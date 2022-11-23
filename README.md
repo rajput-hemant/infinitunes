@@ -1,8 +1,16 @@
 <div align=center>
 
+<!-- labels -->
+
 ![][views] ![][stars] ![][forks] ![][issues] ![][license] ![][repo-size]
 
-<img src="./src/assets/images/infinitunes1920.png" width=300>
+<!-- logo/title -->
+
+<picture>
+  <source media="(prefers-color-scheme: dark, (max-width:300px))" srcset="./src/assets/images/infinitunes1920.png">
+  <source media="(prefers-color-scheme: light,(max-width:300px))" srcset="./src/assets/images/infinitunes1500.png">
+  <img src="./src/assets/images/infinitunes1920.png" width="300px" alt="infinitunes">
+</picture>
 
 <!-- ### **[<kbd> <br> &nbsp; **Click to Visit WebPage** &nbsp; <br> </kbd>][site]** -->
 
