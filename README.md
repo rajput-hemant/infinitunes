@@ -2,7 +2,7 @@
 
 ![][views] ![][stars] ![][forks] ![][issues] ![][license] ![][repo-size]
 
-<img src="./src/assets/images/infinitunes.png" width=300>
+<img src="./src/assets/images/infinitunes1920.png" width=300>
 
 <!-- ### **[<kbd> <br> &nbsp; **Click to Visit WebPage** &nbsp; <br> </kbd>][site]** -->
 
