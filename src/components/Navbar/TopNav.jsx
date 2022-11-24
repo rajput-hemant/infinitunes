@@ -1,5 +1,5 @@
 import { CiSearch } from "react-icons/ci";
-import { BsPersonCircle } from "react-icons/bs";
+import { BsFillMoonFill, BsFillSunFill } from "react-icons/bs";
 
 import LogoSrc from "../../assets/images/infinitunes1500.png";
 import {
@@ -16,18 +16,21 @@ import {
 } from "./TopNav.style";
 
 const navItems = [
-	{ id: "m1", label: "Home", to: "/" },
-	{ id: "m2", label: "Podcasts", to: "/playlist" },
+	{ label: "Home", to: "/" },
+	{ label: "Playlists", to: "/playlist" },
+	{ label: "Charts", to: "/charts" },
+	{ label: "About", to: "/About" },
+	{ label: "Settings", to: "/Settings" },
 ];
 
-const Navbar = () => {
+const Navbar = (props) => {
 	return (
 		<MainContainer>
 			<Logo src={LogoSrc} alt="Inifitunes Logo" />
 			<LeftContainer>
 				<LinkContainer>
-					{navItems.map(({ id, label, to }) => (
-						<StyledLink key={id} to={to}>
+					{navItems.slice(0, 3).map(({ label, to }, index) => (
+						<StyledLink key={index} to={to}>
 							{label}
 						</StyledLink>
 					))}
@@ -35,13 +38,32 @@ const Navbar = () => {
 			</LeftContainer>
 			<SearchContainer>
 				<SearchIconContainer>
-					<CiSearch size={20} color="grey" />
+					<CiSearch size={20} color="white" />
 				</SearchIconContainer>
 				<SearchInput placeholder="Search" required />
 			</SearchContainer>
 			<RightContainer>
+				<LinkContainer>
+					{navItems.slice(3).map(({ label, to }, index) => (
+						<StyledLink key={index} to={to}>
+							{label}
+						</StyledLink>
+					))}
+				</LinkContainer>
 				<IconButton>
-					<BsPersonCircle size={30} color="white" />
+					{props.theme === "light" ? (
+						<BsFillMoonFill
+							onClick={props.toggleTheme}
+							size={30}
+							color="white"
+						/>
+					) : (
+						<BsFillSunFill
+							onClick={props.toggleTheme}
+							size={30}
+							color="white"
+						/>
+					)}
 				</IconButton>
 			</RightContainer>
 		</MainContainer>

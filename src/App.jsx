@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
+import useThemeSwitcher from "./hooks/useThemeSwitcher";
+
 import GlobalStyles, { themes } from "./styles/GlobalStyles";
-import useThemeSwitcher from "./styles/ThemeSwitcher";
 import Player from "./components/Player/Player";
 import Navbar from "./components/Navbar/TopNav";
 import Home from "./pages/Home/Home";
@@ -18,7 +19,7 @@ const App = () => {
 
 	return (
 		<Router>
-			<ThemeProvider theme={themeMode}>
+			<ThemeProvider theme={themeMode} >
 				<GlobalStyles />
 				<Routes>
 					<Route path="/" element={<Home />} />
