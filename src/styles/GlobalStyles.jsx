@@ -43,6 +43,7 @@ const GlobalStyle = createGlobalStyle`
 body {
 	/* background-color: #000; */
 	background: ${({ theme }) => theme.body};
+	background: linear-gradient(#434343, #000000, 90deg);
 }
 
 ::-webkit-scrollbar {

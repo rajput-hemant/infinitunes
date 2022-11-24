@@ -1,63 +1,81 @@
-import { Autoplay, Navigation, Pagination } from "swiper";
 import { useEffect, useState } from "react";
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/pagination";
-import "swiper/css/navigation";
-import "swiper/css/autoplay";
 
-import { Box, StyledSlider, StyledSwiper } from "./Home.style";
+import { Box } from "./Home.style";
 import api from "../../api/JioSaavnApi";
+import StyledSwiper from "../../components/Swiper/StyledSwiper";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-	const [playlists, setPlaylists] = useState([]);
-	const [trending, setTtrending] = useState([]);
-	const [albums, setAlbums] = useState([]);
-	const [charts, setCharts] = useState([]);
+	const [playlists, setPlaylists] = useState([]),
+		[trending, setTtrending] = useState([]),
+		[albums, setAlbums] = useState([]),
+		[charts, setCharts] = useState([]),
+		[podcasts, setPodcasts] = useState([]),
+		[devotional, setDevotional] = useState([]),
+		[topGenreAndMood, setTopGenreAndMood] = useState([]),
+		[bestComedyPodcasts, setBestComedyPodcasts] = useState([]),
+		[newReleasePop, setNewReleasePop] = useState([]),
+		[topAlbums, setTopAlbums] = useState([]);
+
+	const homeData = [
+		{ label: "Trending Now", array: trending },
+		{ label: "Top Charts", array: charts },
+		{ label: "New Releases", array: playlists },
+		{ label: "Editorial Picks", array: albums },
+		{ label: "Trending Podcasts", array: podcasts },
+		{ label: "Devotional", array: devotional },
+		{ label: "Top Genres & Moods", array: topGenreAndMood },
+		{ label: "Best Comedy Podcasts", array: bestComedyPodcasts },
+		{ label: "New Releases Pop - Hindi", array: newReleasePop },
+		{ label: "Top Albums - Hindi", array: topAlbums },
+	];
 
 	useEffect(() => {
 		const fetchData = async () => {
 			const _playlists = await api.getPlaylists(),
 				_trending = await api.getTrending(),
 				_albums = await api.getEditorialPicks(),
-				_charts = await api.getCharts();
+				_charts = await api.getCharts(),
+				_podcasts = await api.getOthers(api.Other.trendingPodcasts),
+				_devotional = await api.getOthers(api.Other.devotional),
+				_topGenreAndMood = await api.getOthers(api.Other.topGenreAndMood),
+				_bestComedyPodcasts = await api.getOthers(api.Other.bestComedyPodcasts),
+				_newReleasePop = await api.getOthers(api.Other.newReleaseHindi),
+				_topAlbums = await api.getOthers(api.Other.topAlbumsHindi);
 
 			setPlaylists(_playlists);
 			setTtrending(_trending);
 			setAlbums(_albums);
 			setCharts(_charts);
+			setPodcasts(_podcasts);
+			setDevotional(_devotional);
+			setTopGenreAndMood(_topGenreAndMood);
+			setBestComedyPodcasts(_bestComedyPodcasts);
+			setNewReleasePop(_newReleasePop);
+			setTopAlbums(_topAlbums);
 		};
 
 		try {
-			fetchData();
+				fetchData();
 		} catch (error) {
 			console.log("Unable to fetch Home Data: ", error);
 		}
 	}, []);
 
+	const navigate = useNavigate();
+
 	return (
 		<Box>
-			<StyledSwiper
-				slidesPerView={6}
-				spaceBetween={300}
-				autoplay={{
-					delay: 2000,
-					// disableOnInteraction: false,
-				}}
-				loop={true}
-				pagination={{
-					clickable: true,
-				}}
-				mousewheel={true}
-				navigation={true}
-				modules={[Autoplay, Pagination, Navigation]}
-			>
-				{playlists.map((item) => (
-					<StyledSlider>
-						<img src={item.image} alt="" />
-					</StyledSlider>
-				))}
-			</StyledSwiper>
+			{console.log(podcasts)}
+			<StyledSwiper source={playlists} isBanner={true} />
+			{homeData.map(({ label, array }) => {
+				return (
+					<>
+						<h2>{label}</h2>
+						<StyledSwiper source={array} />;
+					</>
+				);
+			})}
 		</Box>
 	);
 };
