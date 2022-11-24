@@ -34,22 +34,22 @@ class JioSaavnApi {
 		return response.top_playlists;
 	}
 
-	async getOthers(id = "32") {
+	async getOthers(id = 32) {
 		const response = await this.#jioSaavnApiGetCall("/home");
-		return response[`"promo:vx:data:${id}"`];
+		return response[`promo:vx:data:${id}`];
 	}
 
-	async getAlbumDetails(query) {
+	async getAlbumDetails(query = "") {
 		if (query.includes("http"))
 			return await this.#jioSaavnApiGetCall(`/albums?link=${query}`);
 		else return await this.#jioSaavnApiGetCall(`/albums?id=${query}`);
 	}
 
-	async getPlaylistDetails(query) {
+	async getPlaylistDetails(query = "") {
 		return await this.#jioSaavnApiGetCall(`/playlists?id=${query}`);
 	}
 
-	async getSongDetails(query) {
+	async getSongDetails(query = "") {
 		if (query.includes("http"))
 			return await this.#jioSaavnApiGetCall(`/songs?link=${query}`);
 		else return await this.#jioSaavnApiGetCall(`/songs?id=${query}`);
