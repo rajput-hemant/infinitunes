@@ -1,8 +1,7 @@
-import React from "react";
-import { Autoplay, Navigation, Pagination } from "swiper";
+import { Autoplay, Navigation } from "swiper";
+
 // Import Swiper styles
 import "swiper/css";
-import "swiper/css/pagination";
 import "swiper/css/navigation";
 import "swiper/css/autoplay";
 
@@ -49,6 +48,24 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 		}
 	};
 
+	const cartSubtitle = (item) => {
+		if (item.type === "album" && item.more_info.artistMap !== undefined) {
+			let artists = "";
+			item.more_info.artistMap.artists.map(
+				(artist) => (artists += `${artist.name}, `)
+			);
+			return <h5>{artists.slice(0, -2)}</h5>;
+		}
+		if (item.type === "playlist" && item.more_info.firstname !== undefined)
+			return <h5>{item.more_info.firstname}</h5>;
+		if (item.type === "playlist" && item.more_info.subtitle !== undefined)
+			return <h5>{item.more_info.subtitle}</h5>;
+		if (item.type === "album" && item.more_info.subtitle !== undefined)
+			return <h5>{item.more_info.release_year}</h5>;
+		if (item.data_type === "featured" && item.follower_count !== undefined)
+			return <h5>{item.follower_count}</h5>;
+	};
+
 	return (
 		<SwiperComponent
 			isbanner={isBanner}
@@ -62,18 +79,26 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 				clickable: true,
 			}}
 			// mousewheel={true}
+			centeredSlides={true}
 			navigation={true}
 			longSwipes={true}
 			loop={true}
-			modules={[Autoplay, Pagination, Navigation]}
+			modules={[Autoplay, Navigation]}
 		>
 			{source.map((item, index) => (
 				<StyledSlider key={index} isbanner={isBanner}>
-					<img
-						src={item.image.replace("150x150", "500x500")}
-						alt={item.title}
-					/>
-					{/* {console.log(item)} */}
+					<div >
+						<img
+							src={item.image.replace("150x150", "500x500")}
+							alt={item.title}
+						/>
+						{!isBanner && (
+							<>
+								<h4>{item.title !== undefined ? item.title : item.listname}</h4>
+								{cartSubtitle(item)}
+							</>
+						)}
+					</div>
 				</StyledSlider>
 			))}
 		</SwiperComponent>
