@@ -29,6 +29,11 @@ class JioSaavnApi {
 		return await this.#jioSaavnApiGetCall("/playlists");
 	}
 
+	async getNewReleases() {
+		const response = await this.#jioSaavnApiGetCall("/home");
+		return response.new_albums;
+	}
+
 	async getEditorialPicks() {
 		const response = await this.#jioSaavnApiGetCall("/home");
 		return response.top_playlists;
