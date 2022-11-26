@@ -1,4 +1,5 @@
 import { Autoplay, Navigation } from "swiper";
+import { FaPlay } from "react-icons/fa";
 
 // Import Swiper styles
 import "swiper/css";
@@ -87,11 +88,14 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 		>
 			{source.map((item, index) => (
 				<StyledSlider key={index} isbanner={isBanner}>
-					<div >
+					<div>
 						<img
 							src={item.image.replace("150x150", "500x500")}
 							alt={item.title}
 						/>
+						<button onClick={() => console.log(item.title)}>
+							<FaPlay size={50} color="red" />
+						</button>
 						{!isBanner && (
 							<>
 								<h4>{item.title !== undefined ? item.title : item.listname}</h4>
