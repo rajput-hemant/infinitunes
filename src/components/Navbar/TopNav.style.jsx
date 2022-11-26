@@ -67,7 +67,7 @@ export const RightContainer = styled.nav`
 	display: flex;
 	background: transparent;
 	justify-content: flex-end;
-	padding-right: 2%;
+	padding-right: 1%;
 `;
 
 export const LinkContainer = styled.div`
@@ -154,7 +154,6 @@ export const IconButton = styled.button`
 	border: none;
 	cursor: pointer;
 	background: none;
-	z-index: 1;
 
 	&:hover {
 		animation: spinZ 2s linear 2;
