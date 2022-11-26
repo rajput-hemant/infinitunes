@@ -14,13 +14,14 @@ import {
 	IconButton,
 	SearchIconContainer,
 } from "./TopNav.style";
+import Dropdown from "../Dropdown/Dropdown";
 
 const navItems = [
 	{ label: "Home", to: "/" },
 	{ label: "Playlists", to: "/playlist" },
 	{ label: "Charts", to: "/charts" },
-	{ label: "About", to: "/About" },
-	{ label: "Settings", to: "/Settings" },
+	// { label: "About", to: "/About" },
+	// { label: "Settings", to: "/Settings" },
 ];
 
 const Navbar = (props) => {
@@ -43,13 +44,6 @@ const Navbar = (props) => {
 				<SearchInput placeholder="Search" required />
 			</SearchContainer>
 			<RightContainer>
-				<LinkContainer>
-					{navItems.slice(3).map(({ label, to }, index) => (
-						<StyledLink key={index} to={to}>
-							{label}
-						</StyledLink>
-					))}
-				</LinkContainer>
 				<IconButton>
 					{props.theme === "light" ? (
 						<BsFillMoonFill
@@ -65,6 +59,7 @@ const Navbar = (props) => {
 						/>
 					)}
 				</IconButton>
+				<Dropdown />
 			</RightContainer>
 		</MainContainer>
 	);
