@@ -36,10 +36,6 @@ export const StyledSlider = styled(SwiperSlide)`
 			font-size: large;
 			text-align: center;
 			font-family: Roboto, sans-serif;
-
-			&:hover {
-				text-shadow: 2px 2px 10px #74f2ce;
-			}
 		}
 
 		h5 {

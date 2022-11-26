@@ -72,10 +72,10 @@ const Home = () => {
 			<StyledSwiper source={playlists} isBanner={true} />
 			{homeData.map(({ label, array }) => {
 				return (
-					array.length && (
+					array.length !== 0 && (
 						<>
 							<h2>{label}</h2>
-							<StyledSwiper source={array} />;
+							<StyledSwiper source={array} />
 						</>
 					)
 				);
