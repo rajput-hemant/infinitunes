@@ -14,7 +14,7 @@ const Home = () => {
 		[podcasts, setPodcasts] = useState([]),
 		[devotional, setDevotional] = useState([]),
 		[topGenreAndMood, setTopGenreAndMood] = useState([]),
-		// [bestComedyPodcasts, setBestComedyPodcasts] = useState([]),
+		[bestComedyPodcasts, setBestComedyPodcasts] = useState([]),
 		[newReleasePop, setNewReleasePop] = useState([]),
 		[topAlbums, setTopAlbums] = useState([]);
 
@@ -26,7 +26,7 @@ const Home = () => {
 		{ label: "Trending Podcasts", array: podcasts },
 		{ label: "Devotional", array: devotional },
 		{ label: "Top Genres & Moods", array: topGenreAndMood },
-		// { label: "Best Comedy Podcasts", array: bestComedyPodcasts },
+		{ label: "Best Comedy Podcasts", array: bestComedyPodcasts },
 		{ label: "New Releases Pop - Hindi", array: newReleasePop },
 		{ label: "Top Albums - Hindi", array: topAlbums },
 	];
@@ -41,7 +41,7 @@ const Home = () => {
 				_podcasts = await api.getOthers(api.Other.trendingPodcasts),
 				_devotional = await api.getOthers(api.Other.devotional),
 				_topGenreAndMood = await api.getOthers(api.Other.topGenreAndMood),
-				// _bestComedyPodcasts = await api.getOthers(api.Other.bestComedyPodcasts),
+				_bestComedyPodcasts = await api.getOthers(api.Other.bestComedyPodcasts),
 				_newReleasePop = await api.getOthers(api.Other.newReleaseHindi),
 				_topAlbums = await api.getOthers(api.Other.topAlbumsHindi);
 
@@ -53,7 +53,7 @@ const Home = () => {
 			setPodcasts(_podcasts);
 			setDevotional(_devotional);
 			setTopGenreAndMood(_topGenreAndMood);
-			// setBestComedyPodcasts(_bestComedyPodcasts);
+			setBestComedyPodcasts(_bestComedyPodcasts);
 			setNewReleasePop(_newReleasePop);
 			setTopAlbums(_topAlbums);
 		};
@@ -72,10 +72,12 @@ const Home = () => {
 			<StyledSwiper source={playlists} isBanner={true} />
 			{homeData.map(({ label, array }) => {
 				return (
-					<>
-						<h2>{label}</h2>
-						<StyledSwiper source={array} />;
-					</>
+					array.length && (
+						<>
+							<h2>{label}</h2>
+							<StyledSwiper source={array} />;
+						</>
+					)
 				);
 			})}
 		</Box>

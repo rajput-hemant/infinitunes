@@ -20,17 +20,15 @@ export const StyledSlider = styled(SwiperSlide)`
 			border-radius: 10px;
 			height: ${(props) => (props.isbanner ? "340px" : "300px")};
 			width: ${(props) => (props.isbanner ? "340px" : "300px")};
-			/* object-fit: cover; */
 
 			&:hover {
-				box-shadow: 7px 7px 10px #74f2ce;
 				opacity: 0.6;
 				border: 3px solid #74f2ce;
+				box-shadow: 7px 7px 10px #74f2ce;
 			}
 		}
 
 		h4 {
-			padding: 5px 20px;
 			overflow: hidden;
 			white-space: nowrap;
 			text-overflow: ellipsis;
@@ -45,7 +43,6 @@ export const StyledSlider = styled(SwiperSlide)`
 		}
 
 		h5 {
-			padding: 0 40px;
 			overflow: hidden;
 			white-space: nowrap;
 			text-overflow: ellipsis;
@@ -53,6 +50,21 @@ export const StyledSlider = styled(SwiperSlide)`
 			font-size: smaller;
 			text-align: center;
 			font-family: Roboto, sans-serif;
+		}
+
+		button {
+			position: absolute;
+			top: ${(props) => (props.isbanner ? "150px" : "125px")};
+			left: ${(props) => (props.isbanner ? "150px" : "125px")};
+			border-radius: 10px;
+			background: transparent;
+			border: none;
+			z-index: 100;
+			opacity: 0;
+
+			&:hover {
+				opacity: 1;
+			}
 		}
 	}
 `;
