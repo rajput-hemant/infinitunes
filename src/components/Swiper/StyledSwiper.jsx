@@ -68,45 +68,47 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 	};
 
 	return (
-		<SwiperComponent
-			isbanner={isBanner}
-			slidesPerView={6}
-			spaceBetween={isBanner ? 300 : 200}
-			autoplay={{
-				delay: isBanner ? 2000 : 4000,
-				disableOnInteraction: false,
-			}}
-			pagination={{
-				clickable: true,
-			}}
-			// mousewheel={true}
-			centeredSlides={true}
-			navigation={true}
-			longSwipes={true}
-			loop={true}
-			modules={[Autoplay, Navigation]}
-		>
-			{source.map((item, index) => (
-				<StyledSlider key={index} isbanner={isBanner}>
-					<div>
-						<img
-							src={item.image.replace("150x150", "500x500")}
-							alt={item.title}
-						/>
-						<button onClick={() => console.log(item.title)}>
-							<FaPlay size={50} color="red" />
-						</button>
-						{!isBanner && (
-							<>
-								<h4>{item.title !== undefined ? item.title : item.listname}</h4>
-								{cartSubtitle(item)}
-							</>
-						)}
-					</div>
-				</StyledSlider>
-			))}
-		</SwiperComponent>
-	);
+    <SwiperComponent
+      isbanner={isBanner}
+      slidesPerView={6}
+      spaceBetween={isBanner ? 300 : 200}
+      autoplay={{
+        delay: isBanner ? 2000 : 4000,
+        disableOnInteraction: false,
+      }}
+      pagination={{
+        clickable: true,
+      }}
+      // mousewheel={true}
+      centeredSlides={true}
+      navigation={true}
+      longSwipes={true}
+      loop={true}
+      modules={[Autoplay, Navigation]}
+    >
+      {source.map((item, index) => (
+        <StyledSlider key={index} isbanner={isBanner}>
+          <div>
+            <container>
+              <img
+                src={item.image.replace("150x150", "500x500")}
+                alt={item.title}
+              />
+              <button onClick={() => console.log(item.title)}>
+                <FaPlay size={50} color="#74f2ce" />
+              </button>
+            </container>
+            {!isBanner && (
+              <>
+                <h4>{item.title !== undefined ? item.title : item.listname}</h4>
+                {cartSubtitle(item)}
+              </>
+            )}
+          </div>
+        </StyledSlider>
+      ))}
+    </SwiperComponent>
+  );
 };
 
 export default StyledSwiper;
