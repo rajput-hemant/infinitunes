@@ -1,36 +1,43 @@
-export const itemCount = (winWidth) => {
-	if (winWidth <= 500) {
-		return [3];
+
+ export const itemCount = (winWidth) => {
+	if (winWidth <= 590) {
+		return 2;
 	}
-	if (winWidth > 500 && winWidth <= 800) {
-		return [4];
+	if (winWidth > 590 && winWidth <= 800) {
+		return 3;
 	}
-	if (winWidth > 800 && winWidth <= 1440) {
-		return [5];
+	if (winWidth > 800 && winWidth <= 1100) {
+		return 4;
 	}
-	if (winWidth > 1440 && winWidth <= 1790) {
-		return [6];
+	if (winWidth > 1100 && winWidth <= 1300) {
+		return 4;
 	}
-	if (winWidth > 1790) {
-		return 6;
+	if (winWidth > 1300 && winWidth <= 1600) {
+		return 4;
+	}
+	if (winWidth > 1600) {
+		return 5;
 	}
 };
 
 export const spaceBetween = (winWidth) => {
-	if (winWidth <= 500) {
-		return [10];
+	if (winWidth <= 590) {
+		return 130;
 	}
-	if (winWidth > 500 && winWidth <= 800) {
-		return [10];
+	if (winWidth > 590 && winWidth <= 800) {
+		return 190;
 	}
 	if (winWidth > 800 && winWidth <= 1100) {
-		return [15];
+		return 170;
 	}
-	if (winWidth > 1100 && winWidth <= 1440) {
-		return [0];
+	if (winWidth > 1100 && winWidth <= 1300) {
+		return 170;
 	}
-	if (winWidth > 1440) {
-		return [0];
+	if (winWidth > 1300 && winWidth <= 1600) {
+		return 150;
+	}
+	if (winWidth > 1600) {
+		return 140;
 	}
 };
 
