@@ -9,6 +9,7 @@ const SongCard = (props) => {
 				{songs.map((song) => {
 					return (
 						<Tile
+							key={song.id}
 							name={song.name}
 							artists={song.primaryArtists}
 							image={song.image[1].link}

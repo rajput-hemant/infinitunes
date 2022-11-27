@@ -19,7 +19,7 @@ export const AlbumImage = styled.img`
 	width: 18rem;
 	border: 2px solid #74f2ce;
 	border-radius: 10px;
-	
+
 	&:hover {
 		box-shadow: 7px 7px 10px #74f2ce;
 	}
@@ -53,7 +53,7 @@ export const TitleContainer = styled.div`
 	}
 `;
 
-export const ArtistsContiner = styled.div`
+export const ArtistsContainer = styled.div`
 	flex: 1;
 	margin: 0.5rem 1rem;
 `;
@@ -63,7 +63,7 @@ export const LabelContainer = styled.div`
 	margin: 0.5rem 1rem;
 `;
 
-export const ButtonContainer = styled.div`
+export const ButtonsContainer = styled.div`
 	display: flex;
 	flex: 2;
 	align-items: center;

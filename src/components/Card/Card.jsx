@@ -3,14 +3,15 @@ import {
 	CardContainer,
 	InfoContainer,
 	TitleContainer,
-	ArtistsContiner,
+	ArtistsContainer,
 	LabelContainer,
-	ButtonContainer,
+	ButtonsContainer,
 	PlayButton,
 } from "./Card.style";
 
 const Card = (props) => {
-	const item = props.item;
+	const item = props.item,
+		type = props.type;
 
 	const getTotalPlays = (songs) => {
 		const plays = songs.reduce((a, b) => a + +b.playCount, 0);
@@ -23,24 +24,39 @@ const Card = (props) => {
 		return `${hrs}:${mins}`;
 	};
 
+	const subtitle = () => {
+		if (type === "album")
+			return (
+				<ArtistsContainer>
+					{item.primaryArtist} · {item.songCount} Songs ·{" "}
+					{getTotalPlays(item.songs)} Plays · {getTotalDuration(item.songs)}
+				</ArtistsContainer>
+			);
+
+		if (type === "playlist")
+			return (
+				<ArtistsContainer>
+					{(item.fanCount / 1000).toFixed(2)}K Fans · {item.songCount} Songs ·{" "}
+					{getTotalPlays(item.songs)} Plays · {getTotalDuration(item.songs)}
+				</ArtistsContainer>
+			);
+	};
+
 	return (
 		item.length !== 0 && (
 			<CardContainer>
 				<AlbumImage src={item.image[2].link} alt={item.name}></AlbumImage>
 				<InfoContainer>
 					<TitleContainer>{item.name}</TitleContainer>
-					<ArtistsContiner>
-						{item.primaryArtist} · {item.songCount} Songs ·{" "}
-						{getTotalPlays(item.songs)} Plays · {getTotalDuration(item.songs)}
-					</ArtistsContiner>
+					{subtitle()}
 					<LabelContainer>{item.songs[0].copyright}</LabelContainer>
-					<ButtonContainer>
+					<ButtonsContainer>
 						<PlayButton
 							onClick={() => console.log(item.songs[0].downloadUrl[4].link)}
 						>
 							Play
 						</PlayButton>
-					</ButtonContainer>
+					</ButtonsContainer>
 				</InfoContainer>
 			</CardContainer>
 		)

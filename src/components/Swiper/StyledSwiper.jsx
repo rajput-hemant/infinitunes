@@ -9,81 +9,32 @@ import "swiper/css/autoplay";
 
 import useWindowResize from "../../hooks/useWindowResize";
 import { StyledSlider, SwiperComponent } from "./StyledSwiper.style";
-import Album from "../../pages/Album/Album";
+import { cartSubtitle, itemCount } from "./SwiperFns";
 
 const StyledSwiper = ({ source, isBanner = false }) => {
-	const windowDimension = useWindowResize();
-	const { winWidth } = windowDimension;
-
 	const navigate = useNavigate();
+	const { winWidth } = useWindowResize();
 
 	const redirect = (item) => {
-		console.log("swiper", item);
+		const id = item.id,
+			type = item.type,
+			title = item.title
+				.toLowerCase()
+				.replace(/[^\w\s]/gi, "")
+				.replaceAll(" ", "+");
+
 		if (item.type === "album") {
-			const id = item.id;
-			navigate(`/album/${id}/${item.title}`, { state: { id } });
-			<Album id={id} />;
+			navigate(`/album/${id}/${title}`, { state: { id, type } });
 		}
-	};
 
-	const itemCount = () => {
-		if (winWidth <= 500) {
-			return [3];
-		}
-		if (winWidth > 500 && winWidth <= 800) {
-			return [4];
-		}
-		if (winWidth > 800 && winWidth <= 1440) {
-			return [5];
-		}
-		if (winWidth > 1440 && winWidth <= 1790) {
-			return [6];
-		}
-		if (winWidth > 1790) {
-			return [7];
-		}
-	};
-
-	const spaceBetween = () => {
-		if (winWidth <= 500) {
-			return [10];
-		}
-		if (winWidth > 500 && winWidth <= 800) {
-			return [10];
-		}
-		if (winWidth > 800 && winWidth <= 1100) {
-			return [15];
-		}
-		if (winWidth > 1100 && winWidth <= 1440) {
-			return [0];
-		}
-		if (winWidth > 1440) {
-			return [0];
-		}
-	};
-
-	const cartSubtitle = (item) => {
-		if (item.type === "album" && item.more_info.artistMap !== undefined) {
-			let artists = "";
-			item.more_info.artistMap.artists.map(
-				(artist) => (artists += `${artist.name}, `)
-			);
-			return <h5>{artists.slice(0, -2)}</h5>;
-		}
-		if (item.type === "playlist" && item.more_info.firstname !== undefined)
-			return <h5>{item.more_info.firstname}</h5>;
-		if (item.type === "playlist" && item.more_info.subtitle !== undefined)
-			return <h5>{item.more_info.subtitle}</h5>;
-		if (item.type === "album" && item.more_info.subtitle !== undefined)
-			return <h5>{item.more_info.release_year}</h5>;
-		if (item.data_type === "featured" && item.follower_count !== undefined)
-			return <h5>{item.follower_count}</h5>;
+		if (item.type === "playlist")
+			navigate(`/featured/${id}/${title}`, { state: { id, type } });
 	};
 
 	return (
 		<SwiperComponent
 			isbanner={isBanner}
-			slidesPerView={6}
+			slidesPerView={itemCount(winWidth)}
 			spaceBetween={isBanner ? 300 : 200}
 			autoplay={{
 				delay: isBanner ? 2000 : 4000,

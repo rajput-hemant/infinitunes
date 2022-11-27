@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
 
 import useThemeSwitcher from "./hooks/useThemeSwitcher";
 
@@ -11,8 +12,8 @@ import Charts from "./pages/Charts/Charts";
 import Settings from "./pages/Settings/Settings";
 import Search from "./pages/Search/Search";
 import About from "./pages/About/About";
-import { ThemeProvider } from "styled-components";
 import Album from "./pages/Album/Album";
+import Featured from "./pages/Featured/Featured";
 
 const App = () => {
 	const [theme, toggleTheme] = useThemeSwitcher();
@@ -25,6 +26,7 @@ const App = () => {
 				<Routes>
 					<Route path="/" element={<Home />} />
 					<Route path="/album/:id/:title" element={<Album />} />
+					<Route path="/featured/:id/:title" element={<Featured />} />
 					<Route path="/playlist" element={<Playlists />} />
 					<Route path="/charts" element={<Charts />} />
 					<Route path="/search" element={<Search />} />
