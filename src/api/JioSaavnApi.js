@@ -7,7 +7,7 @@ class JioSaavnApi {
 		trendingPodcasts: 107,
 		newReleaseHindi: 113,
 		topAlbumsHindi: 116,
-		bestComedyPodcasts: 135,
+		bestofSocietyAndCulture: 138,
 	};
 
 	async #jioSaavnApiGetCall(path = "") {
@@ -50,7 +50,7 @@ class JioSaavnApi {
 		else return (await this.#jioSaavnApiGetCall(`/albums?id=${query}`)) || [];
 	}
 
-	async getPlaylistDetails(query = "") {
+	async getPlaylistDetails(query) {
 		return await this.#jioSaavnApiGetCall(`/playlists?id=${query}`);
 	}
 
