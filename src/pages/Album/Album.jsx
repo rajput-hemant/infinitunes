@@ -7,7 +7,7 @@ import SongCard from "../../components/Card/SongsCard";
 
 const Album = () => {
 	const {
-		state: { id },
+		state: { id, type },
 	} = useLocation();
 
 	const [album, setAlbum] = useState([]);
@@ -26,7 +26,7 @@ const Album = () => {
 
 	return (
 		<>
-			<Card item={album}></Card>
+			<Card item={album} type={type}></Card>
 			<SongCard item={album} />
 		</>
 	);

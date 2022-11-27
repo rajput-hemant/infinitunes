@@ -5,7 +5,7 @@ import api from "../../api/JioSaavnApi";
 import Card from "../../components/Card/Card";
 import SongCard from "../../components/Card/SongsCard";
 
-const Charts = () => {
+const Featured = () => {
 	const {
 		state: { id, type },
 	} = useLocation();
@@ -13,12 +13,12 @@ const Charts = () => {
 	const [featured, setfeatured] = useState([]);
 
 	useEffect(() => {
-		const fetchCharts = async () => {
+		const fetchFeatured = async () => {
 			const response = await api.getPlaylistDetails(id);
 			setfeatured(response);
 		};
 		try {
-			fetchCharts();
+			fetchFeatured();
 		} catch (error) {
 			console.log("Unable to fetch Albums: ", error);
 		}
@@ -32,4 +32,4 @@ const Charts = () => {
 	);
 };
 
-export default Charts;
+export default Featured;
