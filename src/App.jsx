@@ -12,6 +12,7 @@ import Settings from "./pages/Settings/Settings";
 import Search from "./pages/Search/Search";
 import About from "./pages/About/About";
 import { ThemeProvider } from "styled-components";
+import Album from "./pages/Album/Album";
 
 const App = () => {
 	const [theme, toggleTheme] = useThemeSwitcher();
@@ -19,10 +20,11 @@ const App = () => {
 
 	return (
 		<Router>
-			<ThemeProvider theme={themeMode} >
+			<ThemeProvider theme={themeMode}>
 				<GlobalStyles />
 				<Routes>
 					<Route path="/" element={<Home />} />
+					<Route path="/album/:id/:title" element={<Album />} />
 					<Route path="/playlist" element={<Playlists />} />
 					<Route path="/charts" element={<Charts />} />
 					<Route path="/search" element={<Search />} />

@@ -30,7 +30,7 @@ const Navbar = (props) => {
 			<Logo src={LogoSrc} alt="Inifitunes Logo" />
 			<LeftContainer>
 				<LinkContainer>
-					{navItems.slice(0, 3).map(({ label, to }, index) => (
+					{navItems.map(({ label, to }, index) => (
 						<StyledLink key={index} to={to}>
 							{label}
 						</StyledLink>

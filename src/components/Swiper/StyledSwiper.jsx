@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Autoplay, Navigation } from "swiper";
 import { FaPlay } from "react-icons/fa";
 
@@ -8,10 +9,22 @@ import "swiper/css/autoplay";
 
 import useWindowResize from "../../hooks/useWindowResize";
 import { StyledSlider, SwiperComponent } from "./StyledSwiper.style";
+import Album from "../../pages/Album/Album";
 
 const StyledSwiper = ({ source, isBanner = false }) => {
 	const windowDimension = useWindowResize();
 	const { winWidth } = windowDimension;
+
+	const navigate = useNavigate();
+
+	const redirect = (item) => {
+		console.log("swiper", item);
+		if (item.type === "album") {
+			const id = item.id;
+			navigate(`/album/${id}/${item.title}`, { state: { id } });
+			<Album id={id} />;
+		}
+	};
 
 	const itemCount = () => {
 		if (winWidth <= 500) {
@@ -68,47 +81,44 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 	};
 
 	return (
-    <SwiperComponent
-      isbanner={isBanner}
-      slidesPerView={6}
-      spaceBetween={isBanner ? 300 : 200}
-      autoplay={{
-        delay: isBanner ? 2000 : 4000,
-        disableOnInteraction: false,
-      }}
-      pagination={{
-        clickable: true,
-      }}
-      // mousewheel={true}
-      centeredSlides={true}
-      navigation={true}
-      longSwipes={true}
-      loop={true}
-      modules={[Autoplay, Navigation]}
-    >
-      {source.map((item, index) => (
-        <StyledSlider key={index} isbanner={isBanner}>
-          <div>
-            <container>
-              <img
-                src={item.image.replace("150x150", "500x500")}
-                alt={item.title}
-              />
-              <button onClick={() => console.log(item.title)}>
-                <FaPlay size={50} color="#74f2ce" />
-              </button>
-            </container>
-            {!isBanner && (
-              <>
-                <h4>{item.title !== undefined ? item.title : item.listname}</h4>
-                {cartSubtitle(item)}
-              </>
-            )}
-          </div>
-        </StyledSlider>
-      ))}
-    </SwiperComponent>
-  );
+		<SwiperComponent
+			isbanner={isBanner}
+			slidesPerView={6}
+			spaceBetween={isBanner ? 300 : 200}
+			autoplay={{
+				delay: isBanner ? 2000 : 4000,
+				disableOnInteraction: false,
+			}}
+			pagination={{
+				clickable: true,
+			}}
+			// mousewheel={true}
+			centeredSlides={true}
+			navigation={true}
+			loop={true}
+			modules={[Autoplay, Navigation]}
+		>
+			{source.map((item, index) => (
+				<StyledSlider key={index} isbanner={isBanner}>
+					<div>
+						<img
+							src={item.image.replace("150x150", "500x500")}
+							alt={item.title}
+						/>
+						<button onClick={() => redirect(item)}>
+							<FaPlay size={50} color="#74f2ce" />
+						</button>
+						{!isBanner && (
+							<>
+								<h4>{item.title !== undefined ? item.title : item.listname}</h4>
+								{cartSubtitle(item)}
+							</>
+						)}
+					</div>
+				</StyledSlider>
+			))}
+		</SwiperComponent>
+	);
 };
 
 export default StyledSwiper;
