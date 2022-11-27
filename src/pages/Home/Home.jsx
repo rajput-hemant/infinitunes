@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Box } from "./Home.style";
 import api from "../../api/JioSaavnApi";
 import StyledSwiper from "../../components/Swiper/StyledSwiper";
-import { useNavigate } from "react-router-dom";
 
 const Home = () => {
 	const [playlists, setPlaylists] = useState([]),
@@ -64,8 +63,6 @@ const Home = () => {
 			console.log("Unable to fetch Home Data: ", error);
 		}
 	}, []);
-
-	const navigate = useNavigate();
 
 	return (
 		<Box>
