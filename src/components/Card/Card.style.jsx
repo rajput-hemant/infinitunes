@@ -19,9 +19,11 @@ export const AlbumImage = styled.img`
 	width: 18rem;
 	border: 2px solid #74f2ce;
 	border-radius: 10px;
+	transition: all 150ms ease-in;
 
 	&:hover {
 		box-shadow: 7px 7px 10px #74f2ce;
+		opacity: 0.8;
 	}
 `;
 
@@ -29,7 +31,6 @@ export const InfoContainer = styled.div`
 	display: flex;
 	flex-direction: column;
 	flex: 1;
-	height: 3rem;
 	margin-left: 1rem;
 	border-radius: 10px;
 	height: 18rem;
@@ -71,20 +72,24 @@ export const ButtonsContainer = styled.div`
 `;
 
 export const PlayButton = styled.button`
-	width: 10rem;
-	height: 4rem;
-	border-radius: 100px;
-	/* color: white; */
-	font-size: xx-large;
-	font-family: cubano, Roboto, sans-serif;
-	background: linear-gradient(
-		90deg,
-		${({ theme }) => theme.primaryStart},
-		${({ theme }) => theme.primaryEnd}
-	);
-	border: none;
-
-	&:active {
-		scale: 0.98;
-	}
+  width: 10rem;
+  height: 4rem;
+  border-radius: 100px;
+  /* color: white; */
+  font-size: xx-large;
+  font-family: cubano, Roboto, sans-serif;
+  background: linear-gradient(
+    90deg,
+    ${({ theme }) => theme.primaryStart},
+    ${({ theme }) => theme.primaryEnd}
+  );
+  transition: all 150ms ease-in;
+  border: none;
+  &:hover {
+    cursor: pointer;
+    opacity: 0.8;
+  }
+  &:active {
+    scale: 0.98;
+  }
 `;
