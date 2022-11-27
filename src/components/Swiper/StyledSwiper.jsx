@@ -9,7 +9,7 @@ import "swiper/css/autoplay";
 
 import useWindowResize from "../../hooks/useWindowResize";
 import { StyledSlider, SwiperComponent } from "./StyledSwiper.style";
-import { cartSubtitle, itemCount } from "./SwiperFns";
+import { cartSubtitle, itemCount, spaceBetween } from "./SwiperFns";
 
 const StyledSwiper = ({ source, isBanner = false }) => {
 	const navigate = useNavigate();
@@ -37,7 +37,7 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 		<SwiperComponent
 			isbanner={isBanner}
 			slidesPerView={itemCount(winWidth)}
-			spaceBetween={isBanner ? 300 : 200}
+			spaceBetween={isBanner ? spaceBetween(winWidth) : spaceBetween(winWidth)}
 			autoplay={{
 				delay: isBanner ? 2000 : 4000,
 				disableOnInteraction: false,
