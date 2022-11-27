@@ -14,6 +14,7 @@ import Search from "./pages/Search/Search";
 import About from "./pages/About/About";
 import Album from "./pages/Album/Album";
 import Featured from "./pages/Featured/Featured";
+import NotFound from "./pages/NotFound/NotFound";
 
 const App = () => {
 	const [theme, toggleTheme] = useThemeSwitcher();
@@ -32,6 +33,7 @@ const App = () => {
 					<Route path="/search" element={<Search />} />
 					<Route path="/settings" element={<Settings />} />
 					<Route path="/about" element={<About />} />
+					<Route path="/*" element={<NotFound />} />
 				</Routes>
 				<Navbar theme={theme} toggleTheme={toggleTheme} />
 				<Player />
