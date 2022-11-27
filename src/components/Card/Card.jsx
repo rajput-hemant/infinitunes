@@ -25,15 +25,16 @@ const Card = (props) => {
 	};
 
 	const subtitle = () => {
-		if (type === "album")
+		if (type === "album" || "show")
 			return (
 				<ArtistsContainer>
-					{item.primaryArtist} · {item.songCount} Songs ·{" "}
-					{getTotalPlays(item.songs)} Plays · {getTotalDuration(item.songs)}
+					{type === "albums" ? item.primaryArtist : "Podcast"} ·{" "}
+					{item.songCount} Songs · {getTotalPlays(item.songs)} Plays ·{" "}
+					{getTotalDuration(item.songs)}
 				</ArtistsContainer>
 			);
 
-		if (type === "playlist")
+		if (type === "playlist" || "featured")
 			return (
 				<ArtistsContainer>
 					{(item.fanCount / 1000).toFixed(2)}K Fans · {item.songCount} Songs ·{" "}
@@ -45,14 +46,14 @@ const Card = (props) => {
 	return (
 		item.length !== 0 && (
 			<CardContainer>
-				<AlbumImage src={item.image[2].link} alt={item.name}></AlbumImage>
+				<AlbumImage src={item.image[2]?.link} alt={item.name}></AlbumImage>
 				<InfoContainer>
 					<TitleContainer>{item.name}</TitleContainer>
 					{subtitle()}
-					<LabelContainer>{item.songs[0].copyright}</LabelContainer>
+					<LabelContainer>{item.songs[0]?.copyright}</LabelContainer>
 					<ButtonsContainer>
 						<PlayButton
-							onClick={() => console.log(item.songs[0].downloadUrl[4].link)}
+							onClick={() => console.log(item.songs[0]?.downloadUrl[4].link)}
 						>
 							Play
 						</PlayButton>

@@ -16,19 +16,21 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 	const { winWidth } = useWindowResize();
 
 	const redirect = (item) => {
-		const id = item.id,
-			type = item.type,
-			title = item.title
-				.toLowerCase()
-				.replace(/[^\w\s]/gi, "")
-				.replaceAll(" ", "+");
+		const id = item.id || item.listid,
+			type = item.type || item.data_type,
+			title =
+				item.title ||
+				item.listname
+					.toLowerCase()
+					.replace(/[^\w\s]/gi, "")
+					.replaceAll(" ", "+");
 
-		if (item.type === "album") {
+		if (type === "album" || type === "show") {
 			navigate(`/album/${id}/${title}`, { state: { id, type } });
 		}
 
-		if (item.type === "playlist")
-			navigate(`/featured/${id}/${title}`, { state: { id, type } });
+		if (type === "playlist" || type === "featured")
+			navigate(`/playlist/${id}/${title}`, { state: { id, type } });
 	};
 
 	return (

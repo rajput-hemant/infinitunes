@@ -18,10 +18,8 @@ import Dropdown from "../Dropdown/Dropdown";
 
 const navItems = [
 	{ label: "Home", to: "/" },
-	{ label: "Playlists", to: "/playlist" },
+	{ label: "Playlists", to: "/playlists" },
 	{ label: "Charts", to: "/charts" },
-	// { label: "About", to: "/About" },
-	// { label: "Settings", to: "/Settings" },
 ];
 
 const Navbar = (props) => {

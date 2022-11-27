@@ -13,7 +13,7 @@ const Home = () => {
 		[podcasts, setPodcasts] = useState([]),
 		[devotional, setDevotional] = useState([]),
 		[topGenreAndMood, setTopGenreAndMood] = useState([]),
-		[bestComedyPodcasts, setBestComedyPodcasts] = useState([]),
+		[bestofSocietyAndCulture, setBestofSocietyAndCulture] = useState([]),
 		[newReleasePop, setNewReleasePop] = useState([]),
 		[topAlbums, setTopAlbums] = useState([]);
 
@@ -25,7 +25,7 @@ const Home = () => {
 		{ label: "Trending Podcasts", array: podcasts },
 		{ label: "Devotional", array: devotional },
 		{ label: "Top Genres & Moods", array: topGenreAndMood },
-		{ label: "Best Comedy Podcasts", array: bestComedyPodcasts },
+		{ label: "Best of Society & Culture", array: bestofSocietyAndCulture },
 		{ label: "New Releases Pop - Hindi", array: newReleasePop },
 		{ label: "Top Albums - Hindi", array: topAlbums },
 	];
@@ -40,7 +40,9 @@ const Home = () => {
 				_podcasts = await api.getOthers(api.Other.trendingPodcasts),
 				_devotional = await api.getOthers(api.Other.devotional),
 				_topGenreAndMood = await api.getOthers(api.Other.topGenreAndMood),
-				_bestComedyPodcasts = await api.getOthers(api.Other.bestComedyPodcasts),
+				_bestofSocietyAndCulture = await api.getOthers(
+					api.Other.bestofSocietyAndCulture
+				),
 				_newReleasePop = await api.getOthers(api.Other.newReleaseHindi),
 				_topAlbums = await api.getOthers(api.Other.topAlbumsHindi);
 
@@ -52,7 +54,7 @@ const Home = () => {
 			setPodcasts(_podcasts);
 			setDevotional(_devotional);
 			setTopGenreAndMood(_topGenreAndMood);
-			setBestComedyPodcasts(_bestComedyPodcasts);
+			setBestofSocietyAndCulture(_bestofSocietyAndCulture);
 			setNewReleasePop(_newReleasePop);
 			setTopAlbums(_topAlbums);
 		};
