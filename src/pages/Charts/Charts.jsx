@@ -1,35 +1,25 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
 
 import api from "../../api/JioSaavnApi";
-import Card from "../../components/Card/Card";
-import SongCard from "../../components/Card/SongsCard";
+import Grid from "../../components/Grid/Grid";
 
 const Charts = () => {
-	const {
-		state: { id, type },
-	} = useLocation();
-
-	const [featured, setfeatured] = useState([]);
+	const [charts, setCharts] = useState([]);
 
 	useEffect(() => {
 		const fetchCharts = async () => {
-			const response = await api.getPlaylistDetails(id);
-			setfeatured(response);
+			const response = await api.getCharts();
+			setCharts(response);
+			console.log("charts:", response);
 		};
 		try {
 			fetchCharts();
 		} catch (error) {
-			console.log("Unable to fetch Albums: ", error);
+			console.log("Unable to fetch Charts: ", error);
 		}
-	}, [featured.length, id]);
+	}, [charts.length]);
 
-	return (
-		<>
-			<Card item={featured} type={type}></Card>
-			<SongCard item={featured} />
-		</>
-	);
+	return <Grid source={charts} />;
 };
 
 export default Charts;

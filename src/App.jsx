@@ -13,6 +13,7 @@ import Settings from "./pages/Settings/Settings";
 import Search from "./pages/Search/Search";
 import About from "./pages/About/About";
 import Album from "./pages/Album/Album";
+import Playlists from "./pages/Playlist/Playlists";
 import NotFound from "./pages/NotFound/NotFound";
 
 const App = () => {
@@ -25,10 +26,9 @@ const App = () => {
 				<GlobalStyles />
 				<Routes>
 					<Route path="/" element={<Home />} />
-					<Route path="/playlists" element={<Playlist />} />
+					<Route path="/playlists" element={<Playlists />} />
 					<Route path="/playlist/:id/:title" element={<Playlist />} />
 					<Route path="/search" element={<Search />} />
-					<Route path="/search/:id/:title" element={<Search />} />
 					<Route path="/charts" element={<Charts />} />
 					<Route path="/album/:id/:title" element={<Album />} />
 					<Route path="/settings" element={<Settings />} />
