@@ -134,7 +134,7 @@ export const SearchInput = styled.input`
 	border: none;
 	/* top: 0;
 	left: 0; */
-	font-family: l-regular;
+	font-family: Roboto, sans-serif;
 	/* font-weight: bold; */
 	width: 100%;
 	background: none;

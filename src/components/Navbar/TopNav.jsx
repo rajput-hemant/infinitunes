@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { CiSearch } from "react-icons/ci";
+import { useNavigate } from "react-router-dom";
 import { BsFillMoonFill, BsFillSunFill } from "react-icons/bs";
 
 import LogoSrc from "../../assets/images/infinitunes1500.png";
@@ -15,6 +17,8 @@ import {
 	SearchIconContainer,
 } from "./TopNav.style";
 import Dropdown from "../Dropdown/Dropdown";
+import { useDispatch } from "react-redux";
+import { searchActions } from "../../store/search-slice";
 
 const navItems = [
 	{ label: "Home", to: "/" },
@@ -23,6 +27,18 @@ const navItems = [
 ];
 
 const Navbar = (props) => {
+	const navigate = useNavigate();
+	const dispatch = useDispatch();
+	const [input, setInput] = useState();
+
+	const searchInputHandler = (event) => {
+		setInput(event.target.value);
+	};
+	
+	useEffect(() => {
+		dispatch(searchActions.updateSearchInput(input));
+	});
+
 	return (
 		<MainContainer>
 			<Logo src={LogoSrc} alt="Inifitunes Logo" />
@@ -39,7 +55,11 @@ const Navbar = (props) => {
 				<SearchIconContainer>
 					<CiSearch size={20} color="white" />
 				</SearchIconContainer>
-				<SearchInput placeholder="Search" required />
+				<SearchInput
+					placeholder="Search"
+					onChange={searchInputHandler}
+					onClick={() => navigate("/search")}
+				/>
 			</SearchContainer>
 			<RightContainer>
 				<IconButton>
