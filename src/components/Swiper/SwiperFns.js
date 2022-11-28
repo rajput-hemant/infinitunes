@@ -1,5 +1,4 @@
-
- export const itemCount = (winWidth) => {
+export const itemCount = (winWidth) => {
 	if (winWidth <= 590) {
 		return 2;
 	}
@@ -16,7 +15,7 @@
 		return 4;
 	}
 	if (winWidth > 1600) {
-		return 5;
+		return 6;
 	}
 };
 
@@ -37,7 +36,7 @@ export const spaceBetween = (winWidth) => {
 		return 150;
 	}
 	if (winWidth > 1600) {
-		return 140;
+		return [300, 200];
 	}
 };
 

@@ -33,16 +33,19 @@ export const StyledSlider = styled(SwiperSlide)`
 			z-index: 100;
 			opacity: 0;
 			transition: all 150ms ease-in;
+
 			&:hover {
 				scale: 1.2;
 				cursor: pointer;
 			}
 		}
+
 		&:hover img {
 			opacity: 0.6;
 			border: 3px solid #74f2ce;
 			box-shadow: 7px 7px 10px #74f2ce;
 		}
+
 		&:hover button {
 			opacity: 1;
 		}
@@ -70,25 +73,28 @@ export const StyledSlider = styled(SwiperSlide)`
 			text-align: center;
 			font-family: Roboto, sans-serif;
 		}
-    @media (max-width: 1230px) {
-      height: ${(props) => (props.isbanner ? "300px" : "300px")};
-      width: ${(props) => (props.isbanner ? "300px" : "280px")};
-      container {
-        img {
-          height: ${(props) => (props.isbanner ? "300px" : "280px")};
-          width: ${(props) => (props.isbanner ? "300px" : "280px")};
-        }
-      }
-    }
-    @media (max-width: 1100px) {
-      height: ${(props) => (props.isbanner ? "250px" : "250px")};
-      width: ${(props) => (props.isbanner ? "250px" : "220px")};
-      container {
-        img {
-          height: ${(props) => (props.isbanner ? "250px" : "220px")};
-          width: ${(props) => (props.isbanner ? "250px" : "220px")};
-        }
-      }
-    }
+
+		@media (max-width: 1230px) {
+			height: ${(props) => (props.isbanner ? "300px" : "300px")};
+			width: ${(props) => (props.isbanner ? "300px" : "280px")};
+
+			container {
+				img {
+					height: ${(props) => (props.isbanner ? "300px" : "280px")};
+					width: ${(props) => (props.isbanner ? "300px" : "280px")};
+				}
+			}
+		}
+		@media (max-width: 1100px) {
+			height: ${(props) => (props.isbanner ? "250px" : "250px")};
+			width: ${(props) => (props.isbanner ? "250px" : "220px")};
+			
+			container {
+				img {
+					height: ${(props) => (props.isbanner ? "250px" : "220px")};
+					width: ${(props) => (props.isbanner ? "250px" : "220px")};
+				}
+			}
+		}
 	}
 `;
