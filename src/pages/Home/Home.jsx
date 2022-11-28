@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Box } from "./Home.style";
 import api from "../../api/JioSaavnApi";
 import StyledSwiper from "../../components/Swiper/StyledSwiper";
+import { Motion } from "../../styles/Motion";
 
 const Home = () => {
 	const [playlists, setPlaylists] = useState([]),
@@ -64,8 +65,21 @@ const Home = () => {
 				return (
 					array.length !== 0 && (
 						<>
-							<h2>{label}</h2>
-							<StyledSwiper source={array} />
+							<Motion
+								initial={{ opacity: 0, translateX: +500 }}
+								whileInView={{ opacity: 1, scale: 1, translateX: 0 }}
+								transition={{ duration: 1.5, type: "spring" }}
+								style={{ overflow: "hidden", width: "900px" }}
+							>
+								<h2>{label}</h2>
+							</Motion>
+							<Motion
+								initial={{ opacity: 0, scale: 0.7 }}
+								whileInView={{ opacity: 1, scale: 1 }}
+								transition={{ duration: 0.5, type: "tween" }}
+							>
+								<StyledSwiper source={array} />
+							</Motion>
 						</>
 					)
 				);
