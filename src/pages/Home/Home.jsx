@@ -34,29 +34,20 @@ const Home = () => {
 		const fetchData = async () => {
 			const _playlists = await api.getPlaylists(),
 				_trending = await api.getTrending(),
-				_newRelease = await api.getNewReleases(),
-				_albums = await api.getEditorialPicks(),
 				_charts = await api.getCharts(),
-				_podcasts = await api.getOthers(api.Other.trendingPodcasts),
-				_devotional = await api.getOthers(api.Other.devotional),
-				_topGenreAndMood = await api.getOthers(api.Other.topGenreAndMood),
-				_bestofSocietyAndCulture = await api.getOthers(
-					api.Other.bestofSocietyAndCulture
-				),
-				_newReleasePop = await api.getOthers(api.Other.newReleaseHindi),
-				_topAlbums = await api.getOthers(api.Other.topAlbumsHindi);
+				_homeData = await api.getHomeData();
 
 			setPlaylists(_playlists);
 			setTrending(_trending);
-			setNewRelease(_newRelease);
-			setAlbums(_albums);
 			setCharts(_charts);
-			setPodcasts(_podcasts);
-			setDevotional(_devotional);
-			setTopGenreAndMood(_topGenreAndMood);
-			setBestofSocietyAndCulture(_bestofSocietyAndCulture);
-			setNewReleasePop(_newReleasePop);
-			setTopAlbums(_topAlbums);
+			setNewRelease(_homeData.newReleases);
+			setAlbums(_homeData.editorialPicks);
+			setPodcasts(_homeData.trendingPodcasts);
+			setDevotional(_homeData.devotional);
+			setTopGenreAndMood(_homeData.topGenreAndMood);
+			setBestofSocietyAndCulture(_homeData.bestofSocietyAndCulture);
+			setNewReleasePop(_homeData.newReleaseHindi);
+			setTopAlbums(_homeData.topAlbumsHindi);
 		};
 
 		try {

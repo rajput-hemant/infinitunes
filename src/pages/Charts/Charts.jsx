@@ -10,7 +10,6 @@ const Charts = () => {
 		const fetchCharts = async () => {
 			const response = await api.getCharts();
 			setCharts(response);
-			console.log("charts:", response);
 		};
 		try {
 			fetchCharts();

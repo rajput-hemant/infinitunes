@@ -37,40 +37,43 @@ export const SongInfo = styled.div`
 		}
 	}
 `;
-export const TileContainer = styled.button`
-  display: flex;
-  height: 5rem;
-  margin: 3px 0;
-  padding: 0 5px;
-  border: none;
-  align-items: center;
-  border-radius: 10px;
-  background-color: transparent;
-  transition: all 200ms ease-in;
 
-  &:hover {
-    border: 1px solid white;
-    cursor: pointer;
-    box-shadow: 3px 3px 5px #74f2ce;
-  }
-  button {
-    position: relative;
-    left: -45px;
-    top: -24px;
-    border-radius: 10px;
-    background: transparent;
-    border: none;
-    z-index: 100;
-    opacity: 0;
-    transition: all 150ms ease-in;
-	&:active{
-		transform: scale(1.3);
+export const TileContainer = styled.div`
+	display: flex;
+	height: 5rem;
+	margin: 3px 0;
+	padding: 0 5px;
+	border: none;
+	align-items: center;
+	border-radius: 10px;
+	background-color: transparent;
+	transition: all 200ms ease-in;
+
+	&:hover {
+		border: 1px solid white;
+		cursor: pointer;
+		box-shadow: 3px 3px 5px #74f2ce;
 	}
-  }
-  div {
-    &:hover button {
-      opacity: 1;
-      cursor: pointer;
-    }
-  }
+
+	button {
+		position: relative;
+		left: -45px;
+		top: -24px;
+		border-radius: 10px;
+		background: transparent;
+		border: none;
+		z-index: 100;
+		opacity: 0;
+		transition: all 150ms ease-in;
+		&:active {
+			transform: scale(1.3);
+		}
+	}
+
+	div {
+		&:hover button {
+			opacity: 1;
+			cursor: pointer;
+		}
+	}
 `;

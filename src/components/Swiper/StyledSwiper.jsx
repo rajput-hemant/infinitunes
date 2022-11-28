@@ -18,12 +18,10 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 	const redirect = (item) => {
 		const id = item.id || item.listid,
 			type = item.type || item.data_type,
-			title =
-				item.title ||
-				item.listname
-					.toLowerCase()
-					.replace(/[^\w\s]/gi, "")
-					.replaceAll(" ", "+");
+			title = (item.title || item.listname)
+				.toLowerCase()
+				.replace(/[^\w\s]/gi, "")
+				.replaceAll(" ", "+");
 
 		if (type === "album" || type === "show") {
 			navigate(`/album/${id}/${title}`, { state: { id, type } });
@@ -37,7 +35,9 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 		<SwiperComponent
 			isbanner={isBanner}
 			slidesPerView={itemCount(winWidth)}
-			spaceBetween={isBanner ? spaceBetween(winWidth) : spaceBetween(winWidth)}
+			spaceBetween={
+				isBanner ? spaceBetween(winWidth)[0] : spaceBetween(winWidth)[1]
+			}
 			autoplay={{
 				delay: isBanner ? 2000 : 4000,
 				disableOnInteraction: false,

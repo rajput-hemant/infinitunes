@@ -7,7 +7,7 @@ export const Logo = styled.img`
 	top: -3px;
 	width: 100px;
 	background: transparent;
-	animation: spinY 2s linear infinite;
+	animation: spinY 4s linear infinite;
 	@keyframes spinY {
 		0% {
 			transform: rotateY(0deg);
