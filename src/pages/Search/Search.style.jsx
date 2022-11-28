@@ -1,14 +1,61 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
-	color: white;
+export const SearchContainer = styled.div`
 	display: flex;
-	position: absolute;
-	top: 50%;
-	justify-content: center;
-	height: 100%;
+	flex-direction: column;
+	margin: 6.5rem 20rem;
+
+	h2 {
+		color: white;
+		font-size: 30px;
+		font-weight: 100;
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		font-family: cubano, Roboto, sans-serif;
+	}
+`;
+
+export const SearchNav = styled.div`
+	display: flex;
+	height: 5rem;
+	align-items: flex-end;
 	width: 100%;
-	font-family: Roboto;
-	font-size: xx-large;
-	font-weight: 700;
+	border-bottom: 2px solid gray;
+`;
+
+export const NavBtn = styled.button`
+	height: 3rem;
+	width: 100%;
+	margin: 0 7rem;
+	font-weight: 100;
+	color: white;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: x-large;
+	border: none;
+	border-radius: 10px 10px 0 0;
+	background: none;
+	font-family: cubano;
+	cursor: pointer;
+
+	&:active {
+		background: linear-gradient(
+			90deg,
+			${({ theme }) => theme.primaryStart},
+			${({ theme }) => theme.primaryEnd}
+		);
+		color: black;
+	}
+`;
+
+export const SearchTilesContainer = styled.div`
+	margin: 2rem 4rem;
+	overflow: auto;
+	padding: 20px;
+	border-radius: 10px;
+	border: 2px solid grey;
+	border-left: 2px solid grey;
+	border-right: 2px solid grey;
 `;

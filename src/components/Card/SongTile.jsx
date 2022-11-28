@@ -3,7 +3,7 @@ import { FaPlay } from "react-icons/fa";
 import { SongIcon, SongInfo, TileContainer } from "./SongTile.style";
 import { Motion } from "../../styles/Motion";
 
-const Tile = (props) => {
+const SongTile = (props) => {
 	return (
 		<Motion>
 			<TileContainer onClick={() => console.log(props.name)}>
@@ -22,4 +22,4 @@ const Tile = (props) => {
 	);
 };
 
-export default Tile;
+export default SongTile;

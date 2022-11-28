@@ -1,5 +1,5 @@
 import { SongCardContainer } from "./SongsCard.style";
-import Tile from "./SongTile";
+import SongTile from "./SongTile";
 
 const SongCard = (props) => {
 	const songs = props.item.songs;
@@ -8,7 +8,7 @@ const SongCard = (props) => {
 			<SongCardContainer>
 				{songs.map((song) => {
 					return (
-						<Tile
+						<SongTile
 							key={song.id}
 							name={song.name}
 							artists={song.primaryArtists}
