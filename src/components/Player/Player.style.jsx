@@ -16,7 +16,7 @@ export const MainContainer = styled.footer`
 		rgba(255, 255, 255, 0.09),
 		rgba(0, 21, 28, 0.3)
 	);
-	box-shadow: 20px 20px 40px #000000bd;
+	box-shadow: 2px 2px 15px ${({ theme }) => theme.primaryStart};
 	backdrop-filter: blur(12px);
 `;
 

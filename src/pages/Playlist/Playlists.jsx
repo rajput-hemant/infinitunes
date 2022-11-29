@@ -14,7 +14,6 @@ const Playlists = () => {
 		};
 		try {
 			fetchCharts();
-			console.log("playlists:", playlists);
 		} catch (error) {
 			console.log("Unable to fetch Playlists: ", error);
 		}

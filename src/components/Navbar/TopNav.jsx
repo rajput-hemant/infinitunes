@@ -1,3 +1,5 @@
+import { useDispatch } from "react-redux";
+import { searchActions } from "../../store/search-slice";
 import { useEffect, useState } from "react";
 import { CiSearch } from "react-icons/ci";
 import { useNavigate } from "react-router-dom";
@@ -17,8 +19,6 @@ import {
 	SearchIconContainer,
 } from "./TopNav.style";
 import Dropdown from "../Dropdown/Dropdown";
-import { useDispatch } from "react-redux";
-import { searchActions } from "../../store/search-slice";
 
 const navItems = [
 	{ label: "Home", to: "/" },
@@ -27,17 +27,29 @@ const navItems = [
 ];
 
 const Navbar = (props) => {
-	const navigate = useNavigate();
-	const dispatch = useDispatch();
-	const [input, setInput] = useState();
+	// for clearing the search state after page change
+	// const { pathname } = useLocation(),
+	// 	searchRef = useRef();
+	// useEffect(() => {
+	// 	searchRef.current.value = "";
+	// 	setInput("");
+	// }, [pathname]);
+
+	const navigate = useNavigate(),
+		dispatch = useDispatch(),
+		[input, setInput] = useState();
 
 	const searchInputHandler = (event) => {
 		setInput(event.target.value);
 	};
-	
+
+	const onBlurHandler = (event) => {
+		event.target.value = "";
+	};
+
 	useEffect(() => {
 		dispatch(searchActions.updateSearchInput(input));
-	});
+	}, [input]);
 
 	return (
 		<MainContainer>
@@ -56,6 +68,8 @@ const Navbar = (props) => {
 					<CiSearch size={20} color="white" />
 				</SearchIconContainer>
 				<SearchInput
+					// ref={searchRef}
+					onBlur={onBlurHandler}
 					placeholder="Search"
 					onChange={searchInputHandler}
 					onClick={() => navigate("/search")}

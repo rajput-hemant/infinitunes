@@ -4,9 +4,13 @@ import { SongIcon, SongInfo, TileContainer } from "./SongTile.style";
 import { Motion } from "../../styles/Motion";
 
 const SongTile = (props) => {
+	const onClickHandler = () => {
+		console.log(props.name);
+	};
+
 	return (
 		<Motion>
-			<TileContainer onClick={() => console.log(props.name)}>
+			<TileContainer onClick={props.onClick || onClickHandler}>
 				<div>
 					<SongIcon src={props.image} />
 					<button>
