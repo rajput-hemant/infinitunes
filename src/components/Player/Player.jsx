@@ -13,7 +13,7 @@ const Player = () => {
 	return (
 		<MainContainer>
 			<LeftContainer />
-			<CenterContainer>
+			<CenterContainer >
 				<IconButton>
 					<TbRepeat size={30} color="white" />
 					{/* <TbRepeatOnce size={30} color="white" /> */}

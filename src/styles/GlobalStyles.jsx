@@ -47,6 +47,7 @@ body {
 }
 
 ::-webkit-scrollbar {
+	height: 4px;
 	width: 4px;
 }
 

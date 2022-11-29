@@ -14,6 +14,11 @@ export const SearchContainer = styled.div`
 		text-overflow: ellipsis;
 		font-family: cubano, Roboto, sans-serif;
 	}
+
+	em {
+		font-family: Roboto, sans-serif;
+		color: ${({ theme }) => theme.primaryStart};
+	}
 `;
 
 export const SearchNav = styled.div`
@@ -55,7 +60,8 @@ export const SearchTilesContainer = styled.div`
 	overflow: auto;
 	padding: 20px;
 	border-radius: 10px;
-	border: 2px solid grey;
+	/* border: 2px solid grey; */
 	border-left: 2px solid grey;
 	border-right: 2px solid grey;
+	box-shadow: 2px 2px 20px ${({ theme }) => theme.primaryStart};
 `;
