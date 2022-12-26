@@ -1,20 +1,22 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import { ThemeProvider } from "styled-components";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 import useThemeSwitcher from "./hooks/useThemeSwitcher";
 
 import GlobalStyles, { themes } from "./styles/GlobalStyles";
 import Player from "./components/Player/Player";
 import Navbar from "./components/Navbar/TopNav";
-import Home from "./pages/Home/Home";
-import Playlist from "./pages/Playlist/Playlist";
-import Charts from "./pages/Charts/Charts";
-import Settings from "./pages/Settings/Settings";
-import Search from "./pages/Search/Search";
-import About from "./pages/About/About";
-import Album from "./pages/Album/Album";
-import Playlists from "./pages/Playlist/Playlists";
-import NotFound from "./pages/NotFound/NotFound";
+
+const Home = lazy(() => import("./pages/Home/Home"));
+const About = lazy(() => import("./pages/About/About"));
+const Album = lazy(() => import("./pages/Album/Album"));
+const Search = lazy(() => import("./pages/Search/Search"));
+const Charts = lazy(() => import("./pages/Charts/Charts"));
+const Playlist = lazy(() => import("./pages/Playlist/Playlist"));
+const Settings = lazy(() => import("./pages/Settings/Settings"));
+const NotFound = lazy(() => import("./pages/NotFound/NotFound"));
+const Playlists = lazy(() => import("./pages/Playlist/Playlists"));
 
 const App = () => {
 	const [theme, toggleTheme] = useThemeSwitcher();
@@ -24,19 +26,21 @@ const App = () => {
 		<Router>
 			<ThemeProvider theme={themeMode}>
 				<GlobalStyles />
-				<Routes>
-					<Route path="/" element={<Home />} />
-					<Route path="/playlists" element={<Playlists />} />
-					<Route path="/playlist/:id/:title" element={<Playlist />} />
-					<Route path="/search" element={<Search />} />
-					<Route path="/charts" element={<Charts />} />
-					<Route path="/album/:id/:title" element={<Album />} />
-					<Route path="/settings" element={<Settings />} />
-					<Route path="/about" element={<About />} />
-					<Route path="/*" element={<NotFound />} />
-				</Routes>
-				<Navbar theme={theme} toggleTheme={toggleTheme} />
-				<Player />
+				<Suspense>
+					<Routes>
+						<Route path="/" element={<Home />} />
+						<Route path="/search" element={<Search />} />
+						<Route path="/charts" element={<Charts />} />
+						<Route path="/about" element={<About />} />
+						<Route path="/settings" element={<Settings />} />
+						<Route path="/playlists" element={<Playlists />} />
+						<Route path="/album/:id/:title" element={<Album />} />
+						<Route path="/playlist/:id/:title" element={<Playlist />} />
+						<Route path="/*" element={<NotFound />} />
+					</Routes>
+					<Navbar theme={theme} toggleTheme={toggleTheme} />
+					<Player />
+				</Suspense>
 			</ThemeProvider>
 		</Router>
 	);
