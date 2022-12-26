@@ -1,10 +1,11 @@
-import { useDispatch } from "react-redux";
-import { searchActions } from "../../store/search-slice";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import { CiSearch } from "react-icons/ci";
-import { useNavigate } from "react-router-dom";
 import { BsFillMoonFill, BsFillSunFill } from "react-icons/bs";
 
+import Dropdown from "../Dropdown/Dropdown";
+import { searchActions } from "../../store/search-slice";
 import LogoSrc from "../../assets/images/infinitunes1500.png";
 import {
 	MainContainer,
@@ -18,7 +19,6 @@ import {
 	IconButton,
 	SearchIconContainer,
 } from "./TopNav.style";
-import Dropdown from "../Dropdown/Dropdown";
 
 const navItems = [
 	{ label: "Home", to: "/" },
@@ -27,29 +27,26 @@ const navItems = [
 ];
 
 const Navbar = (props) => {
-	// for clearing the search state after page change
-	// const { pathname } = useLocation(),
-	// 	searchRef = useRef();
-	// useEffect(() => {
-	// 	searchRef.current.value = "";
-	// 	setInput("");
-	// }, [pathname]);
+	const navigate = useNavigate();
+	const dispatch = useDispatch();
+	const { pathname } = useLocation();
+	const searchRef = useRef();
+	const [input, setInput] = useState("");
+	const query = useSelector((state) => state.search.searchInput);
 
-	const navigate = useNavigate(),
-		dispatch = useDispatch(),
-		[input, setInput] = useState();
+	// for clearing the search state after page change
+	useEffect(() => {
+		if (pathname === "/search") searchRef.current.value = query;
+		else searchRef.current.value = "";
+	}, [pathname, query]);
 
 	const searchInputHandler = (event) => {
 		setInput(event.target.value);
 	};
 
-	const onBlurHandler = (event) => {
-		event.target.value = "";
-	};
-
 	useEffect(() => {
 		dispatch(searchActions.updateSearchInput(input));
-	}, [input]);
+	}, [input, dispatch]);
 
 	return (
 		<MainContainer>
@@ -68,8 +65,7 @@ const Navbar = (props) => {
 					<CiSearch size={20} color="white" />
 				</SearchIconContainer>
 				<SearchInput
-					// ref={searchRef}
-					onBlur={onBlurHandler}
+					ref={searchRef}
 					placeholder="Search"
 					onChange={searchInputHandler}
 					onClick={() => navigate("/search")}

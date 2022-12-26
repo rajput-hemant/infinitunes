@@ -1,18 +1,20 @@
+import JSZip from "jszip";
+import JSZipUtils from "jszip-utils";
+import saveAs from "file-saver";
+
+import { decode } from "../../util/decodeHtml";
 import {
 	AlbumImage,
+	StyledButton,
 	CardContainer,
 	InfoContainer,
+	LabelContainer,
 	TitleContainer,
 	ArtistsContainer,
-	LabelContainer,
 	ButtonsContainer,
-	PlayButton,
 } from "./Card.style";
 
-const Card = (props) => {
-	const item = props.item,
-		type = props.type;
-
+const Card = ({ item, type }) => {
 	const getTotalPlays = (songs) => {
 		const plays = songs.reduce((a, b) => a + +b.playCount, 0);
 		return new Intl.NumberFormat().format(plays);
@@ -20,8 +22,7 @@ const Card = (props) => {
 
 	const getTotalDuration = (songs) => {
 		const duration = songs.reduce((a, b) => a + +b.duration, 0);
-		const [hrs, mins] = (duration / 60).toFixed(2).toString().split(".");
-		return `${hrs}:${mins}`;
+		return `${new Date(duration * 1000).toISOString().slice(11, 19)} Hrs`;
 	};
 
 	const subtitle = () => {
@@ -43,20 +44,49 @@ const Card = (props) => {
 			);
 	};
 
+	const downloadPlaylist = async (playlist, name) => {
+		const data = playlist.songs.map((song) => {
+			return {
+				name: decode(song.name),
+				link: song.downloadUrl[0].link,
+			};
+		});
+
+		const zip = new JSZip();
+		let count = 0;
+		data.forEach(async (song) => {
+			try {
+				const file = await JSZipUtils.getBinaryContent(song.link);
+				zip.file(song.name + ".mp3", file, { binary: true });
+				count++;
+				if (count === data.length) {
+					zip.generateAsync({ type: "blob" }).then(function (content) {
+						saveAs(content, name);
+					});
+				}
+			} catch (err) {
+				console.log(err);
+			}
+		});
+	};
+
 	return (
 		item.length !== 0 && (
 			<CardContainer>
-				<AlbumImage src={item.image[2]?.link} alt={item.name}></AlbumImage>
+				<AlbumImage>
+					<img src={item.image[2]?.link} alt={item.name} />
+				</AlbumImage>
 				<InfoContainer>
 					<TitleContainer>{item.name}</TitleContainer>
 					{subtitle()}
 					<LabelContainer>{item.songs[0]?.copyright}</LabelContainer>
 					<ButtonsContainer>
-						<PlayButton
-							onClick={() => console.log(item.songs[0]?.downloadUrl[4].link)}
-						>
+						<StyledButton onClick={() => downloadPlaylist(item, item.name)}>
 							Play
-						</PlayButton>
+						</StyledButton>
+						<StyledButton onClick={() => downloadPlaylist(item, item.name)}>
+							Download
+						</StyledButton>
 					</ButtonsContainer>
 				</InfoContainer>
 			</CardContainer>
