@@ -11,19 +11,25 @@ export const CardContainer = styled.div`
 	font-family: Roboto, sans-serif;
 `;
 
-export const AlbumImage = styled.img`
-	float: left;
-	margin-right: 1rem;
+export const AlbumImage = styled.div`
 	display: flex;
-	height: 20rem;
-	width: 18rem;
-	border: 2px solid #74f2ce;
-	border-radius: 10px;
-	transition: all 150ms ease-in;
+	align-items: center;
+	justify-content: center;
+	margin-right: 1rem;
+	height: 21rem;
+	width: 20rem;
 
-	&:hover {
-		box-shadow: 7px 7px 10px #74f2ce;
-		opacity: 0.8;
+	img {
+		height: 20rem;
+		width: 18rem;
+		border-radius: 10px;
+		border: 2px solid #74f2ce;
+		transition: all 150ms ease-in;
+	}
+
+	&:hover img {
+		box-shadow: 3px 3px 5px #74f2ce;
+		scale: 1.01;
 	}
 `;
 
@@ -71,25 +77,28 @@ export const ButtonsContainer = styled.div`
 	margin: 0.5rem 1rem;
 `;
 
-export const PlayButton = styled.button`
-  width: 10rem;
-  height: 4rem;
-  border-radius: 100px;
-  /* color: white; */
-  font-size: xx-large;
-  font-family: cubano, Roboto, sans-serif;
-  background: linear-gradient(
-    90deg,
-    ${({ theme }) => theme.primaryStart},
-    ${({ theme }) => theme.primaryEnd}
-  );
-  transition: all 150ms ease-in;
-  border: none;
-  &:hover {
-    cursor: pointer;
-    opacity: 0.8;
-  }
-  &:active {
-    scale: 0.98;
-  }
+export const StyledButton = styled.button`
+	width: 12rem;
+	height: 4rem;
+	margin: 0 1rem;
+	border-radius: 100px;
+	/* color: white; */
+	font-size: xx-large;
+	font-family: cubano, Roboto, sans-serif;
+	background: linear-gradient(
+		90deg,
+		${({ theme }) => theme.primaryStart},
+		${({ theme }) => theme.primaryEnd}
+	);
+	transition: all 150ms ease-in;
+	border: none;
+
+	&:hover {
+		cursor: pointer;
+		opacity: 0.8;
+	}
+
+	&:active {
+		scale: 0.98;
+	}
 `;

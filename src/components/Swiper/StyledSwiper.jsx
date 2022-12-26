@@ -7,9 +7,10 @@ import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/autoplay";
 
+import { decode } from "../../util/decodeHtml";
 import useWindowResize from "../../hooks/useWindowResize";
-import { StyledSlider, SwiperComponent } from "./StyledSwiper.style";
 import { cartSubtitle, itemCount, spaceBetween } from "./SwiperFns";
+import { StyledSlider, SwiperComponent } from "./StyledSwiper.style";
 
 const StyledSwiper = ({ source, isBanner = false }) => {
 	const navigate = useNavigate();
@@ -56,14 +57,18 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 					<div>
 						<img
 							src={item.image.replace("150x150", "500x500")}
-							alt={item.title}
+							alt={decode(item.title)}
 						/>
 						<button onClick={() => redirect(item)}>
 							<FaPlay size={50} color="#74f2ce" />
 						</button>
 						{!isBanner && (
 							<>
-								<h4>{item.title !== undefined ? item.title : item.listname}</h4>
+								<h4>
+									{decode(item.title) !== undefined
+										? decode(item.title)
+										: decode(item.listname)}
+								</h4>
 								{cartSubtitle(item)}
 							</>
 						)}

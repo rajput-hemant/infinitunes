@@ -34,25 +34,23 @@ export const NavBtn = styled.button`
 	width: 100%;
 	margin: 0 7rem;
 	font-weight: 100;
-	color: white;
 	overflow: hidden;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	font-size: x-large;
 	border: none;
 	border-radius: 10px 10px 0 0;
-	background: none;
+	color: ${({ isActive }) => (isActive ? "black" : "white")};
+	background: ${({ isActive, theme }) =>
+		isActive
+			? `linear-gradient(
+			90deg,
+			${theme.primaryStart},
+			${theme.primaryEnd}
+		);`
+			: "none"};
 	font-family: cubano;
 	cursor: pointer;
-
-	&:active {
-		background: linear-gradient(
-			90deg,
-			${({ theme }) => theme.primaryStart},
-			${({ theme }) => theme.primaryEnd}
-		);
-		color: black;
-	}
 `;
 
 export const SearchTilesContainer = styled.div`

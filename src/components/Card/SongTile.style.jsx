@@ -1,10 +1,27 @@
 import styled from "styled-components";
 
-export const SongIcon = styled.img`
+export const SongIcon = styled.div`
+	display: flex;
 	height: 4.5rem;
 	width: 4.5rem;
-	border-radius: 10px;
-	transition: all 200ms ease-in;
+
+	img {
+		height: 4.5rem;
+		width: 4.5rem;
+		border-radius: 5px;
+		transition: all 200ms ease-in;
+	}
+
+	button {
+		position: relative;
+		left: -65%;
+		top: auto;
+		opacity: 0;
+	}
+
+	&:hover button {
+		opacity: 1;
+	}
 `;
 
 export const SongInfo = styled.div`
@@ -21,12 +38,6 @@ export const SongInfo = styled.div`
 	text-overflow: ellipsis;
 	font-family: Roboto, sans-serif;
 
-	h4 {
-		font-size: 22px;
-		padding: 5px 0;
-		color: white;
-	}
-
 	h5 {
 		font-size: 15px;
 		padding: 5px 0;
@@ -42,38 +53,42 @@ export const TileContainer = styled.div`
 	display: flex;
 	height: 5rem;
 	margin: 3px 0;
-	padding: 0 5px;
+	padding: 0 20px 0 5px;
 	border: none;
 	align-items: center;
 	border-radius: 10px;
 	background-color: transparent;
 	transition: all 200ms ease-in;
+	border: 1px solid gray;
 
 	&:hover {
-		border: 1px solid white;
-		cursor: pointer;
 		box-shadow: 3px 3px 5px #74f2ce;
+		scale: 1.01;
+	}
+
+	&:active {
+		scale: 1;
 	}
 
 	button {
-		position: relative;
-		left: -45px;
-		top: -24px;
-		border-radius: 10px;
 		background: transparent;
 		border: none;
 		z-index: 100;
-		opacity: 0;
 		transition: all 150ms ease-in;
+
+		&:hover {
+			scale: 1.3;
+			cursor: pointer;
+		}
+
 		&:active {
-			transform: scale(1.3);
+			scale: 1;
 		}
 	}
 
-	div {
-		&:hover button {
-			opacity: 1;
-			cursor: pointer;
-		}
+	h4 {
+		font-size: 22px;
+		padding: 5px 20px 5px 0;
+		color: white;
 	}
 `;

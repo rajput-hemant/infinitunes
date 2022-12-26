@@ -8,10 +8,15 @@ import { SearchTilesContainer } from "./Search.style";
 import { NavBtn, SearchContainer, SearchNav } from "./Search.style";
 
 const Search = () => {
-	const navigate = useNavigate(),
-		[searchRes, setSearchRes] = useState([]),
-		[toSearch, setToSearch] = useState("songs"),
-		query = useSelector((state) => state.search.searchInput) || "";
+	const navigate = useNavigate();
+	const [searchRes, setSearchRes] = useState([]);
+	const [toSearch, setToSearch] = useState("songs");
+	const [isActive, setIsActive] = useState({
+		all: false,
+		songs: true,
+		albums: false,
+	});
+	const query = useSelector((state) => state.search.searchInput) || "";
 
 	useEffect(() => {
 		const fetchSearch = async () => {
@@ -37,11 +42,11 @@ const Search = () => {
 			}
 		};
 
-		const setTimer = setTimeout(() => {
-			if (query.length !== 0) fetchSearch();
-		}, 500);
+		// const setTimer = setTimeout(() => {
+		if (query.length !== 0) fetchSearch();
+		// }, 500);
 
-		return () => clearTimeout(setTimer);
+		// return () => clearTimeout(setTimer);
 	}, [query, toSearch]);
 
 	const onClickHandler = (item) => {
@@ -69,20 +74,63 @@ const Search = () => {
 				</h2>
 			)}
 			<SearchNav>
-				<NavBtn onClick={() => setToSearch("all")}>Top Results</NavBtn>
-				<NavBtn onClick={() => setToSearch("songs")}>Songs</NavBtn>
-				<NavBtn onClick={() => setToSearch("albums")}>Albums</NavBtn>
+				<NavBtn
+					isActive={isActive.all}
+					onClick={() => {
+						setIsActive({
+							all: true,
+							songs: false,
+							albums: false,
+						});
+						setToSearch("all");
+					}}
+				>
+					Top Results
+				</NavBtn>
+				<NavBtn
+					isActive={isActive.songs}
+					onClick={() => {
+						setIsActive({
+							all: false,
+							songs: true,
+							albums: false,
+						});
+
+						setToSearch("songs");
+					}}
+				>
+					Songs
+				</NavBtn>
+				<NavBtn
+					isActive={isActive.albums}
+					onClick={() => {
+						setIsActive({
+							all: false,
+							songs: false,
+							albums: true,
+						});
+						setToSearch("albums");
+					}}
+				>
+					Albums
+				</NavBtn>
 			</SearchNav>
 			<SearchTilesContainer>
-				{searchRes.length === 0 && (
+				{query.length === 0 && (
 					<h2>🔍 Search songs, albums, playlist, you love!. . .</h2>
 				)}
-				{searchRes.length !== 0 &&
+				{query.length !== 0 &&
+					searchRes.length !== 0 &&
 					searchRes.map((item, index) => (
 						<SongTile
 							key={index}
 							name={item.name || item.title}
-							artists={item.primaryArtists || item.music || item.description}
+							artists={
+								item.primaryArtist ||
+								item.primaryArtists ||
+								item.music ||
+								item.description
+							}
 							image={
 								typeof item.image === "string" ? item.image : item.image[1].link
 							}
