@@ -5,7 +5,8 @@ import { Motion } from "../../styles/Motion";
 import { decode } from "../../util/decodeHtml";
 import { SongIcon, SongInfo, TileContainer } from "./SongTile.style";
 
-const SongTile = ({ name, image, duration, artists, download }) => {
+const SongTile = ({ name, image, duration, artists, download, onPlay, onClick }) => {
+	
 	const downloadSong = (song, name) => {
 		const blob = new Blob([song], { type: "audio/mp4" });
 		const href = URL.createObjectURL(blob);
@@ -22,10 +23,10 @@ const SongTile = ({ name, image, duration, artists, download }) => {
 
 	return (
 		<Motion>
-			<TileContainer>
+			<TileContainer onClick={onClick}>
 				<SongIcon>
 					<img src={image} alt={decode(name)} />
-					<button>
+					<button onClick={onPlay}>
 						<FaPlay size={25} color="#74f2ce" />
 					</button>
 				</SongIcon>
