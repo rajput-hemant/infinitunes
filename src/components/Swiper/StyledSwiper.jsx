@@ -34,7 +34,7 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 
 	return (
 		<SwiperComponent
-			isbanner={isBanner}
+			isbanner={isBanner ? 1 : 0}
 			slidesPerView={itemCount(winWidth)}
 			spaceBetween={
 				isBanner ? spaceBetween(winWidth)[0] : spaceBetween(winWidth)[1]
@@ -53,7 +53,7 @@ const StyledSwiper = ({ source, isBanner = false }) => {
 			modules={[Autoplay, Navigation]}
 		>
 			{source.map((item, index) => (
-				<StyledSlider key={index} isbanner={isBanner}>
+				<StyledSlider key={index} isbanner={isBanner ? 1 : 0}>
 					<div>
 						<img
 							src={item.image.replace("150x150", "500x500")}

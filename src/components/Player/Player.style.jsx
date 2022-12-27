@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 export const MainContainer = styled.footer`
-	z-index: 999; // To keep player/ footer upfront
+	z-index: 999; // To keep player/footer upfront
 	display: flex;
 	position: fixed;
 	bottom: 0;
@@ -35,28 +35,4 @@ export const RightContainer = styled.div`
 	background: transparent;
 	justify-content: flex-end;
 	padding-right: 2%;
-`;
-export const CenterContainer = styled.div`
-	flex: 1;
-	display: flex;
-	align-items: center;
-	background: transparent;
-	justify-content: center;
-	padding-right: 2%;
-`;
-
-export const IconButton = styled.button`
-	padding: 15px;
-	background: none;
-	border: none;
-	cursor: pointer;
-
-	&:hover {
-		color: white;
-		scale: 1.3;
-		&::after {
-			opacity: 1;
-			transform: scale(1);
-		}
-	}
 `;

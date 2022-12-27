@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 import api from "../../api/JioSaavnApi";
-import SongTile from "../../components/Card/SongTile";
 import { SearchTilesContainer } from "./Search.style";
+import SongTile from "../../components/Card/SongTile";
+import { playerActions } from "../../store/player-slice";
 import { NavBtn, SearchContainer, SearchNav } from "./Search.style";
 
 const Search = () => {
+	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	const [searchRes, setSearchRes] = useState([]);
 	const [toSearch, setToSearch] = useState("songs");
@@ -42,11 +44,11 @@ const Search = () => {
 			}
 		};
 
-		// const setTimer = setTimeout(() => {
-		if (query.length !== 0) fetchSearch();
-		// }, 500);
+		const setTimer = setTimeout(() => {
+			if (query.length !== 0) fetchSearch();
+		}, 500);
 
-		// return () => clearTimeout(setTimer);
+		return () => clearTimeout(setTimer);
 	}, [query, toSearch]);
 
 	const onClickHandler = (item) => {
@@ -57,7 +59,10 @@ const Search = () => {
 				.replace(/[^\w\s]/gi, "")
 				.replaceAll(" ", "+");
 
-		if (type === "song") console.log(item.title || item.name);
+		if (type === "song") {
+			dispatch(playerActions.SET_SONG_SRC(item.downloadUrl[4].link));
+			dispatch(playerActions.PLAY());
+		}
 
 		if (type === "album" || type === "show")
 			navigate(`/album/${id}/${title}`, { state: { id, type } });

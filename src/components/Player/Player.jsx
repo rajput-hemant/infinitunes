@@ -1,37 +1,51 @@
-import { FaPlay, FaPause, FaStepForward, FaStepBackward } from "react-icons/fa";
-import { TbArrowsShuffle, TbRepeat, TbRepeatOnce } from "react-icons/tb";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
+import Controls from "./Controls";
+import { playerActions } from "../../store/player-slice";
 import {
-	CenterContainer,
+	Box,
 	MainContainer,
-	IconButton,
 	LeftContainer,
 	RightContainer,
 } from "./Player.style";
 
+const player = new Audio();
+
 const Player = () => {
+	const dispatch = useDispatch();
+	const { songSrc, isPlaying } = useSelector((state) => state.player);
+
+	useEffect(() => {
+		player.src = songSrc;
+		if (songSrc) player.play();
+	}, [songSrc]);
+
+	useEffect(() => {
+		isPlaying ? player.play() : player.pause();
+	}, [isPlaying]);
+
+	useEffect(() => {
+		player.addEventListener("ended", () => {
+			dispatch(playerActions.PAUSE());
+		});
+		return () => {
+			player.removeEventListener("ended", () => {
+				dispatch(playerActions.PAUSE());
+			});
+		};
+	}, [dispatch]);
+
+	const toggle = () => {
+		isPlaying && songSrc
+			? dispatch(playerActions.PAUSE())
+			: dispatch(playerActions.PLAY());
+	};
+
 	return (
 		<MainContainer>
 			<LeftContainer />
-			<CenterContainer >
-				<IconButton>
-					<TbRepeat size={30} color="white" />
-					{/* <TbRepeatOnce size={30} color="white" /> */}
-				</IconButton>
-				<IconButton>
-					<FaStepBackward size={25} color="white" />
-				</IconButton>
-				<IconButton>
-					<FaPlay size={25} color="white" />
-					{/* <FaPause size={25} color="white" /> */}
-				</IconButton>
-				<IconButton>
-					<FaStepForward size={25} color="white" />
-				</IconButton>
-				<IconButton>
-					<TbArrowsShuffle size={30} color="white" />
-				</IconButton>
-			</CenterContainer>
+			<Controls toggle={toggle} isPlaying={isPlaying} />
 			<RightContainer />
 		</MainContainer>
 	);
