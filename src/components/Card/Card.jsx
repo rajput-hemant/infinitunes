@@ -1,8 +1,8 @@
 import JSZip from "jszip";
-import JSZipUtils from "jszip-utils";
 import saveAs from "file-saver";
+import JSZipUtils from "jszip-utils";
+import { useDispatch } from "react-redux";
 
-import { decode } from "../../util/decodeHtml";
 import {
 	AlbumImage,
 	StyledButton,
@@ -13,8 +13,13 @@ import {
 	ArtistsContainer,
 	ButtonsContainer,
 } from "./Card.style";
+import { decode } from "../../util/decodeHtml";
+import { playerActions } from "../../store/player-slice";
 
 const Card = ({ item, type }) => {
+	const dispatch = useDispatch();
+	const songs = item.songs;
+
 	const getTotalPlays = (songs) => {
 		const plays = songs.reduce((a, b) => a + +b.playCount, 0);
 		return new Intl.NumberFormat().format(plays);
@@ -30,8 +35,8 @@ const Card = ({ item, type }) => {
 			return (
 				<ArtistsContainer>
 					{type === "albums" ? item.primaryArtist : "Podcast"} ·{" "}
-					{item.songCount} Songs · {getTotalPlays(item.songs)} Plays ·{" "}
-					{getTotalDuration(item.songs)}
+					{item.songCount} Songs · {getTotalPlays(songs)} Plays ·{" "}
+					{getTotalDuration(songs)}
 				</ArtistsContainer>
 			);
 
@@ -39,7 +44,7 @@ const Card = ({ item, type }) => {
 			return (
 				<ArtistsContainer>
 					{(item.fanCount / 1000).toFixed(2)}K Fans · {item.songCount} Songs ·{" "}
-					{getTotalPlays(item.songs)} Plays · {getTotalDuration(item.songs)}
+					{getTotalPlays(songs)} Plays · {getTotalDuration(songs)}
 				</ArtistsContainer>
 			);
 	};
@@ -79,11 +84,9 @@ const Card = ({ item, type }) => {
 				<InfoContainer>
 					<TitleContainer>{item.name}</TitleContainer>
 					{subtitle()}
-					<LabelContainer>{item.songs[0]?.copyright}</LabelContainer>
+					<LabelContainer>{songs[0]?.copyright}</LabelContainer>
 					<ButtonsContainer>
-						<StyledButton onClick={() => downloadPlaylist(item, item.name)}>
-							Play
-						</StyledButton>
+						<StyledButton onClick={()=>{}}>Play</StyledButton>
 						<StyledButton onClick={() => downloadPlaylist(item, item.name)}>
 							Download
 						</StyledButton>
