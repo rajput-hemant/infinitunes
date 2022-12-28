@@ -15,11 +15,11 @@ export const IconButton = styled.button`
 	cursor: pointer;
 
 	&:hover {
-		color: white;
 		scale: 1.3;
-		&::after {
-			opacity: 1;
-			transform: scale(1);
-		}
+		cursor: pointer;
+	}
+
+	&:active {
+		scale: 1;
 	}
 `;

@@ -5,8 +5,15 @@ import { Motion } from "../../styles/Motion";
 import { decode } from "../../util/decodeHtml";
 import { SongIcon, SongInfo, TileContainer } from "./SongTile.style";
 
-const SongTile = ({ name, image, duration, artists, download, onPlay, onClick }) => {
-	
+const SongTile = ({
+	name,
+	image,
+	duration,
+	artists,
+	download,
+	onPlay,
+	onClick,
+}) => {
 	const downloadSong = (song, name) => {
 		const blob = new Blob([song], { type: "audio/mp4" });
 		const href = URL.createObjectURL(blob);
@@ -35,7 +42,7 @@ const SongTile = ({ name, image, duration, artists, download, onPlay, onClick })
 					<h5>{decode(artists)}</h5>
 				</SongInfo>
 				{duration && (
-					<h4>{new Date(duration * 1000).toISOString().slice(15, 19)}</h4>
+					<h4>{new Date(duration * 1000).toISOString().slice(14, 19)}</h4>
 				)}
 				<button onClick={() => downloadSong(download, decode(name))}>
 					<TbDownload size={25} color="#74f2ce" />
