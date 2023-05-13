@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 241, 245, 249;
+    --foreground: 0, 0%, 82%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --popover: 241, 245, 249;
+    --popover-foreground: 248 250 252;
+
+    --border: 216, 12%, 84%;
+    --input: 216, 12%, 84%;
+
+    --card: 241, 245, 249;
+    --card-foreground: 248 250 252;
+
+    --primary: 248 250 252;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 248 250 252;
+
+    --accent: 69 191 157;
+    --accent-foreground: 116 242 206;
+
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --ring: 215 20.2% 65.1%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 26 26 26;
+    --foreground: 0, 0%, 18%;
+
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+
+    --accent: 39 144 114;
+    --accent-foreground: 69 191 157;
+
+    --popover: 26 26 26;
+    --popover-foreground: 215 20.2% 65.1%;
+
+    --border: 240, 5%, 34%;
+    --input: 240, 5%, 34%;
+
+    --card: 26 26 26;
+    --card-foreground: 0, 0%, 18%;
+
+    --primary: 248 250 252;
+    --primary-foreground: 222.2 47.4% 1.2%;
+
+    --secondary: 248 250 252;
+    --secondary-foreground: 248 250 252;
+
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 248 250 252;
+
+    --ring: 240, 5%, 34%;
+
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-background antialiased text-gray-700;
+  }
+}
+
+::-webkit-scrollbar {
+  @apply h-1.5 w-1.5;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-foreground;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-accent rounded-full hover:bg-accent-foreground;
+}
+
+/* swiper pagination */
+.swiper-pagination {
+  @apply absolute bottom-0 left-0 right-0 flex justify-center items-center;
+}
+
+.swiper-pagination-bullet {
+  @apply bg-rose-500 w-2.5 h-2.5;
+}
