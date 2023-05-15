@@ -1,7 +1,9 @@
 import { Suspense, lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 
+import Loading from "./components/loading";
 import RootLayout from "./components/root-layout";
+import Center from "./components/ui/center";
 import Home from "./pages/home/home";
 
 const Song = lazy(() => import("./pages/song/song"));
@@ -20,7 +22,13 @@ const NotFound = lazy(() => import("./pages/not-found"));
 const App = () => {
   return (
     <RootLayout>
-      <Suspense fallback={<div>loading..</div>}>
+      <Suspense
+        fallback={
+          <Center absolutely>
+            <Loading iconSize={50} />
+          </Center>
+        }
+      >
         <Routes>
           <Route index path="/" element={<Home />} />
 

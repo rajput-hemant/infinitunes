@@ -41,8 +41,8 @@ const jioSaavnGetCall = async <T>(path: string): Promise<T | null> => {
  * @param langs Languages for regional data, default is `['hindi','english']`
  * @returns The home data i.e. `trending, songs, albums, charts, playlist` or null
  */
-const getHomeData = async (langs: Langs[] = ["hindi", "english"]) => {
-  return await jioSaavnGetCall<Modules>(`/modules?langs=${langs.join(",")}`);
+const getHomeData = async (langs?: Langs[]) => {
+  return await jioSaavnGetCall<Modules>(`/modules?langs=${langs?.join(",")}`);
 };
 
 /**
@@ -52,8 +52,8 @@ const getHomeData = async (langs: Langs[] = ["hindi", "english"]) => {
  */
 const getSongDetails = async (query: string) => {
   return isJioSaavnLink(query)
-    ? await jioSaavnGetCall<Song[]>(`/songs/link=${query}`)
-    : await jioSaavnGetCall<Song[]>(`/songs?id=${query}`);
+    ? await jioSaavnGetCall<Song>(`/songs/link=${query}`)
+    : await jioSaavnGetCall<Song>(`/songs?id=${query}`);
 };
 
 /**
@@ -63,8 +63,8 @@ const getSongDetails = async (query: string) => {
  */
 const getAlbumDetails = async (query: string) => {
   return isJioSaavnLink(query)
-    ? await jioSaavnGetCall<Album[]>(`/albums/link=${query}`)
-    : await jioSaavnGetCall<Album[]>(`/albums?id=${query}`);
+    ? await jioSaavnGetCall<Album>(`/albums/link=${query}`)
+    : await jioSaavnGetCall<Album>(`/albums?id=${query}`);
 };
 
 /**
@@ -73,7 +73,7 @@ const getAlbumDetails = async (query: string) => {
  * @returns The playlist details or null
  */
 const getPlaylistDetails = async (id: string) => {
-  return await jioSaavnGetCall<Playlist[]>(`/playlists?id=${id}`);
+  return await jioSaavnGetCall<Playlist>(`/playlists?id=${id}`);
 };
 
 /**

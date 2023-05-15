@@ -134,13 +134,7 @@ export const TopographySubtle = ({
   children,
 }: TopographyProps) => {
   return (
-    <p
-      className={cn(
-        "text-fill-light text-sm",
-        className,
-        inter && "font-inter"
-      )}
-    >
+    <p className={cn("text-label2 text-sm", className, inter && "font-inter")}>
       {children}
     </p>
   );
