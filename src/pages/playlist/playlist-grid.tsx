@@ -2,7 +2,8 @@ import useSwr from "swr";
 
 import Card from "@/components/card";
 import Loading from "@/components/loading";
-import { TopographyH2 } from "@/components/topography";
+import Center from "@/components/ui/center";
+import { TopographyH2 } from "@/components/ui/topography";
 import { getHomeData } from "../home/get-home-data";
 
 const PlaylistGrid = () => {
@@ -15,12 +16,12 @@ const PlaylistGrid = () => {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {data ? (
           data.playlists.map((playlist) => (
-            <Card key={playlist.id} item={playlist} />
+            <Card isLink key={playlist.id} item={playlist} />
           ))
         ) : (
-          <div className="absolute left-1/2 top-1/2">
+          <Center absolutely>
             <Loading iconSize={50} />
-          </div>
+          </Center>
         )}
       </div>
     </div>

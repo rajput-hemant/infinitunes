@@ -7,11 +7,11 @@ import { Swiper } from "swiper/react";
 
 import { cn } from "@/lib/utils";
 import { useWindowSize } from "@/hooks";
+import { TopographyH2 } from "./ui/topography";
 // swiper styles
 import "swiper/swiper.css";
 import "swiper/css/grid";
 import "swiper/css/pagination";
-import { TopographyH2 } from "./topography";
 
 type CSwiperProps = {
   heading: string;
@@ -27,6 +27,7 @@ const CSwiper = ({ heading, children }: CSwiperProps) => {
   const prevSlide = () => {
     swiperRef.current?.slidePrev();
   };
+
   const nextSlide = () => {
     swiperRef.current?.slideNext();
   };
@@ -62,7 +63,13 @@ const CSwiper = ({ heading, children }: CSwiperProps) => {
         slidesPerView={slideCount}
         spaceBetween={spaceBetween}
         slidesPerGroup={slidesPerGroup}
-        modules={[Pagination, Keyboard, Mousewheel, Grid]}
+        modules={[
+          Pagination,
+          Keyboard,
+          Grid,
+          // mousewheel is only available for desktop
+          ...(winWidth > 768 ? [Mousewheel] : []),
+        ]}
         mousewheel
         keyboard
         pagination={{ clickable: true }}
@@ -108,7 +115,7 @@ const NavigationButton = ({
     <button
       onClick={onClick}
       className={cn(
-        "hover:bg-accent absolute top-0 z-10 rounded-full bg-black/10 p-2.5 hover:text-white md:top-1/2 md:p-3",
+        "hover:bg-primary absolute top-0 z-10 rounded-full bg-black/10 p-2.5 transition-colors duration-200 hover:text-white md:top-1/2 md:p-3",
         className
       )}
     >

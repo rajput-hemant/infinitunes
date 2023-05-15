@@ -12,7 +12,7 @@
   <img src="./public/images/logo1920.png" width="300px" alt="infinitunes">
 </picture>
 
-### [WIP] 🎵 A Simple Music Player Web App made with ⚛️ React + Vite +  Tailwind and Redux Toolkit.
+### [WIP] 🎵 A Simple Music Player Web App made with ⚛️ React + Vite + Tailwind and Redux Toolkit.
 
 ### **[<kbd> <br> Live Demo <br> </kbd>][site]**
 

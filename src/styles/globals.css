@@ -4,93 +4,69 @@
 
 @layer base {
   :root {
-    --background: 241, 245, 249;
-    --foreground: 0, 0%, 82%;
+    --background: 246 246 246;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --label: 62 62 62;
+    --label-2: 112 112 112;
 
-    --popover: 241, 245, 249;
-    --popover-foreground: 248 250 252;
+    --muted: 244 244 245;
 
-    --border: 216, 12%, 84%;
-    --input: 216, 12%, 84%;
+    --popover: 241 245 249;
 
-    --card: 241, 245, 249;
-    --card-foreground: 248 250 252;
+    --border: 228 228 231;
 
-    --primary: 248 250 252;
-    --primary-foreground: 210 40% 98%;
+    --input: 228 228 231;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 248 250 252;
+    --primary: 43 197 180;
 
-    --accent: 69 191 157;
-    --accent-foreground: 116 242 206;
+    --secondary: 37 143 131;
 
-    --destructive: 0 100% 50%;
-    --destructive-foreground: 210 40% 98%;
-
-    --ring: 215 20.2% 65.1%;
+    --destructive: 239 68 68;
 
     --radius: 0.5rem;
   }
 
   .dark {
     --background: 26 26 26;
-    --foreground: 0, 0%, 18%;
 
-    --muted: 223 47% 11%;
-    --muted-foreground: 215.4 16.3% 56.9%;
+    --label: 255 255 255;
+    --label-2: 112 112 112;
 
-    --accent: 39 144 114;
-    --accent-foreground: 69 191 157;
+    --muted: 244 244 245;
 
     --popover: 26 26 26;
-    --popover-foreground: 215 20.2% 65.1%;
 
     --border: 240, 5%, 34%;
+
     --input: 240, 5%, 34%;
 
-    --card: 26 26 26;
-    --card-foreground: 0, 0%, 18%;
-
-    --primary: 248 250 252;
-    --primary-foreground: 222.2 47.4% 1.2%;
+    --primary: 43 197 180;
 
     --secondary: 248 250 252;
-    --secondary-foreground: 248 250 252;
 
-    --destructive: 0 63% 31%;
-    --destructive-foreground: 248 250 252;
-
-    --ring: 240, 5%, 34%;
+    --destructive: 239 68 68;
 
     --radius: 0.5rem;
   }
 
   body {
-    @apply bg-background antialiased text-gray-700;
+    @apply bg-background antialiased text-label;
   }
 }
 
 ::-webkit-scrollbar {
-  @apply h-1.5 w-1.5;
+  @apply h-2 w-2;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-foreground;
+  @apply bg-gray-300;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-accent rounded-full hover:bg-accent-foreground;
+  @apply bg-primary hover:bg-secondary;
 }
 
 /* swiper pagination */
-.swiper-pagination {
-  @apply absolute bottom-0 left-0 right-0 flex justify-center items-center;
-}
-
 .swiper-pagination-bullet {
-  @apply bg-rose-500 w-2.5 h-2.5;
+  @apply bg-primary w-2.5 h-2.5;
 }

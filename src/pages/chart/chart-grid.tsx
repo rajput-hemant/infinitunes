@@ -2,7 +2,8 @@ import useSwr from "swr";
 
 import Card from "@/components/card";
 import Loading from "@/components/loading";
-import { TopographyH2 } from "@/components/topography";
+import Center from "@/components/ui/center";
+import { TopographyH2 } from "@/components/ui/topography";
 import { getHomeData } from "../home/get-home-data";
 
 const ChartGrid = () => {
@@ -14,11 +15,13 @@ const ChartGrid = () => {
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
         {data ? (
-          data.charts.map((chart) => <Card key={chart.id} item={chart} />)
+          data.charts.map((chart) => (
+            <Card isLink key={chart.id} item={chart} />
+          ))
         ) : (
-          <div className="absolute left-1/2 top-1/2">
+          <Center absolutely>
             <Loading iconSize={50} />
-          </div>
+          </Center>
         )}
       </div>
     </div>

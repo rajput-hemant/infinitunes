@@ -1,39 +1,22 @@
 import { FaPlay } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-import {
-  Album,
-  Chart,
-  Image,
-  ImageQuality,
-  PlaylistV2,
-  TrendingV2,
-} from "@/types";
-import { clearUrl, strToBase64 } from "@/lib/utils";
+import { Album, Chart, Playlist, PlaylistV2, TrendingV2 } from "@/types";
+import { clearUrl, cn, decodeHtml, getImage, strToBase64 } from "@/lib/utils";
 import { Skeleton } from "./ui/skeleton";
 
 type CardProps = {
-  item: TrendingV2 | Album | PlaylistV2 | Chart;
+  isLink?: boolean;
+  className?: string;
+  item: TrendingV2 | Album | Playlist | PlaylistV2 | Chart;
 };
 
-const Card = ({ item }: CardProps) => {
+const Card = ({ isLink, className, item }: CardProps) => {
+  const { pathname } = useLocation();
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const { type, id, name, title } = item;
-
-  const getImage = (image: Image, quality?: ImageQuality) => {
-    if (typeof image == "boolean") return "/images/logo512.png";
-
-    if (quality === "large") {
-      return image[2].link;
-    } else if (quality === "medium") {
-      return image[1].link;
-    } else if (quality === "small") {
-      return image[0].link;
-    }
-
-    return image[2].link;
-  };
 
   const getHref = () => {
     const url = clearUrl(name ?? title);
@@ -43,28 +26,37 @@ const Card = ({ item }: CardProps) => {
       return `/song/${url}/${base64Id}`;
     } else if (type === "album") {
       return `/album/${url}/${base64Id}`;
+    } else if (pathname.split("/")[1] === "chart") {
+      return `/chart/${url}/${base64Id}`;
     } else {
       return `/playlist/${url}/${base64Id}`;
     }
   };
 
   const getSubtitle = () => {
-    if (type === "album") {
-      return typeof item.artists === "string"
-        ? item.artists
-        : item.artists.map((artist) => artist.name).join(", ");
-    } else if (type === "song") {
-      return typeof item.primaryArtists === "string"
-        ? item.primaryArtists
-        : item.primaryArtists.map((artist) => artist.name).join(", ");
-    } else {
-      return item.subtitle;
+    // to exclude Playlist type
+    if ("type" in item) {
+      if (type === "album") {
+        return typeof item.artists === "string"
+          ? item.artists
+          : item.artists.map((artist) => artist.name).join(", ");
+      } else if (type === "song") {
+        return typeof item.primaryArtists === "string"
+          ? item.primaryArtists
+          : item.primaryArtists.map((artist) => artist.name).join(", ");
+      } else {
+        return item.subtitle;
+      }
     }
   };
 
   return (
-    <Link to={getHref()} className="group">
-      <div className="hover:shadow-accent relative aspect-square overflow-hidden rounded-md shadow-lg">
+    <Wrapper
+      href={getHref()}
+      isLink={isLink}
+      className={cn("group", className)}
+    >
+      <div className="hover:shadow-primary relative aspect-square overflow-hidden rounded-md shadow-lg">
         {/* image */}
         <img
           src={getImage(item.image)}
@@ -84,18 +76,37 @@ const Card = ({ item }: CardProps) => {
         <div className="invisible absolute inset-0 z-10 rounded-md bg-black/50 group-hover:visible" />
       </div>
 
-      <div className="flex flex-col py-2">
-        {/* title */}
-        <p className="font-inter truncate text-center text-sm font-medium text-black/75 hover:text-black">
-          {name ?? title}
-        </p>
+      {isLink && (
+        <div className="flex flex-col py-2">
+          {/* title */}
+          <p className="font-inter text-label truncate text-center text-sm font-semibold hover:text-black">
+            {decodeHtml(name ?? title)}
+          </p>
 
-        {/* subtitle */}
-        <p className="truncate text-center text-sm text-gray-700">
-          {getSubtitle()}
-        </p>
-      </div>
+          {/* subtitle */}
+          <p className="text-label truncate text-center text-sm">
+            {getSubtitle()}
+          </p>
+        </div>
+      )}
+    </Wrapper>
+  );
+};
+
+type WrapperProps = {
+  isLink?: boolean;
+  href: string;
+  className: string;
+  children: React.ReactNode;
+};
+
+const Wrapper = ({ isLink, href, children, className }: WrapperProps) => {
+  return isLink ? (
+    <Link to={href} className={className}>
+      {children}
     </Link>
+  ) : (
+    <div className={className}>{children}</div>
   );
 };
 
