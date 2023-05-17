@@ -13,10 +13,10 @@ export default {
     extend: {
       colors: {
         background: "rgb(var(--background) / <alpha-value>)",
+        foreground: "rgb(var(--foreground) / <alpha-value>)",
         label: "rgb(var(--label) / <alpha-value>)",
         muted: "rgb(var(--muted) / <alpha-value>)",
         label2: "rgb(var(--label-2) / <alpha-value>)",
-        popover: "rgb(var(--popover) / <alpha-value>)",
         border: "rgb(var(--border) / <alpha-value>)",
         input: "rgb(var(--input) / <alpha-value>)",
         primary: "rgb(var(--primary) / <alpha-value>)",

@@ -8,6 +8,7 @@ import { Button, ButtonProps } from "./button";
 import { TopographyLarge } from "./topography";
 
 export type DialogProps = {
+  open?: boolean;
   heading: string;
   type?: "alert" | "success" | "warning" | "error";
   className?: string;
@@ -16,15 +17,20 @@ export type DialogProps = {
 
 export type DialogActionsProp = ButtonProps;
 
-const Dialog = ({ heading, type, className, children }: DialogProps) => {
+const Dialog = ({ open, heading, type, className, children }: DialogProps) => {
   const dialogRef = React.useRef<HTMLDialogElement>(null);
 
   React.useEffect(() => {
     const dialog = dialogRef.current;
-    dialog?.showModal();
+
+    // open dialog by default
+    open ?? dialog?.showModal();
+
+    // open dialog when open prop changes
+    open && dialog?.showModal();
 
     return () => dialog?.close();
-  }, []);
+  }, [open]);
 
   const closeDialog = () => {
     dialogRef.current?.close();
@@ -33,7 +39,10 @@ const Dialog = ({ heading, type, className, children }: DialogProps) => {
   return (
     <dialog
       ref={dialogRef}
-      className={cn("w-full rounded-md p-4 shadow-lg md:w-96", className)}
+      className={cn(
+        "w-full rounded-md p-4 shadow-lg md:min-w-[24rem]",
+        className
+      )}
     >
       <TopographyLarge
         className={cn(

@@ -6,6 +6,12 @@ type Search<T> = {
   position: number;
 };
 
+type SearchResponse<T> = {
+  total: number;
+  start: number;
+  results: T[];
+};
+
 export type AllSearch = {
   albums: Search<SearchAlbum[]>;
   songs: Search<SearchSong[]>;
@@ -77,26 +83,10 @@ type SearchTopQuery = {
   language: string;
 };
 
-export type SongSearch = {
-  total: number;
-  start: number;
-  results: Song[];
-};
+export type SongSearch = SearchResponse<Song>;
 
-export type AlbumSearch = {
-  total: number;
-  start: number;
-  results: Album[];
-};
+export type AlbumSearch = SearchResponse<Album>;
 
-export type ArtistSearch = {
-  total: number;
-  start: number;
-  results: Artist[];
-};
+export type ArtistSearch = SearchResponse<Artist>;
 
-export type PlaylistSearch = {
-  total: number;
-  start: number;
-  results: Playlist[];
-};
+export type PlaylistSearch = SearchResponse<Playlist>;

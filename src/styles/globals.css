@@ -9,9 +9,7 @@
     --label: 62 62 62;
     --label-2: 112 112 112;
 
-    --muted: 244 244 245;
-
-    --popover: 241 245 249;
+    --muted: 255 255 255;
 
     --border: 228 228 231;
 
@@ -29,20 +27,18 @@
   .dark {
     --background: 26 26 26;
 
-    --label: 255 255 255;
-    --label-2: 112 112 112;
+    --label: 239 241 246;
+    --label-2: 212 212 216;
 
-    --muted: 244 244 245;
+    --muted: 40 40 40;
 
-    --popover: 26 26 26;
+    --border: 60 60 60;
 
-    --border: 240, 5%, 34%;
-
-    --input: 240, 5%, 34%;
+    --input: 40 40 40;
 
     --primary: 43 197 180;
 
-    --secondary: 248 250 252;
+    --secondary: 37 143 131;
 
     --destructive: 239 68 68;
 

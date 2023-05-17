@@ -1,5 +1,6 @@
 import {
   Album,
+  AlbumSearch,
   AllSearch,
   Artist,
   ArtistAlbum,
@@ -159,7 +160,7 @@ const searchAll = async (query: string) => {
  * @param limit Limit of songs to return
  * @returns The search results or null
  */
-const searchSongs = async (query: string, page = 1, limit = 5) => {
+const searchSongs = async (query: string, page = 1, limit = 10) => {
   return await jioSaavnGetCall<SongSearch>(
     `/search/songs?query=${clearUrl(query)}&page=${page}&limit=${limit}`
   );
@@ -171,8 +172,8 @@ const searchSongs = async (query: string, page = 1, limit = 5) => {
  * @param limit Limit of albums to return
  * @returns The search results or null
  */
-const searchAlbums = async (query: string, page = 1, limit = 5) => {
-  return await jioSaavnGetCall<AllSearch>(
+const searchAlbums = async (query: string, page = 1, limit = 10) => {
+  return await jioSaavnGetCall<AlbumSearch>(
     `/search/albums?query=${clearUrl(query)}&page=${page}&limit=${limit}`
   );
 };
@@ -184,7 +185,7 @@ const searchAlbums = async (query: string, page = 1, limit = 5) => {
  * @param limit Limit of playlist to return
  * @returns The search results or null
  */
-const searchPlaylists = async (query: string, page = 1, limit = 5) => {
+const searchPlaylists = async (query: string, page = 1, limit = 10) => {
   return await jioSaavnGetCall<PlaylistSearch>(
     `/search/playlists?query=${clearUrl(query)}&page=${page}&limit=${limit}`
   );
@@ -197,7 +198,7 @@ const searchPlaylists = async (query: string, page = 1, limit = 5) => {
  * @param limit Limit of artist to return
  * @returns The search results or null
  */
-const searchArtists = async (query: string, page = 1, limit = 5) => {
+const searchArtists = async (query: string, page = 1, limit = 10) => {
   return await jioSaavnGetCall<AllSearch>(
     `/search/artists?query=${clearUrl(query)}&page=${page}&limit=${limit}`
   );

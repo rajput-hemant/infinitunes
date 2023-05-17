@@ -96,9 +96,27 @@ export const getImage = (image: Image, quality?: ImageQuality) => {
  * @returns The artists of the given song or album
  */
 export const getArtists = (item: Song | Album) => {
-  if (typeof item?.primaryArtists === "string") return item?.primaryArtists;
+  // @ts-ignore
+  const { primaryArtists, featuredArtists, artists } = item;
 
-  return item?.primaryArtists?.map((artist) => artist.name).join(", ");
+  const getArtistsFromList = (artists: string | AlbumArtist[]) => {
+    if (typeof artists === "string") {
+      return artists.length ? artists.split(", ") : [];
+    } else {
+      return artists?.map((artist) => artist.name);
+    }
+  };
+
+  const uniqueArtists = new Set<string>();
+
+  const addArtistsToList = (artists: string[] | null) =>
+    artists?.forEach((artist) => uniqueArtists.add(artist));
+
+  addArtistsToList(getArtistsFromList(artists));
+  addArtistsToList(getArtistsFromList(primaryArtists));
+  addArtistsToList(getArtistsFromList(featuredArtists));
+
+  return Array.from(uniqueArtists).join(", ");
 };
 
 /**
@@ -109,8 +127,13 @@ export const getArtists = (item: Song | Album) => {
 export const getArtistIds = (item: Song | Album) => {
   const { primaryArtistsId, primaryArtists, featuredArtists } = item;
 
-  const getArtistIdsFromList = (artists: string | AlbumArtist[]) =>
-    typeof artists !== "string" ? artists?.map((artist) => artist.url) : null;
+  const getArtistIdsFromList = (artists: string | AlbumArtist[]) => {
+    if (typeof artists === "string") {
+      return artists.length ? artists.split(", ") : [];
+    } else {
+      return artists?.map((artist) => artist.name);
+    }
+  };
 
   return [
     primaryArtistsId,

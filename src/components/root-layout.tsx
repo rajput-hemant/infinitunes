@@ -11,7 +11,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
     <div className="flex min-h-screen flex-col">
       <Navbar />
 
-      <main className="container grow pt-4">{children}</main>
+      <main className="container grow py-4">{children}</main>
 
       <Footer />
 
