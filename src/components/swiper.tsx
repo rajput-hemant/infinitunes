@@ -1,6 +1,5 @@
 import { useRef } from "react";
 import { FiArrowLeft, FiArrowRight } from "react-icons/fi";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore - swiper types are not available
 import SwiperCore, { Grid, Keyboard, Mousewheel, Pagination } from "swiper";
 import { Swiper } from "swiper/react";
@@ -79,7 +78,7 @@ const CSwiper = ({ heading, children }: CSwiperProps) => {
         {children}
 
         {/* pad pagination */}
-        <div className="pt-6" />
+        <div className="pt-10" />
       </Swiper>
 
       {/* swiper previous button */}
@@ -115,7 +114,7 @@ const NavigationButton = ({
     <button
       onClick={onClick}
       className={cn(
-        "hover:bg-primary absolute top-0 z-10 rounded-full bg-black/10 p-2.5 transition-colors duration-200 hover:text-white md:top-1/2 md:p-3",
+        "hover:bg-primary dark:bg-muted dark:hover:bg-primary absolute top-0 z-10 rounded-full bg-black/10 p-2.5 transition-colors duration-200 hover:text-white md:top-1/2 md:p-3",
         className
       )}
     >

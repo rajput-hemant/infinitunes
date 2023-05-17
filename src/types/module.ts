@@ -31,7 +31,7 @@ export type PlaylistV2 = {
   id: string;
   title: string;
   subtitle: string;
-  type: "playlist";
+  type: "playlistV2";
   image: Image;
   url: string;
   songCount: string;
@@ -69,7 +69,7 @@ export type Chart = {
   id: string;
   title: string;
   subtitle: string;
-  type: "playlist";
+  type: "playlistV2";
   image: Image;
   url: string;
   firstname: string;

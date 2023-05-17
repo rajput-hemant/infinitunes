@@ -80,7 +80,7 @@ const Playlist = () => {
       {/* songs */}
       <div className="mt-8 flex w-full flex-col gap-2">
         {playlist.songs.map((song, i) => (
-          <SongTile key={i} index={i} item={song} />
+          <SongTile key={i} item={song} />
         ))}
       </div>
     </>

@@ -1,4 +1,4 @@
-import { RiVolumeUpFill } from "react-icons/ri";
+import { RiVolumeMuteFill, RiVolumeUpFill } from "react-icons/ri";
 import {
   TbArrowsShuffle,
   TbPlayerPauseFilled,
@@ -28,12 +28,16 @@ const Player = () => {
     handleLoop,
     shuffle,
     handleShuffle,
+    mute,
+    handleMute,
+    handleNext,
+    handlePrevious,
   } = usePlayer();
 
   const { song } = useAppSelector((state) => state.root.player);
 
   return (
-    <div className="border-border bg-background/90 sticky bottom-0 z-50 h-20 border-t backdrop-blur-md">
+    <div className="border-border bg-background/90 sticky bottom-0 z-50 border-t p-2 backdrop-blur-md">
       <Slider
         max={duration}
         value={[currentTime]}
@@ -41,19 +45,19 @@ const Player = () => {
         className={cn("invisible", isPlaying && "visible")}
       />
 
-      <div className="flex h-full items-center px-4">
+      <div className="flex h-full items-center pl-4 lg:px-4">
         {/* left container */}
-        <div className="flex w-full gap-3 lg:w-1/3">
-          <div className="bg-border aspect-square h-14 overflow-hidden rounded">
+        <div className="flex w-full gap-3 overflow-hidden lg:w-1/3">
+          <div className="bg-border aspect-square h-12 rounded md:h-14">
             <img
               src={song ? getImage(song.image) : ""}
               alt={song?.name}
-              className="object-cover"
+              className="rounded object-cover"
             />
           </div>
 
           {/* current song info */}
-          <div className="flex w-full flex-col justify-center text-center lg:text-start">
+          <div className="flex flex-col justify-center truncate text-center lg:text-start">
             <span className="truncate font-medium">{song?.name}</span>
             <span className="truncate text-sm">{song && getArtists(song)}</span>
           </div>
@@ -74,6 +78,7 @@ const Player = () => {
 
           <Button
             variant="ghost"
+            onClick={handlePrevious}
             className="hover:text-label2 hidden border-none lg:flex"
           >
             <TbPlayerSkipBackFilled size={30} />
@@ -93,6 +98,7 @@ const Player = () => {
 
           <Button
             variant="ghost"
+            onClick={handleNext}
             className="hover:text-label2 hidden border-none lg:flex"
           >
             <TbPlayerSkipForwardFilled size={30} />
@@ -111,13 +117,24 @@ const Player = () => {
         </div>
 
         {/* right container */}
-        <div className="hidden w-1/3 justify-end gap-4 lg:flex">
+        <div className="hidden w-1/3 justify-end lg:flex">
           <span className="to-label2 my-auto">
             {formatTime(currentTime)}/{formatTime(duration)}
           </span>
 
-          <div className="flex gap-2">
-            <RiVolumeUpFill size={25} />
+          <div className="flex">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMute}
+              className="border-none"
+            >
+              {mute ? (
+                <RiVolumeMuteFill size={25} />
+              ) : (
+                <RiVolumeUpFill size={25} />
+              )}
+            </Button>
             <Slider
               defaultValue={[75]}
               onValueChange={(volume) => handleVolume(volume[0] / 100)}

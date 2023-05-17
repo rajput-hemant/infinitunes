@@ -15,8 +15,10 @@ const usePlayer = () => {
   const dispatch = useAppDispatch();
 
   const [currentTime, setCurrentTime] = useState(player.current.currentTime);
+  const [currentIndex, setCurrentIndex] = useState(0); // index of current song in playlist
   const [loop, setLoop] = useState(false);
   const [shuffle, setShuffle] = useState(false);
+  const [mute, setMute] = useState(false);
 
   useEffect(() => {
     if (song) {
@@ -28,34 +30,41 @@ const usePlayer = () => {
     }
 
     if (playlist) {
-      dispatch(setSong(playlist[0]));
+      dispatch(setSong(playlist[currentIndex]));
     }
-  }, [song, playlist, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [song, playlist, currentIndex, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    player.current.onplay = () => {
+      dispatch(setAudioIsPlaying(true));
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    player.current.onpause = () => {
+      dispatch(setAudioIsPlaying(false));
+      cancelAnimationFrame(animationRef.current);
+    };
+  }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEventListener(
     "ended",
     () => {
       if (loop) {
         player.current.play();
-      } else {
-        dispatch(setAudioIsPlaying(false));
-        cancelAnimationFrame(animationRef.current);
       }
 
       if (playlist) {
         if (shuffle) {
-          const randomIndex = Math.floor(Math.random() * playlist.length);
+          setCurrentIndex(getRandomIndex());
 
-          dispatch(setSong(playlist[randomIndex]));
+          dispatch(setSong(playlist[currentIndex]));
         } else {
-          const currentIndex = playlist.findIndex(
-            (item) => item.id === song?.id
-          );
+          const currentIndex = getCurrentIndex();
 
-          const nextIndex = currentIndex + 1;
-          console.log(currentIndex, nextIndex);
+          currentIndex !== playlist.length - 1 &&
+            setCurrentIndex(currentIndex + 1);
 
-          dispatch(setSong(playlist[nextIndex]));
+          dispatch(setSong(playlist[currentIndex]));
         }
       }
     },
@@ -68,12 +77,8 @@ const usePlayer = () => {
   const togglePlayPause = () => {
     if (isPlaying) {
       player.current.pause();
-      dispatch(setAudioIsPlaying(false));
-      cancelAnimationFrame(animationRef.current);
     } else {
       player.current.play();
-      dispatch(setAudioIsPlaying(true));
-      animationRef.current = requestAnimationFrame(animate);
     }
   };
 
@@ -101,6 +106,14 @@ const usePlayer = () => {
   };
 
   /**
+   * Handle mute
+   */
+  const handleMute = () => {
+    setMute(!mute);
+    player.current.muted = !mute;
+  };
+
+  /**
    * Handle loop change
    */
   const handleLoop = () => setLoop(!loop);
@@ -109,6 +122,71 @@ const usePlayer = () => {
    * Handle shuffle change
    */
   const handleShuffle = () => setShuffle(!shuffle);
+
+  /**
+   * Get Random Index of Playlist
+   */
+  const getRandomIndex = () => {
+    if (!playlist) {
+      return 0;
+    }
+
+    const randomIndex = Math.floor(Math.random() * playlist.length);
+
+    return randomIndex;
+  };
+
+  /**
+   * Get current song index
+   */
+  const getCurrentIndex = () => {
+    if (!playlist) {
+      return 0;
+    }
+
+    const currentIndex = playlist.findIndex((item) => item.id === song?.id);
+
+    return currentIndex;
+  };
+
+  /**
+   * Handle previous song
+   */
+  const handlePrevious = () => {
+    if (playlist) {
+      if (shuffle) {
+        setCurrentIndex(getRandomIndex());
+
+        dispatch(setSong(playlist[currentIndex]));
+      } else {
+        const currentIndex = getCurrentIndex();
+
+        currentIndex !== 0 && setCurrentIndex(currentIndex - 1);
+
+        dispatch(setSong(playlist[currentIndex]));
+      }
+    }
+  };
+
+  /**
+   * Handle next song
+   */
+  const handleNext = () => {
+    if (playlist) {
+      if (shuffle) {
+        setCurrentIndex(getRandomIndex());
+
+        dispatch(setSong(playlist[currentIndex]));
+      } else {
+        const currentIndex = getCurrentIndex();
+
+        currentIndex !== playlist.length - 1 &&
+          setCurrentIndex(currentIndex + 1);
+
+        dispatch(setSong(playlist[currentIndex]));
+      }
+    }
+  };
 
   return {
     player,
@@ -122,6 +200,10 @@ const usePlayer = () => {
     handleLoop,
     shuffle,
     handleShuffle,
+    mute,
+    handleMute,
+    handleNext,
+    handlePrevious,
   };
 };
 

@@ -15,6 +15,8 @@ const ChartGrid = lazy(() => import("./pages/chart/chart-grid"));
 const Playlist = lazy(() => import("./pages/playlist/playlist"));
 const PlaylistGrid = lazy(() => import("./pages/playlist/playlist-grid"));
 
+const Search = lazy(() => import("./pages/search/search"));
+
 const NotFound = lazy(() => import("./pages/not-found"));
 
 const App = () => {
@@ -38,6 +40,8 @@ const App = () => {
 
           <Route path="/playlist" element={<PlaylistGrid />} />
           <Route path="/playlist/:title/:id" element={<Playlist />} />
+
+          <Route path="/search" element={<Search />} />
 
           <Route path="/*" element={<NotFound />} />
         </Routes>

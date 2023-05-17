@@ -10,6 +10,7 @@ import { useAppDispatch } from "@/hooks";
 import ArtistsSidebar from "@/components/artists-sidebar";
 import Card from "@/components/card";
 import Loading from "@/components/loading";
+import SongTile from "@/components/song-tile";
 import { Button } from "@/components/ui/button";
 import Center from "@/components/ui/center";
 import Dialog from "@/components/ui/dialog";
@@ -18,7 +19,6 @@ import {
   TopographyH4,
   TopographySmall,
 } from "@/components/ui/topography";
-import SongTile from "../../components/song-tile";
 
 const getAlbumDetail = async (id?: string) => {
   if (!id) throw new Error("No album id provided");
@@ -87,7 +87,7 @@ const Album = () => {
         {/* songs */}
         <div className="flex w-full flex-col gap-2">
           {album.songs.map((song, i) => (
-            <SongTile key={i} index={i} item={song} />
+            <SongTile key={i} item={song} />
           ))}
         </div>
       </div>
