@@ -4,14 +4,16 @@ import { useParams } from "react-router-dom";
 import useSwr from "swr";
 
 import { MatchParams } from "@/types/params";
+import { setPlaylist } from "@/store/root-slice";
 import { base64ToStr } from "@/lib/utils";
+import { useAppDispatch } from "@/hooks";
 import Card from "@/components/card";
 import Loading from "@/components/loading";
 import { Button } from "@/components/ui/button";
 import Center from "@/components/ui/center";
 import Dialog from "@/components/ui/dialog";
 import { TopographyH2, TopographySmall } from "@/components/ui/topography";
-import SongTile from "../song/song-tile";
+import SongTile from "../../components/song-tile";
 
 const getChartDetail = async (id?: string) => {
   if (!id) throw new Error("No chart id provided");
@@ -23,6 +25,7 @@ const getChartDetail = async (id?: string) => {
 
 const Chart = () => {
   const { id } = useParams<MatchParams>();
+  const dispatch = useAppDispatch();
 
   const { data: chart, error } = useSwr("/chart", () => getChartDetail(id));
 
@@ -54,7 +57,10 @@ const Chart = () => {
 
           {/* buttons */}
           <div className="flex items-center justify-center gap-2 md:justify-start">
-            <Button className="w-fit gap-1 rounded-full px-9 text-lg font-bold">
+            <Button
+              onClick={() => dispatch(setPlaylist(chart.songs))}
+              className="w-fit gap-1 rounded-full px-9 text-lg font-bold"
+            >
               Play
             </Button>
 

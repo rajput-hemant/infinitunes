@@ -4,7 +4,9 @@ import { useParams } from "react-router-dom";
 import useSwr from "swr";
 
 import { MatchParams } from "@/types/params";
+import { setPlaylist } from "@/store/root-slice";
 import { base64ToStr, getArtistIds, getArtists } from "@/lib/utils";
+import { useAppDispatch } from "@/hooks";
 import ArtistsSidebar from "@/components/artists-sidebar";
 import Card from "@/components/card";
 import Loading from "@/components/loading";
@@ -16,7 +18,7 @@ import {
   TopographyH4,
   TopographySmall,
 } from "@/components/ui/topography";
-import SongTile from "../song/song-tile";
+import SongTile from "../../components/song-tile";
 
 const getAlbumDetail = async (id?: string) => {
   if (!id) throw new Error("No album id provided");
@@ -28,6 +30,7 @@ const getAlbumDetail = async (id?: string) => {
 
 const Album = () => {
   const { id } = useParams<MatchParams>();
+  const dispatch = useAppDispatch();
 
   const { data: album, error } = useSwr("/album", () => getAlbumDetail(id));
 
@@ -59,7 +62,10 @@ const Album = () => {
 
           {/* buttons */}
           <div className="flex items-center justify-center gap-2 md:justify-start">
-            <Button className="w-fit gap-1 rounded-full px-9 text-lg font-bold">
+            <Button
+              onClick={() => dispatch(setPlaylist(album.songs))}
+              className="w-fit gap-1 rounded-full px-9 text-lg font-bold"
+            >
               Play
             </Button>
 

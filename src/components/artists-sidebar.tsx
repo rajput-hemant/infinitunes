@@ -3,6 +3,8 @@ import useSwr from "swr";
 
 import { Artist } from "@/types";
 import { getImage } from "@/lib/utils";
+import Loading from "./loading";
+import Center from "./ui/center";
 import { Skeleton } from "./ui/skeleton";
 import { TopographyH3 } from "./ui/topography";
 
@@ -26,9 +28,9 @@ const ArtistsSidebar = ({ artists }: ArtistsSidebarProps) => {
       <TopographyH3 className="pb-4 xl:hidden">Artists</TopographyH3>
 
       <div className="flex flex-wrap justify-between gap-4 md:justify-normal">
-        {data &&
+        {data ? (
           data.map((artist) => (
-            <div className="flex flex-col items-center gap-2">
+            <div key={artist.id} className="flex flex-col items-center gap-2">
               <div
                 key={artist.id}
                 className="relative aspect-square w-56 overflow-hidden rounded-full"
@@ -44,7 +46,12 @@ const ArtistsSidebar = ({ artists }: ArtistsSidebarProps) => {
 
               <p className="text-label font-bold">{artist.name}</p>
             </div>
-          ))}
+          ))
+        ) : (
+          <Center>
+            <Loading />
+          </Center>
+        )}
       </div>
     </aside>
   );

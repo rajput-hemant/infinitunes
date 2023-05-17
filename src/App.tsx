@@ -6,8 +6,6 @@ import RootLayout from "./components/root-layout";
 import Center from "./components/ui/center";
 import Home from "./pages/home/home";
 
-const Song = lazy(() => import("./pages/song/song"));
-
 const Album = lazy(() => import("./pages/album/album"));
 const AlbumGrid = lazy(() => import("./pages/album/album-grid"));
 
@@ -31,8 +29,6 @@ const App = () => {
       >
         <Routes>
           <Route index path="/" element={<Home />} />
-
-          <Route path="/song/:title/:id" element={<Song />} />
 
           <Route path="/album" element={<AlbumGrid />} />
           <Route path="/album/:title/:id" element={<Album />} />
