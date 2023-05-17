@@ -12,7 +12,7 @@ const Navbar = () => {
   const { toggleTheme } = useTheme();
 
   return (
-    <header className="border-border bg-background/60 sticky inset-0 z-50 h-16 border-b px-4 backdrop-blur-md md:px-6 lg:px-10 xl:px-14">
+    <header className="border-border bg-background/90 sticky inset-0 z-50 h-16 border-b px-4 backdrop-blur-md md:px-6 lg:px-10 xl:px-14">
       <nav className="flex h-full w-full items-center gap-3">
         <div className="relative aspect-square rounded-full md:-ml-6 lg:ml-0">
           <img

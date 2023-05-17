@@ -1,6 +1,5 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import playerSliceReducer from "./player-slice";
 import rootSliceReducer from "./root-slice";
 import searchSliceReducer from "./search-slice";
 
@@ -8,7 +7,6 @@ export const store = configureStore({
   reducer: {
     root: rootSliceReducer,
     search: searchSliceReducer,
-    player: playerSliceReducer,
   },
 });
 

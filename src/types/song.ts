@@ -25,5 +25,5 @@ export type Song = {
   url: string;
   copyright: string;
   image: Image;
-  downloadUrl: Image;
+  downloadUrl: { quality: string; link: string }[];
 };

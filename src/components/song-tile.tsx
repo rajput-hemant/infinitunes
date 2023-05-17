@@ -1,8 +1,10 @@
-import { FaPlay } from "react-icons/fa";
+import { FaPause, FaPlay } from "react-icons/fa";
 import { RxDownload } from "react-icons/rx";
 
 import { Song } from "@/types";
+import { setSong } from "@/store/root-slice";
 import { decodeHtml, formatTime, getArtists } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import { Button } from "@/components/ui/button";
 
 type SongTileProps = {
@@ -11,28 +13,39 @@ type SongTileProps = {
 };
 
 const SongTile = ({ index, item }: SongTileProps) => {
+  const dispatch = useAppDispatch();
+  const { isPlaying } = useAppSelector((state) => state.root.player);
+
   return (
-    <div className="border-border group flex h-16 items-center truncate rounded-md border px-4 shadow-lg hover:bg-white md:px-6">
+    <div
+      onClick={() => dispatch(setSong(item))}
+      className="border-border group flex h-16 items-center truncate rounded-md border px-4 shadow-lg hover:bg-white active:scale-[1.005] md:px-6"
+    >
       {/* left container */}
       <div className="flex items-center gap-4 overflow-auto md:flex-1">
         {/* song index of play icon */}
         <span className="text-label2 w-4 text-lg font-bold group-hover:hidden">
-          {index + 1}
+          {isPlaying ? <FaPause className="text-label" /> : index + 1}
         </span>
-        <FaPlay className="text-label hidden w-4  group-hover:flex" />
+
+        <span className="text-label hidden w-4 text-lg group-hover:flex">
+          {isPlaying ? <FaPause /> : <FaPlay />}
+        </span>
 
         {/* name & artists (for small screens) */}
         <div className="flex flex-col truncate">
           <span className="font-medium">{decodeHtml(item.name)}</span>
 
-          <span className="text-sm md:hidden">{getArtists(item)}</span>
+          <span className="text-sm md:hidden">
+            {decodeHtml(getArtists(item))}
+          </span>
         </div>
       </div>
 
       {/* center container */}
       <div className="hidden truncate md:flex md:flex-1">
         {/* artists (for large screens) */}
-        <span className="text-sm">{getArtists(item)}</span>
+        <span className="text-sm">{decodeHtml(getArtists(item))}</span>
       </div>
 
       {/* right container */}
