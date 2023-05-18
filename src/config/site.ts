@@ -2,6 +2,7 @@ export const siteConfig = {
   title: "Infinitunes",
   description:
     "A music streaming app built with React and JioSaavn API (unofficial)",
+  url: "https://infinitunes.vercel.app",
 
   nav: [
     { name: "Home", path: "/" },

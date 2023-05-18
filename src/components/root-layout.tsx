@@ -1,6 +1,7 @@
 import Footer from "./footer";
 import Navbar from "./navbar";
 import Player from "./player";
+import BottomNav from "./ui/bottom-nav";
 
 type RootLayoutProps = {
   children: React.ReactNode;
@@ -16,6 +17,8 @@ const RootLayout = ({ children }: RootLayoutProps) => {
       <Footer />
 
       <Player />
+
+      <BottomNav />
     </div>
   );
 };

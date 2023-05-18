@@ -37,7 +37,7 @@ const Player = () => {
   const { song } = useAppSelector((state) => state.root.player);
 
   return (
-    <div className="border-border bg-background/90 sticky bottom-0 z-50 border-t p-2 backdrop-blur-md">
+    <div className="border-border bg-background/90 sticky bottom-16 z-50 border-t backdrop-blur-md lg:bottom-0">
       <Slider
         max={duration}
         value={[currentTime]}
@@ -45,7 +45,7 @@ const Player = () => {
         className={cn("invisible", isPlaying && "visible")}
       />
 
-      <div className="flex h-full items-center pl-4 lg:px-4">
+      <div className="flex h-full items-center p-2 pl-4 lg:px-4">
         {/* left container */}
         <div className="flex w-full gap-3 overflow-hidden lg:w-1/3">
           <div className="bg-border aspect-square h-12 rounded md:h-14">

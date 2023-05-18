@@ -1,8 +1,8 @@
 import { FaPlay } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 
-import { Album, Chart, Playlist, PlaylistV2, Song, TrendingV2 } from "@/types";
-import { setPlaylist, setSong } from "@/store/root-slice";
+import { Album, Chart, Playlist, PlaylistV2, TrendingV2 } from "@/types";
+import { getSongAsync, setPlaylist } from "@/store/root-slice";
 import { clearUrl, cn, decodeHtml, getImage, strToBase64 } from "@/lib/utils";
 import { useAppDispatch } from "@/hooks";
 import { Skeleton } from "./ui/skeleton";
@@ -49,7 +49,7 @@ const Card = ({ isLink, className, item }: CardProps) => {
 
   const clickHandler = () => {
     if (type === "song") {
-      dispatch(setSong(item as Song));
+      dispatch(getSongAsync(item.id));
     } else if (type === "playlist") {
       dispatch(setPlaylist(item.songs));
     }
@@ -62,7 +62,7 @@ const Card = ({ isLink, className, item }: CardProps) => {
     <Wrapper to={getHref()} onClick={clickHandler}>
       <div
         className={cn(
-          "border-border hover:bg-muted group rounded-md border",
+          "border-border hover:bg-muted group cursor-pointer rounded-md border",
           className
         )}
       >

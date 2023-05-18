@@ -7,6 +7,7 @@ import Loading from "@/components/loading";
 import Center from "@/components/ui/center";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TopographyH3 } from "@/components/ui/topography";
+import SearchInput from "./search-input";
 import SearchList from "./search-list";
 
 enum TABS {
@@ -46,7 +47,9 @@ const Search = () => {
   }, [query, toSearch, mutate]);
 
   return (
-    <div className="grid place-items-center gap-4">
+    <div className="space-y-2">
+      <SearchInput className="md:hidden" />
+
       <TopographyH3 className="w-full truncate text-center">
         {query.length ? (
           <>
@@ -59,9 +62,9 @@ const Search = () => {
 
       <Tabs
         defaultValue={TABS.SONGS}
-        className="grid h-full w-full place-items-center gap-4"
+        className="flex flex-col items-center gap-2"
       >
-        <TabsList>
+        <TabsList className="mx-auto">
           {/* <TabsTrigger
             value={TABS.ALL}
             onClick={() => setToSearch(TABS.ALL)}

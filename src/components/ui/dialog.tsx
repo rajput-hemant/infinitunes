@@ -9,6 +9,7 @@ import { TopographyLarge } from "./topography";
 
 export type DialogProps = {
   open?: boolean;
+  onClose?: () => void;
   heading: string;
   type?: "alert" | "success" | "warning" | "error";
   className?: string;
@@ -17,7 +18,14 @@ export type DialogProps = {
 
 export type DialogActionsProp = ButtonProps;
 
-const Dialog = ({ open, heading, type, className, children }: DialogProps) => {
+const Dialog = ({
+  open,
+  onClose,
+  heading,
+  type,
+  className,
+  children,
+}: DialogProps) => {
   const dialogRef = React.useRef<HTMLDialogElement>(null);
 
   React.useEffect(() => {
@@ -39,8 +47,9 @@ const Dialog = ({ open, heading, type, className, children }: DialogProps) => {
   return (
     <dialog
       ref={dialogRef}
+      onClose={onClose}
       className={cn(
-        "w-full rounded-md p-4 shadow-lg md:min-w-[24rem]",
+        "bg-muted text-label rounded-md p-4 shadow-lg backdrop:bg-black/50 backdrop:backdrop-blur md:min-w-[24rem]",
         className
       )}
     >
@@ -67,7 +76,7 @@ const Dialog = ({ open, heading, type, className, children }: DialogProps) => {
         <Button
           variant="outline"
           onClick={closeDialog}
-          className="hover:bg-muted ml-auto"
+          className="hover:bg-background ml-auto"
         >
           {type === "success" ? "Done" : "Close"}
         </Button>

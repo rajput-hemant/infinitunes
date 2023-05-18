@@ -1,4 +1,5 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { api } from "@/api/jiosaavn";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { Album, Artist, Chart, PlaylistV2, Song, Trending } from "@/types";
 
@@ -32,6 +33,21 @@ const initialState: InitialState = {
     isShuffling: false,
   },
 };
+
+// an async thunk to fetch song details asynchronously
+export const getSongAsync = createAsyncThunk(
+  "root/getSongAsync",
+
+  async (id: string) => {
+    try {
+      const song = await api.getSongDetails(id);
+
+      return song;
+    } catch (error) {
+      console.error("Error fetching song details:", error);
+    }
+  }
+);
 
 const RootSlice = createSlice({
   name: "root",
@@ -80,6 +96,14 @@ const RootSlice = createSlice({
     ) => {
       state.player.isShuffling = action.payload;
     },
+  },
+
+  extraReducers: (builder) => {
+    builder.addCase(getSongAsync.fulfilled, (state, action) => {
+      if (action.payload) {
+        state.player.song = action.payload;
+      }
+    });
   },
 });
 

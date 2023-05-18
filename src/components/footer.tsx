@@ -5,7 +5,7 @@ import SocialNav from "./social-nav";
 
 const Footer = () => {
   return (
-    <footer className="border-border text-label2 container flex flex-col items-center justify-center border-t py-1 pb-2 text-sm">
+    <footer className="border-border text-label2 container flex flex-col items-center justify-center border-t py-1 pb-20 text-sm lg:pb-2">
       <SocialNav />
 
       <span>Released under the MIT License.</span>
