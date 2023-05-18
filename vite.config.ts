@@ -13,4 +13,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
+  // dev server
+  server: {
+    host: true, // needed for the Docker Container port mapping to work
+    port: 5173,
+  },
 });

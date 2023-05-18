@@ -14,7 +14,9 @@
 
 ### [WIP] 🎵 A Simple Music Player Web App made with ⚛️ React + Vite + Tailwind and Redux Toolkit.
 
-### **[<kbd> <br> Live Demo <br> </kbd>][site]**
+![](./public/images/screenshot.png)
+
+**[<kbd> <br> &nbsp;**Live Demo**&nbsp; <br> </kbd>][site]**
 
 ## Building from Source
 
@@ -22,7 +24,7 @@
 
 - Fetch latest source code from master branch.
 
-```console
+```
 git clone https://github.com/rajput-hemant/infinitunes
 cd infinitunes
 ```
@@ -30,17 +32,59 @@ cd infinitunes
 - Rename **.env.example** => **.env.local**, add your own [**JioSaavn API**][api] Endpoint.
 
 ```js
-VITE_JIOSAAVN_ENDPOINT = "https://saavn.me"; <- change this
+VITE_JIOSAAVN_ENDPOINT = "https://saavn.me" <- change this
 ```
 
 - Run the app with VS Code or the command line:
 
-```console
+```
 pnpm i
 pnpm dev
 ```
 
+### Build and Run the Docker Image
+
+> **Warning**
+> You need to have [Docker](https://docs.docker.com/get-docker/) installed on your system.
+> You might need to run the following commands with `sudo` depending on your system.
+
+- Start Docker daemon (Skip if already running)
+
+```
+sudo dockerd
+```
+
+- Build the image
+
+```
+docker build -t infinitunes .
+```
+
+- Run the image
+
+```
+docker run -p 5173:5173 infinitunes
+```
+
+- Open http://localhost:5173 to view it in the browser.
+
+- Stop the container
+
+```
+docker ps
+```
+
+```
+docker stop <container-id>
+```
+
 <div align = center>
+
+### Deploy Your Own
+
+You can deploy your own hosted version of `infinitunes`. Just click the link below to deploy a ready-to-go version to Vercel.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rajput-hemant/infinitunes&env=VITE_JIOSAAVN_ENDPOINT&project-name=infinitunes&repo-name=infinitunes)
 
 #### [JioSaavn API (Unofficial)][api] by [Sumit Kolhe][cc], [API Docs][api-docs]
 
