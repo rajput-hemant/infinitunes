@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { api } from "@/api/jiosaavn";
 import { useParams } from "react-router-dom";
 import useSwr from "swr";
@@ -23,6 +24,10 @@ const Album = () => {
   const { id } = useParams<MatchParams>();
 
   const { data: album, error } = useSwr("/album", () => getAlbumDetail(id));
+
+  useEffect(() => {
+    document.title = (album?.name || "Top Albums") + " | Infinitunes";
+  }, [album]);
 
   if (error) {
     return (

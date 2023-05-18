@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import useSwr from "swr";
 
 import Card from "@/components/card";
@@ -8,6 +9,10 @@ import { getHomeData } from "../home/get-home-data";
 
 const ChartGrid = () => {
   const { data } = useSwr("/home", getHomeData);
+
+  useEffect(() => {
+    document.title = "Top Charts | Infinitunes";
+  }, []);
 
   return (
     <div>

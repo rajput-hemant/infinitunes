@@ -75,10 +75,8 @@ const usePlayer = () => {
    * Toggle play/pause
    */
   const togglePlayPause = () => {
-    if (isPlaying) {
-      player.current.pause();
-    } else {
-      player.current.play();
+    if (song) {
+      isPlaying ? player.current.pause() : player.current.play();
     }
   };
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { api } from "@/api/jiosaavn";
 import { useParams } from "react-router-dom";
 import useSwr from "swr";
@@ -6,9 +7,9 @@ import { MatchParams } from "@/types/params";
 import { base64ToStr } from "@/lib/utils";
 import Loading from "@/components/loading";
 import PlaylistHeader from "@/components/playlist-header";
+import SongTile from "@/components/song-tile";
 import Center from "@/components/ui/center";
 import Dialog from "@/components/ui/dialog";
-import SongTile from "../../components/song-tile";
 
 const getPlaylistDetail = async (id?: string) => {
   if (!id) throw new Error("No playlist id provided");
@@ -24,6 +25,10 @@ const Playlist = () => {
   const { data: playlist, error } = useSwr("/playlist", () =>
     getPlaylistDetail(id)
   );
+
+  useEffect(() => {
+    document.title = (playlist?.name || "Playlist") + " | Infinitunes";
+  }, [playlist]);
 
   if (error) {
     return (

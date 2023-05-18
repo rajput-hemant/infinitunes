@@ -26,10 +26,10 @@ const Card = ({ isLink, className, item }: CardProps) => {
 
     if (type === "album") {
       return `/album/${url}/${base64Id}`;
-    } else if (type === "playlist") {
-      return `/playlist/${url}/${base64Id}`;
     } else if (pathname.split("/")[1] === "chart") {
       return `/chart/${url}/${base64Id}`;
+    } else if (type === "playlist") {
+      return `/playlist/${url}/${base64Id}`;
     } else return "#";
   };
 

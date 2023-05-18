@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { Album, Playlist } from "@/types";
 import { setPlaylist } from "@/store/root-slice";
 import { siteConfig } from "@/config/site";
-import { getArtists } from "@/lib/utils";
+import { SongQuality, downloadSong, getArtists } from "@/lib/utils";
 import { useAppDispatch } from "@/hooks";
 import Card from "@/components/card";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,10 @@ const PlaylistHeader = ({ item }: { item: Album | Playlist }) => {
 
   const shareDialogHeading =
     "username" in item ? "Share This Album" : "Share This Playlist";
+
+  const downloadHandler = () => {
+    item.songs.forEach((song) => downloadSong(song, SongQuality.best));
+  };
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center gap-6 text-center md:flex-row md:justify-start md:text-left">
@@ -63,13 +67,18 @@ const PlaylistHeader = ({ item }: { item: Album | Playlist }) => {
             Play
           </Button>
 
-          <Button variant="outline" size="sm" className="rounded-full">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={downloadHandler}
+            className="rounded-full"
+          >
             <RxDownload size={18} />
           </Button>
 
           <Button
-            variant="outline"
             size="sm"
+            variant="outline"
             onClick={() => setIsShareDialogOpen(true)}
             className="rounded-full"
           >
