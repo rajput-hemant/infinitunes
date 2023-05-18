@@ -127,16 +127,11 @@ export const getArtists = (item: Song | Album) => {
 export const getArtistIds = (item: Song | Album) => {
   const { primaryArtistsId, primaryArtists, featuredArtists } = item;
 
-  const getArtistIdsFromList = (artists: string | AlbumArtist[]) => {
-    if (typeof artists === "string") {
-      return artists.length ? artists.split(", ") : [];
-    } else {
-      return artists?.map((artist) => artist.name);
-    }
-  };
+  const getArtistIdsFromList = (artists: string | AlbumArtist[]) =>
+    typeof artists !== "string" ? artists?.map((artist) => artist.url) : null;
 
   return [
-    primaryArtistsId,
+    ...primaryArtistsId.split(", "),
     ...(getArtistIdsFromList(primaryArtists) ?? []),
     ...(getArtistIdsFromList(featuredArtists) ?? []),
   ];

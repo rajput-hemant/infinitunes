@@ -38,7 +38,7 @@ const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
   return (
     <div
       onClick={onClickHandler}
-      className="border-border hover:bg-muted group flex h-[4.5rem] items-center gap-2 truncate rounded-md border px-2 shadow-lg active:scale-[1.005] sm:pr-4 md:pr-6"
+      className="border-border hover:bg-muted group flex h-[4.5rem] items-center gap-2 truncate rounded-md border px-2 shadow-md active:scale-[1.005] sm:pr-4 md:pr-6"
     >
       <div className="group/image relative aspect-square w-16 overflow-hidden rounded">
         <img
