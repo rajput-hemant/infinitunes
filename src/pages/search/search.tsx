@@ -39,6 +39,10 @@ const Search = () => {
   );
 
   useEffect(() => {
+    document.title = `Search ${toSearch.toLowerCase()} | Infinitunes`;
+  }, [toSearch]);
+
+  useEffect(() => {
     const timeout = setTimeout(() => {
       mutate();
     }, 1000);
@@ -48,7 +52,7 @@ const Search = () => {
 
   return (
     <div className="space-y-2">
-      <SearchInput className="md:hidden" />
+      <SearchInput className="lg:hidden" />
 
       <TopographyH3 className="w-full truncate text-center">
         {query.length ? (

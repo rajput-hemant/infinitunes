@@ -152,3 +152,45 @@ export const decodeHtml = (str: string) => {
 
   return txt.documentElement.textContent;
 };
+
+export enum SongQuality {
+  poor = "_12",
+  low = "_48",
+  medium = "_96",
+
+  high = "_160",
+  best = "_256",
+  lossless = "_320",
+}
+
+/**
+ * Downloads the given song with the given quality
+ * @param song Song to download
+ * @param quality Quality of the song to download
+ */
+export const downloadSong = async (song: Song, quality: SongQuality) => {
+  const downloadLink = song.downloadUrl[0].link.replace(
+    "_12.mp4",
+    quality + ".mp4"
+  );
+
+  try {
+    const response = await fetch(downloadLink);
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+
+    const anchor = Object.assign(document.createElement("a"), {
+      href: url,
+      style: "display:none",
+      download: `${decodeHtml(song.name)} ${song.year}.mp3`,
+    });
+
+    document.body.appendChild(anchor);
+    anchor.click();
+
+    URL.revokeObjectURL(url);
+    anchor.remove();
+  } catch (error) {
+    console.error("Error occurred during download:", error);
+  }
+};

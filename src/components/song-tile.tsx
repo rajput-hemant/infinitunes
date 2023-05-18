@@ -5,8 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { Album, Playlist, Song } from "@/types";
 import { setSong } from "@/store/root-slice";
 import {
+  SongQuality,
   clearUrl,
   decodeHtml,
+  downloadSong,
   formatTime,
   getArtists,
   getImage,
@@ -25,8 +27,7 @@ const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
     const url = clearUrl(name);
     const base64Id = strToBase64(id);
 
-    // @ts-ignore
-    if (type === "") {
+    if ("label" in item) {
       dispatch(setSong(item));
     } else if (type === "album") {
       navigate(`/album/${url}/${base64Id}`);
@@ -60,27 +61,25 @@ const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
         <span className="my-auto truncate text-sm md:w-1/2">
           {type !== "playlist" && decodeHtml(getArtists(item))}
 
-          {type === undefined && (item as Playlist).firstname}
+          {"userId" in item && item.firstname}
         </span>
       </div>
 
       {/* download and duration */}
-      <div className="text-label2 ml-auto flex items-center justify-center gap-4 md:gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          className="hover:border-border rounded-full border-transparent"
-        >
-          <RxDownload size={18} />
-        </Button>
+      {"label" in item && (
+        <div className="text-label2 ml-auto flex items-center justify-center gap-4 md:gap-4">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => downloadSong(item, SongQuality.best)}
+            className="hover:border-border rounded-full border-transparent"
+          >
+            <RxDownload size={18} />
+          </Button>
 
-        {/* @ts-ignore */}
-        {type == "" && (
-          <span className="text-label2">
-            {formatTime((item as Song).duration)}
-          </span>
-        )}
-      </div>
+          <span className="text-label2">{formatTime(item.duration)}</span>
+        </div>
+      )}
     </div>
   );
 };
