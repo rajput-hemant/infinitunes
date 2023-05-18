@@ -1,17 +1,19 @@
 FROM node:alpine
 
+RUN npm i -g pnpm
+
 WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+RUN pnpm i
 
 COPY . .
 
-RUN npm run build
+RUN pnpm build
 
-EXPOSE 5173
+EXPOSE 4173
 
 ENV VITE_JIOSAAVN_ENDPOINT=https://saavn.me
 
-CMD ["npm", "run", "dev"]
+CMD ["pnpm", "preview"]
