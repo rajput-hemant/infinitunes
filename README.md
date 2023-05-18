@@ -63,10 +63,10 @@ docker build -t infinitunes .
 - Run the image
 
 ```
-docker run -p 5173:5173 infinitunes
+docker run -p 4173:4173 infinitunes
 ```
 
-- Open http://localhost:5173 to view it in the browser.
+- Open http://localhost:4173 to view it in the browser.
 
 - Stop the container
 
