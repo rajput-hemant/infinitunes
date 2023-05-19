@@ -62,7 +62,7 @@ const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
         <span className="my-auto truncate text-sm md:w-1/2">
           {type !== "playlist" && decodeHtml(getArtists(item))}
 
-          {"userId" in item && item.firstname}
+          {"userId" in item && decodeHtml(item.firstname)}
         </span>
       </div>
 

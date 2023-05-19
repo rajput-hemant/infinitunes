@@ -11,7 +11,7 @@ import {
   // TbRepeatOnce,
 } from "react-icons/tb";
 
-import { cn, formatTime, getArtists, getImage } from "@/lib/utils";
+import { cn, decodeHtml, formatTime, getArtists, getImage } from "@/lib/utils";
 import { useAppSelector } from "@/hooks";
 import usePlayer from "@/hooks/usePlayer";
 import { Button } from "./ui/button";
@@ -53,7 +53,7 @@ const Player = () => {
         max={duration}
         value={[currentTime]}
         onValueChange={(value) => handleTimeChange(value[0])}
-        className={cn("invisible", isPlaying && "visible")}
+        className={cn("invisible z-50", isPlaying && "visible")}
       />
 
       <div className="flex h-full items-center p-2 pl-4 lg:px-4">
@@ -68,19 +68,23 @@ const Player = () => {
           </div>
 
           {/* current song info */}
-          <div className="flex flex-col justify-center truncate text-center lg:text-start">
-            <span className="truncate font-medium">{song?.name}</span>
-            <span className="truncate text-sm">{song && getArtists(song)}</span>
+          <div className="flex w-full flex-col justify-center truncate text-center lg:text-start">
+            <span className="truncate font-medium">
+              {decodeHtml(song?.name ?? "")}
+            </span>
+            <span className="truncate text-sm">
+              {song && decodeHtml(getArtists(song))}
+            </span>
           </div>
         </div>
 
         {/* center container */}
-        <div className="flex justify-center lg:w-1/3">
+        <div className={cn("flex justify-center lg:w-1/3")}>
           <Button
             variant="ghost"
             onClick={handleLoop}
             className={cn(
-              "hover:text-label2 hidden border-none lg:flex",
+              "hover:text-label2 dark:hover:text-label2 hidden border-none lg:flex",
               loop && "text-primary hover:text-secondary"
             )}
           >
@@ -90,7 +94,7 @@ const Player = () => {
           <Button
             variant="ghost"
             onClick={handlePrevious}
-            className="hover:text-label2 hidden border-none lg:flex"
+            className="hover:text-label2 dark:hover:text-label2 hidden border-none lg:flex"
           >
             <TbPlayerSkipBackFilled size={30} />
           </Button>
@@ -98,7 +102,7 @@ const Player = () => {
           <Button
             variant="ghost"
             onClick={togglePlayPause}
-            className="hover:text-label2 border-none"
+            className="hover:text-label2 dark:hover:text-label2 border-none"
           >
             {isPlaying ? (
               <TbPlayerPauseFilled size={30} />
@@ -110,7 +114,7 @@ const Player = () => {
           <Button
             variant="ghost"
             onClick={handleNext}
-            className="hover:text-label2 hidden border-none lg:flex"
+            className="hover:text-label2 dark:hover:text-label2 hidden border-none lg:flex"
           >
             <TbPlayerSkipForwardFilled size={30} />
           </Button>
@@ -119,7 +123,7 @@ const Player = () => {
             variant="ghost"
             onClick={handleShuffle}
             className={cn(
-              "hover:text-label2 hidden border-none lg:flex",
+              "hover:text-label2 dark:hover:text-label2 hidden border-none lg:flex",
               shuffle && "text-primary hover:text-secondary"
             )}
           >

@@ -38,7 +38,7 @@ const usePlayer = () => {
     if (playlist) {
       dispatch(setSong(playlist[currentIndex]));
     }
-  }, [song, playlist, currentIndex, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [song, playlist, currentIndex, quality, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     player.current.onplay = () => {
