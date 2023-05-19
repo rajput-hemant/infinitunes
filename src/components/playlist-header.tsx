@@ -3,10 +3,10 @@ import { RxDownload, RxShare2 } from "react-icons/rx";
 import { useLocation } from "react-router-dom";
 
 import { Album, Playlist } from "@/types";
-import { setPlaylist } from "@/store/root-slice";
+import { setPlaylist } from "@/store/player-slice";
 import { siteConfig } from "@/config/site";
-import { SongQuality, downloadSong, getArtists } from "@/lib/utils";
-import { useAppDispatch } from "@/hooks";
+import { downloadSong, getArtists } from "@/lib/utils";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import Card from "@/components/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,7 @@ import Dialog from "./ui/dialog";
 
 const PlaylistHeader = ({ item }: { item: Album | Playlist }) => {
   const dispatch = useAppDispatch();
+  const { downloadQuality } = useAppSelector((state) => state.root.preferences);
   const pathname = useLocation().pathname;
 
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -27,7 +28,7 @@ const PlaylistHeader = ({ item }: { item: Album | Playlist }) => {
     "username" in item ? "Share This Album" : "Share This Playlist";
 
   const downloadHandler = () => {
-    item.songs.forEach((song) => downloadSong(song, SongQuality.best));
+    item.songs.forEach((song) => downloadSong(song, downloadQuality));
   };
 
   return (

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { RiVolumeMuteFill, RiVolumeUpFill } from "react-icons/ri";
 import {
   TbArrowsShuffle,
@@ -34,10 +35,20 @@ const Player = () => {
     handlePrevious,
   } = usePlayer();
 
-  const { song } = useAppSelector((state) => state.root.player);
+  const { song } = useAppSelector((state) => state.player);
+  const { imageQuality } = useAppSelector((state) => state.root.preferences);
+
+  useEffect(() => {
+    // ...
+  }, [imageQuality]);
 
   return (
-    <div className="border-border bg-background/90 sticky bottom-16 z-50 border-t backdrop-blur-md lg:bottom-0">
+    <div
+      className={cn(
+        "border-border bg-background/90 sticky bottom-16 z-50 border-t backdrop-blur-md lg:bottom-0",
+        !isPlaying && "hidden lg:block"
+      )}
+    >
       <Slider
         max={duration}
         value={[currentTime]}
@@ -50,7 +61,7 @@ const Player = () => {
         <div className="flex w-full gap-3 overflow-hidden lg:w-1/3">
           <div className="bg-border aspect-square h-12 rounded md:h-14">
             <img
-              src={song ? getImage(song.image) : ""}
+              src={song ? getImage(song.image, imageQuality) : ""}
               alt={song?.name}
               className="rounded object-cover"
             />
@@ -135,6 +146,7 @@ const Player = () => {
                 <RiVolumeUpFill size={25} />
               )}
             </Button>
+
             <Slider
               defaultValue={[75]}
               onValueChange={(volume) => handleVolume(volume[0] / 100)}

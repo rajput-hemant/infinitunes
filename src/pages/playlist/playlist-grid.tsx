@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import useSwr from "swr";
 
+import { getHomeData } from "@/lib/utils";
 import Card from "@/components/card";
 import Loading from "@/components/loading";
 import Center from "@/components/ui/center";
 import { TopographyH2 } from "@/components/ui/topography";
-import { getHomeData } from "../home/get-home-data";
 
 const PlaylistGrid = () => {
   const { data } = useSwr("/home", getHomeData);

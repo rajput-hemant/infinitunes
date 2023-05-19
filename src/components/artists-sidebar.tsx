@@ -3,7 +3,10 @@ import { api } from "@/api/jiosaavn";
 import useSwr from "swr";
 
 import { Artist } from "@/types";
+import { store } from "@/store";
+import { setArtists } from "@/store/root-slice";
 import { getImage } from "@/lib/utils";
+import { useAppSelector } from "@/hooks";
 import Loading from "./loading";
 import Center from "./ui/center";
 import { Skeleton } from "./ui/skeleton";
@@ -15,13 +18,27 @@ type ArtistsSidebarProps = {
 };
 
 const getArtists = async (ids: string[]) => {
-  const artists = await Promise.all(ids.map((id) => api.getArtistDetails(id)));
+  const artists = await Promise.all(
+    ids.map((id) => {
+      const artistStore = store.getState().root.artists;
+
+      const artist = artistStore?.find((artist) => artist.id === id);
+
+      return artist ?? api.getArtistDetails(id);
+    })
+  );
 
   // (Artist | null)[] => Artist[]
-  return artists.filter((artist) => artist !== null) as Artist[];
+  const data = artists.filter((artist) => artist !== null) as Artist[];
+
+  store.dispatch(setArtists(data));
+
+  return data;
 };
 
 const ArtistsSidebar = ({ artists }: ArtistsSidebarProps) => {
+  const { imageQuality } = useAppSelector((state) => state.root.preferences);
+
   const { data, isLoading, mutate } = useSwr("/artists", () =>
     getArtists(artists)
   );
@@ -50,7 +67,7 @@ const ArtistsSidebar = ({ artists }: ArtistsSidebarProps) => {
                 className="relative aspect-square w-56 overflow-hidden rounded-full"
               >
                 <img
-                  src={getImage(artist.image)}
+                  src={getImage(artist.image, imageQuality)}
                   alt={artist.name}
                   className="object-cover"
                 />

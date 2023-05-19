@@ -1,53 +1,47 @@
-import { api } from "@/api/jiosaavn";
-import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-import { Album, Artist, Chart, PlaylistV2, Song, Trending } from "@/types";
+import { Album, Artist, ImageQuality, Modules, Playlist } from "@/types";
+
+// import { SongQuality } from "@/lib/utils";
+
+enum SongQuality {
+  poor = "_12",
+  low = "_48",
+  medium = "_96",
+
+  high = "_160",
+  best = "_256",
+  lossless = "_320",
+}
 
 type InitialState = {
-  homeData: {
-    trending: Trending;
-    albums: Album[];
-    playlists: PlaylistV2[];
-    charts: Chart[];
-  } | null;
-  artists: Artist[];
-  songs: Song[];
-  player: {
-    song: Song | null;
-    playlist: Song[] | null;
-    isPlaying: boolean;
-    isLooping?: boolean;
-    isShuffling?: boolean;
+  homeData: Modules | null;
+  albums: Album[] | null;
+  artists: Artist[] | null;
+  playlists: Playlist[] | null;
+  preferences: {
+    songStreamingQuality: SongQuality;
+    downloadQuality: SongQuality;
+    imageQuality: ImageQuality;
   };
 };
 
 const initialState: InitialState = {
   homeData: null,
-  artists: [],
-  songs: [],
-  player: {
-    song: null,
-    playlist: null,
-    isPlaying: false,
-    isLooping: false,
-    isShuffling: false,
+  albums: null,
+  artists: null,
+  playlists: null,
+  preferences: {
+    songStreamingQuality:
+      (localStorage.getItem("songQuality") as SongQuality | null) ??
+      SongQuality.best,
+    downloadQuality:
+      (localStorage.getItem("downloadQuality") as SongQuality | null) ??
+      SongQuality.best,
+    imageQuality:
+      (localStorage.getItem("imageQuality") as ImageQuality | null) ?? "medium",
   },
 };
-
-// an async thunk to fetch song details asynchronously
-export const getSongAsync = createAsyncThunk(
-  "root/getSongAsync",
-
-  async (id: string) => {
-    try {
-      const song = await api.getSongDetails(id);
-
-      return song;
-    } catch (error) {
-      console.error("Error fetching song details:", error);
-    }
-  }
-);
 
 const RootSlice = createSlice({
   name: "root",
@@ -56,58 +50,77 @@ const RootSlice = createSlice({
 
   reducers: {
     /** Set home data*/
-    setHomeData: (state, action: PayloadAction<InitialState["homeData"]>) => {
+    setHomeData: (state, action: PayloadAction<Modules>) => {
       state.homeData = action.payload;
     },
 
-    /** Set audio source */
-    setSong: (state, action: PayloadAction<InitialState["player"]["song"]>) => {
-      state.player.song = action.payload;
+    /** Set albums */
+    setAlbums: (state, action: PayloadAction<Album[]>) => {
+      // console.log(state.albums);
+
+      const newAlbums = action.payload.filter((album) => {
+        // Check if the album is already present in the state
+        return !state.albums?.some(
+          (existingAlbum) => existingAlbum.id === album.id
+        );
+      });
+
+      // Add the new albums to the state
+      state.albums = [...(state.albums ?? []), ...newAlbums];
+      // console.log(state.albums);
     },
 
-    /** Set playlist */
-    setPlaylist: (
-      state,
-      action: PayloadAction<InitialState["player"]["playlist"]>
-    ) => {
-      state.player.playlist = action.payload;
+    /** Set artists */
+    setArtists: (state, action: PayloadAction<Artist[]>) => {
+      const newArtists = action.payload.filter((artist) => {
+        // Check if the artist is already present in the state
+        return !state.artists?.some(
+          (existingArtist) => existingArtist.id === artist.id
+        );
+      });
+
+      // Add the new artists to the state
+      state.artists = [...(state.artists ?? []), ...newArtists];
     },
 
-    /** Set is audio playing */
-    setAudioIsPlaying: (
-      state,
-      action: PayloadAction<InitialState["player"]["isPlaying"]>
-    ) => {
-      state.player.isPlaying = action.payload;
+    /** Set playlists */
+    setPlaylists: (state, action: PayloadAction<Playlist[]>) => {
+      const newPlaylists = action.payload.filter((playlist) => {
+        // Check if the playlist is already present in the state
+        return !state.playlists?.some(
+          (existingPlaylist) => existingPlaylist.id === playlist.id
+        );
+      });
+
+      // Add the new playlists to the state
+      state.playlists = [...(state.playlists ?? []), ...newPlaylists];
     },
 
-    /** Set is audio looping */
-    setAudioIsLooping: (
-      state,
-      action: PayloadAction<InitialState["player"]["isLooping"]>
-    ) => {
-      state.player.isLooping = action.payload;
+    /** Set song streaming quality */
+    setSongStreamingQuality: (state, action: PayloadAction<SongQuality>) => {
+      state.preferences.songStreamingQuality = action.payload;
     },
 
-    /** Set is audio shuffling */
-    setAudioIsShuffling: (
-      state,
-      action: PayloadAction<InitialState["player"]["isShuffling"]>
-    ) => {
-      state.player.isShuffling = action.payload;
+    /** Set download quality */
+    setDownloadQuality: (state, action: PayloadAction<SongQuality>) => {
+      state.preferences.downloadQuality = action.payload;
     },
-  },
 
-  extraReducers: (builder) => {
-    builder.addCase(getSongAsync.fulfilled, (state, action) => {
-      if (action.payload) {
-        state.player.song = action.payload;
-      }
-    });
+    /** Set image quality */
+    setImageQuality: (state, action: PayloadAction<ImageQuality>) => {
+      state.preferences.imageQuality = action.payload;
+    },
   },
 });
 
-export const { setHomeData, setSong, setAudioIsPlaying, setPlaylist } =
-  RootSlice.actions;
+export const {
+  setHomeData,
+  setAlbums,
+  setArtists,
+  setPlaylists,
+  setSongStreamingQuality,
+  setDownloadQuality,
+  setImageQuality,
+} = RootSlice.actions;
 
 export default RootSlice.reducer;

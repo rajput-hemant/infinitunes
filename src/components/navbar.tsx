@@ -1,3 +1,4 @@
+import { useState } from "react";
 import SearchInput from "@/pages/search/search-input";
 import { IoMdSettings } from "react-icons/io";
 import { TbMoonStars, TbSun } from "react-icons/tb";
@@ -6,12 +7,16 @@ import { NavLink } from "react-router-dom";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { useAppSelector, useTheme } from "@/hooks";
+import Settings from "./settings-dialog";
 import { Button } from "./ui/button";
+import Dialog from "./ui/dialog";
 import { TopographySmall } from "./ui/topography";
 
 const Navbar = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const { toggleTheme } = useTheme();
-  const { isPlaying } = useAppSelector((state) => state.root.player);
+  const { isPlaying } = useAppSelector((state) => state.player);
 
   return (
     <header className="border-border bg-background/90 sticky inset-0 z-50 h-16 border-b backdrop-blur-md md:px-6 lg:px-10 xl:px-14">
@@ -43,9 +48,7 @@ const Navbar = () => {
                   )
                 }
               >
-                <TopographySmall inter className="font-bold">
-                  {name}
-                </TopographySmall>
+                <TopographySmall className="font-bold">{name}</TopographySmall>
               </NavLink>
             ))}
           </div>
@@ -59,9 +62,9 @@ const Navbar = () => {
         {/* right container */}
         <div className="text-label2 ml-auto flex w-1/3 items-center justify-end">
           <Button
+            size="sm"
             variant="ghost"
             onClick={toggleTheme}
-            size="sm"
             className="border-none px-2"
           >
             <TbMoonStars className="h-6 w-6 dark:hidden" />
@@ -69,11 +72,25 @@ const Navbar = () => {
             <TbSun className="hidden h-6 w-6 active:animate-spin dark:flex" />
           </Button>
 
-          <Button variant="ghost" size="sm" className="border-none px-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setIsDialogOpen(true)}
+            className="border-none px-2"
+          >
             <IoMdSettings className="h-6 w-6" />
           </Button>
         </div>
       </nav>
+
+      <Dialog
+        heading=""
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        className="w-full md:max-w-2xl"
+      >
+        <Settings />
+      </Dialog>
     </header>
   );
 };
