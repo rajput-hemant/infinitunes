@@ -22,23 +22,25 @@ enum ImageQuality {
 const Settings = () => {
   const dispatch = useAppDispatch();
 
-  const [, setSongQuality_] = useLocalStorage("songQuality", SongQuality.best);
-  const [, setDownloadQuality_] = useLocalStorage(
+  const [songQuality, setSongQuality_] = useLocalStorage(
+    "songQuality",
+    SongQuality.best
+  );
+  const [downloadQuality, setDownloadQuality_] = useLocalStorage(
     "downloadQuality",
     SongQuality.best
   );
-  const [, setImageQuality_] = useLocalStorage(
+  const [imageQuality, setImageQuality_] = useLocalStorage(
     "imageQuality",
     ImageQuality.medium
   );
 
   const songStreamingQuality: { [key: string]: string } = {
-    poor: "12kbps",
-    low: "48kbps",
-    medium: "96kbps",
+    low: "12kbps",
+    medium: "48kbps",
+    high: "96kbps",
 
-    high: "160kbps",
-    best: "256kbps",
+    best: "160kbps",
     lossless: "320kbps",
   };
 
@@ -63,7 +65,7 @@ const Settings = () => {
 
       <div className="space-y-3 md:p-4">
         <RadioGroup
-          defaultValue={SongQuality.best}
+          defaultValue={songQuality}
           onValueChange={streamQualityHandler}
         >
           <TopographyLarge className="border-border  border-b-2">
@@ -73,9 +75,9 @@ const Settings = () => {
           <div className="grid grid-cols-2 gap-2 md:p-2">
             {Object.entries(SongQuality).map(([key, value]) => (
               <div key={key} className="flex items-center space-x-2">
-                <RadioGroupItem value={value} id={key} />
-                <Label htmlFor={key} className="truncate capitalize">
-                  {key} {songStreamingQuality[key]}
+                <RadioGroupItem value={value} id={key + "_song"} />
+                <Label htmlFor={key + "_song"} className="truncate capitalize">
+                  {key} ({songStreamingQuality[key]})
                 </Label>
               </div>
             ))}
@@ -83,7 +85,7 @@ const Settings = () => {
         </RadioGroup>
 
         <RadioGroup
-          defaultValue={SongQuality.best}
+          defaultValue={downloadQuality}
           onValueChange={downloadQualityHandler}
         >
           <TopographyLarge className="border-border  border-b-2">
@@ -93,9 +95,12 @@ const Settings = () => {
           <div className="grid grid-cols-2 gap-2 md:p-2">
             {Object.entries(SongQuality).map(([key, value]) => (
               <div key={key} className="flex items-center space-x-2">
-                <RadioGroupItem value={value} id={key} />
-                <Label htmlFor={key} className="truncate capitalize">
-                  {key} {songStreamingQuality[key]}
+                <RadioGroupItem value={value} id={key + "_download"} />
+                <Label
+                  htmlFor={key + "_download"}
+                  className="truncate capitalize"
+                >
+                  {key} ({songStreamingQuality[key]})
                 </Label>
               </div>
             ))}
@@ -103,7 +108,7 @@ const Settings = () => {
         </RadioGroup>
 
         <RadioGroup
-          defaultValue={ImageQuality.medium}
+          defaultValue={imageQuality}
           onValueChange={imageQualityHandler}
         >
           <TopographyLarge className="border-border  border-b-2">

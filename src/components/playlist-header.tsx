@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import { Album, Playlist } from "@/types";
 import { setPlaylist } from "@/store/player-slice";
 import { siteConfig } from "@/config/site";
-import { downloadSong, getArtists } from "@/lib/utils";
+import { decodeHtml, downloadSong, getArtists } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import Card from "@/components/card";
 import { Button } from "@/components/ui/button";
@@ -38,12 +38,12 @@ const PlaylistHeader = ({ item }: { item: Album | Playlist }) => {
 
       {/* item info */}
       <div className="flex h-full w-full flex-col gap-2 md:gap-4">
-        <TopographyH2>{item.name}</TopographyH2>
+        <TopographyH2>{decodeHtml(item.name)}</TopographyH2>
 
         {"artists" in item && (
           <>
             <TopographyH4 className="font-medium">
-              by {getArtists(item)}
+              by {decodeHtml(getArtists(item))}
             </TopographyH4>
 
             <TopographySmall>

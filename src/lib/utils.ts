@@ -178,12 +178,11 @@ export const decodeHtml = (str: string) => {
 };
 
 export enum SongQuality {
-  poor = "_12",
-  low = "_48",
-  medium = "_96",
+  low = "_12",
+  medium = "_48",
+  high = "_96",
 
-  high = "_160",
-  best = "_256",
+  best = "_160",
   lossless = "_320",
 }
 

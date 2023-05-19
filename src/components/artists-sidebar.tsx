@@ -51,6 +51,7 @@ const ArtistsSidebar = ({ artists }: ArtistsSidebarProps) => {
     <aside className="relative rounded-md p-4 xl:w-96">
       <TopographyH3 className="pb-4 xl:hidden">Artists</TopographyH3>
 
+      {/* artists container */}
       <div className="flex flex-wrap justify-between gap-4 md:justify-normal">
         {isLoading ? (
           <Center absolutely>
@@ -58,13 +59,14 @@ const ArtistsSidebar = ({ artists }: ArtistsSidebarProps) => {
           </Center>
         ) : (
           data?.map((artist) => (
+            // artist card
             <div
               key={artist.id}
               className="flex flex-col items-center gap-2 xl:w-full"
             >
               <div
                 key={artist.id}
-                className="relative aspect-square w-56 overflow-hidden rounded-full"
+                className="relative aspect-square w-36 overflow-hidden rounded-full sm:w-44 md:w-48 lg:w-56"
               >
                 <img
                   src={getImage(artist.image, imageQuality)}
@@ -75,7 +77,9 @@ const ArtistsSidebar = ({ artists }: ArtistsSidebarProps) => {
                 <Skeleton className="absolute" />
               </div>
 
-              <p className="text-label font-bold">{artist.name}</p>
+              <p className="text-label line-clamp-2 text-center font-bold">
+                {artist.name}
+              </p>
             </div>
           ))
         )}

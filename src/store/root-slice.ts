@@ -4,13 +4,12 @@ import { Album, Artist, ImageQuality, Modules, Playlist } from "@/types";
 
 // import { SongQuality } from "@/lib/utils";
 
-enum SongQuality {
-  poor = "_12",
-  low = "_48",
-  medium = "_96",
+export enum SongQuality {
+  low = "_12",
+  medium = "_48",
+  high = "_96",
 
-  high = "_160",
-  best = "_256",
+  best = "_160",
   lossless = "_320",
 }
 
@@ -33,13 +32,17 @@ const initialState: InitialState = {
   playlists: null,
   preferences: {
     songStreamingQuality:
-      (localStorage.getItem("songQuality") as SongQuality | null) ??
-      SongQuality.best,
+      (localStorage
+        .getItem("songQuality")
+        ?.slice(1, -1) as SongQuality | null) ?? SongQuality.best,
     downloadQuality:
-      (localStorage.getItem("downloadQuality") as SongQuality | null) ??
-      SongQuality.best,
+      (localStorage
+        .getItem("downloadQuality")
+        ?.slice(1, -1) as SongQuality | null) ?? SongQuality.best,
     imageQuality:
-      (localStorage.getItem("imageQuality") as ImageQuality | null) ?? "medium",
+      (localStorage
+        .getItem("imageQuality")
+        ?.slice(1, -1) as ImageQuality | null) ?? "medium",
   },
 };
 
