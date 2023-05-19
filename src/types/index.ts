@@ -5,9 +5,9 @@ import {
   Chart,
   Langs,
   Modules,
-  PlaylistV2,
+  PlaylistT,
   Trending,
-  TrendingV2,
+  TrendingT,
 } from "./module";
 import { Playlist } from "./playlist";
 import { CResponse } from "./response";
@@ -35,11 +35,11 @@ export type {
   Modules,
   Langs,
   Playlist,
-  PlaylistV2,
+  PlaylistT,
   PlaylistSearch,
   Song,
   SongSearch,
   Trending,
-  TrendingV2,
+  TrendingT,
   CResponse,
 };

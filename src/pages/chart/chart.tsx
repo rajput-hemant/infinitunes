@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import useSwr from "swr";
 
 import { MatchParams } from "@/types/params";
+import { store } from "@/store";
+import { setPlaylists } from "@/store/root-slice";
 import { base64ToStr } from "@/lib/utils";
 import Loading from "@/components/loading";
 import PlaylistHeader from "@/components/playlist-header";
@@ -14,7 +16,17 @@ import Dialog from "@/components/ui/dialog";
 const getChartDetail = async (id?: string) => {
   if (!id) throw new Error("No chart id provided");
 
-  const data = await api.getPlaylistDetails(base64ToStr(id));
+  // check if playlist is already in store
+  const playlistStore = store.getState().root.playlists;
+  const playlist = playlistStore?.find(
+    (playlist) => playlist.id === base64ToStr(id)
+  );
+
+  // if playlist is in store, return it else fetch it
+  const data = playlist ?? (await api.getPlaylistDetails(base64ToStr(id)));
+
+  // update store
+  data && (playlist ?? store.dispatch(setPlaylists([data])));
 
   return data;
 };

@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import useSwr from "swr";
 
 import { MatchParams } from "@/types/params";
+import { store } from "@/store";
+import { setAlbums } from "@/store/root-slice";
 import { base64ToStr, getArtistIds } from "@/lib/utils";
 import ArtistsSidebar from "@/components/artists-sidebar";
 import Loading from "@/components/loading";
@@ -15,7 +17,15 @@ import Dialog from "@/components/ui/dialog";
 const getAlbumDetail = async (id?: string) => {
   if (!id) throw new Error("No album id provided");
 
-  const data = await api.getAlbumDetails(base64ToStr(id));
+  // check if album is already in store
+  const albumStore = store.getState().root.albums;
+  const album = albumStore?.find((album) => album.id === base64ToStr(id));
+
+  // if album is in store, return it else fetch it
+  const data = album ?? (await api.getAlbumDetails(base64ToStr(id)));
+
+  // update store
+  data && (album ?? store.dispatch(setAlbums([data])));
 
   return data;
 };

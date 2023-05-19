@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import { setAudioIsPlaying, setSong } from "@/store/root-slice";
+import { setAudioIsPlaying, setSong } from "@/store/player-slice";
 import { useAppDispatch, useAppSelector, useEventListener } from ".";
 
 // const player = new Audio();
@@ -9,8 +9,9 @@ const usePlayer = () => {
   const player = useRef(new Audio());
   const animationRef = useRef<number>(0);
 
-  const { song, playlist, isPlaying } = useAppSelector(
-    (state) => state.root.player
+  const { song, playlist, isPlaying } = useAppSelector((state) => state.player);
+  const { songStreamingQuality: quality } = useAppSelector(
+    (state) => state.root.preferences
   );
   const dispatch = useAppDispatch();
 
@@ -22,7 +23,12 @@ const usePlayer = () => {
 
   useEffect(() => {
     if (song) {
-      player.current.src = song.downloadUrl[2].link;
+      const streamLink = song.downloadUrl[0].link.replace(
+        "_12.mp4",
+        quality + ".mp4"
+      );
+
+      player.current.src = streamLink;
       player.current.play();
 
       dispatch(setAudioIsPlaying(true));
@@ -101,6 +107,8 @@ const usePlayer = () => {
    */
   const handleVolume = (volume: number) => {
     player.current.volume = volume <= 1 ? volume : volume / 100;
+
+    volume === 0 ? setMute(true) : setMute(false);
   };
 
   /**

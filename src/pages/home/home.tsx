@@ -1,11 +1,11 @@
 import { SwiperSlide } from "swiper/react";
 import useSwr from "swr";
 
+import { getHomeData } from "@/lib/utils";
 import Card from "@/components/card";
 import Loading from "@/components/loading";
 import CSwiper from "@/components/swiper";
 import Center from "@/components/ui/center";
-import { getHomeData } from "./get-home-data";
 
 const Home = () => {
   const { data } = useSwr("/home", getHomeData);

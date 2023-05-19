@@ -3,9 +3,8 @@ import { TbPlayerPlayFilled } from "react-icons/tb";
 import { useNavigate } from "react-router-dom";
 
 import { Album, Playlist, Song } from "@/types";
-import { setSong } from "@/store/root-slice";
+import { setSong } from "@/store/player-slice";
 import {
-  SongQuality,
   clearUrl,
   decodeHtml,
   downloadSong,
@@ -14,12 +13,14 @@ import {
   getImage,
   strToBase64,
 } from "@/lib/utils";
-import { useAppDispatch } from "@/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import { Button } from "@/components/ui/button";
 
 const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
+
+  const { downloadQuality } = useAppSelector((state) => state.root.preferences);
 
   const { id, type, name, image } = item;
 
@@ -43,7 +44,7 @@ const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
     >
       <div className="group/image relative aspect-square w-16 overflow-hidden rounded">
         <img
-          src={getImage(image)}
+          src={getImage(image, "small")}
           alt={name}
           className="object-cover transition-transform duration-300 group-hover/image:scale-105"
         />
@@ -71,7 +72,7 @@ const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => downloadSong(item, SongQuality.best)}
+            onClick={() => downloadSong(item, downloadQuality)}
             className="hover:border-border rounded-full border-transparent"
           >
             <RxDownload size={18} />

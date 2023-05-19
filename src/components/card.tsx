@@ -1,21 +1,23 @@
 import { FaPlay } from "react-icons/fa";
 import { Link, useLocation } from "react-router-dom";
 
-import { Album, Chart, Playlist, PlaylistV2, TrendingV2 } from "@/types";
-import { getSongAsync, setPlaylist } from "@/store/root-slice";
+import { Album, Chart, Playlist, PlaylistT, TrendingT } from "@/types";
+import { getSongAsync, setPlaylist } from "@/store/player-slice";
 import { clearUrl, cn, decodeHtml, getImage, strToBase64 } from "@/lib/utils";
-import { useAppDispatch } from "@/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import { Skeleton } from "./ui/skeleton";
 
 type CardProps = {
   isLink?: boolean;
   className?: string;
-  item: TrendingV2 | Album | Playlist | PlaylistV2 | Chart;
+  item: TrendingT | Album | Playlist | PlaylistT | Chart;
 };
 
 const Card = ({ isLink, className, item }: CardProps) => {
   const { pathname } = useLocation();
   const dispatch = useAppDispatch();
+
+  const { imageQuality } = useAppSelector((state) => state.root.preferences);
 
   // @ts-ignore
   const { type, id, name, title } = item;
@@ -42,7 +44,7 @@ const Card = ({ isLink, className, item }: CardProps) => {
       return typeof item.primaryArtists === "string"
         ? item.primaryArtists
         : item.primaryArtists.map((artist) => artist.name).join(", ");
-    } else if (type === "playlistV2") {
+    } else if (type === "PlaylistT") {
       return item.subtitle;
     }
   };
@@ -50,7 +52,8 @@ const Card = ({ isLink, className, item }: CardProps) => {
   const clickHandler = () => {
     if (type === "song") {
       dispatch(getSongAsync(item.id));
-    } else if (type === "playlist") {
+    } else if (!isLink) {
+      // @ts-ignore
       dispatch(setPlaylist(item.songs));
     }
   };
@@ -69,7 +72,7 @@ const Card = ({ isLink, className, item }: CardProps) => {
         <div className="hover:shadow-primary relative m-1 aspect-square overflow-hidden rounded-md">
           {/* image */}
           <img
-            src={getImage(item.image)}
+            src={getImage(item.image, imageQuality)}
             alt={item.id}
             className="h-full w-full rounded-md object-cover transition-transform duration-300 group-hover:scale-105"
           />
@@ -91,7 +94,7 @@ const Card = ({ isLink, className, item }: CardProps) => {
         {isLink && (
           <div className="flex flex-col p-2">
             {/* title */}
-            <p className="font-inter text-label truncate text-center text-sm font-semibold group-hover:text-black dark:group-hover:text-white">
+            <p className="text-label truncate text-center text-sm font-semibold group-hover:text-black dark:group-hover:text-white">
               {decodeHtml(name ?? title)}
             </p>
 

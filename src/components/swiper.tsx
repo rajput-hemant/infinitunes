@@ -53,9 +53,7 @@ const CSwiper = ({ heading, children }: CSwiperProps) => {
 
   return (
     <div className="relative md:px-4 xl:px-14">
-      <TopographyH2 inter className="pb-4 capitalize">
-        {heading}
-      </TopographyH2>
+      <TopographyH2 className="pb-4 capitalize">{heading}</TopographyH2>
 
       <Swiper
         onBeforeInit={(swiper) => (swiperRef.current = swiper)}

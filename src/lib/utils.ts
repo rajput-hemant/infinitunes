@@ -1,7 +1,10 @@
+import { api } from "@/api/jiosaavn";
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import { Album, AlbumArtist, Image, ImageQuality, Song } from "@/types";
+import { store } from "@/store";
+import { setHomeData } from "@/store/root-slice";
 
 /**
  * Merges the given class names with the tailwind classes
@@ -68,6 +71,27 @@ export const formatTime = (time: number | string) => {
   const seconds = Math.floor(Number(time) % 60);
 
   return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+};
+
+/**
+ * Gets the home data from the store (if available) or from the api
+ * @returns The home data
+ */
+export const getHomeData = async () => {
+  const rootSlice = store.getState().root;
+
+  const homeData = rootSlice.homeData ?? (await api.getHomeData());
+
+  homeData && (rootSlice.homeData ?? store.dispatch(setHomeData(homeData)));
+
+  return (
+    homeData && {
+      trending: [...homeData.trending.albums, ...homeData.trending.songs],
+      albums: homeData.albums,
+      playlists: homeData.playlists,
+      charts: homeData.charts,
+    }
+  );
 };
 
 /**

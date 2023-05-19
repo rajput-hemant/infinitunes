@@ -6,7 +6,7 @@ export type Modules = {
   albums: Album[];
   charts: Chart[];
   trending: Trending;
-  playlists: PlaylistV2[];
+  playlists: PlaylistT[];
 };
 
 export type Langs =
@@ -27,11 +27,11 @@ export type Langs =
   | "odia"
   | "assamese";
 
-export type PlaylistV2 = {
+export type PlaylistT = {
   id: string;
   title: string;
   subtitle: string;
-  type: "playlistV2";
+  type: "PlaylistT";
   image: Image;
   url: string;
   songCount: string;
@@ -51,10 +51,10 @@ export type Trending = {
     | "copyright"
     | "downloadUrl"
   >[];
-  albums: Omit<Album, "songs" | "primaryArtistsId">[];
+  albums: Album[];
 };
 
-export type TrendingV2 =
+export type TrendingT =
   | Omit<
       Song,
       | "primaryArtistsId"
@@ -69,7 +69,7 @@ export type Chart = {
   id: string;
   title: string;
   subtitle: string;
-  type: "playlistV2";
+  type: "PlaylistT";
   image: Image;
   url: string;
   firstname: string;
