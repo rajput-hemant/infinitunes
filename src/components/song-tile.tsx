@@ -15,6 +15,7 @@ import {
 } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "./ui/skeleton";
 
 const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
   const navigate = useNavigate();
@@ -42,15 +43,26 @@ const SongTile = ({ item }: { item: Song | Album | Playlist }) => {
       onClick={onClickHandler}
       className="border-border hover:bg-muted group flex h-[4.5rem] items-center gap-2 truncate rounded-md border px-2 shadow-md active:scale-[1.005] sm:pr-4 md:pr-6"
     >
-      <div className="group/image relative aspect-square w-16 overflow-hidden rounded">
+      <div className="hover:shadow-primary group relative aspect-square w-16 overflow-hidden rounded">
+        {/* image */}
         <img
           src={getImage(image, "small")}
-          alt={name}
-          className="object-cover transition-transform duration-300 group-hover/image:scale-105"
+          alt={id}
+          className="w-full object-cover transition-transform duration-300 group-hover:scale-110"
         />
 
+        {/* skeleton */}
+        <Skeleton className="absolute inset-0 -z-10 h-full w-full" />
+
         {/* play button */}
-        <TbPlayerPlayFilled className="invisible absolute inset-0 grid h-full w-full p-4 group-hover/image:visible" />
+        <div className="invisible absolute inset-0 z-20 grid place-items-center group-hover:visible">
+          <div className="grid aspect-square w-6 place-items-center rounded-full bg-black/50 transition-all duration-200 hover:w-8 hover:bg-black/75">
+            <TbPlayerPlayFilled className="text-white" />
+          </div>
+        </div>
+
+        {/* overlay */}
+        <div className="invisible absolute inset-0 z-10 rounded bg-black/50 group-hover:visible" />
       </div>
 
       {/* name & artists */}
