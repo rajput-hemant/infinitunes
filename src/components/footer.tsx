@@ -16,7 +16,7 @@ const Footer = () => {
           href={siteConfig.links.github}
           className="hover:text-label px-1 underline underline-offset-2"
         >
-          rajput-hemant@github
+          Khushal-ag@github
         </a>
       </span>
     </footer>

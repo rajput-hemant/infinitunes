@@ -2,7 +2,7 @@ export const siteConfig = {
   title: "Infinitunes",
   description:
     "A music streaming app built with React and JioSaavn API (unofficial)",
-  url: "https://infinitunes.vercel.app",
+  url: "https://infinitunes-delta.vercel.app",
 
   nav: [
     { name: "Home", path: "/" },
@@ -12,8 +12,8 @@ export const siteConfig = {
   ],
 
   links: {
-    github: "https://github.com/rajput-hemant/infinitunes",
-    twitter: "https://twitter.com/rajput_hemant01",
-    discord: "https://discord.gg/rajput-hemant#8269",
+    github: "https://github.com/Khushal-ag/infinitunes/tree/khushal",
+    twitter: "https://twitter.com/starkhush5",
+    discord: "https://discord.gg/CrOpid#6875",
   },
 };
