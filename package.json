@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "format:write": "prettier --write \"**/*.{ts,tsx,mdx}\" --cache",
-    "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache"
+    "format:check": "prettier --check \"**/*.{ts,tsx,mdx}\" --cache",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@radix-ui/react-radio-group": "^1.1.2",
@@ -34,6 +35,8 @@
     "tailwindcss": "^3.3.2"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.6.7",
+    "@commitlint/config-conventional": "^17.6.7",
     "@ianvs/prettier-plugin-sort-imports": "^3.7.2",
     "@types/node": "^20.1.1",
     "@types/react": "^18.0.28",
@@ -47,10 +50,12 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
     "eslint-plugin-tailwindcss": "^3.11.0",
+    "lint-staged": "^13.2.3",
     "prettier": "^2.8.8",
     "prettier-plugin-tailwindcss": "^0.2.8",
     "typescript": "^5.0.2",
     "vite": "^4.3.2",
-    "vite-plugin-eslint": "^1.8.1"
+    "vite-plugin-eslint": "^1.8.1",
+    "husky": "^8.0.0"
   }
 }
