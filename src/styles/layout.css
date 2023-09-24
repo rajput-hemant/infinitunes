@@ -1,0 +1,20 @@
+/* https://github.com/jvidalv/nextal/blob/main/src/components/organisms/layout/layout.module.css */
+
+.layout {
+  background-image: radial-gradient(hsla(0, 0%, 84%, 0.25) 1px, transparent 0),
+    radial-gradient(hsla(0, 0%, 65%, 0.2) 1px, transparent 0);
+  background-size: 50px 50px;
+  background-position:
+    0 0,
+    25px 25px;
+  -webkit-animation: slide 2s linear infinite;
+  animation: slide 4s linear infinite;
+}
+
+@keyframes slide {
+  100% {
+    background-position:
+      50px 0,
+      125px 25px;
+  }
+}
