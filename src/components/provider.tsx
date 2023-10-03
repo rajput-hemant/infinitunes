@@ -4,7 +4,6 @@ import { ThemeProvider } from "next-themes";
 import { type ThemeProviderProps } from "next-themes/dist/types";
 
 import { ThemeSwitcher } from "./theme-switcher";
-import { TooltipProvider } from "./ui/tooltip";
 
 type Props = {
   theme?: ThemeProviderProps;
@@ -19,7 +18,7 @@ export function Providers({ children, theme }: Props) {
       enableSystem
       {...theme}
     >
-      <TooltipProvider>{children}</TooltipProvider>
+      {children}
 
       <ThemeSwitcher />
     </ThemeProvider>
