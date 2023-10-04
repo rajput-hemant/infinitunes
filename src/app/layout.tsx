@@ -6,8 +6,10 @@ import { siteConfig } from "@/config/site";
 import { fontSans, incognito, overpass, poppins } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 import { Providers } from "@/components/provider";
+import { Sidebar } from "@/components/sidebar";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { TailwindIndicator } from "@/components/tailwind-indicator";
 
 export const metadata: Metadata = {
   title: {
@@ -74,14 +76,18 @@ const RootLayout = ({ children }: Props) => {
         )}
       >
         <Providers>
-          <div className="relative flex min-h-screen flex-col">
-            <SiteHeader />
+          <SiteHeader />
 
+          <Sidebar className="fixed left-0 top-14 hidden h-full w-1/5 border-r lg:block xl:w-[15%]" />
+
+          <main className="lg:ml-[20%] xl:ml-[15%]">
             {children}
 
             <SiteFooter />
-          </div>
+          </main>
         </Providers>
+
+        <TailwindIndicator />
       </body>
     </html>
   );

@@ -24,9 +24,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "next.config.js",
+    "next.config.mjs",
     "tailwind.config.js",
-    "postcss.config.js"
+    "postcss.config.js",
+    "src/lib/env.mjs"
   ],
   "exclude": ["node_modules"]
 }

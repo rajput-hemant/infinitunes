@@ -7,7 +7,7 @@ import { X } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
-import { Icons } from "@/components/icons";
+import { Icons } from "./icons";
 import { MobileNav } from "./mobile-nav";
 
 type Props = {
@@ -27,7 +27,7 @@ export function MainNav({ items, children }: Props) {
     <div className="flex gap-6 md:gap-10">
       <Link href="/" className="hidden items-center space-x-2 md:flex">
         <span className="hidden font-bold sm:inline-block">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <Icons.Logo className="h-5 w-5" />
 
             <span className="text-lg lowercase">{siteConfig.name}</span>

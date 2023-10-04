@@ -1,3 +1,4 @@
+import { Type } from "@/types";
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -8,4 +9,8 @@ import { twMerge } from "tailwind-merge";
  */
 export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
+};
+
+export const getHref = (url: string, type: Type) => {
+  return `${type}/${url.split("/").slice(4).join("/")}`;
 };
