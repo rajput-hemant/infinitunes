@@ -1,76 +1,117 @@
 "use client";
 
-import { useState } from "react";
+import React from "react";
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
-import { X } from "lucide-react";
+import { MegaMenu } from "@/types";
 
-import { siteConfig } from "@/config/site";
-import { cn } from "@/lib/utils";
-import { Icons } from "./icons";
-import { MobileNav } from "./mobile-nav";
+import { cn, getHref } from "@/lib/utils";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "./ui/navigation-menu";
+import { Separator } from "./ui/separator";
+import { H2, H4, Small } from "./ui/topography";
 
 type Props = {
-  items?: {
-    title: string;
-    href: string;
-    disabled?: boolean;
-  }[];
-  children?: React.ReactNode;
+  megaMenu: MegaMenu;
+  className?: string;
 };
 
-export function MainNav({ items, children }: Props) {
-  const segment = useSelectedLayoutSegment();
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
-
+function MainNav({ className, megaMenu }: Props) {
   return (
-    <div className="flex gap-6 md:gap-10">
-      <Link href="/" className="hidden items-center space-x-2 md:flex">
-        <span className="hidden font-bold sm:inline-block">
-          <div className="flex items-center gap-1">
-            <Icons.Logo className="h-5 w-5" />
+    <NavigationMenu className={className}>
+      <NavigationMenuList>
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>Music</NavigationMenuTrigger>
 
-            <span className="text-lg lowercase">{siteConfig.name}</span>
-          </div>
-        </span>
-      </Link>
+          <NavigationMenuContent className="p-6 md:w-[400px] lg:w-[1000px]">
+            <H2>What&apos;s Hot on Infinitunes</H2>
 
-      {items?.length && (
-        <nav className="hidden gap-6 md:flex">
-          {items?.map(({ title, href, disabled }, index) => (
-            <Link
-              key={index}
-              href={disabled ? "#" : href}
-              className={cn(
-                "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
-                href.startsWith(`/${segment}`)
-                  ? "text-foreground"
-                  : "text-foreground/60",
-                disabled && "cursor-not-allowed opacity-80"
-              )}
-            >
-              {title}
-            </Link>
-          ))}
-        </nav>
-      )}
+            <Separator />
 
-      <button
-        className="flex items-center space-x-2 md:hidden"
-        onClick={() => setShowMobileMenu(!showMobileMenu)}
-      >
-        {showMobileMenu ? (
-          <X className="h-5 w-5" />
-        ) : (
-          <Icons.Logo className="h-5 w-5" />
-        )}
+            <div className="flex w-full space-x-6 p-2 text-sm font-medium">
+              <div className="w-1/3 border-r">
+                <H4 className="py-3 ">New releases</H4>
 
-        <span className="font-bold">Menu</span>
-      </button>
+                {megaMenu.new_releases.map(({ name, url }) => (
+                  <ListItem
+                    key={name}
+                    title={name}
+                    href={getHref(url, "album")}
+                  >
+                    {name}
+                  </ListItem>
+                ))}
+              </div>
 
-      {showMobileMenu && items && (
-        <MobileNav items={items}>{children}</MobileNav>
-      )}
-    </div>
+              <div className="w-1/3 border-r">
+                <H4 className="py-3">Top Playlist</H4>
+
+                {megaMenu.top_playlists.map(({ name, url }) => (
+                  <ListItem
+                    key={name}
+                    title={name}
+                    href={getHref(url, "playlist")}
+                  >
+                    {name}
+                  </ListItem>
+                ))}
+              </div>
+
+              <div className="w-1/3">
+                <H4 className="py-3">Top Artists</H4>
+
+                {megaMenu.top_artists.map(({ name, url }) => (
+                  <ListItem
+                    key={name}
+                    title={name}
+                    href={getHref(url, "artist")}
+                  >
+                    {name}
+                  </ListItem>
+                ))}
+              </div>
+            </div>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <Link href="/podcast" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              Podcasts
+            </NavigationMenuLink>
+          </Link>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
   );
 }
+
+export default MainNav;
+
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, children, ...props }, ref) => {
+  return (
+    <NavigationMenuLink asChild>
+      <a
+        ref={ref}
+        className={cn(
+          "block space-y-1 rounded-md py-2 text-muted-foreground duration-150 hover:text-secondary-foreground",
+          className
+        )}
+        {...props}
+      >
+        <Small className="line-clamp-1">{children}</Small>
+      </a>
+    </NavigationMenuLink>
+  );
+});
+
+ListItem.displayName = "ListItem";

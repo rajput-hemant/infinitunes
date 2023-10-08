@@ -150,3 +150,14 @@ export type Label = {
   };
   available_languages: string[];
 };
+
+export type MegaMenu = {
+  top_artists: MegaMenuItem[];
+  top_playlists: MegaMenuItem[];
+  new_releases: MegaMenuItem[];
+};
+
+type MegaMenuItem = {
+  name: string;
+  url: string;
+};

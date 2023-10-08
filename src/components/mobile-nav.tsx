@@ -1,50 +1,44 @@
 "use client";
 
-import * as React from "react";
 import Link from "next/link";
+import { useSelectedLayoutSegment } from "next/navigation";
+import { Compass, Home, Search, User2 } from "lucide-react";
 
-import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
-import { useLockBody } from "@/hooks/use-lock-body";
-import { Icons } from "@/components/icons";
 
-type Props = {
-  items: {
-    title: string;
-    href: string;
-    disabled?: boolean;
-  }[];
-  children?: React.ReactNode;
-};
+const mobileNavItems = [
+  { label: "Home", icon: Home, href: "/" },
+  { label: "Search", icon: Search, href: "/album" },
+  { label: "Browse", icon: Compass, href: "/browse" },
+  { label: "Login", icon: User2, href: "/login" },
+];
 
-export function MobileNav({ items, children }: Props) {
-  useLockBody();
+const MobileNav = () => {
+  const segment = useSelectedLayoutSegment();
 
   return (
-    <div className="fixed inset-0 top-16 z-50 grid h-[calc(100vh-4rem)] grid-flow-row auto-rows-max overflow-auto p-6 pb-32 shadow-md backdrop-blur-xl animate-in slide-in-from-bottom-80 md:hidden">
-      <div className="relative z-20 grid gap-6 rounded-md border bg-popover p-4 text-popover-foreground shadow-md">
-        <Link href="/" className="flex items-center space-x-2">
-          <Icons.Logo className="h-5 w-5" />
+    <nav className="fixed inset-x-0 bottom-0 z-50 flex h-14 items-center justify-between border-t bg-background lg:hidden">
+      {mobileNavItems.map(({ label, icon: Icon, href }) => {
+        const isActive = href === "/" + (segment ?? "");
+        return (
+          <Link
+            key={label}
+            href={href}
+            className={cn(
+              "flex h-full w-1/4 flex-col items-center justify-center text-center text-muted-foreground duration-700 animate-in slide-in-from-bottom-full",
+              isActive && "text-secondary-foreground"
+            )}
+          >
+            <Icon />
 
-          <span className="font-bold">{siteConfig.name}</span>
-        </Link>
-
-        <nav className="grid grid-flow-row auto-rows-max text-sm">
-          {items.map(({ href, title, disabled }, index) => (
-            <Link
-              key={index}
-              href={disabled ? "#" : href}
-              className={cn(
-                "flex w-full items-center rounded-md p-2 text-sm font-medium hover:underline",
-                disabled && "cursor-not-allowed opacity-60"
-              )}
-            >
-              {title}
-            </Link>
-          ))}
-        </nav>
-        {children}
-      </div>
-    </div>
+            <span className="text-xs font-semibold duration-200 animate-in slide-in-from-bottom-1/2">
+              {label}
+            </span>
+          </Link>
+        );
+      })}
+    </nav>
   );
-}
+};
+
+export default MobileNav;

@@ -19,7 +19,7 @@ export type Rights = {
   reason: unknown;
 };
 
-export type Langs =
+export type Lang =
   | "hindi"
   | "english"
   | "punjabi"

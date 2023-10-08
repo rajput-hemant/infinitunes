@@ -1,4 +1,10 @@
-import { CustomResponse, FooterDetails, Langs, Modules } from "@/types";
+import {
+  CustomResponse,
+  FooterDetails,
+  Lang,
+  MegaMenu,
+  Modules,
+} from "@/types";
 
 import { env } from "./env.mjs";
 
@@ -17,20 +23,28 @@ const jioSaavnGetCall = async <T>(
   return data.data;
 };
 
-const getHomeData = async (langs?: Langs[], mini: boolean = true) => {
+const getHomeData = async (langs?: Lang[], mini: boolean = true) => {
   return await jioSaavnGetCall<Modules>("/modules", {
     lang: langs ? langs.join(",") : "",
     mini: `${mini}`,
   });
 };
 
-const getFooterDetails = async (langs?: Langs[]) => {
+const getFooterDetails = async (langs?: Lang[]) => {
   return await jioSaavnGetCall<FooterDetails>("/get/footer-details", {
     lang: langs ? langs.join(",") : "hindi",
   });
 };
 
+export async function getMegaMenu(entity = false, lang?: Lang[]) {
+  return await jioSaavnGetCall<MegaMenu>("/get/mega-menu", {
+    entity: `${entity}`,
+    lang: lang?.join(",") ?? "",
+  });
+}
+
 export const api = {
   getHomeData,
   getFooterDetails,
+  getMegaMenu,
 };

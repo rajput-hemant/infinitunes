@@ -5,13 +5,13 @@ import { useTheme } from "next-themes";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
-export function ThemeToggle() {
+function ThemeToggle() {
   const { setTheme, theme } = useTheme();
 
   return (
     <Button
-      variant="ghost"
       size="icon"
+      variant="outline"
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
     >
       <Icons.Sun
@@ -27,3 +27,5 @@ export function ThemeToggle() {
     </Button>
   );
 }
+
+export default ThemeToggle;

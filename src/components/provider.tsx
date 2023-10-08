@@ -4,13 +4,14 @@ import { ThemeProvider } from "next-themes";
 import { type ThemeProviderProps } from "next-themes/dist/types";
 
 import { ThemeSwitcher } from "./theme-switcher";
+import { Toaster } from "./ui/toaster";
 
 type Props = {
   theme?: ThemeProviderProps;
   children: React.ReactNode;
 };
 
-export function Providers({ children, theme }: Props) {
+export default function Providers({ children, theme }: Props) {
   return (
     <ThemeProvider
       attribute="class"
@@ -20,6 +21,7 @@ export function Providers({ children, theme }: Props) {
     >
       {children}
 
+      <Toaster />
       <ThemeSwitcher />
     </ThemeProvider>
   );

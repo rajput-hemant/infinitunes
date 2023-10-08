@@ -5,10 +5,11 @@ import type { Metadata } from "next";
 import { siteConfig } from "@/config/site";
 import { fontSans, incognito, overpass, poppins } from "@/lib/fonts";
 import { cn } from "@/lib/utils";
-import { Providers } from "@/components/provider";
-import { Sidebar } from "@/components/sidebar";
-import { SiteFooter } from "@/components/site-footer";
-import { SiteHeader } from "@/components/site-header";
+import Player from "@/components/player";
+import Providers from "@/components/provider";
+import Sidebar from "@/components/sidebar";
+import SiteFooter from "@/components/site-footer";
+import SiteHeader from "@/components/site-header";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 
 export const metadata: Metadata = {
@@ -80,11 +81,13 @@ const RootLayout = ({ children }: Props) => {
 
           <Sidebar className="fixed left-0 top-14 hidden h-full w-1/5 border-r lg:block xl:w-[15%]" />
 
-          <main className="lg:ml-[20%] xl:ml-[15%]">
+          <main className="pb-36 lg:ml-[20%] lg:pb-20 xl:ml-[15%]">
             {children}
 
             <SiteFooter />
           </main>
+
+          <Player />
         </Providers>
 
         <TailwindIndicator />

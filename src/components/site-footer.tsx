@@ -1,8 +1,8 @@
 import { siteConfig } from "@/config/site";
 
-export function SiteFooter() {
+export default function SiteFooter() {
   return (
-    <footer className="w-full py-6 md:px-8 md:py-0">
+    <footer className="w-full text-center text-muted-foreground lg:ml-[-8%] lg:py-6">
       &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
     </footer>
   );
