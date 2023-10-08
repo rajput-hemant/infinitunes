@@ -7,6 +7,10 @@ jobs:
     name: Run Type Check, Linters & Tests
     runs-on: ubuntu-latest
 
+    env:
+      JIOSAAVN_API_URL: http://localhost:3000
+      NEXT_PUBLIC_JIOSAAVN_API_URL: http://localhost:3000
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3

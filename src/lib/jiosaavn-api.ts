@@ -10,7 +10,7 @@ import { env } from "./env.mjs";
 const jioSaavnGetCall = async <T>(
   path: string,
   query?: Record<string, string>
-): Promise<T | undefined> => {
+): Promise<T> => {
   const url = new URL(path, env.JIOSAAVN_API_URL);
   url.search = new URLSearchParams(query).toString();
 
@@ -19,7 +19,7 @@ const jioSaavnGetCall = async <T>(
 
   if (!response.ok) throw new Error(data.message);
 
-  return data.data;
+  return data.data!;
 };
 
 const getHomeData = async (langs?: Lang[], mini: boolean = true) => {
