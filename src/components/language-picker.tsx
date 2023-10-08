@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronDown, Languages } from "lucide-react";
 
 import { Lang } from "@/types";
+import { languages } from "@/config/languages";
 import { cn } from "@/lib/utils";
 import { useConfig } from "@/hooks/use-config";
 import { Button, buttonVariants } from "./ui/button";
@@ -18,26 +19,7 @@ import { Toggle } from "./ui/toggle";
 import { Large, Muted } from "./ui/topography";
 import { useToast } from "./ui/use-toast";
 
-const LANGUAGES = [
-  "Hindi",
-  "English",
-  "Punjabi",
-  "Tamil",
-  "Telugu",
-  "Marathi",
-  "Gujarati",
-  "Bengali",
-  "Kannada",
-  "Bhojpuri",
-  "Malayalam",
-  "Urdu",
-  "Haryanvi",
-  "Rajasthani",
-  "Odia",
-  "Assamese",
-] as const;
-
-const LanguageSelector = () => {
+const LanguagePicker = () => {
   const { toast } = useToast();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -101,7 +83,7 @@ const LanguageSelector = () => {
         </DropdownMenuLabel>
 
         <div className="grid grid-cols-2">
-          {LANGUAGES.map((l) => {
+          {languages.map((l) => {
             const lang = l.toLowerCase() as Lang;
 
             return (
@@ -129,4 +111,4 @@ const LanguageSelector = () => {
   );
 };
 
-export default LanguageSelector;
+export default LanguagePicker;

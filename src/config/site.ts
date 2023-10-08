@@ -11,11 +11,6 @@ export const siteConfig = {
     name: "rajput-hemant",
     url: "https://github.com/rajput-hemant",
   },
-
-  mainNav: [
-    { title: "Music", href: "/" },
-    { title: "Podcasts", href: "/podcasts" },
-  ],
 };
 
 export type SiteConfig = typeof siteConfig;

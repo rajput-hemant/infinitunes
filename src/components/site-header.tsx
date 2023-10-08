@@ -3,7 +3,7 @@ import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import { getMegaMenu } from "@/lib/jiosaavn-api";
 import { Icons } from "./icons";
-import LanguageSelector from "./language-selector";
+import LanguagePicker from "./language-picker";
 import MainNav from "./main-nav";
 import MobileNav from "./mobile-nav";
 import SearchMenu from "./search-bar";
@@ -29,11 +29,9 @@ export default async function SiteHeader() {
         <div className="flex flex-1 items-center justify-end gap-2">
           <SearchMenu className="hidden lg:block" />
 
-          <LanguageSelector />
+          <LanguagePicker />
 
-          <Button size="sm" className="hidden lg:flex">
-            Sign In
-          </Button>
+          <Button className="hidden lg:flex">Sign In</Button>
 
           <ThemeToggle />
         </div>

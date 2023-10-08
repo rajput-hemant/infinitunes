@@ -42,8 +42,8 @@ const Player = () => {
 
         <div className="flex w-1/2 justify-end lg:w-1/3 lg:justify-evenly">
           <button>
-            <Repeat strokeWidth={2.5} className="hidden h-7 w-7 lg:block" />
-            {/* <Repeat1 strokeWidth={2.5} className="hidden h-7 w-7 lg:block"/> */}
+            <Repeat strokeWidth={2} className="hidden h-7 w-7 lg:block" />
+            {/* <Repeat1 strokeWidth={2} className="hidden h-7 w-7 lg:block"/> */}
           </button>
 
           <button>
@@ -61,19 +61,23 @@ const Player = () => {
           </button>
 
           <button>
-            <Shuffle strokeWidth={2.5} className="hidden lg:block" />
+            <Shuffle strokeWidth={2.35} className="hidden lg:block" />
           </button>
         </div>
 
         <div className="hidden w-1/3 items-center justify-end gap-4 lg:flex">
           <Muted>0:00/0:00</Muted>
 
-          {/* <VolumeX /> */}
-          {/* <Volume /> */}
-          {/* <Volume1 /> */}
-          <Volume2 strokeWidth={2.5} />
+          <button>
+            {/* <VolumeX /> */}
+            {/* <Volume /> */}
+            {/* <Volume1 /> */}
+            <Volume2 strokeWidth={2} />
+          </button>
 
-          <MoreVertical />
+          <button>
+            <MoreVertical />
+          </button>
         </div>
       </div>
     </div>
