@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Quality, Type } from "@/types";
 import { Play } from "lucide-react";
 
+import { Quality, Type } from "@/types";
 import { cn, getHref } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";

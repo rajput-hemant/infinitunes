@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Lang } from "@/types";
 import { ChevronDown, Languages } from "lucide-react";
 
+import { Lang } from "@/types";
 import { cn } from "@/lib/utils";
 import { useConfig } from "@/hooks/use-config";
 import { Button, buttonVariants } from "./ui/button";

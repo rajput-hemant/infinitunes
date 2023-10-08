@@ -2,8 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { MegaMenu } from "@/types";
 
+import { MegaMenu } from "@/types";
 import { cn, getHref } from "@/lib/utils";
 import {
   NavigationMenu,

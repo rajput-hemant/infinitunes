@@ -10,7 +10,7 @@
     "<THIRD_PARTY_MODULES>",
     "",
     "^types$",
-    "^@/types/(.*)$",
+    "^@/types/?(.*)$",
     "^@/store/?(.*)$",
     "^@/config/(.*)$",
     "^@/lib/(.*)$",

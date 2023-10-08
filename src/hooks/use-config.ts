@@ -1,6 +1,7 @@
-import { Lang, Theme } from "@/types";
 import { createStore, useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
+
+import { Lang, Theme } from "@/types";
 
 type Config = {
   theme: {

@@ -1,6 +1,7 @@
-import { Type } from "@/types";
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
+
+import { Type } from "@/types";
 
 /**
  * Merges the given class names with the tailwind classes
