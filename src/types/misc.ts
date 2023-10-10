@@ -12,6 +12,8 @@ export type Type =
 
 export type Quality = string | { quality: string; link: string }[];
 
+export type ImageQuality = "low" | "medium" | "high";
+
 export type Rights = {
   code: unknown;
   cacheable: unknown;

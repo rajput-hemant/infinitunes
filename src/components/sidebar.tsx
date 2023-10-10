@@ -45,9 +45,10 @@ export default function Sidebar({ className }: SidebarProps) {
       <H3 className="p-4">Playlists</H3>
 
       <div className="mx-4 space-y-2">
-        <Button variant="outline" className="my-2 w-full">
-          <Plus className="mr-2 h-5 w-5" />
-          Create Playlist
+        <Button title="Create Playlist" className="my-2 w-full">
+          <Plus className="mr-1 h-4 w-4" />
+
+          <span className="truncate">Create Playlist</span>
         </Button>
 
         <Muted>You need to be logged in to create a playlist.</Muted>

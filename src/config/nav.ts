@@ -22,7 +22,7 @@ export const sidebarNav: NavItem[] = [
   },
   {
     title: "Top Charts",
-    href: "/charts",
+    href: "/chart",
     icon: Disc3,
   },
   {

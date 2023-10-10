@@ -13,16 +13,17 @@ export type Album = {
   header_desc: string;
   language: string;
   play_count: number;
+  duration: number;
   year: number;
   list_count: number;
   list_type: string;
-  artist_map?: ArtistMap;
-  song_count?: number;
-  label_url?: string;
-  copyright_text?: string;
-  is_dolby_content?: boolean;
-  songs?: Song[];
-  modules?: {
+  artist_map: ArtistMap;
+  song_count: number;
+  label_url: string;
+  copyright_text: string;
+  is_dolby_content: boolean;
+  songs: Song[];
+  modules: {
     recommend: {
       source: string;
       position: number;

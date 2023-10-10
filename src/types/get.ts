@@ -48,7 +48,20 @@ export type Chart = {
 };
 
 export type TopShows = A<TopShow> & {
-  trending_podcasts: TrendingPodcasts[];
+  trending_podcasts: {
+    title: string;
+    subtitle: string;
+    source: string;
+    data: {
+      id: string;
+      name: string;
+      subtitle: string;
+      type: "show";
+      image: Quality;
+      url: string;
+      explicit: boolean;
+    }[];
+  };
 };
 
 export type TopShow = {
@@ -64,24 +77,7 @@ export type TopShow = {
   badge: string;
 };
 
-export type TrendingPodcasts = {
-  items: {
-    id: string;
-    name: string;
-    subtitle: string;
-    type: "show";
-    image: Quality;
-    url: string;
-    explicit: boolean;
-  }[];
-  module: {
-    source: string;
-    title: string;
-    subtitle: string;
-  };
-};
-
-export type TopArtist = {
+export type TopArtists = {
   id: string;
   name: string;
   image: Quality;
