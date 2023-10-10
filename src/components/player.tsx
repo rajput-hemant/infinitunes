@@ -13,7 +13,7 @@ const Player = () => {
           <SliderRange />
         </SliderTrack>
 
-        <SliderThumb className="h-4 w-4 cursor-pointer" />
+        <SliderThumb className="hidden h-4 w-4 cursor-pointer lg:block" />
       </Slider>
 
       <div className="flex items-center px-4 pt-3 lg:px-4">

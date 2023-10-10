@@ -1,12 +1,11 @@
 import { getHomeData } from "@/lib/jiosaavn-api";
-import { cn, rethrow } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ItemCard } from "@/components/item-card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { H2, Muted } from "@/components/ui/topography";
 
 const HomePage = async () => {
-  const homedata =
-    (await getHomeData()) ?? rethrow("Failed to fetch home data");
+  const homedata = await getHomeData();
 
   return (
     <div className="py-4 lg:p-4">

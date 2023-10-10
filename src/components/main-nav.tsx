@@ -27,7 +27,9 @@ function MainNav({ className, megaMenu }: Props) {
     <NavigationMenu className={className}>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>Music</NavigationMenuTrigger>
+          <Link href="/">
+            <NavigationMenuTrigger>Music</NavigationMenuTrigger>
+          </Link>
 
           <NavigationMenuContent className="p-6 md:w-[400px] lg:w-[1000px]">
             <H2>What&apos;s Hot on Infinitunes</H2>
