@@ -1,16 +1,19 @@
 import Link from "next/link";
 
-import { Song } from "@/types";
-import { formatDuration, getHref } from "@/lib/utils";
+import { Episode, Song } from "@/types";
+import { cn, formatDuration, getHref } from "@/lib/utils";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 
 type Props = {
-  songs: Song[];
-};
+  songs: (Song | Episode)[];
+} & React.HTMLAttributes<HTMLDivElement>;
 
-const SongList = ({ songs }: Props) => {
+const SongList = ({ songs, className, ...props }: Props) => {
   return (
-    <div className="space-y-2 text-muted-foreground">
+    <div
+      className={cn("space-y-2 text-muted-foreground", className)}
+      {...props}
+    >
       {songs.map((song, i) => (
         <div
           key={song.id}

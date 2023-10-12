@@ -15,7 +15,8 @@ export default async function SiteFooter() {
   return (
     <footer className="w-full">
       <Separator />
-      <div className="mx-auto my-4 flex list-none gap-4 overflow-x-scroll px-4 md:justify-evenly">
+
+      <div className="mx-auto my-4 flex list-none gap-4 overflow-x-scroll px-10 md:justify-between">
         <div className="min-w-fit">
           <Small>Top Artist</Small>
 
@@ -34,7 +35,7 @@ export default async function SiteFooter() {
         <div className="min-w-fit">
           <Small>Top Actors</Small>
 
-          <ul className="my-2">
+          <ul className="my-2 w-fit space-y-1">
             {actor.map(({ id, title, action }) => (
               <li
                 key={id}
@@ -77,14 +78,16 @@ export default async function SiteFooter() {
         <div className="min-w-fit">
           <Small>Top Playlists</Small>
 
-          {playlist.map(({ id, title, action }) => (
-            <li
-              key={id}
-              className="text-xs text-muted-foreground hover:text-secondary-foreground"
-            >
-              <Link href={action}>{title}</Link>
-            </li>
-          ))}
+          <ul className="mt-2 w-fit space-y-1">
+            {playlist.map(({ id, title, action }) => (
+              <li
+                key={id}
+                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+              >
+                <Link href={action}>{title}</Link>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="min-w-fit">
@@ -107,26 +110,74 @@ export default async function SiteFooter() {
 
       <Separator />
 
-      <P className="mt-2 text-center text-sm text-muted-foreground lg:px-10">
-        This website is not affiliated with JioSaavn. All trademarks and
-        copyrights belong to their respective owners. All media, images, and
-        songs are the property of their respective owners. This website is for
-        educational purposes only.
-      </P>
+      <div className="my-4 flex flex-col items-center justify-center gap-1 lg:ml-[-15%]">
+        <P className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground">
+          <span className="text-base font-semibold text-primary">
+            infinitunes
+          </span>{" "}
+          is not affiliated with JioSaavn. All trademarks and copyrights belong
+          to their respective owners. All media, images, and songs are the
+          property of their respective owners. This site is for educational
+          purposes only.
+        </P>
 
-      <div className="my-4 flex flex-col items-center justify-center gap-2">
         <span className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} {siteConfig.name}.
+          Made with ❤️ using{" "}
+          <a
+            href="https://nextjs.org"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline-offset-2 hover:underline"
+          >
+            Next.js 13
+          </a>{" "}
+          &{" "}
+          <a
+            href="https://ui.shadcn.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline-offset-2 hover:underline"
+          >
+            shadcn/ui
+          </a>
         </span>
 
-        <a
-          href={siteConfig.links.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={buttonVariants({ variant: "ghost" })}
-        >
-          <Icons.GitHub className="h-5 w-5" />
-        </a>
+        <span className="text-sm text-muted-foreground">
+          Released under the MIT License.
+        </span>
+
+        <span className="text-sm text-muted-foreground">
+          Copyright &copy; {new Date().getFullYear()} {siteConfig.name}.
+        </span>
+
+        <div className="flex">
+          <a
+            href={siteConfig.links.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "ghost", size: "icon" })}
+          >
+            <Icons.GitHub className="h-5 w-5" />
+          </a>
+
+          <a
+            href={siteConfig.links.twitter}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "ghost", size: "icon" })}
+          >
+            <Icons.Twitter className="h-5 w-5" />
+          </a>
+
+          <a
+            href={siteConfig.links.twitter}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonVariants({ variant: "ghost", size: "icon" })}
+          >
+            <Icons.Discord className="h-5 w-5" />
+          </a>
+        </div>
       </div>
     </footer>
   );

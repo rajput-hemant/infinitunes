@@ -6,6 +6,7 @@ export const siteConfig = {
   links: {
     twitter: "https://twitter.com/rajput_hemant01",
     github: "https://github.com/rajput-hemant/infinitunes",
+    discord: "https://discord.gg/rajput-hemant#8269",
   },
   me: {
     name: "rajput-hemant",

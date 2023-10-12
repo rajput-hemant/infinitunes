@@ -1,5 +1,6 @@
 import {
   Album,
+  Artist,
   Chart,
   CustomResponse,
   FeaturedPlaylists,
@@ -9,6 +10,8 @@ import {
   Modules,
   Playlist,
   Radio,
+  Show,
+  Song,
   TopAlbum,
   TopArtists,
   TopShows,
@@ -142,6 +145,68 @@ export async function getPlaylistRecommendations(
     id,
     lang: lang?.join(",") ?? "",
     mini: `${mini}`,
+  });
+}
+
+/* -----------------------------------------------------------------------------------------------
+ * /artist route
+ * -----------------------------------------------------------------------------------------------*/
+
+/**
+ * Get artist details from JioSaavn API.
+ *
+ * @param token - Artist token
+ * @param mini - Whether to fetch mini data
+ * @returns Promise resolving to artist details
+ */
+export async function getArtistDetails(token: string, mini = true) {
+  return await jioSaavnGetCall<Artist>("/artist", {
+    token,
+    mini: `${mini}`,
+  });
+}
+
+export async function getArtistTopSongs(
+  artistId: string,
+  songId: string,
+  page = 1,
+  cat: "latest" | "alphabetical" | "popularity" = "latest",
+  sort: "asc" | "des" = "asc",
+  lang?: Lang,
+  mini = true
+) {
+  return await jioSaavnGetCall<Song[]>("/artist/top-songs", {
+    artist_id: artistId,
+    song_id: songId,
+    page: `${page}`,
+    cat,
+    sort,
+    lang: lang ?? "hindi,english",
+    mini: `${mini}`,
+  });
+}
+
+/* -----------------------------------------------------------------------------------------------
+ * /show route
+ * -----------------------------------------------------------------------------------------------*/
+
+/**
+ * Get details for a show from JioSaavn API.
+ *
+ * @param token - Show token to get details for.
+ * @param season - Season number to get details for. Default is `1`.
+ * @param sort- Sort order of the episodes. Default is `asc`.
+ * @returns Promise resolving to show object.
+ */
+export async function getShowDetails(
+  token: string,
+  season = 1,
+  sort: "asc" | "des" = "asc"
+) {
+  return await jioSaavnGetCall<Show>("/show", {
+    token,
+    season: `${season}`,
+    sort,
   });
 }
 

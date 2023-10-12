@@ -8,6 +8,8 @@ export type Type =
   | "channel"
   | "mix"
   | "show"
+  | "episode"
+  | "season"
   | "label";
 
 export type Quality = string | { quality: string; link: string }[];

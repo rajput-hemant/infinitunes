@@ -65,7 +65,7 @@ const PodcastsPage = async ({ searchParams: { page = "1" } }: Props) => {
 
       <div className="flex items-center justify-between gap-10">
         <Link
-          href={`/podcast?page=${+page - (page === "1" ? 0 : 1)}`}
+          href={`/show?page=${+page - (page === "1" ? 0 : 1)}`}
           className={cn(
             buttonVariants({ variant: "outline" }),
             "group w-full font-bold",
@@ -82,7 +82,7 @@ const PodcastsPage = async ({ searchParams: { page = "1" } }: Props) => {
         </Link>
 
         <Link
-          href={`/podcast?page=${+page + (last_page ? 0 : 1)}`}
+          href={`/show?page=${+page + (last_page ? 0 : 1)}`}
           className={cn(
             buttonVariants({ variant: "outline" }),
             "group w-full font-bold",

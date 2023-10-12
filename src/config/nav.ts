@@ -32,7 +32,7 @@ export const sidebarNav: NavItem[] = [
   },
   {
     title: "Podcasts",
-    href: "/podcast",
+    href: "/show",
     icon: Podcast,
   },
   {

@@ -5,5 +5,6 @@ export * from "./misc";
 export * from "./modules";
 export * from "./playlist";
 export * from "./response";
+export * from "./show";
 export * from "./song";
 export * from "./theme";
