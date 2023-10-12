@@ -12,7 +12,7 @@
   <img src="./public/images/logo1920.png" width="300px" alt="infinitunes">
 </picture>
 
-### [WIP] 🎵 A Simple Music Player Web App made with ⚛️ React + Vite + Tailwind and Redux Toolkit.
+### [WIP] 🎵 A Simple Music Player Web App made with ▲ Next.js 13 + Tailwind.
 
 ![](./public/images/screenshot.png)
 
@@ -32,50 +32,15 @@ cd infinitunes
 - Rename **.env.example** => **.env.local**, add your own [**JioSaavn API**][api] Endpoint.
 
 ```js
-VITE_JIOSAAVN_ENDPOINT = "https://saavn.me" <- change this
+JIOSAAVN_API_URL=https://jiosaavn-api-ts.vercel.app # <- change this to your own API URL
+NEXT_PUBLIC_JIOSAAVN_API_URL=https://jiosaavn-api-ts.vercel.app # <- change this to your own API URL
 ```
 
 - Run the app with VS Code or the command line:
 
 ```
-pnpm i
-pnpm dev
-```
-
-### Build and Run the Docker Image
-
-> **Warning**
-> You need to have [Docker](https://docs.docker.com/get-docker/) installed on your system.
-> You might need to run the following commands with `sudo` depending on your system.
-
-- Start Docker daemon (Skip if already running)
-
-```
-sudo dockerd
-```
-
-- Build the image
-
-```
-docker build -t infinitunes .
-```
-
-- Run the image
-
-```
-docker run -p 4173:4173 infinitunes
-```
-
-- Open http://localhost:4173 to view it in the browser.
-
-- Stop the container
-
-```
-docker ps
-```
-
-```
-docker stop <container-id>
+bun i
+bun dev
 ```
 
 <div align = center>
@@ -86,7 +51,7 @@ You can deploy your own hosted version of `infinitunes`. Just click the link bel
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rajput-hemant/infinitunes&env=VITE_JIOSAAVN_ENDPOINT&project-name=infinitunes&repo-name=infinitunes)
 
-#### [JioSaavn API (Unofficial)][api] by [Sumit Kolhe][cc], [API Docs][api-docs]
+#### [JioSaavn API (Unofficial)][api] by [me][cc], [API Docs][api-docs]
 
 ## Contributors:
 
@@ -114,6 +79,6 @@ _Note: It may take up to 24h for the [contrib.rocks][contrib-rocks] plugin to up
 
 <!------------------------------------{ api }----------------------------------->
 
-[api]: https://github.com/sumitkolhe/jiosaavn-api
-[api-docs]: https://docs.saavn.me
-[cc]: https://github.com/sumitkolhe
+[api]: https://github.com/rajput-hemant/jiosaavn-api-ts
+[api-docs]: https://docs-jiosaavn.netlify.app/
+[cc]: https://github.com/rajput-hemant
