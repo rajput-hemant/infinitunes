@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# loop through each jpg file in the directory
+for file in *.jpg
+do
+  # extract the name between "default-" and "-500x500.jpg"
+  name=$(echo "$file" | sed -n 's/^default-\(.*\)-500x500\.jpg$/\1/p')
+  
+  # check if the name is not empty
+  if [[ -n "$name" ]]; then
+    # rename the file to "$name.jpg"
+    mv "$file" "$name.jpg"
+  fi
+done
