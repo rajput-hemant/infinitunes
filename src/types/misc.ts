@@ -40,3 +40,7 @@ export type Lang =
   | "rajasthani"
   | "odia"
   | "assamese";
+
+export type Category = "latest" | "alphabetical" | "popularity";
+
+export type Sort = "asc" | "desc";

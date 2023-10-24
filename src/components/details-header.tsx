@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MoreVertical } from "lucide-react";
+import { BadgeCheck, Heart, MoreVertical } from "lucide-react";
 
 import { Album, Artist, Playlist, ShowDetails } from "@/types";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
@@ -22,10 +22,10 @@ type Props = {
 
 const DetailsHeader = ({ item }: Props) => {
   return (
-    <div className="flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
+    <div className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
-          "relative aspect-square w-64 min-w-fit overflow-hidden rounded-md border p-1 shadow-xl",
+          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-2xl dark:shadow-black md:w-64",
           item.type === "artist" && "rounded-full"
         )}
       >
@@ -34,16 +34,30 @@ const DetailsHeader = ({ item }: Props) => {
           width={200}
           height={200}
           alt={item.name}
-          className="h-full w-full rounded-md object-cover"
+          className={cn(
+            "h-full w-full rounded-md object-cover",
+            item.type === "artist" && "scale-105"
+          )}
         />
 
         <Skeleton className="absolute inset-0 -z-10" />
       </div>
 
       <div className="flex flex-col items-center justify-center font-medium lg:items-start lg:gap-2">
-        {item.type !== "artist" && item.explicit && <Badge>Explicit</Badge>}
+        <H2 className="line-clamp-3 flex items-center">
+          {item.type !== "artist" && item.explicit && (
+            <Badge className="mr-2 rounded-sm px-1.5">E</Badge>
+          )}
 
-        <H2 className="line-clamp-3">{item.name}</H2>
+          {item.name}
+
+          {"is_verified" in item && item.is_verified && (
+            <BadgeCheck
+              fill="#3b82f6"
+              className="ml-2 inline-block text-background"
+            />
+          )}
+        </H2>
 
         <div className="text-sm text-muted-foreground">
           {item.type === "album" && (

@@ -4,6 +4,7 @@ import "./src/lib/env.mjs";
 const config = {
   images: {
     domains: ["c.saavncdn.com", "c.sop.saavncdn.com"],
+    unoptimized: true,
   },
   experimental: {
     swcPlugins: [["@swc-jotai/react-refresh", {}]],

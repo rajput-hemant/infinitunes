@@ -1,6 +1,8 @@
 import {
   Album,
   Artist,
+  ArtistSongsOrAlbums,
+  Category,
   Chart,
   CustomResponse,
   FeaturedPlaylists,
@@ -12,6 +14,7 @@ import {
   Radio,
   Show,
   Song,
+  Sort,
   TopAlbum,
   TopArtists,
   TopShows,
@@ -162,16 +165,56 @@ export async function getPlaylistRecommendations(
 export async function getArtistDetails(token: string, mini = true) {
   return await jioSaavnGetCall<Artist>("/artist", {
     token,
+    n_song: "50",
+    n_album: "50",
     mini: `${mini}`,
   });
+}
+
+export async function getArtistsSongs(
+  id: string,
+  page = 0,
+  cat: Category = "popularity",
+  sort: Sort = "asc",
+  mini = true
+) {
+  return await jioSaavnGetCall<Omit<ArtistSongsOrAlbums, "albums">>(
+    "/artist/songs",
+    {
+      id,
+      page: `${page}`,
+      cat,
+      sort,
+      mini: `${mini}`,
+    }
+  );
+}
+
+export async function getArtistsAlbums(
+  id: string,
+  page = 0,
+  cat: Category = "popularity",
+  sort: Sort = "asc",
+  mini = true
+) {
+  return await jioSaavnGetCall<Omit<ArtistSongsOrAlbums, "albums">>(
+    "/artist/albums",
+    {
+      id,
+      page: `${page}`,
+      cat,
+      sort,
+      mini: `${mini}`,
+    }
+  );
 }
 
 export async function getArtistTopSongs(
   artistId: string,
   songId: string,
   page = 1,
-  cat: "latest" | "alphabetical" | "popularity" = "latest",
-  sort: "asc" | "des" = "asc",
+  cat: Category = "latest",
+  sort: Sort = "asc",
   lang?: Lang,
   mini = true
 ) {
@@ -201,7 +244,7 @@ export async function getArtistTopSongs(
 export async function getShowDetails(
   token: string,
   season = 1,
-  sort: "asc" | "des" = "asc"
+  sort: Sort = "asc"
 ) {
   return await jioSaavnGetCall<Show>("/show", {
     token,

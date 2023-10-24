@@ -1,3 +1,4 @@
+import { Sort } from "@/types";
 import { getShowDetails } from "@/lib/jiosaavn-api";
 import DetailsHeader from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
@@ -6,7 +7,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Blockquote, H3 } from "@/components/ui/topography";
 
 type Props = {
-  searchParams: { sort: "asc" | "des" };
+  searchParams: { sort: Sort };
   params: { slug: [string, number, string] };
 };
 

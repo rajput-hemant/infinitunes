@@ -111,15 +111,18 @@ const AlbumDetailsPage = async ({ params: { slug } }: Props) => {
 
       <ScrollArea>
         <div className="flex space-x-4 pb-4">
-          {album.artist_map.artists?.map(({ id, name, url, type, image }) => (
-            <ItemCard
-              key={id}
-              name={name}
-              url={url}
-              type={type}
-              image={image}
-            />
-          ))}
+          {album.artist_map.artists.map(
+            ({ id, name, url, type, image, role }) => (
+              <ItemCard
+                key={id}
+                name={name}
+                url={url}
+                type={type}
+                image={image}
+                subtitle={role || "Artist"}
+              />
+            )
+          )}
         </div>
 
         <ScrollBar orientation="horizontal" />

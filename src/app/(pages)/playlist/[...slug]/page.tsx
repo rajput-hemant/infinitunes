@@ -88,13 +88,14 @@ const PlaylistDetailsPage = async ({ params: { slug } }: Props) => {
 
       <ScrollArea>
         <div className="flex space-x-4 pb-4">
-          {playlist.artists?.map(({ id, name, url, type, image }) => (
+          {playlist.artists?.map(({ id, name, url, type, image, role }) => (
             <ItemCard
               key={id}
               name={name}
               url={url}
               type={type}
               image={image}
+              subtitle={role}
             />
           ))}
         </div>

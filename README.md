@@ -14,7 +14,7 @@
 
 ### [WIP] 🎵 A Simple Music Player Web App made with ▲ Next.js 13 + Tailwind.
 
-![](./public/images/screenshot.png)
+![](https://graph.org/file/9f7cb6de815f1eb73a576.png)
 
 **[<kbd> <br> &nbsp;**Live Demo**&nbsp; <br> </kbd>][site]**
 

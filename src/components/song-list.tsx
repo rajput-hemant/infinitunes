@@ -21,9 +21,12 @@ const SongList = ({ songs, className, ...props }: Props) => {
         >
           <span className="w-[2%] truncate">{i + 1}</span>
 
-          <span className="w-[45%] truncate group-hover:text-primary">
+          <Link
+            href={getHref(song.url, "song")}
+            className="w-[45%] truncate hover:text-secondary-foreground group-hover:text-primary"
+          >
             {song.name}
-          </span>
+          </Link>
 
           <span className="w-[45%] truncate">
             <ScrollArea className="pb-1">

@@ -48,11 +48,16 @@ export function ItemCard({
             )}
           >
             <Image
-              src={getImageSrc(image, "high")}
+              src={
+                getImageSrc(image, "high") || `/images/placeholder/${type}.jpg`
+              }
               width={200}
               height={200}
               alt={name}
-              className="h-full w-full object-cover duration-300 group-hover:scale-110"
+              className={cn(
+                "h-full w-full object-cover duration-300 group-hover:scale-110",
+                !getImageSrc(image, "high") && "duration-0 dark:invert"
+              )}
             />
 
             <Skeleton className="absolute inset-0 -z-10 h-full w-full hover:scale-110" />

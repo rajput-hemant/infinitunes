@@ -114,8 +114,8 @@ export type ArtistSongsOrAlbums = {
   is_verified: boolean;
   dominant_language: string;
   dominant_type: string;
-  top_songs?: Omit<ArtistTopSongsOrAlbums<Song>, "albums">;
-  top_albums?: Omit<ArtistTopSongsOrAlbums<Album>, "songs">;
+  top_songs: Omit<ArtistTopSongsOrAlbums<Song>, "albums">;
+  top_albums: Omit<ArtistTopSongsOrAlbums<Album>, "songs">;
 };
 
 type Module = {

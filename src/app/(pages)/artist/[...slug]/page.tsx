@@ -1,111 +1,188 @@
-import {
-  getAlbumDetails,
-  getAlbumFromSameYear,
-  getAlbumRecommendations,
-  getArtistDetails,
-  getTrending,
-} from "@/lib/jiosaavn-api";
+import { Category } from "@/types";
+import { getArtistDetails } from "@/lib/jiosaavn-api";
 import DetailsHeader from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
 import SongList from "@/components/song-list";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { H3 } from "@/components/ui/topography";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { H3, Small } from "@/components/ui/topography";
+import ArtistsTabList from "./artists-tab-list";
+import ArtistsTopItems from "./artists-top-items";
+import CategoryFilter from "./category-filter";
+import { TABS } from "./tabs";
 
-type Props = { params: { slug: [string, string] } };
-
-const fetcher = async (token: string) => {
-  const artist = await getArtistDetails(token);
-
-  // const [recommendations, trending, sameYear] = await Promise.all([
-  //   getAlbumRecommendations(artist.id),
-  //   getTrending("artist"),
-  //   getAlbumFromSameYear(artist.year),
-  // ]);
-
-  return {
-    artist,
-    // recommendations,
-    // trending,
-    // sameYear,
-  };
+type Props = {
+  params: { slug: [string, string] };
+  searchParams: { cat?: Category };
 };
 
-enum TABS { // eslint-disable-line no-unused-vars
-  Overview = "Overview", // eslint-disable-line no-unused-vars
-  Songs = "Songs", // eslint-disable-line no-unused-vars
-  Albums = "Albums", // eslint-disable-line no-unused-vars
-  Biography = "Biography", // eslint-disable-line no-unused-vars
-}
+const ArtistDetailsPage = async ({
+  params: { slug },
+  searchParams: { cat },
+}: Props) => {
+  const artist = await getArtistDetails(slug[1]);
+  const path = `/artist/${slug.join("/")}`;
+  let selectedTab: TABS;
 
-const ArtistDetailsPage = async ({ params: { slug } }: Props) => {
-  const { artist } = await fetcher(slug[1]);
+  switch (slug[0].split("-").pop()) {
+    case "songs":
+      selectedTab = TABS.Songs;
+      break;
+    case "albums":
+      selectedTab = TABS.Albums;
+      break;
+    case "bio":
+      selectedTab = TABS.Biography;
+      break;
+    default:
+      selectedTab = TABS.Overview;
+      break;
+  }
+
+  /* navigate on click on tab using <Link/> */
+  // const hrefConstructor = (tab: string) => {
+  //   const suffixMap = {
+  //     [TABS.Overview]: "",
+  //     [TABS.Songs]: "-songs",
+  //     [TABS.Albums]: "-albums",
+  //     [TABS.Biography]: "-bio",
+  //   };
+
+  //   const segment =
+  //     slug[0].replace(/(-songs|-albums|-bio)/, "") +
+  //     suffixMap[tab as keyof typeof TABS];
+
+  //   return `/artist/${segment}/${slug[1]}`;
+  // };
 
   return (
     <>
       {/* artist details */}
       <DetailsHeader item={artist} />
 
-      <Tabs defaultValue={TABS.Overview}>
-        <TabsList className="mb-4">
-          {Object.keys(TABS).map((tab, i) => (
-            <TabsTrigger key={i} value={tab}>
-              {tab}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      <Tabs defaultValue={selectedTab}>
+        <ArtistsTabList showBio={artist.bio.length === 0} />
+        {/* navigate on click on tab using <Link /> */}
+        {/* <TabsList className="mx-auto mb-4 flex w-fit lg:mx-0">
+          {Object.keys(TABS).map((tab, i) => {
+            if (artist.bio.length === 0 && tab === TABS.Biography) return;
+
+            return (
+              <Link key={i} href={hrefConstructor(tab)}>
+                <TabsTrigger value={tab}>{tab}</TabsTrigger>
+              </Link>
+            );
+          })}
+        </TabsList> */}
 
         <Separator />
 
         <TabsContent value={TABS.Overview} className="space-y-4">
           <H3>{artist.modules.top_songs.title}</H3>
-
-          <SongList songs={artist.top_songs} />
+          <SongList songs={artist.top_songs.slice(0, 10)} />
         </TabsContent>
 
-        <TabsContent value={TABS.Songs}></TabsContent>
+        <TabsContent value={TABS.Songs}>
+          <CategoryFilter path={path} category={cat ?? "popularity"} />
 
-        <TabsContent value={TABS.Albums}></TabsContent>
+          <ArtistsTopItems
+            id={artist.id}
+            type="songs"
+            category={cat}
+            initialSongs={artist.top_songs}
+          />
+        </TabsContent>
 
-        <TabsContent value={TABS.Biography}></TabsContent>
+        <TabsContent value={TABS.Albums}>
+          <CategoryFilter path={path} category={cat ?? "popularity"} />
+
+          <ArtistsTopItems
+            id={artist.id}
+            type="albums"
+            category={cat}
+            initialAlbums={artist.top_albums}
+          />
+        </TabsContent>
+
+        <TabsContent value={TABS.Biography} className="max-w-3xl">
+          {artist.bio.map(({ title, text }) => (
+            <>
+              <H3 className="my-4">{title}</H3>
+              <Small className="leading-3">{text}</Small>
+            </>
+          ))}
+        </TabsContent>
       </Tabs>
 
-      {/* song list */}
-      {/* <SongList songs={artist.songs} /> */}
-
-      {/* artist recommendations */}
-      {/* {recommendations.length > 0 && (
-        <>
-          <H3>{artist.modules.recommend.title}</H3>
-
-          <ScrollArea>
-            <div className="flex space-x-4 pb-4">
-              {recommendations.map(
-                ({ id, name, url, subtitle, type, image }) => (
-                  <ItemCard
-                    key={id}
-                    name={name}
-                    url={url}
-                    subtitle={subtitle}
-                    type={type}
-                    image={image}
-                  />
-                )
-              )}
-            </div>
-
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </>
-      )} */}
-
-      {/* trending albums */}
-      {/* <H3>{artist.modules.currently_trending.title}</H3>
-
+      {/* Dedicated Playlists */}
+      <H3>{artist.modules.dedicated_artist_playlist.title}</H3>
       <ScrollArea>
         <div className="flex space-x-4 pb-4">
-          {trending?.map(({ id, name, url, subtitle, type, image }) => (
+          {artist.dedicated_artist_playlist?.map(
+            ({ id, name, url, subtitle, type, image }) => (
+              <ItemCard
+                key={id}
+                name={name}
+                url={url}
+                subtitle={subtitle}
+                type={type}
+                image={image}
+              />
+            )
+          )}
+        </div>
+
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+
+      {/* Featured Playlists */}
+      <H3>{artist.modules.featured_artist_playlist.title}</H3>
+      <ScrollArea>
+        <div className="flex space-x-4 pb-4">
+          {artist.featured_artist_playlist?.map(
+            ({ id, name, url, subtitle, type, image }) => (
+              <ItemCard
+                key={id}
+                name={name}
+                url={url}
+                subtitle={subtitle}
+                type={type}
+                image={image}
+              />
+            )
+          )}
+        </div>
+
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+
+      {/* Artist's Top albums */}
+      <H3>{artist.modules.top_albums.title}</H3>
+      <ScrollArea>
+        <div className="flex space-x-4 pb-4">
+          {artist.top_albums?.map(
+            ({ id, name, url, subtitle, type, image }) => (
+              <ItemCard
+                key={id}
+                name={name}
+                url={url}
+                subtitle={subtitle}
+                type={type}
+                image={image}
+              />
+            )
+          )}
+        </div>
+
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+
+      {/* Artist's Singles*/}
+      <H3>{artist.modules.singles.title}</H3>
+      <ScrollArea>
+        <div className="flex space-x-4 pb-4">
+          {artist.singles?.map(({ id, name, url, subtitle, type, image }) => (
             <ItemCard
               key={id}
               name={name}
@@ -118,46 +195,28 @@ const ArtistDetailsPage = async ({ params: { slug } }: Props) => {
         </div>
 
         <ScrollBar orientation="horizontal" />
-      </ScrollArea> */}
+      </ScrollArea>
 
-      {/* albums from same year */}
-      {/* <H3>{artist.modules.top_albums_from_same_year.title}</H3>
-
+      {/* Latest releases */}
+      <H3>{artist.modules.latest_release.title}</H3>
       <ScrollArea>
         <div className="flex space-x-4 pb-4">
-          {sameYear?.map(({ id, name, url, subtitle, type, image }) => (
-            <ItemCard
-              key={id}
-              name={name}
-              url={url}
-              subtitle={subtitle}
-              type={type}
-              image={image}
-            />
-          ))}
+          {artist.latest_release?.map(
+            ({ id, name, url, subtitle, type, image }) => (
+              <ItemCard
+                key={id}
+                name={name}
+                url={url}
+                subtitle={subtitle}
+                type={type}
+                image={image}
+              />
+            )
+          )}
         </div>
 
         <ScrollBar orientation="horizontal" />
-      </ScrollArea> */}
-
-      {/* artist artist */}
-      {/* <H3>{artist.modules.artists.title}</H3>
-
-      <ScrollArea>
-        <div className="flex space-x-4 pb-4">
-          {artist.artist_map.artists?.map(({ id, name, url, type, image }) => (
-            <ItemCard
-              key={id}
-              name={name}
-              url={url}
-              type={type}
-              image={image}
-            />
-          ))}
-        </div>
-
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea> */}
+      </ScrollArea>
     </>
   );
 };
