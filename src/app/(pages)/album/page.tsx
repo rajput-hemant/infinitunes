@@ -10,6 +10,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { H2, H3 } from "@/components/ui/topography";
 
+export const dynamic = "force-dynamic"; // always fetch on page load
+
 type Props = { searchParams: { page?: string; lang?: Lang } };
 
 const AlbumsPage = async ({ searchParams: { page = "1", lang } }: Props) => {

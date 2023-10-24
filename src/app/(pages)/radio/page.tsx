@@ -5,6 +5,8 @@ import LanguageBar from "@/components/language-bar";
 import { Separator } from "@/components/ui/separator";
 import { H2, H3 } from "@/components/ui/topography";
 
+export const dynamic = "force-dynamic"; // always fetch on page load
+
 type Props = { searchParams: { page?: string; lang?: Lang } };
 
 const RadioPage = async ({ searchParams: { page = "1", lang } }: Props) => {

@@ -8,6 +8,8 @@ import { buttonVariants } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { H2, Muted } from "@/components/ui/topography";
 
+export const dynamic = "force-dynamic"; // always fetch on page load
+
 type Props = { searchParams: { page?: string } };
 
 const PodcastsPage = async ({ searchParams: { page = "1" } }: Props) => {

@@ -10,6 +10,8 @@ import SearchMenu from "./search-bar";
 import ThemeToggle from "./theme-toggle";
 import { Button } from "./ui/button";
 
+export const dynamic = "force-dynamic"; // always fetch on page load
+
 export default async function SiteHeader() {
   const megaMenu = await getMegaMenu();
 

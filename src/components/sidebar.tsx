@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
+import { useSelectedLayoutSegments } from "next/navigation";
 import { Plus } from "lucide-react";
 
 import { sidebarNav } from "@/config/nav";
@@ -12,7 +12,7 @@ import { H3, Muted } from "./ui/topography";
 type SidebarProps = React.HTMLAttributes<HTMLDivElement>;
 
 export default function Sidebar({ className }: SidebarProps) {
-  const segment = useSelectedLayoutSegment();
+  const segment = useSelectedLayoutSegments().pop();
 
   return (
     <aside

@@ -126,7 +126,7 @@ export function Small({
   ...props
 }: React.HTMLAttributes<HTMLElement>) {
   return (
-    <small className={cn("text-sm font-medium", className)} {...props}>
+    <small className={cn("text-sm", className)} {...props}>
       {children}
     </small>
   );

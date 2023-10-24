@@ -3,6 +3,8 @@ import { ItemCard } from "@/components/item-card";
 import { Separator } from "@/components/ui/separator";
 import { H2, H3 } from "@/components/ui/topography";
 
+export const dynamic = "force-dynamic"; // always fetch on page load
+
 const TopArtistsPage = async () => {
   const topArtists = await getTopArtists();
   const heading = "Top Artists";

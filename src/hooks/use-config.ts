@@ -5,7 +5,7 @@ import { Lang, Theme } from "@/types";
 
 type Config = {
   theme: {
-    name: Theme["name"];
+    name: "default" | Theme["name"];
     radius: number;
   };
   languages: Lang[];
@@ -15,7 +15,7 @@ const store = createStore();
 
 const configAtom = atomWithStorage<Config>("config", {
   theme: {
-    name: "zinc",
+    name: "default",
     radius: 0.5,
   },
   languages: ["hindi", "english"],
