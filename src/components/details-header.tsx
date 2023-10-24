@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck, Heart, MoreVertical } from "lucide-react";
 
-import { Album, Artist, Playlist, ShowDetails } from "@/types";
+import { Album, Artist, Label, Playlist, ShowDetails, Song } from "@/types";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -17,7 +17,7 @@ import { Skeleton } from "./ui/skeleton";
 import { H2 } from "./ui/topography";
 
 type Props = {
-  item: Album | Playlist | Artist | ShowDetails;
+  item: Song | Album | Playlist | Artist | ShowDetails | Label;
 };
 
 const DetailsHeader = ({ item }: Props) => {
@@ -26,7 +26,7 @@ const DetailsHeader = ({ item }: Props) => {
       <div
         className={cn(
           "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-2xl dark:shadow-black md:w-64",
-          item.type === "artist" && "rounded-full"
+          (item.type === "artist" || item.type === "label") && "rounded-full"
         )}
       >
         <Image
@@ -45,7 +45,7 @@ const DetailsHeader = ({ item }: Props) => {
 
       <div className="flex flex-col items-center justify-center font-medium lg:items-start lg:gap-2">
         <H2 className="line-clamp-3 flex items-center">
-          {item.type !== "artist" && item.explicit && (
+          {"explicit" in item && item.explicit && (
             <Badge className="mr-2 rounded-sm px-1.5">E</Badge>
           )}
 
@@ -59,20 +59,61 @@ const DetailsHeader = ({ item }: Props) => {
           )}
         </H2>
 
-        <div className="text-sm text-muted-foreground">
+        <div className="space-y-1.5 text-sm text-muted-foreground">
+          {item.type === "song" && (
+            <>
+              <p>
+                <span>
+                  <Link
+                    href={getHref(item.album_url, "album")}
+                    className="hover:text-foreground"
+                  >
+                    {item.album}
+                  </Link>
+                </span>
+                <span> by </span>
+                <span>
+                  {item.artist_map.primary_artists.map(
+                    ({ id, name, url }, i) => (
+                      <Link
+                        key={id}
+                        href={getHref(url, "artist")}
+                        className="hover:text-foreground"
+                      >
+                        {name}
+                        {i !== item.artist_map.primary_artists.length - 1 &&
+                          ", "}
+                      </Link>
+                    )
+                  )}
+                </span>
+              </p>
+
+              <p>
+                <span className="capitalize">{item.type}</span>
+                {" · "}
+                <span>{item.play_count.toLocaleString()} Plays</span>
+                {" · "}
+                <span>{formatDuration(item.duration, "mm:ss")}</span>
+                {" · "}
+                <span className="capitalize">{item.language}</span>
+              </p>
+            </>
+          )}
+
           {item.type === "album" && (
             <>
               <p className="hidden lg:block">
                 <span>
                   by{" "}
-                  {item.artist_map.artists.map((artist, i) => (
+                  {item.artist_map.artists.map(({ id, name, url }, i) => (
                     <Link
-                      key={artist.id}
-                      href={getHref(artist.url, "artist")}
-                      title={artist.name}
+                      key={id}
+                      href={getHref(url, "artist")}
+                      title={name}
                       className="hover:text-foreground"
                     >
-                      {artist.name}
+                      {name}
                       {i !== item.artist_map.artists.length - 1 && ","}
                     </Link>
                   ))}
@@ -88,14 +129,14 @@ const DetailsHeader = ({ item }: Props) => {
               <p className="text-center lg:hidden">
                 <span>
                   by{" "}
-                  {item.artist_map?.artists.map((artist, i) => (
+                  {item.artist_map?.artists.map(({ id, name, url }, i) => (
                     <Link
-                      key={artist.id}
-                      href={getHref(artist.url, "artist")}
-                      title={artist.name}
+                      key={id}
+                      href={getHref(url, "artist")}
+                      title={name}
                       className="hover:text-foreground"
                     >
-                      {artist.name}
+                      {name}
                       {i !== item.artist_map?.artists.length - 1 && ","}
                     </Link>
                   ))}
@@ -140,15 +181,22 @@ const DetailsHeader = ({ item }: Props) => {
               <span>{item.fan_count.toLocaleString()} Listeners</span>
             </p>
           )}
+
+          {(item.type === "song" || item.type === "album") && (
+            <p className="hidden w-fit text-sm text-muted-foreground hover:text-foreground lg:block">
+              <Link href={item.label_url ?? "#"}>{item.copyright_text}</Link>
+            </p>
+          )}
+
+          {item.type === "label" && <p>Record Label</p>}
         </div>
 
-        {item.type === "album" && (
-          <p className="hidden w-fit text-sm text-muted-foreground hover:text-foreground lg:block">
-            <Link href={item.label_url ?? "#"}>{item.copyright_text}</Link>
-          </p>
-        )}
-
-        <div className="mt-3 flex gap-2 lg:mt-6">
+        <div
+          className={cn(
+            "mt-3 flex gap-2 lg:mt-6",
+            item.type === "label" && "hidden"
+          )}
+        >
           <Button className="rounded-full px-10 text-xl font-bold">Play</Button>
 
           <Button size="icon" variant="outline" className="rounded-full">

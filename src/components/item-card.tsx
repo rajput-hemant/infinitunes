@@ -92,7 +92,7 @@ export function ItemCard({
             <Link href={getHref(url, type)}>{name}</Link>
           </H4>
 
-          <span className="w-full truncate text-center text-xs text-secondary-foreground/75">
+          <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground/75">
             {subtitle}
           </span>
         </div>

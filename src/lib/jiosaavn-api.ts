@@ -7,13 +7,16 @@ import {
   CustomResponse,
   FeaturedPlaylists,
   FooterDetails,
+  Label,
   Lang,
+  Lyrics,
   MegaMenu,
   Modules,
   Playlist,
   Radio,
   Show,
   Song,
+  SongObj,
   Sort,
   TopAlbum,
   TopArtists,
@@ -50,6 +53,42 @@ async function jioSaavnGetCall<T>(
  */
 export async function getHomeData(lang?: Lang[], mini = true) {
   return await jioSaavnGetCall<Modules>("/modules", {
+    lang: lang?.join(",") ?? "",
+    mini: `${mini}`,
+  });
+}
+
+/* -----------------------------------------------------------------------------------------------
+ * /song route
+ * -----------------------------------------------------------------------------------------------*/
+
+/**
+ * Get song details from JioSaavn API.
+ * @param token - Song token
+ * @param mini - Whether to fetch mini data
+ * @returns Promise resolving to song details
+ */
+export async function getSongDetails(token: string, mini = false) {
+  return await jioSaavnGetCall<SongObj>("/song", {
+    token,
+    mini: `${mini}`,
+  });
+}
+
+/**
+ * Get song recommendations from JioSaavn API.
+ * @param id - Song ID to get recommendations for
+ * @param lang - language(s) to get data for
+ * @param mini - Whether to get mini data. Default `true`.
+ * @returns Promise resolving to recommended songs
+ */
+export async function getSongRecommendations(
+  id: string,
+  lang?: Lang[],
+  mini = true
+) {
+  return await jioSaavnGetCall<Song[]>("/song/recommend", {
+    id,
     lang: lang?.join(",") ?? "",
     mini: `${mini}`,
   });
@@ -171,6 +210,15 @@ export async function getArtistDetails(token: string, mini = true) {
   });
 }
 
+/**
+ * Get artist Top songs from JioSaavn API.
+ * @param id - Artist ID
+ * @param page - Page number to get
+ * @param cat - Category to sort by
+ * @param sort - Sort order
+ * @param mini - Whether to fetch mini data
+ * @returns Promise resolving to artist top songs
+ */
 export async function getArtistsSongs(
   id: string,
   page = 0,
@@ -190,6 +238,15 @@ export async function getArtistsSongs(
   );
 }
 
+/**
+ * Get artist Top albums from JioSaavn API.
+ * @param id - Artist ID
+ * @param page - Page number to get
+ * @param cat - Category to sort by
+ * @param sort - Sort order
+ * @param mini - Whether to fetch mini data
+ * @returns Promise resolving to artist top albums
+ */
 export async function getArtistsAlbums(
   id: string,
   page = 0,
@@ -209,6 +266,17 @@ export async function getArtistsAlbums(
   );
 }
 
+/**
+ * Get artist(s) song's recommendations from JioSaavn API.
+ * @param artistId - Artist ID(s) to get recommendations for
+ * @param songId - Song ID to get recommendations for
+ * @param page - Page number to get
+ * @param cat - Category to sort by
+ * @param sort - Sort order
+ * @param lang - Language(s) to filter the results by
+ * @param mini - Whether to fetch mini data
+ * @returns
+ */
 export async function getArtistTopSongs(
   artistId: string,
   songId: string,
@@ -382,6 +450,71 @@ export async function getFeaturedRadioStations(
     page: page ?? "1",
     n: "42",
     lang: lang ?? "hindi,english",
+    mini: `${mini}`,
+  });
+}
+
+/**
+ * Get Actor's Top Songs from JioSaavn API.
+ * @param actorID - Actor ID
+ * @param songId - Song ID
+ * @param lang - Language(s) to filter the results by
+ * @param mini -  Whether to fetch mini data
+ * @returns
+ */
+export async function getActorsTopSongs(
+  actorID: string,
+  songId: string,
+  lang: Lang,
+  mini = true
+) {
+  return await jioSaavnGetCall("/get/actor-top-songs", {
+    actor_id: actorID,
+    song_id: songId,
+    lang,
+    mini: `${mini}`,
+  });
+}
+
+/**
+ * Get Lyrics for a song from JioSaavn API.
+ * @param id - Song ID or Lyrics ID
+ * @returns - Promise resolving to Lyrics object
+ */
+export async function getLyrics(id: string) {
+  return await jioSaavnGetCall<Lyrics>("/get/lyrics", { id });
+}
+
+/**
+ * Get details for a label from JioSaavn API.
+ * @param token - Label token
+ * @param p - page number to get
+ * @param n_song - number of songs to get
+ * @param n_album - number of albums to get
+ * @param cat - category to sort by
+ * @param sort - sort order
+ * @param lang - language(s) to filter the results by
+ * @param mini - Whether to fetch mini data
+ * @returns - Promise resolving to Label object
+ */
+export async function getLabelDetails(
+  token: string,
+  p = 0,
+  n_song = 50,
+  n_album = 50,
+  cat: Category = "popularity",
+  sort: Sort = "asc",
+  lang: Lang = "hindi",
+  mini = true
+) {
+  return await jioSaavnGetCall<Label>("/get/label", {
+    token,
+    p: `${p}`,
+    n_song: `${n_song}`,
+    n_album: `${n_album}`,
+    cat,
+    sort,
+    lang,
     mini: `${mini}`,
   });
 }

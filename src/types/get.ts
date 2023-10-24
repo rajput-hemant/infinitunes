@@ -132,6 +132,7 @@ export type Label = {
   id: string;
   name: string;
   image: Quality;
+  type: "label";
   top_songs: {
     songs: Song[];
     total: number;
