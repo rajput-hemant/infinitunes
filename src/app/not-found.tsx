@@ -29,7 +29,7 @@ const Links = [
 
 const NotFound = () => {
   return (
-    <section className="flex h-[calc(100vh-14rem)] flex-col items-center justify-center gap-y-4 lg:ml-[-16%]">
+    <section className="flex h-screen flex-col items-center justify-center gap-y-4">
       <Image
         src="/images/404.png"
         height={300}
@@ -59,7 +59,7 @@ const NotFound = () => {
             </Link>
 
             {i !== Links.length - 1 && (
-              <span className="ml-4 text-muted-foreground">/</span>
+              <span className="text-muted-foreground ml-4">/</span>
             )}
           </>
         ))}

@@ -17,13 +17,13 @@ export default function Error({ error, reset }: Props) {
   }, [error]);
 
   return (
-    <div className="flex h-[calc(100vh-14rem)] flex-col items-center justify-center gap-4 lg:ml-[-16%]">
+    <div className="flex h-screen flex-col items-center justify-center gap-4">
       <Image
         src="/images/searching-duck.gif"
         width={100}
         height={100}
         alt="Searching Duck"
-        className="w-2h-28 h-28 object-cover"
+        className="h-28 w-28 object-cover"
       />
 
       <H1>Something went wrong!</H1>

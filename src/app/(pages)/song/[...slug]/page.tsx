@@ -1,4 +1,6 @@
+import { Lang } from "@/types";
 import {
+  getActorsTopSongs,
   getAlbumDetails,
   getArtistTopSongs,
   getLyrics,
@@ -22,6 +24,9 @@ const fetcher = async (token: string) => {
   const modules = data.modules!;
   const artistsTopSongsParams = modules.songs_by_same_artists.params;
   const actorsTopSongsParams = modules.songs_by_same_actors.params;
+  const isActorPresent = song.artist_map.artists.some(
+    (artist) => artist.role === "starring"
+  );
 
   const [
     lyrics,
@@ -37,12 +42,16 @@ const fetcher = async (token: string) => {
     getTrending("song"),
     getArtistTopSongs(
       artistsTopSongsParams.artist_id,
-      artistsTopSongsParams.song_id
+      artistsTopSongsParams.song_id,
+      artistsTopSongsParams.lang as Lang
     ),
-    getArtistTopSongs(
-      actorsTopSongsParams.actor_id,
-      actorsTopSongsParams.song_id
-    ),
+    isActorPresent
+      ? getActorsTopSongs(
+          actorsTopSongsParams.actor_id,
+          actorsTopSongsParams.song_id,
+          actorsTopSongsParams.lang as Lang
+        )
+      : undefined,
   ]);
 
   return {
@@ -161,7 +170,7 @@ const Page = async ({ params: { slug } }: Props) => {
       )}
 
       {/* songs from same actors */}
-      {trending.length > 0 && (
+      {songsFromSameActors && songsFromSameActors.length > 0 && (
         <>
           <H3>{modules.songs_by_same_actors.title}</H3>
 

@@ -10,7 +10,7 @@ const HomePage = async () => {
   const homedata = await getHomeData();
 
   return (
-    <div className="py-4 lg:p-4">
+    <>
       {Object.entries(homedata).map(([key, section]) => {
         if (!("random_songs_listid" in section || key === "discover"))
           return (
@@ -49,7 +49,7 @@ const HomePage = async () => {
             </div>
           );
       })}
-    </div>
+    </>
   );
 };
 

@@ -21,8 +21,13 @@ const SecondaryNavbar = () => {
   }
 
   return (
-    <nav>
-      <div className="-mb-4 hidden h-full items-center gap-2 lg:flex">
+    <nav
+      className={cn(
+        "hidden border-b",
+        sidebarNav.some((i) => i.href === pathname) && "block"
+      )}
+    >
+      <div className="hidden h-full items-center gap-2 lg:flex">
         {sidebarNav.map(({ title, href }) => {
           const isActive = href === pathname;
 
@@ -30,7 +35,7 @@ const SecondaryNavbar = () => {
             <div
               key={title}
               className={cn(
-                "inline-block h-full border-b-2 border-transparent py-2 hover:border-primary",
+                "hover:border-primary inline-block h-full border-b-2 border-transparent py-2",
                 isActive && "border-primary"
               )}
             >
@@ -75,9 +80,9 @@ const SecondaryNavbar = () => {
                   onClick={toggle}
                   className={cn(
                     buttonVariants({ variant: "ghost" }),
-                    "my-1 flex justify-between text-muted-foreground",
+                    "text-muted-foreground my-1 flex justify-between",
                     href === pathname &&
-                      "bg-secondary font-bold text-secondary-foreground"
+                      "bg-secondary text-secondary-foreground font-bold"
                   )}
                 >
                   <span>
