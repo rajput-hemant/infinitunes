@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-import { H3 } from "@/components/ui/topography";
+import { H3 } from "../ui/topography";
 
 const FormSubHeading = () => {
   const isLoginPage = usePathname() === "/login";

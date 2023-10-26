@@ -6,10 +6,10 @@ import { ArrowLeft } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { getUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import AuthModeToggle from "@/components/auth/auth-mode-toggle";
+import FormSubHeading from "@/components/auth/form-sub-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { H2 } from "@/components/ui/topography";
-import AuthModeToggle from "./auth-mode-toggle";
-import FormSubHeading from "./form-sub-heading";
 
 type Props = { children: React.ReactNode };
 
@@ -55,7 +55,7 @@ async function AuthLayout({ children }: Props) {
       </div>
 
       {/* right half */}
-      <div className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[350px] sm:p-0">
+      <div className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[400px] sm:p-0">
         <Image
           src="/images/logo512.png"
           width={100}

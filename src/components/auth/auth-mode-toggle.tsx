@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "../ui/button";
 
 const AuthModeToggle = () => {
   const isLoginPage = usePathname() === "/login";

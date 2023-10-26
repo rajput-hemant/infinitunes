@@ -13,9 +13,9 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "./ui/navigation-menu";
-import { Separator } from "./ui/separator";
-import { H2, H4, Small } from "./ui/topography";
+} from "../ui/navigation-menu";
+import { Separator } from "../ui/separator";
+import { H2, H4, Small } from "../ui/topography";
 
 type Props = {
   megaMenu: MegaMenu;

@@ -1,8 +1,8 @@
+import SecondaryNavbar from "@/components/navbar/sec-nav";
+import SiteHeader from "@/components/navbar/site-header";
 import Player from "@/components/player";
-import SecondaryNavbar from "@/components/sec-nav";
 import Sidebar from "@/components/sidebar";
 import SiteFooter from "@/components/site-footer";
-import SiteHeader from "@/components/site-header";
 import RouteGuard from "./route-guard";
 
 type Props = {

@@ -7,10 +7,10 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { sidebarNav } from "@/config/nav";
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "./ui/button";
-import { Separator } from "./ui/separator";
-import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "./ui/sheet";
-import { H2, H4 } from "./ui/topography";
+import { Button, buttonVariants } from "../ui/button";
+import { Separator } from "../ui/separator";
+import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "../ui/sheet";
+import { H2, H4 } from "../ui/topography";
 
 const SecondaryNavbar = () => {
   const pathname = usePathname();
