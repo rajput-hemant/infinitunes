@@ -22,7 +22,7 @@ const CategoryFilter = ({ path, category }: Props) => {
         <Link key={key} title={value} href={`${path}?cat=${key}`}>
           <Badge
             className={cn(
-              "bg-primary-foreground p-2 text-primary hover:bg-muted lg:px-4",
+              "bg-primary-foreground text-primary hover:bg-muted p-2 lg:px-4",
               category === key && "!bg-primary text-primary-foreground"
             )}
           >

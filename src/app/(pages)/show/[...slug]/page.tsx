@@ -54,7 +54,7 @@ const ShowDetailsPage = async ({
 
       {/* about */}
       <H3>{modules.show_details.title}</H3>
-      <Blockquote className="max-w-4xl leading-snug text-muted-foreground">
+      <Blockquote className="text-muted-foreground max-w-4xl leading-snug">
         {show_details.description}
       </Blockquote>
     </>

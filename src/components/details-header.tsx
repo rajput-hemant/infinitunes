@@ -54,12 +54,12 @@ const DetailsHeader = ({ item }: Props) => {
           {"is_verified" in item && item.is_verified && (
             <BadgeCheck
               fill="#3b82f6"
-              className="ml-2 inline-block text-background"
+              className="text-background ml-2 inline-block"
             />
           )}
         </H2>
 
-        <div className="space-y-1.5 text-sm text-muted-foreground">
+        <div className="text-muted-foreground space-y-1.5 text-sm">
           {item.type === "song" && (
             <>
               <p>
@@ -183,7 +183,7 @@ const DetailsHeader = ({ item }: Props) => {
           )}
 
           {(item.type === "song" || item.type === "album") && (
-            <p className="hidden w-fit text-sm text-muted-foreground hover:text-foreground lg:block">
+            <p className="text-muted-foreground hover:text-foreground hidden w-fit text-sm lg:block">
               <Link href={item.label_url ?? "#"}>{item.copyright_text}</Link>
             </p>
           )}

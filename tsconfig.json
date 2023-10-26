@@ -25,7 +25,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "next.config.mjs",
-    "tailwind.config.js",
+    "tailwind.config.ts",
     "postcss.config.js",
     "src/lib/env.mjs"
   ],

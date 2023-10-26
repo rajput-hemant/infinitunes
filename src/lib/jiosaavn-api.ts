@@ -280,10 +280,10 @@ export async function getArtistsAlbums(
 export async function getArtistTopSongs(
   artistId: string,
   songId: string,
+  lang: Lang,
   page = 1,
   cat: Category = "latest",
   sort: Sort = "asc",
-  lang?: Lang,
   mini = true
 ) {
   return await jioSaavnGetCall<Song[]>("/artist/top-songs", {
@@ -292,7 +292,7 @@ export async function getArtistTopSongs(
     page: `${page}`,
     cat,
     sort,
-    lang: lang ?? "hindi,english",
+    lang,
     mini: `${mini}`,
   });
 }
@@ -468,7 +468,7 @@ export async function getActorsTopSongs(
   lang: Lang,
   mini = true
 ) {
-  return await jioSaavnGetCall("/get/actor-top-songs", {
+  return await jioSaavnGetCall<Song[]>("/get/actor-top-songs", {
     actor_id: actorID,
     song_id: songId,
     lang,

@@ -24,7 +24,7 @@ export default async function SiteFooter() {
             {artist.map(({ id, title, action }) => (
               <li
                 key={id}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                className="text-muted-foreground hover:text-secondary-foreground text-xs"
               >
                 <Link href={action}>{title}</Link>
               </li>
@@ -39,7 +39,7 @@ export default async function SiteFooter() {
             {actor.map(({ id, title, action }) => (
               <li
                 key={id}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                className="text-muted-foreground hover:text-secondary-foreground text-xs"
               >
                 <Link href={action}>{title}</Link>
               </li>
@@ -52,7 +52,7 @@ export default async function SiteFooter() {
             {sidebarNav.map(({ href, title }) => (
               <li
                 key={title}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                className="text-muted-foreground hover:text-secondary-foreground text-xs"
               >
                 <Link href={href}>{title}</Link>
               </li>
@@ -67,7 +67,7 @@ export default async function SiteFooter() {
             {album.map(({ id, title, action }) => (
               <li
                 key={id}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                className="text-muted-foreground hover:text-secondary-foreground text-xs"
               >
                 <Link href={action}>{title}</Link>
               </li>
@@ -82,7 +82,7 @@ export default async function SiteFooter() {
             {playlist.map(({ id, title, action }) => (
               <li
                 key={id}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                className="text-muted-foreground hover:text-secondary-foreground text-xs"
               >
                 <Link href={action}>{title}</Link>
               </li>
@@ -97,7 +97,7 @@ export default async function SiteFooter() {
             {languages.map((lang) => (
               <li
                 key={lang}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                className="text-muted-foreground hover:text-secondary-foreground text-xs"
               >
                 <Link
                   href={`/album?lang=${lang.toLowerCase()}`}
@@ -111,8 +111,8 @@ export default async function SiteFooter() {
       <Separator />
 
       <div className="my-4 flex flex-col items-center justify-center gap-1 lg:ml-[-15%]">
-        <P className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground">
-          <span className="text-base font-semibold text-primary">
+        <P className="text-muted-foreground mx-auto mt-2 max-w-xl text-center text-sm">
+          <span className="text-primary text-base font-semibold">
             infinitunes
           </span>{" "}
           is not affiliated with JioSaavn. All trademarks and copyrights belong
@@ -121,7 +121,7 @@ export default async function SiteFooter() {
           purposes only.
         </P>
 
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           Made with ❤️ using{" "}
           <a
             href="https://nextjs.org"
@@ -142,11 +142,11 @@ export default async function SiteFooter() {
           </a>
         </span>
 
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           Released under the MIT License.
         </span>
 
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           Copyright &copy; {new Date().getFullYear()} {siteConfig.name}.
         </span>
 

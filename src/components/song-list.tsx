@@ -11,19 +11,19 @@ type Props = {
 const SongList = ({ songs, className, ...props }: Props) => {
   return (
     <div
-      className={cn("space-y-2 text-muted-foreground", className)}
+      className={cn("text-muted-foreground space-y-2", className)}
       {...props}
     >
       {songs.map((song, i) => (
         <div
           key={song.id}
-          className="group flex h-12 w-full cursor-pointer items-center rounded-md border px-10 text-sm font-medium shadow transition-shadow duration-150 hover:bg-secondary hover:shadow-md"
+          className="hover:bg-secondary group flex h-12 w-full cursor-pointer items-center rounded-md border px-10 text-sm font-medium shadow transition-shadow duration-150 hover:shadow-md"
         >
           <span className="w-[2%] truncate">{i + 1}</span>
 
           <Link
             href={getHref(song.url, "song")}
-            className="w-[45%] truncate hover:text-secondary-foreground group-hover:text-primary"
+            className="hover:text-secondary-foreground group-hover:text-primary w-[45%] truncate"
           >
             {song.name}
           </Link>

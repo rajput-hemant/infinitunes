@@ -2,13 +2,14 @@ import Link from "next/link";
 
 import { siteConfig } from "@/config/site";
 import { getMegaMenu } from "@/lib/jiosaavn-api";
+import { cn } from "@/lib/utils";
 import { Icons } from "./icons";
 import LanguagePicker from "./language-picker";
 import MainNav from "./main-nav";
 import MobileNav from "./mobile-nav";
 import SearchMenu from "./search-bar";
 import ThemeToggle from "./theme-toggle";
-import { Button } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 
 export const dynamic = "force-dynamic"; // always fetch on page load
 
@@ -16,7 +17,7 @@ export default async function SiteHeader() {
   const megaMenu = await getMegaMenu();
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background">
+    <header className="bg-background sticky top-0 z-50 w-full border-b">
       <div className="container flex h-14 items-center space-x-4">
         <Link href="/" className="flex items-center">
           <div className="flex items-center gap-1 font-bold">
@@ -33,7 +34,12 @@ export default async function SiteHeader() {
 
           <LanguagePicker />
 
-          <Button className="hidden lg:flex">Sign In</Button>
+          <Link
+            href="/login"
+            className={cn(buttonVariants(), "hidden lg:flex")}
+          >
+            Sign In
+          </Link>
 
           <ThemeToggle />
         </div>

@@ -105,7 +105,7 @@ const ListItem = React.forwardRef<
       <a
         ref={ref}
         className={cn(
-          "block space-y-1 rounded-md py-2 text-muted-foreground duration-150 hover:text-secondary-foreground",
+          "text-muted-foreground hover:text-secondary-foreground block space-y-1 rounded-md py-2 duration-150",
           className
         )}
         {...props}

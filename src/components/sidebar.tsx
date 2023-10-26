@@ -17,7 +17,7 @@ export default function Sidebar({ className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "p-4 animate-in slide-in-from-left-full [animation-duration:500ms]",
+        "animate-in slide-in-from-left-full p-4 [animation-duration:500ms]",
         className
       )}
     >
@@ -32,8 +32,8 @@ export default function Sidebar({ className }: SidebarProps) {
             href={href}
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "my-1 flex justify-start text-muted-foreground",
-              isActive && "bg-secondary font-bold text-secondary-foreground"
+              "text-muted-foreground my-1 flex justify-start",
+              isActive && "bg-secondary text-secondary-foreground font-bold"
             )}
           >
             <Icon className="mr-2 h-5 w-5" />

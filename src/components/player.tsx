@@ -7,7 +7,7 @@ import { Muted } from "./ui/topography";
 
 const Player = () => {
   return (
-    <div className="fixed inset-x-0 bottom-14 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0">
+    <div className="bg-background animate-in slide-in-from-bottom-full fixed inset-x-0 bottom-14 h-20 [animation-duration:500ms] lg:bottom-0">
       <Slider>
         <SliderTrack className="h-1 cursor-pointer">
           <SliderRange />

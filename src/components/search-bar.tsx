@@ -43,7 +43,7 @@ function SearchMenu({ className }: Props) {
 
         <span className="sr-only">Search</span>
 
-        <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 lg:flex">
+        <kbd className="bg-muted pointer-events-none ml-auto hidden h-6 select-none items-center gap-1 rounded border px-1.5 font-mono text-[10px] font-medium opacity-100 lg:flex">
           <span className="text-xs">Ctrl</span>K
         </kbd>
       </Button>

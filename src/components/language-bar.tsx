@@ -31,7 +31,7 @@ const LanguageBar = ({ type, language }: Props) => {
           >
             <Badge
               className={cn(
-                "bg-primary-foreground p-2 text-primary hover:bg-muted lg:px-4",
+                "bg-primary-foreground text-primary hover:bg-muted p-2 lg:px-4",
                 language === lang.toLowerCase() &&
                   "!bg-primary text-primary-foreground"
               )}

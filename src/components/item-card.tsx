@@ -33,7 +33,7 @@ export function ItemCard({
     <Card
       title={name}
       className={cn(
-        "group w-36 cursor-pointer bg-transparent transition-shadow duration-200 hover:bg-secondary hover:shadow-md md:w-48 lg:w-56",
+        "hover:bg-secondary group w-36 cursor-pointer bg-transparent transition-shadow duration-200 hover:shadow-md md:w-48 lg:w-56",
         type === "artist" && "border-none !shadow-none hover:bg-transparent",
         className
       )}
@@ -63,18 +63,18 @@ export function ItemCard({
             <Skeleton className="absolute inset-0 -z-10 h-full w-full hover:scale-110" />
 
             <div className="absolute inset-0 hidden flex-col justify-between from-transparent via-black/75 to-black p-2 group-hover:flex group-hover:bg-gradient-to-b">
-              <span className="m-1 ml-auto rounded bg-primary px-1 text-sm font-bold text-secondary">
+              <span className="bg-primary text-secondary m-1 ml-auto rounded px-1 text-sm font-bold">
                 {explicit && "E"}
               </span>
 
-              <div className="group/play mx-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16">
+              <div className="group/play bg-muted/75 mx-auto aspect-square w-12 rounded-full duration-200 hover:w-16">
                 <Play
                   strokeWidth={10}
                   className="m-auto h-full w-6 p-1 duration-200 group-hover/play:w-8"
                 />
               </div>
 
-              <div className="flex justify-between text-primary-foreground dark:text-secondary-foreground">
+              <div className="text-primary-foreground dark:text-secondary-foreground flex justify-between">
                 <button className="rounded-full">
                   <Heart className="h-6 w-6" />
                 </button>
@@ -92,7 +92,7 @@ export function ItemCard({
             <Link href={getHref(url, type)}>{name}</Link>
           </H4>
 
-          <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground/75">
+          <span className="text-secondary-foreground/75 w-full truncate text-center text-xs capitalize">
             {subtitle}
           </span>
         </div>

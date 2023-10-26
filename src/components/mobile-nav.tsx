@@ -17,7 +17,7 @@ const MobileNav = () => {
   const segment = useSelectedLayoutSegment();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 flex h-14 items-center justify-between border-t bg-background lg:hidden">
+    <nav className="bg-background fixed inset-x-0 bottom-0 z-50 flex h-14 items-center justify-between border-t lg:hidden">
       {mobileNavItems.map(({ label, icon: Icon, href }) => {
         const isActive = href === "/" + (segment ?? "");
         return (
@@ -25,13 +25,13 @@ const MobileNav = () => {
             key={label}
             href={href}
             className={cn(
-              "flex h-full w-1/4 flex-col items-center justify-center text-center text-muted-foreground duration-700 animate-in slide-in-from-bottom-full",
+              "text-muted-foreground animate-in slide-in-from-bottom-full flex h-full w-1/4 flex-col items-center justify-center text-center duration-700",
               isActive && "text-secondary-foreground"
             )}
           >
             <Icon />
 
-            <span className="text-xs font-semibold duration-200 animate-in slide-in-from-bottom-1/2">
+            <span className="animate-in slide-in-from-bottom-1/2 text-xs font-semibold duration-200">
               {label}
             </span>
           </Link>

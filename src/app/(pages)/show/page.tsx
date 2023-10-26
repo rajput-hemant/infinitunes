@@ -71,7 +71,7 @@ const PodcastsPage = async ({ searchParams: { page = "1" } }: Props) => {
           className={cn(
             buttonVariants({ variant: "outline" }),
             "group w-full font-bold",
-            page === "1" && "cursor-not-allowed bg-muted !text-muted-foreground"
+            page === "1" && "bg-muted !text-muted-foreground cursor-not-allowed"
           )}
         >
           <ArrowLeft
@@ -88,7 +88,7 @@ const PodcastsPage = async ({ searchParams: { page = "1" } }: Props) => {
           className={cn(
             buttonVariants({ variant: "outline" }),
             "group w-full font-bold",
-            last_page && "cursor-not-allowed bg-muted !text-muted-foreground"
+            last_page && "bg-muted !text-muted-foreground cursor-not-allowed"
           )}
         >
           Next

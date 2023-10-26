@@ -60,7 +60,7 @@ const PlaylistsPage = async ({ searchParams: { page = "1", lang } }: Props) => {
               buttonVariants({ variant: "outline" }),
               "group w-full font-bold",
               page === "1" &&
-                "cursor-not-allowed bg-muted !text-muted-foreground"
+                "bg-muted !text-muted-foreground cursor-not-allowed"
             )}
           >
             <ArrowLeft
@@ -77,7 +77,7 @@ const PlaylistsPage = async ({ searchParams: { page = "1", lang } }: Props) => {
             className={cn(
               buttonVariants({ variant: "outline" }),
               "group w-full font-bold",
-              last_page && "cursor-not-allowed bg-muted !text-muted-foreground"
+              last_page && "bg-muted !text-muted-foreground cursor-not-allowed"
             )}
           >
             Next
