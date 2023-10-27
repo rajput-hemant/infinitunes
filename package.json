@@ -41,7 +41,7 @@
     "cmdk": "^0.2.0",
     "drizzle-orm": "^0.28.6",
     "jotai": "^2.5.0",
-    "lucide-react": "^0.288.0",
+    "lucide-react": "^0.290.0",
     "next": "13.5.6",
     "next-auth": "^4.24.3",
     "next-themes": "^0.2.1",
@@ -54,15 +54,15 @@
     "zod": "^3.22.4"
   },
   "devDependencies": {
-    "@commitlint/cli": "^18.0.0",
-    "@commitlint/config-conventional": "^18.0.0",
+    "@commitlint/cli": "^18.2.0",
+    "@commitlint/config-conventional": "^18.1.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.1.1",
     "@swc-jotai/react-refresh": "^0.1.0",
     "@total-typescript/ts-reset": "^0.5.1",
     "@types/bcryptjs": "^2.4.5",
-    "@types/node": "20.6.2",
-    "@types/react": "18.2.21",
-    "@types/react-dom": "18.2.7",
+    "@types/node": "20.8.9",
+    "@types/react": "18.2.33",
+    "@types/react-dom": "18.2.14",
     "@typescript-eslint/eslint-plugin": "6.9.0",
     "@typescript-eslint/parser": "^6.9.0",
     "autoprefixer": "10.4.16",
@@ -76,7 +76,7 @@
     "postcss": "8.4.31",
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.6",
-    "tailwindcss": "3.3.4",
+    "tailwindcss": "3.3.5",
     "typescript": "5.2.2"
   }
 }
