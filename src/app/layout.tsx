@@ -55,10 +55,11 @@ export const metadata: Metadata = {
 };
 
 type Props = {
+  modal: React.ReactNode;
   children: React.ReactNode;
 };
 
-const RootLayout = ({ children }: Props) => {
+const RootLayout = ({ modal, children }: Props) => {
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -72,7 +73,11 @@ const RootLayout = ({ children }: Props) => {
           incognito.variable
         )}
       >
-        <Providers>{children}</Providers>
+        <Providers>
+          {children}
+
+          {modal}
+        </Providers>
 
         <TailwindIndicator />
       </body>

@@ -7,7 +7,6 @@ import { siteConfig } from "@/config/site";
 import { getUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import AuthModeToggle from "@/components/auth/auth-mode-toggle";
-import FormSubHeading from "@/components/auth/form-sub-heading";
 import { buttonVariants } from "@/components/ui/button";
 import { H2 } from "@/components/ui/topography";
 
@@ -67,8 +66,6 @@ async function AuthLayout({ children }: Props) {
         <H2 className="text-center font-semibold">
           Welcome to <span className="lowercase">{siteConfig.name}</span>.
         </H2>
-
-        <FormSubHeading />
 
         {children}
       </div>

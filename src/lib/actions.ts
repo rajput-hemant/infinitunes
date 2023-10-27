@@ -2,17 +2,17 @@
 
 import { redirect } from "next/navigation";
 import { hash } from "bcryptjs";
+import { eq } from "drizzle-orm";
 
 import { db } from "./db";
 import { users } from "./db/schema";
 
-export async function createNewAccount({
-  email,
-  password,
-}: {
+type Credentials = {
   email: string;
   password: string;
-}) {
+};
+
+export async function createNewAccount({ email, password }: Credentials) {
   try {
     const hashedPassword = await hash(password, 10);
 
@@ -33,4 +33,26 @@ export async function createNewAccount({
   }
 
   redirect("/");
+}
+
+export async function resetPassword({ email, password }: Credentials) {
+  try {
+    const hashedPassword = await hash(password, 10);
+
+    console.log({ email, password, hashedPassword });
+
+    const updatedPass = await db
+      .update(users)
+      .set({ password: hashedPassword })
+      .where(eq(users.email, email))
+      .returning({ updatedPass: users.password });
+
+    if (updatedPass.length === 0) {
+      throw new Error("Email not found, please try signing up");
+    }
+  } catch (error) {
+    throw new Error((error as Error).message);
+  }
+
+  redirect("/login");
 }

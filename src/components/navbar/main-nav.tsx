@@ -83,7 +83,7 @@ function MainNav({ className, megaMenu }: Props) {
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          <Link href="/podcast" legacyBehavior passHref>
+          <Link href="/show" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
               Podcasts
             </NavigationMenuLink>

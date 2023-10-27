@@ -9,9 +9,7 @@ import { Button } from "../ui/button";
 import { ToastAction } from "../ui/toast";
 import { toast } from "../ui/use-toast";
 
-type Props = React.HTMLAttributes<HTMLDivElement>;
-
-const OAuthButtons = ({ className, ...props }: Props) => {
+const OAuthButtons = () => {
   const [isGithubLoading, setIsGithubLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
@@ -58,35 +56,45 @@ const OAuthButtons = ({ className, ...props }: Props) => {
     setIsGithubLoading(false);
   }
   return (
-    <div className={className} {...props}>
-      <Button
-        type="button"
-        variant="outline"
-        disabled={isGoogleLoading}
-        onClick={googleSignInHandler}
-      >
-        {isGoogleLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <Icons.Google className="mr-2 h-4 w-4" />
-        )}
-        Google
-      </Button>
+    <>
+      <div className="relative">
+        <span className="absolute inset-x-0 inset-y-1/2 border-t" />
 
-      <Button
-        type="button"
-        variant="outline"
-        disabled={isGithubLoading}
-        onClick={githubSignInHandler}
-      >
-        {isGithubLoading ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <Icons.GitHub className="mr-2 h-4 w-4" />
-        )}
-        Github
-      </Button>
-    </div>
+        <span className="bg-background text-muted-foreground relative mx-auto flex w-fit px-2 text-xs uppercase">
+          Or continue with
+        </span>
+      </div>
+
+      <div className="flex flex-col space-y-2">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isGoogleLoading}
+          onClick={googleSignInHandler}
+        >
+          {isGoogleLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Icons.Google className="mr-2 h-4 w-4" />
+          )}
+          Google
+        </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isGithubLoading}
+          onClick={githubSignInHandler}
+        >
+          {isGithubLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Icons.GitHub className="mr-2 h-4 w-4" />
+          )}
+          Github
+        </Button>
+      </div>
+    </>
   );
 };
 
