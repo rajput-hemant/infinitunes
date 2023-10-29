@@ -7,13 +7,14 @@ import { cn } from "@/lib/utils";
 import LogoutButton from "../auth/logout-button";
 import { Icons } from "../icons";
 import LanguagePicker from "../language-picker";
-import SearchMenu from "../search-bar";
+import SearchMenu from "../search/search-menu";
+import TopSearch from "../search/top-search";
 import ThemeToggle from "../theme-toggle";
 import { buttonVariants } from "../ui/button";
 import MainNav from "./main-nav";
 import MobileNav from "./mobile-nav";
 
-export const dynamic = "force-dynamic"; // always fetch on page load
+export const revalidate = 6000; // revalidate page every 10 minutes
 
 export default async function SiteHeader() {
   const user = await getUser();
@@ -33,7 +34,7 @@ export default async function SiteHeader() {
         <MainNav megaMenu={megaMenu} className="hidden lg:block" />
 
         <div className="flex flex-1 items-center justify-end gap-2">
-          <SearchMenu className="hidden lg:block" />
+          <SearchMenu topSearch={<TopSearch />} className="hidden lg:flex" />
 
           <LanguagePicker />
 

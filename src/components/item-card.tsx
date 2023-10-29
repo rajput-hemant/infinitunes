@@ -29,6 +29,8 @@ export function ItemCard({
   aspect = "square",
   className,
 }: Props) {
+  const imageSrc = getImageSrc(image, "high");
+
   return (
     <Card
       title={name}
@@ -44,19 +46,19 @@ export function ItemCard({
             className={cn(
               "relative w-full overflow-hidden rounded-md",
               aspect === "square" ? "aspect-square" : "aspect-video",
-              ["radio_station", "artist"].includes(type) && "rounded-full"
+              ["radio_station", "artist"].includes(type) &&
+                "rounded-full border"
             )}
           >
             <Image
-              src={
-                getImageSrc(image, "high") || `/images/placeholder/${type}.jpg`
-              }
+              src={imageSrc || `/images/placeholder/${type}.jpg`}
               width={200}
               height={200}
               alt={name}
               className={cn(
-                "h-full w-full object-cover duration-300 group-hover:scale-110",
-                !getImageSrc(image, "high") && "duration-0 dark:invert"
+                "h-full w-full object-contain duration-300 group-hover:scale-110",
+                !imageSrc && "duration-0 dark:invert",
+                imageSrc.includes("default") && "dark:invert"
               )}
             />
 

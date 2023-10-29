@@ -1,6 +1,9 @@
 import {
   Album,
+  AlbumSearch,
+  AllSearch,
   Artist,
+  ArtistSearch,
   ArtistSongsOrAlbums,
   Category,
   Chart,
@@ -13,13 +16,17 @@ import {
   MegaMenu,
   Modules,
   Playlist,
+  PlaylistSearch,
+  PodcastSearch,
   Radio,
   Show,
   Song,
   SongObj,
+  SongSearch,
   Sort,
   TopAlbum,
   TopArtists,
+  TopSearch,
   TopShows,
   Trending,
 } from "@/types";
@@ -319,6 +326,60 @@ export async function getShowDetails(
     season: `${season}`,
     sort,
   });
+}
+
+/* -----------------------------------------------------------------------------------------------
+ * /search route
+ * -----------------------------------------------------------------------------------------------*/
+
+/**
+ * Get search suggestions from JioSaavn API.
+ * @returns Promise resolving to search suggestions
+ */
+export async function getTopSearches() {
+  return await jioSaavnGetCall<TopSearch[]>("/search/top");
+}
+
+/**
+ * Get search results from JioSaavn API.
+ * @param query - Search query
+ * @returns Promise resolving to search results
+ */
+export async function searchAll(query: string) {
+  return await jioSaavnGetCall<AllSearch>("/search", { q: query });
+}
+
+type SearchReturnType<T> = T extends "song"
+  ? SongSearch
+  : T extends "album"
+  ? AlbumSearch
+  : T extends "playlist"
+  ? PlaylistSearch
+  : T extends "artist"
+  ? ArtistSearch
+  : T extends "show"
+  ? PodcastSearch
+  : never;
+
+/**
+ * Search for songs, albums, playlists, artists or shows from JioSaavn API.
+ * @param query - Search query
+ * @param type - Type of search results to get
+ * @param page - Page number to get
+ * @param n - Number of results to get
+ * @returns Promise resolving to search results
+ */
+export async function search<
+  T extends "song" | "album" | "playlist" | "artist" | "show",
+>(query: string, type: T, page = 0, n = 50): Promise<SearchReturnType<T>> {
+  return await jioSaavnGetCall(
+    `/search/${type === "show" ? "podcast" : type}s`,
+    {
+      q: query,
+      page: `${page}`,
+      n: `${n}`,
+    }
+  );
 }
 
 /* -----------------------------------------------------------------------------------------------

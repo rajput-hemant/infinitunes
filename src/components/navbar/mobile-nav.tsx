@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 const mobileNavItems = [
   { label: "Home", icon: Home, href: "/" },
-  { label: "Search", icon: Search, href: "/album" },
+  { label: "Search", icon: Search, href: "/search" },
   { label: "Browse", icon: Compass, href: "/browse" },
   { label: "Login", icon: User2, href: "/login" },
 ];
