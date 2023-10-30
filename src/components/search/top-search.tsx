@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import { getTopSearches } from "@/lib/jiosaavn-api";
 import { getHref, getImageSrc } from "@/lib/utils";
+import { ItemCard } from "../item-card";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
 import { Large } from "../ui/topography";
 
@@ -13,7 +15,24 @@ const TopSearch = async () => {
     <>
       <Large className="text-muted-foreground">Trending</Large>
 
-      <div className="grid max-w-5xl gap-2 md:grid-cols-2 lg:grid-cols-3">
+      <ScrollArea className="lg:hidden">
+        <div className="flex space-x-4 pb-4">
+          {topSearches.map(({ id, name, url, subtitle, type, image }) => (
+            <ItemCard
+              key={id}
+              name={name}
+              url={url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+            />
+          ))}
+        </div>
+
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
+
+      <div className="hidden max-w-5xl gap-2 md:grid-cols-2 lg:grid lg:grid-cols-3">
         {topSearches.map((t) => (
           <Link
             key={t.id}

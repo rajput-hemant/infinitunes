@@ -14,7 +14,7 @@ type Props = {
 
 const SearchAll = ({ query, data }: Props) => {
   return (
-    <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="gap-2 space-y-4 md:grid md:grid-cols-2 md:space-y-0 lg:grid-cols-3 xl:grid-cols-4">
       {Object.entries(data)
         .sort(([, a], [, b]) => a.position - b.position)
         .map(([key, value]) => {

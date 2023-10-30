@@ -28,14 +28,19 @@ const Page = async ({ params: { slug } }: Props) => {
 
   return (
     <>
-      <H1>
-        Search Results for &apos;
-        <em className="font-extrabold underline underline-offset-4">
-          {query.replaceAll("%20", " ")}
-        </em>
-        &apos;
+      <H1 className="text-center md:text-start">
+        Search Results for{" "}
+        <span className="block md:inline-block">
+          &apos;
+          <em className="font-extrabold underline underline-offset-4">
+            {query.replaceAll("%20", " ")}
+          </em>
+          &apos;
+        </span>
       </H1>
-      <Muted>{searchRes.total} Results</Muted>
+      <Muted className="text-center md:text-start">
+        {searchRes.total} Results
+      </Muted>
 
       <Separator className="mt-4" />
 

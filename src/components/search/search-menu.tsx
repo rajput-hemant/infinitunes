@@ -9,8 +9,9 @@ import { searchAll } from "@/lib/jiosaavn-api";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEventListener } from "@/hooks/use-event-listner";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
+import { Input } from "../ui/input";
 import SearchAll from "./search-all";
 
 type Props = {
@@ -20,12 +21,11 @@ type Props = {
 
 function SearchMenu({ topSearch, className }: Props) {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const debouncedQuery = useDebounce(query.trim(), 1000);
-
   const [searchResult, setSearchResult] = useState<AllSearch | null>(null);
+  const debouncedQuery = useDebounce(query.trim(), 1000);
 
   useEventListener("keydown", (e: KeyboardEvent) => {
     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -45,13 +45,9 @@ function SearchMenu({ topSearch, className }: Props) {
   useEffect(() => {
     (async () => {
       if (!debouncedQuery) return setSearchResult(null);
-
       setIsLoading(true);
-
       const data = await searchAll(debouncedQuery);
-
       setIsLoading(false);
-
       setSearchResult(data);
     })();
   }, [debouncedQuery]);
@@ -79,14 +75,14 @@ function SearchMenu({ topSearch, className }: Props) {
       </DialogTrigger>
 
       <DialogContent className="max-w-7xl shadow-lg">
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+        <div className="relative mr-4 mt-4">
+          <Search className="text-muted-foreground absolute left-2 top-3 h-4 w-4" />
 
-          <input
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search"
-            className="placeholder:text-muted-foreground flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full pl-8"
           />
         </div>
 
