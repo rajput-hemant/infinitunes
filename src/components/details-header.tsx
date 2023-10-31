@@ -1,18 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import { BadgeCheck, Heart, MoreVertical } from "lucide-react";
+import { BadgeCheck } from "lucide-react";
 
 import { Album, Artist, Label, Playlist, ShowDetails, Song } from "@/types";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
+import DetailsHeaderDropdown from "./details-header-dropdown";
+import LikeButton from "./like-button";
 import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+import { Button, buttonVariants } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 import { H2 } from "./ui/topography";
 
@@ -46,7 +41,7 @@ const DetailsHeader = ({ item }: Props) => {
       <div className="flex flex-col items-center justify-center font-medium lg:items-start lg:gap-2">
         <H2 className="line-clamp-3 flex items-center">
           {"explicit" in item && item.explicit && (
-            <Badge className="mr-2 rounded-sm px-1.5">E</Badge>
+            <Badge className="mr-2 rounded-[2px] px-1 py-0 font-bold">E</Badge>
           )}
 
           {item.name}
@@ -199,27 +194,18 @@ const DetailsHeader = ({ item }: Props) => {
         >
           <Button className="rounded-full px-10 text-xl font-bold">Play</Button>
 
-          <Button size="icon" variant="outline" className="rounded-full">
+          {/* <Button size="icon" variant="outline" className="rounded-full">
             <Heart className="h-6 w-6" />
-          </Button>
+          </Button> */}
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size="icon" variant="outline" className="rounded-full">
-                <MoreVertical className="h-6 w-6" />
-              </Button>
-            </DropdownMenuTrigger>
+          <LikeButton
+            className={cn(
+              buttonVariants({ size: "icon", variant: "outline" }),
+              "rounded-full p-1.5"
+            )}
+          />
 
-            <DropdownMenuContent>
-              <DropdownMenuGroup className="font-medium">
-                <DropdownMenuItem className="px-4">Play Now</DropdownMenuItem>
-                <DropdownMenuItem className="px-4">Radio</DropdownMenuItem>
-                <DropdownMenuItem className="px-4">
-                  Add to Queue
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <DetailsHeaderDropdown />
         </div>
       </div>
     </div>

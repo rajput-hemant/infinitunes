@@ -5,16 +5,16 @@ import LanguageBar from "@/components/language-bar";
 import { Separator } from "@/components/ui/separator";
 import { H2, H3 } from "@/components/ui/topography";
 
-export const dynamic = "force-dynamic"; // always fetch on page load
+export const revalidate = 3600; // revalidate page every hour
 
-type Props = { searchParams: { page?: string; lang?: Lang } };
+type Props = { searchParams: { page?: number; lang?: Lang } };
 
-const RadioPage = async ({ searchParams: { page = "1", lang } }: Props) => {
-  const radioStations = await getFeaturedRadioStations(page, lang);
+const RadioPage = async ({ searchParams: { page = 1, lang } }: Props) => {
+  const radioStations = await getFeaturedRadioStations(page, 50, lang);
   const heading = "Radio Stations";
 
   return (
-    <div className="space-y-4">
+    <div className="mb-4 space-y-4">
       <H2 className="pb-0 lg:hidden">{heading}</H2>
 
       <LanguageBar type="radio" language={lang} />
@@ -39,7 +39,9 @@ const RadioPage = async ({ searchParams: { page = "1", lang } }: Props) => {
         )}
       </div>
 
-      <H3 className="text-center italic">Yay! You have seen it all 🤩</H3>
+      <H3 className="text-center">
+        <em>Yay! You have seen it all</em> 🤩
+      </H3>
     </div>
   );
 };

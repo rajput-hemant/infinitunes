@@ -12,7 +12,7 @@ import { H3, Muted } from "./ui/topography";
 type SidebarProps = React.HTMLAttributes<HTMLDivElement>;
 
 export default function Sidebar({ className }: SidebarProps) {
-  const segment = useSelectedLayoutSegments().pop();
+  const [segment] = useSelectedLayoutSegments();
 
   return (
     <aside

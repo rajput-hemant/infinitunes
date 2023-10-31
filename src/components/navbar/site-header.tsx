@@ -14,7 +14,7 @@ import { buttonVariants } from "../ui/button";
 import MainNav from "./main-nav";
 import MobileNav from "./mobile-nav";
 
-export const revalidate = 6000; // revalidate page every 10 minutes
+export const revalidate = 3600; // revalidate page every hour
 
 export default async function SiteHeader() {
   const user = await getUser();

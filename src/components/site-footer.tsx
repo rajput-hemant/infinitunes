@@ -16,7 +16,7 @@ export default async function SiteFooter() {
     <footer className="w-full">
       <Separator />
 
-      <div className="mx-auto my-4 flex list-none gap-4 overflow-x-scroll px-10 md:justify-between">
+      <div className="mx-auto my-4 flex list-none gap-4 overflow-x-scroll md:justify-between md:px-5 xl:px-10">
         <div className="min-w-fit">
           <Small>Top Artist</Small>
 

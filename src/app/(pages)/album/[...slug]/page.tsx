@@ -33,12 +33,12 @@ const AlbumDetailsPage = async ({ params: { slug } }: Props) => {
   const { album, recommendations, trending, sameYear } = await fetcher(slug[1]);
 
   return (
-    <>
+    <div className="space-y-4">
       {/* album details */}
       <DetailsHeader item={album} />
 
       {/* song list */}
-      <SongList songs={album.songs} />
+      <SongList songs={album.songs} showAlbum={false} />
 
       {/* album recommendations */}
       {recommendations.length > 0 && (
@@ -127,7 +127,7 @@ const AlbumDetailsPage = async ({ params: { slug } }: Props) => {
 
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-    </>
+    </div>
   );
 };
 

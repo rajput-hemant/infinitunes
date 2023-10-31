@@ -4,7 +4,7 @@ import { ItemCard } from "@/components/item-card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { H2, Muted } from "@/components/ui/topography";
 
-export const dynamic = "force-dynamic"; // always fetch on page load
+export const revalidate = 3600; // revalidate page every hour
 
 const HomePage = async () => {
   const homedata = await getHomeData();

@@ -97,7 +97,9 @@ const ArtistsTopItems = ({
           {isLoading ? "Loading..." : "Load More"}
         </Button>
       ) : (
-        <H3 className="text-center italic">Yay! You have seen it all 🤩</H3>
+        <H3 className="text-center">
+          <em>Yay! You have seen it all</em> 🤩
+        </H3>
       )}
     </>
   );

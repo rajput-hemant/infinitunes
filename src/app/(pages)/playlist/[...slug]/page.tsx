@@ -30,7 +30,7 @@ const PlaylistDetailsPage = async ({ params: { slug } }: Props) => {
   const { playlist, recommendations, trending } = await fetcher(slug[1]);
 
   return (
-    <>
+    <div className="space-y-4">
       {/* playlist details header */}
       <DetailsHeader item={playlist} />
 
@@ -102,7 +102,7 @@ const PlaylistDetailsPage = async ({ params: { slug } }: Props) => {
 
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-    </>
+    </div>
   );
 };
 

@@ -1,9 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Heart, MoreVertical, Play } from "lucide-react";
+import { MoreVertical, Play } from "lucide-react";
 
 import { Quality, Type } from "@/types";
 import { cn, getHref, getImageSrc } from "@/lib/utils";
+import LikeButton from "./like-button";
 import { Card, CardContent } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { H4 } from "./ui/topography";
@@ -30,6 +31,7 @@ export function ItemCard({
   className,
 }: Props) {
   const imageSrc = getImageSrc(image, "high");
+  const Wrapper = type === "radio_station" ? "div" : Link;
 
   return (
     <Card
@@ -41,7 +43,7 @@ export function ItemCard({
       )}
     >
       <CardContent className="h-full w-full p-2">
-        <Link href={getHref(url, type)}>
+        <Wrapper href={getHref(url, type)}>
           <div
             className={cn(
               "relative w-full overflow-hidden rounded-md",
@@ -77,9 +79,7 @@ export function ItemCard({
               </div>
 
               <div className="text-primary-foreground dark:text-secondary-foreground flex justify-between">
-                <button className="rounded-full">
-                  <Heart className="h-6 w-6" />
-                </button>
+                <LikeButton />
 
                 <button className="rounded-full">
                   <MoreVertical className="h-6 w-6" />
@@ -87,11 +87,11 @@ export function ItemCard({
               </div>
             </div>
           </div>
-        </Link>
+        </Wrapper>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
           <H4 className="w-full truncate text-center lg:text-lg">
-            <Link href={getHref(url, type)}>{name}</Link>
+            <Wrapper href={getHref(url, type)}>{name}</Wrapper>
           </H4>
 
           <span className="text-secondary-foreground/75 w-full truncate text-center text-xs capitalize">

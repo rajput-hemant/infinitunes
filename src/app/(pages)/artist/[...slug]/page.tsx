@@ -57,7 +57,7 @@ const ArtistDetailsPage = async ({
   // };
 
   return (
-    <>
+    <div className="space-y-4">
       {/* artist details */}
       <DetailsHeader item={artist} />
 
@@ -217,7 +217,7 @@ const ArtistDetailsPage = async ({
 
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-    </>
+    </div>
   );
 };
 

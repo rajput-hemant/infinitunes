@@ -414,10 +414,10 @@ export async function getTrending(
  * @param mini - Whether to get mini data. Default is true.
  * @returns Promise resolving to top albums response from JioSaavn API.
  */
-export async function getTopAlbums(page?: string, lang?: Lang, mini = true) {
+export async function getTopAlbums(page = 1, n = 50, lang?: Lang, mini = true) {
   return await jioSaavnGetCall<TopAlbum>("/get/top-albums", {
-    page: page ?? "1",
-    n: "42",
+    page: `${page}`,
+    n: `${n}`,
     lang: lang ?? "hindi,english",
     mini: `${mini}`,
   });
@@ -431,10 +431,10 @@ export async function getTopAlbums(page?: string, lang?: Lang, mini = true) {
  * @param mini - Whether to get mini data. Default is true.
  * @returns Promise resolving to array of Chart objects from JioSaavn API.
  */
-export async function getCharts(page?: string, lang?: Lang, mini = true) {
+export async function getCharts(page = 1, n = 50, lang?: Lang, mini = true) {
   return await jioSaavnGetCall<Chart[]>("/get/charts", {
-    page: page ?? "1",
-    n: "42",
+    page: `${page}`,
+    n: `${n}`,
     lang: lang ?? "hindi,english",
     mini: `${mini}`,
   });
@@ -449,13 +449,14 @@ export async function getCharts(page?: string, lang?: Lang, mini = true) {
  * @returns Promise resolving to featured playlists response from JioSaavn API.
  */
 export async function getFeaturedPlaylists(
-  page?: string,
+  page = 1,
+  n = 50,
   lang?: Lang,
   mini = true
 ) {
   return await jioSaavnGetCall<FeaturedPlaylists>("/get/featured-playlists", {
-    page: page ?? "1",
-    n: "42",
+    page: `${page}`,
+    n: `${n}`,
     lang: lang ?? "hindi,english",
     mini: `${mini}`,
   });
@@ -469,10 +470,15 @@ export async function getFeaturedPlaylists(
  * @param mini - Whether to fetch minimal artist data. Defaults to `true`.
  * @returns A promise that resolves to an object containing the top artists data.
  */
-export async function getTopArtists(page?: string, lang?: Lang, mini = true) {
+export async function getTopArtists(
+  page = 1,
+  n = 50,
+  lang?: Lang,
+  mini = true
+) {
   return await jioSaavnGetCall<TopArtists>("/get/top-artists", {
-    page: page ?? "1",
-    n: "42",
+    page: `${page}`,
+    n: `${n}`,
     lang: lang ?? "hindi,english",
     mini: `${mini}`,
   });
@@ -485,10 +491,10 @@ export async function getTopArtists(page?: string, lang?: Lang, mini = true) {
  * @param mini - Whether to fetch mini version of the shows. Defaults to true.
  * @returns A promise that resolves to an object containing the top shows.
  */
-export async function getTopShows(page?: string, lang?: Lang, mini = true) {
+export async function getTopShows(page = 1, n = 50, lang?: Lang, mini = true) {
   return await jioSaavnGetCall<TopShows>("/get/top-shows", {
-    page: page ?? "1",
-    n: "42",
+    page: `${page}`,
+    n: `${n}`,
     lang: lang ?? "hindi,english",
     mini: `${mini}`,
   });
@@ -503,13 +509,14 @@ export async function getTopShows(page?: string, lang?: Lang, mini = true) {
  * @returns A promise that resolves to an array of Radio objects.
  */
 export async function getFeaturedRadioStations(
-  page?: string,
+  page = 1,
+  n = 50,
   lang?: Lang,
   mini = true
 ) {
   return await jioSaavnGetCall<Radio[]>("/get/featured-stations", {
-    page: page ?? "1",
-    n: "42",
+    page: `${page}`,
+    n: `${n}`,
     lang: lang ?? "hindi,english",
     mini: `${mini}`,
   });

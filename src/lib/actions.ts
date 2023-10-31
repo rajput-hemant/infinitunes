@@ -39,8 +39,6 @@ export async function resetPassword({ email, password }: Credentials) {
   try {
     const hashedPassword = await hash(password, 10);
 
-    console.log({ email, password, hashedPassword });
-
     const updatedPass = await db
       .update(users)
       .set({ password: hashedPassword })

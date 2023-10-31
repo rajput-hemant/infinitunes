@@ -23,7 +23,7 @@ const ShowDetailsPage = async ({
   );
 
   return (
-    <>
+    <div className="mb-4 space-y-4">
       {/* playlist details header */}
       <DetailsHeader item={show_details} />
 
@@ -57,7 +57,7 @@ const ShowDetailsPage = async ({
       <Blockquote className="text-muted-foreground max-w-4xl leading-snug">
         {show_details.description}
       </Blockquote>
-    </>
+    </div>
   );
 };
 
