@@ -3,7 +3,14 @@ import "@/styles/globals.css";
 import type { Metadata } from "next";
 
 import { siteConfig } from "@/config/site";
-import { fontSans, incognito, overpass, poppins } from "@/lib/fonts";
+import {
+  fontInter,
+  fontMono,
+  fontSans,
+  incognito,
+  overpass,
+  poppins,
+} from "@/lib/fonts";
 import { cn } from "@/lib/utils";
 import Providers from "@/components/provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
@@ -68,6 +75,8 @@ const RootLayout = ({ modal, children }: Props) => {
         className={cn(
           "min-h-screen font-sans",
           fontSans.variable,
+          fontMono.variable,
+          fontInter.variable,
           poppins.variable,
           overpass.variable,
           incognito.variable

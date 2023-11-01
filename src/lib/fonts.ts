@@ -1,22 +1,21 @@
-import {
-  JetBrains_Mono as FontMono,
-  Inter as FontSans,
-  Overpass,
-  Poppins,
-} from "next/font/google";
+import { Inter, Overpass, Poppins } from "next/font/google";
 import localFont from "next/font/local";
+import { GeistMono, GeistSans } from "geist/font";
+
+/* -----------------------------------------------------------------------------------------------
+ * Geist Fonts (https://vercel.com/font / https://www.npmjs.com/package/geist)
+ * -----------------------------------------------------------------------------------------------*/
+
+export const fontSans = GeistSans;
+
+export const fontMono = GeistMono;
 
 /* -----------------------------------------------------------------------------------------------
  * Google Fonts
  * -----------------------------------------------------------------------------------------------*/
 
-export const fontSans = FontSans({
-  variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-export const fontMono = FontMono({
-  variable: "--font-mono",
+export const fontInter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
