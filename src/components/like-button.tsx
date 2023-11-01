@@ -6,7 +6,7 @@ type Props = {
   className?: string;
 };
 
-const LikeButton = ({ className }: Props) => {
+export const LikeButton = ({ className }: Props) => {
   function likeHandler() {
     // ...
   }
@@ -17,5 +17,3 @@ const LikeButton = ({ className }: Props) => {
     </button>
   );
 };
-
-export default LikeButton;

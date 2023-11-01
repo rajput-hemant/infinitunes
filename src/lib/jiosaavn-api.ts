@@ -371,7 +371,7 @@ type SearchReturnType<T> = T extends "song"
  */
 export async function search<
   T extends "song" | "album" | "playlist" | "artist" | "show",
->(query: string, type: T, page = 0, n = 50): Promise<SearchReturnType<T>> {
+>(query: string, type: T, page = 1, n = 50): Promise<SearchReturnType<T>> {
   return await jioSaavnGetCall(
     `/search/${type === "show" ? "podcast" : type}s`,
     {

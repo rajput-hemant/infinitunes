@@ -1,46 +1,26 @@
-import { Facebook, Link, Share2, Twitter } from "lucide-react";
+import { Share2 } from "lucide-react";
 
+import { ShareOptions } from "./share-options";
 import {
-  DropdownMenuItem,
   DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "./ui/dropdown-menu";
 
-const ShareSubMenu = () => {
+export const ShareSubMenu = () => {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
         <Share2 className="mr-2 h-4 w-4" />
-        <span>Share</span>
+        Share
       </DropdownMenuSubTrigger>
 
       <DropdownMenuPortal>
-        <DropdownMenuSubContent>
-          <DropdownMenuItem>
-            <Link className="mr-2 h-4 w-4" />
-            <span>Copy Link</span>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem>
-            <Link className="mr-2 h-4 w-4" />
-            <span>WhatsApp</span>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem>
-            <Twitter className="mr-2 h-4 w-4" />
-            <span>Twitter</span>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem>
-            <Facebook className="mr-2 h-4 w-4" />
-            <span>Facebook</span>
-          </DropdownMenuItem>
+        <DropdownMenuSubContent className="p-2">
+          <ShareOptions isDropDownItem className="cursor-pointer" />
         </DropdownMenuSubContent>
       </DropdownMenuPortal>
     </DropdownMenuSub>
   );
 };
-
-export default ShareSubMenu;

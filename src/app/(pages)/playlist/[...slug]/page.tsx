@@ -3,9 +3,9 @@ import {
   getPlaylistRecommendations,
   getTrending,
 } from "@/lib/jiosaavn-api";
-import DetailsHeader from "@/components/details-header";
+import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
-import SongList from "@/components/song-list";
+import { SongList } from "@/components/song/song-list";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { H3 } from "@/components/ui/topography";
 
@@ -35,7 +35,7 @@ const PlaylistDetailsPage = async ({ params: { slug } }: Props) => {
       <DetailsHeader item={playlist} />
 
       {/* song list */}
-      <SongList songs={playlist.songs!} />
+      <SongList items={playlist.songs!} />
 
       {/* related playlists */}
       {recommendations.length > 0 && (

@@ -8,9 +8,9 @@ import {
   getSongRecommendations,
   getTrending,
 } from "@/lib/jiosaavn-api";
-import DetailsHeader from "@/components/details-header";
+import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
-import SongList from "@/components/song-list";
+import { SongList } from "@/components/song/song-list";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { H3 } from "@/components/ui/topography";
@@ -79,7 +79,7 @@ const Page = async ({ params: { slug } }: Props) => {
   } = await fetcher(slug[1]);
 
   return (
-    <>
+    <div className="space-y-4">
       <DetailsHeader item={song} />
 
       {lyrics && <Lyrics lyrics={lyrics} />}
@@ -89,7 +89,7 @@ const Page = async ({ params: { slug } }: Props) => {
         <>
           <H3>More from {song.album}</H3>
           <Separator />
-          <SongList songs={albumSongs} />
+          <SongList items={albumSongs} />
         </>
       )}
 
@@ -216,7 +216,7 @@ const Page = async ({ params: { slug } }: Props) => {
 
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-    </>
+    </div>
   );
 };
 

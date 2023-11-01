@@ -4,7 +4,8 @@ import { MoreVertical, Play } from "lucide-react";
 
 import { Quality, Type } from "@/types";
 import { cn, getHref, getImageSrc } from "@/lib/utils";
-import LikeButton from "./like-button";
+import { LikeButton } from "./like-button";
+import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
 import { H4 } from "./ui/topography";
@@ -66,12 +67,8 @@ export function ItemCard({
 
             <Skeleton className="absolute inset-0 -z-10 h-full w-full hover:scale-110" />
 
-            <div className="absolute inset-0 hidden flex-col justify-between from-transparent via-black/75 to-black p-2 group-hover:flex group-hover:bg-gradient-to-b">
-              <span className="bg-primary text-secondary m-1 ml-auto rounded px-1 text-sm font-bold">
-                {explicit && "E"}
-              </span>
-
-              <div className="group/play bg-muted/75 mx-auto aspect-square w-12 rounded-full duration-200 hover:w-16">
+            <div className="absolute inset-0 hidden flex-col from-transparent to-black p-2 group-hover:flex group-hover:bg-gradient-to-b">
+              <div className="group/play bg-muted/75 m-auto aspect-square w-12 rounded-full duration-200 hover:w-16">
                 <Play
                   strokeWidth={10}
                   className="m-auto h-full w-6 p-1 duration-200 group-hover/play:w-8"
@@ -90,8 +87,18 @@ export function ItemCard({
         </Wrapper>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
-          <H4 className="w-full truncate text-center lg:text-lg">
-            <Wrapper href={getHref(url, type)}>{name}</Wrapper>
+          <H4 className="w-full lg:text-lg">
+            <Wrapper
+              href={getHref(url, type)}
+              className="mx-auto flex max-w-fit items-center"
+            >
+              {explicit && (
+                <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
+                  E
+                </Badge>
+              )}
+              <span className="truncate">{name}</span>
+            </Wrapper>
           </H4>
 
           <span className="text-secondary-foreground/75 w-full truncate text-center text-xs capitalize">

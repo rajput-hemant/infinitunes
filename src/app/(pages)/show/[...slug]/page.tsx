@@ -1,8 +1,8 @@
 import { Sort } from "@/types";
 import { getShowDetails } from "@/lib/jiosaavn-api";
-import DetailsHeader from "@/components/details-header";
+import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
-import SongList from "@/components/song-list";
+import { SongList } from "@/components/song/song-list";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Blockquote, H3 } from "@/components/ui/topography";
 
@@ -50,7 +50,7 @@ const ShowDetailsPage = async ({
 
       {/* song list */}
       <H3>{modules.episodes.title}</H3>
-      <SongList songs={episodes} />
+      <SongList items={episodes} />
 
       {/* about */}
       <H3>{modules.show_details.title}</H3>

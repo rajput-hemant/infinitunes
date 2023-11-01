@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Album, Category, Song } from "@/types";
 import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
 import { ItemCard } from "@/components/item-card";
-import SongList from "@/components/song-list";
+import { SongList } from "@/components/song/song-list";
 import { Button } from "@/components/ui/button";
 import { H3 } from "@/components/ui/topography";
 
@@ -72,7 +72,7 @@ const ArtistsTopItems = ({
 
   return (
     <>
-      <SongList songs={songs} />
+      <SongList items={songs} />
 
       <div className="flex w-full flex-wrap justify-between gap-y-4">
         {albums.map(({ id, name, url, subtitle, type, image, explicit }) => (

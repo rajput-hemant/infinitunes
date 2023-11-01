@@ -4,8 +4,8 @@ import { BadgeCheck } from "lucide-react";
 
 import { Album, Artist, Label, Playlist, ShowDetails, Song } from "@/types";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
-import DetailsHeaderDropdown from "./details-header-dropdown";
-import LikeButton from "./like-button";
+import { DetailsHeaderMoreButton } from "./details-header-more-button";
+import { LikeButton } from "./like-button";
 import { Badge } from "./ui/badge";
 import { Button, buttonVariants } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
@@ -15,12 +15,12 @@ type Props = {
   item: Song | Album | Playlist | Artist | ShowDetails | Label;
 };
 
-const DetailsHeader = ({ item }: Props) => {
+export const DetailsHeader = ({ item }: Props) => {
   return (
     <div className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
-          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-2xl dark:shadow-black md:w-64",
+          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-2xl transition-[width] duration-1000 dark:shadow-black md:w-56 xl:w-64",
           (item.type === "artist" || item.type === "label") && "rounded-full"
         )}
       >
@@ -186,30 +186,23 @@ const DetailsHeader = ({ item }: Props) => {
           {item.type === "label" && <p>Record Label</p>}
         </div>
 
-        <div
-          className={cn(
-            "mt-3 flex gap-2 lg:mt-6",
-            item.type === "label" && "hidden"
-          )}
-        >
-          <Button className="rounded-full px-10 text-xl font-bold">Play</Button>
+        {item.type !== "label" && (
+          <div className="mt-3 flex gap-2 lg:mt-6">
+            <Button className="rounded-full px-10 text-xl font-bold">
+              Play
+            </Button>
 
-          {/* <Button size="icon" variant="outline" className="rounded-full">
-            <Heart className="h-6 w-6" />
-          </Button> */}
+            <LikeButton
+              className={cn(
+                buttonVariants({ size: "icon", variant: "outline" }),
+                "rounded-full p-1.5"
+              )}
+            />
 
-          <LikeButton
-            className={cn(
-              buttonVariants({ size: "icon", variant: "outline" }),
-              "rounded-full p-1.5"
-            )}
-          />
-
-          <DetailsHeaderDropdown />
-        </div>
+            <DetailsHeaderMoreButton item={item} />
+          </div>
+        )}
       </div>
     </div>
   );
 };
-
-export default DetailsHeader;

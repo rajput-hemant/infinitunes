@@ -1,13 +1,11 @@
 import Link from "next/link";
 
-import { Song } from "@/types";
 import { search } from "@/lib/jiosaavn-api";
 import { cn } from "@/lib/utils";
-import { ItemCard } from "@/components/item-card";
-import SongList from "@/components/song-list";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { H1, Muted } from "@/components/ui/topography";
+import { SearchResults } from "./search-results";
 
 type Props = {
   params: { slug: ["song" | "album" | "playlist" | "artist" | "show", string] };
@@ -72,26 +70,12 @@ const Page = async ({ params: { slug } }: Props) => {
         </div>
       </nav>
 
-      <div className="my-4">
-        {type === "song" ? (
-          <SongList songs={searchRes.results as Song[]} />
-        ) : (
-          <div className="flex w-full flex-wrap justify-between gap-y-4">
-            {searchRes.results.map(
-              ({ id, name, url, subtitle, type, image }) => (
-                <ItemCard
-                  key={id}
-                  name={name}
-                  url={url}
-                  subtitle={subtitle}
-                  type={type}
-                  image={image}
-                />
-              )
-            )}
-          </div>
-        )}
-      </div>
+      <SearchResults
+        query={query}
+        type={type}
+        initialSearchResults={searchRes}
+        className="my-4"
+      />
     </>
   );
 };

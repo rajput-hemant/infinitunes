@@ -1,7 +1,7 @@
 import { getLabelDetails } from "@/lib/jiosaavn-api";
-import DetailsHeader from "@/components/details-header";
+import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
-import SongList from "@/components/song-list";
+import { SongList } from "@/components/song/song-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 type Props = { params: { slug: [string, string] } };
@@ -16,7 +16,7 @@ const Page = async ({ params: { slug } }: Props) => {
       <DetailsHeader item={label} />
 
       <Tabs defaultValue={TABS.Songs}>
-        <TabsList>
+        <TabsList className="mx-auto flex max-w-fit lg:mx-0">
           {Object.entries(TABS).map(([key, value]) => (
             <TabsTrigger key={key} value={value}>
               {value}
@@ -25,7 +25,7 @@ const Page = async ({ params: { slug } }: Props) => {
         </TabsList>
 
         <TabsContent value={TABS.Songs}>
-          <SongList songs={label.top_songs.songs} />
+          <SongList items={label.top_songs.songs} />
         </TabsContent>
 
         <TabsContent value={TABS.Albums}>

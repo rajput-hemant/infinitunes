@@ -1,8 +1,8 @@
 import { Category } from "@/types";
 import { getArtistDetails } from "@/lib/jiosaavn-api";
-import DetailsHeader from "@/components/details-header";
+import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
-import SongList from "@/components/song-list";
+import { SongList } from "@/components/song/song-list";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
@@ -80,7 +80,7 @@ const ArtistDetailsPage = async ({
 
         <TabsContent value={TABS.Overview} className="space-y-4">
           <H3>{artist.modules.top_songs.title}</H3>
-          <SongList songs={artist.top_songs.slice(0, 10)} />
+          <SongList items={artist.top_songs.slice(0, 10)} />
         </TabsContent>
 
         <TabsContent value={TABS.Songs}>
