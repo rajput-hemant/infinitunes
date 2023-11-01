@@ -8,7 +8,6 @@ const config = {
   },
   experimental: {
     swcPlugins: [["@swc-jotai/react-refresh", {}]],
-    serverActions: true,
   },
   /* ... */
 };

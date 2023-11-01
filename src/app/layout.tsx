@@ -15,6 +15,12 @@ import { cn } from "@/lib/utils";
 import Providers from "@/components/provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "white" },
+    { media: "(prefers-color-scheme: dark)", color: "black" },
+  ],
+};
 export const metadata: Metadata = {
   title: {
     default: siteConfig.name,
@@ -26,10 +32,6 @@ export const metadata: Metadata = {
   ],
   authors: [siteConfig.me],
   creator: siteConfig.me.name,
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
   openGraph: {
     type: "website",
     locale: "en_US",
