@@ -13,7 +13,7 @@ import {
   Share2,
 } from "lucide-react";
 
-import { Album, Artist, Playlist, ShowDetails, Song } from "@/types";
+import { Quality, Type } from "@/types";
 import { getImageSrc } from "@/lib/utils";
 import {
   Sheet,
@@ -39,7 +39,10 @@ import { Separator } from "./ui/separator";
 import { Skeleton } from "./ui/skeleton";
 
 type Props = {
-  item: Song | Album | Playlist | Artist | ShowDetails;
+  type: Type;
+  image: Quality;
+  name: string;
+  subtitle: string;
 };
 
 type MenuItem = {
@@ -49,7 +52,12 @@ type MenuItem = {
   icon: ({ className }: { className: string }) => JSX.Element;
 };
 
-export const DetailsHeaderMoreButton = ({ item }: Props) => {
+export const DetailsHeaderMoreButton = ({
+  name,
+  subtitle,
+  type,
+  image,
+}: Props) => {
   const [traslateX, setTranslateX] = useState(0);
 
   function play() {}
@@ -66,19 +74,19 @@ export const DetailsHeaderMoreButton = ({ item }: Props) => {
     {
       label: "Add to Queue",
       onClick: addToQueue,
-      hide: item.type === "show" || item.type === "artist",
+      hide: type === "show" || type === "artist",
       icon: ({ className }) => <ListOrdered className={className} />,
     },
     {
       label: "Add To Playlist",
       onClick: addToPlaylist,
-      hide: item.type === "show" || item.type === "artist",
+      hide: type === "show" || type === "artist" || type === "episode",
       icon: ({ className }) => <ListMusic className={className} />,
     },
     {
       label: "Play Radio",
       onClick: playRadio,
-      hide: item.type === "show",
+      hide: type === "show" || type === "mix",
       icon: ({ className }) => <Radio className={className} />,
     },
   ];
@@ -102,8 +110,8 @@ export const DetailsHeaderMoreButton = ({ item }: Props) => {
             <div className="flex gap-2">
               <div className="relative aspect-square h-14 rounded-md">
                 <Image
-                  src={getImageSrc(item.image, "low")}
-                  alt={item.name}
+                  src={getImageSrc(image, "low")}
+                  alt={name}
                   fill
                   className="z-10 rounded-md"
                 />
@@ -112,10 +120,10 @@ export const DetailsHeaderMoreButton = ({ item }: Props) => {
               </div>
 
               <div className="flex flex-col truncate text-start">
-                <SheetTitle className="truncate">{item.name}</SheetTitle>
+                <SheetTitle className="truncate">{name}</SheetTitle>
 
                 <SheetDescription className="truncate">
-                  {item.subtitle}
+                  {subtitle}
                 </SheetDescription>
               </div>
             </div>
@@ -194,6 +202,7 @@ export const DetailsHeaderMoreButton = ({ item }: Props) => {
                   {label}
                 </DropdownMenuItem>
               ))}
+
             <ShareSubMenu />
           </DropdownMenuGroup>
         </DropdownMenuContent>

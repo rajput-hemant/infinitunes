@@ -18,7 +18,7 @@ export const CopyButton = ({ isDropDownItem, className }: Props) => {
 
   function copy() {
     try {
-      navigator.clipboard.writeText(`${siteConfig.url}/${pathname}`);
+      navigator.clipboard.writeText(`${siteConfig.url}${pathname}`);
       setIsCopied(true);
     } catch (error) {
       console.error("Could not copy to clipboard", error);
@@ -30,7 +30,7 @@ export const CopyButton = ({ isDropDownItem, className }: Props) => {
       <Clipboard
         className={cn("mr-2 aspect-square h-5", isDropDownItem && "h-4")}
       />
-      {isCopied ? "Copied 👍" : "Copy Link"}
+      {isCopied ? "Link Copied 👍" : "Copy Link"}
     </button>
   );
 };

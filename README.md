@@ -2,7 +2,7 @@
 
 <!-- labels -->
 
-![][views] ![][stars] ![][forks] ![][issues] ![][license] ![][repo-size]
+![][ci] ![][views] ![][stars] ![][forks] ![][issues] ![][license] ![][repo-size]
 
 <!-- logo/title -->
 
@@ -72,6 +72,7 @@ _Note: It may take up to 24h for the [contrib.rocks][contrib-rocks] plugin to up
 [contributors]: https://contrib.rocks/image?repo=rajput-hemant/infinitunes&max=500
 [contributors-graph]: https://github.com/rajput-hemant/infinitunes/graphs/contributors
 [contrib-rocks]: https://contrib.rocks/preview?repo=rajput-hemant%2Finfinitunes
+[ci]: https://github.com/rajput-hemant/infinitunes/actions/workflows/ci.yml/badge.svg
 
 <!-----------------------------------{ Links }---------------------------------->
 

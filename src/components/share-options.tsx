@@ -3,6 +3,7 @@ import { Clipboard, Facebook, Mail, Twitter } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { CopyButton } from "./copy-button";
+import { Icons } from "./icons";
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 
 type Props = {
@@ -24,12 +25,12 @@ const shareOptions: ShareOption[] = [
   {
     label: "WhatsApp",
     href: "https://github.com/rajput-hemant/infinitunes",
-    icon: ({ className }) => <Clipboard className={className} />,
+    icon: ({ className }) => <Icons.WhatsApp className={className} />,
   },
   {
     label: "Telegram",
     href: "https://github.com/rajput-hemant/infinitunes",
-    icon: ({ className }) => <Clipboard className={className} />,
+    icon: ({ className }) => <Icons.Telegram className={className} />,
   },
   {
     label: "Twitter",

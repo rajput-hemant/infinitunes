@@ -8,12 +8,15 @@ import {
   Category,
   Chart,
   CustomResponse,
+  Episode,
+  EpisodeDetail,
   FeaturedPlaylists,
   FooterDetails,
   Label,
   Lang,
   Lyrics,
   MegaMenu,
+  Mix,
   Modules,
   Playlist,
   PlaylistSearch,
@@ -313,15 +316,56 @@ export async function getArtistTopSongs(
  *
  * @param token - Show token to get details for.
  * @param season - Season number to get details for. Default is `1`.
- * @param sort- Sort order of the episodes. Default is `asc`.
+ * @param sort- Sort order of the episodes. Default is `desc`.
  * @returns Promise resolving to show object.
  */
 export async function getShowDetails(
   token: string,
   season = 1,
-  sort: Sort = "asc"
+  sort: Sort = "desc"
 ) {
   return await jioSaavnGetCall<Show>("/show", {
+    token,
+    season: `${season}`,
+    sort,
+  });
+}
+
+/**
+ * Get episodes for a show from JioSaavn API.
+ * @param id - Show ID
+ * @param season - Season number to get details for. Default is `1`.
+ * @param page - Page number to get
+ * @param sort - Sort order of the episodes. Default is `desc`.
+ * @returns - Promise resolving to array of episodes
+ */
+export async function getShowEpisodes(
+  id: string,
+  season?: number,
+  page?: number,
+  sort: Sort = "desc"
+) {
+  return await jioSaavnGetCall<Episode[]>("/show/episodes", {
+    id,
+    season: `${season}`,
+    page: `${page}`,
+    sort,
+  });
+}
+
+/**
+ * Get details for an episode from JioSaavn API.
+ * @param token - Episode token
+ * @param season - Season number to get details for. Default is `1`.
+ * @param sort - Sort order of the episodes. Default is `desc`.
+ * @returns - Promise resolving to episode details
+ */
+export async function getEpisodeDetails(
+  token: string,
+  season = 1,
+  sort: Sort = "desc"
+) {
+  return await jioSaavnGetCall<EpisodeDetail>("/show/episode", {
     token,
     season: `${season}`,
     sort,
@@ -583,6 +627,31 @@ export async function getLabelDetails(
     cat,
     sort,
     lang,
+    mini: `${mini}`,
+  });
+}
+
+/**
+ * Get details for a mix playlist from JioSaavn API.
+ * @param token - Mix token
+ * @param page - page number to get
+ * @param n - number of results to get
+ * @param lang - language(s) to filter the results by
+ * @param mini - Whether to fetch mini data
+ * @returns - Promise resolving to Mix object
+ */
+export async function getMixDetails(
+  token: string,
+  page = 1,
+  n = 20,
+  lang: Lang[] = ["hindi", "english"],
+  mini = true
+) {
+  return await jioSaavnGetCall<Mix>("/get/mix", {
+    token,
+    page: `${page}`,
+    n: `${n}`,
+    lang: lang.join(","),
     mini: `${mini}`,
   });
 }

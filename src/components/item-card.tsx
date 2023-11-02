@@ -1,10 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { MoreVertical, Play } from "lucide-react";
+import { Play } from "lucide-react";
 
 import { Quality, Type } from "@/types";
 import { cn, getHref, getImageSrc } from "@/lib/utils";
-import { LikeButton } from "./like-button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
@@ -67,7 +66,7 @@ export function ItemCard({
 
             <Skeleton className="absolute inset-0 -z-10 h-full w-full hover:scale-110" />
 
-            <div className="absolute inset-0 hidden flex-col from-transparent to-black p-2 group-hover:flex group-hover:bg-gradient-to-b">
+            <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
               <div className="group/play bg-muted/75 m-auto aspect-square w-12 rounded-full duration-200 hover:w-16">
                 <Play
                   strokeWidth={10}
@@ -75,13 +74,13 @@ export function ItemCard({
                 />
               </div>
 
-              <div className="text-primary-foreground dark:text-secondary-foreground flex justify-between">
+              {/* <div className="text-primary-foreground dark:text-secondary-foreground flex justify-between">
                 <LikeButton />
 
                 <button className="rounded-full">
                   <MoreVertical className="h-6 w-6" />
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </Wrapper>

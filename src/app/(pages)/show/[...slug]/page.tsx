@@ -1,10 +1,20 @@
+import Link from "next/link";
+import { ChevronDown } from "lucide-react";
+
 import { Sort } from "@/types";
 import { getShowDetails } from "@/lib/jiosaavn-api";
 import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
-import { SongList } from "@/components/song/song-list";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Blockquote, H3 } from "@/components/ui/topography";
+import { EpisodeList } from "./episode-list";
 
 type Props = {
   searchParams: { sort: Sort };
@@ -13,7 +23,7 @@ type Props = {
 
 const ShowDetailsPage = async ({
   params: { slug },
-  searchParams: { sort = "asc" },
+  searchParams: { sort = "desc" },
 }: Props) => {
   const [_, season, token] = slug;
   const { episodes, modules, seasons, show_details } = await getShowDetails(
@@ -48,9 +58,41 @@ const ShowDetailsPage = async ({
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      {/* song list */}
-      <H3>{modules.episodes.title}</H3>
-      <SongList items={episodes} />
+      {/* eoisode list & sonrt order */}
+      <div className="flex justify-between">
+        <H3>{modules.episodes.title}</H3>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-36">
+              {sort === "asc" ? "Oldest" : "Newest"}
+              <ChevronDown className="ml-auto h-5 w-5" />
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent className="w-36">
+            <DropdownMenuItem asChild>
+              <Link href="?sort=desc" className="cursor-pointer">
+                Newest
+              </Link>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem asChild>
+              <Link href="?sort=asc" className="cursor-pointer">
+                Oldest
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <EpisodeList
+        showId={show_details.id}
+        season={show_details.season_number}
+        sort={sort}
+        totalEpisodes={show_details.total_episodes}
+        initialEpisodes={episodes}
+      />
 
       {/* about */}
       <H3>{modules.show_details.title}</H3>

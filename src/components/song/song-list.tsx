@@ -80,7 +80,7 @@ export const SongList = ({
                 <Link
                   href={getHref(
                     item.url,
-                    item.type === "song" ? "song" : "show"
+                    item.type === "song" ? "song" : "episode"
                   )}
                   className="group-hover:text-primary"
                 >
@@ -113,7 +113,7 @@ export const SongList = ({
               <p className="hidden w-1/3 truncate xl:block">
                 <Link
                   href={getHref(item.album_url, "album")}
-                  className="group-hover:text-primary"
+                  className="hover:text-primary"
                 >
                   {item.album}
                 </Link>

@@ -2,7 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
 
-import { Album, Artist, Label, Playlist, ShowDetails, Song } from "@/types";
+import {
+  Album,
+  Artist,
+  Episode,
+  Label,
+  Mix,
+  Playlist,
+  ShowDetails,
+  Song,
+} from "@/types";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { DetailsHeaderMoreButton } from "./details-header-more-button";
 import { LikeButton } from "./like-button";
@@ -12,7 +21,7 @@ import { Skeleton } from "./ui/skeleton";
 import { H2 } from "./ui/topography";
 
 type Props = {
-  item: Song | Album | Playlist | Artist | ShowDetails | Label;
+  item: Song | Album | Playlist | Artist | Episode | ShowDetails | Label | Mix;
 };
 
 export const DetailsHeader = ({ item }: Props) => {
@@ -55,33 +64,39 @@ export const DetailsHeader = ({ item }: Props) => {
         </H2>
 
         <div className="text-muted-foreground space-y-1.5 text-sm">
-          {item.type === "song" && (
+          {(item.type === "song" || item.type === "episode") && (
             <>
               <p>
-                <span>
-                  <Link
-                    href={getHref(item.album_url, "album")}
-                    className="hover:text-foreground"
-                  >
-                    {item.album}
-                  </Link>
-                </span>
-                <span> by </span>
-                <span>
-                  {item.artist_map.primary_artists.map(
-                    ({ id, name, url }, i) => (
+                {item.type === "song" ? (
+                  <>
+                    <span>
                       <Link
-                        key={id}
-                        href={getHref(url, "artist")}
+                        href={getHref(item.album_url, "album")}
                         className="hover:text-foreground"
                       >
-                        {name}
-                        {i !== item.artist_map.primary_artists.length - 1 &&
-                          ", "}
+                        {item.album}
                       </Link>
-                    )
-                  )}
-                </span>
+                    </span>
+                    <span> by </span>
+                    <span>
+                      {item.artist_map.primary_artists.map(
+                        ({ id, name, url }, i) => (
+                          <Link
+                            key={id}
+                            href={getHref(url, "artist")}
+                            className="hover:text-foreground"
+                          >
+                            {name}
+                            {i !== item.artist_map.primary_artists.length - 1 &&
+                              ", "}
+                          </Link>
+                        )
+                      )}
+                    </span>
+                  </>
+                ) : (
+                  <span>{item.header_desc}</span>
+                )}
               </p>
 
               <p>
@@ -177,6 +192,16 @@ export const DetailsHeader = ({ item }: Props) => {
             </p>
           )}
 
+          {item.type === "mix" && (
+            <p>
+              <span>{item.firstname}</span>
+              {" · "}
+              <span>{item.lastname}</span>
+              {" · "}
+              <span>{item.list_count} Songs</span>
+            </p>
+          )}
+
           {(item.type === "song" || item.type === "album") && (
             <p className="text-muted-foreground hover:text-foreground hidden w-fit text-sm lg:block">
               <Link href={item.label_url ?? "#"}>{item.copyright_text}</Link>
@@ -199,7 +224,12 @@ export const DetailsHeader = ({ item }: Props) => {
               )}
             />
 
-            <DetailsHeaderMoreButton item={item} />
+            <DetailsHeaderMoreButton
+              name={item.name}
+              subtitle={item.subtitle}
+              type={item.type}
+              image={item.image}
+            />
           </div>
         )}
       </div>
