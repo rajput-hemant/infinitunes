@@ -1,3 +1,5 @@
+import { ArtistMini } from "./artist";
+
 export type Type =
   | "artist"
   | "album"
@@ -15,6 +17,8 @@ export type Type =
 export type Quality = string | { quality: string; link: string }[];
 
 export type ImageQuality = "low" | "medium" | "high";
+
+export type StreamQuality = "poor" | "low" | "medium" | "high" | "excellent";
 
 export type Rights = {
   code: unknown;
@@ -44,3 +48,13 @@ export type Lang =
 export type Category = "latest" | "alphabetical" | "popularity";
 
 export type Sort = "asc" | "desc";
+
+export type Queue = {
+  id: string;
+  name: string;
+  subtitle: string;
+  url: string;
+  image: Quality;
+  download_url: Quality;
+  artists: ArtistMini[];
+};

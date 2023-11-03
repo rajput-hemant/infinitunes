@@ -1,7 +1,7 @@
 import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
-import { ImageQuality, Quality, Type } from "@/types";
+import { ImageQuality, Quality, StreamQuality, Type } from "@/types";
 
 /**
  * Merges the given class names with the tailwind classes
@@ -58,5 +58,21 @@ export const getImageSrc = (image: Quality, quality: ImageQuality) => {
     return image[1].link;
   } else {
     return image[2].link;
+  }
+};
+
+export const getDownloadLink = (url: Quality, quality: StreamQuality) => {
+  if (typeof url === "string") {
+    return url;
+  } else if (quality === "poor") {
+    return url[0].link;
+  } else if (quality === "low") {
+    return url[1].link;
+  } else if (quality === "medium") {
+    return url[2].link;
+  } else if (quality === "high") {
+    return url[3].link;
+  } else {
+    return url[4].link;
   }
 };

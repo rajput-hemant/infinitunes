@@ -15,8 +15,9 @@ import {
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { DetailsHeaderMoreButton } from "./details-header-more-button";
 import { LikeButton } from "./like-button";
+import { PlayButton } from "./play-button";
 import { Badge } from "./ui/badge";
-import { Button, buttonVariants } from "./ui/button";
+import { buttonVariants } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 import { H2 } from "./ui/topography";
 
@@ -213,9 +214,20 @@ export const DetailsHeader = ({ item }: Props) => {
 
         {item.type !== "label" && (
           <div className="mt-3 flex gap-2 lg:mt-6">
-            <Button className="rounded-full px-10 text-xl font-bold">
+            <PlayButton
+              type={item.type}
+              token={
+                (item.type === "artist" ? item.urls.songs : item.url)
+                  .split("/")
+                  .pop()!
+              }
+              className={cn(
+                buttonVariants(),
+                "rounded-full px-10 text-xl font-bold"
+              )}
+            >
               Play
-            </Button>
+            </PlayButton>
 
             <LikeButton
               className={cn(

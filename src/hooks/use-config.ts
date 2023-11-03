@@ -1,7 +1,7 @@
-import { createStore, useAtom } from "jotai";
+import { atom, createStore, useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import { Lang, Theme } from "@/types";
+import { Lang, Queue, StreamQuality, Theme } from "@/types";
 
 type Config = {
   theme: {
@@ -9,6 +9,10 @@ type Config = {
     radius: number;
   };
   languages: Lang[];
+  queue: Queue[];
+  currentSongId: string | null;
+  streamQuality: StreamQuality;
+  downloadQuality: StreamQuality;
 };
 
 const store = createStore();
@@ -19,8 +23,18 @@ const configAtom = atomWithStorage<Config>("config", {
     radius: 0.5,
   },
   languages: ["hindi", "english"],
+  queue: [],
+  currentSongId: null,
+  streamQuality: "excellent",
+  downloadQuality: "excellent",
 });
+
+const isPlayingAtom = atom(false);
 
 export function useConfig() {
   return useAtom(configAtom, { store });
+}
+
+export function useIsPlayerInit() {
+  return useAtom(isPlayingAtom, { store });
 }

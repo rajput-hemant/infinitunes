@@ -5,6 +5,7 @@ import { Play } from "lucide-react";
 import { Episode, Song } from "@/types";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { LikeButton } from "../like-button";
+import { PlayButton } from "../play-button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
 import { TileMoreButton } from "./tile-more-button";
@@ -42,12 +43,16 @@ export const SongList = ({
             </span>
 
             {!showAlbum && (
-              <span className="hover:text-primary border-muted-foreground group/play hover:border-primary hidden aspect-square h-8 items-center justify-center rounded-full border duration-300 hover:h-9 group-hover:flex">
+              <PlayButton
+                type={item.type}
+                token={item.url.split("/").pop()!}
+                className="hover:text-primary border-muted-foreground group/play hover:border-primary hidden aspect-square h-8 items-center justify-center rounded-full border duration-300 hover:h-9 group-hover:flex"
+              >
                 <Play
                   strokeWidth={10}
                   className="h-full w-5 p-1 duration-300 group-hover/play:w-6"
                 />
-              </span>
+              </PlayButton>
             )}
           </div>
 
@@ -64,10 +69,12 @@ export const SongList = ({
 
                 <Skeleton className="absolute inset-0 rounded" />
 
-                <Play
-                  strokeWidth={10}
-                  className="text-secondary absolute inset-0 z-20 m-auto hidden h-full w-6 p-1 duration-300 hover:w-8 group-hover:block dark:invert"
-                />
+                <PlayButton type={item.type} token={item.url.split("/").pop()!}>
+                  <Play
+                    strokeWidth={10}
+                    className="text-secondary absolute inset-0 z-20 m-auto hidden h-full w-6 p-1 duration-300 hover:w-8 group-hover:block dark:invert"
+                  />
+                </PlayButton>
               </div>
             )}
 
@@ -88,25 +95,23 @@ export const SongList = ({
                 </Link>
               </h3>
 
-              <p className="w-full truncate">
-                <ScrollArea className="pb-1">
-                  {item.artist_map.primary_artists.map((artist, i) => (
-                    <Link
-                      key={artist.id}
-                      href={getHref(artist.url, "artist")}
-                      className="hover:text-foreground"
-                    >
-                      {artist.name}
-                      {i !== item.artist_map.primary_artists.length - 1 && ", "}
-                    </Link>
-                  ))}
+              <ScrollArea className="w-full truncate pb-1">
+                {item.artist_map.primary_artists.map((artist, i) => (
+                  <Link
+                    key={artist.id}
+                    href={getHref(artist.url, "artist")}
+                    className="hover:text-foreground"
+                  >
+                    {artist.name}
+                    {i !== item.artist_map.primary_artists.length - 1 && ", "}
+                  </Link>
+                ))}
 
-                  <ScrollBar
-                    orientation="horizontal"
-                    className="mt-1 h-1 w-full"
-                  />
-                </ScrollArea>
-              </p>
+                <ScrollBar
+                  orientation="horizontal"
+                  className="mt-1 h-1 w-full"
+                />
+              </ScrollArea>
             </div>
 
             {showAlbum && item.type !== "episode" && (

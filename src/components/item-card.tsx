@@ -4,6 +4,7 @@ import { Play } from "lucide-react";
 
 import { Quality, Type } from "@/types";
 import { cn, getHref, getImageSrc } from "@/lib/utils";
+import { PlayButton } from "./play-button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
@@ -67,12 +68,16 @@ export function ItemCard({
             <Skeleton className="absolute inset-0 -z-10 h-full w-full hover:scale-110" />
 
             <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
-              <div className="group/play bg-muted/75 m-auto aspect-square w-12 rounded-full duration-200 hover:w-16">
+              <PlayButton
+                type={type}
+                token={url.split("/").pop()!}
+                className="group/play bg-muted/75 m-auto aspect-square w-12 rounded-full duration-200 hover:w-16"
+              >
                 <Play
                   strokeWidth={10}
                   className="m-auto h-full w-6 p-1 duration-200 group-hover/play:w-8"
                 />
-              </div>
+              </PlayButton>
 
               {/* <div className="text-primary-foreground dark:text-secondary-foreground flex justify-between">
                 <LikeButton />
