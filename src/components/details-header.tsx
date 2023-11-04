@@ -26,6 +26,9 @@ type Props = {
 };
 
 export const DetailsHeader = ({ item }: Props) => {
+  const songs =
+    item.type === "song" ? [item] : "songs" in item ? item.songs : [];
+
   return (
     <div className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
@@ -41,7 +44,7 @@ export const DetailsHeader = ({ item }: Props) => {
           alt={item.name}
           className={cn(
             "h-full w-full rounded-md object-cover",
-            item.type === "artist" && "scale-105"
+            ["artist", "label"].includes(item.type) && "scale-105"
           )}
         />
 
@@ -241,6 +244,7 @@ export const DetailsHeader = ({ item }: Props) => {
               subtitle={item.subtitle}
               type={item.type}
               image={item.image}
+              songs={songs ?? []}
             />
           </div>
         )}

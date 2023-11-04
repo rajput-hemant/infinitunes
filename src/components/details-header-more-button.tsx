@@ -13,8 +13,9 @@ import {
   Share2,
 } from "lucide-react";
 
-import { Quality, Type } from "@/types";
+import { Quality, Song, Type } from "@/types";
 import { getImageSrc } from "@/lib/utils";
+import { useQueue } from "@/hooks/use-store";
 import {
   Sheet,
   SheetClose,
@@ -43,6 +44,7 @@ type Props = {
   image: Quality;
   name: string;
   subtitle: string;
+  songs: Song[];
 };
 
 type MenuItem = {
@@ -57,12 +59,41 @@ export const DetailsHeaderMoreButton = ({
   subtitle,
   type,
   image,
+  songs,
 }: Props) => {
+  const [, setQueue] = useQueue();
   const [traslateX, setTranslateX] = useState(0);
 
   function play() {}
-  function addToQueue() {}
+
+  function addToQueue() {
+    const songsPayload = songs.map(
+      ({
+        id,
+        name,
+        subtitle,
+        type,
+        url,
+        image,
+        download_url,
+        artist_map: { artists },
+      }) => ({
+        id,
+        name,
+        subtitle,
+        url,
+        type,
+        image,
+        download_url,
+        artists,
+      })
+    );
+
+    setQueue((prev) => [...prev, ...songsPayload]);
+  }
+
   function addToPlaylist() {}
+
   function playRadio() {}
 
   const menuItems: MenuItem[] = [

@@ -9,6 +9,7 @@ import { PlayButton } from "../play-button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
 import { TileMoreButton } from "./tile-more-button";
+import { TilePlayPauseButton } from "./tile-play-pause-button";
 
 type Props = {
   items: (Song | Episode)[];
@@ -69,12 +70,11 @@ export const SongList = ({
 
                 <Skeleton className="absolute inset-0 rounded" />
 
-                <PlayButton type={item.type} token={item.url.split("/").pop()!}>
-                  <Play
-                    strokeWidth={10}
-                    className="text-secondary absolute inset-0 z-20 m-auto hidden h-full w-6 p-1 duration-300 hover:w-8 group-hover:block dark:invert"
-                  />
-                </PlayButton>
+                <TilePlayPauseButton
+                  id={item.id}
+                  type={item.type}
+                  token={item.url.split("/").pop()!}
+                />
               </div>
             )}
 

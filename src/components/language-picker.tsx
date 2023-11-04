@@ -6,7 +6,7 @@ import { ChevronDown, Languages } from "lucide-react";
 import { Lang } from "@/types";
 import { languages } from "@/config/languages";
 import { cn } from "@/lib/utils";
-import { useConfig } from "@/hooks/use-config";
+import { useConfig } from "@/hooks/use-store";
 import { Button, buttonVariants } from "./ui/button";
 import {
   DropdownMenu,

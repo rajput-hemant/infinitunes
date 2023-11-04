@@ -14,8 +14,13 @@ import {
   Share2,
 } from "lucide-react";
 
-import { Episode, Song } from "@/types";
+import { Episode, Queue, Song } from "@/types";
 import { getImageSrc } from "@/lib/utils";
+import {
+  useCurrentSongIndex,
+  useIsPlayerInit,
+  useQueue,
+} from "@/hooks/use-store";
 import {
   Sheet,
   SheetClose,
@@ -40,7 +45,7 @@ import { Skeleton } from "../ui/skeleton";
 import { TileMoreLinks } from "./tile-more-links";
 
 type Props = {
-  item: Song | Episode;
+  item: Song | Episode | Queue;
   showAlbum: boolean;
 };
 
@@ -52,12 +57,86 @@ type MenuItem = {
 };
 
 export const TileMoreButton = ({ item, showAlbum }: Props) => {
+  const [, setIsPlayerInit] = useIsPlayerInit();
+  const [initialQueue, setQueue] = useQueue();
+  const [, setCurrentIndex] = useCurrentSongIndex();
   const [traslateX, setTranslateX] = useState(0);
 
   function like() {}
-  function play() {}
-  function addToQueue() {}
+
+  function play() {
+    if (item.type === "episode") return;
+
+    const songIndex = initialQueue.findIndex((q) => q.id === item.id);
+
+    if (songIndex !== -1) {
+      setCurrentIndex(songIndex);
+    } else {
+      const {
+        id,
+        name,
+        subtitle,
+        type,
+        url,
+        image,
+        artist_map: { featured_artists: artists },
+        download_url,
+      } = item as Song;
+
+      const queue = {
+        id,
+        name,
+        subtitle,
+        type,
+        url,
+        image,
+        artists,
+        download_url,
+      } satisfies Queue;
+
+      setQueue([queue]);
+      setCurrentIndex(0);
+    }
+
+    setIsPlayerInit(true);
+  }
+
+  function addToQueue() {
+    if (item.type === "episode") return;
+
+    let queue: Queue;
+
+    if ("explicit" in item) {
+      const {
+        id,
+        name,
+        subtitle,
+        type,
+        url,
+        image,
+        artist_map: { featured_artists: artists },
+        download_url,
+      } = item;
+
+      queue = {
+        id,
+        name,
+        subtitle,
+        type,
+        url,
+        image,
+        artists,
+        download_url,
+      } satisfies Queue;
+    } else {
+      queue = item;
+    }
+
+    setQueue((q) => [...q, queue]);
+  }
+
   function addToPlaylist() {}
+
   function playRadio() {}
 
   const menuItems: MenuItem[] = [
@@ -173,7 +252,11 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
               itemUrl={item.url}
               albumUrl={"album_url" in item ? item.album_url : undefined}
               showAlbum={item.type === "song" ? showAlbum : false}
-              primaryArtists={item.artist_map.primary_artists}
+              primaryArtists={
+                "artists" in item
+                  ? item.artists
+                  : item.artist_map.primary_artists
+              }
             />
           </div>
 
@@ -214,7 +297,11 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
               albumUrl={"album_url" in item ? item.album_url : undefined}
               showAlbum={showAlbum}
               isDropdownItem
-              primaryArtists={item.artist_map.primary_artists}
+              primaryArtists={
+                "artists" in item
+                  ? item.artists
+                  : item.artist_map.primary_artists
+              }
             />
           </DropdownMenuGroup>
         </DropdownMenuContent>

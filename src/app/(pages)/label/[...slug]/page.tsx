@@ -12,7 +12,7 @@ const Page = async ({ params: { slug } }: Props) => {
   const label = await getLabelDetails(slug[1]);
 
   return (
-    <>
+    <div className="mb-4 space-y-4">
       <DetailsHeader item={label} />
 
       <Tabs defaultValue={TABS.Songs}>
@@ -45,7 +45,7 @@ const Page = async ({ params: { slug } }: Props) => {
           </div>
         </TabsContent>
       </Tabs>
-    </>
+    </div>
   );
 };
 

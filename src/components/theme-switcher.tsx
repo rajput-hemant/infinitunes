@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { useConfig } from "@/hooks/use-config";
+import { useConfig } from "@/hooks/use-store";
 
 export function ThemeSwitcher() {
   const [config] = useConfig();

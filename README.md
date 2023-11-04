@@ -44,8 +44,12 @@ bun dev
 
 </div>
 
+- [ ] Add Metadata to the pages.
+- [ ] Replace loading spinners with Page Skeletons.
+- [ ] Play rate for shows and podcasts.
 - [ ] Implement the feature to save Favorites, Recently Played Songs in both the `db` and `localStorage`.
 - [ ] Add support for User's Playlists.
+- [ ] Add support for Radio Stations.
 - [ ] Create Library, Settings, and Profile pages.
   - Library page
     - [ ] Recently Played
@@ -64,8 +68,9 @@ bun dev
   - [ ] Improve Card Responsiveness, impelement auto-resizing cards like `https://jiosaavn.com`
   - [ ] Add accessibility features & aria labels.
 - [ ] Enhance the Player UI, add a player screen for small devices, and a Queue sheet for larger devices.
-- [ ] Add support for Keyboard shortcuts for Player.
+- [x] Add support for Keyboard shortcuts for Player.
 - [ ] Add support to download songs.
+- [ ] Optimize initial page load size.
 
 and many more...
 

@@ -11,7 +11,11 @@ import {
   getPlaylistDetails,
   getSongDetails,
 } from "@/lib/jiosaavn-api";
-import { useConfig, useIsPlayerInit } from "@/hooks/use-config";
+import {
+  useCurrentSongIndex,
+  useIsPlayerInit,
+  useQueue,
+} from "@/hooks/use-store";
 
 type Props = {
   type: Type;
@@ -20,45 +24,54 @@ type Props = {
 } & React.HtmlHTMLAttributes<HTMLButtonElement>;
 
 export function PlayButton({ type, token, children, ...props }: Props) {
-  const [, setConfig] = useConfig();
+  const [initialQueue, setQueue] = useQueue();
   const [, setIsPlayerInit] = useIsPlayerInit();
+  const [, setCurrentIndex] = useCurrentSongIndex();
 
   async function playHandler() {
-    let queue: Song[] = [];
+    const songIndex = initialQueue.findIndex(
+      (song) => token === song.url.split("/").pop()
+    );
 
-    if (type === "song") {
-      const songObj = await getSongDetails(token);
+    if (songIndex !== -1) {
+      setCurrentIndex(songIndex);
+      return;
+    } else {
+      let queue: Song[] = [];
 
-      queue = songObj.songs;
-    } else if (type === "album" || type === "playlist" || type === "mix") {
-      let fetcher;
+      if (type === "song") {
+        const songObj = await getSongDetails(token);
 
-      if (type === "album") fetcher = getAlbumDetails;
-      else if (type === "playlist") fetcher = getPlaylistDetails;
-      else fetcher = getMixDetails;
+        queue = songObj.songs;
+      } else if (type === "album" || type === "playlist" || type === "mix") {
+        let fetcher;
 
-      const album = await fetcher(token);
-      queue = album.songs ?? [];
-    } else if (type === "artist") {
-      const artist = await getArtistDetails(token);
-      queue = artist.top_songs;
-    } else if (type === "label") {
-      const label = await getLabelDetails(token);
-      queue = label.top_songs.songs;
-    } else if (type === "episode" || type === "show") {
-      // const result =
-      //   type === "episode"
-      //     ? await getEpisodeDetails(token)
-      //     : getShowDetails(token);
-      // queue = result.episodes ?? [];
-    }
-    setConfig((config) => ({
-      ...config,
-      queue: queue.map(
+        if (type === "album") fetcher = getAlbumDetails;
+        else if (type === "playlist") fetcher = getPlaylistDetails;
+        else fetcher = getMixDetails;
+
+        const album = await fetcher(token);
+        queue = album.songs ?? [];
+      } else if (type === "artist") {
+        const artist = await getArtistDetails(token);
+        queue = artist.top_songs;
+      } else if (type === "label") {
+        const label = await getLabelDetails(token);
+        queue = label.top_songs.songs;
+      } else if (type === "episode" || type === "show") {
+        // const result =
+        //   type === "episode"
+        //     ? await getEpisodeDetails(token)
+        //     : getShowDetails(token);
+        // queue = result.episodes ?? [];
+      }
+
+      const _queue = queue.map(
         ({
           id,
           name,
           subtitle,
+          type,
           url,
           image,
           download_url,
@@ -68,13 +81,17 @@ export function PlayButton({ type, token, children, ...props }: Props) {
           name,
           subtitle,
           url,
+          type,
           image,
           download_url,
           artists,
         })
-      ),
-    }));
-    setIsPlayerInit(true);
+      );
+      setQueue(_queue);
+
+      setCurrentIndex(0);
+      setIsPlayerInit(true);
+    }
   }
 
   return (

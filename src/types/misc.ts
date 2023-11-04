@@ -54,7 +54,8 @@ export type Queue = {
   name: string;
   subtitle: string;
   url: string;
+  type: "song" | "episode";
   image: Quality;
-  download_url: Quality;
   artists: ArtistMini[];
+  download_url: Quality;
 };

@@ -17,20 +17,32 @@ import {
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 
 import { cn, formatDuration, getDownloadLink, getImageSrc } from "@/lib/utils";
-import { useConfig, useIsPlayerInit } from "@/hooks/use-config";
+import { useEventListener } from "@/hooks/use-event-listner";
+import {
+  useCurrentSongIndex,
+  useIsPlayerInit,
+  useQueue,
+  useStreamQuality,
+} from "@/hooks/use-store";
 import { Icons } from "./icons";
+import { TileMoreButton } from "./song/tile-more-button";
 import { Skeleton } from "./ui/skeleton";
 import { Slider, SliderRange, SliderThumb, SliderTrack } from "./ui/slider";
 import { Muted } from "./ui/topography";
 
 const Player = () => {
-  const [config] = useConfig();
-  const frameRef = useRef<number>();
+  // stores
+  const [queue] = useQueue();
+  const [streamQuality] = useStreamQuality();
+  const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
+  // refs
+  const frameRef = useRef<number>();
+  // states
   const [isShuffle, setIsShuffle] = useState(false);
   const [loopPlaylist, setLoopPlaylist] = useState(false);
   const [pos, setPos] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  // third party hooks
   const {
     load,
     playing,
@@ -49,10 +61,10 @@ const Player = () => {
   } = useGlobalAudioPlayer();
 
   useEffect(() => {
-    if (config.queue.length && isPlayerInit) {
+    if (queue.length && isPlayerInit) {
       const audioSrc = getDownloadLink(
-        config.queue[currentIndex].download_url,
-        config.streamQuality
+        queue[currentIndex].download_url,
+        streamQuality
       );
 
       load(audioSrc, {
@@ -63,7 +75,7 @@ const Player = () => {
         onend: onEndHandler,
       });
     }
-  }, [config, currentIndex, isPlayerInit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [queue, streamQuality, currentIndex, isPlayerInit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const animate = () => {
@@ -83,7 +95,7 @@ const Player = () => {
   function loopHandler() {
     if (!isReady) return;
 
-    if (config.queue.length === 1) {
+    if (queue.length === 1) {
       loop(!looping);
     } else if (!looping && !loopPlaylist) {
       setLoopPlaylist(true);
@@ -102,9 +114,9 @@ const Player = () => {
     let index = currentIndex;
 
     if (isShuffle) {
-      index = Math.floor(Math.random() * config.queue.length);
+      index = Math.floor(Math.random() * queue.length);
     } else {
-      if (currentIndex < config.queue.length - 1) {
+      if (currentIndex < queue.length - 1) {
         index = currentIndex + 1;
       } else {
         if (loopPlaylist) {
@@ -121,13 +133,13 @@ const Player = () => {
     let index;
 
     if (isShuffle) {
-      index = Math.floor(Math.random() * config.queue.length);
+      index = Math.floor(Math.random() * queue.length);
     } else {
       if (currentIndex > 0) {
         index = currentIndex - 1;
       } else {
         if (loopPlaylist) {
-          index = config.queue.length - 1;
+          index = queue.length - 1;
         } else {
           index = currentIndex;
         }
@@ -149,9 +161,9 @@ const Player = () => {
     let index = currentIndex;
 
     if (isShuffle) {
-      index = Math.floor(Math.random() * config.queue.length);
+      index = Math.floor(Math.random() * queue.length);
     } else {
-      if (currentIndex < config.queue.length - 1) {
+      if (currentIndex < queue.length - 1) {
         if (!looping) index = currentIndex + 1;
       } else {
         if (loopPlaylist) {
@@ -162,8 +174,37 @@ const Player = () => {
     setCurrentIndex(index);
   }
 
+  /* -----------------------------------------------------------------------------------------------
+   * Keyboard shortcuts (Keybinds)
+   * -----------------------------------------------------------------------------------------------*/
+
+  useEventListener("keydown", (e) => {
+    if (e.key === " ") {
+      e.preventDefault();
+
+      playPauseHandler();
+    } else if (e.key === "n" || (e.shiftKey && e.key === "ArrowRight")) {
+      skipToNext();
+    } else if (e.key === "p" || (e.shiftKey && e.key === "ArrowLeft")) {
+      skipToPrev();
+    } else if (e.shiftKey && e.key === "ArrowUp") {
+      setVolume(volume + 0.05);
+    } else if (e.shiftKey && e.key === "ArrowDown") {
+      setVolume(volume - 0.05);
+    } else if (e.key === "l") {
+      loopHandler();
+    } else if (e.key === "s") {
+      setIsShuffle(!isShuffle);
+    }
+  });
+
   return (
-    <div className="bg-background animate-in slide-in-from-bottom-full fixed inset-x-0 bottom-14 z-50 h-20 [animation-duration:500ms] lg:bottom-0">
+    <div
+      className={cn(
+        "bg-background animate-in slide-in-from-bottom-full fixed inset-x-0 bottom-14 z-40 h-20 [animation-duration:500ms] lg:bottom-0",
+        !(isReady || queue.length) && "hidden lg:block"
+      )}
+    >
       <Slider
         value={[pos]}
         max={duration}
@@ -182,16 +223,16 @@ const Player = () => {
       <div
         className={cn(
           "flex items-center px-4 pt-3 lg:px-4",
-          config.queue.length === 0 && "text-muted-foreground"
+          queue.length === 0 && "text-muted-foreground"
         )}
       >
         <div className="flex w-full gap-4 lg:w-1/3">
-          {config.queue.length && config.queue[currentIndex]?.image ? (
+          {queue.length && queue[currentIndex]?.image ? (
             <>
               <div className="relative aspect-square h-12 overflow-hidden rounded-md">
                 <Image
-                  src={getImageSrc(config.queue[currentIndex].image, "low")}
-                  alt={config.queue[currentIndex].name}
+                  src={getImageSrc(queue[currentIndex].image, "low")}
+                  alt={queue[currentIndex].name}
                   fill
                 />
 
@@ -200,11 +241,11 @@ const Player = () => {
 
               <div className="flex flex-col justify-center">
                 <p className="text-primary line-clamp-1 text-sm font-semibold">
-                  {config.queue[currentIndex].name}
+                  {queue[currentIndex].name}
                 </p>
 
                 <Muted className="line-clamp-1">
-                  {config.queue[currentIndex].subtitle}
+                  {queue[currentIndex].subtitle}
                 </Muted>
               </div>
             </>
@@ -274,7 +315,11 @@ const Player = () => {
             {formatDuration(duration, duration > 3600 ? "hh:mm:ss" : "mm:ss")}
           </Muted>
 
-          <button onClick={() => mute(!muted)}>
+          <button
+            disabled={!isReady || muted}
+            onClick={() => mute(!muted)}
+            className="disabled:text-muted-foreground"
+          >
             {!!muted ? (
               <VolumeX />
             ) : (
@@ -291,24 +336,35 @@ const Player = () => {
           </button>
 
           <Slider
-            value={[volume]}
-            max={1}
-            step={0.1}
-            onValueChange={([values]) => setVolume(values)}
+            disabled={!isReady || muted}
+            value={[volume * 100]}
+            defaultValue={[75]}
+            onValueChange={([volume]) => {
+              setVolume(volume / 100);
+            }}
             className="w-44"
           >
             <SliderTrack className="h-1 cursor-pointer">
-              <SliderRange />
+              <SliderRange className={cn((!isReady || muted) && "bg-accent")} />
             </SliderTrack>
 
-            <SliderThumb className="h-4 w-4 cursor-pointer" />
+            <SliderThumb
+              className={cn(
+                "h-4 w-4 cursor-pointer",
+                (!isReady || muted) && "bg-accent"
+              )}
+            />
           </Slider>
 
-          <span>{volume * 100}</span>
+          <span className="w-8 text-sm font-medium">
+            {(volume * 100).toFixed()}%
+          </span>
 
-          <button>
+          {queue.length > 0 ? (
+            <TileMoreButton item={queue[currentIndex]} showAlbum />
+          ) : (
             <MoreVertical />
-          </button>
+          )}
         </div>
       </div>
     </div>
