@@ -24,7 +24,7 @@ const SecondaryNavbar = () => {
     <nav
       className={cn(
         "hidden border-b",
-        sidebarNav.some((i) => i.href === pathname) && "block"
+        sidebarNav.slice(0, 6).some((i) => i.href === pathname) && "block"
       )}
     >
       <div className="hidden h-full items-center gap-2 lg:flex">

@@ -1,58 +1,108 @@
 "use client";
 
+import React from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { Plus } from "lucide-react";
+import type { User } from "next-auth";
 
 import { sidebarNav } from "@/config/nav";
 import { cn } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { H3, Muted } from "./ui/topography";
 
-type SidebarProps = React.HTMLAttributes<HTMLDivElement>;
+type SidebarProps = { user?: User } & React.HTMLAttributes<HTMLDivElement>;
 
-export default function Sidebar({ className }: SidebarProps) {
+export default function Sidebar({ user, className }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
+
+  const ButtonOrLink = user ? Button : Link;
 
   return (
     <aside
       className={cn(
-        "animate-in slide-in-from-left-full p-4 [animation-duration:500ms]",
+        "animate-in slide-in-from-left-full space-y-2 p-4 [animation-duration:500ms]",
         className
       )}
     >
-      <H3 className="px-4 pb-4">Discover</H3>
+      <H3 className="pl-4">Discover</H3>
 
-      {sidebarNav.map(({ title, href, icon: Icon }) => {
-        const isActive = href === "/" + (segment ?? "");
+      <nav>
+        {sidebarNav.slice(0, 6).map(({ title, href, icon: Icon }) => {
+          const isActive = href === "/" + (segment ?? "");
 
-        return (
-          <Link
-            key={title}
-            href={href}
-            className={cn(
-              buttonVariants({ variant: "ghost" }),
-              "text-muted-foreground my-1 flex justify-start",
-              isActive && "bg-secondary text-secondary-foreground font-bold"
-            )}
-          >
-            <Icon className="mr-2 h-5 w-5" />
-            {title}
-          </Link>
-        );
-      })}
+          return (
+            <NavLink key={title} title={title} href={href} isActive={isActive}>
+              <Icon className="mr-2 h-5 w-5" />
+              {title}
+            </NavLink>
+          );
+        })}
+      </nav>
 
-      <H3 className="p-4">Playlists</H3>
+      {!!user && (
+        <>
+          <H3 className="pl-4">Library</H3>
+
+          <nav>
+            {sidebarNav.slice(6).map(({ title, href, icon: Icon }) => {
+              const isActive = href === "/" + (segment ?? "");
+
+              return (
+                <NavLink
+                  key={title}
+                  title={title}
+                  href={href}
+                  isActive={isActive}
+                >
+                  <Icon className="mr-2 h-5 w-5" />
+                  {title}
+                </NavLink>
+              );
+            })}
+          </nav>
+        </>
+      )}
+
+      <H3 className="pl-4">Playlists</H3>
 
       <div className="mx-4 space-y-2">
-        <Button title="Create Playlist" className="my-2 w-full">
+        <ButtonOrLink
+          href="/login"
+          title="Create Playlist"
+          className={cn(buttonVariants(), "my-2 w-full")}
+        >
           <Plus className="mr-1 h-4 w-4" />
 
           <span className="truncate">Create Playlist</span>
-        </Button>
+        </ButtonOrLink>
 
-        <Muted>You need to be logged in to create a playlist.</Muted>
+        {!user && <Muted>You need to be logged in to create a playlist.</Muted>}
       </div>
     </aside>
   );
 }
+
+const NavLink = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a"> & {
+    isActive: boolean;
+  }
+>(({ href, isActive, children, ...props }, ref) => {
+  return (
+    <Link
+      ref={ref}
+      href={href!}
+      className={cn(
+        buttonVariants({ variant: "ghost" }),
+        "text-muted-foreground flex justify-start",
+        isActive && "bg-secondary text-secondary-foreground font-bold"
+      )}
+      {...props}
+    >
+      {children}
+    </Link>
+  );
+});
+
+NavLink.displayName = "NavLink";

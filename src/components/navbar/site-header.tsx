@@ -4,13 +4,12 @@ import { siteConfig } from "@/config/site";
 import { getUser } from "@/lib/auth";
 import { getMegaMenu } from "@/lib/jiosaavn-api";
 import { cn } from "@/lib/utils";
-import LogoutButton from "../auth/logout-button";
 import { Icons } from "../icons";
 import LanguagePicker from "../language-picker";
 import SearchMenu from "../search/search-menu";
 import TopSearch from "../search/top-search";
-import ThemeToggle from "../theme-toggle";
 import { buttonVariants } from "../ui/button";
+import { UserDropdown } from "../user-dropdown";
 import MainNav from "./main-nav";
 import MobileNav from "./mobile-nav";
 
@@ -38,9 +37,7 @@ export default async function SiteHeader() {
 
           <LanguagePicker />
 
-          {user ? (
-            <LogoutButton />
-          ) : (
+          {!user && (
             <Link
               href="/login"
               className={cn(buttonVariants(), "hidden lg:flex")}
@@ -49,11 +46,11 @@ export default async function SiteHeader() {
             </Link>
           )}
 
-          <ThemeToggle />
+          <UserDropdown user={user} />
         </div>
       </div>
 
-      <MobileNav />
+      <MobileNav user={user} />
     </header>
   );
 }

@@ -1,11 +1,13 @@
 import {
   Disc3,
+  History,
   Library,
   ListMusic,
   LucideIcon,
   Mic2,
   Podcast,
   Radio,
+  Star,
 } from "lucide-react";
 
 type NavItem = {
@@ -44,5 +46,17 @@ export const sidebarNav: NavItem[] = [
     title: "Radio",
     href: "/radio",
     icon: Radio,
+  },
+
+  // authenticated routes
+  {
+    title: "Recently Played",
+    href: "/me/recently-played",
+    icon: History,
+  },
+  {
+    title: "Your Favorite",
+    href: "/me/liked-songs",
+    icon: Star,
   },
 ];

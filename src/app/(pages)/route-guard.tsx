@@ -3,9 +3,13 @@
 import { notFound, usePathname } from "next/navigation";
 
 const RouteGuard = () => {
-  const segments = usePathname().split("/");
+  const [, route, name, token] = usePathname().split("/");
 
-  if (segments[2] && !segments[3]) return notFound();
+  const excludedRoutes = ["me"];
+
+  if (excludedRoutes.includes(route)) return null;
+
+  if (name && !token) return notFound();
 };
 
 export default RouteGuard;
