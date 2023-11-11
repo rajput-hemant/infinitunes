@@ -2,10 +2,30 @@ import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 export const env = createEnv({
+  /* -----------------------------------------------------------------------------------------------
+   * Opt out of validation
+   * -----------------------------------------------------------------------------------------------*/
+
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+
   server: {
+    /* -----------------------------------------------------------------------------------------------
+     * Node.js Environment
+     * -----------------------------------------------------------------------------------------------*/
+
+    NODE_ENV: z.enum(["development", "test", "production"]),
+
+    /* -----------------------------------------------------------------------------------------------
+     * JioSaavn API URL (https://github.com/rajput-hemant/jiosaavn-api-ts)
+     * -----------------------------------------------------------------------------------------------*/
+
     JIOSAAVN_API_URL: z
       .string()
       .url({ message: "JioSaavn API URL is invalid or missing" }),
+
+    /* -----------------------------------------------------------------------------------------------
+     * NextAuth.js
+     * -----------------------------------------------------------------------------------------------*/
 
     NEXTAUTH_SECRET:
       process.env.NODE_ENV === "production"
@@ -19,12 +39,21 @@ export const env = createEnv({
       // VERCEL_URL doesn't include `https` so it cant be validated as a URL
       process.env.VERCEL ? z.string() : z.string().url()
     ),
+
+    /* -----------------------------------------------------------------------------------------------
+     * Google OAuth
+     * -----------------------------------------------------------------------------------------------*/
+
     GOOGLE_CLIENT_ID: z
       .string()
       .min(1, { message: "Google Client ID is invalid or missing" }),
     GOOGLE_CLIENT_SECRET: z
       .string()
       .min(1, { message: "Google Client Secret is invalid or missing" }),
+
+    /* -----------------------------------------------------------------------------------------------
+     * Github OAuth
+     * -----------------------------------------------------------------------------------------------*/
 
     GITHUB_CLIENT_ID: z
       .string()
@@ -33,9 +62,22 @@ export const env = createEnv({
       .string()
       .min(1, { message: "Github Client Secret is invalid or missing" }),
 
+    /* -----------------------------------------------------------------------------------------------
+     * Postgres Database URL (Supabase)
+     * -----------------------------------------------------------------------------------------------*/
+
     DATABASE_URL: z
       .string()
       .min(1, { message: "Database URL is invalid or missing" }),
+
+    /* -----------------------------------------------------------------------------------------------
+     * Upstash Rate Limiting (Redis)
+     * -----------------------------------------------------------------------------------------------*/
+
+    UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+    UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+    ENABLE_RATE_LIMITING: z.coerce.boolean().default(false),
+    RATE_LIMITING_REQUESTS_PER_SECOND: z.coerce.number().default(50),
   },
   client: {
     NEXT_PUBLIC_JIOSAAVN_API_URL: z

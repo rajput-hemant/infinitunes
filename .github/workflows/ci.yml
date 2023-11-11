@@ -8,20 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
-
-      NEXTAUTH_URL: http://localhost:3000
-      NEXTAUTH_SECRET: mock-secret
-
-      JIOSAAVN_API_URL: https://jiosaavn-api-ts.vercel.app
-      NEXT_PUBLIC_JIOSAAVN_API_URL: http://localhost:6969
-
-      GOOGLE_CLIENT_ID: mock-client-id
-      GOOGLE_CLIENT_SECRET: mock-client-secret
-
-      GITHUB_CLIENT_ID: mock-client-id
-      GITHUB_CLIENT_SECRET: mock-client-secret
-      DATABASE_URL: postgresql://postgres:{password}@db.{project_id}.supabase.co:5432/postgres
+      SKIP_ENV_VALIDATION: true
 
     steps:
       - name: Checkout repository
