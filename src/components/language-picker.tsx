@@ -58,7 +58,7 @@ const LanguagePicker = () => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="h-10 w-10 space-x-1 p-0 lg:w-auto lg:space-x-2 lg:p-2"
+          className="hidden h-10 w-10 space-x-1 p-0 lg:inline-flex lg:w-auto lg:space-x-2 lg:p-2"
         >
           <Languages className="aspect-square h-5 lg:h-4" />
 

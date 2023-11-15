@@ -38,57 +38,59 @@ export function ItemCard({
     <Card
       title={name}
       className={cn(
-        "hover:bg-secondary group w-36 cursor-pointer bg-transparent transition-shadow duration-200 hover:shadow-md md:w-48 lg:w-56",
+        "hover:bg-secondary group w-32 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
         type === "artist" && "border-none !shadow-none hover:bg-transparent",
+        aspect === "video" && "w-44 !border-none sm:w-48 md:w-64 lg:w-72",
         className
       )}
     >
       <CardContent className="h-full w-full p-2">
-        <Wrapper href={getHref(url, type)}>
-          <div
+        <div
+          className={cn(
+            "relative w-full overflow-hidden rounded-md",
+            aspect === "square" ? "aspect-square" : "aspect-video",
+            ["radio_station", "artist"].includes(type) && "rounded-full border"
+          )}
+        >
+          <Wrapper href={getHref(url, type)} className="absolute inset-0 z-10">
+            <span className="sr-only">View {name}</span>
+          </Wrapper>
+
+          <Image
+            src={imageSrc || `/images/placeholder/${type}.jpg`}
+            width={200}
+            height={200}
+            alt={name}
             className={cn(
-              "relative w-full overflow-hidden rounded-md",
-              aspect === "square" ? "aspect-square" : "aspect-video",
-              ["radio_station", "artist"].includes(type) &&
-                "rounded-full border"
+              "h-full w-full object-cover duration-300 group-hover:scale-110",
+              !imageSrc && "duration-0 dark:invert",
+              imageSrc.includes("default") && "dark:invert"
             )}
-          >
-            <Image
-              src={imageSrc || `/images/placeholder/${type}.jpg`}
-              width={200}
-              height={200}
-              alt={name}
-              className={cn(
-                "h-full w-full object-contain duration-300 group-hover:scale-110",
-                !imageSrc && "duration-0 dark:invert",
-                imageSrc.includes("default") && "dark:invert"
-              )}
-            />
+          />
 
-            <Skeleton className="absolute inset-0 -z-10 h-full w-full hover:scale-110" />
+          <Skeleton className="absolute inset-0 -z-10 h-full w-full hover:scale-110" />
 
-            <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
-              <PlayButton
-                type={type}
-                token={url.split("/").pop()!}
-                className="group/play bg-muted/75 m-auto aspect-square w-12 rounded-full duration-200 hover:w-16"
-              >
-                <Play
-                  strokeWidth={10}
-                  className="m-auto h-full w-6 p-1 duration-200 group-hover/play:w-8"
-                />
-              </PlayButton>
+          <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
+            <PlayButton
+              type={type}
+              token={url.split("/").pop()!}
+              className="group/play bg-muted/75 z-20 m-auto aspect-square w-12 rounded-full duration-200 hover:w-16 active:w-14"
+            >
+              <Play
+                strokeWidth={10}
+                className="m-auto h-full w-6 p-1 duration-200 group-hover/play:w-8"
+              />
+            </PlayButton>
 
-              {/* <div className="text-primary-foreground dark:text-secondary-foreground flex justify-between">
+            {/* <div className="text-primary-foreground dark:text-secondary-foreground flex justify-between">
                 <LikeButton />
 
                 <button className="rounded-full">
                   <MoreVertical className="h-6 w-6" />
                 </button>
               </div> */}
-            </div>
           </div>
-        </Wrapper>
+        </div>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
           <H4 className="w-full lg:text-lg">

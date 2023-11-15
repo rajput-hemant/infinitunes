@@ -5,7 +5,7 @@ import { notFound, usePathname } from "next/navigation";
 const RouteGuard = () => {
   const [, route, name, token] = usePathname().split("/");
 
-  const excludedRoutes = ["me"];
+  const excludedRoutes = ["me", "settings"];
 
   if (excludedRoutes.includes(route)) return null;
 

@@ -24,7 +24,7 @@ const RoutesLayout = async ({ children }: Props) => {
         className="fixed left-0 top-14 hidden h-full w-1/5 border-r lg:block xl:w-[15%]"
       />
 
-      <main className="p-4 pb-36 lg:ml-[20%] lg:pb-20 xl:ml-[15%]">
+      <main className="p-2 pb-36 sm:p-4 lg:ml-[20%] lg:pb-20 xl:ml-[15%]">
         <SecondaryNavbar />
 
         {children}

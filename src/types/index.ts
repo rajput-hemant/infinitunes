@@ -8,4 +8,3 @@ export * from "./response";
 export * from "./search";
 export * from "./show";
 export * from "./song";
-export * from "./theme";

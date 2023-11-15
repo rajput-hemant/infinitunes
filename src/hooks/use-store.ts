@@ -1,14 +1,15 @@
 import { atom, createStore, useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import { Lang, Queue, StreamQuality, Theme } from "@/types";
+import { Lang, Queue, StreamQuality } from "@/types";
+import { Theme } from "@/config/themes";
 
 const store = createStore();
 
 type Config = {
   theme: {
     name: "default" | Theme["name"];
-    radius: number;
+    radius: "default" | number;
   };
   languages: Lang[];
 };
@@ -16,7 +17,7 @@ type Config = {
 const configAtom = atomWithStorage<Config>("config", {
   theme: {
     name: "default",
-    radius: 0.5,
+    radius: "default",
   },
   languages: ["hindi", "english"],
 });
