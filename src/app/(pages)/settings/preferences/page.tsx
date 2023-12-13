@@ -1,15 +1,19 @@
-import { Construction } from "lucide-react";
-
-import { H2 } from "@/components/ui/topography";
+import { PreferenceSettings } from "./preference-settings";
 
 export default function Page() {
   return (
-    <div className="grid place-items-center space-y-4">
-      <Construction size={50} className="mr-2" />
+    <>
+      <div className="space-y-1 border-b p-4">
+        <h3 className="text-lg font-medium">Preferences</h3>
+        <p className="text-muted-foreground text-sm">
+          Configure your preferences like language, music stream, download
+          quality, etc.
+        </p>
+      </div>
 
-      <H2 className="text-center">
-        Under development. <br /> Please check back later.
-      </H2>
-    </div>
+      <div className="p-6">
+        <PreferenceSettings />
+      </div>
+    </>
   );
 }

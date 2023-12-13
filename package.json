@@ -1,6 +1,6 @@
 {
   "name": "infinitunes",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -12,9 +12,12 @@
     "fmt:check": "prettier --check \"**/*.{ts,tsx,mdx,json}\" --cache",
     "fmt:write": "prettier --write \"**/*.{ts,tsx,mdx,json}\" --cache",
     "db:generate": "drizzle-kit generate:pg",
-    "db:push": "drizzle-kit push:pg",
+    "db:migrate": "bun lib/db/migrate.ts",
+    "db:drop": "drizzle-kit drop",
+    "db:pull": "drizzle-kit introspect:pg",
     "db:studio": "drizzle-kit studio",
-    "prepare": "husky install"
+    "db:check": "drizzle-kit check:pg",
+    "ui": "bunx shadcn-ui"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^0.3.5",
@@ -44,7 +47,7 @@
     "geist": "^1.0.0",
     "jotai": "^2.5.0",
     "lucide-react": "^0.291.0",
-    "next": "14.0.1",
+    "next": "14.0.2",
     "next-auth": "^4.24.4",
     "next-themes": "^0.2.1",
     "postgres": "^3.4.2",

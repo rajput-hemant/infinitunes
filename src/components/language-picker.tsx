@@ -17,13 +17,11 @@ import {
 } from "./ui/dropdown-menu";
 import { Toggle } from "./ui/toggle";
 import { Large, Muted } from "./ui/topography";
-import { useToast } from "./ui/use-toast";
+import { toast } from "./ui/use-toast";
 
 const LanguagePicker = () => {
-  const { toast } = useToast();
-
   const [isOpen, setIsOpen] = useState(false);
-  const [config] = useConfig();
+  const [config, setConfig] = useConfig();
   const [selected, setSelected] = useState<Lang[]>(config.languages);
 
   function toggleLanguage(lang: Lang) {
@@ -35,26 +33,19 @@ const LanguagePicker = () => {
   }
 
   function updateLanguage() {
-    // setConfig({
-    //   ...config,
-    //   languages: selected,
-    // });
-
-    // toast({
-    //   title: "Languages updated",
-    //   description: "Your language preferences have been updated.",
-    // });
-
-    // router.refresh();
+    setConfig((prev) => ({
+      ...prev,
+      languages: selected,
+    }));
 
     toast({
-      title: "Coming soon",
-      description: "This feature is in development.",
+      title: "Languages updated",
+      description: "Your language preferences have been updated.",
     });
   }
 
   return (
-    <DropdownMenu onOpenChange={(isOpen) => setIsOpen(isOpen)}>
+    <DropdownMenu onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"

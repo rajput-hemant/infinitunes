@@ -16,3 +16,5 @@ export const languages = [
   "Odia",
   "Assamese",
 ] as const;
+
+export type Language = Lowercase<(typeof languages)[number]>;

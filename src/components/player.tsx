@@ -29,6 +29,7 @@ import { TileMoreButton } from "./song/tile-more-button";
 import { Skeleton } from "./ui/skeleton";
 import { Slider, SliderRange, SliderThumb, SliderTrack } from "./ui/slider";
 import { Muted } from "./ui/topography";
+import { toast } from "./ui/use-toast";
 
 const Player = () => {
   // stores
@@ -97,9 +98,15 @@ const Player = () => {
 
     if (queue.length === 1) {
       loop(!looping);
+      toast({
+        description: looping
+          ? "Looping disabled"
+          : "Playing current song on repeat",
+      });
     } else if (!looping && !loopPlaylist) {
       setLoopPlaylist(true);
       loop(false);
+      toast({ description: "Looping playlist" });
     } else if (!looping && loopPlaylist) {
       setLoopPlaylist(false);
       loop(true);
@@ -229,7 +236,7 @@ const Player = () => {
         <div className="flex w-full gap-4 lg:w-1/3">
           {queue.length && queue[currentIndex]?.image ? (
             <>
-              <div className="relative aspect-square h-12 overflow-hidden rounded-md">
+              <div className="relative aspect-square h-12 overflow-hidden rounded-md shadow-md">
                 <Image
                   src={getImageSrc(queue[currentIndex].image, "low")}
                   alt={queue[currentIndex].name}

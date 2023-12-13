@@ -19,10 +19,10 @@ import { ToastAction } from "../ui/toast";
 import { H3, Muted, Small } from "../ui/topography";
 import { toast } from "../ui/use-toast";
 
-type Props = {
+type Props = React.HTMLAttributes<HTMLDivElement> & {
   isLoginPage?: boolean;
   isSignUpPage?: boolean;
-} & React.HTMLAttributes<HTMLDivElement>;
+};
 
 const loginSchema = authSchema.innerType().omit({ confirmPassword: true });
 

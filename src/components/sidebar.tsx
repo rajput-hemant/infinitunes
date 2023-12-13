@@ -55,7 +55,7 @@ export default function Sidebar({ user, className }: SidebarProps) {
                   href={href}
                   isActive={isActive}
                 >
-                  <Icon className="mr-2 h-5 w-5" />
+                  <Icon className="mr-2 h-5 w-5 shrink-0" />
                   {title}
                 </NavLink>
               );

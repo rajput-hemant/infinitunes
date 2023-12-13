@@ -41,12 +41,10 @@ const Page = () => {
           </H3>
         </>
       ) : (
-        <div className="space-y-4">
-          <H3 className="text-center">
-            You don&apos;t have any playlist yet 😢.
-          </H3>
+        <div className="flex h-[25rem] flex-col items-center justify-center space-y-4 rounded-md border border-dashed">
+          <H3>You don&apos;t have any playlist yet 😢.</H3>
 
-          <Button className="mx-auto flex">
+          <Button>
             <Plus className="mr-2 h-4 w-4" />
             Create Playlist
           </Button>

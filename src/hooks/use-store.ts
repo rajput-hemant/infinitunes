@@ -1,7 +1,7 @@
 import { atom, createStore, useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import { Lang, Queue, StreamQuality } from "@/types";
+import { ImageQuality, Lang, Queue, StreamQuality } from "@/types";
 import { Theme } from "@/config/themes";
 
 const store = createStore();
@@ -32,6 +32,7 @@ const downloadQualityAtom = atomWithStorage<StreamQuality>(
   "download_quality",
   "excellent"
 );
+const imageQualityAtom = atomWithStorage<ImageQuality>("image_quality", "high");
 
 const playerCurrentTimeAtom = atom(0);
 const isPlayingAtom = atom(false);
@@ -54,6 +55,10 @@ export function useStreamQuality() {
 
 export function useDownloadQuality() {
   return useAtom(downloadQualityAtom, { store });
+}
+
+export function useImageQuality() {
+  return useAtom(imageQualityAtom, { store });
 }
 
 export function usePlayerCurrentTime() {
