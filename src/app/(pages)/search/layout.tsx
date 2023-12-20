@@ -16,7 +16,7 @@ const SearchLayout = ({ children }: Props) => {
     return notFound();
   }
 
-  return <>{children}</>;
+  return children;
 };
 
 export default SearchLayout;

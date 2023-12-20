@@ -161,7 +161,7 @@ export default async function SiteFooter() {
           </a>
 
           <a
-            href={siteConfig.links.twitter}
+            href={siteConfig.links.x}
             target="_blank"
             rel="noopener noreferrer"
             className={buttonVariants({ variant: "ghost", size: "icon" })}
@@ -170,7 +170,7 @@ export default async function SiteFooter() {
           </a>
 
           <a
-            href={siteConfig.links.twitter}
+            href={siteConfig.links.x}
             target="_blank"
             rel="noopener noreferrer"
             className={buttonVariants({ variant: "ghost", size: "icon" })}

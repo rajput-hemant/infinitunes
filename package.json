@@ -9,8 +9,8 @@
     "preview": "next build && next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
+    "fmt": "prettier --write \"**/*.{ts,tsx,mdx,json}\" --cache",
     "fmt:check": "prettier --check \"**/*.{ts,tsx,mdx,json}\" --cache",
-    "fmt:write": "prettier --write \"**/*.{ts,tsx,mdx,json}\" --cache",
     "db:generate": "drizzle-kit generate:pg",
     "db:migrate": "bun lib/db/migrate.ts",
     "db:drop": "drizzle-kit drop",
@@ -85,5 +85,18 @@
     "prettier-plugin-tailwindcss": "^0.5.6",
     "tailwindcss": "3.3.5",
     "typescript": "5.2.2"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,md,mdx}": [
+      "prettier --write \"**/*.{ts,tsx,mdx}\" --cache"
+    ],
+    "*.{ts,tsx,mdx}": [
+      "eslint --fix ."
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }

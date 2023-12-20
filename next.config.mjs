@@ -2,8 +2,18 @@ import "./src/lib/env.mjs";
 
 /** @type {import("next").NextConfig} */
 const config = {
+  reactStrictMode: true,
   images: {
-    domains: ["c.saavncdn.com", "c.sop.saavncdn.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "c.saavncdn.com",
+      },
+      {
+        protocol: "https",
+        hostname: "c.sop.saavncdn.com",
+      },
+    ],
     unoptimized: true,
   },
   experimental: {

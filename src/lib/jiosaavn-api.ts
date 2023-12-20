@@ -1,3 +1,5 @@
+"use server";
+
 import {
   Album,
   AlbumSearch,
@@ -39,7 +41,7 @@ async function jioSaavnGetCall<T>(
   path: string,
   query?: Record<string, string>
 ): Promise<T> {
-  const url = new URL(path, env.NEXT_PUBLIC_JIOSAAVN_API_URL);
+  const url = new URL(path, env.JIOSAAVN_API_URL);
   url.search = new URLSearchParams(query).toString();
 
   const response = await fetch(url);

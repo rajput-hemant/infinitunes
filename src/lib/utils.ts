@@ -2,15 +2,51 @@ import { ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 import { ImageQuality, Quality, StreamQuality, Type } from "@/types";
+import { siteConfig } from "@/config/site";
 
 /**
  * Merges the given class names with the tailwind classes
  * @param inputs The class names to merge
  * @returns The merged class names
  */
-export const cn = (...inputs: ClassValue[]) => {
+export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-};
+}
+
+/**
+ * Returns the absolute url for the given path based on the current environment
+ * @param path The path to get the absolute url for
+ * @returns The absolute url for the given path
+ */
+export function absoluteUrl(path: string) {
+  if (process.env.VERCEL) {
+    switch (process.env.NEXT_PUBLIC_VERCEL_ENV) {
+      case "production":
+        return `${siteConfig.url}${path}`;
+
+      case "preview":
+        return `https://${process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL}${path}`;
+
+      default:
+        // development
+        return `http://localhost:${process.env.PORT ?? 3000}${path}`;
+    }
+  } else if (process.env.NETLIFY) {
+    switch (process.env.CONTEXT) {
+      case "production":
+        return `${siteConfig.url}${path}`;
+
+      case "deploy-preview" || "branch-deploy":
+        return `https://${process.env.DEPLOY_PRIME_URL}${path}`;
+
+      default:
+        // development
+        return `http://localhost:${process.env.PORT ?? 3000}${path}`;
+    }
+  } else {
+    return `${siteConfig.url}${path}`;
+  }
+}
 
 /**
  * Encodes and decodes strings to and from base64
@@ -44,12 +80,12 @@ export function formatDuration(seconds: number, format: "hh:mm:ss" | "mm:ss") {
     : date.toISOString().slice(14, 19);
 }
 
-export const getHref = (url: string, type: Type) => {
+export function getHref(url: string, type: Type) {
   const re = /https:\/\/www.jiosaavn.com\/(s\/)?\w*/;
   return `/${url.replace(re, type)}`;
-};
+}
 
-export const getImageSrc = (image: Quality, quality: ImageQuality) => {
+export function getImageSrc(image: Quality, quality: ImageQuality) {
   if (typeof image === "string") {
     return image;
   } else if (quality === "low") {
@@ -59,9 +95,9 @@ export const getImageSrc = (image: Quality, quality: ImageQuality) => {
   } else {
     return image[2].link;
   }
-};
+}
 
-export const getDownloadLink = (url: Quality, quality: StreamQuality) => {
+export function getDownloadLink(url: Quality, quality: StreamQuality) {
   if (typeof url === "string") {
     return url;
   } else if (quality === "poor") {
@@ -75,4 +111,4 @@ export const getDownloadLink = (url: Quality, quality: StreamQuality) => {
   } else {
     return url[4].link;
   }
-};
+}

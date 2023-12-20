@@ -1,4 +1,5 @@
 import { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 import { fontFamily } from "tailwindcss/defaultTheme";
 
 const config = {
@@ -73,7 +74,7 @@ const config = {
       },
       fontFamily: {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
-        mono: ["var(--font-geist-mono)"],
+        mono: ["var(--font-geist-mono)", ...fontFamily.mono],
         inter: ["var(--font-inter)"],
         poppins: ["var(--font-poppins)"],
         overpass: ["var(--font-overpass)"],
@@ -81,7 +82,7 @@ const config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [tailwindcssAnimate],
 } satisfies Config;
 
 export default config;

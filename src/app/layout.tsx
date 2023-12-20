@@ -1,7 +1,5 @@
 import "@/styles/globals.css";
 
-import type { Metadata } from "next";
-
 import { siteConfig } from "@/config/site";
 import {
   fontInter,
@@ -11,27 +9,33 @@ import {
   overpass,
   poppins,
 } from "@/lib/fonts";
-import { cn } from "@/lib/utils";
+import { absoluteUrl, cn } from "@/lib/utils";
 import Providers from "@/components/provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 
 export const viewport = {
+  viewportFit: "cover",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: true,
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "white" },
     { media: "(prefers-color-scheme: dark)", color: "black" },
   ],
 };
-export const metadata: Metadata = {
+
+export const metadata = {
   title: {
     default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
+    template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  keywords: [
-    //...
-  ],
-  authors: [siteConfig.me],
-  creator: siteConfig.me.name,
+  authors: {
+    name: siteConfig.author.name,
+    url: siteConfig.author.url,
+  },
+  creator: siteConfig.author.name,
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -39,43 +43,39 @@ export const metadata: Metadata = {
     title: siteConfig.name,
     description: siteConfig.description,
     siteName: siteConfig.name,
-    images: [
-      {
-        url: "/images/screenshot.png",
-        width: 1200,
-        height: 630,
-        alt: siteConfig.name,
-      },
-    ],
   },
   twitter: {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [siteConfig.ogImage],
-    creator: "@rajput_hemant01",
+    creator: siteConfig.author.x,
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
+      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-icon.png", type: "image/png" }],
   },
-  manifest: "/manifest.json",
+  metadataBase: new URL(absoluteUrl("/")),
 };
 
-type Props = {
+type RootLayoutProps = {
   modal: React.ReactNode;
   children: React.ReactNode;
 };
 
-const RootLayout = ({ modal, children }: Props) => {
+export default function RootLayout({ modal, children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
 
       <body
         className={cn(
-          "min-h-screen font-sans",
+          "min-h-screen font-sans antialiased",
           fontSans.variable,
           fontMono.variable,
           fontInter.variable,
@@ -86,7 +86,6 @@ const RootLayout = ({ modal, children }: Props) => {
       >
         <Providers>
           {children}
-
           {modal}
         </Providers>
 
@@ -94,6 +93,4 @@ const RootLayout = ({ modal, children }: Props) => {
       </body>
     </html>
   );
-};
-
-export default RootLayout;
+}

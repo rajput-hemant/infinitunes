@@ -1,3 +1,4 @@
+import React from "react";
 import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -49,7 +50,7 @@ const NotFound = () => {
 
       <div className="flex flex-wrap justify-center space-x-4 font-mono text-sm font-medium italic lg:text-xl">
         {Links.map(({ title, href }, i) => (
-          <>
+          <React.Fragment key={i}>
             <Link
               key={title}
               href={href}
@@ -61,7 +62,7 @@ const NotFound = () => {
             {i !== Links.length - 1 && (
               <span className="text-muted-foreground ml-4">/</span>
             )}
-          </>
+          </React.Fragment>
         ))}
       </div>
     </section>
