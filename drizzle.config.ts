@@ -1,11 +1,12 @@
-import { type Config } from "drizzle-kit";
+import type { Config } from "drizzle-kit";
+
+import { siteConfig } from "@/config/site";
+import { env } from "@/lib/env.mjs";
 
 export default {
-  schema: "./src/lib/db/schema.ts",
+  schema: "./src/lib/db/schema",
+  out: "./src/lib/db/migrations",
   driver: "pg",
-  dbCredentials: {
-    connectionString: process.env.DATABASE_URL!,
-  },
-  out: "./drizzle",
-  tablesFilter: ["infinitunes_*"],
+  dbCredentials: { connectionString: env.DATABASE_URL },
+  tablesFilter: [`${siteConfig.name.toLowerCase().replace(/\s/g, "_")}_*`],
 } satisfies Config;

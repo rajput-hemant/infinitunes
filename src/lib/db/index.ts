@@ -1,10 +1,9 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import { env } from "../env.mjs";
+import { env } from "@/lib/env.mjs";
 import * as schema from "./schema";
 
-const client = postgres(env.DATABASE_URL);
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+const client = postgres(env.DATABASE_URL, { max: 1 });
+
 export const db = drizzle(client, { schema });

@@ -13,6 +13,7 @@ import { users } from "./db/schema";
 import { env } from "./env.mjs";
 
 export const authOptions: NextAuthOptions = {
+  // @ts-expect-error eslint-disable-line @typescript-eslint/ban-ts-comment
   adapter: DrizzleAdapter(db),
 
   session: {
