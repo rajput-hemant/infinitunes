@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import type { AllSearch } from "@/types";
+
 import { cn, getHref, getImageSrc } from "@/lib/utils";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
@@ -57,7 +58,7 @@ const SearchAll = ({ query, data }: Props) => {
                       )}
                     />
 
-                    <Skeleton className="h-full w-full" />
+                    <Skeleton className="size-full" />
                   </div>
 
                   <div className="my-auto w-[calc(100%-3rem)]">

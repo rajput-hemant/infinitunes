@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 
-import { AllSearch } from "@/types";
-import { searchAll } from "@/lib/jiosaavn-api";
 import { useDebounce } from "@/hooks/use-debounce";
+import { searchAll } from "@/lib/jiosaavn-api";
+import { AllSearch } from "@/types";
 import { Input } from "../ui/input";
 import SearchAll from "./search-all";
 
@@ -33,7 +33,7 @@ const MobileSearch = ({ topSearch }: Props) => {
   return (
     <>
       <div className="relative mx-auto max-w-md">
-        <Search className="text-muted-foreground absolute left-2 top-3 h-4 w-4" />
+        <Search className="text-muted-foreground absolute left-2 top-3 size-4" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}

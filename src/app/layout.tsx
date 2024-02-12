@@ -1,5 +1,7 @@
 import "@/styles/globals.css";
 
+import Providers from "@/components/provider";
+import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { siteConfig } from "@/config/site";
 import {
   fontInter,
@@ -10,8 +12,6 @@ import {
   poppins,
 } from "@/lib/fonts";
 import { absoluteUrl, cn } from "@/lib/utils";
-import Providers from "@/components/provider";
-import { TailwindIndicator } from "@/components/tailwind-indicator";
 
 export const viewport = {
   viewportFit: "cover",

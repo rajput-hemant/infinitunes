@@ -1,6 +1,6 @@
-import { getEpisodeDetails } from "@/lib/jiosaavn-api";
 import { DetailsHeader } from "@/components/details-header";
 import { H3, Small } from "@/components/ui/topography";
+import { getEpisodeDetails } from "@/lib/jiosaavn-api";
 
 type Props = { params: { slug: [string, string] } };
 

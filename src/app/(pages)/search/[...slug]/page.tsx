@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import { search } from "@/lib/jiosaavn-api";
-import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { H1, Muted } from "@/components/ui/topography";
+import { search } from "@/lib/jiosaavn-api";
+import { cn } from "@/lib/utils";
 import { SearchResults } from "./search-results";
 
 type Props = {

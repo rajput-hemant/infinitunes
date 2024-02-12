@@ -1,5 +1,3 @@
-import { Category } from "@/types";
-import { getArtistDetails } from "@/lib/jiosaavn-api";
 import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
 import { SongList } from "@/components/song/song-list";
@@ -7,6 +5,8 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { H3, Small } from "@/components/ui/topography";
+import { getArtistDetails } from "@/lib/jiosaavn-api";
+import { Category } from "@/types";
 import ArtistsTabList from "./artists-tab-list";
 import ArtistsTopItems from "./artists-top-items";
 import CategoryFilter from "./category-filter";

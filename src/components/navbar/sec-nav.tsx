@@ -86,7 +86,7 @@ const SecondaryNavbar = () => {
                   )}
                 >
                   <span>
-                    <Icon className="mr-2 inline-block h-5 w-5" />
+                    <Icon className="mr-2 inline-block size-5" />
                     {title}
                   </span>
 

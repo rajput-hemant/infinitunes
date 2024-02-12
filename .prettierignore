@@ -8,3 +8,4 @@ node_modules
 .next
 build
 .contentlayer
+migrations

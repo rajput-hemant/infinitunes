@@ -1,7 +1,7 @@
-import { getTopShows } from "@/lib/jiosaavn-api";
 import { ItemCard } from "@/components/item-card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { H2, Muted } from "@/components/ui/topography";
+import { getTopShows } from "@/lib/jiosaavn-api";
 import TopPodcasts from "./top-podcasts";
 
 export const revalidate = 3600; // revalidate page every hour

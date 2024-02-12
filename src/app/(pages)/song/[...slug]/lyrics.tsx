@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { type Lyrics } from "@/types";
 import {
   Accordion,
   AccordionContent,
@@ -10,6 +9,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { H3, Small } from "@/components/ui/topography";
+import { type Lyrics } from "@/types";
 
 type Props = { lyrics: Lyrics };
 

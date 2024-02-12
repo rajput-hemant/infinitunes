@@ -1,7 +1,7 @@
-import { getTopArtists } from "@/lib/jiosaavn-api";
 import { ItemCard } from "@/components/item-card";
 import { Separator } from "@/components/ui/separator";
 import { H2, H3 } from "@/components/ui/topography";
+import { getTopArtists } from "@/lib/jiosaavn-api";
 
 export const revalidate = 3600; // revalidate page every hour
 

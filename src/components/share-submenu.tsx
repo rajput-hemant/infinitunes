@@ -12,7 +12,7 @@ export const ShareSubMenu = () => {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
-        <Share2 className="mr-2 h-4 w-4" />
+        <Share2 className="mr-2 size-4" />
         Share
       </DropdownMenuSubTrigger>
 

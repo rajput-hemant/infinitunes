@@ -1,10 +1,10 @@
 import Link from "next/link";
 
-import { Lang, Type } from "@/types";
-import { languages } from "@/config/languages";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { languages } from "@/config/languages";
+import { cn } from "@/lib/utils";
+import { Lang, Type } from "@/types";
 
 type Props = { type: Type; language?: Lang };
 

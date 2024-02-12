@@ -23,7 +23,7 @@ export default function Error({ error, reset }: Props) {
         width={100}
         height={100}
         alt="Searching Duck"
-        className="h-28 w-28 object-cover"
+        className="size-28 object-cover"
       />
 
       <H1>Something went wrong!</H1>

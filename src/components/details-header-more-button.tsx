@@ -13,9 +13,6 @@ import {
   Share2,
 } from "lucide-react";
 
-import { Quality, Song, Type } from "@/types";
-import { getImageSrc } from "@/lib/utils";
-import { useQueue } from "@/hooks/use-store";
 import {
   Sheet,
   SheetClose,
@@ -26,6 +23,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useQueue } from "@/hooks/use-store";
+import { getImageSrc } from "@/lib/utils";
+import { Quality, Song, Type } from "@/types";
 import { ShareOptions } from "./share-options";
 import { ShareSubMenu } from "./share-submenu";
 import { Button } from "./ui/button";
@@ -132,7 +132,7 @@ export const DetailsHeaderMoreButton = ({
             variant="outline"
             className="rounded-full lg:hidden"
           >
-            <MoreVertical className="h-6 w-6 lg:hidden" />
+            <MoreVertical className="size-6 lg:hidden" />
           </Button>
         </SheetTrigger>
 
@@ -147,7 +147,7 @@ export const DetailsHeaderMoreButton = ({
                   className="z-10 rounded-md"
                 />
 
-                <Skeleton className="absolute inset-0 h-full w-full" />
+                <Skeleton className="absolute inset-0 size-full" />
               </div>
 
               <div className="flex flex-col truncate text-start">
@@ -174,7 +174,7 @@ export const DetailsHeaderMoreButton = ({
                   onClick={onClick}
                   className="flex h-8 items-center font-medium"
                 >
-                  <Icon className="mr-2 h-5 w-5" />
+                  <Icon className="mr-2 size-5" />
                   {label}
                 </button>
               ))}
@@ -183,9 +183,9 @@ export const DetailsHeaderMoreButton = ({
               onClick={() => setTranslateX(-110)}
               className="flex h-8 items-center font-medium"
             >
-              <Share2 className="mr-2 h-5 w-5" />
+              <Share2 className="mr-2 size-5" />
               Share
-              <ChevronRight className="ml-auto h-5 w-5" />
+              <ChevronRight className="ml-auto size-5" />
             </button>
 
             <div className="bg-background absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4">
@@ -193,7 +193,7 @@ export const DetailsHeaderMoreButton = ({
                 onClick={() => setTranslateX(0)}
                 className="flex h-8 items-center font-medium"
               >
-                <ChevronLeft className="mr-2 h-5 w-5" />
+                <ChevronLeft className="mr-2 size-5" />
                 Back
               </button>
 
@@ -219,7 +219,7 @@ export const DetailsHeaderMoreButton = ({
             variant="outline"
             className="hidden rounded-full lg:inline-flex"
           >
-            <MoreVertical className="h-6 w-6" />
+            <MoreVertical className="size-6" />
           </Button>
         </DropdownMenuTrigger>
 
@@ -229,7 +229,7 @@ export const DetailsHeaderMoreButton = ({
               .filter(({ hide }) => !hide)
               .map(({ icon: Icon, label, onClick }, i) => (
                 <DropdownMenuItem key={i} onClick={onClick}>
-                  <Icon className="mr-2 h-5 w-5" />
+                  <Icon className="mr-2 size-5" />
                   {label}
                 </DropdownMenuItem>
               ))}

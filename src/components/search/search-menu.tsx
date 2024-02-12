@@ -5,10 +5,11 @@ import { usePathname } from "next/navigation";
 import { Loader2, Search } from "lucide-react";
 
 import type { AllSearch } from "@/types";
-import { searchAll } from "@/lib/jiosaavn-api";
-import { cn } from "@/lib/utils";
+
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEventListener } from "@/hooks/use-event-listner";
+import { searchAll } from "@/lib/jiosaavn-api";
+import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
@@ -59,11 +60,11 @@ function SearchMenu({ topSearch, className }: Props) {
           variant="outline"
           onClick={() => setIsOpen(true)}
           className={cn(
-            "flex h-10 w-10 p-0 lg:w-60 lg:justify-start lg:px-3 lg:py-2",
+            "flex size-10 p-0 lg:w-60 lg:justify-start lg:px-3 lg:py-2",
             className
           )}
         >
-          <Search className="inline-block h-4 w-4 lg:mr-2" aria-hidden="true" />
+          <Search className="inline-block size-4 lg:mr-2" aria-hidden="true" />
           <span className="sr-only">Search</span>
 
           <span className="hidden lg:inline-block">Search...</span>
@@ -76,7 +77,7 @@ function SearchMenu({ topSearch, className }: Props) {
 
       <DialogContent className="max-w-7xl shadow-lg">
         <div className="relative mr-4 mt-4">
-          <Search className="text-muted-foreground absolute left-2 top-3 h-4 w-4" />
+          <Search className="text-muted-foreground absolute left-2 top-3 size-4" />
 
           <Input
             value={query}

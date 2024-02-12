@@ -3,11 +3,11 @@
 import { CheckIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
-import { themes } from "@/config/themes";
-import { cn } from "@/lib/utils";
-import { useConfig } from "@/hooks/use-store";
 import { Button } from "@/components/ui/button";
 import { H3 } from "@/components/ui/topography";
+import { themes } from "@/config/themes";
+import { useConfig } from "@/hooks/use-store";
+import { cn } from "@/lib/utils";
 
 export function AppearanceSettings() {
   const [{ theme }, setConfig] = useConfig();
@@ -35,12 +35,12 @@ export function AppearanceSettings() {
                 </div>
 
                 <div className="bg-muted flex items-center space-x-2 rounded-md p-2 shadow-sm">
-                  <div className="bg-muted-foreground/25 h-4 w-4 rounded-full" />
+                  <div className="bg-muted-foreground/25 size-4 rounded-full" />
                   <div className="bg-muted-foreground/25 h-2 w-[100px] rounded-lg" />
                 </div>
 
                 <div className="bg-muted flex items-center space-x-2 rounded-md p-2 shadow-sm">
-                  <div className="bg-muted-foreground/25 h-4 w-4 rounded-full" />
+                  <div className="bg-muted-foreground/25 size-4 rounded-full" />
                   <div className="bg-muted-foreground/25 h-2 w-[100px] rounded-lg" />
                 </div>
               </div>
@@ -76,19 +76,19 @@ export function AppearanceSettings() {
             )}
             style={
               {
-                "--theme-primary": `hsl(${value?.activeColor[
-                  themeMode === "dark" ? "dark" : "light"
-                ]})`,
+                "--theme-primary": `hsl(${
+                  value?.activeColor[themeMode === "dark" ? "dark" : "light"]
+                })`,
               } as React.CSSProperties
             }
           >
             <span
               className={cn(
-                "mr-1 flex h-5 w-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]"
+                "mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]"
               )}
             >
               {theme.name === value.name && (
-                <CheckIcon className="h-4 w-4 text-white" />
+                <CheckIcon className="size-4 text-white" />
               )}
             </span>
             {value.label}

@@ -1,8 +1,8 @@
-import { Lang } from "@/types";
-import { getTopAlbums } from "@/lib/jiosaavn-api";
 import LanguageBar from "@/components/language-bar";
 import { Separator } from "@/components/ui/separator";
 import { H2 } from "@/components/ui/topography";
+import { getTopAlbums } from "@/lib/jiosaavn-api";
+import { Lang } from "@/types";
 import TopAlbums from "./top-albums";
 
 export const revalidate = 3600; // revalidate page every hour

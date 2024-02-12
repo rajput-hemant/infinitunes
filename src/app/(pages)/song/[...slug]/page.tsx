@@ -1,4 +1,9 @@
-import { Lang } from "@/types";
+import { DetailsHeader } from "@/components/details-header";
+import { ItemCard } from "@/components/item-card";
+import { SongList } from "@/components/song/song-list";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { H3 } from "@/components/ui/topography";
 import {
   getActorsTopSongs,
   getAlbumDetails,
@@ -8,12 +13,7 @@ import {
   getSongRecommendations,
   getTrending,
 } from "@/lib/jiosaavn-api";
-import { DetailsHeader } from "@/components/details-header";
-import { ItemCard } from "@/components/item-card";
-import { SongList } from "@/components/song/song-list";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { H3 } from "@/components/ui/topography";
+import { Lang } from "@/types";
 import Lyrics from "./lyrics";
 
 type Props = { params: { slug: [string, string] } };
@@ -45,13 +45,13 @@ const fetcher = async (token: string) => {
       artistsTopSongsParams.song_id,
       artistsTopSongsParams.lang as Lang
     ),
-    isActorPresent
-      ? getActorsTopSongs(
-          actorsTopSongsParams.actor_id,
-          actorsTopSongsParams.song_id,
-          actorsTopSongsParams.lang as Lang
-        )
-      : undefined,
+    isActorPresent ?
+      getActorsTopSongs(
+        actorsTopSongsParams.actor_id,
+        actorsTopSongsParams.song_id,
+        actorsTopSongsParams.lang as Lang
+      )
+    : undefined,
   ]);
 
   return {

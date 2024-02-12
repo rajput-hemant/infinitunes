@@ -1,9 +1,9 @@
-import { getHomeData } from "@/lib/jiosaavn-api";
-import { cn } from "@/lib/utils";
 import { ItemCard } from "@/components/item-card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { H2, Muted } from "@/components/ui/topography";
+import { getHomeData } from "@/lib/jiosaavn-api";
+import { cn } from "@/lib/utils";
 
 export const revalidate = 3600; // revalidate page every hour
 

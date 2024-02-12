@@ -2,8 +2,8 @@ import React from "react";
 import Link from "next/link";
 import { Disc, Mic2, Music } from "lucide-react";
 
-import { ArtistMini } from "@/types";
 import { getHref } from "@/lib/utils";
+import { ArtistMini } from "@/types";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 
 type Props = {
@@ -32,7 +32,7 @@ export const TileMoreLinks = ({
           href={getHref(itemUrl, type === "song" ? "song" : "show")}
           className="cursor-pointer"
         >
-          <Music className="mr-2 inline-block h-5 w-5" />
+          <Music className="mr-2 inline-block size-5" />
           {type === "song" ? "Song Details & Lyrics" : "View Episode Details"}
         </Link>
       </Wrapper>
@@ -40,7 +40,7 @@ export const TileMoreLinks = ({
       {showAlbum && albumUrl && (
         <Wrapper asChild>
           <Link href={getHref(albumUrl, "album")} className="cursor-pointer">
-            <Disc className="mr-2 inline-block h-5 w-5" />
+            <Disc className="mr-2 inline-block size-5" />
             More from Album
           </Link>
         </Wrapper>
@@ -49,7 +49,7 @@ export const TileMoreLinks = ({
       {primaryArtists?.map((artist) => (
         <Wrapper key={artist.id} asChild>
           <Link href={getHref(artist.url, "artist")}>
-            <Mic2 className="mr-2 inline-block h-5 w-5" />
+            <Mic2 className="mr-2 inline-block size-5" />
             More From {artist.name}
           </Link>
         </Wrapper>

@@ -4,12 +4,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Edit, Mail } from "lucide-react";
 
-import { getUser } from "@/lib/auth";
-import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { H2, Small } from "@/components/ui/topography";
+import { getUser } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 import { MeNavbar } from "./me-navbar";
 
 type Props = {
@@ -32,7 +32,7 @@ const Layout = async ({ children }: Props) => {
             alt={user.name ?? "User"}
             fill
             className={cn(
-              "h-full w-full rounded-full object-cover",
+              "size-full rounded-full object-cover",
               !user.image && "dark:invert"
             )}
           />
@@ -45,7 +45,7 @@ const Layout = async ({ children }: Props) => {
             {user.name ?? "User"}
 
             <Small className="text-muted-foreground block">
-              <Mail className="mr-1 inline-block h-4 w-4" />
+              <Mail className="mr-1 inline-block size-4" />
               {user.email ?? "user@example.com"}
             </Small>
           </H2>
@@ -54,7 +54,7 @@ const Layout = async ({ children }: Props) => {
             href="/settings?account"
             className={buttonVariants({ variant: "secondary" })}
           >
-            <Edit className="mr-2 h-4 w-4" /> Edit
+            <Edit className="mr-2 size-4" /> Edit
           </Link>
         </div>
       </div>

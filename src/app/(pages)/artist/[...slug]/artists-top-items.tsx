@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-import { Album, Category, Song } from "@/types";
-import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
 import { ItemCard } from "@/components/item-card";
 import { SongList } from "@/components/song/song-list";
 import { Button } from "@/components/ui/button";
 import { H3 } from "@/components/ui/topography";
+import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
+import { Album, Category, Song } from "@/types";
 
 type Props = {
   id: string;
@@ -88,7 +88,7 @@ const ArtistsTopItems = ({
         ))}
       </div>
 
-      {hasMore ? (
+      {hasMore ?
         <Button
           variant="outline"
           className="mx-auto my-4 flex rounded-full text-center"
@@ -96,11 +96,10 @@ const ArtistsTopItems = ({
         >
           {isLoading ? "Loading..." : "Load More"}
         </Button>
-      ) : (
-        <H3 className="text-center">
+      : <H3 className="text-center">
           <em>Yay! You have seen it all</em> 🤩
         </H3>
-      )}
+      }
     </>
   );
 };

@@ -2,18 +2,18 @@
 
 import React from "react";
 
-import { ImageQuality, StreamQuality } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
+import { H3 } from "@/components/ui/topography";
 import { Language, languages as languageList } from "@/config/languages";
-import { cn } from "@/lib/utils";
 import {
   useConfig,
   useDownloadQuality,
   useImageQuality,
   useStreamQuality,
 } from "@/hooks/use-store";
-import { Button } from "@/components/ui/button";
-import { Toggle } from "@/components/ui/toggle";
-import { H3 } from "@/components/ui/topography";
+import { cn } from "@/lib/utils";
+import { ImageQuality, StreamQuality } from "@/types";
 
 const songQualities: StreamQuality[] = [
   "poor",

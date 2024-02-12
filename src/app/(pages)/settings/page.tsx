@@ -17,7 +17,7 @@ export default async function SettingsProfilePage() {
 
         <div className="p-6">
           <div className="flex items-center gap-4">
-            <div className="ring-ring ring-offset-background relative h-32 w-32 overflow-hidden rounded-full ring-2">
+            <div className="ring-ring ring-offset-background relative size-32 overflow-hidden rounded-full ring-2">
               <Image
                 src={user?.image ?? "/images/placeholder/user.jpg"}
                 alt={user?.name ?? "Profile Photo"}

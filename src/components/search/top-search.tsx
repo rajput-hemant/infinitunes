@@ -47,7 +47,7 @@ const TopSearch = async () => {
                 className="z-10 object-cover"
               />
 
-              <Skeleton className="h-full w-full" />
+              <Skeleton className="size-full" />
             </div>
 
             <div className="my-auto w-[calc(100%-3rem)]">

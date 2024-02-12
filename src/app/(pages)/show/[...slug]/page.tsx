@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
-import { Sort } from "@/types";
-import { getShowDetails } from "@/lib/jiosaavn-api";
 import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Blockquote, H3 } from "@/components/ui/topography";
+import { getShowDetails } from "@/lib/jiosaavn-api";
+import { Sort } from "@/types";
 import { EpisodeList } from "./episode-list";
 
 type Props = {
@@ -66,7 +66,7 @@ const ShowDetailsPage = async ({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="w-36">
               {sort === "asc" ? "Oldest" : "Newest"}
-              <ChevronDown className="ml-auto h-5 w-5" />
+              <ChevronDown className="ml-auto size-5" />
             </Button>
           </DropdownMenuTrigger>
 

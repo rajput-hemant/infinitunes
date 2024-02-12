@@ -1,8 +1,8 @@
-import { getLabelDetails } from "@/lib/jiosaavn-api";
 import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
 import { SongList } from "@/components/song/song-list";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getLabelDetails } from "@/lib/jiosaavn-api";
 
 type Props = { params: { slug: [string, string] } };
 

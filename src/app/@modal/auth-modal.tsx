@@ -30,9 +30,9 @@ const AuthModal = ({ children }: Props) => {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogDescription className="text-center">
-            {isLoginPage
-              ? "Don't have an account? "
-              : "Already have an account? "}
+            {isLoginPage ?
+              "Don't have an account? "
+            : "Already have an account? "}
             <Button
               variant="link"
               className="px-0"

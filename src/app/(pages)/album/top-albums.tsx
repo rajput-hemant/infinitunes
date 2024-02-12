@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
-import { TopAlbum } from "@/types";
-import { getTopAlbums } from "@/lib/jiosaavn-api";
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { ItemCard } from "@/components/item-card";
 import { H3 } from "@/components/ui/topography";
+import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
+import { getTopAlbums } from "@/lib/jiosaavn-api";
+import { TopAlbum } from "@/types";
 
 type Props = {
   initialAlbums: TopAlbum;
@@ -51,22 +51,21 @@ const TopAlbums = ({ initialAlbums: { data, last_page } }: Props) => {
         ))}
       </div>
 
-      {hasMore ? (
+      {hasMore ?
         <div
           ref={ref}
           className="text-muted-foreground flex items-center justify-center gap-2 font-bold"
         >
           {isLoading && (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" /> Loading...
+              <Loader2 className="size-5 animate-spin" /> Loading...
             </>
           )}
         </div>
-      ) : (
-        <H3 className="text-center">
+      : <H3 className="text-center">
           <em>Yay! You have seen it all</em> 🤩
         </H3>
-      )}
+      }
     </>
   );
 };

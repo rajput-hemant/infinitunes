@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
-import { Episode, Sort } from "@/types";
-import { getShowEpisodes } from "@/lib/jiosaavn-api";
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { SongList } from "@/components/song/song-list";
 import { H3 } from "@/components/ui/topography";
+import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
+import { getShowEpisodes } from "@/lib/jiosaavn-api";
+import { Episode, Sort } from "@/types";
 
 type Props = {
   showId: string;
@@ -51,22 +51,21 @@ export const EpisodeList = ({
     <>
       <SongList items={episodes} />
 
-      {hasMore ? (
+      {hasMore ?
         <div
           ref={ref}
           className="text-muted-foreground flex items-center justify-center gap-2 font-bold"
         >
           {isLoading && (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" /> Loading...
+              <Loader2 className="size-5 animate-spin" /> Loading...
             </>
           )}
         </div>
-      ) : (
-        <H3 className="text-center">
+      : <H3 className="text-center">
           <em>Yay! You have seen it all</em> 🤩
         </H3>
-      )}
+      }
     </>
   );
 };

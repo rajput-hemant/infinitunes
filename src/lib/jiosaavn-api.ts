@@ -395,16 +395,12 @@ export async function searchAll(query: string) {
   return await jioSaavnGetCall<AllSearch>("/search", { q: query });
 }
 
-type SearchReturnType<T> = T extends "song"
-  ? SongSearch
-  : T extends "album"
-  ? AlbumSearch
-  : T extends "playlist"
-  ? PlaylistSearch
-  : T extends "artist"
-  ? ArtistSearch
-  : T extends "show"
-  ? PodcastSearch
+type SearchReturnType<T> =
+  T extends "song" ? SongSearch
+  : T extends "album" ? AlbumSearch
+  : T extends "playlist" ? PlaylistSearch
+  : T extends "artist" ? ArtistSearch
+  : T extends "show" ? PodcastSearch
   : never;
 
 /**

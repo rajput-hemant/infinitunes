@@ -3,12 +3,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { siteConfig } from "@/config/site";
-import { getUser } from "@/lib/auth";
-import { cn } from "@/lib/utils";
 import AuthModeToggle from "@/components/auth/auth-mode-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { H2 } from "@/components/ui/topography";
+import { siteConfig } from "@/config/site";
+import { getUser } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 type Props = { children: React.ReactNode };
 
@@ -27,7 +27,7 @@ async function AuthLayout({ children }: Props) {
       <AuthModeToggle />
 
       {/* left half */}
-      <div className="hidden h-full flex-col justify-between bg-zinc-900 p-10 text-white dark:border-r lg:flex">
+      <div className="hidden h-full flex-col justify-between bg-zinc-900 p-10 text-white lg:flex dark:border-r">
         <Link
           href="/"
           className={cn(
@@ -35,7 +35,7 @@ async function AuthLayout({ children }: Props) {
             "group w-fit bg-inherit dark:bg-transparent"
           )}
         >
-          <ArrowLeft className="mr-1 h-4 w-4 duration-300 group-hover:-translate-x-1" />
+          <ArrowLeft className="mr-1 size-4 duration-300 group-hover:-translate-x-1" />
           Back
         </Link>
 

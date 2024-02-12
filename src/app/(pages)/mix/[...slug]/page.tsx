@@ -1,6 +1,6 @@
-import { getMixDetails } from "@/lib/jiosaavn-api";
 import { DetailsHeader } from "@/components/details-header";
 import { SongList } from "@/components/song/song-list";
+import { getMixDetails } from "@/lib/jiosaavn-api";
 
 type Props = { params: { slug: [string, string] } };
 

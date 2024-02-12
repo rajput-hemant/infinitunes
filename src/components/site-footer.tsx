@@ -157,7 +157,7 @@ export default async function SiteFooter() {
             rel="noopener noreferrer"
             className={buttonVariants({ variant: "ghost", size: "icon" })}
           >
-            <Icons.GitHub className="h-5 w-5" />
+            <Icons.GitHub className="size-5" />
           </a>
 
           <a
@@ -166,7 +166,7 @@ export default async function SiteFooter() {
             rel="noopener noreferrer"
             className={buttonVariants({ variant: "ghost", size: "icon" })}
           >
-            <Icons.Twitter className="h-5 w-5" />
+            <Icons.Twitter className="size-5" />
           </a>
 
           <a
@@ -175,7 +175,7 @@ export default async function SiteFooter() {
             rel="noopener noreferrer"
             className={buttonVariants({ variant: "ghost", size: "icon" })}
           >
-            <Icons.Discord className="h-5 w-5" />
+            <Icons.Discord className="size-5" />
           </a>
         </div>
       </div>

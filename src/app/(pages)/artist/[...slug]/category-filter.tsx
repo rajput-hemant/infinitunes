@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { Category } from "@/types";
-import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Category } from "@/types";
 
 type Props = {
   path: string;

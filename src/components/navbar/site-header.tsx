@@ -24,7 +24,7 @@ export default async function SiteHeader() {
       <div className="container flex h-14 items-center space-x-4">
         <Link href="/" className="flex items-center">
           <div className="flex items-center gap-1 font-bold">
-            <Icons.Logo className="h-5 w-5" />
+            <Icons.Logo className="size-5" />
 
             <span className="text-lg lowercase">{siteConfig.name}</span>
           </div>

@@ -1,9 +1,9 @@
-import { getUser } from "@/lib/auth";
 import SecondaryNavbar from "@/components/navbar/sec-nav";
 import SiteHeader from "@/components/navbar/site-header";
 import Player from "@/components/player";
 import Sidebar from "@/components/sidebar";
 import SiteFooter from "@/components/site-footer";
+import { getUser } from "@/lib/auth";
 import RouteGuard from "./route-guard";
 
 type Props = {

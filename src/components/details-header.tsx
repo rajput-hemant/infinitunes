@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
 
+import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import {
   Album,
   Artist,
@@ -12,7 +13,6 @@ import {
   ShowDetails,
   Song,
 } from "@/types";
-import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { DetailsHeaderMoreButton } from "./details-header-more-button";
 import { LikeButton } from "./like-button";
 import { PlayButton } from "./play-button";
@@ -27,13 +27,15 @@ type Props = {
 
 export const DetailsHeader = ({ item }: Props) => {
   const songs =
-    item.type === "song" ? [item] : "songs" in item ? item.songs : [];
+    item.type === "song" ? [item]
+    : "songs" in item ? item.songs
+    : [];
 
   return (
     <div className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
-          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-2xl transition-[width] duration-1000 dark:shadow-black md:w-56 xl:w-64",
+          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-2xl transition-[width] duration-1000 md:w-56 xl:w-64 dark:shadow-black",
           (item.type === "artist" || item.type === "label") && "rounded-full"
         )}
       >
@@ -43,7 +45,7 @@ export const DetailsHeader = ({ item }: Props) => {
           height={200}
           alt={item.name}
           className={cn(
-            "h-full w-full rounded-md object-cover",
+            "size-full rounded-md object-cover",
             ["artist", "label"].includes(item.type) && "scale-105"
           )}
         />
@@ -71,7 +73,7 @@ export const DetailsHeader = ({ item }: Props) => {
           {(item.type === "song" || item.type === "episode") && (
             <>
               <p>
-                {item.type === "song" ? (
+                {item.type === "song" ?
                   <>
                     <span>
                       <Link
@@ -98,9 +100,7 @@ export const DetailsHeader = ({ item }: Props) => {
                       )}
                     </span>
                   </>
-                ) : (
-                  <span>{item.header_desc}</span>
-                )}
+                : <span>{item.header_desc}</span>}
               </p>
 
               <p>

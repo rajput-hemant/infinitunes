@@ -3,8 +3,8 @@
 import React from "react";
 import Link from "next/link";
 
-import { MegaMenu } from "@/types";
 import { cn, getHref } from "@/lib/utils";
+import { MegaMenu } from "@/types";
 import {
   NavigationMenu,
   NavigationMenuContent,

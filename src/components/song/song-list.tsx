@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 
-import { Episode, Song } from "@/types";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
+import { Episode, Song } from "@/types";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
@@ -138,7 +138,7 @@ export const SongList = ({
 
           {/* controls */}
           <div className="flex w-[12%] items-center justify-end lg:justify-between xl:w-[8%]">
-            <LikeButton className="hover:text-primary hidden h-5 w-5 lg:block" />
+            <LikeButton className="hover:text-primary hidden size-5 lg:block" />
 
             <span className="mx-auto hidden truncate lg:block">
               {formatDuration(item.duration, "mm:ss")}

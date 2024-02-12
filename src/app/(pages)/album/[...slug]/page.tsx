@@ -1,14 +1,14 @@
+import { DetailsHeader } from "@/components/details-header";
+import { ItemCard } from "@/components/item-card";
+import { SongList } from "@/components/song/song-list";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { H3 } from "@/components/ui/topography";
 import {
   getAlbumDetails,
   getAlbumFromSameYear,
   getAlbumRecommendations,
   getTrending,
 } from "@/lib/jiosaavn-api";
-import { DetailsHeader } from "@/components/details-header";
-import { ItemCard } from "@/components/item-card";
-import { SongList } from "@/components/song/song-list";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { H3 } from "@/components/ui/topography";
 
 type Props = { params: { slug: [string, string] } };
 

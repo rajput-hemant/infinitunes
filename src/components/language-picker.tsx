@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { ChevronDown, Languages } from "lucide-react";
 
-import { Lang } from "@/types";
 import { languages } from "@/config/languages";
-import { cn } from "@/lib/utils";
 import { useConfig } from "@/hooks/use-store";
+import { cn } from "@/lib/utils";
+import { Lang } from "@/types";
 import { Button, buttonVariants } from "./ui/button";
 import {
   DropdownMenu,
@@ -49,7 +49,7 @@ const LanguagePicker = () => {
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="hidden h-10 w-10 space-x-1 p-0 lg:inline-flex lg:w-auto lg:space-x-2 lg:p-2"
+          className="hidden size-10 space-x-1 p-0 lg:inline-flex lg:w-auto lg:space-x-2 lg:p-2"
         >
           <Languages className="aspect-square h-5 lg:h-4" />
 
@@ -57,7 +57,7 @@ const LanguagePicker = () => {
 
           <ChevronDown
             className={cn(
-              "hidden h-4 w-4 duration-300 lg:inline-block",
+              "hidden size-4 duration-300 lg:inline-block",
               isOpen && "rotate-180"
             )}
           />

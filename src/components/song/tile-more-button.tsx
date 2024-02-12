@@ -14,13 +14,6 @@ import {
   Share2,
 } from "lucide-react";
 
-import { Episode, Queue, Song } from "@/types";
-import { getImageSrc } from "@/lib/utils";
-import {
-  useCurrentSongIndex,
-  useIsPlayerInit,
-  useQueue,
-} from "@/hooks/use-store";
 import {
   Sheet,
   SheetClose,
@@ -31,6 +24,13 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  useCurrentSongIndex,
+  useIsPlayerInit,
+  useQueue,
+} from "@/hooks/use-store";
+import { getImageSrc } from "@/lib/utils";
+import { Episode, Queue, Song } from "@/types";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
 import {
@@ -174,7 +174,7 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
       {/* sheet for small devices */}
       <Sheet>
         <SheetTrigger>
-          <MoreVertical className="hover:text-primary h-6 w-6 lg:hidden" />
+          <MoreVertical className="hover:text-primary size-6 lg:hidden" />
         </SheetTrigger>
 
         <SheetContent side="bottom" className="rounded-t-3xl">
@@ -188,7 +188,7 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
                   className="z-10 rounded-md"
                 />
 
-                <Skeleton className="absolute inset-0 h-full w-full" />
+                <Skeleton className="absolute inset-0 size-full" />
               </div>
 
               <div className="flex flex-col truncate text-start">
@@ -215,10 +215,10 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
                   onClick={onClick}
                   className="flex h-8 items-center font-medium"
                 >
-                  <Icon className="mr-2 h-5 w-5" />
-                  {item.type === "song"
-                    ? label
-                    : label.replace("Song", "Episode")}
+                  <Icon className="mr-2 size-5" />
+                  {item.type === "song" ?
+                    label
+                  : label.replace("Song", "Episode")}
                 </button>
               ))}
 
@@ -226,9 +226,9 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
               onClick={() => setTranslateX(-110)}
               className="flex h-8 items-center font-medium"
             >
-              <Share2 className="mr-2 h-5 w-5" />
+              <Share2 className="mr-2 size-5" />
               Share
-              <ChevronRight className="ml-auto h-5 w-5" />
+              <ChevronRight className="ml-auto size-5" />
             </button>
 
             <div className="bg-background absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4">
@@ -236,7 +236,7 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
                 onClick={() => setTranslateX(0)}
                 className="flex h-8 items-center font-medium"
               >
-                <ChevronLeft className="mr-2 h-5 w-5" />
+                <ChevronLeft className="mr-2 size-5" />
                 Back
               </button>
 
@@ -253,9 +253,9 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
               albumUrl={"album_url" in item ? item.album_url : undefined}
               showAlbum={item.type === "song" ? showAlbum : false}
               primaryArtists={
-                "artists" in item
-                  ? item.artists
-                  : item.artist_map.primary_artists
+                "artists" in item ?
+                  item.artists
+                : item.artist_map.primary_artists
               }
             />
           </div>
@@ -271,7 +271,7 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
       {/* dropdown for large devices */}
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <MoreVertical className="hover:text-primary hidden h-6 w-6 lg:block" />
+          <MoreVertical className="hover:text-primary hidden size-6 lg:block" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className="p-2">
@@ -280,10 +280,10 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
               .filter(({ hide }) => !hide)
               .map(({ icon: Icon, label, onClick }, i) => (
                 <DropdownMenuItem key={i} onClick={onClick}>
-                  <Icon className="mr-2 h-5 w-5" />
-                  {item.type === "song"
-                    ? label
-                    : label.replace("Song", "Episode")}
+                  <Icon className="mr-2 size-5" />
+                  {item.type === "song" ?
+                    label
+                  : label.replace("Song", "Episode")}
                 </DropdownMenuItem>
               ))}
 
@@ -298,9 +298,9 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
               showAlbum={showAlbum}
               isDropdownItem
               primaryArtists={
-                "artists" in item
-                  ? item.artists
-                  : item.artist_map.primary_artists
+                "artists" in item ?
+                  item.artists
+                : item.artist_map.primary_artists
               }
             />
           </DropdownMenuGroup>

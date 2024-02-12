@@ -12,9 +12,9 @@ const AuthModeToggle = () => {
   return (
     <div className="absolute right-4 top-4 md:right-8 md:top-8">
       <span className="text-muted-foreground hidden text-sm md:inline-block">
-        {isLoginPage
-          ? "Don't have an account yet?"
-          : "Already have an account?"}
+        {isLoginPage ?
+          "Don't have an account yet?"
+        : "Already have an account?"}
       </span>
 
       <Link

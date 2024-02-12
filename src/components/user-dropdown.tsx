@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
-import type { User } from "next-auth";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
+
+import type { User } from "next-auth";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {

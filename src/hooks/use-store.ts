@@ -1,8 +1,8 @@
 import { atom, createStore, useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import { ImageQuality, Lang, Queue, StreamQuality } from "@/types";
 import { Theme } from "@/config/themes";
+import { ImageQuality, Lang, Queue, StreamQuality } from "@/types";
 
 const store = createStore();
 

@@ -194,14 +194,12 @@ export function AuthForm({
         )}
 
         <Button disabled={isSubmitting} className="w-full">
-          {isSubmitting ? (
+          {isSubmitting ?
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 size-4 animate-spin" />
               {submitButtonLoadingText}
             </>
-          ) : (
-            submitButtonText
-          )}
+          : submitButtonText}
         </Button>
 
         {isLoginPage && (
@@ -226,11 +224,9 @@ export function AuthForm({
           disabled={isGoogleLoading}
           onClick={googleSignInHandler}
         >
-          {isGoogleLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Icons.Google className="mr-2 h-4 w-4" />
-          )}
+          {isGoogleLoading ?
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          : <Icons.Google className="mr-2 size-4" />}
           Google
         </Button>
 
@@ -240,11 +236,9 @@ export function AuthForm({
           disabled={isGithubLoading}
           onClick={githubSignInHandler}
         >
-          {isGithubLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Icons.GitHub className="mr-2 h-4 w-4" />
-          )}
+          {isGithubLoading ?
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          : <Icons.GitHub className="mr-2 size-4" />}
           Github
         </Button>
       </div>

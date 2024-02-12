@@ -1,10 +1,12 @@
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { compare } from "bcryptjs";
 import { eq } from "drizzle-orm";
-import { getServerSession, type NextAuthOptions, type User } from "next-auth";
+import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+
+import type { NextAuthOptions, User } from "next-auth";
 
 import { db } from "./db";
 import { users } from "./db/schema";

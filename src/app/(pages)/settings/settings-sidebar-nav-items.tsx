@@ -3,9 +3,9 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 
-import { cn } from "@/lib/utils";
-import { useHash } from "@/hooks/use-hash";
 import { buttonVariants } from "@/components/ui/button";
+import { useHash } from "@/hooks/use-hash";
+import { cn } from "@/lib/utils";
 import { SidebarNavItem } from "./settings-sidebar-nav";
 
 type Props = {
@@ -30,9 +30,9 @@ export function SettingsSidebarNavItems({ items, href, className }: Props) {
             className={cn(
               buttonVariants({ variant: "ghost" }),
               "text-muted-foreground justify-start",
-              hash === id
-                ? "bg-muted text-foreground"
-                : "hover:bg-muted underline-offset-4 hover:underline"
+              hash === id ?
+                "bg-muted text-foreground"
+              : "hover:bg-muted underline-offset-4 hover:underline"
             )}
           >
             {icon}

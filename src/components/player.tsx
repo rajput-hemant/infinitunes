@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 
-import { cn, formatDuration, getDownloadLink, getImageSrc } from "@/lib/utils";
 import { useEventListener } from "@/hooks/use-event-listner";
 import {
   useCurrentSongIndex,
@@ -24,6 +23,7 @@ import {
   useQueue,
   useStreamQuality,
 } from "@/hooks/use-store";
+import { cn, formatDuration, getDownloadLink, getImageSrc } from "@/lib/utils";
 import { Icons } from "./icons";
 import { TileMoreButton } from "./song/tile-more-button";
 import { Skeleton } from "./ui/skeleton";
@@ -99,9 +99,8 @@ const Player = () => {
     if (queue.length === 1) {
       loop(!looping);
       toast({
-        description: looping
-          ? "Looping disabled"
-          : "Playing current song on repeat",
+        description:
+          looping ? "Looping disabled" : "Playing current song on repeat",
       });
     } else if (!looping && !loopPlaylist) {
       setLoopPlaylist(true);
@@ -224,7 +223,7 @@ const Player = () => {
           <SliderRange />
         </SliderTrack>
 
-        <SliderThumb className="hidden h-4 w-4 cursor-pointer lg:block" />
+        <SliderThumb className="hidden size-4 cursor-pointer lg:block" />
       </Slider>
 
       <div
@@ -234,7 +233,7 @@ const Player = () => {
         )}
       >
         <div className="flex w-full gap-4 lg:w-1/3">
-          {queue.length && queue[currentIndex]?.image ? (
+          {queue.length && queue[currentIndex]?.image ?
             <>
               <div className="relative aspect-square h-12 overflow-hidden rounded-md shadow-md">
                 <Image
@@ -256,15 +255,14 @@ const Player = () => {
                 </Muted>
               </div>
             </>
-          ) : (
-            <div className="flex items-center space-x-4">
-              <Skeleton className="h-12 w-12 rounded-md" />
+          : <div className="flex items-center space-x-4">
+              <Skeleton className="size-12 rounded-md" />
               <div className="space-y-2">
                 <Skeleton className="h-3 w-44 lg:w-64" />
                 <Skeleton className="h-3 w-52 2xl:w-[500px]" />
               </div>
             </div>
-          )}
+          }
         </div>
 
         <div className="flex justify-end lg:w-1/3 lg:justify-evenly">
@@ -275,33 +273,28 @@ const Player = () => {
               !looping && !loopPlaylist && "text-muted-foreground"
             )}
           >
-            {looping ? (
-              <Repeat1 strokeWidth={2} className="h-7 w-7" />
-            ) : (
-              <Repeat strokeWidth={2} className="h-7 w-7" />
-            )}
+            {looping ?
+              <Repeat1 strokeWidth={2} className="size-7" />
+            : <Repeat strokeWidth={2} className="size-7" />}
           </button>
 
           <button onClick={skipToPrev} className="hidden lg:block">
-            <Icons.SkipBack className="h-10 w-10" />
+            <Icons.SkipBack className="size-10" />
           </button>
 
           <button onClick={playPauseHandler}>
-            {isLoading ? (
+            {isLoading ?
               <Loader2 className="animate-spin" />
-            ) : (
-              <>
-                {playing ? (
-                  <Pause className="h-10 w-10" />
-                ) : (
-                  <Icons.Play className="h-10 w-10" />
-                )}
+            : <>
+                {playing ?
+                  <Pause className="size-10" />
+                : <Icons.Play className="size-10" />}
               </>
-            )}
+            }
           </button>
 
           <button onClick={skipToNext} className="hidden lg:block">
-            <Icons.SkipForward className="h-10 w-10" />
+            <Icons.SkipForward className="size-10" />
           </button>
 
           <button
@@ -327,19 +320,16 @@ const Player = () => {
             onClick={() => mute(!muted)}
             className="disabled:text-muted-foreground"
           >
-            {!!muted ? (
+            {!!muted ?
               <VolumeX />
-            ) : (
-              <>
-                {volume < 0.33 ? (
+            : <>
+                {volume < 0.33 ?
                   <Volume />
-                ) : volume < 0.66 ? (
+                : volume < 0.66 ?
                   <Volume1 />
-                ) : (
-                  <Volume2 strokeWidth={2} />
-                )}
+                : <Volume2 strokeWidth={2} />}
               </>
-            )}
+            }
           </button>
 
           <Slider
@@ -357,7 +347,7 @@ const Player = () => {
 
             <SliderThumb
               className={cn(
-                "h-4 w-4 cursor-pointer",
+                "size-4 cursor-pointer",
                 (!isReady || muted) && "bg-accent"
               )}
             />
@@ -367,11 +357,9 @@ const Player = () => {
             {(volume * 100).toFixed()}%
           </span>
 
-          {queue.length > 0 ? (
+          {queue.length > 0 ?
             <TileMoreButton item={queue[currentIndex]} showAlbum />
-          ) : (
-            <MoreVertical />
-          )}
+          : <MoreVertical />}
         </div>
       </div>
     </div>

@@ -2,8 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 
-import { Quality, Type } from "@/types";
 import { cn, getHref, getImageSrc } from "@/lib/utils";
+import { Quality, Type } from "@/types";
 import { PlayButton } from "./play-button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
@@ -44,7 +44,7 @@ export function ItemCard({
         className
       )}
     >
-      <CardContent className="h-full w-full p-2">
+      <CardContent className="size-full p-2">
         <div
           className={cn(
             "relative w-full overflow-hidden rounded-md",
@@ -62,13 +62,13 @@ export function ItemCard({
             height={200}
             alt={name}
             className={cn(
-              "h-full w-full object-cover duration-300 group-hover:scale-110",
+              "size-full object-cover duration-300 group-hover:scale-110",
               !imageSrc && "duration-0 dark:invert",
               imageSrc.includes("default") && "dark:invert"
             )}
           />
 
-          <Skeleton className="absolute inset-0 -z-10 h-full w-full hover:scale-110" />
+          <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
 
           <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
             <PlayButton

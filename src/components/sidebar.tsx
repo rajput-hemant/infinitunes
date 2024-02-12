@@ -4,11 +4,12 @@ import React from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import { Plus } from "lucide-react";
+
 import type { User } from "next-auth";
 
+import { Button, buttonVariants } from "@/components/ui/button";
 import { sidebarNav } from "@/config/nav";
 import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
 import { H3, Muted } from "./ui/topography";
 
 type SidebarProps = { user?: User } & React.HTMLAttributes<HTMLDivElement>;
@@ -33,7 +34,7 @@ export default function Sidebar({ user, className }: SidebarProps) {
 
           return (
             <NavLink key={title} title={title} href={href} isActive={isActive}>
-              <Icon className="mr-2 h-5 w-5" />
+              <Icon className="mr-2 size-5" />
               {title}
             </NavLink>
           );
@@ -55,7 +56,7 @@ export default function Sidebar({ user, className }: SidebarProps) {
                   href={href}
                   isActive={isActive}
                 >
-                  <Icon className="mr-2 h-5 w-5 shrink-0" />
+                  <Icon className="mr-2 size-5 shrink-0" />
                   {title}
                 </NavLink>
               );
@@ -72,7 +73,7 @@ export default function Sidebar({ user, className }: SidebarProps) {
           title="Create Playlist"
           className={cn(buttonVariants(), "my-2 w-full")}
         >
-          <Plus className="mr-1 h-4 w-4" />
+          <Plus className="mr-1 size-4" />
 
           <span className="truncate">Create Playlist</span>
         </ButtonOrLink>

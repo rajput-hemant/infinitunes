@@ -2,7 +2,11 @@
 
 import React from "react";
 
-import { Song, Type } from "@/types";
+import {
+  useCurrentSongIndex,
+  useIsPlayerInit,
+  useQueue,
+} from "@/hooks/use-store";
 import {
   getAlbumDetails,
   getArtistDetails,
@@ -11,11 +15,7 @@ import {
   getPlaylistDetails,
   getSongDetails,
 } from "@/lib/jiosaavn-api";
-import {
-  useCurrentSongIndex,
-  useIsPlayerInit,
-  useQueue,
-} from "@/hooks/use-store";
+import { Song, Type } from "@/types";
 
 type Props = {
   type: Type;

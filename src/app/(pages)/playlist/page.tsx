@@ -1,8 +1,8 @@
-import { Lang } from "@/types";
-import { getFeaturedPlaylists } from "@/lib/jiosaavn-api";
 import LanguageBar from "@/components/language-bar";
 import { Separator } from "@/components/ui/separator";
 import { H2 } from "@/components/ui/topography";
+import { getFeaturedPlaylists } from "@/lib/jiosaavn-api";
+import { Lang } from "@/types";
 import FeaturedPlaylists from "./featured-playlists";
 
 export const revalidate = 3600; // revalidate page every hour
@@ -12,8 +12,9 @@ type Props = { searchParams: { page?: number; lang?: Lang } };
 const PlaylistsPage = async ({ searchParams: { page = 1, lang } }: Props) => {
   const featuredPlaylists = await getFeaturedPlaylists(page, 50, lang);
 
-  const heading = lang
-    ? `${lang[0].toUpperCase() + lang.slice(1)} Music Playlists`
+  const heading =
+    lang ?
+      `${lang[0].toUpperCase() + lang.slice(1)} Music Playlists`
     : "Top Playlists";
 
   return (

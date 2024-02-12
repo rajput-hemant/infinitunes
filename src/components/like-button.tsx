@@ -13,7 +13,7 @@ export const LikeButton = ({ className }: Props) => {
 
   return (
     <button onClick={likeHandler} className={className}>
-      <Heart className="h-full w-full text-inherit" />
+      <Heart className="size-full text-inherit" />
     </button>
   );
 };
