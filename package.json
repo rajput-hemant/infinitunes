@@ -43,7 +43,7 @@
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
-    "cmdk": "^0.2.1",
+    "cmdk": "^1.0.0",
     "drizzle-orm": "^0.29.3",
     "geist": "^1.2.2",
     "jotai": "^2.6.4",
