@@ -20,21 +20,14 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
-    /* -----------------------------------------------------------------------------------------------
-     * JioSaavn API URL (https://github.com/rajput-hemant/jiosaavn-api-ts)
-     * -----------------------------------------------------------------------------------------------*/
-
-    JIOSAAVN_API_URL: z
-      .string()
-      .url({ message: "JioSaavn API URL is invalid or missing" }),
 
     /* -----------------------------------------------------------------------------------------------
      * NextAuth.js
      * -----------------------------------------------------------------------------------------------*/
 
-    NEXTAUTH_SECRET:
+    AUTH_SECRET:
       process.env.NODE_ENV === "production"
-        ? z.string()
+        ? z.string({ required_error: "Auth Secret is invalid or missing" })
         : z.string().optional(),
     NEXTAUTH_URL: z.preprocess(
       // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
@@ -67,6 +60,14 @@ export const env = createEnv({
       .min(1, { message: "Github Client Secret is invalid or missing" }),
 
     /* -----------------------------------------------------------------------------------------------
+     * JioSaavn API URL (https://github.com/rajput-hemant/jiosaavn-api-ts)
+     * -----------------------------------------------------------------------------------------------*/
+
+    JIOSAAVN_API_URL: z
+      .string()
+      .url({ message: "JioSaavn API URL is invalid or missing" }),
+
+    /* -----------------------------------------------------------------------------------------------
      * Postgres Database URL (Supabase)
      * -----------------------------------------------------------------------------------------------*/
 
@@ -80,7 +81,7 @@ export const env = createEnv({
 
     UPSTASH_REDIS_REST_URL: z.string().url().optional(),
     UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
-    ENABLE_RATE_LIMITING: z.coerce.boolean().default(false),
+    ENABLE_RATE_LIMITING: z.enum(["true", "false"]).default("false"),
     RATE_LIMITING_REQUESTS_PER_SECOND: z.coerce.number().default(50),
   },
 

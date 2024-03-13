@@ -35,7 +35,7 @@ import {
   TopShows,
   Trending,
 } from "@/types";
-import { env } from "./env.mjs";
+import { env } from "./env";
 
 async function jioSaavnGetCall<T>(
   path: string,
