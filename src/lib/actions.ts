@@ -1,56 +1,69 @@
 "use server";
 
+import { randomUUID } from "crypto";
 import { redirect } from "next/navigation";
-import { hash } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
+
+import type { resetPasswordSchema, signUpSchema } from "./validations";
+import type { z } from "zod";
 
 import { db } from "./db";
 import { users } from "./db/schema";
 
-type Credentials = {
-  email: string;
-  password: string;
-};
+export async function createNewAccount(
+  credentials: z.infer<typeof signUpSchema>
+) {
+  const { email, password } = credentials;
 
-export async function createNewAccount({ email, password }: Credentials) {
-  try {
-    const hashedPassword = await hash(password, 10);
+  const hashedPassword = await hash(password, 10);
 
-    // check if email already exists
-    // const [user] = await db
-    //   .select()
-    //   .from(users)
-    //   .where(eq(users.email, email))
-    //   .limit(1);
+  const user = await db.query.users.findFirst({
+    where: (u, { eq }) => eq(u.email, email),
+  });
 
-    // if (user) {
-    //   return { error: "Email already exists" };
-    // }
-
-    await db.insert(users).values({ email, password: hashedPassword });
-  } catch (error) {
-    throw new Error((error as Error).message);
+  if (user) {
+    throw new Error("Email already exists, please try logging in");
   }
+
+  await db
+    .insert(users)
+    .values({ username: randomUUID(), email, password: hashedPassword });
 
   redirect("/");
 }
 
-export async function resetPassword({ email, password }: Credentials) {
-  try {
-    const hashedPassword = await hash(password, 10);
+export async function resetPassword(
+  credentials: z.infer<typeof resetPasswordSchema>
+) {
+  const { email, password, newPassword } = credentials;
 
-    const updatedPass = await db
-      .update(users)
-      .set({ password: hashedPassword })
-      .where(eq(users.email, email))
-      .returning({ updatedPass: users.password });
+  const user = await db.query.users.findFirst({
+    where: (u, { eq }) => eq(u.email, email),
+  });
 
-    if (updatedPass.length === 0) {
-      throw new Error("Email not found, please try signing up");
-    }
-  } catch (error) {
-    throw new Error((error as Error).message);
+  if (!user) {
+    throw new Error("User not found, please try signing up");
   }
+
+  if (!user.password) {
+    throw new Error(
+      "User does not have a password, you might have signed up with a social account"
+    );
+  }
+
+  const isPasswordValid = await compare(password, user.password);
+
+  if (!isPasswordValid) {
+    throw new Error("Previous password is incorrect, please try again");
+  }
+
+  const hashedPassword = await hash(newPassword, 10);
+
+  await db
+    .update(users)
+    .set({ password: hashedPassword })
+    .where(eq(users.email, email));
 
   redirect("/login");
 }

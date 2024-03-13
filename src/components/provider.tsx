@@ -1,10 +1,12 @@
 "use client";
 
+import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { type ThemeProviderProps } from "next-themes/dist/types";
 
 import { ThemeSwitcher } from "./theme-switcher";
-import { Toaster } from "./ui/toaster";
+import { Toaster } from "./ui/sonner";
+import { TooltipProvider } from "./ui/tooltip";
 
 type Props = {
   theme?: ThemeProviderProps;
@@ -19,7 +21,9 @@ export default function Providers({ children, theme }: Props) {
       enableSystem
       {...theme}
     >
-      {children}
+      <SessionProvider>
+        <TooltipProvider>{children}</TooltipProvider>
+      </SessionProvider>
 
       <Toaster />
       <ThemeSwitcher />

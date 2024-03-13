@@ -1,18 +1,18 @@
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import AuthModeToggle from "@/components/auth/auth-mode-toggle";
+import { Icons } from "@/components/icons";
 import { buttonVariants } from "@/components/ui/button";
-import { H2 } from "@/components/ui/topography";
-import { siteConfig } from "@/config/site";
 import { getUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { AuthModeToggle } from "./_components/auth-mode-toggle";
 
-type Props = { children: React.ReactNode };
+type AuthLayoutProps = React.PropsWithChildren;
 
-async function AuthLayout({ children }: Props) {
+export default async function AuthLayout({ children }: AuthLayoutProps) {
   const user = await getUser();
 
   if (user) {
@@ -23,16 +23,12 @@ async function AuthLayout({ children }: Props) {
 
   return (
     <div className="grid h-screen lg:grid-cols-2">
-      {/* top sign-in/sign-up link */}
-      <AuthModeToggle />
-
-      {/* left half */}
-      <div className="hidden h-full flex-col justify-between bg-zinc-900 p-10 text-white lg:flex dark:border-r">
+      <div className="hidden h-full bg-zinc-900 p-10 text-white lg:flex lg:flex-col lg:justify-between dark:border-r">
         <Link
           href="/"
           className={cn(
-            buttonVariants({ variant: "outline" }),
-            "group w-fit bg-inherit dark:bg-transparent"
+            buttonVariants({ size: "sm" }),
+            "group w-fit border border-zinc-600 duration-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-2 hover:ring-offset-zinc-900"
           )}
         >
           <ArrowLeft className="mr-1 size-4 duration-300 group-hover:-translate-x-1" />
@@ -42,35 +38,40 @@ async function AuthLayout({ children }: Props) {
         <Image
           src={imageUrl}
           width={1280}
-          height={843}
-          alt="Authentication"
+          height={640}
+          alt="Artist Image"
           className="animate-in zoom-in-50 mx-auto max-w-md object-cover duration-1000"
         />
 
         <div className="mb-20 text-center 2xl:mb-32">
-          <H2>All Your Music.</H2>
-          <em className="text-muted-foreground">Anytime, anywhere.</em>
+          <h2 className="font-heading text-5xl">All Your Music.</h2>
+          <em className="text-muted-foreground text-2xl">Anytime, anywhere.</em>
         </div>
       </div>
 
-      {/* right half */}
-      <div className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[400px] sm:p-0">
-        <Image
-          src="/images/logo512.png"
-          width={100}
-          height={100}
-          alt={`${siteConfig.name} Logo`}
-          className="mx-auto"
-        />
+      <AuthModeToggle />
 
-        <H2 className="text-center font-semibold">
-          Welcome to <span className="lowercase">{siteConfig.name}</span>.
-        </H2>
-
+      <div className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[350px] sm:p-0">
+        <Icons.Logo className="mx-auto size-14 drop-shadow" />
         {children}
+        <p className="text-muted-foreground mx-auto px-10 text-center text-sm">
+          By clicking continue, you agree to our{" "}
+          <Link
+            href="/terms"
+            className="hover:text-foreground underline underline-offset-4 outline-none hover:underline"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href="/privacy"
+            className="hover:text-foreground underline underline-offset-4 outline-none hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );
 }
-
-export default AuthLayout;

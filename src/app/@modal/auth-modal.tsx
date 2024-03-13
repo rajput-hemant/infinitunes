@@ -10,14 +10,16 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 
-type Props = {
-  children: React.ReactNode;
-};
+type AuthModalProps = React.PropsWithChildren<{
+  title: string;
+  description: string;
+}>;
 
-const AuthModal = ({ children }: Props) => {
+export function AuthModal({ title, description, children }: AuthModalProps) {
   const router = useRouter();
   const isLoginPage = usePathname() === "/login";
 
@@ -27,35 +29,41 @@ const AuthModal = ({ children }: Props) => {
 
   return (
     <Dialog defaultOpen onOpenChange={(open) => !open && navigateBack()}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="gap-0 space-y-2 p-10 sm:max-w-[450px]">
         <DialogHeader>
+          <DialogTitle className="font-heading text-center text-3xl font-normal drop-shadow-md sm:text-4xl md:text-5xl dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent">
+            {title}
+          </DialogTitle>
           <DialogDescription className="text-center">
-            {isLoginPage ?
-              "Don't have an account? "
-            : "Already have an account? "}
-            <Button
-              variant="link"
-              className="px-0"
-              onClick={() => router.replace(isLoginPage ? "/signup" : "/login")}
-            >
-              {isLoginPage ? "Sign up" : "Login"}
-            </Button>
-            .
+            {description}
           </DialogDescription>
         </DialogHeader>
 
-        <Separator />
-
         {children}
 
-        <Separator className="mt-2" />
+        <p className="text-muted-foreground py-2 text-center text-sm">
+          {isLoginPage
+            ? "Don't have an account? "
+            : "Already have an account? "}
+          <Button
+            size="sm"
+            variant="link"
+            className="h-5 px-0"
+            onClick={() => router.replace(isLoginPage ? "/signup" : "/login")}
+          >
+            {isLoginPage ? "Sign up" : "Login"}
+          </Button>
+          .
+        </p>
 
-        <DialogFooter className="my-4 flex">
+        <Separator />
+
+        <DialogFooter className="flex pt-2">
           <DialogClose asChild>
             <Button
               variant="secondary"
               onClick={navigateBack}
-              className="w-full text-lg font-semibold"
+              className="w-full border text-lg font-semibold shadow-sm"
             >
               Close
             </Button>
@@ -64,6 +72,4 @@ const AuthModal = ({ children }: Props) => {
       </DialogContent>
     </Dialog>
   );
-};
-
-export default AuthModal;
+}

@@ -3,14 +3,7 @@ import "@/styles/globals.css";
 import Providers from "@/components/provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { siteConfig } from "@/config/site";
-import {
-  fontInter,
-  fontMono,
-  fontSans,
-  incognito,
-  overpass,
-  poppins,
-} from "@/lib/fonts";
+import { fontHeading, fontMono, fontSans } from "@/lib/fonts";
 import { absoluteUrl, cn } from "@/lib/utils";
 
 export const viewport = {
@@ -78,10 +71,7 @@ export default function RootLayout({ modal, children }: RootLayoutProps) {
           "min-h-screen font-sans antialiased",
           fontSans.variable,
           fontMono.variable,
-          fontInter.variable,
-          poppins.variable,
-          overpass.variable,
-          incognito.variable
+          fontHeading.variable
         )}
       >
         <Providers>

@@ -1,12 +1,18 @@
-import { AuthForm } from "@/components/auth/auth-form";
-import AuthModal from "../auth-modal";
+import { LoginForm } from "@/app/(auth)/_components/login-form";
+import { AuthModal } from "../auth-modal";
 
-const SignUpModal = () => {
-  return (
-    <AuthModal>
-      <AuthForm isLoginPage />
-    </AuthModal>
-  );
+export const metadata = {
+  title: "Login",
+  description: "Login to your account",
 };
 
-export default SignUpModal;
+export default function LoginModal() {
+  return (
+    <AuthModal
+      title="Login"
+      description="Enter your credentials below to login"
+    >
+      <LoginForm />
+    </AuthModal>
+  );
+}
