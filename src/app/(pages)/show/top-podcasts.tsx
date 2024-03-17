@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
+import type { TopShows } from "@/types";
+
 import { ItemCard } from "@/components/item-card";
 import { H3 } from "@/components/ui/topography";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getTopShows } from "@/lib/jiosaavn-api";
-import { TopShows } from "@/types";
 
 type Props = {
   initialTopShows: TopShows;
@@ -57,7 +58,7 @@ const TopPodcasts = ({ initialTopShows: { data, last_page } }: Props) => {
       {hasMore ?
         <div
           ref={ref}
-          className="text-muted-foreground flex items-center justify-center gap-2 font-bold"
+          className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
         >
           {isLoading && (
             <>

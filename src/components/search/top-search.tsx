@@ -37,7 +37,7 @@ const TopSearch = async () => {
           <Link
             key={t.id}
             href={getHref(t.url, t.type)}
-            className="hover:bg-secondary flex gap-2 rounded-md p-2"
+            className="flex gap-2 rounded-md p-2 hover:bg-secondary"
           >
             <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded">
               <Image
@@ -53,7 +53,7 @@ const TopSearch = async () => {
             <div className="my-auto w-[calc(100%-3rem)]">
               <div className="truncate text-sm font-medium">{t.name}</div>
 
-              <div className="text-muted-foreground truncate text-xs capitalize">
+              <div className="truncate text-xs capitalize text-muted-foreground">
                 {t.subtitle}
               </div>
             </div>

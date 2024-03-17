@@ -14,7 +14,7 @@ export function AuthModeToggle() {
       href={isLoginPage ? "/signup" : "/login"}
       className={cn(
         buttonVariants({ size: "sm", variant: "outline" }),
-        "hover:ring-border hover:ring-offset-background absolute right-4 top-4 w-20 transition-all duration-200 hover:ring-2 hover:ring-offset-2 md:right-8 md:top-8"
+        "absolute right-4 top-4 w-20 transition-all duration-200 hover:ring-2 hover:ring-border hover:ring-offset-2 hover:ring-offset-background md:right-8 md:top-8"
       )}
     >
       {isLoginPage ? "Sign Up" : "Login"}

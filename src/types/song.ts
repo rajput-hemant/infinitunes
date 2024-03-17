@@ -1,5 +1,5 @@
-import { ArtistMap } from "./artist";
-import { Quality, Rights } from "./misc";
+import type { ArtistMap } from "./artist";
+import type { Quality, Rights } from "./misc";
 
 export type SongObj = {
   songs: Song[];

@@ -28,7 +28,7 @@ const MobileNav = ({ user }: Props) => {
   );
 
   return (
-    <nav className="bg-background fixed inset-x-0 bottom-0 z-50 flex h-14 items-center justify-between border-t lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-50 flex h-14 items-center justify-between border-t bg-background lg:hidden">
       {filteredNavItems.slice().map(({ label, icon: Icon, href }) => {
         const isActive = href === pathname;
         return (
@@ -36,13 +36,13 @@ const MobileNav = ({ user }: Props) => {
             key={label}
             href={href}
             className={cn(
-              "text-muted-foreground animate-in slide-in-from-bottom-full flex h-full w-1/4 flex-col items-center justify-center text-center duration-700",
+              "flex h-full w-1/4 flex-col items-center justify-center text-center text-muted-foreground duration-700 animate-in slide-in-from-bottom-full",
               isActive && "text-secondary-foreground"
             )}
           >
             <Icon />
 
-            <span className="animate-in slide-in-from-bottom-1/2 text-xs font-semibold duration-200">
+            <span className="text-xs font-semibold duration-200 animate-in slide-in-from-bottom-1/2">
               {label}
             </span>
           </Link>

@@ -22,7 +22,7 @@ export default function Sidebar({ user, className }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "animate-in slide-in-from-left-full space-y-2 p-4 [animation-duration:500ms]",
+        "space-y-2 p-4 animate-in slide-in-from-left-full [animation-duration:500ms]",
         className
       )}
     >
@@ -96,8 +96,8 @@ const NavLink = React.forwardRef<
       href={href!}
       className={cn(
         buttonVariants({ variant: "ghost" }),
-        "text-muted-foreground flex justify-start",
-        isActive && "bg-secondary text-secondary-foreground font-bold"
+        "flex justify-start text-muted-foreground",
+        isActive && "bg-secondary font-bold text-secondary-foreground"
       )}
       {...props}
     >

@@ -207,7 +207,7 @@ const Player = () => {
   return (
     <div
       className={cn(
-        "bg-background animate-in slide-in-from-bottom-full fixed inset-x-0 bottom-14 z-40 h-20 [animation-duration:500ms] lg:bottom-0",
+        "fixed inset-x-0 bottom-14 z-40 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0",
         !(isReady || queue.length) && "hidden lg:block"
       )}
     >
@@ -246,7 +246,7 @@ const Player = () => {
               </div>
 
               <div className="flex flex-col justify-center">
-                <p className="text-primary line-clamp-1 text-sm font-semibold">
+                <p className="line-clamp-1 text-sm font-semibold text-primary">
                   {queue[currentIndex].name}
                 </p>
 
@@ -320,7 +320,7 @@ const Player = () => {
             onClick={() => mute(!muted)}
             className="disabled:text-muted-foreground"
           >
-            {!!muted ?
+            {muted ?
               <VolumeX />
             : <>
                 {volume < 0.33 ?

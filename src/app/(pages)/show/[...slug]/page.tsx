@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
+import type { Sort } from "@/types";
+
 import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,6 @@ import {
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Blockquote, H3 } from "@/components/ui/topography";
 import { getShowDetails } from "@/lib/jiosaavn-api";
-import { Sort } from "@/types";
 import { EpisodeList } from "./episode-list";
 
 type Props = {
@@ -96,7 +97,7 @@ const ShowDetailsPage = async ({
 
       {/* about */}
       <H3>{modules.show_details.title}</H3>
-      <Blockquote className="text-muted-foreground max-w-4xl leading-snug">
+      <Blockquote className="max-w-4xl leading-snug text-muted-foreground">
         {show_details.description}
       </Blockquote>
     </div>

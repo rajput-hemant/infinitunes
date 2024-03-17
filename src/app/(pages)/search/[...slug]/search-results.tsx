@@ -3,12 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
-import { ItemCard } from "@/components/item-card";
-import { SongList } from "@/components/song/song-list";
-import { H3 } from "@/components/ui/topography";
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { search } from "@/lib/jiosaavn-api";
-import {
+import type {
   AlbumSearch,
   ArtistSearch,
   PlaylistSearch,
@@ -16,6 +11,12 @@ import {
   Song,
   SongSearch,
 } from "@/types";
+
+import { ItemCard } from "@/components/item-card";
+import { SongList } from "@/components/song/song-list";
+import { H3 } from "@/components/ui/topography";
+import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
+import { search } from "@/lib/jiosaavn-api";
 
 type Props = {
   query: string;
@@ -79,7 +80,7 @@ export const SearchResults = ({
       {hasMore ?
         <div
           ref={ref}
-          className="text-muted-foreground mt-4 flex items-center justify-center gap-2 font-bold"
+          className="mt-4 flex items-center justify-center gap-2 font-bold text-muted-foreground"
         >
           {isLoading && (
             <>

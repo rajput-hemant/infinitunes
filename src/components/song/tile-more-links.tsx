@@ -2,8 +2,9 @@ import React from "react";
 import Link from "next/link";
 import { Disc, Mic2, Music } from "lucide-react";
 
+import type { ArtistMini } from "@/types";
+
 import { getHref } from "@/lib/utils";
-import { ArtistMini } from "@/types";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 
 type Props = {

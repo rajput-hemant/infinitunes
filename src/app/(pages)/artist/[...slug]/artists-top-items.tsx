@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 
+import type { Album, Category, Song } from "@/types";
+
 import { ItemCard } from "@/components/item-card";
 import { SongList } from "@/components/song/song-list";
 import { Button } from "@/components/ui/button";
 import { H3 } from "@/components/ui/topography";
 import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
-import { Album, Category, Song } from "@/types";
 
 type Props = {
   id: string;

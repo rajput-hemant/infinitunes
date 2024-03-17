@@ -2,8 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 
+import type { Quality, Type } from "@/types";
+
 import { cn, getHref, getImageSrc } from "@/lib/utils";
-import { Quality, Type } from "@/types";
 import { PlayButton } from "./play-button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
@@ -38,7 +39,7 @@ export function ItemCard({
     <Card
       title={name}
       className={cn(
-        "hover:bg-secondary group w-32 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
+        "group w-32 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:bg-secondary hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
         type === "artist" && "border-none !shadow-none hover:bg-transparent",
         aspect === "video" && "w-44 !border-none sm:w-48 md:w-64 lg:w-72",
         className
@@ -74,7 +75,7 @@ export function ItemCard({
             <PlayButton
               type={type}
               token={url.split("/").pop()!}
-              className="group/play bg-muted/75 z-20 m-auto aspect-square w-12 rounded-full duration-200 hover:w-16 active:w-14"
+              className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
             >
               <Play
                 strokeWidth={10}
@@ -107,7 +108,7 @@ export function ItemCard({
             </Wrapper>
           </H4>
 
-          <span className="text-secondary-foreground/75 w-full truncate text-center text-xs capitalize">
+          <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground/75">
             {subtitle}
           </span>
         </div>

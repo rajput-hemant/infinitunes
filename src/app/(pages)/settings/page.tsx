@@ -10,14 +10,14 @@ export default async function SettingsProfilePage() {
       <div id="edit-profile">
         <div className="space-y-1 border-b p-4">
           <h3 className="text-xl font-medium">Edit Profile</h3>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             This is how others will see you on the site.
           </p>
         </div>
 
         <div className="p-6">
           <div className="flex items-center gap-4">
-            <div className="ring-ring ring-offset-background relative size-32 overflow-hidden rounded-full ring-2">
+            <div className="relative size-32 overflow-hidden rounded-full ring-2 ring-ring ring-offset-background">
               <Image
                 src={user?.image ?? "/images/placeholder/user.jpg"}
                 alt={user?.name ?? "Profile Photo"}

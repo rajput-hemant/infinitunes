@@ -69,7 +69,7 @@ function SearchMenu({ topSearch, className }: Props) {
 
           <span className="hidden lg:inline-block">Search...</span>
 
-          <kbd className="bg-muted pointer-events-none ml-auto hidden h-6 select-none items-center rounded border px-1.5 font-mono text-[10px] font-medium lg:block">
+          <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:block">
             <span className="text-xs">Ctrl</span> K
           </kbd>
         </Button>
@@ -77,7 +77,7 @@ function SearchMenu({ topSearch, className }: Props) {
 
       <DialogContent className="max-w-7xl shadow-lg">
         <div className="relative mr-4 mt-4">
-          <Search className="text-muted-foreground absolute left-2 top-3 size-4" />
+          <Search className="absolute left-2 top-3 size-4 text-muted-foreground" />
 
           <Input
             value={query}
@@ -90,7 +90,7 @@ function SearchMenu({ topSearch, className }: Props) {
         {!debouncedQuery.length && topSearch}
 
         {isLoading && (
-          <div className="text-muted-foreground mx-auto text-xs">
+          <div className="mx-auto text-xs text-muted-foreground">
             <Loader2 className="mr-2 inline-block animate-spin" /> Loading
             Results
           </div>

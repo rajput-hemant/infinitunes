@@ -14,6 +14,8 @@ import {
   Share2,
 } from "lucide-react";
 
+import type { Episode, Queue, Song } from "@/types";
+
 import {
   Sheet,
   SheetClose,
@@ -30,7 +32,6 @@ import {
   useQueue,
 } from "@/hooks/use-store";
 import { getImageSrc } from "@/lib/utils";
-import { Episode, Queue, Song } from "@/types";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
 import {
@@ -174,7 +175,7 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
       {/* sheet for small devices */}
       <Sheet>
         <SheetTrigger>
-          <MoreVertical className="hover:text-primary size-6 lg:hidden" />
+          <MoreVertical className="size-6 hover:text-primary lg:hidden" />
         </SheetTrigger>
 
         <SheetContent side="bottom" className="rounded-t-3xl">
@@ -231,7 +232,7 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
               <ChevronRight className="ml-auto size-5" />
             </button>
 
-            <div className="bg-background absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4">
+            <div className="absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4 bg-background">
               <button
                 onClick={() => setTranslateX(0)}
                 className="flex h-8 items-center font-medium"
@@ -271,7 +272,7 @@ export const TileMoreButton = ({ item, showAlbum }: Props) => {
       {/* dropdown for large devices */}
       <DropdownMenu>
         <DropdownMenuTrigger>
-          <MoreVertical className="hover:text-primary hidden size-6 lg:block" />
+          <MoreVertical className="hidden size-6 hover:text-primary lg:block" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className="p-2">

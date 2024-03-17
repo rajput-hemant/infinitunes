@@ -44,7 +44,7 @@ const Layout = async ({ children }: Props) => {
           <H2 className="line-clamp-3 flex flex-col pb-0">
             {user.name ?? "User"}
 
-            <Small className="text-muted-foreground block">
+            <Small className="block text-muted-foreground">
               <Mail className="mr-1 inline-block size-4" />
               {user.email ?? "user@example.com"}
             </Small>

@@ -1,8 +1,8 @@
-import { Album } from "./album";
-import { ArtistMap, ArtistMini } from "./artist";
-import { Quality, Type } from "./misc";
-import { Playlist } from "./playlist";
-import { Song } from "./song";
+import type { Album } from "./album";
+import type { ArtistMap, ArtistMini } from "./artist";
+import type { Quality, Type } from "./misc";
+import type { Playlist } from "./playlist";
+import type { Song } from "./song";
 
 type A<T> = {
   position: number;

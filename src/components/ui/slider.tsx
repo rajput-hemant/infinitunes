@@ -19,11 +19,11 @@ const Slider = React.forwardRef<
   >
     {children ?? (
       <>
-        <SliderPrimitive.Track className="bg-secondary relative h-2 w-full grow overflow-hidden rounded-full">
-          <SliderPrimitive.Range className="bg-primary absolute h-full" />
+        <SliderPrimitive.Track className="relative h-2 w-full grow overflow-hidden rounded-full bg-secondary">
+          <SliderPrimitive.Range className="absolute h-full bg-primary" />
         </SliderPrimitive.Track>
 
-        <SliderPrimitive.Thumb className="border-primary bg-background ring-offset-background focus-visible:ring-ring block size-5 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
+        <SliderPrimitive.Thumb className="block size-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" />
       </>
     )}
   </SliderPrimitive.Root>
@@ -38,7 +38,7 @@ const SliderTrack = React.forwardRef<
   <SliderPrimitive.Track
     ref={ref}
     className={cn(
-      "bg-secondary relative h-2 w-full grow overflow-hidden rounded-full",
+      "relative h-2 w-full grow overflow-hidden rounded-full bg-secondary",
       className
     )}
     {...props}
@@ -53,7 +53,7 @@ const SliderRange = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SliderPrimitive.Range
     ref={ref}
-    className={cn("bg-primary absolute h-full", className)}
+    className={cn("absolute h-full bg-primary", className)}
     {...props}
   />
 ));
@@ -67,7 +67,7 @@ const SliderThumb = React.forwardRef<
   <SliderPrimitive.Thumb
     ref={ref}
     className={cn(
-      "border-primary bg-background ring-offset-background focus-visible:ring-ring block size-5 rounded-full border-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+      "block size-5 rounded-full border-2 border-primary bg-background ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
       className
     )}
     {...props}

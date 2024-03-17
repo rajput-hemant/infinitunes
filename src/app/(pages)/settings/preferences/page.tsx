@@ -5,7 +5,7 @@ export default function Page() {
     <>
       <div className="space-y-1 border-b p-4">
         <h3 className="text-lg font-medium">Preferences</h3>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           Configure your preferences like language, music stream, download
           quality, etc.
         </p>

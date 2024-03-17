@@ -2,8 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 
+import type { Episode, Song } from "@/types";
+
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
-import { Episode, Song } from "@/types";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
@@ -24,13 +25,13 @@ export const SongList = ({
 }: Props) => {
   return (
     <div
-      className={cn("text-muted-foreground space-y-2", className)}
+      className={cn("space-y-2 text-muted-foreground", className)}
       {...props}
     >
       {items.map((item, i) => (
         <div
           key={item.id}
-          className="hover:bg-accent group flex h-14 w-full cursor-pointer items-center justify-between rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-sm"
+          className="group flex h-14 w-full cursor-pointer items-center justify-between rounded-md px-2 text-sm transition-shadow duration-150 hover:bg-accent hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-sm"
         >
           {/* song index */}
           <div className="hidden w-[6%] justify-center lg:flex xl:w-[4%]">
@@ -47,7 +48,7 @@ export const SongList = ({
               <PlayButton
                 type={item.type}
                 token={item.url.split("/").pop()!}
-                className="hover:text-primary border-muted-foreground group/play hover:border-primary hidden aspect-square h-8 items-center justify-center rounded-full border duration-300 hover:h-9 group-hover:flex"
+                className="group/play hidden aspect-square h-8 items-center justify-center rounded-full border border-muted-foreground duration-300 hover:h-9 hover:border-primary hover:text-primary group-hover:flex"
               >
                 <Play
                   strokeWidth={10}
@@ -138,7 +139,7 @@ export const SongList = ({
 
           {/* controls */}
           <div className="flex w-[12%] items-center justify-end lg:justify-between xl:w-[8%]">
-            <LikeButton className="hover:text-primary hidden size-5 lg:block" />
+            <LikeButton className="hidden size-5 hover:text-primary lg:block" />
 
             <span className="mx-auto hidden truncate lg:block">
               {formatDuration(item.duration, "mm:ss")}

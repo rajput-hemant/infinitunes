@@ -1,9 +1,10 @@
 import { Plus } from "lucide-react";
 
+import type { Playlist } from "@/types";
+
 import { ItemCard } from "@/components/item-card";
 import { Button } from "@/components/ui/button";
 import { H2, H3 } from "@/components/ui/topography";
-import { Playlist } from "@/types";
 
 const Page = () => {
   const playlists: Playlist[] = [];

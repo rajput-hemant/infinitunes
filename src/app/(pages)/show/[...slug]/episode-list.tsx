@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
+import type { Episode, Sort } from "@/types";
+
 import { SongList } from "@/components/song/song-list";
 import { H3 } from "@/components/ui/topography";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getShowEpisodes } from "@/lib/jiosaavn-api";
-import { Episode, Sort } from "@/types";
 
 type Props = {
   showId: string;
@@ -54,7 +55,7 @@ export const EpisodeList = ({
       {hasMore ?
         <div
           ref={ref}
-          className="text-muted-foreground flex items-center justify-center gap-2 font-bold"
+          className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
         >
           {isLoading && (
             <>

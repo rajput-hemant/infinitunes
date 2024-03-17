@@ -8,7 +8,8 @@ import { AtSign, Eye, EyeOff, Fingerprint, Loader2, Mail } from "lucide-react";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import z from "zod";
+
+import type z from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -94,27 +95,25 @@ export function LoginForm() {
                   <Tooltip delayDuration={150}>
                     <TooltipTrigger
                       aria-label={
-                        isEmailMode
-                          ? "Use Username instead"
-                          : "Use Email instead"
+                        isEmailMode ?
+                          "Use Username instead"
+                        : "Use Email instead"
                       }
                       tabIndex={-1}
                       type="button"
                       onClick={() => setIsEmailMode(!isEmailMode)}
-                      className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-2 my-auto disabled:pointer-events-none disabled:opacity-50"
+                      className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                     >
-                      {isEmailMode ? (
+                      {isEmailMode ?
                         <AtSign className="size-5" />
-                      ) : (
-                        <Mail className="size-5" />
-                      )}
+                      : <Mail className="size-5" />}
                     </TooltipTrigger>
 
                     <TooltipContent>
                       <p className="text-xs">
-                        {isEmailMode
-                          ? "Use Username instead"
-                          : "Use Email instead"}
+                        {isEmailMode ?
+                          "Use Username instead"
+                        : "Use Email instead"}
                       </p>
                     </TooltipContent>
                   </Tooltip>
@@ -149,13 +148,11 @@ export function LoginForm() {
                       type="button"
                       disabled={!field.value}
                       onClick={() => setIsPassVisible(!isPassVisible)}
-                      className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-2 my-auto disabled:pointer-events-none disabled:opacity-50"
+                      className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                     >
-                      {isPassVisible ? (
+                      {isPassVisible ?
                         <EyeOff className="size-5" />
-                      ) : (
-                        <Eye className="size-5" />
-                      )}
+                      : <Eye className="size-5" />}
                     </TooltipTrigger>
 
                     <TooltipContent>
@@ -177,19 +174,17 @@ export function LoginForm() {
           disabled={isSubmitting}
           className="w-full font-semibold shadow-md"
         >
-          {isSubmitting ? (
+          {isSubmitting ?
             <Loader2 className="mr-2 size-4 animate-spin" />
-          ) : isEmailMode ? (
+          : isEmailMode ?
             <Mail className="mr-2 size-4" />
-          ) : (
-            <Fingerprint className="mr-2 size-4" />
-          )}
+          : <Fingerprint className="mr-2 size-4" />}
 
           {isEmailMode ? "Login with Email" : "Login"}
         </Button>
       </form>
 
-      <p className="text-muted-foreground hover:text-foreground mx-auto mt-2 text-xs">
+      <p className="mx-auto mt-2 text-xs text-muted-foreground hover:text-foreground">
         <Link
           href="/reset-password"
           className="underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"

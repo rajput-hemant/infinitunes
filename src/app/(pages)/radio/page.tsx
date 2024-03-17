@@ -1,9 +1,10 @@
+import type { Lang } from "@/types";
+
 import { ItemCard } from "@/components/item-card";
 import LanguageBar from "@/components/language-bar";
 import { Separator } from "@/components/ui/separator";
 import { H2, H3 } from "@/components/ui/topography";
 import { getFeaturedRadioStations } from "@/lib/jiosaavn-api";
-import { Lang } from "@/types";
 
 export const revalidate = 3600; // revalidate page every hour
 

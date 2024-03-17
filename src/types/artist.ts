@@ -1,7 +1,7 @@
-import { Album } from "./album";
-import { Quality } from "./misc";
-import { Playlist } from "./playlist";
-import { Song } from "./song";
+import type { Album } from "./album";
+import type { Quality } from "./misc";
+import type { Playlist } from "./playlist";
+import type { Song } from "./song";
 
 export type Artist = {
   id: string;

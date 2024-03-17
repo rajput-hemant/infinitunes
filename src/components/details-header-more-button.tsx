@@ -13,6 +13,8 @@ import {
   Share2,
 } from "lucide-react";
 
+import type { Quality, Song, Type } from "@/types";
+
 import {
   Sheet,
   SheetClose,
@@ -25,7 +27,6 @@ import {
 } from "@/components/ui/sheet";
 import { useQueue } from "@/hooks/use-store";
 import { getImageSrc } from "@/lib/utils";
-import { Quality, Song, Type } from "@/types";
 import { ShareOptions } from "./share-options";
 import { ShareSubMenu } from "./share-submenu";
 import { Button } from "./ui/button";
@@ -188,7 +189,7 @@ export const DetailsHeaderMoreButton = ({
               <ChevronRight className="ml-auto size-5" />
             </button>
 
-            <div className="bg-background absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4">
+            <div className="absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4 bg-background">
               <button
                 onClick={() => setTranslateX(0)}
                 className="flex h-8 items-center font-medium"

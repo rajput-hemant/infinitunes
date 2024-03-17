@@ -1,3 +1,5 @@
+import type { Lang } from "@/types";
+
 import { DetailsHeader } from "@/components/details-header";
 import { ItemCard } from "@/components/item-card";
 import { SongList } from "@/components/song/song-list";
@@ -13,7 +15,6 @@ import {
   getSongRecommendations,
   getTrending,
 } from "@/lib/jiosaavn-api";
-import { Lang } from "@/types";
 import Lyrics from "./lyrics";
 
 type Props = { params: { slug: [string, string] } };

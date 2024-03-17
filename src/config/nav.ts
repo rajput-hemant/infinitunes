@@ -3,12 +3,13 @@ import {
   History,
   Library,
   ListMusic,
-  LucideIcon,
   Mic2,
   Podcast,
   Radio,
   Star,
 } from "lucide-react";
+
+import type { LucideIcon } from "lucide-react";
 
 type NavItem = {
   title: string;

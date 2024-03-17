@@ -2,6 +2,8 @@
 
 import React from "react";
 
+import type { Song, Type } from "@/types";
+
 import {
   useCurrentSongIndex,
   useIsPlayerInit,
@@ -15,7 +17,6 @@ import {
   getPlaylistDetails,
   getSongDetails,
 } from "@/lib/jiosaavn-api";
-import { Song, Type } from "@/types";
 
 type Props = {
   type: Type;

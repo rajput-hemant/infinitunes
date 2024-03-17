@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 
+import type { AllSearch } from "@/types";
+
 import { useDebounce } from "@/hooks/use-debounce";
 import { searchAll } from "@/lib/jiosaavn-api";
-import { AllSearch } from "@/types";
 import { Input } from "../ui/input";
 import SearchAll from "./search-all";
 
@@ -33,7 +34,7 @@ const MobileSearch = ({ topSearch }: Props) => {
   return (
     <>
       <div className="relative mx-auto max-w-md">
-        <Search className="text-muted-foreground absolute left-2 top-3 size-4" />
+        <Search className="absolute left-2 top-3 size-4 text-muted-foreground" />
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -45,7 +46,7 @@ const MobileSearch = ({ topSearch }: Props) => {
       {!debouncedQuery.length && topSearch}
 
       {isLoading && (
-        <div className="text-muted-foreground text-center text-xs">
+        <div className="text-center text-xs text-muted-foreground">
           <Loader2 className="mr-2 inline-block animate-spin" /> Loading Results
         </div>
       )}

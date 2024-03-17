@@ -22,31 +22,31 @@ export function AppearanceSettings() {
           <div key={mode} onClick={() => setTheme(mode)}>
             <div
               className={cn(
-                "bg-background hover:bg-accent hover:text-foreground cursor-pointer items-center rounded-md border p-2",
-                mode === themeMode && "border-primary border-2"
+                "cursor-pointer items-center rounded-md border bg-background p-2 hover:bg-accent hover:text-foreground",
+                mode === themeMode && "border-2 border-primary"
               )}
             >
               <div
-                className={cn(mode, "bg-background space-y-2 rounded-sm p-2")}
+                className={cn(mode, "space-y-2 rounded-sm bg-background p-2")}
               >
-                <div className="bg-muted space-y-2 rounded-md p-2 shadow-sm">
-                  <div className="bg-muted-foreground/25 h-2 w-[80px] rounded-lg" />
-                  <div className="bg-muted-foreground/25 h-2 w-[100px] rounded-lg" />
+                <div className="space-y-2 rounded-md bg-muted p-2 shadow-sm">
+                  <div className="h-2 w-[80px] rounded-lg bg-muted-foreground/25" />
+                  <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
                 </div>
 
-                <div className="bg-muted flex items-center space-x-2 rounded-md p-2 shadow-sm">
-                  <div className="bg-muted-foreground/25 size-4 rounded-full" />
-                  <div className="bg-muted-foreground/25 h-2 w-[100px] rounded-lg" />
+                <div className="flex items-center space-x-2 rounded-md bg-muted p-2 shadow-sm">
+                  <div className="size-4 rounded-full bg-muted-foreground/25" />
+                  <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
                 </div>
 
-                <div className="bg-muted flex items-center space-x-2 rounded-md p-2 shadow-sm">
-                  <div className="bg-muted-foreground/25 size-4 rounded-full" />
-                  <div className="bg-muted-foreground/25 h-2 w-[100px] rounded-lg" />
+                <div className="flex items-center space-x-2 rounded-md bg-muted p-2 shadow-sm">
+                  <div className="size-4 rounded-full bg-muted-foreground/25" />
+                  <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
                 </div>
               </div>
             </div>
 
-            <span className="text-muted-foreground block w-full p-2 text-center text-sm font-normal capitalize">
+            <span className="block w-full p-2 text-center text-sm font-normal capitalize text-muted-foreground">
               {mode}
             </span>
           </div>
@@ -72,7 +72,7 @@ export function AppearanceSettings() {
             }}
             className={cn(
               "w-24 justify-start",
-              theme.name === value.name && "border-primary border-2"
+              theme.name === value.name && "border-2 border-primary"
             )}
             style={
               {
@@ -117,7 +117,7 @@ export function AppearanceSettings() {
               "w-24 capitalize",
               (theme.radius === parseFloat(value) ||
                 (value === "default" && theme.radius === "default")) &&
-                "border-primary border-2"
+                "border-2 border-primary"
             )}
           >
             {value}

@@ -1,8 +1,10 @@
-import { ClassValue, clsx } from "clsx";
+import { clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+import type { ClassValue } from "clsx";
+import type { ImageQuality, Quality, StreamQuality, Type } from "@/types";
+
 import { siteConfig } from "@/config/site";
-import { ImageQuality, Quality, StreamQuality, Type } from "@/types";
 
 /**
  * Merges the given class names with the tailwind classes

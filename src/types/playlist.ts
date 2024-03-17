@@ -1,6 +1,6 @@
-import { ArtistMini } from "./artist";
-import { Quality } from "./misc";
-import { Song } from "./song";
+import type { ArtistMini } from "./artist";
+import type { Quality } from "./misc";
+import type { Song } from "./song";
 
 export type Playlist = {
   id: string;

@@ -46,7 +46,7 @@ export const UserDropdown = ({ user }: Props) => {
         <DropdownMenuLabel className="flex flex-col">
           <span className="truncate">{user?.name ?? "Guest User"}</span>
 
-          <span className="text-muted-foreground truncate text-sm font-normal">
+          <span className="truncate text-sm font-normal text-muted-foreground">
             {user?.email ?? "rajput-hemant@github"}
           </span>
         </DropdownMenuLabel>

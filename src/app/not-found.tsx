@@ -1,7 +1,8 @@
 import React from "react";
-import { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+
+import type { Metadata } from "next";
 
 import { H1, H3, Large } from "@/components/ui/topography";
 
@@ -60,7 +61,7 @@ const NotFound = () => {
             </Link>
 
             {i !== Links.length - 1 && (
-              <span className="text-muted-foreground ml-4">/</span>
+              <span className="ml-4 text-muted-foreground">/</span>
             )}
           </React.Fragment>
         ))}

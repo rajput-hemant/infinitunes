@@ -2,10 +2,13 @@
 
 import React from "react";
 
+import type { Language } from "@/config/languages";
+import type { ImageQuality, StreamQuality } from "@/types";
+
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
 import { H3 } from "@/components/ui/topography";
-import { Language, languages as languageList } from "@/config/languages";
+import { languages as languageList } from "@/config/languages";
 import {
   useConfig,
   useDownloadQuality,
@@ -13,7 +16,6 @@ import {
   useStreamQuality,
 } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
-import { ImageQuality, StreamQuality } from "@/types";
 
 const songQualities: StreamQuality[] = [
   "poor",
@@ -60,7 +62,7 @@ export function PreferenceSettings() {
               variant="outline"
               pressed={config.languages.includes(lang)}
               onPressedChange={() => toggleLanguage(lang)}
-              className="data-[state=on]:border-primary w-24 capitalize data-[state=on]:border-2"
+              className="w-24 capitalize data-[state=on]:border-2 data-[state=on]:border-primary"
             >
               {lang}
             </Toggle>
@@ -79,7 +81,7 @@ export function PreferenceSettings() {
             onClick={() => setStreamQuality(quality)}
             className={cn(
               "w-24 capitalize",
-              streamQuality === quality && "border-primary border-2"
+              streamQuality === quality && "border-2 border-primary"
             )}
           >
             {quality}
@@ -98,7 +100,7 @@ export function PreferenceSettings() {
             onClick={() => setDownloadQuality(quality)}
             className={cn(
               "w-24 capitalize",
-              downloadQuality === quality && "border-primary border-2"
+              downloadQuality === quality && "border-2 border-primary"
             )}
           >
             {quality}
@@ -117,7 +119,7 @@ export function PreferenceSettings() {
             onClick={() => setImageQuality(quality)}
             className={cn(
               "w-24 capitalize",
-              imageQuality === quality && "border-primary border-2"
+              imageQuality === quality && "border-2 border-primary"
             )}
           >
             {quality}

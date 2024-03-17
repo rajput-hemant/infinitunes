@@ -23,7 +23,7 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
 
   return (
     <div className="grid h-screen lg:grid-cols-2">
-      <div className="hidden h-full bg-zinc-900 p-10 text-white lg:flex lg:flex-col lg:justify-between dark:border-r">
+      <div className="hidden h-full bg-zinc-900 p-10 text-white dark:border-r lg:flex lg:flex-col lg:justify-between">
         <Link
           href="/"
           className={cn(
@@ -40,12 +40,12 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
           width={1280}
           height={640}
           alt="Artist Image"
-          className="animate-in zoom-in-50 mx-auto max-w-md object-cover duration-1000"
+          className="mx-auto max-w-md object-cover duration-1000 animate-in zoom-in-50"
         />
 
         <div className="mb-20 text-center 2xl:mb-32">
           <h2 className="font-heading text-5xl">All Your Music.</h2>
-          <em className="text-muted-foreground text-2xl">Anytime, anywhere.</em>
+          <em className="text-2xl text-muted-foreground">Anytime, anywhere.</em>
         </div>
       </div>
 
@@ -54,18 +54,18 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
       <div className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[350px] sm:p-0">
         <Icons.Logo className="mx-auto size-14 drop-shadow" />
         {children}
-        <p className="text-muted-foreground mx-auto px-10 text-center text-sm">
+        <p className="mx-auto px-10 text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}
           <Link
             href="/terms"
-            className="hover:text-foreground underline underline-offset-4 outline-none hover:underline"
+            className="underline underline-offset-4 outline-none hover:text-foreground hover:underline"
           >
             Terms of Service
           </Link>{" "}
           and{" "}
           <Link
             href="/privacy"
-            className="hover:text-foreground underline underline-offset-4 outline-none hover:underline"
+            className="underline underline-offset-4 outline-none hover:text-foreground hover:underline"
           >
             Privacy Policy
           </Link>

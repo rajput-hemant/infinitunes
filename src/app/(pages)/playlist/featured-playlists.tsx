@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
-import type { FeaturedPlaylists } from "@/types";
+import { FeaturedPlaylists } from "@/types";
 
 import { ItemCard } from "@/components/item-card";
 import { H3 } from "@/components/ui/topography";
@@ -59,7 +59,7 @@ const FeaturedPlaylists = ({
       {hasMore ?
         <div
           ref={ref}
-          className="text-muted-foreground flex items-center justify-center gap-2 font-bold"
+          className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
         >
           {isLoading && (
             <>

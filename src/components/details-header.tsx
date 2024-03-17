@@ -2,8 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
 
-import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
-import {
+import type {
   Album,
   Artist,
   Episode,
@@ -13,6 +12,8 @@ import {
   ShowDetails,
   Song,
 } from "@/types";
+
+import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { DetailsHeaderMoreButton } from "./details-header-more-button";
 import { LikeButton } from "./like-button";
 import { PlayButton } from "./play-button";
@@ -35,7 +36,7 @@ export const DetailsHeader = ({ item }: Props) => {
     <div className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
-          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-2xl transition-[width] duration-1000 md:w-56 xl:w-64 dark:shadow-black",
+          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-2xl transition-[width] duration-1000 dark:shadow-black md:w-56 xl:w-64",
           (item.type === "artist" || item.type === "label") && "rounded-full"
         )}
       >
@@ -64,12 +65,12 @@ export const DetailsHeader = ({ item }: Props) => {
           {"is_verified" in item && item.is_verified && (
             <BadgeCheck
               fill="#3b82f6"
-              className="text-background ml-2 inline-block"
+              className="ml-2 inline-block text-background"
             />
           )}
         </H2>
 
-        <div className="text-muted-foreground space-y-1.5 text-sm">
+        <div className="space-y-1.5 text-sm text-muted-foreground">
           {(item.type === "song" || item.type === "episode") && (
             <>
               <p>
@@ -207,7 +208,7 @@ export const DetailsHeader = ({ item }: Props) => {
           )}
 
           {(item.type === "song" || item.type === "album") && (
-            <p className="text-muted-foreground hover:text-foreground hidden w-fit text-sm lg:block">
+            <p className="hidden w-fit text-sm text-muted-foreground hover:text-foreground lg:block">
               <Link href={item.label_url ?? "#"}>{item.copyright_text}</Link>
             </p>
           )}

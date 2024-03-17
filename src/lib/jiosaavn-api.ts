@@ -1,6 +1,6 @@
 "use server";
 
-import {
+import type {
   Album,
   AlbumSearch,
   AllSearch,
@@ -35,6 +35,7 @@ import {
   TopShows,
   Trending,
 } from "@/types";
+
 import { env } from "./env";
 
 async function jioSaavnGetCall<T>(

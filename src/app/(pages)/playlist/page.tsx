@@ -1,8 +1,9 @@
+import type { Lang } from "@/types";
+
 import LanguageBar from "@/components/language-bar";
 import { Separator } from "@/components/ui/separator";
 import { H2 } from "@/components/ui/topography";
 import { getFeaturedPlaylists } from "@/lib/jiosaavn-api";
-import { Lang } from "@/types";
 import FeaturedPlaylists from "./featured-playlists";
 
 export const revalidate = 3600; // revalidate page every hour

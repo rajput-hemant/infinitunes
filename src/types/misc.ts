@@ -1,4 +1,4 @@
-import { ArtistMini } from "./artist";
+import type { ArtistMini } from "./artist";
 
 export type Type =
   | "artist"

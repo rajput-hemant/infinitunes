@@ -31,7 +31,7 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
     <Dialog defaultOpen onOpenChange={(open) => !open && navigateBack()}>
       <DialogContent className="gap-0 space-y-2 p-10 sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle className="font-heading text-center text-3xl font-normal drop-shadow-md sm:text-4xl md:text-5xl dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent">
+          <DialogTitle className="text-center font-heading text-3xl font-normal drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-4xl md:text-5xl">
             {title}
           </DialogTitle>
           <DialogDescription className="text-center">
@@ -41,10 +41,10 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
 
         {children}
 
-        <p className="text-muted-foreground py-2 text-center text-sm">
-          {isLoginPage
-            ? "Don't have an account? "
-            : "Already have an account? "}
+        <p className="py-2 text-center text-sm text-muted-foreground">
+          {isLoginPage ?
+            "Don't have an account? "
+          : "Already have an account? "}
           <Button
             size="sm"
             variant="link"

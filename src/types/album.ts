@@ -1,6 +1,6 @@
-import { ArtistMap } from "./artist";
-import { Quality } from "./misc";
-import { Song } from "./song";
+import type { ArtistMap } from "./artist";
+import type { Quality } from "./misc";
+import type { Song } from "./song";
 
 export type Album = {
   explicit: boolean;

@@ -3,9 +3,10 @@
 import { Pause, Play } from "lucide-react";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 
+import type { Type } from "@/types";
+
 import { useCurrentSongIndex, useQueue } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
-import { Type } from "@/types";
 import { PlayButton } from "../play-button";
 
 type Props = {
@@ -25,7 +26,7 @@ export function TilePlayPauseButton({ id, type, token }: Props) {
   return isCurrentSong ?
       <button
         onClick={playing ? pause : play}
-        className="text-secondary absolute inset-0 z-10 w-full bg-black/40 dark:bg-black/75"
+        className="absolute inset-0 z-10 w-full bg-black/40 text-secondary dark:bg-black/75"
       >
         <Icon
           strokeWidth={playing ? 2 : 10}
@@ -38,7 +39,7 @@ export function TilePlayPauseButton({ id, type, token }: Props) {
     : <PlayButton type={type} token={token}>
         <Play
           strokeWidth={10}
-          className="text-secondary absolute inset-0 z-20 m-auto hidden h-full w-6 p-1 duration-300 hover:w-8 group-hover:block dark:invert"
+          className="absolute inset-0 z-20 m-auto hidden h-full w-6 p-1 text-secondary duration-300 hover:w-8 group-hover:block dark:invert"
         />
       </PlayButton>;
 }

@@ -3,8 +3,9 @@
 import React from "react";
 import Link from "next/link";
 
+import type { MegaMenu } from "@/types";
+
 import { cn, getHref } from "@/lib/utils";
-import { MegaMenu } from "@/types";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -105,7 +106,7 @@ const ListItem = React.forwardRef<
       <a
         ref={ref}
         className={cn(
-          "text-muted-foreground hover:text-secondary-foreground block space-y-1 rounded-md py-2 duration-150",
+          "block space-y-1 rounded-md py-2 text-muted-foreground duration-150 hover:text-secondary-foreground",
           className
         )}
         {...props}

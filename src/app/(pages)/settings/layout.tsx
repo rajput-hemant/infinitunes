@@ -10,7 +10,7 @@ const SettingsLayout = ({ children }: Props) => {
     <div className="flex min-h-[calc(100vh-8rem)] flex-col">
       <div className="mb-4 space-y-1 px-2">
         <h2 className="text-2xl font-bold tracking-tight">Settings</h2>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           Manage your account, appearance, and preference settings.
         </p>
       </div>

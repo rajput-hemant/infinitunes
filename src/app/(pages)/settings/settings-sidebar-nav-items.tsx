@@ -3,10 +3,11 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 
+import type { SidebarNavItem } from "./settings-sidebar-nav";
+
 import { buttonVariants } from "@/components/ui/button";
 import { useHash } from "@/hooks/use-hash";
 import { cn } from "@/lib/utils";
-import { SidebarNavItem } from "./settings-sidebar-nav";
 
 type Props = {
   href: string;
@@ -29,10 +30,10 @@ export function SettingsSidebarNavItems({ items, href, className }: Props) {
             href={url}
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "text-muted-foreground justify-start",
+              "justify-start text-muted-foreground",
               hash === id ?
                 "bg-muted text-foreground"
-              : "hover:bg-muted underline-offset-4 hover:underline"
+              : "underline-offset-4 hover:bg-muted hover:underline"
             )}
           >
             {icon}

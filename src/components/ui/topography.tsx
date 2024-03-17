@@ -98,7 +98,7 @@ export function InlineCode({
   return (
     <code
       className={cn(
-        "bg-muted relative rounded px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold",
+        "relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold",
         className
       )}
       {...props}
@@ -138,7 +138,7 @@ export function Muted({
   ...props
 }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-muted-foreground text-sm", className)} {...props}>
+    <p className={cn("text-sm text-muted-foreground", className)} {...props}>
       {children}
     </p>
   );

@@ -2,37 +2,41 @@
   "$schema": "https://json.schemastore.org/eslintrc",
   "root": true,
   "extends": [
+    "eslint:recommended",
     "next/core-web-vitals",
     "prettier",
     "plugin:tailwindcss/recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
   ],
   "plugins": ["tailwindcss"],
   "rules": {
     "@next/next/no-html-link-for-pages": "off",
     "react/jsx-key": "warn",
     "tailwindcss/no-custom-classname": "off",
-    "tailwindcss/classnames-order": "error",
+    "tailwindcss/classnames-order": "warn",
+    "@typescript-eslint/consistent-type-imports": "warn",
     "@typescript-eslint/no-unused-vars": [
       "warn",
       {
         "argsIgnorePattern": "^_",
         "varsIgnorePattern": "^_",
-        "caughtErrorsIgnorePattern": "^_"
-      }
-    ]
+        "caughtErrorsIgnorePattern": "^_",
+      },
+    ],
   },
   "settings": {
     "tailwindcss": {
-      "callees": ["cn"],
-      "config": "tailwind.config.js"
+      "callees": ["cn", "cva"],
+      "config": "tailwind.config.ts",
     },
-    "next": { "rootDir": true }
+    "next": {
+      "rootDir": ["./"],
+    },
   },
   "overrides": [
     {
       "files": ["*.ts", "*.tsx"],
-      "parser": "@typescript-eslint/parser"
-    }
-  ]
+      "parser": "@typescript-eslint/parser",
+    },
+  ],
 }

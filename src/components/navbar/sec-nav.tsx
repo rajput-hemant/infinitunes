@@ -35,7 +35,7 @@ const SecondaryNavbar = () => {
             <div
               key={title}
               className={cn(
-                "hover:border-primary inline-block h-full border-b-2 border-transparent py-2",
+                "inline-block h-full border-b-2 border-transparent py-2 hover:border-primary",
                 isActive && "border-primary"
               )}
             >
@@ -80,9 +80,9 @@ const SecondaryNavbar = () => {
                   onClick={toggle}
                   className={cn(
                     buttonVariants({ variant: "ghost" }),
-                    "text-muted-foreground my-1 flex justify-between",
+                    "my-1 flex justify-between text-muted-foreground",
                     href === pathname &&
-                      "bg-secondary text-secondary-foreground font-bold"
+                      "bg-secondary font-bold text-secondary-foreground"
                   )}
                 >
                   <span>

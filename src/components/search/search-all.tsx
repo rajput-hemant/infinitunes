@@ -23,7 +23,7 @@ const SearchAll = ({ query, data }: Props) => {
 
           return (
             <div key={key}>
-              <div className="text-muted-foreground flex">
+              <div className="flex text-muted-foreground">
                 <Large className="pl-2 capitalize">
                   {key.replace("_query", " Result")}
                 </Large>
@@ -31,7 +31,7 @@ const SearchAll = ({ query, data }: Props) => {
                 {key !== "top_query" && (
                   <Link
                     href={`/search/${key.slice(0, -1)}/${query}`}
-                    className="hover:bg-secondary hover:text-secondary-foreground ml-auto rounded-full border px-2 py-1 text-xs"
+                    className="ml-auto rounded-full border px-2 py-1 text-xs hover:bg-secondary hover:text-secondary-foreground"
                   >
                     View all
                   </Link>
@@ -44,7 +44,7 @@ const SearchAll = ({ query, data }: Props) => {
                 <Link
                   key={t.id}
                   href={getHref(t.url, t.type)}
-                  className="hover:bg-secondary flex gap-2 rounded-md p-2"
+                  className="flex gap-2 rounded-md p-2 hover:bg-secondary"
                 >
                   <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded border">
                     <Image
@@ -64,7 +64,7 @@ const SearchAll = ({ query, data }: Props) => {
                   <div className="my-auto w-[calc(100%-3rem)]">
                     <div className="truncate text-sm font-medium">{t.name}</div>
 
-                    <div className="text-muted-foreground truncate text-xs capitalize">
+                    <div className="truncate text-xs capitalize text-muted-foreground">
                       {t.subtitle}
                     </div>
                   </div>

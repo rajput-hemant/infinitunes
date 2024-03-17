@@ -57,7 +57,7 @@ export function OAuthButtons(props: OAuthButtonProps) {
       <div className="relative py-2">
         <span className="absolute inset-x-0 inset-y-1/2 border-t" />
 
-        <span className="bg-background text-muted-foreground relative mx-auto flex w-fit px-2 text-xs uppercase transition-colors duration-0">
+        <span className="relative mx-auto flex w-fit bg-background px-2 text-xs uppercase text-muted-foreground transition-colors duration-0">
           Or continue with
         </span>
       </div>
@@ -69,11 +69,9 @@ export function OAuthButtons(props: OAuthButtonProps) {
           disabled={isFormDisabled}
           className="w-full font-semibold shadow-md"
         >
-          {oauthLoading === "google" ? (
+          {oauthLoading === "google" ?
             <Loader2 className="mr-2 size-4 animate-spin" />
-          ) : (
-            <Google className="mr-2 size-4" />
-          )}
+          : <Google className="mr-2 size-4" />}
           Google
         </Button>
 
@@ -83,11 +81,9 @@ export function OAuthButtons(props: OAuthButtonProps) {
           disabled={isFormDisabled}
           className="w-full font-semibold shadow-md"
         >
-          {oauthLoading === "github" ? (
+          {oauthLoading === "github" ?
             <Loader2 className="mr-2 size-4 animate-spin" />
-          ) : (
-            <GitHub className="mr-2 size-4" />
-          )}
+          : <GitHub className="mr-2 size-4" />}
           GitHub
         </Button>
       </div>

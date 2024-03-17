@@ -20,7 +20,7 @@ export default async function SiteHeader() {
   const megaMenu = await getMegaMenu();
 
   return (
-    <header className="bg-background sticky top-0 z-50 w-full border-b">
+    <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container flex h-14 items-center space-x-4">
         <Link href="/" className="flex items-center">
           <div className="flex items-center gap-1 font-bold">

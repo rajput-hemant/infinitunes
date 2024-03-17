@@ -3,10 +3,11 @@
 import { useState } from "react";
 import { ChevronDown, Languages } from "lucide-react";
 
+import type { Lang } from "@/types";
+
 import { languages } from "@/config/languages";
 import { useConfig } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
-import { Lang } from "@/types";
 import { Button, buttonVariants } from "./ui/button";
 import {
   DropdownMenu,
