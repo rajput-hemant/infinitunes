@@ -8,12 +8,12 @@ import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 import { Large } from "../ui/topography";
 
-type Props = {
+type SearchAllProps = {
   query: string;
   data: AllSearch;
 };
 
-const SearchAll = ({ query, data }: Props) => {
+export function SearchAll({ query, data }: SearchAllProps) {
   return (
     <div className="gap-2 space-y-4 md:grid md:grid-cols-2 md:space-y-0 lg:grid-cols-3 xl:grid-cols-4">
       {Object.entries(data)
@@ -75,6 +75,4 @@ const SearchAll = ({ query, data }: Props) => {
         })}
     </div>
   );
-};
-
-export default SearchAll;
+}

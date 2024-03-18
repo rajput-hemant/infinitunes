@@ -8,7 +8,7 @@ import type { AllSearch } from "@/types";
 import { useDebounce } from "@/hooks/use-debounce";
 import { searchAll } from "@/lib/jiosaavn-api";
 import { Input } from "../ui/input";
-import SearchAll from "./search-all";
+import { SearchAll } from "./search-all";
 
 type Props = {
   topSearch: React.JSX.Element;

@@ -13,19 +13,21 @@ import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
-import SearchAll from "./search-all";
+import { SearchAll } from "./search-all";
 
-type Props = {
-  topSearch: React.JSX.Element;
+type SearchMenuProps = {
   className?: string;
+  topSearch: React.ReactNode;
 };
 
-function SearchMenu({ topSearch, className }: Props) {
+export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   const pathname = usePathname();
+
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<AllSearch | null>(null);
+
   const debouncedQuery = useDebounce(query.trim(), 1000);
 
   useEventListener("keydown", (e: KeyboardEvent) => {
@@ -57,14 +59,14 @@ function SearchMenu({ topSearch, className }: Props) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
+          size="sm"
           variant="outline"
-          onClick={() => setIsOpen(true)}
           className={cn(
-            "flex size-10 p-0 lg:w-60 lg:justify-start lg:px-3 lg:py-2",
+            "flex size-10 p-0 shadow-sm lg:w-60 lg:justify-start lg:px-3 lg:py-2",
             className
           )}
         >
-          <Search className="inline-block size-4 lg:mr-2" aria-hidden="true" />
+          <Search aria-hidden="true" className="inline-block size-4 lg:mr-2" />
           <span className="sr-only">Search</span>
 
           <span className="hidden lg:inline-block">Search...</span>
@@ -75,7 +77,7 @@ function SearchMenu({ topSearch, className }: Props) {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-7xl shadow-lg">
+      <DialogContent className="max-w-7xl shadow-md">
         <div className="relative mr-4 mt-4">
           <Search className="absolute left-2 top-3 size-4 text-muted-foreground" />
 
@@ -91,8 +93,8 @@ function SearchMenu({ topSearch, className }: Props) {
 
         {isLoading && (
           <div className="mx-auto text-xs text-muted-foreground">
-            <Loader2 className="mr-2 inline-block animate-spin" /> Loading
-            Results
+            <Loader2 className="mr-2 inline-block animate-spin" />
+            Loading Results
           </div>
         )}
 
@@ -101,5 +103,3 @@ function SearchMenu({ topSearch, className }: Props) {
     </Dialog>
   );
 }
-
-export default SearchMenu;

@@ -1,23 +1,21 @@
-import SecondaryNavbar from "@/components/navbar/sec-nav";
-import SiteHeader from "@/components/navbar/site-header";
+import React from "react";
+
 import Player from "@/components/player";
 import Sidebar from "@/components/sidebar";
 import SiteFooter from "@/components/site-footer";
+import { Navbar } from "@/components/site-header/navbar";
+import SecondaryNavbar from "@/components/site-header/sec-nav";
 import { getUser } from "@/lib/auth";
 import RouteGuard from "./route-guard";
 
-type Props = {
-  children: React.ReactNode;
-};
-
-const RoutesLayout = async ({ children }: Props) => {
+export default async function Layout({ children }: React.PropsWithChildren) {
   const user = await getUser();
 
   return (
     <>
       <RouteGuard />
 
-      <SiteHeader />
+      <Navbar />
 
       <Sidebar
         user={user}
@@ -35,6 +33,4 @@ const RoutesLayout = async ({ children }: Props) => {
       <Player />
     </>
   );
-};
-
-export default RoutesLayout;
+}

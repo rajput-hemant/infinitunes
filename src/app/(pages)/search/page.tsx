@@ -1,5 +1,5 @@
 import MobileSearch from "@/components/search/mobile-search";
-import TopSearch from "@/components/search/top-search";
+import { TopSearch } from "@/components/search/top-search";
 
 const Page = () => {
   return (

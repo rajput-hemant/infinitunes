@@ -20,7 +20,7 @@ const mobileNavItems = [
   { label: "Settings", icon: Cog, href: "/settings" },
 ];
 
-const MobileNav = ({ user }: Props) => {
+export function MobileNav({ user }: Props) {
   const pathname = usePathname();
 
   const filteredNavItems = mobileNavItems.filter(({ label }) =>
@@ -31,6 +31,7 @@ const MobileNav = ({ user }: Props) => {
     <nav className="fixed inset-x-0 bottom-0 z-50 flex h-14 items-center justify-between border-t bg-background lg:hidden">
       {filteredNavItems.slice().map(({ label, icon: Icon, href }) => {
         const isActive = href === pathname;
+
         return (
           <Link
             key={label}
@@ -50,6 +51,4 @@ const MobileNav = ({ user }: Props) => {
       })}
     </nav>
   );
-};
-
-export default MobileNav;
+}

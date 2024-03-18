@@ -6,14 +6,15 @@ import { getHref, getImageSrc } from "@/lib/utils";
 import { ItemCard } from "../item-card";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
-import { Large } from "../ui/topography";
 
-const TopSearch = async () => {
+export async function TopSearch() {
   const topSearches = await getTopSearches();
 
   return (
     <>
-      <Large className="text-muted-foreground">Trending</Large>
+      <p className="font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+        Trending Searches
+      </p>
 
       <ScrollArea className="lg:hidden">
         <div className="flex space-x-4 pb-4">
@@ -62,6 +63,4 @@ const TopSearch = async () => {
       </div>
     </>
   );
-};
-
-export default TopSearch;
+}

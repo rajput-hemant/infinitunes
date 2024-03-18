@@ -16,14 +16,13 @@ import {
   navigationMenuTriggerStyle,
 } from "../ui/navigation-menu";
 import { Separator } from "../ui/separator";
-import { H2, H4, Small } from "../ui/topography";
 
-type Props = {
+type MainNavProps = {
   megaMenu: MegaMenu;
   className?: string;
 };
 
-function MainNav({ className, megaMenu }: Props) {
+export function MainNav({ className, megaMenu }: MainNavProps) {
   return (
     <NavigationMenu className={className}>
       <NavigationMenuList>
@@ -33,13 +32,15 @@ function MainNav({ className, megaMenu }: Props) {
           </Link>
 
           <NavigationMenuContent className="p-6 md:w-[400px] lg:w-[1000px]">
-            <H2>What&apos;s Hot on Infinitunes</H2>
+            <h2 className="font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-4xl">
+              What&apos;s Hot on Infinitunes
+            </h2>
 
-            <Separator />
+            <Separator className="my-2" />
 
-            <div className="flex w-full space-x-6 p-2 text-sm font-medium">
-              <div className="w-1/3 border-r">
-                <H4 className="py-3 ">New releases</H4>
+            <div className="grid grid-cols-3 space-x-6 p-2 text-sm font-medium">
+              <div className="border-r">
+                <h4 className="font-heading text-2xl">New releases</h4>
 
                 {megaMenu.new_releases.map(({ name, url }) => (
                   <ListItem
@@ -52,8 +53,8 @@ function MainNav({ className, megaMenu }: Props) {
                 ))}
               </div>
 
-              <div className="w-1/3 border-r">
-                <H4 className="py-3">Top Playlist</H4>
+              <div className="border-r">
+                <h4 className="font-heading text-2xl">Top Playlist</h4>
 
                 {megaMenu.top_playlists.map(({ name, url }) => (
                   <ListItem
@@ -66,8 +67,8 @@ function MainNav({ className, megaMenu }: Props) {
                 ))}
               </div>
 
-              <div className="w-1/3">
-                <H4 className="py-3">Top Artists</H4>
+              <div>
+                <h4 className="font-heading text-2xl">Top Artists</h4>
 
                 {megaMenu.top_artists.map(({ name, url }) => (
                   <ListItem
@@ -95,8 +96,6 @@ function MainNav({ className, megaMenu }: Props) {
   );
 }
 
-export default MainNav;
-
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a">
@@ -111,7 +110,7 @@ const ListItem = React.forwardRef<
         )}
         {...props}
       >
-        <Small className="line-clamp-1">{children}</Small>
+        <span className="line-clamp-1">{children}</span>
       </a>
     </NavigationMenuLink>
   );
