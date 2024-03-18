@@ -26,8 +26,6 @@ export const authConfig: NextAuthConfig = {
         if (validatedFields.success) {
           const user = validatedFields.data;
 
-          console.log({ user });
-
           const dbUser = await db.query.users.findFirst({
             where: (u, { eq }) =>
               user.type === "email" ?

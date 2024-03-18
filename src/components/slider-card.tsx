@@ -1,37 +1,38 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 
 import type { Quality, Type } from "@/types";
 
 import { cn, getHref, getImageSrc } from "@/lib/utils";
+import { ImageWithFallback } from "./image-with-fallback";
 import { PlayButton } from "./play-button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { Skeleton } from "./ui/skeleton";
-import { H4 } from "./ui/topography";
 
-type Props = {
-  url: string;
-  type: Type;
-  image: Quality;
+type SliderCardProps = {
   name: string;
+  type: Type;
+  url: string;
+  image: Quality;
   explicit?: boolean;
   subtitle?: string;
   className?: string;
   aspect?: "square" | "video";
 };
 
-export function ItemCard({
-  url,
-  type,
-  image,
-  name,
-  subtitle,
-  explicit,
-  aspect = "square",
-  className,
-}: Props) {
+export function SliderCard(props: SliderCardProps) {
+  const {
+    url,
+    type,
+    image,
+    name,
+    subtitle,
+    explicit,
+    aspect = "square",
+    className,
+  } = props;
+
   const imageSrc = getImageSrc(image, "high");
   const Wrapper = type === "radio_station" ? "div" : Link;
 
@@ -39,8 +40,7 @@ export function ItemCard({
     <Card
       title={name}
       className={cn(
-        "group w-32 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:bg-secondary hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
-        type === "artist" && "border-none !shadow-none hover:bg-transparent",
+        "group w-32 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:bg-accent hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
         aspect === "video" && "w-44 !border-none sm:w-48 md:w-64 lg:w-72",
         className
       )}
@@ -57,8 +57,9 @@ export function ItemCard({
             <span className="sr-only">View {name}</span>
           </Wrapper>
 
-          <Image
-            src={imageSrc || `/images/placeholder/${type}.jpg`}
+          <ImageWithFallback
+            src={imageSrc}
+            fallback={`/images/placeholder/${type}.jpg`}
             width={200}
             height={200}
             alt={name}
@@ -86,7 +87,7 @@ export function ItemCard({
         </div>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
-          <H4 className="w-full lg:text-lg">
+          <h4 className="w-full font-semibold lg:text-lg">
             <Wrapper
               href={getHref(url, type)}
               className="mx-auto flex max-w-fit items-center"
@@ -98,9 +99,9 @@ export function ItemCard({
               )}
               <span className="truncate">{name}</span>
             </Wrapper>
-          </H4>
+          </h4>
 
-          <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground/75">
+          <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">
             {subtitle}
           </span>
         </div>

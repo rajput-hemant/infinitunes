@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 
-import { FeaturedPlaylists } from "@/types";
+import type { FeaturedPlaylists as TFeaturedPlaylists } from "@/types";
 
 import { ItemCard } from "@/components/item-card";
 import { H3 } from "@/components/ui/topography";
@@ -11,7 +11,7 @@ import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getFeaturedPlaylists } from "@/lib/jiosaavn-api";
 
 type Props = {
-  initialPlaylists: FeaturedPlaylists;
+  initialPlaylists: TFeaturedPlaylists;
 };
 
 const FeaturedPlaylists = ({

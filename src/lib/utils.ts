@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 import type { ClassValue } from "clsx";
@@ -113,4 +114,10 @@ export function getDownloadLink(url: Quality, quality: StreamQuality) {
   } else {
     return url[4].link;
   }
+}
+
+export function currentlyInDev() {
+  toast.info("This feature is currently in development.", {
+    description: "We're working on it and it'll be available soon.",
+  });
 }

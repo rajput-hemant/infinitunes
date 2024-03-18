@@ -21,7 +21,7 @@ const config = {
     unoptimized: true,
   },
   experimental: {
-    swcPlugins: [["@swc-jotai/react-refresh", {}]],
+    // ...
   },
   /* ... */
 };
