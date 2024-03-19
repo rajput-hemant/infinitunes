@@ -18,7 +18,7 @@ const SettingsLayout = ({ children }: Props) => {
       <Separator />
 
       <div className="flex h-full flex-1 flex-col lg:flex-row">
-        <aside className="pt-2 lg:max-w-[16rem] lg:border-r lg:pr-4 lg:pt-4 xl:w-1/5">
+        <aside className="pt-2 lg:max-w-64 lg:border-r lg:pr-4 lg:pt-4 xl:w-1/5">
           <SettingsSidebarNav />
         </aside>
 

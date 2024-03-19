@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
 import { signOut } from "next-auth/react";
@@ -21,33 +22,41 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 
-type Props = {
+type UserDropdownProps = {
   user?: User;
 };
 
-export const UserDropdown = ({ user }: Props) => {
+export function UserDropdown({ user }: UserDropdownProps) {
   const { setTheme } = useTheme();
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="rounded-full p-0.5  ">
-        <Avatar>
+      <DropdownMenuTrigger className="rounded-full ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+        <Avatar className="border shadow-sm">
           <AvatarImage
-            src={user?.image ?? "https://github.com/rajput-hemant.png"}
-            alt={user?.name ?? "rajput-hemant@github"}
+            src={user?.image ?? undefined}
+            alt={user?.name ?? "Guest User"}
           />
-          <AvatarFallback>
-            {user?.name?.charAt(0).toUpperCase() ?? "R"}
+          <AvatarFallback asChild>
+            <Image
+              src="/images/placeholder/user.jpg"
+              alt={user?.name ?? "Guest User"}
+              fill
+              className="dark:invert"
+            />
           </AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="max-w-[250px] p-2">
+      <DropdownMenuContent
+        side="bottom"
+        align="end"
+        className="w-[150px] max-w-[250px]"
+      >
         <DropdownMenuLabel className="flex flex-col">
           <span className="truncate">{user?.name ?? "Guest User"}</span>
-
           <span className="truncate text-sm font-normal text-muted-foreground">
-            {user?.email ?? "rajput-hemant@github"}
+            {user?.email}
           </span>
         </DropdownMenuLabel>
 
@@ -104,4 +113,4 @@ export const UserDropdown = ({ user }: Props) => {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+}

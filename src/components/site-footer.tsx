@@ -1,184 +1,104 @@
 import Link from "next/link";
 
 import { languages } from "@/config/languages";
-import { sidebarNav } from "@/config/nav";
 import { siteConfig } from "@/config/site";
 import { getFooterDetails } from "@/lib/jiosaavn-api";
 import { Icons } from "./icons";
-import { buttonVariants } from "./ui/button";
-import { Separator } from "./ui/separator";
-import { P, Small } from "./ui/topography";
 
-export default async function SiteFooter() {
+export async function SiteFooter() {
   const { artist, actor, album, playlist } = await getFooterDetails();
 
+  const footerLinks = [
+    { title: "Top Artist", data: artist },
+    { title: "Top Actors", data: actor },
+    { title: "New Releases", data: album },
+    { title: "Top Playlists", data: playlist },
+  ];
+
   return (
-    <footer className="w-full">
-      <Separator />
+    <footer className="border-t py-6 md:py-10">
+      <div className="mx-auto w-full max-w-none px-5 text-sm sm:max-w-[90%] sm:px-0 2xl:max-w-7xl">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] items-stretch justify-between gap-y-10 sm:gap-x-6 md:flex md:flex-wrap">
+          <div className="col-span-full flex justify-between md:flex-col md:justify-normal">
+            <Link href="/" className="flex items-start">
+              <Icons.Logo className="mr-1 h-5" />
+              <span className="font-heading tracking-wide drop-shadow-md">
+                {siteConfig.name}
+              </span>
+            </Link>
 
-      <div className="mx-auto my-4 flex list-none gap-4 overflow-x-auto md:justify-between md:px-5 xl:px-10">
-        <div className="min-w-fit">
-          <Small>Top Artist</Small>
-
-          <ul className="mt-2 w-fit space-y-1">
-            {artist.map(({ id, title, action }) => (
-              <li
-                key={id}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+            <div className="flex justify-center gap-4 text-muted-foreground md:mt-4">
+              <a
+                href={siteConfig.links.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="duration-200 hover:text-foreground"
               >
-                <Link href={action}>{title}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="min-w-fit">
-          <Small>Top Actors</Small>
-
-          <ul className="my-2 w-fit space-y-1">
-            {actor.map(({ id, title, action }) => (
-              <li
-                key={id}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                <Icons.GitHub className="size-4" />
+              </a>
+              <a
+                href={siteConfig.links.x}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="duration-200 hover:text-foreground"
               >
-                <Link href={action}>{title}</Link>
-              </li>
-            ))}
-          </ul>
-
-          <Small>Browse</Small>
-
-          <ul className="mt-2 w-fit space-y-1">
-            {sidebarNav.map(({ href, title }) => (
-              <li
-                key={title}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                <Icons.X className="size-4" />
+              </a>
+              <a
+                href={siteConfig.links.x}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="duration-200 hover:text-foreground"
               >
-                <Link href={href}>{title}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+                <Icons.Discord className="size-[18px]" />
+              </a>
+            </div>
+          </div>
 
-        <div className="min-w-fit">
-          <Small>New Releases</Small>
+          {footerLinks.map(({ title, data }) => (
+            <div key={title} className="flex flex-col gap-2.5">
+              <p className="text-sm font-semibold lg:text-sm">{title}</p>
 
-          <ul className="mt-2 w-fit space-y-1">
-            {album.map(({ id, title, action }) => (
-              <li
-                key={id}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
-              >
-                <Link href={action}>{title}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
+              <ul className="w-fit space-y-1">
+                {data.map(({ id, title, action }) => (
+                  <li
+                    key={id}
+                    className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                  >
+                    <Link href={action}>{title}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-        <div className="min-w-fit">
-          <Small>Top Playlists</Small>
+          <div className="flex flex-col gap-2.5">
+            <p className="text-sm font-semibold lg:text-sm">Languages</p>
 
-          <ul className="mt-2 w-fit space-y-1">
-            {playlist.map(({ id, title, action }) => (
-              <li
-                key={id}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
-              >
-                <Link href={action}>{title}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="min-w-fit">
-          <Small>Language</Small>
-
-          <ul className="mt-2 w-fit space-y-1">
-            {languages.map((lang) => (
-              <li
-                key={lang}
-                className="text-xs text-muted-foreground hover:text-secondary-foreground"
-              >
-                <Link
-                  href={`/album?lang=${lang.toLowerCase()}`}
-                >{`${lang} Songs`}</Link>
-              </li>
-            ))}
-          </ul>
+            <ul className="w-fit space-y-1">
+              {languages.map((lang) => (
+                <li
+                  key={lang}
+                  className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                >
+                  <Link
+                    href={`/album?lang=${lang.toLowerCase()}`}
+                  >{`${lang} Songs`}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
-      <Separator />
-
-      <div className="my-4 flex flex-col items-center justify-center gap-1 lg:ml-[-15%]">
-        <P className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground">
-          <span className="text-base font-semibold text-primary">
-            infinitunes
-          </span>{" "}
-          is not affiliated with JioSaavn. All trademarks and copyrights belong
-          to their respective owners. All media, images, and songs are the
-          property of their respective owners. This site is for educational
-          purposes only.
-        </P>
-
-        <span className="text-sm text-muted-foreground">
-          Made with ❤️ using{" "}
-          <a
-            href="https://nextjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline-offset-2 hover:underline"
-          >
-            Next.js 13
-          </a>{" "}
-          &{" "}
-          <a
-            href="https://ui.shadcn.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline-offset-2 hover:underline"
-          >
-            shadcn/ui
-          </a>
-        </span>
-
-        <span className="text-sm text-muted-foreground">
-          Released under the MIT License.
-        </span>
-
-        <span className="text-sm text-muted-foreground">
-          Copyright &copy; {new Date().getFullYear()} {siteConfig.name}.
-        </span>
-
-        <div className="flex">
-          <a
-            href={siteConfig.links.github}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({ variant: "ghost", size: "icon" })}
-          >
-            <Icons.GitHub className="size-5" />
-          </a>
-
-          <a
-            href={siteConfig.links.x}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({ variant: "ghost", size: "icon" })}
-          >
-            <Icons.Twitter className="size-5" />
-          </a>
-
-          <a
-            href={siteConfig.links.x}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={buttonVariants({ variant: "ghost", size: "icon" })}
-          >
-            <Icons.Discord className="size-5" />
-          </a>
-        </div>
-      </div>
+      <p className="mx-auto mt-2 max-w-2xl border-t py-6 text-center text-sm text-muted-foreground lg:ml-[20%]">
+        <span className="font-heading text-base tracking-wide text-primary underline drop-shadow-md">
+          {siteConfig.name}
+        </span>{" "}
+        is not affiliated with JioSaavn. All trademarks and copyrights belong to
+        their respective owners. All media, images, and songs are the property
+        of their respective owners. This site is for educational purposes only.
+      </p>
     </footer>
   );
 }

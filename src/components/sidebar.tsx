@@ -10,23 +10,19 @@ import type { User } from "next-auth";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { sidebarNav } from "@/config/nav";
 import { cn } from "@/lib/utils";
-import { H3, Muted } from "./ui/topography";
 
-type SidebarProps = { user?: User } & React.HTMLAttributes<HTMLDivElement>;
+type SidebarProps = {
+  user?: User;
+};
 
-export default function Sidebar({ user, className }: SidebarProps) {
+export function Sidebar({ user }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
 
-  const ButtonOrLink = user ? Button : Link;
-
   return (
-    <aside
-      className={cn(
-        "space-y-2 p-4 animate-in slide-in-from-left-full [animation-duration:500ms]",
-        className
-      )}
-    >
-      <H3 className="pl-4">Discover</H3>
+    <aside className="fixed left-0 top-14 hidden h-full w-1/5 space-y-2 border-r p-4 animate-in slide-in-from-left-full [animation-duration:500ms] lg:block xl:w-[15%]">
+      <h3 className="pl-3 font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+        Discover
+      </h3>
 
       <nav>
         {sidebarNav.slice(0, 6).map(({ title, href, icon: Icon }) => {
@@ -43,7 +39,9 @@ export default function Sidebar({ user, className }: SidebarProps) {
 
       {!!user && (
         <>
-          <H3 className="pl-4">Library</H3>
+          <h3 className="pl-3 font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+            Library
+          </h3>
 
           <nav>
             {sidebarNav.slice(6).map(({ title, href, icon: Icon }) => {
@@ -65,20 +63,32 @@ export default function Sidebar({ user, className }: SidebarProps) {
         </>
       )}
 
-      <H3 className="pl-4">Playlists</H3>
+      <h3 className="pl-3 font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        Playlists
+      </h3>
 
       <div className="mx-4 space-y-2">
-        <ButtonOrLink
-          href="/login"
-          title="Create Playlist"
-          className={cn(buttonVariants(), "my-2 w-full")}
-        >
-          <Plus className="mr-1 size-4" />
-
-          <span className="truncate">Create Playlist</span>
-        </ButtonOrLink>
-
-        {!user && <Muted>You need to be logged in to create a playlist.</Muted>}
+        {user ?
+          <Button title="Create Playlist" className="shadow-sm">
+            <Plus className="mr-2 size-4 shrink-0" />
+            Create Playlist
+          </Button>
+        : <>
+            <Link
+              href="/login"
+              className={cn(
+                buttonVariants(),
+                "my-2 w-full font-medium shadow-sm"
+              )}
+            >
+              <Plus className="mr-2 size-4 shrink-0" />
+              Create Playlist
+            </Link>
+            <p className="text-center text-xs text-muted-foreground">
+              You need to be logged in to create a playlist.
+            </p>
+          </>
+        }
       </div>
     </aside>
   );
