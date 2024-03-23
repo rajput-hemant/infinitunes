@@ -7,16 +7,17 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { languages } from "@/config/languages";
 import { cn } from "@/lib/utils";
 
-type Props = { type: Type; language?: Lang };
+// TODO: remove type prop
+type LanguageBarProps = { type?: Type; language?: Lang };
 
-const LanguageBar = ({ type, language }: Props) => {
+export function LanguageBar({ language }: LanguageBarProps) {
   return (
-    <ScrollArea>
-      <div className="flex space-x-2 sm:space-x-6 md:space-x-10 lg:space-x-12">
-        <Link title="For You" href={`/${type}`}>
+    <ScrollArea className="border-y py-2">
+      <div className="flex space-x-2 py-1 sm:space-x-6 md:space-x-10 lg:space-x-12">
+        <Link title="For You" href="?">
           <Badge
             className={cn(
-              "bg-primary p-2 lg:px-4",
+              "bg-primary p-2 hover:shadow lg:px-4",
               language && "bg-primary-foreground text-primary hover:bg-muted"
             )}
           >
@@ -25,14 +26,10 @@ const LanguageBar = ({ type, language }: Props) => {
         </Link>
 
         {languages.map((lang) => (
-          <Link
-            key={lang}
-            title={lang}
-            href={`/${type}?lang=${lang.toLowerCase()}`}
-          >
+          <Link key={lang} title={lang} href={`?lang=${lang.toLowerCase()}`}>
             <Badge
               className={cn(
-                "bg-primary-foreground p-2 text-primary hover:bg-muted lg:px-4",
+                "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow lg:px-4",
                 language === lang.toLowerCase() &&
                   "!bg-primary text-primary-foreground"
               )}
@@ -46,6 +43,7 @@ const LanguageBar = ({ type, language }: Props) => {
       <ScrollBar orientation="horizontal" className="invisible" />
     </ScrollArea>
   );
-};
+}
 
+// TODO: remove default export
 export default LanguageBar;

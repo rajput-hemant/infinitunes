@@ -1,0 +1,254 @@
+"use client";
+
+import React from "react";
+import Image from "next/image";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ListMusic,
+  ListOrdered,
+  MoreVertical,
+  Play,
+  Radio,
+  Share2,
+} from "lucide-react";
+
+import type { LucideIcon } from "lucide-react";
+import type { Quality, Song, Type } from "@/types";
+
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useQueue } from "@/hooks/use-store";
+import { currentlyInDev, getImageSrc } from "@/lib/utils";
+import { ShareOptions } from "../share-options";
+import { ShareSubMenu } from "../share-submenu";
+import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Separator } from "../ui/separator";
+import { Skeleton } from "../ui/skeleton";
+
+type MoreButtonProps = {
+  type: Type;
+  image: Quality;
+  name: string;
+  subtitle: string;
+  songs: Song[];
+};
+
+type MenuItem = {
+  label: string;
+  onClick: () => void;
+  hide?: boolean;
+  icon: LucideIcon;
+};
+
+export function MoreButton(props: MoreButtonProps) {
+  const { name, subtitle, type, image, songs } = props;
+
+  const [traslateX, setTranslateX] = React.useState(0);
+  const [, setQueue] = useQueue();
+
+  function play() {
+    currentlyInDev();
+  }
+
+  function addToQueue() {
+    const songsPayload = songs.map(
+      ({
+        id,
+        name,
+        subtitle,
+        type,
+        url,
+        image,
+        download_url,
+        artist_map: { artists },
+      }) => ({
+        id,
+        name,
+        subtitle,
+        url,
+        type,
+        image,
+        download_url,
+        artists,
+      })
+    );
+
+    setQueue((prev) => [...prev, ...songsPayload]);
+  }
+
+  function addToPlaylist() {
+    currentlyInDev();
+  }
+
+  function playRadio() {
+    currentlyInDev();
+  }
+
+  const menuItems: MenuItem[] = [
+    {
+      label: "Play Now",
+      onClick: play,
+      icon: Play,
+    },
+    {
+      label: "Add to Queue",
+      onClick: addToQueue,
+      hide: type === "show" || type === "artist",
+      icon: ListOrdered,
+    },
+    {
+      label: "Add To Playlist",
+      onClick: addToPlaylist,
+      hide: type === "show" || type === "artist" || type === "episode",
+      icon: ListMusic,
+    },
+    {
+      label: "Play Radio",
+      onClick: playRadio,
+      hide: type === "show" || type === "mix",
+      icon: Radio,
+    },
+  ];
+
+  return (
+    <div>
+      <div className="lg:hidden">
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button
+              size="icon"
+              variant="outline"
+              className="rounded-full shadow-sm"
+            >
+              <MoreVertical className="size-5" />
+            </Button>
+          </SheetTrigger>
+
+          <SheetContent side="bottom" className="rounded-t-3xl">
+            <SheetHeader>
+              <div className="flex gap-2">
+                <div className="relative aspect-square h-14 rounded-md">
+                  <Image
+                    src={getImageSrc(image, "low")}
+                    alt={name}
+                    fill
+                    className="z-10 rounded-md"
+                  />
+
+                  <Skeleton className="absolute inset-0 size-full" />
+                </div>
+
+                <div className="flex flex-col truncate text-start">
+                  <SheetTitle className="truncate">{name}</SheetTitle>
+
+                  <SheetDescription className="truncate">
+                    {subtitle}
+                  </SheetDescription>
+                </div>
+              </div>
+            </SheetHeader>
+
+            <Separator className="my-4" />
+
+            <div
+              className="relative flex min-h-[300px] flex-col gap-4 transition-transform duration-300"
+              style={{ transform: `translateX(${traslateX}%)` }}
+            >
+              {menuItems
+                .filter(({ hide }) => !hide)
+                .map(({ icon: Icon, label, onClick }, i) => (
+                  <button
+                    key={i}
+                    onClick={onClick}
+                    className="flex h-8 items-center font-medium"
+                  >
+                    <Icon className="mr-2 size-5" />
+                    {label}
+                  </button>
+                ))}
+
+              <button
+                onClick={() => setTranslateX(-110)}
+                className="flex h-8 items-center font-medium"
+              >
+                <Share2 className="mr-2 size-5" />
+                Share
+                <ChevronRight className="ml-auto size-5" />
+              </button>
+
+              <div className="absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4 bg-background">
+                <button
+                  onClick={() => setTranslateX(0)}
+                  className="flex h-8 items-center font-medium"
+                >
+                  <ChevronLeft className="mr-2 size-5" />
+                  Back
+                </button>
+
+                <Separator />
+
+                <ShareOptions />
+              </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            <SheetFooter className="sm:justify-center">
+              <SheetClose asChild>
+                <Button variant="secondary">Cancel</Button>
+              </SheetClose>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      </div>
+      <div className="hidden lg:block">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              size="icon"
+              variant="outline"
+              className="rounded-full shadow-sm"
+            >
+              <MoreVertical className="size-5" />
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="start">
+            <DropdownMenuGroup>
+              {menuItems
+                .filter(({ hide }) => !hide)
+                .map(({ icon: Icon, label, onClick }, i) => (
+                  <DropdownMenuItem
+                    key={i}
+                    onClick={onClick}
+                    className="cursor-pointer"
+                  >
+                    <Icon className="mr-2 size-5" />
+                    {label}
+                  </DropdownMenuItem>
+                ))}
+
+              <ShareSubMenu />
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+  );
+}

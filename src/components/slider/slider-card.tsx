@@ -4,13 +4,13 @@ import { Play } from "lucide-react";
 import type { Quality, Type } from "@/types";
 
 import { cn, getHref, getImageSrc } from "@/lib/utils";
-import { ImageWithFallback } from "./image-with-fallback";
-import { PlayButton } from "./play-button";
-import { Badge } from "./ui/badge";
-import { Card, CardContent } from "./ui/card";
-import { Skeleton } from "./ui/skeleton";
+import { ImageWithFallback } from "../image-with-fallback";
+import { PlayButton } from "../play-button";
+import { Badge } from "../ui/badge";
+import { Card, CardContent } from "../ui/card";
+import { Skeleton } from "../ui/skeleton";
 
-type SliderCardProps = {
+export type SliderCardProps = {
   name: string;
   type: Type;
   url: string;

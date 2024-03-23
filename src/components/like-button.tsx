@@ -2,18 +2,14 @@
 
 import { Heart } from "lucide-react";
 
-type Props = {
-  className?: string;
-};
+import { currentlyInDev } from "@/lib/utils";
 
-export const LikeButton = ({ className }: Props) => {
-  function likeHandler() {
-    // ...
-  }
+type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement>;
 
+export function LikeButton(props: LikeButtonProps) {
   return (
-    <button onClick={likeHandler} className={className}>
-      <Heart className="size-full text-inherit" />
+    <button onClick={currentlyInDev} {...props}>
+      <Heart className="size-5 text-inherit" />
     </button>
   );
-};
+}

@@ -1,13 +1,15 @@
 import React from "react";
+import { usePathname } from "next/navigation";
 import { Clipboard, Facebook, Mail, Twitter } from "lucide-react";
 
+import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
-import { CopyButton } from "./copy-button";
 import { Icons } from "./icons";
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 
-type Props = {
+type ShareOptionsProps = {
   isDropDownItem?: boolean;
+  // TODO: remove className prop
   className?: string;
 };
 
@@ -49,34 +51,47 @@ const shareOptions: ShareOption[] = [
   },
 ];
 
-export const ShareOptions = ({ isDropDownItem, className }: Props) => {
-  const Wrapper = isDropDownItem ? DropdownMenuItem : React.Fragment;
+export function ShareOptions({ isDropDownItem }: ShareOptionsProps) {
+  const pathname = usePathname();
+
+  const [isCopied, setIsCopied] = React.useState(false);
+
+  function copy() {
+    navigator.clipboard.writeText(`${siteConfig.url}${pathname}`);
+    setIsCopied(true);
+  }
+
+  function MenuItem({ label, href, icon: Icon }: ShareOption) {
+    return href ?
+        <a href={href} target="_blank" rel="noopener noreferrer">
+          <Icon
+            className={cn(
+              "mr-2 inline-block aspect-square h-5",
+              isDropDownItem && "h-4"
+            )}
+          />
+          {label}
+        </a>
+      : <button onClick={copy} className="inline-flex">
+          <Clipboard
+            className={cn(
+              "mr-2 inline-block aspect-square h-5",
+              isDropDownItem && "h-4"
+            )}
+          />
+          {isCopied ? "Link Copied 👍" : "Copy Link"}
+        </button>;
+  }
 
   return (
-    <>
+    <React.Fragment>
       {shareOptions.map(({ label, href, icon: Icon }, i) => {
-        const AnchorOrButton = href ? "a" : CopyButton;
-
-        return (
-          <Wrapper key={i} asChild>
-            <AnchorOrButton
-              href={href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={className}
-              isDropDownItem={isDropDownItem}
-            >
-              <Icon
-                className={cn(
-                  "mr-2 aspect-square h-5",
-                  isDropDownItem && "h-4"
-                )}
-              />
-              {label}
-            </AnchorOrButton>
-          </Wrapper>
-        );
+        return isDropDownItem ?
+            <DropdownMenuItem key={i}>
+              <MenuItem label={label} href={href} icon={Icon} />
+            </DropdownMenuItem>
+          : <MenuItem key={i} label={label} href={href} icon={Icon} />;
       })}
-    </>
+    </React.Fragment>
   );
-};
+}

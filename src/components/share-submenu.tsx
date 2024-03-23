@@ -8,7 +8,7 @@ import {
   DropdownMenuSubTrigger,
 } from "./ui/dropdown-menu";
 
-export const ShareSubMenu = () => {
+export function ShareSubMenu() {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
@@ -17,10 +17,10 @@ export const ShareSubMenu = () => {
       </DropdownMenuSubTrigger>
 
       <DropdownMenuPortal>
-        <DropdownMenuSubContent className="p-2">
-          <ShareOptions isDropDownItem className="cursor-pointer" />
+        <DropdownMenuSubContent>
+          <ShareOptions isDropDownItem />
         </DropdownMenuSubContent>
       </DropdownMenuPortal>
     </DropdownMenuSub>
   );
-};
+}

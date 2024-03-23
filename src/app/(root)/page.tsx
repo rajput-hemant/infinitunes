@@ -1,4 +1,4 @@
-import { SliderCard } from "@/components/slider-card";
+import { SliderCard } from "@/components/slider";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getHomeData } from "@/lib/jiosaavn-api";
 import { cn } from "@/lib/utils";

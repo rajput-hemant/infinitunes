@@ -24,7 +24,7 @@ export function Sidebar({ user }: SidebarProps) {
         Discover
       </h3>
 
-      <nav>
+      <nav className="space-y-0.5">
         {sidebarNav.slice(0, 6).map(({ title, href, icon: Icon }) => {
           const isActive = href === "/" + (segment ?? "");
 
@@ -43,7 +43,7 @@ export function Sidebar({ user }: SidebarProps) {
             Library
           </h3>
 
-          <nav>
+          <nav className="space-y-0.5">
             {sidebarNav.slice(6).map(({ title, href, icon: Icon }) => {
               const isActive = href === "/" + (segment ?? "");
 
@@ -69,7 +69,7 @@ export function Sidebar({ user }: SidebarProps) {
 
       <div className="mx-4 space-y-2">
         {user ?
-          <Button title="Create Playlist" className="shadow-sm">
+          <Button title="Create Playlist" className="shadow">
             <Plus className="mr-2 size-4 shrink-0" />
             Create Playlist
           </Button>
@@ -77,8 +77,8 @@ export function Sidebar({ user }: SidebarProps) {
             <Link
               href="/login"
               className={cn(
-                buttonVariants(),
-                "my-2 w-full font-medium shadow-sm"
+                buttonVariants({ size: "sm" }),
+                "my-2 w-full font-medium shadow"
               )}
             >
               <Plus className="mr-2 size-4 shrink-0" />
@@ -105,7 +105,7 @@ const NavLink = React.forwardRef<
       ref={ref}
       href={href!}
       className={cn(
-        buttonVariants({ variant: "ghost" }),
+        buttonVariants({ size: "sm", variant: "ghost" }),
         "flex justify-start text-muted-foreground",
         isActive && "bg-secondary font-bold text-secondary-foreground"
       )}

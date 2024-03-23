@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -14,16 +14,17 @@ import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "../ui/sheet";
 
 export function SecondaryNavbar() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
 
-  function toggle() {
+  const [isOpen, setIsOpen] = React.useState(false);
+
+  function toggleSheet() {
     setIsOpen((prev) => !prev);
   }
 
   if (!sidebarNav.slice(0, 6).some((i) => i.href === pathname)) return null;
 
   return (
-    <nav className="border-b">
+    <nav>
       <div className="hidden h-full items-center gap-2 lg:flex">
         <ScrollArea>
           <div className="flex gap-2">
@@ -42,7 +43,10 @@ export function SecondaryNavbar() {
                   <Link
                     href={href}
                     className={cn(
-                      buttonVariants({ variant: "ghost" }),
+                      buttonVariants({
+                        size: "sm",
+                        variant: isActive ? "secondary" : "ghost",
+                      }),
                       isActive && "font-medium"
                     )}
                   >
@@ -55,13 +59,17 @@ export function SecondaryNavbar() {
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
 
-        <Button variant="secondary" className="ml-auto shrink-0">
+        <Button
+          size="sm"
+          variant="secondary"
+          className="ml-auto shrink-0 hover:shadow"
+        >
           Surprise Me
         </Button>
       </div>
 
       <div className="lg:hidden">
-        <Sheet open={isOpen} onOpenChange={toggle}>
+        <Sheet open={isOpen} onOpenChange={toggleSheet}>
           <SheetTrigger className="flex w-full justify-between">
             <h4 className="text-lg font-semibold">Browse</h4>
 
@@ -79,15 +87,17 @@ export function SecondaryNavbar() {
 
             <div>
               {sidebarNav.map(({ title, href, icon: Icon }) => {
+                const isActive = href === pathname;
+
                 return (
                   <Link
                     key={title}
                     href={href}
-                    onClick={toggle}
+                    onClick={toggleSheet}
                     className={cn(
-                      buttonVariants({ variant: "ghost" }),
+                      buttonVariants({ size: "sm", variant: "ghost" }),
                       "my-1 flex justify-between text-muted-foreground",
-                      href === pathname &&
+                      isActive &&
                         "bg-secondary font-bold text-secondary-foreground"
                     )}
                   >
@@ -105,11 +115,11 @@ export function SecondaryNavbar() {
             <Separator />
 
             <div className="my-4 w-full space-y-4">
-              <Button variant="secondary" className="w-full">
+              <Button variant="secondary" className="w-full hover:shadow">
                 Surprise Me
               </Button>
               <Separator />
-              <Button variant="ghost" onClick={toggle} className="w-full">
+              <Button variant="ghost" onClick={toggleSheet} className="w-full">
                 Cancel
               </Button>
             </div>
