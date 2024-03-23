@@ -185,7 +185,10 @@ export function TileMoreButton({ item, showAlbum }: TileMoreButtonProps) {
     <div>
       <div className="lg:hidden">
         <Sheet>
-          <SheetTrigger className="focus-visible:outline-none">
+          <SheetTrigger
+            aria-label="More Options"
+            className="focus-visible:outline-none"
+          >
             <MoreVertical className="size-6 hover:text-primary" />
           </SheetTrigger>
 
@@ -283,7 +286,10 @@ export function TileMoreButton({ item, showAlbum }: TileMoreButtonProps) {
 
       <div className="hidden lg:block">
         <DropdownMenu>
-          <DropdownMenuTrigger className="focus-visible:outline-none">
+          <DropdownMenuTrigger
+            aria-label="More Options"
+            className="focus-visible:outline-none"
+          >
             <MoreVertical className="size-6 hover:text-primary" />
           </DropdownMenuTrigger>
 

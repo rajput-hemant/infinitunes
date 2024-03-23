@@ -1,3 +1,3 @@
-import { TopAlbumsPageSkeleton } from "@/components/skeletons/top-albums-page-skeleton";
+import { TopAlbumsPageSkeleton } from "@/components/skeletons";
 
 export default TopAlbumsPageSkeleton;

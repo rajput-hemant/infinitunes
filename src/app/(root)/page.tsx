@@ -1,5 +1,6 @@
 import { SliderCard } from "@/components/slider";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { siteConfig } from "@/config/site";
 import { getHomeData } from "@/lib/jiosaavn-api";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +13,8 @@ export default async function HomePage() {
     return (
       <div key={key} className="mb-4 space-y-4">
         <header className="border-b pb-2">
+          <h1 className="sr-only">{siteConfig.name} Homepage</h1>
+
           <h2 className="pl-2 font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl lg:pl-0">
             {section.title}
           </h2>
@@ -25,7 +28,7 @@ export default async function HomePage() {
 
         <ScrollArea>
           <div
-            className={cn("flex pb-6 sm:gap-2", {
+            className={cn("flex sm:gap-2 xl:pb-6", {
               "grid grid-flow-col grid-rows-2 place-content-start": [
                 "trending",
                 "albums",

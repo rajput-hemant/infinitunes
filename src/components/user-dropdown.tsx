@@ -51,11 +51,20 @@ export function UserDropdown({ user }: UserDropdownProps) {
       <DropdownMenuContent
         side="bottom"
         align="end"
-        className="w-[150px] max-w-[250px]"
+        className="max-w-[300px] *:cursor-pointer"
       >
         <DropdownMenuLabel className="flex flex-col">
-          <span className="truncate">{user?.name ?? "Guest User"}</span>
-          <span className="truncate text-sm font-normal text-muted-foreground">
+          <span title={user?.name ?? undefined} className="truncate">
+            {user ?
+              user.name ?
+                user.name
+              : "~"
+            : "Guest User"}
+          </span>
+          <span
+            title={user?.email ?? undefined}
+            className="truncate text-sm font-normal text-muted-foreground"
+          >
             {user?.email}
           </span>
         </DropdownMenuLabel>
@@ -75,8 +84,6 @@ export function UserDropdown({ user }: UserDropdownProps) {
             Settings
           </Link>
         </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
 
         <DropdownMenuSub>
           <DropdownMenuSubTrigger>
@@ -103,6 +110,8 @@ export function UserDropdown({ user }: UserDropdownProps) {
             </DropdownMenuSubContent>
           </DropdownMenuPortal>
         </DropdownMenuSub>
+
+        <DropdownMenuSeparator />
 
         {user && (
           <DropdownMenuItem onClick={() => signOut()}>

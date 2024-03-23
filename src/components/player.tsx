@@ -235,7 +235,7 @@ const Player = () => {
         <div className="flex w-full gap-4 lg:w-1/3">
           {queue.length && queue[currentIndex]?.image ?
             <>
-              <div className="relative aspect-square h-12 overflow-hidden rounded-md shadow-md">
+              <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
                 <Image
                   src={getImageSrc(queue[currentIndex].image, "low")}
                   alt={queue[currentIndex].name}
@@ -267,6 +267,7 @@ const Player = () => {
 
         <div className="flex justify-end lg:w-1/3 lg:justify-evenly">
           <button
+            aria-label={looping ? "Looping" : "Loop"}
             onClick={loopHandler}
             className={cn(
               "hidden lg:block",
@@ -278,11 +279,18 @@ const Player = () => {
             : <Repeat strokeWidth={2} className="size-7" />}
           </button>
 
-          <button onClick={skipToPrev} className="hidden lg:block">
+          <button
+            aria-label="Previous"
+            onClick={skipToPrev}
+            className="hidden lg:block"
+          >
             <Icons.SkipBack className="size-10" />
           </button>
 
-          <button onClick={playPauseHandler}>
+          <button
+            aria-label={playing ? "Pause" : "Play"}
+            onClick={playPauseHandler}
+          >
             {isLoading ?
               <Loader2 className="animate-spin" />
             : <>
@@ -293,11 +301,16 @@ const Player = () => {
             }
           </button>
 
-          <button onClick={skipToNext} className="hidden lg:block">
+          <button
+            aria-label="Next"
+            onClick={skipToNext}
+            className="hidden lg:block"
+          >
             <Icons.SkipForward className="size-10" />
           </button>
 
           <button
+            aria-label={isShuffle ? "Shuffling" : "Shuffle"}
             onClick={() => setIsShuffle(!isShuffle)}
             className={cn(
               "hidden lg:block",
@@ -316,6 +329,7 @@ const Player = () => {
           </Muted>
 
           <button
+            aria-label={muted ? "Unmute" : "Mute"}
             disabled={!isReady || muted}
             onClick={() => mute(!muted)}
             className="disabled:text-muted-foreground"
@@ -333,6 +347,7 @@ const Player = () => {
           </button>
 
           <Slider
+            aria-label="Volume"
             disabled={!isReady || muted}
             value={[volume * 100]}
             defaultValue={[75]}
@@ -346,6 +361,7 @@ const Player = () => {
             </SliderTrack>
 
             <SliderThumb
+              aria-label="Volume slider"
               className={cn(
                 "size-4 cursor-pointer",
                 (!isReady || muted) && "bg-accent"

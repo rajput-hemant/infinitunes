@@ -27,12 +27,12 @@ export function SecondaryNavbar() {
     <nav>
       <div className="hidden h-full items-center gap-2 lg:flex">
         <ScrollArea>
-          <div className="flex gap-2">
+          <ul className="flex gap-2">
             {sidebarNav.map(({ title, href }) => {
               const isActive = href === pathname;
 
               return (
-                <div
+                <li
                   key={title}
                   title={title}
                   className={cn(
@@ -52,10 +52,10 @@ export function SecondaryNavbar() {
                   >
                     {title}
                   </Link>
-                </div>
+                </li>
               );
             })}
-          </div>
+          </ul>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
 

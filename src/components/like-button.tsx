@@ -8,7 +8,7 @@ type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement>;
 
 export function LikeButton(props: LikeButtonProps) {
   return (
-    <button onClick={currentlyInDev} {...props}>
+    <button aria-label="Like" onClick={currentlyInDev} {...props}>
       <Heart className="size-5 text-inherit" />
     </button>
   );

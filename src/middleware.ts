@@ -4,6 +4,7 @@ import { Redis } from "@upstash/redis";
 
 import type { NextRequest } from "next/server";
 
+import { appRoutes } from "./config/routes";
 import { env } from "./lib/env";
 
 const ratelimit = new Ratelimit({
@@ -39,6 +40,13 @@ export async function middleware(req: NextRequest) {
         }
       );
     }
+  }
+
+  const { nextUrl } = req;
+  const paths = nextUrl.pathname.split("/").slice(1);
+
+  if (paths.length === 2 && appRoutes.includes(`/${paths[0]}`)) {
+    return NextResponse.redirect(new URL(`/${paths[0]}`, nextUrl));
   }
 
   return NextResponse.next();

@@ -1,3 +1,3 @@
-import { HomePageSkeleton } from "@/components/skeletons/home-page-skeleton";
+import { HomePageSkeleton } from "@/components/skeletons";
 
 export default HomePageSkeleton;

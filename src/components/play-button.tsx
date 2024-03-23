@@ -111,7 +111,7 @@ export function PlayButton(props: PlayButtonProps) {
   }
 
   return (
-    <button onClick={playHandler} {...restProps}>
+    <button aria-label="Play" onClick={playHandler} {...restProps}>
       {children}
     </button>
   );

@@ -132,6 +132,7 @@ export function MoreButton(props: MoreButtonProps) {
         <Sheet>
           <SheetTrigger asChild>
             <Button
+              aria-label="More options"
               size="icon"
               variant="outline"
               className="rounded-full shadow-sm"
@@ -221,6 +222,7 @@ export function MoreButton(props: MoreButtonProps) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
+              aria-label="More options"
               size="icon"
               variant="outline"
               className="rounded-full shadow-sm"

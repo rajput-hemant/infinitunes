@@ -16,7 +16,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
       <Sidebar user={user} />
 
-      <main className="p-2 pb-36 sm:p-4 lg:ml-[20%] lg:pb-20 xl:ml-[15%]">
+      <main className="p-2 pb-24 sm:p-4 sm:pb-24 lg:ml-[20%] lg:pb-10 xl:ml-[15%]">
         <SecondaryNavbar />
 
         {children}

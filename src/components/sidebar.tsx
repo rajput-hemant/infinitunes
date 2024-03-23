@@ -9,7 +9,7 @@ import type { User } from "next-auth";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { sidebarNav } from "@/config/nav";
-import { cn } from "@/lib/utils";
+import { cn, currentlyInDev } from "@/lib/utils";
 
 type SidebarProps = {
   user?: User;
@@ -24,17 +24,21 @@ export function Sidebar({ user }: SidebarProps) {
         Discover
       </h3>
 
-      <nav className="space-y-0.5">
-        {sidebarNav.slice(0, 6).map(({ title, href, icon: Icon }) => {
-          const isActive = href === "/" + (segment ?? "");
+      <nav>
+        <ul className="space-y-0.5">
+          {sidebarNav.slice(0, 6).map(({ title, href, icon: Icon }) => {
+            const isActive = href === "/" + (segment ?? "");
 
-          return (
-            <NavLink key={title} title={title} href={href} isActive={isActive}>
-              <Icon className="mr-2 size-5" />
-              {title}
-            </NavLink>
-          );
-        })}
+            return (
+              <li key={title}>
+                <NavLink title={title} href={href} isActive={isActive}>
+                  <Icon className="mr-2 size-5" />
+                  {title}
+                </NavLink>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
       {!!user && (
@@ -43,22 +47,21 @@ export function Sidebar({ user }: SidebarProps) {
             Library
           </h3>
 
-          <nav className="space-y-0.5">
-            {sidebarNav.slice(6).map(({ title, href, icon: Icon }) => {
-              const isActive = href === "/" + (segment ?? "");
+          <nav>
+            <ul className="space-y-0.5">
+              {sidebarNav.slice(6).map(({ title, href, icon: Icon }) => {
+                const isActive = href === "/" + (segment ?? "");
 
-              return (
-                <NavLink
-                  key={title}
-                  title={title}
-                  href={href}
-                  isActive={isActive}
-                >
-                  <Icon className="mr-2 size-5 shrink-0" />
-                  {title}
-                </NavLink>
-              );
-            })}
+                return (
+                  <li key={title}>
+                    <NavLink title={title} href={href} isActive={isActive}>
+                      <Icon className="mr-2 size-5 shrink-0" />
+                      {title}
+                    </NavLink>
+                  </li>
+                );
+              })}
+            </ul>
           </nav>
         </>
       )}
@@ -69,7 +72,11 @@ export function Sidebar({ user }: SidebarProps) {
 
       <div className="mx-4 space-y-2">
         {user ?
-          <Button title="Create Playlist" className="shadow">
+          <Button
+            title="Create Playlist"
+            onClick={currentlyInDev}
+            className="w-full truncate shadow"
+          >
             <Plus className="mr-2 size-4 shrink-0" />
             Create Playlist
           </Button>
@@ -78,7 +85,7 @@ export function Sidebar({ user }: SidebarProps) {
               href="/login"
               className={cn(
                 buttonVariants({ size: "sm" }),
-                "my-2 w-full font-medium shadow"
+                "my-2 w-full truncate font-medium shadow"
               )}
             >
               <Plus className="mr-2 size-4 shrink-0" />

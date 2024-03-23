@@ -3,7 +3,8 @@ import Link from "next/link";
 import { languages } from "@/config/languages";
 import { siteConfig } from "@/config/site";
 import { getFooterDetails } from "@/lib/jiosaavn-api";
-import { Icons } from "./icons";
+import { Icons } from "../icons";
+import { ThemeToggleGroup } from "./theme-toggle-group";
 
 export async function SiteFooter() {
   const { artist, actor, album, playlist } = await getFooterDetails();
@@ -29,6 +30,7 @@ export async function SiteFooter() {
 
             <div className="flex justify-center gap-4 text-muted-foreground md:mt-4">
               <a
+                aria-label="GitHub Repository"
                 href={siteConfig.links.github}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -37,6 +39,7 @@ export async function SiteFooter() {
                 <Icons.GitHub className="size-4" />
               </a>
               <a
+                aria-label="X/Twitter Handle"
                 href={siteConfig.links.x}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -45,7 +48,8 @@ export async function SiteFooter() {
                 <Icons.X className="size-4" />
               </a>
               <a
-                href={siteConfig.links.x}
+                aria-label="Discord Server"
+                href={siteConfig.links.discord}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="duration-200 hover:text-foreground"
@@ -63,7 +67,7 @@ export async function SiteFooter() {
                 {data.map(({ id, title, action }) => (
                   <li
                     key={id}
-                    className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                    className="w-full text-xs text-muted-foreground hover:text-secondary-foreground"
                   >
                     <Link href={action}>{title}</Link>
                   </li>
@@ -79,7 +83,7 @@ export async function SiteFooter() {
               {languages.map((lang) => (
                 <li
                   key={lang}
-                  className="text-xs text-muted-foreground hover:text-secondary-foreground"
+                  className="w-full text-xs text-muted-foreground hover:text-secondary-foreground"
                 >
                   <Link
                     href={`/album?lang=${lang.toLowerCase()}`}
@@ -91,14 +95,21 @@ export async function SiteFooter() {
         </div>
       </div>
 
-      <p className="mx-auto mt-2 max-w-2xl border-t py-6 text-center text-sm text-muted-foreground lg:ml-[20%]">
-        <span className="font-heading text-base tracking-wide text-primary underline drop-shadow-md">
-          {siteConfig.name}
-        </span>{" "}
-        is not affiliated with JioSaavn. All trademarks and copyrights belong to
-        their respective owners. All media, images, and songs are the property
-        of their respective owners. This site is for educational purposes only.
-      </p>
+      <div className="mx-auto mt-4 flex max-w-7xl flex-col items-center justify-between gap-4 border-t py-6 lg:flex-row">
+        <p className="max-w-4xl text-center text-xs text-muted-foreground lg:text-sm">
+          <Link href="/" className="inline-flex items-center justify-center">
+            <span className="font-heading text-base tracking-wide text-primary underline drop-shadow-md">
+              {siteConfig.name}
+            </span>
+          </Link>{" "}
+          is not affiliated with JioSaavn. All trademarks and copyrights belong
+          to their respective owners. All media, images, and songs are the
+          property of their respective owners. This site is for educational
+          purposes only.
+        </p>
+
+        <ThemeToggleGroup className="w-fit" />
+      </div>
     </footer>
   );
 }

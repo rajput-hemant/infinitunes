@@ -18,6 +18,8 @@
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check:pg",
     "ui": "bunx shadcn-ui",
+    "clean": "rm -rf .next",
+    "cleani": "rm -rf .next && rm -rf node_modules && bun i",
     "prepare": "husky"
   },
   "dependencies": {
