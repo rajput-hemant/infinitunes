@@ -12,7 +12,7 @@ type LanguageBarProps = { type?: Type; language?: Lang };
 
 export function LanguageBar({ language }: LanguageBarProps) {
   return (
-    <ScrollArea className="border-y py-2">
+    <ScrollArea className="border-b py-2">
       <ul className="flex space-x-2 py-1 sm:space-x-6 md:space-x-10 lg:space-x-12">
         <li>
           <Link title="For You" href="?">

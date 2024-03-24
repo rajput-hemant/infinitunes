@@ -51,7 +51,12 @@ export function DetailsHeader({ item }: DetailsHeaderProps) {
           )}
         />
 
-        <Skeleton className="absolute inset-0 -z-10" />
+        <Skeleton
+          className={cn(
+            "absolute inset-0 -z-10",
+            (item.type === "artist" || item.type === "label") && "rounded-full"
+          )}
+        />
       </div>
 
       <figcaption className="flex flex-col items-center justify-center font-medium lg:items-start lg:gap-2">

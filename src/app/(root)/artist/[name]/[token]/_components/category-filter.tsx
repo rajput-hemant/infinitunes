@@ -5,25 +5,24 @@ import type { Category } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-type Props = {
-  path: string;
+type CategoryFilterProps = {
   category: Category;
 };
 
-const categoryMap = {
+const CategoryMap = {
   popularity: "Popular",
   latest: "Date",
   alphabetical: "Name",
 };
 
-const CategoryFilter = ({ path, category }: Props) => {
+export function CategoryFilter({ category }: CategoryFilterProps) {
   return (
     <div className="my-6 flex space-x-2">
-      {Object.entries(categoryMap).map(([key, value]) => (
-        <Link key={key} title={value} href={`${path}?cat=${key}`}>
+      {Object.entries(CategoryMap).map(([key, value]) => (
+        <Link key={key} title={value} href={`?cat=${key}`}>
           <Badge
             className={cn(
-              "bg-primary-foreground p-2 text-primary hover:bg-muted lg:px-4",
+              "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-sm lg:px-4",
               category === key && "!bg-primary text-primary-foreground"
             )}
           >
@@ -33,6 +32,4 @@ const CategoryFilter = ({ path, category }: Props) => {
       ))}
     </div>
   );
-};
-
-export default CategoryFilter;
+}

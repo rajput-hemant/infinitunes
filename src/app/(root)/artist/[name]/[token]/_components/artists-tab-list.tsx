@@ -5,11 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TABS } from "./tabs";
 
-type Props = { showBio: boolean };
+type ArtistsTabListProps = { showBio: boolean };
 
-const ArtistsTabList = ({ showBio }: Props) => {
+export function ArtistsTabList({ showBio }: ArtistsTabListProps) {
   const router = useRouter();
-  const pathname = usePathname();
+  const segments = usePathname().split("/");
 
   const hrefConstructor = (tab: string) => {
     const suffixMap = {
@@ -19,8 +19,6 @@ const ArtistsTabList = ({ showBio }: Props) => {
       [TABS.Biography]: "-bio",
     };
 
-    const segments = pathname.split("/");
-
     segments[2] =
       segments[2].replace(/(-songs|-albums|-bio)/, "") +
       suffixMap[tab as keyof typeof TABS];
@@ -29,9 +27,9 @@ const ArtistsTabList = ({ showBio }: Props) => {
   };
 
   return (
-    <TabsList className="mx-auto mb-4 flex w-fit lg:mx-0">
+    <TabsList className="mx-auto flex w-fit lg:mx-0 lg:*:w-1/3 lg:*:px-5">
       {Object.keys(TABS).map((tab, i) => {
-        if (showBio && tab === TABS.Biography) return;
+        if (!showBio && tab === TABS.Biography) return;
 
         return (
           <TabsTrigger
@@ -45,6 +43,4 @@ const ArtistsTabList = ({ showBio }: Props) => {
       })}
     </TabsList>
   );
-};
-
-export default ArtistsTabList;
+}

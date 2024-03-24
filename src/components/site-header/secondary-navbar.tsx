@@ -24,7 +24,7 @@ export function SecondaryNavbar() {
   if (!sidebarNav.slice(0, 6).some((i) => i.href === pathname)) return null;
 
   return (
-    <nav>
+    <nav className="border-b">
       <div className="hidden h-full items-center gap-2 lg:flex">
         <ScrollArea>
           <ul className="flex gap-2">

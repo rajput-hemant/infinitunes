@@ -64,8 +64,8 @@ export function SliderCard(props: SliderCardProps) {
             height={200}
             alt={name}
             className={cn(
-              "size-full object-cover duration-300 group-hover:scale-110",
-              !imageSrc && "duration-0 dark:invert",
+              "size-full object-cover transition-transform duration-300 group-hover:scale-110",
+              !imageSrc && "dark:invert",
               imageSrc.includes("default") && "dark:invert"
             )}
           />
