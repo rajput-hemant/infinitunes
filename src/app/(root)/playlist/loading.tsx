@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { languages } from "@/config/languages";
 
-export default function TopAlbumsPageSkeleton() {
+export default function FeaturedPlaylistPageSkeleton() {
   return (
     <div className="space-y-4">
       <div className="border-b py-2">
