@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 
 import type { NextRequest } from "next/server";
 
@@ -8,7 +8,7 @@ import { appRoutes } from "./config/routes";
 import { env } from "./lib/env";
 
 const ratelimit = new Ratelimit({
-  redis: kv,
+  redis: Redis.fromEnv(),
   limiter: Ratelimit.slidingWindow(env.RATE_LIMITING_REQUESTS_PER_SECOND, "1s"),
 });
 
