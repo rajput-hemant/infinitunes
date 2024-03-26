@@ -1,25 +1,25 @@
-import { ItemCard } from "@/components/item-card";
+import { SliderCard } from "@/components/slider";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { H2, Muted } from "@/components/ui/topography";
 import { getTopShows } from "@/lib/jiosaavn-api";
-import TopPodcasts from "./top-podcasts";
+import { TopPodcasts } from "./_components/top-podcasts";
 
-export const revalidate = 3600; // revalidate page every hour
+type TopPodcastsPageProps = { searchParams: { page?: number } };
 
-type Props = { searchParams: { page?: number } };
+export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
+  const topShows = await getTopShows(props.searchParams.page ?? 1);
 
-const PodcastsPage = async ({ searchParams: { page = 1 } }: Props) => {
-  const topShows = await getTopShows(page);
   const {
     trending_podcasts: { data: trendingPodcasts, title, subtitle },
   } = topShows;
 
   return (
-    <div className="mb-4 space-y-4">
+    <div className="space-y-4">
       <header className="mt-4">
-        <H2 className="pb-0">{title}</H2>
+        <h1 className="font-heading text-2xl capitalize drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+          {title}
+        </h1>
 
-        <Muted className="ml-1">{subtitle}</Muted>
+        <p className="pl-1 font-medium text-muted-foreground">{subtitle}</p>
       </header>
 
       <ScrollArea>
@@ -27,7 +27,7 @@ const PodcastsPage = async ({ searchParams: { page = 1 } }: Props) => {
           {trendingPodcasts.map(
             ({ id, name, url, subtitle, type, image, explicit }) => {
               return (
-                <ItemCard
+                <SliderCard
                   key={id}
                   name={name}
                   url={url}
@@ -44,10 +44,11 @@ const PodcastsPage = async ({ searchParams: { page = 1 } }: Props) => {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      <H2>All Podcasts</H2>
+      <h2 className="font-heading text-2xl capitalize drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+        All Podcasts
+      </h2>
+
       <TopPodcasts initialTopShows={topShows} />
     </div>
   );
-};
-
-export default PodcastsPage;
+}

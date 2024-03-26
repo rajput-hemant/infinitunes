@@ -35,7 +35,7 @@ export function DetailsHeader({ item }: DetailsHeaderProps) {
     <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
-          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64",
+          "relative aspect-square w-44 shrink-0 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64",
           (item.type === "artist" || item.type === "label") && "rounded-full"
         )}
       >
@@ -59,12 +59,14 @@ export function DetailsHeader({ item }: DetailsHeaderProps) {
         />
       </div>
 
-      <figcaption className="flex flex-col items-center justify-center font-medium lg:items-start lg:gap-2">
-        <h1 className="flex items-center text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2">
+        <h1
+          title={item.name}
+          className="flex items-center truncate text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start"
+        >
           {"explicit" in item && item.explicit && (
             <Badge className="mr-2 rounded px-1 py-0 font-bold">E</Badge>
           )}
-
           {item.name}
 
           {"is_verified" in item && item.is_verified && (

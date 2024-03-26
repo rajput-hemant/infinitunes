@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 import type { Sort } from "@/types";
 
 import { DetailsHeader } from "@/components/details-header";
-import { ItemCard } from "@/components/item-card";
+import { SliderCard } from "@/components/slider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,20 +13,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Blockquote, H3 } from "@/components/ui/topography";
 import { getShowDetails } from "@/lib/jiosaavn-api";
-import { EpisodeList } from "./episode-list";
+import { EpisodeList } from "./_components/episode-list";
 
-type Props = {
+type ShowDetailsPageProps = {
   searchParams: { sort: Sort };
-  params: { slug: [string, number, string] };
+  params: { name: string; season: number; token: string };
 };
 
-const ShowDetailsPage = async ({
-  params: { slug },
-  searchParams: { sort = "desc" },
-}: Props) => {
-  const [_, season, token] = slug;
+export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
+  const {
+    params: { season, token },
+    searchParams: { sort = "desc" },
+  } = props;
+
   const { episodes, modules, seasons, show_details } = await getShowDetails(
     token,
     season,
@@ -35,16 +35,16 @@ const ShowDetailsPage = async ({
 
   return (
     <div className="mb-4 space-y-4">
-      {/* playlist details header */}
       <DetailsHeader item={show_details} />
 
-      {/* seasons */}
-      <H3>{modules.seasons.title}</H3>
+      <h2 className="font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
+        {modules.seasons.title}
+      </h2>
 
       <ScrollArea>
         <div className="flex space-x-4 pb-4">
           {seasons.reverse().map(({ id, name, url, subtitle, image }) => (
-            <ItemCard
+            <SliderCard
               key={id}
               name={name}
               url={url}
@@ -59,35 +59,33 @@ const ShowDetailsPage = async ({
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      {/* eoisode list & sonrt order */}
-      <div className="flex justify-between">
-        <H3>{modules.episodes.title}</H3>
+      <div className="flex items-center justify-between">
+        <h2 className="font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
+          {modules.episodes.title}
+        </h2>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-36">
+            <Button size="sm" variant="outline" className="w-28 md:w-36">
               {sort === "asc" ? "Oldest" : "Newest"}
               <ChevronDown className="ml-auto size-5" />
             </Button>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent className="w-36">
+          <DropdownMenuContent className="w-28 *:cursor-pointer md:w-36">
             <DropdownMenuItem asChild>
-              <Link href="?sort=desc" className="cursor-pointer">
-                Newest
-              </Link>
+              <Link href="?sort=desc">Newest</Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem asChild>
-              <Link href="?sort=asc" className="cursor-pointer">
-                Oldest
-              </Link>
+              <Link href="?sort=asc">Oldest</Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
       <EpisodeList
+        key={episodes[0].id}
         showId={show_details.id}
         season={show_details.season_number}
         sort={sort}
@@ -95,13 +93,13 @@ const ShowDetailsPage = async ({
         initialEpisodes={episodes}
       />
 
-      {/* about */}
-      <H3>{modules.show_details.title}</H3>
-      <Blockquote className="max-w-4xl leading-snug text-muted-foreground">
+      <h2 className="font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
+        {modules.show_details.title}
+      </h2>
+
+      <blockquote className="max-w-4xl italic text-muted-foreground">
         {show_details.description}
-      </Blockquote>
+      </blockquote>
     </div>
   );
-};
-
-export default ShowDetailsPage;
+}

@@ -21,7 +21,7 @@ export const viewport = {
 export const metadata = {
   title: {
     default: siteConfig.name,
-    template: `${siteConfig.name} | %s`,
+    template: `%s | ${siteConfig.name}`,
   },
   description: siteConfig.description,
   authors: {

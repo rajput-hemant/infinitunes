@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React from "react";
 import { Loader2 } from "lucide-react";
 
 import type { Episode, Sort } from "@/types";
 
 import { SongList } from "@/components/song/song-list";
-import { H3 } from "@/components/ui/topography";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getShowEpisodes } from "@/lib/jiosaavn-api";
 
-type Props = {
+type EpisodeListProps = {
   showId: string;
   season: number;
   sort: Sort;
@@ -18,30 +17,28 @@ type Props = {
   initialEpisodes: Episode[];
 };
 
-export const EpisodeList = ({
-  showId,
-  season,
-  sort,
-  totalEpisodes,
-  initialEpisodes,
-}: Props) => {
-  const [episodes, setEpisodes] = useState(initialEpisodes);
-  const [page, setPage] = useState(2);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(
+export function EpisodeList(props: EpisodeListProps) {
+  const { showId, season, sort, totalEpisodes, initialEpisodes } = props;
+
+  const [episodes, setEpisodes] = React.useState(initialEpisodes);
+  const [page, setPage] = React.useState(1);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [hasMore, setHasMore] = React.useState(
     totalEpisodes > initialEpisodes.length
   );
 
-  const ref = useRef<HTMLDivElement | null>(null);
-  const isLoadMoreVisible = !!useIntersectionObserver(ref, {})?.isIntersecting;
+  const loadMoreRef = React.useRef<HTMLDivElement | null>(null);
+  const isLoadMoreVisible = !!useIntersectionObserver(loadMoreRef, {})
+    ?.isIntersecting;
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (isLoadMoreVisible) {
       (async () => {
         setIsLoading(true);
-        const response = await getShowEpisodes(showId, season, page, sort);
+        const nextPage = page + 1;
+        const response = await getShowEpisodes(showId, season, nextPage, sort);
         setEpisodes((episodes) => [...episodes, ...response]);
-        setPage((page) => page + 1);
+        setPage(nextPage);
         setHasMore(totalEpisodes > episodes.length);
         setIsLoading(false);
       })();
@@ -54,7 +51,7 @@ export const EpisodeList = ({
 
       {hasMore ?
         <div
-          ref={ref}
+          ref={loadMoreRef}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
         >
           {isLoading && (
@@ -63,10 +60,10 @@ export const EpisodeList = ({
             </>
           )}
         </div>
-      : <H3 className="text-center">
+      : <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em> 🤩
-        </H3>
+        </h3>
       }
     </>
   );
-};
+}

@@ -43,7 +43,7 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
       </div>
 
       <div className="flex flex-col items-center justify-center font-medium lg:items-start lg:gap-2">
-        <div className="space-y-1">
+        <div className="space-y-2">
           <Skeleton className="h-6 w-72 sm:h-7 md:h-8 md:w-96 lg:h-9" />
 
           <div className="space-y-2 text-sm text-muted-foreground">

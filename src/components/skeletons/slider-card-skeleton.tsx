@@ -3,9 +3,12 @@ import { Skeleton } from "../ui/skeleton";
 
 type SliderCardSkeletonProps = {
   aspect?: "square" | "video";
+  hideSubtitle?: boolean;
 };
 
-export function SliderCardSkeleton({ aspect }: SliderCardSkeletonProps) {
+export function SliderCardSkeleton(props: SliderCardSkeletonProps) {
+  const { aspect, hideSubtitle } = props;
+
   return (
     <div
       className={cn(
@@ -23,8 +26,9 @@ export function SliderCardSkeleton({ aspect }: SliderCardSkeletonProps) {
         />
 
         <div className="mt-1 space-y-1 lg:space-y-1.5">
-          <Skeleton className="h-6 w-full" />
-          <Skeleton className="h-3 w-full lg:h-3.5" />
+          <Skeleton className={cn("h-6 w-full", hideSubtitle && "md:h-7")} />
+
+          {!hideSubtitle && <Skeleton className="h-3 w-full lg:h-3.5" />}
         </div>
       </div>
     </div>
