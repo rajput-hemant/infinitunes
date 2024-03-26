@@ -76,11 +76,13 @@ export const env = createEnv({
       .min(1, { message: "Database URL is invalid or missing" }),
 
     /* -----------------------------------------------------------------------------------------------
-     * Upstash Rate Limiting (Redis)
+     * Vercel KV Store (Upstash Rate Limiting)
      * -----------------------------------------------------------------------------------------------*/
 
-    UPSTASH_REDIS_REST_URL: z.string().url().optional(),
-    UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+    KV_URL: z.string().url().optional(),
+    KV_REST_API_URL: z.string().url().optional(),
+    KV_REST_API_TOKEN: z.string().optional(),
+    KV_REST_API_READ_ONLY_TOKEN: z.string().optional(),
     ENABLE_RATE_LIMITING: z.enum(["true", "false"]).default("false"),
     RATE_LIMITING_REQUESTS_PER_SECOND: z.coerce.number().default(50),
   },
