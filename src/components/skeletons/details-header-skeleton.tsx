@@ -43,16 +43,18 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
       </div>
 
       <div className="flex flex-col items-center justify-center font-medium lg:items-start lg:gap-2">
-        <Skeleton className="h-9 w-96" />
+        <div className="space-y-1">
+          <Skeleton className="h-6 w-72 sm:h-7 md:h-8 md:w-96 lg:h-9" />
 
-        <div className="space-y-2 text-sm text-muted-foreground">
-          {Array.from({ length: subtileSkeletonCount }).map((_, i) => (
-            <Skeleton
-              key={i}
-              className="h-5"
-              style={{ width: `${256 - i * 32}px` }}
-            />
-          ))}
+          <div className="space-y-2 text-sm text-muted-foreground">
+            {Array.from({ length: subtileSkeletonCount }).map((_, i) => (
+              <Skeleton
+                key={i}
+                className="mx-auto h-5 lg:mx-0"
+                style={{ width: `${256 - i * 32}px` }}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="mt-4 flex gap-2 lg:mt-6">

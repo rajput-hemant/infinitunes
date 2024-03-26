@@ -70,7 +70,7 @@ export function SecondaryNavbar() {
 
       <div className="lg:hidden">
         <Sheet open={isOpen} onOpenChange={toggleSheet}>
-          <SheetTrigger className="flex w-full justify-between">
+          <SheetTrigger className="mb-2 flex w-full justify-between">
             <h4 className="text-lg font-semibold">Browse</h4>
 
             <ChevronDown />

@@ -24,29 +24,29 @@ export function SongListSkeleton(props: SongListSkeletonProps) {
 
             <div
               className={cn(
-                "flex w-[calc(100%-2.5rem)] flex-col lg:flex-row",
+                "flex w-[calc(100%-2.5rem)] flex-col space-y-1.5 lg:flex-row lg:items-baseline",
                 showAlbum && "xl:w-2/3"
               )}
             >
               <div className="w-full">
-                <Skeleton className="h-5 w-72" />
+                <Skeleton className="h-4 w-52 md:w-80" />
               </div>
               <div className="w-full">
-                <Skeleton className="h-4 w-96" />
+                <Skeleton className="h-4 w-64 md:w-72" />
               </div>
             </div>
 
             {showAlbum && (
-              <div className="w-1/3">
-                <Skeleton className="h-5 w-72" />
+              <div className="hidden w-1/3 xl:block">
+                <Skeleton className="h-4 w-72" />
               </div>
             )}
           </div>
 
           <div className="flex w-[12%] items-center justify-end lg:justify-between xl:w-[10%] 2xl:w-[8%]">
-            <Skeleton className="size-5" />
-            <Skeleton className="h-5 w-[38.5px]" />
-            <Skeleton className="size-5" />
+            <Skeleton className="hidden size-5 lg:block" />
+            <Skeleton className="hidden h-5 w-[38.5px] lg:block" />
+            <Skeleton className="size-6 lg:size-5" />
           </div>
         </div>
       ))}

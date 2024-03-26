@@ -22,9 +22,6 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
     searchParams: { cat },
   } = props;
 
-  // 5 seconds delay
-  await new Promise((resolve) => setTimeout(resolve, 5000));
-
   const artist = await getArtistDetails(token);
 
   let selectedTab: TABS;

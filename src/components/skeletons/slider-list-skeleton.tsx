@@ -6,8 +6,8 @@ import { SliderCardSkeleton } from "./slider-card-skeleton";
 
 export function SliderListSkeleton({ length = 5 }) {
   return Array.from({ length }).map((_, i) => (
-    <React.Fragment key={i}>
-      <Skeleton className="h-9 w-96" />
+    <div key={i} className="space-y-2">
+      <Skeleton className="h-7 w-72 sm:h-8 md:h-9 lg:w-96" />
 
       <ScrollArea>
         <div className="flex space-x-4 pb-4">
@@ -17,6 +17,6 @@ export function SliderListSkeleton({ length = 5 }) {
         </div>
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
-    </React.Fragment>
+    </div>
   ));
 }
