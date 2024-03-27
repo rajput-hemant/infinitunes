@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
+import type { Metadata } from "next";
 import type { Sort } from "@/types";
 
 import { DetailsHeader } from "@/components/details-header";
@@ -21,6 +22,27 @@ type ShowDetailsPageProps = {
   params: { name: string; season: number; token: string };
 };
 
+export async function generateMetadata({
+  params,
+}: ShowDetailsPageProps): Promise<Metadata> {
+  const { name, season, token } = params;
+
+  const { show_details: show } = await getShowDetails(token, season);
+
+  return {
+    title: show.name,
+    description: show.subtitle,
+    openGraph: {
+      title: show.name,
+      description: show.subtitle,
+      url: `/show/${name}/${season}/${token}`,
+      images: {
+        url: `/api/og?title=${show.name}&description=${show.subtitle}&image=${show.image[2].link}&square=true`,
+        alt: show.name,
+      },
+    },
+  };
+}
 export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const {
     params: { season, token },

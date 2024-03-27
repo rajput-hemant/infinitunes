@@ -5,9 +5,22 @@ import { siteConfig } from "@/config/site";
 import { getTopAlbums } from "@/lib/jiosaavn-api";
 import { TopAlbums } from "./_components/top-albums";
 
+const title = `Listen to New Hindi Songs Online Only on ${siteConfig.name}.`;
+const description = `Listen to Latest and Trending Bollywood Hindi songs online for free with ${siteConfig.name} anytime, anywhere. Download or listen to unlimited new & old Hindi songs online. Search from most trending, weekly top 15, Hindi movie songs, etc on ${siteConfig.name}.`;
+
 export const metadata = {
-  title: `Listen to New Hindi Songs Online Only on ${siteConfig.name}.`,
-  description: `Listen to Latest and Trending Bollywood Hindi songs online for free with ${siteConfig.name} anytime, anywhere. Download or listen to unlimited new & old Hindi songs online. Search from most trending, weekly top 15, Hindi movie songs, etc on ${siteConfig.name}.`,
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+
+    url: "/album",
+    images: {
+      url: `/api/og?title=${title}&description=${description}&image=https://graph.org/file/40972e692b4439ec36c6f.png`,
+      alt: "Top Albums",
+    },
+  },
 };
 
 type AlbumsPageProps = {

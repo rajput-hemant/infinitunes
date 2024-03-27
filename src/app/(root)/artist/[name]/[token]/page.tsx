@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import type { Category } from "@/types";
 
 import { DetailsHeader } from "@/components/details-header";
@@ -16,6 +17,27 @@ type ArtistDetailsPageProps = {
   searchParams: { cat?: Category };
 };
 
+export async function generateMetadata({
+  params,
+}: ArtistDetailsPageProps): Promise<Metadata> {
+  const { name, token } = params;
+
+  const artist = await getArtistDetails(token);
+
+  return {
+    title: artist.name,
+    description: artist.subtitle,
+    openGraph: {
+      title: artist.name,
+      description: artist.subtitle,
+      url: `/artist/${name}/${token}`,
+      images: {
+        url: `/api/og?title=${artist.name}&description=${artist.subtitle}&image=${artist.image[2].link}&square=true`,
+        alt: artist.name,
+      },
+    },
+  };
+}
 export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
   const {
     params: { name, token },

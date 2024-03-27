@@ -1,7 +1,8 @@
 export const siteConfig = {
   name: "Infinitunes",
-  url: "https://infinitunes.vercel.app",
-  description: "🎵 A Simple Music Player Web App",
+  url: "https://infinitunes.rajputhemant.me",
+  description:
+    "A Simple Music Player Web App built using Next.js, shadcn/ui, TailwindCSS, DrizzleORM and more...",
 
   author: {
     name: "Hemant Rajput",

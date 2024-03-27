@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { DetailsHeader } from "@/components/details-header";
 import { SliderList } from "@/components/slider";
 import { SongList } from "@/components/song/song-list";
@@ -9,6 +11,27 @@ import {
 
 type PlaylistPageProps = { params: { name: string; token: string } };
 
+export async function generateMetadata({
+  params,
+}: PlaylistPageProps): Promise<Metadata> {
+  const { name, token } = params;
+
+  const playlist = await getPlaylistDetails(token);
+
+  return {
+    title: playlist.name,
+    description: playlist.subtitle,
+    openGraph: {
+      title: playlist.name,
+      description: playlist.subtitle,
+      url: `/playlist/${name}/${token}`,
+      images: {
+        url: `/api/og?title=${playlist.name}&description=${playlist.subtitle}&image=${playlist.image[2].link}&square=true`,
+        alt: playlist.name,
+      },
+    },
+  };
+}
 async function fetcher(token: string) {
   const playlist = await getPlaylistDetails(token);
 

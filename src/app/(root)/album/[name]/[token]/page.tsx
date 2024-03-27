@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { DetailsHeader } from "@/components/details-header";
 import { SliderList } from "@/components/slider";
 import { SongList } from "@/components/song-list";
@@ -11,6 +13,28 @@ import {
 type AlbumDetailsPageProps = {
   params: { name: string; token: string };
 };
+
+export async function generateMetadata({
+  params,
+}: AlbumDetailsPageProps): Promise<Metadata> {
+  const { name, token } = params;
+
+  const album = await getAlbumDetails(token);
+
+  return {
+    title: album.name,
+    description: album.subtitle,
+    openGraph: {
+      title: album.name,
+      description: album.subtitle,
+      url: `/album/${name}/${token}`,
+      images: {
+        url: `/api/og?title=${album.name}&description=${album.subtitle}&image=${album.image[2].link}&square=true`,
+        alt: album.name,
+      },
+    },
+  };
+}
 
 async function fetcher(token: string) {
   const album = await getAlbumDetails(token);

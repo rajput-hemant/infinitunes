@@ -3,6 +3,23 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getTopShows } from "@/lib/jiosaavn-api";
 import { TopPodcasts } from "./_components/top-podcasts";
 
+const title = `Latest podcasts - download and listen online @JioSaavn`;
+const description = `Listen to the latest podcasts online on JioSaavn. Download and listen to new, exclusive, electronic dance music and house tracks.`;
+
+export const metadata = {
+  title,
+  description,
+  openGraph: {
+    title,
+    description,
+    url: "/show",
+    images: {
+      url: `/api/og?title=${title}&description=${description}&image=https://graph.org/file/d19f3d8420f985480bf5b.png`,
+      alt: "Original Podcasts",
+    },
+  },
+};
+
 type TopPodcastsPageProps = { searchParams: { page?: number } };
 
 export default async function TopPodcastsPage(props: TopPodcastsPageProps) {

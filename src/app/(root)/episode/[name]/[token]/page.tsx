@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { DetailsHeader } from "@/components/details-header";
 import { getEpisodeDetails } from "@/lib/jiosaavn-api";
 
@@ -8,6 +10,28 @@ type EpisodeDetailsProps = {
   };
 };
 
+export async function generateMetadata({
+  params,
+}: EpisodeDetailsProps): Promise<Metadata> {
+  const { name, token } = params;
+
+  const episodeObj = await getEpisodeDetails(token);
+  const episode = episodeObj.episodes[0];
+
+  return {
+    title: episode.name,
+    description: episode.subtitle,
+    openGraph: {
+      title: episode.name,
+      description: episode.subtitle,
+      url: `/episode/${name}/${token}`,
+      images: {
+        url: `/api/og?title=${episode.name}&description=${episode.subtitle}&image=${episode.image[2].link}&square=true`,
+        alt: episode.name,
+      },
+    },
+  };
+}
 export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
   const episodeObj = await getEpisodeDetails(props.params.token);
 
