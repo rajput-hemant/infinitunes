@@ -5,7 +5,7 @@ import { Loader2 } from "lucide-react";
 
 import type { Episode, Sort } from "@/types";
 
-import { SongList } from "@/components/song/song-list";
+import { SongList } from "@/components/song-list";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getShowEpisodes } from "@/lib/jiosaavn-api";
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { DetailsHeader } from "@/components/details-header";
 import { SliderList } from "@/components/slider";
-import { SongList } from "@/components/song/song-list";
+import { SongList } from "@/components/song-list";
 import {
   getPlaylistDetails,
   getPlaylistRecommendations,

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import type { Album, Category, Song } from "@/types";
 
 import { SliderCard } from "@/components/slider";
-import { SongList } from "@/components/song/song-list";
+import { SongList } from "@/components/song-list";
 import { Button } from "@/components/ui/button";
 import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
 

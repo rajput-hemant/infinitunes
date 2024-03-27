@@ -1,5 +1,5 @@
 import type { ArtistMap } from "./artist";
-import type { Quality, Rights } from "./misc";
+import type { Lang, Quality, Rights } from "./misc";
 
 export type SongObj = {
   songs: Song[];
@@ -54,7 +54,7 @@ export type SongModules = {
     position: number;
     params: {
       id: string;
-      lang: string;
+      lang: Lang;
     };
   };
   currently_trending: {
@@ -64,7 +64,7 @@ export type SongModules = {
     position: number;
     params: {
       type: string;
-      lang: string;
+      lang: Lang;
     };
   };
   songs_by_same_artists: {
@@ -75,7 +75,7 @@ export type SongModules = {
     params: {
       artist_id: string;
       song_id: string;
-      lang: string;
+      lang: Lang;
     };
   };
   songs_by_same_actors: {
@@ -86,7 +86,7 @@ export type SongModules = {
     params: {
       actor_id: string;
       song_id: string;
-      lang: string;
+      lang: Lang;
     };
   };
   artists: {

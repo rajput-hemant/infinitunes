@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React from "react";
 
 import {
   Accordion,
@@ -8,13 +8,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { H3, Small } from "@/components/ui/topography";
 import { type Lyrics } from "@/types";
 
-type Props = { lyrics: Lyrics };
+type LyricsProps = { lyrics: Lyrics };
 
-const Lyrics = ({ lyrics }: Props) => {
-  const [isCollapsed, setIsCollapsed] = useState(true);
+export function Lyrics({ lyrics }: LyricsProps) {
+  const [isCollapsed, setIsCollapsed] = React.useState(true);
 
   return (
     <Accordion
@@ -25,23 +24,25 @@ const Lyrics = ({ lyrics }: Props) => {
       <AccordionItem value="lyrics">
         <AccordionTrigger className="!no-underline">
           <div className="flex flex-col items-start gap-2">
-            <H3>Lyrics</H3>
+            <h2 className="pl-2 font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:pl-0">
+              Lyrics
+            </h2>
 
             {isCollapsed && (
               <>
-                <Small className="text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {lyrics.snippet}
-                </Small>
+                </p>
 
-                <Small className="italic">Read More...</Small>
+                <p className="text-sm italic">Read More...</p>
               </>
             )}
           </div>
         </AccordionTrigger>
 
         <AccordionContent>
-          <Small
-            className="text-muted-foreground"
+          <p
+            className="text-sm text-muted-foreground"
             dangerouslySetInnerHTML={{
               __html: lyrics.lyrics + "<br/><br/>" + lyrics.lyrics_copyright,
             }}
@@ -50,6 +51,4 @@ const Lyrics = ({ lyrics }: Props) => {
       </AccordionItem>
     </Accordion>
   );
-};
-
-export default Lyrics;
+}
