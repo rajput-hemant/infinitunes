@@ -1,14 +1,13 @@
 import Link from "next/link";
 
-import type { Lang, Type } from "@/types";
+import type { Lang } from "@/types";
 
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { languages } from "@/config/languages";
 import { cn } from "@/lib/utils";
 
-// TODO: remove type prop
-type LanguageBarProps = { type?: Type; language?: Lang };
+type LanguageBarProps = { language?: Lang };
 
 export function LanguageBar({ language }: LanguageBarProps) {
   return (
@@ -48,6 +47,3 @@ export function LanguageBar({ language }: LanguageBarProps) {
     </ScrollArea>
   );
 }
-
-// TODO: remove default export
-export default LanguageBar;

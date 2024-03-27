@@ -3,11 +3,12 @@ import { Skeleton } from "../ui/skeleton";
 
 type SliderCardSkeletonProps = {
   aspect?: "square" | "video";
+  rounded?: boolean;
   hideSubtitle?: boolean;
 };
 
 export function SliderCardSkeleton(props: SliderCardSkeletonProps) {
-  const { aspect, hideSubtitle } = props;
+  const { aspect, rounded, hideSubtitle } = props;
 
   return (
     <div
@@ -21,7 +22,8 @@ export function SliderCardSkeleton(props: SliderCardSkeletonProps) {
           className={cn(
             aspect === "video" ?
               "aspect-video w-[160px] sm:w-[176px] md:w-[240px] lg:w-[272px]"
-            : "size-28 sm:size-[126px] md:size-[174px] lg:size-[206px]"
+            : "size-28 sm:size-[126px] md:size-[174px] lg:size-[206px]",
+            rounded && "rounded-full"
           )}
         />
 
