@@ -38,7 +38,6 @@ import { ShareSubMenu } from "../share-submenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -293,33 +292,35 @@ export function TileMoreButton({ item, showAlbum }: TileMoreButtonProps) {
             <MoreVertical className="size-6 hover:text-primary" />
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent side="left" align="start">
-            <DropdownMenuGroup>
-              {menuItems
-                .filter(({ hide }) => !hide)
-                .map(({ icon: Icon, label, onClick }, i) => (
-                  <DropdownMenuItem key={i} onClick={onClick}>
-                    <Icon className="mr-2 size-5" />
-                    {item.type === "song" ?
-                      label
-                    : label.replace("Song", "Episode")}
-                  </DropdownMenuItem>
-                ))}
-              <ShareSubMenu />
-              <DropdownMenuSeparator className="my-2" />
-              <TileMoreLinks
-                type={item.type}
-                itemUrl={item.url}
-                albumUrl={"album_url" in item ? item.album_url : undefined}
-                showAlbum={showAlbum}
-                isDropdownItem
-                primaryArtists={
-                  "artists" in item ?
-                    item.artists
-                  : item.artist_map.primary_artists
-                }
-              />
-            </DropdownMenuGroup>
+          <DropdownMenuContent
+            side="left"
+            align="start"
+            className="*:cursor-pointer"
+          >
+            {menuItems
+              .filter(({ hide }) => !hide)
+              .map(({ icon: Icon, label, onClick }, i) => (
+                <DropdownMenuItem key={i} onClick={onClick}>
+                  <Icon className="mr-2 size-5" />
+                  {item.type === "song" ?
+                    label
+                  : label.replace("Song", "Episode")}
+                </DropdownMenuItem>
+              ))}
+            <ShareSubMenu />
+            <DropdownMenuSeparator className="my-2" />
+            <TileMoreLinks
+              type={item.type}
+              itemUrl={item.url}
+              albumUrl={"album_url" in item ? item.album_url : undefined}
+              showAlbum={showAlbum}
+              isDropdownItem
+              primaryArtists={
+                "artists" in item ?
+                  item.artists
+                : item.artist_map.primary_artists
+              }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

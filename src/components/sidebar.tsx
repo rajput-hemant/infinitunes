@@ -3,19 +3,24 @@
 import React from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
-import { Plus } from "lucide-react";
+import { ListMusic, ListPlus, Play, Plus } from "lucide-react";
 
 import type { User } from "next-auth";
+import type { MyPlaylist } from "@/lib/db/schema";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { sidebarNav } from "@/config/nav";
 import { cn, currentlyInDev } from "@/lib/utils";
+import { NewPlaylistForm } from "./playlist/new-playlist-form";
+import { ScrollArea, ScrollBar } from "./ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type SidebarProps = {
   user?: User;
+  userPlaylists?: MyPlaylist[];
 };
 
-export function Sidebar({ user }: SidebarProps) {
+export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
 
   return (
@@ -66,37 +71,83 @@ export function Sidebar({ user }: SidebarProps) {
         </>
       )}
 
-      <h3 className="pl-3 font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
-        Playlists
-      </h3>
+      <div className="flex items-center justify-between pl-3">
+        <h3 className="font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+          Playlists
+        </h3>
 
-      <div className="mx-4 space-y-2">
-        {user ?
-          <Button
-            title="Create Playlist"
-            onClick={currentlyInDev}
-            className="w-full truncate shadow"
+        {user && userPlaylists?.length !== 0 && (
+          <Tooltip delayDuration={0}>
+            <NewPlaylistForm>
+              <TooltipTrigger asChild>
+                <Button size="icon" variant="ghost" className="size-7">
+                  <ListPlus className="size-4" />
+                </Button>
+              </TooltipTrigger>
+            </NewPlaylistForm>
+            <TooltipContent>Create a new playlist</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      {user ?
+        userPlaylists?.length === 0 ?
+          <NewPlaylistForm user={user}>
+            <div className="mx-2">
+              <Button
+                size="sm"
+                title="Create Playlist"
+                className="w-full truncate shadow"
+              >
+                <Plus className="mr-2 size-4 shrink-0" />
+                Create Playlist
+              </Button>
+            </div>
+          </NewPlaylistForm>
+        : null
+      : <>
+          <Link
+            href="/login"
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "m-2 w-full truncate font-medium shadow"
+            )}
           >
             <Plus className="mr-2 size-4 shrink-0" />
             Create Playlist
-          </Button>
-        : <>
-            <Link
-              href="/login"
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "my-2 w-full truncate font-medium shadow"
-              )}
-            >
-              <Plus className="mr-2 size-4 shrink-0" />
-              Create Playlist
-            </Link>
-            <p className="text-center text-xs text-muted-foreground">
-              You need to be logged in to create a playlist.
-            </p>
-          </>
-        }
-      </div>
+          </Link>
+          <p className="text-center text-xs text-muted-foreground">
+            You need to be logged in to create a playlist.
+          </p>
+        </>
+      }
+
+      <ScrollArea>
+        <ul className="flex max-h-[380px] flex-col">
+          {userPlaylists?.map(({ id, name }) => {
+            return (
+              <li key={id}>
+                <NavLink
+                  href={`/playlist/${name.replace(/\s+/g, "-")}/${id}`}
+                  isActive={id === segment}
+                  className="group"
+                >
+                  <ListMusic className="mr-2 size-5" />
+                  {name}
+                  <button
+                    onClick={currentlyInDev}
+                    className="invisible ml-auto rounded-full p-0.5 ring-offset-background duration-200 ease-in hover:outline-none hover:ring-2 hover:ring-ring hover:ring-offset-2 group-hover:visible"
+                  >
+                    <Play className="size-5" />
+                  </button>
+                </NavLink>
+              </li>
+            );
+          })}
+        </ul>
+
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
     </aside>
   );
 }
@@ -106,7 +157,7 @@ const NavLink = React.forwardRef<
   React.ComponentPropsWithoutRef<"a"> & {
     isActive: boolean;
   }
->(({ href, isActive, children, ...props }, ref) => {
+>(({ href, isActive, className, children, ...props }, ref) => {
   return (
     <Link
       ref={ref}
@@ -114,7 +165,8 @@ const NavLink = React.forwardRef<
       className={cn(
         buttonVariants({ size: "sm", variant: "ghost" }),
         "flex justify-start text-muted-foreground",
-        isActive && "bg-secondary font-bold text-secondary-foreground"
+        isActive && "bg-secondary font-bold text-secondary-foreground",
+        className
       )}
       {...props}
     >

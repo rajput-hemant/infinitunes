@@ -5,11 +5,15 @@ import { redirect } from "next/navigation";
 import { compare, hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 
-import type { resetPasswordSchema, signUpSchema } from "./validations";
+import type {
+  newPlaylistSchema,
+  resetPasswordSchema,
+  signUpSchema,
+} from "./validations";
 import type { z } from "zod";
 
 import { db } from "./db";
-import { users } from "./db/schema";
+import { myPlaylists, users } from "./db/schema";
 
 export async function createNewAccount(
   credentials: z.infer<typeof signUpSchema>
@@ -66,4 +70,16 @@ export async function resetPassword(
     .where(eq(users.email, email));
 
   redirect("/login");
+}
+
+export async function createNewPlaylist(
+  data: z.infer<typeof newPlaylistSchema> & { userId: string }
+) {
+  const [playlist] = await db.insert(myPlaylists).values(data).returning();
+
+  if (!playlist) {
+    throw new Error("Failed to create playlist, please try again");
+  }
+
+  return playlist;
 }

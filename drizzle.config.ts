@@ -4,7 +4,7 @@ import { siteConfig } from "@/config/site";
 import { env } from "@/lib/env";
 
 export default {
-  schema: "./src/lib/db/schema",
+  schema: "./src/lib/db/schema.ts",
   out: "./src/lib/db/migrations",
   driver: "pg",
   dbCredentials: { connectionString: env.DATABASE_URL },

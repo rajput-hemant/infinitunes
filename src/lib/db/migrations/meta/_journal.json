@@ -15,6 +15,13 @@
       "when": 1698327852024,
       "tag": "0001_flaky_wrecking_crew",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1712002508571,
+      "tag": "0002_unusual_dreaming_celestial",
+      "breakpoints": true
     }
   ]
 }

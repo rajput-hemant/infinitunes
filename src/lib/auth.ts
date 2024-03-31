@@ -4,7 +4,6 @@ import { eq } from "drizzle-orm";
 import NextAuth from "next-auth";
 
 import { authConfig } from "@/config/auth";
-import { DEFAULT_LOGIN_REDIRECT } from "@/config/routes";
 import { db } from "./db";
 import { users } from "./db/schema";
 
@@ -39,8 +38,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return session;
     },
-
-    redirect: () => DEFAULT_LOGIN_REDIRECT,
   },
 });
 

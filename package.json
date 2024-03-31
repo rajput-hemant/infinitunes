@@ -14,6 +14,7 @@
     "db:generate": "drizzle-kit generate:pg",
     "db:migrate": "bun src/lib/db/migrate.ts",
     "db:drop": "drizzle-kit drop",
+    "db:push": "drizzle-kit push:pg",
     "db:pull": "drizzle-kit introspect:pg",
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check:pg",

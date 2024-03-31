@@ -1,5 +1,7 @@
 import { pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
+import { createTable } from "./table-creator";
+
 /* -----------------------------------------------------------------------------------------------
  * Auth tables
  * NOTE: auth tables are common to mutiple projects, remember to remove `table filters` before
@@ -15,3 +17,16 @@ export const users = pgTable("user", {
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
 });
+
+export const myPlaylists = createTable("playlist", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  userId: uuid("userId")
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  songs: text("songs").default("{}").array(),
+});
+
+export type MyPlaylist = typeof myPlaylists.$inferSelect;
+export type NewPlaylist = typeof myPlaylists.$inferInsert;

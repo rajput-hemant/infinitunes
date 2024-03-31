@@ -8,6 +8,7 @@ import {
   getPlaylistRecommendations,
   getTrending,
 } from "@/lib/jiosaavn-api";
+import { getImageSrc } from "@/lib/utils";
 
 type PlaylistPageProps = { params: { name: string; token: string } };
 
@@ -26,7 +27,7 @@ export async function generateMetadata({
       description: playlist.subtitle,
       url: `/playlist/${name}/${token}`,
       images: {
-        url: `/api/og?title=${playlist.name}&description=${playlist.subtitle}&image=${playlist.image[2].link}&square=true`,
+        url: `/api/og?title=${playlist.name}&description=${playlist.subtitle}&image=${getImageSrc(playlist.image, "high")}&square=true`,
         alt: playlist.name,
       },
     },
