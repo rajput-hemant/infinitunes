@@ -9,7 +9,7 @@ import type { AllSearch } from "@/types";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEventListener } from "@/hooks/use-event-listner";
 import { searchAll } from "@/lib/jiosaavn-api";
-import { cn } from "@/lib/utils";
+import { cn , isMacOs } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
 import { Input } from "../ui/input";
@@ -72,7 +72,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           <span className="hidden lg:inline-block">Search...</span>
 
           <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:block">
-            <span className="text-xs">Ctrl</span> K
+            <span className="text-xs">{isMacOs() ? "⌘" : "Ctrl"}</span> K
           </kbd>
         </Button>
       </DialogTrigger>

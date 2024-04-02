@@ -121,3 +121,9 @@ export function currentlyInDev() {
     description: "We're working on it and it'll be available soon.",
   });
 }
+
+export function isMacOs() {
+  if (typeof window === "undefined") return false;
+
+  return window.navigator.userAgent.includes("Mac");
+}
