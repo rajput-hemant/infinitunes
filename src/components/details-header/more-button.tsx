@@ -2,18 +2,24 @@
 
 import React from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
+  List,
   ListMusic,
   ListOrdered,
+  ListX,
   MoreVertical,
   Play,
   Radio,
   Share2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import type { LucideIcon } from "lucide-react";
+import type { User } from "next-auth";
+import type { MyPlaylist } from "@/lib/db/schema";
 import type { Quality, Song, Type } from "@/types";
 
 import {
@@ -27,10 +33,20 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useQueue } from "@/hooks/use-store";
+import { addSongsToPlaylist } from "@/lib/db/queries";
 import { currentlyInDev, getImageSrc } from "@/lib/utils";
+import { NewPlaylistForm } from "../playlist/new-playlist-form";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
 import { Button } from "../ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,11 +58,13 @@ import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
 
 type MoreButtonProps = {
+  user?: User;
   type: Type;
   image: Quality;
   name: string;
   subtitle: string;
   songs: Song[];
+  playlists?: MyPlaylist[];
 };
 
 type MenuItem = {
@@ -57,9 +75,13 @@ type MenuItem = {
 };
 
 export function MoreButton(props: MoreButtonProps) {
-  const { name, subtitle, type, image, songs } = props;
+  const { user, name, subtitle, type, image, songs, playlists } = props;
+
+  const router = useRouter();
 
   const [traslateX, setTranslateX] = React.useState(0);
+  const [playlistDialog, setPlaylistDialog] = React.useState(false);
+
   const [, setQueue] = useQueue();
 
   function play() {
@@ -67,33 +89,45 @@ export function MoreButton(props: MoreButtonProps) {
   }
 
   function addToQueue() {
-    const songsPayload = songs.map(
-      ({
-        id,
-        name,
-        subtitle,
-        type,
-        url,
-        image,
-        download_url,
-        artist_map: { artists },
-      }) => ({
-        id,
-        name,
-        subtitle,
-        url,
-        type,
-        image,
-        download_url,
-        artists,
-      })
-    );
+    const songsPayload = songs.map((song) => ({
+      id: song.id,
+      name: song.name,
+      subtitle: song.subtitle,
+      url: song.url,
+      type: song.type,
+      image: song.image,
+      download_url: song.download_url,
+      artists: song.artist_map.artists,
+    }));
 
     setQueue((prev) => [...prev, ...songsPayload]);
   }
 
-  function addToPlaylist() {
-    currentlyInDev();
+  function togglePlaylistDialog() {
+    if (user) {
+      setPlaylistDialog(true);
+    } else {
+      router.push("/login");
+
+      toast.info("Unable to perform action", {
+        description: "You need to be logged in to add to playlist",
+      });
+    }
+  }
+
+  function addToPlaylist(id: string, name: string) {
+    toast.promise(
+      addSongsToPlaylist(
+        id,
+        songs.map(({ id }) => id)
+      ),
+      {
+        loading: "Adding songs to playlist...",
+        success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${name}" playlist`,
+        error: (error) => error.message,
+        finally: () => setPlaylistDialog(false),
+      }
+    );
   }
 
   function playRadio() {
@@ -114,7 +148,7 @@ export function MoreButton(props: MoreButtonProps) {
     },
     {
       label: "Add To Playlist",
-      onClick: addToPlaylist,
+      onClick: togglePlaylistDialog,
       hide: type === "show" || type === "artist" || type === "episode",
       icon: ListMusic,
     },
@@ -251,6 +285,69 @@ export function MoreButton(props: MoreButtonProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {!!user && (
+        <Dialog open={playlistDialog} onOpenChange={setPlaylistDialog}>
+          <DialogContent className="max-w-xl shadow-md">
+            <DialogHeader>
+              <DialogTitle className="font-heading text-2xl font-normal drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+                Save to Playlist
+              </DialogTitle>
+            </DialogHeader>
+
+            <Separator />
+
+            <div className="min-h-64">
+              {playlists?.length !== 0 ?
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {playlists?.map(({ id, name, songs }) => (
+                    <Button
+                      key={id}
+                      variant="outline"
+                      onClick={() => addToPlaylist(id, name)}
+                      className="h-14 justify-normal gap-2 px-1 text-start"
+                    >
+                      {/* TODO: add image collage */}
+                      <div className="size-12 rounded-md bg-muted">
+                        <List className="m-auto h-full" />
+                      </div>
+                      <div className="flex flex-col truncate">
+                        <p className="truncate font-medium">{name}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {songs.length ? songs.length : "No"} songs
+                        </p>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              : <div className="h-full rounded-md border border-dashed p-2">
+                  <div className="flex h-full flex-col items-center justify-center gap-2 rounded-md bg-muted text-lg font-medium text-muted-foreground">
+                    <ListX size={40} />
+                    You do not have any playlist yet
+                  </div>
+                </div>
+              }
+            </div>
+
+            <Separator />
+
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button
+                  variant="secondary"
+                  onClick={() => setPlaylistDialog(false)}
+                >
+                  Close
+                </Button>
+              </DialogClose>
+
+              <NewPlaylistForm user={user}>
+                <Button className="shadow">Create New Playlist</Button>
+              </NewPlaylistForm>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

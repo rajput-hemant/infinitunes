@@ -42,6 +42,8 @@ type NewPlaylistFormProps = {
 };
 
 export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
+  const [open, setOpen] = React.useState(false);
+
   const form = useForm<FormData>({
     resolver: zodResolver(newPlaylistSchema),
     defaultValues,
@@ -55,6 +57,7 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
           loading: "Creating playlist...",
           success: (d) => `Playlist "${d.name}" created successfully!`,
           error: (e) => e.message,
+          finally: () => setOpen(false),
         }
       );
     } catch (error) {
@@ -63,7 +66,7 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
     }
   }
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
 
       <DialogContent>

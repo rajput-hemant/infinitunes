@@ -39,7 +39,7 @@ export async function generateMetadata({
 async function fetcher(token: string) {
   const album = await getAlbumDetails(token);
 
-  const [recommendations, trending, sameYear] = await Promise.all([
+  const [recommendations, trending, sameYear] = await Promise.allSettled([
     getAlbumRecommendations(album.id),
     getTrending("album"),
     getAlbumFromSameYear(album.year),
@@ -47,9 +47,10 @@ async function fetcher(token: string) {
 
   return {
     album,
-    recommendations,
-    trending,
-    sameYear,
+    recommendations:
+      recommendations.status === "fulfilled" ? recommendations.value : [],
+    trending: trending.status === "fulfilled" ? trending.value : [],
+    sameYear: sameYear.status === "fulfilled" ? sameYear.value : [],
   };
 }
 
@@ -71,15 +72,19 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
         />
       )}
 
-      <SliderList
-        title={album.modules.currently_trending.title}
-        items={trending}
-      />
+      {trending.length > 0 && (
+        <SliderList
+          title={album.modules.currently_trending.title}
+          items={trending}
+        />
+      )}
 
-      <SliderList
-        title={album.modules.top_albums_from_same_year.title}
-        items={sameYear}
-      />
+      {sameYear.length > 0 && (
+        <SliderList
+          title={album.modules.top_albums_from_same_year.title}
+          items={sameYear}
+        />
+      )}
 
       <SliderList
         title={album.modules.artists.title}

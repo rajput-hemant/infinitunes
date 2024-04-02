@@ -25,7 +25,8 @@ export const myPlaylists = createTable("playlist", {
   userId: uuid("userId")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  songs: text("songs").default("{}").array(),
+  // @ts-expect-error string is not assignable to type 'string[]'
+  songs: text("songs").array().default("{}").notNull(),
 });
 
 export type MyPlaylist = typeof myPlaylists.$inferSelect;

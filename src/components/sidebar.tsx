@@ -78,7 +78,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
 
         {user && userPlaylists?.length !== 0 && (
           <Tooltip delayDuration={0}>
-            <NewPlaylistForm>
+            <NewPlaylistForm user={user}>
               <TooltipTrigger asChild>
                 <Button size="icon" variant="ghost" className="size-7">
                   <ListPlus className="size-4" />
@@ -90,10 +90,10 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
         )}
       </div>
 
-      {user ?
-        userPlaylists?.length === 0 ?
-          <NewPlaylistForm user={user}>
-            <div className="mx-2">
+      <div className="mx-4 space-y-2">
+        {user ?
+          userPlaylists?.length === 0 ?
+            <NewPlaylistForm user={user}>
               <Button
                 size="sm"
                 title="Create Playlist"
@@ -102,25 +102,25 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                 <Plus className="mr-2 size-4 shrink-0" />
                 Create Playlist
               </Button>
-            </div>
-          </NewPlaylistForm>
-        : null
-      : <>
-          <Link
-            href="/login"
-            className={cn(
-              buttonVariants({ size: "sm" }),
-              "m-2 w-full truncate font-medium shadow"
-            )}
-          >
-            <Plus className="mr-2 size-4 shrink-0" />
-            Create Playlist
-          </Link>
-          <p className="text-center text-xs text-muted-foreground">
-            You need to be logged in to create a playlist.
-          </p>
-        </>
-      }
+            </NewPlaylistForm>
+          : null
+        : <>
+            <Link
+              href="/login"
+              className={cn(
+                buttonVariants({ size: "sm" }),
+                "my-2 w-full truncate font-medium shadow"
+              )}
+            >
+              <Plus className="mr-2 size-4 shrink-0" />
+              Create Playlist
+            </Link>
+            <p className="text-center text-xs text-muted-foreground">
+              You need to be logged in to create a playlist.
+            </p>
+          </>
+        }
+      </div>
 
       <ScrollArea>
         <ul className="flex max-h-[380px] flex-col">

@@ -1,9 +1,10 @@
 "use server";
 
 import { randomUUID } from "crypto";
+import { revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { compare, hash } from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 
 import type {
   newPlaylistSchema,
@@ -75,11 +76,22 @@ export async function resetPassword(
 export async function createNewPlaylist(
   data: z.infer<typeof newPlaylistSchema> & { userId: string }
 ) {
+  const [{ playlistsCount }] = await db
+    .select({ playlistsCount: count() })
+    .from(myPlaylists)
+    .where(eq(myPlaylists.userId, data.userId));
+
+  if (playlistsCount >= 10) {
+    throw new Error("You can only have 10 playlists, please delete one");
+  }
+
   const [playlist] = await db.insert(myPlaylists).values(data).returning();
 
   if (!playlist) {
     throw new Error("Failed to create playlist, please try again");
   }
+
+  revalidateTag("user_playlists");
 
   return playlist;
 }

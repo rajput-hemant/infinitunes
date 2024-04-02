@@ -12,6 +12,8 @@ import type {
   Song,
 } from "@/types";
 
+import { getUser } from "@/lib/auth";
+import { getUserPlaylists } from "@/lib/db/queries";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
@@ -25,11 +27,19 @@ type DetailsHeaderProps = {
   item: Album | Song | Playlist | Artist | Episode | ShowDetails | Label | Mix;
 };
 
-export function DetailsHeader({ item }: DetailsHeaderProps) {
+export async function DetailsHeader({ item }: DetailsHeaderProps) {
   const songs =
     item.type === "song" ? [item]
     : "songs" in item ? item.songs
     : [];
+
+  const user = await getUser();
+
+  let playlists;
+
+  if (user) {
+    playlists = await getUserPlaylists(user.id);
+  }
 
   return (
     <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
@@ -59,7 +69,7 @@ export function DetailsHeader({ item }: DetailsHeaderProps) {
         />
       </div>
 
-      <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2">
+      <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
         <h1
           title={item.name}
           className="flex items-center truncate text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start"
@@ -234,11 +244,13 @@ export function DetailsHeader({ item }: DetailsHeaderProps) {
             />
 
             <MoreButton
+              user={user}
               name={item.name}
               subtitle={item.subtitle}
               type={item.type}
               image={item.image}
               songs={songs ?? []}
+              playlists={playlists}
             />
           </div>
         )}
