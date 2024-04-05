@@ -91,11 +91,13 @@ export async function getHomeData(lang?: Lang[], mini = true) {
  * @param mini - Whether to fetch mini data
  * @returns Promise resolving to song details
  */
-export async function getSongDetails(token: string, mini = false) {
-  return await jioSaavnGetCall<SongObj>("/song", {
-    token,
-    mini: `${mini}`,
-  });
+export async function getSongDetails(token: string | string[], mini = false) {
+  return await jioSaavnGetCall<SongObj>(
+    "/song",
+    Array.isArray(token) ?
+      { id: token.join(","), mini: `${mini}` }
+    : { token, mini: `${mini}` }
+  );
 }
 
 /**

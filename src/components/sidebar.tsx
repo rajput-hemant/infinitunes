@@ -128,7 +128,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
             return (
               <li key={id}>
                 <NavLink
-                  href={`/playlist/${name.replace(/\s+/g, "-")}/${id}`}
+                  href={`/me/playlist/${id}`}
                   isActive={id === segment}
                   className="group"
                 >

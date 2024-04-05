@@ -25,7 +25,7 @@ import {
 } from "@/hooks/use-store";
 import { cn, formatDuration, getDownloadLink, getImageSrc } from "@/lib/utils";
 import { Icons } from "./icons";
-import { TileMoreButton } from "./song/tile-more-button";
+import { TileMoreButton } from "./song-list/more-button";
 import { Skeleton } from "./ui/skeleton";
 import { Slider, SliderRange, SliderThumb, SliderTrack } from "./ui/slider";
 import { Muted } from "./ui/topography";
