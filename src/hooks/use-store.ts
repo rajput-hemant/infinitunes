@@ -36,6 +36,7 @@ const imageQualityAtom = atomWithStorage<ImageQuality>("image_quality", "high");
 
 const playerCurrentTimeAtom = atom(0);
 const isPlayingAtom = atom(false);
+const isSearchingAtom = atom(false);
 
 export function useConfig() {
   return useAtom(configAtom, { store });
@@ -67,4 +68,8 @@ export function usePlayerCurrentTime() {
 
 export function useIsPlayerInit() {
   return useAtom(isPlayingAtom, { store });
+}
+
+export function useIsSearching() {
+  return useAtom(isSearchingAtom, { store });
 }

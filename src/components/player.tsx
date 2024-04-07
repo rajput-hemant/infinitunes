@@ -22,6 +22,7 @@ import { useEventListener } from "@/hooks/use-event-listner";
 import {
   useCurrentSongIndex,
   useIsPlayerInit,
+  useIsSearching,
   useQueue,
   useStreamQuality,
 } from "@/hooks/use-store";
@@ -45,6 +46,7 @@ export function Player({ user, playlists }: PlayerProps) {
   const [streamQuality] = useStreamQuality();
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
+  const [isSearching] = useIsSearching();
   // refs
   const frameRef = React.useRef<number>();
   // states
@@ -194,9 +196,10 @@ export function Player({ user, playlists }: PlayerProps) {
 
   useEventListener("keydown", (e) => {
     if (e.key === " ") {
-      e.preventDefault();
-
-      playPauseHandler();
+      if (!isSearching) {
+        e.preventDefault();
+        playPauseHandler();
+      }
     } else if (e.key === "n" || (e.shiftKey && e.key === "ArrowRight")) {
       skipToNext();
     } else if (e.key === "p" || (e.shiftKey && e.key === "ArrowLeft")) {

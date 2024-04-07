@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { getTopSearches } from "@/lib/jiosaavn-api";
 import { getHref, getImageSrc } from "@/lib/utils";
-import { ItemCard } from "../item-card";
+import { SliderCard } from "../slider";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
 
@@ -19,7 +19,7 @@ export async function TopSearch() {
       <ScrollArea className="lg:hidden">
         <div className="flex space-x-4 pb-4">
           {topSearches.map(({ id, name, url, subtitle, type, image }) => (
-            <ItemCard
+            <SliderCard
               key={id}
               name={name}
               url={url}

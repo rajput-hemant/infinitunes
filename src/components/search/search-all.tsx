@@ -1,12 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import type { AllSearch } from "@/types";
 
 import { cn, getHref, getImageSrc } from "@/lib/utils";
+import { ImageWithFallback } from "../image-with-fallback";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
-import { Large } from "../ui/topography";
 
 type SearchAllProps = {
   query: string;
@@ -23,15 +22,15 @@ export function SearchAll({ query, data }: SearchAllProps) {
 
           return (
             <div key={key}>
-              <div className="flex text-muted-foreground">
-                <Large className="pl-2 capitalize">
+              <div className="flex">
+                <p className="pl-2 font-heading text-lg capitalize tracking-wider drop-shadow">
                   {key.replace("_query", " Result")}
-                </Large>
+                </p>
 
                 {key !== "top_query" && (
                   <Link
                     href={`/search/${key.slice(0, -1)}/${query}`}
-                    className="ml-auto rounded-full border px-2 py-1 text-xs hover:bg-secondary hover:text-secondary-foreground"
+                    className="ml-auto rounded-full border px-2 py-1 text-xs text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
                   >
                     View all
                   </Link>
@@ -47,7 +46,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
                   className="flex gap-2 rounded-md p-2 hover:bg-secondary"
                 >
                   <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded border">
-                    <Image
+                    <ImageWithFallback
                       src={getImageSrc(t.image, "low")}
                       alt={t.name}
                       fill
@@ -56,6 +55,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
                         getImageSrc(t.image, "low").includes("default") &&
                           "dark:invert"
                       )}
+                      fallback={`/images/placeholder/${t.type}.jpg`}
                     />
 
                     <Skeleton className="size-full" />

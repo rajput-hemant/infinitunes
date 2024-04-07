@@ -4,10 +4,8 @@ import { cookies } from "next/headers";
 
 import type {
   Album,
-  AlbumSearch,
   AllSearch,
   Artist,
-  ArtistSearch,
   ArtistSongsOrAlbums,
   Category,
   Chart,
@@ -23,13 +21,11 @@ import type {
   Mix,
   Modules,
   Playlist,
-  PlaylistSearch,
-  PodcastSearch,
   Radio,
+  SearchReturnType,
   Show,
   Song,
   SongObj,
-  SongSearch,
   Sort,
   TopAlbum,
   TopArtists,
@@ -94,9 +90,9 @@ export async function getHomeData(lang?: Lang[], mini = true) {
 export async function getSongDetails(token: string | string[], mini = false) {
   return await jioSaavnGetCall<SongObj>(
     "/song",
-    Array.isArray(token) ?
-      { id: token.join(","), mini: `${mini}` }
-    : { token, mini: `${mini}` }
+    Array.isArray(token)
+      ? { id: token.join(","), mini: `${mini}` }
+      : { token, mini: `${mini}` }
   );
 }
 
@@ -408,14 +404,6 @@ export async function searchAll(query: string) {
   return await jioSaavnGetCall<AllSearch>("/search", { q: query });
 }
 
-type SearchReturnType<T> =
-  T extends "song" ? SongSearch
-  : T extends "album" ? AlbumSearch
-  : T extends "playlist" ? PlaylistSearch
-  : T extends "artist" ? ArtistSearch
-  : T extends "show" ? PodcastSearch
-  : never;
-
 /**
  * Search for songs, albums, playlists, artists or shows from JioSaavn API.
  * @param query - Search query
@@ -424,9 +412,12 @@ type SearchReturnType<T> =
  * @param n - Number of results to get
  * @returns Promise resolving to search results
  */
-export async function search<
-  T extends "song" | "album" | "playlist" | "artist" | "show",
->(query: string, type: T, page = 1, n = 50): Promise<SearchReturnType<T>> {
+export async function search(
+  query: string,
+  type: "song" | "album" | "playlist" | "artist" | "show",
+  page = 1,
+  n = 50
+): Promise<SearchReturnType> {
   return await jioSaavnGetCall(
     `/search/${type === "show" ? "podcast" : type}s`,
     {
@@ -465,7 +456,7 @@ export async function getTrending(
  * Gets top albums from JioSaavn API.
  *
  * @param page - page number to get. Default is `1`.
- * @param lang - language(s) to get albums for. Default is `hindi|english`.
+ * @param lang - language(s) to get albums for.
  * @param mini - Whether to get mini data. Default is true.
  * @returns Promise resolving to top albums response from JioSaavn API.
  */
@@ -482,7 +473,7 @@ export async function getTopAlbums(page = 1, n = 50, lang?: Lang, mini = true) {
  * Gets the charts from JioSaavn API.
  *
  * @param page - page number to get. Default is `1`.
- * @param lang - language(s) to filter charts by. Default is `hindi|english`.
+ * @param lang - language(s) to filter charts by.
  * @param mini - Whether to get mini data. Default is true.
  * @returns Promise resolving to array of Chart objects from JioSaavn API.
  */
@@ -499,7 +490,7 @@ export async function getCharts(page = 1, n = 50, lang?: Lang, mini = true) {
  * Gets featured playlists from JioSaavn API.
  *
  * @param page - page number to get. Default is `1`.
- * @param lang - language(s) to get playlists for. Default is `hindi|english`.
+ * @param lang - language(s) to get playlists for.
  * @param mini - Whether to get mini data. Default is true.
  * @returns Promise resolving to featured playlists response from JioSaavn API.
  */
@@ -687,6 +678,6 @@ export async function getMegaMenu(entity = false, lang?: Lang[]) {
  */
 export async function getFooterDetails(lang?: Lang[]) {
   return await jioSaavnGetCall<FooterDetails>("/get/footer-details", {
-    lang: lang?.join(",") ?? "hindi",
+    lang: lang?.join(",") ?? "hindi,english",
   });
 }

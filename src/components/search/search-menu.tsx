@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Loader2, Search } from "lucide-react";
+import { Search } from "lucide-react";
 
 import type { AllSearch } from "@/types";
 
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEventListener } from "@/hooks/use-event-listner";
+import { useIsSearching } from "@/hooks/use-store";
 import { searchAll } from "@/lib/jiosaavn-api";
-import { cn , isMacOs } from "@/lib/utils";
-import { Button } from "../ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "../ui/dialog";
-import { Input } from "../ui/input";
+import { cn, isMacOs } from "@/lib/utils";
 import { SearchAll } from "./search-all";
 
 type SearchMenuProps = {
@@ -30,6 +31,8 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
   const debouncedQuery = useDebounce(query.trim(), 1000);
 
+  const [_, setIsSearching] = useIsSearching();
+
   useEventListener("keydown", (e: KeyboardEvent) => {
     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
@@ -38,8 +41,13 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   });
 
   useEffect(() => {
-    if (!isOpen) setQuery("");
-  }, [isOpen]);
+    if (isOpen) {
+      setIsSearching(true);
+    } else {
+      setIsSearching(false);
+      setQuery("");
+    }
+  }, [isOpen, setIsSearching]);
 
   useEffect(() => {
     setIsOpen(false);
@@ -89,16 +97,13 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           />
         </div>
 
-        {!debouncedQuery.length && topSearch}
-
-        {isLoading && (
-          <div className="mx-auto text-xs text-muted-foreground">
-            <Loader2 className="mr-2 inline-block animate-spin" />
-            Loading Results
-          </div>
-        )}
-
-        {searchResult && <SearchAll query={query} data={searchResult} />}
+        {debouncedQuery.length ?
+          isLoading ?
+            <div className="m-auto aspect-square h-16 animate-spin rounded-full border-y-2 border-primary py-10 lg:h-32">
+              <span className="sr-only">Loading Results</span>
+            </div>
+          : searchResult && <SearchAll query={query} data={searchResult} />
+        : topSearch}
       </DialogContent>
     </Dialog>
   );

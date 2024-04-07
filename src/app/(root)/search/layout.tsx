@@ -2,13 +2,11 @@
 
 import { notFound, usePathname } from "next/navigation";
 
+import type React from "react";
+
 import { useWindowSize } from "@/hooks/use-window-size";
 
-type Props = {
-  children: React.ReactNode;
-};
-
-const SearchLayout = ({ children }: Props) => {
+export default function SearchLayout({ children }: React.PropsWithChildren) {
   const pathname = usePathname();
   const { width } = useWindowSize();
 
@@ -17,6 +15,4 @@ const SearchLayout = ({ children }: Props) => {
   }
 
   return children;
-};
-
-export default SearchLayout;
+}

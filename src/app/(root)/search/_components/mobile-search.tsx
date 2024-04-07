@@ -1,27 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React from "react";
 import { Loader2, Search } from "lucide-react";
 
 import type { AllSearch } from "@/types";
 
+import { SearchAll } from "@/components/search/search-all";
+import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useIsSearching } from "@/hooks/use-store";
 import { searchAll } from "@/lib/jiosaavn-api";
-import { Input } from "../ui/input";
-import { SearchAll } from "./search-all";
 
-type Props = {
+type MobileSearchProps = {
   topSearch: React.JSX.Element;
 };
 
-const MobileSearch = ({ topSearch }: Props) => {
-  const [query, setQuery] = useState("");
+export function MobileSearch({ topSearch }: MobileSearchProps) {
+  const [query, setQuery] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [searchResult, setSearchResult] = React.useState<AllSearch | null>(
+    null
+  );
+
   const debouncedQuery = useDebounce(query.trim(), 1000);
-  const [isLoading, setIsLoading] = useState(false);
+  const [_, setIsSearching] = useIsSearching();
 
-  const [searchResult, setSearchResult] = useState<AllSearch | null>(null);
-
-  useEffect(() => {
+  React.useEffect(() => {
     (async () => {
       if (!debouncedQuery) return setSearchResult(null);
       setIsLoading(true);
@@ -31,10 +35,16 @@ const MobileSearch = ({ topSearch }: Props) => {
     })();
   }, [debouncedQuery]);
 
+  React.useEffect(() => {
+    if (debouncedQuery.length) setIsSearching(true);
+    else setIsSearching(false);
+  }, [debouncedQuery, setIsSearching]);
+
   return (
     <>
       <div className="relative mx-auto max-w-md">
         <Search className="absolute left-2 top-3 size-4 text-muted-foreground" />
+
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -54,6 +64,4 @@ const MobileSearch = ({ topSearch }: Props) => {
       {searchResult && <SearchAll query={query} data={searchResult} />}
     </>
   );
-};
-
-export default MobileSearch;
+}

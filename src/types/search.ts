@@ -137,3 +137,10 @@ export type PodcastSearch = Search<{
   primary_artists: ArtistMini[];
   url: string;
 }>;
+
+export type SearchReturnType =
+  | SongSearch
+  | AlbumSearch
+  | PlaylistSearch
+  | ArtistSearch
+  | PodcastSearch;

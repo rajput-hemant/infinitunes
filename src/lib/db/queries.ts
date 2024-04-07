@@ -82,6 +82,8 @@ export async function addToFavorites(
       throw new Error("Failed to add to favorites");
     }
 
+    revalidateTag("user_favorites");
+
     return newFavorites;
   }
 
