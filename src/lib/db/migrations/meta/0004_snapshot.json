@@ -1,0 +1,254 @@
+{
+  "id": "4be634ec-54ce-4138-822e-b12a9bf14924",
+  "prevId": "062a98e7-28af-40d2-8fb5-e99312f8c6bd",
+  "version": "5",
+  "dialect": "pg",
+  "tables": {
+    "infinitunes_favorite": {
+      "name": "infinitunes_favorite",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "songs": {
+          "name": "songs",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "albums": {
+          "name": "albums",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "playlists": {
+          "name": "playlists",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "artists": {
+          "name": "artists",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "podcasts": {
+          "name": "podcasts",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "infinitunes_favorite_userId_user_id_fk": {
+          "name": "infinitunes_favorite_userId_user_id_fk",
+          "tableFrom": "infinitunes_favorite",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "infinitunes_favorite_songs_unique": {
+          "name": "infinitunes_favorite_songs_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "songs"
+          ]
+        },
+        "infinitunes_favorite_albums_unique": {
+          "name": "infinitunes_favorite_albums_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "albums"
+          ]
+        },
+        "infinitunes_favorite_playlists_unique": {
+          "name": "infinitunes_favorite_playlists_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "playlists"
+          ]
+        },
+        "infinitunes_favorite_artists_unique": {
+          "name": "infinitunes_favorite_artists_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "artists"
+          ]
+        },
+        "infinitunes_favorite_podcasts_unique": {
+          "name": "infinitunes_favorite_podcasts_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "podcasts"
+          ]
+        }
+      }
+    },
+    "infinitunes_playlist": {
+      "name": "infinitunes_playlist",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "songs": {
+          "name": "songs",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "infinitunes_playlist_userId_user_id_fk": {
+          "name": "infinitunes_playlist_userId_user_id_fk",
+          "tableFrom": "infinitunes_playlist",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "username": {
+          "name": "username",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "password": {
+          "name": "password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "emailVerified": {
+          "name": "emailVerified",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_email_unique": {
+          "name": "user_email_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "email"
+          ]
+        },
+        "user_username_unique": {
+          "name": "user_username_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "username"
+          ]
+        }
+      }
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

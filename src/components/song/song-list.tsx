@@ -5,7 +5,7 @@ import { Play } from "lucide-react";
 import type { Episode, Song } from "@/types";
 
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
-import { LikeButton } from "../like-button";
+// import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
@@ -139,7 +139,7 @@ export const SongList = ({
 
           {/* controls */}
           <div className="flex w-[12%] items-center justify-end lg:justify-between xl:w-[8%]">
-            <LikeButton className="hidden size-5 hover:text-primary lg:block" />
+            {/* <LikeButton className="hidden size-5 hover:text-primary lg:block" /> */}
 
             <span className="mx-auto hidden truncate lg:block">
               {formatDuration(item.duration, "mm:ss")}

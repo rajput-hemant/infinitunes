@@ -1,6 +1,6 @@
 import React from "react";
 
-import Player from "@/components/player";
+import { Player } from "@/components/player";
 import { Sidebar } from "@/components/sidebar";
 import { SiteFooter } from "@/components/site-footer";
 import { Navbar } from "@/components/site-header/navbar";
@@ -31,7 +31,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
         <SiteFooter />
       </main>
 
-      <Player />
+      <Player user={user} playlists={userPlaylists} />
     </>
   );
 }

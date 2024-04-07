@@ -13,7 +13,7 @@ import type {
 } from "@/types";
 
 import { getUser } from "@/lib/auth";
-import { getUserPlaylists } from "@/lib/db/queries";
+import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
@@ -35,10 +35,13 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   const user = await getUser();
 
-  let playlists;
+  let playlists, favorites;
 
   if (user) {
-    playlists = await getUserPlaylists(user.id);
+    [playlists, favorites] = await Promise.all([
+      getUserPlaylists(user.id),
+      getUserFavorites(user.id),
+    ]);
   }
 
   return (
@@ -237,6 +240,11 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
             </PlayButton>
 
             <LikeButton
+              user={user}
+              type={item.type}
+              token={item.id}
+              name={item.name}
+              favourites={favorites}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
                 "rounded-full shadow-sm"

@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import React from "react";
 import {
   Loader2,
   MoreVertical,
@@ -16,6 +15,9 @@ import {
 } from "lucide-react";
 import { useGlobalAudioPlayer } from "react-use-audio-player";
 
+import type { User } from "next-auth";
+import type { MyPlaylist } from "@/lib/db/schema";
+
 import { useEventListener } from "@/hooks/use-event-listner";
 import {
   useCurrentSongIndex,
@@ -25,24 +27,30 @@ import {
 } from "@/hooks/use-store";
 import { cn, formatDuration, getDownloadLink, getImageSrc } from "@/lib/utils";
 import { Icons } from "./icons";
+import { ImageWithFallback } from "./image-with-fallback";
 import { TileMoreButton } from "./song-list/more-button";
 import { Skeleton } from "./ui/skeleton";
 import { Slider, SliderRange, SliderThumb, SliderTrack } from "./ui/slider";
-import { Muted } from "./ui/topography";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { toast } from "./ui/use-toast";
 
-const Player = () => {
+type PlayerProps = {
+  user?: User;
+  playlists?: MyPlaylist[];
+};
+
+export function Player({ user, playlists }: PlayerProps) {
   // stores
   const [queue] = useQueue();
   const [streamQuality] = useStreamQuality();
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
   // refs
-  const frameRef = useRef<number>();
+  const frameRef = React.useRef<number>();
   // states
-  const [isShuffle, setIsShuffle] = useState(false);
-  const [loopPlaylist, setLoopPlaylist] = useState(false);
-  const [pos, setPos] = useState(0);
+  const [isShuffle, setIsShuffle] = React.useState(false);
+  const [loopPlaylist, setLoopPlaylist] = React.useState(false);
+  const [pos, setPos] = React.useState(0);
   // third party hooks
   const {
     load,
@@ -61,7 +69,7 @@ const Player = () => {
     isReady,
   } = useGlobalAudioPlayer();
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (queue.length && isPlayerInit) {
       const audioSrc = getDownloadLink(
         queue[currentIndex].download_url,
@@ -78,7 +86,7 @@ const Player = () => {
     }
   }, [queue, streamQuality, currentIndex, isPlayerInit]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  useEffect(() => {
+  React.useEffect(() => {
     const animate = () => {
       setPos(getPosition());
       frameRef.current = requestAnimationFrame(animate);
@@ -235,24 +243,25 @@ const Player = () => {
         <div className="flex w-full gap-4 lg:w-1/3">
           {queue.length && queue[currentIndex]?.image ?
             <>
-              <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
-                <Image
+              <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow">
+                <ImageWithFallback
                   src={getImageSrc(queue[currentIndex].image, "low")}
                   alt={queue[currentIndex].name}
                   fill
+                  fallback="/images/placeholder/song.jpg"
                 />
 
                 <Skeleton className="absolute inset-0 -z-10" />
               </div>
 
               <div className="flex flex-col justify-center">
-                <p className="line-clamp-1 text-sm font-semibold text-primary">
+                <p className="line-clamp-1 font-heading text-sm text-primary drop-shadow">
                   {queue[currentIndex].name}
                 </p>
 
-                <Muted className="line-clamp-1">
+                <p className="line-clamp-1 text-xs text-muted-foreground">
                   {queue[currentIndex].subtitle}
-                </Muted>
+                </p>
               </div>
             </>
           : <div className="flex items-center space-x-4">
@@ -266,67 +275,96 @@ const Player = () => {
         </div>
 
         <div className="flex justify-end lg:w-1/3 lg:justify-evenly">
-          <button
-            aria-label={looping ? "Looping" : "Loop"}
-            onClick={loopHandler}
-            className={cn(
-              "hidden lg:block",
-              !looping && !loopPlaylist && "text-muted-foreground"
-            )}
-          >
-            {looping ?
-              <Repeat1 strokeWidth={2} className="size-7" />
-            : <Repeat strokeWidth={2} className="size-7" />}
-          </button>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                aria-label={looping ? "Looping" : "Loop"}
+                onClick={loopHandler}
+                className={cn(
+                  "hidden lg:block",
+                  !looping && !loopPlaylist && "text-muted-foreground"
+                )}
+              >
+                {looping ?
+                  <Repeat1 strokeWidth={2} className="size-7" />
+                : <Repeat strokeWidth={2} className="size-7" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {looping ?
+                "Playing current song on repeat"
+              : loopPlaylist ?
+                "Looping playlist"
+              : "Loop"}
+            </TooltipContent>
+          </Tooltip>
 
-          <button
-            aria-label="Previous"
-            onClick={skipToPrev}
-            className="hidden lg:block"
-          >
-            <Icons.SkipBack className="size-10" />
-          </button>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                aria-label="Previous"
+                onClick={skipToPrev}
+                className="hidden lg:block"
+              >
+                <Icons.SkipBack className="size-10" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Previous</TooltipContent>
+          </Tooltip>
 
-          <button
-            aria-label={playing ? "Pause" : "Play"}
-            onClick={playPauseHandler}
-          >
-            {isLoading ?
-              <Loader2 className="animate-spin" />
-            : <>
-                {playing ?
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                aria-label={playing ? "Pause" : "Play"}
+                onClick={playPauseHandler}
+              >
+                {isLoading ?
+                  <Loader2 className="animate-spin" />
+                : playing ?
                   <Pause className="size-10" />
                 : <Icons.Play className="size-10" />}
-              </>
-            }
-          </button>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{playing ? "Pause" : "Play"}</TooltipContent>
+          </Tooltip>
 
-          <button
-            aria-label="Next"
-            onClick={skipToNext}
-            className="hidden lg:block"
-          >
-            <Icons.SkipForward className="size-10" />
-          </button>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild></TooltipTrigger>
+            <button
+              aria-label="Next"
+              onClick={skipToNext}
+              className="hidden lg:block"
+            >
+              <Icons.SkipForward className="size-10" />
+            </button>
+            <TooltipContent>Next</TooltipContent>
+          </Tooltip>
 
-          <button
-            aria-label={isShuffle ? "Shuffling" : "Shuffle"}
-            onClick={() => setIsShuffle(!isShuffle)}
-            className={cn(
-              "hidden lg:block",
-              !isShuffle && "text-muted-foreground"
-            )}
-          >
-            <Shuffle strokeWidth={2.35} />
-          </button>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                aria-label={isShuffle ? "Shuffling" : "Shuffle"}
+                onClick={() => setIsShuffle(!isShuffle)}
+                className={cn(
+                  "hidden lg:block",
+                  !isShuffle && "text-muted-foreground"
+                )}
+              >
+                <Shuffle strokeWidth={2.35} />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {isShuffle ? "Shuffling" : "Shuffle"}
+            </TooltipContent>
+          </Tooltip>
         </div>
 
         <div className="hidden w-1/3 items-center justify-end gap-4 lg:flex">
-          <Muted>
+          <p className="text-sm text-muted-foreground">
             {formatDuration(pos, pos > 3600 ? "hh:mm:ss" : "mm:ss")}
             {" / "}
             {formatDuration(duration, duration > 3600 ? "hh:mm:ss" : "mm:ss")}
-          </Muted>
+          </p>
 
           <button
             aria-label={muted ? "Unmute" : "Mute"}
@@ -336,14 +374,11 @@ const Player = () => {
           >
             {muted ?
               <VolumeX />
-            : <>
-                {volume < 0.33 ?
-                  <Volume />
-                : volume < 0.66 ?
-                  <Volume1 />
-                : <Volume2 strokeWidth={2} />}
-              </>
-            }
+            : volume < 0.33 ?
+              <Volume />
+            : volume < 0.66 ?
+              <Volume1 />
+            : <Volume2 strokeWidth={2} />}
           </button>
 
           <Slider
@@ -374,12 +409,17 @@ const Player = () => {
           </span>
 
           {queue.length > 0 ?
-            <TileMoreButton item={queue[currentIndex]} showAlbum />
+            <TileMoreButton
+              item={queue[currentIndex]}
+              showAlbum
+              user={user}
+              playlists={playlists}
+            />
           : <MoreVertical />}
         </div>
       </div>
     </div>
   );
-};
+}
 
 export default Player;

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import React from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,8 +14,11 @@ import {
   Radio,
   Share2,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import type { LucideIcon } from "lucide-react";
+import type { User } from "next-auth";
+import type { MyPlaylist } from "@/lib/db/schema";
 import type { Episode, Queue, Song } from "@/types";
 
 import {
@@ -32,7 +36,9 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "@/hooks/use-store";
+import { addSongsToPlaylist } from "@/lib/db/queries";
 import { currentlyInDev, getImageSrc } from "@/lib/utils";
+import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
 import {
@@ -47,8 +53,10 @@ import { Skeleton } from "../ui/skeleton";
 import { TileMoreLinks } from "./more-links";
 
 type TileMoreButtonProps = {
+  user?: User;
   item: Song | Episode | Queue;
   showAlbum: boolean;
+  playlists?: MyPlaylist[];
 };
 
 type MenuItem = {
@@ -58,18 +66,27 @@ type MenuItem = {
   icon: LucideIcon;
 };
 
-export function TileMoreButton({ item, showAlbum }: TileMoreButtonProps) {
+export function TileMoreButton(props: TileMoreButtonProps) {
+  const { user, item, showAlbum, playlists } = props;
+
+  const router = useRouter();
+
+  const [traslateX, setTranslateX] = React.useState(0);
+  const [isDialogOpen, setDialogOpen] = React.useState(false);
+
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [initialQueue, setQueue] = useQueue();
   const [, setCurrentIndex] = useCurrentSongIndex();
-  const [traslateX, setTranslateX] = useState(0);
 
   function like() {
     currentlyInDev();
   }
 
   function play() {
-    if (item.type === "episode") return;
+    if (item.type === "episode") {
+      currentlyInDev();
+      return;
+    }
 
     const songIndex = initialQueue.findIndex((q) => q.id === item.id);
 
@@ -140,10 +157,29 @@ export function TileMoreButton({ item, showAlbum }: TileMoreButtonProps) {
     }
 
     setQueue((q) => [...q, queue]);
+
+    toast(`"${item.name}" added to queue`);
   }
 
-  function addToPlaylist() {
-    currentlyInDev();
+  function togglePlaylistDialog() {
+    if (user) {
+      setDialogOpen(true);
+    } else {
+      router.push("/login");
+
+      toast.info("Unable to perform action", {
+        description: "You need to be logged in to add to playlist",
+      });
+    }
+  }
+
+  function addToPlaylist(id: string, name: string) {
+    toast.promise(addSongsToPlaylist(id, [item.id]), {
+      loading: "Adding songs to playlist...",
+      success: `"${item.name}" added to "${name}" playlist`,
+      error: (error) => error.message,
+      finally: () => setDialogOpen(false),
+    });
   }
 
   function playRadio() {
@@ -168,14 +204,12 @@ export function TileMoreButton({ item, showAlbum }: TileMoreButtonProps) {
     },
     {
       label: "Add To Playlist",
-      onClick: addToPlaylist,
-      hide: true,
+      onClick: togglePlaylistDialog,
       icon: ListMusic,
     },
     {
       label: "Play Radio",
       onClick: playRadio,
-      hide: true,
       icon: Radio,
     },
   ];
@@ -324,6 +358,16 @@ export function TileMoreButton({ item, showAlbum }: TileMoreButtonProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {!!user && (
+        <AddToPlaylistDialog
+          user={user}
+          isDialogOpen={isDialogOpen}
+          setDialogOpen={setDialogOpen}
+          playlists={playlists}
+          addToPlaylist={addToPlaylist}
+        />
+      )}
     </div>
   );
 }

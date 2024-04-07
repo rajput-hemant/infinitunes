@@ -3,22 +3,36 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
 
+import type { User } from "next-auth";
+import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import type { Episode, Sort } from "@/types";
 
-import { SongList } from "@/components/song-list";
+import { SongListClient } from "@/components/song-list/song-list.client";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getShowEpisodes } from "@/lib/jiosaavn-api";
 
 type EpisodeListProps = {
+  user?: User;
   showId: string;
   season: number;
   sort: Sort;
   totalEpisodes: number;
   initialEpisodes: Episode[];
+  userFavorites?: Favorite;
+  userPlaylists?: MyPlaylist[];
 };
 
 export function EpisodeList(props: EpisodeListProps) {
-  const { showId, season, sort, totalEpisodes, initialEpisodes } = props;
+  const {
+    user,
+    showId,
+    season,
+    sort,
+    totalEpisodes,
+    initialEpisodes,
+    userFavorites,
+    userPlaylists,
+  } = props;
 
   const [episodes, setEpisodes] = React.useState(initialEpisodes);
   const [page, setPage] = React.useState(1);
@@ -47,7 +61,12 @@ export function EpisodeList(props: EpisodeListProps) {
 
   return (
     <>
-      <SongList items={episodes} />
+      <SongListClient
+        user={user}
+        items={episodes}
+        userFavorites={userFavorites}
+        userPlaylists={userPlaylists}
+      />
 
       {hasMore ?
         <div

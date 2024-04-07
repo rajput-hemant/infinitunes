@@ -6,6 +6,8 @@ import { SliderList } from "@/components/slider";
 import { SongList } from "@/components/song-list";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { getUser } from "@/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { getArtistDetails } from "@/lib/jiosaavn-api";
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
@@ -44,7 +46,13 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
     searchParams: { cat },
   } = props;
 
-  const artist = await getArtistDetails(token);
+  const user = await getUser();
+
+  const [artist, playlists, favorites] = await Promise.all([
+    getArtistDetails(token),
+    user ? getUserPlaylists(user.id) : undefined,
+    user ? getUserFavorites(user.id) : undefined,
+  ]);
 
   let selectedTab: TABS;
 
@@ -86,6 +94,9 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
             id={artist.id}
             type="songs"
             category={cat}
+            user={user}
+            userFavorites={favorites}
+            userPlaylists={playlists}
             initialSongs={artist.top_songs}
           />
         </TabsContent>
@@ -97,6 +108,9 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
             id={artist.id}
             type="albums"
             category={cat}
+            user={user}
+            userFavorites={favorites}
+            userPlaylists={playlists}
             initialAlbums={artist.top_albums}
           />
         </TabsContent>

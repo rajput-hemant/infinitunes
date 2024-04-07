@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 
+import type { User } from "next-auth";
+import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import type { Album, Category, Song } from "@/types";
 
 import { SliderCard } from "@/components/slider";
-import { SongList } from "@/components/song-list";
+import { SongListClient } from "@/components/song-list/song-list.client";
 import { Button } from "@/components/ui/button";
 import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
 
@@ -15,10 +17,22 @@ type ArtistsTopItemsProps = {
   initialSongs?: Song[];
   initialAlbums?: Album[];
   category?: Category;
+  user?: User;
+  userFavorites?: Favorite;
+  userPlaylists?: MyPlaylist[];
 };
 
 export function ArtistsTopItems(props: ArtistsTopItemsProps) {
-  const { id, type, initialSongs, initialAlbums, category } = props;
+  const {
+    id,
+    type,
+    initialSongs,
+    initialAlbums,
+    category,
+    user,
+    userFavorites,
+    userPlaylists,
+  } = props;
 
   const [songs, setSongs] = useState(initialSongs ?? []);
   const [albums, setAlbums] = useState(initialAlbums ?? []);
@@ -71,7 +85,12 @@ export function ArtistsTopItems(props: ArtistsTopItemsProps) {
 
   return (
     <>
-      <SongList items={songs} />
+      <SongListClient
+        items={songs}
+        user={user}
+        userFavorites={userFavorites}
+        userPlaylists={userPlaylists}
+      />
 
       <div className="flex w-full flex-wrap justify-between gap-y-4">
         {albums.map(({ id, name, url, subtitle, type, image, explicit }) => (

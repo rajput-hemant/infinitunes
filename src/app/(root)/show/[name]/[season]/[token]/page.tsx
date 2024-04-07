@@ -14,6 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { getUser } from "@/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { getShowDetails } from "@/lib/jiosaavn-api";
 import { EpisodeList } from "./_components/episode-list";
 
@@ -43,17 +45,21 @@ export async function generateMetadata({
     },
   };
 }
+
 export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const {
     params: { season, token },
     searchParams: { sort = "desc" },
   } = props;
 
-  const { episodes, modules, seasons, show_details } = await getShowDetails(
-    token,
-    season,
-    sort
-  );
+  const user = await getUser();
+
+  const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
+    await Promise.all([
+      getShowDetails(token, season, sort),
+      user ? getUserFavorites(user.id) : undefined,
+      user ? getUserPlaylists(user.id) : undefined,
+    ]);
 
   return (
     <div className="mb-4 space-y-4">
@@ -108,11 +114,14 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
 
       <EpisodeList
         key={episodes[0].id}
+        user={user}
         showId={show_details.id}
         season={show_details.season_number}
         sort={sort}
         totalEpisodes={show_details.total_episodes}
         initialEpisodes={episodes}
+        userFavorites={favorites}
+        userPlaylists={playlists}
       />
 
       <h2 className="font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">

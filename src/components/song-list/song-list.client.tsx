@@ -2,11 +2,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Play } from "lucide-react";
 
+import type { User } from "next-auth";
 import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import type { Episode, Song } from "@/types";
 
-import { getUser } from "@/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
@@ -16,24 +15,23 @@ import { TileMoreButton } from "./more-button";
 import { TilePlayPauseButton } from "./play-pause-button";
 
 type SongListProps = {
+  user?: User;
   items: (Song | Episode)[];
   showAlbum?: boolean;
+  userFavorites?: Favorite;
+  userPlaylists?: MyPlaylist[];
   className?: string;
 };
 
-export async function SongList(props: SongListProps) {
-  const { items, showAlbum = true, className } = props;
-
-  const user = await getUser();
-
-  let playlists: MyPlaylist[] | undefined, favorites: Favorite | undefined;
-
-  if (user) {
-    [playlists, favorites] = await Promise.all([
-      getUserPlaylists(user.id),
-      getUserFavorites(user.id),
-    ]);
-  }
+export async function SongListClient(props: SongListProps) {
+  const {
+    user,
+    items,
+    showAlbum = true,
+    userFavorites,
+    userPlaylists,
+    className,
+  } = props;
 
   return (
     <section className={className}>
@@ -150,7 +148,7 @@ export async function SongList(props: SongListProps) {
                   type={item.type}
                   token={item.id}
                   name={item.name}
-                  favourites={favorites}
+                  favourites={userFavorites}
                   className="hidden size-5 hover:text-primary lg:block"
                 />
 
@@ -162,7 +160,7 @@ export async function SongList(props: SongListProps) {
                   user={user}
                   item={item}
                   showAlbum={showAlbum}
-                  playlists={playlists}
+                  playlists={userPlaylists}
                 />
               </div>
             </div>
