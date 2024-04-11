@@ -23,7 +23,7 @@ type SongListProps = {
   className?: string;
 };
 
-export async function SongListClient(props: SongListProps) {
+export function SongListClient(props: SongListProps) {
   const {
     user,
     items,

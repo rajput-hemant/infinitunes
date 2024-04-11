@@ -8,6 +8,11 @@ import { getUser } from "@/lib/auth";
 import { getUserPlaylists } from "@/lib/db/queries";
 import { PlaylistItem } from "./_components/playlist-item";
 
+export const metadata = {
+  title: "My Playlists",
+  description: "Your playlists in one place.",
+};
+
 export default async function MyPlaylistsPage() {
   const user = await getUser();
   const playlists = await getUserPlaylists(user!.id);

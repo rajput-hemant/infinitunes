@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { compare, hash } from "bcryptjs";
 import { count, eq } from "drizzle-orm";
 
+import type { NewUser } from "./db/schema";
 import type {
   newPlaylistSchema,
   resetPasswordSchema,
@@ -94,4 +95,31 @@ export async function createNewPlaylist(
   revalidateTag("user_playlists");
 
   return playlist;
+}
+
+export async function updateUser(user: NewUser) {
+  const [updatedUser] = await db
+    .update(users)
+    .set(user)
+    .where(eq(users.id, user.id!))
+    .returning();
+
+  if (!updatedUser) {
+    throw new Error("Failed to update user, please try again");
+  }
+
+  return updatedUser;
+}
+
+export async function deleteUser(userId: string) {
+  const [deletedUser] = await db
+    .delete(users)
+    .where(eq(users.id, userId))
+    .returning();
+
+  if (!deletedUser) {
+    throw new Error("Failed to delete user, please try again");
+  }
+
+  return deletedUser;
 }

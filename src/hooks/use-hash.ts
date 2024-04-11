@@ -1,30 +1,25 @@
-import { useEffect, useState } from "react";
+import React from "react";
+import { useParams } from "next/navigation";
 
 const getHash = () =>
   typeof window !== "undefined" ?
     decodeURIComponent(window.location.hash.replace("#", ""))
-  : undefined;
+  : null;
 
 /**
  * @see https://github.com/vercel/next.js/discussions/49465#discussioncomment-7034208
  */
-export const useHash = () => {
-  const [hash, setHash] = useState(getHash());
-  const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
+export function useHash() {
+  const [isClient, setIsClient] = React.useState(false);
+  const [hash, setHash] = React.useState(getHash());
+
+  const params = useParams();
+
+  React.useEffect(() => {
     setIsClient(true);
-
-    const handleHashChange = () => {
-      setHash(getHash());
-    };
-
-    window.addEventListener("hashchange", handleHashChange);
-
-    return () => {
-      window.removeEventListener("hashchange", handleHashChange);
-    };
-  }, []);
+    setHash(getHash());
+  }, [params]);
 
   return isClient ? hash : null;
-};
+}

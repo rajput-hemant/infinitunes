@@ -18,13 +18,13 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { SettingsSidebarNavItems } from "./settings-sidebar-nav-items";
+import { SideNavItems } from "./side-navbar-items";
 
 export type SidebarNavItem = {
   section: string;
   href: string;
   items: {
-    href: string;
+    hash: string;
     title: string;
     icon: React.ReactNode;
   }[];
@@ -38,17 +38,17 @@ const sidebarNavItems: SidebarNavItem[] = [
     items: [
       {
         title: "Edit Profile",
-        href: "edit-profile",
+        hash: "edit-profile",
         icon: <UserCog2 className={iconClass} />,
       },
       {
         title: "Change Password",
-        href: "change-password",
+        hash: "change-password",
         icon: <Key className={iconClass} />,
       },
       {
         title: "Delete Account",
-        href: "delete-account",
+        hash: "delete-account",
         icon: <UserX2 className={iconClass} />,
       },
     ],
@@ -59,17 +59,17 @@ const sidebarNavItems: SidebarNavItem[] = [
     items: [
       {
         title: "Mode",
-        href: "mode",
+        hash: "mode",
         icon: <SunMoon className={iconClass} />,
       },
       {
         title: "Themes",
-        href: "theme",
+        hash: "theme",
         icon: <Palette className={iconClass} />,
       },
       {
         title: "Radius",
-        href: "radius",
+        hash: "radius",
         icon: <Radius className={iconClass} />,
       },
     ],
@@ -80,55 +80,51 @@ const sidebarNavItems: SidebarNavItem[] = [
     items: [
       {
         title: "Language",
-        href: "language",
+        hash: "language",
         icon: <Languages className={iconClass} />,
       },
       {
         title: "Stream Quality",
-        href: "stream-quality",
+        hash: "stream-quality",
         icon: <Headphones className={iconClass} />,
       },
       {
         title: "Download Quality",
-        href: "download-quality",
+        hash: "download-quality",
         icon: <DownloadCloud className={iconClass} />,
       },
       {
         title: "Image Quality",
-        href: "image-quality",
+        hash: "image-quality",
         icon: <ImageDown className={iconClass} />,
       },
     ],
   },
 ];
 
-export function SettingsSidebarNav() {
+export function SideNavbar() {
   return (
     <nav className="flex flex-col">
       {sidebarNavItems.map(({ section, href, items }, i) => (
-        <>
-          {/* for large devices */}
+        <React.Fragment key={`${section}-${i}`}>
           <div key={i} className="hidden flex-col lg:flex">
-            <h3 className="my-2 ml-4 font-semibold tracking-wide">{section}</h3>
+            <h3 className="font-semibold drop-shadow-sm dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-lg md:text-xl">
+              {section}
+            </h3>
 
-            <SettingsSidebarNavItems
-              items={items}
-              href={href}
-              className="flex flex-col"
-            />
+            <SideNavItems items={items} href={href} className="flex flex-col" />
           </div>
 
-          {/* for small devices */}
           <Accordion key={section} type="multiple" className="lg:hidden">
             <AccordionItem value={section.toLowerCase()}>
               <AccordionTrigger>
-                <h3 className="text-sm font-semibold tracking-wide">
+                <h3 className="font-semibold drop-shadow-sm dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-lg md:text-xl">
                   {section}
                 </h3>
               </AccordionTrigger>
 
               <AccordionContent>
-                <SettingsSidebarNavItems
+                <SideNavItems
                   items={items}
                   href={href}
                   className="flow-row flex flex-wrap gap-2"
@@ -136,7 +132,7 @@ export function SettingsSidebarNav() {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </>
+        </React.Fragment>
       ))}
     </nav>
   );

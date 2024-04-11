@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 
+import type { Metadata } from "next";
+
 import { ImageCollage } from "@/components/image-collage";
 import { PlayButton } from "@/components/play-button";
 import { SongList } from "@/components/song-list";
@@ -15,7 +17,30 @@ type Props = {
   };
 };
 
-export default async function Page({ params: { id } }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = params;
+
+  const playlist = await getPlaylistDetails(id);
+
+  if (!playlist) {
+    return {
+      title: "Unknown Playlist",
+      description: "This playlist does not exist.",
+    };
+  }
+
+  return {
+    title: playlist.name,
+    description: playlist.description,
+    openGraph: {
+      title: playlist.name,
+      description: playlist.description ?? "No description available",
+      url: `/me/playlist/${id}`,
+    },
+  };
+}
+
+export default async function MyPlaylistsPage({ params: { id } }: Props) {
   const playlist = await getPlaylistDetails(id);
 
   if (!playlist) {

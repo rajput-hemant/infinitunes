@@ -5,6 +5,11 @@ import { getUser } from "@/lib/auth";
 import { getUserFavorites } from "@/lib/db/queries";
 import { getSongDetails } from "@/lib/jiosaavn-api";
 
+export const metadata = {
+  title: "Liked Songs",
+  description: "Your favorite songs in one place.",
+};
+
 export default async function LikedSongsPage() {
   const user = await getUser();
 

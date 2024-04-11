@@ -90,9 +90,9 @@ export async function getHomeData(lang?: Lang[], mini = true) {
 export async function getSongDetails(token: string | string[], mini = false) {
   return await jioSaavnGetCall<SongObj>(
     "/song",
-    Array.isArray(token)
-      ? { id: token.join(","), mini: `${mini}` }
-      : { token, mini: `${mini}` }
+    Array.isArray(token) ?
+      { id: token.join(","), mini: `${mini}` }
+    : { token, mini: `${mini}` }
   );
 }
 

@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-const usernameSchema = z
+export const usernameSchema = z
   .string()
   .min(1, "Username is Required")
   .regex(/^(?=.{8,15}$)/, "Username must be 8-15 characters long.")
@@ -9,12 +9,12 @@ const usernameSchema = z
     "Username must be alphanumeric and can contain [_ . -]"
   );
 
-const emailSchema = z
+export const emailSchema = z
   .string()
   .min(1, "Email is Required")
   .email("Please enter a valid email");
 
-const passwordSchema = z
+export const passwordSchema = z
   .string()
   .min(1, "Password is Required")
   .regex(/^(?!\s*$).+/, "Password must not contain Whitespaces.")

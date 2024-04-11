@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
+import { toast } from "sonner";
 
 import type { User } from "next-auth";
 
@@ -28,6 +29,14 @@ type UserDropdownProps = {
 
 export function UserDropdown({ user }: UserDropdownProps) {
   const { setTheme } = useTheme();
+
+  async function signOutHandler() {
+    toast.promise(signOut, {
+      loading: "Signing out...",
+      success: "You have been signed out.",
+      error: "Something went wrong.",
+    });
+  }
 
   return (
     <DropdownMenu>
@@ -114,7 +123,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
         <DropdownMenuSeparator />
 
         {user && (
-          <DropdownMenuItem onClick={() => signOut()}>
+          <DropdownMenuItem onClick={signOutHandler}>
             <LogOut size={16} className="mr-2" />
             Log Out
           </DropdownMenuItem>
