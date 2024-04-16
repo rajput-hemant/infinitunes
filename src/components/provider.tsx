@@ -4,7 +4,6 @@ import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { type ThemeProviderProps } from "next-themes/dist/types";
 
-import { ThemeSwitcher } from "./theme-switcher";
 import { Toaster } from "./ui/sonner";
 import { TooltipProvider } from "./ui/tooltip";
 
@@ -26,7 +25,6 @@ export default function Providers({ children, theme }: Props) {
       </SessionProvider>
 
       <Toaster />
-      <ThemeSwitcher />
     </ThemeProvider>
   );
 }

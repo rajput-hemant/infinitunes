@@ -1,5 +1,6 @@
 export * from "./album";
 export * from "./artist";
+export * from "./config";
 export * from "./get";
 export * from "./misc";
 export * from "./modules";

@@ -120,13 +120,14 @@ export function UserDropdown({ user }: UserDropdownProps) {
           </DropdownMenuPortal>
         </DropdownMenuSub>
 
-        <DropdownMenuSeparator />
-
         {user && (
-          <DropdownMenuItem onClick={signOutHandler}>
-            <LogOut size={16} className="mr-2" />
-            Log Out
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={signOutHandler}>
+              <LogOut size={16} className="mr-2" />
+              Log Out
+            </DropdownMenuItem>
+          </>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

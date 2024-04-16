@@ -1,5 +1,9 @@
 import "@/styles/globals.css";
 
+import { cookies } from "next/headers";
+
+import type { ThemeConfig } from "@/types";
+
 import Providers from "@/components/provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { siteConfig } from "@/config/site";
@@ -62,6 +66,12 @@ type RootLayoutProps = {
 };
 
 export default function RootLayout({ modal, children }: RootLayoutProps) {
+  const themeConfig = cookies().get("theme-config");
+
+  const { theme, radius } = JSON.parse(
+    themeConfig?.value ?? '{"theme":"default","radius":"default"}'
+  ) as ThemeConfig;
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -71,8 +81,14 @@ export default function RootLayout({ modal, children }: RootLayoutProps) {
           "min-h-screen font-sans antialiased",
           fontSans.variable,
           fontMono.variable,
-          fontHeading.variable
+          fontHeading.variable,
+          `theme-${theme}`
         )}
+        style={
+          radius === "default" ?
+            {}
+          : ({ "--radius": `${radius}rem` } as React.CSSProperties)
+        }
       >
         <Providers>
           {children}

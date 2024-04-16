@@ -48,9 +48,6 @@ export default async function SettingsProfilePage() {
       </div>
 
       <ProfileForm user={user} />
-
-      <div id="change-password"></div>
-      <div id="delete-account"></div>
     </div>
   );
 }
