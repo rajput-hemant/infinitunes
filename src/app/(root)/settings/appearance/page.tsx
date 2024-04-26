@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 
 import type { ThemeConfig } from "@/types";
 
-import { AppearanceSettings } from "./appearance-settings";
+import { AppearanceSettings } from "../_components/appearance-settings";
 
 export const metadata = {
   title: "Appearance Settings",

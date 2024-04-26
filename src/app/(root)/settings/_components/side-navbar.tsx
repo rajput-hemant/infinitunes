@@ -104,15 +104,19 @@ const sidebarNavItems: SidebarNavItem[] = [
 
 export function SideNavbar() {
   return (
-    <nav className="flex flex-col">
+    <nav className="flex flex-col gap-2">
       {sidebarNavItems.map(({ section, href, items }, i) => (
         <React.Fragment key={`${section}-${i}`}>
-          <div key={i} className="hidden flex-col lg:flex">
+          <div key={i} className="hidden flex-col gap-2 lg:flex">
             <h3 className="font-semibold drop-shadow-sm dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-lg md:text-xl">
               {section}
             </h3>
 
-            <SideNavItems items={items} href={href} className="flex flex-col" />
+            <SideNavItems
+              items={items}
+              href={href}
+              className="flex flex-col gap-0.5"
+            />
           </div>
 
           <Accordion key={section} type="multiple" className="lg:hidden">

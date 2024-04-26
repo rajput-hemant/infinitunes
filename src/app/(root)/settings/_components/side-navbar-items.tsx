@@ -24,7 +24,7 @@ export function SideNavItems({ items, href, ...props }: SideNavItemsProps) {
           key={i}
           href={`${href}#${hash}`}
           className={cn(
-            buttonVariants({ variant: "ghost" }),
+            buttonVariants({ size: "sm", variant: "ghost" }),
             "justify-start text-muted-foreground",
             windowHash === hash ?
               "bg-muted text-foreground"

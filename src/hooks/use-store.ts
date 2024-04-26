@@ -1,26 +1,9 @@
 import { atom, createStore, useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-import type { Theme } from "@/config/themes";
-import type { ImageQuality, Lang, Queue, StreamQuality } from "@/types";
+import type { ImageQuality, Queue, StreamQuality } from "@/types";
 
 const store = createStore();
-
-type Config = {
-  theme: {
-    name: "default" | Theme["name"];
-    radius: "default" | number;
-  };
-  languages: Lang[];
-};
-
-const configAtom = atomWithStorage<Config>("config", {
-  theme: {
-    name: "default",
-    radius: "default",
-  },
-  languages: ["hindi", "english"],
-});
 
 const queueAtom = atomWithStorage<Queue[]>("queue", []);
 const currentSongIndexAtom = atomWithStorage("current_song_index", 0);
@@ -37,10 +20,6 @@ const imageQualityAtom = atomWithStorage<ImageQuality>("image_quality", "high");
 const playerCurrentTimeAtom = atom(0);
 const isPlayingAtom = atom(false);
 const isSearchingAtom = atom(false);
-
-export function useConfig() {
-  return useAtom(configAtom, { store });
-}
 
 export function useQueue() {
   return useAtom(queueAtom, { store });
