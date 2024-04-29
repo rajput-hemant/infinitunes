@@ -1,8 +1,10 @@
 "use client";
 
 import React from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
 
-import type { Song, Type } from "@/types";
+import type { Episode, Song, Sort, Type } from "@/types";
 
 import {
   useCurrentSongIndex,
@@ -12,9 +14,11 @@ import {
 import {
   getAlbumDetails,
   getArtistDetails,
+  getEpisodeDetails,
   getLabelDetails,
   getMixDetails,
   getPlaylistDetails,
+  getShowEpisodes,
   getSongDetails,
 } from "@/lib/jiosaavn-api";
 import { currentlyInDev } from "@/lib/utils";
@@ -27,9 +31,14 @@ type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
 export function PlayButton(props: PlayButtonProps) {
   const { type, token, children, ...restProps } = props;
 
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [initialQueue, setQueue] = useQueue();
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [, setCurrentIndex] = useCurrentSongIndex();
+
+  const sort = (searchParams.get("sort") as Sort) ?? "desc";
 
   async function playHandler() {
     const songIndex = initialQueue.findIndex(
@@ -40,7 +49,7 @@ export function PlayButton(props: PlayButtonProps) {
       setCurrentIndex(songIndex);
       return;
     } else {
-      let queue: Song[] = [];
+      let queue: (Song | Episode)[] = [];
 
       switch (type) {
         case "song": {
@@ -73,8 +82,21 @@ export function PlayButton(props: PlayButtonProps) {
           queue = label.top_songs.songs;
           break;
         }
-        case "episode":
-        case "show":
+        case "show": {
+          const episodes = await getShowEpisodes(
+            token,
+            +pathname.split("/")[3],
+            1,
+            sort
+          );
+          queue = episodes;
+          break;
+        }
+        case "episode": {
+          const data = await getEpisodeDetails(token);
+          queue = data.episodes;
+          break;
+        }
         case "radio_station": {
           currentlyInDev();
           return;
@@ -104,6 +126,14 @@ export function PlayButton(props: PlayButtonProps) {
       );
 
       setQueue(_queue);
+
+      toast.success(
+        `${queue.length} item${queue.length > 1 ? "s" : ""} has been added to the queue`,
+        {
+          description: `Playing "${queue[0].name}"`,
+          position: "bottom-center",
+        }
+      );
 
       setCurrentIndex(0);
       setIsPlayerInit(true);

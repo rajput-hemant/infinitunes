@@ -227,9 +227,11 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
             <PlayButton
               type={item.type}
               token={
-                (item.type === "artist" ? item.urls.songs : item.url)
-                  .split("/")
-                  .pop()!
+                item.type === "show" ?
+                  item.id
+                : (item.type === "artist" ? item.urls.songs : item.url)
+                    .split("/")
+                    .pop()!
               }
               className={cn(
                 buttonVariants(),

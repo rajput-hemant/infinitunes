@@ -102,17 +102,26 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onClick={() => setTheme("light")}>
+              <DropdownMenuItem
+                onClick={() => setTheme("light")}
+                className="cursor-pointer"
+              >
                 <Sun size={16} className="mr-2" />
                 Light
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <DropdownMenuItem
+                onClick={() => setTheme("dark")}
+                className="cursor-pointer"
+              >
                 <Moon size={16} className="mr-2" />
                 Dark
               </DropdownMenuItem>
 
-              <DropdownMenuItem onClick={() => setTheme("system")}>
+              <DropdownMenuItem
+                onClick={() => setTheme("system")}
+                className="cursor-pointer"
+              >
                 <Monitor size={16} className="mr-2" />
                 System
               </DropdownMenuItem>

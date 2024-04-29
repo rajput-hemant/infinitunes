@@ -332,14 +332,15 @@ export function Player({ user, playlists }: PlayerProps) {
           </Tooltip>
 
           <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild></TooltipTrigger>
-            <button
-              aria-label="Next"
-              onClick={skipToNext}
-              className="hidden lg:block"
-            >
-              <Icons.SkipForward className="size-10" />
-            </button>
+            <TooltipTrigger asChild>
+              <button
+                aria-label="Next"
+                onClick={skipToNext}
+                className="hidden lg:block"
+              >
+                <Icons.SkipForward className="size-10" />
+              </button>
+            </TooltipTrigger>
             <TooltipContent>Next</TooltipContent>
           </Tooltip>
 

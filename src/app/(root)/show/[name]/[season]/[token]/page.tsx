@@ -70,18 +70,21 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       </h2>
 
       <ScrollArea>
-        <div className="flex space-x-4 pb-4">
-          {seasons.reverse().map(({ id, name, url, subtitle, image }) => (
-            <SliderCard
-              key={id}
-              name={name}
-              url={url}
-              subtitle={subtitle}
-              type="show"
-              image={image}
-              aspect="video"
-            />
-          ))}
+        <div className="flex space-x-4 p-1 pb-4">
+          {seasons
+            .reverse()
+            .map(({ id, name, url, subtitle, image, season_number }) => (
+              <SliderCard
+                key={id}
+                name={name}
+                url={url}
+                subtitle={subtitle}
+                type="show"
+                image={image}
+                aspect="video"
+                isCurrentSeason={season == season_number}
+              />
+            ))}
         </div>
 
         <ScrollBar orientation="horizontal" />

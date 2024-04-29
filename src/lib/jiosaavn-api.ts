@@ -352,8 +352,8 @@ export async function getShowDetails(
  */
 export async function getShowEpisodes(
   id: string,
-  season?: number,
-  page?: number,
+  season = 1,
+  page = 1,
   sort: Sort = "desc"
 ) {
   return await jioSaavnGetCall<Episode[]>("/show/episodes", {

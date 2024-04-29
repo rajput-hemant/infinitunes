@@ -19,6 +19,7 @@ export type SliderCardProps = {
   subtitle?: string;
   className?: string;
   aspect?: "square" | "video";
+  isCurrentSeason?: boolean;
 };
 
 export function SliderCard(props: SliderCardProps) {
@@ -30,6 +31,7 @@ export function SliderCard(props: SliderCardProps) {
     subtitle,
     explicit,
     aspect = "square",
+    isCurrentSeason,
     className,
   } = props;
 
@@ -42,6 +44,8 @@ export function SliderCard(props: SliderCardProps) {
       className={cn(
         "group w-32 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:bg-accent hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
         aspect === "video" && "w-44 !border-none sm:w-48 md:w-64 lg:w-72",
+        isCurrentSeason &&
+          "ring-2 ring-ring ring-offset-2 ring-offset-background",
         className
       )}
     >
@@ -72,18 +76,20 @@ export function SliderCard(props: SliderCardProps) {
 
           <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
 
-          <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
-            <PlayButton
-              type={type}
-              token={url.split("/").pop()!}
-              className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
-            >
-              <Play
-                strokeWidth={10}
-                className="m-auto h-full w-6 p-1 duration-200 group-hover/play:w-8"
-              />
-            </PlayButton>
-          </div>
+          {type !== "show" && (
+            <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
+              <PlayButton
+                type={type}
+                token={url.split("/").pop()!}
+                className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
+              >
+                <Play
+                  strokeWidth={10}
+                  className="m-auto h-full w-6 p-1 duration-200 group-hover/play:w-8"
+                />
+              </PlayButton>
+            </div>
+          )}
         </div>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
