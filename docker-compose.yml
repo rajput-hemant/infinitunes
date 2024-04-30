@@ -1,0 +1,7 @@
+services:
+  infinitunes:
+    build:
+      dockerfile: Dockerfile
+    image: infinitunes
+    ports:
+      - "3000:3000"

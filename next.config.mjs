@@ -23,6 +23,7 @@ const config = {
   experimental: {
     // ...
   },
+  output: "standalone",
   /* ... */
 };
 
