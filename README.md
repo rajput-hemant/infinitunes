@@ -14,7 +14,11 @@
 
 ### [WIP] 🎵 A Simple Music Player Web App made with ▲ Next.js + Tailwind.
 
-![](https://graph.org/file/9f7cb6de815f1eb73a576.png)
+<picture>
+  <source media="(prefers-color-scheme: light)" srcset="https://graph.org/file/12ea4beff2367f40f13ce.png">
+  <source media="(prefers-color-scheme: dark)" srcset="https://graph.org/file/16937ebb693470d804f31.png">
+  <img src="https://graph.org/file/12ea4beff2367f40f13ce.png" alt="infinitunes">
+</picture>
 
 **[<kbd> <br> &nbsp;**Live Demo**&nbsp; <br> </kbd>][site]**
 
@@ -34,45 +38,28 @@ cd infinitunes
 - Run the app with VS Code or the command line:
 
 ```
-bun i
-bun dev
+bun i || pnpm i || npm i || yarn
+bun dev || pnpm dev || npm run dev || yarn dev
 ```
 
 <div align=center>
 
-## TODO
+### Docker and Makefile
 
 </div>
 
-- [ ] Add Metadata to the pages.
-- [ ] Replace loading spinners with Page Skeletons.
-- [ ] Play rate for shows and podcasts.
-- [ ] Implement the feature to save Favorites, Recently Played Songs in both the `db` and `localStorage`.
-- [ ] Add support for User's Playlists.
-- [ ] Add support for Radio Stations.
-- [ ] Create Library, Settings, and Profile pages.
-  - Library page
-    - [ ] Recently Played
-    - [ ] Favorites (Songs, Albums, Playlists)
-  - Settings page (Intercepting routes `/settings`)
-    - [ ] Theme Mode (Light, Dark, System)
-    - [ ] Theme Color (Zinc, Slate, Stone, Gray, Neutral, Red, Rose, Orange, Green, Blue, Yellow, Violet)
-    - [ ] Language (Hindi, English, Punjabi, Tamil, Telugu, Marathi, Gujarati, Bengali, Kannada, Bhojpuri, Malayalam, Urdu, Haryanvi, Rajasthani, Odia, Assamese)
-    - [ ] Image Quality (Low, Medium, High)
-    - [ ] Audio Quality (12kbps, 48kbps, 96kbps, 160kbps, 320kbps)
-    - [ ] Download Quality (12kbps, 48kbps, 96kbps, 160kbps, 320kbps)
-    - [ ] Download Location
-    - [ ] Clear Cache
-    - [ ] Delete Account
-- [ ] Improve website responsiveness and accessibility.
-  - [ ] Improve Card Responsiveness, impelement auto-resizing cards like `https://jiosaavn.com`
-  - [ ] Add accessibility features & aria labels.
-- [ ] Enhance the Player UI, add a player screen for small devices, and a Queue sheet for larger devices.
-- [x] Add support for Keyboard shortcuts for Player.
-- [ ] Add support to download songs.
-- [ ] Optimize initial page load size.
+- Build the Docker Image and start the container:
 
-and many more...
+```
+make build
+make start
+```
+
+- Stop the Docker container:
+
+```
+make stop
+```
 
 <div align=center>
 
@@ -83,6 +70,16 @@ You can deploy your own hosted version of `infinitunes`. Just click the link bel
 [![Deploy with Vercel](https://vercel.com/button)][deploy]
 
 #### [JioSaavn API (Unofficial)][api] by [me][cc], [API Docs][api-docs]
+
+## Star History
+
+<a href="https://star-history.com/#rajput-hemant/infinitunes">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=rajput-hemant/infinitunes&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=rajput-hemant/infinitunes" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=rajput-hemant/infinitunes" />
+ </picture>
+</a>
 
 ## Disclaimer
 
