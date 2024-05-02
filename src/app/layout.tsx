@@ -1,12 +1,14 @@
 import "@/styles/globals.css";
 
 import { cookies } from "next/headers";
+import Script from "next/script";
 
 import type { ThemeConfig } from "@/types";
 
 import Providers from "@/components/provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
 import { siteConfig } from "@/config/site";
+import { env } from "@/lib/env";
 import { fontHeading, fontMono, fontSans } from "@/lib/fonts";
 import { absoluteUrl, cn } from "@/lib/utils";
 
@@ -97,6 +99,13 @@ export default function RootLayout({ modal, children }: RootLayoutProps) {
 
         <TailwindIndicator />
       </body>
+
+      {/* Umami Analytics */}
+      <Script
+        async
+        src="https://us.umami.is/script.js"
+        data-website-id={env.UMAMI_WEBSITE_ID}
+      />
     </html>
   );
 }

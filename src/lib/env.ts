@@ -83,6 +83,11 @@ export const env = createEnv({
     UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
     ENABLE_RATE_LIMITING: z.enum(["true", "false"]).default("false"),
     RATE_LIMITING_REQUESTS_PER_SECOND: z.coerce.number().default(50),
+
+    /* -----------------------------------------------------------------------------------------------
+     * Umami Analytics
+     * -----------------------------------------------------------------------------------------------*/
+    UMAMI_WEBSITE_ID: z.string().optional(),
   },
 
   /**
