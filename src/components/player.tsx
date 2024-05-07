@@ -22,7 +22,7 @@ import { useEventListener } from "@/hooks/use-event-listner";
 import {
   useCurrentSongIndex,
   useIsPlayerInit,
-  useIsSearching,
+  useIsTyping,
   useQueue,
   useStreamQuality,
 } from "@/hooks/use-store";
@@ -46,7 +46,7 @@ export function Player({ user, playlists }: PlayerProps) {
   const [streamQuality] = useStreamQuality();
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
-  const [isSearching] = useIsSearching();
+  const [isTyping] = useIsTyping();
   // refs
   const frameRef = React.useRef<number>();
   // states
@@ -196,7 +196,7 @@ export function Player({ user, playlists }: PlayerProps) {
 
   useEventListener("keydown", (e) => {
     if (e.key === " ") {
-      if (!isSearching) {
+      if (!isTyping) {
         e.preventDefault();
         playPauseHandler();
       }

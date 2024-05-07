@@ -39,6 +39,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useIsTyping } from "@/hooks/use-store";
 import { deleteUser, updateUser } from "@/lib/actions";
 import { currentlyInDev } from "@/lib/utils";
 import { emailSchema, passwordSchema, usernameSchema } from "@/lib/validations";
@@ -51,7 +52,7 @@ const profileSchema = z.object({
   name: z.string().min(1, "Name is Required"),
   username: usernameSchema,
   email: emailSchema,
-  password: passwordSchema,
+  password: passwordSchema.optional(),
 });
 
 type FormData = z.infer<typeof profileSchema>;
@@ -61,12 +62,17 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState("");
 
+  const [_, setIsTyping] = useIsTyping();
+
+  React.useEffect(() => {
+    setIsTyping(true);
+    return () => setIsTyping(false);
+  }, [setIsTyping]);
+
   const defaultValues: FormData = {
     name: user.name ?? "",
-    // @ts-expect-error - `username` does not exist on `User`
     username: user.username ?? "",
     email: user.email ?? "",
-    password: "",
   };
 
   const form = useForm<FormData>({

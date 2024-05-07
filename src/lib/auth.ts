@@ -7,7 +7,13 @@ import { authConfig } from "@/config/auth";
 import { db } from "./db";
 import { users } from "./db/schema";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const {
+  handlers,
+  auth,
+  signIn,
+  signOut,
+  unstable_update: update,
+} = NextAuth({
   ...authConfig,
 
   adapter: DrizzleAdapter(db),
@@ -31,25 +37,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
 
   callbacks: {
-    session: async ({ session, token }) => {
-      if (token.sub && session.user) {
-        session.user.id = token.sub;
-        session.user.username = token.username;
-      }
-
-      return session;
-    },
-
     jwt: async ({ token }) => {
       const user = await db.query.users.findFirst({
         where: (u, { eq }) => eq(u.id, token.sub!),
       });
 
       if (user) {
-        token.username = user.username;
+        const { id, name, email, username, image: picture } = user;
+
+        token = {
+          ...token,
+          id,
+          name,
+          email,
+          username,
+          picture,
+        };
       }
 
       return token;
+    },
+
+    session: async ({ session, token }) => {
+      if (token.sub && session.user) {
+        const { id, name, email, username, picture: image } = token;
+
+        session.user = {
+          ...session.user,
+          id,
+          name,
+          email,
+          username,
+          image,
+        };
+      }
+
+      return session;
     },
   },
 });

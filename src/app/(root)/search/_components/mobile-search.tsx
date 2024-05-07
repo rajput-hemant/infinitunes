@@ -8,7 +8,7 @@ import type { AllSearch } from "@/types";
 import { SearchAll } from "@/components/search/search-all";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
-import { useIsSearching } from "@/hooks/use-store";
+import { useIsTyping } from "@/hooks/use-store";
 import { searchAll } from "@/lib/jiosaavn-api";
 
 type MobileSearchProps = {
@@ -23,7 +23,7 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
   );
 
   const debouncedQuery = useDebounce(query.trim(), 1000);
-  const [_, setIsSearching] = useIsSearching();
+  const [_, setIsTyping] = useIsTyping();
 
   React.useEffect(() => {
     (async () => {
@@ -36,9 +36,9 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
   }, [debouncedQuery]);
 
   React.useEffect(() => {
-    if (debouncedQuery.length) setIsSearching(true);
-    else setIsSearching(false);
-  }, [debouncedQuery, setIsSearching]);
+    if (debouncedQuery.length) setIsTyping(true);
+    else setIsTyping(false);
+  }, [debouncedQuery, setIsTyping]);
 
   return (
     <>

@@ -98,6 +98,14 @@ export async function createNewPlaylist(
 }
 
 export async function updateUser(user: NewUser) {
+  const usernameExists = await db.query.users.findFirst({
+    where: (u, { eq }) => eq(u.username, user.username!),
+  });
+
+  if (usernameExists) {
+    throw new Error("Username already exists, please try another one");
+  }
+
   const [updatedUser] = await db
     .update(users)
     .set(user)

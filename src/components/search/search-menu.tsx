@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEventListener } from "@/hooks/use-event-listner";
-import { useIsSearching } from "@/hooks/use-store";
+import { useIsTyping } from "@/hooks/use-store";
 import { searchAll } from "@/lib/jiosaavn-api";
 import { cn, isMacOs } from "@/lib/utils";
 import { SearchAll } from "./search-all";
@@ -31,7 +31,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
   const debouncedQuery = useDebounce(query.trim(), 1000);
 
-  const [_, setIsSearching] = useIsSearching();
+  const [_, setIsTyping] = useIsTyping();
 
   useEventListener("keydown", (e: KeyboardEvent) => {
     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -42,12 +42,12 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
   useEffect(() => {
     if (isOpen) {
-      setIsSearching(true);
+      setIsTyping(true);
     } else {
-      setIsSearching(false);
+      setIsTyping(false);
       setQuery("");
     }
-  }, [isOpen, setIsSearching]);
+  }, [isOpen, setIsTyping]);
 
   useEffect(() => {
     setIsOpen(false);

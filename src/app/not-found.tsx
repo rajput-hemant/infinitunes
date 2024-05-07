@@ -4,13 +4,12 @@ import Link from "next/link";
 
 import type { Metadata } from "next";
 
-import { H1, H3, Large } from "@/components/ui/topography";
-
 export const metadata: Metadata = {
   title: "Error 404",
+  description: "Page not found!, but there are plenty of other great tunes!",
 };
 
-const Links = [
+const LINKS = [
   {
     title: "Weekly Top Songs",
     href: "/playlist/weekly-top-songs/8MT-LQlP35c_",
@@ -37,20 +36,25 @@ const NotFound = () => {
         height={300}
         width={600}
         alt="404 not found"
+        className="drop-shadow"
       />
-      <H1>
+
+      <h1 className="font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
         This page seems to be{" "}
-        <span className="text-red-500 selection:text-red-500">missing</span>.
-      </H1>
+        <span className="text-red-500 underline underline-offset-4 selection:text-red-500">
+          missing
+        </span>
+        .
+      </h1>
 
-      <H3 className="font-medium italic">
+      <h2 className="text-lg font-medium italic">
         But, there are plenty of other great tunes!
-      </H3>
+      </h2>
 
-      <Large className="font-normal italic">Try one of these:</Large>
+      <p className="text-lg font-normal italic">Try one of these:</p>
 
-      <div className="flex flex-wrap justify-center space-x-4 font-mono text-sm font-medium italic lg:text-xl">
-        {Links.map(({ title, href }, i) => (
+      <div className="flex flex-wrap justify-center space-x-4 font-heading text-sm font-medium italic drop-shadow sm:text-lg md:text-left lg:text-2xl">
+        {LINKS.map(({ title, href }, i, arr) => (
           <React.Fragment key={i}>
             <Link
               key={title}
@@ -60,7 +64,7 @@ const NotFound = () => {
               <span>{title}</span>
             </Link>
 
-            {i !== Links.length - 1 && (
+            {i !== arr.length - 1 && (
               <span className="ml-4 text-muted-foreground">/</span>
             )}
           </React.Fragment>

@@ -51,7 +51,7 @@ async function jioSaavnGetCall<T>(
   const url = new URL(path, env.JIOSAAVN_API_URL);
   url.search = new URLSearchParams(queries).toString();
 
-  const response = await fetch(url);
+  const response = await fetch(url, { cache: "force-cache" });
   const data = (await response.json()) as CustomResponse<T>;
 
   if (!response.ok) throw new Error(data.message);
@@ -618,7 +618,7 @@ export async function getLabelDetails(
   n_album = 50,
   cat: Category = "popularity",
   sort: Sort = "asc",
-  lang: Lang = "hindi",
+  lang?: Lang,
   mini = true
 ) {
   return await jioSaavnGetCall<Label>("/get/label", {
@@ -628,7 +628,7 @@ export async function getLabelDetails(
     n_album: `${n_album}`,
     cat,
     sort,
-    lang,
+    lang: lang ?? "",
     mini: `${mini}`,
   });
 }
