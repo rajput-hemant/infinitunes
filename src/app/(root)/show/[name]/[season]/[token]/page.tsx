@@ -82,7 +82,8 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
                 type="show"
                 image={image}
                 aspect="video"
-                isCurrentSeason={season == season_number}
+                hidePlayButton
+                isCurrentSeason={season == season_number && seasons.length > 1}
               />
             ))}
         </div>

@@ -40,7 +40,7 @@ export async function SongList(props: SongListProps) {
       <ol className="space-y-2 text-muted-foreground">
         {items.map((item, i) => (
           <li key={item.id}>
-            <div className="group flex h-14 w-full cursor-pointer items-center justify-between rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-sm">
+            <div className="group flex h-14 w-full cursor-pointer items-center justify-between overflow-hidden rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-sm">
               <div className="hidden w-[6%] lg:flex lg:justify-center xl:w-[4%]">
                 <span
                   className={cn(
@@ -65,7 +65,7 @@ export async function SongList(props: SongListProps) {
                 )}
               </div>
 
-              <figure className="flex w-[82%] items-center justify-between gap-4 xl:w-[86%] 2xl:w-[88%]">
+              <figure className="flex items-center justify-between gap-4 overflow-hidden lg:w-full xl:w-[86%] 2xl:w-[88%]">
                 {showAlbum && (
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                     <Image
@@ -87,7 +87,7 @@ export async function SongList(props: SongListProps) {
 
                 <figcaption
                   className={cn(
-                    "flex w-[calc(100%-2.5rem)] flex-col lg:flex-row",
+                    "flex w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
                     showAlbum && "xl:w-2/3"
                   )}
                 >
@@ -144,7 +144,7 @@ export async function SongList(props: SongListProps) {
                 )}
               </figure>
 
-              <div className="flex w-[12%] items-center justify-end lg:justify-between xl:w-[10%] 2xl:w-[8%]">
+              <div className="flex w-[12%] items-center justify-end lg:shrink-0 lg:justify-between xl:w-[10%] 2xl:w-[8%]">
                 <LikeButton
                   user={user}
                   type={item.type}

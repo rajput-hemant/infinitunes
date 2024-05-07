@@ -52,6 +52,7 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
                   type={type}
                   image={image}
                   explicit={explicit}
+                  hidePlayButton
                 />
               );
             }

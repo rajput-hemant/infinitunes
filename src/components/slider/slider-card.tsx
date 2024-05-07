@@ -19,6 +19,7 @@ export type SliderCardProps = {
   subtitle?: string;
   className?: string;
   aspect?: "square" | "video";
+  hidePlayButton?: boolean;
   isCurrentSeason?: boolean;
 };
 
@@ -31,6 +32,7 @@ export function SliderCard(props: SliderCardProps) {
     subtitle,
     explicit,
     aspect = "square",
+    hidePlayButton,
     isCurrentSeason,
     className,
   } = props;
@@ -76,7 +78,7 @@ export function SliderCard(props: SliderCardProps) {
 
           <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
 
-          {type !== "show" && (
+          {!hidePlayButton && (
             <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
               <PlayButton
                 type={type}
@@ -85,7 +87,7 @@ export function SliderCard(props: SliderCardProps) {
               >
                 <Play
                   strokeWidth={10}
-                  className="m-auto h-full w-6 p-1 duration-200 group-hover/play:w-8"
+                  className="m-auto h-full w-6 p-0.5 duration-200 group-hover/play:w-8"
                 />
               </PlayButton>
             </div>

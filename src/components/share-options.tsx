@@ -7,10 +7,8 @@ import { cn } from "@/lib/utils";
 import { Icons } from "./icons";
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 
-type ShareOptionsProps = {
+type ShareOptionsProps = React.ComponentProps<"div"> & {
   isDropDownItem?: boolean;
-  // TODO: remove className prop
-  className?: string;
 };
 
 type ShareOption = {
@@ -51,7 +49,7 @@ const shareOptions: ShareOption[] = [
   },
 ];
 
-export function ShareOptions({ isDropDownItem }: ShareOptionsProps) {
+export function ShareOptions({ isDropDownItem, ...props }: ShareOptionsProps) {
   const pathname = usePathname();
 
   const [isCopied, setIsCopied] = React.useState(false);
@@ -84,7 +82,7 @@ export function ShareOptions({ isDropDownItem }: ShareOptionsProps) {
   }
 
   return (
-    <React.Fragment>
+    <div {...props}>
       {shareOptions.map(({ label, href, icon: Icon }, i) => {
         return isDropDownItem ?
             <DropdownMenuItem key={i}>
@@ -92,6 +90,6 @@ export function ShareOptions({ isDropDownItem }: ShareOptionsProps) {
             </DropdownMenuItem>
           : <MenuItem key={i} label={label} href={href} icon={Icon} />;
       })}
-    </React.Fragment>
+    </div>
   );
 }

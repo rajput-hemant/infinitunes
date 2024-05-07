@@ -51,6 +51,7 @@ export function TopPodcasts({ initialTopShows }: TopPodcastsProps) {
             type={type}
             image={image}
             explicit={explicit}
+            hidePlayButton
           />
         ))}
       </div>

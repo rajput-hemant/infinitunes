@@ -22,15 +22,15 @@ import type { MyPlaylist } from "@/lib/db/schema";
 import type { Episode, Queue, Song } from "@/types";
 
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import {
   useCurrentSongIndex,
   useIsPlayerInit,
@@ -41,6 +41,7 @@ import { currentlyInDev, getImageSrc } from "@/lib/utils";
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
+import { buttonVariants } from "../ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -215,19 +216,19 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   ];
 
   return (
-    <div>
+    <>
       <div className="lg:hidden">
-        <Sheet>
-          <SheetTrigger
+        <Drawer>
+          <DrawerTrigger
             aria-label="More Options"
             className="focus-visible:outline-none"
           >
             <MoreVertical className="size-6 hover:text-primary" />
-          </SheetTrigger>
+          </DrawerTrigger>
 
-          <SheetContent side="bottom" className="rounded-t-2xl">
-            <SheetHeader>
-              <div className="flex items-center gap-2">
+          <DrawerContent className="rounded-t-2xl">
+            <DrawerHeader className="pb-0">
+              <div className="flex items-center gap-2 truncate">
                 <div className="relative aspect-square h-14 rounded-md">
                   <Image
                     src={getImageSrc(item.image, "low")}
@@ -239,20 +240,19 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                   <Skeleton className="absolute inset-0 size-full" />
                 </div>
 
-                <div className="flex flex-col truncate text-start">
-                  <SheetTitle className="truncate">{item.name}</SheetTitle>
-
-                  <SheetDescription className="truncate">
+                <div className="flex flex-col justify-start truncate text-start">
+                  <DrawerTitle className="truncate">{item.name}</DrawerTitle>
+                  <DrawerDescription className="truncate">
                     {item.subtitle}
-                  </SheetDescription>
+                  </DrawerDescription>
                 </div>
               </div>
-            </SheetHeader>
+            </DrawerHeader>
 
             <Separator className="mb-2 mt-4" />
 
             <div
-              className="relative flex flex-col gap-2 transition-transform duration-300"
+              className="relative flex flex-col gap-2 px-4 transition-transform duration-300"
               style={{ transform: `translateX(${traslateX}%)` }}
             >
               {menuItems
@@ -279,10 +279,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 <ChevronRight className="ml-auto size-5" />
               </button>
 
-              <div className="absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4 bg-background">
+              <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
                   onClick={() => setTranslateX(0)}
-                  className="flex h-8 items-center font-medium"
+                  className="flex h-8 items-center px-4 font-medium"
                 >
                   <ChevronLeft className="mr-2 size-5" />
                   Back
@@ -290,7 +290,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
                 <Separator className="-my-2 mb-2" />
 
-                <ShareOptions className="flex h-8 cursor-pointer items-center font-medium" />
+                <ShareOptions className="flex flex-col gap-4 p-4" />
               </div>
 
               <Separator />
@@ -310,11 +310,11 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
             <Separator className="my-4" />
 
-            <SheetFooter className="sm:justify-center">
-              <SheetClose>Cancel</SheetClose>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
+            <DrawerFooter className="pt-0 sm:justify-center">
+              <DrawerClose className={buttonVariants()}>Cancel</DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       </div>
 
       <div className="hidden lg:block">
@@ -368,6 +368,6 @@ export function TileMoreButton(props: TileMoreButtonProps) {
           addToPlaylist={addToPlaylist}
         />
       )}
-    </div>
+    </>
   );
 }

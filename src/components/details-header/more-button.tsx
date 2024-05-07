@@ -20,15 +20,15 @@ import type { MyPlaylist } from "@/lib/db/schema";
 import type { Quality, Song, Type } from "@/types";
 
 import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 import { useQueue } from "@/hooks/use-store";
 import { addSongsToPlaylist } from "@/lib/db/queries";
 import { currentlyInDev, getImageSrc } from "@/lib/utils";
@@ -145,8 +145,8 @@ export function MoreButton(props: MoreButtonProps) {
   return (
     <div>
       <div className="lg:hidden">
-        <Sheet>
-          <SheetTrigger asChild>
+        <Drawer>
+          <DrawerTrigger asChild>
             <Button
               aria-label="More options"
               size="icon"
@@ -155,11 +155,11 @@ export function MoreButton(props: MoreButtonProps) {
             >
               <MoreVertical className="size-5" />
             </Button>
-          </SheetTrigger>
+          </DrawerTrigger>
 
-          <SheetContent side="bottom" className="rounded-t-3xl">
-            <SheetHeader>
-              <div className="flex gap-2">
+          <DrawerContent className="rounded-t-3xl">
+            <DrawerHeader className="pb-0">
+              <div className="flex gap-2 truncate">
                 <div className="relative aspect-square h-14 rounded-md">
                   <Image
                     src={getImageSrc(image, "low")}
@@ -171,20 +171,19 @@ export function MoreButton(props: MoreButtonProps) {
                   <Skeleton className="absolute inset-0 size-full" />
                 </div>
 
-                <div className="flex flex-col truncate text-start">
-                  <SheetTitle className="truncate">{name}</SheetTitle>
-
-                  <SheetDescription className="truncate">
+                <div className="flex flex-col justify-center truncate text-start">
+                  <DrawerTitle className="truncate">{name}</DrawerTitle>
+                  <DrawerDescription className="truncate">
                     {subtitle}
-                  </SheetDescription>
+                  </DrawerDescription>
                 </div>
               </div>
-            </SheetHeader>
+            </DrawerHeader>
 
-            <Separator className="my-4" />
+            <Separator className="my-2" />
 
             <div
-              className="relative flex min-h-[300px] flex-col gap-4 transition-transform duration-300"
+              className="relative flex min-h-[300px] flex-col gap-4 px-4 transition-transform duration-300"
               style={{ transform: `translateX(${traslateX}%)` }}
             >
               {menuItems
@@ -209,10 +208,10 @@ export function MoreButton(props: MoreButtonProps) {
                 <ChevronRight className="ml-auto size-5" />
               </button>
 
-              <div className="absolute inset-y-0 left-[110%] flex min-w-full flex-col gap-4 bg-background">
+              <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
                   onClick={() => setTranslateX(0)}
-                  className="flex h-8 items-center font-medium"
+                  className="flex h-8 items-center px-4 font-medium"
                 >
                   <ChevronLeft className="mr-2 size-5" />
                   Back
@@ -220,19 +219,19 @@ export function MoreButton(props: MoreButtonProps) {
 
                 <Separator />
 
-                <ShareOptions />
+                <ShareOptions className="flex flex-col gap-4 p-4" />
               </div>
             </div>
 
             <Separator className="my-4" />
 
-            <SheetFooter className="sm:justify-center">
-              <SheetClose asChild>
-                <Button variant="secondary">Cancel</Button>
-              </SheetClose>
-            </SheetFooter>
-          </SheetContent>
-        </Sheet>
+            <DrawerFooter className="pt-0 sm:justify-center">
+              <DrawerClose asChild>
+                <Button>Cancel</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </DrawerContent>
+        </Drawer>
       </div>
       <div className="hidden lg:block">
         <DropdownMenu>
