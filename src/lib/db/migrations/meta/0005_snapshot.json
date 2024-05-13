@@ -1,10 +1,8 @@
 {
-  "id": "70879611-989f-4ec9-8b7e-04b1994baa5a",
-  "prevId": "4be634ec-54ce-4138-822e-b12a9bf14924",
-  "version": "5",
-  "dialect": "pg",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "account": {
+    "public.account": {
       "name": "account",
       "schema": "",
       "columns": {
@@ -80,15 +78,15 @@
         "account_userId_user_id_fk": {
           "name": "account_userId_user_id_fk",
           "tableFrom": "account",
-          "tableTo": "user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -102,7 +100,7 @@
       },
       "uniqueConstraints": {}
     },
-    "infinitunes_favorite": {
+    "public.infinitunes_favorite": {
       "name": "infinitunes_favorite",
       "schema": "",
       "columns": {
@@ -160,57 +158,57 @@
         "infinitunes_favorite_userId_user_id_fk": {
           "name": "infinitunes_favorite_userId_user_id_fk",
           "tableFrom": "infinitunes_favorite",
-          "tableTo": "user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "infinitunes_favorite_songs_unique": {
           "name": "infinitunes_favorite_songs_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "songs"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "infinitunes_favorite_albums_unique": {
           "name": "infinitunes_favorite_albums_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "albums"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "infinitunes_favorite_playlists_unique": {
           "name": "infinitunes_favorite_playlists_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "playlists"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "infinitunes_favorite_artists_unique": {
           "name": "infinitunes_favorite_artists_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "artists"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "infinitunes_favorite_podcasts_unique": {
           "name": "infinitunes_favorite_podcasts_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "podcasts"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "infinitunes_playlist": {
+    "public.infinitunes_playlist": {
       "name": "infinitunes_playlist",
       "schema": "",
       "columns": {
@@ -259,21 +257,21 @@
         "infinitunes_playlist_userId_user_id_fk": {
           "name": "infinitunes_playlist_userId_user_id_fk",
           "tableFrom": "infinitunes_playlist",
-          "tableTo": "user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -327,21 +325,21 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "user_username_unique": {
           "name": "user_username_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "username"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     },
-    "verificationToken": {
+    "public.verificationToken": {
       "name": "verificationToken",
       "schema": "",
       "columns": {
@@ -381,8 +379,10 @@
   "enums": {},
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "70879611-989f-4ec9-8b7e-04b1994baa5a",
+  "prevId": "4be634ec-54ce-4138-822e-b12a9bf14924"
 }

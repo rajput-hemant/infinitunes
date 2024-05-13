@@ -1,10 +1,8 @@
 {
-  "version": "5",
-  "dialect": "pg",
-  "id": "afb7f6d1-54c4-40d0-ac23-3a3652ad81a5",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "account": {
+    "public.account": {
       "name": "account",
       "schema": "",
       "columns": {
@@ -80,22 +78,29 @@
         "account_userId_user_id_fk": {
           "name": "account_userId_user_id_fk",
           "tableFrom": "account",
+          "columnsFrom": [
+            "userId"
+          ],
           "tableTo": "user",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
         "account_provider_providerAccountId": {
           "name": "account_provider_providerAccountId",
-          "columns": ["provider", "providerAccountId"]
+          "columns": [
+            "provider",
+            "providerAccountId"
+          ]
         }
       },
       "uniqueConstraints": {}
     },
-    "session": {
+    "public.session": {
       "name": "session",
       "schema": "",
       "columns": {
@@ -123,17 +128,21 @@
         "session_userId_user_id_fk": {
           "name": "session_userId_user_id_fk",
           "tableFrom": "session",
+          "columnsFrom": [
+            "userId"
+          ],
           "tableTo": "user",
-          "columnsFrom": ["userId"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -173,7 +182,7 @@
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "verificationToken": {
+    "public.verificationToken": {
       "name": "verificationToken",
       "schema": "",
       "columns": {
@@ -201,7 +210,10 @@
       "compositePrimaryKeys": {
         "verificationToken_identifier_token": {
           "name": "verificationToken_identifier_token",
-          "columns": ["identifier", "token"]
+          "columns": [
+            "identifier",
+            "token"
+          ]
         }
       },
       "uniqueConstraints": {}
@@ -213,5 +225,7 @@
     "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "afb7f6d1-54c4-40d0-ac23-3a3652ad81a5",
+  "prevId": "00000000-0000-0000-0000-000000000000"
 }

@@ -1,10 +1,8 @@
 {
-  "id": "2ee05bad-3456-4958-a696-aec1a68f9abd",
-  "prevId": "9cf1b973-18e3-40f5-a21e-5c34afc9ca76",
-  "version": "5",
-  "dialect": "pg",
+  "version": "6",
+  "dialect": "postgresql",
   "tables": {
-    "infinitunes_playlist": {
+    "public.infinitunes_playlist": {
       "name": "infinitunes_playlist",
       "schema": "",
       "columns": {
@@ -45,21 +43,21 @@
         "infinitunes_playlist_userId_user_id_fk": {
           "name": "infinitunes_playlist_userId_user_id_fk",
           "tableFrom": "infinitunes_playlist",
-          "tableTo": "user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
     },
-    "user": {
+    "public.user": {
       "name": "user",
       "schema": "",
       "columns": {
@@ -113,17 +111,17 @@
       "uniqueConstraints": {
         "user_email_unique": {
           "name": "user_email_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
+          ],
+          "nullsNotDistinct": false
         },
         "user_username_unique": {
           "name": "user_username_unique",
-          "nullsNotDistinct": false,
           "columns": [
             "username"
-          ]
+          ],
+          "nullsNotDistinct": false
         }
       }
     }
@@ -131,8 +129,10 @@
   "enums": {},
   "schemas": {},
   "_meta": {
-    "columns": {},
     "schemas": {},
-    "tables": {}
-  }
+    "tables": {},
+    "columns": {}
+  },
+  "id": "2ee05bad-3456-4958-a696-aec1a68f9abd",
+  "prevId": "9cf1b973-18e3-40f5-a21e-5c34afc9ca76"
 }
