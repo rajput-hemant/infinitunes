@@ -29,7 +29,6 @@ export function useWindowSize(): WindowSize {
   // Set size at the first client-side load
   useIsomorphicLayoutEffect(() => {
     handleSize();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return windowSize;

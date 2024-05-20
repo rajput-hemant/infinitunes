@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
+import { setCookie } from "cookies-next";
 import { ChevronDown, Languages } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,7 +32,9 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
     React.useState(initialLanguages);
 
   function updateLanguages() {
-    document.cookie = `language=${selectedLanguages.join(",")}; path=/`;
+    setCookie("language", selectedLanguages.join(","), {
+      path: "/",
+    });
 
     toast.success("Preferences updated!", {
       description: "Your language preferences have been updated.",

@@ -4,6 +4,8 @@ import createJiti from "jiti";
 const jiti = createJiti(new URL(import.meta.url).pathname);
 jiti("./src/lib/env");
 
+const isProd = process.env.NODE_ENV === "production";
+
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
@@ -21,6 +23,7 @@ const config = {
     unoptimized: true,
   },
   experimental: {
+    reactCompiler: isProd,
     // ...
   },
   output: "standalone",
