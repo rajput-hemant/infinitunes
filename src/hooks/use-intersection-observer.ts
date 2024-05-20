@@ -40,8 +40,7 @@ export function useIntersectionObserver(
     return () => observer.disconnect();
 
     
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elementRef?.current, JSON.stringify(threshold), root, rootMargin, frozen]); // prettier-ignore
+  }, [elementRef, root, rootMargin, frozen, threshold]); // prettier-ignore
 
   return entry;
 }

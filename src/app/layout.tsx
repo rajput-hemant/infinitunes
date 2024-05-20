@@ -1,5 +1,6 @@
 import "@/styles/globals.css";
 
+import React from "react";
 import { cookies } from "next/headers";
 import Script from "next/script";
 
@@ -75,37 +76,39 @@ export default function RootLayout({ modal, children }: RootLayoutProps) {
   ) as ThemeConfig;
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <head />
+    <React.StrictMode>
+      <html lang="en" suppressHydrationWarning>
+        <head />
 
-      <body
-        className={cn(
-          "min-h-screen font-sans antialiased",
-          fontSans.variable,
-          fontMono.variable,
-          fontHeading.variable,
-          `theme-${theme}`
-        )}
-        style={
-          radius === "default" ?
-            {}
-          : ({ "--radius": `${radius}rem` } as React.CSSProperties)
-        }
-      >
-        <Providers>
-          {children}
-          {modal}
-        </Providers>
+        <body
+          className={cn(
+            "min-h-screen font-sans antialiased",
+            fontSans.variable,
+            fontMono.variable,
+            fontHeading.variable,
+            `theme-${theme}`
+          )}
+          style={
+            radius === "default" ?
+              {}
+            : ({ "--radius": `${radius}rem` } as React.CSSProperties)
+          }
+        >
+          <Providers>
+            {children}
+            {modal}
+          </Providers>
 
-        <TailwindIndicator />
-      </body>
+          <TailwindIndicator />
+        </body>
 
-      {/* Umami Analytics */}
-      <Script
-        async
-        src="https://us.umami.is/script.js"
-        data-website-id={env.UMAMI_WEBSITE_ID}
-      />
-    </html>
+        {/* Umami Analytics */}
+        <Script
+          async
+          src="https://us.umami.is/script.js"
+          data-website-id={env.UMAMI_WEBSITE_ID}
+        />
+      </html>
+    </React.StrictMode>
   );
 }

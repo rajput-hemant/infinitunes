@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { setCookie } from "cookies-next";
 import { CheckIcon } from "lucide-react";
 import { useTheme } from "next-themes";
 
@@ -18,7 +19,9 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
   const { resolvedTheme: themeMode, setTheme } = useTheme();
 
   function themeConfigHandler({ theme, radius }: ThemeConfig) {
-    document.cookie = `theme-config=${JSON.stringify({ theme, radius })}; path=/`;
+    setCookie("theme-config", JSON.stringify({ theme, radius }), {
+      path: "/",
+    });
     router.refresh();
   }
 
