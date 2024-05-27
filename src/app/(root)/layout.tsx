@@ -18,20 +18,15 @@ export default async function Layout({ children }: React.PropsWithChildren) {
   }
 
   return (
-    <>
+    <React.Fragment>
       <Navbar />
-
       <Sidebar user={user} userPlaylists={userPlaylists} />
-
       <main className="p-2 pb-24 sm:p-4 sm:pb-24 lg:ml-[20%] lg:pb-10 xl:ml-[15%]">
         <SecondaryNavbar />
-
         {children}
-
         <SiteFooter />
       </main>
-
       <Player user={user} playlists={userPlaylists} />
-    </>
+    </React.Fragment>
   );
 }

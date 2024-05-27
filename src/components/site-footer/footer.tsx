@@ -69,7 +69,9 @@ export async function SiteFooter() {
                     key={id}
                     className="w-full text-xs text-muted-foreground hover:text-secondary-foreground"
                   >
-                    <Link href={action}>{title}</Link>
+                    <Link href={action.replace("featured", "playlist")}>
+                      {title}
+                    </Link>
                   </li>
                 ))}
               </ul>

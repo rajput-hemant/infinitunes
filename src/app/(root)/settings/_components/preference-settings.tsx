@@ -25,12 +25,12 @@ import {
 } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
 
-const SONG_QUALITIES: StreamQuality[] = [
-  "poor",
-  "low",
-  "medium",
-  "high",
-  "excellent",
+const SONG_QUALITIES: { quality: StreamQuality; bitrate: string }[] = [
+  { quality: "poor", bitrate: "12kbps" },
+  { quality: "low", bitrate: "48kbps" },
+  { quality: "medium", bitrate: "96kbps" },
+  { quality: "high", bitrate: "160kbps" },
+  { quality: "excellent", bitrate: "320kbps" },
 ];
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
@@ -111,15 +111,24 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="group w-40 justify-between font-semibold capitalize"
+                className="group w-44 justify-between font-semibold capitalize"
               >
-                {streamQuality}
+                <span>{streamQuality}</span>
+                <span className="font-light">
+                  (
+                  {
+                    SONG_QUALITIES.find((q) => q.quality === streamQuality)
+                      ?.bitrate
+                  }
+                  )
+                </span>
+
                 <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-40 *:cursor-pointer *:capitalize">
-              {SONG_QUALITIES.map((quality) => (
+            <DropdownMenuContent className="w-44 *:cursor-pointer *:capitalize">
+              {SONG_QUALITIES.map(({ quality, bitrate }) => (
                 <DropdownMenuItem
                   key={quality}
                   onClick={() => {
@@ -129,9 +138,13 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                       description: `Stream quality set to "${quality}".`,
                     });
                   }}
-                  className={cn(quality === streamQuality && "bg-accent/60")}
+                  className={cn(
+                    "justify-between",
+                    quality === downloadQuality && "bg-accent/60"
+                  )}
                 >
-                  {quality}
+                  <span>{quality}</span>
+                  <span className="font-medium">{bitrate}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -152,15 +165,23 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="group w-40 justify-between font-semibold capitalize"
+                className="group w-44 justify-between font-semibold capitalize"
               >
-                {downloadQuality}
+                <span>{streamQuality}</span>
+                <span className="font-light">
+                  (
+                  {
+                    SONG_QUALITIES.find((q) => q.quality === downloadQuality)
+                      ?.bitrate
+                  }
+                  )
+                </span>
                 <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-40 *:cursor-pointer *:capitalize">
-              {SONG_QUALITIES.map((quality) => (
+            <DropdownMenuContent className="w-44 *:cursor-pointer *:capitalize">
+              {SONG_QUALITIES.map(({ bitrate, quality }) => (
                 <DropdownMenuItem
                   key={quality}
                   onClick={() => {
@@ -170,9 +191,13 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                       description: `Download quality has been set to "${quality}".`,
                     });
                   }}
-                  className={cn(quality === downloadQuality && "bg-accent/60")}
+                  className={cn(
+                    "justify-between",
+                    quality === downloadQuality && "bg-accent/60"
+                  )}
                 >
-                  {quality}
+                  <span>{quality}</span>
+                  <span className="font-medium">{bitrate}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -193,14 +218,14 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="group w-40 justify-between font-semibold capitalize"
+                className="group w-44 justify-between font-semibold capitalize"
               >
                 {imageQuality}
                 <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-40 *:cursor-pointer *:capitalize">
+            <DropdownMenuContent className="w-44 *:cursor-pointer *:capitalize">
               {IMAGE_QUALITIES.map((quality) => (
                 <DropdownMenuItem
                   key={quality}

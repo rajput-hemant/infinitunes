@@ -46,7 +46,11 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
                   <ListItem
                     key={name}
                     title={name}
-                    href={getHref(url, "album")}
+                    href={
+                      url.includes("song") ?
+                        getHref(url, "song")
+                      : getHref(url, "album")
+                    }
                   >
                     {name}
                   </ListItem>
@@ -97,12 +101,12 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
 }
 
 const ListItem = React.forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
+  React.ElementRef<typeof Link>,
+  React.ComponentPropsWithoutRef<typeof Link>
 >(({ className, children, ...props }, ref) => {
   return (
     <NavigationMenuLink asChild>
-      <a
+      <Link
         ref={ref}
         className={cn(
           "block space-y-1 rounded-md py-1.5 text-muted-foreground duration-150 hover:text-secondary-foreground",
@@ -111,7 +115,7 @@ const ListItem = React.forwardRef<
         {...props}
       >
         <span className="line-clamp-1">{children}</span>
-      </a>
+      </Link>
     </NavigationMenuLink>
   );
 });

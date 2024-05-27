@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 import type { User } from "next-auth";
 import type { MyPlaylist } from "@/lib/db/schema";
-import type { Quality, Song, Type } from "@/types";
+import type { Quality, Queue, Song, Type } from "@/types";
 
 import {
   Drawer,
@@ -74,7 +74,7 @@ export function MoreButton(props: MoreButtonProps) {
   const [, setQueue] = useQueue();
 
   function addToQueue() {
-    const songsPayload = songs.map((song) => ({
+    const songsPayload: Queue[] = songs.map((song) => ({
       id: song.id,
       name: song.name,
       subtitle: song.subtitle,
@@ -83,6 +83,7 @@ export function MoreButton(props: MoreButtonProps) {
       image: song.image,
       download_url: song.download_url,
       artists: song.artist_map.artists,
+      duration: song.duration,
     }));
 
     setQueue((prev) => [...prev, ...songsPayload]);

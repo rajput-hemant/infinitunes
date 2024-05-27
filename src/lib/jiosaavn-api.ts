@@ -45,7 +45,7 @@ async function jioSaavnGetCall<T>(
 
   const queries = {
     ...query,
-    lang: query && query["lang"] ? query.lang : languages ?? "hindi,english",
+    lang: query && query["lang"] ? query.lang : languages ?? "hindi",
   };
 
   const url = new URL(path, env.JIOSAAVN_API_URL);
@@ -678,6 +678,6 @@ export async function getMegaMenu(entity = false, lang?: Lang[]) {
  */
 export async function getFooterDetails(lang?: Lang[]) {
   return await jioSaavnGetCall<FooterDetails>("/get/footer-details", {
-    lang: lang?.join(",") ?? "hindi,english",
+    lang: lang?.join(",") ?? "",
   });
 }

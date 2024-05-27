@@ -113,6 +113,7 @@ export function PlayButton(props: PlayButtonProps) {
           image,
           download_url,
           artist_map: { artists },
+          duration,
         }) => ({
           id,
           name,
@@ -122,6 +123,7 @@ export function PlayButton(props: PlayButtonProps) {
           image,
           download_url,
           artists,
+          duration,
         })
       );
 

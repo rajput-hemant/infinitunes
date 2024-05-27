@@ -1,9 +1,11 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   Loader2,
   MoreVertical,
+  MoveUpRight,
   Pause,
   Repeat,
   Repeat1,
@@ -26,10 +28,18 @@ import {
   useQueue,
   useStreamQuality,
 } from "@/hooks/use-store";
-import { cn, formatDuration, getDownloadLink, getImageSrc } from "@/lib/utils";
+import {
+  cn,
+  formatDuration,
+  getDownloadLink,
+  getHref,
+  getImageSrc,
+} from "@/lib/utils";
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
+import { Queue } from "./queue";
 import { TileMoreButton } from "./song-list/more-button";
+import { buttonVariants } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 import { Slider, SliderRange, SliderThumb, SliderTrack } from "./ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -258,9 +268,16 @@ export function Player({ user, playlists }: PlayerProps) {
               </div>
 
               <div className="flex flex-col justify-center">
-                <p className="line-clamp-1 font-heading text-sm text-primary drop-shadow">
+                <Link
+                  href={getHref(
+                    queue[currentIndex].url,
+                    queue[currentIndex].type === "song" ? "song" : "episode"
+                  )}
+                  className="group line-clamp-1 font-heading text-sm text-primary drop-shadow"
+                >
                   {queue[currentIndex].name}
-                </p>
+                  <MoveUpRight className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible" />
+                </Link>
 
                 <p className="line-clamp-1 text-xs text-muted-foreground">
                   {queue[currentIndex].subtitle}
@@ -364,62 +381,74 @@ export function Player({ user, playlists }: PlayerProps) {
         </div>
 
         <div className="hidden w-1/3 items-center justify-end gap-4 lg:flex">
-          <p className="text-sm text-muted-foreground">
+          <p className="shrink-0 text-sm text-muted-foreground">
             {formatDuration(pos, pos > 3600 ? "hh:mm:ss" : "mm:ss")}
             {" / "}
             {formatDuration(duration, duration > 3600 ? "hh:mm:ss" : "mm:ss")}
           </p>
 
-          <button
-            aria-label={muted ? "Unmute" : "Mute"}
-            disabled={!isReady || muted}
-            onClick={() => mute(!muted)}
-            className="disabled:text-muted-foreground"
-          >
-            {muted ?
-              <VolumeX />
-            : volume < 0.33 ?
-              <Volume />
-            : volume < 0.66 ?
-              <Volume1 />
-            : <Volume2 strokeWidth={2} />}
-          </button>
+          <div className="hidden items-center gap-4 xl:flex">
+            <button
+              aria-label={muted ? "Unmute" : "Mute"}
+              disabled={!isReady || muted}
+              onClick={() => mute(!muted)}
+              className="disabled:text-muted-foreground"
+            >
+              {muted ?
+                <VolumeX />
+              : volume < 0.33 ?
+                <Volume />
+              : volume < 0.66 ?
+                <Volume1 />
+              : <Volume2 strokeWidth={2} />}
+            </button>
 
-          <Slider
-            aria-label="Volume"
-            disabled={!isReady || muted}
-            value={[volume * 100]}
-            defaultValue={[75]}
-            onValueChange={([volume]) => {
-              setVolume(volume / 100);
-            }}
-            className="w-44"
-          >
-            <SliderTrack className="h-1 cursor-pointer">
-              <SliderRange className={cn((!isReady || muted) && "bg-accent")} />
-            </SliderTrack>
+            <Slider
+              aria-label="Volume"
+              disabled={!isReady || muted}
+              value={[volume * 100]}
+              defaultValue={[75]}
+              onValueChange={([volume]) => {
+                setVolume(volume / 100);
+              }}
+              className="w-44"
+            >
+              <SliderTrack className="h-1 cursor-pointer">
+                <SliderRange
+                  className={cn((!isReady || muted) && "bg-accent")}
+                />
+              </SliderTrack>
 
-            <SliderThumb
-              aria-label="Volume slider"
-              className={cn(
-                "size-4 cursor-pointer",
-                (!isReady || muted) && "bg-accent"
-              )}
-            />
-          </Slider>
+              <SliderThumb
+                aria-label="Volume slider"
+                className={cn(
+                  "size-4 cursor-pointer",
+                  (!isReady || muted) && "bg-accent"
+                )}
+              />
+            </Slider>
 
-          <span className="w-8 text-sm font-medium">
-            {(volume * 100).toFixed()}%
-          </span>
+            <span className="w-8 text-sm font-medium">
+              {(volume * 100).toFixed()}%
+            </span>
+          </div>
 
-          {queue.length > 0 ?
-            <TileMoreButton
-              item={queue[currentIndex]}
-              showAlbum
-              user={user}
-              playlists={playlists}
-            />
-          : <MoreVertical />}
+          <div className="flex">
+            <Queue />
+
+            {queue.length > 0 ?
+              <TileMoreButton
+                item={queue[currentIndex]}
+                showAlbum
+                user={user}
+                playlists={playlists}
+                className={buttonVariants({
+                  size: "icon",
+                  variant: "ghost",
+                })}
+              />
+            : <MoreVertical />}
+          </div>
         </div>
       </div>
     </div>

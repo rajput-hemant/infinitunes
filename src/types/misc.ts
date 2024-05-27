@@ -58,4 +58,5 @@ export type Queue = {
   image: Quality;
   artists: ArtistMini[];
   download_url: Quality;
+  duration: number;
 };

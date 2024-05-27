@@ -37,7 +37,7 @@ import {
   useQueue,
 } from "@/hooks/use-store";
 import { addSongsToPlaylist } from "@/lib/db/queries";
-import { currentlyInDev, getImageSrc } from "@/lib/utils";
+import { cn, currentlyInDev, getImageSrc } from "@/lib/utils";
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
@@ -58,6 +58,7 @@ type TileMoreButtonProps = {
   item: Song | Episode | Queue;
   showAlbum: boolean;
   playlists?: MyPlaylist[];
+  className?: string;
 };
 
 type MenuItem = {
@@ -68,7 +69,7 @@ type MenuItem = {
 };
 
 export function TileMoreButton(props: TileMoreButtonProps) {
-  const { user, item, showAlbum, playlists } = props;
+  const { user, item, showAlbum, playlists, className } = props;
 
   const router = useRouter();
 
@@ -103,6 +104,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         image,
         artist_map: { featured_artists: artists },
         download_url,
+        duration,
       } = item as Song;
 
       const queue = {
@@ -114,6 +116,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         image,
         artists,
         download_url,
+        duration,
       } satisfies Queue;
 
       setQueue([queue]);
@@ -141,6 +144,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         image,
         artist_map: { featured_artists: artists },
         download_url,
+        duration,
       } = item;
 
       queue = {
@@ -152,6 +156,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         image,
         artists,
         download_url,
+        duration,
       } satisfies Queue;
     } else {
       queue = item;
@@ -321,7 +326,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="More Options"
-            className="focus-visible:outline-none"
+            className={cn("focus-visible:outline-none", className)}
           >
             <MoreVertical className="size-6 hover:text-primary" />
           </DropdownMenuTrigger>
