@@ -5,6 +5,7 @@ const jiti = createJiti(new URL(import.meta.url).pathname);
 jiti("./src/lib/env");
 
 const isProd = process.env.NODE_ENV === "production";
+const isDocker = process.env.IS_DOCKER === "true";
 
 /** @type {import("next").NextConfig} */
 const config = {
@@ -20,13 +21,14 @@ const config = {
         hostname: "c.sop.saavncdn.com",
       },
     ],
-    unoptimized: true,
+    unoptimized: isDocker,
   },
   experimental: {
+    ppr: true,
     reactCompiler: isProd,
     // ...
   },
-  output: "standalone",
+  output: isDocker ? "standalone" : undefined,
   /* ... */
 };
 
