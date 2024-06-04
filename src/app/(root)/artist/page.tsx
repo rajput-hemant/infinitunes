@@ -43,7 +43,8 @@ export default async function TopArtistsPage() {
       </div>
 
       <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-        <em>Yay! You have seen it all</em> 🤩
+        <em>Yay! You have seen it all</em>{" "}
+        <span className="text-foreground">🤩</span>
       </h3>
     </div>
   );

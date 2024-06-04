@@ -1,5 +1,6 @@
 "use client";
 
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
 import { type ThemeProviderProps } from "next-themes/dist/types";
@@ -12,6 +13,10 @@ type Props = {
   children: React.ReactNode;
 };
 
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: Infinity } },
+});
+
 export default function Providers({ children, theme }: Props) {
   return (
     <ThemeProvider
@@ -21,7 +26,9 @@ export default function Providers({ children, theme }: Props) {
       {...theme}
     >
       <SessionProvider>
-        <TooltipProvider>{children}</TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>{children}</TooltipProvider>
+        </QueryClientProvider>
       </SessionProvider>
 
       <Toaster />

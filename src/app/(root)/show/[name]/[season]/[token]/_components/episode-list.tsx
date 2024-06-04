@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 import type { User } from "next-auth";
@@ -34,30 +35,32 @@ export function EpisodeList(props: EpisodeListProps) {
     userPlaylists,
   } = props;
 
-  const [episodes, setEpisodes] = React.useState(initialEpisodes);
-  const [page, setPage] = React.useState(1);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [hasMore, setHasMore] = React.useState(
-    totalEpisodes > initialEpisodes.length
-  );
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: ["episodes", season, showId],
+      queryFn: ({ pageParam }) =>
+        getShowEpisodes(showId, season, pageParam, sort),
+      getNextPageParam: (_, allPages) => {
+        const allPagesLength = allPages
+          .map((page) => page.length)
+          .reduce((acc, curr) => acc + curr, 0);
 
-  const loadMoreRef = React.useRef<HTMLDivElement | null>(null);
-  const isLoadMoreVisible = !!useIntersectionObserver(loadMoreRef, {})
-    ?.isIntersecting;
+        return allPagesLength < totalEpisodes ? allPages.length + 1 : null;
+      },
+      initialPageParam: 1,
+      initialData: { pages: [initialEpisodes], pageParams: [1] },
+    });
 
-  React.useEffect(() => {
-    if (isLoadMoreVisible) {
-      (async () => {
-        setIsLoading(true);
-        const nextPage = page + 1;
-        const response = await getShowEpisodes(showId, season, nextPage, sort);
-        setEpisodes((episodes) => [...episodes, ...response]);
-        setPage(nextPage);
-        setHasMore(totalEpisodes > episodes.length);
-        setIsLoading(false);
-      })();
-    }
-  }, [isLoadMoreVisible]); // eslint-disable-line react-hooks/exhaustive-deps
+  const episodes = data.pages.flatMap((page) => page);
+
+  const [ref] = useIntersectionObserver({
+    threshold: 0.5,
+    onChange(isIntersecting) {
+      if (isIntersecting) {
+        fetchNextPage();
+      }
+    },
+  });
 
   return (
     <>
@@ -68,19 +71,20 @@ export function EpisodeList(props: EpisodeListProps) {
         userPlaylists={userPlaylists}
       />
 
-      {hasMore ?
+      {hasNextPage ?
         <div
-          ref={loadMoreRef}
+          ref={ref}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
         >
-          {isLoading && (
+          {isFetchingNextPage && (
             <>
               <Loader2 className="size-5 animate-spin" /> Loading...
             </>
           )}
         </div>
       : <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em> 🤩
+          <em>Yay! You have seen it all</em>{" "}
+          <span className="text-foreground">🤩</span>
         </h3>
       }
     </>

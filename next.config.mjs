@@ -21,7 +21,7 @@ const config = {
         hostname: "c.sop.saavncdn.com",
       },
     ],
-    unoptimized: isDocker,
+    unoptimized: !isDocker,
   },
   experimental: {
     ppr: true,

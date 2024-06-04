@@ -14,14 +14,12 @@ import { ArtistsTopItems } from "./_components/artists-top-items";
 import { CategoryFilter } from "./_components/category-filter";
 import { TABS } from "./_components/tabs";
 
-type ArtistDetailsPageProps = {
+type Props = {
   params: { name: string; token: string };
   searchParams: { cat?: Category };
 };
 
-export async function generateMetadata({
-  params,
-}: ArtistDetailsPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name, token } = params;
 
   const artist = await getArtistDetails(token);
@@ -40,7 +38,8 @@ export async function generateMetadata({
     },
   };
 }
-export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
+
+export default async function ArtistDetailsPage(props: Props) {
   const {
     params: { name, token },
     searchParams: { cat },
@@ -91,6 +90,7 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
           <CategoryFilter category={cat ?? "popularity"} />
 
           <ArtistsTopItems
+            key={artist.top_songs[0].id}
             id={artist.id}
             type="songs"
             category={cat}
@@ -105,6 +105,7 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
           <CategoryFilter category={cat ?? "popularity"} />
 
           <ArtistsTopItems
+            key={artist.top_albums[0].id}
             id={artist.id}
             type="albums"
             category={cat}

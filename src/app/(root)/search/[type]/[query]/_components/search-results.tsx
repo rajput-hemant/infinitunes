@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
-import type { SearchReturnType, Song } from "@/types";
+import type { Album, SearchReturnType, Song } from "@/types";
 
 import { SliderCard } from "@/components/slider";
 import { SongListClient } from "@/components/song-list/song-list.client";
@@ -17,39 +17,30 @@ type SearchResultsProps = {
 };
 
 export function SearchResults(props: SearchResultsProps) {
-  const {
-    query,
-    type,
-    initialSearchResults: { results, start, total },
-  } = props;
+  const { query, type, initialSearchResults } = props;
 
-  const [searchResults, setSearchResults] = useState(results);
-  const [page, setPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(start + results.length < total);
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: ["search-results", type, query],
+      queryFn: ({ pageParam }) => search(query, type, pageParam, 50),
+      getNextPageParam: ({ total }, allPages) =>
+        allPages.length * 50 < total ? allPages.length + 1 : undefined,
+      initialPageParam: 1,
+      initialData: { pages: [initialSearchResults], pageParams: [1] },
+    });
 
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-  const isLoadMoreVisible = !!useIntersectionObserver(loadMoreRef, {})
-    ?.isIntersecting;
+  const searchResults = data.pages.flatMap(
+    (page) => page.results as (Album | Song)[]
+  );
 
-  async function loadMoreSearchResults() {
-    setIsLoading(true);
-    const nextPage = page + 1;
-    const { results, start, total } = await search(query, type, nextPage, 50);
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    setSearchResults((s) => [...s, ...results]);
-    setPage(nextPage);
-    setHasMore(start + results.length < total);
-    setIsLoading(false);
-  }
-
-  useEffect(() => {
-    if (isLoadMoreVisible) {
-      loadMoreSearchResults();
-    }
-  }, [isLoadMoreVisible]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [ref] = useIntersectionObserver({
+    threshold: 0.5,
+    onChange(isIntersecting) {
+      if (isIntersecting) {
+        fetchNextPage();
+      }
+    },
+  });
 
   return (
     <>
@@ -69,19 +60,20 @@ export function SearchResults(props: SearchResultsProps) {
         </div>
       }
 
-      {hasMore ?
+      {hasNextPage ?
         <div
-          ref={loadMoreRef}
+          ref={ref}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
         >
-          {isLoading && (
+          {isFetchingNextPage && (
             <>
               <Loader2 className="size-5 animate-spin" /> Loading...
             </>
           )}
         </div>
       : <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em> 🤩
+          <em>Yay! You have seen it all</em>{" "}
+          <span className="text-foreground">🤩</span>
         </h3>
       }
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
 import type { FeaturedPlaylists, Lang } from "@/types";
@@ -9,42 +10,35 @@ import { SliderCard } from "@/components/slider";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getFeaturedPlaylists } from "@/lib/jiosaavn-api";
 
-type FeaturedPlaylistsProps = {
+type Props = {
   initialPlaylists: FeaturedPlaylists;
   lang?: Lang;
 };
 
-export function FeaturedPlaylists(props: FeaturedPlaylistsProps) {
-  const {
-    initialPlaylists: { data, last_page },
-    lang,
-  } = props;
+export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
+  const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: ["featured-playlists", lang],
+      queryFn: ({ pageParam }) => getFeaturedPlaylists(pageParam, 50, lang),
+      getNextPageParam: ({ last_page }, allPages) =>
+        last_page ? null : allPages.length + 1,
+      initialPageParam: 1,
+      initialData: { pages: [initialPlaylists], pageParams: [1] },
+    });
 
-  const [featuredPlaylists, setFeaturedPlaylists] = React.useState(data);
-  const [page, setPage] = React.useState(1);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [hasMore, setHasMore] = React.useState(!last_page);
+  const featuredPlaylists = data.pages.flatMap((page) => page.data);
 
-  const loadMoreRef = React.useRef<HTMLDivElement | null>(null);
-  const isLoadMoreVisible = !!useIntersectionObserver(loadMoreRef, {})
-    ?.isIntersecting;
-
-  React.useEffect(() => {
-    if (isLoadMoreVisible) {
-      (async () => {
-        setIsLoading(true);
-        const nextPage = page + 1;
-        const playlist = await getFeaturedPlaylists(nextPage, 50, lang);
-        setFeaturedPlaylists((p) => [...p, ...playlist.data]);
-        setPage(nextPage);
-        setHasMore(!playlist.last_page);
-        setIsLoading(false);
-      })();
-    }
-  }, [isLoadMoreVisible]); // eslint-disable-line react-hooks/exhaustive-deps
+  const [ref] = useIntersectionObserver({
+    threshold: 0.5,
+    onChange(isIntersecting) {
+      if (isIntersecting) {
+        fetchNextPage();
+      }
+    },
+  });
 
   return (
-    <>
+    <div className="py-6">
       <div className="flex w-full flex-wrap justify-between gap-y-4">
         {featuredPlaylists.map(
           ({ id, name, url, subtitle, type, image, explicit }) => (
@@ -61,21 +55,22 @@ export function FeaturedPlaylists(props: FeaturedPlaylistsProps) {
         )}
       </div>
 
-      {hasMore ?
+      {hasNextPage ?
         <div
-          ref={loadMoreRef}
+          ref={ref}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
         >
-          {isLoading && (
+          {isFetchingNextPage && (
             <>
               <Loader2 className="size-5 animate-spin" /> Loading...
             </>
           )}
         </div>
-      : <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em> 🤩
+      : <h3 className="text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+          <em>Yay! You have seen it all</em>{" "}
+          <span className="text-foreground">🤩</span>
         </h3>
       }
-    </>
+    </div>
   );
 }
