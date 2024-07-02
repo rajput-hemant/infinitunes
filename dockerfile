@@ -7,7 +7,7 @@ COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 
 # 2. Rebuild the source code only when needed
-FROM node:20.14.0-alpine AS base
+FROM node:20.15.0-alpine AS base
 
 FROM base AS builder
 WORKDIR /app
