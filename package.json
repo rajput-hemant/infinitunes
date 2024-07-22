@@ -46,7 +46,7 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@tanstack/react-query": "^5.51.11",
-    "@upstash/ratelimit": "^1.2.1",
+    "@upstash/ratelimit": "^2.0.1",
     "@upstash/redis": "^1.33.0",
     "babel-plugin-react-compiler": "^0.0.0-experimental-696af53-20240625",
     "bcryptjs": "^2.4.3",
