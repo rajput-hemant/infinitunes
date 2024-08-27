@@ -1,5 +1,5 @@
 # 1. Install dependencies only when needed
-FROM oven/bun:1 AS deps
+FROM oven/bun:latest AS deps
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -36,7 +36,6 @@ COPY --from=builder /app/public ./public
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
 
 USER nextjs
 

@@ -25,7 +25,7 @@ const config = {
   },
   experimental: {
     ppr: true,
-    reactCompiler: isProd,
+    reactCompiler: isProd ? true : undefined,
     // ...
   },
   output: isDocker ? "standalone" : undefined,

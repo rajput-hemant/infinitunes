@@ -10,7 +10,7 @@
     "preview": "next build && next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "fmt": "prettier --write \"**/*.{ts,tsx,mdx,json}\" --cache --experimental-ternaries",
+    "fmt": "prettier --write \"**/*.{ts,tsx,mdx,json}\" --cache",
     "fmt:check": "prettier --check \"**/*.{ts,tsx,mdx,json}\" --cache",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun src/lib/db/migrate.ts",
@@ -104,7 +104,7 @@
   },
   "lint-staged": {
     "*.{ts,tsx,md,mdx}": [
-      "prettier --write \"**/*.{ts,tsx,mdx}\" --cache --experimental-ternaries"
+      "prettier --write \"**/*.{ts,tsx,mdx}\" --cache"
     ],
     "*.{ts,tsx,mdx}": [
       "eslint --fix ."
