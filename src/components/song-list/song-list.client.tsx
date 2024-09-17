@@ -7,6 +7,7 @@ import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import type { Episode, Song } from "@/types";
 
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
+import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
@@ -63,7 +64,7 @@ export function SongListClient(props: SongListProps) {
                 )}
               </div>
 
-              <figure className="flex items-center justify-between gap-4 overflow-hidden lg:w-full xl:w-[86%] 2xl:w-[88%]">
+              <figure className="flex items-center justify-between gap-4 overflow-hidden lg:w-[86%]">
                 {showAlbum && (
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                     <Image
@@ -142,7 +143,9 @@ export function SongListClient(props: SongListProps) {
                 )}
               </figure>
 
-              <div className="flex w-[12%] items-center justify-end lg:shrink-0 lg:justify-between xl:w-[10%] 2xl:w-[8%]">
+              <div className="flex w-[12%] items-center justify-end gap-3 lg:w-[16%] lg:shrink-0 lg:justify-between xl:w-[12%] 2xl:w-[10%]">
+                <DownloadButton songs={[item]} />
+
                 <LikeButton
                   user={user}
                   type={item.type}

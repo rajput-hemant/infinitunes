@@ -6,7 +6,7 @@ import { setCookie } from "cookies-next";
 import { ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
-import type { ImageQuality, Lang, StreamQuality } from "@/types";
+import type { ImageQuality, Lang } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,14 +24,7 @@ import {
   useStreamQuality,
 } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
-
-const SONG_QUALITIES: { quality: StreamQuality; bitrate: string }[] = [
-  { quality: "poor", bitrate: "12kbps" },
-  { quality: "low", bitrate: "48kbps" },
-  { quality: "medium", bitrate: "96kbps" },
-  { quality: "high", bitrate: "160kbps" },
-  { quality: "excellent", bitrate: "320kbps" },
-];
+import { QUALITIES_MAP } from "@/types";
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
 
@@ -101,9 +94,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
           id="stream-quality"
           className="flex max-w-xl items-center justify-between"
         >
-          <h4 className="w-40 text-muted-foreground md:text-lg">
-            Stream Quality
-          </h4>
+          <h4 className="w-40 text-muted-foreground">Stream Quality</h4>
 
           <Separator className="w-20" />
 
@@ -111,13 +102,13 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="group w-44 justify-between font-semibold capitalize"
+                className="group w-48 justify-between font-semibold capitalize"
               >
                 <span>{streamQuality}</span>
-                <span className="font-light">
+                <span className="text-xs font-light">
                   (
                   {
-                    SONG_QUALITIES.find((q) => q.quality === streamQuality)
+                    QUALITIES_MAP.find((q) => q.quality === streamQuality)
                       ?.bitrate
                   }
                   )
@@ -127,8 +118,8 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-44 *:cursor-pointer *:capitalize">
-              {SONG_QUALITIES.map(({ quality, bitrate }) => (
+            <DropdownMenuContent className="w-48 *:cursor-pointer *:capitalize">
+              {QUALITIES_MAP.map(({ quality, bitrate }) => (
                 <DropdownMenuItem
                   key={quality}
                   onClick={() => {
@@ -144,7 +135,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                   )}
                 >
                   <span>{quality}</span>
-                  <span className="font-medium">{bitrate}</span>
+                  <span className="text-xs font-medium">{bitrate}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -155,9 +146,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
           id="download-quality"
           className="flex max-w-xl items-center justify-between"
         >
-          <h4 className="w-40 text-muted-foreground md:text-lg">
-            Download Quality
-          </h4>
+          <h4 className="w-40 text-muted-foreground">Download Quality</h4>
 
           <Separator className="w-20" />
 
@@ -165,13 +154,13 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="group w-44 justify-between font-semibold capitalize"
+                className="group w-48 justify-between font-semibold capitalize"
               >
                 <span>{streamQuality}</span>
-                <span className="font-light">
+                <span className="text-xs font-light">
                   (
                   {
-                    SONG_QUALITIES.find((q) => q.quality === downloadQuality)
+                    QUALITIES_MAP.find((q) => q.quality === downloadQuality)
                       ?.bitrate
                   }
                   )
@@ -180,8 +169,8 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-44 *:cursor-pointer *:capitalize">
-              {SONG_QUALITIES.map(({ bitrate, quality }) => (
+            <DropdownMenuContent className="w-48 *:cursor-pointer *:capitalize">
+              {QUALITIES_MAP.map(({ bitrate, quality }) => (
                 <DropdownMenuItem
                   key={quality}
                   onClick={() => {
@@ -197,7 +186,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                   )}
                 >
                   <span>{quality}</span>
-                  <span className="font-medium">{bitrate}</span>
+                  <span className="text-xs font-medium">{bitrate}</span>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -208,9 +197,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
           id="image-quality"
           className="flex max-w-xl items-center justify-between"
         >
-          <h4 className="w-40 text-muted-foreground md:text-lg">
-            Image Quality
-          </h4>
+          <h4 className="w-40 text-muted-foreground">Image Quality</h4>
 
           <Separator className="w-20" />
 
@@ -218,14 +205,14 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
-                className="group w-44 justify-between font-semibold capitalize"
+                className="group w-48 justify-between font-semibold capitalize"
               >
                 {imageQuality}
                 <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
               </Button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-44 *:cursor-pointer *:capitalize">
+            <DropdownMenuContent className="w-48 *:cursor-pointer *:capitalize">
               {IMAGE_QUALITIES.map((quality) => (
                 <DropdownMenuItem
                   key={quality}

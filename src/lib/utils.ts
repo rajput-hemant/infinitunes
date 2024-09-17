@@ -39,7 +39,8 @@ export function absoluteUrl(path: string) {
       case "production":
         return `${siteConfig.url}${path}`;
 
-      case "deploy-preview" || "branch-deploy":
+      case "deploy-preview":
+      case "branch-deploy":
         return `https://${process.env.DEPLOY_PRIME_URL}${path}`;
 
       default:
@@ -89,15 +90,20 @@ export function getHref(url: string, type: Type) {
 }
 
 export function getImageSrc(image: Quality, quality: ImageQuality) {
+  let link;
+
   if (typeof image === "string") {
-    return image;
+    link = image;
   } else if (quality === "low") {
-    return image[0].link;
+    link = image[0].link;
   } else if (quality === "medium") {
-    return image[1].link;
+    link = image[1].link;
   } else {
-    return image[2].link;
+    link = image[2].link;
   }
+
+  // replace http with https if not present
+  return link.replace(/http:\/\//, "https://");
 }
 
 export function getDownloadLink(url: Quality, quality: StreamQuality) {

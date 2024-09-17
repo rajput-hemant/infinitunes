@@ -8,6 +8,7 @@ import type { Episode, Song } from "@/types";
 import { getUser } from "@/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
+import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
@@ -65,7 +66,7 @@ export async function SongList(props: SongListProps) {
                 )}
               </div>
 
-              <figure className="flex items-center justify-between gap-4 overflow-hidden lg:w-full xl:w-[86%] 2xl:w-[88%]">
+              <figure className="flex items-center justify-between gap-4 overflow-hidden lg:w-[86%]">
                 {showAlbum && (
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                     <Image
@@ -144,17 +145,19 @@ export async function SongList(props: SongListProps) {
                 )}
               </figure>
 
-              <div className="flex w-[12%] items-center justify-end lg:shrink-0 lg:justify-between xl:w-[10%] 2xl:w-[8%]">
+              <div className="flex w-[12%] items-center justify-end gap-3 lg:w-[16%] lg:shrink-0 lg:justify-between xl:w-[12%] 2xl:w-[10%]">
+                <DownloadButton songs={[item]} />
+
                 <LikeButton
                   user={user}
                   type={item.type}
                   token={item.id}
                   name={item.name}
                   favourites={favorites}
-                  className="hidden size-5 hover:text-primary lg:block"
+                  className="hidden hover:text-primary lg:block"
                 />
 
-                <span className="mx-auto hidden truncate lg:block">
+                <span className="hidden shrink-0 truncate lg:block">
                   {formatDuration(item.duration, "mm:ss")}
                 </span>
 

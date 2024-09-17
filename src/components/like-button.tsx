@@ -10,6 +10,7 @@ import type { Type } from "@/types";
 
 import { addToFavorites, removeFromFavorites } from "@/lib/db/queries";
 import { cn, currentlyInDev } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   user?: User;
@@ -133,13 +134,19 @@ export function LikeButton(props: LikeButtonProps) {
   }
 
   return (
-    <button aria-label="Like" onClick={likeHandler} {...rest}>
-      <Heart
-        className={cn(
-          "size-5 text-inherit transition-transform active:scale-105",
-          optimisticLike && "fill-red-500 text-red-500"
-        )}
-      />
-    </button>
+    <Tooltip delayDuration={0}>
+      <TooltipTrigger aria-label="Like" onClick={likeHandler} {...rest}>
+        <Heart
+          className={cn(
+            "size-5 text-inherit transition-transform active:scale-105",
+            optimisticLike && "fill-red-500 text-red-500"
+          )}
+        />
+      </TooltipTrigger>
+
+      <TooltipContent>
+        {optimisticLike ? "Unlike" : "Like"} `{name}`
+      </TooltipContent>
+    </Tooltip>
   );
 }

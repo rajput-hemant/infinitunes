@@ -15,6 +15,7 @@ import type {
 import { getUser } from "@/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
+import { DownloadButton } from "../download-button";
 import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
@@ -247,6 +248,14 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               token={item.id}
               name={item.name}
               favourites={favorites}
+              className={cn(
+                buttonVariants({ size: "icon", variant: "outline" }),
+                "rounded-full shadow-sm"
+              )}
+            />
+
+            <DownloadButton
+              songs={songs ?? []}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
                 "rounded-full shadow-sm"

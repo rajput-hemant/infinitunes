@@ -60,3 +60,16 @@ export type Queue = {
   download_url: Quality;
   duration: number;
 };
+
+type QualitiesMap = {
+  quality: StreamQuality;
+  bitrate: string;
+};
+
+export const QUALITIES_MAP: QualitiesMap[] = [
+  { quality: "poor", bitrate: "12kbps" },
+  { quality: "low", bitrate: "48kbps" },
+  { quality: "medium", bitrate: "96kbps" },
+  { quality: "high", bitrate: "160kbps" },
+  { quality: "excellent", bitrate: "320kbps" },
+];

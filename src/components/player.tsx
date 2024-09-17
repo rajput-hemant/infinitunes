@@ -39,7 +39,7 @@ import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Queue } from "./queue";
 import { TileMoreButton } from "./song-list/more-button";
-import { buttonVariants } from "./ui/button";
+import { Button, buttonVariants } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
 import { Slider, SliderRange, SliderThumb, SliderTrack } from "./ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -447,7 +447,10 @@ export function Player({ user, playlists }: PlayerProps) {
                   variant: "ghost",
                 })}
               />
-            : <MoreVertical />}
+            : <Button size="icon" variant="ghost">
+                <MoreVertical />
+              </Button>
+            }
           </div>
         </div>
       </div>
