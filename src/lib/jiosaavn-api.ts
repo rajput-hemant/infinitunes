@@ -45,7 +45,7 @@ async function jioSaavnGetCall<T>(
 
   const queries = {
     ...query,
-    lang: query && query["lang"] ? query.lang : languages ?? "hindi",
+    lang: query && query["lang"] ? query.lang : (languages ?? "hindi"),
   };
 
   const url = new URL(path, env.JIOSAAVN_API_URL);
