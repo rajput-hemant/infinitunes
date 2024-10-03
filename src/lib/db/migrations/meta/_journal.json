@@ -43,6 +43,13 @@
       "when": 1713508723922,
       "tag": "0005_clever_cargill",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1727934796540,
+      "tag": "0006_simple_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }
