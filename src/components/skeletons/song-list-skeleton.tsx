@@ -9,7 +9,7 @@ type SongListSkeletonProps = {
 export function SongListSkeleton(props: SongListSkeletonProps) {
   const { length = 1, showAlbum = true } = props;
   return (
-    <div className="space-y-2 text-muted-foreground">
+    <div className="pointer-events-none space-y-2 text-muted-foreground">
       {Array.from({ length }).map((_, i) => (
         <div
           key={i}
@@ -19,12 +19,12 @@ export function SongListSkeleton(props: SongListSkeletonProps) {
             <Skeleton className="h-5 w-3" />
           </div>
 
-          <div className="flex w-[82%] items-center justify-between gap-4 xl:w-[86%] 2xl:w-[88%]">
+          <div className="flex items-center justify-between gap-4 overflow-hidden lg:w-[86%]">
             {showAlbum && <Skeleton className="size-10 shrink-0" />}
 
             <div
               className={cn(
-                "flex w-[calc(100%-2.5rem)] flex-col space-y-1.5 lg:flex-row lg:items-baseline",
+                "flex w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
                 showAlbum && "xl:w-2/3"
               )}
             >
@@ -43,7 +43,8 @@ export function SongListSkeleton(props: SongListSkeletonProps) {
             )}
           </div>
 
-          <div className="flex w-[12%] items-center justify-end lg:justify-between xl:w-[10%] 2xl:w-[8%]">
+          <div className="flex w-[12%] items-center justify-end gap-3 lg:w-[16%] lg:shrink-0 lg:justify-between xl:w-[12%] 2xl:w-[10%]">
+            <Skeleton className="hidden size-5 lg:block" />
             <Skeleton className="hidden size-5 lg:block" />
             <Skeleton className="hidden h-5 w-[38.5px] lg:block" />
             <Skeleton className="size-6 lg:size-5" />

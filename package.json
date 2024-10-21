@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
     "preview": "next build && next start",
@@ -60,7 +60,7 @@
     "jotai": "^2.10.0",
     "lucide-react": "^0.452.0",
     "next": "^15.0.0-rc.0",
-    "next-auth": "beta",
+    "next-auth": "^5.0.0-beta.22",
     "next-themes": "^0.3.0",
     "postgres": "^3.4.4",
     "react": "^19.0.0-rc-fb9a90fa48-20240614",

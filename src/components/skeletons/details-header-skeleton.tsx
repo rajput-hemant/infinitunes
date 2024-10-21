@@ -27,7 +27,7 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
   )[type];
 
   return (
-    <div className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
+    <div className="pointer-events-none mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
           "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64",
@@ -60,6 +60,13 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
         <div className="mt-4 flex gap-2 lg:mt-6">
           <Button className="rounded-full px-10 text-xl font-bold text-primary shadow-sm">
             Play
+          </Button>
+          <Button
+            size="icon"
+            variant="outline"
+            className="rounded-full shadow-sm"
+          >
+            <Skeleton className="size-5 rounded-full" />
           </Button>
           <Button
             size="icon"
