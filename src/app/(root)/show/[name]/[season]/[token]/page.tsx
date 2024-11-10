@@ -20,14 +20,14 @@ import { getShowDetails } from "@/lib/jiosaavn-api";
 import { EpisodeList } from "./_components/episode-list";
 
 type ShowDetailsPageProps = {
-  searchParams: { sort: Sort };
-  params: { name: string; season: number; token: string };
+  searchParams: Promise<{ sort: Sort }>;
+  params: Promise<{ name: string; season: number; token: string }>;
 };
 
 export async function generateMetadata({
   params,
 }: ShowDetailsPageProps): Promise<Metadata> {
-  const { name, season, token } = params;
+  const { name, season, token } = await params;
 
   const { show_details: show } = await getShowDetails(token, season);
 
@@ -47,10 +47,8 @@ export async function generateMetadata({
 }
 
 export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
-  const {
-    params: { season, token },
-    searchParams: { sort = "desc" },
-  } = props;
+  const { sort } = await props.searchParams;
+  const { name, season, token } = await props.params;
 
   const user = await getUser();
 

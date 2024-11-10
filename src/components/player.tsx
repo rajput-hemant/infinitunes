@@ -58,7 +58,7 @@ export function Player({ user, playlists }: PlayerProps) {
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
   const [isTyping] = useIsTyping();
   // refs
-  const frameRef = React.useRef<number>();
+  const frameRef = React.useRef<number>(0);
   // states
   const [isShuffle, setIsShuffle] = React.useState(false);
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);

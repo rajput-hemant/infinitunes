@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
     "preview": "next build && next start",
@@ -56,15 +56,14 @@
     "cookies-next": "^4.3.0",
     "drizzle-orm": "^0.34.1",
     "geist": "^1.3.1",
-    "jiti": "^2.3.3",
     "jotai": "^2.10.0",
     "lucide-react": "^0.452.0",
-    "next": "^15.0.0-rc.0",
+    "next": "^15.0.4-canary.4",
     "next-auth": "^5.0.0-beta.22",
     "next-themes": "^0.3.0",
     "postgres": "^3.4.4",
-    "react": "^19.0.0-rc-fb9a90fa48-20240614",
-    "react-dom": "^19.0.0-rc-fb9a90fa48-20240614",
+    "react": "19.0.0-rc-66855b96-20241106",
+    "react-dom": "19.0.0-rc-66855b96-20241106",
     "react-hook-form": "^7.53.0",
     "react-use-audio-player": "^2.2.0",
     "sonner": "^1.5.0",
@@ -77,18 +76,18 @@
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.3.1",
-    "@next/bundle-analyzer": "^15.0.1",
+    "@next/bundle-analyzer": "15.0.3",
     "@total-typescript/ts-reset": "^0.6.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "22.7.5",
-    "@types/react": "18.3.11",
-    "@types/react-dom": "18.3.1",
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "autoprefixer": "10.4.20",
     "drizzle-kit": "^0.25.0",
     "eslint": "8.57.1",
-    "eslint-config-next": "15.0.1",
+    "eslint-config-next": "15.0.3",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-react-compiler": "^0.0.0-experimental-45ae4c3-20241011",
     "eslint-plugin-tailwindcss": "^3.17.5",
@@ -114,5 +113,9 @@
     "extends": [
       "@commitlint/config-conventional"
     ]
+  },
+  "overrides": {
+    "@types/react": "npm:types-react@19.0.0-rc.1",
+    "@types/react-dom": "npm:types-react-dom@19.0.0-rc.1"
   }
 }

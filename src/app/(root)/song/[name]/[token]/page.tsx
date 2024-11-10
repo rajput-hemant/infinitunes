@@ -16,16 +16,16 @@ import {
 import { Lyrics } from "./_components/lyrics";
 
 type SongDetailsPageProps = {
-  params: {
+  params: Promise<{
     name: string;
     token: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({
   params,
 }: SongDetailsPageProps): Promise<Metadata> {
-  const { name, token } = params;
+  const { token } = await params;
 
   const songObj = await getSongDetails(token);
   const song = songObj.songs[0];
@@ -93,6 +93,8 @@ async function fetcher(token: string) {
 }
 
 export default async function SongDetailsPage(props: SongDetailsPageProps) {
+  const { token } = await props.params;
+
   const {
     song,
     lyrics,
@@ -102,7 +104,7 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
     songsFromSameArtists,
     songsFromSameActors,
     trending,
-  } = await fetcher(props.params.token);
+  } = await fetcher(token);
 
   return (
     <div className="space-y-4">

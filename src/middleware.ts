@@ -14,10 +14,9 @@ const ratelimit = new Ratelimit({
 
 export async function middleware(req: NextRequest) {
   if (env.ENABLE_RATE_LIMITING === "true" && env.NODE_ENV === "production") {
-    const id = req.ip ?? "anonymous";
-    const { limit, pending, remaining, reset, success } = await ratelimit.limit(
-      id ?? "anonymous"
-    );
+    const id = getIP(req) || "anonymous";
+    const { limit, pending, remaining, reset, success } =
+      await ratelimit.limit(id);
 
     if (!success) {
       return NextResponse.json(
@@ -64,3 +63,13 @@ export const config = {
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
+
+function getIP(req: NextRequest): string {
+  // @ts-expect-error ip is not available in NextRequest
+  let ip = req.ip ?? req.headers.get("x-real-ip");
+  const forwardedFor = req.headers.get("x-forwarded-for");
+  if (!ip && forwardedFor) {
+    ip = forwardedFor.split(",").at(0) ?? "";
+  }
+  return ip;
+}

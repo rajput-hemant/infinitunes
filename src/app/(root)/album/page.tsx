@@ -24,11 +24,11 @@ export const metadata = {
 };
 
 type AlbumsPageProps = {
-  searchParams: { page?: number; lang?: Lang };
+  searchParams: Promise<{ page?: number; lang?: Lang }>;
 };
 
 export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
-  const { page = 1, lang } = searchParams;
+  const { page = 1, lang } = await searchParams;
 
   const topAlbums = await getTopAlbums(page, 50, lang);
 

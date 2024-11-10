@@ -18,7 +18,7 @@ import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 
 export async function Navbar() {
-  const cookiesStore = cookies(); // this will trigger dynamic rendering
+  const cookiesStore = await cookies(); // this will trigger dynamic rendering
   const languages = cookiesStore.get("language")?.value?.split(",") ?? [];
 
   const [user, megaMenu] = await Promise.all([getUser(), getMegaMenu()]);

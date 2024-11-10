@@ -10,8 +10,9 @@ export const metadata = {
     "Configure your preferences like language, music stream, download quality, etc.",
 };
 
-export default function Page() {
-  const languages = cookies().get("language")?.value?.split(",") ?? [];
+export default async function Page() {
+  const cookieStore = await cookies();
+  const languages = cookieStore.get("language")?.value?.split(",") ?? [];
 
   return (
     <div className="space-y-4">

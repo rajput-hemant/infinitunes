@@ -3,14 +3,14 @@ import { SearchNavbar } from "./_components/search-navbar";
 import { SearchResults } from "./_components/search-results";
 
 type SearchPageProps = {
-  params: {
+  params: Promise<{
     type: "song" | "album" | "playlist" | "artist" | "show";
     query: string;
-  };
+  }>;
 };
 
 export default async function SearchPage({ params }: SearchPageProps) {
-  const { query, type } = params;
+  const { query, type } = await params;
 
   const searchRes = await search(query, type);
 

@@ -22,10 +22,10 @@ export const metadata = {
     },
   },
 };
-type PageProps = { searchParams: { page?: number; lang?: Lang } };
+type PageProps = { searchParams: Promise<{ page?: number; lang?: Lang }> };
 
 export default async function PlaylistsPage({ searchParams }: PageProps) {
-  const { page = 1, lang } = searchParams;
+  const { page = 1, lang } = await searchParams;
 
   const featuredPlaylists = await getFeaturedPlaylists(page, 50, lang);
 

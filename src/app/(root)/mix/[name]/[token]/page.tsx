@@ -5,16 +5,16 @@ import { SongList } from "@/components/song-list";
 import { getMixDetails } from "@/lib/jiosaavn-api";
 
 type MixDetailsPageProps = {
-  params: {
+  params: Promise<{
     name: string;
     token: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({
   params,
 }: MixDetailsPageProps): Promise<Metadata> {
-  const { name, token } = params;
+  const { name, token } = await params;
 
   const mix = await getMixDetails(token);
 
@@ -33,7 +33,9 @@ export async function generateMetadata({
   };
 }
 export default async function MixDetailsPage(props: MixDetailsPageProps) {
-  const mix = await getMixDetails(props.params.token);
+  const { name, token } = await props.params;
+
+  const mix = await getMixDetails(token);
 
   return (
     <div className="mb-4 space-y-4">

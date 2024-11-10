@@ -19,8 +19,9 @@ type RootLayoutProps = {
   children: React.ReactNode;
 };
 
-export default function RootLayout({ modal, children }: RootLayoutProps) {
-  const themeConfig = cookies().get("theme-config");
+export default async function RootLayout({ modal, children }: RootLayoutProps) {
+  const cookieStore = await cookies();
+  const themeConfig = cookieStore.get("theme-config");
 
   const { theme, radius } = JSON.parse(
     themeConfig?.value ?? '{"theme":"default","radius":"default"}'

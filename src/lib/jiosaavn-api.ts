@@ -40,7 +40,7 @@ async function jioSaavnGetCall<T>(
   path: string,
   query?: Record<string, string>
 ): Promise<T> {
-  const cookiesStore = cookies(); // this will trigger dynamic rendering
+  const cookiesStore = await cookies(); // this will trigger dynamic rendering
   const languages = cookiesStore.get("language")?.value;
 
   const queries = {

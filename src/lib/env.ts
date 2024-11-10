@@ -6,7 +6,7 @@ export const env = createEnv({
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
    * useful for Docker builds.
    */
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
 
   /**
    * Specify your server-side environment variables schema here. This way you can ensure the app
@@ -29,7 +29,7 @@ export const env = createEnv({
       process.env.NODE_ENV === "production" ?
         z.string({ required_error: "Auth Secret is invalid or missing" })
       : z.string().optional(),
-    NEXTAUTH_URL: z.preprocess(
+    AUTH_URL: z.preprocess(
       // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
       // Since NextAuth.js automatically uses the VERCEL_URL if present.
       (str) => process.env.VERCEL_URL ?? str,

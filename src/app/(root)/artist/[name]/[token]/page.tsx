@@ -15,12 +15,12 @@ import { CategoryFilter } from "./_components/category-filter";
 import { TABS } from "./_components/tabs";
 
 type Props = {
-  params: { name: string; token: string };
-  searchParams: { cat?: Category };
+  params: Promise<{ name: string; token: string }>;
+  searchParams: Promise<{ cat?: Category }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { name, token } = params;
+  const { name, token } = await params;
 
   const artist = await getArtistDetails(token);
 
@@ -40,10 +40,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ArtistDetailsPage(props: Props) {
-  const {
-    params: { name, token },
-    searchParams: { cat },
-  } = props;
+  const { name, token } = await props.params;
+  const { cat } = await props.searchParams;
 
   const user = await getUser();
 

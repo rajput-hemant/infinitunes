@@ -24,16 +24,14 @@ export const metadata = {
 };
 
 type Props = {
-  searchParams: {
+  searchParams: Promise<{
     page?: number;
     lang?: Lang;
-  };
+  }>;
 };
 
 export default async function RadioPage(props: Props) {
-  const {
-    searchParams: { page = 1, lang },
-  } = props;
+  const { page = 1, lang } = await props.searchParams;
 
   const radioStations = await getFeaturedRadioStations(page, 50, lang);
 

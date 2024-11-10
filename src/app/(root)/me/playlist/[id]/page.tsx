@@ -12,13 +12,13 @@ import { getSongDetails } from "@/lib/jiosaavn-api";
 import { cn, formatDuration, getImageSrc } from "@/lib/utils";
 
 type Props = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = params;
+  const { id } = await params;
 
   const playlist = await getPlaylistDetails(id);
 
@@ -40,7 +40,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function MyPlaylistsPage({ params: { id } }: Props) {
+export default async function MyPlaylistsPage(props: Props) {
+  const { id } = await props.params;
+
   const playlist = await getPlaylistDetails(id);
 
   if (!playlist) {

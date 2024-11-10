@@ -10,8 +10,9 @@ export const metadata = {
   description: "Customize the appearance of the app.",
 };
 
-export default function Page() {
-  const themeConfig = cookies().get("theme-config");
+export default async function Page() {
+  const cookieStore = await cookies();
+  const themeConfig = cookieStore.get("theme-config");
 
   const { theme, radius } = JSON.parse(
     themeConfig?.value ?? '{"theme":"default","radius":"default"}'

@@ -10,12 +10,12 @@ import {
 } from "@/lib/jiosaavn-api";
 import { getImageSrc } from "@/lib/utils";
 
-type PlaylistPageProps = { params: { name: string; token: string } };
+type PlaylistPageProps = { params: Promise<{ name: string; token: string }> };
 
 export async function generateMetadata({
   params,
 }: PlaylistPageProps): Promise<Metadata> {
-  const { name, token } = params;
+  const { name, token } = await params;
 
   const playlist = await getPlaylistDetails(token);
 
@@ -49,9 +49,9 @@ async function fetcher(token: string) {
 }
 
 export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
-  const { playlist, recommendations, trending } = await fetcher(
-    props.params.token
-  );
+  const { token } = await props.params;
+
+  const { playlist, recommendations, trending } = await fetcher(token);
 
   return (
     <div className="space-y-4">

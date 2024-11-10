@@ -11,13 +11,13 @@ import {
 } from "@/lib/jiosaavn-api";
 
 type AlbumDetailsPageProps = {
-  params: { name: string; token: string };
+  params: Promise<{ name: string; token: string }>;
 };
 
 export async function generateMetadata({
   params,
 }: AlbumDetailsPageProps): Promise<Metadata> {
-  const { name, token } = params;
+  const { name, token } = await params;
 
   const album = await getAlbumDetails(token);
 
@@ -55,9 +55,9 @@ async function fetcher(token: string) {
 }
 
 export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
-  const { album, recommendations, trending, sameYear } = await fetcher(
-    props.params.token
-  );
+  const { token } = await props.params;
+
+  const { album, recommendations, trending, sameYear } = await fetcher(token);
 
   return (
     <div className="space-y-4">

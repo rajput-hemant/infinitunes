@@ -4,16 +4,16 @@ import { DetailsHeader } from "@/components/details-header";
 import { getEpisodeDetails } from "@/lib/jiosaavn-api";
 
 type EpisodeDetailsProps = {
-  params: {
+  params: Promise<{
     name: string;
     token: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({
   params,
 }: EpisodeDetailsProps): Promise<Metadata> {
-  const { name, token } = params;
+  const { name, token } = await params;
 
   const episodeObj = await getEpisodeDetails(token);
   const episode = episodeObj.episodes[0];
@@ -33,7 +33,9 @@ export async function generateMetadata({
   };
 }
 export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
-  const episodeObj = await getEpisodeDetails(props.params.token);
+  const { name, token } = await props.params;
+
+  const episodeObj = await getEpisodeDetails(token);
 
   return (
     <div className="mb-4 space-y-4">

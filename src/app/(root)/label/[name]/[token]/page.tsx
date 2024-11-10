@@ -9,16 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLabelDetails } from "@/lib/jiosaavn-api";
 
 type LabelDetailsPageProps = {
-  params: {
+  params: Promise<{
     name: string;
     token: string;
-  };
+  }>;
 };
 
 export async function generateMetadata({
   params,
 }: LabelDetailsPageProps): Promise<Metadata> {
-  const { name, token } = params;
+  const { name, token } = await params;
 
   const label = await getLabelDetails(token);
   const description = "Record Label";
@@ -44,7 +44,7 @@ const TABS = {
 };
 
 export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
-  const { name, token } = props.params;
+  const { name, token } = await props.params;
 
   const label = await getLabelDetails(token);
 
@@ -57,10 +57,10 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
           {Object.entries(TABS).map(([key, value]) => (
             <TabsTrigger key={key} value={value} asChild>
               <Link
-                href={`/label/${props.params.name.replace(
+                href={`/label/${name.replace(
                   /-(songs|albums)$/,
                   value === TABS.Songs ? "-songs" : "-albums"
-                )}/${props.params.token}`}
+                )}/${token}`}
               >
                 {value}
               </Link>

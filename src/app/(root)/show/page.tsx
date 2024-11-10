@@ -20,10 +20,12 @@ export const metadata = {
   },
 };
 
-type TopPodcastsPageProps = { searchParams: { page?: number } };
+type TopPodcastsPageProps = { searchParams: Promise<{ page?: number }> };
 
 export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
-  const topShows = await getTopShows(props.searchParams.page ?? 1);
+  const { page = 1 } = await props.searchParams;
+
+  const topShows = await getTopShows(page);
 
   const {
     trending_podcasts: { data: trendingPodcasts, title, subtitle },
