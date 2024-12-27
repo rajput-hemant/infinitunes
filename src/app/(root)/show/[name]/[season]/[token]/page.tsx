@@ -48,7 +48,7 @@ export async function generateMetadata({
 
 export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const { sort } = await props.searchParams;
-  const { name, season, token } = await props.params;
+  const { season, token } = await props.params;
 
   const user = await getUser();
 

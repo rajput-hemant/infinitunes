@@ -33,7 +33,7 @@ export async function generateMetadata({
   };
 }
 export default async function MixDetailsPage(props: MixDetailsPageProps) {
-  const { name, token } = await props.params;
+  const { token } = await props.params;
 
   const mix = await getMixDetails(token);
 

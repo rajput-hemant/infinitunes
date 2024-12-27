@@ -33,7 +33,7 @@ export async function generateMetadata({
   };
 }
 export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
-  const { name, token } = await props.params;
+  const { token } = await props.params;
 
   const episodeObj = await getEpisodeDetails(token);
 

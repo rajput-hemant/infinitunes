@@ -25,7 +25,7 @@ type SongDetailsPageProps = {
 export async function generateMetadata({
   params,
 }: SongDetailsPageProps): Promise<Metadata> {
-  const { token } = await params;
+  const { name, token } = await params;
 
   const songObj = await getSongDetails(token);
   const song = songObj.songs[0];

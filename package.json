@@ -106,7 +106,7 @@
       "prettier --write \"**/*.{ts,tsx,mdx}\" --cache"
     ],
     "*.{ts,tsx,mdx}": [
-      "eslint --fix ."
+      "eslint --fix --no-config-lookup"
     ]
   },
   "commitlint": {
