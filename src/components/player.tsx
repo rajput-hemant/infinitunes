@@ -63,6 +63,8 @@ export function Player({ user, playlists }: PlayerProps) {
   const [isShuffle, setIsShuffle] = React.useState(false);
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);
   const [pos, setPos] = React.useState(0);
+  const [isDragging, setIsDragging] = React.useState<boolean>(false);
+
   // third party hooks
   const {
     load,
@@ -99,6 +101,10 @@ export function Player({ user, playlists }: PlayerProps) {
   }, [queue, streamQuality, currentIndex, isPlayerInit]); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
+    if (isDragging) {
+      return;
+    }
+
     const animate = () => {
       setPos(getPosition());
       frameRef.current = requestAnimationFrame(animate);
@@ -111,7 +117,7 @@ export function Player({ user, playlists }: PlayerProps) {
         cancelAnimationFrame(frameRef.current);
       }
     };
-  }, [getPosition]);
+  }, [getPosition, isDragging]);
 
   function loopHandler() {
     if (!isReady) return;
@@ -236,15 +242,22 @@ export function Player({ user, playlists }: PlayerProps) {
         value={[pos]}
         max={duration}
         onValueChange={([values]) => {
-          seek(values);
           setPos(values);
+        }}
+        onPointerDown={() => {
+          setIsDragging(true);
+        }}
+        onValueCommit={() => {
+          seek(pos);
+          setPos(getPosition());
+          setIsDragging(false);
         }}
       >
         <SliderTrack className="h-1 cursor-pointer">
           <SliderRange />
         </SliderTrack>
 
-        <SliderThumb className="hidden size-4 cursor-pointer lg:block" />
+        <SliderThumb className="block size-4 cursor-pointer" />
       </Slider>
 
       <div
