@@ -88,7 +88,7 @@
     "drizzle-kit": "^0.25.0",
     "eslint": "9.14.0",
     "eslint-config-next": "15.0.3",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^10.0.1",
     "eslint-plugin-react-compiler": "^0.0.0-experimental-45ae4c3-20241011",
     "eslint-plugin-tailwindcss": "^3.17.5",
     "husky": "^9.1.6",
