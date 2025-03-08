@@ -403,11 +403,20 @@ export function Player({ user, playlists }: PlayerProps) {
           <div className="hidden items-center gap-4 xl:flex">
             <button
               aria-label={muted ? "Unmute" : "Mute"}
-              disabled={!isReady || muted}
-              onClick={() => mute(!muted)}
-              className="disabled:text-muted-foreground"
+              onClick={() => {
+                if (!isReady) return;
+                const newMuted = !muted;
+                mute(newMuted);
+                if (!newMuted && volume === 0) {
+                  setVolume(0.75); // Reset to 75% if unmuting from 0
+                }
+              }}
+              className={cn(
+                "transition-opacity hover:opacity-100",
+                (!isReady || muted) && "text-muted-foreground opacity-50"
+              )}
             >
-              {muted ?
+              {muted || volume === 0 ?
                 <VolumeX />
               : volume < 0.33 ?
                 <Volume />
@@ -418,13 +427,26 @@ export function Player({ user, playlists }: PlayerProps) {
 
             <Slider
               aria-label="Volume"
-              disabled={!isReady || muted}
-              value={[volume * 100]}
+              value={[muted ? 0 : volume * 100]}
               defaultValue={[75]}
-              onValueChange={([volume]) => {
-                setVolume(volume / 100);
+              min={0}
+              max={100}
+              step={1}
+              onValueChange={([value]) => {
+                if (!isReady) return;
+                const newVolume = value / 100;
+                setVolume(newVolume);
+                if (newVolume > 0 && muted) {
+                  mute(false);
+                }
+                if (newVolume === 0 && !muted) {
+                  mute(true);
+                }
               }}
-              className="w-44"
+              className={cn(
+                "w-44 transition-opacity hover:opacity-100",
+                !isReady && "opacity-50"
+              )}
             >
               <SliderTrack className="h-1 cursor-pointer">
                 <SliderRange
@@ -442,7 +464,7 @@ export function Player({ user, playlists }: PlayerProps) {
             </Slider>
 
             <span className="w-8 text-sm font-medium">
-              {(volume * 100).toFixed()}%
+              {muted ? "0" : Math.round(volume * 100)}%
             </span>
           </div>
 

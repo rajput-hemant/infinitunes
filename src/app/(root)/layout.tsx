@@ -21,7 +21,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
     <React.Fragment>
       <Navbar />
       <Sidebar user={user} userPlaylists={userPlaylists} />
-      <main className="p-2 pb-24 sm:p-4 sm:pb-24 lg:ml-[20%] lg:pb-10 xl:ml-[15%]">
+      <main className="p-2 pb-24 sm:p-4 sm:pb-24 lg:ml-[20%] lg:pb-10 xl:ml-[15%] 2xl:ml-[12.5%]">
         <SecondaryNavbar />
         {children}
         <SiteFooter />
