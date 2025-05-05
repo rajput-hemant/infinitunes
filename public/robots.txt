@@ -30,3 +30,24 @@ Disallow: /
 
 User-agent: omgili
 Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: Perplexity-User
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
