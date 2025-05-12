@@ -92,7 +92,7 @@
     "eslint-plugin-react-compiler": "^0.0.0-experimental-45ae4c3-20241011",
     "eslint-plugin-tailwindcss": "^3.17.5",
     "husky": "^9.1.6",
-    "lint-staged": "^15.2.10",
+    "lint-staged": "^16.0.0",
     "pg": "^8.13.0",
     "postcss": "8.4.47",
     "prettier": "^3.3.3",
