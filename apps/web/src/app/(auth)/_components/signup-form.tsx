@@ -1,29 +1,22 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import React from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import type z from "zod";
-
-import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { authClient } from "@infinitunes/auth/client";
+import { Button } from "@infinitunes/ui/button";
+import { Field, FieldError, FieldLabel } from "@infinitunes/ui/field";
+import { Input } from "@infinitunes/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { createNewAccount } from "@/lib/actions";
+} from "@infinitunes/ui/tooltip";
+import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type z from "zod";
+
 import { signUpSchema } from "@/lib/validations";
 
 import { OAuthButtons } from "./oauth-buttons";
@@ -59,158 +52,152 @@ export function SignUpForm() {
     setIsSubmitting(true);
 
     try {
-      toast.promise(createNewAccount({ ...formData }), {
-        loading: "Creating Account...",
-        success: "Account Created Successfully",
-        error: (error) => error.message,
-        finally: () => setIsSubmitting(false),
+      const { error } = await authClient.signUp.email({
+        email: formData.email,
+        password: formData.password,
+        name: formData.email.split("@")[0],
       });
+
+      if (error) {
+        toast.error(error.message ?? "Something went wrong.");
+      } else {
+        toast.success("Account Created Successfully");
+      }
     } catch (error) {
       const err = error as Error;
       console.error(err.message);
+      toast.error(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
-        <FormField
-          name="email"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel className="sr-only">Email</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    type="email"
-                    disabled={isSubmitting}
-                    placeholder="you@domain.com"
-                    className="shadow-xs"
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+    <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
+      <Controller
+        control={form.control}
+        name="email"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={!!fieldState.error}>
+            <FieldLabel className="sr-only">Email</FieldLabel>
+            <div className="relative">
+              <Input
+                type="email"
+                disabled={isSubmitting}
+                placeholder="you@domain.com"
+                className="shadow-xs"
+                {...field}
+              />
+            </div>
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
-        <FormField
-          name="password"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel className="sr-only">Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    type={isPassVisible ? "text" : "password"}
-                    disabled={isSubmitting}
-                    placeholder="••••••••••"
-                    className="pr-8 shadow-xs"
-                    {...field}
-                  />
-                  <Tooltip delayDuration={150}>
-                    <TooltipTrigger
-                      aria-label={
-                        isPassVisible ? "Hide Password" : "Show Password"
-                      }
-                      tabIndex={-1}
-                      type="button"
-                      disabled={!field.value}
-                      onClick={() => setIsPassVisible(!isPassVisible)}
-                      className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                    >
-                      {isPassVisible ? (
-                        <EyeOff className="size-5" />
-                      ) : (
-                        <Eye className="size-5" />
-                      )}
-                    </TooltipTrigger>
+      <Controller
+        control={form.control}
+        name="password"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={!!fieldState.error}>
+            <FieldLabel className="sr-only">Password</FieldLabel>
+            <div className="relative">
+              <Input
+                type={isPassVisible ? "text" : "password"}
+                disabled={isSubmitting}
+                placeholder="••••••••••"
+                className="pr-8 shadow-xs"
+                {...field}
+              />
+              <Tooltip delayDuration={150}>
+                <TooltipTrigger
+                  aria-label={isPassVisible ? "Hide Password" : "Show Password"}
+                  tabIndex={-1}
+                  type="button"
+                  disabled={!field.value}
+                  onClick={() => setIsPassVisible(!isPassVisible)}
+                  className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {isPassVisible ? (
+                    <EyeOff className="size-5" />
+                  ) : (
+                    <Eye className="size-5" />
+                  )}
+                </TooltipTrigger>
 
-                    <TooltipContent>
-                      <p className="text-xs">
-                        {isPassVisible ? "Hide Password" : "Show Password"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <TooltipContent>
+                  <p className="text-xs">
+                    {isPassVisible ? "Hide Password" : "Show Password"}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
-        <FormField
-          name="confirmPassword"
-          control={form.control}
-          render={({ field }) => (
-            <FormItem className="space-y-1">
-              <FormLabel className="sr-only">Confirm Password</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Input
-                    type={isConfirmPassVisible ? "text" : "password"}
-                    disabled={isSubmitting}
-                    placeholder="••••••••••"
-                    className="pr-8 shadow-xs"
-                    {...field}
-                  />
-                  <Tooltip delayDuration={150}>
-                    <TooltipTrigger
-                      aria-label={
-                        isConfirmPassVisible ? "Hide Password" : "Show Password"
-                      }
-                      tabIndex={-1}
-                      type="button"
-                      disabled={!field.value}
-                      onClick={() =>
-                        setIsConfirmPassVisible(!isConfirmPassVisible)
-                      }
-                      className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                    >
-                      {isConfirmPassVisible ? (
-                        <EyeOff className="size-5" />
-                      ) : (
-                        <Eye className="size-5" />
-                      )}
-                    </TooltipTrigger>
+      <Controller
+        control={form.control}
+        name="confirmPassword"
+        render={({ field, fieldState }) => (
+          <Field data-invalid={!!fieldState.error}>
+            <FieldLabel className="sr-only">Confirm Password</FieldLabel>
+            <div className="relative">
+              <Input
+                type={isConfirmPassVisible ? "text" : "password"}
+                disabled={isSubmitting}
+                placeholder="••••••••••"
+                className="pr-8 shadow-xs"
+                {...field}
+              />
+              <Tooltip delayDuration={150}>
+                <TooltipTrigger
+                  aria-label={
+                    isConfirmPassVisible ? "Hide Password" : "Show Password"
+                  }
+                  tabIndex={-1}
+                  type="button"
+                  disabled={!field.value}
+                  onClick={() => setIsConfirmPassVisible(!isConfirmPassVisible)}
+                  className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                >
+                  {isConfirmPassVisible ? (
+                    <EyeOff className="size-5" />
+                  ) : (
+                    <Eye className="size-5" />
+                  )}
+                </TooltipTrigger>
 
-                    <TooltipContent>
-                      <p className="text-xs">
-                        {isConfirmPassVisible
-                          ? "Hide Password"
-                          : "Show Password"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                <TooltipContent>
+                  <p className="text-xs">
+                    {isConfirmPassVisible ? "Hide Password" : "Show Password"}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <FieldError errors={[fieldState.error]} />
+          </Field>
+        )}
+      />
 
-        <Button
-          type="submit"
-          size="sm"
-          disabled={isSubmitting}
-          className="w-full font-semibold shadow-md"
-        >
-          {isSubmitting ? (
-            <Loader2 className="mr-2 size-4 animate-spin" />
-          ) : (
-            <Mail className="mr-2 size-4" />
-          )}
-          Sign Up
-        </Button>
-      </form>
+      <Button
+        type="submit"
+        size="sm"
+        disabled={isSubmitting}
+        className="w-full font-semibold shadow-md"
+      >
+        {isSubmitting ? (
+          <Loader2 className="mr-2 size-4 animate-spin" />
+        ) : (
+          <Mail className="mr-2 size-4" />
+        )}
+        Sign Up
+      </Button>
 
       <OAuthButtons
         isFormDisabled={isSubmitting}
         setIsSubmitting={setIsSubmitting}
       />
-    </Form>
+    </form>
   );
 }

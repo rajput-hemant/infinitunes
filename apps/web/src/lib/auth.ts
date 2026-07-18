@@ -1,83 +1,12 @@
-import { DrizzleAdapter } from "@auth/drizzle-adapter";
-import { eq } from "drizzle-orm";
-import NextAuth from "next-auth";
-import type { Adapter } from "next-auth/adapters";
+import { createAuth } from "@infinitunes/auth";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { authConfig } from "@/config/auth";
+import { db } from "@/lib/db";
 
-import { db } from "./db";
-import { users } from "./db/schema";
+const auth = createAuth(db);
 
-export const {
-  handlers,
-  auth,
-  signIn,
-  signOut,
-  unstable_update: update,
-} = NextAuth({
-  ...authConfig,
-
-  adapter: DrizzleAdapter(db) as Adapter,
-
-  session: {
-    strategy: "jwt",
-  },
-
-  pages: {
-    signIn: "/login",
-    newUser: "/signup",
-  },
-
-  events: {
-    linkAccount: async ({ user }) => {
-      await db
-        .update(users)
-        .set({ emailVerified: new Date() })
-        .where(eq(users.id, user.id!));
-    },
-  },
-
-  callbacks: {
-    jwt: async ({ token }) => {
-      const user = await db.query.users.findFirst({
-        where: (u, { eq }) => eq(u.id, token.sub!),
-      });
-
-      if (user) {
-        const { id, name, email, username, image: picture } = user;
-
-        token = {
-          ...token,
-          id,
-          name,
-          email,
-          username,
-          picture,
-        };
-      }
-
-      return token;
-    },
-
-    session: async ({ session, token }) => {
-      if (token.sub && session.user) {
-        const { id, name, email, username, picture: image } = token;
-
-        session.user = {
-          ...session.user,
-          id,
-          name,
-          email,
-          username,
-          image,
-        };
-      }
-
-      return session;
-    },
-  },
-});
+export { auth };
 
 /**
  * Gets the current user from the server session
@@ -85,8 +14,19 @@ export const {
  * @returns The current user
  */
 export async function getUser() {
-  const session = await auth();
-  return session?.user;
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) return undefined;
+
+  return {
+    id: session.user.id,
+    name: session.user.name,
+    email: session.user.email,
+    image: session.user.image,
+    username: session.user.username,
+  };
 }
 
 /**
@@ -94,6 +34,9 @@ export async function getUser() {
  * If not, redirects to the login page
  */
 export const checkAuth = async () => {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
   if (!session) redirect("/login");
 };

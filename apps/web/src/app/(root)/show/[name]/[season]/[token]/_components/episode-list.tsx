@@ -2,7 +2,6 @@
 
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import type { User } from "next-auth";
 import React from "react";
 
 import { SongListClient } from "@/components/song-list/song-list.client";
@@ -10,6 +9,7 @@ import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import { getShowEpisodes } from "@/lib/jiosaavn-api";
 import type { Episode, Sort } from "@/types";
+import type { User } from "@/types/user";
 
 type EpisodeListProps = {
   user?: User;

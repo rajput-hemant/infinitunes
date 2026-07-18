@@ -13,7 +13,6 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import type { User } from "next-auth";
 import Link from "next/link";
 import React from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
@@ -34,6 +33,7 @@ import {
   getHref,
   getImageSrc,
 } from "@/lib/utils";
+import type { User } from "@/types/user";
 
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";

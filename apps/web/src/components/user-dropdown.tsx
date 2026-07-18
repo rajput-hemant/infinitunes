@@ -1,15 +1,7 @@
 "use client";
 
-import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
-import type { User } from "next-auth";
-import { signOut } from "next-auth/react";
-import { useTheme } from "next-themes";
-import Image from "next/image";
-import Link from "next/link";
-import { toast } from "sonner";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
+import { authClient } from "@infinitunes/auth/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@infinitunes/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,17 +13,28 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "@infinitunes/ui/dropdown-menu";
+import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
+import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
+import { toast } from "sonner";
 
 type UserDropdownProps = {
-  user?: User;
+  user?: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    username?: string | null;
+  };
 };
 
 export function UserDropdown({ user }: UserDropdownProps) {
   const { setTheme } = useTheme();
 
   async function signOutHandler() {
-    toast.promise(signOut, {
+    toast.promise(authClient.signOut(), {
       loading: "Signing out...",
       success: "You have been signed out.",
       error: "Something went wrong.",

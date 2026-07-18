@@ -1,0 +1,26 @@
+{
+  "name": "@infinitunes/auth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/auth-client.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.6.23",
+    "@infinitunes/db": "workspace:*",
+    "better-auth": "^1.6.23",
+    "bcryptjs": "^3.0.2",
+    "drizzle-orm": "^0.45.2"
+  },
+  "devDependencies": {
+    "@infinitunes/typescript-config": "workspace:*",
+    "@types/bcryptjs": "^3.0.0",
+    "@types/node": "^26.1.1",
+    "typescript": "^5.9.3"
+  }
+}

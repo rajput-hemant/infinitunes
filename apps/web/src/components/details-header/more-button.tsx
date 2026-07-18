@@ -20,7 +20,6 @@ import {
   Share2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { User } from "next-auth";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -31,6 +30,7 @@ import { addSongsToPlaylist } from "@/lib/db/queries";
 import type { MyPlaylist } from "@/lib/db/schema";
 import { currentlyInDev, getImageSrc } from "@/lib/utils";
 import type { Quality, Queue, Song, Type } from "@/types";
+import type { User } from "@/types/user";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";

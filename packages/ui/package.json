@@ -15,6 +15,7 @@
     "./dialog": "./src/components/ui/dialog.tsx",
     "./drawer": "./src/components/ui/drawer.tsx",
     "./dropdown-menu": "./src/components/ui/dropdown-menu.tsx",
+    "./field": "./src/components/ui/field.tsx",
     "./input": "./src/components/ui/input.tsx",
     "./label": "./src/components/ui/label.tsx",
     "./navigation-menu": "./src/components/ui/navigation-menu.tsx",
@@ -37,7 +38,13 @@
   },
   "peerDependencies": {
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-hook-form": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

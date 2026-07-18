@@ -1,15 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Pen } from "lucide-react";
-import type { User } from "next-auth";
-import { signOut } from "next-auth/react";
-import Image from "next/image";
-import React from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,31 +11,41 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Button, buttonVariants } from "@/components/ui/button";
+} from "@infinitunes/ui/alert-dialog";
+import { Button, buttonVariants } from "@infinitunes/ui/button";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@infinitunes/ui/field";
+import { Input } from "@infinitunes/ui/input";
+import { Separator } from "@infinitunes/ui/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from "@infinitunes/ui/tooltip";
+import { Eye, EyeOff, Pen } from "lucide-react";
+import Image from "next/image";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+
 import { useIsTyping } from "@/hooks/use-store";
 import { deleteUser, updateUser } from "@/lib/actions";
 import { currentlyInDev } from "@/lib/utils";
 import { emailSchema, passwordSchema, usernameSchema } from "@/lib/validations";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
-  user: User;
+  user: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    username?: string | null;
+  };
 };
 
 const profileSchema = z.object({
@@ -96,152 +97,137 @@ export function ProfileForm({ user }: ProfileFormProps) {
       success: "Account Deleted! Logging out...",
       error: (e) => e.message,
     });
-
-    toast.promise(signOut(), {
-      loading: "Logging you out...",
-      success: "You have been logged out.",
-    });
   }
 
   return (
     <div className="flex w-full max-w-5xl justify-between gap-4 px-6 py-2">
       <div className="space-y-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              name="name"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem id="edit-profile">
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      disabled={isSubmitting}
-                      placeholder={user.name ?? "John Doe"}
-                      className="w-96 shadow-xs"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Your name will be displayed on the site.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <Controller
+            control={form.control}
+            name="name"
+            render={({ field, fieldState }) => (
+              <Field id="edit-profile" data-invalid={!!fieldState.error}>
+                <FieldLabel>Name</FieldLabel>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    disabled={isSubmitting}
+                    placeholder={user.name ?? "John Doe"}
+                    className="w-96 shadow-xs"
+                    {...field}
+                  />
+                </div>
+                <FieldDescription>
+                  Your name will be displayed on the site.
+                </FieldDescription>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
 
-            <FormField
-              name="username"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Username</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      disabled={isSubmitting}
-                      placeholder={user.name ?? "@johndoe"}
-                      className="w-96 shadow-xs"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Your username will be used in your profile URL.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <Controller
+            control={form.control}
+            name="username"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel>Username</FieldLabel>
+                <div className="relative">
+                  <Input
+                    type="text"
+                    disabled={isSubmitting}
+                    placeholder={user.name ?? "@johndoe"}
+                    className="w-96 shadow-xs"
+                    {...field}
+                  />
+                </div>
+                <FieldDescription>
+                  Your username will be used in your profile URL.
+                </FieldDescription>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
 
-            <FormField
-              name="email"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <div className="flex gap-4">
-                      <Input
-                        type="email"
-                        disabled={isSubmitting}
-                        placeholder={user.email ?? "you@example.com"}
-                        className="w-96 shadow-xs"
-                        {...field}
-                      />
-                      <Button type="button" onClick={currentlyInDev}>
-                        Verify Email
-                      </Button>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Your email will be used for account notifications.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <Controller
+            control={form.control}
+            name="email"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel>Email</FieldLabel>
+                <div className="relative flex gap-4">
+                  <Input
+                    type="email"
+                    disabled={isSubmitting}
+                    placeholder={user.email ?? "you@example.com"}
+                    className="w-96 shadow-xs"
+                    {...field}
+                  />
+                  <Button type="button" onClick={currentlyInDev}>
+                    Verify Email
+                  </Button>
+                </div>
+                <FieldDescription>
+                  Your email will be used for account notifications.
+                </FieldDescription>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
 
-            <FormField
-              name="password"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem id="change-password">
-                  <FormLabel>New Password</FormLabel>
-                  <FormControl>
-                    <div className="relative w-96">
-                      <Input
-                        type={isPassVisible ? "text" : "password"}
-                        disabled={isSubmitting}
-                        placeholder="••••••••••"
-                        className="pr-8 shadow-xs"
-                        {...field}
-                      />
-                      <Tooltip delayDuration={150}>
-                        <TooltipTrigger
-                          aria-label={
-                            isPassVisible ? "Hide Password" : "Show Password"
-                          }
-                          tabIndex={-1}
-                          type="button"
-                          disabled={!field.value}
-                          onClick={() => setIsPassVisible(!isPassVisible)}
-                          className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                        >
-                          {isPassVisible ? (
-                            <EyeOff className="size-5" />
-                          ) : (
-                            <Eye className="size-5" />
-                          )}
-                        </TooltipTrigger>
+          <Controller
+            control={form.control}
+            name="password"
+            render={({ field, fieldState }) => (
+              <Field id="change-password" data-invalid={!!fieldState.error}>
+                <FieldLabel>New Password</FieldLabel>
+                <div className="relative w-96">
+                  <Input
+                    type={isPassVisible ? "text" : "password"}
+                    disabled={isSubmitting}
+                    placeholder="••••••••••"
+                    className="pr-8 shadow-xs"
+                    {...field}
+                  />
+                  <Tooltip delayDuration={150}>
+                    <TooltipTrigger
+                      aria-label={
+                        isPassVisible ? "Hide Password" : "Show Password"
+                      }
+                      tabIndex={-1}
+                      type="button"
+                      disabled={!field.value}
+                      onClick={() => setIsPassVisible(!isPassVisible)}
+                      className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                    >
+                      {isPassVisible ? (
+                        <EyeOff className="size-5" />
+                      ) : (
+                        <Eye className="size-5" />
+                      )}
+                    </TooltipTrigger>
 
-                        <TooltipContent>
-                          <p className="text-xs">
-                            {isPassVisible ? "Hide Password" : "Show Password"}
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Enter your new password to change your password.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <TooltipContent>
+                      <p className="text-xs">
+                        {isPassVisible ? "Hide Password" : "Show Password"}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+                <FieldDescription>
+                  Enter your new password to change your password.
+                </FieldDescription>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
 
-            <div className="pt-4">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="shadow-xs"
-              >
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </Form>
+          <div className="pt-4">
+            <Button type="submit" disabled={isSubmitting} className="shadow-xs">
+              Save Changes
+            </Button>
+          </div>
+        </form>
 
         <div id="delete-account" className="space-y-4">
           <p className="text-3xl font-bold text-destructive drop-shadow-sm">

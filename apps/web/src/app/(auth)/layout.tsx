@@ -1,3 +1,4 @@
+import { buttonVariants } from "@infinitunes/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -5,7 +6,6 @@ import { redirect } from "next/navigation";
 import React from "react";
 
 import { Icons } from "@/components/icons";
-import { buttonVariants } from "@/components/ui/button";
 import { getUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 

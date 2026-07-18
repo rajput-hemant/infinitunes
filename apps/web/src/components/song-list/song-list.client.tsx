@@ -1,11 +1,11 @@
 import { Play } from "lucide-react";
-import type { User } from "next-auth";
 import Image from "next/image";
 import Link from "next/link";
 
 import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import type { Episode, Song } from "@/types";
+import type { User } from "@/types/user";
 
 import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";

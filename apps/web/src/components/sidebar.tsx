@@ -2,7 +2,6 @@
 
 import { Button, buttonVariants } from "@infinitunes/ui/button";
 import { ListMusic, ListPlus, Play, Plus } from "lucide-react";
-import type { User } from "next-auth";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import React from "react";
@@ -10,6 +9,7 @@ import React from "react";
 import { sidebarNav } from "@/config/nav";
 import type { MyPlaylist } from "@/lib/db/schema";
 import { cn, currentlyInDev } from "@/lib/utils";
+import type { User } from "@/types/user";
 
 import { NewPlaylistForm } from "./playlist/new-playlist-form";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";

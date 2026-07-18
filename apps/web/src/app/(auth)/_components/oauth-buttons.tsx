@@ -1,12 +1,12 @@
 "use client";
 
+import { authClient } from "@infinitunes/auth/client";
+import { Button } from "@infinitunes/ui/button";
 import { Loader2 } from "lucide-react";
-import { signIn } from "next-auth/react";
 import React from "react";
 import { toast } from "sonner";
 
 import { GitHub, Google } from "@/components/icons";
-import { Button } from "@/components/ui/button";
 
 type OAuthButtonProps = {
   isFormDisabled: boolean;
@@ -18,26 +18,27 @@ export function OAuthButtons(props: OAuthButtonProps) {
 
   const [oauthLoading, setOauthLoading] = React.useState<"google" | "github">();
 
-  function signInToaster(promise: Promise<unknown>) {
-    toast.promise(promise, {
-      loading: "Signing in...",
-      success: "You have been signed in.",
-      error: "Something went wrong.",
-      finally: () => {
-        setIsSubmitting(false);
-        setOauthLoading(undefined);
-      },
-    });
-  }
   async function googleSignInHandler() {
     setOauthLoading("google");
     setIsSubmitting(true);
 
     try {
-      signInToaster(signIn("google"));
+      const { error } = await authClient.signIn.social({
+        provider: "google",
+      });
+
+      if (error) {
+        toast.error(error.message ?? "Something went wrong.");
+      } else {
+        toast.success("You have been signed in.");
+      }
     } catch (error) {
       const err = error as Error;
       console.error(err.message);
+      toast.error("Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
+      setOauthLoading(undefined);
     }
   }
 
@@ -46,12 +47,25 @@ export function OAuthButtons(props: OAuthButtonProps) {
     setIsSubmitting(true);
 
     try {
-      signInToaster(signIn("github"));
+      const { error } = await authClient.signIn.social({
+        provider: "github",
+      });
+
+      if (error) {
+        toast.error(error.message ?? "Something went wrong.");
+      } else {
+        toast.success("You have been signed in.");
+      }
     } catch (error) {
       const err = error as Error;
       console.error(err.message);
+      toast.error("Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
+      setOauthLoading(undefined);
     }
   }
+
   return (
     <>
       <div className="relative py-2">

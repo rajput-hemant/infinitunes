@@ -2,6 +2,7 @@
 
 import { randomUUID } from "crypto";
 
+import { betterAuthAccounts } from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
 import { count, eq } from "drizzle-orm";
 import { updateTag } from "next/cache";
@@ -16,28 +17,6 @@ import type {
   resetPasswordSchema,
   signUpSchema,
 } from "./validations";
-
-export async function createNewAccount(
-  credentials: z.infer<typeof signUpSchema>,
-) {
-  const { email, password } = credentials;
-
-  const hashedPassword = await hash(password, 10);
-
-  const user = await db.query.users.findFirst({
-    where: (u, { eq }) => eq(u.email, email),
-  });
-
-  if (user) {
-    throw new Error("Email already exists, please try logging in");
-  }
-
-  await db
-    .insert(users)
-    .values({ username: randomUUID(), email, password: hashedPassword });
-
-  redirect("/");
-}
 
 export async function resetPassword(
   credentials: z.infer<typeof resetPasswordSchema>,
@@ -71,6 +50,11 @@ export async function resetPassword(
     .set({ password: hashedPassword })
     .where(eq(users.email, email));
 
+  await db
+    .update(betterAuthAccounts)
+    .set({ password: hashedPassword })
+    .where(eq(betterAuthAccounts.userId, user.id));
+
   redirect("/login");
 }
 
@@ -97,26 +81,28 @@ export async function createNewPlaylist(
   return playlist;
 }
 
-export async function updateUser(user: NewUser) {
+export async function updateUser(
+  data: NewUser & { name?: string; username?: string; email?: string },
+) {
+  const userId = data.id!;
+
   const usernameExists = await db.query.users.findFirst({
-    where: (u, { eq }) => eq(u.username, user.username!),
+    where: (u, { eq }) => eq(u.username, data.username!),
   });
 
-  if (usernameExists) {
+  if (usernameExists && usernameExists.id !== userId) {
     throw new Error("Username already exists, please try another one");
   }
 
-  const [updatedUser] = await db
-    .update(users)
-    .set(user)
-    .where(eq(users.id, user.id!))
-    .returning();
-
-  if (!updatedUser) {
-    throw new Error("Failed to update user, please try again");
+  const patch: Record<string, unknown> = {};
+  if (data.name !== undefined) patch.betterAuthName = data.name;
+  if (data.username !== undefined) patch.username = data.username;
+  if (data.email !== undefined) patch.email = data.email;
+  if (Object.keys(patch).length > 0) {
+    await db.update(users).set(patch).where(eq(users.id, userId));
   }
 
-  return updatedUser;
+  return db.query.users.findFirst({ where: eq(users.id, userId) });
 }
 
 export async function deleteUser(userId: string) {

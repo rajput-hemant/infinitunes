@@ -1,9 +1,9 @@
 "use client";
 
 import { List, ListX } from "lucide-react";
-import type { User } from "next-auth";
 
 import type { MyPlaylist } from "@/lib/db/schema";
+import type { User } from "@/types/user";
 
 import { Button } from "../ui/button";
 import {
