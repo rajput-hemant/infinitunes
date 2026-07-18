@@ -3,7 +3,7 @@ import path from "path";
 import type { NextConfig } from "next";
 
 // This is validation for the environment variables early in the build process.
-import "./src/lib/env";
+import "./lib/env";
 
 const isProd = process.env.NODE_ENV === "production";
 const isDocker = process.env.IS_DOCKER === "true";
