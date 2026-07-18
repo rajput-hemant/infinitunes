@@ -1,3 +1,4 @@
+import { DropdownMenuItem } from "@infinitunes/ui/dropdown-menu";
 import { Clipboard, Mail } from "lucide-react";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -6,7 +7,6 @@ import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
 import { Icons } from "./icons";
-import { DropdownMenuItem } from "./ui/dropdown-menu";
 
 type ShareOptionsProps = React.ComponentProps<"div"> & {
   isDropDownItem?: boolean;

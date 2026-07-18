@@ -54,16 +54,20 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
       <Tabs defaultValue={name.endsWith("-songs") ? TABS.Songs : TABS.Albums}>
         <TabsList className="mx-auto flex max-w-fit lg:mx-0">
           {Object.entries(TABS).map(([key, value]) => (
-            <TabsTrigger key={key} value={value} asChild>
-              <Link
-                href={`/label/${name.replace(
-                  /-(songs|albums)$/,
-                  value === TABS.Songs ? "-songs" : "-albums",
-                )}/${token}`}
-              >
-                {value}
-              </Link>
-            </TabsTrigger>
+            <TabsTrigger
+              key={key}
+              value={value}
+              render={
+                <Link
+                  href={`/label/${name.replace(
+                    /-(songs|albums)$/,
+                    value === TABS.Songs ? "-songs" : "-albums",
+                  )}/${token}`}
+                >
+                  {value}
+                </Link>
+              }
+            />
           ))}
         </TabsList>
 

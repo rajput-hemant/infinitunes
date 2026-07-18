@@ -1,5 +1,14 @@
 "use client";
 
+import { Button } from "@infinitunes/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@infinitunes/ui/dropdown-menu";
+import { ToggleGroup, ToggleGroupItem } from "@infinitunes/ui/toggle-group";
 import { setCookie } from "cookies-next";
 import { ChevronDown, Languages } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,16 +18,6 @@ import { toast } from "sonner";
 import { languages } from "@/config/languages";
 import { cn } from "@/lib/utils";
 import type { Lang } from "@/types";
-
-import { Button } from "../ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 
 type LanguagePickerProps = {
   initialLanguages: Lang[];
@@ -45,22 +44,24 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
 
   return (
     <DropdownMenu onOpenChange={(o) => setIsOpen(o)}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          size="sm"
-          variant="outline"
-          className="hidden size-10 space-x-1 p-0 shadow-xs lg:inline-flex lg:w-auto lg:space-x-2 lg:p-2"
-        >
-          <Languages className="aspect-square h-5 lg:h-4" />
-          <span className="hidden lg:inline-block">Languages</span>
-          <ChevronDown
-            className={cn(
-              "hidden size-4 duration-300 lg:inline-block",
-              isOpen && "rotate-180",
-            )}
-          />
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            size="sm"
+            variant="outline"
+            className="hidden size-10 space-x-1 p-0 shadow-xs lg:inline-flex lg:w-auto lg:space-x-2 lg:p-2"
+          >
+            <Languages className="aspect-square h-5 lg:h-4" />
+            <span className="hidden lg:inline-block">Languages</span>
+            <ChevronDown
+              className={cn(
+                "hidden size-4 duration-300 lg:inline-block",
+                isOpen && "rotate-180",
+              )}
+            />
+          </Button>
+        }
+      />
 
       <DropdownMenuContent>
         <DropdownMenuLabel className="p-4">
@@ -74,7 +75,6 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
         </DropdownMenuLabel>
 
         <ToggleGroup
-          type="multiple"
           value={selectedLanguages}
           onValueChange={(v) => setSelectedLanguages(v as Lang[])}
           className="grid grid-cols-2 border-y py-2"

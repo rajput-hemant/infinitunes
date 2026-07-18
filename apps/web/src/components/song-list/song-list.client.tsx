@@ -1,3 +1,5 @@
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,8 +12,6 @@ import type { User } from "@/types/user";
 import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-import { Skeleton } from "../ui/skeleton";
 import { TileMoreButton } from "./more-button";
 import { TilePlayPauseButton } from "./play-pause-button";
 

@@ -1,11 +1,11 @@
+import { Separator } from "@infinitunes/ui/separator";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import Link from "next/link";
 
 import { cn, getHref, getImageSrc } from "@/lib/utils";
 import type { AllSearch } from "@/types";
 
 import { ImageWithFallback } from "../image-with-fallback";
-import { Separator } from "../ui/separator";
-import { Skeleton } from "../ui/skeleton";
 
 type SearchAllProps = {
   query: string;

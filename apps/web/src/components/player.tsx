@@ -1,5 +1,13 @@
 "use client";
 
+import { Button, buttonVariants } from "@infinitunes/ui/button";
+import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Slider } from "@infinitunes/ui/slider";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@infinitunes/ui/tooltip";
 import {
   Loader2,
   MoreVertical,
@@ -16,6 +24,7 @@ import {
 import Link from "next/link";
 import React from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
+import { toast } from "sonner";
 
 import { useEventListener } from "@/hooks/use-event-listner";
 import {
@@ -39,11 +48,6 @@ import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Queue } from "./queue";
 import { TileMoreButton } from "./song-list/more-button";
-import { Button, buttonVariants } from "./ui/button";
-import { Skeleton } from "./ui/skeleton";
-import { Slider, SliderRange, SliderThumb, SliderTrack } from "./ui/slider";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
-import { toast } from "./ui/use-toast";
 
 type PlayerProps = {
   user?: User;
@@ -126,15 +130,15 @@ export function Player({ user, playlists }: PlayerProps) {
     if (queue.length === 1) {
       if (isLooping) {
         player?.loopOff();
-        toast({ description: "Looping disabled" });
+        toast("Looping disabled");
       } else {
         player?.loopOn();
-        toast({ description: "Playing current song on repeat" });
+        toast("Playing current song on repeat");
       }
     } else if (!isLooping && !loopPlaylist) {
       setLoopPlaylist(true);
       player?.loopOn();
-      toast({ description: "Looping playlist" });
+      toast("Looping playlist");
     } else if (!isLooping && loopPlaylist) {
       setLoopPlaylist(false);
       player?.loopOff();
@@ -244,24 +248,18 @@ export function Player({ user, playlists }: PlayerProps) {
       <Slider
         value={[pos]}
         max={duration}
-        onValueChange={([values]) => {
-          setPos(values);
+        onValueChange={(value: number | readonly number[], _details) => {
+          setPos(typeof value === "number" ? value : (value[0] as number));
         }}
-        onPointerDown={() => {
-          setIsDragging(true);
-        }}
-        onValueCommit={() => {
+        onValueCommitted={() => {
           seek(pos);
           setPos(getPosition());
           setIsDragging(false);
         }}
-      >
-        <SliderTrack className="h-1 cursor-pointer">
-          <SliderRange />
-        </SliderTrack>
-
-        <SliderThumb className="block size-4 cursor-pointer" />
-      </Slider>
+        onPointerDown={() => {
+          setIsDragging(true);
+        }}
+      />
 
       <div
         className={cn(
@@ -312,23 +310,26 @@ export function Player({ user, playlists }: PlayerProps) {
         </div>
 
         <div className="flex justify-end lg:w-1/3 lg:justify-evenly">
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                aria-label={isLooping ? "Looping" : "Loop"}
-                onClick={loopHandler}
-                className={cn(
-                  "hidden lg:block",
-                  !isLooping && !loopPlaylist && "text-muted-foreground",
-                )}
-              >
-                {isLooping ? (
-                  <Repeat1 strokeWidth={2} className="size-7" />
-                ) : (
-                  <Repeat strokeWidth={2} className="size-7" />
-                )}
-              </button>
-            </TooltipTrigger>
+          <Tooltip>
+            <TooltipTrigger
+              delay={0}
+              render={
+                <button
+                  aria-label={isLooping ? "Looping" : "Loop"}
+                  onClick={loopHandler}
+                  className={cn(
+                    "hidden lg:block",
+                    !isLooping && !loopPlaylist && "text-muted-foreground",
+                  )}
+                >
+                  {isLooping ? (
+                    <Repeat1 strokeWidth={2} className="size-7" />
+                  ) : (
+                    <Repeat strokeWidth={2} className="size-7" />
+                  )}
+                </button>
+              }
+            />
             <TooltipContent>
               {isLooping
                 ? "Playing current song on repeat"
@@ -338,63 +339,75 @@ export function Player({ user, playlists }: PlayerProps) {
             </TooltipContent>
           </Tooltip>
 
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                aria-label="Previous"
-                onClick={skipToPrev}
-                className="hidden lg:block"
-              >
-                <Icons.SkipBack className="size-10" />
-              </button>
-            </TooltipTrigger>
+          <Tooltip>
+            <TooltipTrigger
+              delay={0}
+              render={
+                <button
+                  aria-label="Previous"
+                  onClick={skipToPrev}
+                  className="hidden lg:block"
+                >
+                  <Icons.SkipBack className="size-10" />
+                </button>
+              }
+            />
             <TooltipContent>Previous</TooltipContent>
           </Tooltip>
 
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                aria-label={isPlaying ? "Pause" : "Play"}
-                onClick={playPauseHandler}
-              >
-                {isLoading ? (
-                  <Loader2 className="animate-spin" />
-                ) : isPlaying ? (
-                  <Pause className="size-10" />
-                ) : (
-                  <Icons.Play className="size-10" />
-                )}
-              </button>
-            </TooltipTrigger>
+          <Tooltip>
+            <TooltipTrigger
+              delay={0}
+              render={
+                <button
+                  aria-label={isPlaying ? "Pause" : "Play"}
+                  onClick={playPauseHandler}
+                >
+                  {isLoading ? (
+                    <Loader2 className="animate-spin" />
+                  ) : isPlaying ? (
+                    <Pause className="size-10" />
+                  ) : (
+                    <Icons.Play className="size-10" />
+                  )}
+                </button>
+              }
+            />
             <TooltipContent>{isPlaying ? "Pause" : "Play"}</TooltipContent>
           </Tooltip>
 
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                aria-label="Next"
-                onClick={skipToNext}
-                className="hidden lg:block"
-              >
-                <Icons.SkipForward className="size-10" />
-              </button>
-            </TooltipTrigger>
+          <Tooltip>
+            <TooltipTrigger
+              delay={0}
+              render={
+                <button
+                  aria-label="Next"
+                  onClick={skipToNext}
+                  className="hidden lg:block"
+                >
+                  <Icons.SkipForward className="size-10" />
+                </button>
+              }
+            />
             <TooltipContent>Next</TooltipContent>
           </Tooltip>
 
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                aria-label={isShuffle ? "Shuffling" : "Shuffle"}
-                onClick={() => setIsShuffle(!isShuffle)}
-                className={cn(
-                  "hidden lg:block",
-                  !isShuffle && "text-muted-foreground",
-                )}
-              >
-                <Shuffle strokeWidth={2.35} />
-              </button>
-            </TooltipTrigger>
+          <Tooltip>
+            <TooltipTrigger
+              delay={0}
+              render={
+                <button
+                  aria-label={isShuffle ? "Shuffling" : "Shuffle"}
+                  onClick={() => setIsShuffle(!isShuffle)}
+                  className={cn(
+                    "hidden lg:block",
+                    !isShuffle && "text-muted-foreground",
+                  )}
+                >
+                  <Shuffle strokeWidth={2.35} />
+                </button>
+              }
+            />
             <TooltipContent>
               {isShuffle ? "Shuffling" : "Shuffle"}
             </TooltipContent>
@@ -445,9 +458,11 @@ export function Player({ user, playlists }: PlayerProps) {
               min={0}
               max={100}
               step={1}
-              onValueChange={([value]) => {
+              onValueChange={(value: number | readonly number[], _details) => {
+                const v =
+                  typeof value === "number" ? value : (value[0] as number);
                 if (!isReady) return;
-                const newVolume = value / 100;
+                const newVolume = v / 100;
                 setVolume(newVolume);
                 if (newVolume > 0 && isMuted) {
                   unmute();
@@ -460,21 +475,7 @@ export function Player({ user, playlists }: PlayerProps) {
                 "w-44 transition-opacity hover:opacity-100",
                 !isReady && "opacity-50",
               )}
-            >
-              <SliderTrack className="h-1 cursor-pointer">
-                <SliderRange
-                  className={cn((!isReady || isMuted) && "bg-accent")}
-                />
-              </SliderTrack>
-
-              <SliderThumb
-                aria-label="Volume slider"
-                className={cn(
-                  "size-4 cursor-pointer",
-                  (!isReady || isMuted) && "bg-accent",
-                )}
-              />
-            </Slider>
+            />
 
             <span className="w-8 text-sm font-medium">
               {isMuted ? "0" : Math.round(volume * 100)}%

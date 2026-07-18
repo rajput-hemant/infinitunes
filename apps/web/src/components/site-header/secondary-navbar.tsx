@@ -1,5 +1,14 @@
 "use client";
 
+import { Button, buttonVariants } from "@infinitunes/ui/button";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { Separator } from "@infinitunes/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTrigger,
+} from "@infinitunes/ui/sheet";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -7,11 +16,6 @@ import React from "react";
 
 import { sidebarNav } from "@/config/nav";
 import { cn } from "@/lib/utils";
-
-import { Button, buttonVariants } from "../ui/button";
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-import { Separator } from "../ui/separator";
-import { Sheet, SheetContent, SheetHeader, SheetTrigger } from "../ui/sheet";
 
 export function SecondaryNavbar() {
   const pathname = usePathname();

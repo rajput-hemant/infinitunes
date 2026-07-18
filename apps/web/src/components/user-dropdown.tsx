@@ -49,14 +49,16 @@ export function UserDropdown({ user }: UserDropdownProps) {
             src={user?.image ?? undefined}
             alt={user?.name ?? "Guest User"}
           />
-          <AvatarFallback asChild>
-            <Image
-              src="/images/placeholder/user.jpg"
-              alt={user?.name ?? "Guest User"}
-              fill
-              className="dark:invert"
-            />
-          </AvatarFallback>
+          <AvatarFallback
+            render={
+              <Image
+                src="/images/placeholder/user.jpg"
+                alt={user?.name ?? "Guest User"}
+                fill
+                className="dark:invert"
+              />
+            }
+          />
         </Avatar>
       </DropdownMenuTrigger>
 
@@ -79,18 +81,17 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem disabled={user === undefined} asChild>
-          <Link href="/me">
-            <User2 size={16} className="mr-2" />
-            My Profile
-          </Link>
+        <DropdownMenuItem
+          disabled={user === undefined}
+          render={<Link href="/me" />}
+        >
+          <User2 size={16} className="mr-2" />
+          My Profile
         </DropdownMenuItem>
 
-        <DropdownMenuItem asChild>
-          <Link href="/settings">
-            <Cog size={16} className="mr-2" />
-            Settings
-          </Link>
+        <DropdownMenuItem render={<Link href="/settings" />}>
+          <Cog size={16} className="mr-2" />
+          Settings
         </DropdownMenuItem>
 
         <DropdownMenuSub>

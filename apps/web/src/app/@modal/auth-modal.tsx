@@ -58,15 +58,17 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
         <Separator />
 
         <DialogFooter className="flex pt-2">
-          <DialogClose asChild>
-            <Button
-              variant="secondary"
-              onClick={navigateBack}
-              className="w-full border text-lg font-semibold shadow-xs"
-            >
-              Close
-            </Button>
-          </DialogClose>
+          <DialogClose
+            render={
+              <Button
+                variant="secondary"
+                onClick={navigateBack}
+                className="w-full border text-lg font-semibold shadow-xs"
+              >
+                Back
+              </Button>
+            }
+          />
         </DialogFooter>
       </DialogContent>
     </Dialog>

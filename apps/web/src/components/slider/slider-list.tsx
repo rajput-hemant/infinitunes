@@ -1,4 +1,5 @@
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+
 import type { SliderCardProps } from "./slider-card";
 import { SliderCard } from "./slider-card";
 

@@ -189,8 +189,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     className="pr-8 shadow-xs"
                     {...field}
                   />
-                  <Tooltip delayDuration={150}>
+                  <Tooltip>
                     <TooltipTrigger
+                      delay={150}
                       aria-label={
                         isPassVisible ? "Hide Password" : "Show Password"
                       }
@@ -242,9 +243,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
             </div>
 
             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">Delete Account</Button>
-              </AlertDialogTrigger>
+              <AlertDialogTrigger
+                render={<Button variant="destructive">Delete Account</Button>}
+              />
 
               <AlertDialogContent>
                 <AlertDialogHeader>

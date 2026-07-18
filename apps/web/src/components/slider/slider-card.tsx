@@ -1,3 +1,6 @@
+import { Badge } from "@infinitunes/ui/badge";
+import { Card, CardContent } from "@infinitunes/ui/card";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import { Play } from "lucide-react";
 import Link from "next/link";
 
@@ -6,9 +9,6 @@ import type { Quality, Type } from "@/types";
 
 import { ImageWithFallback } from "../image-with-fallback";
 import { PlayButton } from "../play-button";
-import { Badge } from "../ui/badge";
-import { Card, CardContent } from "../ui/card";
-import { Skeleton } from "../ui/skeleton";
 
 export type SliderCardProps = {
   name: string;

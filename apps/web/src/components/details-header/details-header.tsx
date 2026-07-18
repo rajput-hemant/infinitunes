@@ -1,3 +1,6 @@
+import { Badge } from "@infinitunes/ui/badge";
+import { buttonVariants } from "@infinitunes/ui/button";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 
@@ -19,9 +22,6 @@ import { DownloadButton } from "../download-button";
 import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
-import { Badge } from "../ui/badge";
-import { buttonVariants } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
 import { MoreButton } from "./more-button";
 
 type DetailsHeaderProps = {

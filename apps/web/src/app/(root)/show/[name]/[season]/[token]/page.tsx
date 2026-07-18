@@ -95,21 +95,19 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         </h2>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button size="sm" variant="outline" className="w-28 md:w-36">
-              {sort === "asc" ? "Oldest" : "Newest"}
-              <ChevronDown className="ml-auto size-5" />
-            </Button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <Button size="sm" variant="outline" className="w-28 md:w-36">
+                {sort === "asc" ? "Oldest" : "Newest"}
+                <ChevronDown className="ml-auto size-5" />
+              </Button>
+            }
+          />
 
           <DropdownMenuContent className="w-28 *:cursor-pointer md:w-36">
-            <DropdownMenuItem asChild>
-              <Link href="?sort=desc">Newest</Link>
-            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href="?sort=desc">Newest</Link>} />
 
-            <DropdownMenuItem asChild>
-              <Link href="?sort=asc">Oldest</Link>
-            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href="?sort=asc">Oldest</Link>} />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

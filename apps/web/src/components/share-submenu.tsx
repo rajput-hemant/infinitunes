@@ -1,12 +1,12 @@
-import { Share2 } from "lucide-react";
-
-import { ShareOptions } from "./share-options";
 import {
   DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-} from "./ui/dropdown-menu";
+} from "@infinitunes/ui/dropdown-menu";
+import { Share2 } from "lucide-react";
+
+import { ShareOptions } from "./share-options";
 
 export function ShareSubMenu() {
   return (

@@ -22,9 +22,8 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
 
   return (
     <ToggleGroup
-      type="single"
-      value={isMounted() ? theme : "system"}
-      onValueChange={handleThemeChange}
+      value={[isMounted() ? (theme ?? "system") : "system"]}
+      onValueChange={(v) => handleThemeChange(v[0])}
       className={cn("rounded-full border p-1", className)}
     >
       <ToggleGroupItem

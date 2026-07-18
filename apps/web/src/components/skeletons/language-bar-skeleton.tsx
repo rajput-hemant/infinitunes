@@ -1,6 +1,6 @@
-import { languages } from "@/config/languages";
+import { Badge } from "@infinitunes/ui/badge";
 
-import { Badge } from "../ui/badge";
+import { languages } from "@/config/languages";
 
 export function LanguageBarSkeleton() {
   return (

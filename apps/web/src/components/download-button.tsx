@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@infinitunes/ui/tooltip";
 import { CloudDownload, Loader } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
@@ -7,8 +12,6 @@ import { toast } from "sonner";
 import { useDownloadQuality } from "@/hooks/use-store";
 import type { Episode, Song } from "@/types";
 import { QUALITIES_MAP } from "@/types";
-
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   songs: (Song | Episode)[];
@@ -92,8 +95,9 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
   };
 
   return (
-    <Tooltip delayDuration={0}>
+    <Tooltip>
       <TooltipTrigger
+        delay={0}
         aria-label={`Download ${songs.length} songs`}
         onClick={downloadHandler}
         {...rest}

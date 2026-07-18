@@ -1,6 +1,12 @@
 "use client";
 
 import { Button, buttonVariants } from "@infinitunes/ui/button";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@infinitunes/ui/tooltip";
 import { ListMusic, ListPlus, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
@@ -12,8 +18,6 @@ import { cn, currentlyInDev } from "@/lib/utils";
 import type { User } from "@/types/user";
 
 import { NewPlaylistForm } from "./playlist/new-playlist-form";
-import { ScrollArea, ScrollBar } from "./ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type SidebarProps = {
   user?: User;
@@ -77,13 +81,16 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
         </h3>
 
         {user && userPlaylists?.length !== 0 && (
-          <Tooltip delayDuration={0}>
+          <Tooltip>
             <NewPlaylistForm user={user}>
-              <TooltipTrigger asChild>
-                <Button size="icon" variant="ghost" className="size-7">
-                  <ListPlus className="size-4" />
-                </Button>
-              </TooltipTrigger>
+              <TooltipTrigger
+                delay={0}
+                render={
+                  <Button size="icon" variant="ghost" className="size-7">
+                    <ListPlus className="size-4" />
+                  </Button>
+                }
+              />
             </NewPlaylistForm>
             <TooltipContent>Create a new playlist</TooltipContent>
           </Tooltip>

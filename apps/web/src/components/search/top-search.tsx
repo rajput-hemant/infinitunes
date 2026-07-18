@@ -1,3 +1,5 @@
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -5,8 +7,6 @@ import { getTopSearches } from "@/lib/jiosaavn-api";
 import { getHref, getImageSrc } from "@/lib/utils";
 
 import { SliderCard } from "../slider";
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-import { Skeleton } from "../ui/skeleton";
 
 export async function TopSearch() {
   const topSearches = await getTopSearches();

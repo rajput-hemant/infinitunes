@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@infinitunes/ui/button";
 import {
   Drawer,
   DrawerClose,
@@ -10,6 +11,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@infinitunes/ui/drawer";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@infinitunes/ui/dropdown-menu";
+import { Separator } from "@infinitunes/ui/separator";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import {
   ChevronLeft,
   ChevronRight,
@@ -35,16 +45,6 @@ import type { User } from "@/types/user";
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
-import { Button } from "../ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Separator } from "../ui/separator";
-import { Skeleton } from "../ui/skeleton";
 
 type MoreButtonProps = {
   user?: User;
@@ -147,16 +147,18 @@ export function MoreButton(props: MoreButtonProps) {
     <div>
       <div className="lg:hidden">
         <Drawer>
-          <DrawerTrigger asChild>
-            <Button
-              aria-label="More options"
-              size="icon"
-              variant="outline"
-              className="rounded-full shadow-xs"
-            >
-              <MoreVertical className="size-5" />
-            </Button>
-          </DrawerTrigger>
+          <DrawerTrigger
+            render={
+              <Button
+                aria-label="More options"
+                size="icon"
+                variant="outline"
+                className="rounded-full shadow-xs"
+              >
+                <MoreVertical className="size-5" />
+              </Button>
+            }
+          />
 
           <DrawerContent className="rounded-t-3xl">
             <DrawerHeader className="pb-0">
@@ -227,25 +229,25 @@ export function MoreButton(props: MoreButtonProps) {
             <Separator className="my-4" />
 
             <DrawerFooter className="pt-0 sm:justify-center">
-              <DrawerClose asChild>
-                <Button>Cancel</Button>
-              </DrawerClose>
+              <DrawerClose render={<Button>Cancel</Button>} />
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
       </div>
       <div className="hidden lg:block">
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              aria-label="More options"
-              size="icon"
-              variant="outline"
-              className="rounded-full shadow-xs"
-            >
-              <MoreVertical className="size-5" />
-            </Button>
-          </DropdownMenuTrigger>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                aria-label="More options"
+                size="icon"
+                variant="outline"
+                className="rounded-full shadow-xs"
+              >
+                <MoreVertical className="size-5" />
+              </Button>
+            }
+          />
 
           <DropdownMenuContent align="start">
             <DropdownMenuGroup>

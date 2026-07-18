@@ -1,5 +1,16 @@
 "use client";
 
+import { Button } from "@infinitunes/ui/button";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@infinitunes/ui/sheet";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import { ListOrdered, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,17 +21,6 @@ import { getHref, getImageSrc } from "@/lib/utils";
 import type { Queue } from "@/types";
 
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
-import { Button } from "./ui/button";
-import { ScrollArea, ScrollBar } from "./ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
-import { Skeleton } from "./ui/skeleton";
 
 export function Queue() {
   const [queue, setQueue] = useQueue();
@@ -51,11 +51,13 @@ export function Queue() {
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button size="icon" variant="ghost" className="shrink-0">
-          <ListOrdered />
-        </Button>
-      </SheetTrigger>
+      <SheetTrigger
+        render={
+          <Button size="icon" variant="ghost" className="shrink-0">
+            <ListOrdered />
+          </Button>
+        }
+      />
 
       <SheetContent
         dir="right"

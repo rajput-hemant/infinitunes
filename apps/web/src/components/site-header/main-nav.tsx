@@ -1,11 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import React from "react";
-
-import { cn, getHref } from "@/lib/utils";
-import type { MegaMenu } from "@/types";
-
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -14,8 +8,13 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "../ui/navigation-menu";
-import { Separator } from "../ui/separator";
+} from "@infinitunes/ui/navigation-menu";
+import { Separator } from "@infinitunes/ui/separator";
+import Link from "next/link";
+import React from "react";
+
+import { cn, getHref } from "@/lib/utils";
+import type { MegaMenu } from "@/types";
 
 type MainNavProps = {
   megaMenu: MegaMenu;
@@ -105,18 +104,20 @@ const ListItem = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof Link>
 >(({ className, children, ...props }, ref) => {
   return (
-    <NavigationMenuLink asChild>
-      <Link
-        ref={ref}
-        className={cn(
-          "block space-y-1 rounded-md py-1.5 text-muted-foreground duration-150 hover:text-secondary-foreground",
-          className,
-        )}
-        {...props}
-      >
-        <span className="line-clamp-1">{children}</span>
-      </Link>
-    </NavigationMenuLink>
+    <NavigationMenuLink
+      render={
+        <Link
+          ref={ref}
+          className={cn(
+            "block space-y-1 rounded-md py-1.5 text-muted-foreground duration-150 hover:text-secondary-foreground",
+            className,
+          )}
+          {...props}
+        >
+          <span className="line-clamp-1">{children}</span>
+        </Link>
+      }
+    />
   );
 });
 

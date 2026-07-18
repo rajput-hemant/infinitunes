@@ -16,6 +16,7 @@
     "./drawer": "./src/components/ui/drawer.tsx",
     "./dropdown-menu": "./src/components/ui/dropdown-menu.tsx",
     "./field": "./src/components/ui/field.tsx",
+    "./form": "./src/components/ui/form.tsx",
     "./input": "./src/components/ui/input.tsx",
     "./label": "./src/components/ui/label.tsx",
     "./navigation-menu": "./src/components/ui/navigation-menu.tsx",
@@ -48,6 +49,8 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@radix-ui/react-label": "^2.1.11",
+    "@radix-ui/react-slot": "^1.3.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.25.0",
@@ -56,6 +59,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@infinitunes/typescript-config": "workspace:*",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "typescript": "^5.9.3"

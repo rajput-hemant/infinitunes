@@ -1,7 +1,7 @@
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import React from "react";
 
-import { ScrollArea, ScrollBar } from "../ui/scroll-area";
-import { Skeleton } from "../ui/skeleton";
 import { SliderCardSkeleton } from "./slider-card-skeleton";
 
 export function SliderListSkeleton({ length = 5 }) {

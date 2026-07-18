@@ -65,25 +65,30 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          size="sm"
-          variant="outline"
-          className={cn(
-            "flex size-10 p-0 shadow-xs lg:w-60 lg:justify-start lg:px-3 lg:py-2",
-            className,
-          )}
-        >
-          <Search aria-hidden="true" className="inline-block size-4 lg:mr-2" />
-          <span className="sr-only">Search</span>
+      <DialogTrigger
+        render={
+          <Button
+            size="sm"
+            variant="outline"
+            className={cn(
+              "flex size-10 p-0 shadow-xs lg:w-60 lg:justify-start lg:px-3 lg:py-2",
+              className,
+            )}
+          >
+            <Search
+              aria-hidden="true"
+              className="inline-block size-4 lg:mr-2"
+            />
+            <span className="sr-only">Search</span>
 
-          <span className="hidden lg:inline-block">Search...</span>
+            <span className="hidden lg:inline-block">Search...</span>
 
-          <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:block">
-            <span className="text-xs">{isMacOs() ? "⌘" : "Ctrl"}</span> K
-          </kbd>
-        </Button>
-      </DialogTrigger>
+            <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:block">
+              <span className="text-xs">{isMacOs() ? "⌘" : "Ctrl"}</span> K
+            </kbd>
+          </Button>
+        }
+      />
 
       <DialogContent className="max-w-7xl shadow-md">
         <div className="relative mr-4 mt-4">

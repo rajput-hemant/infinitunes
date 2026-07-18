@@ -62,7 +62,6 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
         </h3>
 
         <ToggleGroup
-          type="multiple"
           value={selectedLanguages}
           onValueChange={(v) => setSelectedLanguages(v as Lang[])}
           className="flex max-w-5xl flex-wrap justify-normal gap-2"
@@ -98,24 +97,26 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
           <Separator className="w-20" />
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="group w-48 justify-between font-semibold capitalize"
-              >
-                <span>{streamQuality}</span>
-                <span className="text-xs font-light">
-                  (
-                  {
-                    QUALITIES_MAP.find((q) => q.quality === streamQuality)
-                      ?.bitrate
-                  }
-                  )
-                </span>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  className="group w-48 justify-between font-semibold capitalize"
+                >
+                  <span>{streamQuality}</span>
+                  <span className="text-xs font-light">
+                    (
+                    {
+                      QUALITIES_MAP.find((q) => q.quality === streamQuality)
+                        ?.bitrate
+                    }
+                    )
+                  </span>
 
-                <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
-              </Button>
-            </DropdownMenuTrigger>
+                  <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
+                </Button>
+              }
+            />
 
             <DropdownMenuContent className="w-48 *:cursor-pointer *:capitalize">
               {QUALITIES_MAP.map(({ quality, bitrate }) => (
@@ -150,23 +151,25 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
           <Separator className="w-20" />
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="group w-48 justify-between font-semibold capitalize"
-              >
-                <span>{streamQuality}</span>
-                <span className="text-xs font-light">
-                  (
-                  {
-                    QUALITIES_MAP.find((q) => q.quality === downloadQuality)
-                      ?.bitrate
-                  }
-                  )
-                </span>
-                <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  className="group w-48 justify-between font-semibold capitalize"
+                >
+                  <span>{streamQuality}</span>
+                  <span className="text-xs font-light">
+                    (
+                    {
+                      QUALITIES_MAP.find((q) => q.quality === downloadQuality)
+                        ?.bitrate
+                    }
+                    )
+                  </span>
+                  <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
+                </Button>
+              }
+            />
 
             <DropdownMenuContent className="w-48 *:cursor-pointer *:capitalize">
               {QUALITIES_MAP.map(({ bitrate, quality }) => (
@@ -201,15 +204,17 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
           <Separator className="w-20" />
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                className="group w-48 justify-between font-semibold capitalize"
-              >
-                {imageQuality}
-                <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  className="group w-48 justify-between font-semibold capitalize"
+                >
+                  {imageQuality}
+                  <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
+                </Button>
+              }
+            />
 
             <DropdownMenuContent className="w-48 *:cursor-pointer *:capitalize">
               {IMAGE_QUALITIES.map((quality) => (

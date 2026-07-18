@@ -16,11 +16,7 @@ export function Lyrics({ lyrics }: LyricsProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(true);
 
   return (
-    <Accordion
-      type="single"
-      collapsible
-      onValueChange={() => setIsCollapsed(!isCollapsed)}
-    >
+    <Accordion onValueChange={() => setIsCollapsed(!isCollapsed)}>
       <AccordionItem value="lyrics">
         <AccordionTrigger className="no-underline!">
           <div className="flex flex-col items-start gap-2">

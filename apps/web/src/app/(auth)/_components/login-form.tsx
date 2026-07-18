@@ -103,8 +103,9 @@ export function LoginForm() {
                 className="pr-8 shadow-xs"
                 {...field}
               />
-              <Tooltip delayDuration={150}>
+              <Tooltip>
                 <TooltipTrigger
+                  delay={150}
                   aria-label={
                     isEmailMode ? "Use Username instead" : "Use Email instead"
                   }
@@ -146,8 +147,9 @@ export function LoginForm() {
                 className="pr-8 shadow-xs"
                 {...field}
               />
-              <Tooltip delayDuration={150}>
+              <Tooltip>
                 <TooltipTrigger
+                  delay={150}
                   aria-label={isPassVisible ? "Hide Password" : "Show Password"}
                   tabIndex={-1}
                   type="button"

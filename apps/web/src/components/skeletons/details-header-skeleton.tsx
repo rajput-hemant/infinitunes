@@ -1,8 +1,8 @@
+import { Button } from "@infinitunes/ui/button";
+import { Skeleton } from "@infinitunes/ui/skeleton";
+
 import { cn } from "@/lib/utils";
 import type { Type } from "@/types";
-
-import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
 
 type DetailsHeaderSkeletonProps = {
   type: Type;

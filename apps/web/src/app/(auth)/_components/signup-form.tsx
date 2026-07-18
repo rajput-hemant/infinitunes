@@ -108,8 +108,9 @@ export function SignUpForm() {
                 className="pr-8 shadow-xs"
                 {...field}
               />
-              <Tooltip delayDuration={150}>
+              <Tooltip>
                 <TooltipTrigger
+                  delay={150}
                   aria-label={isPassVisible ? "Hide Password" : "Show Password"}
                   tabIndex={-1}
                   type="button"
@@ -150,8 +151,9 @@ export function SignUpForm() {
                 className="pr-8 shadow-xs"
                 {...field}
               />
-              <Tooltip delayDuration={150}>
+              <Tooltip>
                 <TooltipTrigger
+                  delay={150}
                   aria-label={
                     isConfirmPassVisible ? "Hide Password" : "Show Password"
                   }

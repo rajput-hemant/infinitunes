@@ -1,3 +1,4 @@
+import { buttonVariants } from "@infinitunes/ui/button";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
@@ -11,7 +12,6 @@ import { SignedOut } from "../auth-control";
 import { Icons } from "../icons";
 import { SearchMenu } from "../search/search-menu";
 import { TopSearch } from "../search/top-search";
-import { buttonVariants } from "../ui/button";
 import { UserDropdown } from "../user-dropdown";
 import { LanguagePicker } from "./language-picker";
 import { MainNav } from "./main-nav";

@@ -1,11 +1,10 @@
+import { DropdownMenuItem } from "@infinitunes/ui/dropdown-menu";
 import { Disc, Mic2, Music } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
 import { getHref } from "@/lib/utils";
 import type { ArtistMini } from "@/types";
-
-import { DropdownMenuItem } from "../ui/dropdown-menu";
 
 type TileMoreLinksProps = {
   type: "song" | "episode";
@@ -77,7 +76,7 @@ type WrapperProps = {
 
 export function Wrapper({ isDropdownItem, children }: WrapperProps) {
   return isDropdownItem ? (
-    <DropdownMenuItem asChild>{children}</DropdownMenuItem>
+    <DropdownMenuItem render={children as React.ReactElement} />
   ) : (
     children
   );

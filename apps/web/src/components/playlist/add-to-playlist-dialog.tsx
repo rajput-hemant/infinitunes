@@ -1,11 +1,6 @@
 "use client";
 
-import { List, ListX } from "lucide-react";
-
-import type { MyPlaylist } from "@/lib/db/schema";
-import type { User } from "@/types/user";
-
-import { Button } from "../ui/button";
+import { Button } from "@infinitunes/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -13,8 +8,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
-import { Separator } from "../ui/separator";
+} from "@infinitunes/ui/dialog";
+import { Separator } from "@infinitunes/ui/separator";
+import { List, ListX } from "lucide-react";
+
+import type { MyPlaylist } from "@/lib/db/schema";
+import type { User } from "@/types/user";
+
 import { NewPlaylistForm } from "./new-playlist-form";
 
 type AddToPlaylistDialogProps = {
@@ -75,11 +75,13 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
         <Separator />
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="secondary" onClick={() => setDialogOpen(false)}>
-              Close
-            </Button>
-          </DialogClose>
+          <DialogClose
+            render={
+              <Button variant="secondary" onClick={() => setDialogOpen(false)}>
+                Close
+              </Button>
+            }
+          />
 
           <NewPlaylistForm user={user}>
             <Button className="shadow-sm">Create New Playlist</Button>

@@ -1,16 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import React from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import type { z } from "zod";
-
-import { createNewPlaylist } from "@/lib/actions";
-import { newPlaylistSchema } from "@/lib/validations";
-import type { User } from "@/types/user";
-
-import { Button } from "../ui/button";
+import { Button } from "@infinitunes/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -20,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
+} from "@infinitunes/ui/dialog";
 import {
   Form,
   FormControl,
@@ -28,8 +19,16 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
-import { Input } from "../ui/input";
+} from "@infinitunes/ui/form";
+import { Input } from "@infinitunes/ui/input";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import type { z } from "zod";
+
+import { createNewPlaylist } from "@/lib/actions";
+import { newPlaylistSchema } from "@/lib/validations";
+import type { User } from "@/types/user";
 
 const defaultValues: FormData = {
   name: "",
@@ -69,7 +68,7 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
   }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger render={children as React.ReactElement} />
 
       <DialogContent>
         <DialogHeader className="space-y-0">
@@ -122,11 +121,13 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
             />
 
             <DialogFooter className="pt-4">
-              <DialogClose asChild>
-                <Button size="sm" variant="secondary">
-                  Cancel
-                </Button>
-              </DialogClose>
+              <DialogClose
+                render={
+                  <Button size="sm" variant="secondary">
+                    Cancel
+                  </Button>
+                }
+              />
               <Button type="submit" size="sm">
                 Create Playlist
               </Button>

@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@infinitunes/ui/tooltip";
 import { Heart } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
@@ -9,8 +14,6 @@ import type { Favorite } from "@/lib/db/schema";
 import { cn, currentlyInDev } from "@/lib/utils";
 import type { Type } from "@/types";
 import type { User } from "@/types/user";
-
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   user?: User;
@@ -134,8 +137,13 @@ export function LikeButton(props: LikeButtonProps) {
   }
 
   return (
-    <Tooltip delayDuration={0}>
-      <TooltipTrigger aria-label="Like" onClick={likeHandler} {...rest}>
+    <Tooltip>
+      <TooltipTrigger
+        delay={0}
+        aria-label="Like"
+        onClick={likeHandler}
+        {...rest}
+      >
         <Heart
           className={cn(
             "size-5 text-inherit transition-transform active:scale-105",
