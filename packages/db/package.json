@@ -12,6 +12,7 @@
   "exports": {
     "./schema": "./src/schema.ts",
     "./client": "./src/client.ts",
+    "./db": "./src/db.ts",
     "./migrations": "./src/migrations/index.ts",
     "./backfill": "./src/backfill.ts",
     "./drizzle.config": "./src/drizzle.config.ts"

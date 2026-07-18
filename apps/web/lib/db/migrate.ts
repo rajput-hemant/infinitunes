@@ -1,6 +1,5 @@
+import { db } from "@infinitunes/db";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
-
-import { db } from ".";
 
 const runMigrate = async () => {
   console.log("⏳ Running migrations...");

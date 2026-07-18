@@ -1,5 +1,6 @@
 "use client";
 
+import type { Favorite } from "@infinitunes/db/schema";
 import {
   Tooltip,
   TooltipContent,
@@ -10,7 +11,6 @@ import React from "react";
 import { toast } from "sonner";
 
 import { addToFavorites, removeFromFavorites } from "@/lib/db/queries";
-import type { Favorite } from "@/lib/db/schema";
 import { cn, currentlyInDev } from "@/lib/utils";
 import type { Type } from "@/types";
 import type { User } from "@/types/user";

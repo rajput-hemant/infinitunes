@@ -1,5 +1,6 @@
 "use client";
 
+import type { MyPlaylist } from "@infinitunes/db/schema";
 import { buttonVariants } from "@infinitunes/ui/button";
 import {
   Drawer,
@@ -43,7 +44,6 @@ import {
   useQueue,
 } from "@/hooks/use-store";
 import { addSongsToPlaylist } from "@/lib/db/queries";
-import type { MyPlaylist } from "@/lib/db/schema";
 import { cn, currentlyInDev, getImageSrc } from "@/lib/utils";
 import type { Episode, Queue, Song } from "@/types";
 import type { User } from "@/types/user";

@@ -1,4 +1,4 @@
-import type { MyPlaylist } from "@/lib/db/schema";
+import type { MyPlaylist } from "@infinitunes/db/schema";
 
 type UsersPlaylistsProps = {
   playlists: MyPlaylist[];

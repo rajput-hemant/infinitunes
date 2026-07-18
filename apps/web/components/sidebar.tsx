@@ -1,5 +1,6 @@
 "use client";
 
+import type { MyPlaylist } from "@infinitunes/db/schema";
 import { Button, buttonVariants } from "@infinitunes/ui/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
 import {
@@ -13,7 +14,6 @@ import { useSelectedLayoutSegments } from "next/navigation";
 import React from "react";
 
 import { sidebarNav } from "@/config/nav";
-import type { MyPlaylist } from "@/lib/db/schema";
 import { cn, currentlyInDev } from "@/lib/utils";
 import type { User } from "@/types/user";
 

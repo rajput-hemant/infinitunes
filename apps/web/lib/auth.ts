@@ -1,8 +1,7 @@
 import { createAuth } from "@infinitunes/auth";
+import { db } from "@infinitunes/db";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-
-import { db } from "@/lib/db";
 
 const auth = createAuth(db);
 

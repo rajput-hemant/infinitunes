@@ -1,10 +1,9 @@
 "use server";
 
+import { db } from "@infinitunes/db";
+import { favorites, myPlaylists } from "@infinitunes/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { updateTag, unstable_cache } from "next/cache";
-
-import { db } from ".";
-import { favorites, myPlaylists } from "./schema";
 
 export const getUserPlaylists = unstable_cache(
   async (userId: string) => {

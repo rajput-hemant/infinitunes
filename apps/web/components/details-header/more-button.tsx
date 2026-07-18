@@ -1,5 +1,6 @@
 "use client";
 
+import type { MyPlaylist } from "@infinitunes/db/schema";
 import { Button } from "@infinitunes/ui/button";
 import {
   Drawer,
@@ -37,7 +38,6 @@ import { toast } from "sonner";
 
 import { useQueue } from "@/hooks/use-store";
 import { addSongsToPlaylist } from "@/lib/db/queries";
-import type { MyPlaylist } from "@/lib/db/schema";
 import { currentlyInDev, getImageSrc } from "@/lib/utils";
 import type { Quality, Queue, Song, Type } from "@/types";
 import type { User } from "@/types/user";

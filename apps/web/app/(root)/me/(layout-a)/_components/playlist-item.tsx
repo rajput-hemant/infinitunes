@@ -1,9 +1,9 @@
+import type { MyPlaylist } from "@infinitunes/db/schema";
 import { Card, CardContent } from "@infinitunes/ui/card";
 import { Skeleton } from "@infinitunes/ui/skeleton";
 import Link from "next/link";
 
 import { ImageCollage } from "@/components/image-collage";
-import type { MyPlaylist } from "@/lib/db/schema";
 import { getSongDetails } from "@/lib/jiosaavn-api";
 import { getImageSrc } from "@/lib/utils";
 

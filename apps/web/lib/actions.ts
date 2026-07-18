@@ -2,16 +2,16 @@
 
 import { randomUUID } from "crypto";
 
+import { db } from "@infinitunes/db";
 import { betterAuthAccounts } from "@infinitunes/db/schema";
+import type { NewUser } from "@infinitunes/db/schema";
+import { myPlaylists, users } from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
 import { count, eq } from "drizzle-orm";
 import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
 
-import { db } from "./db";
-import type { NewUser } from "./db/schema";
-import { myPlaylists, users } from "./db/schema";
 import type {
   newPlaylistSchema,
   resetPasswordSchema,
