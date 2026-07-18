@@ -1,14 +1,14 @@
 "use client";
 
+import { ListOrdered, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { ListOrdered, X } from "lucide-react";
 import { toast } from "sonner";
-
-import type { Queue } from "@/types";
 
 import { useQueue } from "@/hooks/use-store";
 import { getHref, getImageSrc } from "@/lib/utils";
+import type { Queue } from "@/types";
+
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
 import { Button } from "./ui/button";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
@@ -36,7 +36,7 @@ export function Queue() {
         }
 
         return true;
-      })
+      }),
     );
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -103,7 +103,7 @@ export function Queue() {
                         <Link
                           href={getHref(
                             item.url,
-                            item.type === "song" ? "song" : "episode"
+                            item.type === "song" ? "song" : "episode",
                           )}
                           className="text-primary group-hover:text-primary lg:text-muted-foreground"
                         >

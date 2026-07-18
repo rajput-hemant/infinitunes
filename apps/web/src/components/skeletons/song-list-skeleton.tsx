@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+
 import { Skeleton } from "../ui/skeleton";
 
 type SongListSkeletonProps = {
@@ -25,7 +26,7 @@ export function SongListSkeleton(props: SongListSkeletonProps) {
             <div
               className={cn(
                 "flex w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
-                showAlbum && "xl:w-2/3"
+                showAlbum && "xl:w-2/3",
               )}
             >
               <div className="w-full">

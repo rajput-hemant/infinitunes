@@ -1,4 +1,3 @@
-import React from "react";
 import {
   DownloadCloud,
   Headphones,
@@ -11,6 +10,7 @@ import {
   UserCog2,
   UserX2,
 } from "lucide-react";
+import React from "react";
 
 import {
   Accordion,
@@ -18,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+
 import { SideNavItems } from "./side-navbar-items";
 
 export type SidebarNavItem = {

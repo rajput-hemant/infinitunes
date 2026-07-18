@@ -1,8 +1,8 @@
 "use client";
 
 import { List, ListX } from "lucide-react";
-
 import type { User } from "next-auth";
+
 import type { MyPlaylist } from "@/lib/db/schema";
 
 import { Button } from "../ui/button";
@@ -40,7 +40,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
         <Separator />
 
         <div className="min-h-64">
-          {playlists?.length !== 0 ?
+          {playlists?.length !== 0 ? (
             <div className="grid gap-2 sm:grid-cols-2">
               {playlists?.map(({ id, name, songs }) => (
                 <Button
@@ -62,13 +62,14 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
                 </Button>
               ))}
             </div>
-          : <div className="h-full rounded-md border border-dashed p-2">
+          ) : (
+            <div className="h-full rounded-md border border-dashed p-2">
               <div className="flex h-full flex-col items-center justify-center gap-2 rounded-md bg-muted text-lg font-medium text-muted-foreground">
                 <ListX size={40} />
                 You do not have any playlist yet
               </div>
             </div>
-          }
+          )}
         </div>
 
         <Separator />

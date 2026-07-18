@@ -1,11 +1,10 @@
 import Link from "next/link";
 
-import type { Lang } from "@/types";
-
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { languages } from "@/config/languages";
 import { cn } from "@/lib/utils";
+import type { Lang } from "@/types";
 
 type LanguageBarProps = { language?: Lang };
 
@@ -18,7 +17,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
             <Badge
               className={cn(
                 "bg-primary p-2 hover:shadow lg:px-4",
-                language && "bg-primary-foreground text-primary hover:bg-muted"
+                language && "bg-primary-foreground text-primary hover:bg-muted",
               )}
             >
               For&nbsp;you
@@ -33,7 +32,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
                 className={cn(
                   "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-sm lg:px-4",
                   language === lang.toLowerCase() &&
-                    "!bg-primary text-primary-foreground"
+                    "!bg-primary text-primary-foreground",
                 )}
               >
                 {lang}

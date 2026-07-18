@@ -1,12 +1,10 @@
 "use client";
 
-import React from "react";
-import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
 import { ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React from "react";
 import { toast } from "sonner";
-
-import type { ImageQuality, Lang } from "@/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +22,7 @@ import {
   useStreamQuality,
 } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
+import type { ImageQuality, Lang } from "@/types";
 import { QUALITIES_MAP } from "@/types";
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
@@ -40,7 +39,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
   const [imageQuality, setImageQuality] = useImageQuality();
 
   const [selectedLanguages, setSelectedLanguages] = React.useState(
-    props.initialLanguages
+    props.initialLanguages,
   );
 
   function updateLanguages() {
@@ -131,7 +130,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                   }}
                   className={cn(
                     "justify-between",
-                    quality === downloadQuality && "bg-accent/60"
+                    quality === downloadQuality && "bg-accent/60",
                   )}
                 >
                   <span>{quality}</span>
@@ -182,7 +181,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                   }}
                   className={cn(
                     "justify-between",
-                    quality === downloadQuality && "bg-accent/60"
+                    quality === downloadQuality && "bg-accent/60",
                   )}
                 >
                   <span>{quality}</span>

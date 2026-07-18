@@ -1,15 +1,14 @@
 "use client";
 
 import { useInfiniteQuery } from "@tanstack/react-query";
-
 import type { User } from "next-auth";
-import type { Favorite, MyPlaylist } from "@/lib/db/schema";
-import type { Album, Category, Song } from "@/types";
 
 import { SliderCard } from "@/components/slider";
 import { SongListClient } from "@/components/song-list/song-list.client";
 import { Button } from "@/components/ui/button";
+import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
+import type { Album, Category, Song } from "@/types";
 
 type Props = {
   id: string;
@@ -104,7 +103,7 @@ export function ArtistsTopItems(props: Props) {
         ))}
       </div>
 
-      {hasNextPage ?
+      {hasNextPage ? (
         <Button
           variant="outline"
           className="mx-auto my-4 flex rounded-full text-center"
@@ -112,11 +111,12 @@ export function ArtistsTopItems(props: Props) {
         >
           {isLoading ? "Loading..." : "Load More"}
         </Button>
-      : <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      ) : (
+        <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em>{" "}
           <span className="text-foreground">🤩</span>
         </h3>
-      }
+      )}
     </>
   );
 }

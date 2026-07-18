@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { SliderListSkeleton, SongListSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+
 import { navItems } from "./_components/search-navbar";
 
 export default function Loading() {
@@ -35,9 +36,11 @@ export default function Loading() {
           </div>
         </div>
 
-        {type === "song" ?
+        {type === "song" ? (
           <SongListSkeleton length={20} />
-        : <SliderListSkeleton length={40} />}
+        ) : (
+          <SliderListSkeleton length={40} />
+        )}
       </main>
     </div>
   );

@@ -1,24 +1,24 @@
 "use server";
 
 import { randomUUID } from "crypto";
-import { revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
+
 import { compare, hash } from "bcryptjs";
 import { count, eq } from "drizzle-orm";
+import { revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
+import type { z } from "zod";
 
+import { db } from "./db";
 import type { NewUser } from "./db/schema";
+import { myPlaylists, users } from "./db/schema";
 import type {
   newPlaylistSchema,
   resetPasswordSchema,
   signUpSchema,
 } from "./validations";
-import type { z } from "zod";
-
-import { db } from "./db";
-import { myPlaylists, users } from "./db/schema";
 
 export async function createNewAccount(
-  credentials: z.infer<typeof signUpSchema>
+  credentials: z.infer<typeof signUpSchema>,
 ) {
   const { email, password } = credentials;
 
@@ -40,7 +40,7 @@ export async function createNewAccount(
 }
 
 export async function resetPassword(
-  credentials: z.infer<typeof resetPasswordSchema>
+  credentials: z.infer<typeof resetPasswordSchema>,
 ) {
   const { email, password, newPassword } = credentials;
 
@@ -54,7 +54,7 @@ export async function resetPassword(
 
   if (!user.password) {
     throw new Error(
-      "User does not have a password, you might have signed up with a social account"
+      "User does not have a password, you might have signed up with a social account",
     );
   }
 
@@ -75,7 +75,7 @@ export async function resetPassword(
 }
 
 export async function createNewPlaylist(
-  data: z.infer<typeof newPlaylistSchema> & { userId: string }
+  data: z.infer<typeof newPlaylistSchema> & { userId: string },
 ) {
   const [{ playlistsCount }] = await db
     .select({ playlistsCount: count() })

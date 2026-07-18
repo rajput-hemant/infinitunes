@@ -1,10 +1,10 @@
-import React from "react";
-import Link from "next/link";
 import { Disc, Mic2, Music } from "lucide-react";
-
-import type { ArtistMini } from "@/types";
+import Link from "next/link";
+import React from "react";
 
 import { getHref } from "@/lib/utils";
+import type { ArtistMini } from "@/types";
+
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 
 type TileMoreLinksProps = {
@@ -76,7 +76,9 @@ type WrapperProps = {
 };
 
 export function Wrapper({ isDropdownItem, children }: WrapperProps) {
-  return isDropdownItem ?
-      <DropdownMenuItem asChild>{children}</DropdownMenuItem>
-    : children;
+  return isDropdownItem ? (
+    <DropdownMenuItem asChild>{children}</DropdownMenuItem>
+  ) : (
+    children
+  );
 }

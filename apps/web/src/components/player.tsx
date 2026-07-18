@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
 import {
   Loader2,
   MoreVertical,
@@ -15,10 +13,10 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { useGlobalAudioPlayer } from "react-use-audio-player";
-
 import type { User } from "next-auth";
-import type { MyPlaylist } from "@/lib/db/schema";
+import Link from "next/link";
+import React from "react";
+import { useGlobalAudioPlayer } from "react-use-audio-player";
 
 import { useEventListener } from "@/hooks/use-event-listner";
 import {
@@ -28,6 +26,7 @@ import {
   useQueue,
   useStreamQuality,
 } from "@/hooks/use-store";
+import type { MyPlaylist } from "@/lib/db/schema";
 import {
   cn,
   formatDuration,
@@ -35,6 +34,7 @@ import {
   getHref,
   getImageSrc,
 } from "@/lib/utils";
+
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Queue } from "./queue";
@@ -87,7 +87,7 @@ export function Player({ user, playlists }: PlayerProps) {
     if (queue.length && isPlayerInit) {
       const audioSrc = getDownloadLink(
         queue[currentIndex].download_url,
-        streamQuality
+        streamQuality,
       );
 
       load(audioSrc, {
@@ -125,8 +125,9 @@ export function Player({ user, playlists }: PlayerProps) {
     if (queue.length === 1) {
       loop(!looping);
       toast({
-        description:
-          looping ? "Looping disabled" : "Playing current song on repeat",
+        description: looping
+          ? "Looping disabled"
+          : "Playing current song on repeat",
       });
     } else if (!looping && !loopPlaylist) {
       setLoopPlaylist(true);
@@ -235,7 +236,7 @@ export function Player({ user, playlists }: PlayerProps) {
     <div
       className={cn(
         "fixed inset-x-0 bottom-14 z-40 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0",
-        !(isReady || queue.length) && "hidden lg:block"
+        !(isReady || queue.length) && "hidden lg:block",
       )}
     >
       <Slider
@@ -263,11 +264,11 @@ export function Player({ user, playlists }: PlayerProps) {
       <div
         className={cn(
           "flex items-center px-4 pt-3 lg:px-4",
-          queue.length === 0 && "text-muted-foreground"
+          queue.length === 0 && "text-muted-foreground",
         )}
       >
         <div className="flex w-full gap-4 lg:w-1/3">
-          {queue.length && queue[currentIndex]?.image ?
+          {queue.length && queue[currentIndex]?.image ? (
             <>
               <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow">
                 <ImageWithFallback
@@ -284,7 +285,7 @@ export function Player({ user, playlists }: PlayerProps) {
                 <Link
                   href={getHref(
                     queue[currentIndex].url,
-                    queue[currentIndex].type === "song" ? "song" : "episode"
+                    queue[currentIndex].type === "song" ? "song" : "episode",
                   )}
                   className="group line-clamp-1 font-heading text-sm text-primary drop-shadow"
                 >
@@ -297,14 +298,15 @@ export function Player({ user, playlists }: PlayerProps) {
                 </p>
               </div>
             </>
-          : <div className="flex items-center space-x-4">
+          ) : (
+            <div className="flex items-center space-x-4">
               <Skeleton className="size-12 rounded-md" />
               <div className="space-y-2">
                 <Skeleton className="h-3 w-44 lg:w-64" />
                 <Skeleton className="h-3 w-52 2xl:w-[500px]" />
               </div>
             </div>
-          }
+          )}
         </div>
 
         <div className="flex justify-end lg:w-1/3 lg:justify-evenly">
@@ -315,20 +317,22 @@ export function Player({ user, playlists }: PlayerProps) {
                 onClick={loopHandler}
                 className={cn(
                   "hidden lg:block",
-                  !looping && !loopPlaylist && "text-muted-foreground"
+                  !looping && !loopPlaylist && "text-muted-foreground",
                 )}
               >
-                {looping ?
+                {looping ? (
                   <Repeat1 strokeWidth={2} className="size-7" />
-                : <Repeat strokeWidth={2} className="size-7" />}
+                ) : (
+                  <Repeat strokeWidth={2} className="size-7" />
+                )}
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              {looping ?
-                "Playing current song on repeat"
-              : loopPlaylist ?
-                "Looping playlist"
-              : "Loop"}
+              {looping
+                ? "Playing current song on repeat"
+                : loopPlaylist
+                  ? "Looping playlist"
+                  : "Loop"}
             </TooltipContent>
           </Tooltip>
 
@@ -351,11 +355,13 @@ export function Player({ user, playlists }: PlayerProps) {
                 aria-label={playing ? "Pause" : "Play"}
                 onClick={playPauseHandler}
               >
-                {isLoading ?
+                {isLoading ? (
                   <Loader2 className="animate-spin" />
-                : playing ?
+                ) : playing ? (
                   <Pause className="size-10" />
-                : <Icons.Play className="size-10" />}
+                ) : (
+                  <Icons.Play className="size-10" />
+                )}
               </button>
             </TooltipTrigger>
             <TooltipContent>{playing ? "Pause" : "Play"}</TooltipContent>
@@ -381,7 +387,7 @@ export function Player({ user, playlists }: PlayerProps) {
                 onClick={() => setIsShuffle(!isShuffle)}
                 className={cn(
                   "hidden lg:block",
-                  !isShuffle && "text-muted-foreground"
+                  !isShuffle && "text-muted-foreground",
                 )}
               >
                 <Shuffle strokeWidth={2.35} />
@@ -413,16 +419,18 @@ export function Player({ user, playlists }: PlayerProps) {
               }}
               className={cn(
                 "transition-opacity hover:opacity-100",
-                (!isReady || muted) && "text-muted-foreground opacity-50"
+                (!isReady || muted) && "text-muted-foreground opacity-50",
               )}
             >
-              {muted || volume === 0 ?
+              {muted || volume === 0 ? (
                 <VolumeX />
-              : volume < 0.33 ?
+              ) : volume < 0.33 ? (
                 <Volume />
-              : volume < 0.66 ?
+              ) : volume < 0.66 ? (
                 <Volume1 />
-              : <Volume2 strokeWidth={2} />}
+              ) : (
+                <Volume2 strokeWidth={2} />
+              )}
             </button>
 
             <Slider
@@ -445,7 +453,7 @@ export function Player({ user, playlists }: PlayerProps) {
               }}
               className={cn(
                 "w-44 transition-opacity hover:opacity-100",
-                !isReady && "opacity-50"
+                !isReady && "opacity-50",
               )}
             >
               <SliderTrack className="h-1 cursor-pointer">
@@ -458,7 +466,7 @@ export function Player({ user, playlists }: PlayerProps) {
                 aria-label="Volume slider"
                 className={cn(
                   "size-4 cursor-pointer",
-                  (!isReady || muted) && "bg-accent"
+                  (!isReady || muted) && "bg-accent",
                 )}
               />
             </Slider>
@@ -471,7 +479,7 @@ export function Player({ user, playlists }: PlayerProps) {
           <div className="flex">
             <Queue />
 
-            {queue.length > 0 ?
+            {queue.length > 0 ? (
               <TileMoreButton
                 item={queue[currentIndex]}
                 showAlbum
@@ -482,10 +490,11 @@ export function Player({ user, playlists }: PlayerProps) {
                   variant: "ghost",
                 })}
               />
-            : <Button size="icon" variant="ghost">
+            ) : (
+              <Button size="icon" variant="ghost">
                 <MoreVertical />
               </Button>
-            }
+            )}
           </div>
         </div>
       </div>

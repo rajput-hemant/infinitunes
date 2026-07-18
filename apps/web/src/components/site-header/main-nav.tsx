@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-
-import type { MegaMenu } from "@/types";
+import React from "react";
 
 import { cn, getHref } from "@/lib/utils";
+import type { MegaMenu } from "@/types";
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -47,9 +47,9 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
                     key={name}
                     title={name}
                     href={
-                      url.includes("song") ?
-                        getHref(url, "song")
-                      : getHref(url, "album")
+                      url.includes("song")
+                        ? getHref(url, "song")
+                        : getHref(url, "album")
                     }
                   >
                     {name}
@@ -110,7 +110,7 @@ const ListItem = React.forwardRef<
         ref={ref}
         className={cn(
           "block space-y-1 rounded-md py-1.5 text-muted-foreground duration-150 hover:text-secondary-foreground",
-          className
+          className,
         )}
         {...props}
       >

@@ -19,7 +19,7 @@ export function useCurrentSongIndex() {
 
 const streamQualityAtom = atomWithStorage<StreamQuality>(
   "stream_quality",
-  "excellent"
+  "excellent",
 );
 
 export function useStreamQuality() {
@@ -28,7 +28,7 @@ export function useStreamQuality() {
 
 const downloadQualityAtom = atomWithStorage<StreamQuality>(
   "download_quality",
-  "excellent"
+  "excellent",
 );
 
 export function useDownloadQuality() {

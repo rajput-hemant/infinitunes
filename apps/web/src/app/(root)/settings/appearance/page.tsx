@@ -1,5 +1,5 @@
-import React from "react";
 import { cookies } from "next/headers";
+import React from "react";
 
 import type { ThemeConfig } from "@/types";
 
@@ -15,7 +15,7 @@ export default async function Page() {
   const themeConfig = cookieStore.get("theme-config");
 
   const { theme, radius } = JSON.parse(
-    themeConfig?.value ?? '{"theme":"default","radius":"default"}'
+    themeConfig?.value ?? '{"theme":"default","radius":"default"}',
   ) as ThemeConfig;
 
   return (

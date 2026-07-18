@@ -1,12 +1,11 @@
 "use client";
 
-import React from "react";
-import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Key, Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
 import type z from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ import {
 } from "@/components/ui/tooltip";
 import { resetPassword } from "@/lib/actions";
 import { resetPasswordSchema } from "@/lib/validations";
+
 import { OAuthButtons } from "./oauth-buttons";
 
 type FormData = z.infer<typeof resetPasswordSchema>;
@@ -122,9 +122,11 @@ export function ResetPasswordForm() {
                       onClick={() => setIsPassVisible(!isPassVisible)}
                       className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                     >
-                      {isPassVisible ?
+                      {isPassVisible ? (
                         <EyeOff className="size-5" />
-                      : <Eye className="size-5" />}
+                      ) : (
+                        <Eye className="size-5" />
+                      )}
                     </TooltipTrigger>
 
                     <TooltipContent>
@@ -166,9 +168,11 @@ export function ResetPasswordForm() {
                       onClick={() => setIsNewPassVisible(!isNewPassVisible)}
                       className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                     >
-                      {isNewPassVisible ?
+                      {isNewPassVisible ? (
                         <EyeOff className="size-5" />
-                      : <Eye className="size-5" />}
+                      ) : (
+                        <Eye className="size-5" />
+                      )}
                     </TooltipTrigger>
 
                     <TooltipContent>
@@ -190,9 +194,11 @@ export function ResetPasswordForm() {
           disabled={isSubmitting}
           className="w-full font-semibold shadow-md"
         >
-          {isSubmitting ?
+          {isSubmitting ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
-          : <Key className="mr-2 size-4" />}
+          ) : (
+            <Key className="mr-2 size-4" />
+          )}
           Reset Password
         </Button>
       </form>

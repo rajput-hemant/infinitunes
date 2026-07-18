@@ -8,7 +8,6 @@ import {
   Radio,
   Star,
 } from "lucide-react";
-
 import type { LucideIcon } from "lucide-react";
 
 type NavItem = {

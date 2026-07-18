@@ -1,12 +1,13 @@
-import React from "react";
+import { Edit, Mail } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Edit, Mail } from "lucide-react";
+import React from "react";
 
 import { ImageWithFallback } from "@/components/image-with-fallback";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getUser } from "@/lib/auth";
+
 import { LogoutButton } from "./_components/logout";
 import { Navbar } from "./_components/navbar";
 

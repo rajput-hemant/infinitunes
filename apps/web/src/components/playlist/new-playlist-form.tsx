@@ -1,15 +1,15 @@
 "use client";
 
-import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { User } from "next-auth";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-import type { User } from "next-auth";
 import type { z } from "zod";
 
 import { createNewPlaylist } from "@/lib/actions";
 import { newPlaylistSchema } from "@/lib/validations";
+
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -60,7 +60,7 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
           success: (d) => `Playlist "${d.name}" created successfully!`,
           error: (e) => e.message,
           finally: () => setOpen(false),
-        }
+        },
       );
     } catch (error) {
       const err = error as Error;

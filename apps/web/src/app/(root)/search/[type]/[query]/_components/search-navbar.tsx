@@ -28,14 +28,14 @@ export function SearchNavbar({ type, query }: Props) {
               key={title}
               className={cn(
                 "inline-block h-full border-b-2 border-transparent py-2 hover:border-primary",
-                isActive && "border-primary"
+                isActive && "border-primary",
               )}
             >
               <Link
                 href={`${href}/${query}`}
                 className={cn(
                   buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
-                  isActive && "font-medium"
+                  isActive && "font-medium",
                 )}
               >
                 {title}

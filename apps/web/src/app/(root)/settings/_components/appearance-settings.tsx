@@ -1,15 +1,14 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
 import { CheckIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-
-import type { ThemeConfig } from "@/types";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { themes } from "@/config/themes";
 import { cn } from "@/lib/utils";
+import type { ThemeConfig } from "@/types";
 
 const RADIUS = ["default", 0, 0.3, 0.5, 0.75, 1.0] as const;
 
@@ -38,7 +37,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               <div
                 className={cn(
                   "cursor-pointer items-center rounded-md border bg-background p-2 hover:bg-accent hover:text-foreground",
-                  mode === themeMode && "border-2 border-primary"
+                  mode === themeMode && "border-2 border-primary",
                 )}
               >
                 <div
@@ -83,7 +82,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               onClick={() => themeConfigHandler({ theme: name, radius })}
               className={cn(
                 "w-24 justify-start",
-                name === theme && "border-2 border-primary"
+                name === theme && "border-2 border-primary",
               )}
               style={
                 {
@@ -116,14 +115,14 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               onClick={() => themeConfigHandler({ theme, radius: value })}
               className={cn(
                 "w-24 capitalize",
-                radius === value && "border-2 border-primary"
+                radius === value && "border-2 border-primary",
               )}
               style={
-                value === "default" ?
-                  {}
-                : ({
-                    "--radius": `${value}rem`,
-                  } as React.CSSProperties)
+                value === "default"
+                  ? {}
+                  : ({
+                      "--radius": `${value}rem`,
+                    } as React.CSSProperties)
               }
             >
               {value}

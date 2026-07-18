@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { Play } from "lucide-react";
-
-import type { Quality, Type } from "@/types";
+import Link from "next/link";
 
 import { cn, getHref, getImageSrc } from "@/lib/utils";
+import type { Quality, Type } from "@/types";
+
 import { ImageWithFallback } from "../image-with-fallback";
 import { PlayButton } from "../play-button";
 import { Badge } from "../ui/badge";
@@ -48,7 +48,7 @@ export function SliderCard(props: SliderCardProps) {
         aspect === "video" && "w-44 !border-none sm:w-48 md:w-64 lg:w-72",
         isCurrentSeason &&
           "ring-2 ring-ring ring-offset-2 ring-offset-background",
-        className
+        className,
       )}
     >
       <CardContent className="size-full p-2">
@@ -56,7 +56,7 @@ export function SliderCard(props: SliderCardProps) {
           className={cn(
             "relative w-full overflow-hidden rounded-md",
             aspect === "square" ? "aspect-square" : "aspect-video",
-            ["radio_station", "artist"].includes(type) && "rounded-full border"
+            ["radio_station", "artist"].includes(type) && "rounded-full border",
           )}
         >
           <Wrapper href={getHref(url, type)} className="absolute inset-0 z-10">
@@ -72,7 +72,7 @@ export function SliderCard(props: SliderCardProps) {
             className={cn(
               "size-full object-cover transition-transform duration-300 group-hover:scale-110",
               !imageSrc && "dark:invert",
-              imageSrc.includes("default") && "dark:invert"
+              imageSrc.includes("default") && "dark:invert",
             )}
           />
 

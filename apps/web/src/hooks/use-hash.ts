@@ -1,10 +1,10 @@
-import React from "react";
 import { useParams } from "next/navigation";
+import React from "react";
 
 const getHash = () =>
-  typeof window !== "undefined" ?
-    decodeURIComponent(window.location.hash.replace("#", ""))
-  : null;
+  typeof window !== "undefined"
+    ? decodeURIComponent(window.location.hash.replace("#", ""))
+    : null;
 
 /**
  * @see https://github.com/vercel/next.js/discussions/49465#discussioncomment-7034208

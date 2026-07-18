@@ -6,7 +6,7 @@ export const usernameSchema = z
   .regex(/^(?=.{8,15}$)/, "Username must be 8-15 characters long.")
   .regex(
     /^[a-zA-Z0-9_.-]+$/,
-    "Username must be alphanumeric and can contain [_ . -]"
+    "Username must be alphanumeric and can contain [_ . -]",
   );
 
 export const emailSchema = z
@@ -23,7 +23,7 @@ export const passwordSchema = z
   .regex(/^(?=.*\d)/, "Password must contain at least one number.")
   .regex(
     /^(?=.*[~`!@#$%^&*()--+={}[\]|\\:;"'<>,.?/_₹])/,
-    "Password must contain at least one special character."
+    "Password must contain at least one special character.",
   )
   .min(8, "Password must be at least 8 characters long.");
 

@@ -8,5 +8,5 @@ import { siteConfig } from "@/config/site";
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
 export const createTable = pgTableCreator(
-  (name) => `${siteConfig.name.toLowerCase().replace(/\s/g, "_")}_${name}`
+  (name) => `${siteConfig.name.toLowerCase().replace(/\s/g, "_")}_${name}`,
 );

@@ -36,7 +36,7 @@ export function Navbar() {
               key={title}
               className={cn(
                 "inline-block h-full shrink-0 border-b-2 border-transparent py-2 hover:border-primary",
-                isActive && "border-primary"
+                isActive && "border-primary",
               )}
             >
               <Link
@@ -45,7 +45,7 @@ export function Navbar() {
                 className={cn(
                   buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
                   "font-normal",
-                  isActive && "font-medium"
+                  isActive && "font-medium",
                 )}
               >
                 {title}

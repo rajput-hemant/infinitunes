@@ -1,12 +1,12 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 
-import type { Lang } from "@/types";
-
 import { siteConfig } from "@/config/site";
 import { getUser } from "@/lib/auth";
 import { getMegaMenu } from "@/lib/jiosaavn-api";
 import { cn } from "@/lib/utils";
+import type { Lang } from "@/types";
+
 import { SignedOut } from "../auth-control";
 import { Icons } from "../icons";
 import { SearchMenu } from "../search/search-menu";
@@ -48,7 +48,7 @@ export async function Navbar() {
               href="/login"
               className={cn(
                 buttonVariants({ size: "sm" }),
-                "hidden shadow-sm lg:flex"
+                "hidden shadow-sm lg:flex",
               )}
             >
               Sign In

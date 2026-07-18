@@ -1,14 +1,13 @@
 "use client";
 
-import React from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import type { TopShows } from "@/types";
+import React from "react";
 
 import { SliderCard } from "@/components/slider";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getTopShows } from "@/lib/jiosaavn-api";
+import type { TopShows } from "@/types";
 
 type Props = {
   initialTopShows: TopShows;
@@ -53,7 +52,7 @@ export function TopPodcasts({ initialTopShows }: Props) {
         ))}
       </div>
 
-      {hasNextPage ?
+      {hasNextPage ? (
         <div
           ref={ref}
           className="flex items-center justify-center gap-2 py-6 font-bold text-muted-foreground"
@@ -64,11 +63,12 @@ export function TopPodcasts({ initialTopShows }: Props) {
             </>
           )}
         </div>
-      : <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      ) : (
+        <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em>{" "}
           <span className="text-foreground">🤩</span>
         </h3>
-      }
+      )}
     </>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
 import { Monitor, Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
+import React from "react";
 
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMounted } from "@/hooks/use-is-mouted";

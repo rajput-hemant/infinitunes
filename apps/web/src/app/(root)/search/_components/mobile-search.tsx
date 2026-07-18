@@ -1,15 +1,14 @@
 "use client";
 
-import React from "react";
 import { Loader2, Search } from "lucide-react";
-
-import type { AllSearch } from "@/types";
+import React from "react";
 
 import { SearchAll } from "@/components/search/search-all";
 import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useIsTyping } from "@/hooks/use-store";
 import { searchAll } from "@/lib/jiosaavn-api";
+import type { AllSearch } from "@/types";
 
 type MobileSearchProps = {
   topSearch: React.JSX.Element;
@@ -19,7 +18,7 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
   const [query, setQuery] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const [searchResult, setSearchResult] = React.useState<AllSearch | null>(
-    null
+    null,
   );
 
   const debouncedQuery = useDebounce(query.trim(), 1000);

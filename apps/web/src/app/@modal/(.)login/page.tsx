@@ -1,4 +1,5 @@
 import { LoginForm } from "@/app/(auth)/_components/login-form";
+
 import { AuthModal } from "../auth-modal";
 
 export const metadata = {

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import type { Category } from "@/types";
 
 import { DetailsHeader } from "@/components/details-header";
 import { SliderList } from "@/components/slider";
@@ -9,6 +8,8 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { getUser } from "@/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { getArtistDetails } from "@/lib/jiosaavn-api";
+import type { Category } from "@/types";
+
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
 import { CategoryFilter } from "./_components/category-filter";

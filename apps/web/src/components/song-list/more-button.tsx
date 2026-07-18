@@ -1,8 +1,5 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,12 +11,12 @@ import {
   Radio,
   Share2,
 } from "lucide-react";
-import { toast } from "sonner";
-
 import type { LucideIcon } from "lucide-react";
 import type { User } from "next-auth";
-import type { MyPlaylist } from "@/lib/db/schema";
-import type { Episode, Queue, Song } from "@/types";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { toast } from "sonner";
 
 import {
   Drawer,
@@ -37,7 +34,10 @@ import {
   useQueue,
 } from "@/hooks/use-store";
 import { addSongsToPlaylist } from "@/lib/db/queries";
+import type { MyPlaylist } from "@/lib/db/schema";
 import { cn, currentlyInDev, getImageSrc } from "@/lib/utils";
+import type { Episode, Queue, Song } from "@/types";
+
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
@@ -269,9 +269,9 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                     className="flex h-8 items-center font-medium"
                   >
                     <Icon className="mr-2 size-5" />
-                    {item.type === "song" ?
-                      label
-                    : label.replace("Song", "Episode")}
+                    {item.type === "song"
+                      ? label
+                      : label.replace("Song", "Episode")}
                   </button>
                 ))}
 
@@ -306,9 +306,9 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 albumUrl={"album_url" in item ? item.album_url : undefined}
                 showAlbum={item.type === "song" ? showAlbum : false}
                 primaryArtists={
-                  "artists" in item ?
-                    item.artists
-                  : item.artist_map.primary_artists
+                  "artists" in item
+                    ? item.artists
+                    : item.artist_map.primary_artists
                 }
               />
             </div>
@@ -341,9 +341,9 @@ export function TileMoreButton(props: TileMoreButtonProps) {
               .map(({ icon: Icon, label, onClick }, i) => (
                 <DropdownMenuItem key={i} onClick={onClick}>
                   <Icon className="mr-2 size-5" />
-                  {item.type === "song" ?
-                    label
-                  : label.replace("Song", "Episode")}
+                  {item.type === "song"
+                    ? label
+                    : label.replace("Song", "Episode")}
                 </DropdownMenuItem>
               ))}
             <ShareSubMenu />
@@ -355,9 +355,9 @@ export function TileMoreButton(props: TileMoreButtonProps) {
               showAlbum={showAlbum}
               isDropdownItem
               primaryArtists={
-                "artists" in item ?
-                  item.artists
-                : item.artist_map.primary_artists
+                "artists" in item
+                  ? item.artists
+                  : item.artist_map.primary_artists
               }
             />
           </DropdownMenuContent>

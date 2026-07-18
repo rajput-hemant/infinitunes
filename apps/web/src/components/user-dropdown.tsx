@@ -1,15 +1,15 @@
 "use client";
 
-import Image from "next/image";
-import Link from "next/link";
 import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
+import type { User } from "next-auth";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
+import Image from "next/image";
+import Link from "next/link";
 import { toast } from "sonner";
 
-import type { User } from "next-auth";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,11 +64,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
       >
         <DropdownMenuLabel className="flex flex-col">
           <span title={user?.name ?? undefined} className="truncate">
-            {user ?
-              user.name ?
-                user.name
-              : "~"
-            : "Guest User"}
+            {user ? (user.name ? user.name : "~") : "Guest User"}
           </span>
           <span
             title={user?.email ?? undefined}

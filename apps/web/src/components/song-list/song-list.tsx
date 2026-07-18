@@ -1,13 +1,13 @@
+import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Play } from "lucide-react";
-
-import type { Favorite, MyPlaylist } from "@/lib/db/schema";
-import type { Episode, Song } from "@/types";
 
 import { getUser } from "@/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
+import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
+import type { Episode, Song } from "@/types";
+
 import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
@@ -46,7 +46,7 @@ export async function SongList(props: SongListProps) {
                 <span
                   className={cn(
                     "truncate font-medium",
-                    !showAlbum && "group-hover:hidden"
+                    !showAlbum && "group-hover:hidden",
                   )}
                 >
                   {i + 1}
@@ -89,14 +89,14 @@ export async function SongList(props: SongListProps) {
                 <figcaption
                   className={cn(
                     "flex w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
-                    showAlbum && "xl:w-2/3"
+                    showAlbum && "xl:w-2/3",
                   )}
                 >
                   <h4 className="w-full truncate font-semibold">
                     <Link
                       href={getHref(
                         item.url,
-                        item.type === "song" ? "song" : "episode"
+                        item.type === "song" ? "song" : "episode",
                       )}
                       className="text-primary group-hover:text-primary lg:text-muted-foreground"
                     >

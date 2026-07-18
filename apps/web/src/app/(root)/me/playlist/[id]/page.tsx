@@ -1,6 +1,5 @@
-import { notFound } from "next/navigation";
-
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { ImageCollage } from "@/components/image-collage";
 import { PlayButton } from "@/components/play-button";
@@ -90,9 +89,9 @@ export default async function MyPlaylistsPage(props: Props) {
                   {formatDuration(
                     songsDetails.songs.reduce(
                       (acc, song) => acc + song.duration,
-                      0
+                      0,
                     ),
-                    "mm:ss"
+                    "mm:ss",
                   )}
                 </span>
               )}
@@ -107,7 +106,7 @@ export default async function MyPlaylistsPage(props: Props) {
                 token={songs}
                 className={cn(
                   buttonVariants(),
-                  "rounded-full px-10 text-xl font-bold shadow-sm"
+                  "rounded-full px-10 text-xl font-bold shadow-sm",
                 )}
               >
                 Play
@@ -117,7 +116,7 @@ export default async function MyPlaylistsPage(props: Props) {
         </figcaption>
       </figure>
 
-      {songsDetails && songsDetails.songs.length ?
+      {songsDetails && songsDetails.songs.length ? (
         <>
           <SongList items={songsDetails.songs} />
 
@@ -126,13 +125,14 @@ export default async function MyPlaylistsPage(props: Props) {
             <span className="text-foreground">🤩</span>
           </h3>
         </>
-      : <div className="h-96">
+      ) : (
+        <div className="h-96">
           <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
             <em>Nothing to see here</em> 😢
             <p>Try addding songs to the playlist</p>
           </h3>
         </div>
-      }
+      )}
     </div>
   );
 }

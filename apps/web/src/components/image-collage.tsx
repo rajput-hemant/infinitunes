@@ -7,7 +7,7 @@ export function ImageCollage({ src }: { src: string[] }) {
     <div
       className={cn(
         "h-full",
-        src.length === 4 && "grid grid-cols-2 grid-rows-2 gap-0.5"
+        src.length === 4 && "grid grid-cols-2 grid-rows-2 gap-0.5",
       )}
     >
       {src.map((image, i) => (
@@ -19,7 +19,7 @@ export function ImageCollage({ src }: { src: string[] }) {
             className={cn(
               src.length === 1 &&
                 src[0].includes("placeholder") &&
-                "dark:invert"
+                "dark:invert",
             )}
           />
         </div>

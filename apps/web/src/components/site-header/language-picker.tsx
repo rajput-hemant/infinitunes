@@ -1,15 +1,15 @@
 "use client";
 
-import React from "react";
-import { useRouter } from "next/navigation";
 import { setCookie } from "cookies-next";
 import { ChevronDown, Languages } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React from "react";
 import { toast } from "sonner";
-
-import type { Lang } from "@/types";
 
 import { languages } from "@/config/languages";
 import { cn } from "@/lib/utils";
+import type { Lang } from "@/types";
+
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -56,7 +56,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
           <ChevronDown
             className={cn(
               "hidden size-4 duration-300 lg:inline-block",
-              isOpen && "rotate-180"
+              isOpen && "rotate-180",
             )}
           />
         </Button>

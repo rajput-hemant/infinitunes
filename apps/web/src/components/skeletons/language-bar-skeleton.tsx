@@ -1,4 +1,5 @@
 import { languages } from "@/config/languages";
+
 import { Badge } from "../ui/badge";
 
 export function LanguageBarSkeleton() {

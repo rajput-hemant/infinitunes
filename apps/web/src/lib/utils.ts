@@ -1,11 +1,10 @@
 import { clsx } from "clsx";
+import type { ClassValue } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
-import type { ClassValue } from "clsx";
-import type { ImageQuality, Quality, StreamQuality, Type } from "@/types";
-
 import { siteConfig } from "@/config/site";
+import type { ImageQuality, Quality, StreamQuality, Type } from "@/types";
 
 /**
  * Merges the given class names with the tailwind classes
@@ -79,8 +78,8 @@ export function rethrow(message: string): never {
 export function formatDuration(seconds: number, format: "hh:mm:ss" | "mm:ss") {
   const date = new Date(seconds * 1000);
 
-  return format === "hh:mm:ss" ?
-      date.toISOString().slice(11, 19)
+  return format === "hh:mm:ss"
+    ? date.toISOString().slice(11, 19)
     : date.toISOString().slice(14, 19);
 }
 

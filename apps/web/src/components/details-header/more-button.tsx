@@ -1,8 +1,5 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,12 +9,12 @@ import {
   Radio,
   Share2,
 } from "lucide-react";
-import { toast } from "sonner";
-
 import type { LucideIcon } from "lucide-react";
 import type { User } from "next-auth";
-import type { MyPlaylist } from "@/lib/db/schema";
-import type { Quality, Queue, Song, Type } from "@/types";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { toast } from "sonner";
 
 import {
   Drawer,
@@ -31,7 +28,10 @@ import {
 } from "@/components/ui/drawer";
 import { useQueue } from "@/hooks/use-store";
 import { addSongsToPlaylist } from "@/lib/db/queries";
+import type { MyPlaylist } from "@/lib/db/schema";
 import { currentlyInDev, getImageSrc } from "@/lib/utils";
+import type { Quality, Queue, Song, Type } from "@/types";
+
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
@@ -107,14 +107,14 @@ export function MoreButton(props: MoreButtonProps) {
     toast.promise(
       addSongsToPlaylist(
         id,
-        songs.map(({ id }) => id)
+        songs.map(({ id }) => id),
       ),
       {
         loading: "Adding songs to playlist...",
         success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${name}" playlist`,
         error: (error) => error.message,
         finally: () => setDialogOpen(false),
-      }
+      },
     );
   }
 

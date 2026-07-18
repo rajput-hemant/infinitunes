@@ -1,11 +1,8 @@
 import "@/styles/globals.css";
-
-import React from "react";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import Script from "next/script";
-
-import type { Metadata, Viewport } from "next";
-import type { ThemeConfig } from "@/types";
+import React from "react";
 
 import Providers from "@/components/provider";
 import { TailwindIndicator } from "@/components/tailwind-indicator";
@@ -13,6 +10,7 @@ import { siteConfig } from "@/config/site";
 import { env } from "@/lib/env";
 import * as fonts from "@/lib/fonts";
 import { absoluteUrl, cn } from "@/lib/utils";
+import type { ThemeConfig } from "@/types";
 
 type RootLayoutProps = {
   modal: React.ReactNode;
@@ -24,7 +22,7 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
   const themeConfig = cookieStore.get("theme-config");
 
   const { theme, radius } = JSON.parse(
-    themeConfig?.value ?? '{"theme":"default","radius":"default"}'
+    themeConfig?.value ?? '{"theme":"default","radius":"default"}',
   ) as ThemeConfig;
 
   return (
@@ -34,12 +32,12 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
           className={cn(
             Object.values(fonts).map((font) => font.variable),
             "min-h-screen font-sans antialiased",
-            `theme-${theme}`
+            `theme-${theme}`,
           )}
           style={
-            radius === "default" ?
-              {}
-            : ({ "--radius": `${radius}rem` } as React.CSSProperties)
+            radius === "default"
+              ? {}
+              : ({ "--radius": `${radius}rem` } as React.CSSProperties)
           }
         >
           <Providers>

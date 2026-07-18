@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
 import { Loader2 } from "lucide-react";
 import { signIn } from "next-auth/react";
+import React from "react";
 import { toast } from "sonner";
 
 import { GitHub, Google } from "@/components/icons";
@@ -69,9 +69,11 @@ export function OAuthButtons(props: OAuthButtonProps) {
           disabled={isFormDisabled}
           className="w-full font-semibold shadow-md"
         >
-          {oauthLoading === "google" ?
+          {oauthLoading === "google" ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
-          : <Google className="mr-2 size-4" />}
+          ) : (
+            <Google className="mr-2 size-4" />
+          )}
           Google
         </Button>
 
@@ -81,9 +83,11 @@ export function OAuthButtons(props: OAuthButtonProps) {
           disabled={isFormDisabled}
           className="w-full font-semibold shadow-md"
         >
-          {oauthLoading === "github" ?
+          {oauthLoading === "github" ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
-          : <GitHub className="mr-2 size-4" />}
+          ) : (
+            <GitHub className="mr-2 size-4" />
+          )}
           GitHub
         </Button>
       </div>

@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { TABS } from "./tabs";
 
 type ArtistsTabListProps = { showBio: boolean };

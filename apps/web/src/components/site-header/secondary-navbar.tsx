@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import React from "react";
 
 import { sidebarNav } from "@/config/nav";
 import { cn } from "@/lib/utils";
+
 import { Button, buttonVariants } from "../ui/button";
 import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 import { Separator } from "../ui/separator";
@@ -37,7 +38,7 @@ export function SecondaryNavbar() {
                   title={title}
                   className={cn(
                     "inline-block h-full shrink-0 border-b-2 border-transparent py-2 hover:border-primary",
-                    isActive && "border-primary"
+                    isActive && "border-primary",
                   )}
                 >
                   <Link
@@ -47,7 +48,7 @@ export function SecondaryNavbar() {
                         size: "sm",
                         variant: isActive ? "secondary" : "ghost",
                       }),
-                      isActive && "font-medium"
+                      isActive && "font-medium",
                     )}
                   >
                     {title}
@@ -98,7 +99,7 @@ export function SecondaryNavbar() {
                       buttonVariants({ size: "sm", variant: "ghost" }),
                       "my-1 flex justify-between text-muted-foreground",
                       isActive &&
-                        "bg-secondary font-bold text-secondary-foreground"
+                        "bg-secondary font-bold text-secondary-foreground",
                     )}
                   >
                     <span>

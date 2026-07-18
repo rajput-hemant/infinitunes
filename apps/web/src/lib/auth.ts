@@ -1,11 +1,11 @@
-import { redirect } from "next/navigation";
 import { DrizzleAdapter } from "@auth/drizzle-adapter";
 import { eq } from "drizzle-orm";
 import NextAuth from "next-auth";
-
 import type { Adapter } from "next-auth/adapters";
+import { redirect } from "next/navigation";
 
 import { authConfig } from "@/config/auth";
+
 import { db } from "./db";
 import { users } from "./db/schema";
 

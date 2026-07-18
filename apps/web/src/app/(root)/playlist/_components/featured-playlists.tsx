@@ -1,14 +1,13 @@
 "use client";
 
-import React from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
-import type { FeaturedPlaylists, Lang } from "@/types";
+import React from "react";
 
 import { SliderCard } from "@/components/slider";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { getFeaturedPlaylists } from "@/lib/jiosaavn-api";
+import type { FeaturedPlaylists, Lang } from "@/types";
 
 type Props = {
   initialPlaylists: FeaturedPlaylists;
@@ -51,11 +50,11 @@ export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
               image={image}
               explicit={explicit}
             />
-          )
+          ),
         )}
       </div>
 
-      {hasNextPage ?
+      {hasNextPage ? (
         <div
           ref={ref}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
@@ -66,11 +65,12 @@ export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
             </>
           )}
         </div>
-      : <h3 className="text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      ) : (
+        <h3 className="text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em>{" "}
           <span className="text-foreground">🤩</span>
         </h3>
-      }
+      )}
     </div>
   );
 }

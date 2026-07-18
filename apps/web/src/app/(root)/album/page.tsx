@@ -1,8 +1,8 @@
-import type { Lang } from "@/types";
-
 import { LanguageBar } from "@/components/language-bar";
 import { siteConfig } from "@/config/site";
 import { getTopAlbums } from "@/lib/jiosaavn-api";
+import type { Lang } from "@/types";
+
 import { TopAlbums } from "./_components/top-albums";
 
 const title = `Listen to New Hindi Songs Online Only on ${siteConfig.name}.`;

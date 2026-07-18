@@ -1,15 +1,15 @@
 "use client";
 
-import React from "react";
 import { Heart } from "lucide-react";
+import type { User } from "next-auth";
+import React from "react";
 import { toast } from "sonner";
 
-import type { User } from "next-auth";
+import { addToFavorites, removeFromFavorites } from "@/lib/db/queries";
 import type { Favorite } from "@/lib/db/schema";
+import { cn, currentlyInDev } from "@/lib/utils";
 import type { Type } from "@/types";
 
-import { addToFavorites, removeFromFavorites } from "@/lib/db/queries";
-import { cn, currentlyInDev } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
@@ -32,7 +32,7 @@ export function LikeButton(props: LikeButtonProps) {
 
   const [optimisticLike, setOptimisticLike] = React.useOptimistic(
     isFavorite ?? false,
-    (isLiked, _) => !isLiked
+    (isLiked, _) => !isLiked,
   );
 
   function likeHandler() {
@@ -139,7 +139,7 @@ export function LikeButton(props: LikeButtonProps) {
         <Heart
           className={cn(
             "size-5 text-inherit transition-transform active:scale-105",
-            optimisticLike && "fill-red-500 text-red-500"
+            optimisticLike && "fill-red-500 text-red-500",
           )}
         />
       </TooltipTrigger>

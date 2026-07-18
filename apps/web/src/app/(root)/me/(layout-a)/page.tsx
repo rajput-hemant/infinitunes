@@ -1,11 +1,12 @@
-import React from "react";
 import { Plus } from "lucide-react";
+import React from "react";
 
 import { NewPlaylistForm } from "@/components/playlist/new-playlist-form";
 import { SliderCardSkeleton } from "@/components/skeletons";
 import { Button } from "@/components/ui/button";
 import { getUser } from "@/lib/auth";
 import { getUserPlaylists } from "@/lib/db/queries";
+
 import { PlaylistItem } from "./_components/playlist-item";
 
 export const metadata = {
@@ -34,7 +35,7 @@ export default async function MyPlaylistsPage() {
         )}
       </div>
 
-      {playlists.length ?
+      {playlists.length ? (
         <div className="flex w-full flex-wrap gap-4">
           {playlists.map((playlist) => (
             <React.Suspense
@@ -45,7 +46,8 @@ export default async function MyPlaylistsPage() {
             </React.Suspense>
           ))}
         </div>
-      : <div className="flex h-44 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-[25rem]">
+      ) : (
+        <div className="flex h-44 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-[25rem]">
           <h3 className="py-6 text-center font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
             You don&apos;t have any playlist yet 😢.
           </h3>
@@ -57,7 +59,7 @@ export default async function MyPlaylistsPage() {
             </Button>
           </NewPlaylistForm>
         </div>
-      }
+      )}
     </div>
   );
 }

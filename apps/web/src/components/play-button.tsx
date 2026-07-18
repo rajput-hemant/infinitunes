@@ -1,10 +1,8 @@
 "use client";
 
-import React from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import React from "react";
 import { toast } from "sonner";
-
-import type { Episode, Song, Sort, Type } from "@/types";
 
 import {
   useCurrentSongIndex,
@@ -22,6 +20,7 @@ import {
   getSongDetails,
 } from "@/lib/jiosaavn-api";
 import { currentlyInDev } from "@/lib/utils";
+import type { Episode, Song, Sort, Type } from "@/types";
 
 type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   type: Type;
@@ -42,7 +41,7 @@ export function PlayButton(props: PlayButtonProps) {
 
   async function playHandler() {
     const songIndex = initialQueue.findIndex(
-      (song) => token === song.url.split("/").pop()
+      (song) => token === song.url.split("/").pop(),
     );
 
     if (songIndex !== -1) {
@@ -87,7 +86,7 @@ export function PlayButton(props: PlayButtonProps) {
             token,
             +pathname.split("/")[3],
             1,
-            sort
+            sort,
           );
           queue = episodes;
           break;
@@ -124,7 +123,7 @@ export function PlayButton(props: PlayButtonProps) {
           download_url,
           artists,
           duration,
-        })
+        }),
       );
 
       setQueue(_queue);
@@ -134,7 +133,7 @@ export function PlayButton(props: PlayButtonProps) {
         {
           description: `Playing "${queue[0].name}"`,
           position: "bottom-center",
-        }
+        },
       );
 
       setCurrentIndex(0);

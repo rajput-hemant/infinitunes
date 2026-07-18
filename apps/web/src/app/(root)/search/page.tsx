@@ -1,4 +1,5 @@
 import { TopSearch } from "@/components/search/top-search";
+
 import { MobileSearch } from "./_components/mobile-search";
 
 export default function SearchPage() {

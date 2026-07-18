@@ -13,6 +13,7 @@ import {
   getSongRecommendations,
   getTrending,
 } from "@/lib/jiosaavn-api";
+
 import { Lyrics } from "./_components/lyrics";
 
 type SongDetailsPageProps = {
@@ -51,7 +52,7 @@ async function fetcher(token: string) {
   const artistsTopSongsParams = modules.songs_by_same_artists.params;
   const actorsTopSongsParams = modules.songs_by_same_actors.params;
   const isActorPresent = song.artist_map.artists.some(
-    (artist) => artist.role === "starring"
+    (artist) => artist.role === "starring",
   );
 
   const [
@@ -69,15 +70,15 @@ async function fetcher(token: string) {
     getArtistTopSongs(
       artistsTopSongsParams.artist_id,
       artistsTopSongsParams.song_id,
-      artistsTopSongsParams.lang
+      artistsTopSongsParams.lang,
     ),
-    isActorPresent ?
-      getActorsTopSongs(
-        actorsTopSongsParams.actor_id,
-        actorsTopSongsParams.song_id,
-        actorsTopSongsParams.lang
-      )
-    : undefined,
+    isActorPresent
+      ? getActorsTopSongs(
+          actorsTopSongsParams.actor_id,
+          actorsTopSongsParams.song_id,
+          actorsTopSongsParams.lang,
+        )
+      : undefined,
   ]);
 
   return {

@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-
-import type { SidebarNavItem } from "./side-navbar";
+import React from "react";
 
 import { buttonVariants } from "@/components/ui/button";
 import { useHash } from "@/hooks/use-hash";
 import { cn } from "@/lib/utils";
+
+import type { SidebarNavItem } from "./side-navbar";
 
 type SideNavItemsProps = React.ComponentProps<"div"> & {
   href: string;
@@ -26,9 +26,9 @@ export function SideNavItems({ items, href, ...props }: SideNavItemsProps) {
           className={cn(
             buttonVariants({ size: "sm", variant: "ghost" }),
             "justify-start text-muted-foreground",
-            windowHash === hash ?
-              "bg-muted text-foreground"
-            : "underline-offset-4 hover:bg-muted hover:underline"
+            windowHash === hash
+              ? "bg-muted text-foreground"
+              : "underline-offset-4 hover:bg-muted hover:underline",
           )}
         >
           {icon}

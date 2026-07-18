@@ -1,8 +1,8 @@
 import Link from "next/link";
 
+import { cn, getHref, getImageSrc } from "@/lib/utils";
 import type { AllSearch } from "@/types";
 
-import { cn, getHref, getImageSrc } from "@/lib/utils";
 import { ImageWithFallback } from "../image-with-fallback";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
@@ -53,7 +53,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
                       className={cn(
                         "z-10 object-cover",
                         getImageSrc(t.image, "low").includes("default") &&
-                          "dark:invert"
+                          "dark:invert",
                       )}
                       fallback={`/images/placeholder/${t.type}.jpg`}
                     />

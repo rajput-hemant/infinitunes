@@ -1,13 +1,14 @@
-import React from "react";
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import React from "react";
 
 import { Icons } from "@/components/icons";
 import { buttonVariants } from "@/components/ui/button";
 import { getUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
 
 type AuthLayoutProps = React.PropsWithChildren;
@@ -28,7 +29,7 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
           href="/"
           className={cn(
             buttonVariants({ size: "sm" }),
-            "group w-fit border border-zinc-600 duration-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-2 hover:ring-offset-zinc-900"
+            "group w-fit border border-zinc-600 duration-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-2 hover:ring-offset-zinc-900",
           )}
         >
           <ArrowLeft className="mr-1 size-4 duration-300 group-hover:-translate-x-1" />

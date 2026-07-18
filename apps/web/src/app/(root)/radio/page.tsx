@@ -1,8 +1,7 @@
-import type { Lang } from "@/types";
-
 import { LanguageBar } from "@/components/language-bar";
 import { SliderCard } from "@/components/slider";
 import { getFeaturedRadioStations } from "@/lib/jiosaavn-api";
+import type { Lang } from "@/types";
 
 const title = "Top Indian Radio Stations";
 const description =
@@ -55,7 +54,7 @@ export default async function RadioPage(props: Props) {
               image={image}
               explicit={explicit}
             />
-          )
+          ),
         )}
       </div>
 

@@ -1,6 +1,7 @@
 import { SliderCard } from "@/components/slider";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getTopShows } from "@/lib/jiosaavn-api";
+
 import { TopPodcasts } from "./_components/top-podcasts";
 
 const title = `Latest podcasts - download and listen online @JioSaavn`;
@@ -57,7 +58,7 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
                   hidePlayButton
                 />
               );
-            }
+            },
           )}
         </div>
 

@@ -6,7 +6,6 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-
 import type { AdapterAccount } from "next-auth/adapters";
 
 import { createTable } from "./table-creator";
@@ -48,7 +47,7 @@ export const accounts = pgTable(
     compoundKey: primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-  })
+  }),
 );
 
 export const verificationTokens = pgTable(
@@ -60,7 +59,7 @@ export const verificationTokens = pgTable(
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
+  }),
 );
 
 /* -----------------------------------------------------------------------------------------------

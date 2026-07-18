@@ -38,7 +38,7 @@ import { env } from "./env";
 
 async function jioSaavnGetCall<T>(
   path: string,
-  query?: Record<string, string>
+  query?: Record<string, string>,
 ): Promise<T> {
   const cookiesStore = await cookies(); // this will trigger dynamic rendering
   const languages = cookiesStore.get("language")?.value;
@@ -90,9 +90,9 @@ export async function getHomeData(lang?: Lang[], mini = true) {
 export async function getSongDetails(token: string | string[], mini = false) {
   return await jioSaavnGetCall<SongObj>(
     "/song",
-    Array.isArray(token) ?
-      { id: token.join(","), mini: `${mini}` }
-    : { token, mini: `${mini}` }
+    Array.isArray(token)
+      ? { id: token.join(","), mini: `${mini}` }
+      : { token, mini: `${mini}` },
   );
 }
 
@@ -106,7 +106,7 @@ export async function getSongDetails(token: string | string[], mini = false) {
 export async function getSongRecommendations(
   id: string,
   lang?: Lang[],
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Song[]>("/song/recommend", {
     id,
@@ -144,7 +144,7 @@ export async function getAlbumDetails(token: string, mini = true) {
 export async function getAlbumRecommendations(
   id: string,
   lang?: Lang[],
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Album[]>("/album/recommend", {
     id,
@@ -164,7 +164,7 @@ export async function getAlbumRecommendations(
 export async function getAlbumFromSameYear(
   year: number,
   lang?: Lang[],
-  mini = true
+  mini = true,
 ) {
   return jioSaavnGetCall<Album[]>("/album/same-year", {
     year: `${year}`,
@@ -202,7 +202,7 @@ export async function getPlaylistDetails(token: string, mini = true) {
 export async function getPlaylistRecommendations(
   id: string,
   lang?: Lang[],
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Playlist[]>("/playlist/recommend", {
     id,
@@ -245,7 +245,7 @@ export async function getArtistsSongs(
   page = 0,
   cat: Category = "popularity",
   sort: Sort = "asc",
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Omit<ArtistSongsOrAlbums, "albums">>(
     "/artist/songs",
@@ -255,7 +255,7 @@ export async function getArtistsSongs(
       cat,
       sort,
       mini: `${mini}`,
-    }
+    },
   );
 }
 
@@ -273,7 +273,7 @@ export async function getArtistsAlbums(
   page = 0,
   cat: Category = "popularity",
   sort: Sort = "asc",
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Omit<ArtistSongsOrAlbums, "albums">>(
     "/artist/albums",
@@ -283,7 +283,7 @@ export async function getArtistsAlbums(
       cat,
       sort,
       mini: `${mini}`,
-    }
+    },
   );
 }
 
@@ -305,7 +305,7 @@ export async function getArtistTopSongs(
   page = 1,
   cat: Category = "latest",
   sort: Sort = "asc",
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Song[]>("/artist/top-songs", {
     artist_id: artistId,
@@ -333,7 +333,7 @@ export async function getArtistTopSongs(
 export async function getShowDetails(
   token: string,
   season = 1,
-  sort: Sort = "desc"
+  sort: Sort = "desc",
 ) {
   return await jioSaavnGetCall<Show>("/show", {
     token,
@@ -354,7 +354,7 @@ export async function getShowEpisodes(
   id: string,
   season = 1,
   page = 1,
-  sort: Sort = "desc"
+  sort: Sort = "desc",
 ) {
   return await jioSaavnGetCall<Episode[]>("/show/episodes", {
     id,
@@ -374,7 +374,7 @@ export async function getShowEpisodes(
 export async function getEpisodeDetails(
   token: string,
   season = 1,
-  sort: Sort = "desc"
+  sort: Sort = "desc",
 ) {
   return await jioSaavnGetCall<EpisodeDetail>("/show/episode", {
     token,
@@ -416,7 +416,7 @@ export async function search(
   query: string,
   type: "song" | "album" | "playlist" | "artist" | "show",
   page = 1,
-  n = 50
+  n = 50,
 ): Promise<SearchReturnType> {
   return await jioSaavnGetCall(
     `/search/${type === "show" ? "podcast" : type}s`,
@@ -424,7 +424,7 @@ export async function search(
       q: query,
       page: `${page}`,
       n: `${n}`,
-    }
+    },
   );
 }
 
@@ -443,7 +443,7 @@ export async function search(
 export async function getTrending(
   type: "song" | "album" | "playlist",
   lang?: Lang[],
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Trending>("/get/trending", {
     type,
@@ -498,7 +498,7 @@ export async function getFeaturedPlaylists(
   page = 1,
   n = 50,
   lang?: Lang,
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<FeaturedPlaylists>("/get/featured-playlists", {
     page: `${page}`,
@@ -520,7 +520,7 @@ export async function getTopArtists(
   page = 1,
   n = 50,
   lang?: Lang,
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<TopArtists>("/get/top-artists", {
     page: `${page}`,
@@ -558,7 +558,7 @@ export async function getFeaturedRadioStations(
   page = 1,
   n = 50,
   lang?: Lang,
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Radio[]>("/get/featured-stations", {
     page: `${page}`,
@@ -580,7 +580,7 @@ export async function getActorsTopSongs(
   actorID: string,
   songId: string,
   lang: Lang,
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Song[]>("/get/actor-top-songs", {
     actor_id: actorID,
@@ -619,7 +619,7 @@ export async function getLabelDetails(
   cat: Category = "popularity",
   sort: Sort = "asc",
   lang?: Lang,
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Label>("/get/label", {
     token,
@@ -647,7 +647,7 @@ export async function getMixDetails(
   page = 1,
   n = 20,
   lang: Lang[] = ["hindi", "english"],
-  mini = true
+  mini = true,
 ) {
   return await jioSaavnGetCall<Mix>("/get/mix", {
     token,

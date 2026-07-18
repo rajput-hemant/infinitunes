@@ -1,9 +1,10 @@
-import React from "react";
-import { usePathname } from "next/navigation";
 import { Clipboard, Facebook, Mail, Twitter } from "lucide-react";
+import { usePathname } from "next/navigation";
+import React from "react";
 
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
+
 import { Icons } from "./icons";
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 
@@ -60,35 +61,39 @@ export function ShareOptions({ isDropDownItem, ...props }: ShareOptionsProps) {
   }
 
   function MenuItem({ label, href, icon: Icon }: ShareOption) {
-    return href ?
-        <a href={href} target="_blank" rel="noopener noreferrer">
-          <Icon
-            className={cn(
-              "mr-2 inline-block aspect-square h-5",
-              isDropDownItem && "h-4"
-            )}
-          />
-          {label}
-        </a>
-      : <button onClick={copy} className="inline-flex">
-          <Clipboard
-            className={cn(
-              "mr-2 inline-block aspect-square h-5",
-              isDropDownItem && "h-4"
-            )}
-          />
-          {isCopied ? "Link Copied 👍" : "Copy Link"}
-        </button>;
+    return href ? (
+      <a href={href} target="_blank" rel="noopener noreferrer">
+        <Icon
+          className={cn(
+            "mr-2 inline-block aspect-square h-5",
+            isDropDownItem && "h-4",
+          )}
+        />
+        {label}
+      </a>
+    ) : (
+      <button onClick={copy} className="inline-flex">
+        <Clipboard
+          className={cn(
+            "mr-2 inline-block aspect-square h-5",
+            isDropDownItem && "h-4",
+          )}
+        />
+        {isCopied ? "Link Copied 👍" : "Copy Link"}
+      </button>
+    );
   }
 
   return (
     <div {...props}>
       {shareOptions.map(({ label, href, icon: Icon }, i) => {
-        return isDropDownItem ?
-            <DropdownMenuItem key={i}>
-              <MenuItem label={label} href={href} icon={Icon} />
-            </DropdownMenuItem>
-          : <MenuItem key={i} label={label} href={href} icon={Icon} />;
+        return isDropDownItem ? (
+          <DropdownMenuItem key={i}>
+            <MenuItem label={label} href={href} icon={Icon} />
+          </DropdownMenuItem>
+        ) : (
+          <MenuItem key={i} label={label} href={href} icon={Icon} />
+        );
       })}
     </div>
   );

@@ -2,12 +2,11 @@
   "name": "infinitunes",
   "version": "0.3.0",
   "private": true,
-  "type": "module",
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
-  "packageManager": "bun@1.3.14",
+  "type": "module",
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
@@ -15,8 +14,8 @@
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "test": "bun test --pass-with-no-tests",
-    "fmt": "prettier --write \"**/*.{ts,tsx,mdx,json}\" --cache",
-    "fmt:check": "prettier --check \"**/*.{ts,tsx,mdx,json}\" --cache",
+    "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
+    "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
     "db:generate": "bun run --filter @infinitunes/web db:generate",
     "db:migrate": "bun run --filter @infinitunes/web db:migrate",
     "db:drop": "bun run --filter @infinitunes/web db:drop",
@@ -26,12 +25,21 @@
     "db:check": "bun run --filter @infinitunes/web db:check",
     "prepare": "husky"
   },
+  "devDependencies": {
+    "@commitlint/cli": "^21.2.1",
+    "@commitlint/config-conventional": "^21.2.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.8",
+    "oxfmt": "^0.59.0",
+    "oxlint": "^1.74.0",
+    "turbo": "^2.10.5"
+  },
   "lint-staged": {
     "*.{ts,tsx,md,mdx}": [
-      "prettier --write \"**/*.{ts,tsx,mdx}\" --cache"
+      "oxfmt --write"
     ],
     "*.{ts,tsx,mdx}": [
-      "eslint"
+      "oxlint"
     ]
   },
   "commitlint": {
@@ -39,7 +47,5 @@
       "@commitlint/config-conventional"
     ]
   },
-  "devDependencies": {
-    "turbo": "^2.5.0"
-  }
+  "packageManager": "bun@1.3.14"
 }

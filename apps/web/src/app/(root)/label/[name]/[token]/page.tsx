@@ -1,6 +1,5 @@
-import Link from "next/link";
-
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { DetailsHeader } from "@/components/details-header";
 import { SliderCard } from "@/components/slider";
@@ -59,7 +58,7 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
               <Link
                 href={`/label/${name.replace(
                   /-(songs|albums)$/,
-                  value === TABS.Songs ? "-songs" : "-albums"
+                  value === TABS.Songs ? "-songs" : "-albums",
                 )}/${token}`}
               >
                 {value}
@@ -84,7 +83,7 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
                   type={type}
                   image={image}
                 />
-              )
+              ),
             )}
           </div>
         </TabsContent>

@@ -1,15 +1,14 @@
 "use client";
 
-import React from "react";
-import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Pen } from "lucide-react";
+import type { User } from "next-auth";
 import { signOut } from "next-auth/react";
+import Image from "next/image";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-
-import type { User } from "next-auth";
 
 import {
   AlertDialog,
@@ -209,9 +208,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
                           onClick={() => setIsPassVisible(!isPassVisible)}
                           className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                         >
-                          {isPassVisible ?
+                          {isPassVisible ? (
                             <EyeOff className="size-5" />
-                          : <Eye className="size-5" />}
+                          ) : (
+                            <Eye className="size-5" />
+                          )}
                         </TooltipTrigger>
 
                         <TooltipContent>

@@ -1,7 +1,6 @@
 "use client";
 
 import { notFound, usePathname } from "next/navigation";
-
 import type React from "react";
 
 import { useWindowSize } from "@/hooks/use-window-size";

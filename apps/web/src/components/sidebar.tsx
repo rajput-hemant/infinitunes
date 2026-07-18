@@ -1,16 +1,16 @@
 "use client";
 
-import React from "react";
+import { ListMusic, ListPlus, Play, Plus } from "lucide-react";
+import type { User } from "next-auth";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
-import { ListMusic, ListPlus, Play, Plus } from "lucide-react";
-
-import type { User } from "next-auth";
-import type { MyPlaylist } from "@/lib/db/schema";
+import React from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { sidebarNav } from "@/config/nav";
+import type { MyPlaylist } from "@/lib/db/schema";
 import { cn, currentlyInDev } from "@/lib/utils";
+
 import { NewPlaylistForm } from "./playlist/new-playlist-form";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -91,8 +91,8 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
       </div>
 
       <div className="mx-4 space-y-2">
-        {user ?
-          userPlaylists?.length === 0 ?
+        {user ? (
+          userPlaylists?.length === 0 ? (
             <NewPlaylistForm user={user}>
               <Button
                 size="sm"
@@ -103,13 +103,14 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                 Create Playlist
               </Button>
             </NewPlaylistForm>
-          : null
-        : <>
+          ) : null
+        ) : (
+          <>
             <Link
               href="/login"
               className={cn(
                 buttonVariants({ size: "sm" }),
-                "my-2 w-full truncate font-medium shadow"
+                "my-2 w-full truncate font-medium shadow",
               )}
             >
               <Plus className="mr-2 size-4 shrink-0" />
@@ -119,7 +120,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
               You need to be logged in to create a playlist.
             </p>
           </>
-        }
+        )}
       </div>
 
       <ScrollArea>
@@ -166,7 +167,7 @@ const NavLink = React.forwardRef<
         buttonVariants({ size: "sm", variant: "ghost" }),
         "flex justify-start text-muted-foreground",
         isActive && "bg-secondary font-bold text-secondary-foreground",
-        className
+        className,
       )}
       {...props}
     >

@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 import { Search } from "lucide-react";
-
-import type { AllSearch } from "@/types";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -14,6 +12,8 @@ import { useEventListener } from "@/hooks/use-event-listner";
 import { useIsTyping } from "@/hooks/use-store";
 import { searchAll } from "@/lib/jiosaavn-api";
 import { cn, isMacOs } from "@/lib/utils";
+import type { AllSearch } from "@/types";
+
 import { SearchAll } from "./search-all";
 
 type SearchMenuProps = {
@@ -71,7 +71,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           variant="outline"
           className={cn(
             "flex size-10 p-0 shadow-sm lg:w-60 lg:justify-start lg:px-3 lg:py-2",
-            className
+            className,
           )}
         >
           <Search aria-hidden="true" className="inline-block size-4 lg:mr-2" />
@@ -97,13 +97,17 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           />
         </div>
 
-        {debouncedQuery.length ?
-          isLoading ?
+        {debouncedQuery.length ? (
+          isLoading ? (
             <div className="m-auto aspect-square h-16 animate-spin rounded-full border-y-2 border-primary py-10 lg:h-32">
               <span className="sr-only">Loading Results</span>
             </div>
-          : searchResult && <SearchAll query={query} data={searchResult} />
-        : topSearch}
+          ) : (
+            searchResult && <SearchAll query={query} data={searchResult} />
+          )
+        ) : (
+          topSearch
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -1,9 +1,8 @@
 import { compare } from "bcryptjs";
+import type { NextAuthConfig } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
-
-import type { NextAuthConfig } from "next-auth";
 
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
@@ -28,9 +27,9 @@ export const authConfig: NextAuthConfig = {
 
           const dbUser = await db.query.users.findFirst({
             where: (u, { eq }) =>
-              user.type === "email" ?
-                eq(u.email, user.email!)
-              : eq(u.username, user.username!),
+              user.type === "email"
+                ? eq(u.email, user.email!)
+                : eq(u.username, user.username!),
           });
 
           if (dbUser && dbUser.password) {

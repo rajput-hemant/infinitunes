@@ -1,3 +1,20 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.defaultFormatter": "oxc-project.oxc-vscode",
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "oxc-project.oxc-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "oxc-project.oxc-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "oxc-project.oxc-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "oxc-project.oxc-vscode"
+  },
+  "oxc.format.enable": true,
+  "oxc.lint.enable": true,
+  "oxc.lint.run": "onType"
 }

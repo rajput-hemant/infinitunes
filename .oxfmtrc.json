@@ -1,0 +1,33 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": true,
+  "singleQuote": false,
+  "trailingComma": "all",
+  "jsxSingleQuote": false,
+  "sortImports": {
+    "internalPattern": ["@/", "~/", "#"],
+    "newlinesBetween": true,
+    "order": "asc"
+  },
+  "sortPackageJson": false,
+  "tailwind": {
+    "preserveWhitespace": false
+  },
+  "ignorePatterns": [
+    "cache",
+    ".cache",
+    "public",
+    "CHANGELOG.md",
+    ".yarn",
+    "dist",
+    "node_modules",
+    ".next",
+    "build",
+    ".contentlayer",
+    "migrations",
+    "bun.lockb"
+  ]
+}

@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
 import { CloudDownload, Loader } from "lucide-react";
+import React from "react";
 import { toast } from "sonner";
 
-import type { Episode, Song } from "@/types";
-
 import { useDownloadQuality } from "@/hooks/use-store";
+import type { Episode, Song } from "@/types";
 import { QUALITIES_MAP } from "@/types";
+
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
@@ -19,7 +19,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
   const [isDownloading, setIsDownloading] = React.useState(false);
 
   const downloadQualityIndex = QUALITIES_MAP.findIndex(
-    ({ quality }) => quality === downloadQuality
+    ({ quality }) => quality === downloadQuality,
   );
 
   const downloadHandler = async () => {
@@ -43,7 +43,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
 
           const contentLength = parseInt(
             response.headers.get("content-length") ?? "0",
-            10
+            10,
           );
 
           let receivedLength = 0;
@@ -82,7 +82,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
           a.addEventListener("click", handleDownload, false);
 
           a.click();
-        })
+        }),
       );
     } catch (error) {
       console.error;
@@ -99,15 +99,17 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
         {...rest}
         disabled={isDownloading}
       >
-        {isDownloading ?
+        {isDownloading ? (
           <Loader className="size-5 animate-spin" />
-        : <CloudDownload className="size-5" />}
+        ) : (
+          <CloudDownload className="size-5" />
+        )}
       </TooltipTrigger>
 
       <TooltipContent>
-        {songs.length === 1 ?
-          `Download \`${songs[0].name}\``
-        : `Download ${songs.length} songs`}
+        {songs.length === 1
+          ? `Download \`${songs[0].name}\``
+          : `Download ${songs.length} songs`}
       </TooltipContent>
     </Tooltip>
   );

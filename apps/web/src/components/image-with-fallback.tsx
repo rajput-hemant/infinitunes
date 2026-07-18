@@ -1,9 +1,8 @@
 "use client";
 
-import React from "react";
 import Image from "next/image";
-
 import type { ImageProps } from "next/image";
+import React from "react";
 
 import { cn } from "@/lib/utils";
 

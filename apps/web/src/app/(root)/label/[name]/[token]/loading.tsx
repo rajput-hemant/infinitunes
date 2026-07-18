@@ -18,14 +18,15 @@ export default function LabelDetailsLoading() {
 
       <Skeleton className="h-10 w-[148px]" />
 
-      {name.endsWith("-songs") ?
+      {name.endsWith("-songs") ? (
         <SongListSkeleton length={20} />
-      : <div className="flex w-full flex-wrap justify-between gap-y-4">
+      ) : (
+        <div className="flex w-full flex-wrap justify-between gap-y-4">
           {Array.from({ length: 20 }).map((_, i) => (
             <SliderCardSkeleton key={i} />
           ))}
         </div>
-      }
+      )}
     </div>
   );
 }

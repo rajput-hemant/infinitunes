@@ -1,10 +1,9 @@
 import Link from "next/link";
 
-import type { MyPlaylist } from "@/lib/db/schema";
-
 import { ImageCollage } from "@/components/image-collage";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { MyPlaylist } from "@/lib/db/schema";
 import { getSongDetails } from "@/lib/jiosaavn-api";
 import { getImageSrc } from "@/lib/utils";
 
@@ -18,7 +17,7 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
   }
 
   const imageSrcs = songsDetails?.songs.map((song) =>
-    getImageSrc(song.image, "medium")
+    getImageSrc(song.image, "medium"),
   ) ?? ["/images/placeholder/song.jpg"];
 
   return (

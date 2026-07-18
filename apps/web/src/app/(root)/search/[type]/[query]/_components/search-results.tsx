@@ -3,12 +3,11 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
-import type { Album, SearchReturnType, Song } from "@/types";
-
 import { SliderCard } from "@/components/slider";
 import { SongListClient } from "@/components/song-list/song-list.client";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
 import { search } from "@/lib/jiosaavn-api";
+import type { Album, SearchReturnType, Song } from "@/types";
 
 type SearchResultsProps = {
   query: string;
@@ -30,7 +29,7 @@ export function SearchResults(props: SearchResultsProps) {
     });
 
   const searchResults = data.pages.flatMap(
-    (page) => page.results as (Album | Song)[]
+    (page) => page.results as (Album | Song)[],
   );
 
   const [ref] = useIntersectionObserver({
@@ -44,9 +43,10 @@ export function SearchResults(props: SearchResultsProps) {
 
   return (
     <>
-      {type === "song" ?
+      {type === "song" ? (
         <SongListClient items={searchResults as Song[]} />
-      : <div className="flex w-full flex-wrap justify-between gap-y-4">
+      ) : (
+        <div className="flex w-full flex-wrap justify-between gap-y-4">
           {searchResults.map(({ id, name, url, subtitle, type, image }) => (
             <SliderCard
               key={id}
@@ -58,9 +58,9 @@ export function SearchResults(props: SearchResultsProps) {
             />
           ))}
         </div>
-      }
+      )}
 
-      {hasNextPage ?
+      {hasNextPage ? (
         <div
           ref={ref}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
@@ -71,11 +71,12 @@ export function SearchResults(props: SearchResultsProps) {
             </>
           )}
         </div>
-      : <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      ) : (
+        <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em>{" "}
           <span className="text-foreground">🤩</span>
         </h3>
-      }
+      )}
     </>
   );
 }

@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-
 import type { Metadata } from "next";
-import type { Sort } from "@/types";
+import Link from "next/link";
 
 import { DetailsHeader } from "@/components/details-header";
 import { SliderCard } from "@/components/slider";
@@ -17,6 +15,8 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getUser } from "@/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { getShowDetails } from "@/lib/jiosaavn-api";
+import type { Sort } from "@/types";
+
 import { EpisodeList } from "./_components/episode-list";
 
 type ShowDetailsPageProps = {

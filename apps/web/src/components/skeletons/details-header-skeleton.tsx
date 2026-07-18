@@ -1,6 +1,6 @@
+import { cn } from "@/lib/utils";
 import type { Type } from "@/types";
 
-import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 
@@ -31,13 +31,13 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
       <div
         className={cn(
           "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64",
-          (type === "artist" || type === "label") && "rounded-full"
+          (type === "artist" || type === "label") && "rounded-full",
         )}
       >
         <Skeleton
           className={cn(
             "absolute inset-1",
-            (type === "artist" || type === "label") && "rounded-full"
+            (type === "artist" || type === "label") && "rounded-full",
           )}
         />
       </div>

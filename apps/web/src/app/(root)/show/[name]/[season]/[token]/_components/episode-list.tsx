@@ -1,16 +1,15 @@
 "use client";
 
-import React from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-
 import type { User } from "next-auth";
-import type { Favorite, MyPlaylist } from "@/lib/db/schema";
-import type { Episode, Sort } from "@/types";
+import React from "react";
 
 import { SongListClient } from "@/components/song-list/song-list.client";
 import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
+import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import { getShowEpisodes } from "@/lib/jiosaavn-api";
+import type { Episode, Sort } from "@/types";
 
 type EpisodeListProps = {
   user?: User;
@@ -71,7 +70,7 @@ export function EpisodeList(props: EpisodeListProps) {
         userPlaylists={userPlaylists}
       />
 
-      {hasNextPage ?
+      {hasNextPage ? (
         <div
           ref={ref}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
@@ -82,11 +81,12 @@ export function EpisodeList(props: EpisodeListProps) {
             </>
           )}
         </div>
-      : <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      ) : (
+        <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em>{" "}
           <span className="text-foreground">🤩</span>
         </h3>
-      }
+      )}
     </>
   );
 }

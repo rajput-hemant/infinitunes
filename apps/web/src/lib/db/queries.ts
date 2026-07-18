@@ -1,7 +1,7 @@
 "use server";
 
-import { revalidateTag, unstable_cache } from "next/cache";
 import { eq, sql } from "drizzle-orm";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 import { db } from ".";
 import { favorites, myPlaylists } from "./schema";
@@ -15,7 +15,7 @@ export const getUserPlaylists = unstable_cache(
     return playlists;
   },
   ["user_playlists"],
-  { tags: ["user_playlists"] }
+  { tags: ["user_playlists"] },
 );
 
 export async function getPlaylistDetails(playlistId: string) {
@@ -55,13 +55,13 @@ export const getUserFavorites = unstable_cache(
     return favorites;
   },
   ["user_favorites"],
-  { tags: ["user_favorites"] }
+  { tags: ["user_favorites"] },
 );
 
 export async function addToFavorites(
   userId: string,
   token: string,
-  type: "song" | "album" | "playlist" | "artist" | "show"
+  type: "song" | "album" | "playlist" | "artist" | "show",
 ) {
   const userFavorites = await getUserFavorites(userId);
 
@@ -94,9 +94,9 @@ export async function addToFavorites(
       albums:
         type === "album" ? sql`array_append(albums, ${token})` : undefined,
       playlists:
-        type === "playlist" ?
-          sql`array_append(playlists, ${token})`
-        : undefined,
+        type === "playlist"
+          ? sql`array_append(playlists, ${token})`
+          : undefined,
       artists:
         type === "artist" ? sql`array_append(artists, ${token})` : undefined,
       podcasts:
@@ -117,7 +117,7 @@ export async function addToFavorites(
 export async function removeFromFavorites(
   userId: string,
   token: string,
-  type: "song" | "album" | "playlist" | "artist" | "show"
+  type: "song" | "album" | "playlist" | "artist" | "show",
 ) {
   const userFavorites = await getUserFavorites(userId);
 
@@ -132,9 +132,9 @@ export async function removeFromFavorites(
       albums:
         type === "album" ? sql`array_remove(albums, ${token})` : undefined,
       playlists:
-        type === "playlist" ?
-          sql`array_remove(playlists, ${token})`
-        : undefined,
+        type === "playlist"
+          ? sql`array_remove(playlists, ${token})`
+          : undefined,
       artists:
         type === "artist" ? sql`array_remove(artists, ${token})` : undefined,
       podcasts:

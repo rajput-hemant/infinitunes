@@ -12,7 +12,7 @@ type UseIntersectionObserverOptions = {
   freezeOnceVisible?: boolean;
   onChange?: (
     isIntersecting: boolean,
-    entry: IntersectionObserverEntry
+    entry: IntersectionObserverEntry,
   ) => void;
   initialIsIntersecting?: boolean;
 };
@@ -46,7 +46,7 @@ export function useIntersectionObserver({
   }));
 
   const callbackRef = useRef<UseIntersectionObserverOptions["onChange"]>(
-    () => {}
+    () => {},
   );
 
   // eslint-disable-next-line react-compiler/react-compiler
@@ -69,16 +69,15 @@ export function useIntersectionObserver({
 
     const observer = new IntersectionObserver(
       (entries: IntersectionObserverEntry[]): void => {
-        const thresholds =
-          Array.isArray(observer.thresholds) ?
-            observer.thresholds
+        const thresholds = Array.isArray(observer.thresholds)
+          ? observer.thresholds
           : [observer.thresholds];
 
         entries.forEach((entry) => {
           const isIntersecting =
             entry.isIntersecting &&
             thresholds.some(
-              (threshold) => entry.intersectionRatio >= (threshold as number)
+              (threshold) => entry.intersectionRatio >= (threshold as number),
             );
 
           setState({ isIntersecting, entry });
@@ -93,7 +92,7 @@ export function useIntersectionObserver({
           }
         });
       },
-      { threshold, root, rootMargin }
+      { threshold, root, rootMargin },
     );
 
     observer.observe(ref);

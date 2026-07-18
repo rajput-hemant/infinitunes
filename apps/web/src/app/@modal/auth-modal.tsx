@@ -42,9 +42,9 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
         {children}
 
         <p className="py-2 text-center text-sm text-muted-foreground">
-          {isLoginPage ?
-            "Don't have an account? "
-          : "Already have an account? "}
+          {isLoginPage
+            ? "Don't have an account? "
+            : "Already have an account? "}
           <Button
             size="sm"
             variant="link"

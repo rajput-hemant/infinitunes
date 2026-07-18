@@ -1,6 +1,9 @@
-import Link from "next/link";
 import { BadgeCheck } from "lucide-react";
+import Link from "next/link";
 
+import { getUser } from "@/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
+import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import type {
   Album,
   Artist,
@@ -12,9 +15,6 @@ import type {
   Song,
 } from "@/types";
 
-import { getUser } from "@/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
-import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
 import { DownloadButton } from "../download-button";
 import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
@@ -30,9 +30,7 @@ type DetailsHeaderProps = {
 
 export async function DetailsHeader({ item }: DetailsHeaderProps) {
   const songs =
-    item.type === "song" ? [item]
-    : "songs" in item ? item.songs
-    : [];
+    item.type === "song" ? [item] : "songs" in item ? item.songs : [];
 
   const user = await getUser();
 
@@ -50,7 +48,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
       <div
         className={cn(
           "relative aspect-square w-44 shrink-0 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64",
-          (item.type === "artist" || item.type === "label") && "rounded-full"
+          (item.type === "artist" || item.type === "label") && "rounded-full",
         )}
       >
         <ImageWithFallback
@@ -61,14 +59,14 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           fallback={`/images/placeholder/${item.type}.jpg`}
           className={cn(
             "size-full rounded-md object-cover",
-            (item.type === "artist" || item.type === "label") && "scale-105"
+            (item.type === "artist" || item.type === "label") && "scale-105",
           )}
         />
 
         <Skeleton
           className={cn(
             "absolute inset-0 -z-10",
-            (item.type === "artist" || item.type === "label") && "rounded-full"
+            (item.type === "artist" || item.type === "label") && "rounded-full",
           )}
         />
       </div>
@@ -113,7 +111,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                         {name}
                         {i !== arr.length - 1 && ", "}
                       </Link>
-                    )
+                    ),
                   )}
                 </p>
               )}
@@ -228,15 +226,15 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
             <PlayButton
               type={item.type}
               token={
-                item.type === "show" ?
-                  item.id
-                : (item.type === "artist" ? item.urls.songs : item.url)
-                    .split("/")
-                    .pop()!
+                item.type === "show"
+                  ? item.id
+                  : (item.type === "artist" ? item.urls.songs : item.url)
+                      .split("/")
+                      .pop()!
               }
               className={cn(
                 buttonVariants(),
-                "rounded-full px-10 text-xl font-bold shadow-sm"
+                "rounded-full px-10 text-xl font-bold shadow-sm",
               )}
             >
               Play
@@ -250,7 +248,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               favourites={favorites}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
-                "rounded-full shadow-sm"
+                "rounded-full shadow-sm",
               )}
             />
 
@@ -258,7 +256,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               songs={songs ?? []}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
-                "rounded-full shadow-sm"
+                "rounded-full shadow-sm",
               )}
             />
 

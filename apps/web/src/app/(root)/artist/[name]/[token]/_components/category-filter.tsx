@@ -1,9 +1,8 @@
 import Link from "next/link";
 
-import type { Category } from "@/types";
-
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import type { Category } from "@/types";
 
 type CategoryFilterProps = {
   category: Category;
@@ -23,7 +22,7 @@ export function CategoryFilter({ category }: CategoryFilterProps) {
           <Badge
             className={cn(
               "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-sm lg:px-4",
-              category === key && "!bg-primary text-primary-foreground"
+              category === key && "!bg-primary text-primary-foreground",
             )}
           >
             {value}
