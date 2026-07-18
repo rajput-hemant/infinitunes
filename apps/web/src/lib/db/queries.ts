@@ -1,7 +1,7 @@
 "use server";
 
 import { eq, sql } from "drizzle-orm";
-import { revalidateTag, unstable_cache } from "next/cache";
+import { updateTag, unstable_cache } from "next/cache";
 
 import { db } from ".";
 import { favorites, myPlaylists } from "./schema";
@@ -41,7 +41,7 @@ export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
     .where(eq(myPlaylists.id, playlistId))
     .returning();
 
-  revalidateTag("user_playlists");
+  updateTag("user_playlists");
 
   return updatedPlaylist;
 }
@@ -82,7 +82,7 @@ export async function addToFavorites(
       throw new Error("Failed to add to favorites");
     }
 
-    revalidateTag("user_favorites");
+    updateTag("user_favorites");
 
     return newFavorites;
   }
@@ -109,7 +109,7 @@ export async function addToFavorites(
     throw new Error("Failed to add to favorites");
   }
 
-  revalidateTag("user_favorites");
+  updateTag("user_favorites");
 
   return updatedfavorites;
 }
@@ -147,7 +147,7 @@ export async function removeFromFavorites(
     throw new Error("Failed to remove from favorites");
   }
 
-  revalidateTag("user_favorites");
+  updateTag("user_favorites");
 
   return updatedfavorites;
 }

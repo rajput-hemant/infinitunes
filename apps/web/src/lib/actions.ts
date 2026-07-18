@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 
 import { compare, hash } from "bcryptjs";
 import { count, eq } from "drizzle-orm";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
 
@@ -92,7 +92,7 @@ export async function createNewPlaylist(
     throw new Error("Failed to create playlist, please try again");
   }
 
-  revalidateTag("user_playlists");
+  updateTag("user_playlists");
 
   return playlist;
 }
