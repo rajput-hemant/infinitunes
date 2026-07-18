@@ -1,0 +1,26 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["apps/web/.next/**"]
+    },
+    "start": {
+      "dependsOn": ["^build"]
+    },
+    "lint": {},
+    "type-check": {},
+    "test": {},
+    "db:generate": {},
+    "db:migrate": {},
+    "db:drop": {},
+    "db:push": {},
+    "db:pull": {},
+    "db:studio": {},
+    "db:check": {}
+  }
+}

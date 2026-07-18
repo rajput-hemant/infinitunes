@@ -8,12 +8,9 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
+# monorepo cache / output (per-package .gitignore handles app specifics)
+node_modules/.cache
+.pnpm-store
 
 # misc
 .DS_Store
@@ -32,4 +29,3 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
