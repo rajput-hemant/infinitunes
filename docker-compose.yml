@@ -1,7 +1,8 @@
 services:
   infinitunes:
     build:
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: dockerfile
     image: infinitunes
     ports:
       - "3000:3000"
