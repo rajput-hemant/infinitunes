@@ -1,0 +1,221 @@
+{
+  "id": "b7f3a1c2-4d5e-6f78-9abc-def012345679",
+  "prevId": "c6b02785-205f-4138-a22e-de24bdaf4352",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.account": {
+      "name": "account",
+      "schema": "",
+      "columns": {
+        "userId": { "name": "userId", "type": "uuid", "primaryKey": false, "notNull": true },
+        "type": { "name": "type", "type": "text", "primaryKey": false, "notNull": true },
+        "provider": { "name": "provider", "type": "text", "primaryKey": false, "notNull": true },
+        "providerAccountId": { "name": "providerAccountId", "type": "text", "primaryKey": false, "notNull": true },
+        "refresh_token": { "name": "refresh_token", "type": "text", "primaryKey": false, "notNull": false },
+        "access_token": { "name": "access_token", "type": "text", "primaryKey": false, "notNull": false },
+        "expires_at": { "name": "expires_at", "type": "integer", "primaryKey": false, "notNull": false },
+        "token_type": { "name": "token_type", "type": "text", "primaryKey": false, "notNull": false },
+        "scope": { "name": "scope", "type": "text", "primaryKey": false, "notNull": false },
+        "id_token": { "name": "id_token", "type": "text", "primaryKey": false, "notNull": false },
+        "session_state": { "name": "session_state", "type": "text", "primaryKey": false, "notNull": false }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "account_userId_user_id_fk": {
+          "name": "account_userId_user_id_fk", "tableFrom": "account", "tableTo": "user",
+          "columnsFrom": ["userId"], "columnsTo": ["id"],
+          "onDelete": "cascade", "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "account_provider_providerAccountId_pk": {
+          "name": "account_provider_providerAccountId_pk",
+          "columns": ["provider", "providerAccountId"]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "public.better_auth_account": {
+      "name": "better_auth_account",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+        "userId": { "name": "userId", "type": "uuid", "primaryKey": false, "notNull": true },
+        "accountId": { "name": "accountId", "type": "text", "primaryKey": false, "notNull": true },
+        "providerId": { "name": "providerId", "type": "text", "primaryKey": false, "notNull": true },
+        "accessToken": { "name": "accessToken", "type": "text", "primaryKey": false, "notNull": false },
+        "refreshToken": { "name": "refreshToken", "type": "text", "primaryKey": false, "notNull": false },
+        "accessTokenExpiresAt": { "name": "accessTokenExpiresAt", "type": "timestamp", "primaryKey": false, "notNull": false },
+        "refreshTokenExpiresAt": { "name": "refreshTokenExpiresAt", "type": "timestamp", "primaryKey": false, "notNull": false },
+        "scope": { "name": "scope", "type": "text", "primaryKey": false, "notNull": false },
+        "idToken": { "name": "idToken", "type": "text", "primaryKey": false, "notNull": false },
+        "password": { "name": "password", "type": "text", "primaryKey": false, "notNull": false },
+        "createdAt": { "name": "createdAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" },
+        "updatedAt": { "name": "updatedAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" }
+      },
+      "indexes": {
+        "better_auth_account_provider_account_unique": {
+          "name": "better_auth_account_provider_account_unique",
+          "columns": ["providerId", "accountId"],
+          "isUnique": true,
+          "nullsNotDistinct": false
+        }
+      },
+      "foreignKeys": {
+        "better_auth_account_userId_user_id_fk": {
+          "name": "better_auth_account_userId_user_id_fk", "tableFrom": "better_auth_account", "tableTo": "user",
+          "columnsFrom": ["userId"], "columnsTo": ["id"],
+          "onDelete": "cascade", "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.better_auth_session": {
+      "name": "better_auth_session",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+        "userId": { "name": "userId", "type": "uuid", "primaryKey": false, "notNull": true },
+        "token": { "name": "token", "type": "text", "primaryKey": false, "notNull": true },
+        "expiresAt": { "name": "expiresAt", "type": "timestamp", "primaryKey": false, "notNull": true },
+        "ipAddress": { "name": "ipAddress", "type": "text", "primaryKey": false, "notNull": false },
+        "userAgent": { "name": "userAgent", "type": "text", "primaryKey": false, "notNull": false },
+        "createdAt": { "name": "createdAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" },
+        "updatedAt": { "name": "updatedAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" }
+      },
+      "indexes": {
+        "better_auth_session_token_unique": {
+          "name": "better_auth_session_token_unique",
+          "columns": ["token"],
+          "isUnique": true,
+          "nullsNotDistinct": false
+        }
+      },
+      "foreignKeys": {
+        "better_auth_session_userId_user_id_fk": {
+          "name": "better_auth_session_userId_user_id_fk", "tableFrom": "better_auth_session", "tableTo": "user",
+          "columnsFrom": ["userId"], "columnsTo": ["id"],
+          "onDelete": "cascade", "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.better_auth_verification": {
+      "name": "better_auth_verification",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+        "identifier": { "name": "identifier", "type": "text", "primaryKey": false, "notNull": true },
+        "value": { "name": "value", "type": "text", "primaryKey": false, "notNull": true },
+        "expiresAt": { "name": "expiresAt", "type": "timestamp", "primaryKey": false, "notNull": true },
+        "createdAt": { "name": "createdAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" },
+        "updatedAt": { "name": "updatedAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.infinitunes_favorite": {
+      "name": "infinitunes_favorite",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+        "userId": { "name": "userId", "type": "uuid", "primaryKey": false, "notNull": true },
+        "songs": { "name": "songs", "type": "text[]", "primaryKey": false, "notNull": true, "default": "'{}'" },
+        "albums": { "name": "albums", "type": "text[]", "primaryKey": false, "notNull": true, "default": "'{}'" },
+        "playlists": { "name": "playlists", "type": "text[]", "primaryKey": false, "notNull": true, "default": "'{}'" },
+        "artists": { "name": "artists", "type": "text[]", "primaryKey": false, "notNull": true, "default": "'{}'" },
+        "podcasts": { "name": "podcasts", "type": "text[]", "primaryKey": false, "notNull": true, "default": "'{}'" }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "infinitunes_favorite_userId_user_id_fk": {
+          "name": "infinitunes_favorite_userId_user_id_fk", "tableFrom": "infinitunes_favorite", "tableTo": "user",
+          "columnsFrom": ["userId"], "columnsTo": ["id"],
+          "onDelete": "cascade", "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "infinitunes_favorite_songs_unique": { "name": "infinitunes_favorite_songs_unique", "nullsNotDistinct": false, "columns": ["songs"] },
+        "infinitunes_favorite_albums_unique": { "name": "infinitunes_favorite_albums_unique", "nullsNotDistinct": false, "columns": ["albums"] },
+        "infinitunes_favorite_playlists_unique": { "name": "infinitunes_favorite_playlists_unique", "nullsNotDistinct": false, "columns": ["playlists"] },
+        "infinitunes_favorite_artists_unique": { "name": "infinitunes_favorite_artists_unique", "nullsNotDistinct": false, "columns": ["artists"] },
+        "infinitunes_favorite_podcasts_unique": { "name": "infinitunes_favorite_podcasts_unique", "nullsNotDistinct": false, "columns": ["podcasts"] }
+      }
+    },
+    "public.infinitunes_playlist": {
+      "name": "infinitunes_playlist",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+        "name": { "name": "name", "type": "text", "primaryKey": false, "notNull": true },
+        "description": { "name": "description", "type": "text", "primaryKey": false, "notNull": false },
+        "userId": { "name": "userId", "type": "uuid", "primaryKey": false, "notNull": true },
+        "songs": { "name": "songs", "type": "text[]", "primaryKey": false, "notNull": true, "default": "'{}'" },
+        "createdAt": { "name": "createdAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "infinitunes_playlist_userId_user_id_fk": {
+          "name": "infinitunes_playlist_userId_user_id_fk", "tableFrom": "infinitunes_playlist", "tableTo": "user",
+          "columnsFrom": ["userId"], "columnsTo": ["id"],
+          "onDelete": "cascade", "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.user": {
+      "name": "user",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+        "name": { "name": "name", "type": "text", "primaryKey": false, "notNull": false },
+        "email": { "name": "email", "type": "text", "primaryKey": false, "notNull": true },
+        "username": { "name": "username", "type": "text", "primaryKey": false, "notNull": false },
+        "password": { "name": "password", "type": "text", "primaryKey": false, "notNull": false },
+        "emailVerified": { "name": "emailVerified", "type": "timestamp", "primaryKey": false, "notNull": false },
+        "image": { "name": "image", "type": "text", "primaryKey": false, "notNull": false },
+        "betterAuthName": { "name": "betterAuthName", "type": "text", "primaryKey": false, "notNull": true, "default": "''" },
+        "emailVerifiedBoolean": { "name": "emailVerifiedBoolean", "type": "boolean", "primaryKey": false, "notNull": true, "default": "false" },
+        "displayUsername": { "name": "displayUsername", "type": "text", "primaryKey": false, "notNull": false },
+        "createdAt": { "name": "createdAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" },
+        "updatedAt": { "name": "updatedAt", "type": "timestamp", "primaryKey": false, "notNull": true, "default": "now()" }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "user_email_unique": { "name": "user_email_unique", "nullsNotDistinct": false, "columns": ["email"] },
+        "user_username_unique": { "name": "user_username_unique", "nullsNotDistinct": false, "columns": ["username"] }
+      }
+    },
+    "public.verificationToken": {
+      "name": "verificationToken",
+      "schema": "",
+      "columns": {
+        "identifier": { "name": "identifier", "type": "text", "primaryKey": false, "notNull": true },
+        "token": { "name": "token", "type": "text", "primaryKey": false, "notNull": true },
+        "expires": { "name": "expires", "type": "timestamp", "primaryKey": false, "notNull": true }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "verificationToken_identifier_token_pk": {
+          "name": "verificationToken_identifier_token_pk",
+          "columns": ["identifier", "token"]
+        }
+      },
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "_meta": { "columns": {}, "schemas": {}, "tables": {} }
+}

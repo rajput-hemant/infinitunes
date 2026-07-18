@@ -1,0 +1,10 @@
+{
+  "extends": "@infinitunes/typescript-config/base.json",
+  "compilerOptions": {
+    "lib": ["esnext"],
+    "types": ["bun", "node"],
+    "declaration": true
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["node_modules"]
+}
