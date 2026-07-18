@@ -11,7 +11,8 @@ const config: NextConfig = {
   typedRoutes: true,
   reactCompiler: true,
   cacheComponents: true,
-  compiler: { removeConsole: isProd },  images: {
+  compiler: { removeConsole: isProd },
+  images: {
     remotePatterns: [
       {
         protocol: "https",

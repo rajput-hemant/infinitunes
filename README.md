@@ -7,9 +7,9 @@
 <!-- logo/title -->
 
 <picture>
-  <source media="(prefers-color-scheme: dark, (max-width:300px))" srcset="./public/images/logo1920.png">
-  <source media="(prefers-color-scheme: light,(max-width:300px))" srcset="./public/images/logo1500.png">
-  <img src="./public/images/logo1920.png" width="300px" alt="infinitunes">
+  <source media="(prefers-color-scheme: dark, (max-width:300px))" srcset="./apps/web/public/images/logo1920.png">
+  <source media="(prefers-color-scheme: light,(max-width:300px))" srcset="./apps/web/public/images/logo1500.png">
+  <img src="./apps/web/public/images/logo1920.png" width="300px" alt="infinitunes">
 </picture>
 
 ### [WIP] 🎵 A Simple Music Player Web App made with ▲ Next.js + Tailwind.

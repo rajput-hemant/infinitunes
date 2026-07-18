@@ -1,8 +1,8 @@
 import { cwd } from "process";
 import { loadEnvConfig } from "@next/env";
+import { defineConfig } from "drizzle-kit";
 
 import type { Config } from "drizzle-kit";
-import { defineConfig } from "drizzle-kit";
 
 import { siteConfig } from "@/config/site";
 
