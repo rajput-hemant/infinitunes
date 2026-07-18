@@ -27,7 +27,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
   return (
     <div className="space-y-8 px-6">
       <section id="mode" className="space-y-4">
-        <h3 className="font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Theme Mode
         </h3>
 
@@ -43,17 +43,17 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
                 <div
                   className={cn(mode, "space-y-2 rounded-sm bg-background p-2")}
                 >
-                  <div className="space-y-2 rounded-md bg-muted p-2 shadow-sm">
+                  <div className="space-y-2 rounded-md bg-muted p-2 shadow-xs">
                     <div className="h-2 w-[80px] rounded-lg bg-muted-foreground/25" />
                     <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
                   </div>
 
-                  <div className="flex items-center space-x-2 rounded-md bg-muted p-2 shadow-sm">
+                  <div className="flex items-center space-x-2 rounded-md bg-muted p-2 shadow-xs">
                     <div className="size-4 rounded-full bg-muted-foreground/25" />
                     <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
                   </div>
 
-                  <div className="flex items-center space-x-2 rounded-md bg-muted p-2 shadow-sm">
+                  <div className="flex items-center space-x-2 rounded-md bg-muted p-2 shadow-xs">
                     <div className="size-4 rounded-full bg-muted-foreground/25" />
                     <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
                   </div>
@@ -69,7 +69,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
       </section>
 
       <section id="themes" className="space-y-4">
-        <h3 className="font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Themes
         </h3>
 
@@ -92,7 +92,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
                 } as React.CSSProperties
               }
             >
-              <span className="mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-[--theme-primary]">
+              <span className="mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-(--theme-primary)">
                 {theme === name && <CheckIcon className="size-4 text-white" />}
               </span>
               {label}
@@ -102,7 +102,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
       </section>
 
       <section id="radius" className="space-y-4">
-        <h3 className="font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Radius
         </h3>
 

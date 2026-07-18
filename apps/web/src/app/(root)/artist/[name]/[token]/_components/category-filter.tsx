@@ -21,8 +21,8 @@ export function CategoryFilter({ category }: CategoryFilterProps) {
         <Link key={key} title={value} href={`?cat=${key}`}>
           <Badge
             className={cn(
-              "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-sm lg:px-4",
-              category === key && "!bg-primary text-primary-foreground",
+              "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-xs lg:px-4",
+              category === key && "bg-primary! text-primary-foreground",
             )}
           >
             {value}

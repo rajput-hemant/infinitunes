@@ -49,7 +49,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
         <Button
           size="sm"
           variant="outline"
-          className="hidden size-10 space-x-1 p-0 shadow-sm lg:inline-flex lg:w-auto lg:space-x-2 lg:p-2"
+          className="hidden size-10 space-x-1 p-0 shadow-xs lg:inline-flex lg:w-auto lg:space-x-2 lg:p-2"
         >
           <Languages className="aspect-square h-5 lg:h-4" />
           <span className="hidden lg:inline-block">Languages</span>
@@ -64,7 +64,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
 
       <DropdownMenuContent>
         <DropdownMenuLabel className="p-4">
-          <h1 className="font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+          <h1 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
             What music do you like?
           </h1>
 

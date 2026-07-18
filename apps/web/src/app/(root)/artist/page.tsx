@@ -25,7 +25,7 @@ export default async function TopArtistsPage() {
 
   return (
     <div className="my-4 space-y-4">
-      <h1 className="font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+      <h1 className="font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
         Top Artists
       </h1>
 
@@ -42,7 +42,7 @@ export default async function TopArtistsPage() {
         ))}
       </div>
 
-      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
         <em>Yay! You have seen it all</em>{" "}
         <span className="text-foreground">🤩</span>
       </h3>

@@ -45,7 +45,7 @@ export function SliderCard(props: SliderCardProps) {
       title={name}
       className={cn(
         "group w-32 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:bg-accent hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
-        aspect === "video" && "w-44 !border-none sm:w-48 md:w-64 lg:w-72",
+        aspect === "video" && "w-44 border-none! sm:w-48 md:w-64 lg:w-72",
         isCurrentSeason &&
           "ring-2 ring-ring ring-offset-2 ring-offset-background",
         className,
@@ -79,7 +79,7 @@ export function SliderCard(props: SliderCardProps) {
           <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
 
           {!hidePlayButton && (
-            <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-gradient-to-b lg:group-hover:flex">
+            <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-linear-to-b lg:group-hover:flex">
               <PlayButton
                 type={type}
                 token={url.split("/").pop()!}

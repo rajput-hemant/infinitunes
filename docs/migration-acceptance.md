@@ -24,17 +24,18 @@ The landed waves were reconciled against the migration plan. The following
 compatibility-only changes were necessary to satisfy the plan and were applied
 in this lane (no product features, no refactors, no package extraction):
 
-| Change                                         | File                                | Rationale (plan reference)                                                                                                                                                                                                                                                                  |
-| ---------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Add `@next/env@16.2.10` as a web devDependency | `apps/web/package.json`             | `drizzle.config.ts` imports `@next/env`; under Bun's workspace layout it was not resolvable, breaking `type-check` and `build` type-checking. Adds the explicit dependency that already resolves in the lockfile.                                                                           |
-| Restore production-only React Compiler         | `apps/web/next.config.ts`           | Plan step 4: "Preserve the existing production-only React Compiler behavior." Wave 0 had set `reactCompiler: true` (always on); restored to `isProd ? true : undefined` using the Next 16 top-level key.                                                                                    |
-| Add `outputFileTracingRoot` for Docker builds  | `apps/web/next.config.ts`           | Makes monorepo standalone file tracing deterministic (points at repo root) so the Docker standalone output is correct regardless of lockfile auto-detection.                                                                                                                                |
-| Restore `jsx: "preserve"`                      | `apps/web/tsconfig.json`            | Plan step 4: "preserve ... jsx: \"preserve\"." Had been changed to `react-jsx`. Verified production build still passes.                                                                                                                                                                     |
-| Restore `export const runtime = "edge"`        | `apps/web/src/app/api/og/route.tsx` | It was removed because it was "incompatible with cacheComponents"; cacheComponents was subsequently removed (`565b817`), so the removal is no longer justified and diverged from original behavior.                                                                                         |
-| Fix Turbo build outputs                        | `turbo.json`                        | `outputs` are package-relative; `apps/web/.next/**` matched nothing (Turbo warned "no output files found"). Changed to `.next/**` (excluding cache) so the web build output is cached/restored.                                                                                             |
-| Add Turbo `globalPassThroughEnv`               | `turbo.json`                        | Turbo's strict env filtering dropped `SKIP_ENV_VALIDATION` (and build/runtime vars), so `SKIP_ENV_VALIDATION=true bun run build` failed env validation. Declared the escape hatch and env vars so they reach the build.                                                                     |
-| Fix Docker builder + standalone paths          | `dockerfile`                        | Builder stage used `node:*-alpine` but ran `bun run` (bun absent). Switched builder to `oven/bun`. Monorepo standalone nests `server.js` under `apps/web`, so corrected the public/static copy targets and the `CMD` to `node apps/web/server.js`; added a `SKIP_ENV_VALIDATION` build ARG. |
-| Correct new Vercel env documentation           | `README.md`                         | The migration-added Vercel env table and deploy link listed stale `NEXTAUTH_*` / `NEXT_PUBLIC_*` names that do not match `src/lib/env.ts`. Aligned them to the actual schema (`AUTH_SECRET`, `AUTH_URL`, ...).                                                                              |
+| Change                                                                  | File                                                                                                       | Rationale (plan reference)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Add `@next/env@16.2.10` as a web devDependency                          | `apps/web/package.json`                                                                                    | `drizzle.config.ts` imports `@next/env`; under Bun's workspace layout it was not resolvable, breaking `type-check` and `build` type-checking. Adds the explicit dependency that already resolves in the lockfile.                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Restore production-only React Compiler                                  | `apps/web/next.config.ts`                                                                                  | Plan step 4: "Preserve the existing production-only React Compiler behavior." Wave 0 had set `reactCompiler: true` (always on); restored to `isProd ? true : undefined` using the Next 16 top-level key.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Add `outputFileTracingRoot` for Docker builds                           | `apps/web/next.config.ts`                                                                                  | Makes monorepo standalone file tracing deterministic (points at repo root) so the Docker standalone output is correct regardless of lockfile auto-detection.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| Restore `jsx: "preserve"`                                               | `apps/web/tsconfig.json`                                                                                   | Plan step 4: "preserve ... jsx: \"preserve\"." Had been changed to `react-jsx`. Verified production build still passes.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Restore `export const runtime = "edge"`                                 | `apps/web/src/app/api/og/route.tsx`                                                                        | It was removed because it was "incompatible with cacheComponents"; cacheComponents was subsequently removed (`565b817`), so the removal is no longer justified and diverged from original behavior.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| Fix Turbo build outputs                                                 | `turbo.json`                                                                                               | `outputs` are package-relative; `apps/web/.next/**` matched nothing (Turbo warned "no output files found"). Changed to `.next/**` (excluding cache) so the web build output is cached/restored.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| Add Turbo `globalPassThroughEnv`                                        | `turbo.json`                                                                                               | Turbo's strict env filtering dropped `SKIP_ENV_VALIDATION` (and build/runtime vars), so `SKIP_ENV_VALIDATION=true bun run build` failed env validation. Declared the escape hatch and env vars so they reach the build.                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| Fix Docker builder + standalone paths                                   | `dockerfile`                                                                                               | Builder stage used `node:*-alpine` but ran `bun run` (bun absent). Switched builder to `oven/bun`. Monorepo standalone nests `server.js` under `apps/web`, so corrected the public/static copy targets and the `CMD` to `node apps/web/server.js`; added a `SKIP_ENV_VALIDATION` build ARG.                                                                                                                                                                                                                                                                                                                                                                                         |
+| Correct new Vercel env documentation                                    | `README.md`                                                                                                | The migration-added Vercel env table and deploy link listed stale `NEXTAUTH_*` / `NEXT_PUBLIC_*` names that do not match `src/lib/env.ts`. Aligned them to the actual schema (`AUTH_SECRET`, `AUTH_URL`, ...).                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Upgrade to Tailwind CSS v4 (captain-run `@tailwindcss/upgrade` codemod) | `apps/web` (manifest, `postcss.config.js`, `tailwind.config.ts`, `globals.css`, ~110 component/page files) | Adopted the captain-authored codemod output as-is: `@tailwindcss/postcss` + `tailwindcss@^4.3.3`, removed `autoprefixer`, deleted `tailwind.config.ts` (CSS-first `@theme`), and migrated `globals.css` (`@custom-variant dark`, `@utility container`, `@theme` with colors/radii/fonts/accordion keyframes, v4 border-compat layer). Fixed the one codemod gap by replacing the v3-only `tailwindcss-animate` with `tw-animate-css` so `animate-in`/`zoom-in`/`slide-in`/`fade-in`/`accordion` utilities still compile. Class renames (`drop-shadow`→`drop-shadow-sm`, `shadow-sm`→`shadow-xs`, `backdrop-blur-sm`→`backdrop-blur-xs`, `outline-none`→`outline-hidden`) preserved. |
 
 The final repository-wide `bun run fmt` was run once after functional work
 settled and produced **no additional diff** (all touched files were already
@@ -185,16 +186,16 @@ claimed. HTTP-level smoke checks above were used where feasible.
 
 ## 10. Relocation integrity (no lost files)
 
-| Check                        | Result                                                                                                                                             |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/**` file count          | 230 (master) == 230 (`apps/web/src`)                                                                                                               |
-| `public/**` file count       | 34 (master) == 34 (`apps/web/public`)                                                                                                              |
-| Migrations                   | 15 == 15; committed migrations unchanged                                                                                                           |
-| Relocated configs            | `components.json`, `drizzle.config.ts`, `next.config.ts`, `postcss.config.js`, `tailwind.config.ts`, `tsconfig.json` all present under `apps/web/` |
-| `middleware.ts` → `proxy.ts` | Present (Next 16 rename)                                                                                                                           |
-| `.env.example`               | Preserved at repo root                                                                                                                             |
-| Intentional removals         | `.eslintrc`, `.prettierrc`, `.prettierignore`, `bun.lockb` (replaced by Oxlint/oxfmt/`bun.lock`)                                                   |
-| Empty-dir markers            | None existed in master; nothing lost                                                                                                               |
+| Check                        | Result                                                                                                                                                                                       |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/**` file count          | 230 (master) == 230 (`apps/web/src`)                                                                                                                                                         |
+| `public/**` file count       | 34 (master) == 34 (`apps/web/public`)                                                                                                                                                        |
+| Migrations                   | 15 == 15; committed migrations unchanged                                                                                                                                                     |
+| Relocated configs            | `components.json`, `drizzle.config.ts`, `next.config.ts`, `postcss.config.js`, `tsconfig.json` all present under `apps/web/`; `tailwind.config.ts` removed (Tailwind v4 CSS-first migration) |
+| `middleware.ts` → `proxy.ts` | Present (Next 16 rename)                                                                                                                                                                     |
+| `.env.example`               | Preserved at repo root                                                                                                                                                                       |
+| Intentional removals         | `.eslintrc`, `.prettierrc`, `.prettierignore`, `bun.lockb` (replaced by Oxlint/oxfmt/`bun.lock`)                                                                                             |
+| Empty-dir markers            | None existed in master; nothing lost                                                                                                                                                         |
 
 The cumulative diff from `origin/master` to this branch is compatibility-only
 (mechanical move with Git history, dependency upgrades, tooling swap, delivery
@@ -205,34 +206,31 @@ refactor, or package extraction is included.
 
 ## 11. Deviations from plan (accepted)
 
-- **Tailwind version:** the plan (step 4) references "Tailwind 4", but the
-  landed migration keeps `tailwindcss 3.4.13` (matching the recorded baseline)
-  with PostCSS/autoprefixer. Upgrading to Tailwind 4 is a larger styling change
-  outside this final acceptance lane's compatibility-only remit and was **not**
-  performed here. Flagged for captain decision (see §12).
 - **BlobPart fix:** implemented as `chunks: BlobPart[]` typing (type-checks and
   preserves behavior) rather than a literal byte copy; functionally equivalent.
+- **Tailwind v4 styling parity is not visually asserted here:** the migration is
+  code-complete (theme variables, dark mode, container sizing, fonts, radii,
+  animations, and class behavior are preserved as verified by the compiled CSS),
+  but pixel-level visual comparison across themes/breakpoints was not run (no
+  Chrome available). See §12.
 
 ---
 
 ## 12. Captain input required before promotion
 
-1. **Tailwind 4 upgrade** - Plan step 4 says preserve Tailwind theme/behavior
-   under Tailwind 4, but the branch remains on Tailwind 3.4.13. Confirm whether
-   Tailwind 4 is required for promotion or is deferred to a follow-up lane.
-2. **Docker image build** - Requires a running Docker daemon; the Dockerfile is
+1. **Docker image build** - Requires a running Docker daemon; the Dockerfile is
    validated by inspection against the verified standalone layout but the image
    was not built here. Please run/authorize `docker compose build` in an
    environment with the daemon available.
-3. **Authenticated + live-data smoke tests** - Credentials-dependent checks
+2. **Authenticated + live-data smoke tests** - Credentials-dependent checks
    (credentials/OAuth flows, session persistence, protected pages, playlist
    mutations, favorites, logout) and public data-page rendering (which needs a
    reachable JioSaavn API + database) are deferred; they require a non-production
    database and API access not available in this environment.
-4. **Browser visual comparison** - Requires Google Chrome (absent here) plus a
+3. **Browser visual comparison** - Requires Google Chrome (absent here) plus a
    working data backend; deferred (Tailwind desktop/mobile + light/dark
    screenshots, dialogs, responsive navigation, playback/queue/download UI).
-5. **Vercel preview** - The final "Vercel preview builds from apps/web"
+4. **Vercel preview** - The final "Vercel preview builds from apps/web"
    acceptance test requires the hosting platform and secrets; deferred to the
    promotion/deploy step.
 
@@ -246,8 +244,15 @@ documented escape hatch), Drizzle schema validation (temp-only, no DB
 mutation), root script resolution, static-asset and not-found runtime smoke
 checks, and relocation integrity. The cumulative diff is compatibility-only.
 
+The Tailwind CSS v4 migration is code-complete and validated by the compiled
+production CSS: theme color/background/foreground utilities, the `.dark` custom
+variant, the `container` utility (center + 1600px max-width), `rounded-*` radii
+from `var(--radius)`, fonts, and `tw-animate-css` enter/exit animations
+(`animate-in`, `zoom-in-95`, `slide-in-from-*`, `fade-in-0`, `accordion-*`) all
+appear in the emitted stylesheet. The placeholder production build succeeds.
+
 Environment-only blockers (Docker daemon down, Chrome absent) and
 credential/service-dependent checks (authenticated flows, live public-data
-rendering, Vercel preview, Tailwind visual comparison) are deferred and listed
-above for captain action. No unexecuted check is claimed as passed and no
-secret is included in this report.
+rendering, Vercel preview, Tailwind pixel-level visual comparison) are deferred
+and listed above for captain action. No unexecuted check is claimed as passed
+and no secret is included in this report.

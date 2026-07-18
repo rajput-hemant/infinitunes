@@ -152,7 +152,7 @@ export function MoreButton(props: MoreButtonProps) {
               aria-label="More options"
               size="icon"
               variant="outline"
-              className="rounded-full shadow-sm"
+              className="rounded-full shadow-xs"
             >
               <MoreVertical className="size-5" />
             </Button>
@@ -241,7 +241,7 @@ export function MoreButton(props: MoreButtonProps) {
               aria-label="More options"
               size="icon"
               variant="outline"
-              className="rounded-full shadow-sm"
+              className="rounded-full shadow-xs"
             >
               <MoreVertical className="size-5" />
             </Button>

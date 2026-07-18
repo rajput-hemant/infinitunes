@@ -35,10 +35,10 @@ const NotFound = () => {
         height={300}
         width={600}
         alt="404 not found"
-        className="drop-shadow"
+        className="drop-shadow-sm"
       />
 
-      <h1 className="font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+      <h1 className="font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
         This page seems to be{" "}
         <span className="text-red-500 underline underline-offset-4 selection:text-red-500">
           missing
@@ -52,7 +52,7 @@ const NotFound = () => {
 
       <p className="text-lg font-normal italic">Try one of these:</p>
 
-      <div className="flex flex-wrap justify-center space-x-4 font-heading text-sm font-medium italic drop-shadow sm:text-lg md:text-left lg:text-2xl">
+      <div className="flex flex-wrap justify-center space-x-4 font-heading text-sm font-medium italic drop-shadow-sm sm:text-lg md:text-left lg:text-2xl">
         {LINKS.map(({ title, href }, i, arr) => (
           <React.Fragment key={i}>
             <Link

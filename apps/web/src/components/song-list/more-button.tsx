@@ -226,7 +226,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         <Drawer>
           <DrawerTrigger
             aria-label="More Options"
-            className="focus-visible:outline-none"
+            className="focus-visible:outline-hidden"
           >
             <MoreVertical className="size-6 hover:text-primary" />
           </DrawerTrigger>
@@ -326,7 +326,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="More Options"
-            className={cn("focus-visible:outline-none", className)}
+            className={cn("focus-visible:outline-hidden", className)}
           >
             <MoreVertical className="size-6 hover:text-primary" />
           </DropdownMenuTrigger>

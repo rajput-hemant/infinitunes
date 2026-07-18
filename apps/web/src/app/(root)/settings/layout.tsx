@@ -6,7 +6,7 @@ export default function SettingsLayout({ children }: React.PropsWithChildren) {
   return (
     <div className="flex min-h-[calc(100vh-8rem)] flex-col">
       <div className="mb-4 space-y-1">
-        <h1 className="font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+        <h1 className="font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
           Settings
         </h1>
         <p className="text-xs text-muted-foreground sm:text-sm">

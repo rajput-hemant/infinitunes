@@ -36,7 +36,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
         <div className="flex flex-col items-center justify-center gap-y-2 font-medium lg:items-start lg:gap-6">
           <div className="text-center lg:text-start">
-            <h1 className="max-w-5xl truncate font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+            <h1 className="max-w-5xl truncate font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
               {user.name ?? "User"}
             </h1>
 
@@ -65,7 +65,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
       <Navbar />
 
-      <main className="mb-4 min-h-[30rem]">{children}</main>
+      <main className="mb-4 min-h-120">{children}</main>
     </section>
   );
 }

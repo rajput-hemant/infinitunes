@@ -272,7 +272,7 @@ export function Player({ user, playlists }: PlayerProps) {
         <div className="flex w-full gap-4 lg:w-1/3">
           {queue.length && queue[currentIndex]?.image ? (
             <>
-              <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow">
+              <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
                 <ImageWithFallback
                   src={getImageSrc(queue[currentIndex].image, "low")}
                   alt={queue[currentIndex].name}
@@ -289,7 +289,7 @@ export function Player({ user, playlists }: PlayerProps) {
                     queue[currentIndex].url,
                     queue[currentIndex].type === "song" ? "song" : "episode",
                   )}
-                  className="group line-clamp-1 font-heading text-sm text-primary drop-shadow"
+                  className="group line-clamp-1 font-heading text-sm text-primary drop-shadow-sm"
                 >
                   {queue[currentIndex].name}
                   <MoveUpRight className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible" />

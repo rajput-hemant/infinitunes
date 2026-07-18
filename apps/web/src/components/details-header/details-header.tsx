@@ -74,7 +74,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
       <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
         <h1
           title={item.name}
-          className="flex items-center truncate text-center font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start"
+          className="flex items-center truncate text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start"
         >
           {"explicit" in item && item.explicit && (
             <Badge className="mr-2 rounded px-1 py-0 font-bold">E</Badge>
@@ -234,7 +234,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               }
               className={cn(
                 buttonVariants(),
-                "rounded-full px-10 text-xl font-bold shadow-sm",
+                "rounded-full px-10 text-xl font-bold shadow-xs",
               )}
             >
               Play
@@ -248,7 +248,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               favourites={favorites}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
-                "rounded-full shadow-sm",
+                "rounded-full shadow-xs",
               )}
             />
 
@@ -256,7 +256,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               songs={songs ?? []}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
-                "rounded-full shadow-sm",
+                "rounded-full shadow-xs",
               )}
             />
 

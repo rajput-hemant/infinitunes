@@ -2,7 +2,7 @@ import { Construction } from "lucide-react";
 
 export default function LikedPodcastsPage() {
   return (
-    <div className="flex h-64 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-[25rem]">
+    <div className="flex h-64 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-100">
       <Construction
         size={64}
         className="fill-yellow-500 dark:fill-black dark:stroke-yellow-500"

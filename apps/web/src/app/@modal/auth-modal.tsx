@@ -31,7 +31,7 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
     <Dialog defaultOpen onOpenChange={(open) => !open && navigateBack()}>
       <DialogContent className="gap-0 space-y-2 p-10 sm:max-w-[450px]">
         <DialogHeader>
-          <DialogTitle className="text-center font-heading text-3xl font-normal drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-4xl md:text-5xl">
+          <DialogTitle className="text-center font-heading text-3xl font-normal drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-4xl md:text-5xl">
             {title}
           </DialogTitle>
           <DialogDescription className="text-center">
@@ -63,7 +63,7 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
             <Button
               variant="secondary"
               onClick={navigateBack}
-              className="w-full border text-lg font-semibold shadow-sm"
+              className="w-full border text-lg font-semibold shadow-xs"
             >
               Close
             </Button>

@@ -119,7 +119,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       type="text"
                       disabled={isSubmitting}
                       placeholder={user.name ?? "John Doe"}
-                      className="w-96 shadow-sm"
+                      className="w-96 shadow-xs"
                       {...field}
                     />
                   </FormControl>
@@ -142,7 +142,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       type="text"
                       disabled={isSubmitting}
                       placeholder={user.name ?? "@johndoe"}
-                      className="w-96 shadow-sm"
+                      className="w-96 shadow-xs"
                       {...field}
                     />
                   </FormControl>
@@ -166,7 +166,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         type="email"
                         disabled={isSubmitting}
                         placeholder={user.email ?? "you@example.com"}
-                        className="w-96 shadow-sm"
+                        className="w-96 shadow-xs"
                         {...field}
                       />
                       <Button type="button" onClick={currentlyInDev}>
@@ -194,7 +194,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                         type={isPassVisible ? "text" : "password"}
                         disabled={isSubmitting}
                         placeholder="••••••••••"
-                        className="pr-8 shadow-sm"
+                        className="pr-8 shadow-xs"
                         {...field}
                       />
                       <Tooltip delayDuration={150}>
@@ -235,7 +235,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="shadow-sm"
+                className="shadow-xs"
               >
                 Save Changes
               </Button>
@@ -244,7 +244,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </Form>
 
         <div id="delete-account" className="space-y-4">
-          <p className="text-3xl font-bold text-destructive drop-shadow">
+          <p className="text-3xl font-bold text-destructive drop-shadow-sm">
             Danger Zone
           </p>
           <Separator />
@@ -299,14 +299,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
           src={user.image ?? "/images/placeholder/user.jpg"}
           alt={user.name ?? "Profile Photo"}
           fill
-          className="rounded-full border p-1 shadow-sm"
+          className="rounded-full border p-1 shadow-xs"
         />
 
         <Button
           size="sm"
           variant="outline"
           onClick={currentlyInDev}
-          className="absolute bottom-4 left-0 gap-2 shadow-sm"
+          className="absolute bottom-4 left-0 gap-2 shadow-xs"
         >
           <Pen size={14} /> Edit
         </Button>

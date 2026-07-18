@@ -41,7 +41,7 @@ export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
     <div className="mb-4 space-y-4">
       <DetailsHeader item={episodeObj.episodes[0]} />
 
-      <h2 className="font-heading text-2xl capitalize drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+      <h2 className="font-heading text-2xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
         {episodeObj.modules.episode_details.title}
       </h2>
 

@@ -109,7 +109,7 @@ export function SideNavbar() {
       {sidebarNavItems.map(({ section, href, items }, i) => (
         <React.Fragment key={`${section}-${i}`}>
           <div key={i} className="hidden flex-col gap-2 lg:flex">
-            <h3 className="font-semibold drop-shadow-sm dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-lg md:text-xl">
+            <h3 className="font-semibold drop-shadow-xs dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-lg md:text-xl">
               {section}
             </h3>
 
@@ -123,7 +123,7 @@ export function SideNavbar() {
           <Accordion key={section} type="multiple" className="lg:hidden">
             <AccordionItem value={section.toLowerCase()}>
               <AccordionTrigger>
-                <h3 className="font-semibold drop-shadow-sm dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-lg md:text-xl">
+                <h3 className="font-semibold drop-shadow-xs dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-lg md:text-xl">
                   {section}
                 </h3>
               </AccordionTrigger>

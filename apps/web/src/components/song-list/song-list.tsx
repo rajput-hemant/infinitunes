@@ -41,7 +41,7 @@ export async function SongList(props: SongListProps) {
       <ol className="space-y-2 text-muted-foreground">
         {items.map((item, i) => (
           <li key={item.id}>
-            <div className="group flex h-14 w-full cursor-pointer items-center justify-between overflow-hidden rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-sm">
+            <div className="group flex h-14 w-full cursor-pointer items-center justify-between overflow-hidden rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-xs">
               <div className="hidden w-[6%] lg:flex lg:justify-center xl:w-[4%]">
                 <span
                   className={cn(

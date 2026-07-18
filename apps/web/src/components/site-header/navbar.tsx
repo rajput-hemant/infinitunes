@@ -48,7 +48,7 @@ export async function Navbar() {
               href="/login"
               className={cn(
                 buttonVariants({ size: "sm" }),
-                "hidden shadow-sm lg:flex",
+                "hidden shadow-xs lg:flex",
               )}
             >
               Sign In

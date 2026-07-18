@@ -57,7 +57,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
   return (
     <div className="space-y-8 px-6">
       <section id="language" className="space-y-4">
-        <h3 className="font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Languages
         </h3>
 
@@ -85,7 +85,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
       </section>
 
       <section className="space-y-2">
-        <h3 className="pb-4 font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h3 className="pb-4 font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Quality Settings
         </h3>
 

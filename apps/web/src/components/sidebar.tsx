@@ -25,7 +25,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
 
   return (
     <aside className="fixed left-0 top-14 hidden h-full w-1/5 space-y-2 border-r p-4 animate-in slide-in-from-left-full [animation-duration:500ms] lg:block xl:w-[15%] 2xl:w-[12.5%]">
-      <h3 className="pl-3 font-heading text-xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      <h3 className="pl-3 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
         Discover
       </h3>
 
@@ -48,7 +48,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
 
       {!!user && (
         <>
-          <h3 className="pl-3 font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+          <h3 className="pl-3 font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
             Library
           </h3>
 
@@ -72,7 +72,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
       )}
 
       <div className="flex items-center justify-between pl-3">
-        <h3 className="font-heading text-lg drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Playlists
         </h3>
 
@@ -97,7 +97,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
               <Button
                 size="sm"
                 title="Create Playlist"
-                className="w-full truncate shadow"
+                className="w-full truncate shadow-sm"
               >
                 <Plus className="mr-2 size-4 shrink-0" />
                 Create Playlist
@@ -110,7 +110,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
               href="/login"
               className={cn(
                 buttonVariants({ size: "sm" }),
-                "my-2 w-full truncate font-medium shadow",
+                "my-2 w-full truncate font-medium shadow-sm",
               )}
             >
               <Plus className="mr-2 size-4 shrink-0" />
@@ -137,7 +137,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                   {name}
                   <button
                     onClick={currentlyInDev}
-                    className="invisible ml-auto rounded-full p-0.5 ring-offset-background duration-200 ease-in hover:outline-none hover:ring-2 hover:ring-ring hover:ring-offset-2 group-hover:visible"
+                    className="invisible ml-auto rounded-full p-0.5 ring-offset-background duration-200 ease-in hover:outline-hidden hover:ring-2 hover:ring-ring hover:ring-offset-2 group-hover:visible"
                   >
                     <Play className="size-5" />
                   </button>

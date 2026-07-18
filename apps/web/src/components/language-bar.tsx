@@ -16,7 +16,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
           <Link title="For You" href="?">
             <Badge
               className={cn(
-                "bg-primary p-2 hover:shadow lg:px-4",
+                "bg-primary p-2 hover:shadow-sm lg:px-4",
                 language && "bg-primary-foreground text-primary hover:bg-muted",
               )}
             >
@@ -30,9 +30,9 @@ export function LanguageBar({ language }: LanguageBarProps) {
             <Link title={lang} href={`?lang=${lang.toLowerCase()}`}>
               <Badge
                 className={cn(
-                  "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-sm lg:px-4",
+                  "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-xs lg:px-4",
                   language === lang.toLowerCase() &&
-                    "!bg-primary text-primary-foreground",
+                    "bg-primary! text-primary-foreground",
                 )}
               >
                 {lang}

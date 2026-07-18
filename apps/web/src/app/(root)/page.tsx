@@ -34,7 +34,7 @@ export default async function HomePage() {
         <header className="border-b pb-2">
           <h1 className="sr-only">{siteConfig.name} Homepage</h1>
           {/*
-          <h2 className="pl-2 font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl lg:pl-0">
+          <h2 className="pl-2 font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl lg:pl-0">
             {section.title}
           </h2> */}
 

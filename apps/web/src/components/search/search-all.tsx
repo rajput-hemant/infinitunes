@@ -23,7 +23,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
           return (
             <div key={key}>
               <div className="flex">
-                <p className="pl-2 font-heading text-lg capitalize tracking-wider drop-shadow">
+                <p className="pl-2 font-heading text-lg capitalize tracking-wider drop-shadow-sm">
                   {key.replace("_query", " Result")}
                 </p>
 

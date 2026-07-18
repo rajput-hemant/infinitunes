@@ -18,7 +18,7 @@ export default async function SearchPage({ params }: SearchPageProps) {
   return (
     <div className="mb-4 space-y-4">
       <header>
-        <h1 className="text-center font-heading text-2xl capitalize drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-start md:text-4xl">
+        <h1 className="text-center font-heading text-2xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-start md:text-4xl">
           Search Results for{" "}
           <span className="block md:inline-block">
             &apos;

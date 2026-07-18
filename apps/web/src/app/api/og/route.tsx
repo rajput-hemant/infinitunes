@@ -49,7 +49,7 @@ export async function GET(request: Request) {
             maskImage: "radial-gradient(closest-side,white,transparent)",
           }}
           // @ts-expect-error property 'tw' does not exist on type svg
-          tw="absolute left-1/2 top-1/2 ml-0 h-[64rem] w-[64rem]"
+          tw="absolute left-1/2 top-1/2 ml-0 h-256 w-5xl"
         >
           <circle
             cx="512"
@@ -96,8 +96,8 @@ export async function GET(request: Request) {
             // @ts-expect-error arrayBuffer is not assignable to string
             src={image}
             tw={cn(
-              "mx-8 my-auto w-[56rem] max-w-none rounded-2xl border border-zinc-800 shadow-lg shadow-[#e935c277]",
-              isSquaredImage && "w-[32rem]",
+              "mx-8 my-auto w-4xl max-w-none rounded-2xl border border-zinc-800 shadow-lg shadow-[#e935c277]",
+              isSquaredImage && "w-lg",
             )}
           />
         </div>

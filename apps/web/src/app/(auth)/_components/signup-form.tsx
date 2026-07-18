@@ -86,7 +86,7 @@ export function SignUpForm() {
                     type="email"
                     disabled={isSubmitting}
                     placeholder="you@domain.com"
-                    className="shadow-sm"
+                    className="shadow-xs"
                     {...field}
                   />
                 </div>
@@ -108,7 +108,7 @@ export function SignUpForm() {
                     type={isPassVisible ? "text" : "password"}
                     disabled={isSubmitting}
                     placeholder="••••••••••"
-                    className="pr-8 shadow-sm"
+                    className="pr-8 shadow-xs"
                     {...field}
                   />
                   <Tooltip delayDuration={150}>
@@ -154,7 +154,7 @@ export function SignUpForm() {
                     type={isConfirmPassVisible ? "text" : "password"}
                     disabled={isSubmitting}
                     placeholder="••••••••••"
-                    className="pr-8 shadow-sm"
+                    className="pr-8 shadow-xs"
                     {...field}
                   />
                   <Tooltip delayDuration={150}>

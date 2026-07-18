@@ -89,7 +89,7 @@ export function LoginForm() {
                     type={isEmailMode ? "email" : "text"}
                     disabled={isSubmitting}
                     placeholder={isEmailMode ? "you@domain.com" : "@username"}
-                    className="pr-8 shadow-sm"
+                    className="pr-8 shadow-xs"
                     {...field}
                   />
                   <Tooltip delayDuration={150}>
@@ -138,7 +138,7 @@ export function LoginForm() {
                     type={isPassVisible ? "text" : "password"}
                     disabled={isSubmitting}
                     placeholder="••••••••••"
-                    className="pr-8 shadow-sm"
+                    className="pr-8 shadow-xs"
                     {...field}
                   />
                   <Tooltip delayDuration={150}>
@@ -193,7 +193,7 @@ export function LoginForm() {
       <p className="mx-auto mt-2 text-xs text-muted-foreground hover:text-foreground">
         <Link
           href="/reset-password"
-          className="underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+          className="underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-hidden"
         >
           Forgot password?
         </Link>

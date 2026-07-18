@@ -58,27 +58,27 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
         </div>
 
         <div className="mt-4 flex gap-2 lg:mt-6">
-          <Button className="rounded-full px-10 text-xl font-bold text-primary shadow-sm">
+          <Button className="rounded-full px-10 text-xl font-bold text-primary shadow-xs">
             Play
           </Button>
           <Button
             size="icon"
             variant="outline"
-            className="rounded-full shadow-sm"
+            className="rounded-full shadow-xs"
           >
             <Skeleton className="size-5 rounded-full" />
           </Button>
           <Button
             size="icon"
             variant="outline"
-            className="rounded-full shadow-sm"
+            className="rounded-full shadow-xs"
           >
             <Skeleton className="size-5 rounded-full" />
           </Button>
           <Button
             size="icon"
             variant="outline"
-            className="rounded-full shadow-sm"
+            className="rounded-full shadow-xs"
           >
             <Skeleton className="size-5 rounded-full" />
           </Button>

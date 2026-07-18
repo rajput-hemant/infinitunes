@@ -33,7 +33,7 @@ export default async function PlaylistsPage({ searchParams }: PageProps) {
     <div className="space-y-4">
       <LanguageBar language={lang} />
 
-      <h1 className="font-heading text-2xl capitalize drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
+      <h1 className="font-heading text-2xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
         {lang ? `${lang} Music` : "Top"} Playlists
       </h1>
 

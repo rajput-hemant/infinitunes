@@ -40,8 +40,8 @@ export function UserDropdown({ user }: UserDropdownProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="rounded-full ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
-        <Avatar className="border shadow-sm">
+      <DropdownMenuTrigger className="rounded-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+        <Avatar className="border shadow-xs">
           <AvatarImage
             src={user?.image ?? undefined}
             alt={user?.name ?? "Guest User"}

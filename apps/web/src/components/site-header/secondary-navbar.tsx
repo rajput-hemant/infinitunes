@@ -63,7 +63,7 @@ export function SecondaryNavbar() {
         <Button
           size="sm"
           variant="secondary"
-          className="ml-auto shrink-0 hover:shadow"
+          className="ml-auto shrink-0 hover:shadow-sm"
         >
           Surprise Me
         </Button>
@@ -79,7 +79,7 @@ export function SecondaryNavbar() {
 
           <SheetContent side="bottom" className="space-y-4 rounded-t-2xl">
             <SheetHeader>
-              <h2 className="font-heading text-2xl drop-shadow-md dark:bg-gradient-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent md:text-3xl">
+              <h2 className="font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent md:text-3xl">
                 Browse
               </h2>
             </SheetHeader>
@@ -116,7 +116,7 @@ export function SecondaryNavbar() {
             <Separator />
 
             <div className="my-4 w-full space-y-4">
-              <Button variant="secondary" className="w-full hover:shadow">
+              <Button variant="secondary" className="w-full hover:shadow-sm">
                 Surprise Me
               </Button>
               <Separator />
