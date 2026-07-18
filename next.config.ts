@@ -8,7 +8,10 @@ const isDocker = process.env.IS_DOCKER === "true";
 
 const config: NextConfig = {
   reactStrictMode: true,
-  images: {
+  typedRoutes: true,
+  reactCompiler: true,
+  cacheComponents: true,
+  compiler: { removeConsole: isProd },  images: {
     remotePatterns: [
       {
         protocol: "https",
@@ -20,11 +23,6 @@ const config: NextConfig = {
       },
     ],
     unoptimized: !isDocker,
-  },
-  experimental: {
-    ppr: true,
-    reactCompiler: isProd ? true : undefined,
-    // ...
   },
   output: isDocker ? "standalone" : undefined,
   /* ... */

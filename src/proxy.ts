@@ -12,7 +12,7 @@ const ratelimit = new Ratelimit({
   limiter: Ratelimit.slidingWindow(env.RATE_LIMITING_REQUESTS_PER_SECOND, "1s"),
 });
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   if (env.ENABLE_RATE_LIMITING === "true" && env.NODE_ENV === "production") {
     const id = getIP(req) || "anonymous";
     const { limit, pending, remaining, reset, success } =
