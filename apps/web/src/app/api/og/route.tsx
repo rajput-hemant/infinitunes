@@ -6,8 +6,6 @@ import { ImageResponse } from "next/og";
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 
-export const runtime = "edge";
-
 async function fetchImage(url: string) {
   const res = await fetch(url);
   const buffer = await res.arrayBuffer();

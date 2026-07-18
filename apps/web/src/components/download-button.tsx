@@ -39,7 +39,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
 
           const reader = response.body.getReader();
 
-          const chunks: Uint8Array[] = [];
+          const chunks: BlobPart[] = [];
 
           const contentLength = parseInt(
             response.headers.get("content-length") ?? "0",
@@ -64,7 +64,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
             }
           }
 
-          const blob = new Blob(chunks);
+          const blob = new Blob(chunks, { type: "audio/mp4" });
 
           const url = URL.createObjectURL(blob);
 

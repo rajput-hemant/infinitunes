@@ -1,4 +1,4 @@
-import { Clipboard, Facebook, Mail, Twitter } from "lucide-react";
+import { Clipboard, Mail } from "lucide-react";
 import { usePathname } from "next/navigation";
 import React from "react";
 
@@ -36,12 +36,12 @@ const shareOptions: ShareOption[] = [
   {
     label: "Twitter",
     href: "https://github.com/rajput-hemant/infinitunes",
-    icon: ({ className }) => <Twitter className={className} />,
+    icon: ({ className }) => <Icons.X className={className} />,
   },
   {
     label: "Facebook",
     href: "https://github.com/rajput-hemant/infinitunes",
-    icon: ({ className }) => <Facebook className={className} />,
+    icon: ({ className }) => <Icons.Facebook className={className} />,
   },
   {
     label: "Email",

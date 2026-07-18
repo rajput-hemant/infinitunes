@@ -16,7 +16,7 @@ import {
 import type { User } from "next-auth";
 import Link from "next/link";
 import React from "react";
-import { useGlobalAudioPlayer } from "react-use-audio-player";
+import { useAudioPlayerContext } from "react-use-audio-player";
 
 import { useEventListener } from "@/hooks/use-event-listner";
 import {
@@ -68,20 +68,21 @@ export function Player({ user, playlists }: PlayerProps) {
   // third party hooks
   const {
     load,
-    playing,
+    isPlaying,
     togglePlayPause,
     getPosition,
     isLoading,
     duration,
-    loop,
-    looping,
+    isLooping,
     mute,
-    muted,
+    unmute,
+    isMuted,
     volume,
     setVolume,
     seek,
     isReady,
-  } = useGlobalAudioPlayer();
+    player,
+  } = useAudioPlayerContext();
 
   React.useEffect(() => {
     if (queue.length && isPlayerInit) {
@@ -123,21 +124,22 @@ export function Player({ user, playlists }: PlayerProps) {
     if (!isReady) return;
 
     if (queue.length === 1) {
-      loop(!looping);
-      toast({
-        description: looping
-          ? "Looping disabled"
-          : "Playing current song on repeat",
-      });
-    } else if (!looping && !loopPlaylist) {
+      if (isLooping) {
+        player?.loopOff();
+        toast({ description: "Looping disabled" });
+      } else {
+        player?.loopOn();
+        toast({ description: "Playing current song on repeat" });
+      }
+    } else if (!isLooping && !loopPlaylist) {
       setLoopPlaylist(true);
-      loop(false);
+      player?.loopOn();
       toast({ description: "Looping playlist" });
-    } else if (!looping && loopPlaylist) {
+    } else if (!isLooping && loopPlaylist) {
       setLoopPlaylist(false);
-      loop(true);
-    } else if (looping) {
-      loop(false);
+      player?.loopOff();
+    } else if (isLooping) {
+      player?.loopOff();
     }
   }
 
@@ -197,7 +199,7 @@ export function Player({ user, playlists }: PlayerProps) {
       index = Math.floor(Math.random() * queue.length);
     } else {
       if (currentIndex < queue.length - 1) {
-        if (!looping) index = currentIndex + 1;
+        if (!isLooping) index = currentIndex + 1;
       } else {
         if (loopPlaylist) {
           index = 0;
@@ -313,14 +315,14 @@ export function Player({ user, playlists }: PlayerProps) {
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <button
-                aria-label={looping ? "Looping" : "Loop"}
+                aria-label={isLooping ? "Looping" : "Loop"}
                 onClick={loopHandler}
                 className={cn(
                   "hidden lg:block",
-                  !looping && !loopPlaylist && "text-muted-foreground",
+                  !isLooping && !loopPlaylist && "text-muted-foreground",
                 )}
               >
-                {looping ? (
+                {isLooping ? (
                   <Repeat1 strokeWidth={2} className="size-7" />
                 ) : (
                   <Repeat strokeWidth={2} className="size-7" />
@@ -328,7 +330,7 @@ export function Player({ user, playlists }: PlayerProps) {
               </button>
             </TooltipTrigger>
             <TooltipContent>
-              {looping
+              {isLooping
                 ? "Playing current song on repeat"
                 : loopPlaylist
                   ? "Looping playlist"
@@ -352,19 +354,19 @@ export function Player({ user, playlists }: PlayerProps) {
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <button
-                aria-label={playing ? "Pause" : "Play"}
+                aria-label={isPlaying ? "Pause" : "Play"}
                 onClick={playPauseHandler}
               >
                 {isLoading ? (
                   <Loader2 className="animate-spin" />
-                ) : playing ? (
+                ) : isPlaying ? (
                   <Pause className="size-10" />
                 ) : (
                   <Icons.Play className="size-10" />
                 )}
               </button>
             </TooltipTrigger>
-            <TooltipContent>{playing ? "Pause" : "Play"}</TooltipContent>
+            <TooltipContent>{isPlaying ? "Pause" : "Play"}</TooltipContent>
           </Tooltip>
 
           <Tooltip delayDuration={0}>
@@ -408,21 +410,24 @@ export function Player({ user, playlists }: PlayerProps) {
 
           <div className="hidden items-center gap-4 xl:flex">
             <button
-              aria-label={muted ? "Unmute" : "Mute"}
+              aria-label={isMuted ? "Unmute" : "Mute"}
               onClick={() => {
                 if (!isReady) return;
-                const newMuted = !muted;
-                mute(newMuted);
-                if (!newMuted && volume === 0) {
-                  setVolume(0.75); // Reset to 75% if unmuting from 0
+                if (isMuted) {
+                  unmute();
+                  if (volume === 0) {
+                    setVolume(0.75);
+                  }
+                } else {
+                  mute();
                 }
               }}
               className={cn(
                 "transition-opacity hover:opacity-100",
-                (!isReady || muted) && "text-muted-foreground opacity-50",
+                (!isReady || isMuted) && "text-muted-foreground opacity-50",
               )}
             >
-              {muted || volume === 0 ? (
+              {isMuted || volume === 0 ? (
                 <VolumeX />
               ) : volume < 0.33 ? (
                 <Volume />
@@ -435,7 +440,7 @@ export function Player({ user, playlists }: PlayerProps) {
 
             <Slider
               aria-label="Volume"
-              value={[muted ? 0 : volume * 100]}
+              value={[isMuted ? 0 : volume * 100]}
               defaultValue={[75]}
               min={0}
               max={100}
@@ -444,11 +449,11 @@ export function Player({ user, playlists }: PlayerProps) {
                 if (!isReady) return;
                 const newVolume = value / 100;
                 setVolume(newVolume);
-                if (newVolume > 0 && muted) {
-                  mute(false);
+                if (newVolume > 0 && isMuted) {
+                  unmute();
                 }
-                if (newVolume === 0 && !muted) {
-                  mute(true);
+                if (newVolume === 0 && !isMuted) {
+                  mute();
                 }
               }}
               className={cn(
@@ -458,7 +463,7 @@ export function Player({ user, playlists }: PlayerProps) {
             >
               <SliderTrack className="h-1 cursor-pointer">
                 <SliderRange
-                  className={cn((!isReady || muted) && "bg-accent")}
+                  className={cn((!isReady || isMuted) && "bg-accent")}
                 />
               </SliderTrack>
 
@@ -466,13 +471,13 @@ export function Player({ user, playlists }: PlayerProps) {
                 aria-label="Volume slider"
                 className={cn(
                   "size-4 cursor-pointer",
-                  (!isReady || muted) && "bg-accent",
+                  (!isReady || isMuted) && "bg-accent",
                 )}
               />
             </Slider>
 
             <span className="w-8 text-sm font-medium">
-              {muted ? "0" : Math.round(volume * 100)}%
+              {isMuted ? "0" : Math.round(volume * 100)}%
             </span>
           </div>
 
