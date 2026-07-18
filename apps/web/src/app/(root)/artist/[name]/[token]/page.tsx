@@ -1,10 +1,10 @@
+import { Separator } from "@infinitunes/ui/separator";
+import { Tabs, TabsContent } from "@infinitunes/ui/tabs";
 import type { Metadata } from "next";
 
 import { DetailsHeader } from "@/components/details-header";
 import { SliderList } from "@/components/slider";
 import { SongList } from "@/components/song-list";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { getUser } from "@/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { getArtistDetails } from "@/lib/jiosaavn-api";

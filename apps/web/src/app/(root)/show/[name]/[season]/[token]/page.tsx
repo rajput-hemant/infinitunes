@@ -1,17 +1,17 @@
+import { Button } from "@infinitunes/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@infinitunes/ui/dropdown-menu";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
 import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DetailsHeader } from "@/components/details-header";
 import { SliderCard } from "@/components/slider";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { getUser } from "@/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
 import { getShowDetails } from "@/lib/jiosaavn-api";

@@ -1,12 +1,12 @@
 "use client";
 
+import { Button, buttonVariants } from "@infinitunes/ui/button";
 import { ListMusic, ListPlus, Play, Plus } from "lucide-react";
 import type { User } from "next-auth";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import React from "react";
 
-import { Button, buttonVariants } from "@/components/ui/button";
 import { sidebarNav } from "@/config/nav";
 import type { MyPlaylist } from "@/lib/db/schema";
 import { cn, currentlyInDev } from "@/lib/utils";

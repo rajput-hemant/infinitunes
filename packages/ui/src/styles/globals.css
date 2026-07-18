@@ -1,0 +1,16 @@
+/*
+ * @infinitunes/ui package styles.
+ *
+ * This package ships headless, unstyled-by-default Base UI primitives plus
+ * Tailwind utility classes. The design tokens (--background, --foreground,
+ * --primary, --secondary, --muted, --accent, --popover, --destructive,
+ * --border, --ring, --radius, --radius-md, --radius-lg, ...) are expected to
+ * be provided by the consuming application's global stylesheet (the web app's
+ * src/styles/globals.css defines the neutral base color tokens).
+ *
+ * Import this file once in an application that consumes @infinitunes/ui
+ * standalone; the web app already provides equivalent tokens and should NOT
+ * import this file.
+ */
+
+@import "tailwindcss";

@@ -1,0 +1,56 @@
+{
+  "name": "@infinitunes/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./styles/globals.css": "./src/styles/globals.css",
+    "./accordion": "./src/components/ui/accordion.tsx",
+    "./alert-dialog": "./src/components/ui/alert-dialog.tsx",
+    "./avatar": "./src/components/ui/avatar.tsx",
+    "./badge": "./src/components/ui/badge.tsx",
+    "./button": "./src/components/ui/button.tsx",
+    "./card": "./src/components/ui/card.tsx",
+    "./dialog": "./src/components/ui/dialog.tsx",
+    "./drawer": "./src/components/ui/drawer.tsx",
+    "./dropdown-menu": "./src/components/ui/dropdown-menu.tsx",
+    "./input": "./src/components/ui/input.tsx",
+    "./label": "./src/components/ui/label.tsx",
+    "./navigation-menu": "./src/components/ui/navigation-menu.tsx",
+    "./scroll-area": "./src/components/ui/scroll-area.tsx",
+    "./separator": "./src/components/ui/separator.tsx",
+    "./sheet": "./src/components/ui/sheet.tsx",
+    "./skeleton": "./src/components/ui/skeleton.tsx",
+    "./slider": "./src/components/ui/slider.tsx",
+    "./sonner": "./src/components/ui/sonner.tsx",
+    "./switch": "./src/components/ui/switch.tsx",
+    "./tabs": "./src/components/ui/tabs.tsx",
+    "./toggle": "./src/components/ui/toggle.tsx",
+    "./toggle-group": "./src/components/ui/toggle-group.tsx",
+    "./tooltip": "./src/components/ui/tooltip.tsx",
+    "./components/*": "./src/components/ui/*.tsx",
+    "./lib/*": "./src/lib/*.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "dependencies": {
+    "@base-ui/react": "^1.6.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.25.0",
+    "next-themes": "^0.4.6",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.6.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3"
+  }
+}

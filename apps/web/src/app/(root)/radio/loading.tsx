@@ -1,8 +1,9 @@
+import { Skeleton } from "@infinitunes/ui/skeleton";
+
 import {
   LanguageBarSkeleton,
   SliderCardSkeleton,
 } from "@/components/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RadioLoading() {
   return (

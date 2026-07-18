@@ -1,9 +1,10 @@
+import { Separator } from "@infinitunes/ui/separator";
+import { Skeleton } from "@infinitunes/ui/skeleton";
+
 import {
   DetailsHeaderSkeleton,
   SongListSkeleton,
 } from "@/components/skeletons";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SongDetailsLoading() {
   return (

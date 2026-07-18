@@ -1,6 +1,16 @@
 "use client";
 
 import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@infinitunes/ui/drawer";
+import {
   ChevronLeft,
   ChevronRight,
   ListMusic,
@@ -16,16 +26,6 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@/components/ui/drawer";
 import { useQueue } from "@/hooks/use-store";
 import { addSongsToPlaylist } from "@/lib/db/queries";
 import type { MyPlaylist } from "@/lib/db/schema";

@@ -1,9 +1,9 @@
+import { Separator } from "@infinitunes/ui/separator";
 import type { Metadata } from "next";
 
 import { DetailsHeader } from "@/components/details-header";
 import { SliderList } from "@/components/slider";
 import { SongList } from "@/components/song-list";
-import { Separator } from "@/components/ui/separator";
 import {
   getActorsTopSongs,
   getAlbumDetails,

@@ -1,9 +1,8 @@
 "use client";
 
+import { Button } from "@infinitunes/ui/button";
 import Image from "next/image";
 import React from "react";
-
-import { Button } from "@/components/ui/button";
 
 type ErrorProps = {
   error: Error & { digest?: string };

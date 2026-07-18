@@ -1,11 +1,11 @@
+import { buttonVariants } from "@infinitunes/ui/button";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ImageCollage } from "@/components/image-collage";
 import { PlayButton } from "@/components/play-button";
 import { SongList } from "@/components/song-list";
-import { buttonVariants } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getPlaylistDetails } from "@/lib/db/queries";
 import { getSongDetails } from "@/lib/jiosaavn-api";
 import { cn, formatDuration, getImageSrc } from "@/lib/utils";

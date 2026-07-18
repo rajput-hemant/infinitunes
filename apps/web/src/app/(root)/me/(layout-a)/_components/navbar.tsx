@@ -1,10 +1,10 @@
 "use client";
 
+import { buttonVariants } from "@infinitunes/ui/button";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { buttonVariants } from "@/components/ui/button";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 type NavItem = {

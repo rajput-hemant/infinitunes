@@ -1,5 +1,6 @@
+import { Skeleton } from "@infinitunes/ui/skeleton";
+
 import { SongListSkeleton } from "@/components/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LikedSongsLoading() {
   return (

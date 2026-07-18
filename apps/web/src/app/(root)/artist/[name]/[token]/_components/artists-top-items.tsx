@@ -1,11 +1,11 @@
 "use client";
 
+import { Button } from "@infinitunes/ui/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { User } from "next-auth";
 
 import { SliderCard } from "@/components/slider";
 import { SongListClient } from "@/components/song-list/song-list.client";
-import { Button } from "@/components/ui/button";
 import type { Favorite, MyPlaylist } from "@/lib/db/schema";
 import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
 import type { Album, Category, Song } from "@/types";

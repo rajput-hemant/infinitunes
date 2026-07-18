@@ -1,8 +1,7 @@
 "use client";
 
+import { TabsList, TabsTrigger } from "@infinitunes/ui/tabs";
 import { usePathname, useRouter } from "next/navigation";
-
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { TABS } from "./tabs";
 

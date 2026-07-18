@@ -1,5 +1,6 @@
+import { Skeleton } from "@infinitunes/ui/skeleton";
+
 import { SliderCardSkeleton } from "@/components/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function TopArtistsPageSkeleton() {
   return (

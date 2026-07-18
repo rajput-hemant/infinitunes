@@ -1,11 +1,11 @@
+import { buttonVariants } from "@infinitunes/ui/button";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import { Edit, Mail } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
 import { ImageWithFallback } from "@/components/image-with-fallback";
-import { buttonVariants } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { getUser } from "@/lib/auth";
 
 import { LogoutButton } from "./_components/logout";

@@ -1,10 +1,10 @@
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@infinitunes/ui/tabs";
 import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DetailsHeader } from "@/components/details-header";
 import { SliderCard } from "@/components/slider";
 import { SongList } from "@/components/song-list";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getLabelDetails } from "@/lib/jiosaavn-api";
 
 type LabelDetailsPageProps = {

@@ -1,10 +1,10 @@
 "use client";
 
+import { Input } from "@infinitunes/ui/input";
 import { Loader2, Search } from "lucide-react";
 import React from "react";
 
 import { SearchAll } from "@/components/search/search-all";
-import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useIsTyping } from "@/hooks/use-store";
 import { searchAll } from "@/lib/jiosaavn-api";

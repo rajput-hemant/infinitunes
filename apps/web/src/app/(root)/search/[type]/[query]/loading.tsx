@@ -1,10 +1,10 @@
 "use client";
 
+import { Button } from "@infinitunes/ui/button";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import { usePathname } from "next/navigation";
 
 import { SliderListSkeleton, SongListSkeleton } from "@/components/skeletons";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 
 import { navItems } from "./_components/search-navbar";
 

@@ -1,13 +1,13 @@
 "use client";
 
-import React from "react";
-
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@infinitunes/ui/accordion";
+import React from "react";
+
 import { type Lyrics } from "@/types";
 
 type LyricsProps = { lyrics: Lyrics };

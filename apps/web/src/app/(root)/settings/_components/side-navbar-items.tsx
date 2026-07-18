@@ -1,9 +1,9 @@
 "use client";
 
+import { buttonVariants } from "@infinitunes/ui/button";
 import Link from "next/link";
 import React from "react";
 
-import { buttonVariants } from "@/components/ui/button";
 import { useHash } from "@/hooks/use-hash";
 import { cn } from "@/lib/utils";
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import { usePathname } from "next/navigation";
 
 import {
@@ -7,7 +8,6 @@ import {
   SliderCardSkeleton,
   SongListSkeleton,
 } from "@/components/skeletons";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LabelDetailsLoading() {
   const [_, name] = usePathname().split("/").slice(1);

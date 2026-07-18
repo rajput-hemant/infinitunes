@@ -1,12 +1,12 @@
 "use client";
 
+import { Button } from "@infinitunes/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@infinitunes/ui/dialog";
+import { Input } from "@infinitunes/ui/input";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useEventListener } from "@/hooks/use-event-listner";
 import { useIsTyping } from "@/hooks/use-store";

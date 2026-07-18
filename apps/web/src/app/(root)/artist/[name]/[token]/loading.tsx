@@ -1,5 +1,8 @@
 "use client";
 
+import { Badge } from "@infinitunes/ui/badge";
+import { Separator } from "@infinitunes/ui/separator";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import { usePathname } from "next/navigation";
 import React from "react";
 
@@ -8,9 +11,6 @@ import {
   SliderCardSkeleton,
   SongListSkeleton,
 } from "@/components/skeletons";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ArtistDetailsSkeleton() {
   const name = usePathname().split("/")[2];

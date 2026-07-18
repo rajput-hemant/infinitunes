@@ -1,4 +1,10 @@
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@infinitunes/ui/accordion";
+import {
   DownloadCloud,
   Headphones,
   ImageDown,
@@ -11,13 +17,6 @@ import {
   UserX2,
 } from "lucide-react";
 import React from "react";
-
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 
 import { SideNavItems } from "./side-navbar-items";
 

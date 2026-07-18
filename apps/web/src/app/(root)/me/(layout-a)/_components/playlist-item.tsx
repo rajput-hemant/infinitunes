@@ -1,8 +1,8 @@
+import { Card, CardContent } from "@infinitunes/ui/card";
+import { Skeleton } from "@infinitunes/ui/skeleton";
 import Link from "next/link";
 
 import { ImageCollage } from "@/components/image-collage";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { MyPlaylist } from "@/lib/db/schema";
 import { getSongDetails } from "@/lib/jiosaavn-api";
 import { getImageSrc } from "@/lib/utils";
