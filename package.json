@@ -31,7 +31,7 @@
       "prettier --write \"**/*.{ts,tsx,mdx}\" --cache"
     ],
     "*.{ts,tsx,mdx}": [
-      "eslint ."
+      "eslint"
     ]
   },
   "commitlint": {
