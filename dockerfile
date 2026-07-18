@@ -1,27 +1,31 @@
 # 1. Install dependencies only when needed
-FROM oven/bun:latest AS deps
+FROM oven/bun:1.3.14 AS deps
 WORKDIR /app
 
-# Install dependencies based on the preferred package manager
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
+COPY apps/web/package.json apps/web/package.json
 RUN bun install --frozen-lockfile
 
 # 2. Rebuild the source code only when needed
-FROM node:22.11.0-alpine AS base
-
-FROM base AS builder
+FROM oven/bun:1.3.14 AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
 COPY . .
-COPY .env.local .env.production
 
-ENV IS_DOCKER true
+ARG IS_DOCKER=true
+ENV IS_DOCKER=$IS_DOCKER
 
-RUN npm run build -- --no-lint
+# Env validation is skipped at build time; runtime variables are supplied to the
+# container. Provide real values via the environment when running the image.
+ARG SKIP_ENV_VALIDATION=true
+ENV SKIP_ENV_VALIDATION=$SKIP_ENV_VALIDATION
+
+RUN bun run --filter @infinitunes/web build
 
 # 3. Production image, copy all the files and run next
-FROM base AS runner
+FROM node:22.11.0-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
@@ -30,12 +34,13 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nextjs -u 1001
 
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/apps/web/public ./apps/web/public
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# The monorepo standalone output nests the server under apps/web.
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
 
 USER nextjs
 
@@ -44,5 +49,4 @@ ARG PORT=3000
 EXPOSE $PORT
 ENV PORT $PORT
 
-# CMD HOSTNAME=node server.js
-CMD ["node", "server.js"]
+CMD ["node", "apps/web/server.js"]

@@ -1,19 +1,16 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
+# monorepo cache / output (per-package .gitignore handles app specifics)
+node_modules/.cache
+.pnpm-store
 
 # misc
 .DS_Store
@@ -32,4 +29,18 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# next.js
+.next
+out
+build
 next-env.d.ts
+
+# turbo
+.turbo
+
+# eslint
+.eslintcache
+
+# old bun binary lockfile (migrated to bun.lock)
+bun.lockb
