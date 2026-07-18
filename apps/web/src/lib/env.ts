@@ -27,7 +27,7 @@ export const env = createEnv({
 
     AUTH_SECRET:
       process.env.NODE_ENV === "production"
-        ? z.string({ required_error: "Auth Secret is invalid or missing" })
+        ? z.string({ error: "Auth Secret is invalid or missing" })
         : z.string().optional(),
     AUTH_URL: z.preprocess(
       // This makes Vercel deployments not fail if you don't set NEXTAUTH_URL
