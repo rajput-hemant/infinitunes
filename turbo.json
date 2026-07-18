@@ -1,5 +1,26 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalPassThroughEnv": [
+    "SKIP_ENV_VALIDATION",
+    "IS_DOCKER",
+    "NODE_ENV",
+    "VERCEL",
+    "VERCEL_URL",
+    "AUTH_SECRET",
+    "AUTH_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_CLIENT_SECRET",
+    "GITHUB_CLIENT_ID",
+    "GITHUB_CLIENT_SECRET",
+    "JIOSAAVN_API_URL",
+    "DATABASE_URL",
+    "UPSTASH_REDIS_REST_URL",
+    "UPSTASH_REDIS_REST_TOKEN",
+    "ENABLE_RATE_LIMITING",
+    "RATE_LIMITING_REQUESTS_PER_SECOND",
+    "UMAMI_WEBSITE_ID",
+    "NEXT_TELEMETRY_DISABLED"
+  ],
   "tasks": {
     "dev": {
       "persistent": true,
@@ -7,7 +28,7 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["apps/web/.next/**"]
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "start": {
       "dependsOn": ["^build"]

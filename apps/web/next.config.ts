@@ -1,3 +1,5 @@
+import path from "path";
+
 import type { NextConfig } from "next";
 
 // This is validation for the environment variables early in the build process.
@@ -8,7 +10,7 @@ const isDocker = process.env.IS_DOCKER === "true";
 
 const config: NextConfig = {
   reactStrictMode: true,
-  reactCompiler: true,
+  reactCompiler: isProd ? true : undefined,
   compiler: { removeConsole: isProd },
   images: {
     remotePatterns: [
@@ -24,6 +26,7 @@ const config: NextConfig = {
     unoptimized: !isDocker,
   },
   output: isDocker ? "standalone" : undefined,
+  outputFileTracingRoot: isDocker ? path.join(__dirname, "../../") : undefined,
   /* ... */
 };
 
