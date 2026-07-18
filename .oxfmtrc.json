@@ -28,6 +28,6 @@
     "build",
     ".contentlayer",
     "migrations",
-    "bun.lockb"
+    "bun.lock"
   ]
 }
