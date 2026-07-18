@@ -8,9 +8,7 @@ const isDocker = process.env.IS_DOCKER === "true";
 
 const config: NextConfig = {
   reactStrictMode: true,
-  typedRoutes: true,
   reactCompiler: true,
-  cacheComponents: true,
   compiler: { removeConsole: isProd },
   images: {
     remotePatterns: [
