@@ -4,18 +4,25 @@ import { db } from "@infinitunes/db";
 import { favorites, myPlaylists } from "@infinitunes/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { updateTag, unstable_cache } from "next/cache";
+import { cache } from "react";
 
-export const getUserPlaylists = unstable_cache(
-  async (userId: string) => {
-    const playlists = await db.query.myPlaylists.findMany({
-      where: (playlist, { eq }) => eq(playlist.userId, userId),
-    });
+const getUserPlaylistsCached = cache(
+  unstable_cache(
+    async (userId: string) => {
+      const playlists = await db.query.myPlaylists.findMany({
+        where: (playlist, { eq }) => eq(playlist.userId, userId),
+      });
 
-    return playlists;
-  },
-  ["user_playlists"],
-  { tags: ["user_playlists"] },
+      return playlists;
+    },
+    ["user_playlists"],
+    { tags: ["user_playlists"] },
+  ),
 );
+
+export async function getUserPlaylists(userId: string) {
+  return getUserPlaylistsCached(userId);
+}
 
 export async function getPlaylistDetails(playlistId: string) {
   const playlist = await db.query.myPlaylists.findFirst({
@@ -45,17 +52,23 @@ export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
   return updatedPlaylist;
 }
 
-export const getUserFavorites = unstable_cache(
-  async (userId: string) => {
-    const favorites = await db.query.favorites.findFirst({
-      where: (favorites, { eq }) => eq(favorites.userId, userId),
-    });
+const getUserFavoritesCached = cache(
+  unstable_cache(
+    async (userId: string) => {
+      const favorites = await db.query.favorites.findFirst({
+        where: (favorites, { eq }) => eq(favorites.userId, userId),
+      });
 
-    return favorites;
-  },
-  ["user_favorites"],
-  { tags: ["user_favorites"] },
+      return favorites;
+    },
+    ["user_favorites"],
+    { tags: ["user_favorites"] },
+  ),
 );
+
+export async function getUserFavorites(userId: string) {
+  return getUserFavoritesCached(userId);
+}
 
 export async function addToFavorites(
   userId: string,

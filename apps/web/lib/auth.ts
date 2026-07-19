@@ -2,6 +2,7 @@ import { createAuth } from "@infinitunes/auth";
 import { db } from "@infinitunes/db";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 const auth = createAuth(db);
 
@@ -12,7 +13,7 @@ export { auth };
  *
  * @returns The current user
  */
-export async function getUser() {
+export const getUser = cache(async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -26,7 +27,7 @@ export async function getUser() {
     image: session.user.image,
     username: session.user.username,
   };
-}
+});
 
 /**
  * Checks if the current user is authenticated

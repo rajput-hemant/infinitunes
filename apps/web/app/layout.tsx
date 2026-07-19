@@ -10,7 +10,7 @@ import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
 import { absoluteUrl, cn } from "~/lib/utils";
-import type { ThemeConfig } from "~/types";
+import { DEFAULT_THEME_CONFIG, type ThemeConfig } from "~/types";
 
 type RootLayoutProps = {
   modal: React.ReactNode;
@@ -21,9 +21,9 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
   const cookieStore = await cookies();
   const themeConfig = cookieStore.get("theme-config");
 
-  const { theme, radius } = JSON.parse(
-    themeConfig?.value ?? '{"theme":"default","radius":"default"}',
-  ) as ThemeConfig;
+  const { theme, radius } = themeConfig
+    ? (JSON.parse(themeConfig.value) as ThemeConfig)
+    : DEFAULT_THEME_CONFIG;
 
   return (
     <React.StrictMode>
@@ -32,7 +32,7 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
           className={cn(
             Object.values(fonts).map((font) => font.variable),
             "min-h-screen font-sans antialiased",
-            `theme-${theme}`,
+            theme !== "default" && `theme-${theme}`,
           )}
           style={
             radius === "default"
