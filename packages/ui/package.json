@@ -6,7 +6,6 @@
   "sideEffects": false,
   "exports": {
     "./styles/globals.css": "./src/styles/globals.css",
-    "./components/sidebar": "./src/components/ui/sidebar.tsx",
     "./components/*": "./src/components/ui/*.tsx",
     "./hooks/*": "./src/hooks/*.ts",
     "./lib/*": "./src/lib/*.ts"
