@@ -35,6 +35,14 @@ function tokenFromLink(link: string) {
   return link.split("/").at(-1) ?? "";
 }
 
+function resolveNumericId(t: string, type: "album" | "playlist") {
+  if (/^\d+$/.test(t)) return Promise.resolve(t);
+  const result = api(endpoints[type].link, {
+    query: { token: t, type },
+  }) as Promise<{ id?: string }>;
+  return result.then((r) => r.id ?? t);
+}
+
 function withDownloadUrl(item: unknown) {
   const obj = item as Record<string, unknown>;
   const more = obj.more_info as Record<string, unknown> | undefined;
@@ -124,10 +132,12 @@ export const albumRouter = router({
         message: "Please provide a valid JioSaavn link",
       });
     }
+    const t = token || tokenFromLink(link ?? "");
+    const albumid = id ?? (await resolveNumericId(t, "album"));
     const result = await api(endpoints.album.id, {
       query: {
-        albumid: id,
-        token: token || tokenFromLink(link ?? ""),
+        albumid,
+        token: t,
         type: "album",
       },
       language: lang,
@@ -187,10 +197,12 @@ export const playlistRouter = router({
         message: "Please provide a valid JioSaavn link",
       });
     }
+    const t = token || tokenFromLink(link ?? "");
+    const listid = id ?? (await resolveNumericId(t, "playlist"));
     const result = await api(endpoints.playlist.id, {
       query: {
-        listid: id,
-        token: token || tokenFromLink(link ?? ""),
+        listid,
+        token: t,
         type: "playlist",
         p: "1",
         n: "50",

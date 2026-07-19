@@ -61,8 +61,9 @@
   --animate-accordion-up: accordion-up 0.2s ease-out;
 
   --font-sans:
-    var(--font-sans), ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    var(--font-sans), var(--font-sans-devanagari), ui-sans-serif, system-ui,
+    sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
   --font-mono:
     var(--font-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     'Liberation Mono', 'Courier New', monospace;
@@ -194,8 +195,18 @@
     @apply border-border;
   }
 
+  html {
+    @apply overflow-x-hidden;
+  }
+
   body {
-    @apply bg-background text-foreground antialiased scroll-smooth;
+    @apply bg-background text-foreground antialiased scroll-smooth max-w-full overflow-x-hidden;
+  }
+
+  img,
+  video,
+  canvas {
+    @apply max-w-full;
   }
 
   ::selection {

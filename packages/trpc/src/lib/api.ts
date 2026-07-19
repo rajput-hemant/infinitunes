@@ -37,6 +37,10 @@ export type ApiOptions = {
   signal?: AbortSignal;
 };
 
+const CACHE_TTL = 60_000;
+
+const cache = new Map<string, { expires: number; data: unknown }>();
+
 /**
  * Calls the upstream JioSaavn API and returns the raw, untransformed JSON body.
  */
@@ -57,6 +61,13 @@ export async function api<T = unknown>(
 
   const url = `${BASE_URL}?__call=${call}&${params.toString()}`;
   const langs = validLangs(language) || "hindi,english";
+  const cacheKey = `${url}&L=${langs}`;
+
+  const cached = cache.get(cacheKey);
+  const now = Date.now();
+  if (cached && cached.expires > now) {
+    return cached.data as T;
+  }
 
   let response: Response;
   try {
@@ -95,7 +106,9 @@ export async function api<T = unknown>(
   }
 
   try {
-    return (await response.json()) as T;
+    const data = (await response.json()) as T;
+    cache.set(cacheKey, { expires: Date.now() + CACHE_TTL, data });
+    return data;
   } catch {
     throw new TRPCError({
       code: "BAD_GATEWAY",

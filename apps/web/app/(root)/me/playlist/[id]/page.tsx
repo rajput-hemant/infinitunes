@@ -99,7 +99,7 @@ export default async function MyPlaylistsPage(props: Props) {
           </div>
 
           {songsDetails && songsDetails.songs.length > 0 && (
-            <div className="mt-4 flex gap-2 lg:mt-6">
+            <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
               <PlayButton
                 type="song"
                 // @ts-expect-error string[] is not assignable to string

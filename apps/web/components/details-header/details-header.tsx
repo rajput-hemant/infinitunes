@@ -127,7 +127,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
         />
       </div>
 
-      <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
+      <figcaption className="flex min-w-0 w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
         <h1
           title={title}
           className="flex items-center truncate text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start"
@@ -145,7 +145,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           )}
         </h1>
 
-        <div className="space-y-2 text-sm text-muted-foreground">
+        <div className="min-w-0 space-y-2 break-words text-sm text-muted-foreground">
           {(item.type === "song" || item.type === "episode") && (
             <>
               {item.type === "song" && (
@@ -297,7 +297,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
         </div>
 
         {item.type !== "label" && (
-          <div className="mt-4 flex gap-2 lg:mt-6">
+          <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
             <PlayButton
               type={item.type}
               token={

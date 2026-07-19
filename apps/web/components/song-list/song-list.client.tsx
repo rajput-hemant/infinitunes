@@ -1,5 +1,4 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Image from "next/image";
@@ -108,7 +107,7 @@ export function SongListClient(props: SongListProps) {
                     </Link>
                   </h4>
 
-                  <ScrollArea className="w-full truncate pb-1">
+                  <div className="w-full truncate pb-1">
                     {item.more_info.artistMap.primary_artists.map(
                       (artist, i, arr) => (
                         <Link
@@ -121,12 +120,7 @@ export function SongListClient(props: SongListProps) {
                         </Link>
                       ),
                     )}
-
-                    <ScrollBar
-                      orientation="horizontal"
-                      className="mt-1 h-1 w-full"
-                    />
-                  </ScrollArea>
+                  </div>
                 </figcaption>
 
                 {showAlbum && item.type !== "episode" && (

@@ -1,4 +1,4 @@
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Noto_Sans_Devanagari } from "next/font/google";
 import localFont from "next/font/local";
 
 /* -----------------------------------------------------------------------------------------------
@@ -8,6 +8,12 @@ import localFont from "next/font/local";
 export const fontSans = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
+});
+
+export const fontSansDevanagari = Noto_Sans_Devanagari({
+  variable: "--font-sans-devanagari",
+  subsets: ["devanagari", "latin"],
+  weight: ["400", "600", "700"],
 });
 
 export const fontMono = JetBrains_Mono({
