@@ -26,7 +26,7 @@ import {
 } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
 import type { ImageQuality, Lang } from "@/types";
-import { QUALITIES_MAP } from "@/types";
+import { QUALITIES_MAP } from "@/types/misc";
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
 

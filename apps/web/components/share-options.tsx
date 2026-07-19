@@ -52,6 +52,43 @@ const shareOptions: ShareOption[] = [
   },
 ];
 
+type MenuItemProps = ShareOption & {
+  isDropDownItem?: boolean;
+  copy: () => void;
+  isCopied: boolean;
+};
+
+function MenuItem({
+  label,
+  href,
+  icon: Icon,
+  isDropDownItem,
+  copy,
+  isCopied,
+}: MenuItemProps) {
+  return href ? (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      <Icon
+        className={cn(
+          "mr-2 inline-block aspect-square h-5",
+          isDropDownItem && "h-4",
+        )}
+      />
+      {label}
+    </a>
+  ) : (
+    <button onClick={copy} className="inline-flex">
+      <Clipboard
+        className={cn(
+          "mr-2 inline-block aspect-square h-5",
+          isDropDownItem && "h-4",
+        )}
+      />
+      {isCopied ? "Link Copied" : "Copy Link"}
+    </button>
+  );
+}
+
 export function ShareOptions({ isDropDownItem, ...props }: ShareOptionsProps) {
   const pathname = usePathname();
 
@@ -62,39 +99,30 @@ export function ShareOptions({ isDropDownItem, ...props }: ShareOptionsProps) {
     setIsCopied(true);
   }
 
-  function MenuItem({ label, href, icon: Icon }: ShareOption) {
-    return href ? (
-      <a href={href} target="_blank" rel="noopener noreferrer">
-        <Icon
-          className={cn(
-            "mr-2 inline-block aspect-square h-5",
-            isDropDownItem && "h-4",
-          )}
-        />
-        {label}
-      </a>
-    ) : (
-      <button onClick={copy} className="inline-flex">
-        <Clipboard
-          className={cn(
-            "mr-2 inline-block aspect-square h-5",
-            isDropDownItem && "h-4",
-          )}
-        />
-        {isCopied ? "Link Copied 👍" : "Copy Link"}
-      </button>
-    );
-  }
-
   return (
     <div {...props}>
-      {shareOptions.map(({ label, href, icon: Icon }, i) => {
+      {shareOptions.map(({ label, href, icon }, i) => {
         return isDropDownItem ? (
           <DropdownMenuItem key={i}>
-            <MenuItem label={label} href={href} icon={Icon} />
+            <MenuItem
+              label={label}
+              href={href}
+              icon={icon}
+              isDropDownItem
+              copy={copy}
+              isCopied={isCopied}
+            />
           </DropdownMenuItem>
         ) : (
-          <MenuItem key={i} label={label} href={href} icon={Icon} />
+          <MenuItem
+            key={i}
+            label={label}
+            href={href}
+            icon={icon}
+            isDropDownItem={isDropDownItem}
+            copy={copy}
+            isCopied={isCopied}
+          />
         );
       })}
     </div>

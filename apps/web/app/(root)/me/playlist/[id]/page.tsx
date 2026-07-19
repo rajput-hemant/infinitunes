@@ -83,7 +83,7 @@ export default async function MyPlaylistsPage(props: Props) {
             <p>{description}</p>
             <p>
               <span>{songs.length} Songs</span>
-              {songsDetails && songsDetails.songs.length && (
+              {songsDetails && songsDetails.songs.length > 0 && (
                 <span>
                   {" · "}
                   {formatDuration(
@@ -98,7 +98,7 @@ export default async function MyPlaylistsPage(props: Props) {
             </p>
           </div>
 
-          {songsDetails && songsDetails.songs.length && (
+          {songsDetails && songsDetails.songs.length > 0 && (
             <div className="mt-4 flex gap-2 lg:mt-6">
               <PlayButton
                 type="song"

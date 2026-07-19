@@ -1,7 +1,8 @@
 import { LanguageBar } from "@/components/language-bar";
-import { SliderCard } from "@/components/slider";
 import { getFeaturedRadioStations } from "@/lib/jiosaavn-api";
 import type { Lang } from "@/types";
+
+import { FeaturedStations } from "./_components/featured-stations";
 
 const title = "Top Indian Radio Stations";
 const description =
@@ -17,7 +18,7 @@ export const metadata = {
     url: "/radio",
     images: {
       url: `/api/og?title=${title}&description=${description}&image=https://graph.org/file/857b2fc40944dbb65b184.png`,
-      alt: "Top Indian Music Artists",
+      alt: "Top Indian Radio Stations",
     },
   },
 };
@@ -42,26 +43,11 @@ export default async function RadioPage(props: Props) {
         Radio Stations
       </h1>
 
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {radioStations.map(
-          ({ id, name, url, subtitle, type, image, explicit }) => (
-            <SliderCard
-              key={id}
-              name={name}
-              url={url}
-              subtitle={subtitle}
-              type={type}
-              image={image}
-              explicit={explicit}
-            />
-          ),
-        )}
-      </div>
-
-      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-        <em>Yay! You have seen it all</em>{" "}
-        <span className="text-foreground">🤩</span>
-      </h3>
+      <FeaturedStations
+        key={radioStations[0]?.id ?? "stations"}
+        initialStations={radioStations}
+        lang={lang}
+      />
     </div>
   );
 }

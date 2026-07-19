@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 import { useDownloadQuality } from "@/hooks/use-store";
 import type { Episode, Song } from "@/types";
-import { QUALITIES_MAP } from "@/types";
+import { QUALITIES_MAP } from "@/types/misc";
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   songs: (Song | Episode)[];
