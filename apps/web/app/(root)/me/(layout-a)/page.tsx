@@ -19,7 +19,7 @@ export default async function MyPlaylistsPage() {
   const playlists = await getUserPlaylists(user!.id);
 
   return (
-    <div className="space-y-4">
+    <section className="space-y-4">
       <div className="flex justify-between">
         <h2 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           My Playlists
@@ -60,6 +60,6 @@ export default async function MyPlaylistsPage() {
           </NewPlaylistForm>
         </div>
       )}
-    </div>
+    </section>
   );
 }

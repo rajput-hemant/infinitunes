@@ -21,7 +21,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
           if (!value.data.length) return null;
 
           return (
-            <div key={key}>
+            <section key={key}>
               <div className="flex">
                 <p className="pl-2 font-heading text-lg capitalize tracking-wider drop-shadow-sm">
                   {key.replace("_query", " Result")}
@@ -70,7 +70,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
                   </div>
                 </Link>
               ))}
-            </div>
+            </section>
           );
         })}
     </div>

@@ -162,7 +162,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
 
 const NavLink = React.forwardRef<
   React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a"> & {
+  React.ComponentProps<"a"> & {
     isActive: boolean;
   }
 >(({ href, isActive, className, children, ...props }, ref) => {

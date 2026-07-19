@@ -31,7 +31,7 @@ export default async function HomePage() {
     if ("random_songs_listid" in section || key === "discover") return null;
 
     return (
-      <div key={key} className="mb-4 space-y-4">
+      <section key={key} className="mb-4 space-y-4">
         <header className="border-b pb-2">
           <h1 className="sr-only">{siteConfig.name} Homepage</h1>
           {/*
@@ -73,7 +73,7 @@ export default async function HomePage() {
 
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
-      </div>
+      </section>
     );
   });
 }

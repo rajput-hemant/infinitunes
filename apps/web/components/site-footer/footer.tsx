@@ -61,8 +61,8 @@ export async function SiteFooter() {
           </div>
 
           {footerLinks.map(({ title, data }) => (
-            <div key={title} className="flex flex-col gap-2.5">
-              <p className="text-sm font-semibold lg:text-sm">{title}</p>
+            <section key={title} className="flex flex-col gap-2.5">
+              <h2 className="text-sm font-semibold lg:text-sm">{title}</h2>
 
               <ul className="w-fit space-y-1">
                 {data.map(({ id, title, action }) => (
@@ -76,11 +76,11 @@ export async function SiteFooter() {
                   </li>
                 ))}
               </ul>
-            </div>
+            </section>
           ))}
 
-          <div className="flex flex-col gap-2.5">
-            <p className="text-sm font-semibold lg:text-sm">Languages</p>
+          <section className="flex flex-col gap-2.5">
+            <h2 className="text-sm font-semibold lg:text-sm">Languages</h2>
 
             <ul className="w-fit space-y-1">
               {languages.map((lang) => (
@@ -94,7 +94,7 @@ export async function SiteFooter() {
                 </li>
               ))}
             </ul>
-          </div>
+          </section>
         </div>
       </div>
 
