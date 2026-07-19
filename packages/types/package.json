@@ -1,0 +1,21 @@
+{
+  "name": "@infinitunes/types",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "type-check": "tsc --noEmit",
+    "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
+    "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\""
+  },
+  "devDependencies": {
+    "@infinitunes/typescript-config": "workspace:*",
+    "oxlint": "^1.74.0",
+    "oxfmt": "^0.59.0",
+    "typescript": "^5.9.3"
+  }
+}
