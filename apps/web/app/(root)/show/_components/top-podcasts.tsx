@@ -4,10 +4,10 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SliderCard } from "@/components/slider";
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { getTopShows } from "@/lib/jiosaavn-api";
-import type { TopShows } from "@/types";
+import { SliderCard } from "~/components/slider";
+import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
+import { getTopShows } from "~/lib/jiosaavn-api";
+import type { TopShows } from "~/types";
 
 type Props = {
   initialTopShows: TopShows;

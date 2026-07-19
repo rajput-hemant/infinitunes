@@ -3,8 +3,8 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Image from "next/image";
 import Link from "next/link";
 
-import { getTopSearches } from "@/lib/jiosaavn-api";
-import { getHref, getImageSrc } from "@/lib/utils";
+import { getTopSearches } from "~/lib/jiosaavn-api";
+import { getHref, getImageSrc } from "~/lib/utils";
 
 import { SliderCard } from "../slider";
 

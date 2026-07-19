@@ -5,11 +5,11 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SongListClient } from "@/components/song-list/song-list.client";
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { getShowEpisodes } from "@/lib/jiosaavn-api";
-import type { Episode, Sort } from "@/types";
-import type { User } from "@/types/user";
+import { SongListClient } from "~/components/song-list/song-list.client";
+import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
+import { getShowEpisodes } from "~/lib/jiosaavn-api";
+import type { Episode, Sort } from "~/types";
+import type { User } from "~/types/user";
 
 type EpisodeListProps = {
   user?: User;

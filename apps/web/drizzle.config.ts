@@ -4,7 +4,7 @@ import { loadEnvConfig } from "@next/env";
 import type { Config } from "drizzle-kit";
 import { defineConfig } from "drizzle-kit";
 
-import { siteConfig } from "@/config/site";
+import { siteConfig } from "~/config/site";
 
 loadEnvConfig(cwd());
 

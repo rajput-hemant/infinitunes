@@ -21,7 +21,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { signUpSchema } from "@/lib/validations";
+import { signUpSchema } from "~/lib/validations";
 
 import { OAuthButtons } from "./oauth-buttons";
 

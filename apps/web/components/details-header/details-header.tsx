@@ -4,9 +4,9 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 
-import { getUser } from "@/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
-import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
+import { getUser } from "~/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { cn, formatDuration, getHref, getImageSrc } from "~/lib/utils";
 import type {
   Album,
   Artist,
@@ -16,7 +16,7 @@ import type {
   Playlist,
   ShowDetails,
   Song,
-} from "@/types";
+} from "~/types";
 
 import { DownloadButton } from "../download-button";
 import { ImageWithFallback } from "../image-with-fallback";

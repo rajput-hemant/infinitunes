@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import React from "react";
 
-import type { ThemeConfig } from "@/types";
+import type { ThemeConfig } from "~/types";
 
 import { AppearanceSettings } from "../_components/appearance-settings";
 

@@ -3,9 +3,9 @@
 import { Pause, Play } from "lucide-react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 
-import { useCurrentSongIndex, useQueue } from "@/hooks/use-store";
-import { cn } from "@/lib/utils";
-import type { Type } from "@/types";
+import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
+import { cn } from "~/lib/utils";
+import type { Type } from "~/types";
 
 import { PlayButton } from "../play-button";
 

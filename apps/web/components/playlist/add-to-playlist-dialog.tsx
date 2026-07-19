@@ -13,7 +13,7 @@ import {
 import { Separator } from "@infinitunes/ui/components/separator";
 import { List, ListX } from "lucide-react";
 
-import type { User } from "@/types/user";
+import type { User } from "~/types/user";
 
 import { NewPlaylistForm } from "./new-playlist-form";
 

@@ -1,9 +1,9 @@
 import { Ghost } from "lucide-react";
 
-import { SongList } from "@/components/song-list";
-import { getUser } from "@/lib/auth";
-import { getUserFavorites } from "@/lib/db/queries";
-import { getSongDetails } from "@/lib/jiosaavn-api";
+import { SongList } from "~/components/song-list";
+import { getUser } from "~/lib/auth";
+import { getUserFavorites } from "~/lib/db/queries";
+import { getSongDetails } from "~/lib/jiosaavn-api";
 
 export const metadata = {
   title: "Liked Songs",

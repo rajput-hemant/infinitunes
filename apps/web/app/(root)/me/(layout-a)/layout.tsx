@@ -5,8 +5,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
-import { ImageWithFallback } from "@/components/image-with-fallback";
-import { getUser } from "@/lib/auth";
+import { ImageWithFallback } from "~/components/image-with-fallback";
+import { getUser } from "~/lib/auth";
 
 import { LogoutButton } from "./_components/logout";
 import { Navbar } from "./_components/navbar";

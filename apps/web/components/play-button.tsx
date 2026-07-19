@@ -8,7 +8,7 @@ import {
   useCurrentSongIndex,
   useIsPlayerInit,
   useQueue,
-} from "@/hooks/use-store";
+} from "~/hooks/use-store";
 import {
   getAlbumDetails,
   getArtistDetails,
@@ -18,9 +18,9 @@ import {
   getPlaylistDetails,
   getShowEpisodes,
   getSongDetails,
-} from "@/lib/jiosaavn-api";
-import { currentlyInDev } from "@/lib/utils";
-import type { Episode, Song, Sort, Type } from "@/types";
+} from "~/lib/jiosaavn-api";
+import { currentlyInDev } from "~/lib/utils";
+import type { Episode, Song, Sort, Type } from "~/types";
 
 type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   type: Type;

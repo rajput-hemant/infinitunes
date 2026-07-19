@@ -1,9 +1,9 @@
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
-import { SliderCard } from "@/components/slider";
-import { siteConfig } from "@/config/site";
-import { getHomeData } from "@/lib/jiosaavn-api";
-import { cn } from "@/lib/utils";
+import { SliderCard } from "~/components/slider";
+import { siteConfig } from "~/config/site";
+import { getHomeData } from "~/lib/jiosaavn-api";
+import { cn } from "~/lib/utils";
 
 const title = `Online Songs on ${siteConfig.name}: Download & Play Latest Music for Free`;
 

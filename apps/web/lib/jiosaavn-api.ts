@@ -32,7 +32,7 @@ import type {
   TopSearch,
   TopShows,
   Trending,
-} from "@/types";
+} from "~/types";
 
 import { env } from "./env";
 

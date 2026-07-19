@@ -3,7 +3,7 @@ import React from "react";
 import {
   DetailsHeaderSkeleton,
   SongListSkeleton,
-} from "@/components/skeletons";
+} from "~/components/skeletons";
 
 export default function PlaylistDetailsSkeleton() {
   return (

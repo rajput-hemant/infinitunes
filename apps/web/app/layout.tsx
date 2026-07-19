@@ -1,16 +1,16 @@
-import "@/styles/globals.css";
+import "~/styles/globals.css";
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import Script from "next/script";
 import React from "react";
 
-import Providers from "@/components/provider";
-import { TailwindIndicator } from "@/components/tailwind-indicator";
-import { siteConfig } from "@/config/site";
-import { env } from "@/lib/env";
-import * as fonts from "@/lib/fonts";
-import { absoluteUrl, cn } from "@/lib/utils";
-import type { ThemeConfig } from "@/types";
+import Providers from "~/components/provider";
+import { TailwindIndicator } from "~/components/tailwind-indicator";
+import { siteConfig } from "~/config/site";
+import { env } from "~/lib/env";
+import * as fonts from "~/lib/fonts";
+import { absoluteUrl, cn } from "~/lib/utils";
+import type { ThemeConfig } from "~/types";
 
 type RootLayoutProps = {
   modal: React.ReactNode;

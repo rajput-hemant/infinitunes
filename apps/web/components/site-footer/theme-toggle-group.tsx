@@ -8,8 +8,8 @@ import { Monitor, Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
 import React from "react";
 
-import { useIsMounted } from "@/hooks/use-is-mouted";
-import { cn } from "@/lib/utils";
+import { useIsMounted } from "~/hooks/use-is-mouted";
+import { cn } from "~/lib/utils";
 
 type ThemeToggleGroupProps = {
   className?: string;

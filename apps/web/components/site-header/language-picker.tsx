@@ -19,9 +19,9 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
-import { languages } from "@/config/languages";
-import { cn } from "@/lib/utils";
-import type { Lang } from "@/types";
+import { languages } from "~/config/languages";
+import { cn } from "~/lib/utils";
+import type { Lang } from "~/types";
 
 type LanguagePickerProps = {
   initialLanguages: Lang[];

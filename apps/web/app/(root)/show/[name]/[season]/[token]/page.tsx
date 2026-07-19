@@ -10,12 +10,12 @@ import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { DetailsHeader } from "@/components/details-header";
-import { SliderCard } from "@/components/slider";
-import { getUser } from "@/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
-import { getShowDetails } from "@/lib/jiosaavn-api";
-import type { Sort } from "@/types";
+import { DetailsHeader } from "~/components/details-header";
+import { SliderCard } from "~/components/slider";
+import { getUser } from "~/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { getShowDetails } from "~/lib/jiosaavn-api";
+import type { Sort } from "~/types";
 
 import { EpisodeList } from "./_components/episode-list";
 

@@ -3,7 +3,7 @@
 import { Button } from "@infinitunes/ui/components/button";
 import { useTheme } from "next-themes";
 
-import { Icons } from "@/components/icons";
+import { Icons } from "~/components/icons";
 
 function ThemeToggle() {
   const { setTheme, theme } = useTheme();

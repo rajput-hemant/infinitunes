@@ -1,6 +1,6 @@
 import { pgTableCreator } from "drizzle-orm/pg-core";
 
-import { siteConfig } from "@/config/site";
+import { siteConfig } from "~/config/site";
 
 /**
  * Use to keep multiple projects schemas/tables in the same database.

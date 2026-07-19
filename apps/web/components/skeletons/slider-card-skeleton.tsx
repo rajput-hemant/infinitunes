@@ -1,6 +1,6 @@
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
-import { cn } from "@/lib/utils";
+import { cn } from "~/lib/utils";
 
 type SliderCardSkeletonProps = {
   aspect?: "square" | "video";

@@ -10,7 +10,7 @@ import {
   DetailsHeaderSkeleton,
   SliderCardSkeleton,
   SongListSkeleton,
-} from "@/components/skeletons";
+} from "~/components/skeletons";
 
 export default function ArtistDetailsSkeleton() {
   const name = usePathname().split("/")[2];

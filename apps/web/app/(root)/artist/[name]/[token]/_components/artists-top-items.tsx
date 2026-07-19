@@ -4,11 +4,11 @@ import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { SliderCard } from "@/components/slider";
-import { SongListClient } from "@/components/song-list/song-list.client";
-import { getArtistsAlbums, getArtistsSongs } from "@/lib/jiosaavn-api";
-import type { Album, Category, Song } from "@/types";
-import type { User } from "@/types/user";
+import { SliderCard } from "~/components/slider";
+import { SongListClient } from "~/components/song-list/song-list.client";
+import { getArtistsAlbums, getArtistsSongs } from "~/lib/jiosaavn-api";
+import type { Album, Category, Song } from "~/types";
+import type { User } from "~/types/user";
 
 type Props = {
   id: string;

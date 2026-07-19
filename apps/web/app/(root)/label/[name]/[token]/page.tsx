@@ -7,10 +7,10 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { DetailsHeader } from "@/components/details-header";
-import { SliderCard } from "@/components/slider";
-import { SongList } from "@/components/song-list";
-import { getLabelDetails } from "@/lib/jiosaavn-api";
+import { DetailsHeader } from "~/components/details-header";
+import { SliderCard } from "~/components/slider";
+import { SongList } from "~/components/song-list";
+import { getLabelDetails } from "~/lib/jiosaavn-api";
 
 type LabelDetailsPageProps = {
   params: Promise<{

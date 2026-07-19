@@ -1,4 +1,4 @@
-import { SignUpForm } from "@/app/(auth)/_components/signup-form";
+import { SignUpForm } from "~/app/(auth)/_components/signup-form";
 
 import { AuthModal } from "../auth-modal";
 

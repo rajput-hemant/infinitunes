@@ -4,8 +4,8 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Link from "next/link";
 
-import { cn, getHref, getImageSrc } from "@/lib/utils";
-import type { Quality, Type } from "@/types";
+import { cn, getHref, getImageSrc } from "~/lib/utils";
+import type { Quality, Type } from "~/types";
 
 import { ImageWithFallback } from "../image-with-fallback";
 import { PlayButton } from "../play-button";

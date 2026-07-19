@@ -11,12 +11,12 @@ import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-import { useDebounce } from "@/hooks/use-debounce";
-import { useEventListener } from "@/hooks/use-event-listner";
-import { useIsTyping } from "@/hooks/use-store";
-import { searchAll } from "@/lib/jiosaavn-api";
-import { cn, isMacOs } from "@/lib/utils";
-import type { AllSearch } from "@/types";
+import { useDebounce } from "~/hooks/use-debounce";
+import { useEventListener } from "~/hooks/use-event-listner";
+import { useIsTyping } from "~/hooks/use-store";
+import { searchAll } from "~/lib/jiosaavn-api";
+import { cn, isMacOs } from "~/lib/utils";
+import type { AllSearch } from "~/types";
 
 import { SearchAll } from "./search-all";
 

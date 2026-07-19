@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
-import { DetailsHeader } from "@/components/details-header";
-import { getEpisodeDetails } from "@/lib/jiosaavn-api";
+import { DetailsHeader } from "~/components/details-header";
+import { getEpisodeDetails } from "~/lib/jiosaavn-api";
 
 type EpisodeDetailsProps = {
   params: Promise<{

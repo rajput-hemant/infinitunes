@@ -4,7 +4,7 @@ import {
   DetailsHeaderSkeleton,
   SliderListSkeleton,
   SongListSkeleton,
-} from "@/components/skeletons";
+} from "~/components/skeletons";
 
 export default function AlbumDetailsSkeleton() {
   return (

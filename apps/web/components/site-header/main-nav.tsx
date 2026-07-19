@@ -13,8 +13,8 @@ import { Separator } from "@infinitunes/ui/components/separator";
 import Link from "next/link";
 import React from "react";
 
-import { cn, getHref } from "@/lib/utils";
-import type { MegaMenu } from "@/types";
+import { cn, getHref } from "~/lib/utils";
+import type { MegaMenu } from "~/types";
 
 type MainNavProps = {
   megaMenu: MegaMenu;

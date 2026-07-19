@@ -8,7 +8,7 @@ import {
 } from "@infinitunes/ui/components/accordion";
 import React from "react";
 
-import { type Lyrics } from "@/types";
+import { type Lyrics } from "~/types";
 
 type LyricsProps = { lyrics: Lyrics };
 

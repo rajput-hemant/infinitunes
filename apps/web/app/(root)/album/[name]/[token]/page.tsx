@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 
-import { DetailsHeader } from "@/components/details-header";
-import { SliderList } from "@/components/slider";
-import { SongList } from "@/components/song-list";
+import { DetailsHeader } from "~/components/details-header";
+import { SliderList } from "~/components/slider";
+import { SongList } from "~/components/song-list";
 import {
   getAlbumDetails,
   getAlbumFromSameYear,
   getAlbumRecommendations,
   getTrending,
-} from "@/lib/jiosaavn-api";
+} from "~/lib/jiosaavn-api";
 
 type AlbumDetailsPageProps = {
   params: Promise<{ name: string; token: string }>;

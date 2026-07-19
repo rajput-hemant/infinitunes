@@ -3,8 +3,8 @@ import type { ClassValue } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
-import { siteConfig } from "@/config/site";
-import type { ImageQuality, Quality, StreamQuality, Type } from "@/types";
+import { siteConfig } from "~/config/site";
+import type { ImageQuality, Quality, StreamQuality, Type } from "~/types";
 
 /**
  * Merges the given class names with the tailwind classes

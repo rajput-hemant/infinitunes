@@ -16,9 +16,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { useQueue } from "@/hooks/use-store";
-import { getHref, getImageSrc } from "@/lib/utils";
-import type { Queue } from "@/types";
+import { useQueue } from "~/hooks/use-store";
+import { getHref, getImageSrc } from "~/lib/utils";
+import type { Queue } from "~/types";
 
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
 

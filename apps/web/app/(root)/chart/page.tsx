@@ -1,5 +1,5 @@
-import { SliderCard } from "@/components/slider";
-import { getCharts } from "@/lib/jiosaavn-api";
+import { SliderCard } from "~/components/slider";
+import { getCharts } from "~/lib/jiosaavn-api";
 
 const title = "Top Music Charts";
 const description = "Listen to the top music charts from around the world.";

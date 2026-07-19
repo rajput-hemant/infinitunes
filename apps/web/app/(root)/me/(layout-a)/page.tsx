@@ -2,10 +2,10 @@ import { Button } from "@infinitunes/ui/components/button";
 import { Plus } from "lucide-react";
 import React from "react";
 
-import { NewPlaylistForm } from "@/components/playlist/new-playlist-form";
-import { SliderCardSkeleton } from "@/components/skeletons";
-import { getUser } from "@/lib/auth";
-import { getUserPlaylists } from "@/lib/db/queries";
+import { NewPlaylistForm } from "~/components/playlist/new-playlist-form";
+import { SliderCardSkeleton } from "~/components/skeletons";
+import { getUser } from "~/lib/auth";
+import { getUserPlaylists } from "~/lib/db/queries";
 
 import { PlaylistItem } from "./_components/playlist-item";
 

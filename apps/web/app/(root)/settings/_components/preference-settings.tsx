@@ -18,15 +18,15 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
-import { languages as languageList } from "@/config/languages";
+import { languages as languageList } from "~/config/languages";
 import {
   useDownloadQuality,
   useImageQuality,
   useStreamQuality,
-} from "@/hooks/use-store";
-import { cn } from "@/lib/utils";
-import type { ImageQuality, Lang } from "@/types";
-import { QUALITIES_MAP } from "@/types/misc";
+} from "~/hooks/use-store";
+import { cn } from "~/lib/utils";
+import type { ImageQuality, Lang } from "~/types";
+import { QUALITIES_MAP } from "~/types/misc";
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
 

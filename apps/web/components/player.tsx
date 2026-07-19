@@ -30,22 +30,22 @@ import {
 } from "react-use-audio-player";
 import { toast } from "sonner";
 
-import { useEventListener } from "@/hooks/use-event-listner";
+import { useEventListener } from "~/hooks/use-event-listner";
 import {
   useCurrentSongIndex,
   useIsPlayerInit,
   useIsTyping,
   useQueue,
   useStreamQuality,
-} from "@/hooks/use-store";
+} from "~/hooks/use-store";
 import {
   cn,
   formatDuration,
   getDownloadLink,
   getHref,
   getImageSrc,
-} from "@/lib/utils";
-import type { User } from "@/types/user";
+} from "~/lib/utils";
+import type { User } from "~/types/user";
 
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";

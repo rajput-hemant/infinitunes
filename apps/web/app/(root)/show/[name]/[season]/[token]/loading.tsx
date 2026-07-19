@@ -5,7 +5,7 @@ import {
   DetailsHeaderSkeleton,
   SliderCardSkeleton,
   SongListSkeleton,
-} from "@/components/skeletons";
+} from "~/components/skeletons";
 
 export default function ShowDetailsLoading() {
   return (

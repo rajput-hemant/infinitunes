@@ -1,4 +1,4 @@
-import { getUser } from "@/lib/auth";
+import { getUser } from "~/lib/auth";
 
 export async function SignedIn({ children }: React.PropsWithChildren) {
   const user = await getUser();

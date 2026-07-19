@@ -1,4 +1,4 @@
-import { ResetPasswordForm } from "@/app/(auth)/_components/reset-password-form";
+import { ResetPasswordForm } from "~/app/(auth)/_components/reset-password-form";
 
 import { AuthModal } from "../auth-modal";
 

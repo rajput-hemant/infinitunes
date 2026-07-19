@@ -11,10 +11,10 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@/components",
+    "components": "~/components",
     "ui": "@infinitunes/ui/components",
-    "lib": "@/lib",
+    "lib": "~/lib",
     "utils": "@infinitunes/ui/lib/utils",
-    "hooks": "@/hooks"
+    "hooks": "~/hooks"
   }
 }

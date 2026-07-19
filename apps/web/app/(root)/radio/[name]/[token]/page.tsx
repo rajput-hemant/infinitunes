@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { PlayButton } from "@/components/play-button";
-import { SongList } from "@/components/song-list";
-import { siteConfig } from "@/config/site";
-import { getFeaturedRadioStations, search } from "@/lib/jiosaavn-api";
-import { getHref, getImageSrc } from "@/lib/utils";
-import type { SongSearch } from "@/types/search";
+import { PlayButton } from "~/components/play-button";
+import { SongList } from "~/components/song-list";
+import { siteConfig } from "~/config/site";
+import { getFeaturedRadioStations, search } from "~/lib/jiosaavn-api";
+import { getHref, getImageSrc } from "~/lib/utils";
+import type { SongSearch } from "~/types/search";
 
 type Props = {
   params: Promise<{ name: string; token: string }>;

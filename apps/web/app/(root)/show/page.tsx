@@ -1,7 +1,7 @@
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
-import { SliderCard } from "@/components/slider";
-import { getTopShows } from "@/lib/jiosaavn-api";
+import { SliderCard } from "~/components/slider";
+import { getTopShows } from "~/lib/jiosaavn-api";
 
 import { TopPodcasts } from "./_components/top-podcasts";
 

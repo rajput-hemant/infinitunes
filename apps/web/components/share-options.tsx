@@ -5,8 +5,8 @@ import { Clipboard, Mail } from "lucide-react";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-import { siteConfig } from "@/config/site";
-import { cn } from "@/lib/utils";
+import { siteConfig } from "~/config/site";
+import { cn } from "~/lib/utils";
 
 import { Icons } from "./icons";
 

@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-import { languages } from "@/config/languages";
-import { siteConfig } from "@/config/site";
-import { getFooterDetails } from "@/lib/jiosaavn-api";
+import { languages } from "~/config/languages";
+import { siteConfig } from "~/config/site";
+import { getFooterDetails } from "~/lib/jiosaavn-api";
 
 import { Icons } from "../icons";
 import { ThemeToggleGroup } from "./theme-toggle-group";

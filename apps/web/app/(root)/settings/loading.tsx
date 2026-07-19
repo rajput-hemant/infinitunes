@@ -1,3 +1,3 @@
-import LoadingSpinner from "@/components/loading-spinner";
+import LoadingSpinner from "~/components/loading-spinner";
 
 export default LoadingSpinner;

@@ -4,10 +4,10 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SliderCard } from "@/components/slider";
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { getFeaturedPlaylists } from "@/lib/jiosaavn-api";
-import type { FeaturedPlaylists, Lang } from "@/types";
+import { SliderCard } from "~/components/slider";
+import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
+import { getFeaturedPlaylists } from "~/lib/jiosaavn-api";
+import type { FeaturedPlaylists, Lang } from "~/types";
 
 type Props = {
   initialPlaylists: FeaturedPlaylists;

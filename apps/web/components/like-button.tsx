@@ -10,10 +10,10 @@ import { Heart } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
-import { addToFavorites, removeFromFavorites } from "@/lib/db/queries";
-import { cn, currentlyInDev } from "@/lib/utils";
-import type { Type } from "@/types";
-import type { User } from "@/types/user";
+import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
+import { cn, currentlyInDev } from "~/lib/utils";
+import type { Type } from "~/types";
+import type { User } from "~/types/user";
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   user?: User;

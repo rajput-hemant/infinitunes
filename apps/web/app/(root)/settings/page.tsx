@@ -2,7 +2,7 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Ban } from "lucide-react";
 import Link from "next/link";
 
-import { getUser } from "@/lib/auth";
+import { getUser } from "~/lib/auth";
 
 import { ProfileForm } from "./_components/profile-form";
 

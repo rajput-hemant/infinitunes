@@ -33,10 +33,10 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { useIsTyping } from "@/hooks/use-store";
-import { deleteUser, updateUser } from "@/lib/actions";
-import { currentlyInDev } from "@/lib/utils";
-import { emailSchema, passwordSchema, usernameSchema } from "@/lib/validations";
+import { useIsTyping } from "~/hooks/use-store";
+import { deleteUser, updateUser } from "~/lib/actions";
+import { currentlyInDev } from "~/lib/utils";
+import { emailSchema, passwordSchema, usernameSchema } from "~/lib/validations";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
   user: {

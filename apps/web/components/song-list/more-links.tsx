@@ -3,8 +3,8 @@ import { Disc, Mic2, Music } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
-import { getHref } from "@/lib/utils";
-import type { ArtistMini } from "@/types";
+import { getHref } from "~/lib/utils";
+import type { ArtistMini } from "~/types";
 
 type TileMoreLinksProps = {
   type: "song" | "episode";

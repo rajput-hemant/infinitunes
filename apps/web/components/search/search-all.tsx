@@ -2,8 +2,8 @@ import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
-import { cn, getHref, getImageSrc } from "@/lib/utils";
-import type { AllSearch } from "@/types";
+import { cn, getHref, getImageSrc } from "~/lib/utils";
+import type { AllSearch } from "~/types";
 
 import { ImageWithFallback } from "../image-with-fallback";
 

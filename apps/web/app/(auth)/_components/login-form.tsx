@@ -22,7 +22,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { loginSchema } from "@/lib/validations";
+import { loginSchema } from "~/lib/validations";
 
 import { OAuthButtons } from "./oauth-buttons";
 

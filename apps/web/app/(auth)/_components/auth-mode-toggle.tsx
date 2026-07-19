@@ -4,7 +4,7 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { cn } from "@/lib/utils";
+import { cn } from "~/lib/utils";
 
 export function AuthModeToggle() {
   const isLoginPage = usePathname() === "/login";

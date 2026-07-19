@@ -9,9 +9,9 @@ import { CloudDownload, Loader } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
-import { useDownloadQuality } from "@/hooks/use-store";
-import type { Episode, Song } from "@/types";
-import { QUALITIES_MAP } from "@/types/misc";
+import { useDownloadQuality } from "~/hooks/use-store";
+import type { Episode, Song } from "~/types";
+import { QUALITIES_MAP } from "~/types/misc";
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   songs: (Song | Episode)[];

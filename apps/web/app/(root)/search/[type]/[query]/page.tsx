@@ -1,4 +1,4 @@
-import { search } from "@/lib/jiosaavn-api";
+import { search } from "~/lib/jiosaavn-api";
 
 import { SearchNavbar } from "./_components/search-navbar";
 import { SearchResults } from "./_components/search-results";

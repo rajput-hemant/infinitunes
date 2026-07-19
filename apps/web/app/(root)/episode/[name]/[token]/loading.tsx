@@ -1,6 +1,6 @@
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
-import { DetailsHeaderSkeleton } from "@/components/skeletons";
+import { DetailsHeaderSkeleton } from "~/components/skeletons";
 
 export default function EpisodeDetailsLoading() {
   return (

@@ -3,12 +3,12 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { ImageCollage } from "@/components/image-collage";
-import { PlayButton } from "@/components/play-button";
-import { SongList } from "@/components/song-list";
-import { getPlaylistDetails } from "@/lib/db/queries";
-import { getSongDetails } from "@/lib/jiosaavn-api";
-import { cn, formatDuration, getImageSrc } from "@/lib/utils";
+import { ImageCollage } from "~/components/image-collage";
+import { PlayButton } from "~/components/play-button";
+import { SongList } from "~/components/song-list";
+import { getPlaylistDetails } from "~/lib/db/queries";
+import { getSongDetails } from "~/lib/jiosaavn-api";
+import { cn, formatDuration, getImageSrc } from "~/lib/utils";
 
 type Props = {
   params: Promise<{

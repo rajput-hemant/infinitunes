@@ -4,10 +4,10 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SliderCard } from "@/components/slider";
-import { useIntersectionObserver } from "@/hooks/use-intersection-observer";
-import { getTopAlbums } from "@/lib/jiosaavn-api";
-import type { Lang, TopAlbum } from "@/types";
+import { SliderCard } from "~/components/slider";
+import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
+import { getTopAlbums } from "~/lib/jiosaavn-api";
+import type { Lang, TopAlbum } from "~/types";
 
 type TopAlbumsProps = {
   initialAlbums: TopAlbum;

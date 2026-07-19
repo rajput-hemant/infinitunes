@@ -5,10 +5,10 @@ import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { getUser } from "@/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
-import { cn, formatDuration, getHref, getImageSrc } from "@/lib/utils";
-import type { Episode, Song } from "@/types";
+import { getUser } from "~/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { cn, formatDuration, getHref, getImageSrc } from "~/lib/utils";
+import type { Episode, Song } from "~/types";
 
 import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";

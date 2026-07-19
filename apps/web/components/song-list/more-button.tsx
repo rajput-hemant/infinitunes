@@ -42,11 +42,11 @@ import {
   useCurrentSongIndex,
   useIsPlayerInit,
   useQueue,
-} from "@/hooks/use-store";
-import { addSongsToPlaylist } from "@/lib/db/queries";
-import { cn, currentlyInDev, getImageSrc } from "@/lib/utils";
-import type { Episode, Queue, Song } from "@/types";
-import type { User } from "@/types/user";
+} from "~/hooks/use-store";
+import { addSongsToPlaylist } from "~/lib/db/queries";
+import { cn, currentlyInDev, getImageSrc } from "~/lib/utils";
+import type { Episode, Queue, Song } from "~/types";
+import type { User } from "~/types/user";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";

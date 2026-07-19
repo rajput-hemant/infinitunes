@@ -4,8 +4,8 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import Link from "next/link";
 import React from "react";
 
-import { useHash } from "@/hooks/use-hash";
-import { cn } from "@/lib/utils";
+import { useHash } from "~/hooks/use-hash";
+import { cn } from "~/lib/utils";
 
 import type { SidebarNavItem } from "./side-navbar";
 

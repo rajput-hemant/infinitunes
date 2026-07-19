@@ -2,11 +2,11 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
-import { siteConfig } from "@/config/site";
-import { getUser } from "@/lib/auth";
-import { getMegaMenu } from "@/lib/jiosaavn-api";
-import { cn } from "@/lib/utils";
-import type { Lang } from "@/types";
+import { siteConfig } from "~/config/site";
+import { getUser } from "~/lib/auth";
+import { getMegaMenu } from "~/lib/jiosaavn-api";
+import { cn } from "~/lib/utils";
+import type { Lang } from "~/types";
 
 import { SignedOut } from "../auth-control";
 import { Icons } from "../icons";

@@ -1,8 +1,8 @@
 import { Badge } from "@infinitunes/ui/components/badge";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
-import { SliderCardSkeleton } from "@/components/skeletons";
-import { languages } from "@/config/languages";
+import { SliderCardSkeleton } from "~/components/skeletons";
+import { languages } from "~/config/languages";
 
 export default function TopAlbumsPageSkeleton() {
   return (

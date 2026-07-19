@@ -36,11 +36,11 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
-import { useQueue } from "@/hooks/use-store";
-import { addSongsToPlaylist } from "@/lib/db/queries";
-import { currentlyInDev, getImageSrc } from "@/lib/utils";
-import type { Quality, Queue, Song, Type } from "@/types";
-import type { User } from "@/types/user";
+import { useQueue } from "~/hooks/use-store";
+import { addSongsToPlaylist } from "~/lib/db/queries";
+import { currentlyInDev, getImageSrc } from "~/lib/utils";
+import type { Quality, Queue, Song, Type } from "~/types";
+import type { User } from "~/types/user";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";

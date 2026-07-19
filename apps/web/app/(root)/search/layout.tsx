@@ -3,7 +3,7 @@
 import { notFound, usePathname } from "next/navigation";
 import type React from "react";
 
-import { useWindowSize } from "@/hooks/use-window-size";
+import { useWindowSize } from "~/hooks/use-window-size";
 
 export default function SearchLayout({ children }: React.PropsWithChildren) {
   const pathname = usePathname();

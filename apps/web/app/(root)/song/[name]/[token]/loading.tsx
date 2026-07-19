@@ -4,7 +4,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import {
   DetailsHeaderSkeleton,
   SongListSkeleton,
-} from "@/components/skeletons";
+} from "~/components/skeletons";
 
 export default function SongDetailsLoading() {
   return (

@@ -20,8 +20,8 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { resetPassword } from "@/lib/actions";
-import { resetPasswordSchema } from "@/lib/validations";
+import { resetPassword } from "~/lib/actions";
+import { resetPasswordSchema } from "~/lib/validations";
 
 import { OAuthButtons } from "./oauth-buttons";
 

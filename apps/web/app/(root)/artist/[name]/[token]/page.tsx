@@ -2,13 +2,13 @@ import { Separator } from "@infinitunes/ui/components/separator";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
 
-import { DetailsHeader } from "@/components/details-header";
-import { SliderList } from "@/components/slider";
-import { SongList } from "@/components/song-list";
-import { getUser } from "@/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "@/lib/db/queries";
-import { getArtistDetails } from "@/lib/jiosaavn-api";
-import type { Category } from "@/types";
+import { DetailsHeader } from "~/components/details-header";
+import { SliderList } from "~/components/slider";
+import { SongList } from "~/components/song-list";
+import { getUser } from "~/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { getArtistDetails } from "~/lib/jiosaavn-api";
+import type { Category } from "~/types";
 
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";

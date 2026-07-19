@@ -1,7 +1,7 @@
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import Link from "next/link";
 
-import { cn } from "@/lib/utils";
+import { cn } from "~/lib/utils";
 
 type Props = {
   type: string;

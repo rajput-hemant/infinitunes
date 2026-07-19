@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-import type { Lang } from "@/types";
+import type { Lang } from "~/types";
 
 import { PreferenceSettings } from "../_components/preference-settings";
 

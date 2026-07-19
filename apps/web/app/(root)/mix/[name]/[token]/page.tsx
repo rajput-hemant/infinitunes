@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import { DetailsHeader } from "@/components/details-header";
-import { SongList } from "@/components/song-list";
-import { getMixDetails } from "@/lib/jiosaavn-api";
+import { DetailsHeader } from "~/components/details-header";
+import { SongList } from "~/components/song-list";
+import { getMixDetails } from "~/lib/jiosaavn-api";
 
 type MixDetailsPageProps = {
   params: Promise<{

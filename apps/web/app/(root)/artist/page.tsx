@@ -1,6 +1,6 @@
-import { SliderCard } from "@/components/slider";
-import { siteConfig } from "@/config/site";
-import { getTopArtists } from "@/lib/jiosaavn-api";
+import { SliderCard } from "~/components/slider";
+import { siteConfig } from "~/config/site";
+import { getTopArtists } from "~/lib/jiosaavn-api";
 
 const title = ` Top Indian Music Artists - Download or Listen Free on ${siteConfig.name} `;
 const description = `Search for songs based on Top Artist. Get new and old songs based on artists along with details of individual artist on ${siteConfig.name}.`;

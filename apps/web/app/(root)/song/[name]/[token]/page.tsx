@@ -1,9 +1,9 @@
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
 
-import { DetailsHeader } from "@/components/details-header";
-import { SliderList } from "@/components/slider";
-import { SongList } from "@/components/song-list";
+import { DetailsHeader } from "~/components/details-header";
+import { SliderList } from "~/components/slider";
+import { SongList } from "~/components/song-list";
 import {
   getActorsTopSongs,
   getAlbumDetails,
@@ -12,7 +12,7 @@ import {
   getSongDetails,
   getSongRecommendations,
   getTrending,
-} from "@/lib/jiosaavn-api";
+} from "~/lib/jiosaavn-api";
 
 import { Lyrics } from "./_components/lyrics";
 

@@ -14,8 +14,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-import { sidebarNav } from "@/config/nav";
-import { cn } from "@/lib/utils";
+import { sidebarNav } from "~/config/nav";
+import { cn } from "~/lib/utils";
 
 export function SecondaryNavbar() {
   const pathname = usePathname();

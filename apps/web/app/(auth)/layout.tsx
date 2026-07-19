@@ -5,9 +5,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
-import { Icons } from "@/components/icons";
-import { getUser } from "@/lib/auth";
-import { cn } from "@/lib/utils";
+import { Icons } from "~/components/icons";
+import { getUser } from "~/lib/auth";
+import { cn } from "~/lib/utils";
 
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
 

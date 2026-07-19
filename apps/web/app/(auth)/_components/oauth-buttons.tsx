@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
-import { GitHub, Google } from "@/components/icons";
+import { GitHub, Google } from "~/components/icons";
 
 type OAuthButtonProps = {
   isFormDisabled: boolean;
