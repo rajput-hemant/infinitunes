@@ -12,13 +12,14 @@ import { SignedOut } from "../auth-control";
 import { Icons } from "../icons";
 import { SearchMenu } from "../search/search-menu";
 import { TopSearch } from "../search/top-search";
+import { SidebarTrigger } from "../sidebar";
 import { UserDropdown } from "../user-dropdown";
 import { LanguagePicker } from "./language-picker";
 import { MainNav } from "./main-nav";
 import { MobileNav } from "./mobile-nav";
 
 export async function Navbar() {
-  const cookiesStore = await cookies(); // this will trigger dynamic rendering
+  const cookiesStore = await cookies();
   const languages = cookiesStore.get("language")?.value?.split(",") ?? [];
 
   const [user, megaMenu] = await Promise.all([getUser(), getMegaMenu()]);
@@ -35,6 +36,8 @@ export async function Navbar() {
             </span>
           </div>
         </Link>
+
+        <SidebarTrigger className="hidden lg:flex" />
 
         <MainNav megaMenu={megaMenu} className="hidden lg:block" />
 
