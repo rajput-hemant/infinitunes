@@ -32,6 +32,11 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [searchResult, setSearchResult] = useState<AllSearch | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const debouncedQuery = useDebounce(query.trim(), 1000);
 
@@ -88,7 +93,10 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             <span className="hidden lg:inline-block">Search...</span>
 
             <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:block">
-              <span className="text-xs">{isMacOs() ? "⌘" : "Ctrl"}</span> K
+              <span className="text-xs">
+                {mounted && isMacOs() ? "⌘" : "Ctrl"}
+              </span>{" "}
+              K
             </kbd>
           </Button>
         }

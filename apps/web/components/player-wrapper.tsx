@@ -10,9 +10,12 @@ type PlayerWrapperProps = {
   playlists?: MyPlaylist[];
 };
 
-const Player = dynamic(() => import("~/components/player"), {
-  ssr: false,
-});
+const Player = dynamic(
+  () => import("~/components/player").then((mod) => mod.Player),
+  {
+    ssr: false,
+  },
+);
 
 export function PlayerWrapper({ user, playlists }: PlayerWrapperProps) {
   return <Player user={user} playlists={playlists} />;
