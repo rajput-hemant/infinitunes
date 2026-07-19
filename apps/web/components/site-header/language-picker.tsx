@@ -1,14 +1,17 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@infinitunes/ui/dropdown-menu";
-import { ToggleGroup, ToggleGroupItem } from "@infinitunes/ui/toggle-group";
+} from "@infinitunes/ui/components/dropdown-menu";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@infinitunes/ui/components/toggle-group";
 import { setCookie } from "cookies-next";
 import { ChevronDown, Languages } from "lucide-react";
 import { useRouter } from "next/navigation";

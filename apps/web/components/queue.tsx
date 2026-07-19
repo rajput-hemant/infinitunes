@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/button";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { Button } from "@infinitunes/ui/components/button";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
   Sheet,
   SheetContent,
@@ -9,8 +9,8 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@infinitunes/ui/sheet";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+} from "@infinitunes/ui/components/sheet";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListOrdered, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

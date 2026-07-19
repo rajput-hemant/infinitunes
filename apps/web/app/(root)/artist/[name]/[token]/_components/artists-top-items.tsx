@@ -1,7 +1,7 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { SliderCard } from "@/components/slider";

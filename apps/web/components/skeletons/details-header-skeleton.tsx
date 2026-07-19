@@ -1,5 +1,5 @@
-import { Button } from "@infinitunes/ui/button";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Button } from "@infinitunes/ui/components/button";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { cn } from "@/lib/utils";
 import type { Type } from "@/types";

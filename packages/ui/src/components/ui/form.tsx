@@ -1,6 +1,6 @@
 "use client";
 
-import { Label } from "@infinitunes/ui/label";
+import { Label } from "@infinitunes/ui/components/label";
 import { cn } from "@infinitunes/ui/lib/utils";
 import * as LabelPrimitive from "@radix-ui/react-label";
 import { Slot } from "@radix-ui/react-slot";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import { setCookie } from "cookies-next";
 import { CheckIcon } from "lucide-react";
 import { useTheme } from "next-themes";

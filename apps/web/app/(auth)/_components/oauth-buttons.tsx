@@ -1,7 +1,7 @@
 "use client";
 
 import { authClient } from "@infinitunes/auth/client";
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import { Loader2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";

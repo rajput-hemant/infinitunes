@@ -1,4 +1,4 @@
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { SliderCardSkeleton } from "@/components/skeletons";
 

@@ -1,6 +1,6 @@
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import { Card, CardContent } from "@infinitunes/ui/card";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Card, CardContent } from "@infinitunes/ui/components/card";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
 import { ImageCollage } from "@/components/image-collage";

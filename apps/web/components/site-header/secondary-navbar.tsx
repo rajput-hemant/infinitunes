@@ -1,14 +1,14 @@
 "use client";
 
-import { Button, buttonVariants } from "@infinitunes/ui/button";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
-import { Separator } from "@infinitunes/ui/separator";
+import { Button, buttonVariants } from "@infinitunes/ui/components/button";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
+import { Separator } from "@infinitunes/ui/components/separator";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTrigger,
-} from "@infinitunes/ui/sheet";
+} from "@infinitunes/ui/components/sheet";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

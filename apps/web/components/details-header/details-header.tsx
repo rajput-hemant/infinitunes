@@ -1,6 +1,6 @@
-import { Badge } from "@infinitunes/ui/badge";
-import { buttonVariants } from "@infinitunes/ui/button";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Badge } from "@infinitunes/ui/components/badge";
+import { buttonVariants } from "@infinitunes/ui/components/button";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 

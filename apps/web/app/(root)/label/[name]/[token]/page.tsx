@@ -1,4 +1,9 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@infinitunes/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
 import Link from "next/link";
 

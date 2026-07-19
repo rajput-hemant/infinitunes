@@ -1,4 +1,4 @@
-import { DropdownMenuItem } from "@infinitunes/ui/dropdown-menu";
+import { DropdownMenuItem } from "@infinitunes/ui/components/dropdown-menu";
 import { Disc, Mic2, Music } from "lucide-react";
 import Link from "next/link";
 import React from "react";

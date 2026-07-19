@@ -1,4 +1,4 @@
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import { Plus } from "lucide-react";
 import React from "react";
 

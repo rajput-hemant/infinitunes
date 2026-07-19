@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
   DialogClose,
@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@infinitunes/ui/dialog";
+} from "@infinitunes/ui/components/dialog";
 import {
   Form,
   FormControl,
@@ -19,8 +19,8 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@infinitunes/ui/form";
-import { Input } from "@infinitunes/ui/input";
+} from "@infinitunes/ui/components/form";
+import { Input } from "@infinitunes/ui/components/input";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";

@@ -1,4 +1,4 @@
-import { Badge } from "@infinitunes/ui/badge";
+import { Badge } from "@infinitunes/ui/components/badge";
 import Link from "next/link";
 
 import { cn } from "@/lib/utils";

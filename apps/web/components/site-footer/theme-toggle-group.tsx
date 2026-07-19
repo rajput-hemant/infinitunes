@@ -1,6 +1,9 @@
 "use client";
 
-import { ToggleGroup, ToggleGroupItem } from "@infinitunes/ui/toggle-group";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@infinitunes/ui/components/toggle-group";
 import { Monitor, Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
 import React from "react";

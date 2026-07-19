@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
   DialogClose,
@@ -9,8 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@infinitunes/ui/dialog";
-import { Separator } from "@infinitunes/ui/separator";
+} from "@infinitunes/ui/components/dialog";
+import { Separator } from "@infinitunes/ui/components/separator";
 import { usePathname, useRouter } from "next/navigation";
 
 type AuthModalProps = React.PropsWithChildren<{

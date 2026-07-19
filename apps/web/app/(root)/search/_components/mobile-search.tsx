@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@infinitunes/ui/input";
+import { Input } from "@infinitunes/ui/components/input";
 import { Loader2, Search } from "lucide-react";
 import React from "react";
 

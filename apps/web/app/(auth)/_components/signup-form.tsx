@@ -2,14 +2,18 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@infinitunes/auth/client";
-import { Button } from "@infinitunes/ui/button";
-import { Field, FieldError, FieldLabel } from "@infinitunes/ui/field";
-import { Input } from "@infinitunes/ui/input";
+import { Button } from "@infinitunes/ui/components/button";
+import {
+  Field,
+  FieldError,
+  FieldLabel,
+} from "@infinitunes/ui/components/field";
+import { Input } from "@infinitunes/ui/components/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@infinitunes/ui/tooltip";
+} from "@infinitunes/ui/components/tooltip";
 import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React from "react";

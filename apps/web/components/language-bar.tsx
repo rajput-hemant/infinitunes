@@ -1,5 +1,5 @@
-import { Badge } from "@infinitunes/ui/badge";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { Badge } from "@infinitunes/ui/components/badge";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import Link from "next/link";
 
 import { languages } from "@/config/languages";

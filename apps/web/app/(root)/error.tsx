@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import Image from "next/image";
 import React from "react";
 

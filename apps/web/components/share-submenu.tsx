@@ -3,7 +3,7 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-} from "@infinitunes/ui/dropdown-menu";
+} from "@infinitunes/ui/components/dropdown-menu";
 import { Share2 } from "lucide-react";
 
 import { ShareOptions } from "./share-options";

@@ -1,7 +1,11 @@
 "use client";
 
 import { authClient } from "@infinitunes/auth/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@infinitunes/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@infinitunes/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +17,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@infinitunes/ui/dropdown-menu";
+} from "@infinitunes/ui/components/dropdown-menu";
 import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";

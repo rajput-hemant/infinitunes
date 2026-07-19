@@ -1,4 +1,4 @@
-import { buttonVariants } from "@infinitunes/ui/button";
+import { buttonVariants } from "@infinitunes/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

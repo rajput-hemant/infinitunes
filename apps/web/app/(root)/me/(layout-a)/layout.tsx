@@ -1,5 +1,5 @@
-import { buttonVariants } from "@infinitunes/ui/button";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { buttonVariants } from "@infinitunes/ui/components/button";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Edit, Mail } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";

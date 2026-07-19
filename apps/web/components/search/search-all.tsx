@@ -1,5 +1,5 @@
-import { Separator } from "@infinitunes/ui/separator";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Separator } from "@infinitunes/ui/components/separator";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
 import { cn, getHref, getImageSrc } from "@/lib/utils";

@@ -1,13 +1,13 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import { Button, buttonVariants } from "@infinitunes/ui/button";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { Button, buttonVariants } from "@infinitunes/ui/components/button";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@infinitunes/ui/tooltip";
+} from "@infinitunes/ui/components/tooltip";
 import { ListMusic, ListPlus, Play, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";

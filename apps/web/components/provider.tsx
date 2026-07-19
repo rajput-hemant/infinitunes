@@ -1,7 +1,7 @@
 "use client";
 
-import { Toaster } from "@infinitunes/ui/sonner";
-import { TooltipProvider } from "@infinitunes/ui/tooltip";
+import { Toaster } from "@infinitunes/ui/components/sonner";
+import { TooltipProvider } from "@infinitunes/ui/components/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";

@@ -1,7 +1,7 @@
 "use client";
 
-import { buttonVariants } from "@infinitunes/ui/button";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { buttonVariants } from "@infinitunes/ui/components/button";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

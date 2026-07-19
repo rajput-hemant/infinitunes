@@ -5,7 +5,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@infinitunes/ui/accordion";
+} from "@infinitunes/ui/components/accordion";
 import React from "react";
 
 import { type Lyrics } from "@/types";

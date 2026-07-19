@@ -1,6 +1,6 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

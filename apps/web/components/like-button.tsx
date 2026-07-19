@@ -5,7 +5,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@infinitunes/ui/tooltip";
+} from "@infinitunes/ui/components/tooltip";
 import { Heart } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";

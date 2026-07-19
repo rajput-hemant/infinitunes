@@ -1,4 +1,4 @@
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
 import { SliderCard } from "@/components/slider";
 import { getTopShows } from "@/lib/jiosaavn-api";

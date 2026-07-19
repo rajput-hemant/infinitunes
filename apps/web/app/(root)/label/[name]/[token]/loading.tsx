@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 
 import {

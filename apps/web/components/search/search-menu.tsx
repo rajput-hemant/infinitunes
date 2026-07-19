@@ -1,8 +1,12 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/button";
-import { Dialog, DialogContent, DialogTrigger } from "@infinitunes/ui/dialog";
-import { Input } from "@infinitunes/ui/input";
+import { Button } from "@infinitunes/ui/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@infinitunes/ui/components/dialog";
+import { Input } from "@infinitunes/ui/components/input";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";

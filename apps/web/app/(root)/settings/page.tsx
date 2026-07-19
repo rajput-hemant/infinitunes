@@ -1,4 +1,4 @@
-import { buttonVariants } from "@infinitunes/ui/button";
+import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Ban } from "lucide-react";
 import Link from "next/link";
 

@@ -1,4 +1,4 @@
-import { buttonVariants } from "@infinitunes/ui/button";
+import { buttonVariants } from "@infinitunes/ui/components/button";
 import { cookies } from "next/headers";
 import Link from "next/link";
 

@@ -4,7 +4,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@infinitunes/ui/tooltip";
+} from "@infinitunes/ui/components/tooltip";
 import { CloudDownload, Loader } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";

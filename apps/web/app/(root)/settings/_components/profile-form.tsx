@@ -11,21 +11,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@infinitunes/ui/alert-dialog";
-import { Button, buttonVariants } from "@infinitunes/ui/button";
+} from "@infinitunes/ui/components/alert-dialog";
+import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@infinitunes/ui/field";
-import { Input } from "@infinitunes/ui/input";
-import { Separator } from "@infinitunes/ui/separator";
+} from "@infinitunes/ui/components/field";
+import { Input } from "@infinitunes/ui/components/input";
+import { Separator } from "@infinitunes/ui/components/separator";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@infinitunes/ui/tooltip";
+} from "@infinitunes/ui/components/tooltip";
 import { Eye, EyeOff, Pen } from "lucide-react";
 import Image from "next/image";
 import React from "react";

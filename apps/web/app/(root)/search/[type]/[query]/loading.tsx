@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/button";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Button } from "@infinitunes/ui/components/button";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 
 import { SliderListSkeleton, SongListSkeleton } from "@/components/skeletons";

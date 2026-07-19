@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@infinitunes/ui/badge";
-import { Separator } from "@infinitunes/ui/separator";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Badge } from "@infinitunes/ui/components/badge";
+import { Separator } from "@infinitunes/ui/components/separator";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 import React from "react";
 

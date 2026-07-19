@@ -3,7 +3,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@infinitunes/ui/accordion";
+} from "@infinitunes/ui/components/accordion";
 import {
   DownloadCloud,
   Headphones,

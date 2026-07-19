@@ -1,5 +1,5 @@
-import { Badge } from "@infinitunes/ui/badge";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Badge } from "@infinitunes/ui/components/badge";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { SliderCardSkeleton } from "@/components/skeletons";
 import { languages } from "@/config/languages";

@@ -8,8 +8,8 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "@infinitunes/ui/navigation-menu";
-import { Separator } from "@infinitunes/ui/separator";
+} from "@infinitunes/ui/components/navigation-menu";
+import { Separator } from "@infinitunes/ui/components/separator";
 import Link from "next/link";
 import React from "react";
 

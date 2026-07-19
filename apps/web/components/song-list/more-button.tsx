@@ -1,7 +1,7 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import { buttonVariants } from "@infinitunes/ui/button";
+import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
   Drawer,
   DrawerClose,
@@ -11,16 +11,16 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@infinitunes/ui/drawer";
+} from "@infinitunes/ui/components/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@infinitunes/ui/dropdown-menu";
-import { Separator } from "@infinitunes/ui/separator";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+} from "@infinitunes/ui/components/dropdown-menu";
+import { Separator } from "@infinitunes/ui/components/separator";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import {
   ChevronLeft,
   ChevronRight,

@@ -1,5 +1,5 @@
-import { Separator } from "@infinitunes/ui/separator";
-import { Tabs, TabsContent } from "@infinitunes/ui/tabs";
+import { Separator } from "@infinitunes/ui/components/separator";
+import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
 
 import { DetailsHeader } from "@/components/details-header";

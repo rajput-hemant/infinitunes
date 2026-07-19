@@ -1,11 +1,11 @@
-import { Button } from "@infinitunes/ui/button";
+import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@infinitunes/ui/dropdown-menu";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/scroll-area";
+} from "@infinitunes/ui/components/dropdown-menu";
+import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";

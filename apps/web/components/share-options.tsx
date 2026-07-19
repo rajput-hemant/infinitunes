@@ -1,4 +1,4 @@
-import { DropdownMenuItem } from "@infinitunes/ui/dropdown-menu";
+import { DropdownMenuItem } from "@infinitunes/ui/components/dropdown-menu";
 import { Clipboard, Mail } from "lucide-react";
 import { usePathname } from "next/navigation";
 import React from "react";

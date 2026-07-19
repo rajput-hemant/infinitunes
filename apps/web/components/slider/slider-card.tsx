@@ -1,6 +1,6 @@
-import { Badge } from "@infinitunes/ui/badge";
-import { Card, CardContent } from "@infinitunes/ui/card";
-import { Skeleton } from "@infinitunes/ui/skeleton";
+import { Badge } from "@infinitunes/ui/components/badge";
+import { Card, CardContent } from "@infinitunes/ui/components/card";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Link from "next/link";
 

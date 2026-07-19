@@ -1,14 +1,14 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import { Button, buttonVariants } from "@infinitunes/ui/button";
-import { Skeleton } from "@infinitunes/ui/skeleton";
-import { Slider } from "@infinitunes/ui/slider";
+import { Button, buttonVariants } from "@infinitunes/ui/components/button";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import { Slider } from "@infinitunes/ui/components/slider";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@infinitunes/ui/tooltip";
+} from "@infinitunes/ui/components/tooltip";
 import {
   Loader2,
   MoreVertical,
