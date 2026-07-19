@@ -4,6 +4,7 @@ import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
@@ -67,15 +68,17 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
       />
 
       <DropdownMenuContent>
-        <DropdownMenuLabel className="p-4">
-          <h1 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
-            What music do you like?
-          </h1>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="p-4">
+            <h1 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+              What music do you like?
+            </h1>
 
-          <small className="text-xs text-muted-foreground">
-            Pick all the languages you want to listen to.
-          </small>
-        </DropdownMenuLabel>
+            <small className="text-xs text-muted-foreground">
+              Pick all the languages you want to listen to.
+            </small>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
 
         <ToggleGroup
           value={selectedLanguages}

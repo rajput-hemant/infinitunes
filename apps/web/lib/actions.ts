@@ -2,7 +2,7 @@
 
 import { randomUUID } from "crypto";
 
-import { db } from "@infinitunes/db";
+import { db } from "@infinitunes/db/db";
 import { betterAuthAccounts } from "@infinitunes/db/schema";
 import type { NewUser } from "@infinitunes/db/schema";
 import { myPlaylists, users } from "@infinitunes/db/schema";

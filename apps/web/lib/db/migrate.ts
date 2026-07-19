@@ -1,4 +1,4 @@
-import { db } from "@infinitunes/db";
+import { db } from "@infinitunes/db/db";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 
 const runMigrate = async () => {

@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@infinitunes/db";
+import { db } from "@infinitunes/db/db";
 import { favorites, myPlaylists } from "@infinitunes/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { updateTag, unstable_cache } from "next/cache";

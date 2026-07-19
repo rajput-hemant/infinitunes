@@ -88,11 +88,12 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          <Link href="/show" legacyBehavior passHref>
-            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-              Podcasts
-            </NavigationMenuLink>
-          </Link>
+          <NavigationMenuLink
+            href="/show"
+            className={navigationMenuTriggerStyle()}
+          >
+            Podcasts
+          </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>

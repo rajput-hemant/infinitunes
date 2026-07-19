@@ -9,6 +9,7 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuPortal,
@@ -71,17 +72,19 @@ export function UserDropdown({ user }: UserDropdownProps) {
         align="end"
         className="max-w-[300px] *:cursor-pointer"
       >
-        <DropdownMenuLabel className="flex flex-col">
-          <span title={user?.name ?? undefined} className="truncate">
-            {user ? (user.name ? user.name : "~") : "Guest User"}
-          </span>
-          <span
-            title={user?.email ?? undefined}
-            className="truncate text-sm font-normal text-muted-foreground"
-          >
-            {user?.email}
-          </span>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="flex flex-col">
+            <span title={user?.name ?? undefined} className="truncate">
+              {user ? (user.name ? user.name : "~") : "Guest User"}
+            </span>
+            <span
+              title={user?.email ?? undefined}
+              className="truncate text-sm font-normal text-muted-foreground"
+            >
+              {user?.email}
+            </span>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
 

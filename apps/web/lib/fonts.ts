@@ -20,7 +20,7 @@ export const fontMono = JetBrains_Mono({
  * -----------------------------------------------------------------------------------------------*/
 
 export const fontHeading = localFont({
-  src: "../../public/fonts/CalSans-SemiBold.woff",
+  src: "../public/fonts/CalSans-SemiBold.woff",
   variable: "--font-heading",
 });
 

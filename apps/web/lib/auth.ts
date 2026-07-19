@@ -1,5 +1,5 @@
 import { createAuth } from "@infinitunes/auth";
-import { db } from "@infinitunes/db";
+import { db } from "@infinitunes/db/db";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 

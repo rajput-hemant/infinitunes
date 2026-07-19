@@ -24,7 +24,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { useAudioPlayerContext } from "react-use-audio-player";
+import {
+  AudioPlayerProvider,
+  useAudioPlayerContext,
+} from "react-use-audio-player";
 import { toast } from "sonner";
 
 import { useEventListener } from "@/hooks/use-event-listner";
@@ -55,6 +58,14 @@ type PlayerProps = {
 };
 
 export function Player({ user, playlists }: PlayerProps) {
+  return (
+    <AudioPlayerProvider>
+      <PlayerInner user={user} playlists={playlists} />
+    </AudioPlayerProvider>
+  );
+}
+
+function PlayerInner({ user, playlists }: PlayerProps) {
   // stores
   const [queue] = useQueue();
   const [streamQuality] = useStreamQuality();
@@ -508,4 +519,4 @@ export function Player({ user, playlists }: PlayerProps) {
   );
 }
 
-export default Player;
+export default PlayerInner;
