@@ -13,6 +13,7 @@
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.6.23",
     "@infinitunes/db": "workspace:*",
+    "@infinitunes/env": "workspace:*",
     "better-auth": "^1.6.23",
     "bcryptjs": "^3.0.2",
     "drizzle-orm": "^0.45.2"

@@ -5,6 +5,7 @@ import {
   betterAuthVerifications,
   users,
 } from "@infinitunes/db/schema";
+import { createServerEnv } from "@infinitunes/env/server";
 import { compare } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -13,12 +14,14 @@ import { username } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
 export function createAuth(db: DbClient) {
+  const env = createServerEnv({ skipValidation: true });
+
   // Map existing AUTH_SECRET / AUTH_URL env vars to Better Auth defaults
-  if (!process.env.BETTER_AUTH_SECRET && process.env.AUTH_SECRET) {
-    process.env.BETTER_AUTH_SECRET = process.env.AUTH_SECRET;
+  if (!process.env.BETTER_AUTH_SECRET && env.AUTH_SECRET) {
+    process.env.BETTER_AUTH_SECRET = env.AUTH_SECRET;
   }
-  if (!process.env.BETTER_AUTH_URL && process.env.AUTH_URL) {
-    process.env.BETTER_AUTH_URL = process.env.AUTH_URL;
+  if (!process.env.BETTER_AUTH_URL && env.AUTH_URL) {
+    process.env.BETTER_AUTH_URL = env.AUTH_URL;
   }
 
   async function mirrorAccountPassword(userId: string) {
@@ -76,12 +79,12 @@ export function createAuth(db: DbClient) {
 
     socialProviders: {
       google: {
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        clientId: env.GOOGLE_CLIENT_ID!,
+        clientSecret: env.GOOGLE_CLIENT_SECRET!,
       },
       github: {
-        clientId: process.env.GITHUB_CLIENT_ID!,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+        clientId: env.GITHUB_CLIENT_ID!,
+        clientSecret: env.GITHUB_CLIENT_SECRET!,
       },
     },
 
@@ -151,7 +154,7 @@ export function createAuth(db: DbClient) {
     advanced: {
       defaultCookieAttributes: {
         sameSite: "lax",
-        secure: process.env.NODE_ENV === "production",
+        secure: env.NODE_ENV === "production",
         httpOnly: true,
       },
       generateId: () => crypto.randomUUID(),
