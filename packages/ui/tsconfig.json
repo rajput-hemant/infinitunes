@@ -1,0 +1,10 @@
+{
+  "extends": "@infinitunes/typescript-config/react-library.json",
+  "compilerOptions": {
+    "resolvePackageJsonImports": true,
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": ["src"]
+}

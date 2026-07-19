@@ -4,7 +4,7 @@ import { loadEnvConfig } from "@next/env";
 import type { Config } from "drizzle-kit";
 import { defineConfig } from "drizzle-kit";
 
-import { siteConfig } from "@/config/site";
+import { siteConfig } from "~/config/site";
 
 loadEnvConfig(cwd());
 
@@ -14,8 +14,8 @@ if (!process.env.DATABASE_URL) {
 }
 
 export default defineConfig({
-  schema: "./src/lib/db/schema.ts",
-  out: "./src/lib/db/migrations",
+  schema: "./lib/db/schema.ts",
+  out: "./lib/db/migrations",
   dialect: "postgresql",
   verbose: true,
   dbCredentials: { url: process.env.DATABASE_URL },

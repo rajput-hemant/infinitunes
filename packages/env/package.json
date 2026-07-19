@@ -1,0 +1,25 @@
+{
+  "name": "@infinitunes/env",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server.ts",
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@t3-oss/env-core": "^0.13.11",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@infinitunes/typescript-config": "workspace:*",
+    "@types/bun": "^1.3.14",
+    "@types/node": "^26.1.1",
+    "typescript": "^5.9.3"
+  }
+}

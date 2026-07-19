@@ -23,6 +23,7 @@
     "db:pull": "bun run --filter @infinitunes/web db:pull",
     "db:studio": "bun run --filter @infinitunes/web db:studio",
     "db:check": "bun run --filter @infinitunes/web db:check",
+    "ui": "bunx shadcn@latest --cwd packages/ui",
     "prepare": "husky"
   },
   "devDependencies": {
