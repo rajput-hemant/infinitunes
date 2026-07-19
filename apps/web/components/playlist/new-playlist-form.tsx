@@ -13,16 +13,14 @@ import {
   DialogTrigger,
 } from "@infinitunes/ui/components/dialog";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@infinitunes/ui/components/form";
+  Field,
+  FieldLabel,
+  FieldContent,
+  FieldError,
+} from "@infinitunes/ui/components/field";
 import { Input } from "@infinitunes/ui/components/input";
-import React from "react";
-import { useForm } from "react-hook-form";
+import * as React from "react";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
@@ -80,60 +78,62 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-            <FormField
-              name="name"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">
-                    Playlist Name <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      required
-                      placeholder="Enter playlist name"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              name="description"
-              control={form.control}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Description</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      placeholder="Enter playlist description"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
+          <Controller
+            name="name"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field orientation="vertical">
+                <FieldLabel className="text-xs">
+                  Playlist Name <span className="text-red-500">*</span>
+                </FieldLabel>
+                <FieldContent>
+                  <Input
+                    type="text"
+                    required
+                    placeholder="Enter playlist name"
+                    {...field}
+                  />
+                  {fieldState.error && (
+                    <FieldError>{fieldState.error.message}</FieldError>
+                  )}
+                </FieldContent>
+              </Field>
+            )}
+          />
+          <Controller
+            name="description"
+            control={form.control}
+            render={({ field, fieldState }) => (
+              <Field orientation="vertical">
+                <FieldLabel className="text-xs">Description</FieldLabel>
+                <FieldContent>
+                  <Input
+                    type="text"
+                    placeholder="Enter playlist description"
+                    {...field}
+                  />
+                  {fieldState.error && (
+                    <FieldError>{fieldState.error.message}</FieldError>
+                  )}
+                </FieldContent>
+              </Field>
+            )}
+          />
 
-            <DialogFooter className="pt-4">
-              <DialogClose
-                render={
-                  <Button size="sm" variant="secondary">
-                    Cancel
-                  </Button>
-                }
-              />
-              <Button type="submit" size="sm">
-                Create Playlist
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+          <DialogFooter className="pt-4">
+            <DialogClose
+              render={
+                <Button size="sm" variant="secondary">
+                  Cancel
+                </Button>
+              }
+            />
+            <Button type="submit" size="sm">
+              Create Playlist
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
