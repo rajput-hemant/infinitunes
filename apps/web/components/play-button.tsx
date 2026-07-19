@@ -10,7 +10,7 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
-import { currentlyInDev, toQueue } from "~/lib/utils";
+import { currentlyInDev, getToken, toQueue } from "~/lib/utils";
 import type {
   Album,
   Artist,
@@ -46,7 +46,7 @@ export function PlayButton(props: PlayButtonProps) {
 
   async function playHandler() {
     const songIndex = initialQueue.findIndex(
-      (song) => token === song.perma_url.split("/").pop(),
+      (song) => token === getToken(song.perma_url),
     );
 
     if (songIndex !== -1) {

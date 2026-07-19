@@ -17,7 +17,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { useQueue } from "~/hooks/use-store";
-import { getHref, getImageSrc } from "~/lib/utils";
+import { getHref, getImageSrc, getToken } from "~/lib/utils";
 import type { Queue } from "~/types";
 
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
@@ -96,7 +96,7 @@ export function Queue() {
                       <TilePlayPauseButton
                         id={item.id}
                         type={item.type}
-                        token={item.perma_url.split("/").pop()!}
+                        token={getToken(item.perma_url)}
                       />
                     </div>
 

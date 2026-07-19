@@ -4,7 +4,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Link from "next/link";
 
-import { cn, getHref, getImageSrc } from "~/lib/utils";
+import { cn, getHref, getImageSrc, getToken } from "~/lib/utils";
 import type { Quality, Type } from "~/types";
 
 import { ImageWithFallback } from "../image-with-fallback";
@@ -87,7 +87,7 @@ export function SliderCard(props: SliderCardProps) {
             <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-linear-to-b lg:group-hover:flex">
               <PlayButton
                 type={type}
-                token={perma_url.split("/").pop()!}
+                token={getToken(perma_url)}
                 className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
               >
                 <Play

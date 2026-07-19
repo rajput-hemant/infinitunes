@@ -7,7 +7,13 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { cn, formatDuration, getHref, getImageSrc } from "~/lib/utils";
+import {
+  cn,
+  formatDuration,
+  getHref,
+  getImageSrc,
+  getToken,
+} from "~/lib/utils";
 import type { Episode, Song } from "~/types";
 
 import { DownloadButton } from "../download-button";
@@ -55,7 +61,7 @@ export async function SongList(props: SongListProps) {
                 {!showAlbum && (
                   <PlayButton
                     type={item.type}
-                    token={item.perma_url.split("/").pop()!}
+                    token={getToken(item.perma_url)}
                     className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground duration-300 hover:h-9 hover:border-primary hover:text-primary group-hover:flex"
                   >
                     <Play
@@ -81,7 +87,7 @@ export async function SongList(props: SongListProps) {
                     <TilePlayPauseButton
                       id={item.id}
                       type={item.type}
-                      token={item.perma_url.split("/").pop()!}
+                      token={getToken(item.perma_url)}
                     />
                   </div>
                 )}
