@@ -5,7 +5,8 @@ import { PlayButton } from "@/components/play-button";
 import { SongList } from "@/components/song-list";
 import { siteConfig } from "@/config/site";
 import { getFeaturedRadioStations, search } from "@/lib/jiosaavn-api";
-import { getHref } from "@/lib/utils";
+import { getHref, getImageSrc } from "@/lib/utils";
+import type { SongSearch } from "@/types/search";
 
 type Props = {
   params: Promise<{ name: string; token: string }>;
@@ -39,10 +40,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function RadioStationPage({ params }: Props) {
   const { token } = await params;
 
-  const [stations, songs] = await Promise.all([
+  const [stations, songsResult] = await Promise.all([
     getFeaturedRadioStations(1, 50),
     search(token, "song", 1, 50),
   ]);
+
+  const songs = songsResult as SongSearch;
 
   const station = stations.find((s) => s.url.endsWith(token));
 
@@ -53,7 +56,7 @@ export default async function RadioStationPage({ params }: Props) {
       <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
         <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-full border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64">
           <img
-            src={station.image[2].link}
+            src={getImageSrc(station.image, "high")}
             alt={station.name}
             className="size-full rounded-full object-cover"
           />
@@ -80,8 +83,8 @@ export default async function RadioStationPage({ params }: Props) {
         </figcaption>
       </figure>
 
-      {songs.data.length > 0 && (
-        <SongList items={songs.data as any} showAlbum={false} />
+      {songs.results.length > 0 && (
+        <SongList items={songs.results} showAlbum={false} />
       )}
     </div>
   );
