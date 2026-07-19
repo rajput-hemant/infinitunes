@@ -14,95 +14,132 @@ export type Module<T> = {
 };
 
 export type Modules = {
-  albums: Module<Album | Song>;
-  artist_recos: Module<ArtistReco>;
-  charts: Module<Chart>;
-  city_mod?: Module<CityMod>;
-  discover: Module<Discover>;
-  mixes: Module<TagMix>;
-  playlists: Module<Playlist>;
-  radio: Module<Radio>;
-  trending: Module<Trending[0]>;
+  new_albums: (Album | Song)[];
+  artist_recos?: ArtistReco[];
+  browse_discover: Discover[];
+  charts: Chart[];
+  city_mod?: CityMod[];
   global_config: GlobalConfig;
+  modules: ModuleMap;
+  new_trending: Trending;
+  radio: Radio[];
+  tag_mixes?: TagMix[];
+  top_playlists: Playlist[];
+} & Record<string, Promo[]>;
+
+export type ModuleMap = {
+  artist_recos?: ModuleItem;
+  charts: ModuleItem;
+  city_mod?: ModuleItem;
+  new_albums: ModuleItem;
+  new_trending: ModuleItem;
+  radio: ModuleItem;
+  tag_mixes?: ModuleItem;
+  top_playlists: ModuleItem;
+} & Record<string, ModuleItem>;
+
+export type ModuleItem = {
+  title: string;
+  subtitle: string;
+  position: number;
+  featured_text?: string;
 };
-// & Record<string, Module<Promo>>;
 
 export type ArtistReco = {
-  explicit: boolean;
+  explicit_content: string;
   id: string;
   image: Quality;
-  url: string;
+  perma_url: string;
   subtitle: string;
-  name: string;
+  title: string;
   type: Type;
-  featured_station_type: Type;
-  query: string;
-  station_display_text: string;
+  more_info: {
+    featured_station_type: Type;
+    query: string;
+    station_display_text: string;
+  };
 };
 
 export type Discover = {
-  explicit: boolean;
+  explicit_content: string;
   id: string;
   image: Quality;
-  url: string;
+  perma_url: string;
   subtitle: string;
-  name: string;
+  title: string;
   type: "channel";
-  badge: string;
-  is_featured: boolean;
-  sub_type: Type;
-  tags: Record<string, string[]>;
-  video_thumbnail: string;
-  video_url: string;
+  more_info: {
+    available: string;
+    badge: string;
+    tags: Record<string, string[]>;
+    is_featured: string;
+    sub_type: Type;
+    video_thumbnail: string;
+    video_url: string;
+  };
 };
 
 export type CityMod = {
-  explicit: boolean;
+  explicit_content: string;
   id: string;
   image: Quality;
-  url: string;
+  perma_url: string;
   subtitle: string;
-  name: string;
+  title: string;
   type: Type;
-  album_id?: string;
-  featured_station_type?: string;
-  query?: string;
+  more_info: {
+    album_id?: string;
+    featured_station_type?: string;
+    query?: string;
+    multiple_tunes?: {
+      id: string;
+      subtype: Type;
+      title: string;
+      type: Type;
+    }[];
+  };
 };
 
 export type TagMix = {
-  explicit: boolean;
+  explicit_content: string;
   id: string;
   image: Quality;
-  url: string;
+  perma_url: string;
   subtitle: string;
-  name: string;
+  title: string;
   type: Type;
-  first_name: string;
   language: string;
-  last_name: string;
-  list_count: number;
+  list_count: string;
   list_type: Type;
   list: string;
-  play_count: number;
-  year: number;
+  more_info: {
+    firstname: string;
+    lastname: string;
+  };
+  play_count: string;
+  year: string;
 };
 
 export type Promo = {
-  explicit: boolean;
+  explicit_content: string;
   id: string;
   image: Quality;
-  url: string;
+  perma_url: string;
   subtitle: string;
-  name: string;
+  title: string;
   type: Type;
-  editorial_language?: string;
   language?: string;
-  list_count?: number;
+  list_count?: string;
   list_type?: string;
   list?: string;
-  play_count?: number;
-  release_year?: number;
-  year?: number;
+  play_count?: string;
+  year?: string;
+  more_info: Partial<{
+    editorial_language: string;
+    position: string;
+    release_year: number;
+    square_image: string;
+  }>;
 };
 
 export type GlobalConfig = {

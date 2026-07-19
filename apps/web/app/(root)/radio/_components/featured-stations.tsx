@@ -42,17 +42,27 @@ export function FeaturedStations({
   return (
     <div className="py-6">
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {stations.map(({ id, name, url, subtitle, type, image, explicit }) => (
-          <SliderCard
-            key={id}
-            name={name}
-            url={url}
-            subtitle={subtitle}
-            type={type}
-            image={image}
-            explicit={explicit}
-          />
-        ))}
+        {stations.map(
+          ({
+            id,
+            title,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <SliderCard
+              key={id}
+              title={title}
+              perma_url={perma_url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+              explicit={explicit_content}
+            />
+          ),
+        )}
       </div>
 
       {hasNextPage ? (

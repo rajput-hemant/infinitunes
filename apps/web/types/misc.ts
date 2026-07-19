@@ -14,7 +14,8 @@ export type Type =
   | "season"
   | "label";
 
-export type Quality = string | { quality: string; link: string }[];
+// Raw JioSaavn responses return a single image URL, not a quality map.
+export type Quality = string;
 
 export type ImageQuality = "low" | "medium" | "high";
 
@@ -51,17 +52,17 @@ export type Sort = "asc" | "desc";
 
 export type Queue = {
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
-  url: string;
+  perma_url: string;
   type: "song" | "episode";
-  image: Quality;
+  image: string;
   artists: ArtistMini[];
-  download_url: Quality;
-  duration: number;
+  download_url: string;
+  duration: string;
 };
 
-type QualitiesMap = {
+export type QualitiesMap = {
   quality: StreamQuality;
   bitrate: string;
 };

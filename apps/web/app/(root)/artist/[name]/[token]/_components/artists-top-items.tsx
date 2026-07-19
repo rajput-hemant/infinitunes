@@ -39,13 +39,13 @@ export function ArtistsTopItems(props: Props) {
     queryKey: [id, type === "songs" ? "artists-top-songs" : null],
     queryFn: async ({ pageParam }) => {
       const songs = await getArtistsSongs(id, pageParam, category, sort);
-      return songs.top_songs;
+      return songs.topSongs ?? { songs: [], total: 0, last_page: true };
     },
     getNextPageParam: ({ last_page }, allPages) =>
       last_page ? null : allPages.length + 5,
     initialPageParam: 1,
     initialData: {
-      pages: [{ songs: initialSongs, total: 0, last_page: false }],
+      pages: [{ songs: initialSongs ?? [], total: 0, last_page: false }],
       pageParams: [1],
     },
   });
@@ -54,13 +54,13 @@ export function ArtistsTopItems(props: Props) {
     queryKey: [id, type === "albums" ? "artists-top-albums" : null],
     queryFn: async ({ pageParam }) => {
       const albums = await getArtistsAlbums(id, pageParam, category, sort);
-      return albums.top_albums;
+      return albums.topAlbums ?? { albums: [], total: 0, last_page: true };
     },
     getNextPageParam: ({ last_page }, allPages) =>
       last_page ? null : allPages.length + 2,
     initialPageParam: 1,
     initialData: {
-      pages: [{ albums: initialAlbums, total: 0, last_page: false }],
+      pages: [{ albums: initialAlbums ?? [], total: 0, last_page: false }],
       pageParams: [1],
     },
   });
@@ -90,17 +90,27 @@ export function ArtistsTopItems(props: Props) {
       />
 
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {albums.map(({ id, name, url, subtitle, type, image, explicit }) => (
-          <SliderCard
-            key={id}
-            name={name}
-            url={url}
-            subtitle={subtitle}
-            type={type}
-            image={image}
-            explicit={explicit}
-          />
-        ))}
+        {albums.map(
+          ({
+            id,
+            title,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <SliderCard
+              key={id}
+              title={title}
+              perma_url={perma_url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+              explicit={explicit_content}
+            />
+          ),
+        )}
       </div>
 
       {hasNextPage ? (

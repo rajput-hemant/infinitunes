@@ -284,7 +284,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
               <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
                 <ImageWithFallback
                   src={getImageSrc(queue[currentIndex].image, "low")}
-                  alt={queue[currentIndex].name}
+                  alt={queue[currentIndex].title}
                   fill
                   fallback="/images/placeholder/song.jpg"
                 />
@@ -295,12 +295,12 @@ function PlayerInner({ user, playlists }: PlayerProps) {
               <div className="flex flex-col justify-center">
                 <Link
                   href={getHref(
-                    queue[currentIndex].url,
+                    queue[currentIndex].perma_url,
                     queue[currentIndex].type === "song" ? "song" : "episode",
                   )}
                   className="group line-clamp-1 font-heading text-sm text-primary drop-shadow-sm"
                 >
-                  {queue[currentIndex].name}
+                  {queue[currentIndex].title}
                   <MoveUpRight className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible" />
                 </Link>
 

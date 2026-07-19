@@ -19,7 +19,7 @@ import {
   getShowEpisodes,
   getSongDetails,
 } from "~/lib/jiosaavn-api";
-import { currentlyInDev } from "~/lib/utils";
+import { currentlyInDev, toQueue } from "~/lib/utils";
 import type { Episode, Song, Sort, Type } from "~/types";
 
 type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
@@ -41,7 +41,7 @@ export function PlayButton(props: PlayButtonProps) {
 
   async function playHandler() {
     const songIndex = initialQueue.findIndex(
-      (song) => token === song.url.split("/").pop(),
+      (song) => token === song.perma_url.split("/").pop(),
     );
 
     if (songIndex !== -1) {
@@ -58,27 +58,27 @@ export function PlayButton(props: PlayButtonProps) {
         }
         case "album": {
           const album = await getAlbumDetails(token);
-          queue = album.songs ?? [];
+          queue = Array.isArray(album.list) ? album.list : [];
           break;
         }
         case "playlist": {
           const playlist = await getPlaylistDetails(token);
-          queue = playlist.songs ?? [];
+          queue = Array.isArray(playlist.list) ? playlist.list : [];
           break;
         }
         case "mix": {
           const mix = await getMixDetails(token);
-          queue = mix.songs ?? [];
+          queue = Array.isArray(mix.list) ? mix.list : [];
           break;
         }
         case "artist": {
           const artist = await getArtistDetails(token);
-          queue = artist.top_songs;
+          queue = artist.topSongs ?? [];
           break;
         }
         case "label": {
           const label = await getLabelDetails(token);
-          queue = label.top_songs.songs;
+          queue = label.topSongs.songs;
           break;
         }
         case "show": {
@@ -102,36 +102,14 @@ export function PlayButton(props: PlayButtonProps) {
         }
       }
 
-      const _queue = queue.map(
-        ({
-          id,
-          name,
-          subtitle,
-          type,
-          url,
-          image,
-          download_url,
-          artist_map: { artists },
-          duration,
-        }) => ({
-          id,
-          name,
-          subtitle,
-          url,
-          type,
-          image,
-          download_url,
-          artists,
-          duration,
-        }),
-      );
+      const _queue = queue.map((item) => toQueue(item));
 
       setQueue(_queue);
 
       toast.success(
         `${queue.length} item${queue.length > 1 ? "s" : ""} has been added to the queue`,
         {
-          description: `Playing "${queue[0].name}"`,
+          description: `Playing "${queue[0].title}"`,
           position: "bottom-center",
         },
       );

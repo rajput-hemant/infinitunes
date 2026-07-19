@@ -43,7 +43,7 @@ export function Queue() {
     // @ts-ignore
     if (song) {
       toast("Removed from queue", {
-        description: `Removed "${song.name}" from the queue`,
+        description: `Removed "${song.title}" from the queue`,
         duration: 10000,
       });
     }
@@ -86,7 +86,7 @@ export function Queue() {
                     <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                       <Image
                         src={getImageSrc(item.image, "low")}
-                        alt={item.name}
+                        alt={item.title}
                         fill
                         className="z-10 object-cover duration-300 group-hover:brightness-50"
                       />
@@ -96,7 +96,7 @@ export function Queue() {
                       <TilePlayPauseButton
                         id={item.id}
                         type={item.type}
-                        token={item.url.split("/").pop()!}
+                        token={item.perma_url.split("/").pop()!}
                       />
                     </div>
 
@@ -104,12 +104,12 @@ export function Queue() {
                       <h4 className="w-full truncate font-semibold">
                         <Link
                           href={getHref(
-                            item.url,
+                            item.perma_url,
                             item.type === "song" ? "song" : "episode",
                           )}
                           className="text-primary group-hover:text-primary lg:text-muted-foreground"
                         >
-                          {item.name}
+                          {item.title}
                         </Link>
                       </h4>
 
@@ -117,10 +117,10 @@ export function Queue() {
                         {item.artists.map((artist, i, arr) => (
                           <Link
                             key={artist.id}
-                            href={getHref(artist.url, "artist")}
+                            href={getHref(artist.perma_url, "artist")}
                             className="w-full truncate hover:text-foreground"
                           >
-                            {artist.name}
+                            {artist.title}
                             {i !== arr.length - 1 && ", "}
                           </Link>
                         ))}

@@ -87,10 +87,10 @@ export default async function MyPlaylistsPage(props: Props) {
                 <span>
                   {" · "}
                   {formatDuration(
-                    songsDetails.songs.reduce(
-                      (acc, song) => acc + song.duration,
+                    `${songsDetails.songs.reduce(
+                      (acc, song) => acc + Number(song.duration),
                       0,
-                    ),
+                    )}`,
                     "mm:ss",
                   )}
                 </span>

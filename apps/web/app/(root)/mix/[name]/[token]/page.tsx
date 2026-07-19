@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { DetailsHeader } from "~/components/details-header";
 import { SongList } from "~/components/song-list";
 import { getMixDetails } from "~/lib/jiosaavn-api";
+import { getImageSrc } from "~/lib/utils";
 
 type MixDetailsPageProps = {
   params: Promise<{
@@ -19,15 +20,15 @@ export async function generateMetadata({
   const mix = await getMixDetails(token);
 
   return {
-    title: mix.name,
+    title: mix.title,
     description: mix.subtitle,
     openGraph: {
-      title: mix.name,
+      title: mix.title,
       description: mix.subtitle,
       url: `/mix/${name}/${token}`,
       images: {
-        url: `/api/og?title=${mix.name}&description=${mix.subtitle}&image=${mix.image[1].link}&square=true`,
-        alt: mix.name,
+        url: `/api/og?title=${mix.title}&description=${mix.subtitle}&image=${getImageSrc(mix.image, "high")}&square=true`,
+        alt: mix.title,
       },
     },
   };
@@ -41,7 +42,7 @@ export default async function MixDetailsPage(props: MixDetailsPageProps) {
     <div className="mb-4 space-y-4">
       <DetailsHeader item={mix} />
 
-      <SongList items={mix.songs} />
+      <SongList items={Array.isArray(mix.list) ? mix.list : []} />
     </div>
   );
 }

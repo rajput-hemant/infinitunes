@@ -3,6 +3,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
 import { cn, getHref, getImageSrc } from "~/lib/utils";
+import type { Quality, Type } from "~/types";
 import type { AllSearch } from "~/types";
 
 import { ImageWithFallback } from "../image-with-fallback";
@@ -39,37 +40,49 @@ export function SearchAll({ query, data }: SearchAllProps) {
 
               <Separator className="my-2" />
 
-              {value.data.map((t) => (
-                <Link
-                  key={t.id}
-                  href={getHref(t.url, t.type)}
-                  className="flex gap-2 rounded-md p-2 hover:bg-secondary"
-                >
-                  <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded border">
-                    <ImageWithFallback
-                      src={getImageSrc(t.image, "low")}
-                      alt={t.name}
-                      fill
-                      className={cn(
-                        "z-10 object-cover",
-                        getImageSrc(t.image, "low").includes("default") &&
-                          "dark:invert",
-                      )}
-                      fallback={`/images/placeholder/${t.type}.jpg`}
-                    />
+              {value.data.map((item) => {
+                const t = item as {
+                  id: string;
+                  title: string;
+                  perma_url: string;
+                  subtitle?: string;
+                  type: Type;
+                  image: Quality;
+                };
+                return (
+                  <Link
+                    key={t.id}
+                    href={getHref(t.perma_url, t.type)}
+                    className="flex gap-2 rounded-md p-2 hover:bg-secondary"
+                  >
+                    <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded border">
+                      <ImageWithFallback
+                        src={getImageSrc(t.image, "low")}
+                        alt={t.title}
+                        fill
+                        className={cn(
+                          "z-10 object-cover",
+                          getImageSrc(t.image, "low").includes("default") &&
+                            "dark:invert",
+                        )}
+                        fallback={`/images/placeholder/${t.type}.jpg`}
+                      />
 
-                    <Skeleton className="size-full" />
-                  </div>
-
-                  <div className="my-auto w-[calc(100%-3rem)]">
-                    <div className="truncate text-sm font-medium">{t.name}</div>
-
-                    <div className="truncate text-xs capitalize text-muted-foreground">
-                      {t.subtitle}
+                      <Skeleton className="size-full" />
                     </div>
-                  </div>
-                </Link>
-              ))}
+
+                    <div className="my-auto w-[calc(100%-3rem)]">
+                      <div className="truncate text-sm font-medium">
+                        {t.title}
+                      </div>
+
+                      <div className="truncate text-xs capitalize text-muted-foreground">
+                        {t.subtitle}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
             </section>
           );
         })}

@@ -13,6 +13,7 @@ import {
   getSongRecommendations,
   getTrending,
 } from "~/lib/jiosaavn-api";
+import { getImageSrc } from "~/lib/utils";
 
 import { Lyrics } from "./_components/lyrics";
 
@@ -32,15 +33,15 @@ export async function generateMetadata({
   const song = songObj.songs[0];
 
   return {
-    title: song.name,
+    title: song.title,
     description: song.subtitle,
     openGraph: {
-      title: song.name,
+      title: song.title,
       description: song.subtitle,
       url: `/song/${name}/${token}`,
       images: {
-        url: `/api/og?title=${song.name}&description=${song.subtitle}&image=${song.image[2].link}&square=true`,
-        alt: song.name,
+        url: `/api/og?title=${song.title}&description=${song.subtitle}&image=${getImageSrc(song.image, "high")}&square=true`,
+        alt: song.title,
       },
     },
   };
@@ -51,7 +52,7 @@ async function fetcher(token: string) {
   const modules = data.modules!;
   const artistsTopSongsParams = modules.songs_by_same_artists.params;
   const actorsTopSongsParams = modules.songs_by_same_actors.params;
-  const isActorPresent = song.artist_map.artists.some(
+  const isActorPresent = song.more_info.artistMap.artists?.some(
     (artist) => artist.role === "starring",
   );
 
@@ -84,7 +85,9 @@ async function fetcher(token: string) {
   return {
     song,
     lyrics,
-    albumSongs: album.songs.filter((s) => s.id !== song.id),
+    albumSongs: Array.isArray(album.list)
+      ? album.list.filter((s: { id: string }) => s.id !== song.id)
+      : [],
     recommendations,
     trending,
     songsFromSameArtists,
@@ -147,7 +150,7 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
 
       <SliderList
         title={modules.artists.title}
-        items={song.artist_map.artists}
+        items={song.more_info.artistMap.artists ?? []}
       />
     </div>
   );

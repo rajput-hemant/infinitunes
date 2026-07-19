@@ -9,6 +9,7 @@ import {
   getAlbumRecommendations,
   getTrending,
 } from "~/lib/jiosaavn-api";
+import { decode, getImageSrc } from "~/lib/utils";
 
 type AlbumDetailsPageProps = {
   params: Promise<{ name: string; token: string }>;
@@ -22,15 +23,15 @@ export async function generateMetadata({
   const album = await getAlbumDetails(token);
 
   return {
-    title: album.name,
+    title: album.title,
     description: album.subtitle,
     openGraph: {
-      title: album.name,
+      title: album.title,
       description: album.subtitle,
       url: `/album/${name}/${token}`,
       images: {
-        url: `/api/og?title=${album.name}&description=${album.subtitle}&image=${album.image[2].link}&square=true`,
-        alt: album.name,
+        url: `/api/og?title=${album.title}&description=${album.subtitle}&image=${getImageSrc(album.image, "high")}&square=true`,
+        alt: album.title,
       },
     },
   };
@@ -42,7 +43,7 @@ async function fetcher(token: string) {
   const [recommendations, trending, sameYear] = await Promise.allSettled([
     getAlbumRecommendations(album.id),
     getTrending("album"),
-    getAlbumFromSameYear(album.year),
+    getAlbumFromSameYear(Number(album.year)),
   ]);
 
   return {
@@ -59,36 +60,49 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
 
   const { album, recommendations, trending, sameYear } = await fetcher(token);
 
+  const songs = Array.isArray(album.list) ? album.list : [];
+
   return (
     <div className="space-y-4">
       <DetailsHeader item={album} />
 
-      <SongList items={album.songs} showAlbum={false} />
+      <SongList items={songs} showAlbum={false} />
 
       {recommendations.length > 0 && (
         <SliderList
-          title={album.modules.recommend.title}
-          items={recommendations}
+          title={album.modules?.reco.title ?? "Recommended Albums"}
+          items={recommendations.map((a) => ({
+            id: a.id,
+            title: decode(a.title),
+            perma_url: a.perma_url,
+            subtitle: decode(a.subtitle),
+            type: a.type,
+            image: a.image,
+            explicit: a.explicit_content,
+          }))}
         />
       )}
 
       {trending.length > 0 && (
         <SliderList
-          title={album.modules.currently_trending.title}
+          title={album.modules?.currentlyTrending.title ?? "Trending"}
           items={trending}
         />
       )}
 
       {sameYear.length > 0 && (
         <SliderList
-          title={album.modules.top_albums_from_same_year.title}
+          title={
+            album.modules?.topAlbumsFromSameYear.title ??
+            "Albums From Same Year"
+          }
           items={sameYear}
         />
       )}
 
       <SliderList
-        title={album.modules.artists.title}
-        items={album.artist_map.artists}
+        title={album.modules?.artists.title ?? "Artists"}
+        items={album.more_info.artistMap.artists ?? []}
       />
     </div>
   );

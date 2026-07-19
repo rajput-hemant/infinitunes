@@ -35,53 +35,63 @@ export type FeaturedPlaylists = A<Playlist>;
 
 export type Chart = {
   id: string;
-  name: string;
+  title: string;
   subtitle?: string;
   type: "playlist";
   image: Quality;
-  url: string;
-  explicit?: boolean;
+  perma_url: string;
   count?: number;
-  first_name?: string;
   language?: string;
   listname?: string;
+  explicit_content?: string;
+  more_info?: {
+    firstname: string;
+    song_count: number;
+  };
 };
 
 export type TopShows = A<TopShow> & {
-  trending_podcasts: {
-    title: string;
-    subtitle: string;
-    source: string;
-    data: {
+  trendingPodcasts: {
+    items: {
       id: string;
-      name: string;
+      title: string;
       subtitle: string;
       type: "show";
       image: Quality;
-      url: string;
-      explicit: boolean;
+      perma_url: string;
+      explicit_content: string;
+      more_info: { square_image: string };
     }[];
-  };
+    module: {
+      source: string;
+      title: string;
+      subtitle: string;
+    };
+  }[];
 };
 
 export type TopShow = {
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
   type: "show";
   image: Quality;
-  url: string;
-  explicit: boolean;
-  season_number: number;
-  release_date: string;
-  badge: string;
+  perma_url: string;
+  explicit_content: string;
+  more_info: {
+    season_number: string;
+    release_date: string;
+    year: string;
+    badge: string;
+    square_image: string;
+  };
 };
 
 export type TopArtists = {
-  id: string;
+  artistid: string;
   name: string;
   image: Quality;
-  url: string;
+  perma_url: string;
   follower_count: number;
   is_followed: boolean;
 }[];
@@ -89,55 +99,75 @@ export type TopArtists = {
 export type TopAlbum = A<Song | Album>;
 
 export type Radio = {
+  explicit_content: string;
   id: string;
-  name: string;
-  subtitle: string;
-  type: "radio_station";
   image: Quality;
-  url: string;
-  explicit: boolean;
-  color?: string;
-  description?: string;
-  featured_station_type: Type;
-  language: string;
-  query?: string;
-  station_display_text: string;
+  perma_url: string;
+  subtitle: string;
+  title: string;
+  type: "radio_station";
+  more_info: {
+    color?: string;
+    description?: string;
+    featured_station_type: Type;
+    language: string;
+    query?: string;
+    station_display_text: string;
+  };
 };
 
 export type Mix = {
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
   header_desc: string;
   type: "mix";
-  url: string;
+  perma_url: string;
   image: Quality;
   language: string;
-  year: number;
-  play_count: number;
-  explicit: boolean;
-  list_count: number;
+  year: string;
+  play_count: string;
+  explicit_content: string;
+  list_count: string;
   list_type: string;
-  songs: Song[];
-  user_id: string;
-  last_updated: string;
-  username: string;
-  firstname: string;
-  lastname: string;
-  is_followed: boolean;
-  share: number;
+  list: Song[];
+  more_info: {
+    uid: string;
+    last_updated: string;
+    username: string;
+    firstname: string;
+    lastname: string;
+    is_followed: string;
+    playlist_type: string;
+    share: string;
+  };
+  modules: {
+    list: {
+      source: string;
+      position: number;
+      score: string;
+      bucket: string;
+      scroll_type: string;
+      title: string;
+      subtitle: string;
+      highlight: string;
+      simpleHeader: boolean;
+      noHeader: boolean;
+      view_more: unknown[];
+    };
+  };
 };
 
 export type Label = {
-  id: string;
-  name: string;
-  image: Quality;
+  labelId: string;
+  title: string;
   type: "label";
-  top_songs: {
+  image: Quality;
+  topSongs: {
     songs: Song[];
     total: number;
   };
-  top_albums: {
+  topAlbums: {
     albums: Album[];
     total: number;
   };
@@ -145,16 +175,18 @@ export type Label = {
     albums: string;
     songs: string;
   };
-  available_languages: string[];
+  availableLanguages: string[];
 };
 
 export type MegaMenu = {
-  top_artists: MegaMenuItem[];
-  top_playlists: MegaMenuItem[];
-  new_releases: MegaMenuItem[];
+  mega_menu: {
+    top_artists: MegaMenuItem[];
+    top_playlists: MegaMenuItem[];
+    new_releases: MegaMenuItem[];
+  };
 };
 
 type MegaMenuItem = {
-  name: string;
-  url: string;
+  title: string;
+  perma_url: string;
 };

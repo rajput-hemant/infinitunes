@@ -1,121 +1,116 @@
 import type { Album } from "./album";
-import type { Quality } from "./misc";
+import type { Quality, Type } from "./misc";
 import type { Playlist } from "./playlist";
 import type { Song } from "./song";
 
 export type Artist = {
-  id: string;
-  name: string;
+  artistId: string;
+  title: string;
   subtitle: string;
   image: Quality;
-  follower_count: number;
+  follower_count: string;
   type: "artist";
-  is_verified: boolean;
-  dominant_language: string;
-  dominant_type: string;
-  top_songs: Song[];
-  top_albums: Album[];
-  dedicated_artist_playlist: Playlist[];
-  featured_artist_playlist: Playlist[];
-  singles: ArtistSong[];
-  latest_release: ArtistSong[];
-  similar_artists: SimilarArtist[];
-  is_radio_present: boolean;
-  bio: {
-    title: string;
-    text: string;
-    sequence: number;
-  }[];
+  isVerified: boolean;
+  dominantLanguage: string;
+  dominantType: string;
+  topSongs?: Song[];
+  topAlbums?: Album[];
+  dedicated_artist_playlist?: Playlist[];
+  featured_artist_playlist?: Playlist[];
+  singles?: ArtistSong[];
+  latest_release?: ArtistSong[];
+  similarArtists: SimilarArtist[];
+  isRadioPresent: boolean;
+  bio: string;
   dob: string;
   fb: string;
   twitter: string;
   wiki: string;
   urls: Urls;
-  available_languages: string[];
-  fan_count: number;
+  availableLanguages: string[];
+  fan_count: string;
   is_followed: boolean;
-  modules: {
-    top_songs: Module;
-    latest_release: Module;
-    top_albums: Module;
-    dedicated_artist_playlist: Module;
-    featured_artist_playlist: Module;
-    singles: Module;
-    similar_artists: Module;
+  modules?: {
+    topSongs?: Module;
+    latest_release?: Module;
+    topAlbums?: Module;
+    dedicated_artist_playlist?: Module;
+    featured_artist_playlist?: Module;
+    singles?: Module;
+    similarArtists?: Module;
   };
 };
 
 export type SimilarArtist = {
   id: string;
-  name: string;
-  roles: { [K: string]: string };
+  title: string;
+  roles: string;
   aka: string;
   fb: string;
   twitter: string;
   wiki: string;
-  similar: {
-    id: string;
-    name: string;
-  }[];
+  similar: string;
   dob: string;
-  image: Quality;
+  image_url: string;
   search_keywords: string;
   primary_artist_id: string;
-  languages: { [K: string]: string };
-  url: string;
+  combine_artist_pages: number;
+  replace_with_primary_artists: number;
+  languages: string;
+  perma_url: string;
   type: "artist";
-  is_radio_present: boolean;
-  dominant_type: string;
+  isRadioPresent: boolean;
+  dominantType: string;
 };
 
 export type ArtistMap = {
   primary_artists: ArtistMini[];
-  featured_artists: ArtistMini[];
-  artists: ArtistMini[];
+  featured_artists?: ArtistMini[];
+  artists?: ArtistMini[];
 };
 
 export type ArtistMini = {
   id: string;
   image: Quality;
-  url: string;
-  name: string;
+  perma_url: string;
   type: "artist";
+  title: string;
   role: string;
 };
 
 export type ArtistSong = Pick<
   Song,
   | "id"
-  | "name"
+  | "title"
   | "subtitle"
   | "type"
-  | "url"
+  | "perma_url"
   | "image"
   | "language"
   | "year"
   | "play_count"
-  | "explicit"
+  | "explicit_content"
   | "list_count"
   | "list_type"
   | "music"
-  | "artist_map"
+  | "more_info"
 > & {
   query: string;
   text: string;
-  song_count: number;
+  song_count: string;
 };
 
 export type ArtistSongsOrAlbums = {
-  id: string;
-  name: string;
+  artistId: string;
+  title: string;
   image: Quality;
-  follower_count: number;
+  follower_count: string;
   type: "artist";
-  is_verified: boolean;
-  dominant_language: string;
-  dominant_type: string;
-  top_songs: Omit<ArtistTopSongsOrAlbums<Song>, "albums">;
-  top_albums: Omit<ArtistTopSongsOrAlbums<Album>, "songs">;
+  isVerified: boolean;
+  dominantLanguage: string;
+  dominantType: Type;
+  topSongs?: Omit<ArtistTopSongsOrAlbums<Song>, "albums">;
+  topAlbums?: Omit<ArtistTopSongsOrAlbums<Album>, "songs">;
 };
 
 type Module = {

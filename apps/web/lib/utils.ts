@@ -5,6 +5,62 @@ import { twMerge } from "tailwind-merge";
 
 import { siteConfig } from "~/config/site";
 import type { ImageQuality, Quality, StreamQuality, Type } from "~/types";
+import type { Queue } from "~/types/misc";
+import type { Episode } from "~/types/show";
+import type { Song } from "~/types/song";
+
+const ENTITY_MAP: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+};
+
+/**
+ * Decodes the HTML entities present in raw JioSaavn payloads (e.g. `&amp;`).
+ */
+export function decode(str: string | undefined | null): string {
+  if (!str) return "";
+  return str
+    .replace(/&#(\d+);/g, (_, code: string) =>
+      String.fromCodePoint(Number(code)),
+    )
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code: string) =>
+      String.fromCodePoint(Number.parseInt(code, 16)),
+    )
+    .replace(
+      /&([a-z]+);/gi,
+      (match, name: string) => ENTITY_MAP[name.toLowerCase()] ?? match,
+    );
+}
+
+/**
+ * Extracts the trailing token from a JioSaavn perma_url.
+ */
+export function getToken(url: string | undefined): string {
+  if (!url) return "";
+  return url.split("/").filter(Boolean).pop() ?? "";
+}
+
+/**
+ * Maps a raw JioSaavn song/episode payload into a queue item.
+ */
+export function toQueue(item: Song | Episode): Queue {
+  const more = item.more_info;
+  return {
+    id: item.id,
+    title: decode(item.title),
+    subtitle: decode(item.subtitle),
+    perma_url: item.perma_url,
+    type: item.type,
+    image: getImageSrc(item.image),
+    artists: more.artistMap?.artists ?? [],
+    download_url: "download_url" in item ? item.download_url : "",
+    duration: more.duration ?? "",
+  };
+}
 
 /**
  * Merges the given class names with the tailwind classes
@@ -75,8 +131,11 @@ export function rethrow(message: string): never {
  * @param format The format to format the duration in `hh:mm:ss` or `mm:ss`
  * @returns The formatted duration
  */
-export function formatDuration(seconds: number, format: "hh:mm:ss" | "mm:ss") {
-  const date = new Date(seconds * 1000);
+export function formatDuration(
+  seconds: number | string,
+  format: "hh:mm:ss" | "mm:ss",
+) {
+  const date = new Date(Number(seconds) * 1000);
 
   return format === "hh:mm:ss"
     ? date.toISOString().slice(11, 19)
@@ -88,37 +147,15 @@ export function getHref(url: string, type: Type) {
   return `/${url.replace(re, type)}`;
 }
 
-export function getImageSrc(image: Quality, quality: ImageQuality) {
-  let link;
-
-  if (typeof image === "string") {
-    link = image;
-  } else if (quality === "low") {
-    link = image[0].link;
-  } else if (quality === "medium") {
-    link = image[1].link;
-  } else {
-    link = image[2].link;
-  }
-
+// Raw JioSaavn images are a single URL string.
+export function getImageSrc(image: Quality, _quality?: ImageQuality) {
+  const link = typeof image === "string" ? image : String(image);
   // replace http with https if not present
-  return link.replace(/http:\/\//, "https://");
+  return link.replace(/^http:\/\//, "https://");
 }
 
-export function getDownloadLink(url: Quality, quality: StreamQuality) {
-  if (typeof url === "string") {
-    return url;
-  } else if (quality === "poor") {
-    return url[0].link;
-  } else if (quality === "low") {
-    return url[1].link;
-  } else if (quality === "medium") {
-    return url[2].link;
-  } else if (quality === "high") {
-    return url[3].link;
-  } else {
-    return url[4].link;
-  }
+export function getDownloadLink(url: Quality, _quality?: StreamQuality) {
+  return typeof url === "string" ? url.replace(/^http:\/\//, "https://") : "";
 }
 
 export function currentlyInDev() {

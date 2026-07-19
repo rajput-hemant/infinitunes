@@ -40,15 +40,23 @@ export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
     <div className="py-6">
       <div className="flex w-full flex-wrap justify-between gap-y-4">
         {featuredPlaylists.map(
-          ({ id, name, url, subtitle, type, image, explicit }) => (
+          ({
+            id,
+            title,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
             <SliderCard
               key={id}
-              name={name}
-              url={url}
+              title={title}
+              perma_url={perma_url}
               subtitle={subtitle}
               type={type}
               image={image}
-              explicit={explicit}
+              explicit={explicit_content}
             />
           ),
         )}

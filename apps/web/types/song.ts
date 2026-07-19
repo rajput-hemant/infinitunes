@@ -1,5 +1,5 @@
 import type { ArtistMap } from "./artist";
-import type { Lang, Quality, Rights } from "./misc";
+import type { Lang, Quality, Rights, Type } from "./misc";
 
 export type SongObj = {
   songs: Song[];
@@ -8,19 +8,19 @@ export type SongObj = {
 
 export type Song = {
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
   header_desc: string;
   type: "song";
-  url: string;
+  perma_url: string;
   image: Quality;
   language: string;
-  year: number;
-  play_count: number;
-  explicit: boolean;
+  year: string;
+  play_count: string;
+  explicit_content: string;
   list: string;
   list_type: string;
-  list_count: number;
+  list_count: string;
   music: string;
   song?: string;
   album: string;
@@ -32,18 +32,39 @@ export type Song = {
   is_dolby_content: boolean;
   "320kbps": boolean;
   download_url: Quality;
-  duration: number;
+  duration: string;
   rights: Rights;
   has_lyrics: boolean;
   lyrics_id?: string;
   lyrics_snippet: string;
   starred: boolean;
   copyright_text: string;
-  artist_map: ArtistMap;
+  more_info: SongMoreInfo;
   release_date?: string;
   vcode: string;
   vlink: string;
   triller_available: boolean;
+};
+
+export type SongMoreInfo = {
+  artistMap: ArtistMap;
+  song_count?: string;
+  copyright_text?: string;
+  is_dolby_content?: boolean;
+  label_url?: string;
+  album_id?: string;
+  album?: string;
+  album_url?: string;
+  duration?: string;
+  release_date?: string;
+  video_available?: boolean;
+  triller_available?: boolean;
+  primary_artists?: string;
+  singers?: string;
+  language?: string;
+  vcode?: string;
+  vlink?: string;
+  encrypted_media_url?: string;
 };
 
 export type SongModules = {
@@ -95,4 +116,23 @@ export type SongModules = {
     source: string;
     position: number;
   };
+};
+
+export type MiniResponse = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  header_desc?: string;
+  type: Type;
+  perma_url: string;
+  image: Quality;
+  color?: string;
+  duration?: string;
+  album?: string;
+  album_id?: string;
+  album_url?: string;
+  download_url?: Quality;
+  artist_map?: ArtistMap;
+  explicit_content?: string;
+  list?: string;
 };

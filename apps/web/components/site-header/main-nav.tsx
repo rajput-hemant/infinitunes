@@ -41,17 +41,17 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
               <div className="border-r">
                 <h4 className="font-heading text-2xl">New releases</h4>
 
-                {megaMenu.new_releases.map(({ name, url }) => (
+                {megaMenu.mega_menu.new_releases.map(({ title, perma_url }) => (
                   <ListItem
-                    key={name}
-                    title={name}
+                    key={title}
+                    title={title}
                     href={
-                      url.includes("song")
-                        ? getHref(url, "song")
-                        : getHref(url, "album")
+                      perma_url.includes("song")
+                        ? getHref(perma_url, "song")
+                        : getHref(perma_url, "album")
                     }
                   >
-                    {name}
+                    {title}
                   </ListItem>
                 ))}
               </div>
@@ -59,27 +59,29 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
               <div className="border-r">
                 <h4 className="font-heading text-2xl">Top Playlist</h4>
 
-                {megaMenu.top_playlists.map(({ name, url }) => (
-                  <ListItem
-                    key={name}
-                    title={name}
-                    href={getHref(url, "playlist")}
-                  >
-                    {name}
-                  </ListItem>
-                ))}
+                {megaMenu.mega_menu.top_playlists.map(
+                  ({ title, perma_url }) => (
+                    <ListItem
+                      key={title}
+                      title={title}
+                      href={getHref(perma_url, "playlist")}
+                    >
+                      {title}
+                    </ListItem>
+                  ),
+                )}
               </div>
 
               <div>
                 <h4 className="font-heading text-2xl">Top Artists</h4>
 
-                {megaMenu.top_artists.map(({ name, url }) => (
+                {megaMenu.mega_menu.top_artists.map(({ title, perma_url }) => (
                   <ListItem
-                    key={name}
-                    title={name}
-                    href={getHref(url, "artist")}
+                    key={title}
+                    title={title}
+                    href={getHref(perma_url, "artist")}
                   >
-                    {name}
+                    {title}
                   </ListItem>
                 ))}
               </div>

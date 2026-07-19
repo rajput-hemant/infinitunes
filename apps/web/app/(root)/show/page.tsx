@@ -29,33 +29,45 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
 
   const topShows = await getTopShows(page);
 
-  const {
-    trending_podcasts: { data: trendingPodcasts, title, subtitle },
-  } = topShows;
+  const trendingPodcasts = topShows.trendingPodcasts?.[0]?.items ?? [];
+  const trendingTitle =
+    topShows.trendingPodcasts?.[0]?.module.title ?? "Trending Podcasts";
+  const trendingSubtitle =
+    topShows.trendingPodcasts?.[0]?.module.subtitle ?? "";
 
   return (
     <div className="space-y-4">
       <header className="mt-4">
         <h1 className="font-heading text-2xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
-          {title}
+          {trendingTitle}
         </h1>
 
-        <p className="pl-1 font-medium text-muted-foreground">{subtitle}</p>
+        <p className="pl-1 font-medium text-muted-foreground">
+          {trendingSubtitle}
+        </p>
       </header>
 
       <ScrollArea>
         <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 pb-6">
           {trendingPodcasts.map(
-            ({ id, name, url, subtitle, type, image, explicit }) => {
+            ({
+              id,
+              title: tTitle,
+              perma_url,
+              subtitle,
+              type,
+              image,
+              explicit_content,
+            }) => {
               return (
                 <SliderCard
                   key={id}
-                  name={name}
-                  url={url}
+                  title={title}
+                  perma_url={perma_url}
                   subtitle={subtitle}
                   type={type}
                   image={image}
-                  explicit={explicit}
+                  explicit={explicit_content}
                   hidePlayButton
                 />
               );

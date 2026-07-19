@@ -11,6 +11,7 @@ import { DetailsHeader } from "~/components/details-header";
 import { SliderCard } from "~/components/slider";
 import { SongList } from "~/components/song-list";
 import { getLabelDetails } from "~/lib/jiosaavn-api";
+import { getImageSrc } from "~/lib/utils";
 
 type LabelDetailsPageProps = {
   params: Promise<{
@@ -28,15 +29,15 @@ export async function generateMetadata({
   const description = "Record Label";
 
   return {
-    title: label.name,
+    title: label.title,
     description,
     openGraph: {
-      title: label.name,
+      title: label.title,
       description,
       url: `/label/${name}/${token}`,
       images: {
-        url: `/api/og?title=${label.name}&description=${description}&image=${label.image[1].link}&square=true`,
-        alt: label.name,
+        url: `/api/og?title=${label.title}&description=${description}&image=${getImageSrc(label.image, "high")}&square=true`,
+        alt: label.title,
       },
     },
   };
@@ -77,17 +78,17 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
         </TabsList>
 
         <TabsContent value={TABS.Songs}>
-          <SongList items={label.top_songs.songs} />
+          <SongList items={label.topSongs.songs} />
         </TabsContent>
 
         <TabsContent value={TABS.Albums}>
           <div className="flex w-full flex-wrap justify-between gap-y-4">
-            {label.top_albums.albums.map(
-              ({ id, name, url, subtitle, type, image }) => (
+            {label.topAlbums.albums.map(
+              ({ id, title, perma_url, subtitle, type, image }) => (
                 <SliderCard
                   key={id}
-                  name={name}
-                  url={url}
+                  title={title}
+                  perma_url={perma_url}
                   subtitle={subtitle}
                   type={type}
                   image={image}

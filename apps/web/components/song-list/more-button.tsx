@@ -44,7 +44,7 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { addSongsToPlaylist } from "~/lib/db/queries";
-import { cn, currentlyInDev, getImageSrc } from "~/lib/utils";
+import { cn, currentlyInDev, getImageSrc, toQueue } from "~/lib/utils";
 import type { Episode, Queue, Song } from "~/types";
 import type { User } from "~/types/user";
 
@@ -95,30 +95,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     if (songIndex !== -1) {
       setCurrentIndex(songIndex);
     } else {
-      const {
-        id,
-        name,
-        subtitle,
-        type,
-        url,
-        image,
-        artist_map: { featured_artists: artists },
-        download_url,
-        duration,
-      } = item as Song;
-
-      const queue = {
-        id,
-        name,
-        subtitle,
-        type,
-        url,
-        image,
-        artists,
-        download_url,
-        duration,
-      } satisfies Queue;
-
+      const queue = toQueue(item as Song);
       setQueue([queue]);
       setCurrentIndex(0);
     }
@@ -132,39 +109,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       return;
     }
 
-    let queue: Queue;
-
-    if ("explicit" in item) {
-      const {
-        id,
-        name,
-        subtitle,
-        type,
-        url,
-        image,
-        artist_map: { featured_artists: artists },
-        download_url,
-        duration,
-      } = item;
-
-      queue = {
-        id,
-        name,
-        subtitle,
-        type,
-        url,
-        image,
-        artists,
-        download_url,
-        duration,
-      } satisfies Queue;
-    } else {
-      queue = item;
-    }
-
+    const queue = "explicit_content" in item ? toQueue(item as Song) : item;
     setQueue((q) => [...q, queue]);
 
-    toast(`"${item.name}" added to queue`);
+    toast(`"${item.title}" added to queue`);
   }
 
   function togglePlaylistDialog() {
@@ -182,7 +130,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   function addToPlaylist(id: string, name: string) {
     toast.promise(addSongsToPlaylist(id, [item.id]), {
       loading: "Adding songs to playlist...",
-      success: `"${item.name}" added to "${name}" playlist`,
+      success: `"${item.title}" added to "${name}" playlist`,
       error: (error) => error.message,
       finally: () => setDialogOpen(false),
     });
@@ -237,7 +185,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 <div className="relative aspect-square h-14 rounded-md">
                   <Image
                     src={getImageSrc(item.image, "low")}
-                    alt={item.name}
+                    alt={item.title}
                     fill
                     className="z-10 shrink-0 rounded-md"
                   />
@@ -246,7 +194,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 </div>
 
                 <div className="flex flex-col justify-start truncate text-start">
-                  <DrawerTitle className="truncate">{item.name}</DrawerTitle>
+                  <DrawerTitle className="truncate">{item.title}</DrawerTitle>
                   <DrawerDescription className="truncate">
                     {item.subtitle}
                   </DrawerDescription>
@@ -302,13 +250,13 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
               <TileMoreLinks
                 type={item.type}
-                itemUrl={item.url}
+                itemUrl={item.perma_url}
                 albumUrl={"album_url" in item ? item.album_url : undefined}
                 showAlbum={item.type === "song" ? showAlbum : false}
                 primaryArtists={
                   "artists" in item
                     ? item.artists
-                    : item.artist_map.primary_artists
+                    : item.more_info.artistMap.primary_artists
                 }
               />
             </div>
@@ -350,14 +298,14 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             <DropdownMenuSeparator className="my-2" />
             <TileMoreLinks
               type={item.type}
-              itemUrl={item.url}
+              itemUrl={item.perma_url}
               albumUrl={"album_url" in item ? item.album_url : undefined}
               showAlbum={showAlbum}
               isDropdownItem
               primaryArtists={
                 "artists" in item
                   ? item.artists
-                  : item.artist_map.primary_artists
+                  : item.more_info.artistMap.primary_artists
               }
             />
           </DropdownMenuContent>

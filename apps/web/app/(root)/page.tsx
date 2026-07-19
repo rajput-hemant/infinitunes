@@ -4,6 +4,7 @@ import { SliderCard } from "~/components/slider";
 import { siteConfig } from "~/config/site";
 import { getHomeData } from "~/lib/jiosaavn-api";
 import { cn } from "~/lib/utils";
+import type { Type } from "~/types";
 
 const title = `Online Songs on ${siteConfig.name}: Download & Play Latest Music for Free`;
 
@@ -28,22 +29,28 @@ export default async function HomePage() {
   const homedata = await getHomeData();
 
   return Object.entries(homedata).map(([key, section]) => {
-    if ("random_songs_listid" in section || key === "discover") return null;
+    if (
+      key === "modules" ||
+      key === "global_config" ||
+      key === "browse_discover" ||
+      !Array.isArray(section)
+    )
+      return null;
+
+    const items = section as {
+      id: string;
+      title: string;
+      perma_url: string;
+      subtitle?: string;
+      type: Type;
+      image: string;
+      explicit_content?: string;
+    }[];
 
     return (
       <section key={key} className="mb-4 space-y-4">
         <header className="border-b pb-2">
           <h1 className="sr-only">{siteConfig.name} Homepage</h1>
-          {/*
-          <h2 className="pl-2 font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl lg:pl-0">
-            {section.title}
-          </h2> */}
-
-          {section.subtitle && (
-            <p className="pl-2 font-medium text-muted-foreground lg:pl-0">
-              {section.subtitle}
-            </p>
-          )}
         </header>
 
         <ScrollArea>
@@ -51,21 +58,29 @@ export default async function HomePage() {
             className={cn("flex sm:gap-2 xl:pb-6", {
               "grid grid-flow-col grid-rows-2 place-content-start": [
                 "trending",
-                "albums",
+                "new_albums",
                 "charts",
               ].includes(key),
             })}
           >
-            {section.data.map(
-              ({ id, name, url, subtitle, type, image, explicit }) => (
+            {items.map(
+              ({
+                id,
+                title,
+                perma_url,
+                subtitle,
+                type,
+                image,
+                explicit_content,
+              }) => (
                 <SliderCard
                   key={id}
-                  name={name}
-                  url={url}
+                  title={title}
+                  perma_url={perma_url}
                   subtitle={subtitle}
                   type={type}
                   image={image}
-                  explicit={explicit}
+                  explicit={explicit_content}
                 />
               ),
             )}

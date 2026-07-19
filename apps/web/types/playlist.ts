@@ -4,48 +4,64 @@ import type { Song } from "./song";
 
 export type Playlist = {
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
-  header_desc: string;
+  header_desc?: string;
   type: "playlist";
-  url: string;
+  perma_url: string;
   image: Quality;
   language: string;
-  year?: number;
-  play_count?: number;
-  explicit: boolean;
-  list_count?: number;
+  year?: string;
+  play_count?: string;
+  explicit_content: string;
+  list_count?: string;
   list_type: string;
-  user_id: string;
+  user_id?: string;
   is_dolby_content: boolean;
   last_updated?: string;
   username: string;
   firstname: string;
   lastname: string;
-  follower_count?: number;
-  fan_count?: number;
-  share?: number;
-  video_count?: number;
-  artists?: ArtistMini[];
+  follower_count?: string;
+  fan_count?: string;
+  share?: string;
+  video_count?: string;
+  more_info: PlaylistMoreInfo;
   subtitle_desc: string[];
-  songs?: Song[];
+  list?: string | Song[];
   modules?: PlaylistModules;
 };
 
+export type PlaylistMoreInfo = {
+  uid: string;
+  is_dolby_content: boolean;
+  last_updated?: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  follower_count?: string;
+  fan_count?: string;
+  playlist_type: string;
+  share?: string;
+  video_count?: string;
+  artists?: ArtistMini[];
+  subtitle_desc: string[];
+};
+
 export type PlaylistModules = {
-  related_playlist: {
+  relatedPlaylist: {
     source: string;
     position: number;
     title: string;
     subtitle: string;
-    params: { id: string };
+    source_params: { listid: string };
   };
-  currently_trending_playlists: {
+  currentlyTrendingPlaylists: {
     source: string;
     position: number;
     title: string;
     subtitle: string;
-    params: { type: string; lang: string };
+    source_params: { entity_type: string; entity_language: string };
   };
   artists: {
     source: string;

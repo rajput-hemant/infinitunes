@@ -53,15 +53,15 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
         </Link>
       </Wrapper>
 
-      {primaryArtists?.map(({ id, url, name }) => (
+      {primaryArtists?.map(({ id, perma_url, title }) => (
         <Wrapper key={id} isDropdownItem={isDropdownItem}>
           <Link
             key={id}
-            href={getHref(url, "artist")}
+            href={getHref(perma_url, "artist")}
             className="cursor-pointer py-1"
           >
             <Mic2 className="mr-2 inline-block size-5" />
-            More From {name}
+            More From {title}
           </Link>
         </Wrapper>
       ))}
