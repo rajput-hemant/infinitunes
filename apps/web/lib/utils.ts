@@ -143,6 +143,7 @@ export function formatDuration(
 }
 
 export function getHref(url: string, type: Type) {
+  if (!url) return "#";
   const re = /https:\/\/www.jiosaavn.com\/(s\/)?\w*/;
   return `/${url.replace(re, type)}`;
 }
