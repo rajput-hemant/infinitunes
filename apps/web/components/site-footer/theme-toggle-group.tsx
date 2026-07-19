@@ -6,9 +6,8 @@ import {
 } from "@infinitunes/ui/components/toggle-group";
 import { Monitor, Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
-import React from "react";
+import { useEffect, useRef, useCallback } from "react";
 
-import { useIsMounted } from "~/hooks/use-is-mouted";
 import { cn } from "~/lib/utils";
 
 type ThemeToggleGroupProps = {
@@ -16,7 +15,18 @@ type ThemeToggleGroupProps = {
 };
 
 export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
-  const isMounted = useIsMounted();
+  const isMountedRef = useRef(false);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const isMounted = useCallback(() => isMountedRef.current, []);
+
   const { theme, setTheme } = useTheme();
 
   function handleThemeChange(value: string) {
