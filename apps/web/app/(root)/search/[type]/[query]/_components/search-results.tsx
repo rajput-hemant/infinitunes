@@ -6,7 +6,7 @@ import { Loader2 } from "lucide-react";
 import { SliderCard } from "~/components/slider";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { search } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/client";
 import type { Album, SearchReturnType, Song } from "~/types";
 
 type SearchResultsProps = {
@@ -15,20 +15,38 @@ type SearchResultsProps = {
   initialSearchResults: SearchReturnType;
 };
 
+const typeMap = {
+  song: "songs",
+  album: "albums",
+  playlist: "playlists",
+  artist: "artists",
+  show: "podcasts",
+} as const;
+
 export function SearchResults(props: SearchResultsProps) {
   const { query, type, initialSearchResults } = props;
+
+  const utils = api.useUtils();
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["search-results", type, query],
-      queryFn: ({ pageParam }) => search(query, type, pageParam, 50),
-      getNextPageParam: ({ total }, allPages) =>
-        allPages.length * 50 < total ? allPages.length + 1 : undefined,
-      initialPageParam: 1,
+      queryFn: ({ pageParam }) =>
+        utils.search.byType.fetch({
+          q: query,
+          type: typeMap[type],
+          page: pageParam,
+          n: 50,
+        }),
+      initialPageParam: 1 as number,
+      getNextPageParam: (lastPage, allPages) =>
+        allPages.length * 50 < (lastPage as SearchReturnType).total
+          ? allPages.length + 1
+          : undefined,
       initialData: { pages: [initialSearchResults], pageParams: [1] },
     });
 
-  const searchResults = data.pages.flatMap(
+  const searchResults = (data.pages as SearchReturnType[]).flatMap(
     (page) => page.results as (Album | Song)[],
   );
 

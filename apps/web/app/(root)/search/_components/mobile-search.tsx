@@ -7,7 +7,7 @@ import React from "react";
 import { SearchAll } from "~/components/search/search-all";
 import { useDebounce } from "~/hooks/use-debounce";
 import { useIsTyping } from "~/hooks/use-store";
-import { searchAll } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/client";
 import type { AllSearch } from "~/types";
 
 type MobileSearchProps = {
@@ -16,23 +16,14 @@ type MobileSearchProps = {
 
 export function MobileSearch({ topSearch }: MobileSearchProps) {
   const [query, setQuery] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [searchResult, setSearchResult] = React.useState<AllSearch | null>(
-    null,
-  );
 
   const debouncedQuery = useDebounce(query.trim(), 1000);
   const [_, setIsTyping] = useIsTyping();
 
-  React.useEffect(() => {
-    (async () => {
-      if (!debouncedQuery) return setSearchResult(null);
-      setIsLoading(true);
-      const data = await searchAll(debouncedQuery);
-      setIsLoading(false);
-      setSearchResult(data);
-    })();
-  }, [debouncedQuery]);
+  const { data: searchResult, isLoading } = api.search.all.useQuery(
+    { q: debouncedQuery },
+    { enabled: debouncedQuery.length > 0 },
+  );
 
   React.useEffect(() => {
     if (debouncedQuery.length) setIsTyping(true);
@@ -60,7 +51,9 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
         </div>
       )}
 
-      {searchResult && <SearchAll query={query} data={searchResult} />}
+      {searchResult && (
+        <SearchAll query={query} data={searchResult as AllSearch} />
+      )}
     </>
   );
 }

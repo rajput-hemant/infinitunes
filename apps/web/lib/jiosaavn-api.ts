@@ -1,3 +1,4 @@
+import "server-only";
 import { api } from "~/lib/trpc/server";
 import type {
   Album,

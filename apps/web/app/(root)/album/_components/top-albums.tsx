@@ -6,7 +6,7 @@ import React from "react";
 
 import { SliderCard } from "~/components/slider";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { getTopAlbums } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/client";
 import type { Lang, TopAlbum } from "~/types";
 
 type TopAlbumsProps = {
@@ -15,17 +15,20 @@ type TopAlbumsProps = {
 };
 
 export function TopAlbums({ initialAlbums, lang }: TopAlbumsProps) {
+  const utils = api.useUtils();
+
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["top-albums", lang],
-      queryFn: ({ pageParam }) => getTopAlbums(pageParam, 50, lang),
-      getNextPageParam: ({ last_page }, allPages) =>
-        last_page ? null : allPages.length + 1,
-      initialPageParam: 1,
+      queryFn: ({ pageParam }) =>
+        utils.get.topAlbums.fetch({ page: pageParam, n: 50, lang }),
+      initialPageParam: 1 as number,
+      getNextPageParam: (lastPage, allPages) =>
+        (lastPage as TopAlbum).last_page ? null : allPages.length + 1,
       initialData: { pages: [initialAlbums], pageParams: [1] },
     });
 
-  const topAlbums = data.pages.flatMap((page) => page.data);
+  const topAlbums = (data.pages as TopAlbum[]).flatMap((page) => page.data);
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,

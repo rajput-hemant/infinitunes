@@ -6,7 +6,7 @@ import React from "react";
 
 import { SliderCard } from "~/components/slider";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { getTopShows } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/client";
 import type { TopShows } from "~/types";
 
 type Props = {
@@ -14,17 +14,20 @@ type Props = {
 };
 
 export function TopPodcasts({ initialTopShows }: Props) {
+  const utils = api.useUtils();
+
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["top-podcasts"],
-      queryFn: ({ pageParam }) => getTopShows(pageParam, 50),
-      getNextPageParam: ({ last_page }, allPages) =>
-        last_page ? null : allPages.length + 1,
-      initialPageParam: 1,
+      queryFn: ({ pageParam }) =>
+        utils.get.topShows.fetch({ page: pageParam, n: 50 }),
+      initialPageParam: 1 as number,
+      getNextPageParam: (lastPage, allPages) =>
+        (lastPage as TopShows).last_page ? null : allPages.length + 1,
       initialData: { pages: [initialTopShows], pageParams: [1] },
     });
 
-  const podcasts = data.pages.flatMap((page) => page.data);
+  const podcasts = (data.pages as TopShows[]).flatMap((page) => page.data);
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,

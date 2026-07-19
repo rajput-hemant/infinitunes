@@ -1,3 +1,4 @@
+import "server-only";
 import { createCaller, type AppRouter } from "@infinitunes/trpc";
 import { cache } from "react";
 
