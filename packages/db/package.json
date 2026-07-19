@@ -10,6 +10,7 @@
     "db:check": "drizzle-kit check --config=./src/drizzle.config.ts"
   },
   "exports": {
+    ".": "./src/db.ts",
     "./schema": "./src/schema.ts",
     "./client": "./src/client.ts",
     "./db": "./src/db.ts",
