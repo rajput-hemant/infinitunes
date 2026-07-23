@@ -1,11 +1,13 @@
-import { homeRouter } from "./router";
-import { albumRouter } from "./router/index";
-import { artistRouter } from "./router/index";
-import { getRouter } from "./router/index";
-import { playlistRouter } from "./router/index";
-import { searchRouter } from "./router/index";
-import { showRouter } from "./router/index";
-import { songRouter } from "./router/index";
+import {
+  albumRouter,
+  artistRouter,
+  getRouter,
+  homeRouter,
+  playlistRouter,
+  searchRouter,
+  showRouter,
+  songRouter,
+} from "./router";
 import { router } from "./trpc";
 
 export const appRouter = router({
