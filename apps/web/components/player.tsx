@@ -262,7 +262,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
     >
       <Slider
         value={[pos]}
-        max={duration}
+        max={duration || 1}
         onValueChange={(value: number | readonly number[], _details) => {
           setPos(typeof value === "number" ? value : (value[0] as number));
         }}
