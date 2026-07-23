@@ -24,6 +24,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `apps/web/.next/standalone/apps/web/server.js` (entrypoint `node apps/web/server.js`).
   `next.config.ts` sets `outputFileTracingRoot` to the repo root when `IS_DOCKER`.
 - `drizzle.config.ts` imports `@next/env` (declared in `apps/web` devDeps).
+- Tailwind v4's automatic content scanning only covers `apps/web`. Utility
+  classes/theme vars used exclusively inside `packages/ui/src` (e.g.
+  `bg-sidebar`, `bg-popover`, `bg-card`) get tree-shaken out of the compiled
+  CSS unless `apps/web/styles/globals.css` declares
+  `@source '../../../packages/ui/src';`. If a new workspace package ships
+  components consumed by `apps/web`, add its source dir the same way.
 
 ## Maintaining this file
 
