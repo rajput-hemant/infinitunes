@@ -57,7 +57,7 @@ export function EpisodeList(props: EpisodeListProps) {
       initialData: { pages: [initialEpisodes], pageParams: [1] },
     });
 
-  const episodes = data.pages as Episode[];
+  const episodes = (data.pages as Episode[][]).flat();
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,

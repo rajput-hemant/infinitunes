@@ -7,7 +7,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 ## Monorepo layout
 
 Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
-(`@/*` → `apps/web/src/*`). Run all gates from the repo root:
+(`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
 `bun run fmt:check`, `bun run lint` (Oxlint), `bun run type-check`,
 `bun run test` (`bun test --pass-with-no-tests`; no tests yet), `bun run build`.
 DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
@@ -15,7 +15,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 
 ## Build / delivery sharp edges
 
-- Env validation (`apps/web/src/lib/env.ts`) runs at build time and fails
+- Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
   must be listed in `turbo.json` `globalPassThroughEnv` to reach `next build`.
@@ -40,25 +40,52 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   CSS unless `apps/web/styles/globals.css` declares
   `@source '../../../packages/ui/src';`. If a new workspace package ships
   components consumed by `apps/web`, add its source dir the same way.
+- A workspace package's `index.ts` must not `export *` a pure ambient `.d.ts`
+  file (only `declare global`/`declare module`, no runtime exports). `tsc`
+  tolerates it, but Next.js's Turbopack bundler cannot resolve it as a module
+  and fails the whole build with `Module not found` on every consumer (this is
+  what broke `@infinitunes/types` imports repo-wide, not any specific named
+  export). If a package needs ambient globals visible to consumers, prefer
+  listing the `.d.ts` file directly in the consumer's own `tsconfig.json`
+  `include`/`files`, not a barrel re-export.
 
-## packages/trpc raw-passthrough sharp edge
+## packages/trpc raw-passthrough shape (resolved)
 
-Most `@infinitunes/trpc` procedures (`packages/trpc/src/router/index.ts`) do
-`return api(endpoints...)` unmodified - raw untransformed JioSaavn JSON. Some
-`@infinitunes/types` types (e.g. `MegaMenu`, `TopArtists`) describe a
-normalized shape (`name`/`url`, unwrapped) that does NOT match the real
-upstream JSON (`title`/`perma_url`, wrapped in a container key like
-`mega_menu`/`top_artists`). Before trusting a passthrough procedure's shape
-against its declared type, verify live (curl the upstream `__call` from
-`endpoints.ts` via `packages/trpc/src/lib/api.ts`'s `BASE_URL`) rather than
-assuming the type is accurate. Confirmed/fixed so far: `megaMenu`,
-`topArtists`, `download_url` (song/episode `more_info.encrypted_media_url`).
-Other procedures (`charts`, `topShows`, `featuredStations`,
-`featuredPlaylists`, `topAlbums`, song/album/artist/playlist `details`) show
-the same `title`/`perma_url` raw naming but need deeper per-field reshaping
-(nested `more_info` flattening, `explicit_content` string->boolean, etc.),
-not just a rename - unverified, do not assume they're broken or fine without
-checking case by case.
+Every `@infinitunes/trpc` procedure (`packages/trpc/src/router/index.ts`) does
+`return api(endpoints...)` unmodified - raw untransformed JioSaavn JSON - with
+the single documented exception of `withDownloadUrl` (decrypts
+`more_info.encrypted_media_url` into `download_url`, needs `JIOSAAVN_DES_KEY`).
+`@infinitunes/types` (`packages/types/src/*.ts`) now describes that true raw
+shape end to end (`title`/`perma_url`/`explicit_content` strings, nested
+`more_info`, camelCase module container keys like `songsBysameArtists`,
+`currentlyTrending`), verified against both the `jiosaavn-api` project's
+`*Request` reference types and live upstream curls. Notable raw-shape quirks
+that are easy to get wrong again:
+
+- Entities embedded in an `artistMap`/`similarArtists` list (`ArtistMini`,
+  `SimilarArtist`) use `name`, not `title`, like `Artist`/`Label` themselves -
+  only song/album/playlist/show/episode top-level objects use `title`.
+- `ShowDetails.type` is the literal `"season"`, not `"show"` - the show detail
+  page's own UI/routing concept of "this is a show" has to be derived
+  separately (see `apps/web/components/details-header/details-header.tsx`'s
+  `getKind`/`getId` handling of `Label` and `Artist`, which also lack a plain
+  `id`/`type` field and use `labelId`/`artistId` instead).
+- `Quality` (image/download URLs) is a plain templated string, never the
+  `{quality,link}[]` array shape some earlier normalized types assumed.
+- `TopShows.trendingPodcasts` is an array of `{items, module}` groups, not a
+  single `{data, title, subtitle}` object.
+- Before trusting any procedure's shape against its declared type, verify
+  live (curl the upstream `__call` from `endpoints.ts` via
+  `packages/trpc/src/lib/api.ts`'s `BASE_URL`) rather than assuming a type is
+  accurate - the `jiosaavn-api` reference project's own types are sometimes
+  stale vs. the live API (e.g. its `AllSearchRequest` album/song items say
+  `url`, live data says `perma_url`).
+- A `data.pages` value from `useInfiniteQuery` is one array per fetched page
+  (`T[][]`), not a flat `T[]` - `apps/web/.../episode-list.tsx` had a bare
+  `data.pages as Episode[]` cast (should be `.flat()`) that silently treated
+  a whole page-array as a single episode object; grep for `data.pages as` if
+  a `SongList`/`SongListClient` consumer throws on an undefined nested field
+  that the type says is required.
 
 ## Maintaining this file
 
@@ -81,4 +108,4 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
 - `message` is deprecated; `error` is the replacement.
 - `z.preprocess` signature accepts `(arg, ctx) => result` (second `ctx` param is new; single-arg callbacks still work).
 - `z.discriminatedUnion`, `.min()`, `.max()`, `.regex()`, `.refine()` APIs are unchanged.
-- See `apps/web/src/lib/env.ts` and `apps/web/src/lib/validations.ts` for usage examples.
+- See `apps/web/lib/env.ts` and `apps/web/lib/validations.ts` for usage examples.
