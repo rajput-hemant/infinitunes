@@ -1,7 +1,6 @@
 import type { Album } from "./album";
 import type { ArtistMap, ArtistMini } from "./artist";
-import type { MediaType, Quality } from "./misc";
-import type { Playlist } from "./playlist";
+import type { MediaType } from "./misc";
 import type { Song } from "./song";
 
 type SearchResults<T> = {
@@ -17,124 +16,178 @@ export type Search<T> = {
 
 export type TopSearch = {
   id: string;
-  name: string;
-  subtitle: string;
+  title: string;
+  subtitle?: string;
   type: MediaType;
-  image: Quality;
-  url: string;
-  explicit: boolean;
-  album: string;
-  artist_map: ArtistMap[];
+  image: string;
+  perma_url: string;
+  explicit_content: string;
+  more_info: Partial<{
+    album: string;
+    artistMap: ArtistMap[] | unknown[];
+    season_number: number;
+  }>;
 };
 
 export type AllSearch = {
   albums: SearchResults<{
     id: string;
-    name: string;
+    title: string;
     subtitle: string;
-    image: Quality;
-    music: string;
-    url: string;
     type: "album";
-    position: number;
-    year: number;
-    is_movie: boolean;
-    language: string;
-    song_pids: string;
+    image: string;
+    perma_url: string;
+    explicit_content: string;
+    description: string;
+    more_info: {
+      music: string;
+      ctr: number;
+      year: string;
+      is_movie: string;
+      language: string;
+      song_pids: string;
+    };
   }>;
   songs: SearchResults<{
     id: string;
-    name: string;
+    title: string;
     subtitle: string;
-    image: Quality;
-    album: string;
-    url: string;
     type: "song";
-    position: number;
-    primary_artists: string;
-    singers: string;
-    language: string;
+    image: string;
+    perma_url: string;
+    explicit_content: string;
+    description: string;
+    more_info: {
+      album: string;
+      album_id: string;
+      ctr: number;
+      score: string;
+      vcode?: string;
+      vlink?: string;
+      primary_artists: string;
+      singers: string;
+      video_available: boolean | null;
+      triller_available: boolean;
+      language: string;
+    };
   }>;
   playlists: SearchResults<{
     id: string;
-    name: string;
+    title: string;
     subtitle: string;
-    image: Quality;
-    extra: string;
-    url: string;
-    language: string;
     type: "playlist";
-    position: number;
-    firstname: string;
-    lastname: string;
-    artist_name: string;
-    entity_type: string;
-    entity_sub_type: string;
-    is_dolby_content: boolean;
-    sub_types: string;
+    image: string;
+    perma_url: string;
+    explicit_content: string;
+    description: string;
+    more_info: Partial<{
+      uid: string;
+      firstname: string;
+      lastname: string;
+      artist_name: string[] | null;
+      entity_type: string;
+      entity_sub_type: string;
+      video_available: boolean;
+      is_dolby_content: boolean | null;
+      sub_types: string | null;
+      song_count: string;
+      language: string;
+    }>;
   }>;
   artists: SearchResults<{
     id: string;
-    name: string;
-    image: Quality;
+    title: string;
+    image: string;
     extra: string;
-    url: string;
     type: "artist";
-    subtitle: string;
+    description: string;
+    ctr: number;
     entity: number;
+    isRadioPresent: boolean;
     position: number;
   }>;
-  top_query: SearchResults<
-    AllSearch["songs"]["data"][0] & {
-      type: MediaType;
-    }
-  >;
+  topquery: SearchResults<{
+    id: string;
+    title: string;
+    image: string;
+    extra: string;
+    type: MediaType;
+    description: string;
+    ctr: number;
+    entity: number;
+    isRadioPresent: boolean;
+    position: number;
+  }>;
   shows: SearchResults<{
     id: string;
-    name: string;
-    image: Quality;
-    type: "show";
-    season_number: number;
+    title: string;
     subtitle: string;
-    url: string;
-    position: number;
+    type: "show";
+    image: string;
+    perma_url: string;
+    explicit_content: string;
+    description: string;
+    more_info: { season_number: number };
   }>;
+  episodes: SearchResults<unknown>;
 };
 
 export type SongSearch = Search<Song>;
 
 export type AlbumSearch = Search<Album>;
 
-export type PlaylistSearch = Search<Playlist>;
+export type PlaylistSearch = Search<{
+  id: string;
+  title: string;
+  subtitle: string;
+  type: "playlist";
+  image: string;
+  perma_url: string;
+  explicit_content: string;
+  more_info: Partial<{
+    uid: string;
+    firstname: string;
+    lastname: string;
+    artist_name: string[] | null;
+    entity_type: string;
+    entity_sub_type: string;
+    video_available: boolean;
+    is_dolby_content: boolean | null;
+    sub_types: string | null;
+    song_count: string;
+    language: string;
+  }>;
+}>;
 
 export type ArtistSearch = Search<{
   id: string;
   name: string;
-  subtitle: string;
-  type: "artist";
   ctr: number;
   entity: number;
-  image: Quality;
+  image: string;
   role: string;
-  url: string;
-  is_radio_present: boolean;
+  perma_url: string;
+  type: "artist";
+  isRadioPresent: boolean;
   is_followed: boolean;
 }>;
 
 export type PodcastSearch = Search<{
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
-  type: "show";
-  image: Quality;
+  type: string;
+  image_file_url: string;
   partner_name: string;
   label_name: string;
-  explicit: boolean;
-  season: number;
+  explicit_content: number;
+  song_info: string;
+  latest_season_sequence: number;
+  square_image_url: string;
   artists: ArtistMini[];
   featured_artists: ArtistMini[];
   primary_artists: ArtistMini[];
-  url: string;
+  perma_url: string;
 }>;
 
 export type SearchReturnType =

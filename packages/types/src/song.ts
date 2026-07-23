@@ -1,5 +1,5 @@
 import type { ArtistMap } from "./artist";
-import type { Lang, Quality, Rights } from "./misc";
+import type { Lang, Rights } from "./misc";
 
 export type SongObj = {
   songs: Song[];
@@ -8,85 +8,95 @@ export type SongObj = {
 
 export type Song = {
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
   header_desc: string;
   type: "song";
-  url: string;
-  image: Quality;
+  perma_url: string;
+  image: string;
   language: string;
-  year: number;
-  play_count: number;
-  explicit: boolean;
-  list: string;
+  year: string;
+  play_count: string | number;
+  explicit_content: string;
+  list_count: string;
   list_type: string;
-  list_count: number;
-  music: string;
-  song?: string;
-  album: string;
-  album_id: string;
-  album_url: string;
-  label: string;
-  label_url: string;
-  origin: string;
-  is_dolby_content: boolean;
-  "320kbps": boolean;
-  download_url: Quality;
-  duration: number;
-  rights: Rights;
-  has_lyrics: boolean;
-  lyrics_id?: string;
-  lyrics_snippet: string;
-  starred: boolean;
-  copyright_text: string;
-  artist_map: ArtistMap;
-  release_date?: string;
-  vcode: string;
-  vlink: string;
-  triller_available: boolean;
+  list: string;
+  more_info: {
+    music: string;
+    song?: string;
+    album_id: string;
+    album: string;
+    label: string;
+    origin: string;
+    is_dolby_content: boolean;
+    "320kbps": string;
+    encrypted_media_url: string;
+    encrypted_cache_url: string;
+    album_url: string;
+    duration: string;
+    rights: Rights;
+    cache_state: string;
+    has_lyrics: string;
+    lyrics_snippet: string;
+    starred: string;
+    copyright_text: string;
+    artistMap: ArtistMap;
+    release_date?: string;
+    label_url: string;
+    vcode: string;
+    vlink: string;
+    triller_available: boolean;
+    request_jiotune_flag: boolean;
+    webp: string;
+    lyrics_id: string;
+    /** Injected server-side by `withDownloadUrl`, decrypted from `encrypted_media_url`. Not part of the raw upstream shape. */
+    download_url?: string;
+  };
+  /** Injected server-side by `withDownloadUrl`, decrypted from `more_info.encrypted_media_url`. Not part of the raw upstream shape. */
+  download_url?: string;
 };
 
 export type SongModules = {
-  recommend: {
+  reco: {
     title: string;
     subtitle: string;
     source: string;
     position: number;
-    params: {
-      id: string;
-      lang: Lang;
+    source_params: {
+      pid: string;
+      language: Lang;
     };
   };
-  currently_trending: {
+  currentlyTrending: {
     title: string;
     subtitle: string;
     source: string;
     position: number;
-    params: {
-      type: string;
-      lang: Lang;
+    source_params: {
+      entity_type: string;
+      entity_language: Lang;
     };
   };
-  songs_by_same_artists: {
+  songsBysameArtists: {
     title: string;
     subtitle: string;
     source: string;
     position: number;
-    params: {
-      artist_id: string;
+    source_params: {
+      artist_ids: string;
       song_id: string;
-      lang: Lang;
+      language: Lang;
     };
   };
-  songs_by_same_actors: {
+  songsBysameActors: {
     title: string;
     subtitle: string;
     source: string;
     position: number;
-    params: {
-      actor_id: string;
+    source_params: {
+      actor_ids: string;
       song_id: string;
-      lang: Lang;
+      language: Lang;
     };
   };
   artists: {

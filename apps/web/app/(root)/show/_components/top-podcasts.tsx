@@ -41,18 +41,28 @@ export function TopPodcasts({ initialTopShows }: Props) {
   return (
     <>
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {podcasts.map(({ id, name, url, subtitle, type, image, explicit }) => (
-          <SliderCard
-            key={id}
-            name={name}
-            url={url}
-            subtitle={subtitle}
-            type={type}
-            image={image}
-            explicit={explicit}
-            hidePlayButton
-          />
-        ))}
+        {podcasts.map(
+          ({
+            id,
+            title,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <SliderCard
+              key={id}
+              name={title}
+              url={perma_url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+              explicit={explicit_content}
+              hidePlayButton
+            />
+          ),
+        )}
       </div>
 
       {hasNextPage ? (

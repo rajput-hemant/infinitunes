@@ -1,5 +1,5 @@
 import type { Album } from "./album";
-import type { MediaType, Quality } from "./misc";
+import type { MediaType } from "./misc";
 import type { Playlist } from "./playlist";
 import type { Song } from "./song";
 
@@ -35,111 +35,140 @@ export type FeaturedPlaylists = Paginated<Playlist>;
 
 export type Chart = {
   id: string;
-  name: string;
+  title: string;
   subtitle?: string;
   type: "playlist";
-  image: Quality;
-  url: string;
-  explicit?: boolean;
+  image: string;
   count?: number;
-  first_name?: string;
   language?: string;
   listname?: string;
+  perma_url: string;
+  explicit_content?: string;
+  more_info?: Partial<{
+    firstname: string;
+    song_count: number;
+  }>;
 };
 
 export type TopShows = Paginated<TopShow> & {
-  trending_podcasts: {
-    title: string;
-    subtitle: string;
-    source: string;
-    data: {
+  trendingPodcasts: {
+    items: {
       id: string;
-      name: string;
+      title: string;
       subtitle: string;
       type: "show";
-      image: Quality;
-      url: string;
-      explicit: boolean;
+      image: string;
+      perma_url: string;
+      explicit_content: string;
+      more_info: { square_image?: string } | unknown[];
     }[];
-  };
+    module: {
+      source: string;
+      title: string;
+      subtitle: string;
+    };
+  }[];
 };
 
 export type TopShow = {
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
   type: "show";
-  image: Quality;
-  url: string;
-  explicit: boolean;
-  season_number: number;
-  release_date: string;
-  badge: string;
+  image: string;
+  perma_url: string;
+  explicit_content: string;
+  more_info: {
+    season_number: string;
+    release_date: string;
+    year: string;
+    badge: string;
+    square_image: string;
+  };
 };
 
 export type TopArtists = {
   top_artists: {
     artistid: string;
     name: string;
-    image: Quality;
-    perma_url: string;
+    image: string;
     follower_count: number;
     is_followed: boolean;
+    perma_url: string;
   }[];
 };
 
 export type TopAlbum = Paginated<Song | Album>;
 
 export type Radio = {
+  explicit_content: string;
   id: string;
-  name: string;
+  image: string;
+  perma_url: string;
   subtitle: string;
+  title: string;
   type: "radio_station";
-  image: Quality;
-  url: string;
-  explicit: boolean;
-  color?: string;
-  description?: string;
-  featured_station_type: MediaType;
-  language: string;
-  query?: string;
-  station_display_text: string;
+  more_info: {
+    color?: string;
+    description?: string;
+    featured_station_type: MediaType;
+    language: string;
+    query?: string;
+    station_display_text: string;
+  };
 };
 
 export type Mix = {
   id: string;
-  name: string;
+  title: string;
   subtitle: string;
   header_desc: string;
   type: "mix";
-  url: string;
-  image: Quality;
+  perma_url: string;
+  image: string;
   language: string;
-  year: number;
-  play_count: number;
-  explicit: boolean;
-  list_count: number;
+  year: string;
+  play_count: string;
+  explicit_content: string;
+  list_count: string;
   list_type: string;
-  songs: Song[];
-  user_id: string;
-  last_updated: string;
-  username: string;
-  firstname: string;
-  lastname: string;
-  is_followed: boolean;
-  share: number;
+  list: Song[];
+  more_info: {
+    uid: string;
+    last_updated: string;
+    username: string;
+    firstname: string;
+    lastname: string;
+    is_followed: string;
+    playlist_type: string;
+    share: string;
+  };
+  modules: {
+    list: {
+      source: string;
+      position: number;
+      score: string;
+      bucket: string;
+      scroll_type: string;
+      title: string;
+      subtitle: string;
+      highlight: string;
+      simpleHeader: boolean;
+      noHeader: boolean;
+      view_more: unknown[];
+    };
+  };
 };
 
 export type Label = {
-  id: string;
+  labelId: string;
   name: string;
-  image: Quality;
-  type: "label";
-  top_songs: {
+  image: string;
+  topSongs: {
     songs: Song[];
     total: number;
   };
-  top_albums: {
+  topAlbums: {
     albums: Album[];
     total: number;
   };
@@ -147,7 +176,7 @@ export type Label = {
     albums: string;
     songs: string;
   };
-  available_languages: string[];
+  availableLanguages: string[];
 };
 
 export type MegaMenu = {

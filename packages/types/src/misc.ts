@@ -14,7 +14,8 @@ export type MediaType =
   | "season"
   | "label";
 
-export type Quality = string | { quality: string; link: string }[];
+/** Raw JioSaavn images and (post-decryption) download links are a single templated URL string. */
+export type Quality = string;
 
 export type ImageQuality = "low" | "medium" | "high";
 

@@ -78,17 +78,17 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
         </TabsList>
 
         <TabsContent value={TABS.Songs}>
-          <SongList items={label.top_songs.songs} />
+          <SongList items={label.topSongs.songs} />
         </TabsContent>
 
         <TabsContent value={TABS.Albums}>
           <div className="flex w-full flex-wrap justify-between gap-y-4">
-            {label.top_albums.albums.map(
-              ({ id, name, url, subtitle, type, image }) => (
+            {label.topAlbums.albums.map(
+              ({ id, title, perma_url, subtitle, type, image }) => (
                 <SliderCard
                   key={id}
-                  name={name}
-                  url={url}
+                  name={title}
+                  url={perma_url}
                   subtitle={subtitle}
                   type={type}
                   image={image}

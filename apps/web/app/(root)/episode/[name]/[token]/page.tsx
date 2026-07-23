@@ -20,15 +20,15 @@ export async function generateMetadata({
   const episode = episodeObj.episodes[0];
 
   return {
-    title: episode.name,
+    title: episode.title,
     description: episode.subtitle,
     openGraph: {
-      title: episode.name,
+      title: episode.title,
       description: episode.subtitle,
       url: `/episode/${name}/${token}`,
       images: {
-        url: `/api/og?title=${episode.name}&description=${episode.subtitle}&image=${getImageSrc(episode.image, "high")}&square=true`,
-        alt: episode.name,
+        url: `/api/og?title=${episode.title}&description=${episode.subtitle}&image=${getImageSrc(episode.image, "high")}&square=true`,
+        alt: episode.title,
       },
     },
   };
@@ -47,7 +47,7 @@ export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
       </h2>
 
       <p className="max-w-3xl text-muted-foreground">
-        {episodeObj.episodes[0].description}
+        {episodeObj.episodes[0].more_info.description}
       </p>
     </div>
   );

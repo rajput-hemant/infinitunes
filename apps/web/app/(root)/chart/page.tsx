@@ -28,18 +28,28 @@ export default async function ChartsPage() {
       </h1>
 
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {charts.map(({ id, name, url, subtitle, type, image, explicit }) => (
-          <SliderCard
-            key={id}
-            name={name}
-            url={url}
-            subtitle={subtitle}
-            type={type}
-            image={image}
-            explicit={explicit}
-            aspect="video"
-          />
-        ))}
+        {charts.map(
+          ({
+            id,
+            title: chartTitle,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <SliderCard
+              key={id}
+              name={chartTitle}
+              url={perma_url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+              explicit={explicit_content}
+              aspect="video"
+            />
+          ),
+        )}
       </div>
 
       <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">

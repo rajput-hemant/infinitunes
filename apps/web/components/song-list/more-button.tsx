@@ -68,6 +68,26 @@ type MenuItem = {
   icon: LucideIcon;
 };
 
+function getItemName(item: Song | Episode | Queue): string {
+  return "title" in item ? item.title : item.name;
+}
+
+function getItemUrl(item: Song | Episode | Queue): string {
+  return "perma_url" in item ? item.perma_url : item.url;
+}
+
+function getItemAlbumUrl(item: Song | Episode | Queue): string | undefined {
+  return "more_info" in item && item.type === "song"
+    ? item.more_info.album_url
+    : undefined;
+}
+
+function getItemArtists(item: Song | Episode | Queue) {
+  return "more_info" in item
+    ? (item.more_info.artistMap?.primary_artists ?? [])
+    : item.artists;
+}
+
 export function TileMoreButton(props: TileMoreButtonProps) {
   const { user, item, showAlbum, playlists, className } = props;
 
@@ -110,10 +130,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     }
 
     const queue =
-      "artist_map" in item ? toQueue(item as Song | Episode) : (item as Queue);
+      "more_info" in item ? toQueue(item as Song | Episode) : (item as Queue);
     setQueue((q) => [...q, queue]);
 
-    toast(`"${item.name}" added to queue`);
+    toast(`"${getItemName(item)}" added to queue`);
   }
 
   function togglePlaylistDialog() {
@@ -131,7 +151,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   function addToPlaylist(id: string, name: string) {
     toast.promise(addSongsToPlaylist(id, [item.id]), {
       loading: "Adding songs to playlist...",
-      success: `"${item.name}" added to "${name}" playlist`,
+      success: `"${getItemName(item)}" added to "${name}" playlist`,
       error: (error) => error.message,
       finally: () => setDialogOpen(false),
     });
@@ -186,7 +206,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 <div className="relative aspect-square h-14 rounded-md">
                   <Image
                     src={getImageSrc(item.image, "low")}
-                    alt={item.name}
+                    alt={getItemName(item)}
                     fill
                     className="z-10 shrink-0 rounded-md"
                   />
@@ -195,7 +215,9 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 </div>
 
                 <div className="flex flex-col justify-start truncate text-start">
-                  <DrawerTitle className="truncate">{item.name}</DrawerTitle>
+                  <DrawerTitle className="truncate">
+                    {getItemName(item)}
+                  </DrawerTitle>
                   <DrawerDescription className="truncate">
                     {item.subtitle}
                   </DrawerDescription>
@@ -251,14 +273,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
               <TileMoreLinks
                 type={item.type}
-                itemUrl={item.url}
-                albumUrl={"album_url" in item ? item.album_url : undefined}
+                itemUrl={getItemUrl(item)}
+                albumUrl={getItemAlbumUrl(item)}
                 showAlbum={item.type === "song" ? showAlbum : false}
-                primaryArtists={
-                  "artists" in item
-                    ? item.artists
-                    : (item.artist_map?.primary_artists ?? [])
-                }
+                primaryArtists={getItemArtists(item)}
               />
             </div>
 
@@ -299,15 +317,11 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             <DropdownMenuSeparator className="my-2" />
             <TileMoreLinks
               type={item.type}
-              itemUrl={item.url}
-              albumUrl={"album_url" in item ? item.album_url : undefined}
+              itemUrl={getItemUrl(item)}
+              albumUrl={getItemAlbumUrl(item)}
               showAlbum={showAlbum}
               isDropdownItem
-              primaryArtists={
-                "artists" in item
-                  ? item.artists
-                  : (item.artist_map?.primary_artists ?? [])
-              }
+              primaryArtists={getItemArtists(item)}
             />
           </DropdownMenuContent>
         </DropdownMenu>

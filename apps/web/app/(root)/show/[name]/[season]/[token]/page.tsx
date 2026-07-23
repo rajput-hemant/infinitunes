@@ -33,15 +33,15 @@ export async function generateMetadata({
   const { show_details: show } = await getShowDetails(token, season);
 
   return {
-    title: show.name,
+    title: show.title,
     description: show.subtitle,
     openGraph: {
-      title: show.name,
+      title: show.title,
       description: show.subtitle,
       url: `/show/${name}/${season}/${token}`,
       images: {
-        url: `/api/og?title=${show.name}&description=${show.subtitle}&image=${getImageSrc(show.image, "high")}&square=true`,
-        alt: show.name,
+        url: `/api/og?title=${show.title}&description=${show.subtitle}&image=${getImageSrc(show.image, "high")}&square=true`,
+        alt: show.title,
       },
     },
   };
@@ -73,15 +73,16 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
           {seasons.reverse().map((s) => (
             <SliderCard
               key={s.id}
-              name={s.name}
-              url={s.url}
+              name={s.title}
+              url={s.perma_url}
               subtitle={s.subtitle}
               type="show"
               image={s.image}
               aspect="video"
               hidePlayButton
               isCurrentSeason={
-                season == Number(s.season_number) && seasons.length > 1
+                season == Number(s.more_info.season_number) &&
+                seasons.length > 1
               }
             />
           ))}
@@ -117,9 +118,9 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         key={episodes[0].id}
         user={user}
         showId={show_details.id}
-        season={Number(show_details.season_number)}
+        season={Number(show_details.more_info.season_number)}
         sort={sort}
-        totalEpisodes={Number(show_details.total_episodes)}
+        totalEpisodes={Number(show_details.more_info.total_episodes)}
         initialEpisodes={episodes}
         userFavorites={favorites}
         userPlaylists={playlists}
@@ -130,7 +131,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       </h2>
 
       <blockquote className="max-w-4xl italic text-muted-foreground">
-        {show_details.description}
+        {show_details.more_info.description}
       </blockquote>
     </div>
   );

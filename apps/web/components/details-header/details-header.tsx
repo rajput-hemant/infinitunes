@@ -1,6 +1,7 @@
 import type {
   Album,
   Artist,
+  ArtistMap,
   Episode,
   Label,
   Mix,
@@ -34,20 +35,36 @@ type DetailsItem =
   | Label
   | Mix;
 
+/** `Label` is the only DetailsItem variant with no raw `type`/`id` field (it has `labelId` instead). */
+function isLabel(item: DetailsItem): item is Label {
+  return "labelId" in item;
+}
+
+function getKind(
+  item: DetailsItem,
+): Exclude<DetailsItem, Label>["type"] | "label" {
+  return isLabel(item) ? "label" : item.type;
+}
+
 function getId(item: DetailsItem): string {
-  return (item as { id: string }).id;
+  if (isLabel(item)) return item.labelId;
+  if (item.type === "artist") return item.artistId;
+  return item.id;
 }
 
 function getVerified(item: DetailsItem): boolean {
-  return "is_verified" in item
-    ? Boolean((item as { is_verified: unknown }).is_verified)
-    : false;
+  return "isVerified" in item ? item.isVerified : false;
 }
 
 function getExplicit(item: DetailsItem): boolean {
-  return "explicit" in item
-    ? Boolean((item as { explicit: unknown }).explicit)
+  return "explicit_content" in item
+    ? Boolean(Number(item.explicit_content))
     : false;
+}
+
+function getArtistMap(item: DetailsItem): ArtistMap | undefined {
+  const info = (item as { more_info?: { artistMap?: ArtistMap } }).more_info;
+  return info?.artistMap;
 }
 
 type DetailsHeaderProps = {
@@ -55,12 +72,18 @@ type DetailsHeaderProps = {
 };
 
 export async function DetailsHeader({ item }: DetailsHeaderProps) {
+  const kind = getKind(item);
+
+  const list = "list" in item ? item.list : undefined;
   const songs =
-    item.type === "song"
-      ? [item]
-      : "songs" in item && Array.isArray((item as { songs: unknown }).songs)
-        ? (item as { songs: Song[] }).songs
-        : [];
+    kind === "song" ? [item as Song] : Array.isArray(list) ? list : [];
+
+  const albumDuration = Array.isArray(list)
+    ? list.reduce(
+        (sum, song) => sum + (Number(song.more_info.duration) || 0),
+        0,
+      )
+    : 0;
 
   const user = await getUser();
 
@@ -74,27 +97,22 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
   }
 
   const title = decode(
-    "title" in item
-      ? (item as { title: string }).title
-      : (item as { name: string }).name,
+    "title" in item ? item.title : (item as { name: string }).name,
   );
 
-  const artistMap =
-    "artist_map" in item
-      ? (item as { artist_map: Album["artist_map"] }).artist_map
-      : undefined;
+  const artistMap = getArtistMap(item);
 
   const albumUrl =
-    "album_url" in item ? (item as { album_url: string }).album_url : undefined;
+    kind === "song" ? (item as Song).more_info.album_url : undefined;
 
-  const permaUrl = "url" in item ? (item as { url: string }).url : "";
+  const permaUrl = "perma_url" in item ? item.perma_url : "";
 
   return (
     <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
           "relative aspect-square w-44 shrink-0 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64",
-          (item.type === "artist" || item.type === "label") && "rounded-full",
+          (kind === "artist" || kind === "label") && "rounded-full",
         )}
       >
         <ImageWithFallback
@@ -102,17 +120,17 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           width={200}
           height={200}
           alt={title}
-          fallback={`/images/placeholder/${item.type}.jpg`}
+          fallback={`/images/placeholder/${kind}.jpg`}
           className={cn(
             "size-full rounded-md object-cover",
-            (item.type === "artist" || item.type === "label") && "scale-105",
+            (kind === "artist" || kind === "label") && "scale-105",
           )}
         />
 
         <Skeleton
           className={cn(
             "absolute inset-0 -z-10",
-            (item.type === "artist" || item.type === "label") && "rounded-full",
+            (kind === "artist" || kind === "label") && "rounded-full",
           )}
         />
       </div>
@@ -136,22 +154,22 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
         </h1>
 
         <div className="min-w-0 space-y-2 break-words text-sm text-muted-foreground">
-          {(item.type === "song" || item.type === "episode") && (
+          {(kind === "song" || kind === "episode") && (
             <>
-              {item.type === "song" && (
+              {kind === "song" && (
                 <p>
                   <Link
                     href={getHref(albumUrl ?? "", "album")}
                     className="hover:text-foreground"
                   >
-                    {decode((item as Song).album)}
+                    {decode((item as Song).more_info.album)}
                   </Link>
                   {" by "}
                   {artistMap?.primary_artists?.map(
-                    ({ id, name, url }, i, arr) => (
+                    ({ id, name, perma_url }, i, arr) => (
                       <Link
                         key={id}
-                        href={getHref(url, "artist")}
+                        href={getHref(perma_url, "artist")}
                         className="hover:text-foreground"
                       >
                         {decode(name)}
@@ -162,17 +180,20 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                 </p>
               )}
 
-              {item.type === "episode" && <p>{decode(item.subtitle)}</p>}
+              {kind === "episode" && (
+                <p>{decode((item as Episode).subtitle)}</p>
+              )}
 
               <p className="capitalize">
-                {item.type}
+                {kind}
                 {" · "}
-                {(item as Song | Episode).play_count?.toLocaleString()} Plays
+                {Number(
+                  (item as Song | Episode).play_count,
+                ).toLocaleString()}{" "}
+                Plays
                 {" · "}
                 {formatDuration(
-                  String(
-                    (item as Song).duration ?? (item as Episode).duration ?? 0,
-                  ),
+                  (item as Song | Episode).more_info.duration,
                   "mm:ss",
                 )}
                 {" · "}
@@ -181,14 +202,14 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
             </>
           )}
 
-          {item.type === "album" && (
+          {kind === "album" && (
             <>
               <p className="hidden lg:block">
                 by{" "}
-                {artistMap?.artists?.map(({ id, name, url }, i, arr) => (
+                {artistMap?.artists?.map(({ id, name, perma_url }, i, arr) => (
                   <Link
                     key={id}
-                    href={getHref(url, "artist")}
+                    href={getHref(perma_url, "artist")}
                     title={decode(name)}
                     className="hover:text-foreground"
                   >
@@ -197,20 +218,20 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                   </Link>
                 ))}
                 {" · "}
-                {(item as Album).song_count ?? 0} Songs
+                {(item as Album).more_info.song_count ?? 0} Songs
                 {" · "}
-                {((item as Album).play_count ?? 0).toLocaleString()} Plays
+                {Number((item as Album).play_count || 0).toLocaleString()} Plays
                 {" · "}
-                {formatDuration(Number((item as Album).duration) || 0, "mm:ss")}
+                {formatDuration(albumDuration, "mm:ss")}
               </p>
 
               <div className="text-center lg:hidden">
                 <p>
                   by{" "}
-                  {artistMap?.artists?.map(({ id, name, url }, i) => (
+                  {artistMap?.artists?.map(({ id, name, perma_url }, i) => (
                     <Link
                       key={id}
-                      href={getHref(url, "artist")}
+                      href={getHref(perma_url, "artist")}
                       title={decode(name)}
                       className="hover:text-foreground"
                     >
@@ -221,71 +242,76 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                 </p>
 
                 <p className="capitalize">
-                  {item.type}
+                  {kind}
                   {" · "}
-                  {((item as Album).play_count ?? 0).toLocaleString()} Plays
+                  {Number(
+                    (item as Album).play_count || 0,
+                  ).toLocaleString()}{" "}
+                  Plays
                 </p>
               </div>
             </>
           )}
 
-          {item.type === "song" && (
+          {kind === "song" && (
             <p className="hidden w-fit text-sm text-muted-foreground hover:text-foreground lg:block">
-              <Link href={(item as Song).label_url ?? "#"}>
-                {decode((item as Song).copyright_text)}
+              <Link href={(item as Song).more_info.label_url ?? "#"}>
+                {decode((item as Song).more_info.copyright_text)}
               </Link>
             </p>
           )}
 
-          {item.type === "playlist" && (
+          {kind === "playlist" && (
             <p className="capitalize">
-              {decode(item.subtitle)}
+              {decode((item as Playlist).subtitle)}
               {" · "}
-              {(item as Playlist).subtitle_desc
+              {(item as Playlist).more_info.subtitle_desc
+                .slice()
                 .reverse()
                 .map((s, i, arr) => s + (i !== arr.length - 1 ? " · " : ""))}
             </p>
           )}
 
-          {item.type === "show" && (
+          {kind === "season" && (
             <p>
               Podcast{" · "}
-              {((item as ShowDetails).fan_count ?? 0).toLocaleString()} Fans
+              {Number(
+                (item as ShowDetails).more_info.fan_count || 0,
+              ).toLocaleString()}{" "}
+              Fans
             </p>
           )}
 
-          {item.type === "artist" && (
+          {kind === "artist" && (
             <p>
               Artist
               {" · "}
-              {((item as Artist).fan_count ?? 0).toLocaleString()} Listeners
+              {Number((item as Artist).fan_count || 0).toLocaleString()}{" "}
+              Listeners
             </p>
           )}
 
-          {item.type === "mix" && (
+          {kind === "mix" && (
             <p>
-              {decode((item as Mix).firstname)}
+              {decode((item as Mix).more_info.firstname)}
               {" · "}
-              {decode((item as Mix).lastname)}
+              {decode((item as Mix).more_info.lastname)}
               {" · "}
               {(item as Mix).list_count ?? 0} Songs
             </p>
           )}
 
-          {item.type === "label" && <p>Record Label</p>}
+          {kind === "label" && <p>Record Label</p>}
         </div>
 
-        {item.type !== "label" && (
+        {kind !== "label" && (
           <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
             <PlayButton
-              type={item.type}
+              type={kind === "season" ? "show" : kind}
               token={
-                item.type === "show"
+                kind === "season"
                   ? getId(item)
-                  : (item.type === "artist"
-                      ? (item as Artist).urls.songs
-                      : permaUrl
-                    )
+                  : (kind === "artist" ? (item as Artist).urls.songs : permaUrl)
                       .split("/")
                       .pop()!
               }
@@ -299,7 +325,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
             <LikeButton
               user={user}
-              type={item.type}
+              type={kind === "season" ? "show" : kind}
               token={getId(item)}
               name={title}
               favourites={favorites}
@@ -320,8 +346,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
             <MoreButton
               user={user}
               name={title}
-              subtitle={decode(item.subtitle)}
-              type={item.type}
+              subtitle={decode("subtitle" in item ? (item.subtitle ?? "") : "")}
+              type={kind === "season" ? "show" : kind}
               image={item.image}
               songs={songs ?? []}
               playlists={playlists}

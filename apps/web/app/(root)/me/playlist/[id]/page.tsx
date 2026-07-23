@@ -88,7 +88,7 @@ export default async function MyPlaylistsPage(props: Props) {
                   {" · "}
                   {formatDuration(
                     `${songsDetails.songs.reduce(
-                      (acc, song) => acc + Number(song.duration),
+                      (acc, song) => acc + Number(song.more_info.duration),
                       0,
                     )}`,
                     "mm:ss",

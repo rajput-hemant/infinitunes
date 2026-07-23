@@ -8,7 +8,7 @@ import {
   getPlaylistRecommendations,
   getTrending,
 } from "~/lib/jiosaavn-api";
-import { getImageSrc } from "~/lib/utils";
+import { decode, getImageSrc, toCardItem } from "~/lib/utils";
 
 type PlaylistPageProps = { params: Promise<{ name: string; token: string }> };
 
@@ -20,15 +20,15 @@ export async function generateMetadata({
   const playlist = await getPlaylistDetails(token);
 
   return {
-    title: playlist.name,
+    title: playlist.title,
     description: playlist.subtitle,
     openGraph: {
-      title: playlist.name,
+      title: playlist.title,
       description: playlist.subtitle,
       url: `/playlist/${name}/${token}`,
       images: {
-        url: `/api/og?title=${playlist.name}&description=${playlist.subtitle}&image=${getImageSrc(playlist.image, "high")}&square=true`,
-        alt: playlist.name,
+        url: `/api/og?title=${playlist.title}&description=${playlist.subtitle}&image=${getImageSrc(playlist.image, "high")}&square=true`,
+        alt: playlist.title,
       },
     },
   };
@@ -53,7 +53,8 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
 
   const { playlist, recommendations, trending } = await fetcher(token);
 
-  const songs = Array.isArray(playlist.songs) ? playlist.songs : [];
+  const songs = Array.isArray(playlist.list) ? playlist.list : [];
+  const artists = playlist.more_info.artists ?? [];
 
   return (
     <div className="space-y-4">
@@ -64,24 +65,30 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
       {recommendations.length > 0 && (
         <SliderList
           title={
-            playlist.modules?.related_playlist.title ?? "Recommended Playlists"
+            playlist.modules?.relatedPlaylist.title ?? "Recommended Playlists"
           }
-          items={recommendations}
+          items={recommendations.map(toCardItem)}
         />
       )}
 
       <SliderList
         title={
-          playlist.modules?.currently_trending_playlists.title ??
+          playlist.modules?.currentlyTrendingPlaylists.title ??
           "Trending Playlists"
         }
-        items={trending}
+        items={trending.map(toCardItem)}
       />
 
-      {playlist.artists && playlist.artists.length > 0 && (
+      {artists.length > 0 && (
         <SliderList
           title={playlist.modules?.artists.title ?? "Artists"}
-          items={playlist.artists}
+          items={artists.map((artist) => ({
+            id: artist.id,
+            name: decode(artist.name),
+            url: artist.perma_url,
+            type: artist.type,
+            image: artist.image,
+          }))}
         />
       )}
     </div>

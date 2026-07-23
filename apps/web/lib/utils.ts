@@ -74,17 +74,44 @@ export function getToken(url: string | undefined): string {
   return url.split("/").filter(Boolean).pop() ?? "";
 }
 
+type RawCardItem = {
+  id: string;
+  title: string;
+  perma_url: string;
+  subtitle?: string;
+  type: MediaType;
+  image: string;
+  explicit_content?: string;
+};
+
+/**
+ * Adapts a raw JioSaavn item (title/perma_url/explicit_content) to the
+ * `SliderCard`/`SliderList` prop shape (name/url/explicit) - a client-only
+ * presentational contract, not a wire shape.
+ */
+export function toCardItem(item: RawCardItem) {
+  return {
+    id: item.id,
+    name: decode(item.title),
+    url: item.perma_url,
+    subtitle: item.subtitle ? decode(item.subtitle) : undefined,
+    type: item.type,
+    image: item.image,
+    explicit: item.explicit_content,
+  };
+}
+
 export function toQueue(item: Song | Episode): Queue {
   return {
     id: item.id,
-    name: decode(item.name),
+    name: decode(item.title),
     subtitle: decode(item.subtitle),
-    url: item.url,
-    type: item.type as "song" | "episode",
+    url: item.perma_url,
+    type: item.type,
     image: getImageSrc(item.image),
-    artists: item.artist_map?.artists ?? [],
-    download_url: "download_url" in item ? item.download_url : "",
-    duration: item.duration ?? 0,
+    artists: item.more_info.artistMap?.artists ?? [],
+    download_url: item.download_url ?? item.more_info.download_url ?? "",
+    duration: Number(item.more_info.duration) || 0,
   };
 }
 

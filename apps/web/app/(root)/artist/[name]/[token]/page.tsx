@@ -9,7 +9,7 @@ import { SongList } from "~/components/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { getArtistDetails } from "~/lib/jiosaavn-api";
-import { decode, getImageSrc } from "~/lib/utils";
+import { decode, getImageSrc, toCardItem } from "~/lib/utils";
 
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
@@ -70,7 +70,7 @@ export default async function ArtistDetailsPage(props: Props) {
       break;
   }
 
-  const topSongs = artist.top_songs ?? [];
+  const topSongs = artist.topSongs ?? [];
 
   return (
     <div className="space-y-4">
@@ -83,7 +83,7 @@ export default async function ArtistDetailsPage(props: Props) {
 
         <TabsContent value={TABS.Overview} className="space-y-4">
           <h2 className="pl-2 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:pl-0">
-            {artist.modules?.top_songs?.title}
+            {artist.modules?.topSongs?.title}
           </h2>
           <SongList items={topSongs.slice(0, 10)} />
         </TabsContent>
@@ -93,7 +93,7 @@ export default async function ArtistDetailsPage(props: Props) {
 
           <ArtistsTopItems
             key={topSongs[0]?.id}
-            id={artist.id}
+            id={artist.artistId}
             type="songs"
             category={cat}
             user={user}
@@ -107,14 +107,14 @@ export default async function ArtistDetailsPage(props: Props) {
           <CategoryFilter category={cat ?? "popularity"} />
 
           <ArtistsTopItems
-            key={artist.top_albums?.[0]?.id}
-            id={artist.id}
+            key={artist.topAlbums?.[0]?.id}
+            id={artist.artistId}
             type="albums"
             category={cat}
             user={user}
             userFavorites={favorites}
             userPlaylists={playlists}
-            initialAlbums={artist.top_albums}
+            initialAlbums={artist.topAlbums}
           />
         </TabsContent>
 
@@ -123,7 +123,7 @@ export default async function ArtistDetailsPage(props: Props) {
             <small
               className="leading-2"
               dangerouslySetInnerHTML={{
-                __html: decode(artist.bio?.[0]?.text ?? ""),
+                __html: decode(artist.bio ?? ""),
               }}
             />
           )}
@@ -132,38 +132,44 @@ export default async function ArtistDetailsPage(props: Props) {
 
       <SliderList
         title={artist.modules?.dedicated_artist_playlist?.title ?? "Playlists"}
-        items={artist.dedicated_artist_playlist ?? []}
+        items={(artist.dedicated_artist_playlist ?? []).map(toCardItem)}
       />
 
       <SliderList
         title={artist.modules?.featured_artist_playlist?.title ?? "Playlists"}
-        items={artist.featured_artist_playlist ?? []}
+        items={(artist.featured_artist_playlist ?? []).map(toCardItem)}
       />
 
       <SliderList
-        title={artist.modules?.top_albums?.title ?? "Albums"}
-        items={artist.top_albums ?? []}
+        title={artist.modules?.topAlbums?.title ?? "Albums"}
+        items={(artist.topAlbums ?? []).map(toCardItem)}
       />
 
       <SliderList
-        title={artist.modules?.top_songs?.title ?? "Songs"}
-        items={topSongs}
+        title={artist.modules?.topSongs?.title ?? "Songs"}
+        items={topSongs.map(toCardItem)}
       />
 
       <SliderList
         title={artist.modules?.singles?.title ?? "Singles"}
-        items={artist.singles ?? []}
+        items={(artist.singles ?? []).map(toCardItem)}
       />
 
       <SliderList
         title={artist.modules?.latest_release?.title ?? "Latest Release"}
-        items={artist.latest_release ?? []}
+        items={(artist.latest_release ?? []).map(toCardItem)}
       />
 
       <SliderList
-        title={artist.modules?.similar_artists?.title ?? "Similar Artists"}
+        title={artist.modules?.similarArtists?.title ?? "Similar Artists"}
         items={
-          artist.similar_artists?.map((s) => ({ ...s, image: s.image })) ?? []
+          artist.similarArtists?.map((s) => ({
+            id: s.id,
+            name: decode(s.name),
+            url: s.perma_url,
+            type: s.type,
+            image: s.image_url,
+          })) ?? []
         }
       />
     </div>

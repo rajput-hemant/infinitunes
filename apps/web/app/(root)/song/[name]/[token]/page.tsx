@@ -13,7 +13,7 @@ import {
   getSongRecommendations,
   getTrending,
 } from "~/lib/jiosaavn-api";
-import { getImageSrc } from "~/lib/utils";
+import { getImageSrc, toCardItem } from "~/lib/utils";
 
 import { Lyrics } from "./_components/lyrics";
 
@@ -33,15 +33,15 @@ export async function generateMetadata({
   const song = songObj.songs[0];
 
   return {
-    title: song.name,
+    title: song.title,
     description: song.subtitle,
     openGraph: {
-      title: song.name,
+      title: song.title,
       description: song.subtitle,
       url: `/song/${name}/${token}`,
       images: {
-        url: `/api/og?title=${song.name}&description=${song.subtitle}&image=${getImageSrc(song.image, "high")}&square=true`,
-        alt: song.name,
+        url: `/api/og?title=${song.title}&description=${song.subtitle}&image=${getImageSrc(song.image, "high")}&square=true`,
+        alt: song.title,
       },
     },
   };
@@ -50,9 +50,9 @@ async function fetcher(token: string) {
   const data = await getSongDetails(token);
   const song = data.songs[0];
   const modules = data.modules!;
-  const artistsTopSongsParams = modules.songs_by_same_artists.params;
-  const actorsTopSongsParams = modules.songs_by_same_actors.params;
-  const isActorPresent = song.artist_map?.artists?.some(
+  const artistsTopSongsParams = modules.songsBysameArtists.source_params;
+  const actorsTopSongsParams = modules.songsBysameActors.source_params;
+  const isActorPresent = song.more_info.artistMap?.artists?.some(
     (artist) => artist.role === "starring",
   );
 
@@ -64,20 +64,20 @@ async function fetcher(token: string) {
     songsFromSameArtists,
     songsFromSameActors,
   ] = await Promise.all([
-    song.has_lyrics ? getLyrics(song.id ?? "") : undefined,
-    getAlbumDetails(song.album_url.split("/").pop()!),
+    song.more_info.has_lyrics === "true" ? getLyrics(song.id ?? "") : undefined,
+    getAlbumDetails(song.more_info.album_url.split("/").pop()!),
     getSongRecommendations(song.id),
     getTrending("song"),
     getArtistTopSongs(
-      artistsTopSongsParams.artist_id,
+      artistsTopSongsParams.artist_ids,
       artistsTopSongsParams.song_id,
-      artistsTopSongsParams.lang,
+      artistsTopSongsParams.language,
     ),
     isActorPresent
       ? getActorsTopSongs(
-          actorsTopSongsParams.actor_id,
+          actorsTopSongsParams.actor_ids,
           actorsTopSongsParams.song_id,
-          actorsTopSongsParams.lang,
+          actorsTopSongsParams.language,
         )
       : undefined,
   ]);
@@ -85,8 +85,8 @@ async function fetcher(token: string) {
   return {
     song,
     lyrics,
-    albumSongs: Array.isArray(album.songs)
-      ? album.songs.filter((s: { id: string }) => s.id !== song.id)
+    albumSongs: Array.isArray(album.list)
+      ? album.list.filter((s) => s.id !== song.id)
       : [],
     recommendations,
     trending,
@@ -119,7 +119,7 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
       {albumSongs.length > 0 && (
         <>
           <h2 className="pl-2 font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl lg:pl-0">
-            More from {song.album}
+            More from {song.more_info.album}
           </h2>
           <Separator />
           <SongList items={albumSongs} />
@@ -127,30 +127,42 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
       )}
 
       {recommendations.length > 0 && (
-        <SliderList title={modules.recommend.title} items={recommendations} />
-      )}
-
-      {trending.length > 0 && (
-        <SliderList title={modules.currently_trending.title} items={trending} />
+        <SliderList
+          title={modules.reco.title}
+          items={recommendations.map(toCardItem)}
+        />
       )}
 
       {trending.length > 0 && (
         <SliderList
-          title={modules.songs_by_same_artists.title}
-          items={songsFromSameArtists}
+          title={modules.currentlyTrending.title}
+          items={trending.map(toCardItem)}
+        />
+      )}
+
+      {trending.length > 0 && (
+        <SliderList
+          title={modules.songsBysameArtists.title}
+          items={songsFromSameArtists.map(toCardItem)}
         />
       )}
 
       {songsFromSameActors && songsFromSameActors.length > 0 && (
         <SliderList
-          title={modules.songs_by_same_actors.title}
-          items={songsFromSameActors}
+          title={modules.songsBysameActors.title}
+          items={songsFromSameActors.map(toCardItem)}
         />
       )}
 
       <SliderList
         title={modules.artists.title}
-        items={song.artist_map?.artists ?? []}
+        items={(song.more_info.artistMap?.artists ?? []).map((artist) => ({
+          id: artist.id,
+          name: artist.name,
+          url: artist.perma_url,
+          type: artist.type,
+          image: artist.image,
+        }))}
       />
     </div>
   );

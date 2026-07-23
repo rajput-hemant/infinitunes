@@ -30,15 +30,14 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
     try {
       await Promise.all(
         songs.map(async (song) => {
-          const name = "name" in song ? song.name : "";
-          const download_url = "download_url" in song ? song.download_url : "";
-          const link = Array.isArray(download_url)
-            ? (download_url[downloadQualityIndex]?.link ??
-              download_url[0]?.link)
-            : download_url;
+          const name = song.title;
+          const links = (song.download_url ?? song.more_info.download_url ?? "")
+            .split(",")
+            .filter(Boolean);
+          const link = links[downloadQualityIndex] ?? links[0];
           if (!link) return;
 
-          const response = await fetch(link as string);
+          const response = await fetch(link);
 
           if (!response.body) return;
 
@@ -114,7 +113,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
 
       <TooltipContent>
         {songs.length === 1
-          ? `Download \`${"name" in songs[0] ? songs[0].name : ""}\``
+          ? `Download \`${songs[0]?.title ?? ""}\``
           : `Download ${songs.length} songs`}
       </TooltipContent>
     </Tooltip>

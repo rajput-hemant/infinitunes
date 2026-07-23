@@ -43,8 +43,8 @@ export function SearchAll({ query, data }: SearchAllProps) {
               {value.data.map((item) => {
                 const t = item as unknown as {
                   id: string;
-                  name: string;
-                  url: string;
+                  title: string;
+                  perma_url: string;
                   subtitle?: string;
                   type: MediaType;
                   image: Quality;
@@ -52,13 +52,13 @@ export function SearchAll({ query, data }: SearchAllProps) {
                 return (
                   <Link
                     key={t.id}
-                    href={getHref(t.url, t.type)}
+                    href={getHref(t.perma_url, t.type)}
                     className="flex gap-2 rounded-md p-2 hover:bg-secondary"
                   >
                     <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded border">
                       <ImageWithFallback
                         src={getImageSrc(t.image, "low")}
-                        alt={t.name}
+                        alt={t.title}
                         fill
                         className={cn(
                           "z-10 object-cover",
@@ -73,7 +73,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
 
                     <div className="my-auto w-[calc(100%-3rem)]">
                       <div className="truncate text-sm font-medium">
-                        {t.name}
+                        {t.title}
                       </div>
 
                       <div className="truncate text-xs capitalize text-muted-foreground">

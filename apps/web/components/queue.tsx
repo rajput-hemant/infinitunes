@@ -117,7 +117,7 @@ export function Queue() {
                         {item.artists.map((artist, i, arr) => (
                           <Link
                             key={artist.id}
-                            href={getHref(artist.url, "artist")}
+                            href={getHref(artist.perma_url, "artist")}
                             className="w-full truncate hover:text-foreground"
                           >
                             {artist.name}

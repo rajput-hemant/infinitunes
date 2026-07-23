@@ -67,35 +67,35 @@ export function PlayButton(props: PlayButtonProps) {
           const album = (await utils.album.details.fetch({
             token,
           })) as unknown as Album;
-          queue = Array.isArray(album.songs) ? album.songs : [];
+          queue = Array.isArray(album.list) ? album.list : [];
           break;
         }
         case "playlist": {
           const playlist = (await utils.playlist.details.fetch({
             token,
           })) as unknown as Playlist;
-          queue = Array.isArray(playlist.songs) ? playlist.songs : [];
+          queue = Array.isArray(playlist.list) ? playlist.list : [];
           break;
         }
         case "mix": {
           const mix = (await utils.get.mix.fetch({
             token,
           })) as unknown as Mix;
-          queue = Array.isArray(mix.songs) ? mix.songs : [];
+          queue = Array.isArray(mix.list) ? mix.list : [];
           break;
         }
         case "artist": {
           const artist = (await utils.artist.details.fetch({
             token,
           })) as unknown as Artist;
-          queue = artist.top_songs ?? [];
+          queue = artist.topSongs ?? [];
           break;
         }
         case "label": {
           const label = (await utils.get.label.fetch({
             token,
           })) as unknown as Label;
-          queue = label.top_songs.songs;
+          queue = label.topSongs.songs;
           break;
         }
         case "show": {
@@ -129,7 +129,7 @@ export function PlayButton(props: PlayButtonProps) {
       toast.success(
         `${queue.length} item${queue.length > 1 ? "s" : ""} has been added to the queue`,
         {
-          description: `Playing "${queue[0].name}"`,
+          description: `Playing "${_queue[0].name}"`,
           position: "bottom-center",
         },
       );

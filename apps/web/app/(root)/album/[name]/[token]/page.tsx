@@ -9,7 +9,7 @@ import {
   getAlbumRecommendations,
   getTrending,
 } from "~/lib/jiosaavn-api";
-import { decode, getImageSrc } from "~/lib/utils";
+import { decode, getImageSrc, toCardItem } from "~/lib/utils";
 
 type AlbumDetailsPageProps = {
   params: Promise<{ name: string; token: string }>;
@@ -23,15 +23,15 @@ export async function generateMetadata({
   const album = await getAlbumDetails(token);
 
   return {
-    title: album.name,
+    title: album.title,
     description: album.subtitle,
     openGraph: {
-      title: album.name,
+      title: album.title,
       description: album.subtitle,
       url: `/album/${name}/${token}`,
       images: {
-        url: `/api/og?title=${album.name}&description=${album.subtitle}&image=${getImageSrc(album.image, "high")}&square=true`,
-        alt: album.name,
+        url: `/api/og?title=${album.title}&description=${album.subtitle}&image=${getImageSrc(album.image, "high")}&square=true`,
+        alt: album.title,
       },
     },
   };
@@ -60,7 +60,7 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
 
   const { album, recommendations, trending, sameYear } = await fetcher(token);
 
-  const songs = Array.isArray(album.songs) ? album.songs : [];
+  const songs = Array.isArray(album.list) ? album.list : [];
 
   return (
     <div className="space-y-4">
@@ -70,39 +70,37 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
 
       {recommendations.length > 0 && (
         <SliderList
-          title={album.modules?.recommend?.title ?? "Recommended Albums"}
-          items={recommendations.map((a) => ({
-            id: a.id,
-            name: decode(a.name),
-            url: a.url,
-            subtitle: decode(a.subtitle),
-            type: a.type,
-            image: a.image,
-            explicit: a.explicit,
-          }))}
+          title={album.modules?.reco?.title ?? "Recommended Albums"}
+          items={recommendations.map(toCardItem)}
         />
       )}
 
       {trending.length > 0 && (
         <SliderList
-          title={album.modules?.currently_trending?.title ?? "Trending"}
-          items={trending}
+          title={album.modules?.currentlyTrending?.title ?? "Trending"}
+          items={trending.map(toCardItem)}
         />
       )}
 
       {sameYear.length > 0 && (
         <SliderList
           title={
-            album.modules?.top_albums_from_same_year?.title ??
+            album.modules?.topAlbumsFromSameYear?.title ??
             "Albums From Same Year"
           }
-          items={sameYear}
+          items={sameYear.map(toCardItem)}
         />
       )}
 
       <SliderList
         title={album.modules?.artists.title ?? "Artists"}
-        items={album.artist_map?.artists ?? []}
+        items={(album.more_info.artistMap?.artists ?? []).map((artist) => ({
+          id: artist.id,
+          name: decode(artist.name),
+          url: artist.perma_url,
+          type: artist.type,
+          image: artist.image,
+        }))}
       />
     </div>
   );
