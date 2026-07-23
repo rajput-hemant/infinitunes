@@ -150,8 +150,10 @@
     "packages/types": {
       "name": "@infinitunes/types",
       "version": "0.1.0",
-      "devDependencies": {
+      "dependencies": {
         "@infinitunes/auth": "workspace:*",
+      },
+      "devDependencies": {
         "@infinitunes/typescript-config": "workspace:*",
         "oxfmt": "^0.59.0",
         "oxlint": "^1.74.0",

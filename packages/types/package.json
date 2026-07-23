@@ -12,6 +12,9 @@
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\""
   },
+  "dependencies": {
+    "@infinitunes/auth": "workspace:*"
+  },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
     "oxlint": "^1.74.0",
