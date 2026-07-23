@@ -18,6 +18,46 @@ const ratelimit = new Ratelimit({
 });
 
 export async function proxy(req: NextRequest) {
+  const { nextUrl } = req;
+  const pathname = nextUrl.pathname;
+
+  // Origin / Referer check for /api/trpc requests
+  if (pathname.startsWith("/api/trpc") && req.method !== "OPTIONS") {
+    const origin = req.headers.get("origin");
+    const referer = req.headers.get("referer");
+    const host = req.headers.get("host");
+
+    const allowedOrigin =
+      env.AUTH_URL ?? (host ? `${nextUrl.protocol}//${host}` : null);
+
+    let isSameOrigin = false;
+
+    if (origin && allowedOrigin) {
+      try {
+        isSameOrigin = new URL(origin).origin === new URL(allowedOrigin).origin;
+      } catch {
+        isSameOrigin = false;
+      }
+    } else if (referer && allowedOrigin) {
+      try {
+        isSameOrigin =
+          new URL(referer).origin === new URL(allowedOrigin).origin;
+      } catch {
+        isSameOrigin = false;
+      }
+    } else if (!origin && !referer) {
+      // Same-origin server-to-server calls or direct internal fetches might omit origin/referer
+      isSameOrigin = true;
+    }
+
+    if (!isSameOrigin) {
+      return NextResponse.json(
+        { error: { message: "Forbidden: Invalid origin or referer" } },
+        { status: 403 },
+      );
+    }
+  }
+
   if (env.ENABLE_RATE_LIMITING === "true" && env.NODE_ENV === "production") {
     const id = getIP(req) || "anonymous";
     const { limit, pending, remaining, reset, success } =
@@ -45,9 +85,6 @@ export async function proxy(req: NextRequest) {
       );
     }
   }
-
-  const { nextUrl } = req;
-  const pathname = nextUrl.pathname;
 
   const sessionToken = getSessionCookie(req);
 
@@ -77,13 +114,13 @@ export async function proxy(req: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * Match all request paths except for:
+     * - api routes EXCEPT /api/trpc (which is matched for rate limiting & origin check)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api/(?!trpc)|_next/static|_next/image|favicon.ico).*)",
   ],
 };
 
