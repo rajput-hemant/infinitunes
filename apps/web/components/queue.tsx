@@ -1,5 +1,6 @@
 "use client";
 
+import type { Queue } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
@@ -18,7 +19,6 @@ import { toast } from "sonner";
 
 import { useQueue } from "~/hooks/use-store";
 import { getHref, getImageSrc, getToken } from "~/lib/utils";
-import type { Queue } from "~/types";
 
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
 
@@ -43,7 +43,7 @@ export function Queue() {
     // @ts-ignore
     if (song) {
       toast("Removed from queue", {
-        description: `Removed "${song.title}" from the queue`,
+        description: `Removed "${song.name}" from the queue`,
         duration: 10000,
       });
     }
@@ -86,7 +86,7 @@ export function Queue() {
                     <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                       <Image
                         src={getImageSrc(item.image, "low")}
-                        alt={item.title}
+                        alt={item.name}
                         fill
                         className="z-10 object-cover duration-300 group-hover:brightness-50"
                       />
@@ -96,7 +96,7 @@ export function Queue() {
                       <TilePlayPauseButton
                         id={item.id}
                         type={item.type}
-                        token={getToken(item.perma_url)}
+                        token={getToken(item.url)}
                       />
                     </div>
 
@@ -104,12 +104,12 @@ export function Queue() {
                       <h4 className="w-full truncate font-semibold">
                         <Link
                           href={getHref(
-                            item.perma_url,
+                            item.url,
                             item.type === "song" ? "song" : "episode",
                           )}
                           className="text-primary group-hover:text-primary lg:text-muted-foreground"
                         >
-                          {item.title}
+                          {item.name}
                         </Link>
                       </h4>
 
@@ -117,10 +117,10 @@ export function Queue() {
                         {item.artists.map((artist, i, arr) => (
                           <Link
                             key={artist.id}
-                            href={getHref(artist.perma_url, "artist")}
+                            href={getHref(artist.url, "artist")}
                             className="w-full truncate hover:text-foreground"
                           >
-                            {artist.title}
+                            {artist.name}
                             {i !== arr.length - 1 && ", "}
                           </Link>
                         ))}

@@ -33,15 +33,15 @@ export async function generateMetadata({
   const song = songObj.songs[0];
 
   return {
-    title: song.title,
+    title: song.name,
     description: song.subtitle,
     openGraph: {
-      title: song.title,
+      title: song.name,
       description: song.subtitle,
       url: `/song/${name}/${token}`,
       images: {
-        url: `/api/og?title=${song.title}&description=${song.subtitle}&image=${getImageSrc(song.image, "high")}&square=true`,
-        alt: song.title,
+        url: `/api/og?title=${song.name}&description=${song.subtitle}&image=${getImageSrc(song.image, "high")}&square=true`,
+        alt: song.name,
       },
     },
   };
@@ -52,7 +52,7 @@ async function fetcher(token: string) {
   const modules = data.modules!;
   const artistsTopSongsParams = modules.songs_by_same_artists.params;
   const actorsTopSongsParams = modules.songs_by_same_actors.params;
-  const isActorPresent = song.more_info.artistMap.artists?.some(
+  const isActorPresent = song.artist_map?.artists?.some(
     (artist) => artist.role === "starring",
   );
 
@@ -85,8 +85,8 @@ async function fetcher(token: string) {
   return {
     song,
     lyrics,
-    albumSongs: Array.isArray(album.list)
-      ? album.list.filter((s: { id: string }) => s.id !== song.id)
+    albumSongs: Array.isArray(album.songs)
+      ? album.songs.filter((s: { id: string }) => s.id !== song.id)
       : [],
     recommendations,
     trending,
@@ -150,7 +150,7 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
 
       <SliderList
         title={modules.artists.title}
-        items={song.more_info.artistMap.artists ?? []}
+        items={song.artist_map?.artists ?? []}
       />
     </div>
   );

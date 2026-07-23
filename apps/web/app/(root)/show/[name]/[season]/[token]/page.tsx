@@ -1,3 +1,4 @@
+import type { Sort } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -16,7 +17,6 @@ import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { getShowDetails } from "~/lib/jiosaavn-api";
 import { getImageSrc } from "~/lib/utils";
-import type { Sort } from "~/types";
 
 import { EpisodeList } from "./_components/episode-list";
 
@@ -33,15 +33,15 @@ export async function generateMetadata({
   const { show_details: show } = await getShowDetails(token, season);
 
   return {
-    title: show.title,
+    title: show.name,
     description: show.subtitle,
     openGraph: {
-      title: show.title,
+      title: show.name,
       description: show.subtitle,
       url: `/show/${name}/${season}/${token}`,
       images: {
-        url: `/api/og?title=${show.title}&description=${show.subtitle}&image=${getImageSrc(show.image, "high")}&square=true`,
-        alt: show.title,
+        url: `/api/og?title=${show.name}&description=${show.subtitle}&image=${getImageSrc(show.image, "high")}&square=true`,
+        alt: show.name,
       },
     },
   };
@@ -73,16 +73,15 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
           {seasons.reverse().map((s) => (
             <SliderCard
               key={s.id}
-              title={s.title}
-              perma_url={s.perma_url}
+              name={s.name}
+              url={s.url}
               subtitle={s.subtitle}
               type="show"
               image={s.image}
               aspect="video"
               hidePlayButton
               isCurrentSeason={
-                season == Number(s.more_info.season_number) &&
-                seasons.length > 1
+                season == Number(s.season_number) && seasons.length > 1
               }
             />
           ))}
@@ -118,9 +117,9 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         key={episodes[0].id}
         user={user}
         showId={show_details.id}
-        season={Number(show_details.more_info.season_number)}
+        season={Number(show_details.season_number)}
         sort={sort}
-        totalEpisodes={Number(show_details.more_info.total_episodes)}
+        totalEpisodes={Number(show_details.total_episodes)}
         initialEpisodes={episodes}
         userFavorites={favorites}
         userPlaylists={playlists}
@@ -131,7 +130,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       </h2>
 
       <blockquote className="max-w-4xl italic text-muted-foreground">
-        {show_details.more_info.description}
+        {show_details.description}
       </blockquote>
     </div>
   );

@@ -20,15 +20,15 @@ export async function generateMetadata({
   const mix = await getMixDetails(token);
 
   return {
-    title: mix.title,
+    title: mix.name,
     description: mix.subtitle,
     openGraph: {
-      title: mix.title,
+      title: mix.name,
       description: mix.subtitle,
       url: `/mix/${name}/${token}`,
       images: {
-        url: `/api/og?title=${mix.title}&description=${mix.subtitle}&image=${getImageSrc(mix.image, "high")}&square=true`,
-        alt: mix.title,
+        url: `/api/og?title=${mix.name}&description=${mix.subtitle}&image=${getImageSrc(mix.image, "high")}&square=true`,
+        alt: mix.name,
       },
     },
   };
@@ -42,7 +42,7 @@ export default async function MixDetailsPage(props: MixDetailsPageProps) {
     <div className="mb-4 space-y-4">
       <DetailsHeader item={mix} />
 
-      <SongList items={Array.isArray(mix.list) ? mix.list : []} />
+      <SongList items={Array.isArray(mix.songs) ? mix.songs : []} />
     </div>
   );
 }

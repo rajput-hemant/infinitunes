@@ -1,11 +1,11 @@
+import type { MediaType } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { cn } from "~/lib/utils";
-import type { Type } from "~/types";
 
 type DetailsHeaderSkeletonProps = {
-  type: Type;
+  type: MediaType;
 };
 
 export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
@@ -23,7 +23,7 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
       season: 2,
       show: 2,
       song: 3,
-    } satisfies Record<Type, number>
+    } satisfies Record<MediaType, number>
   )[type];
 
   return (

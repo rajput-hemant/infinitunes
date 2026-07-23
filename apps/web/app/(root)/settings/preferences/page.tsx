@@ -1,6 +1,5 @@
+import type { Lang } from "@infinitunes/types";
 import { cookies } from "next/headers";
-
-import type { Lang } from "~/types";
 
 import { PreferenceSettings } from "../_components/preference-settings";
 

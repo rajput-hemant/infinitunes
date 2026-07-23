@@ -1,10 +1,10 @@
+import type { MediaType } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
 import { SliderCard } from "~/components/slider";
 import { siteConfig } from "~/config/site";
 import { getHomeData } from "~/lib/jiosaavn-api";
 import { cn } from "~/lib/utils";
-import type { Type } from "~/types";
 
 const title = `Online Songs on ${siteConfig.name}: Download & Play Latest Music for Free`;
 
@@ -39,12 +39,12 @@ export default async function HomePage() {
 
     const items = section as {
       id: string;
-      title: string;
-      perma_url: string;
+      name: string;
+      url: string;
       subtitle?: string;
-      type: Type;
+      type: MediaType;
       image: string;
-      explicit_content?: string;
+      explicit?: boolean;
     }[];
 
     return (
@@ -63,27 +63,17 @@ export default async function HomePage() {
               ].includes(key),
             })}
           >
-            {items.map(
-              ({
-                id,
-                title,
-                perma_url,
-                subtitle,
-                type,
-                image,
-                explicit_content,
-              }) => (
-                <SliderCard
-                  key={id}
-                  title={title}
-                  perma_url={perma_url}
-                  subtitle={subtitle}
-                  type={type}
-                  image={image}
-                  explicit={explicit_content}
-                />
-              ),
-            )}
+            {items.map(({ id, name, url, subtitle, type, image, explicit }) => (
+              <SliderCard
+                key={id}
+                name={name}
+                url={url}
+                subtitle={subtitle}
+                type={type}
+                image={image}
+                explicit={explicit}
+              />
+            ))}
           </div>
 
           <ScrollBar orientation="horizontal" />

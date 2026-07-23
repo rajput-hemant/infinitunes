@@ -30,18 +30,16 @@ export default async function TopArtistsPage() {
       </h1>
 
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {topArtists.map(
-          ({ artistid, name, perma_url, follower_count, image }) => (
-            <SliderCard
-              key={artistid}
-              title={name}
-              perma_url={perma_url}
-              subtitle={`${follower_count.toLocaleString()} Fans`}
-              type="artist"
-              image={image}
-            />
-          ),
-        )}
+        {topArtists.map(({ id, name, url, follower_count, image }) => (
+          <SliderCard
+            key={id}
+            name={name}
+            url={url}
+            subtitle={`${follower_count.toLocaleString()} Fans`}
+            type="artist"
+            image={image}
+          />
+        ))}
       </div>
 
       <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">

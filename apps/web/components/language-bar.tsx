@@ -1,10 +1,10 @@
+import type { Lang } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import Link from "next/link";
 
 import { languages } from "~/config/languages";
 import { cn } from "~/lib/utils";
-import type { Lang } from "~/types";
 
 type LanguageBarProps = { language?: Lang };
 

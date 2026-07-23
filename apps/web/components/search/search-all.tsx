@@ -1,10 +1,10 @@
+import type { Quality, MediaType } from "@infinitunes/types";
+import type { AllSearch } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
 import { cn, getHref, getImageSrc } from "~/lib/utils";
-import type { Quality, Type } from "~/types";
-import type { AllSearch } from "~/types";
 
 import { ImageWithFallback } from "../image-with-fallback";
 
@@ -41,24 +41,24 @@ export function SearchAll({ query, data }: SearchAllProps) {
               <Separator className="my-2" />
 
               {value.data.map((item) => {
-                const t = item as {
+                const t = item as unknown as {
                   id: string;
-                  title: string;
-                  perma_url: string;
+                  name: string;
+                  url: string;
                   subtitle?: string;
-                  type: Type;
+                  type: MediaType;
                   image: Quality;
                 };
                 return (
                   <Link
                     key={t.id}
-                    href={getHref(t.perma_url, t.type)}
+                    href={getHref(t.url, t.type)}
                     className="flex gap-2 rounded-md p-2 hover:bg-secondary"
                   >
                     <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded border">
                       <ImageWithFallback
                         src={getImageSrc(t.image, "low")}
-                        alt={t.title}
+                        alt={t.name}
                         fill
                         className={cn(
                           "z-10 object-cover",
@@ -73,7 +73,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
 
                     <div className="my-auto w-[calc(100%-3rem)]">
                       <div className="truncate text-sm font-medium">
-                        {t.title}
+                        {t.name}
                       </div>
 
                       <div className="truncate text-xs capitalize text-muted-foreground">

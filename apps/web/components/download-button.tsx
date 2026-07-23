@@ -1,5 +1,7 @@
 "use client";
 
+import type { Episode, Song } from "@infinitunes/types";
+import { QUALITIES_MAP } from "@infinitunes/types";
 import {
   Tooltip,
   TooltipContent,
@@ -10,8 +12,6 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useDownloadQuality } from "~/hooks/use-store";
-import type { Episode, Song } from "~/types";
-import { QUALITIES_MAP } from "~/types/misc";
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   songs: (Song | Episode)[];
@@ -30,11 +30,15 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
     try {
       await Promise.all(
         songs.map(async (song) => {
-          const name = "title" in song ? song.title : "";
+          const name = "name" in song ? song.name : "";
           const download_url = "download_url" in song ? song.download_url : "";
-          if (!download_url) return;
+          const link = Array.isArray(download_url)
+            ? (download_url[downloadQualityIndex]?.link ??
+              download_url[0]?.link)
+            : download_url;
+          if (!link) return;
 
-          const response = await fetch(download_url);
+          const response = await fetch(link as string);
 
           if (!response.body) return;
 
@@ -110,7 +114,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
 
       <TooltipContent>
         {songs.length === 1
-          ? `Download \`${"title" in songs[0] ? songs[0].title : ""}\``
+          ? `Download \`${"name" in songs[0] ? songs[0].name : ""}\``
           : `Download ${songs.length} songs`}
       </TooltipContent>
     </Tooltip>

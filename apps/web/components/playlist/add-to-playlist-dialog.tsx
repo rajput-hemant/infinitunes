@@ -1,6 +1,7 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { User } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
@@ -12,8 +13,6 @@ import {
 } from "@infinitunes/ui/components/dialog";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { List, ListX } from "lucide-react";
-
-import type { User } from "~/types/user";
 
 import { NewPlaylistForm } from "./new-playlist-form";
 

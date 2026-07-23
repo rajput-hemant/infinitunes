@@ -1,6 +1,7 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { User } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Slider } from "@infinitunes/ui/components/slider";
@@ -46,7 +47,6 @@ import {
   getImageSrc,
   seededIndex,
 } from "~/lib/utils";
-import type { User } from "~/types/user";
 
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
@@ -288,7 +288,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
               <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
                 <ImageWithFallback
                   src={getImageSrc(queue[currentIndex].image, "low")}
-                  alt={queue[currentIndex].title}
+                  alt={queue[currentIndex].name}
                   fill
                   fallback="/images/placeholder/song.jpg"
                 />
@@ -299,12 +299,12 @@ function PlayerInner({ user, playlists }: PlayerProps) {
               <div className="flex flex-col justify-center">
                 <Link
                   href={getHref(
-                    queue[currentIndex].perma_url,
+                    queue[currentIndex].url,
                     queue[currentIndex].type === "song" ? "song" : "episode",
                   )}
                   className="group line-clamp-1 font-heading text-sm text-primary drop-shadow-sm"
                 >
-                  {queue[currentIndex].title}
+                  {queue[currentIndex].name}
                   <MoveUpRight className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible" />
                 </Link>
 

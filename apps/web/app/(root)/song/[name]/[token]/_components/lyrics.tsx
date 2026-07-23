@@ -1,5 +1,6 @@
 "use client";
 
+import { type Lyrics } from "@infinitunes/types";
 import {
   Accordion,
   AccordionContent,
@@ -7,8 +8,6 @@ import {
   AccordionTrigger,
 } from "@infinitunes/ui/components/accordion";
 import React from "react";
-
-import { type Lyrics } from "~/types";
 
 type LyricsProps = { lyrics: Lyrics };
 

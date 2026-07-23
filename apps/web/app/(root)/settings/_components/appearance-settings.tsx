@@ -1,5 +1,6 @@
 "use client";
 
+import type { ThemeConfig } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { setCookie } from "cookies-next";
 import { CheckIcon } from "lucide-react";
@@ -8,7 +9,6 @@ import { useRouter } from "next/navigation";
 
 import { themes } from "~/config/themes";
 import { cn } from "~/lib/utils";
-import type { ThemeConfig } from "~/types";
 
 const RADIUS = ["default", 0, 0.3, 0.5, 0.75, 1.0] as const;
 

@@ -1,8 +1,8 @@
+import type { Category } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import Link from "next/link";
 
 import { cn } from "~/lib/utils";
-import type { Category } from "~/types";
 
 type CategoryFilterProps = {
   category: Category;

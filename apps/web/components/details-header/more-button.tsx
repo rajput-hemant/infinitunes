@@ -1,6 +1,8 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { Quality, Queue, Song, MediaType } from "@infinitunes/types";
+import type { User } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -39,8 +41,6 @@ import { toast } from "sonner";
 import { useQueue } from "~/hooks/use-store";
 import { addSongsToPlaylist } from "~/lib/db/queries";
 import { currentlyInDev, getImageSrc, toQueue } from "~/lib/utils";
-import type { Quality, Queue, Song, Type } from "~/types";
-import type { User } from "~/types/user";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
@@ -48,7 +48,7 @@ import { ShareSubMenu } from "../share-submenu";
 
 type MoreButtonProps = {
   user?: User;
-  type: Type;
+  type: MediaType;
   image: Quality;
   name: string;
   subtitle: string;

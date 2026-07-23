@@ -23,15 +23,15 @@ export async function generateMetadata({
   const album = await getAlbumDetails(token);
 
   return {
-    title: album.title,
+    title: album.name,
     description: album.subtitle,
     openGraph: {
-      title: album.title,
+      title: album.name,
       description: album.subtitle,
       url: `/album/${name}/${token}`,
       images: {
-        url: `/api/og?title=${album.title}&description=${album.subtitle}&image=${getImageSrc(album.image, "high")}&square=true`,
-        alt: album.title,
+        url: `/api/og?title=${album.name}&description=${album.subtitle}&image=${getImageSrc(album.image, "high")}&square=true`,
+        alt: album.name,
       },
     },
   };
@@ -60,7 +60,7 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
 
   const { album, recommendations, trending, sameYear } = await fetcher(token);
 
-  const songs = Array.isArray(album.list) ? album.list : [];
+  const songs = Array.isArray(album.songs) ? album.songs : [];
 
   return (
     <div className="space-y-4">
@@ -70,22 +70,22 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
 
       {recommendations.length > 0 && (
         <SliderList
-          title={album.modules?.reco.title ?? "Recommended Albums"}
+          title={album.modules?.recommend?.title ?? "Recommended Albums"}
           items={recommendations.map((a) => ({
             id: a.id,
-            title: decode(a.title),
-            perma_url: a.perma_url,
+            name: decode(a.name),
+            url: a.url,
             subtitle: decode(a.subtitle),
             type: a.type,
             image: a.image,
-            explicit: a.explicit_content,
+            explicit: a.explicit,
           }))}
         />
       )}
 
       {trending.length > 0 && (
         <SliderList
-          title={album.modules?.currentlyTrending.title ?? "Trending"}
+          title={album.modules?.currently_trending?.title ?? "Trending"}
           items={trending}
         />
       )}
@@ -93,7 +93,7 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
       {sameYear.length > 0 && (
         <SliderList
           title={
-            album.modules?.topAlbumsFromSameYear.title ??
+            album.modules?.top_albums_from_same_year?.title ??
             "Albums From Same Year"
           }
           items={sameYear}
@@ -102,7 +102,7 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
 
       <SliderList
         title={album.modules?.artists.title ?? "Artists"}
-        items={album.more_info.artistMap.artists ?? []}
+        items={album.artist_map?.artists ?? []}
       />
     </div>
   );

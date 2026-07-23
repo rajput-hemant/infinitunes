@@ -20,15 +20,15 @@ export async function generateMetadata({
   const playlist = await getPlaylistDetails(token);
 
   return {
-    title: playlist.title,
+    title: playlist.name,
     description: playlist.subtitle,
     openGraph: {
-      title: playlist.title,
+      title: playlist.name,
       description: playlist.subtitle,
       url: `/playlist/${name}/${token}`,
       images: {
-        url: `/api/og?title=${playlist.title}&description=${playlist.subtitle}&image=${getImageSrc(playlist.image, "high")}&square=true`,
-        alt: playlist.title,
+        url: `/api/og?title=${playlist.name}&description=${playlist.subtitle}&image=${getImageSrc(playlist.image, "high")}&square=true`,
+        alt: playlist.name,
       },
     },
   };
@@ -53,7 +53,7 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
 
   const { playlist, recommendations, trending } = await fetcher(token);
 
-  const songs = Array.isArray(playlist.list) ? playlist.list : [];
+  const songs = Array.isArray(playlist.songs) ? playlist.songs : [];
 
   return (
     <div className="space-y-4">
@@ -64,7 +64,7 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
       {recommendations.length > 0 && (
         <SliderList
           title={
-            playlist.modules?.relatedPlaylist.title ?? "Recommended Playlists"
+            playlist.modules?.related_playlist.title ?? "Recommended Playlists"
           }
           items={recommendations}
         />
@@ -72,16 +72,16 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
 
       <SliderList
         title={
-          playlist.modules?.currentlyTrendingPlaylists.title ??
+          playlist.modules?.currently_trending_playlists.title ??
           "Trending Playlists"
         }
         items={trending}
       />
 
-      {playlist.more_info.artists && playlist.more_info.artists.length > 0 && (
+      {playlist.artists && playlist.artists.length > 0 && (
         <SliderList
           title={playlist.modules?.artists.title ?? "Artists"}
-          items={playlist.more_info.artists}
+          items={playlist.artists}
         />
       )}
     </div>

@@ -1,7 +1,8 @@
+import type { Lang } from "@infinitunes/types";
+
 import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
 import { getFeaturedPlaylists } from "~/lib/jiosaavn-api";
-import type { Lang } from "~/types";
 
 import { FeaturedPlaylists } from "./_components/featured-playlists";
 

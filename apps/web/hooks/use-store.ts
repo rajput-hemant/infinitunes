@@ -1,7 +1,6 @@
+import type { ImageQuality, Queue, StreamQuality } from "@infinitunes/types";
 import { atom, createStore, useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-
-import type { ImageQuality, Queue, StreamQuality } from "~/types";
 
 const store = createStore();
 

@@ -29,15 +29,15 @@ export async function generateMetadata({
   const description = "Record Label";
 
   return {
-    title: label.title,
+    title: label.name,
     description,
     openGraph: {
-      title: label.title,
+      title: label.name,
       description,
       url: `/label/${name}/${token}`,
       images: {
-        url: `/api/og?title=${label.title}&description=${description}&image=${getImageSrc(label.image, "high")}&square=true`,
-        alt: label.title,
+        url: `/api/og?title=${label.name}&description=${description}&image=${getImageSrc(label.image, "high")}&square=true`,
+        alt: label.name,
       },
     },
   };
@@ -78,17 +78,17 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
         </TabsList>
 
         <TabsContent value={TABS.Songs}>
-          <SongList items={label.topSongs.songs} />
+          <SongList items={label.top_songs.songs} />
         </TabsContent>
 
         <TabsContent value={TABS.Albums}>
           <div className="flex w-full flex-wrap justify-between gap-y-4">
-            {label.topAlbums.albums.map(
-              ({ id, title, perma_url, subtitle, type, image }) => (
+            {label.top_albums.albums.map(
+              ({ id, name, url, subtitle, type, image }) => (
                 <SliderCard
                   key={id}
-                  title={title}
-                  perma_url={perma_url}
+                  name={name}
+                  url={url}
                   subtitle={subtitle}
                   type={type}
                   image={image}

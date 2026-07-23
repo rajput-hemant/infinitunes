@@ -1,5 +1,6 @@
 "use client";
 
+import type { Album, SearchReturnType, Song } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
@@ -7,7 +8,6 @@ import { SliderCard } from "~/components/slider";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
-import type { Album, SearchReturnType, Song } from "~/types";
 
 type SearchResultsProps = {
   query: string;
@@ -65,18 +65,16 @@ export function SearchResults(props: SearchResultsProps) {
         <SongListClient items={searchResults as Song[]} />
       ) : (
         <div className="flex w-full flex-wrap justify-between gap-y-4">
-          {searchResults.map(
-            ({ id, title, perma_url, subtitle, type, image }) => (
-              <SliderCard
-                key={id}
-                title={title}
-                perma_url={perma_url}
-                subtitle={subtitle}
-                type={type}
-                image={image}
-              />
-            ),
-          )}
+          {searchResults.map(({ id, name, url, subtitle, type, image }) => (
+            <SliderCard
+              key={id}
+              name={name}
+              url={url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+            />
+          ))}
         </div>
       )}
 

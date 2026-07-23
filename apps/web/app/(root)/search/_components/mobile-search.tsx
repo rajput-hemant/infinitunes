@@ -1,5 +1,6 @@
 "use client";
 
+import type { AllSearch } from "@infinitunes/types";
 import { Input } from "@infinitunes/ui/components/input";
 import { Loader2, Search } from "lucide-react";
 import React from "react";
@@ -8,7 +9,6 @@ import { SearchAll } from "~/components/search/search-all";
 import { useDebounce } from "~/hooks/use-debounce";
 import { useIsTyping } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
-import type { AllSearch } from "~/types";
 
 type MobileSearchProps = {
   topSearch: React.JSX.Element;

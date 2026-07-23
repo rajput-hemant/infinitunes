@@ -29,6 +29,7 @@
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
     "@infinitunes/trpc": "workspace:*",
+    "@infinitunes/types": "workspace:*",
     "@infinitunes/ui": "workspace:*",
     "@tanstack/react-query": "^5.101.2",
     "@upstash/ratelimit": "^2.0.8",

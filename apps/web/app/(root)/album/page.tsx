@@ -1,7 +1,8 @@
+import type { Lang } from "@infinitunes/types";
+
 import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
 import { getTopAlbums } from "~/lib/jiosaavn-api";
-import type { Lang } from "~/types";
 
 import { TopAlbums } from "./_components/top-albums";
 

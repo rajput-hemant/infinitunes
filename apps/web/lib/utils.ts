@@ -1,13 +1,18 @@
+import type {
+  ImageQuality,
+  Quality,
+  StreamQuality,
+  MediaType,
+} from "@infinitunes/types";
+import type { Queue } from "@infinitunes/types";
+import type { Episode } from "@infinitunes/types";
+import type { Song } from "@infinitunes/types";
 import { clsx } from "clsx";
 import type { ClassValue } from "clsx";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 
 import { siteConfig } from "~/config/site";
-import type { ImageQuality, Quality, StreamQuality, Type } from "~/types";
-import type { Queue } from "~/types/misc";
-import type { Episode } from "~/types/show";
-import type { Song } from "~/types/song";
 
 function xmur3(str: string) {
   let h = 1779033703 ^ str.length;
@@ -69,21 +74,17 @@ export function getToken(url: string | undefined): string {
   return url.split("/").filter(Boolean).pop() ?? "";
 }
 
-/**
- * Maps a raw JioSaavn song/episode payload into a queue item.
- */
 export function toQueue(item: Song | Episode): Queue {
-  const more = item.more_info;
   return {
     id: item.id,
-    title: decode(item.title),
+    name: decode(item.name),
     subtitle: decode(item.subtitle),
-    perma_url: item.perma_url,
-    type: item.type,
+    url: item.url,
+    type: item.type as "song" | "episode",
     image: getImageSrc(item.image),
-    artists: more.artistMap?.artists ?? [],
+    artists: item.artist_map?.artists ?? [],
     download_url: "download_url" in item ? item.download_url : "",
-    duration: more.duration ?? "",
+    duration: item.duration ?? 0,
   };
 }
 
@@ -167,7 +168,7 @@ export function formatDuration(
     : date.toISOString().slice(14, 19);
 }
 
-export function getHref(url: string, type: Type) {
+export function getHref(url: string, type: MediaType) {
   if (!url) return "#";
   const re = /https:\/\/www.jiosaavn.com\/(s\/)?\w*/;
   return `/${url.replace(re, type)}`;

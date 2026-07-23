@@ -1,3 +1,4 @@
+import type { Category } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
@@ -9,7 +10,6 @@ import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { getArtistDetails } from "~/lib/jiosaavn-api";
 import { decode, getImageSrc } from "~/lib/utils";
-import type { Category } from "~/types";
 
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
@@ -27,15 +27,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const artist = await getArtistDetails(token);
 
   return {
-    title: artist.title,
+    title: artist.name,
     description: artist.subtitle,
     openGraph: {
-      title: artist.title,
+      title: artist.name,
       description: artist.subtitle,
       url: `/artist/${name}/${token}`,
       images: {
-        url: `/api/og?title=${artist.title}&description=${artist.subtitle}&image=${getImageSrc(artist.image, "high")}&square=true`,
-        alt: artist.title,
+        url: `/api/og?title=${artist.name}&description=${artist.subtitle}&image=${getImageSrc(artist.image, "high")}&square=true`,
+        alt: artist.name,
       },
     },
   };
@@ -70,7 +70,7 @@ export default async function ArtistDetailsPage(props: Props) {
       break;
   }
 
-  const topSongs = artist.topSongs ?? [];
+  const topSongs = artist.top_songs ?? [];
 
   return (
     <div className="space-y-4">
@@ -83,7 +83,7 @@ export default async function ArtistDetailsPage(props: Props) {
 
         <TabsContent value={TABS.Overview} className="space-y-4">
           <h2 className="pl-2 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:pl-0">
-            {artist.modules?.topSongs?.title}
+            {artist.modules?.top_songs?.title}
           </h2>
           <SongList items={topSongs.slice(0, 10)} />
         </TabsContent>
@@ -93,7 +93,7 @@ export default async function ArtistDetailsPage(props: Props) {
 
           <ArtistsTopItems
             key={topSongs[0]?.id}
-            id={artist.artistId}
+            id={artist.id}
             type="songs"
             category={cat}
             user={user}
@@ -107,14 +107,14 @@ export default async function ArtistDetailsPage(props: Props) {
           <CategoryFilter category={cat ?? "popularity"} />
 
           <ArtistsTopItems
-            key={artist.topAlbums?.[0]?.id}
-            id={artist.artistId}
+            key={artist.top_albums?.[0]?.id}
+            id={artist.id}
             type="albums"
             category={cat}
             user={user}
             userFavorites={favorites}
             userPlaylists={playlists}
-            initialAlbums={artist.topAlbums}
+            initialAlbums={artist.top_albums}
           />
         </TabsContent>
 
@@ -122,7 +122,9 @@ export default async function ArtistDetailsPage(props: Props) {
           {artist.bio && (
             <small
               className="leading-2"
-              dangerouslySetInnerHTML={{ __html: decode(artist.bio) }}
+              dangerouslySetInnerHTML={{
+                __html: decode(artist.bio?.[0]?.text ?? ""),
+              }}
             />
           )}
         </TabsContent>
@@ -139,12 +141,12 @@ export default async function ArtistDetailsPage(props: Props) {
       />
 
       <SliderList
-        title={artist.modules?.topAlbums?.title ?? "Albums"}
-        items={artist.topAlbums ?? []}
+        title={artist.modules?.top_albums?.title ?? "Albums"}
+        items={artist.top_albums ?? []}
       />
 
       <SliderList
-        title={artist.modules?.topSongs?.title ?? "Songs"}
+        title={artist.modules?.top_songs?.title ?? "Songs"}
         items={topSongs}
       />
 
@@ -159,8 +161,10 @@ export default async function ArtistDetailsPage(props: Props) {
       />
 
       <SliderList
-        title={artist.modules?.similarArtists?.title ?? "Similar Artists"}
-        items={artist.similarArtists.map((s) => ({ ...s, image: s.image_url }))}
+        title={artist.modules?.similar_artists?.title ?? "Similar Artists"}
+        items={
+          artist.similar_artists?.map((s) => ({ ...s, image: s.image })) ?? []
+        }
       />
     </div>
   );

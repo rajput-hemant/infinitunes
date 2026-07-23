@@ -1,5 +1,6 @@
 "use client";
 
+import type { FeaturedPlaylists, Lang } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
@@ -7,7 +8,6 @@ import React from "react";
 import { SliderCard } from "~/components/slider";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
-import type { FeaturedPlaylists, Lang } from "~/types";
 
 type Props = {
   initialPlaylists: FeaturedPlaylists;
@@ -45,23 +45,15 @@ export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
     <div className="py-6">
       <div className="flex w-full flex-wrap justify-between gap-y-4">
         {featuredPlaylists.map(
-          ({
-            id,
-            title,
-            perma_url,
-            subtitle,
-            type,
-            image,
-            explicit_content,
-          }) => (
+          ({ id, name, url, subtitle, type, image, explicit }) => (
             <SliderCard
               key={id}
-              title={title}
-              perma_url={perma_url}
+              name={name}
+              url={url}
               subtitle={subtitle}
               type={type}
               image={image}
-              explicit={explicit_content}
+              explicit={explicit}
             />
           ),
         )}

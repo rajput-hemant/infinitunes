@@ -1,5 +1,6 @@
 "use client";
 
+import type { AllSearch } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
@@ -16,7 +17,6 @@ import { useEventListener } from "~/hooks/use-event-listner";
 import { useIsTyping } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
 import { cn, isMacOs } from "~/lib/utils";
-import type { AllSearch } from "~/types";
 
 import { SearchAll } from "./search-all";
 

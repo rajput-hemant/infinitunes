@@ -29,11 +29,10 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
 
   const topShows = await getTopShows(page);
 
-  const trendingPodcasts = topShows.trendingPodcasts?.[0]?.items ?? [];
+  const trendingPodcasts = topShows.trending_podcasts?.data ?? [];
   const trendingTitle =
-    topShows.trendingPodcasts?.[0]?.module.title ?? "Trending Podcasts";
-  const trendingSubtitle =
-    topShows.trendingPodcasts?.[0]?.module.subtitle ?? "";
+    topShows.trending_podcasts?.title ?? "Trending Podcasts";
+  const trendingSubtitle = topShows.trending_podcasts?.subtitle ?? "";
 
   return (
     <div className="space-y-4">
@@ -50,24 +49,16 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
       <ScrollArea>
         <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 pb-6">
           {trendingPodcasts.map(
-            ({
-              id,
-              title: tTitle,
-              perma_url,
-              subtitle,
-              type,
-              image,
-              explicit_content,
-            }) => {
+            ({ id, name, url, subtitle, type, image, explicit }) => {
               return (
                 <SliderCard
                   key={id}
-                  title={title}
-                  perma_url={perma_url}
+                  name={name}
+                  url={url}
                   subtitle={subtitle}
                   type={type}
                   image={image}
-                  explicit={explicit_content}
+                  explicit={explicit}
                   hidePlayButton
                 />
               );

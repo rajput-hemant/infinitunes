@@ -30,6 +30,7 @@
         "@infinitunes/db": "workspace:*",
         "@infinitunes/env": "workspace:*",
         "@infinitunes/trpc": "workspace:*",
+        "@infinitunes/types": "workspace:*",
         "@infinitunes/ui": "workspace:*",
         "@tanstack/react-query": "^5.101.2",
         "@upstash/ratelimit": "^2.0.8",
@@ -140,6 +141,17 @@
         "zod": "^4.4.3",
       },
       "devDependencies": {
+        "@infinitunes/typescript-config": "workspace:*",
+        "oxfmt": "^0.59.0",
+        "oxlint": "^1.74.0",
+        "typescript": "^5.9.3",
+      },
+    },
+    "packages/types": {
+      "name": "@infinitunes/types",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@infinitunes/auth": "workspace:*",
         "@infinitunes/typescript-config": "workspace:*",
         "oxfmt": "^0.59.0",
         "oxlint": "^1.74.0",
@@ -382,6 +394,8 @@
     "@infinitunes/env": ["@infinitunes/env@workspace:packages/env"],
 
     "@infinitunes/trpc": ["@infinitunes/trpc@workspace:packages/trpc"],
+
+    "@infinitunes/types": ["@infinitunes/types@workspace:packages/types"],
 
     "@infinitunes/typescript-config": ["@infinitunes/typescript-config@workspace:packages/typescript-config"],
 

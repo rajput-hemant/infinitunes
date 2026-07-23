@@ -1,6 +1,8 @@
 "use client";
 
 import type { Favorite } from "@infinitunes/db/schema";
+import type { MediaType } from "@infinitunes/types";
+import type { User } from "@infinitunes/types";
 import {
   Tooltip,
   TooltipContent,
@@ -12,12 +14,10 @@ import { toast } from "sonner";
 
 import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
 import { cn, currentlyInDev } from "~/lib/utils";
-import type { Type } from "~/types";
-import type { User } from "~/types/user";
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   user?: User;
-  type: Type;
+  type: MediaType;
   name: string;
   token: string;
   favourites?: Favorite;

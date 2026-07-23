@@ -1,6 +1,8 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { Episode, Queue, Song } from "@infinitunes/types";
+import type { User } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -45,8 +47,6 @@ import {
 } from "~/hooks/use-store";
 import { addSongsToPlaylist } from "~/lib/db/queries";
 import { cn, currentlyInDev, getImageSrc, toQueue } from "~/lib/utils";
-import type { Episode, Queue, Song } from "~/types";
-import type { User } from "~/types/user";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
@@ -109,10 +109,11 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       return;
     }
 
-    const queue = "explicit_content" in item ? toQueue(item as Song) : item;
+    const queue =
+      "artist_map" in item ? toQueue(item as Song | Episode) : (item as Queue);
     setQueue((q) => [...q, queue]);
 
-    toast(`"${item.title}" added to queue`);
+    toast(`"${item.name}" added to queue`);
   }
 
   function togglePlaylistDialog() {
@@ -130,7 +131,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   function addToPlaylist(id: string, name: string) {
     toast.promise(addSongsToPlaylist(id, [item.id]), {
       loading: "Adding songs to playlist...",
-      success: `"${item.title}" added to "${name}" playlist`,
+      success: `"${item.name}" added to "${name}" playlist`,
       error: (error) => error.message,
       finally: () => setDialogOpen(false),
     });
@@ -185,7 +186,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 <div className="relative aspect-square h-14 rounded-md">
                   <Image
                     src={getImageSrc(item.image, "low")}
-                    alt={item.title}
+                    alt={item.name}
                     fill
                     className="z-10 shrink-0 rounded-md"
                   />
@@ -194,7 +195,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 </div>
 
                 <div className="flex flex-col justify-start truncate text-start">
-                  <DrawerTitle className="truncate">{item.title}</DrawerTitle>
+                  <DrawerTitle className="truncate">{item.name}</DrawerTitle>
                   <DrawerDescription className="truncate">
                     {item.subtitle}
                   </DrawerDescription>
@@ -250,13 +251,13 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
               <TileMoreLinks
                 type={item.type}
-                itemUrl={item.perma_url}
+                itemUrl={item.url}
                 albumUrl={"album_url" in item ? item.album_url : undefined}
                 showAlbum={item.type === "song" ? showAlbum : false}
                 primaryArtists={
                   "artists" in item
                     ? item.artists
-                    : item.more_info.artistMap.primary_artists
+                    : (item.artist_map?.primary_artists ?? [])
                 }
               />
             </div>
@@ -298,14 +299,14 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             <DropdownMenuSeparator className="my-2" />
             <TileMoreLinks
               type={item.type}
-              itemUrl={item.perma_url}
+              itemUrl={item.url}
               albumUrl={"album_url" in item ? item.album_url : undefined}
               showAlbum={showAlbum}
               isDropdownItem
               primaryArtists={
                 "artists" in item
                   ? item.artists
-                  : item.more_info.artistMap.primary_artists
+                  : (item.artist_map?.primary_artists ?? [])
               }
             />
           </DropdownMenuContent>

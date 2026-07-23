@@ -1,14 +1,14 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { Album, Category, Song } from "@infinitunes/types";
+import type { User } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { SliderCard } from "~/components/slider";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { api } from "~/lib/trpc/client";
-import type { Album, Category, Song } from "~/types";
-import type { User } from "~/types/user";
 
 type Props = {
   id: string;
@@ -106,27 +106,17 @@ export function ArtistsTopItems(props: Props) {
       />
 
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {albums.map(
-          ({
-            id,
-            title,
-            perma_url,
-            subtitle,
-            type,
-            image,
-            explicit_content,
-          }) => (
-            <SliderCard
-              key={id}
-              title={title}
-              perma_url={perma_url}
-              subtitle={subtitle}
-              type={type}
-              image={image}
-              explicit={explicit_content}
-            />
-          ),
-        )}
+        {albums.map(({ id, name, url, subtitle, type, image, explicit }) => (
+          <SliderCard
+            key={id}
+            name={name}
+            url={url}
+            subtitle={subtitle}
+            type={type}
+            image={image}
+            explicit={explicit}
+          />
+        ))}
       </div>
 
       {hasNextPage ? (

@@ -1,6 +1,7 @@
+import type { Lang } from "@infinitunes/types";
+
 import { LanguageBar } from "~/components/language-bar";
 import { getFeaturedRadioStations } from "~/lib/jiosaavn-api";
-import type { Lang } from "~/types";
 
 import { FeaturedStations } from "./_components/featured-stations";
 

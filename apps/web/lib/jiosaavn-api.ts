@@ -1,5 +1,4 @@
 import "server-only";
-import { api } from "~/lib/trpc/server";
 import type {
   Album,
   AllSearch,
@@ -29,7 +28,9 @@ import type {
   TopSearch,
   TopShows,
   Trending,
-} from "~/types";
+} from "@infinitunes/types";
+
+import { api } from "~/lib/trpc/server";
 
 /* -----------------------------------------------------------------------------------------------
  * /home route
