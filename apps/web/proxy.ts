@@ -1,9 +1,15 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { appRoutes } from "./config/routes";
+import {
+  appRoutes,
+  authRoutes,
+  DEFAULT_LOGIN_REDIRECT,
+  userRoutes,
+} from "./config/routes";
 import { env } from "./lib/env";
 
 const ratelimit = new Ratelimit({
@@ -41,7 +47,25 @@ export async function proxy(req: NextRequest) {
   }
 
   const { nextUrl } = req;
-  const paths = nextUrl.pathname.split("/").slice(1);
+  const pathname = nextUrl.pathname;
+
+  const sessionToken = getSessionCookie(req);
+
+  const isUserRoute = userRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+  if (isUserRoute && !sessionToken) {
+    return NextResponse.redirect(new URL("/login", nextUrl));
+  }
+
+  const isAuthRoute = authRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+  if (isAuthRoute && sessionToken) {
+    return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
+  }
+
+  const paths = pathname.split("/").slice(1);
 
   if (paths.length === 2 && appRoutes.includes(`/${paths[0]}`)) {
     return NextResponse.redirect(new URL(`/${paths[0]}`, nextUrl));
