@@ -41,6 +41,25 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `@source '../../../packages/ui/src';`. If a new workspace package ships
   components consumed by `apps/web`, add its source dir the same way.
 
+## packages/trpc raw-passthrough sharp edge
+
+Most `@infinitunes/trpc` procedures (`packages/trpc/src/router/index.ts`) do
+`return api(endpoints...)` unmodified - raw untransformed JioSaavn JSON. Some
+`@infinitunes/types` types (e.g. `MegaMenu`, `TopArtists`) describe a
+normalized shape (`name`/`url`, unwrapped) that does NOT match the real
+upstream JSON (`title`/`perma_url`, wrapped in a container key like
+`mega_menu`/`top_artists`). Before trusting a passthrough procedure's shape
+against its declared type, verify live (curl the upstream `__call` from
+`endpoints.ts` via `packages/trpc/src/lib/api.ts`'s `BASE_URL`) rather than
+assuming the type is accurate. Confirmed/fixed so far: `megaMenu`,
+`topArtists`, `download_url` (song/episode `more_info.encrypted_media_url`).
+Other procedures (`charts`, `topShows`, `featuredStations`,
+`featuredPlaylists`, `topAlbums`, song/album/artist/playlist `details`) show
+the same `title`/`perma_url` raw naming but need deeper per-field reshaping
+(nested `more_info` flattening, `explicit_content` string->boolean, etc.),
+not just a rename - unverified, do not assume they're broken or fine without
+checking case by case.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
