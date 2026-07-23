@@ -562,12 +562,31 @@ export const getRouter = router({
   }),
 
   topArtists: publicProcedure.input(getPagedInput).query(async ({ input }) => {
-    return api(endpoints.get.top_artists, {
+    const result = await api(endpoints.get.top_artists, {
       query: {
         p: input.page ?? "1",
         n: input.n ?? "20",
         languages: input.lang,
       },
+    });
+    const raw = (result as { top_artists?: unknown[] }).top_artists ?? [];
+    return raw.map((item) => {
+      const i = item as {
+        artistid: string;
+        name: string;
+        image: unknown;
+        follower_count: number;
+        is_followed: boolean;
+        perma_url: string;
+      };
+      return {
+        id: i.artistid,
+        name: i.name,
+        image: i.image,
+        url: i.perma_url,
+        follower_count: i.follower_count,
+        is_followed: i.is_followed,
+      };
     });
   }),
 
@@ -706,11 +725,24 @@ export const getRouter = router({
   }),
 
   megaMenu: publicProcedure.input(getMegaMenuInput).query(async ({ input }) => {
-    return api(endpoints.get.mega_menu, {
+    const result = await api(endpoints.get.mega_menu, {
       query: {
         is_entity_page: `${input.entity ?? false}`,
         language: input.lang,
       },
     });
+    const raw = (result as { mega_menu?: Record<string, unknown> }).mega_menu;
+    const toItems = (items: unknown) =>
+      Array.isArray(items)
+        ? items.map((item) => {
+            const i = item as { title: string; perma_url: string };
+            return { name: i.title, url: i.perma_url };
+          })
+        : [];
+    return {
+      top_artists: toItems(raw?.top_artists),
+      top_playlists: toItems(raw?.top_playlists),
+      new_releases: toItems(raw?.new_releases),
+    };
   }),
 });
