@@ -39,12 +39,12 @@ export default async function HomePage() {
 
     const items = section as {
       id: string;
-      name: string;
-      url: string;
+      title: string;
+      perma_url: string;
       subtitle?: string;
       type: MediaType;
       image: string;
-      explicit?: boolean;
+      explicit_content?: string | boolean;
     }[];
 
     return (
@@ -63,17 +63,38 @@ export default async function HomePage() {
               ].includes(key),
             })}
           >
-            {items.map(({ id, name, url, subtitle, type, image, explicit }) => (
-              <SliderCard
-                key={id}
-                name={name}
-                url={url}
-                subtitle={subtitle}
-                type={type}
-                image={image}
-                explicit={explicit}
-              />
-            ))}
+            {items.map(
+              ({
+                id,
+                title: itemTitle,
+                perma_url,
+                subtitle,
+                type: itemType,
+                image,
+                explicit_content,
+              }) => {
+                const sectionTypeMap: Record<string, MediaType> = {
+                  new_albums: "album",
+                  charts: "playlist",
+                  top_playlists: "playlist",
+                  radio: "radio_station",
+                };
+                const effectiveType =
+                  itemType || sectionTypeMap[key] || "playlist";
+
+                return (
+                  <SliderCard
+                    key={id || itemTitle}
+                    name={itemTitle}
+                    url={perma_url}
+                    subtitle={subtitle}
+                    type={effectiveType}
+                    image={image}
+                    explicit={explicit_content}
+                  />
+                );
+              },
+            )}
           </div>
 
           <ScrollBar orientation="horizontal" />

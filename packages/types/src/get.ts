@@ -78,13 +78,15 @@ export type TopShow = {
 };
 
 export type TopArtists = {
-  id: string;
-  name: string;
-  image: Quality;
-  url: string;
-  follower_count: number;
-  is_followed: boolean;
-}[];
+  top_artists: {
+    artistid: string;
+    name: string;
+    image: Quality;
+    perma_url: string;
+    follower_count: number;
+    is_followed: boolean;
+  }[];
+};
 
 export type TopAlbum = Paginated<Song | Album>;
 
@@ -149,12 +151,14 @@ export type Label = {
 };
 
 export type MegaMenu = {
-  top_artists: MegaMenuItem[];
-  top_playlists: MegaMenuItem[];
-  new_releases: MegaMenuItem[];
+  mega_menu: {
+    top_artists: MegaMenuItem[];
+    top_playlists: MegaMenuItem[];
+    new_releases: MegaMenuItem[];
+  };
 };
 
-type MegaMenuItem = {
-  name: string;
-  url: string;
+export type MegaMenuItem = {
+  title: string;
+  perma_url: string;
 };
