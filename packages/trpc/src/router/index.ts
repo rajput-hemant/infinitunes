@@ -58,9 +58,15 @@ function withDownloadUrl(item: unknown) {
 
 export const homeRouter = router({
   home: publicProcedure.input(homeInput).query(async ({ input }) => {
-    return api(endpoints.modules.launch_data, {
+    const result = await api(endpoints.modules.launch_data, {
       language: input.lang,
     });
+    const payload = result as Record<string, unknown>;
+    for (const value of Object.values(payload)) {
+      if (Array.isArray(value))
+        value.forEach((v, i, arr) => (arr[i] = withDownloadUrl(v)));
+    }
+    return result;
   }),
 });
 
@@ -142,12 +148,15 @@ export const albumRouter = router({
       },
       language: lang,
     });
-    if (!(result as Record<string, unknown>).id) {
+    const payload = result as { id?: string; list?: Record<string, unknown>[] };
+    if (!payload.id) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "No album found, please check the id, link or token",
       });
     }
+    if (Array.isArray(payload.list))
+      payload.list = payload.list.map(withDownloadUrl);
     return result;
   }),
 
@@ -209,12 +218,15 @@ export const playlistRouter = router({
       },
       language: lang,
     });
-    if (!(result as Record<string, unknown>).id) {
+    const payload = result as { id?: string; list?: Record<string, unknown>[] };
+    if (!payload.id) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "No playlist found, please check the id, link or token",
       });
     }
+    if (Array.isArray(payload.list))
+      payload.list = payload.list.map(withDownloadUrl);
     return result;
   }),
 
@@ -269,11 +281,18 @@ export const artistRouter = router({
       },
       language: lang,
     });
-    if (!(result as Record<string, unknown>).artistId) {
+    const payload = result as {
+      artistId?: string;
+      topSongs?: Record<string, unknown>[];
+    };
+    if (!payload.artistId) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Artist not found, please check the id or link",
       });
+    }
+    if (Array.isArray(payload.topSongs)) {
+      payload.topSongs = payload.topSongs.map(withDownloadUrl);
     }
     return result;
   }),
@@ -291,6 +310,12 @@ export const artistRouter = router({
         },
         language: input.lang,
       });
+      const payload = result as {
+        topSongs?: { songs?: Record<string, unknown>[] };
+      };
+      if (Array.isArray(payload.topSongs?.songs)) {
+        payload.topSongs.songs = payload.topSongs.songs.map(withDownloadUrl);
+      }
       return result;
     }),
 
@@ -329,7 +354,7 @@ export const artistRouter = router({
           message: "Artist not found, please check the ids",
         });
       }
-      return result;
+      return result.map(withDownloadUrl);
     }),
 });
 
