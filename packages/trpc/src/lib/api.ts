@@ -47,6 +47,7 @@ const cache = new Map<string, { expires: number; data: unknown }>();
 export async function api<T = unknown>(
   call: string,
   { isVersion4 = true, query = {}, language, signal }: ApiOptions = {},
+  fetchFn: typeof fetch = fetch,
 ): Promise<T> {
   const params = new URLSearchParams({
     _format: "json",
@@ -77,7 +78,7 @@ export async function api<T = unknown>(
       ? (AbortSignal.any?.([signal, controller.signal]) ?? signal)
       : controller.signal;
 
-    response = await fetch(url, {
+    response = await fetchFn(url, {
       headers: {
         cookie: `L=${langs}; gdpr_acceptance=true; DL=english`,
         "user-agent":
