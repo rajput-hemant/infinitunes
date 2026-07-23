@@ -24,6 +24,16 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `apps/web/.next/standalone/apps/web/server.js` (entrypoint `node apps/web/server.js`).
   `next.config.ts` sets `outputFileTracingRoot` to the repo root when `IS_DOCKER`.
 - `drizzle.config.ts` imports `@next/env` (declared in `apps/web` devDeps).
+- `packages/trpc/src/lib/download.ts`'s `createDownloadLinks` needs `JIOSAAVN_DES_KEY`
+  in `turbo.json` `globalPassThroughEnv` (alongside `JIOSAAVN_API_URL`) or every song's
+  `download_url` silently comes back empty under `bun run dev`/`build`, which crashes
+  the player (empty Howler src). Every song array a router returns must be mapped
+  through `withDownloadUrl` (see `packages/trpc/src/router/index.ts`) before reaching
+  the client, not just the song-details/podcast-episode endpoints.
+- `des-ecb` (used by `createDownloadLinks`) is unsupported by plain Node's default
+  OpenSSL 3 build (`next dev` runs under Node even when invoked via `bun run dev`), but
+  works under Bun's own crypto. Locally reproduce with `NODE_OPTIONS=--openssl-legacy-provider`;
+  don't add that flag to the repo, it's a local-verification workaround only.
 - Tailwind v4's automatic content scanning only covers `apps/web`. Utility
   classes/theme vars used exclusively inside `packages/ui/src` (e.g.
   `bg-sidebar`, `bg-popover`, `bg-card`) get tree-shaken out of the compiled
