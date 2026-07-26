@@ -1,4 +1,5 @@
 import type { Album } from "./album";
+import type { ModuleMeta } from "./modules";
 import type { Playlist } from "./playlist";
 import type { Song } from "./song";
 
@@ -14,13 +15,6 @@ export type ArtistTopSongsOrAlbums<T> = {
   last_page: boolean;
   songs: T[];
   albums: T[];
-};
-
-export type ArtistModule = {
-  title: string;
-  subtitle: string;
-  source: string;
-  position: number;
 };
 
 export type Artist = {
@@ -51,13 +45,13 @@ export type Artist = {
   fan_count: string;
   is_followed: boolean;
   modules: Partial<{
-    topSongs: ArtistModule;
-    latest_release: ArtistModule;
-    topAlbums: ArtistModule;
-    dedicated_artist_playlist: ArtistModule;
-    featured_artist_playlist: ArtistModule;
-    singles: ArtistModule;
-    similarArtists: ArtistModule;
+    topSongs: ModuleMeta;
+    latest_release: ModuleMeta;
+    topAlbums: ModuleMeta;
+    dedicated_artist_playlist: ModuleMeta;
+    featured_artist_playlist: ModuleMeta;
+    singles: ModuleMeta;
+    similarArtists: ModuleMeta;
   }>;
 };
 

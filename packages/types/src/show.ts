@@ -1,4 +1,5 @@
 import type { ArtistMap } from "./artist";
+import type { ModuleMeta } from "./modules";
 import type { Rights } from "./misc";
 
 export type Show = {
@@ -6,30 +7,10 @@ export type Show = {
   seasons: Season[];
   episodes: Episode[];
   modules: {
-    seasons: {
-      source: string;
-      position: number;
-      title: string;
-      subtitle: string;
-    };
-    episodes: {
-      source: string;
-      position: number;
-      title: string;
-      subtitle: string;
-    };
-    show_details: {
-      source: string;
-      position: number;
-      title: string;
-      subtitle: string;
-    };
-    show_starring: {
-      source: string;
-      position: number;
-      title: string;
-      subtitle: string;
-    };
+    seasons: ModuleMeta;
+    episodes: ModuleMeta;
+    show_details: ModuleMeta;
+    show_starring: ModuleMeta;
   };
 };
 
@@ -114,18 +95,8 @@ export type Season = {
 export type EpisodeDetail = {
   episodes: Episode[];
   modules: {
-    episode_details: {
-      source: string;
-      position: number;
-      title: string;
-      subtitle: string;
-    };
-    episode_starring: {
-      source: string;
-      position: number;
-      title: string;
-      subtitle: string;
-    };
+    episode_details: ModuleMeta;
+    episode_starring: ModuleMeta;
   };
 };
 
