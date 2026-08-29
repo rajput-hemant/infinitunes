@@ -27,14 +27,54 @@ export const auth = new Proxy({} as ReturnType<typeof createAuth>, {
 export type { User } from "@infinitunes/auth";
 
 /**
+ * Better Auth refuses to run without a real secret and throws from
+ * `validateSecret` on the first API call - either
+ * `You are using the default secret ...` (its placeholder is still in place) or
+ * `BETTER_AUTH_SECRET is missing ...`. Match only those; everything else must
+ * still propagate.
+ */
+function isMissingSecretError(error: unknown): boolean {
+  return (
+    error instanceof Error &&
+    error.name === "BetterAuthError" &&
+    (error.message.includes("You are using the default secret") ||
+      error.message.includes("BETTER_AUTH_SECRET is missing"))
+  );
+}
+
+/**
+ * A production deployment whose env passed validation always has a real
+ * `AUTH_SECRET` (`authSecret()` in `packages/env/src/schema.ts`), so a missing
+ * secret there is a genuine misconfiguration and must surface. The error is
+ * only reachable in production when validation was deliberately skipped.
+ */
+function isValidatedProduction(): boolean {
+  return (
+    process.env.NODE_ENV === "production" &&
+    process.env.SKIP_ENV_VALIDATION !== "true"
+  );
+}
+
+/**
  * Gets the current user from the server session
  *
  * @returns The current user
  */
 export const getUser = cache(async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  let session: Awaited<ReturnType<typeof auth.api.getSession>>;
+
+  try {
+    session = await auth.api.getSession({
+      headers: await headers(),
+    });
+  } catch (error) {
+    if (!isMissingSecretError(error) || isValidatedProduction()) throw error;
+
+    // No secret configured outside a validated production deployment (fresh
+    // checkout, preview build): nobody can be signed in, so render the page
+    // logged-out instead of 500-ing every route in the app.
+    return undefined;
+  }
 
   if (!session?.user) return undefined;
 

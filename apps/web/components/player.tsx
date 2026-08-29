@@ -93,6 +93,49 @@ function PlayerInner({ user, playlists }: PlayerProps) {
     player,
   } = useAudioPlayerContext();
 
+  // Howler captures `onend` when the song is loaded, so the handler has to stay
+  // referentially stable - a changing identity would reload and restart the
+  // current song every time shuffle/loop is toggled. Read the latest playback
+  // state through a ref instead of closing over it.
+  const playbackStateRef = React.useRef({
+    queue,
+    currentIndex,
+    isShuffle,
+    isLooping,
+    loopPlaylist,
+  });
+
+  React.useEffect(() => {
+    playbackStateRef.current = {
+      queue,
+      currentIndex,
+      isShuffle,
+      isLooping,
+      loopPlaylist,
+    };
+  });
+
+  const onEndHandler = React.useCallback(() => {
+    const latest = playbackStateRef.current;
+
+    let index = latest.currentIndex;
+
+    if (latest.isShuffle) {
+      const seed = `${latest.queue[latest.currentIndex]?.id ?? latest.currentIndex}:${latest.currentIndex}:end`;
+      index = seededIndex(seed, latest.queue.length);
+    } else {
+      if (latest.currentIndex < latest.queue.length - 1) {
+        if (!latest.isLooping) index = latest.currentIndex + 1;
+      } else {
+        if (latest.loopPlaylist) {
+          index = 0;
+        }
+      }
+    }
+
+    setCurrentIndex(index);
+  }, [setCurrentIndex]);
+
   React.useEffect(() => {
     const current = queue[currentIndex];
     if (queue.length && isPlayerInit && current) {
@@ -111,7 +154,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
         onend: onEndHandler,
       });
     }
-  }, [queue, streamQuality, currentIndex, isPlayerInit]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [queue, streamQuality, currentIndex, isPlayerInit, load, onEndHandler]);
 
   React.useEffect(() => {
     if (isDragging) {
@@ -204,24 +247,6 @@ function PlayerInner({ user, playlists }: PlayerProps) {
     } else {
       setIsPlayerInit(true);
     }
-  }
-
-  function onEndHandler() {
-    let index = currentIndex;
-
-    if (isShuffle) {
-      const seed = `${queue[currentIndex]?.id ?? currentIndex}:${currentIndex}:end`;
-      index = seededIndex(seed, queue.length);
-    } else {
-      if (currentIndex < queue.length - 1) {
-        if (!isLooping) index = currentIndex + 1;
-      } else {
-        if (loopPlaylist) {
-          index = 0;
-        }
-      }
-    }
-    setCurrentIndex(index);
   }
 
   /* -----------------------------------------------------------------------------------------------

@@ -2,7 +2,7 @@ import React from "react";
 
 import { PlayerWrapper } from "~/components/player-wrapper";
 import { Sidebar, SidebarProvider, SidebarInset } from "~/components/sidebar";
-import { SiteFooter } from "~/components/site-footer";
+import { SiteFooter } from "~/components/site-footer/footer";
 import { Navbar } from "~/components/site-header/navbar";
 import { SecondaryNavbar } from "~/components/site-header/secondary-navbar";
 import { getUser } from "~/lib/auth";
