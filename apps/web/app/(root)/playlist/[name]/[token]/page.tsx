@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
 import { decode, getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
+
+const getPlaylist = cache(async (token: string) =>
+  api.playlist.details({ token }),
+);
 
 type PlaylistPageProps = { params: Promise<{ name: string; token: string }> };
 
@@ -13,7 +18,7 @@ export async function generateMetadata({
 }: PlaylistPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const playlist = await api.playlist.details({ token });
+  const playlist = await getPlaylist(token);
 
   return {
     title: playlist.title,
@@ -35,7 +40,7 @@ export async function generateMetadata({
   };
 }
 async function fetcher(token: string) {
-  const playlist = await api.playlist.details({ token });
+  const playlist = await getPlaylist(token);
 
   const [recommendations, trending] = await Promise.allSettled([
     api.playlist.recommendations({ id: playlist.id }),
