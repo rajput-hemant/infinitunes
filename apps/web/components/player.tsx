@@ -95,10 +95,13 @@ function PlayerInner({ user, playlists }: PlayerProps) {
 
   React.useEffect(() => {
     if (queue.length && isPlayerInit) {
-      const audioSrc = getDownloadLink(
-        queue[currentIndex].download_url,
-        streamQuality,
-      );
+      const current = queue[currentIndex];
+      const audioSrc = getDownloadLink(current?.download_url, streamQuality);
+
+      if (!audioSrc) {
+        toast.error("This song can't be played right now.");
+        return;
+      }
 
       load(audioSrc, {
         html5: true,

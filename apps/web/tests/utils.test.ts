@@ -259,6 +259,15 @@ describe("getDownloadLink", () => {
   it("returns an empty string when there is no download url", () => {
     expect(getDownloadLink("")).toBe("");
   });
+
+  it("returns an empty string for non-string input (undefined download_url)", () => {
+    expect(getDownloadLink(undefined)).toBe("");
+    expect(getDownloadLink(null)).toBe("");
+  });
+
+  it("returns an empty string when every split segment is blank", () => {
+    expect(getDownloadLink(" , , ")).toBe("");
+  });
 });
 
 describe("ogImageUrl", () => {
