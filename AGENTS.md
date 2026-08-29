@@ -130,6 +130,13 @@ bug is appending to them instead of substituting:
   `getDownloadLink`/`~/lib/utils` and `apps/web/components/download-button.tsx`.
   The decrypted URL already ends in a bitrate (`_96`/`_160`); `createDownloadLinks`
   must strip it before appending, because the CDN 404s on `..._96_320.mp4`.
+- `download_url` is only populated when `withDownloadUrl` ran with a valid
+  `JIOSAAVN_DES_KEY` (see above); without it the field stays `undefined`, and
+  `getDownloadLink` returns `""`. Never pass that empty string to `load()` in
+  `apps/web/components/player.tsx`: Howl's constructor early-returns on an empty
+  src (leaving `_sounds` undefined) and react-use-audio-player's `getSnapshotFromHowl`
+  then throws `Cannot read properties of undefined (reading 'length')` inside the
+  play effect. Guard on a falsy `audioSrc` and `toast` instead of calling `load()`.
 - Images embed a resolution token with _either_ separator: `-500x500.jpg` for
   song/album/playlist artwork, `_150x150.jpg` for artist and some CDN paths.
   Resizing regexes must accept both (`getImageSrc`/`withSize` in `~/lib/utils`).
