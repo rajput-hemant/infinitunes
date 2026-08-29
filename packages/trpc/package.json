@@ -15,6 +15,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@infinitunes/types": "workspace:*",
     "@trpc/server": "^11.18.0",
     "server-only": "^0.0.1",
     "superjson": "^2.2.6",

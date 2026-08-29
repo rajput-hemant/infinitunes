@@ -162,3 +162,13 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
 - `z.preprocess` signature accepts `(arg, ctx) => result` (second `ctx` param is new; single-arg callbacks still work).
 - `z.discriminatedUnion`, `.min()`, `.max()`, `.regex()`, `.refine()` APIs are unchanged.
 - See `apps/web/lib/env.ts` and `apps/web/lib/validations.ts` for usage examples.
+
+## Shared constants across the monorepo
+
+- `@infinitunes/auth` exports `USERNAME_REGEX` / `USERNAME_MIN_LENGTH` / `USERNAME_MAX_LENGTH`
+  from `packages/auth/src/constants.ts`. The main `@infinitunes/auth` barrel pulls server-only
+  `createAuth` (Better Auth, DB, bcrypt) into the graph, so client components must import these via
+  the `./constants` subpath (`@infinitunes/auth/constants`), never from `@infinitunes/auth`.
+- `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
+  (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
+  by both `apps/web` and `packages/trpc`; don't hand-roll another copy).

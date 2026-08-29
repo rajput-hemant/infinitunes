@@ -1,11 +1,19 @@
+import {
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_REGEX,
+} from "@infinitunes/auth/constants";
 import * as z from "zod";
 
 export const usernameSchema = z
   .string()
   .min(1, "Username is Required")
-  .regex(/^(?=.{8,15}$)/, "Username must be 8-15 characters long.")
   .regex(
-    /^[a-zA-Z0-9_.-]+$/,
+    new RegExp(`^(?=.{${USERNAME_MIN_LENGTH},${USERNAME_MAX_LENGTH}}$)`),
+    "Username must be 8-15 characters long.",
+  )
+  .regex(
+    USERNAME_REGEX,
     "Username must be alphanumeric and can contain [_ . -]",
   );
 

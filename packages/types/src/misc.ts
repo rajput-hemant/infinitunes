@@ -28,23 +28,33 @@ export type Rights = {
   reason: unknown;
 };
 
-export type Lang =
-  | "hindi"
-  | "english"
-  | "punjabi"
-  | "tamil"
-  | "telugu"
-  | "marathi"
-  | "gujarati"
-  | "bengali"
-  | "kannada"
-  | "bhojpuri"
-  | "malayalam"
-  | "urdu"
-  | "haryanvi"
-  | "rajasthani"
-  | "odia"
-  | "assamese";
+export const LANGUAGES = [
+  "hindi",
+  "english",
+  "punjabi",
+  "tamil",
+  "telugu",
+  "marathi",
+  "gujarati",
+  "bengali",
+  "kannada",
+  "bhojpuri",
+  "malayalam",
+  "urdu",
+  "haryanvi",
+  "rajasthani",
+  "odia",
+  "assamese",
+] as const;
+
+export type Lang = (typeof LANGUAGES)[number];
+
+/**
+ * Extracts the trailing token from a JioSaavn perma_url.
+ */
+export function parseToken(url: string): string {
+  return url.split("/").filter(Boolean).pop() ?? "";
+}
 
 export type Category = "latest" | "alphabetical" | "popularity";
 

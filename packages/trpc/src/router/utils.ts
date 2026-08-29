@@ -1,9 +1,11 @@
+import { parseToken } from "@infinitunes/types";
+
 import { api } from "../lib/api";
 import { createDownloadLinks } from "../lib/download";
 import { endpoints } from "../lib/endpoints";
 
 export function tokenFromLink(link: string): string {
-  return link.split("/").at(-1) ?? "";
+  return parseToken(link);
 }
 
 export function resolveNumericId(

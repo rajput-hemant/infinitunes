@@ -5,7 +5,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./client": "./src/auth-client.ts"
+    "./client": "./src/auth-client.ts",
+    "./constants": "./src/constants.ts"
   },
   "scripts": {
     "type-check": "tsc --noEmit"

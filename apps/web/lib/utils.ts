@@ -4,16 +4,16 @@ import type {
   StreamQuality,
   MediaType,
 } from "@infinitunes/types";
-import { QUALITIES_MAP } from "@infinitunes/types";
+import { parseToken, QUALITIES_MAP } from "@infinitunes/types";
 import type { Queue } from "@infinitunes/types";
 import type { Episode } from "@infinitunes/types";
 import type { Song } from "@infinitunes/types";
-import { clsx } from "clsx";
-import type { ClassValue } from "clsx";
+import { cn } from "@infinitunes/ui/lib/utils";
 import { toast } from "sonner";
-import { twMerge } from "tailwind-merge";
 
 import { siteConfig } from "~/config/site";
+
+export { cn };
 
 function xmur3(str: string) {
   let h = 1779033703 ^ str.length;
@@ -71,8 +71,7 @@ export function decode(str: string | undefined | null): string {
  * Extracts the trailing token from a JioSaavn perma_url.
  */
 export function getToken(url: string | undefined): string {
-  if (!url) return "";
-  return url.split("/").filter(Boolean).pop() ?? "";
+  return parseToken(url ?? "");
 }
 
 type RawCardItem = {
@@ -114,15 +113,6 @@ export function toQueue(item: Song | Episode): Queue {
     download_url: item.download_url ?? item.more_info.download_url ?? "",
     duration: Number(item.more_info.duration) || 0,
   };
-}
-
-/**
- * Merges the given class names with the tailwind classes
- * @param inputs The class names to merge
- * @returns The merged class names
- */
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
 }
 
 /**

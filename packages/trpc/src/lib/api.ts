@@ -1,25 +1,9 @@
+import { LANGUAGES, type Lang } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 
 const BASE_URL = "https://www.jiosaavn.com/api.php";
 
-const VALID_LANGUAGES = new Set([
-  "hindi",
-  "english",
-  "punjabi",
-  "tamil",
-  "telugu",
-  "marathi",
-  "gujarati",
-  "bengali",
-  "kannada",
-  "bhojpuri",
-  "malayalam",
-  "urdu",
-  "haryanvi",
-  "rajasthani",
-  "odia",
-  "assamese",
-]);
+const VALID_LANGUAGES = new Set<string>(LANGUAGES);
 
 export function validLangs(langs: string | undefined): string {
   if (!langs) return "";
