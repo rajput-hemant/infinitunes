@@ -57,11 +57,14 @@ export function createServerSchema(ctx: EnvContext = {}) {
     ),
 
     JIOSAAVN_DES_KEY: z
-      .string()
-      .optional()
-      .describe(
-        "DES key used to decrypt JioSaavn media URLs. Sourced from the environment only - never hardcoded.",
-      ),
+      .string({
+        error:
+          "JIOSAAVN_DES_KEY is missing. It decrypts JioSaavn media URLs, and playback fails without it - read it from the environment, never hardcode it.",
+      })
+      .min(1, {
+        message:
+          "JIOSAAVN_DES_KEY is empty. It decrypts JioSaavn media URLs, and playback fails without it - read it from the environment, never hardcode it.",
+      }),
 
     DATABASE_URL: z
       .string()
