@@ -6,6 +6,17 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 ## Monorepo layout
 
+- `@infinitunes/types` is a pure leaf package (zero runtime deps). `User` is NOT
+  re-exported from it; import `type { User }` from `@infinitunes/auth`, or from
+  `apps/web/lib/auth.ts` which re-exports it for app components.
+- In `apps/web/package.json`, `bcryptjs`, `@types/bcryptjs`, and `drizzle-kit`
+  are NOT redundant duplicates of workspace deps: `apps/web/lib/actions.ts`
+  imports `bcryptjs` directly and `apps/web/drizzle.config.ts` imports
+  `drizzle-kit` directly, and Bun does not hoist sibling-workspace deps far
+  enough for `tsc` to resolve them. Don't "dedupe" these away - type-check
+  breaks. `postgres` and `pg`, by contrast, are unused in app source (provided
+  by `@infinitunes/db`) and are safe to drop.
+
 Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
 (`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
 `bun run fmt:check`, `bun run lint` (Oxlint), `bun run type-check`,
