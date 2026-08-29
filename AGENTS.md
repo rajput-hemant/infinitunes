@@ -45,6 +45,14 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   OpenSSL 3 build (`next dev` runs under Node even when invoked via `bun run dev`), but
   works under Bun's own crypto. Locally reproduce with `NODE_OPTIONS=--openssl-legacy-provider`;
   don't add that flag to the repo, it's a local-verification workaround only.
+- `apps/web/app/api/og/route.tsx` runs on the default Node runtime (Edge is
+  deprecated in Next 16). Its font must be loaded with `readFile` from
+  `node:fs/promises`, not `fetch()` - undici rejects the `file:` URL that
+  `new URL(..., import.meta.url)` resolves to under Node.
+- `getUser()` in `apps/web/lib/auth.ts` swallows only Better Auth's
+  no-secret-configured `BetterAuthError` (and only outside a validated
+  production env), so a checkout with no `AUTH_SECRET` renders logged-out
+  instead of 500-ing every route. Don't widen that catch.
 - Tailwind v4's automatic content scanning only covers `apps/web`. Utility
   classes/theme vars used exclusively inside `packages/ui/src` (e.g.
   `bg-sidebar`, `bg-popover`, `bg-card`) get tree-shaken out of the compiled
