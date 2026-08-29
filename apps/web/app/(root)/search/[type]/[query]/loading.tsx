@@ -4,7 +4,8 @@ import { Button } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 
-import { SliderListSkeleton, SongListSkeleton } from "~/components/skeletons";
+import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 import { navItems } from "./_components/search-navbar";
 

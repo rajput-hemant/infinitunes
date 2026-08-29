@@ -8,9 +8,9 @@ import {
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { DetailsHeader } from "~/components/details-header";
-import { SliderCard } from "~/components/slider";
-import { SongList } from "~/components/song-list";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderCard } from "~/components/slider/slider-card";
+import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl } from "~/lib/utils";
 

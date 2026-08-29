@@ -10,9 +10,8 @@ import {
 import { Input } from "@infinitunes/ui/components/input";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 
-import { useDebounce } from "~/hooks/use-debounce";
 import { useEventListener } from "~/hooks/use-event-listner";
 import { useIsTyping } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
@@ -36,7 +35,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
     setMounted(true);
   }, []);
 
-  const debouncedQuery = useDebounce(query.trim(), 1000);
+  const deferredQuery = useDeferredValue(query.trim());
 
   const [_, setIsTyping] = useIsTyping();
 
@@ -61,8 +60,8 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   }, [pathname]);
 
   const { data: searchResult, isLoading } = api.search.all.useQuery(
-    { q: debouncedQuery },
-    { enabled: debouncedQuery.length > 0 },
+    { q: deferredQuery },
+    { enabled: deferredQuery.length > 0 },
   );
 
   const result = searchResult as AllSearch | undefined;
@@ -109,7 +108,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           />
         </div>
 
-        {debouncedQuery.length ? (
+        {deferredQuery.length ? (
           isLoading ? (
             <div className="m-auto aspect-square h-16 animate-spin rounded-full border-y-2 border-primary py-10 lg:h-32">
               <span className="sr-only">Loading Results</span>

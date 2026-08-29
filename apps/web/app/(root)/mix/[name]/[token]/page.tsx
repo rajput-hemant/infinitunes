@@ -1,8 +1,8 @@
 import type { Mix } from "@infinitunes/types";
 import type { Metadata } from "next";
 
-import { DetailsHeader } from "~/components/details-header";
-import { SongList } from "~/components/song-list";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl } from "~/lib/utils";
 

@@ -2,10 +2,11 @@ import type { Artist, Category } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
+import { cache } from "react";
 
-import { DetailsHeader } from "~/components/details-header";
-import { SliderList } from "~/components/slider";
-import { SongList } from "~/components/song-list";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderList } from "~/components/slider/slider-list";
+import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
@@ -16,6 +17,15 @@ import { ArtistsTopItems } from "./_components/artists-top-items";
 import { CategoryFilter } from "./_components/category-filter";
 import { TABS } from "./_components/tabs";
 
+const getArtist = cache(
+  async (token: string) =>
+    (await api.artist.details({
+      token,
+      n_song: 50,
+      n_album: 50,
+    })) as unknown as Artist,
+);
+
 type Props = {
   params: Promise<{ name: string; token: string }>;
   searchParams: Promise<{ cat?: Category }>;
@@ -24,11 +34,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name, token } = await params;
 
-  const artist = (await api.artist.details({
-    token,
-    n_song: 50,
-    n_album: 50,
-  })) as unknown as Artist;
+  const artist = await getArtist(token);
 
   return {
     title: artist.name,
@@ -57,11 +63,7 @@ export default async function ArtistDetailsPage(props: Props) {
   const user = await getUser();
 
   const [artist, playlists, favorites] = await Promise.all([
-    api.artist.details({
-      token,
-      n_song: 50,
-      n_album: 50,
-    }) as unknown as Promise<Artist>,
+    getArtist(token),
     user ? getUserPlaylists(user.id) : undefined,
     user ? getUserFavorites(user.id) : undefined,
   ]);

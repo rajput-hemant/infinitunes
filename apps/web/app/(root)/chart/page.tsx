@@ -1,6 +1,6 @@
 import type { Chart } from "@infinitunes/types";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { api } from "~/lib/trpc/server";
 
 const title = "Top Music Charts";

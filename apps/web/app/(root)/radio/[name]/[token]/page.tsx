@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PlayButton } from "~/components/play-button";
-import { SongList } from "~/components/song-list";
+import { SongList } from "~/components/song-list/song-list";
 import { siteConfig } from "~/config/site";
 import { api } from "~/lib/trpc/server";
 import { getHref, getImageSrc, ogImageUrl } from "~/lib/utils";

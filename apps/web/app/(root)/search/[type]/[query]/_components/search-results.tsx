@@ -4,7 +4,7 @@ import type { Album, SearchReturnType, Song } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";

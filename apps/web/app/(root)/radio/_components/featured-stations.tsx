@@ -5,7 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
 

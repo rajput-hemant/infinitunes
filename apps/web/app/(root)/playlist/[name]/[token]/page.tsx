@@ -1,9 +1,9 @@
 import type { Playlist, Trending } from "@infinitunes/types";
 import type { Metadata } from "next";
 
-import { DetailsHeader } from "~/components/details-header";
-import { SliderList } from "~/components/slider";
-import { SongList } from "~/components/song-list";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderList } from "~/components/slider/slider-list";
+import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
 import { decode, getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 

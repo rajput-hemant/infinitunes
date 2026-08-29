@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 
 import { ImageCollage } from "~/components/image-collage";
 import { PlayButton } from "~/components/play-button";
-import { SongList } from "~/components/song-list";
+import { SongList } from "~/components/song-list/song-list";
 import { getPlaylistDetails } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
 import { cn, formatDuration, getImageSrc } from "~/lib/utils";

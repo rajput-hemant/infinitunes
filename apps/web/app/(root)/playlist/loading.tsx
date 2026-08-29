@@ -1,7 +1,7 @@
 import { Badge } from "@infinitunes/ui/components/badge";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
-import { SliderCardSkeleton } from "~/components/skeletons";
+import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
 import { languages } from "~/config/languages";
 
 export default function FeaturedPlaylistPageSkeleton() {

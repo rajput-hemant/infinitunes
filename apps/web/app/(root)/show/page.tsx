@@ -1,7 +1,7 @@
 import type { TopShows } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { api } from "~/lib/trpc/server";
 
 import { TopPodcasts } from "./_components/top-podcasts";

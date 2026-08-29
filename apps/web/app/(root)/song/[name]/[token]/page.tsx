@@ -7,14 +7,20 @@ import type {
 } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
+import { cache } from "react";
 
-import { DetailsHeader } from "~/components/details-header";
-import { SliderList } from "~/components/slider";
-import { SongList } from "~/components/song-list";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderList } from "~/components/slider/slider-list";
+import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 
 import { Lyrics } from "./_components/lyrics";
+
+const getSong = cache(
+  async (token: string) =>
+    (await api.song.details({ token })) as unknown as SongObj,
+);
 
 type SongDetailsPageProps = {
   params: Promise<{
@@ -28,7 +34,7 @@ export async function generateMetadata({
 }: SongDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const songObj = (await api.song.details({ token })) as unknown as SongObj;
+  const songObj = await getSong(token);
   const song = songObj.songs[0];
 
   return {
@@ -51,7 +57,7 @@ export async function generateMetadata({
   };
 }
 async function fetcher(token: string) {
-  const data = (await api.song.details({ token })) as unknown as SongObj;
+  const data = await getSong(token);
   const song = data.songs[0];
   const modules = data.modules!;
   const artistsTopSongsParams = modules.songsBysameArtists.source_params;
@@ -150,7 +156,7 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
         />
       )}
 
-      {trending.length > 0 && (
+      {songsFromSameArtists.length > 0 && (
         <SliderList
           title={modules.songsBysameArtists.title}
           items={songsFromSameArtists.map(toCardItem)}

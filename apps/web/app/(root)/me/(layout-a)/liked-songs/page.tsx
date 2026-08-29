@@ -1,7 +1,7 @@
 import type { SongObj } from "@infinitunes/types";
 import { Ghost } from "lucide-react";
 
-import { SongList } from "~/components/song-list";
+import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";

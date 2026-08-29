@@ -5,7 +5,7 @@ import type { Album, Category, Song } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import type { User } from "~/lib/auth";
 import { api } from "~/lib/trpc/client";

@@ -152,6 +152,12 @@ When updating this file, preserve this bar for all agents and keep entries conci
 - **Server vs Client Components**: Layouts and pages should remain Server Components where possible to fetch data and cookies efficiently. Isolate user interactivity (clicks, menus, forms) into dedicated Client Components with `"use client"`.
 - **Sidebar Layout Hierarchy**: Always nest `<Navbar />` inside `<SidebarInset>` above `<main>` within `<SidebarProvider>` to avoid breaking the horizontal layout.
 - **Component Imports**: Do not create local component files under `apps/web/components/ui`. Always reference the monorepo package `@infinitunes/ui/components/<name>` and exports in `packages/ui/package.json`.
+- **No barrel files in `apps/web/components`**: import from the source file
+  (`~/components/slider/slider-card`), never a directory `index.ts`. Barrels were
+  removed for tree-shaking/trace reasons; don't reintroduce them.
+- **Per-request dedup**: when `generateMetadata` and the page body need the same
+  fetch, wrap the fetcher in `cache()` from `"react"` at module scope and call it
+  from both, with identical arguments (see the `song`/`album`/`show` detail pages).
 
 ## Zod 4 API
 

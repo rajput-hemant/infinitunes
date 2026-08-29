@@ -1,7 +1,7 @@
 import type { MediaType, Modules } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { api } from "~/lib/trpc/server";
 import { cn } from "~/lib/utils";

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { api } from "~/lib/trpc/server";
 import { getHref, getImageSrc } from "~/lib/utils";
 
-import { SliderCard } from "../slider";
+import { SliderCard } from "../slider/slider-card";
 
 export async function TopSearch() {
   const topSearches = (await api.search.top({})) as unknown as TopSearchType[];

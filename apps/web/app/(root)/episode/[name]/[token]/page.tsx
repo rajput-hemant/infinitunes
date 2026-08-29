@@ -1,9 +1,19 @@
 import type { EpisodeDetail } from "@infinitunes/types";
 import type { Metadata } from "next";
+import { cache } from "react";
 
-import { DetailsHeader } from "~/components/details-header";
+import { DetailsHeader } from "~/components/details-header/details-header";
 import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl } from "~/lib/utils";
+
+const getEpisode = cache(
+  async (token: string) =>
+    (await api.show.episodeDetails({
+      token,
+      season: 1,
+      sort: "desc",
+    })) as unknown as EpisodeDetail,
+);
 
 type EpisodeDetailsProps = {
   params: Promise<{
@@ -17,11 +27,7 @@ export async function generateMetadata({
 }: EpisodeDetailsProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const episodeObj = (await api.show.episodeDetails({
-    token,
-    season: 1,
-    sort: "desc",
-  })) as unknown as EpisodeDetail;
+  const episodeObj = await getEpisode(token);
   const episode = episodeObj.episodes[0];
 
   return {
@@ -46,11 +52,7 @@ export async function generateMetadata({
 export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
   const { token } = await props.params;
 
-  const episodeObj = (await api.show.episodeDetails({
-    token,
-    season: 1,
-    sort: "desc",
-  })) as unknown as EpisodeDetail;
+  const episodeObj = await getEpisode(token);
 
   return (
     <div className="mb-4 space-y-4">

@@ -10,15 +10,28 @@ import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cache } from "react";
 
-import { DetailsHeader } from "~/components/details-header";
-import { SliderCard } from "~/components/slider";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
+
+const DEFAULT_SORT: Sort = "desc";
+
+// callers must pass a normalized sort so generateMetadata and the page share one cache entry
+const getShow = cache(
+  async (token: string, season: number, sort: Sort) =>
+    (await api.show.details({
+      token,
+      season: `${season}`,
+      sort,
+    })) as unknown as Show,
+);
 
 type ShowDetailsPageProps = {
   searchParams: Promise<{ sort: Sort }>;
@@ -30,10 +43,7 @@ export async function generateMetadata({
 }: ShowDetailsPageProps): Promise<Metadata> {
   const { name, season, token } = await params;
 
-  const { show_details: show } = (await api.show.details({
-    token,
-    season: `${season}`,
-  })) as unknown as Show;
+  const { show_details: show } = await getShow(token, season, DEFAULT_SORT);
 
   return {
     title: show.title,
@@ -63,11 +73,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
 
   const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
     await Promise.all([
-      api.show.details({
-        token,
-        season: `${season}`,
-        sort,
-      }) as unknown as Promise<Show>,
+      getShow(token, season, sort ?? DEFAULT_SORT),
       user ? getUserFavorites(user.id) : undefined,
       user ? getUserPlaylists(user.id) : undefined,
     ]);
