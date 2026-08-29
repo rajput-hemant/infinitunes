@@ -1,7 +1,6 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import type { User } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Sidebar as SidebarPrimitive,
@@ -27,6 +26,7 @@ import { useSelectedLayoutSegments } from "next/navigation";
 import React from "react";
 
 import { sidebarNav } from "~/config/nav";
+import type { User } from "~/lib/auth";
 import { cn, currentlyInDev } from "~/lib/utils";
 
 import { NewPlaylistForm } from "./playlist/new-playlist-form";

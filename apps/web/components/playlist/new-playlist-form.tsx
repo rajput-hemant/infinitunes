@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { User } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
@@ -26,6 +25,7 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { createNewPlaylist } from "~/lib/actions";
+import type { User } from "~/lib/auth";
 import { newPlaylistSchema } from "~/lib/validations";
 
 const defaultValues: FormData = {

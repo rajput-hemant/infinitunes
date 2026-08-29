@@ -2,12 +2,12 @@
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Album, Category, Song } from "@infinitunes/types";
-import type { User } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { SliderCard } from "~/components/slider";
 import { SongListClient } from "~/components/song-list/song-list.client";
+import type { User } from "~/lib/auth";
 import { api } from "~/lib/trpc/client";
 
 type Props = {

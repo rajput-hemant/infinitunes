@@ -2,13 +2,13 @@
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Sort } from "@infinitunes/types";
-import type { User } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
+import type { User } from "~/lib/auth";
 import { api } from "~/lib/trpc/client";
 
 type EpisodeListProps = {

@@ -7,6 +7,7 @@ import { cache } from "react";
 const auth = createAuth(db);
 
 export { auth };
+export type { User } from "@infinitunes/auth";
 
 /**
  * Gets the current user from the server session

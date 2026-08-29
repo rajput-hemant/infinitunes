@@ -2,7 +2,6 @@
 
 import type { Favorite } from "@infinitunes/db/schema";
 import type { MediaType } from "@infinitunes/types";
-import type { User } from "@infinitunes/types";
 import {
   Tooltip,
   TooltipContent,
@@ -12,6 +11,7 @@ import { Heart } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
+import type { User } from "~/lib/auth";
 import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
 import { cn, currentlyInDev } from "~/lib/utils";
 

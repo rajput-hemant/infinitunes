@@ -1,11 +1,11 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
-import type { User } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
+import type { User } from "~/lib/auth";
 import {
   cn,
   formatDuration,

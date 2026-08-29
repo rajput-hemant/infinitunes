@@ -15,9 +15,9 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@trpc/client": "^11.18.0",
     "@trpc/server": "^11.18.0",
     "server-only": "^0.0.1",
+    "superjson": "^2.2.6",
     "zod": "^4.4.3"
   },
   "devDependencies": {

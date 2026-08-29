@@ -1,7 +1,6 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import type { User } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Slider } from "@infinitunes/ui/components/slider";
@@ -39,6 +38,7 @@ import {
   useQueue,
   useStreamQuality,
 } from "~/hooks/use-store";
+import type { User } from "~/lib/auth";
 import {
   cn,
   formatDuration,

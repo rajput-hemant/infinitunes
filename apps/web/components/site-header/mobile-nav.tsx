@@ -1,10 +1,10 @@
 "use client";
 
-import type { User } from "@infinitunes/types";
 import { Cog, Compass, Home, Search, User2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import type { User } from "~/lib/auth";
 import { cn } from "~/lib/utils";
 
 type Props = {

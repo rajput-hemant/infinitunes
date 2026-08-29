@@ -1,8 +1,9 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import type { User } from "@infinitunes/types";
 import dynamic from "next/dynamic";
+
+import type { User } from "~/lib/auth";
 
 type PlayerWrapperProps = {
   user?: User;
