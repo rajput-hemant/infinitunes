@@ -19,6 +19,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { ThemeProvider } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";
+import { AudioPlayerProvider } from "react-use-audio-player";
 import superjson from "superjson";
 
 import { api } from "~/lib/trpc/client";
@@ -58,11 +59,13 @@ export default function Providers({ children, theme }: Props) {
       enableSystem
       {...theme}
     >
-      <TRPCReactProvider>
-        <TooltipProvider>{children}</TooltipProvider>
-      </TRPCReactProvider>
+      <AudioPlayerProvider>
+        <TRPCReactProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </TRPCReactProvider>
 
-      <Toaster />
+        <Toaster />
+      </AudioPlayerProvider>
     </ThemeProvider>
   );
 }

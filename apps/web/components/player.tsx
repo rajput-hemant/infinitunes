@@ -24,10 +24,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import {
-  AudioPlayerProvider,
-  useAudioPlayerContext,
-} from "react-use-audio-player";
+import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
 import { useEventListener } from "~/hooks/use-event-listner";
@@ -59,11 +56,7 @@ type PlayerProps = {
 };
 
 export function Player({ user, playlists }: PlayerProps) {
-  return (
-    <AudioPlayerProvider>
-      <PlayerInner user={user} playlists={playlists} />
-    </AudioPlayerProvider>
-  );
+  return <PlayerInner user={user} playlists={playlists} />;
 }
 
 function PlayerInner({ user, playlists }: PlayerProps) {

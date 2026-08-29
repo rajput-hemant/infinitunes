@@ -195,10 +195,25 @@ export function formatDuration(
     : date.toISOString().slice(14, 19);
 }
 
-export function getHref(url: string, type: MediaType) {
+const JIOSAAVN_URL_RE =
+  /^https?:\/\/(?:[a-zA-Z0-9-]+\.)*(?:jiosaavn|saavn)\.com(?::\d+)?\/(.*)$/i;
+
+export function getHref(url: string | undefined | null, type: MediaType) {
   if (!url) return "#";
-  const re = /https:\/\/www.jiosaavn.com\/(s\/)?\w*/;
-  return `/${url.replace(re, type)}`;
+  if (!url.startsWith("http://") && !url.startsWith("https://")) {
+    return url;
+  }
+
+  const match = JIOSAAVN_URL_RE.exec(url);
+  if (!match) return "#";
+
+  const path = (match[1] ?? "").split(/[?#]/)[0];
+  const segments = path.split("/").filter(Boolean);
+  const count = type === "show" ? 3 : 2;
+  if (segments.length < count) return "#";
+
+  const trailing = segments.slice(-count);
+  return `/${type}/${trailing.join("/")}`;
 }
 
 // Raw JioSaavn images are a single URL string.

@@ -31,7 +31,7 @@ export function FeaturedStations({
       initialData: { pages: [initialStations], pageParams: [1] },
     });
 
-  const stations = data.pages as Radio[];
+  const stations = (data.pages as Radio[][]).flat();
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,

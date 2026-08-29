@@ -31,10 +31,12 @@ export const artistRouter = router({
         message: "Please provide a valid JioSaavn link",
       });
     }
-    const result = await api(endpoints.artist.id, {
+    const t = token || tokenFromLink(link ?? "");
+    const endpoint = id ? endpoints.artist.id : endpoints.artist.link;
+    const result = await api(endpoint, {
       query: {
         artistId: id,
-        token: token || tokenFromLink(link ?? ""),
+        token: t,
         type: id ? "" : "artist",
         p: input.page,
         n_song: input.n_song,

@@ -21,10 +21,12 @@ export const songRouter = router({
         message: "Please provide a valid JioSaavn link",
       });
     }
-    const result = await api(endpoints.song.id, {
+    const t = token || tokenFromLink(link ?? "");
+    const endpoint = id ? endpoints.song.id : endpoints.song.link;
+    const result = await api(endpoint, {
       query: {
         pids: id,
-        token: token || tokenFromLink(link ?? ""),
+        token: t,
         type: "song",
       },
       language: lang,

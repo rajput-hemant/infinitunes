@@ -212,4 +212,36 @@ describe("router procedures", () => {
     expect(result.name).toBe("Artist 1");
     expect(result.topSongs).toHaveLength(1);
   });
+
+  it("song.details supports token lookup via webapi.get", async () => {
+    const mockPayload = {
+      songs: [mockSong],
+    };
+
+    const mockFetch: typeof fetch = (async () => {
+      return new Response(JSON.stringify(mockPayload), { status: 200 });
+    }) as typeof fetch;
+
+    const result = (await api(
+      "webapi.get",
+      { query: { token: "token123", type: "song" } },
+      mockFetch,
+    )) as typeof mockPayload;
+    expect(result.songs).toHaveLength(1);
+    expect(result.songs[0].id).toBe("s1");
+  });
+
+  it("artist.details supports token lookup via webapi.get", async () => {
+    const mockFetch: typeof fetch = (async () => {
+      return new Response(JSON.stringify(mockArtist), { status: 200 });
+    }) as typeof fetch;
+
+    const result = (await api(
+      "webapi.get",
+      { query: { token: "token123", type: "artist" } },
+      mockFetch,
+    )) as Artist;
+    expect(result.artistId).toBe("ar1");
+    expect(result.name).toBe("Artist 1");
+  });
 });
