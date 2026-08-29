@@ -1,6 +1,6 @@
 import type { ArtistMap } from "./artist";
-import type { ModuleMeta } from "./modules";
 import type { Rights } from "./misc";
+import type { ModuleMeta } from "./modules";
 
 export type Show = {
   show_details: ShowDetails;

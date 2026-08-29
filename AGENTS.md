@@ -87,6 +87,27 @@ that are easy to get wrong again:
   a `SongList`/`SongListClient` consumer throws on an undefined nested field
   that the type says is required.
 
+## Next.js 16 edge middleware lives in `apps/web/proxy.ts` (not `middleware.ts`)
+
+Next 16 renamed the root middleware file to `proxy.ts` with an exported
+`proxy` function; `middleware.ts`/`middleware` is the legacy name. This repo
+uses the current convention, and it is wired up - `next build` prints
+`ƒ Proxy (Middleware)` and a live `next start` returns 403 on a cross-origin
+`/api/trpc` request and 307s `/me` to `/login`. Do not "fix" it by renaming to
+`middleware.ts`; audits that assume the pre-16 convention flag this as a false
+critical. See `node_modules/next/dist/build/templates/middleware.js` (`isProxy`)
+for the resolution rule.
+
+## `@infinitunes/db` exports a lazy `db`
+
+`packages/db/src/db.ts` exports `db` as a Proxy over `getDb()`, so importing
+`@infinitunes/db` never connects or throws at module-evaluation time. This is
+required because Next.js evaluates `apps/web/app/api/auth/[...all]/route.ts`
+while collecting page data, and `SKIP_ENV_VALIDATION=true` only skips schema
+validation in `@infinitunes/env` - it does not supply `DATABASE_URL`. Keep the
+`DATABASE_URL` check inside `getDb()`; hoisting it back to module scope breaks
+`SKIP_ENV_VALIDATION=true bun run build`.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
