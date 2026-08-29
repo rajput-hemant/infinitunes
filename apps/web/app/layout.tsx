@@ -1,4 +1,5 @@
 import "~/styles/globals.css";
+import { type ThemeConfig } from "@infinitunes/types";
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import Script from "next/script";
@@ -10,20 +11,29 @@ import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
 import { absoluteUrl, cn } from "~/lib/utils";
-import { DEFAULT_THEME_CONFIG, type ThemeConfig } from "~/types";
 
 type RootLayoutProps = {
   modal: React.ReactNode;
   children: React.ReactNode;
 };
 
+const DEFAULT_THEME_CONFIG: ThemeConfig = {
+  theme: "default",
+  radius: "default",
+};
+
 export default async function RootLayout({ modal, children }: RootLayoutProps) {
   const cookieStore = await cookies();
   const themeConfig = cookieStore.get("theme-config");
 
-  const { theme, radius } = themeConfig
-    ? (JSON.parse(themeConfig.value) as ThemeConfig)
-    : DEFAULT_THEME_CONFIG;
+  let { theme, radius } = DEFAULT_THEME_CONFIG;
+  if (themeConfig) {
+    try {
+      ({ theme, radius } = JSON.parse(themeConfig.value) as ThemeConfig);
+    } catch {
+      // keep DEFAULT_THEME_CONFIG
+    }
+  }
 
   return (
     <React.StrictMode>

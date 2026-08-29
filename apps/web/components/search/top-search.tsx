@@ -1,15 +1,16 @@
+import type { TopSearch as TopSearchType } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Image from "next/image";
 import Link from "next/link";
 
-import { getTopSearches } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { getHref, getImageSrc } from "~/lib/utils";
 
-import { SliderCard } from "../slider";
+import { SliderCard } from "../slider/slider-card";
 
 export async function TopSearch() {
-  const topSearches = await getTopSearches();
+  const topSearches = (await api.search.top({})) as unknown as TopSearchType[];
 
   return (
     <>
@@ -19,16 +20,18 @@ export async function TopSearch() {
 
       <ScrollArea className="lg:hidden">
         <div className="flex space-x-4 pb-4">
-          {topSearches.map(({ id, name, url, subtitle, type, image }) => (
-            <SliderCard
-              key={id}
-              name={name}
-              url={url}
-              subtitle={subtitle}
-              type={type}
-              image={image}
-            />
-          ))}
+          {topSearches.map(
+            ({ id, title, perma_url, subtitle, type, image }) => (
+              <SliderCard
+                key={id}
+                name={title}
+                url={perma_url}
+                subtitle={subtitle}
+                type={type}
+                image={image}
+              />
+            ),
+          )}
         </div>
 
         <ScrollBar orientation="horizontal" />
@@ -38,13 +41,13 @@ export async function TopSearch() {
         {topSearches.map((t) => (
           <Link
             key={t.id}
-            href={getHref(t.url, t.type)}
+            href={getHref(t.perma_url, t.type)}
             className="flex gap-2 rounded-md p-2 hover:bg-secondary"
           >
             <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded">
               <Image
                 src={getImageSrc(t.image, "low")}
-                alt={t.name}
+                alt={t.title}
                 fill
                 className="z-10 object-cover"
               />
@@ -53,7 +56,7 @@ export async function TopSearch() {
             </div>
 
             <div className="my-auto w-[calc(100%-3rem)]">
-              <div className="truncate text-sm font-medium">{t.name}</div>
+              <div className="truncate text-sm font-medium">{t.title}</div>
 
               <div className="truncate text-xs capitalize text-muted-foreground">
                 {t.subtitle}

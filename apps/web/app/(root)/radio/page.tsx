@@ -1,6 +1,7 @@
+import type { Lang, Radio } from "@infinitunes/types";
+
 import { LanguageBar } from "~/components/language-bar";
-import { getFeaturedRadioStations } from "~/lib/jiosaavn-api";
-import type { Lang } from "~/types";
+import { api } from "~/lib/trpc/server";
 
 import { FeaturedStations } from "./_components/featured-stations";
 
@@ -33,7 +34,11 @@ type Props = {
 export default async function RadioPage(props: Props) {
   const { page = 1, lang } = await props.searchParams;
 
-  const radioStations = await getFeaturedRadioStations(page, 50, lang);
+  const radioStations = (await api.get.featuredStations({
+    page,
+    n: 50,
+    lang,
+  })) as unknown as Radio[];
 
   return (
     <div className="space-y-4">

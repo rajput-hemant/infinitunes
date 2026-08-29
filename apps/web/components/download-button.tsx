@@ -1,5 +1,7 @@
 "use client";
 
+import type { Episode, Song } from "@infinitunes/types";
+import { QUALITIES_MAP } from "@infinitunes/types";
 import {
   Tooltip,
   TooltipContent,
@@ -10,8 +12,6 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useDownloadQuality } from "~/hooks/use-store";
-import type { Episode, Song } from "~/types";
-import { QUALITIES_MAP } from "~/types/misc";
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   songs: (Song | Episode)[];
@@ -29,14 +29,15 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
     setIsDownloading(true);
     try {
       await Promise.all(
-        songs.map(async ({ name, download_url }) => {
-          let response;
+        songs.map(async (song) => {
+          const name = song.title;
+          const links = (song.download_url ?? song.more_info.download_url ?? "")
+            .split(",")
+            .filter(Boolean);
+          const link = links[downloadQualityIndex] ?? links[0];
+          if (!link) return;
 
-          if (typeof download_url === "string") {
-            response = await fetch(download_url);
-          } else {
-            response = await fetch(download_url.at(downloadQualityIndex)!.link);
-          }
+          const response = await fetch(link);
 
           if (!response.body) return;
 
@@ -88,7 +89,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
         }),
       );
     } catch (error) {
-      console.error;
+      console.error(error);
     } finally {
       setIsDownloading(false);
     }
@@ -112,7 +113,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
 
       <TooltipContent>
         {songs.length === 1
-          ? `Download \`${songs[0].name}\``
+          ? `Download \`${songs[0]?.title ?? ""}\``
           : `Download ${songs.length} songs`}
       </TooltipContent>
     </Tooltip>

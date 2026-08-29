@@ -1,3 +1,4 @@
+import type { Show, Sort } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -9,15 +10,28 @@ import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cache } from "react";
 
-import { DetailsHeader } from "~/components/details-header";
-import { SliderCard } from "~/components/slider";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { getShowDetails } from "~/lib/jiosaavn-api";
-import type { Sort } from "~/types";
+import { api } from "~/lib/trpc/server";
+import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
+
+const DEFAULT_SORT: Sort = "desc";
+
+// callers must pass a normalized sort so generateMetadata and the page share one cache entry
+const getShow = cache(
+  async (token: string, season: number, sort: Sort) =>
+    (await api.show.details({
+      token,
+      season: `${season}`,
+      sort,
+    })) as unknown as Show,
+);
 
 type ShowDetailsPageProps = {
   searchParams: Promise<{ sort: Sort }>;
@@ -29,18 +43,23 @@ export async function generateMetadata({
 }: ShowDetailsPageProps): Promise<Metadata> {
   const { name, season, token } = await params;
 
-  const { show_details: show } = await getShowDetails(token, season);
+  const { show_details: show } = await getShow(token, season, DEFAULT_SORT);
 
   return {
-    title: show.name,
+    title: show.title,
     description: show.subtitle,
     openGraph: {
-      title: show.name,
+      title: show.title,
       description: show.subtitle,
       url: `/show/${name}/${season}/${token}`,
       images: {
-        url: `/api/og?title=${show.name}&description=${show.subtitle}&image=${show.image[2].link}&square=true`,
-        alt: show.name,
+        url: ogImageUrl({
+          title: show.title,
+          description: show.subtitle,
+          image: getImageSrc(show.image, "high"),
+          square: true,
+        }),
+        alt: show.title,
       },
     },
   };
@@ -54,7 +73,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
 
   const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
     await Promise.all([
-      getShowDetails(token, season, sort),
+      getShow(token, season, sort ?? DEFAULT_SORT),
       user ? getUserFavorites(user.id) : undefined,
       user ? getUserPlaylists(user.id) : undefined,
     ]);
@@ -69,21 +88,22 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
 
       <ScrollArea>
         <div className="flex space-x-4 p-1 pb-4">
-          {seasons
-            .reverse()
-            .map(({ id, name, url, subtitle, image, season_number }) => (
-              <SliderCard
-                key={id}
-                name={name}
-                url={url}
-                subtitle={subtitle}
-                type="show"
-                image={image}
-                aspect="video"
-                hidePlayButton
-                isCurrentSeason={season == season_number && seasons.length > 1}
-              />
-            ))}
+          {seasons.reverse().map((s) => (
+            <SliderCard
+              key={s.id}
+              name={s.title}
+              url={s.perma_url}
+              subtitle={s.subtitle}
+              type="show"
+              image={s.image}
+              aspect="video"
+              hidePlayButton
+              isCurrentSeason={
+                season == Number(s.more_info.season_number) &&
+                seasons.length > 1
+              }
+            />
+          ))}
         </div>
 
         <ScrollBar orientation="horizontal" />
@@ -116,9 +136,9 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         key={episodes[0].id}
         user={user}
         showId={show_details.id}
-        season={show_details.season_number}
+        season={Number(show_details.more_info.season_number)}
         sort={sort}
-        totalEpisodes={show_details.total_episodes}
+        totalEpisodes={Number(show_details.more_info.total_episodes)}
         initialEpisodes={episodes}
         userFavorites={favorites}
         userPlaylists={playlists}
@@ -129,7 +149,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       </h2>
 
       <blockquote className="max-w-4xl italic text-muted-foreground">
-        {show_details.description}
+        {show_details.more_info.description}
       </blockquote>
     </div>
   );

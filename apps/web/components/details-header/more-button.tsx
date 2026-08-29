@@ -1,6 +1,7 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { Quality, Queue, Song, MediaType } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -37,10 +38,9 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useQueue } from "~/hooks/use-store";
+import type { User } from "~/lib/auth";
 import { addSongsToPlaylist } from "~/lib/db/queries";
-import { currentlyInDev, getImageSrc } from "~/lib/utils";
-import type { Quality, Queue, Song, Type } from "~/types";
-import type { User } from "~/types/user";
+import { currentlyInDev, getImageSrc, toQueue } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
@@ -48,7 +48,7 @@ import { ShareSubMenu } from "../share-submenu";
 
 type MoreButtonProps = {
   user?: User;
-  type: Type;
+  type: MediaType;
   image: Quality;
   name: string;
   subtitle: string;
@@ -74,17 +74,7 @@ export function MoreButton(props: MoreButtonProps) {
   const [, setQueue] = useQueue();
 
   function addToQueue() {
-    const songsPayload: Queue[] = songs.map((song) => ({
-      id: song.id,
-      name: song.name,
-      subtitle: song.subtitle,
-      url: song.url,
-      type: song.type,
-      image: song.image,
-      download_url: song.download_url,
-      artists: song.artist_map.artists,
-      duration: song.duration,
-    }));
+    const songsPayload: Queue[] = songs.map((song) => toQueue(song));
 
     setQueue((prev) => [...prev, ...songsPayload]);
 

@@ -1,15 +1,15 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { Episode, Sort } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { getShowEpisodes } from "~/lib/jiosaavn-api";
-import type { Episode, Sort } from "~/types";
-import type { User } from "~/types/user";
+import type { User } from "~/lib/auth";
+import { api } from "~/lib/trpc/client";
 
 type EpisodeListProps = {
   user?: User;
@@ -34,23 +34,30 @@ export function EpisodeList(props: EpisodeListProps) {
     userPlaylists,
   } = props;
 
+  const utils = api.useUtils();
+
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["episodes", season, showId],
       queryFn: ({ pageParam }) =>
-        getShowEpisodes(showId, season, pageParam, sort),
+        utils.show.episodes.fetch({
+          id: showId,
+          season,
+          page: pageParam,
+          sort,
+        }),
+      initialPageParam: 1 as number,
       getNextPageParam: (_, allPages) => {
-        const allPagesLength = allPages
+        const allPagesLength = (allPages as Episode[][])
           .map((page) => page.length)
           .reduce((acc, curr) => acc + curr, 0);
 
         return allPagesLength < totalEpisodes ? allPages.length + 1 : null;
       },
-      initialPageParam: 1,
       initialData: { pages: [initialEpisodes], pageParams: [1] },
     });
 
-  const episodes = data.pages.flatMap((page) => page);
+  const episodes = (data.pages as Episode[][]).flat();
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,

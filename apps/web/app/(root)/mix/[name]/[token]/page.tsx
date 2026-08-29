@@ -1,8 +1,10 @@
+import type { Mix } from "@infinitunes/types";
 import type { Metadata } from "next";
 
-import { DetailsHeader } from "~/components/details-header";
-import { SongList } from "~/components/song-list";
-import { getMixDetails } from "~/lib/jiosaavn-api";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { SongList } from "~/components/song-list/song-list";
+import { api } from "~/lib/trpc/server";
+import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 type MixDetailsPageProps = {
   params: Promise<{
@@ -16,18 +18,28 @@ export async function generateMetadata({
 }: MixDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const mix = await getMixDetails(token);
+  const mix = (await api.get.mix({
+    token,
+    page: 1,
+    n: 20,
+    lang: "hindi,english",
+  })) as unknown as Mix;
 
   return {
-    title: mix.name,
+    title: mix.title,
     description: mix.subtitle,
     openGraph: {
-      title: mix.name,
+      title: mix.title,
       description: mix.subtitle,
       url: `/mix/${name}/${token}`,
       images: {
-        url: `/api/og?title=${mix.name}&description=${mix.subtitle}&image=${mix.image[1].link}&square=true`,
-        alt: mix.name,
+        url: ogImageUrl({
+          title: mix.title,
+          description: mix.subtitle,
+          image: getImageSrc(mix.image, "high"),
+          square: true,
+        }),
+        alt: mix.title,
       },
     },
   };
@@ -35,13 +47,18 @@ export async function generateMetadata({
 export default async function MixDetailsPage(props: MixDetailsPageProps) {
   const { token } = await props.params;
 
-  const mix = await getMixDetails(token);
+  const mix = (await api.get.mix({
+    token,
+    page: 1,
+    n: 20,
+    lang: "hindi,english",
+  })) as unknown as Mix;
 
   return (
     <div className="mb-4 space-y-4">
       <DetailsHeader item={mix} />
 
-      <SongList items={mix.songs} />
+      <SongList items={Array.isArray(mix.list) ? mix.list : []} />
     </div>
   );
 }

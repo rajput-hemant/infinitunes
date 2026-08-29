@@ -1,6 +1,7 @@
 "use client";
 
 import type { Favorite } from "@infinitunes/db/schema";
+import type { MediaType } from "@infinitunes/types";
 import {
   Tooltip,
   TooltipContent,
@@ -10,14 +11,13 @@ import { Heart } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
+import type { User } from "~/lib/auth";
 import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
 import { cn, currentlyInDev } from "~/lib/utils";
-import type { Type } from "~/types";
-import type { User } from "~/types/user";
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   user?: User;
-  type: Type;
+  type: MediaType;
   name: string;
   token: string;
   favourites?: Favorite;
@@ -52,13 +52,13 @@ export function LikeButton(props: LikeButtonProps) {
     switch (type) {
       case "song": {
         if (favourites?.songs.includes(token)) {
-          toast.promise(removeFromFavorites(user.id!, token, type), {
+          toast.promise(removeFromFavorites(token, type), {
             loading: "Removing from favorites...",
             success: `Successfully removed "${name}" from favorites!`,
             error: (e) => e.message,
           });
         } else {
-          toast.promise(addToFavorites(user.id!, token, type), {
+          toast.promise(addToFavorites(token, type), {
             loading: "Adding Song to favorites...",
             success: `"${name}" song added to favorites!`,
             error: (e) => e.message,
@@ -68,13 +68,13 @@ export function LikeButton(props: LikeButtonProps) {
       }
       case "album": {
         if (favourites?.albums.includes(token)) {
-          toast.promise(removeFromFavorites(user.id!, token, type), {
+          toast.promise(removeFromFavorites(token, type), {
             loading: "Removing from favorites...",
             success: `Successfully removed "${name}" from favorites!`,
             error: (e) => e.message,
           });
         } else {
-          toast.promise(addToFavorites(user.id!, token, type), {
+          toast.promise(addToFavorites(token, type), {
             loading: "Adding Album to favorites...",
             success: `"${name}" album added to favorites!`,
             error: (e) => e.message,
@@ -84,13 +84,13 @@ export function LikeButton(props: LikeButtonProps) {
       }
       case "playlist": {
         if (favourites?.playlists.includes(token)) {
-          toast.promise(removeFromFavorites(user.id!, token, type), {
+          toast.promise(removeFromFavorites(token, type), {
             loading: "Removing from favorites...",
             success: `"${name}" playlist removed from favorites!`,
             error: (e) => e.message,
           });
         } else {
-          toast.promise(addToFavorites(user.id!, token, type), {
+          toast.promise(addToFavorites(token, type), {
             loading: "Adding Playlist to favorites...",
             success: `"${name}" playlist added to favorites!`,
             error: (e) => e.message,
@@ -100,13 +100,13 @@ export function LikeButton(props: LikeButtonProps) {
       }
       case "artist": {
         if (favourites?.artists.includes(token)) {
-          toast.promise(removeFromFavorites(user.id!, token, type), {
+          toast.promise(removeFromFavorites(token, type), {
             loading: "Removing from favorites...",
             success: `Successfully removed "${name}" from favorites!`,
             error: (e) => e.message,
           });
         } else {
-          toast.promise(addToFavorites(user.id!, token, type), {
+          toast.promise(addToFavorites(token, type), {
             loading: "Adding Artist to favorites...",
             success: `"${name}" artist added to favorites!`,
             error: (e) => e.message,
@@ -116,13 +116,13 @@ export function LikeButton(props: LikeButtonProps) {
       }
       case "show": {
         if (favourites?.podcasts.includes(token)) {
-          toast.promise(removeFromFavorites(user.id!, token, type), {
+          toast.promise(removeFromFavorites(token, type), {
             loading: "Removing from favorites...",
             success: "Removed from favorites!",
             error: (e) => e.message,
           });
         } else {
-          toast.promise(addToFavorites(user.id!, token, type), {
+          toast.promise(addToFavorites(token, type), {
             loading: "Adding Podcast to favorites...",
             success: "Added Podcast to favorites!",
             error: (e) => e.message,

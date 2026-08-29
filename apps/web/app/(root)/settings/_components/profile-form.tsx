@@ -83,7 +83,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   async function onSubmit(formData: FormData) {
     setIsSubmitting(true);
 
-    toast.promise(updateUser({ id: user.id!, ...formData }), {
+    toast.promise(updateUser(formData), {
       loading: "Updating Profile...",
       success: "Profile Updated!",
       error: (e) => e.message,
@@ -92,7 +92,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   }
 
   async function deleteUserHandler() {
-    toast.promise(deleteUser(user.id!), {
+    toast.promise(deleteUser(), {
       loading: "Deleting Account...",
       success: "Account Deleted! Logging out...",
       error: (e) => e.message,

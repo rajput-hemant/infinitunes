@@ -7,6 +7,11 @@
     "type-check": "tsc --noEmit",
     "test": "bun test",
     "db:generate": "drizzle-kit generate --config=./src/drizzle.config.ts",
+    "db:migrate": "drizzle-kit migrate --config=./src/drizzle.config.ts",
+    "db:drop": "drizzle-kit drop --config=./src/drizzle.config.ts",
+    "db:push": "drizzle-kit push --config=./src/drizzle.config.ts",
+    "db:pull": "drizzle-kit introspect --config=./src/drizzle.config.ts",
+    "db:studio": "drizzle-kit studio --config=./src/drizzle.config.ts",
     "db:check": "drizzle-kit check --config=./src/drizzle.config.ts"
   },
   "exports": {

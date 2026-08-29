@@ -1,5 +1,6 @@
 "use client";
 
+import type { Queue } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
@@ -17,8 +18,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { useQueue } from "~/hooks/use-store";
-import { getHref, getImageSrc } from "~/lib/utils";
-import type { Queue } from "~/types";
+import { getHref, getImageSrc, getToken } from "~/lib/utils";
 
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
 
@@ -96,7 +96,7 @@ export function Queue() {
                       <TilePlayPauseButton
                         id={item.id}
                         type={item.type}
-                        token={item.url.split("/").pop()!}
+                        token={getToken(item.url)}
                       />
                     </div>
 
@@ -117,7 +117,7 @@ export function Queue() {
                         {item.artists.map((artist, i, arr) => (
                           <Link
                             key={artist.id}
-                            href={getHref(artist.url, "artist")}
+                            href={getHref(artist.perma_url, "artist")}
                             className="w-full truncate hover:text-foreground"
                           >
                             {artist.name}

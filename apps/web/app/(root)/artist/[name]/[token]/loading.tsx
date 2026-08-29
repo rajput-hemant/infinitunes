@@ -6,11 +6,9 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-import {
-  DetailsHeaderSkeleton,
-  SliderCardSkeleton,
-  SongListSkeleton,
-} from "~/components/skeletons";
+import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
+import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function ArtistDetailsSkeleton() {
   const name = usePathname().split("/")[2];

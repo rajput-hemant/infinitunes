@@ -1,13 +1,13 @@
 "use client";
 
+import type { Lang, Radio } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { getFeaturedRadioStations } from "~/lib/jiosaavn-api";
-import type { Lang, Radio } from "~/types";
+import { api } from "~/lib/trpc/client";
 
 type FeaturedStationsProps = {
   initialStations: Radio[];
@@ -18,17 +18,20 @@ export function FeaturedStations({
   initialStations,
   lang,
 }: FeaturedStationsProps) {
+  const utils = api.useUtils();
+
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["featured-stations", lang],
-      queryFn: ({ pageParam }) => getFeaturedRadioStations(pageParam, 50, lang),
+      queryFn: ({ pageParam }) =>
+        utils.get.featuredStations.fetch({ page: pageParam, n: 50, lang }),
+      initialPageParam: 1 as number,
       getNextPageParam: (stations, allPages) =>
-        stations.length < 50 ? null : allPages.length + 1,
-      initialPageParam: 1,
+        (stations as Radio[]).length < 50 ? null : allPages.length + 1,
       initialData: { pages: [initialStations], pageParams: [1] },
     });
 
-  const stations = data.pages.flatMap((page) => page);
+  const stations = (data.pages as Radio[][]).flat();
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,
@@ -42,17 +45,27 @@ export function FeaturedStations({
   return (
     <div className="py-6">
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {stations.map(({ id, name, url, subtitle, type, image, explicit }) => (
-          <SliderCard
-            key={id}
-            name={name}
-            url={url}
-            subtitle={subtitle}
-            type={type}
-            image={image}
-            explicit={explicit}
-          />
-        ))}
+        {stations.map(
+          ({
+            id,
+            title,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <SliderCard
+              key={id}
+              name={title}
+              url={perma_url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+              explicit={explicit_content}
+            />
+          ),
+        )}
       </div>
 
       {hasNextPage ? (

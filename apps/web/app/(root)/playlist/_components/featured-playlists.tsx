@@ -1,13 +1,13 @@
 "use client";
 
+import type { FeaturedPlaylists, Lang } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { getFeaturedPlaylists } from "~/lib/jiosaavn-api";
-import type { FeaturedPlaylists, Lang } from "~/types";
+import { api } from "~/lib/trpc/client";
 
 type Props = {
   initialPlaylists: FeaturedPlaylists;
@@ -15,17 +15,22 @@ type Props = {
 };
 
 export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
+  const utils = api.useUtils();
+
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["featured-playlists", lang],
-      queryFn: ({ pageParam }) => getFeaturedPlaylists(pageParam, 50, lang),
-      getNextPageParam: ({ last_page }, allPages) =>
-        last_page ? null : allPages.length + 1,
-      initialPageParam: 1,
+      queryFn: ({ pageParam }) =>
+        utils.get.featuredPlaylists.fetch({ page: pageParam, n: 50, lang }),
+      initialPageParam: 1 as number,
+      getNextPageParam: (lastPage, allPages) =>
+        (lastPage as FeaturedPlaylists).last_page ? null : allPages.length + 1,
       initialData: { pages: [initialPlaylists], pageParams: [1] },
     });
 
-  const featuredPlaylists = data.pages.flatMap((page) => page.data);
+  const featuredPlaylists = (data.pages as FeaturedPlaylists[]).flatMap(
+    (page) => page.data,
+  );
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,
@@ -40,15 +45,23 @@ export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
     <div className="py-6">
       <div className="flex w-full flex-wrap justify-between gap-y-4">
         {featuredPlaylists.map(
-          ({ id, name, url, subtitle, type, image, explicit }) => (
+          ({
+            id,
+            title,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
             <SliderCard
               key={id}
-              name={name}
-              url={url}
+              name={title}
+              url={perma_url}
               subtitle={subtitle}
               type={type}
               image={image}
-              explicit={explicit}
+              explicit={explicit_content}
             />
           ),
         )}

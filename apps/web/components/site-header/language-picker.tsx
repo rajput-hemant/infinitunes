@@ -1,5 +1,6 @@
 "use client";
 
+import type { Lang } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -21,7 +22,6 @@ import { toast } from "sonner";
 
 import { languages } from "~/config/languages";
 import { cn } from "~/lib/utils";
-import type { Lang } from "~/types";
 
 type LanguagePickerProps = {
   initialLanguages: Lang[];

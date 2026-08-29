@@ -50,6 +50,13 @@ export function createServerSchema(ctx: EnvContext = {}) {
       .string()
       .url({ message: "JioSaavn API URL is invalid or missing" }),
 
+    JIOSAAVN_DES_KEY: z
+      .string()
+      .optional()
+      .describe(
+        "DES key used to decrypt JioSaavn media URLs. Sourced from the environment only - never hardcoded.",
+      ),
+
     DATABASE_URL: z
       .string()
       .min(1, { message: "Database URL is invalid or missing" }),

@@ -1,6 +1,6 @@
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
-import { SliderCardSkeleton } from "~/components/skeletons";
+import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
 
 export default function Loading() {
   return (

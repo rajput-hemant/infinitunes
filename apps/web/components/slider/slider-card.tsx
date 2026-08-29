@@ -1,21 +1,21 @@
+import type { Quality, MediaType } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Link from "next/link";
 
-import { cn, getHref, getImageSrc } from "~/lib/utils";
-import type { Quality, Type } from "~/types";
+import { cn, getHref, getImageSrc, getToken } from "~/lib/utils";
 
 import { ImageWithFallback } from "../image-with-fallback";
 import { PlayButton } from "../play-button";
 
 export type SliderCardProps = {
   name: string;
-  type: Type;
+  type: MediaType;
   url: string;
   image: Quality;
-  explicit?: boolean;
+  explicit?: boolean | string;
   subtitle?: string;
   className?: string;
   aspect?: "square" | "video";
@@ -38,7 +38,10 @@ export function SliderCard(props: SliderCardProps) {
   } = props;
 
   const imageSrc = getImageSrc(image, "high");
-  const Wrapper = type === "radio_station" ? "div" : Link;
+  const isRadio = type === "radio_station";
+  const href = isRadio ? undefined : getHref(url, type);
+  const isExplicit =
+    typeof explicit === "string" ? explicit === "true" : Boolean(explicit);
 
   return (
     <Card
@@ -59,9 +62,15 @@ export function SliderCard(props: SliderCardProps) {
             ["radio_station", "artist"].includes(type) && "rounded-full border",
           )}
         >
-          <Wrapper href={getHref(url, type)} className="absolute inset-0 z-10">
-            <span className="sr-only">View {name}</span>
-          </Wrapper>
+          {href ? (
+            <Link href={href} className="absolute inset-0 z-10">
+              <span className="sr-only">View {name}</span>
+            </Link>
+          ) : (
+            <div className="absolute inset-0 z-10">
+              <span className="sr-only">View {name}</span>
+            </div>
+          )}
 
           <ImageWithFallback
             src={imageSrc}
@@ -82,7 +91,7 @@ export function SliderCard(props: SliderCardProps) {
             <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-linear-to-b lg:group-hover:flex">
               <PlayButton
                 type={type}
-                token={url.split("/").pop()!}
+                token={getToken(url)}
                 className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
               >
                 <Play
@@ -96,17 +105,25 @@ export function SliderCard(props: SliderCardProps) {
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
           <h4 className="w-full font-semibold lg:text-lg">
-            <Wrapper
-              href={getHref(url, type)}
-              className="mx-auto flex max-w-fit items-center"
-            >
-              {explicit && (
-                <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
-                  E
-                </Badge>
-              )}
-              <span className="truncate">{name}</span>
-            </Wrapper>
+            {href ? (
+              <Link href={href} className="mx-auto flex max-w-fit items-center">
+                {isExplicit && (
+                  <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
+                    E
+                  </Badge>
+                )}
+                <span className="truncate">{name}</span>
+              </Link>
+            ) : (
+              <div className="mx-auto flex max-w-fit items-center">
+                {isExplicit && (
+                  <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
+                    E
+                  </Badge>
+                )}
+                <span className="truncate">{name}</span>
+              </div>
+            )}
           </h4>
 
           <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">

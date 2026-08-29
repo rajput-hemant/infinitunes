@@ -1,13 +1,13 @@
 "use client";
 
+import type { Lang, TopAlbum } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { getTopAlbums } from "~/lib/jiosaavn-api";
-import type { Lang, TopAlbum } from "~/types";
+import { api } from "~/lib/trpc/client";
 
 type TopAlbumsProps = {
   initialAlbums: TopAlbum;
@@ -15,17 +15,20 @@ type TopAlbumsProps = {
 };
 
 export function TopAlbums({ initialAlbums, lang }: TopAlbumsProps) {
+  const utils = api.useUtils();
+
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["top-albums", lang],
-      queryFn: ({ pageParam }) => getTopAlbums(pageParam, 50, lang),
-      getNextPageParam: ({ last_page }, allPages) =>
-        last_page ? null : allPages.length + 1,
-      initialPageParam: 1,
+      queryFn: ({ pageParam }) =>
+        utils.get.topAlbums.fetch({ page: pageParam, n: 50, lang }),
+      initialPageParam: 1 as number,
+      getNextPageParam: (lastPage, allPages) =>
+        (lastPage as TopAlbum).last_page ? null : allPages.length + 1,
       initialData: { pages: [initialAlbums], pageParams: [1] },
     });
 
-  const topAlbums = data.pages.flatMap((page) => page.data);
+  const topAlbums = (data.pages as TopAlbum[]).flatMap((page) => page.data);
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,
@@ -39,17 +42,27 @@ export function TopAlbums({ initialAlbums, lang }: TopAlbumsProps) {
   return (
     <div className="py-6">
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {topAlbums.map(({ id, name, url, subtitle, type, image, explicit }) => (
-          <SliderCard
-            key={id}
-            name={name}
-            url={url}
-            subtitle={subtitle}
-            type={type}
-            image={image}
-            explicit={explicit}
-          />
-        ))}
+        {topAlbums.map(
+          ({
+            id,
+            title,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <SliderCard
+              key={id}
+              name={title}
+              url={perma_url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+              explicit={explicit_content}
+            />
+          ),
+        )}
       </div>
 
       {hasNextPage ? (

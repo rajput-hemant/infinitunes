@@ -3,7 +3,7 @@
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import dynamic from "next/dynamic";
 
-import type { User } from "~/types/user";
+import type { User } from "~/lib/auth";
 
 type PlayerWrapperProps = {
   user?: User;

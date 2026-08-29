@@ -37,6 +37,9 @@ jobs:
         run: bun test --pass-with-no-tests
 
       - name: Build production
+        env:
+          DATABASE_URL: postgres://ci:ci@127.0.0.1:1/ci
+          AUTH_SECRET: test-secret-key-that-is-at-least-32-chars-long
         run: bun run build
 
       - name: Check commits messages

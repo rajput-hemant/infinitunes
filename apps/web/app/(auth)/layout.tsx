@@ -7,7 +7,7 @@ import React from "react";
 
 import { Icons } from "~/components/icons";
 import { getUser } from "~/lib/auth";
-import { cn } from "~/lib/utils";
+import { cn, seededIndex } from "~/lib/utils";
 
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
 
@@ -20,7 +20,8 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
     redirect("/");
   }
 
-  const imageUrl = `/images/artists/${+(Math.random() * 10).toFixed()}.png`;
+  const today = new Date().toISOString().slice(0, 10);
+  const imageUrl = `/images/artists/${seededIndex(today, 10)}.png`;
 
   return (
     <div className="grid h-screen lg:grid-cols-2">

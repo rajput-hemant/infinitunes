@@ -1,4 +1,5 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { Episode, Song } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
@@ -7,8 +8,13 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { cn, formatDuration, getHref, getImageSrc } from "~/lib/utils";
-import type { Episode, Song } from "~/types";
+import {
+  cn,
+  formatDuration,
+  getHref,
+  getImageSrc,
+  getToken,
+} from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";
@@ -55,7 +61,7 @@ export async function SongList(props: SongListProps) {
                 {!showAlbum && (
                   <PlayButton
                     type={item.type}
-                    token={item.url.split("/").pop()!}
+                    token={getToken(item.perma_url)}
                     className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground duration-300 hover:h-9 hover:border-primary hover:text-primary group-hover:flex"
                   >
                     <Play
@@ -71,7 +77,7 @@ export async function SongList(props: SongListProps) {
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                     <Image
                       src={getImageSrc(item.image, "low")}
-                      alt={item.name}
+                      alt={item.title}
                       fill
                       className="z-10 object-cover duration-300 group-hover:brightness-50"
                     />
@@ -81,7 +87,7 @@ export async function SongList(props: SongListProps) {
                     <TilePlayPauseButton
                       id={item.id}
                       type={item.type}
-                      token={item.url.split("/").pop()!}
+                      token={getToken(item.perma_url)}
                     />
                   </div>
                 )}
@@ -95,26 +101,28 @@ export async function SongList(props: SongListProps) {
                   <h4 className="w-full truncate font-semibold">
                     <Link
                       href={getHref(
-                        item.url,
+                        item.perma_url,
                         item.type === "song" ? "song" : "episode",
                       )}
                       className="text-primary group-hover:text-primary lg:text-muted-foreground"
                     >
-                      {item.name}
+                      {item.title}
                     </Link>
                   </h4>
 
                   <ScrollArea className="w-full truncate pb-1">
-                    {item.artist_map.primary_artists.map((artist, i, arr) => (
-                      <Link
-                        key={artist.id}
-                        href={getHref(artist.url, "artist")}
-                        className="hover:text-foreground"
-                      >
-                        {artist.name}
-                        {i !== arr.length - 1 && ", "}
-                      </Link>
-                    ))}
+                    {item.more_info.artistMap?.primary_artists?.map(
+                      (artist, i, arr) => (
+                        <Link
+                          key={artist.id}
+                          href={getHref(artist.perma_url, "artist")}
+                          className="hover:text-foreground"
+                        >
+                          {artist.name}
+                          {i !== arr.length - 1 && ", "}
+                        </Link>
+                      ),
+                    )}
 
                     <ScrollBar
                       orientation="horizontal"
@@ -126,17 +134,19 @@ export async function SongList(props: SongListProps) {
                 {showAlbum && item.type !== "episode" && (
                   <p className="hidden w-1/3 truncate xl:block">
                     <Link
-                      href={getHref(item.album_url, "album")}
+                      href={getHref(item.more_info.album_url, "album")}
                       className="hover:text-primary"
                     >
-                      {item.album}
+                      {item.more_info.album}
                     </Link>
                   </p>
                 )}
 
                 {item.type === "episode" && (
                   <p className="hidden w-full pr-8 text-end lg:block">
-                    {new Date(item.release_date).toLocaleDateString("en-US", {
+                    {new Date(
+                      String(item.more_info.release_date),
+                    ).toLocaleDateString("en-US", {
                       year: "numeric",
                       month: "short",
                       day: "numeric",
@@ -152,13 +162,13 @@ export async function SongList(props: SongListProps) {
                   user={user}
                   type={item.type}
                   token={item.id}
-                  name={item.name}
+                  name={item.title}
                   favourites={favorites}
                   className="hidden hover:text-primary lg:block"
                 />
 
                 <span className="hidden shrink-0 truncate lg:block">
-                  {formatDuration(item.duration, "mm:ss")}
+                  {formatDuration(item.more_info.duration, "mm:ss")}
                 </span>
 
                 <TileMoreButton

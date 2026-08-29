@@ -16,7 +16,7 @@ async function fetchImage(url: string) {
 
 async function fetchFonts() {
   const res = await fetch(
-    new URL("../../../../public/fonts/CalSans-SemiBold.woff", import.meta.url),
+    new URL("../../../public/fonts/CalSans-SemiBold.woff", import.meta.url),
   );
 
   const buffer = await res.arrayBuffer();

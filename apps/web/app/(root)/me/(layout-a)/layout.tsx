@@ -2,7 +2,6 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Edit, Mail } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import React from "react";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
@@ -14,9 +13,8 @@ import { Navbar } from "./_components/navbar";
 export default async function Layout({ children }: React.PropsWithChildren) {
   const user = await getUser();
 
-  // TODO: protect this route with a middleware
   if (!user) {
-    redirect("/login");
+    return null;
   }
 
   return (

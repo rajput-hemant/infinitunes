@@ -26,8 +26,8 @@ import { useSelectedLayoutSegments } from "next/navigation";
 import React from "react";
 
 import { sidebarNav } from "~/config/nav";
+import type { User } from "~/lib/auth";
 import { cn, currentlyInDev } from "~/lib/utils";
-import type { User } from "~/types/user";
 
 import { NewPlaylistForm } from "./playlist/new-playlist-form";
 

@@ -1,5 +1,18 @@
 "use client";
 
+import type {
+  Album,
+  Artist,
+  Episode,
+  EpisodeDetail,
+  Label,
+  Mix,
+  Playlist,
+  Song,
+  SongObj,
+  Sort,
+  MediaType,
+} from "@infinitunes/types";
 import { usePathname, useSearchParams } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -9,21 +22,11 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
-import {
-  getAlbumDetails,
-  getArtistDetails,
-  getEpisodeDetails,
-  getLabelDetails,
-  getMixDetails,
-  getPlaylistDetails,
-  getShowEpisodes,
-  getSongDetails,
-} from "~/lib/jiosaavn-api";
-import { currentlyInDev } from "~/lib/utils";
-import type { Episode, Song, Sort, Type } from "~/types";
+import { api } from "~/lib/trpc/client";
+import { currentlyInDev, getToken, toQueue } from "~/lib/utils";
 
 type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
-  type: Type;
+  type: MediaType;
   token: string;
 };
 
@@ -37,11 +40,13 @@ export function PlayButton(props: PlayButtonProps) {
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [, setCurrentIndex] = useCurrentSongIndex();
 
+  const utils = api.useUtils();
+
   const sort = (searchParams.get("sort") as Sort) ?? "desc";
 
   async function playHandler() {
     const songIndex = initialQueue.findIndex(
-      (song) => token === song.url.split("/").pop(),
+      (song) => token === getToken(song.url),
     );
 
     if (songIndex !== -1) {
@@ -52,47 +57,62 @@ export function PlayButton(props: PlayButtonProps) {
 
       switch (type) {
         case "song": {
-          const songObj = await getSongDetails(token);
+          const songObj = (await utils.song.details.fetch({
+            token,
+          })) as unknown as SongObj;
           queue = songObj.songs;
           break;
         }
         case "album": {
-          const album = await getAlbumDetails(token);
-          queue = album.songs ?? [];
+          const album = (await utils.album.details.fetch({
+            token,
+          })) as unknown as Album;
+          queue = Array.isArray(album.list) ? album.list : [];
           break;
         }
         case "playlist": {
-          const playlist = await getPlaylistDetails(token);
-          queue = playlist.songs ?? [];
+          const playlist = (await utils.playlist.details.fetch({
+            token,
+          })) as unknown as Playlist;
+          queue = Array.isArray(playlist.list) ? playlist.list : [];
           break;
         }
         case "mix": {
-          const mix = await getMixDetails(token);
-          queue = mix.songs ?? [];
+          const mix = (await utils.get.mix.fetch({
+            token,
+          })) as unknown as Mix;
+          queue = Array.isArray(mix.list) ? mix.list : [];
           break;
         }
         case "artist": {
-          const artist = await getArtistDetails(token);
-          queue = artist.top_songs;
+          const artist = (await utils.artist.details.fetch({
+            token,
+          })) as unknown as Artist;
+          queue = artist.topSongs ?? [];
           break;
         }
         case "label": {
-          const label = await getLabelDetails(token);
-          queue = label.top_songs.songs;
+          const label = (await utils.get.label.fetch({
+            token,
+          })) as unknown as Label;
+          queue = label.topSongs.songs;
           break;
         }
         case "show": {
-          const episodes = await getShowEpisodes(
-            token,
-            +pathname.split("/")[3],
-            1,
+          const episodes = (await utils.show.episodes.fetch({
+            id: token,
+            season: +pathname.split("/")[3],
+            page: 1,
             sort,
-          );
+          })) as unknown as Episode[];
           queue = episodes;
           break;
         }
         case "episode": {
-          const data = await getEpisodeDetails(token);
+          const data = (await utils.show.episodeDetails.fetch({
+            token,
+            sort,
+          })) as unknown as EpisodeDetail;
           queue = data.episodes;
           break;
         }
@@ -102,36 +122,16 @@ export function PlayButton(props: PlayButtonProps) {
         }
       }
 
-      const _queue = queue.map(
-        ({
-          id,
-          name,
-          subtitle,
-          type,
-          url,
-          image,
-          download_url,
-          artist_map: { artists },
-          duration,
-        }) => ({
-          id,
-          name,
-          subtitle,
-          url,
-          type,
-          image,
-          download_url,
-          artists,
-          duration,
-        }),
-      );
+      const _queue = queue.map((item) => toQueue(item));
+      const first = _queue[0];
+      if (!first) return;
 
       setQueue(_queue);
 
       toast.success(
-        `${queue.length} item${queue.length > 1 ? "s" : ""} has been added to the queue`,
+        `${_queue.length} item${_queue.length > 1 ? "s" : ""} has been added to the queue`,
         {
-          description: `Playing "${queue[0].name}"`,
+          description: `Playing "${first.name}"`,
           position: "bottom-center",
         },
       );

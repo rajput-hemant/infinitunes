@@ -74,13 +74,44 @@ describe("Better Auth configuration", () => {
   });
 });
 
-describe("Legacy bcrypt credential compatibility", () => {
-  it("verifies a legacy bcrypt hash and rejects a wrong password", async () => {
+describe("Password hashing and credential verification", () => {
+  it("configures matching bcrypt hash and verify handlers on Better Auth", async () => {
+    const auth = createAuth(makeFakeDb());
+    const hashFn = auth.options.emailAndPassword?.password?.hash;
+    const verifyFn = auth.options.emailAndPassword?.password?.verify;
+
+    expect(hashFn).toBeTypeOf("function");
+    expect(verifyFn).toBeTypeOf("function");
+
+    const password = "fresh-signup-password";
+    const hashedPassword = await hashFn!(password);
+
+    // Verify hash format is bcrypt
+    expect(hashedPassword).toMatch(/^\$2[aby]\$/);
+
+    // Verify round-trip with the configured verify handler
+    const isValid = await verifyFn!({ password, hash: hashedPassword });
+    expect(isValid).toBe(true);
+
+    const isInvalid = await verifyFn!({
+      password: "wrong-password",
+      hash: hashedPassword,
+    });
+    expect(isInvalid).toBe(false);
+  });
+
+  it("verifies a legacy bcrypt hash with the configured Better Auth verify handler", async () => {
+    const auth = createAuth(makeFakeDb());
+    const verifyFn = auth.options.emailAndPassword?.password?.verify;
+    expect(verifyFn).toBeTypeOf("function");
+
     const password = "s3cret-passw0rd";
     const legacyHash = await hash(password, 10);
 
-    expect(await compare(password, legacyHash)).toBe(true);
-    expect(await compare("wrong-password", legacyHash)).toBe(false);
+    expect(await verifyFn!({ password, hash: legacyHash })).toBe(true);
+    expect(
+      await verifyFn!({ password: "wrong-password", hash: legacyHash }),
+    ).toBe(false);
   });
 
   it("keeps the Better Auth credential column in sync with the legacy hash", async () => {

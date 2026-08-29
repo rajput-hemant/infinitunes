@@ -1,20 +1,8 @@
-export const languages = [
-  "Hindi",
-  "English",
-  "Punjabi",
-  "Tamil",
-  "Telugu",
-  "Marathi",
-  "Gujarati",
-  "Bengali",
-  "Kannada",
-  "Bhojpuri",
-  "Malayalam",
-  "Urdu",
-  "Haryanvi",
-  "Rajasthani",
-  "Odia",
-  "Assamese",
-] as const;
+import { LANGUAGES } from "@infinitunes/types";
 
-export type Language = Lowercase<(typeof languages)[number]>;
+const capitalize = (value: string) =>
+  value.charAt(0).toUpperCase() + value.slice(1);
+
+export const languages = LANGUAGES.map((language) => capitalize(language));
+
+export type Language = (typeof languages)[number];

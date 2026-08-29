@@ -1,7 +1,8 @@
+import type { TopShows } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
-import { SliderCard } from "~/components/slider";
-import { getTopShows } from "~/lib/jiosaavn-api";
+import { SliderCard } from "~/components/slider/slider-card";
+import { api } from "~/lib/trpc/server";
 
 import { TopPodcasts } from "./_components/top-podcasts";
 
@@ -27,35 +28,49 @@ type TopPodcastsPageProps = { searchParams: Promise<{ page?: number }> };
 export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
   const { page = 1 } = await props.searchParams;
 
-  const topShows = await getTopShows(page);
+  const topShows = (await api.get.topShows({
+    page,
+    n: 50,
+  })) as unknown as TopShows;
 
-  const {
-    trending_podcasts: { data: trendingPodcasts, title, subtitle },
-  } = topShows;
+  const trendingGroup = topShows.trendingPodcasts?.[0];
+  const trendingPodcasts = trendingGroup?.items ?? [];
+  const trendingTitle = trendingGroup?.module.title ?? "Trending Podcasts";
+  const trendingSubtitle = trendingGroup?.module.subtitle ?? "";
 
   return (
     <div className="space-y-4">
       <header className="mt-4">
         <h1 className="font-heading text-2xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
-          {title}
+          {trendingTitle}
         </h1>
 
-        <p className="pl-1 font-medium text-muted-foreground">{subtitle}</p>
+        <p className="pl-1 font-medium text-muted-foreground">
+          {trendingSubtitle}
+        </p>
       </header>
 
       <ScrollArea>
         <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 pb-6">
           {trendingPodcasts.map(
-            ({ id, name, url, subtitle, type, image, explicit }) => {
+            ({
+              id,
+              title: podcastTitle,
+              perma_url,
+              subtitle,
+              type,
+              image,
+              explicit_content,
+            }) => {
               return (
                 <SliderCard
                   key={id}
-                  name={name}
-                  url={url}
+                  name={podcastTitle}
+                  url={perma_url}
                   subtitle={subtitle}
                   type={type}
                   image={image}
-                  explicit={explicit}
+                  explicit={explicit_content}
                   hidePlayButton
                 />
               );

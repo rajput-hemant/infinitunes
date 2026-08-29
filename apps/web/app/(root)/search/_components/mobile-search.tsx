@@ -1,14 +1,13 @@
 "use client";
 
+import type { AllSearch } from "@infinitunes/types";
 import { Input } from "@infinitunes/ui/components/input";
 import { Loader2, Search } from "lucide-react";
 import React from "react";
 
 import { SearchAll } from "~/components/search/search-all";
-import { useDebounce } from "~/hooks/use-debounce";
 import { useIsTyping } from "~/hooks/use-store";
-import { searchAll } from "~/lib/jiosaavn-api";
-import type { AllSearch } from "~/types";
+import { api } from "~/lib/trpc/client";
 
 type MobileSearchProps = {
   topSearch: React.JSX.Element;
@@ -16,28 +15,19 @@ type MobileSearchProps = {
 
 export function MobileSearch({ topSearch }: MobileSearchProps) {
   const [query, setQuery] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [searchResult, setSearchResult] = React.useState<AllSearch | null>(
-    null,
-  );
 
-  const debouncedQuery = useDebounce(query.trim(), 1000);
+  const deferredQuery = React.useDeferredValue(query.trim());
   const [_, setIsTyping] = useIsTyping();
 
-  React.useEffect(() => {
-    (async () => {
-      if (!debouncedQuery) return setSearchResult(null);
-      setIsLoading(true);
-      const data = await searchAll(debouncedQuery);
-      setIsLoading(false);
-      setSearchResult(data);
-    })();
-  }, [debouncedQuery]);
+  const { data: searchResult, isLoading } = api.search.all.useQuery(
+    { q: deferredQuery },
+    { enabled: deferredQuery.length > 0 },
+  );
 
   React.useEffect(() => {
-    if (debouncedQuery.length) setIsTyping(true);
+    if (deferredQuery.length) setIsTyping(true);
     else setIsTyping(false);
-  }, [debouncedQuery, setIsTyping]);
+  }, [deferredQuery, setIsTyping]);
 
   return (
     <>
@@ -52,7 +42,7 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
         />
       </div>
 
-      {!debouncedQuery.length && topSearch}
+      {!deferredQuery.length && topSearch}
 
       {isLoading && (
         <div className="text-center text-xs text-muted-foreground">
@@ -60,7 +50,9 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
         </div>
       )}
 
-      {searchResult && <SearchAll query={query} data={searchResult} />}
+      {searchResult && (
+        <SearchAll query={query} data={searchResult as AllSearch} />
+      )}
     </>
   );
 }

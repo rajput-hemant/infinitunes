@@ -1,5 +1,7 @@
 "use client";
 
+import type { ImageQuality, Lang } from "@infinitunes/types";
+import { QUALITIES_MAP } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -25,8 +27,6 @@ import {
   useStreamQuality,
 } from "~/hooks/use-store";
 import { cn } from "~/lib/utils";
-import type { ImageQuality, Lang } from "~/types";
-import { QUALITIES_MAP } from "~/types/misc";
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
 

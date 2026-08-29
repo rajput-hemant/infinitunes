@@ -24,10 +24,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import {
-  AudioPlayerProvider,
-  useAudioPlayerContext,
-} from "react-use-audio-player";
+import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
 import { useEventListener } from "~/hooks/use-event-listner";
@@ -38,14 +35,15 @@ import {
   useQueue,
   useStreamQuality,
 } from "~/hooks/use-store";
+import type { User } from "~/lib/auth";
 import {
   cn,
   formatDuration,
   getDownloadLink,
   getHref,
   getImageSrc,
+  seededIndex,
 } from "~/lib/utils";
-import type { User } from "~/types/user";
 
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
@@ -58,11 +56,7 @@ type PlayerProps = {
 };
 
 export function Player({ user, playlists }: PlayerProps) {
-  return (
-    <AudioPlayerProvider>
-      <PlayerInner user={user} playlists={playlists} />
-    </AudioPlayerProvider>
-  );
+  return <PlayerInner user={user} playlists={playlists} />;
 }
 
 function PlayerInner({ user, playlists }: PlayerProps) {
@@ -100,11 +94,14 @@ function PlayerInner({ user, playlists }: PlayerProps) {
   } = useAudioPlayerContext();
 
   React.useEffect(() => {
-    if (queue.length && isPlayerInit) {
-      const audioSrc = getDownloadLink(
-        queue[currentIndex].download_url,
-        streamQuality,
-      );
+    const current = queue[currentIndex];
+    if (queue.length && isPlayerInit && current) {
+      const audioSrc = getDownloadLink(current.download_url, streamQuality);
+
+      if (!audioSrc) {
+        toast.error("This song can't be played right now.");
+        return;
+      }
 
       load(audioSrc, {
         html5: true,
@@ -164,7 +161,8 @@ function PlayerInner({ user, playlists }: PlayerProps) {
     let index = currentIndex;
 
     if (isShuffle) {
-      index = Math.floor(Math.random() * queue.length);
+      const seed = `${queue[currentIndex]?.id ?? currentIndex}:${currentIndex}:next`;
+      index = seededIndex(seed, queue.length);
     } else {
       if (currentIndex < queue.length - 1) {
         index = currentIndex + 1;
@@ -183,7 +181,8 @@ function PlayerInner({ user, playlists }: PlayerProps) {
     let index;
 
     if (isShuffle) {
-      index = Math.floor(Math.random() * queue.length);
+      const seed = `${queue[currentIndex]?.id ?? currentIndex}:${currentIndex}:prev`;
+      index = seededIndex(seed, queue.length);
     } else {
       if (currentIndex > 0) {
         index = currentIndex - 1;
@@ -211,7 +210,8 @@ function PlayerInner({ user, playlists }: PlayerProps) {
     let index = currentIndex;
 
     if (isShuffle) {
-      index = Math.floor(Math.random() * queue.length);
+      const seed = `${queue[currentIndex]?.id ?? currentIndex}:${currentIndex}:end`;
+      index = seededIndex(seed, queue.length);
     } else {
       if (currentIndex < queue.length - 1) {
         if (!isLooping) index = currentIndex + 1;
@@ -258,7 +258,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
     >
       <Slider
         value={[pos]}
-        max={duration}
+        max={duration || 1}
         onValueChange={(value: number | readonly number[], _details) => {
           setPos(typeof value === "number" ? value : (value[0] as number));
         }}

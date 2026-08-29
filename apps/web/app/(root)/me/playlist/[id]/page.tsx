@@ -1,3 +1,4 @@
+import type { SongObj } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import type { Metadata } from "next";
@@ -5,9 +6,9 @@ import { notFound } from "next/navigation";
 
 import { ImageCollage } from "~/components/image-collage";
 import { PlayButton } from "~/components/play-button";
-import { SongList } from "~/components/song-list";
+import { SongList } from "~/components/song-list/song-list";
 import { getPlaylistDetails } from "~/lib/db/queries";
-import { getSongDetails } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { cn, formatDuration, getImageSrc } from "~/lib/utils";
 
 type Props = {
@@ -50,10 +51,12 @@ export default async function MyPlaylistsPage(props: Props) {
 
   const { name, description, songs } = playlist;
 
-  let songsDetails;
+  let songsDetails: SongObj | undefined;
 
   if (songs.length) {
-    songsDetails = await getSongDetails(songs);
+    songsDetails = (await api.song.details({
+      id: songs.join(","),
+    })) as unknown as SongObj;
   }
 
   const imageSrcs = songsDetails?.songs
@@ -87,10 +90,10 @@ export default async function MyPlaylistsPage(props: Props) {
                 <span>
                   {" · "}
                   {formatDuration(
-                    songsDetails.songs.reduce(
-                      (acc, song) => acc + song.duration,
+                    `${songsDetails.songs.reduce(
+                      (acc, song) => acc + Number(song.more_info.duration),
                       0,
-                    ),
+                    )}`,
                     "mm:ss",
                   )}
                 </span>
@@ -99,7 +102,7 @@ export default async function MyPlaylistsPage(props: Props) {
           </div>
 
           {songsDetails && songsDetails.songs.length > 0 && (
-            <div className="mt-4 flex gap-2 lg:mt-6">
+            <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
               <PlayButton
                 type="song"
                 // @ts-expect-error string[] is not assignable to string

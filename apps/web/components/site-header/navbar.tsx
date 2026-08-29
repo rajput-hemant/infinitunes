@@ -1,12 +1,12 @@
+import type { Lang, MegaMenu } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
 import { siteConfig } from "~/config/site";
 import { getUser } from "~/lib/auth";
-import { getMegaMenu } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { cn } from "~/lib/utils";
-import type { Lang } from "~/types";
 
 import { SignedOut } from "../auth-control";
 import { Icons } from "../icons";
@@ -22,7 +22,10 @@ export async function Navbar() {
   const cookiesStore = await cookies();
   const languages = cookiesStore.get("language")?.value?.split(",") ?? [];
 
-  const [user, megaMenu] = await Promise.all([getUser(), getMegaMenu()]);
+  const [user, megaMenu] = await Promise.all([
+    getUser(),
+    api.get.megaMenu({}) as unknown as Promise<MegaMenu>,
+  ]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">

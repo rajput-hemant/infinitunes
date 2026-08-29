@@ -6,12 +6,18 @@ import {
   users,
 } from "@infinitunes/db/schema";
 import { createServerEnv } from "@infinitunes/env/server";
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
+
+import {
+  USERNAME_MAX_LENGTH,
+  USERNAME_MIN_LENGTH,
+  USERNAME_REGEX,
+} from "./constants";
 
 export function createAuth(db: DbClient) {
   const env = createServerEnv({ skipValidation: true });
@@ -71,6 +77,9 @@ export function createAuth(db: DbClient) {
       enabled: true,
       requireEmailVerification: false,
       password: {
+        hash: async (password) => {
+          return hash(password, 10);
+        },
         verify: async ({ password, hash }) => {
           return compare(password, hash);
         },
@@ -165,9 +174,9 @@ export function createAuth(db: DbClient) {
 
     plugins: [
       username({
-        minUsernameLength: 8,
-        maxUsernameLength: 15,
-        usernameValidator: (username) => /^[a-zA-Z0-9_.\-]+$/.test(username),
+        minUsernameLength: USERNAME_MIN_LENGTH,
+        maxUsernameLength: USERNAME_MAX_LENGTH,
+        usernameValidator: (username) => USERNAME_REGEX.test(username),
       }),
       nextCookies(),
     ],

@@ -1,19 +1,22 @@
 import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { SongObj } from "@infinitunes/types";
 import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
 import { ImageCollage } from "~/components/image-collage";
-import { getSongDetails } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { getImageSrc } from "~/lib/utils";
 
 export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
   const { id, name, description, songs } = playlist;
 
-  let songsDetails;
+  let songsDetails: SongObj | undefined;
 
   if (songs.length) {
-    songsDetails = await getSongDetails(songs.slice(0, 4), true);
+    songsDetails = (await api.song.details({
+      id: songs.slice(0, 4).join(","),
+    })) as unknown as SongObj;
   }
 
   const imageSrcs = songsDetails?.songs.map((song) =>

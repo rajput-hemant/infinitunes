@@ -1,7 +1,19 @@
+import type { EpisodeDetail } from "@infinitunes/types";
 import type { Metadata } from "next";
+import { cache } from "react";
 
-import { DetailsHeader } from "~/components/details-header";
-import { getEpisodeDetails } from "~/lib/jiosaavn-api";
+import { DetailsHeader } from "~/components/details-header/details-header";
+import { api } from "~/lib/trpc/server";
+import { getImageSrc, ogImageUrl } from "~/lib/utils";
+
+const getEpisode = cache(
+  async (token: string) =>
+    (await api.show.episodeDetails({
+      token,
+      season: 1,
+      sort: "desc",
+    })) as unknown as EpisodeDetail,
+);
 
 type EpisodeDetailsProps = {
   params: Promise<{
@@ -15,19 +27,24 @@ export async function generateMetadata({
 }: EpisodeDetailsProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const episodeObj = await getEpisodeDetails(token);
+  const episodeObj = await getEpisode(token);
   const episode = episodeObj.episodes[0];
 
   return {
-    title: episode.name,
+    title: episode.title,
     description: episode.subtitle,
     openGraph: {
-      title: episode.name,
+      title: episode.title,
       description: episode.subtitle,
       url: `/episode/${name}/${token}`,
       images: {
-        url: `/api/og?title=${episode.name}&description=${episode.subtitle}&image=${episode.image[2].link}&square=true`,
-        alt: episode.name,
+        url: ogImageUrl({
+          title: episode.title,
+          description: episode.subtitle,
+          image: getImageSrc(episode.image, "high"),
+          square: true,
+        }),
+        alt: episode.title,
       },
     },
   };
@@ -35,7 +52,7 @@ export async function generateMetadata({
 export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
   const { token } = await props.params;
 
-  const episodeObj = await getEpisodeDetails(token);
+  const episodeObj = await getEpisode(token);
 
   return (
     <div className="mb-4 space-y-4">
@@ -46,7 +63,7 @@ export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
       </h2>
 
       <p className="max-w-3xl text-muted-foreground">
-        {episodeObj.episodes[0].description}
+        {episodeObj.episodes[0].more_info.description}
       </p>
     </div>
   );

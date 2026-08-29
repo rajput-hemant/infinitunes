@@ -1,5 +1,6 @@
 "use client";
 
+import type { AllSearch } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
@@ -9,14 +10,12 @@ import {
 import { Input } from "@infinitunes/ui/components/input";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useState } from "react";
 
-import { useDebounce } from "~/hooks/use-debounce";
 import { useEventListener } from "~/hooks/use-event-listner";
 import { useIsTyping } from "~/hooks/use-store";
-import { searchAll } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/client";
 import { cn, isMacOs } from "~/lib/utils";
-import type { AllSearch } from "~/types";
 
 import { SearchAll } from "./search-all";
 
@@ -30,15 +29,13 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchResult, setSearchResult] = useState<AllSearch | null>(null);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const debouncedQuery = useDebounce(query.trim(), 1000);
+  const deferredQuery = useDeferredValue(query.trim());
 
   const [_, setIsTyping] = useIsTyping();
 
@@ -62,15 +59,12 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
     setIsOpen(false);
   }, [pathname]);
 
-  useEffect(() => {
-    (async () => {
-      if (!debouncedQuery) return setSearchResult(null);
-      setIsLoading(true);
-      const data = await searchAll(debouncedQuery);
-      setIsLoading(false);
-      setSearchResult(data);
-    })();
-  }, [debouncedQuery]);
+  const { data: searchResult, isLoading } = api.search.all.useQuery(
+    { q: deferredQuery },
+    { enabled: deferredQuery.length > 0 },
+  );
+
+  const result = searchResult as AllSearch | undefined;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -114,13 +108,13 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           />
         </div>
 
-        {debouncedQuery.length ? (
+        {deferredQuery.length ? (
           isLoading ? (
             <div className="m-auto aspect-square h-16 animate-spin rounded-full border-y-2 border-primary py-10 lg:h-32">
               <span className="sr-only">Loading Results</span>
             </div>
           ) : (
-            searchResult && <SearchAll query={query} data={searchResult} />
+            result && <SearchAll query={query} data={result} />
           )
         ) : (
           topSearch

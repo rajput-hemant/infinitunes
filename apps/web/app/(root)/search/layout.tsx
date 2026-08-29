@@ -2,14 +2,21 @@
 
 import { notFound, usePathname } from "next/navigation";
 import type React from "react";
-
-import { useWindowSize } from "~/hooks/use-window-size";
+import { useEffect, useState } from "react";
 
 export default function SearchLayout({ children }: React.PropsWithChildren) {
   const pathname = usePathname();
-  const { width } = useWindowSize();
+  const [isDesktop, setIsDesktop] = useState(false);
 
-  if (pathname === "/search" && width > 1024) {
+  useEffect(() => {
+    const mql = window.matchMedia("(min-width: 1025px)");
+    const onChange = () => setIsDesktop(mql.matches);
+    mql.addEventListener("change", onChange);
+    setIsDesktop(mql.matches);
+    return () => mql.removeEventListener("change", onChange);
+  }, []);
+
+  if (pathname === "/search" && isDesktop) {
     return notFound();
   }
 

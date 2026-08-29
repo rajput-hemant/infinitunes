@@ -1,11 +1,9 @@
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
-import {
-  DetailsHeaderSkeleton,
-  SliderCardSkeleton,
-  SongListSkeleton,
-} from "~/components/skeletons";
+import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
+import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function ShowDetailsLoading() {
   return (

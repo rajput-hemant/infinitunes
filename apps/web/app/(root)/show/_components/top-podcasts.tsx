@@ -1,30 +1,33 @@
 "use client";
 
+import type { TopShows } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
-import { SliderCard } from "~/components/slider";
+import { SliderCard } from "~/components/slider/slider-card";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { getTopShows } from "~/lib/jiosaavn-api";
-import type { TopShows } from "~/types";
+import { api } from "~/lib/trpc/client";
 
 type Props = {
   initialTopShows: TopShows;
 };
 
 export function TopPodcasts({ initialTopShows }: Props) {
+  const utils = api.useUtils();
+
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["top-podcasts"],
-      queryFn: ({ pageParam }) => getTopShows(pageParam, 50),
-      getNextPageParam: ({ last_page }, allPages) =>
-        last_page ? null : allPages.length + 1,
-      initialPageParam: 1,
+      queryFn: ({ pageParam }) =>
+        utils.get.topShows.fetch({ page: pageParam, n: 50 }),
+      initialPageParam: 1 as number,
+      getNextPageParam: (lastPage, allPages) =>
+        (lastPage as TopShows).last_page ? null : allPages.length + 1,
       initialData: { pages: [initialTopShows], pageParams: [1] },
     });
 
-  const podcasts = data.pages.flatMap((page) => page.data);
+  const podcasts = (data.pages as TopShows[]).flatMap((page) => page.data);
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,
@@ -38,18 +41,28 @@ export function TopPodcasts({ initialTopShows }: Props) {
   return (
     <>
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {podcasts.map(({ id, name, url, subtitle, type, image, explicit }) => (
-          <SliderCard
-            key={id}
-            name={name}
-            url={url}
-            subtitle={subtitle}
-            type={type}
-            image={image}
-            explicit={explicit}
-            hidePlayButton
-          />
-        ))}
+        {podcasts.map(
+          ({
+            id,
+            title,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <SliderCard
+              key={id}
+              name={title}
+              url={perma_url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+              explicit={explicit_content}
+              hidePlayButton
+            />
+          ),
+        )}
       </div>
 
       {hasNextPage ? (

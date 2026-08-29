@@ -1,9 +1,7 @@
 import React from "react";
 
-import {
-  DetailsHeaderSkeleton,
-  SongListSkeleton,
-} from "~/components/skeletons";
+import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function PlaylistDetailsSkeleton() {
   return (
