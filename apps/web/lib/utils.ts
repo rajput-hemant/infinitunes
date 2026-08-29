@@ -4,6 +4,7 @@ import type {
   StreamQuality,
   MediaType,
 } from "@infinitunes/types";
+import { QUALITIES_MAP } from "@infinitunes/types";
 import type { Queue } from "@infinitunes/types";
 import type { Episode } from "@infinitunes/types";
 import type { Song } from "@infinitunes/types";
@@ -195,6 +196,26 @@ export function formatDuration(
     : date.toISOString().slice(14, 19);
 }
 
+/**
+ * Builds an `/api/og` URL. Raw JioSaavn titles/subtitles arrive HTML-encoded
+ * (`&amp;`), so they must be decoded and percent-encoded or the trailing
+ * `image` param gets truncated and the OG card renders without artwork.
+ */
+export function ogImageUrl(params: {
+  title: string;
+  description: string;
+  image: string;
+  square?: boolean;
+}) {
+  const query = new URLSearchParams({
+    title: decode(params.title),
+    description: decode(params.description),
+    image: params.image,
+  });
+  if (params.square) query.set("square", "true");
+  return `/api/og?${query}`;
+}
+
 const JIOSAAVN_URL_RE =
   /^https?:\/\/(?:[a-zA-Z0-9-]+\.)*(?:jiosaavn|saavn)\.com(?::\d+)?\/(.*)$/i;
 
@@ -223,8 +244,13 @@ const IMAGE_SIZE: Record<ImageQuality, number> = {
   high: 500,
 };
 
+// JioSaavn embeds the resolution token with either separator, depending on the
+// CDN path: `...-500x500.jpg` for songs/albums, `..._150x150.jpg` for artists.
 function withSize(url: string, size: number) {
-  return url.replace(/_(\d+)x(\d+)(?=\.\w+$)/, `_${size}x${size}`);
+  return url.replace(
+    /([-_])\d+x\d+(?=\.\w+(?:\?.*)?$)/,
+    (_match, sep: string) => `${sep}${size}x${size}`,
+  );
 }
 
 export function getImageSrc(
@@ -239,8 +265,20 @@ export function getImageSrc(
   return withSize(sized, size);
 }
 
-export function getDownloadLink(url: Quality, _quality?: StreamQuality) {
-  return typeof url === "string" ? url.replace(/^http:\/\//, "https://") : "";
+/**
+ * `withDownloadUrl` attaches every decrypted bitrate as one comma-separated
+ * string, ordered to match `QUALITIES_MAP`. Pick the requested bitrate out of
+ * it, falling back to the highest available bitrate.
+ */
+export function getDownloadLink(url: Quality, quality?: StreamQuality) {
+  if (typeof url !== "string") return "";
+  const links = url
+    .split(",")
+    .map((link) => link.trim().replace(/^http:\/\//, "https://"))
+    .filter(Boolean);
+  if (links.length === 0) return "";
+  const index = QUALITIES_MAP.findIndex((q) => q.quality === quality);
+  return links[index] ?? links.at(-1) ?? "";
 }
 
 export function currentlyInDev() {

@@ -13,7 +13,7 @@ import {
   getTrendingInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { tokenFromLink } from "./utils";
+import { tokenFromLink, withDownloadUrl } from "./utils";
 
 export const getRouter = router({
   trending: publicProcedure.input(getTrendingInput).query(async ({ input }) => {
@@ -39,7 +39,9 @@ export const getRouter = router({
         });
       }
     }
-    return result;
+    // trending mixes songs, albums and playlists; withDownloadUrl no-ops on
+    // entities without an encrypted_media_url
+    return result.map(withDownloadUrl);
   }),
 
   featuredPlaylists: publicProcedure
@@ -123,7 +125,7 @@ export const getRouter = router({
             "Failed to fetch actor top songs, please provide a valid ID(s)",
         });
       }
-      return result;
+      return result.map(withDownloadUrl);
     }),
 
   lyrics: publicProcedure.input(getLyricsInput).query(async ({ input }) => {
@@ -172,12 +174,20 @@ export const getRouter = router({
         language: lang,
       },
     });
-    if (!(result as Record<string, unknown>).id) {
+    // Upstream answers a non-mix token with a bare `null`.
+    const payload = (result ?? {}) as {
+      id?: string;
+      list?: Record<string, unknown>[];
+    };
+    if (!payload.id) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message:
           "Failed to fetch mix details, please provide a valid token or link",
       });
+    }
+    if (Array.isArray(payload.list)) {
+      payload.list = payload.list.map(withDownloadUrl);
     }
     return result;
   }),
@@ -208,12 +218,19 @@ export const getRouter = router({
         language: lang,
       },
     });
-    if (!(result as Record<string, unknown>).labelId) {
+    const payload = (result ?? {}) as {
+      labelId?: string;
+      topSongs?: { songs?: Record<string, unknown>[] };
+    };
+    if (!payload.labelId) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message:
           "Failed to fetch label details, please provide a valid token or link",
       });
+    }
+    if (Array.isArray(payload.topSongs?.songs)) {
+      payload.topSongs.songs = payload.topSongs.songs.map(withDownloadUrl);
     }
     return result;
   }),

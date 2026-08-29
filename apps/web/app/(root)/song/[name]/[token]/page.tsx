@@ -13,7 +13,7 @@ import {
   getSongRecommendations,
   getTrending,
 } from "~/lib/jiosaavn-api";
-import { getImageSrc, toCardItem } from "~/lib/utils";
+import { getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 
 import { Lyrics } from "./_components/lyrics";
 
@@ -40,7 +40,12 @@ export async function generateMetadata({
       description: song.subtitle,
       url: `/song/${name}/${token}`,
       images: {
-        url: `/api/og?title=${song.title}&description=${song.subtitle}&image=${getImageSrc(song.image, "high")}&square=true`,
+        url: ogImageUrl({
+          title: song.title,
+          description: song.subtitle,
+          image: getImageSrc(song.image, "high"),
+          square: true,
+        }),
         alt: song.title,
       },
     },

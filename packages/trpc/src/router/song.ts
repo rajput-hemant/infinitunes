@@ -57,6 +57,6 @@ export const songRouter = router({
           message: "No recommendations found, please check the id",
         });
       }
-      return result;
+      return result.map(withDownloadUrl);
     }),
 });

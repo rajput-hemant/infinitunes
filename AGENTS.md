@@ -39,7 +39,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   in `turbo.json` `globalPassThroughEnv` (alongside `JIOSAAVN_API_URL`) or every song's
   `download_url` silently comes back empty under `bun run dev`/`build`, which crashes
   the player (empty Howler src). Every song array a router returns must be mapped
-  through `withDownloadUrl` (see `packages/trpc/src/router/index.ts`) before reaching
+  through `withDownloadUrl` (`packages/trpc/src/router/utils.ts`) before reaching
   the client, not just the song-details/podcast-episode endpoints.
 - `des-ecb` (used by `createDownloadLinks`) is unsupported by plain Node's default
   OpenSSL 3 build (`next dev` runs under Node even when invoked via `bun run dev`), but
@@ -62,7 +62,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 
 ## packages/trpc raw-passthrough shape (resolved)
 
-Every `@infinitunes/trpc` procedure (`packages/trpc/src/router/index.ts`) does
+Every `@infinitunes/trpc` procedure (`packages/trpc/src/router/*.ts`) does
 `return api(endpoints...)` unmodified - raw untransformed JioSaavn JSON - with
 the single documented exception of `withDownloadUrl` (decrypts
 `more_info.encrypted_media_url` into `download_url`, needs `JIOSAAVN_DES_KEY`).
@@ -118,6 +118,27 @@ while collecting page data, and `SKIP_ENV_VALIDATION=true` only skips schema
 validation in `@infinitunes/env` - it does not supply `DATABASE_URL`. Keep the
 `DATABASE_URL` check inside `getDb()`; hoisting it back to module scope breaks
 `SKIP_ENV_VALIDATION=true bun run build`.
+
+## Media URL shapes (playback / artwork)
+
+Both are single strings, and both carry a _replaceable_ token - the recurring
+bug is appending to them instead of substituting:
+
+- `download_url` is one comma-separated string, one entry per bitrate in
+  `QUALITIES_MAP` order (`packages/types/src/misc.ts`). Consumers must split
+  and index it, never hand it to a player whole - see
+  `getDownloadLink`/`~/lib/utils` and `apps/web/components/download-button.tsx`.
+  The decrypted URL already ends in a bitrate (`_96`/`_160`); `createDownloadLinks`
+  must strip it before appending, because the CDN 404s on `..._96_320.mp4`.
+- Images embed a resolution token with _either_ separator: `-500x500.jpg` for
+  song/album/playlist artwork, `_150x150.jpg` for artist and some CDN paths.
+  Resizing regexes must accept both (`getImageSrc`/`withSize` in `~/lib/utils`).
+- Raw titles/subtitles are still HTML-encoded (`&amp;`), so anything putting
+  them in a URL must `decode()` then percent-encode, or trailing query params
+  get truncated - that is what `ogImageUrl` exists for.
+
+Verify these against live data, not fixtures: a decrypted link should answer
+`206 audio/mp4` to `curl -o /dev/null -w '%{http_code} %{content_type}' -r 0-1`.
 
 ## Maintaining this file
 

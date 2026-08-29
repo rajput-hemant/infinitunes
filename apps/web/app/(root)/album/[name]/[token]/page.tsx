@@ -9,7 +9,7 @@ import {
   getAlbumRecommendations,
   getTrending,
 } from "~/lib/jiosaavn-api";
-import { decode, getImageSrc, toCardItem } from "~/lib/utils";
+import { decode, getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 
 type AlbumDetailsPageProps = {
   params: Promise<{ name: string; token: string }>;
@@ -30,7 +30,12 @@ export async function generateMetadata({
       description: album.subtitle,
       url: `/album/${name}/${token}`,
       images: {
-        url: `/api/og?title=${album.title}&description=${album.subtitle}&image=${getImageSrc(album.image, "high")}&square=true`,
+        url: ogImageUrl({
+          title: album.title,
+          description: album.subtitle,
+          image: getImageSrc(album.image, "high"),
+          square: true,
+        }),
         alt: album.title,
       },
     },

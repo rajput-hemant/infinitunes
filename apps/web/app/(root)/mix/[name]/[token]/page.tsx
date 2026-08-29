@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { DetailsHeader } from "~/components/details-header";
 import { SongList } from "~/components/song-list";
 import { getMixDetails } from "~/lib/jiosaavn-api";
-import { getImageSrc } from "~/lib/utils";
+import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 type MixDetailsPageProps = {
   params: Promise<{
@@ -27,7 +27,12 @@ export async function generateMetadata({
       description: mix.subtitle,
       url: `/mix/${name}/${token}`,
       images: {
-        url: `/api/og?title=${mix.title}&description=${mix.subtitle}&image=${getImageSrc(mix.image, "high")}&square=true`,
+        url: ogImageUrl({
+          title: mix.title,
+          description: mix.subtitle,
+          image: getImageSrc(mix.image, "high"),
+          square: true,
+        }),
         alt: mix.title,
       },
     },

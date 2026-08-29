@@ -6,7 +6,7 @@ import { PlayButton } from "~/components/play-button";
 import { SongList } from "~/components/song-list";
 import { siteConfig } from "~/config/site";
 import { getFeaturedRadioStations, search } from "~/lib/jiosaavn-api";
-import { getHref, getImageSrc } from "~/lib/utils";
+import { getHref, getImageSrc, ogImageUrl } from "~/lib/utils";
 
 type Props = {
   params: Promise<{ name: string; token: string }>;
@@ -30,7 +30,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: station.subtitle,
       url: getHref(station.perma_url, station.type),
       images: {
-        url: `/api/og?title=${station.title}&description=${station.subtitle}&image=${getImageSrc(station.image, "high")}&square=true`,
+        url: ogImageUrl({
+          title: station.title,
+          description: station.subtitle,
+          image: getImageSrc(station.image, "high"),
+          square: true,
+        }),
         alt: station.title,
       },
     },

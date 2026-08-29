@@ -9,7 +9,7 @@ import { SongList } from "~/components/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { getArtistDetails } from "~/lib/jiosaavn-api";
-import { decode, getImageSrc, toCardItem } from "~/lib/utils";
+import { decode, getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
@@ -34,7 +34,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: artist.subtitle,
       url: `/artist/${name}/${token}`,
       images: {
-        url: `/api/og?title=${artist.name}&description=${artist.subtitle}&image=${getImageSrc(artist.image, "high")}&square=true`,
+        url: ogImageUrl({
+          title: artist.name,
+          description: artist.subtitle,
+          image: getImageSrc(artist.image, "high"),
+          square: true,
+        }),
         alt: artist.name,
       },
     },

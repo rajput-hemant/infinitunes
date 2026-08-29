@@ -11,7 +11,7 @@ import { DetailsHeader } from "~/components/details-header";
 import { SliderCard } from "~/components/slider";
 import { SongList } from "~/components/song-list";
 import { getLabelDetails } from "~/lib/jiosaavn-api";
-import { getImageSrc } from "~/lib/utils";
+import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 type LabelDetailsPageProps = {
   params: Promise<{
@@ -36,7 +36,12 @@ export async function generateMetadata({
       description,
       url: `/label/${name}/${token}`,
       images: {
-        url: `/api/og?title=${label.name}&description=${description}&image=${getImageSrc(label.image, "high")}&square=true`,
+        url: ogImageUrl({
+          title: label.name,
+          description: description,
+          image: getImageSrc(label.image, "high"),
+          square: true,
+        }),
         alt: label.name,
       },
     },

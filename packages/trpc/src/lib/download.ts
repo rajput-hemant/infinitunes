@@ -1,7 +1,5 @@
 import { createDecipheriv } from "node:crypto";
 
-const DES_KEY = process.env.JIOSAAVN_DES_KEY ?? "";
-
 /**
  * Decrypts a JioSaavn `encrypted_media_url` (base64 DES-ECB) into a playable
  * media URL. This is the only server-side transformation allowed on otherwise
@@ -10,12 +8,15 @@ const DES_KEY = process.env.JIOSAAVN_DES_KEY ?? "";
 export function createDownloadLinks(
   encryptedMediaUrl: string | undefined,
 ): string {
-  if (!encryptedMediaUrl || !DES_KEY) return "";
+  // Read lazily: Next.js and test runners can populate the env after this
+  // module is first evaluated, and a key captured too early stays empty.
+  const desKey = process.env.JIOSAAVN_DES_KEY ?? "";
+  if (!encryptedMediaUrl || !desKey) return "";
 
   try {
     const decipher = createDecipheriv(
       "des-ecb",
-      Buffer.from(DES_KEY, "utf8"),
+      Buffer.from(desKey, "utf8"),
       null,
     );
     decipher.setAutoPadding(true);
@@ -31,13 +32,13 @@ export function createDownloadLinks(
     );
     if (!match) return decrypted;
 
-    const [_full, base, ext] = match;
+    const [_full, path, ext] = match;
+    // The decrypted URL already carries a bitrate suffix (usually `_96` or
+    // `_160`). It has to be replaced, not appended to: the CDN 404s on
+    // `..._96_320.mp4`.
+    const base = path.replace(/_(?:12|48|96|160|320)$/, "");
     const bitrates = ["_12", "_48", "_96", "_160", "_320"];
-    const out: string[] = [];
-    for (const id of bitrates) {
-      out.push(`${base}${id}${ext}`);
-    }
-    return out.join(",");
+    return bitrates.map((id) => `${base}${id}${ext}`).join(",");
   } catch {
     return "";
   }

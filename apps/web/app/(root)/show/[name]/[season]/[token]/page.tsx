@@ -16,7 +16,7 @@ import { SliderCard } from "~/components/slider";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { getShowDetails } from "~/lib/jiosaavn-api";
-import { getImageSrc } from "~/lib/utils";
+import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
 
@@ -40,7 +40,12 @@ export async function generateMetadata({
       description: show.subtitle,
       url: `/show/${name}/${season}/${token}`,
       images: {
-        url: `/api/og?title=${show.title}&description=${show.subtitle}&image=${getImageSrc(show.image, "high")}&square=true`,
+        url: ogImageUrl({
+          title: show.title,
+          description: show.subtitle,
+          image: getImageSrc(show.image, "high"),
+          square: true,
+        }),
         alt: show.title,
       },
     },

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { DetailsHeader } from "~/components/details-header";
 import { getEpisodeDetails } from "~/lib/jiosaavn-api";
-import { getImageSrc } from "~/lib/utils";
+import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 type EpisodeDetailsProps = {
   params: Promise<{
@@ -27,7 +27,12 @@ export async function generateMetadata({
       description: episode.subtitle,
       url: `/episode/${name}/${token}`,
       images: {
-        url: `/api/og?title=${episode.title}&description=${episode.subtitle}&image=${getImageSrc(episode.image, "high")}&square=true`,
+        url: ogImageUrl({
+          title: episode.title,
+          description: episode.subtitle,
+          image: getImageSrc(episode.image, "high"),
+          square: true,
+        }),
         alt: episode.title,
       },
     },

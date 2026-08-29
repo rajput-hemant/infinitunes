@@ -8,6 +8,7 @@ import {
   searchTopInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
+import { withDownloadUrl } from "./utils";
 
 export const searchRouter = router({
   top: publicProcedure.input(searchTopInput).query(async () => {
@@ -45,12 +46,14 @@ export const searchRouter = router({
           params: JSON.stringify({ type: "podcasts" }),
         },
       });
-      if (!(result as Record<string, unknown>).results) {
+      const payload = result as { results?: Record<string, unknown>[] };
+      if (!payload.results) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No search results found",
         });
       }
+      payload.results = payload.results.map(withDownloadUrl);
       return result;
     }
     const map = {
@@ -62,11 +65,15 @@ export const searchRouter = router({
     const result = await api(map[input.type], {
       query: { q: input.q, p: input.page, n: input.n },
     });
-    if (!(result as Record<string, unknown>).results) {
+    const payload = result as { results?: Record<string, unknown>[] };
+    if (!payload.results) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "No search results found",
       });
+    }
+    if (input.type === "songs") {
+      payload.results = payload.results.map(withDownloadUrl);
     }
     return result;
   }),
