@@ -1,14 +1,10 @@
+import type { Album, Trending } from "@infinitunes/types";
 import type { Metadata } from "next";
 
 import { DetailsHeader } from "~/components/details-header";
 import { SliderList } from "~/components/slider";
 import { SongList } from "~/components/song-list";
-import {
-  getAlbumDetails,
-  getAlbumFromSameYear,
-  getAlbumRecommendations,
-  getTrending,
-} from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { decode, getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 
 type AlbumDetailsPageProps = {
@@ -20,7 +16,7 @@ export async function generateMetadata({
 }: AlbumDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const album = await getAlbumDetails(token);
+  const album = (await api.album.details({ token })) as unknown as Album;
 
   return {
     title: album.title,
@@ -43,12 +39,14 @@ export async function generateMetadata({
 }
 
 async function fetcher(token: string) {
-  const album = await getAlbumDetails(token);
+  const album = (await api.album.details({ token })) as unknown as Album;
 
   const [recommendations, trending, sameYear] = await Promise.allSettled([
-    getAlbumRecommendations(album.id),
-    getTrending("album"),
-    getAlbumFromSameYear(Number(album.year)),
+    api.album.recommendations({ id: album.id }) as unknown as Promise<Album[]>,
+    api.get.trending({ type: "album" }) as unknown as Promise<Trending>,
+    api.album.sameYear({ year: `${album.year}` }) as unknown as Promise<
+      Album[]
+    >,
   ]);
 
   return {

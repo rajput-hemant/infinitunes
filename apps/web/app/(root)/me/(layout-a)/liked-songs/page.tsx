@@ -1,9 +1,10 @@
+import type { SongObj } from "@infinitunes/types";
 import { Ghost } from "lucide-react";
 
 import { SongList } from "~/components/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites } from "~/lib/db/queries";
-import { getSongDetails } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 
 export const metadata = {
   title: "Liked Songs",
@@ -16,7 +17,9 @@ export default async function LikedSongsPage() {
   const favoriteSongs = await getUserFavorites(user!.id);
 
   if (favoriteSongs && favoriteSongs.songs.length) {
-    const songsDetails = await getSongDetails(favoriteSongs.songs);
+    const songsDetails = (await api.song.details({
+      id: favoriteSongs.songs.join(","),
+    })) as unknown as SongObj;
 
     return (
       <div className="space-y-4">

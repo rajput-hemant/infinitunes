@@ -1,7 +1,8 @@
+import type { EpisodeDetail } from "@infinitunes/types";
 import type { Metadata } from "next";
 
 import { DetailsHeader } from "~/components/details-header";
-import { getEpisodeDetails } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 type EpisodeDetailsProps = {
@@ -16,7 +17,11 @@ export async function generateMetadata({
 }: EpisodeDetailsProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const episodeObj = await getEpisodeDetails(token);
+  const episodeObj = (await api.show.episodeDetails({
+    token,
+    season: 1,
+    sort: "desc",
+  })) as unknown as EpisodeDetail;
   const episode = episodeObj.episodes[0];
 
   return {
@@ -41,7 +46,11 @@ export async function generateMetadata({
 export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
   const { token } = await props.params;
 
-  const episodeObj = await getEpisodeDetails(token);
+  const episodeObj = (await api.show.episodeDetails({
+    token,
+    season: 1,
+    sort: "desc",
+  })) as unknown as EpisodeDetail;
 
   return (
     <div className="mb-4 space-y-4">

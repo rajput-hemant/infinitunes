@@ -1,15 +1,16 @@
+import type { TopSearch as TopSearchType } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Image from "next/image";
 import Link from "next/link";
 
-import { getTopSearches } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { getHref, getImageSrc } from "~/lib/utils";
 
 import { SliderCard } from "../slider";
 
 export async function TopSearch() {
-  const topSearches = await getTopSearches();
+  const topSearches = (await api.search.top({})) as unknown as TopSearchType[];
 
   return (
     <>

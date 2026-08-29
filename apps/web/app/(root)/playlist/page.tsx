@@ -1,8 +1,11 @@
-import type { Lang } from "@infinitunes/types";
+import type {
+  FeaturedPlaylists as FeaturedPlaylistsType,
+  Lang,
+} from "@infinitunes/types";
 
 import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
-import { getFeaturedPlaylists } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 
 import { FeaturedPlaylists } from "./_components/featured-playlists";
 
@@ -28,7 +31,11 @@ type PageProps = { searchParams: Promise<{ page?: number; lang?: Lang }> };
 export default async function PlaylistsPage({ searchParams }: PageProps) {
   const { page = 1, lang } = await searchParams;
 
-  const featuredPlaylists = await getFeaturedPlaylists(page, 50, lang);
+  const featuredPlaylists = (await api.get.featuredPlaylists({
+    page,
+    n: 50,
+    lang,
+  })) as unknown as FeaturedPlaylistsType;
 
   return (
     <div className="space-y-4">

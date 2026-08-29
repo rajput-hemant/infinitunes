@@ -1,4 +1,4 @@
-import type { Sort } from "@infinitunes/types";
+import type { Show, Sort } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -15,7 +15,7 @@ import { DetailsHeader } from "~/components/details-header";
 import { SliderCard } from "~/components/slider";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { getShowDetails } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
@@ -30,7 +30,10 @@ export async function generateMetadata({
 }: ShowDetailsPageProps): Promise<Metadata> {
   const { name, season, token } = await params;
 
-  const { show_details: show } = await getShowDetails(token, season);
+  const { show_details: show } = (await api.show.details({
+    token,
+    season: `${season}`,
+  })) as unknown as Show;
 
   return {
     title: show.title,
@@ -60,7 +63,11 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
 
   const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
     await Promise.all([
-      getShowDetails(token, season, sort),
+      api.show.details({
+        token,
+        season: `${season}`,
+        sort,
+      }) as unknown as Promise<Show>,
       user ? getUserFavorites(user.id) : undefined,
       user ? getUserPlaylists(user.id) : undefined,
     ]);

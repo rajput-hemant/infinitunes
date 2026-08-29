@@ -1,4 +1,6 @@
-import { search } from "~/lib/jiosaavn-api";
+import type { SearchReturnType } from "@infinitunes/types";
+
+import { api } from "~/lib/trpc/server";
 
 import { SearchNavbar } from "./_components/search-navbar";
 import { SearchResults } from "./_components/search-results";
@@ -13,7 +15,19 @@ type SearchPageProps = {
 export default async function SearchPage({ params }: SearchPageProps) {
   const { query, type } = await params;
 
-  const searchRes = await search(query, type);
+  const mappedType =
+    type === "show" ? "podcasts" : type === "song" ? "songs" : `${type}s`;
+  const searchRes = (await api.search.byType({
+    q: query,
+    type: mappedType as
+      | "songs"
+      | "albums"
+      | "playlists"
+      | "artists"
+      | "podcasts",
+    page: 1,
+    n: 50,
+  })) as unknown as SearchReturnType;
 
   return (
     <div className="mb-4 space-y-4">

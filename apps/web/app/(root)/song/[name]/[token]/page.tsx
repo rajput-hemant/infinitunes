@@ -1,18 +1,17 @@
+import type {
+  Album,
+  Lyrics as LyricsType,
+  Song,
+  SongObj,
+  Trending,
+} from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
 
 import { DetailsHeader } from "~/components/details-header";
 import { SliderList } from "~/components/slider";
 import { SongList } from "~/components/song-list";
-import {
-  getActorsTopSongs,
-  getAlbumDetails,
-  getArtistTopSongs,
-  getLyrics,
-  getSongDetails,
-  getSongRecommendations,
-  getTrending,
-} from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 
 import { Lyrics } from "./_components/lyrics";
@@ -29,7 +28,7 @@ export async function generateMetadata({
 }: SongDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const songObj = await getSongDetails(token);
+  const songObj = (await api.song.details({ token })) as unknown as SongObj;
   const song = songObj.songs[0];
 
   return {
@@ -52,7 +51,7 @@ export async function generateMetadata({
   };
 }
 async function fetcher(token: string) {
-  const data = await getSongDetails(token);
+  const data = (await api.song.details({ token })) as unknown as SongObj;
   const song = data.songs[0];
   const modules = data.modules!;
   const artistsTopSongsParams = modules.songsBysameArtists.source_params;
@@ -69,21 +68,27 @@ async function fetcher(token: string) {
     songsFromSameArtists,
     songsFromSameActors,
   ] = await Promise.all([
-    song.more_info.has_lyrics === "true" ? getLyrics(song.id ?? "") : undefined,
-    getAlbumDetails(song.more_info.album_url.split("/").pop()!),
-    getSongRecommendations(song.id),
-    getTrending("song"),
-    getArtistTopSongs(
-      artistsTopSongsParams.artist_ids,
-      artistsTopSongsParams.song_id,
-      artistsTopSongsParams.language,
-    ),
+    song.more_info.has_lyrics === "true"
+      ? (api.get.lyrics({
+          id: song.id ?? "",
+        }) as unknown as Promise<LyricsType>)
+      : undefined,
+    api.album.details({
+      token: song.more_info.album_url.split("/").pop()!,
+    }) as unknown as Promise<Album>,
+    api.song.recommendations({ id: song.id }) as unknown as Promise<Song[]>,
+    api.get.trending({ type: "song" }) as unknown as Promise<Trending>,
+    api.artist.topSongs({
+      artist_id: artistsTopSongsParams.artist_ids,
+      song_id: artistsTopSongsParams.song_id,
+      lang: artistsTopSongsParams.language,
+    }) as unknown as Promise<Song[]>,
     isActorPresent
-      ? getActorsTopSongs(
-          actorsTopSongsParams.actor_ids,
-          actorsTopSongsParams.song_id,
-          actorsTopSongsParams.language,
-        )
+      ? (api.get.actorTopSongs({
+          actor_id: actorsTopSongsParams.actor_ids,
+          song_id: actorsTopSongsParams.song_id,
+          lang: actorsTopSongsParams.language,
+        }) as unknown as Promise<Song[]>)
       : undefined,
   ]);
 

@@ -1,5 +1,7 @@
+import type { Chart } from "@infinitunes/types";
+
 import { SliderCard } from "~/components/slider";
-import { getCharts } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 
 const title = "Top Music Charts";
 const description = "Listen to the top music charts from around the world.";
@@ -19,7 +21,10 @@ export const metadata = {
   },
 };
 export default async function ChartsPage() {
-  const charts = await getCharts();
+  const charts = (await api.get.charts({
+    page: 1,
+    n: 50,
+  })) as unknown as Chart[];
 
   return (
     <div className="space-y-4">

@@ -1,3 +1,4 @@
+import type { Label } from "@infinitunes/types";
 import {
   Tabs,
   TabsContent,
@@ -10,7 +11,7 @@ import Link from "next/link";
 import { DetailsHeader } from "~/components/details-header";
 import { SliderCard } from "~/components/slider";
 import { SongList } from "~/components/song-list";
-import { getLabelDetails } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 type LabelDetailsPageProps = {
@@ -25,7 +26,14 @@ export async function generateMetadata({
 }: LabelDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const label = await getLabelDetails(token);
+  const label = (await api.get.label({
+    token,
+    page: 0,
+    n_song: 50,
+    n_album: 50,
+    cat: "popularity",
+    sort: "asc",
+  })) as unknown as Label;
   const description = "Record Label";
 
   return {
@@ -56,7 +64,14 @@ const TABS = {
 export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
   const { name, token } = await props.params;
 
-  const label = await getLabelDetails(token);
+  const label = (await api.get.label({
+    token,
+    page: 0,
+    n_song: 50,
+    n_album: 50,
+    cat: "popularity",
+    sort: "asc",
+  })) as unknown as Label;
 
   return (
     <div className="mb-4 space-y-4">

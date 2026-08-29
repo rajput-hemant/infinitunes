@@ -1,8 +1,8 @@
-import type { Lang } from "@infinitunes/types";
+import type { Lang, TopAlbum } from "@infinitunes/types";
 
 import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
-import { getTopAlbums } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 
 import { TopAlbums } from "./_components/top-albums";
 
@@ -31,7 +31,11 @@ type AlbumsPageProps = {
 export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
   const { page = 1, lang } = await searchParams;
 
-  const topAlbums = await getTopAlbums(page, 50, lang);
+  const topAlbums = (await api.get.topAlbums({
+    page,
+    n: 50,
+    lang,
+  })) as unknown as TopAlbum;
 
   return (
     <div className="space-y-4">

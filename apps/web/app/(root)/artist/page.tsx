@@ -1,6 +1,8 @@
+import type { TopArtists } from "@infinitunes/types";
+
 import { SliderCard } from "~/components/slider";
 import { siteConfig } from "~/config/site";
-import { getTopArtists } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 
 const title = ` Top Indian Music Artists - Download or Listen Free on ${siteConfig.name} `;
 const description = `Search for songs based on Top Artist. Get new and old songs based on artists along with details of individual artist on ${siteConfig.name}.`;
@@ -21,7 +23,10 @@ export const metadata = {
 };
 
 export default async function TopArtistsPage() {
-  const topArtists = await getTopArtists();
+  const topArtists = (await api.get.topArtists({
+    page: 1,
+    n: 50,
+  })) as unknown as TopArtists;
 
   return (
     <div className="my-4 space-y-4">

@@ -12,13 +12,6 @@
     "type-check": "tsc --noEmit",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
-    "db:generate": "drizzle-kit generate",
-    "db:migrate": "bun src/lib/db/migrate.ts",
-    "db:drop": "drizzle-kit drop",
-    "db:push": "drizzle-kit push",
-    "db:pull": "drizzle-kit introspect",
-    "db:studio": "drizzle-kit studio",
-    "db:check": "drizzle-kit check",
     "ui": "bunx shadcn",
     "clean": "rm -rf .next",
     "cleani": "rm -rf .next && rm -rf node_modules && bun i"

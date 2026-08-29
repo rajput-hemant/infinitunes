@@ -1,8 +1,9 @@
+import type { Mix } from "@infinitunes/types";
 import type { Metadata } from "next";
 
 import { DetailsHeader } from "~/components/details-header";
 import { SongList } from "~/components/song-list";
-import { getMixDetails } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { getImageSrc, ogImageUrl } from "~/lib/utils";
 
 type MixDetailsPageProps = {
@@ -17,7 +18,12 @@ export async function generateMetadata({
 }: MixDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const mix = await getMixDetails(token);
+  const mix = (await api.get.mix({
+    token,
+    page: 1,
+    n: 20,
+    lang: "hindi,english",
+  })) as unknown as Mix;
 
   return {
     title: mix.title,
@@ -41,7 +47,12 @@ export async function generateMetadata({
 export default async function MixDetailsPage(props: MixDetailsPageProps) {
   const { token } = await props.params;
 
-  const mix = await getMixDetails(token);
+  const mix = (await api.get.mix({
+    token,
+    page: 1,
+    n: 20,
+    lang: "hindi,english",
+  })) as unknown as Mix;
 
   return (
     <div className="mb-4 space-y-4">

@@ -1,9 +1,9 @@
-import type { MediaType } from "@infinitunes/types";
+import type { MediaType, Modules } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
 import { SliderCard } from "~/components/slider";
 import { siteConfig } from "~/config/site";
-import { getHomeData } from "~/lib/jiosaavn-api";
+import { api } from "~/lib/trpc/server";
 import { cn } from "~/lib/utils";
 
 const title = `Online Songs on ${siteConfig.name}: Download & Play Latest Music for Free`;
@@ -26,7 +26,7 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  const homedata = await getHomeData();
+  const homedata = (await api.home.home({})) as unknown as Modules;
 
   return Object.entries(homedata).map(([key, section]) => {
     if (
