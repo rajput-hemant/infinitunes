@@ -14,9 +14,9 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
   let songsDetails: SongObj | undefined;
 
   if (songs.length) {
-    songsDetails = (await api.song.details({
+    songsDetails = await api.song.details({
       id: songs.slice(0, 4).join(","),
-    })) as unknown as SongObj;
+    });
   }
 
   const imageSrcs = songsDetails?.songs.map((song) =>

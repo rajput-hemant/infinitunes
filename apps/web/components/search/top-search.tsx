@@ -1,4 +1,3 @@
-import type { TopSearch as TopSearchType } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Image from "next/image";
@@ -10,7 +9,7 @@ import { getHref, getImageSrc } from "~/lib/utils";
 import { SliderCard } from "../slider/slider-card";
 
 export async function TopSearch() {
-  const topSearches = (await api.search.top({})) as unknown as TopSearchType[];
+  const topSearches = await api.search.top({});
 
   return (
     <>

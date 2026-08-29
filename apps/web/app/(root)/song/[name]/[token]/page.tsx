@@ -1,10 +1,3 @@
-import type {
-  Album,
-  Lyrics as LyricsType,
-  Song,
-  SongObj,
-  Trending,
-} from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
 import { cache } from "react";
@@ -17,10 +10,7 @@ import { getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 
 import { Lyrics } from "./_components/lyrics";
 
-const getSong = cache(
-  async (token: string) =>
-    (await api.song.details({ token })) as unknown as SongObj,
-);
+const getSong = cache(async (token: string) => api.song.details({ token }));
 
 type SongDetailsPageProps = {
   params: Promise<{
@@ -75,26 +65,24 @@ async function fetcher(token: string) {
     songsFromSameActors,
   ] = await Promise.all([
     song.more_info.has_lyrics === "true"
-      ? (api.get.lyrics({
-          id: song.id ?? "",
-        }) as unknown as Promise<LyricsType>)
+      ? api.get.lyrics({ id: song.id ?? "" })
       : undefined,
     api.album.details({
       token: song.more_info.album_url.split("/").pop()!,
-    }) as unknown as Promise<Album>,
-    api.song.recommendations({ id: song.id }) as unknown as Promise<Song[]>,
-    api.get.trending({ type: "song" }) as unknown as Promise<Trending>,
+    }),
+    api.song.recommendations({ id: song.id }),
+    api.get.trending({ type: "song" }),
     api.artist.topSongs({
       artist_id: artistsTopSongsParams.artist_ids,
       song_id: artistsTopSongsParams.song_id,
       lang: artistsTopSongsParams.language,
-    }) as unknown as Promise<Song[]>,
+    }),
     isActorPresent
-      ? (api.get.actorTopSongs({
+      ? api.get.actorTopSongs({
           actor_id: actorsTopSongsParams.actor_ids,
           song_id: actorsTopSongsParams.song_id,
           lang: actorsTopSongsParams.language,
-        }) as unknown as Promise<Song[]>)
+        })
       : undefined,
   ]);
 

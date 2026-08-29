@@ -1,4 +1,3 @@
-import type { FooterDetails } from "@infinitunes/types";
 import Link from "next/link";
 
 import { languages } from "~/config/languages";
@@ -9,9 +8,9 @@ import { Icons } from "../icons";
 import { ThemeToggleGroup } from "./theme-toggle-group";
 
 export async function SiteFooter() {
-  const { artist, actor, album, playlist } = (await api.get.footer({
+  const { artist, actor, album, playlist } = await api.get.footer({
     lang: "hindi",
-  })) as unknown as FooterDetails;
+  });
 
   const footerLinks = [
     { title: "Top Artist", data: artist },

@@ -1,18 +1,6 @@
 "use client";
 
-import type {
-  Album,
-  Artist,
-  Episode,
-  EpisodeDetail,
-  Label,
-  Mix,
-  Playlist,
-  Song,
-  SongObj,
-  Sort,
-  MediaType,
-} from "@infinitunes/types";
+import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
 import { usePathname, useSearchParams } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -57,44 +45,32 @@ export function PlayButton(props: PlayButtonProps) {
 
       switch (type) {
         case "song": {
-          const songObj = (await utils.song.details.fetch({
-            token,
-          })) as unknown as SongObj;
+          const songObj = await utils.song.details.fetch({ token });
           queue = songObj.songs;
           break;
         }
         case "album": {
-          const album = (await utils.album.details.fetch({
-            token,
-          })) as unknown as Album;
+          const album = await utils.album.details.fetch({ token });
           queue = Array.isArray(album.list) ? album.list : [];
           break;
         }
         case "playlist": {
-          const playlist = (await utils.playlist.details.fetch({
-            token,
-          })) as unknown as Playlist;
+          const playlist = await utils.playlist.details.fetch({ token });
           queue = Array.isArray(playlist.list) ? playlist.list : [];
           break;
         }
         case "mix": {
-          const mix = (await utils.get.mix.fetch({
-            token,
-          })) as unknown as Mix;
+          const mix = await utils.get.mix.fetch({ token });
           queue = Array.isArray(mix.list) ? mix.list : [];
           break;
         }
         case "artist": {
-          const artist = (await utils.artist.details.fetch({
-            token,
-          })) as unknown as Artist;
+          const artist = await utils.artist.details.fetch({ token });
           queue = artist.topSongs ?? [];
           break;
         }
         case "label": {
-          const label = (await utils.get.label.fetch({
-            token,
-          })) as unknown as Label;
+          const label = await utils.get.label.fetch({ token });
           queue = label.topSongs.songs;
           break;
         }
@@ -109,10 +85,10 @@ export function PlayButton(props: PlayButtonProps) {
           break;
         }
         case "episode": {
-          const data = (await utils.show.episodeDetails.fetch({
+          const data = await utils.show.episodeDetails.fetch({
             token,
             sort,
-          })) as unknown as EpisodeDetail;
+          });
           queue = data.episodes;
           break;
         }

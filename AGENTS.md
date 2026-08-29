@@ -85,6 +85,15 @@ that are easy to get wrong again:
   `{quality,link}[]` array shape some earlier normalized types assumed.
 - `TopShows.trendingPodcasts` is an array of `{items, module}` groups, not a
   single `{data, title, subtitle}` object.
+- Procedures declare their raw shape with `.output(z.custom<T>())` against a
+  `@infinitunes/types` type, so `apps/web` call sites must not re-cast. If you add
+  an output type to a procedure, delete the `as unknown as` at its callers in the
+  same change; `artist.songs`/`artist.albums` and `show.episodes` are still
+  output-less on purpose (their call sites read a different shape than the router
+  returns). `z.custom` performs no runtime validation - it is a type declaration only.
+- Secondary lists (recommendations, trending, same-year, top-songs, top searches)
+  return `[]` when upstream is empty; only a missing primary entity throws
+  `NOT_FOUND`. Pages `Promise.all` these, so throwing on empty fails the render.
 - Before trusting any procedure's shape against its declared type, verify
   live (curl the upstream `__call` from `endpoints.ts` via
   `packages/trpc/src/lib/api.ts`'s `BASE_URL`) rather than assuming a type is

@@ -1,4 +1,4 @@
-import type { Artist, Category } from "@infinitunes/types";
+import type { Category } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
@@ -17,13 +17,12 @@ import { ArtistsTopItems } from "./_components/artists-top-items";
 import { CategoryFilter } from "./_components/category-filter";
 import { TABS } from "./_components/tabs";
 
-const getArtist = cache(
-  async (token: string) =>
-    (await api.artist.details({
-      token,
-      n_song: 50,
-      n_album: 50,
-    })) as unknown as Artist,
+const getArtist = cache(async (token: string) =>
+  api.artist.details({
+    token,
+    n_song: 50,
+    n_album: 50,
+  }),
 );
 
 type Props = {

@@ -1,4 +1,3 @@
-import type { SongObj } from "@infinitunes/types";
 import { Ghost } from "lucide-react";
 
 import { SongList } from "~/components/song-list/song-list";
@@ -17,9 +16,9 @@ export default async function LikedSongsPage() {
   const favoriteSongs = await getUserFavorites(user!.id);
 
   if (favoriteSongs && favoriteSongs.songs.length) {
-    const songsDetails = (await api.song.details({
+    const songsDetails = await api.song.details({
       id: favoriteSongs.songs.join(","),
-    })) as unknown as SongObj;
+    });
 
     return (
       <div className="space-y-4">

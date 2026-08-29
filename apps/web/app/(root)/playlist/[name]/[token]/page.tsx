@@ -1,4 +1,3 @@
-import type { Playlist, Trending } from "@infinitunes/types";
 import type { Metadata } from "next";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
@@ -14,9 +13,7 @@ export async function generateMetadata({
 }: PlaylistPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const playlist = (await api.playlist.details({
-    token,
-  })) as unknown as Playlist;
+  const playlist = await api.playlist.details({ token });
 
   return {
     title: playlist.title,
@@ -38,15 +35,11 @@ export async function generateMetadata({
   };
 }
 async function fetcher(token: string) {
-  const playlist = (await api.playlist.details({
-    token,
-  })) as unknown as Playlist;
+  const playlist = await api.playlist.details({ token });
 
   const [recommendations, trending] = await Promise.allSettled([
-    api.playlist.recommendations({
-      id: playlist.id,
-    }) as unknown as Promise<Playlist[]>,
-    api.get.trending({ type: "playlist" }) as unknown as Promise<Trending>,
+    api.playlist.recommendations({ id: playlist.id }),
+    api.get.trending({ type: "playlist" }),
   ]);
 
   return {

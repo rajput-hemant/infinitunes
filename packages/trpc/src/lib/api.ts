@@ -23,7 +23,77 @@ export type ApiOptions = {
 
 const CACHE_TTL = 60_000;
 
-const cache = new Map<string, { expires: number; data: unknown }>();
+/** Hard ceiling on cached upstream responses; oldest entries are evicted first. */
+export const CACHE_MAX_ENTRIES = 500;
+
+type CacheEntry = { expires: number; data: unknown };
+
+/** Insertion order doubles as LRU recency: re-reads move a key to the end. */
+const cache = new Map<string, CacheEntry>();
+
+function cacheGet(key: string): CacheEntry | undefined {
+  const entry = cache.get(key);
+  if (!entry) return undefined;
+  if (entry.expires <= Date.now()) {
+    cache.delete(key);
+    return undefined;
+  }
+  cache.delete(key);
+  cache.set(key, entry);
+  return entry;
+}
+
+function cacheSet(key: string, data: unknown): void {
+  cache.delete(key);
+  cache.set(key, { expires: Date.now() + CACHE_TTL, data });
+  while (cache.size > CACHE_MAX_ENTRIES) {
+    const oldest = cache.keys().next();
+    if (oldest.done) break;
+    cache.delete(oldest.value);
+  }
+}
+
+/** Test/ops helpers for the module-level cache. */
+export function apiCacheSize(): number {
+  return cache.size;
+}
+
+export function clearApiCache(): void {
+  cache.clear();
+}
+
+type CombinedSignal = { signal: AbortSignal; release: () => void };
+
+function combineSignals(
+  timeoutSignal: AbortSignal,
+  callerSignal: AbortSignal | undefined,
+): CombinedSignal {
+  if (!callerSignal) return { signal: timeoutSignal, release: () => {} };
+  if (typeof AbortSignal.any === "function") {
+    return {
+      signal: AbortSignal.any([callerSignal, timeoutSignal]),
+      release: () => {},
+    };
+  }
+
+  const controller = new AbortController();
+  const signals = [callerSignal, timeoutSignal];
+  const onAbort = (event: Event) => {
+    controller.abort((event.target as AbortSignal).reason);
+  };
+  const already = signals.find((s) => s.aborted);
+  if (already) {
+    controller.abort(already.reason);
+    return { signal: controller.signal, release: () => {} };
+  }
+  for (const s of signals) s.addEventListener("abort", onAbort, { once: true });
+  return {
+    signal: controller.signal,
+    release: () => {
+      for (const s of signals) s.removeEventListener("abort", onAbort);
+    },
+  };
+}
 
 /**
  * Calls the upstream JioSaavn API and returns the raw, untransformed JSON body.
@@ -48,30 +118,24 @@ export async function api<T = unknown>(
   const langs = validLangs(language) || "hindi,english";
   const cacheKey = `${url}&L=${langs}`;
 
-  const cached = cache.get(cacheKey);
-  const now = Date.now();
-  if (cached && cached.expires > now) {
+  const cached = cacheGet(cacheKey);
+  if (cached) {
     return cached.data as T;
   }
 
   let response: Response;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+  const combined = combineSignals(controller.signal, signal);
   try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
-    const combinedSignal = signal
-      ? (AbortSignal.any?.([signal, controller.signal]) ?? signal)
-      : controller.signal;
-
     response = await fetchFn(url, {
       headers: {
         cookie: `L=${langs}; gdpr_acceptance=true; DL=english`,
         "user-agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
       },
-      signal: combinedSignal,
+      signal: combined.signal,
     });
-
-    clearTimeout(timeout);
   } catch (err) {
     if ((err as Error).name === "AbortError") {
       throw new TRPCError({
@@ -83,6 +147,9 @@ export async function api<T = unknown>(
       code: "BAD_GATEWAY",
       message: `Upstream network failure: ${(err as Error).message}`,
     });
+  } finally {
+    clearTimeout(timeout);
+    combined.release();
   }
 
   if (!response.ok) {
@@ -94,7 +161,7 @@ export async function api<T = unknown>(
 
   try {
     const data = (await response.json()) as T;
-    cache.set(cacheKey, { expires: Date.now() + CACHE_TTL, data });
+    cacheSet(cacheKey, data);
     return data;
   } catch {
     throw new TRPCError({

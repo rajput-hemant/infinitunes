@@ -1,4 +1,4 @@
-import type { Show, Sort } from "@infinitunes/types";
+import type { Sort } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -24,13 +24,12 @@ import { EpisodeList } from "./_components/episode-list";
 const DEFAULT_SORT: Sort = "desc";
 
 // callers must pass a normalized sort so generateMetadata and the page share one cache entry
-const getShow = cache(
-  async (token: string, season: number, sort: Sort) =>
-    (await api.show.details({
-      token,
-      season: `${season}`,
-      sort,
-    })) as unknown as Show,
+const getShow = cache(async (token: string, season: number, sort: Sort) =>
+  api.show.details({
+    token,
+    season: `${season}`,
+    sort,
+  }),
 );
 
 type ShowDetailsPageProps = {

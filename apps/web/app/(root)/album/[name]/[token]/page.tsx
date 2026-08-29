@@ -1,4 +1,3 @@
-import type { Album, Trending } from "@infinitunes/types";
 import type { Metadata } from "next";
 import { cache } from "react";
 
@@ -8,10 +7,7 @@ import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
 import { decode, getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
 
-const getAlbum = cache(
-  async (token: string) =>
-    (await api.album.details({ token })) as unknown as Album,
-);
+const getAlbum = cache(async (token: string) => api.album.details({ token }));
 
 type AlbumDetailsPageProps = {
   params: Promise<{ name: string; token: string }>;
@@ -45,20 +41,16 @@ export async function generateMetadata({
 }
 
 async function fetcher(token: string) {
-  const trendingPromise = api.get.trending({
-    type: "album",
-  }) as unknown as Promise<Trending>;
+  const trendingPromise = api.get.trending({ type: "album" });
   // settled later; keep it from being an unhandled rejection during the await below
   trendingPromise.catch(() => null);
 
   const album = await getAlbum(token);
 
   const [recommendations, trending, sameYear] = await Promise.allSettled([
-    api.album.recommendations({ id: album.id }) as unknown as Promise<Album[]>,
+    api.album.recommendations({ id: album.id }),
     trendingPromise,
-    api.album.sameYear({ year: `${album.year}` }) as unknown as Promise<
-      Album[]
-    >,
+    api.album.sameYear({ year: `${album.year}` }),
   ]);
 
   return {

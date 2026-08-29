@@ -1,4 +1,4 @@
-import type { Lang, Radio } from "@infinitunes/types";
+import type { Lang } from "@infinitunes/types";
 
 import { LanguageBar } from "~/components/language-bar";
 import { api } from "~/lib/trpc/server";
@@ -34,11 +34,11 @@ type Props = {
 export default async function RadioPage(props: Props) {
   const { page = 1, lang } = await props.searchParams;
 
-  const radioStations = (await api.get.featuredStations({
+  const radioStations = await api.get.featuredStations({
     page,
     n: 50,
     lang,
-  })) as unknown as Radio[];
+  });
 
   return (
     <div className="space-y-4">
