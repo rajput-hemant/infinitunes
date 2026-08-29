@@ -1,10 +1,7 @@
 "use server";
 
-import { randomUUID } from "crypto";
-
 import { db } from "@infinitunes/db";
 import { betterAuthAccounts } from "@infinitunes/db/schema";
-import type { NewUser } from "@infinitunes/db/schema";
 import { myPlaylists, users } from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
 import { count, eq } from "drizzle-orm";
@@ -12,11 +9,8 @@ import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import type { z } from "zod";
 
-import type {
-  newPlaylistSchema,
-  resetPasswordSchema,
-  signUpSchema,
-} from "./validations";
+import { getUser } from "./auth";
+import type { newPlaylistSchema, resetPasswordSchema } from "./validations";
 
 export async function resetPassword(
   credentials: z.infer<typeof resetPasswordSchema>,
@@ -59,18 +53,31 @@ export async function resetPassword(
 }
 
 export async function createNewPlaylist(
-  data: z.infer<typeof newPlaylistSchema> & { userId: string },
+  data: z.infer<typeof newPlaylistSchema>,
 ) {
+  const user = await getUser();
+  if (!user?.id) {
+    throw new Error("Unauthorized");
+  }
+  const userId = user.id;
+
   const [{ playlistsCount }] = await db
     .select({ playlistsCount: count() })
     .from(myPlaylists)
-    .where(eq(myPlaylists.userId, data.userId));
+    .where(eq(myPlaylists.userId, userId));
 
   if (playlistsCount >= 10) {
     throw new Error("You can only have 10 playlists, please delete one");
   }
 
-  const [playlist] = await db.insert(myPlaylists).values(data).returning();
+  const [playlist] = await db
+    .insert(myPlaylists)
+    .values({
+      name: data.name,
+      description: data.description,
+      userId,
+    })
+    .returning();
 
   if (!playlist) {
     throw new Error("Failed to create playlist, please try again");
@@ -81,17 +88,25 @@ export async function createNewPlaylist(
   return playlist;
 }
 
-export async function updateUser(
-  data: NewUser & { name?: string; username?: string; email?: string },
-) {
-  const userId = data.id!;
+export async function updateUser(data: {
+  name?: string;
+  username?: string;
+  email?: string;
+}) {
+  const user = await getUser();
+  if (!user?.id) {
+    throw new Error("Unauthorized");
+  }
+  const userId = user.id;
 
-  const usernameExists = await db.query.users.findFirst({
-    where: (u, { eq }) => eq(u.username, data.username!),
-  });
+  if (data.username) {
+    const usernameExists = await db.query.users.findFirst({
+      where: (u, { eq }) => eq(u.username, data.username!),
+    });
 
-  if (usernameExists && usernameExists.id !== userId) {
-    throw new Error("Username already exists, please try another one");
+    if (usernameExists && usernameExists.id !== userId) {
+      throw new Error("Username already exists, please try another one");
+    }
   }
 
   const patch: Record<string, unknown> = {};
@@ -105,7 +120,13 @@ export async function updateUser(
   return db.query.users.findFirst({ where: eq(users.id, userId) });
 }
 
-export async function deleteUser(userId: string) {
+export async function deleteUser() {
+  const user = await getUser();
+  if (!user?.id) {
+    throw new Error("Unauthorized");
+  }
+  const userId = user.id;
+
   const [deletedUser] = await db
     .delete(users)
     .where(eq(users.id, userId))

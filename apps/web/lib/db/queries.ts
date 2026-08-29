@@ -6,6 +6,8 @@ import { eq, sql } from "drizzle-orm";
 import { updateTag, unstable_cache } from "next/cache";
 import { cache } from "react";
 
+import { getUser } from "~/lib/auth";
+
 const getUserPlaylistsCached = cache(
   unstable_cache(
     async (userId: string) => {
@@ -33,10 +35,19 @@ export async function getPlaylistDetails(playlistId: string) {
 }
 
 export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
+  const user = await getUser();
+  if (!user?.id) {
+    throw new Error("Unauthorized");
+  }
+
   const playlist = await getPlaylistDetails(playlistId);
 
   if (!playlist) {
     throw new Error("Playlist not found");
+  }
+
+  if (playlist.userId !== user.id) {
+    throw new Error("Unauthorized");
   }
 
   const dedupSongs = [...new Set([...songs, ...playlist.songs])].slice(0, 100);
@@ -71,10 +82,15 @@ export async function getUserFavorites(userId: string) {
 }
 
 export async function addToFavorites(
-  userId: string,
   token: string,
   type: "song" | "album" | "playlist" | "artist" | "show",
 ) {
+  const user = await getUser();
+  if (!user?.id) {
+    throw new Error("Unauthorized");
+  }
+  const userId = user.id;
+
   const userFavorites = await getUserFavorites(userId);
 
   if (!userFavorites) {
@@ -127,10 +143,15 @@ export async function addToFavorites(
 }
 
 export async function removeFromFavorites(
-  userId: string,
   token: string,
   type: "song" | "album" | "playlist" | "artist" | "show",
 ) {
+  const user = await getUser();
+  if (!user?.id) {
+    throw new Error("Unauthorized");
+  }
+  const userId = user.id;
+
   const userFavorites = await getUserFavorites(userId);
 
   if (!userFavorites) {

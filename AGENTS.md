@@ -109,14 +109,14 @@ uses the current convention, and it is wired up - `next build` prints
 critical. See `node_modules/next/dist/build/templates/middleware.js` (`isProxy`)
 for the resolution rule.
 
-## `@infinitunes/db` exports a lazy `db`
+## `@infinitunes/db` exports a lazy `db`, `apps/web/lib/auth.ts` exports a lazy `auth`
 
-`packages/db/src/db.ts` exports `db` as a Proxy over `getDb()`, so importing
-`@infinitunes/db` never connects or throws at module-evaluation time. This is
-required because Next.js evaluates `apps/web/app/api/auth/[...all]/route.ts`
-while collecting page data, and `SKIP_ENV_VALIDATION=true` only skips schema
-validation in `@infinitunes/env` - it does not supply `DATABASE_URL`. Keep the
-`DATABASE_URL` check inside `getDb()`; hoisting it back to module scope breaks
+`packages/db/src/db.ts` exports `db` as a Proxy over `getDb()`, and `apps/web/lib/auth.ts`
+exports `auth` as a Proxy over `getAuth()`, so importing `@infinitunes/db` or `apps/web/lib/auth.ts`
+never connects or initializes Better Auth at module-evaluation time. This is required because
+Next.js evaluates layouts and routes (which import `getUser` / `auth`) while collecting page data,
+and `SKIP_ENV_VALIDATION=true` only skips schema validation in `@infinitunes/env` - it does not
+supply `DATABASE_URL`. Keep initialization lazy; eager evaluation at module scope breaks
 `SKIP_ENV_VALIDATION=true bun run build`.
 
 ## Media URL shapes (playback / artwork)

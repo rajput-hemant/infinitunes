@@ -50,15 +50,12 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
 
   async function onSubmit({ name, description }: FormData) {
     try {
-      toast.promise(
-        createNewPlaylist({ name, description, userId: user!.id! }),
-        {
-          loading: "Creating playlist...",
-          success: (d) => `Playlist "${d.name}" created successfully!`,
-          error: (e) => e.message,
-          finally: () => setOpen(false),
-        },
-      );
+      toast.promise(createNewPlaylist({ name, description }), {
+        loading: "Creating playlist...",
+        success: (d) => `Playlist "${d.name}" created successfully!`,
+        error: (e) => e.message,
+        finally: () => setOpen(false),
+      });
     } catch (error) {
       const err = error as Error;
       console.error(err.message);

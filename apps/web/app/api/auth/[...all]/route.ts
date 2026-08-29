@@ -1,7 +1,5 @@
-import { createAuth } from "@infinitunes/auth";
-import { db } from "@infinitunes/db";
 import { toNextJsHandler } from "better-auth/next-js";
 
-const auth = createAuth(db);
+import { auth } from "~/lib/auth";
 
 export const { GET, POST } = toNextJsHandler(auth);

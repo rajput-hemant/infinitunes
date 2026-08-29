@@ -6,7 +6,7 @@ import {
   users,
 } from "@infinitunes/db/schema";
 import { createServerEnv } from "@infinitunes/env/server";
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
@@ -77,6 +77,9 @@ export function createAuth(db: DbClient) {
       enabled: true,
       requireEmailVerification: false,
       password: {
+        hash: async (password) => {
+          return hash(password, 10);
+        },
         verify: async ({ password, hash }) => {
           return compare(password, hash);
         },
