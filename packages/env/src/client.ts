@@ -8,6 +8,7 @@ export interface ClientEnvOptions {
   runtimeEnv: Record<string, string | undefined>;
   skipValidation?: boolean;
   emptyStringAsUndefined?: boolean;
+  clientPrefix?: string;
 }
 
 export function createClientEnv(options: ClientEnvOptions) {
@@ -15,6 +16,7 @@ export function createClientEnv(options: ClientEnvOptions) {
     runtimeEnv,
     skipValidation = false,
     emptyStringAsUndefined = true,
+    clientPrefix = "NEXT_PUBLIC_",
   } = options;
 
   return createEnv({
@@ -22,7 +24,7 @@ export function createClientEnv(options: ClientEnvOptions) {
     emptyStringAsUndefined,
     server: {},
     client: clientSchema,
-    clientPrefix: "NEXT_PUBLIC_",
+    clientPrefix: clientPrefix as "NEXT_PUBLIC_",
     runtimeEnv: runtimeEnv as Record<
       string,
       string | boolean | number | undefined

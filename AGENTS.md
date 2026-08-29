@@ -36,7 +36,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `apps/web/.next/standalone/apps/web/server.js` (entrypoint `node apps/web/server.js`).
   `next.config.ts` sets `outputFileTracingRoot` to the repo root when `IS_DOCKER`.
 - `packages/trpc/src/lib/download.ts`'s `createDownloadLinks` needs `JIOSAAVN_DES_KEY`
-  in `turbo.json` `globalPassThroughEnv` (alongside `JIOSAAVN_API_URL`) or every song's
+  in `turbo.json` `globalPassThroughEnv` or every song's
   `download_url` silently comes back empty under `bun run dev`/`build`, which crashes
   the player (empty Howler src). Every song array a router returns must be mapped
   through `withDownloadUrl` (`packages/trpc/src/router/utils.ts`) before reaching

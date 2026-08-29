@@ -106,19 +106,19 @@ When importing the repository into Vercel, configure the following:
 
 Set these in your Vercel project settings:
 
-| Variable                   | Description                                   |
-| -------------------------- | --------------------------------------------- |
-| `AUTH_SECRET`              | Secret for Auth.js sessions                   |
-| `AUTH_URL`                 | Your deployed app URL (for Auth.js)           |
-| `JIOSAAVN_API_URL`         | JioSaavn API base URL                         |
-| `GOOGLE_CLIENT_ID`         | Google OAuth client ID                        |
-| `GOOGLE_CLIENT_SECRET`     | Google OAuth client secret                    |
-| `GITHUB_CLIENT_ID`         | GitHub OAuth client ID                        |
-| `GITHUB_CLIENT_SECRET`     | GitHub OAuth client secret                    |
-| `DATABASE_URL`             | PostgreSQL connection string                  |
-| `UPSTASH_REDIS_REST_URL`   | Upstash Redis URL (optional, rate limiting)   |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis token (optional, rate limiting) |
-| `UMAMI_WEBSITE_ID`         | Umami analytics website ID (optional)         |
+| Variable                   | Description                                       |
+| -------------------------- | ------------------------------------------------- |
+| `AUTH_SECRET`              | Secret for Better Auth sessions                   |
+| `AUTH_URL`                 | Your deployed app URL (for Better Auth)           |
+| `JIOSAAVN_DES_KEY`         | DES key to decrypt JioSaavn media URLs            |
+| `GOOGLE_CLIENT_ID`         | Google OAuth client ID (optional unless prod)     |
+| `GOOGLE_CLIENT_SECRET`     | Google OAuth client secret (optional unless prod) |
+| `GITHUB_CLIENT_ID`         | GitHub OAuth client ID (optional unless prod)     |
+| `GITHUB_CLIENT_SECRET`     | GitHub OAuth client secret (optional unless prod) |
+| `DATABASE_URL`             | PostgreSQL connection string                      |
+| `UPSTASH_REDIS_REST_URL`   | Upstash Redis URL (optional, rate limiting)       |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis token (optional, rate limiting)     |
+| `UMAMI_WEBSITE_ID`         | Umami analytics website ID (optional)             |
 
 [![Deploy with Vercel][deploy]][deploy-link]
 
@@ -167,7 +167,7 @@ _Note: It may take up to 24h for the [contrib.rocks][contrib-rocks] plugin to up
 
 [site]: https://infinitunes.vercel.app
 [deploy]: https://vercel.com/button
-[deploy-link]: https://vercel.com/new/clone?repository-url=https://github.com/rajput-hemant/infinitunes&root-directory=apps%2Fweb&install-command=bun%20install&build-command=bun%20run%20build&env=AUTH_SECRET,AUTH_URL,JIOSAAVN_API_URL,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET,DATABASE_URL&project-name=infinitunes&repo-name=infinitunes
+[deploy-link]: https://vercel.com/new/clone?repository-url=https://github.com/rajput-hemant/infinitunes&root-directory=apps%2Fweb&install-command=bun%20install&build-command=bun%20run%20build&env=AUTH_SECRET,AUTH_URL,JIOSAAVN_DES_KEY,GOOGLE_CLIENT_ID,GOOGLE_CLIENT_SECRET,GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET,DATABASE_URL&project-name=infinitunes&repo-name=infinitunes
 
 <!------------------------------------{ api }----------------------------------->
 
