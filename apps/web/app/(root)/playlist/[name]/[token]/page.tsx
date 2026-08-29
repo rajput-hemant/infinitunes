@@ -42,7 +42,7 @@ async function fetcher(token: string) {
     token,
   })) as unknown as Playlist;
 
-  const [recommendations, trending] = await Promise.all([
+  const [recommendations, trending] = await Promise.allSettled([
     api.playlist.recommendations({
       id: playlist.id,
     }) as unknown as Promise<Playlist[]>,
@@ -51,8 +51,9 @@ async function fetcher(token: string) {
 
   return {
     playlist,
-    recommendations,
-    trending,
+    recommendations:
+      recommendations.status === "fulfilled" ? recommendations.value : [],
+    trending: trending.status === "fulfilled" ? trending.value : [],
   };
 }
 
@@ -73,7 +74,7 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
       {recommendations.length > 0 && (
         <SliderList
           title={
-            playlist.modules?.relatedPlaylist.title ?? "Recommended Playlists"
+            playlist.modules?.relatedPlaylist?.title ?? "Recommended Playlists"
           }
           items={recommendations.map(toCardItem)}
         />
@@ -81,7 +82,7 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
 
       <SliderList
         title={
-          playlist.modules?.currentlyTrendingPlaylists.title ??
+          playlist.modules?.currentlyTrendingPlaylists?.title ??
           "Trending Playlists"
         }
         items={trending.map(toCardItem)}
@@ -89,7 +90,7 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
 
       {artists.length > 0 && (
         <SliderList
-          title={playlist.modules?.artists.title ?? "Artists"}
+          title={playlist.modules?.artists?.title ?? "Artists"}
           items={artists.map((artist) => ({
             id: artist.id,
             name: decode(artist.name),

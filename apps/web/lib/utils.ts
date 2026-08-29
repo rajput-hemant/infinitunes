@@ -152,24 +152,6 @@ export function absoluteUrl(path: string) {
 }
 
 /**
- * Encodes and decodes strings to and from base64
- * @param str The string to encode/decode
- * @returns The encoded/decoded string
- */
-export const base64 = {
-  encode: (str: string) => Buffer.from(str).toString("base64"),
-  decode: (str: string) => Buffer.from(str, "base64").toString("ascii"),
-};
-
-/**
- * Throws an error with the given message
- * @param message The Error message
- */
-export function rethrow(message: string): never {
-  throw new Error(message);
-}
-
-/**
  * Formats the given duration in seconds to the given format
  * @param seconds The duration in seconds
  * @param format The format to format the duration in `hh:mm:ss` or `mm:ss`

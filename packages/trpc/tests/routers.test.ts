@@ -1,247 +1,216 @@
-import { describe, expect, it } from "bun:test";
+import { beforeAll, describe, expect, it } from "bun:test";
 
-import type { Song, Album, Playlist, Artist } from "@infinitunes/types";
+// `createDownloadLinks` reads JIOSAAVN_DES_KEY at module-eval time, so the key
+// has to exist before the router graph is imported below.
+process.env.JIOSAAVN_DES_KEY ??= "38346591";
 
-import { api } from "../src/lib/api";
+type Caller = {
+  home: { home: (i: unknown) => Promise<unknown> };
+  song: { details: (i: unknown) => Promise<unknown> };
+  album: { details: (i: unknown) => Promise<unknown> };
+  playlist: { details: (i: unknown) => Promise<unknown> };
+  artist: { details: (i: unknown) => Promise<unknown> };
+};
 
-// Fixture helpers matching `@infinitunes/types` structure
-const mockSong: Song = {
-  id: "s1",
-  title: "Test Song",
-  subtitle: "Test Subtitle",
-  header_desc: "",
-  type: "song",
-  perma_url: "https://www.jiosaavn.com/song/test/s1",
-  image: "https://example.com/song.jpg",
-  language: "hindi",
-  year: "2024",
-  play_count: "1000",
-  explicit_content: "0",
-  list_count: "",
-  list_type: "",
-  list: "",
-  more_info: {
-    music: "Artist 1",
-    album_id: "a1",
-    album: "Test Album",
-    label: "Test Label",
-    origin: "none",
-    is_dolby_content: false,
-    "320kbps": "true",
-    encrypted_media_url: "",
-    encrypted_cache_url: "",
-    album_url: "",
-    duration: "180",
-    rights: {
-      code: 0,
-      cacheable: true,
-      delete_cached_object: false,
-      reason: "",
+const MEDIA_URL = "https://aac.saavncdn.com/test/track_96.mp4";
+
+let caller: Caller;
+let encryptedMediaUrl: string;
+/** Upstream `__call` value -> JSON body, set per test. */
+let responses: Record<string, unknown> = {};
+let calls: string[] = [];
+
+/** Distinct query per test so the 60s in-memory api cache never cross-talks. */
+let seq = 0;
+const uniq = () => `fixture-${++seq}`;
+
+function song(id: string) {
+  return {
+    id,
+    title: "Test Song",
+    type: "song",
+    more_info: {
+      album: "Test Album",
+      duration: "180",
+      encrypted_media_url: encryptedMediaUrl,
     },
-    cache_state: "true",
-    has_lyrics: "true",
-    lyrics_snippet: "",
-    starred: "false",
-    copyright_text: "",
-    artistMap: {
-      primary_artists: [
-        {
-          id: "ar1",
-          name: "Artist 1",
-          role: "singer",
-          image: "",
-          type: "artist",
-          perma_url: "",
-        },
-      ],
-      featured_artists: [],
-      artists: [
-        {
-          id: "ar1",
-          name: "Artist 1",
-          role: "singer",
-          image: "",
-          type: "artist",
-          perma_url: "",
-        },
-      ],
-    },
-    label_url: "",
-    vcode: "",
-    vlink: "",
-    triller_available: false,
-    request_jiotune_flag: false,
-    webp: "true",
-    lyrics_id: "l1",
-  },
-};
+  };
+}
 
-const mockAlbum: Album = {
-  id: "a1",
-  title: "Test Album",
-  subtitle: "Test Subtitle",
-  type: "album",
-  image: "https://example.com/album.jpg",
-  perma_url: "https://www.jiosaavn.com/album/test/a1",
-  header_desc: "",
-  explicit_content: "0",
-  language: "hindi",
-  year: "2024",
-  play_count: "5000",
-  list_count: "1",
-  list_type: "song",
-  list: [mockSong],
-  more_info: {
-    song_count: "1",
-  },
-};
+function downloadUrlOf(item: unknown) {
+  return (item as { download_url?: string }).download_url;
+}
 
-const mockPlaylist: Playlist = {
-  id: "p1",
-  title: "Test Playlist",
-  subtitle: "Test Subtitle",
-  type: "playlist",
-  image: "https://example.com/playlist.jpg",
-  perma_url: "https://www.jiosaavn.com/featured/test/p1",
-  header_desc: "",
-  explicit_content: "0",
-  language: "hindi",
-  year: "2024",
-  play_count: "10000",
-  list_count: "1",
-  list_type: "song",
-  list: [mockSong],
-  more_info: {
-    firstname: "User",
-    song_count: "1",
-  },
-};
+beforeAll(async () => {
+  const { createCipheriv } = await import("node:crypto");
+  const cipher = createCipheriv(
+    "des-ecb",
+    Buffer.from(process.env.JIOSAAVN_DES_KEY!, "utf8"),
+    null,
+  );
+  encryptedMediaUrl = Buffer.concat([
+    cipher.update(Buffer.from(MEDIA_URL, "utf8")),
+    cipher.final(),
+  ]).toString("base64");
 
-const mockArtist: Artist = {
-  artistId: "ar1",
-  name: "Artist 1",
-  subtitle: "Artist Subtitle",
-  image: "https://example.com/artist.jpg",
-  type: "artist",
-  perma_url: "https://www.jiosaavn.com/artist/test/ar1",
-  follower_count: "500",
-  topSongs: [mockSong],
-  topAlbums: [mockAlbum],
-};
+  globalThis.fetch = ((input: string | URL) => {
+    const call = new URL(String(input)).searchParams.get("__call") ?? "";
+    calls.push(call);
+    if (!(call in responses)) {
+      throw new Error(`unexpected upstream call: ${call}`);
+    }
+    return Promise.resolve(
+      new Response(JSON.stringify(responses[call]), { status: 200 }),
+    );
+  }) as typeof fetch;
+
+  const { appRouter } = await import("../src/root");
+  const { createCallerFactory } = await import("../src/trpc");
+  caller = createCallerFactory(appRouter)({}) as unknown as Caller;
+});
 
 describe("router procedures", () => {
   it("home.home returns launch data with processed download URLs", async () => {
-    const mockLaunchData = {
-      new_trending: [mockSong],
-      top_playlists: [mockPlaylist],
+    calls = [];
+    responses = {
+      "webapi.getLaunchData": {
+        new_trending: [song("s1")],
+        top_playlists: [{ id: "p1", title: "Test Playlist" }],
+      },
     };
 
-    const mockFetch: typeof fetch = (async () => {
-      return new Response(JSON.stringify(mockLaunchData), { status: 200 });
-    }) as typeof fetch;
+    const result = (await caller.home.home({ lang: "hindi" })) as {
+      new_trending: { id: string; title: string }[];
+    };
 
-    // Call api directly with injected mock fetchFn to test data flow
-    const result = (await api(
-      "content.getLaunchData",
-      { language: "hindi" },
-      mockFetch,
-    )) as typeof mockLaunchData;
-    expect(result.new_trending[0].id).toBe("s1");
-    expect(result.new_trending[0].title).toBe("Test Song");
+    expect(calls).toEqual(["webapi.getLaunchData"]);
+    expect(result.new_trending[0]?.id).toBe("s1");
+    expect(result.new_trending[0]?.title).toBe("Test Song");
+    expect(downloadUrlOf(result.new_trending[0])).toContain("_320.mp4");
   });
 
   it("song.details returns song payload matching SongObj shape", async () => {
-    const mockPayload = {
-      songs: [mockSong],
+    const id = uniq();
+    calls = [];
+    responses = { "song.getDetails": { songs: [song(id)] } };
+
+    const result = (await caller.song.details({ id })) as {
+      songs: { id: string; more_info: { album: string } }[];
     };
 
-    const mockFetch: typeof fetch = (async () => {
-      return new Response(JSON.stringify(mockPayload), { status: 200 });
-    }) as typeof fetch;
-
-    const result = (await api(
-      "song.getDetails",
-      { query: { pids: "s1" } },
-      mockFetch,
-    )) as typeof mockPayload;
+    expect(calls).toEqual(["song.getDetails"]);
     expect(result.songs).toHaveLength(1);
-    expect(result.songs[0].id).toBe("s1");
-    expect(result.songs[0].more_info.album).toBe("Test Album");
+    expect(result.songs[0]?.id).toBe(id);
+    expect(result.songs[0]?.more_info.album).toBe("Test Album");
+    expect(downloadUrlOf(result.songs[0])).toContain("_320.mp4");
   });
 
   it("album.details returns album payload matching Album shape", async () => {
-    const mockFetch: typeof fetch = (async () => {
-      return new Response(JSON.stringify(mockAlbum), { status: 200 });
-    }) as typeof fetch;
+    const id = uniq();
+    calls = [];
+    responses = {
+      "content.getAlbumDetails": {
+        id,
+        title: "Test Album",
+        list: [song("s1")],
+      },
+    };
 
-    const result = (await api(
-      "content.getAlbumDetails",
-      { query: { albumid: "a1" } },
-      mockFetch,
-    )) as Album;
-    expect(result.id).toBe("a1");
+    const result = (await caller.album.details({ id })) as {
+      id: string;
+      title: string;
+      list: unknown[];
+    };
+
+    expect(calls).toEqual(["content.getAlbumDetails"]);
+    expect(result.id).toBe(id);
     expect(result.title).toBe("Test Album");
     expect(Array.isArray(result.list)).toBe(true);
+    expect(downloadUrlOf(result.list[0])).toContain("_320.mp4");
   });
 
   it("playlist.details returns playlist payload matching Playlist shape", async () => {
-    const mockFetch: typeof fetch = (async () => {
-      return new Response(JSON.stringify(mockPlaylist), { status: 200 });
-    }) as typeof fetch;
+    const id = uniq();
+    calls = [];
+    responses = {
+      "playlist.getDetails": {
+        id,
+        title: "Test Playlist",
+        list: [song("s1")],
+      },
+    };
 
-    const result = (await api(
-      "playlist.getDetails",
-      { query: { listid: "p1" } },
-      mockFetch,
-    )) as Playlist;
-    expect(result.id).toBe("p1");
+    const result = (await caller.playlist.details({ id })) as {
+      id: string;
+      title: string;
+    };
+
+    expect(calls).toEqual(["playlist.getDetails"]);
+    expect(result.id).toBe(id);
     expect(result.title).toBe("Test Playlist");
+    expect(downloadUrlOf((result as { list: unknown[] }).list[0])).toContain(
+      "_320.mp4",
+    );
   });
 
   it("artist.details returns artist payload matching Artist shape", async () => {
-    const mockFetch: typeof fetch = (async () => {
-      return new Response(JSON.stringify(mockArtist), { status: 200 });
-    }) as typeof fetch;
+    const id = uniq();
+    calls = [];
+    responses = {
+      "artist.getArtistPageDetails": {
+        artistId: id,
+        name: "Artist 1",
+        topSongs: [song("s1")],
+      },
+    };
 
-    const result = (await api(
-      "artist.getArtistDetails",
-      { query: { artistId: "ar1" } },
-      mockFetch,
-    )) as Artist;
-    expect(result.artistId).toBe("ar1");
+    const result = (await caller.artist.details({ id })) as {
+      artistId: string;
+      name: string;
+      topSongs: unknown[];
+    };
+
+    expect(calls).toEqual(["artist.getArtistPageDetails"]);
+    expect(result.artistId).toBe(id);
     expect(result.name).toBe("Artist 1");
     expect(result.topSongs).toHaveLength(1);
+    expect(downloadUrlOf(result.topSongs[0])).toContain("_320.mp4");
   });
 
   it("song.details supports token lookup via webapi.get", async () => {
-    const mockPayload = {
-      songs: [mockSong],
+    calls = [];
+    responses = { "webapi.get": { songs: [song("s1")] } };
+
+    const result = (await caller.song.details({ token: uniq() })) as {
+      songs: { id: string }[];
     };
 
-    const mockFetch: typeof fetch = (async () => {
-      return new Response(JSON.stringify(mockPayload), { status: 200 });
-    }) as typeof fetch;
-
-    const result = (await api(
-      "webapi.get",
-      { query: { token: "token123", type: "song" } },
-      mockFetch,
-    )) as typeof mockPayload;
+    expect(calls).toEqual(["webapi.get"]);
     expect(result.songs).toHaveLength(1);
-    expect(result.songs[0].id).toBe("s1");
+    expect(result.songs[0]?.id).toBe("s1");
+    expect(downloadUrlOf(result.songs[0])).toContain("_320.mp4");
   });
 
   it("artist.details supports token lookup via webapi.get", async () => {
-    const mockFetch: typeof fetch = (async () => {
-      return new Response(JSON.stringify(mockArtist), { status: 200 });
-    }) as typeof fetch;
+    calls = [];
+    responses = {
+      "webapi.get": {
+        artistId: "ar1",
+        name: "Artist 1",
+        topSongs: [song("s1")],
+      },
+    };
 
-    const result = (await api(
-      "webapi.get",
-      { query: { token: "token123", type: "artist" } },
-      mockFetch,
-    )) as Artist;
+    const result = (await caller.artist.details({ token: uniq() })) as {
+      artistId: string;
+      name: string;
+    };
+
+    expect(calls).toEqual(["webapi.get"]);
     expect(result.artistId).toBe("ar1");
     expect(result.name).toBe("Artist 1");
+    expect(
+      downloadUrlOf((result as { topSongs: unknown[] }).topSongs[0]),
+    ).toContain("_320.mp4");
   });
 });

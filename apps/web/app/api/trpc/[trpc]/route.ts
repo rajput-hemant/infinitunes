@@ -1,6 +1,5 @@
 import { appRouter } from "@infinitunes/trpc";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import superjson from "superjson";
 
 function handler(req: Request) {
   return fetchRequestHandler({

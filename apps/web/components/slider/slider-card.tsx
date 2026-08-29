@@ -38,7 +38,8 @@ export function SliderCard(props: SliderCardProps) {
   } = props;
 
   const imageSrc = getImageSrc(image, "high");
-  const Wrapper = type === "radio_station" ? "div" : Link;
+  const isRadio = type === "radio_station";
+  const href = isRadio ? undefined : getHref(url, type);
   const isExplicit =
     typeof explicit === "string" ? explicit === "true" : Boolean(explicit);
 
@@ -61,9 +62,15 @@ export function SliderCard(props: SliderCardProps) {
             ["radio_station", "artist"].includes(type) && "rounded-full border",
           )}
         >
-          <Wrapper href={getHref(url, type)} className="absolute inset-0 z-10">
-            <span className="sr-only">View {name}</span>
-          </Wrapper>
+          {href ? (
+            <Link href={href} className="absolute inset-0 z-10">
+              <span className="sr-only">View {name}</span>
+            </Link>
+          ) : (
+            <div className="absolute inset-0 z-10">
+              <span className="sr-only">View {name}</span>
+            </div>
+          )}
 
           <ImageWithFallback
             src={imageSrc}
@@ -98,17 +105,25 @@ export function SliderCard(props: SliderCardProps) {
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
           <h4 className="w-full font-semibold lg:text-lg">
-            <Wrapper
-              href={getHref(url, type)}
-              className="mx-auto flex max-w-fit items-center"
-            >
-              {isExplicit && (
-                <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
-                  E
-                </Badge>
-              )}
-              <span className="truncate">{name}</span>
-            </Wrapper>
+            {href ? (
+              <Link href={href} className="mx-auto flex max-w-fit items-center">
+                {isExplicit && (
+                  <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
+                    E
+                  </Badge>
+                )}
+                <span className="truncate">{name}</span>
+              </Link>
+            ) : (
+              <div className="mx-auto flex max-w-fit items-center">
+                {isExplicit && (
+                  <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
+                    E
+                  </Badge>
+                )}
+                <span className="truncate">{name}</span>
+              </div>
+            )}
           </h4>
 
           <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">

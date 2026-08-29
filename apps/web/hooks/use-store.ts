@@ -40,12 +40,6 @@ export function useImageQuality() {
   return useAtom(imageQualityAtom, { store });
 }
 
-const playerCurrentTimeAtom = atom(0);
-
-export function usePlayerCurrentTime() {
-  return useAtom(playerCurrentTimeAtom, { store });
-}
-
 const isPlayingAtom = atom(false);
 
 export function useIsPlayerInit() {

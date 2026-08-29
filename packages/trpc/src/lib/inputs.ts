@@ -4,12 +4,6 @@ const lang = z.string().optional();
 const page = z.coerce.number().optional();
 const n = z.coerce.number().optional();
 
-export const tokenSchema = z.object({
-  token: z.string().optional(),
-  id: z.string().optional(),
-  link: z.string().optional(),
-});
-
 export const homeInput = z.object({
   lang,
 });

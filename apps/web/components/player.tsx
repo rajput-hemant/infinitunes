@@ -94,9 +94,9 @@ function PlayerInner({ user, playlists }: PlayerProps) {
   } = useAudioPlayerContext();
 
   React.useEffect(() => {
-    if (queue.length && isPlayerInit) {
-      const current = queue[currentIndex];
-      const audioSrc = getDownloadLink(current?.download_url, streamQuality);
+    const current = queue[currentIndex];
+    if (queue.length && isPlayerInit && current) {
+      const audioSrc = getDownloadLink(current.download_url, streamQuality);
 
       if (!audioSrc) {
         toast.error("This song can't be played right now.");

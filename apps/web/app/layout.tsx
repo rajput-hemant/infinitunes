@@ -26,9 +26,14 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
   const cookieStore = await cookies();
   const themeConfig = cookieStore.get("theme-config");
 
-  const { theme, radius } = themeConfig
-    ? (JSON.parse(themeConfig.value) as ThemeConfig)
-    : DEFAULT_THEME_CONFIG;
+  let { theme, radius } = DEFAULT_THEME_CONFIG;
+  if (themeConfig) {
+    try {
+      ({ theme, radius } = JSON.parse(themeConfig.value) as ThemeConfig);
+    } catch {
+      // keep DEFAULT_THEME_CONFIG
+    }
+  }
 
   return (
     <React.StrictMode>

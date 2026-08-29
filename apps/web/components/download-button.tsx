@@ -89,7 +89,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
         }),
       );
     } catch (error) {
-      console.error;
+      console.error(error);
     } finally {
       setIsDownloading(false);
     }

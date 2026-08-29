@@ -123,13 +123,15 @@ export function PlayButton(props: PlayButtonProps) {
       }
 
       const _queue = queue.map((item) => toQueue(item));
+      const first = _queue[0];
+      if (!first) return;
 
       setQueue(_queue);
 
       toast.success(
-        `${queue.length} item${queue.length > 1 ? "s" : ""} has been added to the queue`,
+        `${_queue.length} item${_queue.length > 1 ? "s" : ""} has been added to the queue`,
         {
-          description: `Playing "${_queue[0].name}"`,
+          description: `Playing "${first.name}"`,
           position: "bottom-center",
         },
       );
