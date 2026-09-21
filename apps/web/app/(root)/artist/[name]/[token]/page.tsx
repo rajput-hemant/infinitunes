@@ -1,4 +1,5 @@
 import type { Category } from "@infinitunes/types";
+import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
@@ -10,7 +11,7 @@ import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
-import { decode, getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
+import { ogImageUrl } from "~/lib/utils";
 
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";

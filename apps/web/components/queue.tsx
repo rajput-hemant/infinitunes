@@ -1,6 +1,7 @@
 "use client";
 
 import type { Queue } from "@infinitunes/types";
+import { getImageSrc, getToken } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
@@ -18,7 +19,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 
 import { useQueue } from "~/hooks/use-store";
-import { getHref, getImageSrc, getToken } from "~/lib/utils";
+import { getHref } from "~/lib/utils";
 
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
 

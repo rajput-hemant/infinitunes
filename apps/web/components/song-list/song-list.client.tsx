@@ -1,18 +1,13 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
+import { formatDuration, getImageSrc, getToken } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 import type { User } from "~/lib/auth";
-import {
-  cn,
-  formatDuration,
-  getHref,
-  getImageSrc,
-  getToken,
-} from "~/lib/utils";
+import { cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";

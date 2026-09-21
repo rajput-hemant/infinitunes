@@ -1,9 +1,10 @@
+import { getImageSrc } from "@infinitunes/types";
 import type { Metadata } from "next";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { api } from "~/lib/trpc/server";
-import { getImageSrc, ogImageUrl } from "~/lib/utils";
+import { ogImageUrl } from "~/lib/utils";
 
 const getEpisode = cache(async (token: string) =>
   api.show.episodeDetails({

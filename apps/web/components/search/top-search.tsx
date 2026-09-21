@@ -1,10 +1,11 @@
+import { getImageSrc } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Image from "next/image";
 import Link from "next/link";
 
 import { api } from "~/lib/trpc/server";
-import { getHref, getImageSrc } from "~/lib/utils";
+import { getHref } from "~/lib/utils";
 
 import { SliderCard } from "../slider/slider-card";
 

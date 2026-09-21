@@ -1,4 +1,5 @@
 import type { Sort } from "@infinitunes/types";
+import { getImageSrc } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -17,7 +18,7 @@ import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
-import { getImageSrc, ogImageUrl } from "~/lib/utils";
+import { ogImageUrl } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
 

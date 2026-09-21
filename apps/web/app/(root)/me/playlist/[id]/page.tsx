@@ -1,4 +1,5 @@
 import type { SongObj } from "@infinitunes/types";
+import { formatDuration, getImageSrc } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import type { Metadata } from "next";
@@ -9,7 +10,7 @@ import { PlayButton } from "~/components/play-button";
 import { SongList } from "~/components/song-list/song-list";
 import { getPlaylistDetails } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
-import { cn, formatDuration, getImageSrc } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 
 type Props = {
   params: Promise<{

@@ -1,3 +1,4 @@
+import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
 import type { Metadata } from "next";
 import { cache } from "react";
 
@@ -5,7 +6,7 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
-import { decode, getImageSrc, ogImageUrl, toCardItem } from "~/lib/utils";
+import { ogImageUrl } from "~/lib/utils";
 
 const getPlaylist = cache(async (token: string) =>
   api.playlist.details({ token }),

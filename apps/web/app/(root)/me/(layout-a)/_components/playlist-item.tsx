@@ -1,12 +1,12 @@
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import type { SongObj } from "@infinitunes/types";
+import { getImageSrc } from "@infinitunes/types";
 import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
 import { ImageCollage } from "~/components/image-collage";
 import { api } from "~/lib/trpc/server";
-import { getImageSrc } from "~/lib/utils";
 
 export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
   const { id, name, description, songs } = playlist;

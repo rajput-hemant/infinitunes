@@ -1,3 +1,4 @@
+import { seededIndex } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
@@ -7,7 +8,7 @@ import React from "react";
 
 import { Icons } from "~/components/icons";
 import { getUser } from "~/lib/auth";
-import { cn, seededIndex } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
 

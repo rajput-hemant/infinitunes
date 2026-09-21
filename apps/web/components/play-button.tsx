@@ -1,6 +1,7 @@
 "use client";
 
 import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
+import { getToken, toQueue } from "@infinitunes/types";
 import { usePathname, useSearchParams } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -11,7 +12,7 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
-import { currentlyInDev, getToken, toQueue } from "~/lib/utils";
+import { currentlyInDev } from "~/lib/utils";
 
 type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   type: MediaType;

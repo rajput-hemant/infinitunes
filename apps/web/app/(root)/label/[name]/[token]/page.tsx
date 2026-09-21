@@ -1,3 +1,4 @@
+import { getImageSrc } from "@infinitunes/types";
 import {
   Tabs,
   TabsContent,
@@ -12,7 +13,7 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
-import { getImageSrc, ogImageUrl } from "~/lib/utils";
+import { ogImageUrl } from "~/lib/utils";
 
 const getLabel = cache(async (token: string) =>
   api.get.label({

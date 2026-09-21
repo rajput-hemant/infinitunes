@@ -9,6 +9,7 @@ import type {
   ShowDetails,
   Song,
 } from "@infinitunes/types";
+import { decode, formatDuration, getImageSrc } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -17,7 +18,7 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { cn, decode, formatDuration, getHref, getImageSrc } from "~/lib/utils";
+import { cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
 import { ImageWithFallback } from "../image-with-fallback";

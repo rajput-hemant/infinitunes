@@ -3,6 +3,7 @@ export * from "./artist";
 export * from "./config";
 export * from "./get";
 export * from "./misc";
+export * from "./media";
 export * from "./modules";
 export * from "./playlist";
 export * from "./search";

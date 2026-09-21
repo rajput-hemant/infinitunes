@@ -1,11 +1,12 @@
 import type { Quality, MediaType } from "@infinitunes/types";
+import { getImageSrc, getToken } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Link from "next/link";
 
-import { cn, getHref, getImageSrc, getToken } from "~/lib/utils";
+import { cn, getHref } from "~/lib/utils";
 
 import { ImageWithFallback } from "../image-with-fallback";
 import { PlayButton } from "../play-button";

@@ -1,10 +1,11 @@
 import type { Quality, MediaType } from "@infinitunes/types";
 import type { AllSearch } from "@infinitunes/types";
+import { getImageSrc } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
-import { cn, getHref, getImageSrc } from "~/lib/utils";
+import { cn, getHref } from "~/lib/utils";
 
 import { ImageWithFallback } from "../image-with-fallback";
 

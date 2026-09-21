@@ -1,6 +1,12 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
+import {
+  formatDuration,
+  getDownloadLink,
+  getImageSrc,
+  seededIndex,
+} from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Slider } from "@infinitunes/ui/components/slider";
@@ -36,14 +42,7 @@ import {
   useStreamQuality,
 } from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
-import {
-  cn,
-  formatDuration,
-  getDownloadLink,
-  getHref,
-  getImageSrc,
-  seededIndex,
-} from "~/lib/utils";
+import { cn, getHref } from "~/lib/utils";
 
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";

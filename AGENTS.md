@@ -144,7 +144,8 @@ bug is appending to them instead of substituting:
 - `download_url` is one comma-separated string, one entry per bitrate in
   `QUALITIES_MAP` order (`packages/types/src/misc.ts`). Consumers must split
   and index it, never hand it to a player whole - see
-  `getDownloadLink`/`~/lib/utils` and `apps/web/components/download-button.tsx`.
+  `getDownloadLink`/`packages/types/src/media.ts` and
+  `apps/web/components/download-button.tsx`.
   The decrypted URL already ends in a bitrate (`_96`/`_160`); `createDownloadLinks`
   must strip it before appending, because the CDN 404s on `..._96_320.mp4`.
 - `download_url` is only populated when `withDownloadUrl` ran with a valid
@@ -156,7 +157,8 @@ bug is appending to them instead of substituting:
   play effect. Guard on a falsy `audioSrc` and `toast` instead of calling `load()`.
 - Images embed a resolution token with _either_ separator: `-500x500.jpg` for
   song/album/playlist artwork, `_150x150.jpg` for artist and some CDN paths.
-  Resizing regexes must accept both (`getImageSrc`/`withSize` in `~/lib/utils`).
+  Resizing regexes must accept both (`getImageSrc`/`withSize` in
+  `packages/types/src/media.ts`).
 - Raw titles/subtitles are still HTML-encoded (`&amp;`), so anything putting
   them in a URL must `decode()` then percent-encode, or trailing query params
   get truncated - that is what `ogImageUrl` exists for.

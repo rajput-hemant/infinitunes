@@ -1,10 +1,11 @@
+import { getImageSrc } from "@infinitunes/types";
 import type { Metadata } from "next";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
-import { getImageSrc, ogImageUrl } from "~/lib/utils";
+import { ogImageUrl } from "~/lib/utils";
 
 const getMix = cache(async (token: string) =>
   api.get.mix({ token, page: 1, n: 20, lang: "hindi,english" }),
