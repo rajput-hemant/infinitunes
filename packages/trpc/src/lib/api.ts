@@ -1,4 +1,4 @@
-import { LANGUAGES, type Lang } from "@infinitunes/types";
+import { LANGUAGES } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 
 const BASE_URL = "https://www.jiosaavn.com/api.php";
@@ -95,8 +95,18 @@ function combineSignals(
   };
 }
 
+function isAbortError(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "name" in err &&
+    err.name === "AbortError"
+  );
+}
+
 /**
  * Calls the upstream JioSaavn API and returns the raw, untransformed JSON body.
+ * `T` names the shape the caller declares; the body is not validated.
  */
 export async function api<T = unknown>(
   call: string,
@@ -137,7 +147,7 @@ export async function api<T = unknown>(
       signal: combined.signal,
     });
   } catch (err) {
-    if ((err as Error).name === "AbortError") {
+    if (isAbortError(err)) {
       throw new TRPCError({
         code: "TIMEOUT",
         message: "Upstream request timed out",
@@ -145,7 +155,7 @@ export async function api<T = unknown>(
     }
     throw new TRPCError({
       code: "BAD_GATEWAY",
-      message: `Upstream network failure: ${(err as Error).message}`,
+      message: "Upstream network failure",
     });
   } finally {
     clearTimeout(timeout);

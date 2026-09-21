@@ -70,6 +70,18 @@ describe("user router authorization", () => {
         playlistId: "playlist-victim",
         songs: ["attacker-song"],
       }),
-    ).rejects.toThrow("Unauthorized");
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    });
+  });
+
+  it("resolves a lazy session thunk before authorizing", async () => {
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: async () => ({ user: { id: "user-123" } }),
+    });
+
+    await expect(caller.user.getUserPlaylists({})).resolves.toEqual([]);
   });
 });

@@ -29,7 +29,21 @@ import {
   getTrendingInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { tokenFromLink, withDownloadUrl } from "./utils";
+import {
+  hasIdentity,
+  isRecord,
+  mapDownloadUrls,
+  tokenFromLink,
+  withDownloadUrl,
+} from "./utils";
+
+function pagedQuery(input: { page?: number; n?: number; lang?: string }) {
+  return {
+    p: input.page ?? "1",
+    n: input.n ?? "20",
+    languages: input.lang,
+  };
+}
 
 export const getRouter = router({
   trending: publicProcedure
@@ -44,12 +58,14 @@ export const getRouter = router({
       let result = await api(endpoints.get.trending, { query });
       if (!Array.isArray(result) || result.length === 0) {
         if (input.type) {
-          result = await api(endpoints.get.trending, {
+          const fallback = await api(endpoints.get.trending, {
             query: lang ? { entity_language: lang } : {},
           });
-          result = (result as unknown[]).filter(
-            (t) => (t as { type?: string }).type === input.type,
-          );
+          result = Array.isArray(fallback)
+            ? fallback.filter(
+                (item) => isRecord(item) && item.type === input.type,
+              )
+            : [];
         }
       }
       // Trending is a secondary carousel on entity pages; an empty upstream
@@ -57,7 +73,7 @@ export const getRouter = router({
       if (!Array.isArray(result)) return [];
       // trending mixes songs, albums and playlists; withDownloadUrl no-ops on
       // entities without an encrypted_media_url
-      return result.map(withDownloadUrl) as unknown as Trending;
+      return result.map((item) => withDownloadUrl(item)) as Trending;
     }),
 
   featuredPlaylists: publicProcedure
@@ -65,11 +81,7 @@ export const getRouter = router({
     .output(z.custom<FeaturedPlaylists>())
     .query(async ({ input }) => {
       return api<FeaturedPlaylists>(endpoints.get.featured_playlists, {
-        query: {
-          p: input.page ?? "1",
-          n: input.n ?? "20",
-          languages: input.lang,
-        },
+        query: pagedQuery(input),
       });
     }),
 
@@ -78,11 +90,7 @@ export const getRouter = router({
     .output(z.custom<Chart[]>())
     .query(async ({ input }) => {
       return api<Chart[]>(endpoints.get.charts, {
-        query: {
-          p: input.page ?? "1",
-          n: input.n ?? "20",
-          languages: input.lang,
-        },
+        query: pagedQuery(input),
       });
     }),
 
@@ -91,11 +99,7 @@ export const getRouter = router({
     .output(z.custom<TopShows>())
     .query(async ({ input }) => {
       return api<TopShows>(endpoints.get.top_shows, {
-        query: {
-          p: input.page ?? "1",
-          n: input.n ?? "20",
-          languages: input.lang,
-        },
+        query: pagedQuery(input),
       });
     }),
 
@@ -104,11 +108,7 @@ export const getRouter = router({
     .output(z.custom<TopArtists>())
     .query(async ({ input }) => {
       return api<TopArtists>(endpoints.get.top_artists, {
-        query: {
-          p: input.page ?? "1",
-          n: input.n ?? "20",
-          languages: input.lang,
-        },
+        query: pagedQuery(input),
       });
     }),
 
@@ -117,11 +117,7 @@ export const getRouter = router({
     .output(z.custom<TopAlbum>())
     .query(async ({ input }) => {
       return api<TopAlbum>(endpoints.get.top_albums, {
-        query: {
-          p: input.page ?? "1",
-          n: input.n ?? "20",
-          languages: input.lang,
-        },
+        query: pagedQuery(input),
       });
     }),
 
@@ -130,11 +126,7 @@ export const getRouter = router({
     .output(z.custom<Radio[]>())
     .query(async ({ input }) => {
       return api<Radio[]>(endpoints.get.featured_stations, {
-        query: {
-          p: input.page ?? "1",
-          n: input.n ?? "20",
-          languages: input.lang,
-        },
+        query: pagedQuery(input),
       });
     }),
 
@@ -151,7 +143,7 @@ export const getRouter = router({
       });
       // Secondary "songs from the same actors" list on the song page.
       if (!Array.isArray(result)) return [];
-      return result.map(withDownloadUrl) as unknown as Song[];
+      return result.map((item) => withDownloadUrl(item)) as Song[];
     }),
 
   lyrics: publicProcedure
@@ -161,13 +153,13 @@ export const getRouter = router({
       const result = await api<Lyrics>(endpoints.get.lyrics, {
         query: { lyrics_id: input.id },
       });
-      if (!(result as unknown as Record<string, unknown>).lyrics) {
+      if (!hasIdentity(result, "lyrics")) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Invalid ID or Lyrics not available for the song",
         });
       }
-      return result;
+      return result as Lyrics;
     }),
 
   footer: publicProcedure
@@ -200,7 +192,7 @@ export const getRouter = router({
           message: "Please provide a valid link",
         });
       }
-      const result = await api<Mix>(endpoints.get.mix_details, {
+      const result = await api(endpoints.get.mix_details, {
         query: {
           token: token || tokenFromLink(link ?? ""),
           type: "mix",
@@ -210,21 +202,15 @@ export const getRouter = router({
         },
       });
       // Upstream answers a non-mix token with a bare `null`.
-      const payload = (result ?? {}) as unknown as {
-        id?: string;
-        list?: Record<string, unknown>[];
-      };
-      if (!payload.id) {
+      if (!hasIdentity(result, "id")) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message:
             "Failed to fetch mix details, please provide a valid token or link",
         });
       }
-      if (Array.isArray(payload.list)) {
-        payload.list = payload.list.map(withDownloadUrl);
-      }
-      return result;
+      mapDownloadUrls(result, "list");
+      return result as Mix;
     }),
 
   label: publicProcedure
@@ -244,7 +230,7 @@ export const getRouter = router({
           message: "Please provide a valid link",
         });
       }
-      const result = await api<Label>(endpoints.get.label_details, {
+      const result = await api(endpoints.get.label_details, {
         query: {
           token: token || tokenFromLink(link ?? ""),
           type: "label",
@@ -256,21 +242,15 @@ export const getRouter = router({
           language: lang,
         },
       });
-      const payload = (result ?? {}) as unknown as {
-        labelId?: string;
-        topSongs?: { songs?: Record<string, unknown>[] };
-      };
-      if (!payload.labelId) {
+      if (!hasIdentity(result, "labelId")) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message:
             "Failed to fetch label details, please provide a valid token or link",
         });
       }
-      if (Array.isArray(payload.topSongs?.songs)) {
-        payload.topSongs.songs = payload.topSongs.songs.map(withDownloadUrl);
-      }
-      return result;
+      if (isRecord(result.topSongs)) mapDownloadUrls(result.topSongs, "songs");
+      return result as Label;
     }),
 
   megaMenu: publicProcedure

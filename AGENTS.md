@@ -77,10 +77,18 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 
 ## packages/trpc raw-passthrough shape (resolved)
 
-Every `@infinitunes/trpc` procedure (`packages/trpc/src/router/*.ts`) does
-`return api(endpoints...)` unmodified - raw untransformed JioSaavn JSON - with
-the single documented exception of `withDownloadUrl` (decrypts
-`more_info.encrypted_media_url` into `download_url`, needs `JIOSAAVN_DES_KEY`).
+Catalog procedures in `packages/trpc/src/router/` (everything except `user.ts`)
+return raw untransformed JioSaavn JSON from `api()` (`packages/trpc/src/lib/api.ts`).
+The only transformation is `withDownloadUrl` (`packages/trpc/src/router/utils.ts`),
+which decrypts `more_info.encrypted_media_url` into `download_url` and needs
+`JIOSAAVN_DES_KEY`. `user.ts` is the authenticated database router, not an
+upstream passthrough. Read upstream fields with `isRecord`, `hasIdentity`, and
+`mapDownloadUrls` in that utils module, then assert the procedure's declared
+output type once. Do not reintroduce `as unknown as` to poke at a payload.
+`TRPCContext.session` (`packages/trpc/src/trpc.ts`) is a session or
+`() => Promise<session>`. The RSC caller passes `getSession`
+(`apps/web/lib/trpc/server.ts`) so public procedures skip the lookup; the fetch
+adapter awaits it. Only `protectedProcedure` resolves it.
 `@infinitunes/types` (`packages/types/src/*.ts`) now describes that true raw
 shape end to end (`title`/`perma_url`/`explicit_content` strings, nested
 `more_info`, camelCase module container keys like `songsBysameArtists`,

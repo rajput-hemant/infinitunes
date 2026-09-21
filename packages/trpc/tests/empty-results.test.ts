@@ -4,23 +4,13 @@ import { db } from "@infinitunes/db";
 
 process.env.JIOSAAVN_DES_KEY ??= "38346591";
 
-type Caller = {
-  song: { recommendations: (i: unknown) => Promise<unknown> };
-  album: {
-    recommendations: (i: unknown) => Promise<unknown>;
-    sameYear: (i: unknown) => Promise<unknown>;
-    details: (i: unknown) => Promise<unknown>;
-  };
-  artist: { topSongs: (i: unknown) => Promise<unknown> };
-  playlist: { recommendations: (i: unknown) => Promise<unknown> };
-  search: { top: (i: unknown) => Promise<unknown> };
-  get: {
-    trending: (i: unknown) => Promise<unknown>;
-    actorTopSongs: (i: unknown) => Promise<unknown>;
-  };
-};
+async function createTestCaller() {
+  const { appRouter } = await import("../src/root");
+  const { createCallerFactory } = await import("../src/trpc");
+  return createCallerFactory(appRouter)({ db, session: null });
+}
 
-let caller: Caller;
+let caller: Awaited<ReturnType<typeof createTestCaller>>;
 /** Upstream `__call` value -> JSON body, set per test. */
 let responses: Record<string, unknown> = {};
 
@@ -29,22 +19,15 @@ let seq = 0;
 const uniq = () => `empty-${++seq}`;
 
 beforeAll(async () => {
-  globalThis.fetch = ((input: string | URL) => {
+  globalThis.fetch = async (input) => {
     const call = new URL(String(input)).searchParams.get("__call") ?? "";
     if (!(call in responses)) {
       throw new Error(`unexpected upstream call: ${call}`);
     }
-    return Promise.resolve(
-      new Response(JSON.stringify(responses[call]), { status: 200 }),
-    );
-  }) as typeof fetch;
+    return new Response(JSON.stringify(responses[call]), { status: 200 });
+  };
 
-  const { appRouter } = await import("../src/root");
-  const { createCallerFactory } = await import("../src/trpc");
-  caller = createCallerFactory(appRouter)({
-    db,
-    session: null,
-  }) as unknown as Caller;
+  caller = await createTestCaller();
 });
 
 describe("secondary lists return [] instead of throwing NOT_FOUND", () => {

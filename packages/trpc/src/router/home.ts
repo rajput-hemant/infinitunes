@@ -1,25 +1,33 @@
 import type { Modules } from "@infinitunes/types";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { homeInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { withDownloadUrl } from "./utils";
+import { isRecord, withDownloadUrl } from "./utils";
 
 export const homeRouter = router({
   home: publicProcedure
     .input(homeInput)
     .output(z.custom<Modules>())
     .query(async ({ input }) => {
-      const result = await api<Modules>(endpoints.modules.launch_data, {
+      const result = await api(endpoints.modules.launch_data, {
         language: input.lang,
       });
-      const payload = result as unknown as Record<string, unknown>;
-      for (const value of Object.values(payload)) {
-        if (Array.isArray(value))
-          value.forEach((v, i, arr) => (arr[i] = withDownloadUrl(v)));
+      if (!isRecord(result)) {
+        throw new TRPCError({
+          code: "BAD_GATEWAY",
+          message: "Unexpected response from upstream",
+        });
       }
-      return result;
+      for (const value of Object.values(result)) {
+        if (!Array.isArray(value)) continue;
+        for (let i = 0; i < value.length; i++) {
+          value[i] = withDownloadUrl(value[i]);
+        }
+      }
+      return result as Modules;
     }),
 });

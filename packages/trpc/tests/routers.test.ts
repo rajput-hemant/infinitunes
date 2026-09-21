@@ -2,25 +2,28 @@ import { beforeAll, describe, expect, it } from "bun:test";
 
 import { db } from "@infinitunes/db";
 
-// `createDownloadLinks` reads JIOSAAVN_DES_KEY at module-eval time, so the key
-// has to exist before the router graph is imported below.
 process.env.JIOSAAVN_DES_KEY ??= "38346591";
-
-type Caller = {
-  home: { home: (i: unknown) => Promise<unknown> };
-  song: { details: (i: unknown) => Promise<unknown> };
-  album: { details: (i: unknown) => Promise<unknown> };
-  playlist: { details: (i: unknown) => Promise<unknown> };
-  artist: { details: (i: unknown) => Promise<unknown> };
-};
 
 const MEDIA_URL = "https://aac.saavncdn.com/test/track_96.mp4";
 
-let caller: Caller;
+async function createTestCaller() {
+  const { appRouter } = await import("../src/root");
+  const { createCallerFactory } = await import("../src/trpc");
+  return createCallerFactory(appRouter)({ db, session: null });
+}
+
+let caller: Awaited<ReturnType<typeof createTestCaller>>;
 let encryptedMediaUrl: string;
 /** Upstream `__call` value -> JSON body, set per test. */
 let responses: Record<string, unknown> = {};
 let calls: string[] = [];
+
+function downloadUrl(item: object | undefined): string | undefined {
+  if (item && "download_url" in item && typeof item.download_url === "string") {
+    return item.download_url;
+  }
+  return undefined;
+}
 
 /** Distinct query per test so the 60s in-memory api cache never cross-talks. */
 let seq = 0;
@@ -39,39 +42,26 @@ function song(id: string) {
   };
 }
 
-function downloadUrlOf(item: unknown) {
-  return (item as { download_url?: string }).download_url;
-}
-
 beforeAll(async () => {
+  const desKey = process.env.JIOSAAVN_DES_KEY;
+  if (!desKey) throw new Error("JIOSAAVN_DES_KEY is required");
   const { createCipheriv } = await import("node:crypto");
-  const cipher = createCipheriv(
-    "des-ecb",
-    Buffer.from(process.env.JIOSAAVN_DES_KEY!, "utf8"),
-    null,
-  );
+  const cipher = createCipheriv("des-ecb", Buffer.from(desKey, "utf8"), null);
   encryptedMediaUrl = Buffer.concat([
     cipher.update(Buffer.from(MEDIA_URL, "utf8")),
     cipher.final(),
   ]).toString("base64");
 
-  globalThis.fetch = ((input: string | URL) => {
+  globalThis.fetch = async (input) => {
     const call = new URL(String(input)).searchParams.get("__call") ?? "";
     calls.push(call);
     if (!(call in responses)) {
       throw new Error(`unexpected upstream call: ${call}`);
     }
-    return Promise.resolve(
-      new Response(JSON.stringify(responses[call]), { status: 200 }),
-    );
-  }) as typeof fetch;
+    return new Response(JSON.stringify(responses[call]), { status: 200 });
+  };
 
-  const { appRouter } = await import("../src/root");
-  const { createCallerFactory } = await import("../src/trpc");
-  caller = createCallerFactory(appRouter)({
-    db,
-    session: null,
-  }) as unknown as Caller;
+  caller = await createTestCaller();
 });
 
 describe("router procedures", () => {
@@ -84,14 +74,13 @@ describe("router procedures", () => {
       },
     };
 
-    const result = (await caller.home.home({ lang: "hindi" })) as {
-      new_trending: { id: string; title: string }[];
-    };
+    const result = await caller.home.home({ lang: "hindi" });
+    const trending = result.new_trending[0];
 
     expect(calls).toEqual(["webapi.getLaunchData"]);
-    expect(result.new_trending[0]?.id).toBe("s1");
-    expect(result.new_trending[0]?.title).toBe("Test Song");
-    expect(downloadUrlOf(result.new_trending[0])).toContain("_320.mp4");
+    expect(trending?.id).toBe("s1");
+    expect(trending?.title).toBe("Test Song");
+    expect(downloadUrl(trending)).toContain("_320.mp4");
   });
 
   it("song.details returns song payload matching SongObj shape", async () => {
@@ -99,15 +88,13 @@ describe("router procedures", () => {
     calls = [];
     responses = { "song.getDetails": { songs: [song(id)] } };
 
-    const result = (await caller.song.details({ id })) as {
-      songs: { id: string; more_info: { album: string } }[];
-    };
+    const result = await caller.song.details({ id });
 
     expect(calls).toEqual(["song.getDetails"]);
     expect(result.songs).toHaveLength(1);
     expect(result.songs[0]?.id).toBe(id);
     expect(result.songs[0]?.more_info.album).toBe("Test Album");
-    expect(downloadUrlOf(result.songs[0])).toContain("_320.mp4");
+    expect(result.songs[0]?.download_url).toContain("_320.mp4");
   });
 
   it("album.details returns album payload matching Album shape", async () => {
@@ -121,17 +108,15 @@ describe("router procedures", () => {
       },
     };
 
-    const result = (await caller.album.details({ id })) as {
-      id: string;
-      title: string;
-      list: unknown[];
-    };
+    const result = await caller.album.details({ id });
 
     expect(calls).toEqual(["content.getAlbumDetails"]);
     expect(result.id).toBe(id);
     expect(result.title).toBe("Test Album");
     expect(Array.isArray(result.list)).toBe(true);
-    expect(downloadUrlOf(result.list[0])).toContain("_320.mp4");
+    if (Array.isArray(result.list)) {
+      expect(result.list[0]?.download_url).toContain("_320.mp4");
+    }
   });
 
   it("playlist.details returns playlist payload matching Playlist shape", async () => {
@@ -145,17 +130,14 @@ describe("router procedures", () => {
       },
     };
 
-    const result = (await caller.playlist.details({ id })) as {
-      id: string;
-      title: string;
-    };
+    const result = await caller.playlist.details({ id });
 
     expect(calls).toEqual(["playlist.getDetails"]);
     expect(result.id).toBe(id);
     expect(result.title).toBe("Test Playlist");
-    expect(downloadUrlOf((result as { list: unknown[] }).list[0])).toContain(
-      "_320.mp4",
-    );
+    expect(Array.isArray(result.list)).toBe(true);
+    if (!Array.isArray(result.list)) return;
+    expect(result.list[0]?.download_url).toContain("_320.mp4");
   });
 
   it("artist.details returns artist payload matching Artist shape", async () => {
@@ -169,31 +151,25 @@ describe("router procedures", () => {
       },
     };
 
-    const result = (await caller.artist.details({ id })) as {
-      artistId: string;
-      name: string;
-      topSongs: unknown[];
-    };
+    const result = await caller.artist.details({ id });
 
     expect(calls).toEqual(["artist.getArtistPageDetails"]);
     expect(result.artistId).toBe(id);
     expect(result.name).toBe("Artist 1");
     expect(result.topSongs).toHaveLength(1);
-    expect(downloadUrlOf(result.topSongs[0])).toContain("_320.mp4");
+    expect(result.topSongs?.[0]?.download_url).toContain("_320.mp4");
   });
 
   it("song.details supports token lookup via webapi.get", async () => {
     calls = [];
     responses = { "webapi.get": { songs: [song("s1")] } };
 
-    const result = (await caller.song.details({ token: uniq() })) as {
-      songs: { id: string }[];
-    };
+    const result = await caller.song.details({ token: uniq() });
 
     expect(calls).toEqual(["webapi.get"]);
     expect(result.songs).toHaveLength(1);
     expect(result.songs[0]?.id).toBe("s1");
-    expect(downloadUrlOf(result.songs[0])).toContain("_320.mp4");
+    expect(result.songs[0]?.download_url).toContain("_320.mp4");
   });
 
   it("artist.details supports token lookup via webapi.get", async () => {
@@ -206,16 +182,11 @@ describe("router procedures", () => {
       },
     };
 
-    const result = (await caller.artist.details({ token: uniq() })) as {
-      artistId: string;
-      name: string;
-    };
+    const result = await caller.artist.details({ token: uniq() });
 
     expect(calls).toEqual(["webapi.get"]);
     expect(result.artistId).toBe("ar1");
     expect(result.name).toBe("Artist 1");
-    expect(
-      downloadUrlOf((result as { topSongs: unknown[] }).topSongs[0]),
-    ).toContain("_320.mp4");
+    expect(result.topSongs?.[0]?.download_url).toContain("_320.mp4");
   });
 });

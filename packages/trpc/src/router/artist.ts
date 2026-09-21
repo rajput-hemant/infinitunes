@@ -10,7 +10,13 @@ import {
   artistTopSongsInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { tokenFromLink, withDownloadUrl } from "./utils";
+import {
+  hasIdentity,
+  isRecord,
+  mapDownloadUrls,
+  tokenFromLink,
+  withDownloadUrl,
+} from "./utils";
 
 export const artistRouter = router({
   details: publicProcedure
@@ -38,7 +44,7 @@ export const artistRouter = router({
       }
       const t = token || tokenFromLink(link ?? "");
       const endpoint = id ? endpoints.artist.id : endpoints.artist.link;
-      const result = await api<Artist>(endpoint, {
+      const result = await api(endpoint, {
         query: {
           artistId: id,
           token: t,
@@ -49,20 +55,14 @@ export const artistRouter = router({
         },
         language: lang,
       });
-      const payload = result as unknown as {
-        artistId?: string;
-        topSongs?: Record<string, unknown>[];
-      };
-      if (!payload.artistId) {
+      if (!hasIdentity(result, "artistId")) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Artist not found, please check the id or link",
         });
       }
-      if (Array.isArray(payload.topSongs)) {
-        payload.topSongs = payload.topSongs.map(withDownloadUrl);
-      }
-      return result;
+      mapDownloadUrls(result, "topSongs");
+      return result as Artist;
     }),
 
   songs: publicProcedure
@@ -78,12 +78,7 @@ export const artistRouter = router({
         },
         language: input.lang,
       });
-      const payload = result as {
-        topSongs?: { songs?: Record<string, unknown>[] };
-      };
-      if (Array.isArray(payload.topSongs?.songs)) {
-        payload.topSongs.songs = payload.topSongs.songs.map(withDownloadUrl);
-      }
+      if (isRecord(result)) mapDownloadUrls(result.topSongs, "songs");
       return result;
     }),
 
@@ -119,6 +114,6 @@ export const artistRouter = router({
       });
       // Secondary "more from these artists" list on the song page.
       if (!Array.isArray(result)) return [];
-      return result.map(withDownloadUrl) as unknown as Song[];
+      return result.map((item) => withDownloadUrl(item)) as Song[];
     }),
 });

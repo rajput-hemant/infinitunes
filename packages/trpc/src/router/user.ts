@@ -26,6 +26,57 @@ const favoriteInput = z.object({
   type: z.enum(["song", "album", "playlist", "artist", "show"]),
 });
 
+type FavoriteType = z.infer<typeof favoriteInput>["type"];
+
+function emptyFavoriteLists(type: FavoriteType, token: string) {
+  return {
+    songs: type === "song" ? [token] : [],
+    albums: type === "album" ? [token] : [],
+    playlists: type === "playlist" ? [token] : [],
+    artists: type === "artist" ? [token] : [],
+    podcasts: type === "show" ? [token] : [],
+  };
+}
+
+function favoritePatch(
+  type: FavoriteType,
+  token: string,
+  op: "append" | "remove",
+) {
+  return {
+    songs:
+      type === "song"
+        ? op === "append"
+          ? sql`array_append(songs, ${token})`
+          : sql`array_remove(songs, ${token})`
+        : undefined,
+    albums:
+      type === "album"
+        ? op === "append"
+          ? sql`array_append(albums, ${token})`
+          : sql`array_remove(albums, ${token})`
+        : undefined,
+    playlists:
+      type === "playlist"
+        ? op === "append"
+          ? sql`array_append(playlists, ${token})`
+          : sql`array_remove(playlists, ${token})`
+        : undefined,
+    artists:
+      type === "artist"
+        ? op === "append"
+          ? sql`array_append(artists, ${token})`
+          : sql`array_remove(artists, ${token})`
+        : undefined,
+    podcasts:
+      type === "show"
+        ? op === "append"
+          ? sql`array_append(podcasts, ${token})`
+          : sql`array_remove(podcasts, ${token})`
+        : undefined,
+  };
+}
+
 const newPlaylistInput = z.object({
   name: z
     .string()
@@ -115,39 +166,14 @@ export const userRouter = router({
           .insert(favorites)
           .values({
             userId,
-            songs: input.type === "song" ? [input.token] : [],
-            albums: input.type === "album" ? [input.token] : [],
-            playlists: input.type === "playlist" ? [input.token] : [],
-            artists: input.type === "artist" ? [input.token] : [],
-            podcasts: input.type === "show" ? [input.token] : [],
+            ...emptyFavoriteLists(input.type, input.token),
           })
           .returning();
       }
 
       return ctx.db
         .update(favorites)
-        .set({
-          songs:
-            input.type === "song"
-              ? sql`array_append(songs, ${input.token})`
-              : undefined,
-          albums:
-            input.type === "album"
-              ? sql`array_append(albums, ${input.token})`
-              : undefined,
-          playlists:
-            input.type === "playlist"
-              ? sql`array_append(playlists, ${input.token})`
-              : undefined,
-          artists:
-            input.type === "artist"
-              ? sql`array_append(artists, ${input.token})`
-              : undefined,
-          podcasts:
-            input.type === "show"
-              ? sql`array_append(podcasts, ${input.token})`
-              : undefined,
-        })
+        .set(favoritePatch(input.type, input.token, "append"))
         .where(drizzleEq(favorites.userId, userId))
         .returning();
     }),
@@ -170,28 +196,7 @@ export const userRouter = router({
 
       return ctx.db
         .update(favorites)
-        .set({
-          songs:
-            input.type === "song"
-              ? sql`array_remove(songs, ${input.token})`
-              : undefined,
-          albums:
-            input.type === "album"
-              ? sql`array_remove(albums, ${input.token})`
-              : undefined,
-          playlists:
-            input.type === "playlist"
-              ? sql`array_remove(playlists, ${input.token})`
-              : undefined,
-          artists:
-            input.type === "artist"
-              ? sql`array_remove(artists, ${input.token})`
-              : undefined,
-          podcasts:
-            input.type === "show"
-              ? sql`array_remove(podcasts, ${input.token})`
-              : undefined,
-        })
+        .set(favoritePatch(input.type, input.token, "remove"))
         .where(drizzleEq(favorites.userId, userId))
         .returning();
     }),
@@ -281,11 +286,12 @@ export const userRouter = router({
     .input(updateUserInput)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
+      const username = input.username;
 
-      if (input.username) {
+      if (username) {
         const usernameExists = await ctx.db.query.users.findFirst({
           where: (userRow, { eq: equals }) =>
-            equals(userRow.username, input.username!),
+            equals(userRow.username, username),
         });
 
         if (usernameExists && usernameExists.id !== userId) {
@@ -296,7 +302,11 @@ export const userRouter = router({
         }
       }
 
-      const patch: Record<string, unknown> = {};
+      const patch: {
+        betterAuthName?: string;
+        username?: string;
+        email?: string;
+      } = {};
       if (input.name !== undefined) patch.betterAuthName = input.name;
       if (input.username !== undefined) patch.username = input.username;
       if (input.email !== undefined) patch.email = input.email;

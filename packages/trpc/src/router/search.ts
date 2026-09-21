@@ -14,7 +14,7 @@ import {
   searchTopInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { withDownloadUrl } from "./utils";
+import { hasIdentity, isRecord, withDownloadUrl } from "./utils";
 
 export const searchRouter = router({
   top: publicProcedure
@@ -34,13 +34,13 @@ export const searchRouter = router({
         query: { query: input.q },
         isVersion4: false,
       });
-      if (!(result as unknown as Record<string, unknown>).albums) {
+      if (!hasIdentity(result, "albums")) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No search results found",
         });
       }
-      return result;
+      return result as AllSearch;
     }),
 
   byType: publicProcedure
@@ -48,7 +48,7 @@ export const searchRouter = router({
     .output(z.custom<SearchReturnType>())
     .query(async ({ input }) => {
       if (input.type === "podcasts") {
-        const result = await api<SearchReturnType>(endpoints.search.more, {
+        const result = await api(endpoints.search.more, {
           query: {
             query: input.q,
             p: input.page,
@@ -56,17 +56,8 @@ export const searchRouter = router({
             params: JSON.stringify({ type: "podcasts" }),
           },
         });
-        const payload = result as unknown as {
-          results?: Record<string, unknown>[];
-        };
-        if (!payload.results) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "No search results found",
-          });
-        }
-        payload.results = payload.results.map(withDownloadUrl);
-        return result;
+        attachSearchDownloads(result);
+        return result as SearchReturnType;
       }
       const map = {
         songs: endpoints.search.songs,
@@ -74,21 +65,32 @@ export const searchRouter = router({
         playlists: endpoints.search.playlists,
         artists: endpoints.search.artists,
       } as const;
-      const result = await api<SearchReturnType>(map[input.type], {
+      const result = await api(map[input.type], {
         query: { q: input.q, p: input.page, n: input.n },
       });
-      const payload = result as unknown as {
-        results?: Record<string, unknown>[];
-      };
-      if (!payload.results) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No search results found",
-        });
-      }
-      if (input.type === "songs") {
-        payload.results = payload.results.map(withDownloadUrl);
-      }
-      return result;
+      if (input.type === "songs") attachSearchDownloads(result);
+      else requireSearchResults(result);
+      return result as SearchReturnType;
     }),
 });
+
+function requireSearchResults(result: unknown): Record<string, unknown> {
+  if (!isRecord(result) || !result.results) {
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "No search results found",
+    });
+  }
+  return result;
+}
+
+function attachSearchDownloads(result: unknown): void {
+  const payload = requireSearchResults(result);
+  if (!Array.isArray(payload.results)) {
+    throw new TRPCError({
+      code: "BAD_GATEWAY",
+      message: "Unexpected response from upstream",
+    });
+  }
+  payload.results = payload.results.map((item) => withDownloadUrl(item));
+}

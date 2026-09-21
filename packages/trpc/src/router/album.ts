@@ -10,7 +10,12 @@ import {
   albumSameYearInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { resolveNumericId, tokenFromLink, withDownloadUrl } from "./utils";
+import {
+  hasIdentity,
+  mapDownloadUrls,
+  resolveNumericId,
+  tokenFromLink,
+} from "./utils";
 
 export const albumRouter = router({
   details: publicProcedure
@@ -32,7 +37,7 @@ export const albumRouter = router({
       }
       const t = token || tokenFromLink(link ?? "");
       const albumid = id ?? (await resolveNumericId(t, "album"));
-      const result = await api<Album>(endpoints.album.id, {
+      const result = await api(endpoints.album.id, {
         query: {
           albumid,
           token: t,
@@ -40,19 +45,14 @@ export const albumRouter = router({
         },
         language: lang,
       });
-      const payload = result as unknown as {
-        id?: string;
-        list?: Record<string, unknown>[];
-      };
-      if (!payload.id) {
+      if (!hasIdentity(result, "id")) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "No album found, please check the id, link or token",
         });
       }
-      if (Array.isArray(payload.list))
-        payload.list = payload.list.map(withDownloadUrl);
-      return result;
+      mapDownloadUrls(result, "list");
+      return result as Album;
     }),
 
   recommendations: publicProcedure

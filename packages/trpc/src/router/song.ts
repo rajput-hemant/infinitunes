@@ -6,7 +6,7 @@ import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { songInput, songRecommendInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { tokenFromLink, withDownloadUrl } from "./utils";
+import { isRecord, tokenFromLink, withDownloadUrl } from "./utils";
 
 export const songRouter = router({
   details: publicProcedure
@@ -28,7 +28,7 @@ export const songRouter = router({
       }
       const t = token || tokenFromLink(link ?? "");
       const endpoint = id ? endpoints.song.id : endpoints.song.link;
-      const result = await api<SongObj>(endpoint, {
+      const result = await api(endpoint, {
         query: {
           pids: id,
           token: t,
@@ -36,15 +36,14 @@ export const songRouter = router({
         },
         language: lang,
       });
-      if (!("songs" in (result as unknown as Record<string, unknown>))) {
+      if (!isRecord(result) || !Array.isArray(result.songs)) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Song not found, please check the id, link or token",
         });
       }
-      const payload = result as unknown as { songs: Record<string, unknown>[] };
-      payload.songs = payload.songs.map(withDownloadUrl);
-      return result;
+      result.songs = result.songs.map((item) => withDownloadUrl(item));
+      return result as SongObj;
     }),
 
   recommendations: publicProcedure
@@ -60,6 +59,6 @@ export const songRouter = router({
       // Recommendations are a secondary list: an empty upstream answer is a
       // valid "nothing to show", not a missing entity.
       if (!Array.isArray(result)) return [];
-      return result.map(withDownloadUrl) as unknown as Song[];
+      return result.map((item) => withDownloadUrl(item)) as Song[];
     }),
 });

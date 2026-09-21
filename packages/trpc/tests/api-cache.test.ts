@@ -7,8 +7,8 @@ import {
   clearApiCache,
 } from "../src/lib/api";
 
-const okFetch: typeof fetch = (async () =>
-  new Response(JSON.stringify({ ok: true }), { status: 200 })) as typeof fetch;
+const okFetch: typeof fetch = async () =>
+  new Response(JSON.stringify({ ok: true }), { status: 200 });
 
 describe("api response cache", () => {
   beforeEach(() => {
@@ -17,10 +17,10 @@ describe("api response cache", () => {
 
   it("serves a repeated call from cache without hitting upstream twice", async () => {
     let calls = 0;
-    const countingFetch: typeof fetch = (async () => {
+    const countingFetch: typeof fetch = async () => {
       calls++;
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
-    }) as typeof fetch;
+    };
 
     await api("cache.hit", { query: { q: "same" } }, countingFetch);
     await api("cache.hit", { query: { q: "same" } }, countingFetch);
@@ -39,10 +39,10 @@ describe("api response cache", () => {
 
   it("evicts the least recently used key first", async () => {
     let calls = 0;
-    const countingFetch: typeof fetch = (async () => {
+    const countingFetch: typeof fetch = async () => {
       calls++;
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
-    }) as typeof fetch;
+    };
 
     await api("cache.lru", { query: { q: "oldest" } }, countingFetch);
     for (let i = 0; i < CACHE_MAX_ENTRIES - 1; i++) {
@@ -72,14 +72,14 @@ describe("api response cache", () => {
 
     try {
       const controller = new AbortController();
-      const hangingFetch: typeof fetch = ((_url: unknown, init?: RequestInit) =>
-        new Promise((_resolve, reject) => {
+      const hangingFetch: typeof fetch = (_url, init) =>
+        new Promise<Response>((_resolve, reject) => {
           init?.signal?.addEventListener("abort", () => {
             const err = new Error("aborted");
             err.name = "AbortError";
             reject(err);
           });
-        })) as typeof fetch;
+        });
 
       const pending = api(
         "cache.abort",
