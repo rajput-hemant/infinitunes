@@ -1,5 +1,6 @@
 import { createAuth } from "@infinitunes/auth";
 import { db } from "@infinitunes/db";
+import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
@@ -8,7 +9,7 @@ let authInstance: ReturnType<typeof createAuth> | undefined;
 
 export function getAuth(): ReturnType<typeof createAuth> {
   if (!authInstance) {
-    authInstance = createAuth(db);
+    authInstance = createAuth(db, { plugins: [nextCookies()] });
   }
   return authInstance;
 }

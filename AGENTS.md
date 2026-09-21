@@ -218,6 +218,13 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
   `resetPasswordSchema`) from `packages/auth/src/schemas.ts` (subpath `@infinitunes/auth/schemas`). The main
   `@infinitunes/auth` barrel pulls server-only `createAuth` (Better Auth, DB, bcrypt) into the graph, so client
   components must import these via `./constants` or `./schemas`, never from `@infinitunes/auth`.
+- `createAuth` in `packages/auth/src/auth.ts` is platform-agnostic: it ships only
+  the `username` plugin and takes extra plugins via `createAuth(db, { plugins })`.
+  The web app injects `nextCookies()` at its call site (`apps/web/lib/auth.ts`) -
+  nothing under `@infinitunes/auth` may import `better-auth/next-js`. `createAuth`
+  passes `secret`/`baseURL` into Better Auth (`BETTER_AUTH_*` wins over `AUTH_*`)
+  and never writes `process.env`. The client factory `createAuthClient({ baseURL })`
+  in `packages/auth/src/auth-client.ts` defaults to same-origin when passed nothing.
 - `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
   (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
   by both `apps/web` and `packages/trpc`; don't hand-roll another copy).

@@ -8,8 +8,8 @@ import {
 import { createServerEnv } from "@infinitunes/env/server";
 import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
+import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { nextCookies } from "better-auth/next-js";
 import { username } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
@@ -19,16 +19,11 @@ import {
   USERNAME_REGEX,
 } from "./constants";
 
-export function createAuth(db: DbClient) {
+export function createAuth(
+  db: DbClient,
+  options: { plugins?: BetterAuthPlugin[] } = {},
+) {
   const env = createServerEnv({ skipValidation: true });
-
-  // Map existing AUTH_SECRET / AUTH_URL env vars to Better Auth defaults
-  if (!process.env.BETTER_AUTH_SECRET && env.AUTH_SECRET) {
-    process.env.BETTER_AUTH_SECRET = env.AUTH_SECRET;
-  }
-  if (!process.env.BETTER_AUTH_URL && env.AUTH_URL) {
-    process.env.BETTER_AUTH_URL = env.AUTH_URL;
-  }
 
   async function mirrorAccountPassword(userId: string) {
     const account = await db.query.betterAuthAccounts.findFirst({
@@ -44,6 +39,8 @@ export function createAuth(db: DbClient) {
   }
 
   return betterAuth({
+    secret: process.env.BETTER_AUTH_SECRET || env.AUTH_SECRET,
+    baseURL: process.env.BETTER_AUTH_URL || env.AUTH_URL,
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: false,
@@ -178,7 +175,7 @@ export function createAuth(db: DbClient) {
         maxUsernameLength: USERNAME_MAX_LENGTH,
         usernameValidator: (username) => USERNAME_REGEX.test(username),
       }),
-      nextCookies(),
+      ...(options.plugins ?? []),
     ],
   });
 }

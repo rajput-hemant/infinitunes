@@ -7,6 +7,7 @@ import {
   users,
 } from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
+import type { BetterAuthPlugin } from "better-auth";
 import { getTableName } from "drizzle-orm";
 
 import { createAuth } from "../src/auth";
@@ -121,6 +122,61 @@ describe("Password hashing and credential verification", () => {
     await compare(password, hashed);
 
     expect(hashed).toMatch(/^\$2[aby]\$/);
+  });
+});
+
+describe("Injected plugins and env precedence", () => {
+  it("ships only the username plugin by default, never next-cookies", () => {
+    const auth = createAuth(makeFakeDb());
+    expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
+      "username",
+    ]);
+  });
+
+  it("appends caller-supplied plugins after the username plugin", () => {
+    const marker = { id: "test-injected" } as unknown as BetterAuthPlugin;
+    const auth = createAuth(makeFakeDb(), { plugins: [marker] });
+    expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
+      "username",
+      "test-injected",
+    ]);
+  });
+
+  it("falls back to AUTH_SECRET / AUTH_URL without mutating process.env", () => {
+    const savedSecret = process.env.BETTER_AUTH_SECRET;
+    const savedUrl = process.env.BETTER_AUTH_URL;
+    delete process.env.BETTER_AUTH_SECRET;
+    delete process.env.BETTER_AUTH_URL;
+    process.env.AUTH_SECRET = "fallback-secret-via-auth-prefix";
+    process.env.AUTH_URL = "https://fallback.example.com";
+    try {
+      const auth = createAuth(makeFakeDb());
+      expect(auth.options.secret).toBe("fallback-secret-via-auth-prefix");
+      expect(auth.options.baseURL).toBe("https://fallback.example.com");
+      expect(process.env.BETTER_AUTH_SECRET).toBeUndefined();
+      expect(process.env.BETTER_AUTH_URL).toBeUndefined();
+    } finally {
+      if (savedSecret !== undefined)
+        process.env.BETTER_AUTH_SECRET = savedSecret;
+      if (savedUrl !== undefined) process.env.BETTER_AUTH_URL = savedUrl;
+      delete process.env.AUTH_SECRET;
+      delete process.env.AUTH_URL;
+    }
+  });
+
+  it("prefers an existing BETTER_AUTH_* value over the AUTH_* fallback", () => {
+    process.env.BETTER_AUTH_SECRET = "explicit-better-auth-secret";
+    process.env.BETTER_AUTH_URL = "https://explicit.example.com";
+    process.env.AUTH_SECRET = "fallback-secret";
+    process.env.AUTH_URL = "https://fallback.example.com";
+    try {
+      const auth = createAuth(makeFakeDb());
+      expect(auth.options.secret).toBe("explicit-better-auth-secret");
+      expect(auth.options.baseURL).toBe("https://explicit.example.com");
+    } finally {
+      delete process.env.AUTH_SECRET;
+      delete process.env.AUTH_URL;
+    }
   });
 });
 
