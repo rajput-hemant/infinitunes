@@ -92,8 +92,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   if (user) {
     [playlists, favorites] = await Promise.all([
-      getUserPlaylists(user.id),
-      getUserFavorites(user.id),
+      getUserPlaylists(),
+      getUserFavorites(),
     ]);
   }
 

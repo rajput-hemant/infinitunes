@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, it } from "bun:test";
 
+import { db } from "@infinitunes/db";
+
 process.env.JIOSAAVN_DES_KEY ??= "38346591";
 
 type Caller = {
@@ -39,7 +41,10 @@ beforeAll(async () => {
 
   const { appRouter } = await import("../src/root");
   const { createCallerFactory } = await import("../src/trpc");
-  caller = createCallerFactory(appRouter)({}) as unknown as Caller;
+  caller = createCallerFactory(appRouter)({
+    db,
+    session: null,
+  }) as unknown as Caller;
 });
 
 describe("secondary lists return [] instead of throwing NOT_FOUND", () => {

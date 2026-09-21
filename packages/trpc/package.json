@@ -15,13 +15,18 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@infinitunes/auth": "workspace:*",
+    "@infinitunes/db": "workspace:*",
     "@infinitunes/types": "workspace:*",
     "@trpc/server": "^11.18.0",
+    "bcryptjs": "^3.0.2",
+    "drizzle-orm": "^0.45.2",
     "server-only": "^0.0.1",
     "superjson": "^2.2.6",
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "@infinitunes/typescript-config": "workspace:*",
     "@types/bun": "^1.3.14",
     "oxlint": "^1.74.0",

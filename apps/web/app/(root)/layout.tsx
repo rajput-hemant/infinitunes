@@ -14,7 +14,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
   let userPlaylists;
 
   if (user) {
-    userPlaylists = await getUserPlaylists(user.id);
+    userPlaylists = await getUserPlaylists();
   }
 
   return (

@@ -1,5 +1,7 @@
 import { beforeAll, describe, expect, it } from "bun:test";
 
+import { db } from "@infinitunes/db";
+
 // `createDownloadLinks` reads JIOSAAVN_DES_KEY at module-eval time, so the key
 // has to exist before the router graph is imported below.
 process.env.JIOSAAVN_DES_KEY ??= "38346591";
@@ -65,7 +67,10 @@ beforeAll(async () => {
 
   const { appRouter } = await import("../src/root");
   const { createCallerFactory } = await import("../src/trpc");
-  caller = createCallerFactory(appRouter)({}) as unknown as Caller;
+  caller = createCallerFactory(appRouter)({
+    db,
+    session: null,
+  }) as unknown as Caller;
 });
 
 describe("createDownloadLinks round-trip", () => {

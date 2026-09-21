@@ -7,6 +7,7 @@ import {
   searchRouter,
   showRouter,
   songRouter,
+  userRouter,
 } from "./router";
 import { router } from "./trpc";
 
@@ -19,6 +20,7 @@ export const appRouter = router({
   show: showRouter,
   search: searchRouter,
   get: getRouter,
+  user: userRouter,
 });
 
 export type AppRouter = typeof appRouter;

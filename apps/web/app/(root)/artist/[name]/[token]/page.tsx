@@ -64,8 +64,8 @@ export default async function ArtistDetailsPage(props: Props) {
 
   const [artist, playlists, favorites] = await Promise.all([
     getArtist(token),
-    user ? getUserPlaylists(user.id) : undefined,
-    user ? getUserFavorites(user.id) : undefined,
+    user ? getUserPlaylists() : undefined,
+    user ? getUserFavorites() : undefined,
   ]);
 
   let selectedTab: TABS;

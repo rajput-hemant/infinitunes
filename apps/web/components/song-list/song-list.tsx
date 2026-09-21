@@ -32,8 +32,8 @@ export async function SongList(props: SongListProps) {
 
   if (user) {
     [playlists, favorites] = await Promise.all([
-      getUserPlaylists(user.id),
-      getUserFavorites(user.id),
+      getUserPlaylists(),
+      getUserFavorites(),
     ]);
   }
 

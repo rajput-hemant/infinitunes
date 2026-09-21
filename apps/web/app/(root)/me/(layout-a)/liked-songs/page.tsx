@@ -1,7 +1,6 @@
 import { Ghost } from "lucide-react";
 
 import { SongList } from "~/components/song-list/song-list";
-import { getUser } from "~/lib/auth";
 import { getUserFavorites } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
 
@@ -11,9 +10,7 @@ export const metadata = {
 };
 
 export default async function LikedSongsPage() {
-  const user = await getUser();
-
-  const favoriteSongs = await getUserFavorites(user!.id);
+  const favoriteSongs = await getUserFavorites();
 
   if (favoriteSongs && favoriteSongs.songs.length) {
     const songsDetails = await api.song.details({

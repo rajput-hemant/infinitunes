@@ -55,12 +55,8 @@ function isValidatedProduction(): boolean {
   );
 }
 
-/**
- * Gets the current user from the server session
- *
- * @returns The current user
- */
-export const getUser = cache(async () => {
+/** Gets the current Better Auth session from the request. */
+export const getSession = cache(async () => {
   let session: Awaited<ReturnType<typeof auth.api.getSession>>;
 
   try {
@@ -73,8 +69,14 @@ export const getUser = cache(async () => {
     // No secret configured outside a validated production deployment (fresh
     // checkout, preview build): nobody can be signed in, so render the page
     // logged-out instead of 500-ing every route in the app.
-    return undefined;
+    return null;
   }
+
+  return session ?? null;
+});
+
+export const getUser = cache(async () => {
+  const session = await getSession();
 
   if (!session?.user) return undefined;
 
