@@ -17,6 +17,10 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   by `@infinitunes/db`) and are safe to drop.
 - Server data fetching in `apps/web` calls `api.<router>.<procedure>` directly via
   `import { api } from "~/lib/trpc/server"`; `apps/web/lib/jiosaavn-api.ts` has been deleted.
+- `@infinitunes/ui` (`packages/ui`) is web-only (DOM, Tailwind v4, Base UI,
+  `next-themes`); never import it from a React Native or Expo app - mobile
+  components belong in a separate package, not a wrapper around these.
+  See `packages/ui/README.md`.
 
 Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
 (`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
