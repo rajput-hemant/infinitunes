@@ -2,6 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
+  emailSchema,
+  passwordSchema,
+  usernameSchema,
+} from "@infinitunes/auth/schemas";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -36,7 +41,6 @@ import { z } from "zod";
 import { useIsTyping } from "~/hooks/use-store";
 import { deleteUser, updateUser } from "~/lib/actions";
 import { currentlyInDev } from "~/lib/utils";
-import { emailSchema, passwordSchema, usernameSchema } from "~/lib/validations";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
   user: {

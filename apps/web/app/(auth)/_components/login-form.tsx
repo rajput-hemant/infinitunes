@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@infinitunes/auth/client";
+import { loginSchema } from "@infinitunes/auth/schemas";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Field,
@@ -21,8 +22,6 @@ import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
-
-import { loginSchema } from "~/lib/validations";
 
 import { OAuthButtons } from "./oauth-buttons";
 

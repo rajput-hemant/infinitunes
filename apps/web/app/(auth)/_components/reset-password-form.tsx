@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { resetPasswordSchema } from "@infinitunes/auth/schemas";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Field,
@@ -21,7 +22,6 @@ import { toast } from "sonner";
 import type z from "zod";
 
 import { resetPassword } from "~/lib/actions";
-import { resetPasswordSchema } from "~/lib/validations";
 
 import { OAuthButtons } from "./oauth-buttons";
 

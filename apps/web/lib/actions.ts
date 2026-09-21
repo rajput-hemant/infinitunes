@@ -1,5 +1,6 @@
 "use server";
 
+import type { resetPasswordSchema } from "@infinitunes/auth/schemas";
 import { db } from "@infinitunes/db";
 import { betterAuthAccounts } from "@infinitunes/db/schema";
 import { myPlaylists, users } from "@infinitunes/db/schema";
@@ -10,7 +11,7 @@ import { redirect } from "next/navigation";
 import type { z } from "zod";
 
 import { getUser } from "./auth";
-import type { newPlaylistSchema, resetPasswordSchema } from "./validations";
+import type { newPlaylistSchema } from "./validations";
 
 export async function resetPassword(
   credentials: z.infer<typeof resetPasswordSchema>,

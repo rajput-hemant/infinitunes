@@ -110,6 +110,7 @@ Set these in your Vercel project settings:
 | -------------------------- | ------------------------------------------------- |
 | `AUTH_SECRET`              | Secret for Better Auth sessions                   |
 | `AUTH_URL`                 | Your deployed app URL (for Better Auth)           |
+| `NEXT_PUBLIC_APP_URL`      | Public app URL (optional, fallback to default)    |
 | `JIOSAAVN_DES_KEY`         | DES key to decrypt JioSaavn media URLs            |
 | `GOOGLE_CLIENT_ID`         | Google OAuth client ID (optional unless prod)     |
 | `GOOGLE_CLIENT_SECRET`     | Google OAuth client secret (optional unless prod) |

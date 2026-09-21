@@ -1,6 +1,14 @@
+import { createClientEnv } from "@infinitunes/env/client";
+
+const env = createClientEnv({
+  runtimeEnv: {
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  },
+});
+
 export const siteConfig = {
   name: "Infinitunes",
-  url: "https://infinitunes.rajputhemant.me",
+  url: env.NEXT_PUBLIC_APP_URL,
   description:
     "A Simple Music Player Web App built using Next.js, shadcn/ui, TailwindCSS, DrizzleORM and more...",
 
