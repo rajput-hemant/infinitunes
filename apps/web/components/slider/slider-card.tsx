@@ -48,7 +48,7 @@ export function SliderCard(props: SliderCardProps) {
     <Card
       title={name}
       className={cn(
-        "group w-32 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:bg-accent hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
+        "group w-32 shrink-0 cursor-pointer border-none bg-transparent transition-shadow duration-200 hover:bg-accent hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
         aspect === "video" && "w-44 border-none! sm:w-48 md:w-64 lg:w-72",
         isCurrentSeason &&
           "ring-2 ring-ring ring-offset-2 ring-offset-background",

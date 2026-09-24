@@ -74,19 +74,19 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             size="sm"
             variant="outline"
             className={cn(
-              "flex size-10 p-0 shadow-xs lg:w-60 lg:justify-start lg:px-3 lg:py-2",
+              "flex size-10 p-0 shadow-xs lg:w-10 lg:justify-center xl:w-60 xl:justify-start xl:px-3 xl:py-2",
               className,
             )}
           >
             <Search
               aria-hidden="true"
-              className="inline-block size-4 lg:mr-2"
+              className="inline-block size-4 xl:mr-2"
             />
             <span className="sr-only">Search</span>
 
-            <span className="hidden lg:inline-block">Search...</span>
+            <span className="hidden xl:inline-block">Search...</span>
 
-            <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:block">
+            <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium xl:block">
               <span className="text-xs">
                 {mounted && isMacOs() ? "⌘" : "Ctrl"}
               </span>{" "}
