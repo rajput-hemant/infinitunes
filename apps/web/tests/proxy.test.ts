@@ -4,8 +4,14 @@ const fromEnv = mock(() => {
   throw new Error("Redis.fromEnv must not run when rate limiting is off");
 });
 
+const getSessionCookie = mock(() => undefined as string | undefined);
+
 mock.module("@upstash/redis", () => ({
   Redis: { fromEnv },
+}));
+
+mock.module("better-auth/cookies", () => ({
+  getSessionCookie,
 }));
 
 mock.module("next/server", () => ({
@@ -42,5 +48,45 @@ describe("proxy Upstash client laziness", () => {
 
     expect(res.status).toBe(200);
     expect(fromEnv).not.toHaveBeenCalled();
+  });
+});
+
+describe("proxy guest route access", () => {
+  let proxy: typeof import("../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../proxy"));
+  });
+
+  it("allows guest /settings without redirecting to login", async () => {
+    const nextUrl = new URL("http://localhost:3000/settings");
+    const req = {
+      nextUrl,
+      method: "GET",
+      headers: { get: () => null },
+      ip: undefined,
+    };
+
+    const res = await proxy(req as never);
+
+    expect(res.status).toBe(200);
+  });
+
+  it("redirects guest /me to login", async () => {
+    const nextUrl = new URL("http://localhost:3000/me/albums");
+    const req = {
+      nextUrl,
+      method: "GET",
+      headers: { get: () => null },
+      ip: undefined,
+    };
+
+    const res = await proxy(req as never);
+
+    expect(res.status).toBe(307);
+    expect((res as { headers: { location: string } }).headers.location).toBe(
+      "http://localhost:3000/login",
+    );
   });
 });

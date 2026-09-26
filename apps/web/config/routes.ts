@@ -28,6 +28,7 @@ export const appRoutes = [
 ];
 
 /**
- * An array of user routes for the application
+ * Routes that require a session before the page renders. Settings stays public
+ * with a guest empty state, matching master middleware (no proxy redirect).
  */
-export const userRoutes = ["/me", "/settings"];
+export const userRoutes = ["/me"];
