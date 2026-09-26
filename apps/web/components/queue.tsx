@@ -133,7 +133,7 @@ export function Queue() {
                     <Button
                       variant="ghost"
                       onClick={() => removeFromQueue(item.id)}
-                      className="ml-auto size-5 p-0.5 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                      className="ml-auto size-5 p-0.5 text-destructive hover:bg-destructive hover:text-white"
                     >
                       <X className="size-4" />
                     </Button>
