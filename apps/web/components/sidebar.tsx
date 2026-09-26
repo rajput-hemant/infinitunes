@@ -36,6 +36,29 @@ type SidebarProps = {
   userPlaylists?: MyPlaylist[];
 };
 
+/** Master parity: lg 20%, xl 15%, 2xl 12.5% (see master src/components/sidebar.tsx). */
+export const masterSidebarWidthClassName =
+  "lg:[--app-sidebar-width:20%] xl:[--app-sidebar-width:15%] 2xl:[--app-sidebar-width:12.5%]";
+
+export function AppSidebarProvider({
+  className,
+  style,
+  ...props
+}: React.ComponentProps<typeof SidebarProvider>) {
+  return (
+    <SidebarProvider
+      className={cn("flex-col", masterSidebarWidthClassName, className)}
+      style={
+        {
+          "--sidebar-width": "var(--app-sidebar-width, 16rem)",
+          ...style,
+        } as React.CSSProperties
+      }
+      {...props}
+    />
+  );
+}
+
 export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
 
