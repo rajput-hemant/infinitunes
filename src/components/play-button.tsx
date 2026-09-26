@@ -112,7 +112,7 @@ export function PlayButton(props: PlayButtonProps) {
           url,
           image,
           download_url,
-          artist_map: { artists },
+          artist_map: { primary_artists: artists },
           duration,
         }) => ({
           id,

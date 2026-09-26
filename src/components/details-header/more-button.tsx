@@ -82,7 +82,7 @@ export function MoreButton(props: MoreButtonProps) {
       type: song.type,
       image: song.image,
       download_url: song.download_url,
-      artists: song.artist_map.artists,
+      artists: song.artist_map.primary_artists,
       duration: song.duration,
     }));
 

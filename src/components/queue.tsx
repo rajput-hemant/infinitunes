@@ -113,14 +113,17 @@ export function Queue() {
 
                       <ScrollArea className="w-full max-w-[400px] pb-1">
                         {item.artists.map((artist, i, arr) => (
-                          <Link
-                            key={artist.id}
-                            href={getHref(artist.url, "artist")}
-                            className="w-full truncate hover:text-foreground"
-                          >
-                            {artist.name}
+                          <span key={artist.id}>
+                            {artist.url ?
+                              <Link
+                                href={getHref(artist.url, "artist")}
+                                className="w-full truncate hover:text-foreground"
+                              >
+                                {artist.name}
+                              </Link>
+                            : artist.name}
                             {i !== arr.length - 1 && ", "}
-                          </Link>
+                          </span>
                         ))}
 
                         <ScrollBar orientation="horizontal" className="h-1.5" />

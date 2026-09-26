@@ -84,7 +84,9 @@ export function formatDuration(seconds: number, format: "hh:mm:ss" | "mm:ss") {
     : date.toISOString().slice(14, 19);
 }
 
-export function getHref(url: string, type: Type) {
+export function getHref(url: string | undefined | null, type: Type) {
+  if (!url) return "#";
+
   const re = /https:\/\/www.jiosaavn.com\/(s\/)?\w*/;
   return `/${url.replace(re, type)}`;
 }
@@ -126,10 +128,4 @@ export function currentlyInDev() {
   toast.info("This feature is currently in development.", {
     description: "We're working on it and it'll be available soon.",
   });
-}
-
-export function isMacOs() {
-  if (typeof window === "undefined") return false;
-
-  return window.navigator.userAgent.includes("Mac");
 }

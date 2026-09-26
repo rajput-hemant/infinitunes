@@ -50,12 +50,13 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
           <TailwindIndicator />
         </body>
 
-        {/* Umami Analytics */}
-        <Script
-          async
-          src="https://us.umami.is/script.js"
-          data-website-id={env.UMAMI_WEBSITE_ID}
-        />
+        {env.UMAMI_WEBSITE_ID && env.NODE_ENV === "production" && (
+          <Script
+            strategy="lazyOnload"
+            src="https://us.umami.is/script.js"
+            data-website-id={env.UMAMI_WEBSITE_ID}
+          />
+        )}
       </html>
     </React.StrictMode>
   );

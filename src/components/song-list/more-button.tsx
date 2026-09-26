@@ -102,7 +102,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         type,
         url,
         image,
-        artist_map: { featured_artists: artists },
+        artist_map: { primary_artists: artists },
         download_url,
         duration,
       } = item as Song;
@@ -142,7 +142,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         type,
         url,
         image,
-        artist_map: { featured_artists: artists },
+        artist_map: { primary_artists: artists },
         download_url,
         duration,
       } = item;
