@@ -39,14 +39,14 @@ function downloadUrl(item: object | undefined): string | undefined {
 }
 
 beforeAll(async () => {
-  const desKey = process.env.JIOSAAVN_DES_KEY;
-  if (!desKey) throw new Error("JIOSAAVN_DES_KEY is required");
-  const { createCipheriv } = await import("node:crypto");
-  const cipher = createCipheriv("des-ecb", Buffer.from(desKey, "utf8"), null);
-  encryptedMediaUrl = Buffer.concat([
-    cipher.update(Buffer.from(MEDIA_URL, "utf8")),
-    cipher.final(),
-  ]).toString("base64");
+  // Known sample: MEDIA_URL encrypted with DES-ECB under JIOSAAVN_DES_KEY.
+  // Hardcoded so this test never depends on `node:crypto` single-DES, which
+  // Node 22 / OpenSSL 3 removed (ERR_OSSL_EVP_UNSUPPORTED). The vector was
+  // produced by an independent implementation (Bun's OpenSSL-backed crypto)
+  // and cross-checked against the NIST FIPS-81 answer
+  // (key 133457799BBCDFF1, pt 0123456789ABCDEF -> ct 85E813540F0AB405).
+  encryptedMediaUrl =
+    "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyV2VjdQb8kXx4TUDOuYJm42+XHLUinhCK";
 
   globalThis.fetch = async (input) => {
     const call = new URL(String(input)).searchParams.get("__call") ?? "";
@@ -62,13 +62,10 @@ beforeAll(async () => {
 describe("createDownloadLinks round-trip", () => {
   it("decrypts into one comma-separated URL per bitrate", async () => {
     const { createDownloadLinks } = await import("../src/lib/download");
-    expect(createDownloadLinks(encryptedMediaUrl).split(",")).toEqual([
-      "https://aac.saavncdn.com/test/track_12.mp4",
-      "https://aac.saavncdn.com/test/track_48.mp4",
-      "https://aac.saavncdn.com/test/track_96.mp4",
-      "https://aac.saavncdn.com/test/track_160.mp4",
-      "https://aac.saavncdn.com/test/track_320.mp4",
-    ]);
+    const base = MEDIA_URL.replace(/_(?:12|48|96|160|320)\.\w+$/, "");
+    expect(createDownloadLinks(encryptedMediaUrl).split(",")).toEqual(
+      ["_12", "_48", "_96", "_160", "_320"].map((id) => `${base}${id}.mp4`),
+    );
   });
 
   it("replaces the bitrate already present instead of appending it", async () => {
