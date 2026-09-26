@@ -13,18 +13,18 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@better-auth/drizzle-adapter": "^1.6.23",
+    "@better-auth/drizzle-adapter": "^1.7.6",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
-    "better-auth": "^1.6.23",
-    "bcryptjs": "^3.0.2",
-    "drizzle-orm": "^0.45.2",
-    "zod": "^4.4.3"
+    "better-auth": "^1.7.6",
+    "bcryptjs": "^3.0.3",
+    "drizzle-orm": "^0.45.3",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
     "@types/bcryptjs": "^3.0.0",
-    "@types/node": "^26.1.1",
-    "typescript": "^5.9.3"
+    "@types/node": "^26.6.3",
+    "typescript": "^7.0.2"
   }
 }

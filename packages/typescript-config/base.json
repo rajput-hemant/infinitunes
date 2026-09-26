@@ -3,6 +3,7 @@
   "compilerOptions": {
     "strict": true,
     "strictNullChecks": true,
+    "types": ["node"],
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "isolatedModules": true,
