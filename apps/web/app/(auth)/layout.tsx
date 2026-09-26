@@ -8,7 +8,7 @@ import React from "react";
 
 import { Icons } from "~/components/icons";
 import { getUser } from "~/lib/auth";
-import { cn } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
 
@@ -58,8 +58,21 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
         <Icons.Logo className="mx-auto size-14 drop-shadow-sm" />
         {children}
         <p className="mx-auto px-10 text-center text-sm text-muted-foreground">
-          By clicking continue, you agree to our <span>Terms of Service</span>{" "}
-          and <span>Privacy Policy</span>.
+          By clicking continue, you agree to our{" "}
+          <Link
+            href={asRoute("/terms")}
+            className="underline underline-offset-4 outline-none hover:text-foreground hover:underline"
+          >
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link
+            href={asRoute("/privacy")}
+            className="underline underline-offset-4 outline-none hover:text-foreground hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          .
         </p>
       </div>
     </div>
