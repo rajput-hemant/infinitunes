@@ -1,16 +1,17 @@
 "use client";
 
 import { buttonVariants } from "@infinitunes/ui/components/button";
+import type { Route } from "next";
 import Link from "next/link";
 import React from "react";
 
 import { useHash } from "~/hooks/use-hash";
-import { cn } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 import type { SidebarNavItem } from "./side-navbar";
 
 type SideNavItemsProps = React.ComponentProps<"div"> & {
-  href: string;
+  href: Route;
   items: SidebarNavItem["items"];
 };
 
@@ -22,7 +23,7 @@ export function SideNavItems({ items, href, ...props }: SideNavItemsProps) {
       {items.map(({ title, hash, icon }, i) => (
         <Link
           key={i}
-          href={`${href}#${hash}`}
+          href={asRoute(`${href}#${hash}`)}
           className={cn(
             buttonVariants({ size: "sm", variant: "ghost" }),
             "justify-start text-muted-foreground",

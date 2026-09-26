@@ -2,6 +2,7 @@
 
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,7 +10,7 @@ import { cn } from "~/lib/utils";
 
 type NavItem = {
   title: string;
-  href: string;
+  href: Route;
 };
 
 const navlist: NavItem[] = [

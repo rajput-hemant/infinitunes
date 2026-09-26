@@ -18,7 +18,7 @@ import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
-import { ogImageUrl } from "~/lib/utils";
+import { asRoute, ogImageUrl } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
 
@@ -125,9 +125,13 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
           />
 
           <DropdownMenuContent className="w-28 *:cursor-pointer md:w-36">
-            <DropdownMenuItem render={<Link href="?sort=desc">Newest</Link>} />
+            <DropdownMenuItem
+              render={<Link href={asRoute("?sort=desc")}>Newest</Link>}
+            />
 
-            <DropdownMenuItem render={<Link href="?sort=asc">Oldest</Link>} />
+            <DropdownMenuItem
+              render={<Link href={asRoute("?sort=asc")}>Oldest</Link>}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

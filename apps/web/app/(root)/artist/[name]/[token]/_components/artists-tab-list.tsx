@@ -3,6 +3,8 @@
 import { TabsList, TabsTrigger } from "@infinitunes/ui/components/tabs";
 import { usePathname, useRouter } from "next/navigation";
 
+import { asRoute } from "~/lib/utils";
+
 import { TABS } from "./tabs";
 
 type ArtistsTabListProps = { showBio: boolean };
@@ -23,7 +25,7 @@ export function ArtistsTabList({ showBio }: ArtistsTabListProps) {
       segments[2].replace(/(-songs|-albums|-bio)/, "") +
       suffixMap[tab as keyof typeof TABS];
 
-    return segments.join("/");
+    return asRoute(segments.join("/"));
   };
 
   return (

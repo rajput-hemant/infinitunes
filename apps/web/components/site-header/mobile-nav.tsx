@@ -1,6 +1,7 @@
 "use client";
 
 import { Cog, Compass, Home, Search, User2 } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -14,10 +15,10 @@ type Props = {
 const mobileNavItems = [
   { label: "Home", icon: Home, href: "/" },
   { label: "Search", icon: Search, href: "/search" },
-  { label: "Browse", icon: Compass, href: "/browse" },
+  { label: "Browse", icon: Compass, href: "/album" },
   { label: "Login", icon: User2, href: "/login" },
   { label: "Settings", icon: Cog, href: "/settings" },
-];
+] satisfies { label: string; icon: typeof Home; href: Route }[];
 
 export function MobileNav({ user }: Props) {
   const pathname = usePathname();

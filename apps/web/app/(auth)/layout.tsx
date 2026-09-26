@@ -58,21 +58,8 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
         <Icons.Logo className="mx-auto size-14 drop-shadow-sm" />
         {children}
         <p className="mx-auto px-10 text-center text-sm text-muted-foreground">
-          By clicking continue, you agree to our{" "}
-          <Link
-            href="/terms"
-            className="underline underline-offset-4 outline-hidden hover:text-foreground hover:underline"
-          >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link
-            href="/privacy"
-            className="underline underline-offset-4 outline-hidden hover:text-foreground hover:underline"
-          >
-            Privacy Policy
-          </Link>
-          .
+          By clicking continue, you agree to our <span>Terms of Service</span>{" "}
+          and <span>Privacy Policy</span>.
         </p>
       </div>
     </div>

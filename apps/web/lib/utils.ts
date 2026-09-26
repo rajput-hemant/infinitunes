@@ -1,11 +1,16 @@
 import { decode } from "@infinitunes/types";
 import type { MediaType } from "@infinitunes/types";
 import { cn } from "@infinitunes/ui/lib/utils";
+import type { Route } from "next";
 import { toast } from "sonner";
 
 import { siteConfig } from "~/config/site";
 
 export { cn };
+
+export function asRoute(href: string): Route {
+  return href as Route;
+}
 
 /**
  * Returns the absolute url for the given path based on the current environment
@@ -66,22 +71,25 @@ export function ogImageUrl(params: {
 const JIOSAAVN_URL_RE =
   /^https?:\/\/(?:[a-zA-Z0-9-]+\.)*(?:jiosaavn|saavn)\.com(?::\d+)?\/(.*)$/i;
 
-export function getHref(url: string | undefined | null, type: MediaType) {
-  if (!url) return "#";
+export function getHref(
+  url: string | undefined | null,
+  type: MediaType,
+): Route {
+  if (!url) return asRoute("#");
   if (!url.startsWith("http://") && !url.startsWith("https://")) {
-    return url;
+    return asRoute(url);
   }
 
   const match = JIOSAAVN_URL_RE.exec(url);
-  if (!match) return "#";
+  if (!match) return asRoute("#");
 
   const path = (match[1] ?? "").split(/[?#]/)[0];
   const segments = path.split("/").filter(Boolean);
   const count = type === "show" ? 3 : 2;
-  if (segments.length < count) return "#";
+  if (segments.length < count) return asRoute("#");
 
   const trailing = segments.slice(-count);
-  return `/${type}/${trailing.join("/")}`;
+  return asRoute(`/${type}/${trailing.join("/")}`);
 }
 
 export function currentlyInDev() {

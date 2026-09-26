@@ -1,17 +1,19 @@
-import type { Metadata } from "next";
+import type { Metadata, Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
+
+import { asRoute } from "~/lib/utils";
 
 export const metadata: Metadata = {
   title: "Error 404",
   description: "Page not found!, but there are plenty of other great tunes!",
 };
 
-const LINKS = [
+const LINKS: { title: string; href: Route }[] = [
   {
     title: "Weekly Top Songs",
-    href: "/playlist/weekly-top-songs/8MT-LQlP35c_",
+    href: asRoute("/playlist/weekly-top-songs/8MT-LQlP35c_"),
   },
   {
     title: "Featured Playlists",

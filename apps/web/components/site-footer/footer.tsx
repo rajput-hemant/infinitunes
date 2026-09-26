@@ -3,6 +3,7 @@ import Link from "next/link";
 import { languages } from "~/config/languages";
 import { siteConfig } from "~/config/site";
 import { api } from "~/lib/trpc/server";
+import { asRoute } from "~/lib/utils";
 
 import { Icons } from "../icons";
 import { ThemeToggleGroup } from "./theme-toggle-group";
@@ -72,7 +73,9 @@ export async function SiteFooter() {
                     key={id}
                     className="w-full text-xs text-muted-foreground hover:text-secondary-foreground"
                   >
-                    <Link href={action.replace("featured", "playlist")}>
+                    <Link
+                      href={asRoute(action.replace("featured", "playlist"))}
+                    >
                       {title}
                     </Link>
                   </li>
@@ -91,7 +94,7 @@ export async function SiteFooter() {
                   className="w-full text-xs text-muted-foreground hover:text-secondary-foreground"
                 >
                   <Link
-                    href={`/album?lang=${lang.toLowerCase()}`}
+                    href={asRoute(`/album?lang=${lang.toLowerCase()}`)}
                   >{`${lang} Songs`}</Link>
                 </li>
               ))}

@@ -18,7 +18,7 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { cn, getHref } from "~/lib/utils";
+import { asRoute, cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
 import { ImageWithFallback } from "../image-with-fallback";
@@ -256,7 +256,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
           {kind === "song" && (
             <p className="hidden w-fit text-sm text-muted-foreground hover:text-foreground lg:block">
-              <Link href={(item as Song).more_info.label_url ?? "#"}>
+              <Link href={asRoute((item as Song).more_info.label_url ?? "#")}>
                 {decode((item as Song).more_info.copyright_text)}
               </Link>
             </p>

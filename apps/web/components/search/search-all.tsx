@@ -5,7 +5,7 @@ import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
-import { cn, getHref } from "~/lib/utils";
+import { asRoute, cn, getHref } from "~/lib/utils";
 
 import { ImageWithFallback } from "../image-with-fallback";
 
@@ -31,7 +31,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
 
                 {key !== "top_query" && (
                   <Link
-                    href={`/search/${key.slice(0, -1)}/${query}`}
+                    href={asRoute(`/search/${key.slice(0, -1)}/${query}`)}
                     className="ml-auto rounded-full border px-2 py-1 text-xs text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
                   >
                     View all

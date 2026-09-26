@@ -13,7 +13,7 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
-import { ogImageUrl } from "~/lib/utils";
+import { asRoute, ogImageUrl } from "~/lib/utils";
 
 const getLabel = cache(async (token: string) =>
   api.get.label({
@@ -83,10 +83,12 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
               value={value}
               render={
                 <Link
-                  href={`/label/${name.replace(
-                    /-(songs|albums)$/,
-                    value === TABS.Songs ? "-songs" : "-albums",
-                  )}/${token}`}
+                  href={asRoute(
+                    `/label/${name.replace(
+                      /-(songs|albums)$/,
+                      value === TABS.Songs ? "-songs" : "-albums",
+                    )}/${token}`,
+                  )}
                 >
                   {value}
                 </Link>
