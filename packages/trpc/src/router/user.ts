@@ -7,7 +7,7 @@ import {
 } from "@infinitunes/db/schema";
 import { TRPCError } from "@trpc/server";
 import { compare, hash } from "bcryptjs";
-import { count, eq as drizzleEq, sql } from "drizzle-orm";
+import { and, count, eq as drizzleEq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure, publicProcedure, router } from "../trpc";
@@ -215,7 +215,17 @@ export const userRouter = router({
         });
       }
 
-      if (!userRecord.password) {
+      const credentialAccount = await ctx.db.query.betterAuthAccounts.findFirst(
+        {
+          where: and(
+            drizzleEq(betterAuthAccounts.userId, userRecord.id),
+            drizzleEq(betterAuthAccounts.providerId, "credential"),
+          ),
+        },
+      );
+      const storedHash = credentialAccount?.password ?? userRecord.password;
+
+      if (!storedHash) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message:
@@ -223,10 +233,7 @@ export const userRouter = router({
         });
       }
 
-      const isPasswordValid = await compare(
-        input.password,
-        userRecord.password,
-      );
+      const isPasswordValid = await compare(input.password, storedHash);
 
       if (!isPasswordValid) {
         throw new TRPCError({
@@ -242,10 +249,19 @@ export const userRouter = router({
         .set({ password: hashedPassword })
         .where(drizzleEq(users.email, input.email));
 
-      await ctx.db
-        .update(betterAuthAccounts)
-        .set({ password: hashedPassword })
-        .where(drizzleEq(betterAuthAccounts.userId, userRecord.id));
+      if (credentialAccount) {
+        await ctx.db
+          .update(betterAuthAccounts)
+          .set({ password: hashedPassword, updatedAt: new Date() })
+          .where(drizzleEq(betterAuthAccounts.id, credentialAccount.id));
+      } else {
+        await ctx.db.insert(betterAuthAccounts).values({
+          userId: userRecord.id,
+          accountId: userRecord.id,
+          providerId: "credential",
+          password: hashedPassword,
+        });
+      }
     }),
 
   createNewPlaylist: protectedProcedure
