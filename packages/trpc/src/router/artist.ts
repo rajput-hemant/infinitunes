@@ -1,4 +1,6 @@
+import type { Artist, Song } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
@@ -8,57 +10,60 @@ import {
   artistTopSongsInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { tokenFromLink, withDownloadUrl } from "./utils";
+import {
+  hasIdentity,
+  isRecord,
+  mapDownloadUrls,
+  tokenFromLink,
+  withDownloadUrl,
+} from "./utils";
 
 export const artistRouter = router({
-  details: publicProcedure.input(artistInput).query(async ({ input }) => {
-    const { id, token, link, lang } = input;
-    if (!id && !link && !token) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Please provide Artist id, link or token",
+  details: publicProcedure
+    .input(artistInput)
+    .output(z.custom<Artist>())
+    .query(async ({ input }) => {
+      const { id, token, link, lang } = input;
+      if (!id && !link && !token) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please provide Artist id, link or token",
+        });
+      }
+      if (id && link) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please provide either Artist id or link",
+        });
+      }
+      if (link && !link.includes("artist")) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please provide a valid JioSaavn link",
+        });
+      }
+      const t = token || tokenFromLink(link ?? "");
+      const endpoint = id ? endpoints.artist.id : endpoints.artist.link;
+      const result = await api(endpoint, {
+        query: {
+          artistId: id,
+          token: t,
+          type: id ? "" : "artist",
+          p: input.page,
+          n_song: input.n_song,
+          n_album: input.n_album,
+        },
+        language: lang,
       });
-    }
-    if (id && link) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Please provide either Artist id or link",
-      });
-    }
-    if (link && !link.includes("artist")) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Please provide a valid JioSaavn link",
-      });
-    }
-    const t = token || tokenFromLink(link ?? "");
-    const endpoint = id ? endpoints.artist.id : endpoints.artist.link;
-    const result = await api(endpoint, {
-      query: {
-        artistId: id,
-        token: t,
-        type: id ? "" : "artist",
-        p: input.page,
-        n_song: input.n_song,
-        n_album: input.n_album,
-      },
-      language: lang,
-    });
-    const payload = result as {
-      artistId?: string;
-      topSongs?: Record<string, unknown>[];
-    };
-    if (!payload.artistId) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Artist not found, please check the id or link",
-      });
-    }
-    if (Array.isArray(payload.topSongs)) {
-      payload.topSongs = payload.topSongs.map(withDownloadUrl);
-    }
-    return result;
-  }),
+      if (!hasIdentity(result, "artistId")) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Artist not found, please check the id or link",
+        });
+      }
+      mapDownloadUrls(result, "topSongs");
+      return result as Artist;
+    }),
 
   songs: publicProcedure
     .input(artistSongsAlbumsInput)
@@ -73,12 +78,7 @@ export const artistRouter = router({
         },
         language: input.lang,
       });
-      const payload = result as {
-        topSongs?: { songs?: Record<string, unknown>[] };
-      };
-      if (Array.isArray(payload.topSongs?.songs)) {
-        payload.topSongs.songs = payload.topSongs.songs.map(withDownloadUrl);
-      }
+      if (isRecord(result)) mapDownloadUrls(result.topSongs, "songs");
       return result;
     }),
 
@@ -100,6 +100,7 @@ export const artistRouter = router({
 
   topSongs: publicProcedure
     .input(artistTopSongsInput)
+    .output(z.custom<Song[]>())
     .query(async ({ input }) => {
       const result = await api(endpoints.artist.top_songs, {
         query: {
@@ -111,12 +112,8 @@ export const artistRouter = router({
           language: input.lang,
         },
       });
-      if (!Array.isArray(result) || result.length === 0) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Artist not found, please check the ids",
-        });
-      }
-      return result.map(withDownloadUrl);
+      // Secondary "more from these artists" list on the song page.
+      if (!Array.isArray(result)) return [];
+      return result.map((item) => withDownloadUrl(item)) as Song[];
     }),
 });

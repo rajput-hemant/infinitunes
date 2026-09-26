@@ -1,18 +1,17 @@
-import type { EpisodeDetail } from "@infinitunes/types";
+import { getImageSrc } from "@infinitunes/types";
 import type { Metadata } from "next";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { api } from "~/lib/trpc/server";
-import { getImageSrc, ogImageUrl } from "~/lib/utils";
+import { ogImageUrl } from "~/lib/utils";
 
-const getEpisode = cache(
-  async (token: string) =>
-    (await api.show.episodeDetails({
-      token,
-      season: 1,
-      sort: "desc",
-    })) as unknown as EpisodeDetail,
+const getEpisode = cache(async (token: string) =>
+  api.show.episodeDetails({
+    token,
+    season: 1,
+    sort: "desc",
+  }),
 );
 
 type EpisodeDetailsProps = {

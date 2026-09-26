@@ -2,6 +2,7 @@
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import type { Quality, Queue, Song, MediaType } from "@infinitunes/types";
+import { getImageSrc, toQueue } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -40,7 +41,7 @@ import { toast } from "sonner";
 import { useQueue } from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
 import { addSongsToPlaylist } from "~/lib/db/queries";
-import { currentlyInDev, getImageSrc, toQueue } from "~/lib/utils";
+import { currentlyInDev } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";

@@ -1,5 +1,3 @@
-import type { Chart } from "@infinitunes/types";
-
 import { SliderCard } from "~/components/slider/slider-card";
 import { api } from "~/lib/trpc/server";
 
@@ -21,10 +19,7 @@ export const metadata = {
   },
 };
 export default async function ChartsPage() {
-  const charts = (await api.get.charts({
-    page: 1,
-    n: 50,
-  })) as unknown as Chart[];
+  const charts = await api.get.charts({ page: 1, n: 50 });
 
   return (
     <div className="space-y-4">

@@ -1,4 +1,5 @@
-import type { Show, Sort } from "@infinitunes/types";
+import type { Sort } from "@infinitunes/types";
+import { getImageSrc } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -17,20 +18,19 @@ import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
-import { getImageSrc, ogImageUrl } from "~/lib/utils";
+import { asRoute, ogImageUrl } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
 
 const DEFAULT_SORT: Sort = "desc";
 
 // callers must pass a normalized sort so generateMetadata and the page share one cache entry
-const getShow = cache(
-  async (token: string, season: number, sort: Sort) =>
-    (await api.show.details({
-      token,
-      season: `${season}`,
-      sort,
-    })) as unknown as Show,
+const getShow = cache(async (token: string, season: number, sort: Sort) =>
+  api.show.details({
+    token,
+    season: `${season}`,
+    sort,
+  }),
 );
 
 type ShowDetailsPageProps = {
@@ -74,8 +74,8 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
     await Promise.all([
       getShow(token, season, sort ?? DEFAULT_SORT),
-      user ? getUserFavorites(user.id) : undefined,
-      user ? getUserPlaylists(user.id) : undefined,
+      user ? getUserFavorites() : undefined,
+      user ? getUserPlaylists() : undefined,
     ]);
 
   return (
@@ -125,9 +125,13 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
           />
 
           <DropdownMenuContent className="w-28 *:cursor-pointer md:w-36">
-            <DropdownMenuItem render={<Link href="?sort=desc">Newest</Link>} />
+            <DropdownMenuItem
+              render={<Link href={asRoute("?sort=desc")}>Newest</Link>}
+            />
 
-            <DropdownMenuItem render={<Link href="?sort=asc">Oldest</Link>} />
+            <DropdownMenuItem
+              render={<Link href={asRoute("?sort=asc")}>Oldest</Link>}
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

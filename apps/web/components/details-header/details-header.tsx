@@ -9,6 +9,7 @@ import type {
   ShowDetails,
   Song,
 } from "@infinitunes/types";
+import { decode, formatDuration, getImageSrc } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -17,7 +18,7 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { cn, decode, formatDuration, getHref, getImageSrc } from "~/lib/utils";
+import { asRoute, cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
 import { ImageWithFallback } from "../image-with-fallback";
@@ -91,8 +92,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   if (user) {
     [playlists, favorites] = await Promise.all([
-      getUserPlaylists(user.id),
-      getUserFavorites(user.id),
+      getUserPlaylists(),
+      getUserFavorites(),
     ]);
   }
 
@@ -255,7 +256,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
           {kind === "song" && (
             <p className="hidden w-fit text-sm text-muted-foreground hover:text-foreground lg:block">
-              <Link href={(item as Song).more_info.label_url ?? "#"}>
+              <Link href={asRoute((item as Song).more_info.label_url ?? "#")}>
                 {decode((item as Song).more_info.copyright_text)}
               </Link>
             </p>

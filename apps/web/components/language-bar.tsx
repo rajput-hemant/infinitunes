@@ -4,7 +4,7 @@ import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import Link from "next/link";
 
 import { languages } from "~/config/languages";
-import { cn } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 type LanguageBarProps = { language?: Lang };
 
@@ -13,7 +13,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
     <ScrollArea className="border-b py-2">
       <ul className="flex space-x-2 py-1 sm:space-x-6 md:space-x-10 lg:space-x-12">
         <li>
-          <Link title="For You" href="?">
+          <Link title="For You" href={asRoute("?")}>
             <Badge
               className={cn(
                 "bg-primary p-2 hover:shadow-sm lg:px-4",
@@ -27,7 +27,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
 
         {languages.map((lang) => (
           <li key={lang}>
-            <Link title={lang} href={`?lang=${lang.toLowerCase()}`}>
+            <Link title={lang} href={asRoute(`?lang=${lang.toLowerCase()}`)}>
               <Badge
                 className={cn(
                   "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-xs lg:px-4",

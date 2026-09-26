@@ -15,8 +15,15 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   enough for `tsc` to resolve them. Don't "dedupe" these away - type-check
   breaks. `postgres` and `pg`, by contrast, are unused in app source (provided
   by `@infinitunes/db`) and are safe to drop.
+- `@infinitunes/ui` (`packages/ui`) is web-only (DOM, Tailwind v4, Base UI,
+  `next-themes`); never import it from a React Native or Expo app - mobile
+  components belong in a separate package, not a wrapper around these.
+  See `packages/ui/README.md`.
 - Server data fetching in `apps/web` calls `api.<router>.<procedure>` directly via
   `import { api } from "~/lib/trpc/server"`; `apps/web/lib/jiosaavn-api.ts` has been deleted.
+- User database operations live in `packages/trpc/src/router/user.ts`; the
+  `apps/web` query and action modules are thin Next.js wrappers for those
+  procedures and own cache invalidation or redirects.
 
 Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
 (`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
@@ -36,7 +43,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `apps/web/.next/standalone/apps/web/server.js` (entrypoint `node apps/web/server.js`).
   `next.config.ts` sets `outputFileTracingRoot` to the repo root when `IS_DOCKER`.
 - `packages/trpc/src/lib/download.ts`'s `createDownloadLinks` needs `JIOSAAVN_DES_KEY`
-  in `turbo.json` `globalPassThroughEnv` (alongside `JIOSAAVN_API_URL`) or every song's
+  in `turbo.json` `globalPassThroughEnv` or every song's
   `download_url` silently comes back empty under `bun run dev`/`build`, which crashes
   the player (empty Howler src). Every song array a router returns must be mapped
   through `withDownloadUrl` (`packages/trpc/src/router/utils.ts`) before reaching
@@ -45,6 +52,14 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   OpenSSL 3 build (`next dev` runs under Node even when invoked via `bun run dev`), but
   works under Bun's own crypto. Locally reproduce with `NODE_OPTIONS=--openssl-legacy-provider`;
   don't add that flag to the repo, it's a local-verification workaround only.
+- `apps/web/app/api/og/route.tsx` runs on the default Node runtime (Edge is
+  deprecated in Next 16). Its font must be loaded with `readFile` from
+  `node:fs/promises`, not `fetch()` - undici rejects the `file:` URL that
+  `new URL(..., import.meta.url)` resolves to under Node.
+- `getUser()` in `apps/web/lib/auth.ts` swallows only Better Auth's
+  no-secret-configured `BetterAuthError` (and only outside a validated
+  production env), so a checkout with no `AUTH_SECRET` renders logged-out
+  instead of 500-ing every route. Don't widen that catch.
 - Tailwind v4's automatic content scanning only covers `apps/web`. Utility
   classes/theme vars used exclusively inside `packages/ui/src` (e.g.
   `bg-sidebar`, `bg-popover`, `bg-card`) get tree-shaken out of the compiled
@@ -62,10 +77,18 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 
 ## packages/trpc raw-passthrough shape (resolved)
 
-Every `@infinitunes/trpc` procedure (`packages/trpc/src/router/*.ts`) does
-`return api(endpoints...)` unmodified - raw untransformed JioSaavn JSON - with
-the single documented exception of `withDownloadUrl` (decrypts
-`more_info.encrypted_media_url` into `download_url`, needs `JIOSAAVN_DES_KEY`).
+Catalog procedures in `packages/trpc/src/router/` (everything except `user.ts`)
+return raw untransformed JioSaavn JSON from `api()` (`packages/trpc/src/lib/api.ts`).
+The only transformation is `withDownloadUrl` (`packages/trpc/src/router/utils.ts`),
+which decrypts `more_info.encrypted_media_url` into `download_url` and needs
+`JIOSAAVN_DES_KEY`. `user.ts` is the authenticated database router, not an
+upstream passthrough. Read upstream fields with `isRecord`, `hasIdentity`, and
+`mapDownloadUrls` in that utils module, then assert the procedure's declared
+output type once. Do not reintroduce `as unknown as` to poke at a payload.
+`TRPCContext.session` (`packages/trpc/src/trpc.ts`) is a session or
+`() => Promise<session>`. The RSC caller passes `getSession`
+(`apps/web/lib/trpc/server.ts`) so public procedures skip the lookup; the fetch
+adapter awaits it. Only `protectedProcedure` resolves it.
 `@infinitunes/types` (`packages/types/src/*.ts`) now describes that true raw
 shape end to end (`title`/`perma_url`/`explicit_content` strings, nested
 `more_info`, camelCase module container keys like `songsBysameArtists`,
@@ -85,6 +108,15 @@ that are easy to get wrong again:
   `{quality,link}[]` array shape some earlier normalized types assumed.
 - `TopShows.trendingPodcasts` is an array of `{items, module}` groups, not a
   single `{data, title, subtitle}` object.
+- Procedures declare their raw shape with `.output(z.custom<T>())` against a
+  `@infinitunes/types` type, so `apps/web` call sites must not re-cast. If you add
+  an output type to a procedure, delete the `as unknown as` at its callers in the
+  same change; `artist.songs`/`artist.albums` and `show.episodes` are still
+  output-less on purpose (their call sites read a different shape than the router
+  returns). `z.custom` performs no runtime validation - it is a type declaration only.
+- Secondary lists (recommendations, trending, same-year, top-songs, top searches)
+  return `[]` when upstream is empty; only a missing primary entity throws
+  `NOT_FOUND`. Pages `Promise.all` these, so throwing on empty fails the render.
 - Before trusting any procedure's shape against its declared type, verify
   live (curl the upstream `__call` from `endpoints.ts` via
   `packages/trpc/src/lib/api.ts`'s `BASE_URL`) rather than assuming a type is
@@ -127,7 +159,8 @@ bug is appending to them instead of substituting:
 - `download_url` is one comma-separated string, one entry per bitrate in
   `QUALITIES_MAP` order (`packages/types/src/misc.ts`). Consumers must split
   and index it, never hand it to a player whole - see
-  `getDownloadLink`/`~/lib/utils` and `apps/web/components/download-button.tsx`.
+  `getDownloadLink`/`packages/types/src/media.ts` and
+  `apps/web/components/download-button.tsx`.
   The decrypted URL already ends in a bitrate (`_96`/`_160`); `createDownloadLinks`
   must strip it before appending, because the CDN 404s on `..._96_320.mp4`.
 - `download_url` is only populated when `withDownloadUrl` ran with a valid
@@ -139,7 +172,8 @@ bug is appending to them instead of substituting:
   play effect. Guard on a falsy `audioSrc` and `toast` instead of calling `load()`.
 - Images embed a resolution token with _either_ separator: `-500x500.jpg` for
   song/album/playlist artwork, `_150x150.jpg` for artist and some CDN paths.
-  Resizing regexes must accept both (`getImageSrc`/`withSize` in `~/lib/utils`).
+  Resizing regexes must accept both (`getImageSrc`/`withSize` in
+  `packages/types/src/media.ts`).
 - Raw titles/subtitles are still HTML-encoded (`&amp;`), so anything putting
   them in a URL must `decode()` then percent-encode, or trailing query params
   get truncated - that is what `ogImageUrl` exists for.
@@ -179,9 +213,18 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
 ## Shared constants across the monorepo
 
 - `@infinitunes/auth` exports `USERNAME_REGEX` / `USERNAME_MIN_LENGTH` / `USERNAME_MAX_LENGTH`
-  from `packages/auth/src/constants.ts`. The main `@infinitunes/auth` barrel pulls server-only
-  `createAuth` (Better Auth, DB, bcrypt) into the graph, so client components must import these via
-  the `./constants` subpath (`@infinitunes/auth/constants`), never from `@infinitunes/auth`.
+  from `packages/auth/src/constants.ts` (subpath `@infinitunes/auth/constants`) and shared Zod auth
+  validation schemas (`usernameSchema`, `emailSchema`, `passwordSchema`, `loginSchema`, `signUpSchema`,
+  `resetPasswordSchema`) from `packages/auth/src/schemas.ts` (subpath `@infinitunes/auth/schemas`). The main
+  `@infinitunes/auth` barrel pulls server-only `createAuth` (Better Auth, DB, bcrypt) into the graph, so client
+  components must import these via `./constants` or `./schemas`, never from `@infinitunes/auth`.
+- `createAuth` in `packages/auth/src/auth.ts` is platform-agnostic: it ships only
+  the `username` plugin and takes extra plugins via `createAuth(db, { plugins })`.
+  The web app injects `nextCookies()` at its call site (`apps/web/lib/auth.ts`) -
+  nothing under `@infinitunes/auth` may import `better-auth/next-js`. `createAuth`
+  passes `secret`/`baseURL` into Better Auth (`BETTER_AUTH_*` wins over `AUTH_*`)
+  and never writes `process.env`. The client factory `createAuthClient({ baseURL })`
+  in `packages/auth/src/auth-client.ts` defaults to same-origin when passed nothing.
 - `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
   (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
   by both `apps/web` and `packages/trpc`; don't hand-roll another copy).

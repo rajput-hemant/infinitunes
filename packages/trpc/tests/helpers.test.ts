@@ -67,11 +67,11 @@ describe("api helper", () => {
     let capturedUrl = "";
     let capturedHeaders: Record<string, string> = {};
 
-    const mockFetch: typeof fetch = (async (url, init) => {
+    const mockFetch: typeof fetch = async (url, init) => {
       capturedUrl = url.toString();
-      capturedHeaders = (init?.headers as Record<string, string>) || {};
+      capturedHeaders = Object.fromEntries(new Headers(init?.headers));
       return new Response(JSON.stringify({ status: "ok" }), { status: 200 });
-    }) as typeof fetch;
+    };
 
     const res = await api<{ status: string }>(
       "content.getLaunchData",
@@ -90,11 +90,11 @@ describe("api helper", () => {
     let capturedUrl = "";
     let capturedHeaders: Record<string, string> = {};
 
-    const mockFetch: typeof fetch = (async (url, init) => {
+    const mockFetch: typeof fetch = async (url, init) => {
       capturedUrl = url.toString();
-      capturedHeaders = (init?.headers as Record<string, string>) || {};
+      capturedHeaders = Object.fromEntries(new Headers(init?.headers));
       return new Response(JSON.stringify({ ok: true }), { status: 200 });
-    }) as typeof fetch;
+    };
 
     await api(
       "song.getDetails",
@@ -112,9 +112,9 @@ describe("api helper", () => {
   });
 
   it("throws TRPCError BAD_GATEWAY when fetchFn returns non-200", async () => {
-    const mockFetch: typeof fetch = (async () => {
+    const mockFetch: typeof fetch = async () => {
       return new Response("Server Error", { status: 500 });
-    }) as typeof fetch;
+    };
 
     expect(api("test.call", {}, mockFetch)).rejects.toThrow(
       "Upstream returned 500",
@@ -122,12 +122,25 @@ describe("api helper", () => {
   });
 
   it("throws TRPCError BAD_GATEWAY on invalid JSON response", async () => {
-    const mockFetch: typeof fetch = (async () => {
+    const mockFetch: typeof fetch = async () => {
       return new Response("NOT JSON", { status: 200 });
-    }) as typeof fetch;
+    };
 
-    expect(api("test.call", {}, mockFetch)).rejects.toThrow(
-      "Invalid JSON response from upstream",
-    );
+    expect(
+      api("test.call", { query: { q: "invalid-json" } }, mockFetch),
+    ).rejects.toThrow("Invalid JSON response from upstream");
+  });
+
+  it("throws a user-safe BAD_GATEWAY when the network fails", async () => {
+    const mockFetch: typeof fetch = async () => {
+      throw new Error("connect ECONNREFUSED 10.0.0.1:443");
+    };
+
+    await expect(
+      api("test.network", { query: { q: "down" } }, mockFetch),
+    ).rejects.toMatchObject({
+      code: "BAD_GATEWAY",
+      message: "Upstream network failure",
+    });
   });
 });

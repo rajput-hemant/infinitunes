@@ -1,4 +1,3 @@
-import type { TopShows } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
 import { SliderCard } from "~/components/slider/slider-card";
@@ -28,10 +27,7 @@ type TopPodcastsPageProps = { searchParams: Promise<{ page?: number }> };
 export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
   const { page = 1 } = await props.searchParams;
 
-  const topShows = (await api.get.topShows({
-    page,
-    n: 50,
-  })) as unknown as TopShows;
+  const topShows = await api.get.topShows({ page, n: 50 });
 
   const trendingGroup = topShows.trendingPodcasts?.[0];
   const trendingPodcasts = trendingGroup?.items ?? [];

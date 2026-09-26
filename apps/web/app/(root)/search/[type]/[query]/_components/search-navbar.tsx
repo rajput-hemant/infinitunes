@@ -1,7 +1,7 @@
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import Link from "next/link";
 
-import { cn } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 type Props = {
   type: string;
@@ -9,19 +9,19 @@ type Props = {
 };
 
 export const navItems = [
-  { title: "Playlists", href: "/search/playlist" },
-  { title: "Songs", href: "/search/song" },
-  { title: "Albums", href: "/search/album" },
-  { title: "Podcasts", href: "/search/show" },
-  { title: "Artists", href: "/search/artist" },
+  { title: "Playlists", type: "playlist" },
+  { title: "Songs", type: "song" },
+  { title: "Albums", type: "album" },
+  { title: "Podcasts", type: "show" },
+  { title: "Artists", type: "artist" },
 ];
 
 export function SearchNavbar({ type, query }: Props) {
   return (
     <nav className="border-b">
       <div className="hidden h-full items-center gap-2 lg:flex">
-        {navItems.map(({ title, href }) => {
-          const isActive = type === href.split("/")[2];
+        {navItems.map(({ title, type: navType }) => {
+          const isActive = type === navType;
 
           return (
             <div
@@ -32,7 +32,7 @@ export function SearchNavbar({ type, query }: Props) {
               )}
             >
               <Link
-                href={`${href}/${query}`}
+                href={asRoute(`/search/${navType}/${query}`)}
                 className={cn(
                   buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
                   isActive && "font-medium",

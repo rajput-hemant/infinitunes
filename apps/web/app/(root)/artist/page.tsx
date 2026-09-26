@@ -1,5 +1,3 @@
-import type { TopArtists } from "@infinitunes/types";
-
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { api } from "~/lib/trpc/server";
@@ -23,10 +21,7 @@ export const metadata = {
 };
 
 export default async function TopArtistsPage() {
-  const topArtists = (await api.get.topArtists({
-    page: 1,
-    n: 50,
-  })) as unknown as TopArtists;
+  const topArtists = await api.get.topArtists({ page: 1, n: 50 });
 
   return (
     <div className="my-4 space-y-4">

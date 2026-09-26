@@ -12,10 +12,20 @@ import {
 } from "./config/routes";
 import { env } from "./lib/env";
 
-const ratelimit = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(env.RATE_LIMITING_REQUESTS_PER_SECOND, "1s"),
-});
+let ratelimit: Ratelimit | undefined;
+
+function getRatelimit() {
+  if (!ratelimit) {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(
+        env.RATE_LIMITING_REQUESTS_PER_SECOND,
+        "1s",
+      ),
+    });
+  }
+  return ratelimit;
+}
 
 export async function proxy(req: NextRequest) {
   const { nextUrl } = req;
@@ -61,7 +71,7 @@ export async function proxy(req: NextRequest) {
   if (env.ENABLE_RATE_LIMITING === "true" && env.NODE_ENV === "production") {
     const id = getIP(req) || "anonymous";
     const { limit, pending, remaining, reset, success } =
-      await ratelimit.limit(id);
+      await getRatelimit().limit(id);
 
     if (!success) {
       return NextResponse.json(

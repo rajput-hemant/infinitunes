@@ -9,6 +9,8 @@ jobs:
 
     env:
       SKIP_ENV_VALIDATION: true
+      DATABASE_URL: postgres://ci:ci@127.0.0.1:1/ci
+      AUTH_SECRET: test-secret-key-that-is-at-least-32-chars-long
 
     steps:
       - name: Checkout repository
@@ -37,10 +39,45 @@ jobs:
         run: bun test --pass-with-no-tests
 
       - name: Build production
-        env:
-          DATABASE_URL: postgres://ci:ci@127.0.0.1:1/ci
-          AUTH_SECRET: test-secret-key-that-is-at-least-32-chars-long
         run: bun run build
+
+      - name: Verify runtime smoke check
+        run: |
+          cleanup() {
+            if [ -n "${SERVER_PID:-}" ]; then
+              kill -TERM "$SERVER_PID" 2>/dev/null || true
+            fi
+            pkill -f "next-server" 2>/dev/null || true
+          }
+          trap cleanup EXIT INT TERM
+
+          bun run start &
+          SERVER_PID=$!
+
+          READY=0
+          for i in $(seq 1 30); do
+            if curl -sf -o /dev/null "http://127.0.0.1:3000/"; then
+              echo "Server is ready after $i seconds"
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            echo "Server failed to become ready within 30 seconds"
+            exit 1
+          fi
+
+          echo "Checking root route /"
+          ROOT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3000/")
+          echo "Root status: $ROOT_STATUS"
+          [ "$ROOT_STATUS" -eq 200 ]
+
+          echo "Checking song route /song/dai-dai/OF0RBBVqWXI"
+          SONG_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3000/song/dai-dai/OF0RBBVqWXI")
+          echo "Song status: $SONG_STATUS"
+          [ "$SONG_STATUS" -eq 200 ]
 
       - name: Check commits messages
         uses: wagoid/commitlint-github-action@v6

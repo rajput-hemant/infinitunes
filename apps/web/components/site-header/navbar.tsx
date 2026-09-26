@@ -1,4 +1,4 @@
-import type { Lang, MegaMenu } from "@infinitunes/types";
+import type { Lang } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { cookies } from "next/headers";
 import Link from "next/link";
@@ -22,10 +22,7 @@ export async function Navbar() {
   const cookiesStore = await cookies();
   const languages = cookiesStore.get("language")?.value?.split(",") ?? [];
 
-  const [user, megaMenu] = await Promise.all([
-    getUser(),
-    api.get.megaMenu({}) as unknown as Promise<MegaMenu>,
-  ]);
+  const [user, megaMenu] = await Promise.all([getUser(), api.get.megaMenu({})]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">

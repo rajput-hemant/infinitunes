@@ -16,13 +16,14 @@ import {
   UserCog2,
   UserX2,
 } from "lucide-react";
+import type { Route } from "next";
 import React from "react";
 
 import { SideNavItems } from "./side-navbar-items";
 
 export type SidebarNavItem = {
   section: string;
-  href: string;
+  href: Route;
   items: {
     hash: string;
     title: string;

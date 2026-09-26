@@ -1,10 +1,15 @@
 "use client";
 
 import { usernameClient } from "better-auth/client/plugins";
-import { createAuthClient } from "better-auth/react";
+import { createAuthClient as createBetterAuthClient } from "better-auth/react";
 
-export const authClient = createAuthClient({
-  plugins: [usernameClient()],
-});
+export function createAuthClient(options: { baseURL?: string } = {}) {
+  return createBetterAuthClient({
+    ...(options.baseURL ? { baseURL: options.baseURL } : {}),
+    plugins: [usernameClient()],
+  });
+}
+
+export const authClient = createAuthClient();
 
 export const { signIn, signUp, signOut, useSession, getSession } = authClient;

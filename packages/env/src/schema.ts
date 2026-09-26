@@ -19,6 +19,12 @@ function authUrl(ctx: EnvContext) {
   );
 }
 
+function requiredInProduction(ctx: EnvContext, message: string) {
+  return ctx.nodeEnv === "production"
+    ? z.string().min(1, { message })
+    : z.string().optional();
+}
+
 /**
  * Server-only schemas. Secrets (OAuth client secrets, database URL) live here
  * and must never be imported by client code.
@@ -32,30 +38,33 @@ export function createServerSchema(ctx: EnvContext = {}) {
     AUTH_SECRET: authSecret(ctx),
     AUTH_URL: authUrl(ctx),
 
-    GOOGLE_CLIENT_ID: z
-      .string()
-      .min(1, { message: "Google Client ID is invalid or missing" }),
-    GOOGLE_CLIENT_SECRET: z
-      .string()
-      .min(1, { message: "Google Client Secret is invalid or missing" }),
+    GOOGLE_CLIENT_ID: requiredInProduction(
+      ctx,
+      "Google Client ID is invalid or missing",
+    ),
+    GOOGLE_CLIENT_SECRET: requiredInProduction(
+      ctx,
+      "Google Client Secret is invalid or missing",
+    ),
 
-    GITHUB_CLIENT_ID: z
-      .string()
-      .min(1, { message: "Github Client ID is invalid or missing" }),
-    GITHUB_CLIENT_SECRET: z
-      .string()
-      .min(1, { message: "Github Client Secret is invalid or missing" }),
-
-    JIOSAAVN_API_URL: z
-      .string()
-      .url({ message: "JioSaavn API URL is invalid or missing" }),
+    GITHUB_CLIENT_ID: requiredInProduction(
+      ctx,
+      "Github Client ID is invalid or missing",
+    ),
+    GITHUB_CLIENT_SECRET: requiredInProduction(
+      ctx,
+      "Github Client Secret is invalid or missing",
+    ),
 
     JIOSAAVN_DES_KEY: z
-      .string()
-      .optional()
-      .describe(
-        "DES key used to decrypt JioSaavn media URLs. Sourced from the environment only - never hardcoded.",
-      ),
+      .string({
+        error:
+          "JIOSAAVN_DES_KEY is missing. It decrypts JioSaavn media URLs, and playback fails without it - read it from the environment, never hardcode it.",
+      })
+      .min(1, {
+        message:
+          "JIOSAAVN_DES_KEY is empty. It decrypts JioSaavn media URLs, and playback fails without it - read it from the environment, never hardcode it.",
+      }),
 
     DATABASE_URL: z
       .string()
@@ -70,7 +79,22 @@ export function createServerSchema(ctx: EnvContext = {}) {
   } as const;
 }
 
-export const clientSchema = {} as const;
+export const clientSchema = {
+  NEXT_PUBLIC_APP_URL: z
+    .string()
+    .url({ message: "Public App URL is invalid or missing" })
+    .default("https://infinitunes.rajputhemant.me")
+    .describe(
+      "Public URL of the application, read from NEXT_PUBLIC_APP_URL for the web app.",
+    ),
+  NEXT_PUBLIC_API_URL: z
+    .string()
+    .url({ message: "Public API URL is invalid or missing" })
+    .optional()
+    .describe(
+      "Base URL of the public API, read from NEXT_PUBLIC_API_URL for the web app. A React Native app passes clientPrefix: 'EXPO_PUBLIC_' with its own EXPO_PUBLIC_API_URL client schema.",
+    ),
+} as const;
 
 export const runtimeKeys = [
   "SKIP_ENV_VALIDATION",

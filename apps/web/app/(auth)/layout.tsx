@@ -1,3 +1,4 @@
+import { seededIndex } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
@@ -7,7 +8,7 @@ import React from "react";
 
 import { Icons } from "~/components/icons";
 import { getUser } from "~/lib/auth";
-import { cn, seededIndex } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
 
@@ -59,15 +60,15 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
         <p className="mx-auto px-10 text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}
           <Link
-            href="/terms"
-            className="underline underline-offset-4 outline-hidden hover:text-foreground hover:underline"
+            href={asRoute("/terms")}
+            className="underline underline-offset-4 outline-none hover:text-foreground hover:underline"
           >
             Terms of Service
           </Link>{" "}
           and{" "}
           <Link
-            href="/privacy"
-            className="underline underline-offset-4 outline-hidden hover:text-foreground hover:underline"
+            href={asRoute("/privacy")}
+            className="underline underline-offset-4 outline-none hover:text-foreground hover:underline"
           >
             Privacy Policy
           </Link>

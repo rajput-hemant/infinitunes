@@ -1,12 +1,12 @@
 /* eslint-disable jsx-a11y/alt-text */
 /* eslint-disable @next/next/no-img-element */
 
+import { readFile } from "node:fs/promises";
+
 import { ImageResponse } from "next/og";
 
 import { siteConfig } from "~/config/site";
 import { cn } from "~/lib/utils";
-
-export const runtime = "edge";
 
 async function fetchImage(url: string) {
   const res = await fetch(url);
@@ -14,14 +14,12 @@ async function fetchImage(url: string) {
   return buffer;
 }
 
+// Read from disk rather than `fetch()`: on the Node runtime undici refuses
+// `file:` URLs, and the bundler rewrites this URL to the emitted asset.
 async function fetchFonts() {
-  const res = await fetch(
+  return readFile(
     new URL("../../../public/fonts/CalSans-SemiBold.woff", import.meta.url),
   );
-
-  const buffer = await res.arrayBuffer();
-
-  return buffer;
 }
 
 export async function GET(request: Request) {

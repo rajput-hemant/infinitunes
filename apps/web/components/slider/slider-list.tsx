@@ -27,7 +27,7 @@ export function SliderList({ title, subtitle, items }: SliderListProps) {
       <ScrollArea>
         <ol className="flex space-x-4 pb-4">
           {items?.map(({ id, ...props }) => (
-            <li key={id}>
+            <li key={id} className="shrink-0">
               <SliderCard {...props} />
             </li>
           ))}

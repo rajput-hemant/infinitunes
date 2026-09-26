@@ -7,7 +7,9 @@ import {
   users,
 } from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
+import type { BetterAuthPlugin } from "better-auth";
 import { getTableName } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
 
 import { createAuth } from "../src/auth";
 
@@ -72,6 +74,60 @@ describe("Better Auth configuration", () => {
       "function",
     );
   });
+
+  it("mirrors the credential password when an OAuth account sorts first", async () => {
+    const userId = "00000000-0000-0000-0000-000000000001";
+    const accounts = [
+      { userId, providerId: "google", password: null },
+      { userId, providerId: "credential", password: "credential-hash" },
+    ];
+    const mirroredPasswords: string[] = [];
+    const query = {
+      users,
+      betterAuthAccounts: {
+        findFirst: async ({
+          where,
+        }: {
+          where: Parameters<PgDialect["sqlToQuery"]>[0];
+        }) => {
+          const { params } = new PgDialect().sqlToQuery(where);
+          const userIdParam = params.indexOf(userId);
+          const providerIdParam = params.indexOf("credential");
+          return accounts.find(
+            (account) =>
+              account.userId === params[userIdParam] &&
+              (providerIdParam === -1 ||
+                account.providerId === params[providerIdParam]),
+          );
+        },
+      },
+      betterAuthSessions,
+      betterAuthVerifications,
+    };
+    const db = {
+      query,
+      update: () => ({
+        set: ({ password }: { password: string }) => ({
+          where: async () => mirroredPasswords.push(password),
+        }),
+      }),
+      _: {
+        fullSchema: {
+          users,
+          betterAuthAccounts,
+          betterAuthSessions,
+          betterAuthVerifications,
+        },
+      },
+    } as unknown as Parameters<typeof createAuth>[0];
+    const auth = createAuth(db);
+
+    await auth.options.databaseHooks?.user?.create?.after?.({
+      id: userId,
+    } as never);
+
+    expect(mirroredPasswords).toEqual(["credential-hash"]);
+  });
 });
 
 describe("Password hashing and credential verification", () => {
@@ -121,6 +177,61 @@ describe("Password hashing and credential verification", () => {
     await compare(password, hashed);
 
     expect(hashed).toMatch(/^\$2[aby]\$/);
+  });
+});
+
+describe("Injected plugins and env precedence", () => {
+  it("ships only the username plugin by default, never next-cookies", () => {
+    const auth = createAuth(makeFakeDb());
+    expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
+      "username",
+    ]);
+  });
+
+  it("appends caller-supplied plugins after the username plugin", () => {
+    const marker = { id: "test-injected" } as unknown as BetterAuthPlugin;
+    const auth = createAuth(makeFakeDb(), { plugins: [marker] });
+    expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
+      "username",
+      "test-injected",
+    ]);
+  });
+
+  it("falls back to AUTH_SECRET / AUTH_URL without mutating process.env", () => {
+    const savedSecret = process.env.BETTER_AUTH_SECRET;
+    const savedUrl = process.env.BETTER_AUTH_URL;
+    delete process.env.BETTER_AUTH_SECRET;
+    delete process.env.BETTER_AUTH_URL;
+    process.env.AUTH_SECRET = "fallback-secret-via-auth-prefix";
+    process.env.AUTH_URL = "https://fallback.example.com";
+    try {
+      const auth = createAuth(makeFakeDb());
+      expect(auth.options.secret).toBe("fallback-secret-via-auth-prefix");
+      expect(auth.options.baseURL).toBe("https://fallback.example.com");
+      expect(process.env.BETTER_AUTH_SECRET).toBeUndefined();
+      expect(process.env.BETTER_AUTH_URL).toBeUndefined();
+    } finally {
+      if (savedSecret !== undefined)
+        process.env.BETTER_AUTH_SECRET = savedSecret;
+      if (savedUrl !== undefined) process.env.BETTER_AUTH_URL = savedUrl;
+      delete process.env.AUTH_SECRET;
+      delete process.env.AUTH_URL;
+    }
+  });
+
+  it("prefers an existing BETTER_AUTH_* value over the AUTH_* fallback", () => {
+    process.env.BETTER_AUTH_SECRET = "explicit-better-auth-secret";
+    process.env.BETTER_AUTH_URL = "https://explicit.example.com";
+    process.env.AUTH_SECRET = "fallback-secret";
+    process.env.AUTH_URL = "https://fallback.example.com";
+    try {
+      const auth = createAuth(makeFakeDb());
+      expect(auth.options.secret).toBe("explicit-better-auth-secret");
+      expect(auth.options.baseURL).toBe("https://explicit.example.com");
+    } finally {
+      delete process.env.AUTH_SECRET;
+      delete process.env.AUTH_URL;
+    }
   });
 });
 

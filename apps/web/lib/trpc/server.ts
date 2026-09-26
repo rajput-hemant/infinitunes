@@ -1,9 +1,12 @@
 import "server-only";
+import { db } from "@infinitunes/db";
 import { createCaller, type AppRouter } from "@infinitunes/trpc";
 import { cache } from "react";
 
-const createTRPCContext = cache(async () => {
-  return {};
+import { getSession } from "~/lib/auth";
+
+const createTRPCContext = cache(() => {
+  return { db, session: getSession };
 });
 
 const getContext = () => createTRPCContext();

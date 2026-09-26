@@ -10,7 +10,8 @@ const isDocker = process.env.IS_DOCKER === "true";
 
 const config: NextConfig = {
   reactStrictMode: true,
-  reactCompiler: isProd ? true : undefined,
+  reactCompiler: true,
+  typedRoutes: true,
   compiler: { removeConsole: isProd },
   images: {
     remotePatterns: [
@@ -27,7 +28,6 @@ const config: NextConfig = {
   },
   output: isDocker ? "standalone" : undefined,
   outputFileTracingRoot: isDocker ? path.join(__dirname, "../../") : undefined,
-  /* ... */
 };
 
 export default config;

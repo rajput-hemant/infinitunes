@@ -14,6 +14,7 @@ export interface ServerEnvOptions {
   context?: EnvContext;
   skipValidation?: boolean;
   emptyStringAsUndefined?: boolean;
+  clientPrefix?: string;
 }
 
 export function createServerEnv(options: ServerEnvOptions = {}) {
@@ -22,6 +23,7 @@ export function createServerEnv(options: ServerEnvOptions = {}) {
     context = {},
     skipValidation = process.env.SKIP_ENV_VALIDATION === "true",
     emptyStringAsUndefined = true,
+    clientPrefix = "NEXT_PUBLIC_",
   } = options;
 
   return createEnv({
@@ -33,7 +35,7 @@ export function createServerEnv(options: ServerEnvOptions = {}) {
       string,
       string | boolean | number | undefined
     >,
-    clientPrefix: "NEXT_PUBLIC_",
+    clientPrefix: clientPrefix as "NEXT_PUBLIC_",
   });
 }
 

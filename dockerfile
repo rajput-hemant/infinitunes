@@ -4,6 +4,13 @@ WORKDIR /app
 
 COPY package.json bun.lock ./
 COPY apps/web/package.json apps/web/package.json
+COPY packages/auth/package.json packages/auth/package.json
+COPY packages/db/package.json packages/db/package.json
+COPY packages/env/package.json packages/env/package.json
+COPY packages/trpc/package.json packages/trpc/package.json
+COPY packages/types/package.json packages/types/package.json
+COPY packages/typescript-config/package.json packages/typescript-config/package.json
+COPY packages/ui/package.json packages/ui/package.json
 RUN bun install --frozen-lockfile
 
 # 2. Rebuild the source code only when needed

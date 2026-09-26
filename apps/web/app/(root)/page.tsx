@@ -1,4 +1,4 @@
-import type { MediaType, Modules } from "@infinitunes/types";
+import type { MediaType } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
 import { SliderCard } from "~/components/slider/slider-card";
@@ -26,7 +26,7 @@ export const metadata = {
 };
 
 export default async function HomePage() {
-  const homedata = (await api.home.home({})) as unknown as Modules;
+  const homedata = await api.home.home({});
 
   return Object.entries(homedata).map(([key, section]) => {
     if (

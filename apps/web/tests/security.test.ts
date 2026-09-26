@@ -1,5 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 
+mock.module("server-only", () => ({}));
+
 let mockUser: { id: string; name?: string; email?: string } | undefined;
 let mockPlaylist: { id: string; userId: string; songs: string[] } | null = null;
 let mockFavorites: {
@@ -14,6 +16,7 @@ let mockFavorites: {
 // Mock the auth module
 mock.module("~/lib/auth", () => ({
   getUser: async () => mockUser,
+  getSession: async () => (mockUser ? { user: { id: mockUser.id } } : null),
   getAuth: () => ({}),
   auth: {},
 }));
@@ -69,12 +72,10 @@ mock.module("next/navigation", () => ({
   redirect: () => {},
 }));
 
-import { createNewPlaylist, deleteUser, updateUser } from "../lib/actions";
-import {
-  addSongsToPlaylist,
-  addToFavorites,
-  removeFromFavorites,
-} from "../lib/db/queries";
+const { createNewPlaylist, deleteUser, updateUser } =
+  await import("../lib/actions");
+const { addSongsToPlaylist, addToFavorites, removeFromFavorites } =
+  await import("../lib/db/queries");
 
 describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {

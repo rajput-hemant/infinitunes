@@ -1,24 +1,18 @@
 import { beforeAll, describe, expect, it } from "bun:test";
 
-// `createDownloadLinks` reads JIOSAAVN_DES_KEY at module-eval time, so the key
-// has to exist before the router graph is imported below.
+import { db } from "@infinitunes/db";
+
 process.env.JIOSAAVN_DES_KEY ??= "38346591";
 
-type Caller = {
-  song: { recommendations: (i: unknown) => Promise<unknown> };
-  artist: { topSongs: (i: unknown) => Promise<unknown> };
-  search: { byType: (i: unknown) => Promise<unknown> };
-  get: {
-    trending: (i: unknown) => Promise<unknown>;
-    actorTopSongs: (i: unknown) => Promise<unknown>;
-    mix: (i: unknown) => Promise<unknown>;
-    label: (i: unknown) => Promise<unknown>;
-  };
-};
+async function createTestCaller() {
+  const { appRouter } = await import("../src/root");
+  const { createCallerFactory } = await import("../src/trpc");
+  return createCallerFactory(appRouter)({ db, session: null });
+}
 
 const MEDIA_URL = "https://aac.saavncdn.com/test/track_96.mp4";
 
-let caller: Caller;
+let caller: Awaited<ReturnType<typeof createTestCaller>>;
 let encryptedMediaUrl: string;
 /** Upstream `__call` value -> JSON body, set per test. */
 let responses: Record<string, unknown> = {};
@@ -37,47 +31,41 @@ function song(id: string) {
   };
 }
 
-function downloadUrlOf(item: unknown) {
-  return (item as { download_url?: string }).download_url;
+function downloadUrl(item: object | undefined): string | undefined {
+  if (item && "download_url" in item && typeof item.download_url === "string") {
+    return item.download_url;
+  }
+  return undefined;
 }
 
 beforeAll(async () => {
-  const { createCipheriv } = await import("node:crypto");
-  const cipher = createCipheriv(
-    "des-ecb",
-    Buffer.from(process.env.JIOSAAVN_DES_KEY!, "utf8"),
-    null,
-  );
-  encryptedMediaUrl = Buffer.concat([
-    cipher.update(Buffer.from(MEDIA_URL, "utf8")),
-    cipher.final(),
-  ]).toString("base64");
+  // Known sample: MEDIA_URL encrypted with DES-ECB under JIOSAAVN_DES_KEY.
+  // Hardcoded so this test never depends on `node:crypto` single-DES, which
+  // Node 22 / OpenSSL 3 removed (ERR_OSSL_EVP_UNSUPPORTED). The vector was
+  // produced by an independent implementation (Bun's OpenSSL-backed crypto)
+  // and cross-checked against the NIST FIPS-81 answer
+  // (key 133457799BBCDFF1, pt 0123456789ABCDEF -> ct 85E813540F0AB405).
+  encryptedMediaUrl =
+    "ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyV2VjdQb8kXx4TUDOuYJm42+XHLUinhCK";
 
-  globalThis.fetch = ((input: string | URL) => {
+  globalThis.fetch = async (input) => {
     const call = new URL(String(input)).searchParams.get("__call") ?? "";
     if (!(call in responses)) {
       throw new Error(`unexpected upstream call: ${call}`);
     }
-    return Promise.resolve(
-      new Response(JSON.stringify(responses[call]), { status: 200 }),
-    );
-  }) as typeof fetch;
+    return new Response(JSON.stringify(responses[call]), { status: 200 });
+  };
 
-  const { appRouter } = await import("../src/root");
-  const { createCallerFactory } = await import("../src/trpc");
-  caller = createCallerFactory(appRouter)({}) as unknown as Caller;
+  caller = await createTestCaller();
 });
 
 describe("createDownloadLinks round-trip", () => {
   it("decrypts into one comma-separated URL per bitrate", async () => {
     const { createDownloadLinks } = await import("../src/lib/download");
-    expect(createDownloadLinks(encryptedMediaUrl).split(",")).toEqual([
-      "https://aac.saavncdn.com/test/track_12.mp4",
-      "https://aac.saavncdn.com/test/track_48.mp4",
-      "https://aac.saavncdn.com/test/track_96.mp4",
-      "https://aac.saavncdn.com/test/track_160.mp4",
-      "https://aac.saavncdn.com/test/track_320.mp4",
-    ]);
+    const base = MEDIA_URL.replace(/_(?:12|48|96|160|320)\.\w+$/, "");
+    expect(createDownloadLinks(encryptedMediaUrl).split(",")).toEqual(
+      ["_12", "_48", "_96", "_160", "_320"].map((id) => `${base}${id}.mp4`),
+    );
   });
 
   it("replaces the bitrate already present instead of appending it", async () => {
@@ -89,74 +77,68 @@ describe("createDownloadLinks round-trip", () => {
 describe("every song-returning procedure attaches download_url", () => {
   it("song.recommendations", async () => {
     responses = { "reco.getreco": [song("s1")] };
-    const result = (await caller.song.recommendations({
-      id: uniq(),
-    })) as unknown[];
-    expect(downloadUrlOf(result[0])).toContain("_320.mp4");
+    const result = await caller.song.recommendations({ id: uniq() });
+    expect(result[0]?.download_url).toContain("_320.mp4");
   });
 
   it("artist.topSongs (pre-existing reference behaviour)", async () => {
     responses = { "search.artistOtherTopSongs": [song("s2")] };
-    const result = (await caller.artist.topSongs({
+    const result = await caller.artist.topSongs({
       artist_id: uniq(),
       song_id: "s2",
-    })) as unknown[];
-    expect(downloadUrlOf(result[0])).toContain("_320.mp4");
+    });
+    expect(result[0]?.download_url).toContain("_320.mp4");
   });
 
   it("get.actorTopSongs", async () => {
     responses = { "search.actorOtherTopSongs": [song("s3")] };
-    const result = (await caller.get.actorTopSongs({
+    const result = await caller.get.actorTopSongs({
       actor_id: uniq(),
       song_id: "s3",
-    })) as unknown[];
-    expect(downloadUrlOf(result[0])).toContain("_320.mp4");
+    });
+    expect(result[0]?.download_url).toContain("_320.mp4");
   });
 
   it("get.trending", async () => {
     responses = { "content.getTrending": [song("s4")] };
-    const result = (await caller.get.trending({
+    const result = await caller.get.trending({
       lang: "hindi",
       type: "song",
-    })) as unknown[];
-    expect(downloadUrlOf(result[0])).toContain("_320.mp4");
+    });
+    expect(downloadUrl(result[0])).toContain("_320.mp4");
   });
 
   it("get.mix maps its list array", async () => {
     responses = { "webapi.get": { id: "m1", list: [song("s5")] } };
-    const result = (await caller.get.mix({ token: uniq() })) as {
-      list: unknown[];
-    };
-    expect(downloadUrlOf(result.list[0])).toContain("_320.mp4");
+    const result = await caller.get.mix({ token: uniq() });
+    expect(result.list[0]?.download_url).toContain("_320.mp4");
   });
 
   it("get.label maps its topSongs.songs array", async () => {
     responses = {
       "webapi.get": { labelId: "l1", topSongs: { songs: [song("s6")] } },
     };
-    const result = (await caller.get.label({ token: uniq() })) as {
-      topSongs: { songs: unknown[] };
-    };
-    expect(downloadUrlOf(result.topSongs.songs[0])).toContain("_320.mp4");
+    const result = await caller.get.label({ token: uniq() });
+    expect(result.topSongs.songs[0]?.download_url).toContain("_320.mp4");
   });
 
   it("search.byType maps song results", async () => {
     responses = { "search.getResults": { results: [song("s7")] } };
-    const result = (await caller.search.byType({
+    const result = await caller.search.byType({
       type: "songs",
       q: uniq(),
-    })) as { results: unknown[] };
-    expect(downloadUrlOf(result.results[0])).toContain("_320.mp4");
+    });
+    expect(downloadUrl(result.results[0])).toContain("_320.mp4");
   });
 
   it("search.byType leaves non-song results untouched", async () => {
     responses = {
       "search.getAlbumResults": { results: [{ id: "a1", title: "Album" }] },
     };
-    const result = (await caller.search.byType({
+    const result = await caller.search.byType({
       type: "albums",
       q: uniq(),
-    })) as { results: unknown[] };
-    expect(downloadUrlOf(result.results[0])).toBeUndefined();
+    });
+    expect(downloadUrl(result.results[0])).toBeUndefined();
   });
 });

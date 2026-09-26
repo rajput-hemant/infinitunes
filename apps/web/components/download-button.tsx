@@ -99,7 +99,7 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
     <Tooltip>
       <TooltipTrigger
         delay={0}
-        aria-label={`Download ${songs.length} songs`}
+        aria-label={`Download ${songs.length} song${songs.length === 1 ? "" : "s"}`}
         onClick={downloadHandler}
         {...rest}
         disabled={isDownloading}

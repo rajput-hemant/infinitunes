@@ -1,7 +1,6 @@
 export const endpoints = {
   modules: {
     launch_data: "webapi.getLaunchData",
-    browse_modules: "content.getBrowseModules",
   },
   song: {
     id: "song.getDetails",

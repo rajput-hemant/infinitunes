@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@infinitunes/ui/lib/utils";
+import { cn } from "cn";
 import * as React from "react";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {

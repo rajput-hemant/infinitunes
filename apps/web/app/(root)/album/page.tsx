@@ -1,4 +1,4 @@
-import type { Lang, TopAlbum } from "@infinitunes/types";
+import type { Lang } from "@infinitunes/types";
 
 import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
@@ -31,11 +31,7 @@ type AlbumsPageProps = {
 export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
   const { page = 1, lang } = await searchParams;
 
-  const topAlbums = (await api.get.topAlbums({
-    page,
-    n: 50,
-    lang,
-  })) as unknown as TopAlbum;
+  const topAlbums = await api.get.topAlbums({ page, n: 50, lang });
 
   return (
     <div className="space-y-4">

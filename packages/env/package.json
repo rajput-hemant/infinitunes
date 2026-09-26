@@ -14,12 +14,12 @@
   },
   "dependencies": {
     "@t3-oss/env-core": "^0.13.11",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
-    "@types/bun": "^1.3.14",
-    "@types/node": "^26.1.1",
-    "typescript": "^5.9.3"
+    "@types/bun": "^1.4.2",
+    "@types/node": "^26.6.3",
+    "typescript": "^7.0.2"
   }
 }

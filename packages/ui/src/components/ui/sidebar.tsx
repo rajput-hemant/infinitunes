@@ -19,8 +19,8 @@ import {
   TooltipTrigger,
 } from "@infinitunes/ui/components/tooltip";
 import { useIsMobile } from "@infinitunes/ui/hooks/use-mobile";
-import { cn } from "@infinitunes/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "cn";
 import { PanelLeftIcon } from "lucide-react";
 import * as React from "react";
 

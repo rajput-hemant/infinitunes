@@ -14,7 +14,7 @@ export function SliderCardSkeleton(props: SliderCardSkeletonProps) {
   return (
     <div
       className={cn(
-        "pointer-events-none w-32 rounded-md sm:w-36 sm:border md:w-48 lg:w-56",
+        "pointer-events-none w-32 shrink-0 rounded-md sm:w-36 sm:border md:w-48 lg:w-56",
         aspect === "video" && "w-44 border-none sm:w-48 md:w-64 lg:w-72",
       )}
     >

@@ -9,10 +9,11 @@ import {
   Star,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { Route } from "next";
 
 type NavItem = {
   title: string;
-  href: string;
+  href: Route;
   icon: LucideIcon;
 };
 

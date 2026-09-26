@@ -27,7 +27,7 @@ import React from "react";
 
 import { sidebarNav } from "~/config/nav";
 import type { User } from "~/lib/auth";
-import { cn, currentlyInDev } from "~/lib/utils";
+import { asRoute, cn, currentlyInDev } from "~/lib/utils";
 
 import { NewPlaylistForm } from "./playlist/new-playlist-form";
 
@@ -121,7 +121,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                           isActive={id === segment}
                           render={
                             <Link
-                              href={`/me/playlist/${id}`}
+                              href={asRoute(`/me/playlist/${id}`)}
                               className="group flex items-center justify-between"
                             >
                               <span className="flex items-center">

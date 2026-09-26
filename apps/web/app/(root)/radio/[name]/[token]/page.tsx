@@ -1,4 +1,5 @@
-import type { Radio, SongSearch } from "@infinitunes/types";
+import type { SongSearch } from "@infinitunes/types";
+import { getImageSrc } from "@infinitunes/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -6,7 +7,7 @@ import { PlayButton } from "~/components/play-button";
 import { SongList } from "~/components/song-list/song-list";
 import { siteConfig } from "~/config/site";
 import { api } from "~/lib/trpc/server";
-import { getHref, getImageSrc, ogImageUrl } from "~/lib/utils";
+import { getHref, ogImageUrl } from "~/lib/utils";
 
 type Props = {
   params: Promise<{ name: string; token: string }>;
@@ -15,10 +16,7 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name, token } = await params;
 
-  const stations = (await api.get.featuredStations({
-    page: 1,
-    n: 50,
-  })) as unknown as Radio[];
+  const stations = await api.get.featuredStations({ page: 1, n: 50 });
   const station = stations.find((s) => s.perma_url.endsWith(token));
 
   if (!station) {
@@ -49,16 +47,13 @@ export default async function RadioStationPage({ params }: Props) {
   const { token } = await params;
 
   const [stations, songsResult] = await Promise.all([
-    api.get.featuredStations({
-      page: 1,
-      n: 50,
-    }) as unknown as Promise<Radio[]>,
+    api.get.featuredStations({ page: 1, n: 50 }),
     api.search.byType({
       q: token,
       type: "songs",
       page: 1,
       n: 50,
-    }) as unknown as Promise<SongSearch>,
+    }),
   ]);
 
   const songs = songsResult as SongSearch;

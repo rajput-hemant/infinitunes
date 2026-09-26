@@ -1,12 +1,13 @@
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import type { SongObj } from "@infinitunes/types";
+import { getImageSrc } from "@infinitunes/types";
 import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
 import { ImageCollage } from "~/components/image-collage";
 import { api } from "~/lib/trpc/server";
-import { getImageSrc } from "~/lib/utils";
+import { asRoute } from "~/lib/utils";
 
 export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
   const { id, name, description, songs } = playlist;
@@ -14,9 +15,9 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
   let songsDetails: SongObj | undefined;
 
   if (songs.length) {
-    songsDetails = (await api.song.details({
+    songsDetails = await api.song.details({
       id: songs.slice(0, 4).join(","),
-    })) as unknown as SongObj;
+    });
   }
 
   const imageSrcs = songsDetails?.songs.map((song) =>
@@ -31,7 +32,10 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
     >
       <CardContent className="size-full p-2">
         <div className="relative aspect-square w-full overflow-hidden rounded-md">
-          <Link href={`/me/playlist/${id}`} className="absolute inset-0 z-10">
+          <Link
+            href={asRoute(`/me/playlist/${id}`)}
+            className="absolute inset-0 z-10"
+          >
             <span className="sr-only">View {name}</span>
           </Link>
 
@@ -43,7 +47,7 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
         <div className="mt-1 flex w-full flex-col items-center justify-between">
           <h4 className="w-full font-semibold lg:text-lg">
             <Link
-              href={`/me/playlist/${id}`}
+              href={asRoute(`/me/playlist/${id}`)}
               className="mx-auto flex max-w-fit items-center"
             >
               <span className="truncate">{name}</span>
