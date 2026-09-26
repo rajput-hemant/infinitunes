@@ -69,133 +69,137 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
-      <Controller
-        control={form.control}
-        name="email"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={!!fieldState.error}>
-            <FieldLabel className="sr-only">Email</FieldLabel>
-            <div className="relative">
-              <Input
-                type="email"
-                disabled={isSubmitting}
-                placeholder="you@domain.com"
-                className="shadow-xs"
-                {...field}
-              />
-            </div>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
+    <>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
+        <Controller
+          control={form.control}
+          name="email"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel className="sr-only">Email</FieldLabel>
+              <div className="relative">
+                <Input
+                  type="email"
+                  disabled={isSubmitting}
+                  placeholder="you@domain.com"
+                  className="shadow-xs"
+                  {...field}
+                />
+              </div>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
+        />
 
-      <Controller
-        control={form.control}
-        name="password"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={!!fieldState.error}>
-            <FieldLabel className="sr-only">Password</FieldLabel>
-            <div className="relative">
-              <Input
-                type={isPassVisible ? "text" : "password"}
-                disabled={isSubmitting}
-                placeholder="••••••••••"
-                className="pr-8 shadow-xs"
-                {...field}
-              />
-              <Tooltip>
-                <TooltipTrigger
-                  delay={150}
-                  aria-label={isPassVisible ? "Hide Password" : "Show Password"}
-                  tabIndex={-1}
-                  type="button"
-                  disabled={!field.value}
-                  onClick={() => setIsPassVisible(!isPassVisible)}
-                  className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                >
-                  {isPassVisible ? (
-                    <EyeOff className="size-5" />
-                  ) : (
-                    <Eye className="size-5" />
-                  )}
-                </TooltipTrigger>
+        <Controller
+          control={form.control}
+          name="password"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel className="sr-only">Password</FieldLabel>
+              <div className="relative">
+                <Input
+                  type={isPassVisible ? "text" : "password"}
+                  disabled={isSubmitting}
+                  placeholder="••••••••••"
+                  className="pr-8 shadow-xs"
+                  {...field}
+                />
+                <Tooltip>
+                  <TooltipTrigger
+                    delay={150}
+                    aria-label={
+                      isPassVisible ? "Hide Password" : "Show Password"
+                    }
+                    tabIndex={-1}
+                    type="button"
+                    disabled={!field.value}
+                    onClick={() => setIsPassVisible(!isPassVisible)}
+                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {isPassVisible ? (
+                      <EyeOff className="size-5" />
+                    ) : (
+                      <Eye className="size-5" />
+                    )}
+                  </TooltipTrigger>
 
-                <TooltipContent>
-                  <p className="text-xs">
-                    {isPassVisible ? "Hide Password" : "Show Password"}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
+                  <TooltipContent>
+                    <p className="text-xs">
+                      {isPassVisible ? "Hide Password" : "Show Password"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
+        />
 
-      <Controller
-        control={form.control}
-        name="newPassword"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={!!fieldState.error}>
-            <FieldLabel className="sr-only">New Password</FieldLabel>
-            <div className="relative">
-              <Input
-                type={isNewPassVisible ? "text" : "password"}
-                disabled={isSubmitting}
-                placeholder="••••••••••"
-                className="pr-8 shadow-xs"
-                {...field}
-              />
-              <Tooltip>
-                <TooltipTrigger
-                  delay={150}
-                  aria-label={
-                    isNewPassVisible ? "Hide Password" : "Show Password"
-                  }
-                  tabIndex={-1}
-                  type="button"
-                  disabled={!field.value}
-                  onClick={() => setIsNewPassVisible(!isNewPassVisible)}
-                  className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                >
-                  {isNewPassVisible ? (
-                    <EyeOff className="size-5" />
-                  ) : (
-                    <Eye className="size-5" />
-                  )}
-                </TooltipTrigger>
+        <Controller
+          control={form.control}
+          name="newPassword"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel className="sr-only">New Password</FieldLabel>
+              <div className="relative">
+                <Input
+                  type={isNewPassVisible ? "text" : "password"}
+                  disabled={isSubmitting}
+                  placeholder="••••••••••"
+                  className="pr-8 shadow-xs"
+                  {...field}
+                />
+                <Tooltip>
+                  <TooltipTrigger
+                    delay={150}
+                    aria-label={
+                      isNewPassVisible ? "Hide Password" : "Show Password"
+                    }
+                    tabIndex={-1}
+                    type="button"
+                    disabled={!field.value}
+                    onClick={() => setIsNewPassVisible(!isNewPassVisible)}
+                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {isNewPassVisible ? (
+                      <EyeOff className="size-5" />
+                    ) : (
+                      <Eye className="size-5" />
+                    )}
+                  </TooltipTrigger>
 
-                <TooltipContent>
-                  <p className="text-xs">
-                    {isNewPassVisible ? "Hide Password" : "Show Password"}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
+                  <TooltipContent>
+                    <p className="text-xs">
+                      {isNewPassVisible ? "Hide Password" : "Show Password"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
+        />
 
-      <Button
-        type="submit"
-        size="sm"
-        disabled={isSubmitting}
-        className="w-full font-semibold shadow-md"
-      >
-        {isSubmitting ? (
-          <Loader2 className="mr-2 size-4 animate-spin" />
-        ) : (
-          <Key className="mr-2 size-4" />
-        )}
-        Reset Password
-      </Button>
+        <Button
+          type="submit"
+          size="sm"
+          disabled={isSubmitting}
+          className="w-full font-semibold shadow-md"
+        >
+          {isSubmitting ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <Key className="mr-2 size-4" />
+          )}
+          Reset Password
+        </Button>
+      </form>
 
       <OAuthButtons
         isFormDisabled={isSubmitting}
         setIsSubmitting={setIsSubmitting}
       />
-    </form>
+    </>
   );
 }

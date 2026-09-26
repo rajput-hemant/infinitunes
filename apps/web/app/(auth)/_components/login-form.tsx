@@ -89,112 +89,118 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
-      <Controller
-        control={form.control}
-        name={isEmailMode ? "email" : "username"}
-        render={({ field, fieldState }) => (
-          <Field data-invalid={!!fieldState.error}>
-            <FieldLabel className="sr-only">
-              {isEmailMode ? "Email" : "Username"}
-            </FieldLabel>
-            <div className="relative">
-              <Input
-                type={isEmailMode ? "email" : "text"}
-                disabled={isSubmitting}
-                placeholder={isEmailMode ? "you@domain.com" : "@username"}
-                className="pr-8 shadow-xs"
-                {...field}
-              />
-              <Tooltip>
-                <TooltipTrigger
-                  delay={150}
-                  aria-label={
-                    isEmailMode ? "Use Username instead" : "Use Email instead"
-                  }
-                  tabIndex={-1}
-                  type="button"
-                  onClick={() => setIsEmailMode(!isEmailMode)}
-                  className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                >
-                  {isEmailMode ? (
-                    <AtSign className="size-5" />
-                  ) : (
-                    <Mail className="size-5" />
-                  )}
-                </TooltipTrigger>
+    <>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
+        <Controller
+          control={form.control}
+          name={isEmailMode ? "email" : "username"}
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel className="sr-only">
+                {isEmailMode ? "Email" : "Username"}
+              </FieldLabel>
+              <div className="relative">
+                <Input
+                  type={isEmailMode ? "email" : "text"}
+                  disabled={isSubmitting}
+                  placeholder={isEmailMode ? "you@domain.com" : "@username"}
+                  className="pr-8 shadow-xs"
+                  {...field}
+                />
+                <Tooltip>
+                  <TooltipTrigger
+                    delay={150}
+                    aria-label={
+                      isEmailMode ? "Use Username instead" : "Use Email instead"
+                    }
+                    tabIndex={-1}
+                    type="button"
+                    onClick={() => setIsEmailMode(!isEmailMode)}
+                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {isEmailMode ? (
+                      <AtSign className="size-5" />
+                    ) : (
+                      <Mail className="size-5" />
+                    )}
+                  </TooltipTrigger>
 
-                <TooltipContent>
-                  <p className="text-xs">
-                    {isEmailMode ? "Use Username instead" : "Use Email instead"}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
+                  <TooltipContent>
+                    <p className="text-xs">
+                      {isEmailMode
+                        ? "Use Username instead"
+                        : "Use Email instead"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
+        />
 
-      <Controller
-        control={form.control}
-        name="password"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={!!fieldState.error}>
-            <FieldLabel className="sr-only">Password</FieldLabel>
-            <div className="relative">
-              <Input
-                type={isPassVisible ? "text" : "password"}
-                disabled={isSubmitting}
-                placeholder="••••••••••"
-                className="pr-8 shadow-xs"
-                {...field}
-              />
-              <Tooltip>
-                <TooltipTrigger
-                  delay={150}
-                  aria-label={isPassVisible ? "Hide Password" : "Show Password"}
-                  tabIndex={-1}
-                  type="button"
-                  disabled={!field.value}
-                  onClick={() => setIsPassVisible(!isPassVisible)}
-                  className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                >
-                  {isPassVisible ? (
-                    <EyeOff className="size-5" />
-                  ) : (
-                    <Eye className="size-5" />
-                  )}
-                </TooltipTrigger>
+        <Controller
+          control={form.control}
+          name="password"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel className="sr-only">Password</FieldLabel>
+              <div className="relative">
+                <Input
+                  type={isPassVisible ? "text" : "password"}
+                  disabled={isSubmitting}
+                  placeholder="••••••••••"
+                  className="pr-8 shadow-xs"
+                  {...field}
+                />
+                <Tooltip>
+                  <TooltipTrigger
+                    delay={150}
+                    aria-label={
+                      isPassVisible ? "Hide Password" : "Show Password"
+                    }
+                    tabIndex={-1}
+                    type="button"
+                    disabled={!field.value}
+                    onClick={() => setIsPassVisible(!isPassVisible)}
+                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                  >
+                    {isPassVisible ? (
+                      <EyeOff className="size-5" />
+                    ) : (
+                      <Eye className="size-5" />
+                    )}
+                  </TooltipTrigger>
 
-                <TooltipContent>
-                  <p className="text-xs">
-                    {isPassVisible ? "Hide Password" : "Show Password"}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
+                  <TooltipContent>
+                    <p className="text-xs">
+                      {isPassVisible ? "Hide Password" : "Show Password"}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+              <FieldError errors={[fieldState.error]} />
+            </Field>
+          )}
+        />
 
-      <Button
-        type="submit"
-        size="sm"
-        disabled={isSubmitting}
-        className="w-full font-semibold shadow-md"
-      >
-        {isSubmitting ? (
-          <Loader2 className="mr-2 size-4 animate-spin" />
-        ) : isEmailMode ? (
-          <Mail className="mr-2 size-4" />
-        ) : (
-          <Fingerprint className="mr-2 size-4" />
-        )}
+        <Button
+          type="submit"
+          size="sm"
+          disabled={isSubmitting}
+          className="w-full font-semibold shadow-md"
+        >
+          {isSubmitting ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : isEmailMode ? (
+            <Mail className="mr-2 size-4" />
+          ) : (
+            <Fingerprint className="mr-2 size-4" />
+          )}
 
-        {isEmailMode ? "Login with Email" : "Login"}
-      </Button>
+          {isEmailMode ? "Login with Email" : "Login"}
+        </Button>
+      </form>
 
       <p className="mx-auto mt-2 text-xs text-muted-foreground hover:text-foreground">
         <Link
@@ -209,6 +215,6 @@ export function LoginForm() {
         isFormDisabled={isSubmitting}
         setIsSubmitting={setIsSubmitting}
       />
-    </form>
+    </>
   );
 }
