@@ -23,14 +23,14 @@ export async function createNewPlaylist(
   return playlist;
 }
 
-export function updateUser(data: {
+export async function updateUser(data: {
   name?: string;
   username?: string;
   email?: string;
 }) {
-  return api.user.updateUser(data);
+  return await api.user.updateUser(data);
 }
 
-export function deleteUser() {
-  return api.user.deleteUser({});
+export async function deleteUser() {
+  return await api.user.deleteUser({});
 }

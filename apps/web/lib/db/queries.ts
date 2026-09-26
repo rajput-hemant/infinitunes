@@ -4,12 +4,12 @@ import { updateTag } from "next/cache";
 
 import { api } from "~/lib/trpc/server";
 
-export function getUserPlaylists() {
-  return api.user.getUserPlaylists({});
+export async function getUserPlaylists() {
+  return await api.user.getUserPlaylists({});
 }
 
-export function getPlaylistDetails(playlistId: string) {
-  return api.user.getPlaylistDetails({ playlistId });
+export async function getPlaylistDetails(playlistId: string) {
+  return await api.user.getPlaylistDetails({ playlistId });
 }
 
 export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
@@ -18,8 +18,8 @@ export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
   return playlist;
 }
 
-export function getUserFavorites() {
-  return api.user.getUserFavorites({});
+export async function getUserFavorites() {
+  return await api.user.getUserFavorites({});
 }
 
 export async function addToFavorites(
