@@ -1,5 +1,6 @@
 "use client";
 
+import { Toaster } from "@infinitunes/ui/components/sonner";
 import { TooltipProvider } from "@infinitunes/ui/components/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
@@ -9,7 +10,6 @@ import { useState } from "react";
 import { AudioPlayerProvider } from "react-use-audio-player";
 import superjson from "superjson";
 
-import { AppToaster } from "~/components/app-toaster";
 import { api } from "~/lib/trpc/client";
 
 type Props = {
@@ -69,7 +69,7 @@ export default function Providers({ children, theme }: Props) {
           <TooltipProvider>{children}</TooltipProvider>
         </TRPCReactProvider>
 
-        <AppToaster />
+        <Toaster />
       </AudioPlayerProvider>
     </ThemeProvider>
   );
