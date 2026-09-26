@@ -9,6 +9,7 @@ import {
 import { compare, hash } from "bcryptjs";
 import type { BetterAuthPlugin } from "better-auth";
 import { getTableName } from "drizzle-orm";
+import { PgDialect } from "drizzle-orm/pg-core";
 
 import { createAuth } from "../src/auth";
 
@@ -72,6 +73,60 @@ describe("Better Auth configuration", () => {
     expect(auth.options.databaseHooks?.account?.update?.after).toBeTypeOf(
       "function",
     );
+  });
+
+  it("mirrors the credential password when an OAuth account sorts first", async () => {
+    const userId = "00000000-0000-0000-0000-000000000001";
+    const accounts = [
+      { userId, providerId: "google", password: null },
+      { userId, providerId: "credential", password: "credential-hash" },
+    ];
+    const mirroredPasswords: string[] = [];
+    const query = {
+      users,
+      betterAuthAccounts: {
+        findFirst: async ({
+          where,
+        }: {
+          where: Parameters<PgDialect["sqlToQuery"]>[0];
+        }) => {
+          const { params } = new PgDialect().sqlToQuery(where);
+          const userIdParam = params.indexOf(userId);
+          const providerIdParam = params.indexOf("credential");
+          return accounts.find(
+            (account) =>
+              account.userId === params[userIdParam] &&
+              (providerIdParam === -1 ||
+                account.providerId === params[providerIdParam]),
+          );
+        },
+      },
+      betterAuthSessions,
+      betterAuthVerifications,
+    };
+    const db = {
+      query,
+      update: () => ({
+        set: ({ password }: { password: string }) => ({
+          where: async () => mirroredPasswords.push(password),
+        }),
+      }),
+      _: {
+        fullSchema: {
+          users,
+          betterAuthAccounts,
+          betterAuthSessions,
+          betterAuthVerifications,
+        },
+      },
+    } as unknown as Parameters<typeof createAuth>[0];
+    const auth = createAuth(db);
+
+    await auth.options.databaseHooks?.user?.create?.after?.({
+      id: userId,
+    } as never);
+
+    expect(mirroredPasswords).toEqual(["credential-hash"]);
   });
 });
 

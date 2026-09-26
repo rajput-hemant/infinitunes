@@ -11,7 +11,7 @@ import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { username } from "better-auth/plugins";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import {
   USERNAME_MAX_LENGTH,
@@ -27,7 +27,10 @@ export function createAuth(
 
   async function mirrorAccountPassword(userId: string) {
     const account = await db.query.betterAuthAccounts.findFirst({
-      where: eq(betterAuthAccounts.userId, userId),
+      where: and(
+        eq(betterAuthAccounts.userId, userId),
+        eq(betterAuthAccounts.providerId, "credential"),
+      ),
     });
 
     if (account?.password) {
