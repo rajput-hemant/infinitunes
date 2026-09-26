@@ -8,10 +8,6 @@ mock.module("@upstash/redis", () => ({
   Redis: { fromEnv },
 }));
 
-mock.module("better-auth/cookies", () => ({
-  getSessionCookie: () => null,
-}));
-
 mock.module("next/server", () => ({
   NextResponse: {
     next: () => ({ status: 200 }),
