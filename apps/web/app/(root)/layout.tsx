@@ -21,7 +21,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
     <React.Fragment>
       <SidebarProvider>
         <Sidebar user={user} userPlaylists={userPlaylists} />
-        <SidebarInset>
+        <SidebarInset className="min-w-0">
           <Navbar />
           <main className="p-2 pb-24 sm:p-4 sm:pb-24 lg:pb-10">
             <SecondaryNavbar />
