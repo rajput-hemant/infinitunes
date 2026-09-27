@@ -70,7 +70,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
       <DropdownMenuContent
         side="bottom"
         align="end"
-        className="max-w-[300px] *:cursor-pointer"
+        className="max-w-[300px] *:cursor-pointer [&_[data-slot=dropdown-menu-item]]:py-1.5"
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex flex-col">
