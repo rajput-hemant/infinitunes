@@ -65,7 +65,7 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
                 onClick={navigateBack}
                 className="w-full border text-lg font-semibold shadow-xs"
               >
-                Back
+                Close
               </Button>
             }
           />
