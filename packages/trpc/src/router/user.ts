@@ -8,6 +8,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { compare, hash } from "bcryptjs";
 import { and, count, eq as drizzleEq, sql } from "drizzle-orm";
+import type { SQLWrapper } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure, publicProcedure, router } from "../trpc";
@@ -43,37 +44,17 @@ function favoritePatch(
   token: string,
   op: "append" | "remove",
 ) {
+  const patch = (column: SQLWrapper) =>
+    op === "append"
+      ? sql`case when ${token} = any(${column}) then ${column} else array_append(${column}, ${token}) end`
+      : sql`array_remove(${column}, ${token})`;
+
   return {
-    songs:
-      type === "song"
-        ? op === "append"
-          ? sql`array_append(songs, ${token})`
-          : sql`array_remove(songs, ${token})`
-        : undefined,
-    albums:
-      type === "album"
-        ? op === "append"
-          ? sql`array_append(albums, ${token})`
-          : sql`array_remove(albums, ${token})`
-        : undefined,
-    playlists:
-      type === "playlist"
-        ? op === "append"
-          ? sql`array_append(playlists, ${token})`
-          : sql`array_remove(playlists, ${token})`
-        : undefined,
-    artists:
-      type === "artist"
-        ? op === "append"
-          ? sql`array_append(artists, ${token})`
-          : sql`array_remove(artists, ${token})`
-        : undefined,
-    podcasts:
-      type === "show"
-        ? op === "append"
-          ? sql`array_append(podcasts, ${token})`
-          : sql`array_remove(podcasts, ${token})`
-        : undefined,
+    songs: type === "song" ? patch(favorites.songs) : undefined,
+    albums: type === "album" ? patch(favorites.albums) : undefined,
+    playlists: type === "playlist" ? patch(favorites.playlists) : undefined,
+    artists: type === "artist" ? patch(favorites.artists) : undefined,
+    podcasts: type === "show" ? patch(favorites.podcasts) : undefined,
   };
 }
 
@@ -276,27 +257,19 @@ export const userRouter = router({
 
   addToFavorites: protectedProcedure
     .input(favoriteInput)
-    .mutation(async ({ ctx, input }) => {
+    .mutation(({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const userFavorites = await ctx.db.query.favorites.findFirst({
-        where: (favoriteRow, { eq: equals }) =>
-          equals(favoriteRow.userId, userId),
-      });
-
-      if (!userFavorites) {
-        return ctx.db
-          .insert(favorites)
-          .values({
-            userId,
-            ...emptyFavoriteLists(input.type, input.token),
-          })
-          .returning();
-      }
 
       return ctx.db
-        .update(favorites)
-        .set(favoritePatch(input.type, input.token, "append"))
-        .where(drizzleEq(favorites.userId, userId))
+        .insert(favorites)
+        .values({
+          userId,
+          ...emptyFavoriteLists(input.type, input.token),
+        })
+        .onConflictDoUpdate({
+          target: favorites.userId,
+          set: favoritePatch(input.type, input.token, "append"),
+        })
         .returning();
     }),
 
