@@ -43,7 +43,7 @@ export const masterSidebarDesktopOffsetClassName =
   "top-14 h-[calc(100svh-3.5rem)]";
 
 export const masterSidebarGapShellClassName =
-  "lg:[--sidebar-width:var(--app-sidebar-width,16rem)] [&_[data-slot=sidebar][data-state=expanded]_[data-slot=sidebar-gap]]:w-(--sidebar-width)";
+  "w-0 shrink-0 has-[[data-slot=sidebar][data-state=expanded]]:lg:w-[20%] has-[[data-slot=sidebar][data-state=expanded]]:xl:w-[15%] has-[[data-slot=sidebar][data-state=expanded]]:2xl:w-[12.5%]";
 
 type AppSidebarProviderStyle = React.CSSProperties & {
   "--sidebar-width"?: string;

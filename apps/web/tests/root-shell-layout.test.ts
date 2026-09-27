@@ -35,26 +35,29 @@ describe("root shell layout", () => {
     );
   });
 
-  it("forces the shadcn sidebar gap to master responsive widths", async () => {
+  it("reserves main-column space when the desktop sidebar is expanded", async () => {
     const sidebar = await Bun.file(SIDEBAR).text();
 
     expect(sidebar).toContain("masterSidebarGapShellClassName");
-    expect(sidebar).toContain("data-state=expanded");
+    expect(sidebar).toContain("w-0 shrink-0");
     expect(sidebar).toContain(
-      "[&_[data-slot=sidebar][data-state=expanded]_[data-slot=sidebar-gap]]:w-(--sidebar-width)",
+      "has-[[data-slot=sidebar][data-state=expanded]]:lg:w-[20%]",
     );
     expect(sidebar).toContain(
-      "cn(masterSidebarWidthClassName, masterSidebarGapShellClassName)",
+      "has-[[data-slot=sidebar][data-state=expanded]]:xl:w-[15%]",
     );
-    expect(sidebar).not.toMatch(/sidebar-gap\]\]:!w-/);
+    expect(sidebar).toContain(
+      "has-[[data-slot=sidebar][data-state=expanded]]:2xl:w-[12.5%]",
+    );
   });
 
-  it("leaves collapsed offcanvas gap sizing to the stock sidebar rules", async () => {
+  it("releases main-column space when the desktop sidebar is collapsed", async () => {
     const sidebar = await Bun.file(SIDEBAR).text();
 
-    expect(sidebar).not.toContain("data-state=collapsed");
+    expect(sidebar).toContain("w-0 shrink-0");
+    expect(sidebar).not.toMatch(/sidebar-gap\]\]:!w-/);
     expect(sidebar).not.toMatch(
-      /\[&_\[data-slot=sidebar\]\[data-state=collapsed\]/,
+      /\[&_\[data-slot=sidebar\]\[data-state=collapsed\].*sidebar-gap/,
     );
   });
 });
