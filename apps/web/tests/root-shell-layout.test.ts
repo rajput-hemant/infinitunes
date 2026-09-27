@@ -39,7 +39,22 @@ describe("root shell layout", () => {
     const sidebar = await Bun.file(SIDEBAR).text();
 
     expect(sidebar).toContain("masterSidebarGapShellClassName");
-    expect(sidebar).toContain("[&_[data-slot=sidebar-gap]]");
-    expect(sidebar).toContain('<div className={masterSidebarGapShellClassName}>');
+    expect(sidebar).toContain("data-state=expanded");
+    expect(sidebar).toContain(
+      "[&_[data-slot=sidebar][data-state=expanded]_[data-slot=sidebar-gap]]:w-(--sidebar-width)",
+    );
+    expect(sidebar).toContain(
+      "cn(masterSidebarWidthClassName, masterSidebarGapShellClassName)",
+    );
+    expect(sidebar).not.toMatch(/sidebar-gap\]\]:!w-/);
+  });
+
+  it("leaves collapsed offcanvas gap sizing to the stock sidebar rules", async () => {
+    const sidebar = await Bun.file(SIDEBAR).text();
+
+    expect(sidebar).not.toContain("data-state=collapsed");
+    expect(sidebar).not.toMatch(
+      /\[&_\[data-slot=sidebar\]\[data-state=collapsed\]/,
+    );
   });
 });
