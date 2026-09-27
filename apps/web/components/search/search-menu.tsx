@@ -96,7 +96,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
         }
       />
 
-      <DialogContent className="max-w-7xl shadow-md">
+      <DialogContent className="max-w-7xl shadow-md sm:max-w-7xl">
         <div className="relative mr-4 mt-4">
           <Search className="absolute left-2 top-3 size-4 text-muted-foreground" />
 
@@ -104,7 +104,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search"
-            className="w-full pl-8"
+            className="h-10 w-full pl-8"
           />
         </div>
 
