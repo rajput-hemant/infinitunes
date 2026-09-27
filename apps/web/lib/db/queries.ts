@@ -18,6 +18,20 @@ export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
   return playlist;
 }
 
+export async function removeSongsFromPlaylist(
+  playlistId: string,
+  index: number,
+  songId: string,
+) {
+  const playlist = await api.user.removeSongsFromPlaylist({
+    playlistId,
+    index,
+    songId,
+  });
+  updateTag("user_playlists");
+  return playlist;
+}
+
 export async function getUserFavorites() {
   return await api.user.getUserFavorites({});
 }

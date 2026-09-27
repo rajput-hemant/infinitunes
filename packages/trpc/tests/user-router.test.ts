@@ -77,7 +77,36 @@ const fakeDb = {
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));
 
 const { appRouter } = await import("../src/root");
+const { removeSongAtPlaylistIndex } = await import("../src/router/user");
 const { createCallerFactory } = await import("../src/trpc");
+
+describe("removeSongAtPlaylistIndex", () => {
+  it("removes only the occurrence at the given index when songId matches", () => {
+    expect(removeSongAtPlaylistIndex(["a", "a", "b"], 0, "a")).toEqual([
+      "a",
+      "b",
+    ]);
+    expect(removeSongAtPlaylistIndex(["a", "a", "b"], 1, "a")).toEqual([
+      "a",
+      "b",
+    ]);
+    expect(removeSongAtPlaylistIndex(["a", "a", "b"], 2, "b")).toEqual([
+      "a",
+      "a",
+    ]);
+    expect(removeSongAtPlaylistIndex(["a"], 1, "a")).toBeNull();
+  });
+
+  it("rejects a filtered-list index that points at a different stored song", () => {
+    const stored = ["A", "B", "C"];
+    expect(removeSongAtPlaylistIndex(stored, 1, "C")).toBeNull();
+    expect(removeSongAtPlaylistIndex(stored, 2, "C")).toEqual(["A", "B"]);
+  });
+
+  it("rejects stale songId at the correct db index", () => {
+    expect(removeSongAtPlaylistIndex(["A", "B", "C"], 2, "A")).toBeNull();
+  });
+});
 
 describe("user router authorization", () => {
   beforeEach(() => {
@@ -213,6 +242,31 @@ describe("user router authorization", () => {
         playlistId: "playlist-victim",
         songs: ["attacker-song"],
       }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    });
+    await expect(
+      caller.user.removeSongsFromPlaylist({
+        playlistId: "playlist-victim",
+        index: 0,
+        songId: "existing-song",
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    });
+    await expect(
+      caller.user.renamePlaylist({
+        playlistId: "playlist-victim",
+        name: "Hijacked",
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    });
+    await expect(
+      caller.user.deletePlaylist({ playlistId: "playlist-victim" }),
     ).rejects.toMatchObject({
       code: "FORBIDDEN",
       message: "Unauthorized",

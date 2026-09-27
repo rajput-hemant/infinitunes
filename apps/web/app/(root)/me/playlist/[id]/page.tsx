@@ -7,6 +7,7 @@ import { notFound } from "next/navigation";
 
 import { ImageCollage } from "~/components/image-collage";
 import { PlayButton } from "~/components/play-button";
+import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { SongList } from "~/components/song-list/song-list";
 import { getPlaylistDetails } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
@@ -60,11 +61,22 @@ export default async function MyPlaylistsPage(props: Props) {
     });
   }
 
-  const imageSrcs = songsDetails?.songs
+  const songById = new Map(
+    songsDetails?.songs.map((song) => [song.id, song]) ?? [],
+  );
+  const playlistEntries = songs.flatMap((songId, dbIndex) => {
+    const song = songById.get(songId);
+    return song ? [{ song, dbIndex }] : [];
+  });
+  const playlistSongs = playlistEntries.map(({ song }) => song);
+  const playlistSongIndices = playlistEntries.map(({ dbIndex }) => dbIndex);
+
+  const imageSrcs = playlistSongs
     .slice(0, 4)
-    .map((song) => getImageSrc(song.image, "medium")) ?? [
-    "/images/placeholder/song.jpg",
-  ];
+    .map((song) => getImageSrc(song.image, "medium"))
+    .concat(
+      playlistSongs.length === 0 ? ["/images/placeholder/song.jpg"] : [],
+    );
 
   return (
     <div className="space-y-4">
@@ -76,22 +88,29 @@ export default async function MyPlaylistsPage(props: Props) {
         </div>
 
         <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
-          <h1
-            title={name}
-            className="flex items-center truncate text-center font-heading text-xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start"
-          >
-            {name}
-          </h1>
+          <div className="flex w-full max-w-full items-center justify-center gap-2 lg:justify-start">
+            <h1
+              title={name}
+              className="flex min-w-0 items-center truncate text-center font-heading text-xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start"
+            >
+              {name}
+            </h1>
+            <PlaylistManageMenu
+              playlist={{ id, name, description }}
+              redirectOnDelete
+              triggerClassName="shrink-0"
+            />
+          </div>
 
           <div className="space-y-2 text-sm text-muted-foreground">
             <p>{description}</p>
             <p>
               <span>{songs.length} Songs</span>
-              {songsDetails && songsDetails.songs.length > 0 && (
+              {playlistSongs.length > 0 && (
                 <span>
                   {" · "}
                   {formatDuration(
-                    `${songsDetails.songs.reduce(
+                    `${playlistSongs.reduce(
                       (acc, song) => acc + Number(song.more_info.duration),
                       0,
                     )}`,
@@ -102,7 +121,7 @@ export default async function MyPlaylistsPage(props: Props) {
             </p>
           </div>
 
-          {songsDetails && songsDetails.songs.length > 0 && (
+          {playlistSongs.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
               <PlayButton
                 type="song"
@@ -120,9 +139,13 @@ export default async function MyPlaylistsPage(props: Props) {
         </figcaption>
       </figure>
 
-      {songsDetails && songsDetails.songs.length ? (
+      {playlistSongs.length ? (
         <>
-          <SongList items={songsDetails.songs} />
+          <SongList
+            items={playlistSongs}
+            playlistId={id}
+            playlistSongIndices={playlistSongIndices}
+          />
 
           <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
             <em>Yay! You have seen it all</em>{" "}

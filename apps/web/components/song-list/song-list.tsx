@@ -21,10 +21,18 @@ type SongListProps = {
   items: (Song | Episode)[];
   showAlbum?: boolean;
   className?: string;
+  playlistId?: string;
+  playlistSongIndices?: number[];
 };
 
 export async function SongList(props: SongListProps) {
-  const { items, showAlbum = true, className } = props;
+  const {
+    items,
+    showAlbum = true,
+    className,
+    playlistId,
+    playlistSongIndices,
+  } = props;
 
   const user = await getUser();
 
@@ -41,7 +49,7 @@ export async function SongList(props: SongListProps) {
     <section className={className}>
       <ol className="space-y-2 text-muted-foreground">
         {items.map((item, i) => (
-          <li key={item.id}>
+          <li key={`${item.id}-${i}`}>
             <div className="group flex h-14 w-full cursor-pointer items-center justify-between overflow-hidden rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-xs">
               <div className="hidden w-[6%] lg:flex lg:justify-center xl:w-[4%]">
                 <span
@@ -171,6 +179,8 @@ export async function SongList(props: SongListProps) {
                   item={item}
                   showAlbum={showAlbum}
                   playlists={playlists}
+                  playlistId={playlistId}
+                  playlistSongIndex={playlistSongIndices?.[i]}
                 />
               </div>
             </div>

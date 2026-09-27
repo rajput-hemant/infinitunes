@@ -23,6 +23,21 @@ export async function createNewPlaylist(
   return playlist;
 }
 
+export async function renamePlaylist(
+  playlistId: string,
+  data: z.infer<typeof newPlaylistSchema>,
+) {
+  const playlist = await api.user.renamePlaylist({ playlistId, ...data });
+  updateTag("user_playlists");
+  return playlist;
+}
+
+export async function deletePlaylist(playlistId: string) {
+  const playlist = await api.user.deletePlaylist({ playlistId });
+  updateTag("user_playlists");
+  return playlist;
+}
+
 export async function updateUser(data: {
   name?: string;
   username?: string;

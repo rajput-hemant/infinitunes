@@ -88,6 +88,29 @@ const newPlaylistInput = z.object({
     .optional(),
 });
 
+const renamePlaylistInput = newPlaylistInput.extend({
+  playlistId: z.string(),
+});
+
+const removeSongsFromPlaylistInput = z.object({
+  playlistId: z.string(),
+  index: z.number().int().min(0),
+  songId: z.string(),
+});
+
+export function removeSongAtPlaylistIndex(
+  songs: string[],
+  index: number,
+  songId: string,
+) {
+  if (index < 0 || index >= songs.length || songs[index] !== songId) {
+    return null;
+  }
+  const next = [...songs];
+  next.splice(index, 1);
+  return next;
+}
+
 const updateUserInput = z.object({
   name: z.string().optional(),
   username: z.string().optional(),
@@ -143,6 +166,105 @@ export const userRouter = router({
         .returning();
 
       return updatedPlaylist;
+    }),
+
+  removeSongsFromPlaylist: protectedProcedure
+    .input(removeSongsFromPlaylistInput)
+    .mutation(async ({ ctx, input }) => {
+      const playlist = await ctx.db.query.myPlaylists.findFirst({
+        where: (playlistRow, { eq: equals }) =>
+          equals(playlistRow.id, input.playlistId),
+      });
+
+      if (!playlist) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Playlist not found",
+        });
+      }
+
+      if (playlist.userId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
+      }
+
+      const songs = removeSongAtPlaylistIndex(
+        playlist.songs,
+        input.index,
+        input.songId,
+      );
+
+      if (!songs) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Song not found in playlist at that position",
+        });
+      }
+
+      const [updatedPlaylist] = await ctx.db
+        .update(myPlaylists)
+        .set({ songs })
+        .where(drizzleEq(myPlaylists.id, input.playlistId))
+        .returning();
+
+      return updatedPlaylist;
+    }),
+
+  renamePlaylist: protectedProcedure
+    .input(renamePlaylistInput)
+    .mutation(async ({ ctx, input }) => {
+      const playlist = await ctx.db.query.myPlaylists.findFirst({
+        where: (playlistRow, { eq: equals }) =>
+          equals(playlistRow.id, input.playlistId),
+      });
+
+      if (!playlist) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Playlist not found",
+        });
+      }
+
+      if (playlist.userId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
+      }
+
+      const [updatedPlaylist] = await ctx.db
+        .update(myPlaylists)
+        .set({
+          name: input.name,
+          description: input.description,
+        })
+        .where(drizzleEq(myPlaylists.id, input.playlistId))
+        .returning();
+
+      return updatedPlaylist;
+    }),
+
+  deletePlaylist: protectedProcedure
+    .input(playlistInput)
+    .mutation(async ({ ctx, input }) => {
+      const playlist = await ctx.db.query.myPlaylists.findFirst({
+        where: (playlistRow, { eq: equals }) =>
+          equals(playlistRow.id, input.playlistId),
+      });
+
+      if (!playlist) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Playlist not found",
+        });
+      }
+
+      if (playlist.userId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
+      }
+
+      const [deletedPlaylist] = await ctx.db
+        .delete(myPlaylists)
+        .where(drizzleEq(myPlaylists.id, input.playlistId))
+        .returning();
+
+      return deletedPlaylist;
     }),
 
   getUserFavorites: protectedProcedure.input(z.object({})).query(({ ctx }) =>

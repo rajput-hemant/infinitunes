@@ -27,6 +27,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Heart,
+  ListMinus,
   ListMusic,
   ListOrdered,
   MoreVertical,
@@ -46,7 +47,7 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
-import { addSongsToPlaylist } from "~/lib/db/queries";
+import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/db/queries";
 import { cn, currentlyInDev } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
@@ -59,6 +60,8 @@ type TileMoreButtonProps = {
   item: Song | Episode | Queue;
   showAlbum: boolean;
   playlists?: MyPlaylist[];
+  playlistId?: string;
+  playlistSongIndex?: number;
   className?: string;
 };
 
@@ -90,7 +93,15 @@ function getItemArtists(item: Song | Episode | Queue) {
 }
 
 export function TileMoreButton(props: TileMoreButtonProps) {
-  const { user, item, showAlbum, playlists, className } = props;
+  const {
+    user,
+    item,
+    showAlbum,
+    playlists,
+    playlistId,
+    playlistSongIndex,
+    className,
+  } = props;
 
   const router = useRouter();
 
@@ -158,6 +169,22 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     });
   }
 
+  function removeFromPlaylist() {
+    if (!playlistId || playlistSongIndex === undefined) {
+      return;
+    }
+
+    toast.promise(
+      removeSongsFromPlaylist(playlistId, playlistSongIndex, item.id),
+      {
+      loading: "Removing from playlist...",
+      success: `"${getItemName(item)}" removed from playlist`,
+      error: (error) => error.message,
+        finally: () => router.refresh(),
+      },
+    );
+  }
+
   function playRadio() {
     currentlyInDev();
   }
@@ -182,6 +209,13 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       label: "Add To Playlist",
       onClick: togglePlaylistDialog,
       icon: ListMusic,
+    },
+    {
+      label: "Remove from Playlist",
+      onClick: removeFromPlaylist,
+      hide:
+        !playlistId || playlistSongIndex === undefined || item.type !== "song",
+      icon: ListMinus,
     },
     {
       label: "Play Radio",

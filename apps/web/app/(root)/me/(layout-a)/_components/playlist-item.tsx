@@ -6,6 +6,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
 import { ImageCollage } from "~/components/image-collage";
+import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { api } from "~/lib/trpc/server";
 import { asRoute } from "~/lib/utils";
 
@@ -38,6 +39,13 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
           >
             <span className="sr-only">View {name}</span>
           </Link>
+
+          <div className="absolute right-1 top-1 z-20 opacity-0 transition-opacity group-hover:opacity-100">
+            <PlaylistManageMenu
+              playlist={{ id, name, description }}
+              triggerClassName="rounded-md bg-background/80 p-1 shadow-sm backdrop-blur-sm"
+            />
+          </div>
 
           <ImageCollage src={songs.length > 4 ? imageSrcs : [imageSrcs[0]]} />
 
