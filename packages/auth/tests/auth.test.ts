@@ -38,6 +38,12 @@ describe("Better Auth configuration", () => {
     process.env.GITHUB_CLIENT_SECRET = "test-github-client-secret";
   });
 
+  it("generates UUID primary keys via advanced.database.generateId", () => {
+    const auth = createAuth(makeFakeDb());
+    expect(auth.options.advanced?.database?.generateId).toBe("uuid");
+    expect(auth.options.advanced?.generateId).toBeUndefined();
+  });
+
   it("disables implicit account linking", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.account?.accountLinking?.enabled).toBe(false);

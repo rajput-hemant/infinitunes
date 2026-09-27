@@ -166,7 +166,9 @@ export function createAuth(
         secure: env.NODE_ENV === "production",
         httpOnly: true,
       },
-      generateId: () => crypto.randomUUID(),
+      database: {
+        generateId: "uuid",
+      },
       crossSubDomainCookies: {
         enabled: false,
       },
