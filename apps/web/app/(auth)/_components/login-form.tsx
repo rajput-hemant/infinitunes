@@ -104,7 +104,7 @@ export function LoginForm() {
                   type={isEmailMode ? "email" : "text"}
                   disabled={isSubmitting}
                   placeholder={isEmailMode ? "you@domain.com" : "@username"}
-                  className="pr-8 shadow-xs"
+                  className="h-10 pr-8 shadow-xs"
                   {...field}
                 />
                 <Tooltip>
@@ -150,7 +150,7 @@ export function LoginForm() {
                   type={isPassVisible ? "text" : "password"}
                   disabled={isSubmitting}
                   placeholder="••••••••••"
-                  className="pr-8 shadow-xs"
+                  className="h-10 pr-8 shadow-xs"
                   {...field}
                 />
                 <Tooltip>
@@ -188,7 +188,7 @@ export function LoginForm() {
           type="submit"
           size="sm"
           disabled={isSubmitting}
-          className="w-full font-semibold shadow-md"
+          className="h-9 w-full font-semibold shadow-md"
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
