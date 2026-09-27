@@ -1,6 +1,6 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
-import { formatDuration, getImageSrc, getToken } from "@infinitunes/types";
+import { formatDuration, decode, getImageSrc, getToken } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
@@ -101,7 +101,7 @@ export async function SongList(props: SongListProps) {
                       )}
                       className="text-primary group-hover:text-primary lg:text-muted-foreground"
                     >
-                      {item.title}
+                      {decode(item.title)}
                     </Link>
                   </h4>
 

@@ -74,19 +74,19 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             size="sm"
             variant="outline"
             className={cn(
-              "flex size-10 p-0 shadow-xs lg:w-10 lg:justify-center xl:w-60 xl:justify-start xl:px-3 xl:py-2",
+              "flex size-10 p-0 shadow-xs lg:w-60 lg:justify-start lg:px-3 lg:py-2",
               className,
             )}
           >
             <Search
               aria-hidden="true"
-              className="inline-block size-4 xl:mr-2"
+              className="inline-block size-4 lg:mr-2"
             />
             <span className="sr-only">Search</span>
 
-            <span className="hidden xl:inline-block">Search...</span>
+            <span className="hidden lg:inline-block">Search...</span>
 
-            <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium xl:block">
+            <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:block">
               <span className="text-xs">
                 {mounted && isMacOs() ? "⌘" : "Ctrl"}
               </span>{" "}
@@ -96,7 +96,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
         }
       />
 
-      <DialogContent className="max-w-7xl shadow-md">
+      <DialogContent className="max-w-7xl shadow-md sm:max-w-7xl">
         <div className="relative mr-4 mt-4">
           <Search className="absolute left-2 top-3 size-4 text-muted-foreground" />
 
@@ -104,7 +104,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search"
-            className="w-full pl-8"
+            className="h-10 w-full pl-8"
           />
         </div>
 

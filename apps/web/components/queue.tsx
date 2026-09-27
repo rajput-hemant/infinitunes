@@ -62,7 +62,7 @@ export function Queue() {
 
       <SheetContent
         dir="right"
-        className="flex flex-col space-y-2 px-2 md:max-w-xl"
+        className="flex flex-col space-y-2 px-2 sm:max-w-xl!"
       >
         <SheetHeader className="space-y-0 px-4">
           <SheetTitle className="flex items-center justify-between pr-4">

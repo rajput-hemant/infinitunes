@@ -142,17 +142,18 @@ export const favorites = createTable("favorite", {
   id: uuid("id").defaultRandom().primaryKey(),
   userId: uuid("userId")
     .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
+    .notNull()
+    .unique(),
   // @ts-expect-error string is not assignable to type 'string[]'
-  songs: text("songs").array().unique().default("{}").notNull(),
+  songs: text("songs").array().default("{}").notNull(),
   // @ts-expect-error string is not assignable to type 'string[]'
-  albums: text("albums").array().unique().default("{}").notNull(),
+  albums: text("albums").array().default("{}").notNull(),
   // @ts-expect-error string is not assignable to type 'string[]'
-  playlists: text("playlists").array().unique().default("{}").notNull(),
+  playlists: text("playlists").array().default("{}").notNull(),
   // @ts-expect-error string is not assignable to type 'string[]'
-  artists: text("artists").array().unique().default("{}").notNull(),
+  artists: text("artists").array().default("{}").notNull(),
   // @ts-expect-error string is not assignable to type 'string[]'
-  podcasts: text("podcasts").array().unique().default("{}").notNull(),
+  podcasts: text("podcasts").array().default("{}").notNull(),
 });
 
 /* ---------------------------------------------------------------------------

@@ -67,7 +67,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
         }
       />
 
-      <DropdownMenuContent>
+      <DropdownMenuContent className="w-auto min-w-[18.5625rem]">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="p-4">
             <h1 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
@@ -90,6 +90,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
               key={lang}
               value={lang.toLowerCase()}
               variant="outline"
+              className="h-10 min-w-[4.4375rem] px-4"
             >
               {lang}
             </ToggleGroupItem>
