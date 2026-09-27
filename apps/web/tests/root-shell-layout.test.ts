@@ -24,4 +24,14 @@ describe("root shell layout", () => {
     expect(sidebar).toContain('"--sidebar-width": "var(--app-sidebar-width');
     expect(sidebar).toContain("flex-col");
   });
+
+  it("offsets the desktop sidebar below the sticky navbar like master top-14", async () => {
+    const sidebar = await Bun.file(SIDEBAR).text();
+
+    expect(sidebar).toContain("masterSidebarDesktopOffsetClassName");
+    expect(sidebar).toContain("top-14 h-[calc(100svh-3.5rem)]");
+    expect(sidebar).toContain(
+      "<SidebarPrimitive className={masterSidebarDesktopOffsetClassName}",
+    );
+  });
 });

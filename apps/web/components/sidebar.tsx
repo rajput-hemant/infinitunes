@@ -36,24 +36,30 @@ type SidebarProps = {
   userPlaylists?: MyPlaylist[];
 };
 
-/** Master parity: lg 20%, xl 15%, 2xl 12.5% (see master src/components/sidebar.tsx). */
 export const masterSidebarWidthClassName =
   "lg:[--app-sidebar-width:20%] xl:[--app-sidebar-width:15%] 2xl:[--app-sidebar-width:12.5%]";
+
+export const masterSidebarDesktopOffsetClassName =
+  "top-14 h-[calc(100svh-3.5rem)]";
+
+type AppSidebarProviderStyle = React.CSSProperties & {
+  "--sidebar-width"?: string;
+};
 
 export function AppSidebarProvider({
   className,
   style,
   ...props
 }: React.ComponentProps<typeof SidebarProvider>) {
+  const providerStyle: AppSidebarProviderStyle = {
+    "--sidebar-width": "var(--app-sidebar-width, 16rem)",
+    ...style,
+  };
+
   return (
     <SidebarProvider
       className={cn("flex-col", masterSidebarWidthClassName, className)}
-      style={
-        {
-          "--sidebar-width": "var(--app-sidebar-width, 16rem)",
-          ...style,
-        } as React.CSSProperties
-      }
+      style={providerStyle}
       {...props}
     />
   );
@@ -63,7 +69,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
 
   return (
-    <SidebarPrimitive>
+    <SidebarPrimitive className={masterSidebarDesktopOffsetClassName}>
       <SidebarHeader>
         <h3 className="pl-3 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           Discover
