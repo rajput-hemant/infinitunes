@@ -42,6 +42,9 @@ export const masterSidebarWidthClassName =
 export const masterSidebarDesktopOffsetClassName =
   "top-14 h-[calc(100svh-3.5rem)]";
 
+export const masterSidebarGapShellClassName =
+  "lg:[&_[data-slot=sidebar-gap]]:!w-[20%] xl:[&_[data-slot=sidebar-gap]]:!w-[15%] 2xl:[&_[data-slot=sidebar-gap]]:!w-[12.5%]";
+
 type AppSidebarProviderStyle = React.CSSProperties & {
   "--sidebar-width"?: string;
 };
@@ -69,7 +72,8 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
 
   return (
-    <SidebarPrimitive className={masterSidebarDesktopOffsetClassName}>
+    <div className={masterSidebarGapShellClassName}>
+      <SidebarPrimitive className={masterSidebarDesktopOffsetClassName}>
       <SidebarHeader>
         <h3 className="pl-3 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           Discover
@@ -193,6 +197,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
         )}
       </SidebarContent>
     </SidebarPrimitive>
+    </div>
   );
 }
 

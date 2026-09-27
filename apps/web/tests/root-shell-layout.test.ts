@@ -34,4 +34,12 @@ describe("root shell layout", () => {
       "<SidebarPrimitive className={masterSidebarDesktopOffsetClassName}",
     );
   });
+
+  it("forces the shadcn sidebar gap to master responsive widths", async () => {
+    const sidebar = await Bun.file(SIDEBAR).text();
+
+    expect(sidebar).toContain("masterSidebarGapShellClassName");
+    expect(sidebar).toContain("[&_[data-slot=sidebar-gap]]");
+    expect(sidebar).toContain('<div className={masterSidebarGapShellClassName}>');
+  });
 });
