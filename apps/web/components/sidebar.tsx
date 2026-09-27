@@ -45,6 +45,9 @@ export const masterSidebarDesktopOffsetClassName =
 export const masterSidebarGapShellClassName =
   "w-0 shrink-0 has-[[data-slot=sidebar][data-state=expanded]]:lg:w-[20%] has-[[data-slot=sidebar][data-state=expanded]]:xl:w-[15%] has-[[data-slot=sidebar][data-state=expanded]]:2xl:w-[12.5%]";
 
+export const masterSidebarDesktopVisibilityClassName =
+  "max-lg:[&_[data-slot=sidebar]]:!hidden max-lg:[&_[data-slot=sidebar-container]]:!hidden";
+
 type AppSidebarProviderStyle = React.CSSProperties & {
   "--sidebar-width"?: string;
 };
@@ -72,7 +75,13 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
 
   return (
-    <div className={cn(masterSidebarWidthClassName, masterSidebarGapShellClassName)}>
+    <div
+      className={cn(
+        masterSidebarWidthClassName,
+        masterSidebarGapShellClassName,
+        masterSidebarDesktopVisibilityClassName,
+      )}
+    >
       <SidebarPrimitive className={masterSidebarDesktopOffsetClassName}>
       <SidebarHeader>
         <h3 className="pl-3 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">

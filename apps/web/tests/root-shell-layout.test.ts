@@ -35,6 +35,16 @@ describe("root shell layout", () => {
     );
   });
 
+  it("hides the desktop sidebar peer below lg like master", async () => {
+    const sidebar = await Bun.file(SIDEBAR).text();
+
+    expect(sidebar).toContain("masterSidebarDesktopVisibilityClassName");
+    expect(sidebar).toContain("max-lg:[&_[data-slot=sidebar]]:!hidden");
+    expect(sidebar).toContain(
+      "max-lg:[&_[data-slot=sidebar-container]]:!hidden",
+    );
+  });
+
   it("reserves main-column space when the desktop sidebar is expanded", async () => {
     const sidebar = await Bun.file(SIDEBAR).text();
 
