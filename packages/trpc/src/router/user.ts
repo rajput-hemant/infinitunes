@@ -94,7 +94,6 @@ export function removeSongAtPlaylistIndex(
 
 const updateUserInput = z.object({
   name: z.string().optional(),
-  username: z.string().optional(),
   email: z.string().optional(),
 });
 
@@ -397,29 +396,12 @@ export const userRouter = router({
     .input(updateUserInput)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const username = input.username;
-
-      if (username) {
-        const usernameExists = await ctx.db.query.users.findFirst({
-          where: (userRow, { eq: equals }) =>
-            equals(userRow.username, username),
-        });
-
-        if (usernameExists && usernameExists.id !== userId) {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message: "Username already exists, please try another one",
-          });
-        }
-      }
 
       const patch: {
         betterAuthName?: string;
-        username?: string;
         email?: string;
       } = {};
       if (input.name !== undefined) patch.betterAuthName = input.name;
-      if (input.username !== undefined) patch.username = input.username;
       if (input.email !== undefined) patch.email = input.email;
       if (Object.keys(patch).length > 0) {
         await ctx.db

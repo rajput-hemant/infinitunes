@@ -1,23 +1,5 @@
 import * as z from "zod";
 
-import {
-  USERNAME_MAX_LENGTH,
-  USERNAME_MIN_LENGTH,
-  USERNAME_REGEX,
-} from "./constants";
-
-export const usernameSchema = z
-  .string()
-  .min(1, "Username is Required")
-  .regex(
-    new RegExp(`^(?=.{${USERNAME_MIN_LENGTH},${USERNAME_MAX_LENGTH}}$)`),
-    "Username must be 8-15 characters long.",
-  )
-  .regex(
-    USERNAME_REGEX,
-    "Username must be alphanumeric and can contain [_ . -]",
-  );
-
 export const emailSchema = z
   .string()
   .min(1, "Email is Required")
@@ -36,18 +18,10 @@ export const passwordSchema = z
   )
   .min(8, "Password must be at least 8 characters long.");
 
-export const loginSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("username"),
-    username: usernameSchema,
-    password: passwordSchema,
-  }),
-  z.object({
-    type: z.literal("email"),
-    email: emailSchema,
-    password: passwordSchema,
-  }),
-]);
+export const loginSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+});
 
 export const signUpSchema = z
   .object({

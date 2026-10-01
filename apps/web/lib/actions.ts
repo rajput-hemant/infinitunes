@@ -40,7 +40,6 @@ export async function deletePlaylist(playlistId: string) {
 
 export async function updateUser(data: {
   name?: string;
-  username?: string;
   email?: string;
 }) {
   return await api.user.updateUser(data);

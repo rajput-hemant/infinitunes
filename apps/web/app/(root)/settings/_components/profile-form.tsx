@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   emailSchema,
   passwordSchema,
-  usernameSchema,
 } from "@infinitunes/auth/schemas";
 import {
   AlertDialog,
@@ -48,13 +47,11 @@ type ProfileFormProps = React.ComponentProps<"div"> & {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    username?: string | null;
   };
 };
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is Required"),
-  username: usernameSchema,
   email: emailSchema,
   password: passwordSchema.optional(),
 });
@@ -75,7 +72,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   const defaultValues: FormData = {
     name: user.name ?? "",
-    username: user.username ?? "",
     email: user.email ?? "",
   };
 
@@ -124,29 +120,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 </div>
                 <FieldDescription>
                   Your name will be displayed on the site.
-                </FieldDescription>
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
-
-          <Controller
-            control={form.control}
-            name="username"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error}>
-                <FieldLabel>Username</FieldLabel>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    disabled={isSubmitting}
-                    placeholder={user.name ?? "@johndoe"}
-                    className="w-96 shadow-xs"
-                    {...field}
-                  />
-                </div>
-                <FieldDescription>
-                  Your username will be used in your profile URL.
                 </FieldDescription>
                 <FieldError errors={[fieldState.error]} />
               </Field>

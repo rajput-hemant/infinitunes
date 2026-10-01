@@ -15,7 +15,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@infinitunes/ui/components/tooltip";
-import { AtSign, Eye, EyeOff, Fingerprint, Loader2, Mail } from "lucide-react";
+import { Eye, EyeOff, Fingerprint, Loader2, Mail } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import React from "react";
@@ -28,15 +28,14 @@ import { OAuthButtons } from "./oauth-buttons";
 type FormData = z.infer<typeof loginSchema>;
 
 const defaultValues: FormData = {
-  type: "email",
   email: "",
   password: "",
 };
 
 export function LoginForm() {
-  const [isEmailMode, setIsEmailMode] = React.useState(true);
   const [isPassVisible, setIsPassVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [isPasskeyLoading, setIsPasskeyLoading] = React.useState(false);
 
   const searchParams = useSearchParams();
   const authError = searchParams.get("error");
@@ -56,28 +55,15 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      if (formData.type === "email") {
-        const { error } = await authClient.signIn.email({
-          email: formData.email,
-          password: formData.password,
-        });
+      const { error } = await authClient.signIn.email({
+        email: formData.email,
+        password: formData.password,
+      });
 
-        if (error) {
-          toast.error(error.message ?? "Something went wrong.");
-        } else {
-          toast.success("You have been signed in.");
-        }
+      if (error) {
+        toast.error(error.message ?? "Something went wrong.");
       } else {
-        const { error } = await authClient.signIn.username({
-          username: formData.username!,
-          password: formData.password,
-        });
-
-        if (error) {
-          toast.error(error.message ?? "Something went wrong.");
-        } else {
-          toast.success("You have been signed in.");
-        }
+        toast.success("You have been signed in.");
       }
     } catch (error) {
       const err = error as Error;
@@ -88,51 +74,50 @@ export function LoginForm() {
     }
   }
 
+  async function passkeySignInHandler() {
+    setIsPasskeyLoading(true);
+
+    try {
+      const { error } = await authClient.signIn.passkey();
+
+      if (error) {
+        if (error.message?.toLowerCase().includes("cancel")) {
+          toast.info("Passkey sign-in was cancelled.");
+        } else {
+          toast.error(error.message ?? "Passkey sign-in failed.");
+        }
+      } else {
+        toast.success("You have been signed in.");
+      }
+    } catch (error) {
+      const err = error as Error;
+      console.error(err.message);
+      toast.error("Passkey sign-in failed.");
+    } finally {
+      setIsPasskeyLoading(false);
+    }
+  }
+
+  const isDisabled = isSubmitting || isPasskeyLoading;
+
   return (
     <>
       <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
         <Controller
           control={form.control}
-          name={isEmailMode ? "email" : "username"}
+          name="email"
           render={({ field, fieldState }) => (
             <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">
-                {isEmailMode ? "Email" : "Username"}
-              </FieldLabel>
+              <FieldLabel className="sr-only">Email</FieldLabel>
               <div className="relative">
                 <Input
-                  type={isEmailMode ? "email" : "text"}
-                  disabled={isSubmitting}
-                  placeholder={isEmailMode ? "you@domain.com" : "@username"}
+                  type="email"
+                  autoComplete="email webauthn"
+                  disabled={isDisabled}
+                  placeholder="you@domain.com"
                   className="h-10 pr-8 shadow-xs"
                   {...field}
                 />
-                <Tooltip>
-                  <TooltipTrigger
-                    delay={150}
-                    aria-label={
-                      isEmailMode ? "Use Username instead" : "Use Email instead"
-                    }
-                    tabIndex={-1}
-                    type="button"
-                    onClick={() => setIsEmailMode(!isEmailMode)}
-                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    {isEmailMode ? (
-                      <AtSign className="size-5" />
-                    ) : (
-                      <Mail className="size-5" />
-                    )}
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-                    <p className="text-xs">
-                      {isEmailMode
-                        ? "Use Username instead"
-                        : "Use Email instead"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
               </div>
               <FieldError errors={[fieldState.error]} />
             </Field>
@@ -148,7 +133,8 @@ export function LoginForm() {
               <div className="relative">
                 <Input
                   type={isPassVisible ? "text" : "password"}
-                  disabled={isSubmitting}
+                  autoComplete="current-password webauthn"
+                  disabled={isDisabled}
                   placeholder="••••••••••"
                   className="h-10 pr-8 shadow-xs"
                   {...field}
@@ -187,18 +173,31 @@ export function LoginForm() {
         <Button
           type="submit"
           size="sm"
-          disabled={isSubmitting}
+          disabled={isDisabled}
           className="h-9 w-full font-semibold shadow-md"
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
-          ) : isEmailMode ? (
+          ) : (
             <Mail className="mr-2 size-4" />
+          )}
+          Login with Email
+        </Button>
+
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={isDisabled}
+          onClick={passkeySignInHandler}
+          className="h-9 w-full font-semibold shadow-md"
+        >
+          {isPasskeyLoading ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
           ) : (
             <Fingerprint className="mr-2 size-4" />
           )}
-
-          {isEmailMode ? "Login with Email" : "Login"}
+          Sign in with Passkey
         </Button>
       </form>
 
@@ -212,7 +211,7 @@ export function LoginForm() {
       </p>
 
       <OAuthButtons
-        isFormDisabled={isSubmitting}
+        isFormDisabled={isDisabled}
         setIsSubmitting={setIsSubmitting}
       />
     </>
