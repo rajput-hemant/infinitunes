@@ -2,6 +2,10 @@
 
 Moved from the root README. Source of truth for building, running and deploying Infinitunes.
 
+## Purpose
+
+Infinitunes is a portfolio showcase project (declared by the captain, alongside Lipi). It is educational and non-commercial, as stated in the README disclaimer; there is no commercial roadmap.
+
 ## Building from Source
 
 This is a Bun monorepo. The web app lives in `apps/web`.

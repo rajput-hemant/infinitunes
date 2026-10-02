@@ -16,5 +16,5 @@ From [migration-acceptance.md](migration-acceptance.md) section 12 and the [plan
 
 ## Product
 
-- [ ] README still labels the app `[WIP]`; no product roadmap or requirements document exists. Captain to state the target feature scope.
-- [ ] Deferred seams from the plan (`packages/domain`, `packages/api-client`, `packages/player`) are not extracted; revisit only when a native app creates a real need.
+- [ ] README still labels the app `[WIP]`; as a portfolio showcase, decide when it counts as finished (see [project.md](project.md#purpose)).
+- [ ] Deferred seams from the plan (`packages/domain`, `packages/api-client`, `packages/player`) are not extracted; revisit only if a native app is pursued.
