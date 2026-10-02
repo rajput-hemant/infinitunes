@@ -1,9 +1,21 @@
 ---
 name: verify
 description: DRAFT verification skill for Infinitunes, the Next.js 16 music web app in apps/web (Bun monorepo). Use it to launch the app against a disposable local Postgres, check readiness, and drive or prove browse, search, player, auth (email, passkey, OAuth entry), settings and playlist flows. Browser recipes are pending the user-selected browser skill; nothing here is live-verified yet.
+disable-model-invocation: true
 ---
 
 # Verify Infinitunes (DRAFT)
+
+> [!IMPORTANT]
+> **Manual trigger only.** This skill must NOT be invoked automatically by commit, push, PR creation, poteto-mode, or any other ship gate. Run it only when explicitly instructed.
+>
+> **Standalone invocation:**
+>
+> - Claude: `/verify` or "read and run `.agents/skills/verify/SKILL.md`"
+> - Codex: `$verify` (when discovered) or "read `.agents/skills/verify/SKILL.md` and run a verification pass"
+> - Otherwise: explicitly instruct the agent to read this file and execute the launch, doctor, drive, evidence and cleanup steps.
+>
+> Launch, doctor, drive, evidence and cleanup phases defined below are preserved; only automatic triggering is prohibited.
 
 **Status: DRAFT.** Written from source and existing documented commands only. Launch, doctor, drive, evidence and cleanup below have not been executed with a browser skill. Every feature file is marked DRAFT with `Last live proof: none`. Do not report a PASS from this skill until a run has produced evidence under `docs/checks/evidence/`.
 

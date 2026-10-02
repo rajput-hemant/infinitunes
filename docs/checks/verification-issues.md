@@ -39,6 +39,8 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | [ISSUE-019](#issue-019) | GAP                     | high     | no browser proof of any feature or UI quality | needs-browser  |
 | [ISSUE-020](#issue-020) | GAP                     | low      | rate limiting                                 | open           |
 | [ISSUE-021](#issue-021) | CONFIRMED               | low      | stale process notes                           | closed         |
+| [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | open           |
+| [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | open           |
 
 ## Confirmed
 
@@ -141,6 +143,37 @@ Stale process items from the migration report, corrected here.
 - Evidence: [../migration-acceptance.md](../migration-acceptance.md) section 12 lists "Docker image build" and Chrome-absent blockers and section 8 says Chrome is missing; section 13 states it "supersedes their Docker, live-data and browser blockers" and records a Docker build pass and Chrome runs. `package.json` `packageManager` and `.github/workflows/ci.yml` now pin Bun `1.4.2` (sections 9 and the header still mention 1.3.14).
 - Correction: treat sections 6, 8 and 12 as historical; the open items are in [../TODO.md](../TODO.md). Prior proofs stay in section 13 and are not re-attributed to this verification.
 - State closed (documentation note only; the older report text is left as the record).
+
+### ISSUE-022
+
+Artist details-header "Play Radio" creates a station but gets zero songs back — fails silently (no queue update, no `activeRadio`).
+
+- Evidence (browser, 2026-10-02, run `browser-radio-3151`):
+  - Opened `/artist/arijit-singh-songs/LlRWpHzy3Hk_`, clicked "More options → Play Radio".
+  - Network: `POST /api/trpc/radio.createStation?batch=1` 200, request body `{"type":"artist","name":"Arijit Singh","artistId":null,"language":null}`. Station returned `stationId: "tctBT65u..."`.
+  - Network: `GET /api/trpc/radio.songs?batch=1` 200, response `"json":[]` (empty songs array).
+  - localStorage after 10s poll: `activeRadio: null`, `queue` length unchanged.
+  - Root cause in `apps/web/components/details-header/more-button.tsx` `playRadio()` (lines 130–131): when `type === "artist"`, `radioType = "artist"` is set but `artistId` remains `undefined`. The numeric artist ID (e.g. `461968`) needed for `~^~artist_radio~^~<id>` station format is not available in the component's `type`/`name` props — only the token-style URL segment is.
+  - `radioSongs.length === 0` triggers silent toast error "Could not find songs for this radio" (no localStorage write, no console error captured).
+  - Fix direction: pass the artist's numeric `id` (raw API field) down to the `MoreButton` props, or derive it from the URL token via a separate lookup.
+- Reproduce (browser): open any artist page, "More options → Play Radio". Queue does not change after the toast clears.
+- Expected: radio starts with artist-seeded songs. Actual: silent failure, no queue update.
+- State open.
+
+### ISSUE-023
+
+After a successful email login, the login form stays on `/login` — no client-side redirect to home.
+
+- Evidence (browser, 2026-10-02, run `browser-radio-3151`):
+  - Filled and submitted the login form at `/login` with `radiotest@example.com` / `Password123!`.
+  - Network: `POST /api/auth/sign-in/email` 200, response includes `token`, `user`, `redirect:false`, and `set-cookie: better-auth.session_token`.
+  - URL after submit: still `http://localhost:3151/login` (confirmed by snapshot check).
+  - Root cause in `apps/web/app/(auth)/_components/login-form.tsx` `onSubmit()` (line 66): success path only calls `toast.success("You have been signed in.")` — no `router.push("/")` or equivalent.
+  - The session cookie is valid; navigating to `/me` directly afterward works (CONFIRMED — shows user dashboard).
+  - This is a UX gap: the user must manually navigate away after login. Signup redirect was already correct in prior tests.
+- Reproduce (browser): submit valid credentials at `/login`, observe URL does not change.
+- Expected: redirect to `/` (or the originally requested protected route) on success. Actual: stays on `/login`.
+- State open.
 
 ## Hypotheses
 

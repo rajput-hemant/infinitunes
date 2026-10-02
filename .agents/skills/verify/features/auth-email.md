@@ -1,11 +1,14 @@
 # Email signup, login, logout, session
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-019 in [verification-issues.md](../../../../docs/checks/verification-issues.md).
+**Status: LIVE PROOF (partial).** Signup, session persistence, /me access, settings access, logout, and post-logout redirect confirmed in browser run `browser-radio-3151` (2026-10-02). Login form no-redirect issue found — see [ISSUE-023](../../../../docs/checks/verification-issues.md#issue-023).
+Issues: [ISSUE-019](../../../../docs/checks/verification-issues.md#issue-019), [ISSUE-023](../../../../docs/checks/verification-issues.md#issue-023).
+
+Last live proof: 2026-10-02, run `browser-radio-3151`, port 3151, container `infinitunes-verify-pg-3151`. Evidence: `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio/evidence/`.
 
 ## Sub-features
 
 - Signup: email, password, confirm password (`apps/web/app/(auth)/_components/signup-form.tsx`, `authClient.signUp.email`); toast `Account Created Successfully`.
-- Login: `Login with Email` (`login-form.tsx`, `authClient.signIn.email`); toast `You have been signed in.`.
+- Login: `Login with Email` (`login-form.tsx`, `authClient.signIn.email`); toast `You have been signed in.`
 - Password rules (`packages/auth/src/schemas.ts`): at least 8 chars, upper, lower, digit, special, no all-whitespace; confirm must match.
 - Logout (`me/(layout-a)/_components/logout.tsx` and user dropdown).
 - Session: 30 day expiry, 1 day refresh, cookie cache off (`packages/auth/src/auth.ts`); cookie httpOnly, `sameSite=lax`, `secure` only in production.
@@ -15,7 +18,22 @@
 
 Header or user dropdown shows login; `/login` and `/signup` render as a modal (`@modal`) when navigated from inside the app and as full pages on direct load. Toggle between them with `auth-mode-toggle.tsx`.
 
-## Driving it with browser skill (pending)
+## Browser proof (run browser-radio-3151, 2026-10-02)
+
+Evidence screenshots in `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio/evidence/`.
+
+| Feature                                     | Result  | Screenshot                          | Notes                                                                                                                                                                                      |
+| ------------------------------------------- | ------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Email signup (`radiotest@example.com`)      | ✅ PASS | `08-signup-page.png`                | DB confirms user row + credential. Redirected to `/` after signup.                                                                                                                         |
+| `/me` redirect (unauthenticated, curl)      | ✅ PASS | —                                   | `curl` → 307 → `/login`                                                                                                                                                                    |
+| `/me` accessible when logged in             | ✅ PASS | `09-me-authenticated.png`           | Shows user profile, playlists, library nav                                                                                                                                                 |
+| `/settings` accessible when logged in       | ✅ PASS | `10-settings-page.png`              | Account, Appearance, Preferences sections                                                                                                                                                  |
+| Logout via user dropdown                    | ✅ PASS | —                                   | `POST /api/auth/sign-out` 200, session cookie cleared                                                                                                                                      |
+| `/me` after logout redirects to `/login`    | ✅ PASS | `11-me-guest-redirect-to-login.png` | Browser navigated to `/me`, ended on `/login`                                                                                                                                              |
+| Login form (`POST /api/auth/sign-in/email`) | ✅ PASS | `12-login-flow.png`                 | 200, session cookie set, user object returned                                                                                                                                              |
+| Login page redirect after success           | ❌ FAIL | —                                   | Form stays on `/login`; no `router.push()` after toast. See [ISSUE-023](../../../../docs/checks/verification-issues.md#issue-023). Session is valid — `/me` works after manual navigation. |
+
+## Driving it with browser skill (reference)
 
 1. Launch per [SKILL.md](../SKILL.md). Open `http://localhost:3417/signup` directly.
 2. Submit invalid inputs one at a time (empty, bad email, weak password, mismatched confirm); expect inline field errors, no request.
