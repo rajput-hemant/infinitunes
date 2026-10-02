@@ -1,5 +1,5 @@
 # 1. Install dependencies only when needed
-FROM oven/bun:1.3.14 AS deps
+FROM oven/bun:1.4.2 AS deps
 WORKDIR /app
 
 COPY package.json bun.lock ./
@@ -14,11 +14,10 @@ COPY packages/ui/package.json packages/ui/package.json
 RUN bun install --frozen-lockfile
 
 # 2. Rebuild the source code only when needed
-FROM oven/bun:1.3.14 AS builder
+FROM oven/bun:1.4.2 AS builder
 WORKDIR /app
 
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/web/node_modules ./apps/web/node_modules
+COPY --from=deps /app ./
 COPY . .
 
 ARG IS_DOCKER=true
