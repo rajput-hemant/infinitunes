@@ -6,6 +6,7 @@ import {
   getDownloadLink,
   getImageSrc,
   seededIndex,
+  toQueue,
 } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -20,6 +21,7 @@ import {
   MoreVertical,
   MoveUpRight,
   Pause,
+  Radio,
   Repeat,
   Repeat1,
   Shuffle,
@@ -35,6 +37,7 @@ import { toast } from "sonner";
 
 import { useEventListener } from "~/hooks/use-event-listner";
 import {
+  useActiveRadioSession,
   useCurrentSongIndex,
   useIsPlayerInit,
   useIsTyping,
@@ -42,6 +45,7 @@ import {
   useStreamQuality,
 } from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
+import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
 import { Icons } from "./icons";
@@ -60,7 +64,8 @@ export function Player({ user, playlists }: PlayerProps) {
 
 function PlayerInner({ user, playlists }: PlayerProps) {
   // stores
-  const [queue] = useQueue();
+  const [queue, setQueue] = useQueue();
+  const [activeRadio] = useActiveRadioSession();
   const [streamQuality] = useStreamQuality();
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
@@ -72,6 +77,9 @@ function PlayerInner({ user, playlists }: PlayerProps) {
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);
   const [pos, setPos] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
+  const refillingRef = React.useRef<boolean>(false);
+
+  const utils = api.useUtils();
 
   // third party hooks
   const {
@@ -173,6 +181,36 @@ function PlayerInner({ user, playlists }: PlayerProps) {
       }
     };
   }, [getPosition, isDragging]);
+
+  React.useEffect(() => {
+    if (!activeRadio || refillingRef.current || queue.length === 0) return;
+    if (currentIndex >= queue.length - 3) {
+      refillingRef.current = true;
+      utils.radio.songs
+        .fetch({
+          stationId: activeRadio.stationId,
+          k: 10,
+          next: 1,
+        })
+        .then((moreSongs) => {
+          if (moreSongs.length > 0) {
+            const currentIds = new Set(queue.map((s) => s.id));
+            const newItems = moreSongs
+              .filter((s) => !currentIds.has(s.id))
+              .map(toQueue);
+            if (newItems.length > 0) {
+              setQueue((prev) => [...prev, ...newItems]);
+            }
+          }
+        })
+        .catch(() => {
+          // Ignore transient background refill glitches
+        })
+        .finally(() => {
+          refillingRef.current = false;
+        });
+    }
+  }, [currentIndex, queue, activeRadio, utils, setQueue]);
 
   function loopHandler() {
     if (!isReady) return;
@@ -328,8 +366,16 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                   <MoveUpRight className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible" />
                 </Link>
 
-                <p className="line-clamp-1 text-xs text-muted-foreground">
-                  {queue[currentIndex].subtitle}
+                <p className="line-clamp-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  {activeRadio && (
+                    <span className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                      <Radio className="size-2.5 animate-pulse" />
+                      {activeRadio.name}
+                    </span>
+                  )}
+                  <span className="truncate">
+                    {queue[currentIndex].subtitle}
+                  </span>
                 </p>
               </div>
             </>

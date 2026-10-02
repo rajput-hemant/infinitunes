@@ -6,4 +6,5 @@ export { playlistRouter } from "./playlist";
 export { searchRouter } from "./search";
 export { showRouter } from "./show";
 export { songRouter } from "./song";
+export { radioRouter } from "./radio";
 export { userRouter } from "./user";

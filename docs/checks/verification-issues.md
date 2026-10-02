@@ -63,12 +63,14 @@ Oxlint reports warnings, no errors.
 
 ### ISSUE-003
 
-Several visible actions are stubs that only show the toast `This feature is currently in development.`.
+Several visible actions were stubs that only showed the toast `This feature is currently in development.`.
 
-- Evidence (source read now, `currentlyInDev` defined at `apps/web/lib/utils.ts:95`): `components/song-list/more-button.tsx` `like()` (menu `Add To Favourite`) and `playRadio()` (menu `Play Radio`); `components/details-header/more-button.tsx` `playRadio()`; `components/play-button.tsx:97` for `radio_station`; `components/sidebar.tsx:174` playlist-row button.
-- Reproduce (browser, pending): open an album, `More Options` on a song, click `Add To Favourite` or `Play Radio`.
-- Expected: the action works or the item is hidden. Actual: a toast says it is in development. `Like` on detail headers is real ([favorites](../../.agents/skills/verify/features/favorites.md)); the song-row item is not.
-- Follow-up: implement or remove. Radio belongs to a separate task. Do not count these as passing coverage.
+- Evidence (updated 2026-10-02 on `fm/infinitunes-radio`):
+  - **Radio actions resolved**: `playRadio()` in `components/song-list/more-button.tsx`, `playRadio()` in `components/details-header/more-button.tsx`, and `components/play-button.tsx` for `radio_station` are now wired to real JioSaavn web radio station sessions (`api.radio.createStation`, `api.radio.songs`) and endless queue refills via `activeRadioSessionAtom` in `apps/web/components/player.tsx`. Verified via 9 unit/integration tests in `packages/trpc/tests/radio-router.test.ts` (pass). See [radio-research.md](./radio-research.md) and [.agents/skills/verify/features/radio.md](../../.agents/skills/verify/features/radio.md).
+  - **Remaining non-radio stubs**: `components/song-list/more-button.tsx` `like()` (menu `Add To Favourite`) and `components/sidebar.tsx:174` playlist-row button still call `currentlyInDev`.
+- Reproduce (browser, pending): open an album, `More Options` on a song, click `Add To Favourite`.
+- Expected: the action works or the item is hidden. Actual: toast says it is in development for remaining non-radio actions. `Like` on detail headers is real ([favorites](../../.agents/skills/verify/features/favorites.md)); the song-row item is not.
+- Follow-up: implement or remove remaining non-radio stubs. State remains open for the remaining stubs.
 
 ### ISSUE-004
 
