@@ -39,8 +39,8 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | [ISSUE-019](#issue-019) | GAP                     | high     | no browser proof of any feature or UI quality | needs-browser  |
 | [ISSUE-020](#issue-020) | GAP                     | low      | rate limiting                                 | open           |
 | [ISSUE-021](#issue-021) | CONFIRMED               | low      | stale process notes                           | closed         |
-| [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | open           |
-| [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | open           |
+| [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | closed         |
+| [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | closed         |
 
 ## Confirmed
 
@@ -153,27 +153,27 @@ Artist details-header "Play Radio" creates a station but gets zero songs back �
   - Network: `POST /api/trpc/radio.createStation?batch=1` 200, request body `{"type":"artist","name":"Arijit Singh","artistId":null,"language":null}`. Station returned `stationId: "tctBT65u..."`.
   - Network: `GET /api/trpc/radio.songs?batch=1` 200, response `"json":[]` (empty songs array).
   - localStorage after 10s poll: `activeRadio: null`, `queue` length unchanged.
-  - Root cause in `apps/web/components/details-header/more-button.tsx` `playRadio()` (lines 130–131): when `type === "artist"`, `radioType = "artist"` is set but `artistId` remains `undefined`. The numeric artist ID (e.g. `461968`) needed for `~^~artist_radio~^~<id>` station format is not available in the component's `type`/`name` props — only the token-style URL segment is.
-  - `radioSongs.length === 0` triggers silent toast error "Could not find songs for this radio" (no localStorage write, no console error captured).
-  - Fix direction: pass the artist's numeric `id` (raw API field) down to the `MoreButton` props, or derive it from the URL token via a separate lookup.
-- Reproduce (browser): open any artist page, "More options → Play Radio". Queue does not change after the toast clears.
-- Expected: radio starts with artist-seeded songs. Actual: silent failure, no queue update.
-- State open.
+  - Root cause in `apps/web/components/details-header/more-button.tsx` `playRadio()`: when `type === "artist"`, `radioType = "artist"` was set but `artistId` was not provided via props from `DetailsHeader` and remained `undefined`.
+  - Upstream behavior: without `artistId`, `createStation` falls back to `webradio.createFeaturedStation`, which returns a placeholder station session without songs. Subsequent fetch to `webradio.getSong` returns `{}`, yielding 0 songs. `radioSongs.length === 0` triggered toast error "Could not find songs for this radio" without updating `queue` or `activeRadio`.
+  - Counterfactual proof: calling `createStation` with `{ type: "artist", name: "Arijit Singh", artistId: "461968", language: "hindi" }` immediately returns valid artist radio station ID (`...~^~artist_radio~^~461968`), and `radio.songs` returns tracks (first track "Haareya").
+  - Fix: passed `artistId: kind === "artist" ? (item as Artist).artistId : undefined` and `language: kind === "artist" ? (item as Artist).dominantLanguage : songs[0]?.language` from `apps/web/components/details-header/details-header.tsx` to `MoreButton`. In `apps/web/components/details-header/more-button.tsx`, accepted `artistId` and `language` in `MoreButtonProps` and forwarded them in `createStation.mutate`.
+  - Live browser verification (run `infinitunes-radio-auth-fixes`, 2026-10-02, port 3152): clicking "More options → Play Radio" on `/artist/arijit-singh-songs/LlRWpHzy3Hk_` generated station `8J3VmbITmEJEOcO9bM98a2rtPB5QEODtuFEvS4n6uS0fbNiB2Vcbdw__~^~artist_radio~^~459320`, populated 20 station songs into `queue`, and set `active_radio_session` (`name: "Arijit Singh Radio"`, `type: "artist"`, `language: "hindi"`). Evidence: `evidence/06-verified-artist-play-radio-success.png`.
+  - Regression test: `apps/web/tests/details-header-radio.test.ts`.
+- State closed.
 
 ### ISSUE-023
 
 After a successful email login, the login form stays on `/login` — no client-side redirect to home.
 
-- Evidence (browser, 2026-10-02, run `browser-radio-3151`):
+- Evidence (browser, 2026-10-02, run `browser-radio-3151` and re-reproduced on `infinitunes-radio-auth-fixes`):
   - Filled and submitted the login form at `/login` with `radiotest@example.com` / `Password123!`.
   - Network: `POST /api/auth/sign-in/email` 200, response includes `token`, `user`, `redirect:false`, and `set-cookie: better-auth.session_token`.
-  - URL after submit: still `http://localhost:3151/login` (confirmed by snapshot check).
-  - Root cause in `apps/web/app/(auth)/_components/login-form.tsx` `onSubmit()` (line 66): success path only calls `toast.success("You have been signed in.")` — no `router.push("/")` or equivalent.
-  - The session cookie is valid; navigating to `/me` directly afterward works (CONFIRMED — shows user dashboard).
-  - This is a UX gap: the user must manually navigate away after login. Signup redirect was already correct in prior tests.
-- Reproduce (browser): submit valid credentials at `/login`, observe URL does not change.
-- Expected: redirect to `/` (or the originally requested protected route) on success. Actual: stays on `/login`.
-- State open.
+  - URL after submit: remained `http://localhost:3152/login` with form inputs still rendered and toast "You have been signed in." displayed. Evidence: `evidence/02-repro-login-stays-on-login.png`.
+  - Root cause: in `apps/web/app/(auth)/_components/login-form.tsx` `onSubmit()`, the success path only showed toast without invoking client-side navigation.
+  - Fix: imported `useRouter` from `next/navigation` and `asRoute` from `~/lib/utils`. On successful email login and passkey sign-in, read `callbackUrl` (defaulting to `/`), then called `router.push(asRoute(callbackUrl))` and `router.refresh()`.
+  - Live browser verification (run `infinitunes-radio-auth-fixes`, 2026-10-02, port 3152): submitted valid email credentials on `/login`, page automatically redirected to `http://localhost:3152/` with title "Online Songs on Infinitunes: Download & Play Latest Music for Free | Infinitunes" and toast "You have been signed in." Evidence: `evidence/05-verified-login-redirect-home.png`.
+  - Regression test: `apps/web/tests/login-redirect.test.ts`.
+- State closed.
 
 ## Hypotheses
 

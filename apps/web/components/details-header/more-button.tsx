@@ -61,6 +61,8 @@ type MoreButtonProps = {
   subtitle: string;
   songs: Song[];
   playlists?: MyPlaylist[];
+  artistId?: string;
+  language?: string;
 };
 
 type MenuItem = {
@@ -71,7 +73,17 @@ type MenuItem = {
 };
 
 export function MoreButton(props: MoreButtonProps) {
-  const { user, name, subtitle, type, image, songs, playlists } = props;
+  const {
+    user,
+    name,
+    subtitle,
+    type,
+    image,
+    songs,
+    playlists,
+    artistId: initialArtistId,
+    language,
+  } = props;
 
   const router = useRouter();
 
@@ -124,7 +136,7 @@ export function MoreButton(props: MoreButtonProps) {
     try {
       toast.loading("Starting radio...", { id: "play-radio" });
       let stationName = name;
-      let artistId: string | undefined;
+      let artistId: string | undefined = initialArtistId;
       let radioType: "artist" | "featured" = "featured";
 
       if (type === "artist") {
@@ -146,11 +158,13 @@ export function MoreButton(props: MoreButtonProps) {
         }
       }
 
+      const stationLanguage = language || songs[0]?.language;
+
       const { stationId } = await utils.client.radio.createStation.mutate({
         type: radioType,
         name: stationName,
         artistId,
-        language: songs[0]?.language,
+        language: stationLanguage,
       });
 
       const radioSongs = await utils.radio.songs.fetch({
@@ -171,7 +185,7 @@ export function MoreButton(props: MoreButtonProps) {
         stationId,
         name: `${stationName} Radio`,
         type: radioType,
-        language: songs[0]?.language,
+        language: stationLanguage,
       });
       setCurrentIndex(0);
       setIsPlayerInit(true);

@@ -1,9 +1,9 @@
 # Email signup, login, logout, session
 
-**Status: LIVE PROOF (partial).** Signup, session persistence, /me access, settings access, logout, and post-logout redirect confirmed in browser run `browser-radio-3151` (2026-10-02). Login form no-redirect issue found — see [ISSUE-023](../../../../docs/checks/verification-issues.md#issue-023).
-Issues: [ISSUE-019](../../../../docs/checks/verification-issues.md#issue-019), [ISSUE-023](../../../../docs/checks/verification-issues.md#issue-023).
+**Status: LIVE PROOF.** Signup, session persistence, /me access, settings access, logout, post-logout redirect, and post-login client redirect (fixed in ISSUE-023) confirmed in browser runs `browser-radio-3151` and `infinitunes-radio-auth-fixes` (2026-10-02).
+Issues: [ISSUE-019](../../../../docs/checks/verification-issues.md#issue-019), [ISSUE-023 (closed)](../../../../docs/checks/verification-issues.md#issue-023).
 
-Last live proof: 2026-10-02, run `browser-radio-3151`, port 3151, container `infinitunes-verify-pg-3151`. Evidence: `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio/evidence/`.
+Last live proof: 2026-10-02, run `infinitunes-radio-auth-fixes`, port 3152, container `infinitunes-verify-pg-54352`. Evidence: `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio-auth-fixes/evidence/`. Prior evidence: `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio/evidence/`.
 
 ## Sub-features
 
@@ -22,16 +22,16 @@ Header or user dropdown shows login; `/login` and `/signup` render as a modal (`
 
 Evidence screenshots in `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio/evidence/`.
 
-| Feature                                     | Result  | Screenshot                          | Notes                                                                                                                                                                                      |
-| ------------------------------------------- | ------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Email signup (`radiotest@example.com`)      | ✅ PASS | `08-signup-page.png`                | DB confirms user row + credential. Redirected to `/` after signup.                                                                                                                         |
-| `/me` redirect (unauthenticated, curl)      | ✅ PASS | —                                   | `curl` → 307 → `/login`                                                                                                                                                                    |
-| `/me` accessible when logged in             | ✅ PASS | `09-me-authenticated.png`           | Shows user profile, playlists, library nav                                                                                                                                                 |
-| `/settings` accessible when logged in       | ✅ PASS | `10-settings-page.png`              | Account, Appearance, Preferences sections                                                                                                                                                  |
-| Logout via user dropdown                    | ✅ PASS | —                                   | `POST /api/auth/sign-out` 200, session cookie cleared                                                                                                                                      |
-| `/me` after logout redirects to `/login`    | ✅ PASS | `11-me-guest-redirect-to-login.png` | Browser navigated to `/me`, ended on `/login`                                                                                                                                              |
-| Login form (`POST /api/auth/sign-in/email`) | ✅ PASS | `12-login-flow.png`                 | 200, session cookie set, user object returned                                                                                                                                              |
-| Login page redirect after success           | ❌ FAIL | —                                   | Form stays on `/login`; no `router.push()` after toast. See [ISSUE-023](../../../../docs/checks/verification-issues.md#issue-023). Session is valid — `/me` works after manual navigation. |
+| Feature                                     | Result  | Screenshot                            | Notes                                                                                                                           |
+| ------------------------------------------- | ------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Email signup (`radiotest@example.com`)      | ✅ PASS | `08-signup-page.png`                  | DB confirms user row + credential. Redirected to `/` after signup.                                                              |
+| `/me` redirect (unauthenticated, curl)      | ✅ PASS | —                                     | `curl` → 307 → `/login`                                                                                                         |
+| `/me` accessible when logged in             | ✅ PASS | `09-me-authenticated.png`             | Shows user profile, playlists, library nav                                                                                      |
+| `/settings` accessible when logged in       | ✅ PASS | `10-settings-page.png`                | Account, Appearance, Preferences sections                                                                                       |
+| Logout via user dropdown                    | ✅ PASS | —                                     | `POST /api/auth/sign-out` 200, session cookie cleared                                                                           |
+| `/me` after logout redirects to `/login`    | ✅ PASS | `11-me-guest-redirect-to-login.png`   | Browser navigated to `/me`, ended on `/login`                                                                                   |
+| Login form (`POST /api/auth/sign-in/email`) | ✅ PASS | `12-login-flow.png`                   | 200, session cookie set, user object returned                                                                                   |
+| Login page redirect after success           | ✅ PASS | `05-verified-login-redirect-home.png` | Form redirects to `/` (or callbackUrl) via `router.push(asRoute(callbackUrl))` and refreshes session state. Fixed in ISSUE-023. |
 
 ## Driving it with browser skill (reference)
 

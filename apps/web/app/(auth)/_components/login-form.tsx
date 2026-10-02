@@ -17,11 +17,13 @@ import {
 } from "@infinitunes/ui/components/tooltip";
 import { Eye, EyeOff, Fingerprint, Loader2, Mail } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
+
+import { asRoute } from "~/lib/utils";
 
 import { OAuthButtons } from "./oauth-buttons";
 
@@ -33,11 +35,14 @@ const defaultValues: FormData = {
 };
 
 export function LoginForm() {
+  const router = useRouter();
   const [isPassVisible, setIsPassVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isPasskeyLoading, setIsPasskeyLoading] = React.useState(false);
 
   const searchParams = useSearchParams();
+  const callbackUrl =
+    searchParams.get("callbackUrl") || searchParams.get("redirect") || "/";
   const authError = searchParams.get("error");
 
   if (authError === "OAuthAccountNotLinked") {
@@ -64,6 +69,8 @@ export function LoginForm() {
         toast.error(error.message ?? "Something went wrong.");
       } else {
         toast.success("You have been signed in.");
+        router.push(asRoute(callbackUrl));
+        router.refresh();
       }
     } catch (error) {
       const err = error as Error;
@@ -88,6 +95,8 @@ export function LoginForm() {
         }
       } else {
         toast.success("You have been signed in.");
+        router.push(asRoute(callbackUrl));
+        router.refresh();
       }
     } catch (error) {
       const err = error as Error;

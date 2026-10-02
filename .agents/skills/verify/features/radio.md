@@ -1,9 +1,9 @@
 # Radio
 
-**Status: LIVE PROOF (partial).** Featured station playback, song/artist row radio, manual queue clearing, and mobile rendering confirmed in browser run `browser-radio-3151` (2026-10-02, port 3151). Artist details-header Play Radio confirmed failing — see [ISSUE-022](../../../../docs/checks/verification-issues.md#issue-022).
-Issues: [ISSUE-003](../../../../docs/checks/verification-issues.md#issue-003), [ISSUE-022](../../../../docs/checks/verification-issues.md#issue-022). Reference & API notes: [radio-research.md](../../../../docs/checks/radio-research.md).
+**Status: LIVE PROOF (partial).** Featured station playback, song/artist row radio, artist details-header radio (fixed in ISSUE-022), manual queue clearing, and mobile rendering confirmed in browser runs `browser-radio-3151` and `infinitunes-radio-auth-fixes` (2026-10-02). Queue refill retained as gap pending playable audio.
+Issues: [ISSUE-003](../../../../docs/checks/verification-issues.md#issue-003), [ISSUE-022 (closed)](../../../../docs/checks/verification-issues.md#issue-022). Reference & API notes: [radio-research.md](../../../../docs/checks/radio-research.md).
 
-Last live proof: 2026-10-02, run `browser-radio-3151`, port 3151, container `infinitunes-verify-pg-3151`. Evidence: `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio/evidence/`.
+Last live proof: 2026-10-02, run `infinitunes-radio-auth-fixes`, port 3152, container `infinitunes-verify-pg-54352`. Evidence: `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio-auth-fixes/evidence/`. Prior evidence: `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio/evidence/`.
 
 Radio functionality replicates official JioSaavn web client semantics (`webradio.*` API), including featured stations, artist-seeded radio sessions, and continuous queue refills.
 
@@ -41,13 +41,13 @@ Radio functionality replicates official JioSaavn web client semantics (`webradio
 
 Evidence screenshots in `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes-radio/evidence/`.
 
-| Feature                              | Result  | Screenshot                          | Notes                                                                                                                                                                 |
-| ------------------------------------ | ------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/radio` featured stations grid      | ✅ PASS | `02-radio-browse.png`               | Real station names, artwork, correct URLs                                                                                                                             |
-| Station detail page                  | ✅ PASS | `03-station-detail.png`             | 20 songs, heading, Play button                                                                                                                                        |
-| Featured station playback            | ✅ PASS | `04-radio-playing.png`              | `activeRadio` set, 20 songs in queue, player badge                                                                                                                    |
-| Song row "Play Radio" (artist radio) | ✅ PASS | `05-song-artist-radio.png`          | `stationId` contains `~^~artist_radio~^~461968`, 20 songs                                                                                                             |
-| Manual queue replaces radio session  | ✅ PASS | `06-manual-queue-cleared-radio.png` | `activeRadio = null` when Play clicked on artist page                                                                                                                 |
-| Mobile `/radio` (390×844)            | ✅ PASS | `07-radio-mobile-390px.png`         | Station grid renders at mobile width                                                                                                                                  |
-| Artist details-header "Play Radio"   | ❌ FAIL | —                                   | `createStation` called with `artistId: null`; `radio.songs` returns `[]`; queue unchanged. See [ISSUE-022](../../../../docs/checks/verification-issues.md#issue-022). |
-| Queue refill (≤2 tracks trigger)     | ⚠️ GAP  | —                                   | Requires actual audio playback; Howler won't advance without CDN-reachable src under headless Chrome.                                                                 |
+| Feature                              | Result  | Screenshot                                  | Notes                                                                                                                                                       |
+| ------------------------------------ | ------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/radio` featured stations grid      | ✅ PASS | `02-radio-browse.png`                       | Real station names, artwork, correct URLs                                                                                                                   |
+| Station detail page                  | ✅ PASS | `03-station-detail.png`                     | 20 songs, heading, Play button                                                                                                                              |
+| Featured station playback            | ✅ PASS | `04-radio-playing.png`                      | `activeRadio` set, 20 songs in queue, player badge                                                                                                          |
+| Song row "Play Radio" (artist radio) | ✅ PASS | `05-song-artist-radio.png`                  | `stationId` contains `~^~artist_radio~^~461968`, 20 songs                                                                                                   |
+| Manual queue replaces radio session  | ✅ PASS | `06-manual-queue-cleared-radio.png`         | `activeRadio = null` when Play clicked on artist page                                                                                                       |
+| Mobile `/radio` (390×844)            | ✅ PASS | `07-radio-mobile-390px.png`                 | Station grid renders at mobile width                                                                                                                        |
+| Artist details-header "Play Radio"   | ✅ PASS | `06-verified-artist-play-radio-success.png` | `artistId` passed from `DetailsHeader`; station created with `...~^~artist_radio~^~459320`; 20 songs added to queue; `activeRadio` set. Fixed in ISSUE-022. |
+| Queue refill (≤2 tracks trigger)     | ⚠️ GAP  | —                                           | Requires actual audio playback; Howler won't advance without CDN-reachable src under headless Chrome. (Retained gap)                                        |
