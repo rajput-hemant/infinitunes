@@ -1,6 +1,8 @@
 {
   "extraKnownMarketplaces": {
-    "agent-skills": { "source": { "source": "github", "repo": "rajput-hemant/agent-skills" } }
+    "agent-skills": {
+      "source": { "source": "github", "repo": "rajput-hemant/agent-skills" }
+    }
   },
   "enabledPlugins": { "agent-skills@agent-skills": true }
 }
