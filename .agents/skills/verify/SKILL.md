@@ -17,11 +17,11 @@ disable-model-invocation: true
 >
 > Launch, doctor, drive, evidence and cleanup phases defined below are preserved; only automatic triggering is prohibited.
 
-**Status: DRAFT.** Written from source and existing documented commands only. Launch, doctor, drive, evidence and cleanup below have not been executed with a browser skill. Every feature file is marked DRAFT with `Last live proof: none`. Do not report a PASS from this skill until a run has produced evidence under `docs/checks/evidence/`.
+**Status: DRAFT.** Written from source and existing documented commands only. Launch, doctor, drive, evidence and cleanup below have not been executed with a browser skill. Every feature file is marked DRAFT with `Last live proof: none`. Do not report a PASS from this skill until a run has produced evidence under `docs/evidence/`.
 
 Browser recipes are pending the user-selected browser skill. Until it exists: no browser automation, screenshots, UI driving, Playwright/Cypress runs or `next-dev-loop`. Non-browser checks (below) are allowed.
 
-Issues found while verifying are recorded once, in [docs/checks/verification-issues.md](../../../docs/checks/verification-issues.md). Feature files link to issue IDs there instead of repeating them.
+Issues found while verifying are recorded once, in [docs/verification/verification-issues.md](../../../docs/verification/verification-issues.md). Feature files link to issue IDs there instead of repeating them.
 
 ## Prerequisites
 
@@ -104,7 +104,7 @@ curl -s -i -X POST http://localhost:3417/api/trpc/user.getUserPlaylists -H 'orig
 
 ## Evidence
 
-Store proof under `docs/checks/evidence/<run-id>/` (created by the run; not committed unless a reviewer needs it). Per proof capture: the action (command or step), the resulting state, and the side effect.
+Store proof under `docs/evidence/<run-id>/` (created by the run; not committed unless a reviewer needs it). Per proof capture: the action (command or step), the resulting state, and the side effect.
 
 - Exercise the real user path, not internal setters or test-only endpoints.
 - Verify side effects alongside what is visible: for auth, query the container (`docker exec infinitunes-verify-pg psql -U postgres -d infinitunes -c 'select id,email from "user"'`); for playlists and favorites, check the `infinitunes_playlist` and `infinitunes_favorite` rows.
@@ -119,7 +119,7 @@ Remove only what this run created; never remove evidence.
 2. Stop any browser bridge or watcher you started.
 3. `docker rm -f infinitunes-verify-pg` (deletes all disposable data, including test users and passkeys).
 4. `unset DATABASE_URL AUTH_SECRET AUTH_URL NEXT_PUBLIC_APP_URL JIOSAAVN_DES_KEY GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET`
-5. Confirm `git status` shows no stray `.env.local`, `.next` is ignored, and `docs/checks/evidence/` still exists.
+5. Confirm `git status` shows no stray `.env.local`, `.next` is ignored, and `docs/evidence/` still exists.
 
 ## Helpers
 

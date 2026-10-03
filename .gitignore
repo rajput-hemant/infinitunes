@@ -44,3 +44,6 @@ next-env.d.ts
 
 # old bun binary lockfile (migrated to bun.lock)
 bun.lockb
+
+# binary evidence (screenshots, recordings) stored outside repo
+/docs/**/evidence/

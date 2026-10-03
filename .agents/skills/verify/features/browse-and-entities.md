@@ -1,6 +1,6 @@
 # Browse and entity pages
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-011, ISSUE-012, ISSUE-013, ISSUE-006 in [verification-issues.md](../../../../docs/checks/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-011, ISSUE-012, ISSUE-013, ISSUE-006 in [verification-issues.md](../../../../docs/verification/verification-issues.md).
 
 ## Sub-features
 
