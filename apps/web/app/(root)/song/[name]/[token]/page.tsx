@@ -1,4 +1,4 @@
-import { getImageSrc, toCardItem } from "@infinitunes/types";
+import { getImageSrc, getToken, toCardItem } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
 import { cache } from "react";
@@ -6,9 +6,9 @@ import { cache } from "react";
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { ogImageUrl } from "~/lib/utils";
 
 import { Lyrics } from "./_components/lyrics";
 
@@ -31,24 +31,13 @@ export async function generateMetadata({
   const songObj = await getSong(token);
   const song = songObj.songs[0];
 
-  return {
+  return pageMetadata({
     title: song.title,
     description: song.subtitle,
-    openGraph: {
-      title: song.title,
-      description: song.subtitle,
-      url: `/song/${name}/${token}`,
-      images: {
-        url: ogImageUrl({
-          title: song.title,
-          description: song.subtitle,
-          image: getImageSrc(song.image, "high"),
-          square: true,
-        }),
-        alt: song.title,
-      },
-    },
-  };
+    url: `/song/${name}/${token}`,
+    image: getImageSrc(song.image, "high"),
+    square: true,
+  });
 }
 async function fetcher(token: string) {
   const data = await getSong(token);
@@ -69,10 +58,10 @@ async function fetcher(token: string) {
     songsFromSameActors,
   ] = await Promise.all([
     song.more_info.has_lyrics === "true"
-      ? api.get.lyrics({ id: song.id ?? "" })
+      ? api.get.lyrics({ id: song.id })
       : undefined,
     api.album.details({
-      token: song.more_info.album_url.split("/").pop()!,
+      token: getToken(song.more_info.album_url),
     }),
     api.song.recommendations({ id: song.id }),
     api.get.trending({ type: "song" }),

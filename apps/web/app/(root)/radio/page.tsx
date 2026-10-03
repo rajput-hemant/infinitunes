@@ -1,6 +1,7 @@
 import type { Lang } from "@infinitunes/types";
 
 import { LanguageBar } from "~/components/language-bar";
+import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
 
 import { FeaturedStations } from "./_components/featured-stations";
@@ -9,20 +10,13 @@ const title = "Top Indian Radio Stations";
 const description =
   "Listen to the top Indian radio stations online. Stream live music, news, sports, and talk radio from India.";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title,
   description,
-  openGraph: {
-    title,
-    description,
-
-    url: "/radio",
-    images: {
-      url: `/api/og?title=${title}&description=${description}&image=https://graph.org/file/857b2fc40944dbb65b184.png`,
-      alt: "Top Indian Radio Stations",
-    },
-  },
-};
+  url: "/radio",
+  image: "https://graph.org/file/857b2fc40944dbb65b184.png",
+  alt: "Top Indian Radio Stations",
+});
 
 type Props = {
   searchParams: Promise<{

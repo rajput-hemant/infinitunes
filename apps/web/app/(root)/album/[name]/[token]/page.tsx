@@ -5,9 +5,9 @@ import { cache } from "react";
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { ogImageUrl } from "~/lib/utils";
 
 const getAlbum = cache(async (token: string) =>
   orNotFound(api.album.details({ token })),
@@ -24,24 +24,13 @@ export async function generateMetadata({
 
   const album = await getAlbum(token);
 
-  return {
+  return pageMetadata({
     title: album.title,
     description: album.subtitle,
-    openGraph: {
-      title: album.title,
-      description: album.subtitle,
-      url: `/album/${name}/${token}`,
-      images: {
-        url: ogImageUrl({
-          title: album.title,
-          description: album.subtitle,
-          image: getImageSrc(album.image, "high"),
-          square: true,
-        }),
-        alt: album.title,
-      },
-    },
-  };
+    url: `/album/${name}/${token}`,
+    image: getImageSrc(album.image, "high"),
+    square: true,
+  });
 }
 
 async function fetcher(token: string) {

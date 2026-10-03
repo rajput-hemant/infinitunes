@@ -5,9 +5,9 @@ import { cache } from "react";
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { ogImageUrl } from "~/lib/utils";
 
 const getPlaylist = cache(async (token: string) =>
   orNotFound(api.playlist.details({ token })),
@@ -22,24 +22,13 @@ export async function generateMetadata({
 
   const playlist = await getPlaylist(token);
 
-  return {
+  return pageMetadata({
     title: playlist.title,
     description: playlist.subtitle,
-    openGraph: {
-      title: playlist.title,
-      description: playlist.subtitle,
-      url: `/playlist/${name}/${token}`,
-      images: {
-        url: ogImageUrl({
-          title: playlist.title,
-          description: playlist.subtitle,
-          image: getImageSrc(playlist.image, "high"),
-          square: true,
-        }),
-        alt: playlist.title,
-      },
-    },
-  };
+    url: `/playlist/${name}/${token}`,
+    image: getImageSrc(playlist.image, "high"),
+    square: true,
+  });
 }
 async function fetcher(token: string) {
   const playlist = await getPlaylist(token);

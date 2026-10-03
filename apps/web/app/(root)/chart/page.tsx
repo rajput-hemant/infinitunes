@@ -1,23 +1,17 @@
 import { SliderCard } from "~/components/slider/slider-card";
+import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
 
 const title = "Top Music Charts";
 const description = "Listen to the top music charts from around the world.";
 
-export const metadata = {
+export const metadata = pageMetadata({
   title,
   description,
-  openGraph: {
-    title,
-    description,
-
-    url: "/chart",
-    images: {
-      url: `/api/og?title=${title}&description=${description}&image=https://graph.org/file/eaa488b6fbcd332148569.png`,
-      alt: "Top Music Charts",
-    },
-  },
-};
+  url: "/chart",
+  image: "https://graph.org/file/eaa488b6fbcd332148569.png",
+  alt: "Top Music Charts",
+});
 export default async function ChartsPage() {
   const charts = await api.get.charts({ page: 1, n: 50 });
 

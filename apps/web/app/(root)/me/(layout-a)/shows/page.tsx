@@ -1,14 +1,10 @@
 import { parseToken } from "@infinitunes/types";
 import { Podcast } from "lucide-react";
 
-import {
-  LibraryEmpty,
-  LibraryHeading,
-  LibraryUnavailable,
-} from "~/components/library/library-section";
-import { SliderCard } from "~/components/slider/slider-card";
 import { getUserFavorites } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
+
+import { LikedCollection } from "../_components/liked-collection";
 
 export const metadata = {
   title: "Liked Podcasts",
@@ -42,53 +38,26 @@ async function getShowDetails(id: string) {
 
 export default async function LikedPodcastsPage() {
   const favorites = await getUserFavorites();
-  const tokens = [...new Set(favorites?.podcasts ?? [])];
-
-  if (tokens.length) {
-    const settled = await Promise.allSettled(
-      tokens.map((token) => getShowDetails(token)),
-    );
-    const shows = settled.flatMap((result) =>
-      result.status === "fulfilled" && result.value ? [result.value] : [],
-    );
-
-    if (shows.length) {
-      return (
-        <div className="space-y-4">
-          <LibraryHeading
-            title="Liked Podcasts"
-            count={shows.length}
-            noun="podcast"
-            missing={tokens.length - shows.length}
-          />
-
-          <div className="flex w-full flex-wrap gap-4">
-            {shows.map((show) => (
-              <SliderCard
-                key={show.show_details.id}
-                name={show.show_details.title}
-                url={show.show_details.perma_url}
-                subtitle={show.show_details.subtitle}
-                type="show"
-                image={show.show_details.image}
-                explicit={show.show_details.explicit_content}
-                hidePlayButton
-              />
-            ))}
-          </div>
-        </div>
-      );
-    }
-  }
-
-  if (tokens.length) return <LibraryUnavailable what="liked podcasts" />;
 
   return (
-    <LibraryEmpty
-      icon={Podcast}
-      title="No liked podcasts yet"
-      description="Tap the heart on a podcast and it will show up here."
-      action={{ href: "/show", label: "Browse Podcasts" }}
+    <LikedCollection
+      tokens={favorites?.podcasts ?? []}
+      noun="podcast"
+      fetchItem={getShowDetails}
+      toCard={({ show_details: show }) => ({
+        name: show.title,
+        url: show.perma_url,
+        subtitle: show.subtitle,
+        type: "show",
+        image: show.image,
+        explicit: show.explicit_content,
+        hidePlayButton: true,
+      })}
+      empty={{
+        icon: Podcast,
+        description: "Tap the heart on a podcast and it will show up here.",
+        action: { href: "/show", label: "Browse Podcasts" },
+      }}
     />
   );
 }
