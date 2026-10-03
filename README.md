@@ -75,7 +75,7 @@ Open [http://localhost:3000](http://localhost:3000) and sign in with default cre
 - **Email:** `local@example.test`
 - **Password:** `LocalDev123!`
 
-For detailed architecture, table prefixing, and shared configuration with Lipi and AMA, see the [Local Development Guide](docs/local-development.md).
+For detailed architecture, table prefixing and configuration, see the [Local Development Guide](docs/local-development.md).
 
 ### Useful Scripts
 

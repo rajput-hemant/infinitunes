@@ -7,7 +7,6 @@ import {
   DEFAULT_LOCAL_DEV_FIXTURE,
   getLocalDevFixture,
   parseLocalDevFixture,
-  LOCAL_DEV_AMA,
   LOCAL_DEV_DATABASE,
   LOCAL_DEV_FIXTURE,
   LOCAL_DEV_INFINITUNES,
@@ -22,17 +21,7 @@ describe("local development fixtures", () => {
     expect(LOCAL_DEV_USER.email).toBe("local@example.test");
     expect(LOCAL_DEV_USER.password).toBe("LocalDev123!");
     expect(LOCAL_DEV_USER.name).toBe("Local Developer");
-    expect(LOCAL_DEV_USER.username).toBe("localdev");
-    expect(LOCAL_DEV_USER.displayUsername).toBe("localdev");
     expect(LOCAL_DEV_USER.emailVerified).toBe(true);
-  });
-
-  it("exports AMA anonymous fixture actor and host", () => {
-    expect(LOCAL_DEV_AMA.actorId).toBe("a0000000-0000-4000-8000-000000000002");
-    expect(LOCAL_DEV_AMA.hostId).toBe("a0000000-0000-4000-8000-000000000003");
-    expect(LOCAL_DEV_AMA.actorName).toBe("Local Developer");
-    expect(LOCAL_DEV_AMA.hostName).toBe("Local Developer");
-    expect(LOCAL_DEV_AMA.isAnonymous).toBe(true);
   });
 
   it("exports Infinitunes deterministic playlists and favorites", () => {

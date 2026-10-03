@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "description": "Shared local development canonical fixtures for Infinitunes, Lipi, and AMA",
+  "description": "Infinitunes local development fixture",
   "database": {
     "host": "127.0.0.1",
     "port": 5432,
@@ -20,16 +20,7 @@
     "email": "local@example.test",
     "password": "LocalDev123!",
     "name": "Local Developer",
-    "username": "localdev",
-    "displayUsername": "localdev",
     "emailVerified": true
-  },
-  "ama": {
-    "actorId": "a0000000-0000-4000-8000-000000000002",
-    "hostId": "a0000000-0000-4000-8000-000000000003",
-    "actorName": "Local Developer",
-    "hostName": "Local Developer",
-    "isAnonymous": true
   },
   "infinitunes": {
     "playlists": [

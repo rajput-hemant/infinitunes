@@ -61,11 +61,9 @@ async function seed() {
           id: LOCAL_DEV_USER.id,
           email: LOCAL_DEV_USER.email,
           name: LOCAL_DEV_USER.name,
-          username: LOCAL_DEV_USER.username,
           password: hashedPassword,
           betterAuthName: LOCAL_DEV_USER.name,
           emailVerifiedBoolean: LOCAL_DEV_USER.emailVerified,
-          displayUsername: LOCAL_DEV_USER.displayUsername,
           emailVerified: new Date(),
         });
       } else {

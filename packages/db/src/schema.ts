@@ -124,7 +124,7 @@ export const betterAuthVerifications = pgTable("better_auth_verification", {
 
 /* ---------------------------------------------------------------------------
  * Infinitunes passkey credentials (Better Auth @better-auth/passkey).
- * App-specific table; Lipi uses lipi_passkey with identical columns.
+ * App-specific table, prefixed to stay isolated in the shared database.
  * Column names mirror the plugin schema so the drizzle adapter maps them.
  * ------------------------------------------------------------------------- */
 

@@ -7,17 +7,7 @@ export interface LocalDevUser {
   email: string;
   password: string;
   name: string;
-  username: string;
-  displayUsername: string;
   emailVerified: boolean;
-}
-
-export interface LocalDevAma {
-  actorId: string;
-  hostId: string;
-  actorName: string;
-  hostName: string;
-  isAnonymous: boolean;
 }
 
 export interface LocalDevInfinitunes {
@@ -59,7 +49,6 @@ export interface LocalDevFixture {
   database: LocalDevDatabase;
   redis: LocalDevRedis;
   user: LocalDevUser;
-  ama: LocalDevAma;
   infinitunes: LocalDevInfinitunes;
 }
 
@@ -117,7 +106,6 @@ export function parseLocalDevFixture(input: unknown): LocalDevFixture {
   const db = rec(root.database, "database");
   const redis = rec(root.redis, "redis");
   const user = rec(root.user, "user");
-  const ama = rec(root.ama, "ama");
   const inf = rec(root.infinitunes, "infinitunes");
   const fav = rec(inf.favorites, "infinitunes.favorites");
   if (!Array.isArray(inf.playlists)) {
@@ -146,16 +134,7 @@ export function parseLocalDevFixture(input: unknown): LocalDevFixture {
       email: str(user, "email", "user"),
       password: str(user, "password", "user"),
       name: str(user, "name", "user"),
-      username: str(user, "username", "user"),
-      displayUsername: str(user, "displayUsername", "user"),
       emailVerified: bool(user, "emailVerified", "user"),
-    },
-    ama: {
-      actorId: str(ama, "actorId", "ama"),
-      hostId: str(ama, "hostId", "ama"),
-      actorName: str(ama, "actorName", "ama"),
-      hostName: str(ama, "hostName", "ama"),
-      isAnonymous: bool(ama, "isAnonymous", "ama"),
     },
     infinitunes: {
       playlists: inf.playlists.map((raw, i) => {
@@ -207,7 +186,6 @@ export function getLocalDevFixture(
 
 export const LOCAL_DEV_FIXTURE = getLocalDevFixture();
 export const LOCAL_DEV_USER = LOCAL_DEV_FIXTURE.user;
-export const LOCAL_DEV_AMA = LOCAL_DEV_FIXTURE.ama;
 export const LOCAL_DEV_INFINITUNES = LOCAL_DEV_FIXTURE.infinitunes;
 export const LOCAL_DEV_DATABASE = LOCAL_DEV_FIXTURE.database;
 export const LOCAL_DEV_REDIS = LOCAL_DEV_FIXTURE.redis;
