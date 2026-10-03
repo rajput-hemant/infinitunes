@@ -36,7 +36,7 @@ jobs:
         run: bun run type-check
 
       - name: Run tests
-        run: bun test --pass-with-no-tests
+        run: bun run test
 
       - name: Build production
         run: bun run build
