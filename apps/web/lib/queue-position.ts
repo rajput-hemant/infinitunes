@@ -1,3 +1,4 @@
+import { parseToken } from "@infinitunes/types";
 import type { Queue } from "@infinitunes/types";
 
 type QueueEntry = Pick<Queue, "id" | "queueItemId" | "url">;
@@ -31,7 +32,6 @@ export function isCurrentTrack(
 export function findQueueIndex(
   queue: readonly QueueEntry[],
   target: { token: string; queueItemId?: string },
-  tokenOf: (url: string) => string,
 ): number {
   if (target.queueItemId !== undefined) {
     const exact = queue.findIndex(
@@ -39,5 +39,5 @@ export function findQueueIndex(
     );
     if (exact !== -1) return exact;
   }
-  return queue.findIndex((item) => tokenOf(item.url) === target.token);
+  return queue.findIndex((item) => parseToken(item.url) === target.token);
 }

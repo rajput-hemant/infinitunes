@@ -1,4 +1,4 @@
-import { getToken } from "@infinitunes/types";
+import { parseToken } from "@infinitunes/types";
 import { Podcast } from "lucide-react";
 
 import {
@@ -26,7 +26,9 @@ function showTokenFromEpisodes(value: unknown): string | undefined {
   if (!isRecord(first) || !isRecord(first.more_info)) return undefined;
 
   const showUrl = first.more_info.show_url;
-  return typeof showUrl === "string" && showUrl ? getToken(showUrl) : undefined;
+  return typeof showUrl === "string" && showUrl
+    ? parseToken(showUrl)
+    : undefined;
 }
 
 async function getShowDetails(id: string) {
