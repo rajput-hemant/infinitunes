@@ -41,6 +41,8 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | [ISSUE-021](#issue-021) | CONFIRMED               | low      | stale process notes                           | closed         |
 | [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | closed         |
 | [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | closed         |
+| [ISSUE-024](#issue-024) | CONFIRMED               | low      | reset password email not lower-cased          | open           |
+| [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset password has no throttling              | open           |
 
 ## Confirmed
 
@@ -62,6 +64,7 @@ Oxlint reports warnings, no errors.
 - Reproduce: `bun run lint`.
 - Expected: no warnings. Actual: 47 warnings. Severity low; the trpc one is intentional and could be suppressed.
 - Follow-up: triage warnings, suppress the intentional import.
+- Update 2026-10-03 (audit, source read only, lint not re-run): `apps/web/components/play-button.tsx:16` and `apps/web/components/details-header/more-button.tsx:50` import `currentlyInDev` but never call it, so they are unused-import warnings that disappear once removed. State remains open.
 
 ### ISSUE-003
 
@@ -73,6 +76,7 @@ Several visible actions were stubs that only showed the toast `This feature is c
 - Reproduce (browser, pending): open an album, `More Options` on a song, click `Add To Favourite`.
 - Expected: the action works or the item is hidden. Actual: toast says it is in development for remaining non-radio actions. `Like` on detail headers is real ([favorites](../../.agents/skills/verify/features/favorites.md)); the song-row item is not.
 - Update 2026-10-03 (`fm/infinitunes-pending-ui-completion`): song-row `Add To Favourite` now calls `addToFavorites`/`removeFromFavorites` (label flips to `Remove From Favourite`; hidden for episodes; signed-out shows a sign-in warning). Browser proof at 390px: DB `infinitunes_favorite.songs` gained then lost the token, label flipped after reload, no console errors. The sidebar playlist-row play stub (a button nested in a link, hidden until hover) was removed. State remains open only for `components/play-button.tsx`/episode paths still using `currentlyInDev`.
+- Update 2026-10-03 (audit, source read only, not re-run in a browser): `components/play-button.tsx` no longer calls `currentlyInDev` (it only imports it; `radio_station` plays real stations), so that part of the remaining-stubs note above is stale. Still stubbed in source: `components/like-button.tsx` `default:` branch calls `currentlyInDev()` for any type other than song, album, playlist, artist and show, and `DetailsHeader` renders `LikeButton` for every kind except `label`, so `Like` on a mix or episode details header shows the in-development toast; `components/song-list/more-button.tsx` `play()` and `addToQueue()` call `currentlyInDev()` for episode rows. Unconfirmed: whether radio-station and season headers reach the `default:` branch. State remains open.
 - Update 2026-10-03 (`fm/infinitunes-ui-polish-round-two`): Playerbar favorite state and stale Add label plumbing resolved. `apps/web/app/(root)/layout.tsx` now queries `getUserFavorites()` and forwards `favorites` through `PlayerWrapper` -> `Player` -> `TileMoreButton`. `TileMoreButton` in `apps/web/components/song-list/more-button.tsx` now manages `useOptimistic` favorite state with `startTransition` and `router.refresh()`, eliminating the stale Add label after addition without requiring page reload. Verified live across 390px, 768px, and 1280px viewports (light and dark modes, keyboard navigation): DB row in `infinitunes_favorite` gained and lost token, menu label flipped instantly to `Remove From Favourite` and back to `Add To Favourite`, 0 console errors. Remaining stubs: `components/play-button.tsx` and episode actions still calling `currentlyInDev`. State remains open.
 
 ### ISSUE-004
@@ -105,6 +109,7 @@ Public `user.resetPassword` leaks account existence and acts as a password-guess
 - Evidence (source, `packages/trpc/src/router/user.ts` `resetPassword`): `publicProcedure`; unknown email throws `NOT_FOUND` "User not found, please try signing up"; a known email with the wrong current password throws `BAD_REQUEST` "Previous password is incorrect"; a passwordless account throws a distinct message. No attempt limit exists in code; the proxy rate limiter only runs when `ENABLE_RATE_LIMITING=true`, `NODE_ENV=production` and Upstash is configured.
 - Reproduce (needs the app and disposable DB): POST to `/api/trpc/user.resetPassword` with a matching origin and three emails (unknown, known, passkey-only); compare errors. Not run here.
 - Expected: uniform response and throttling. Actual: three distinct responses. Follow-up: unify messages, throttle, or move into the authenticated settings flow. State open.
+- Update 2026-10-03 (audit): messages are unified (`packages/trpc/tests/user-router.test.ts` "answers unknown email, wrong password and passwordless accounts identically"). Throttling and the email-casing mismatch were not part of that fix and are tracked as [ISSUE-025](#issue-025) and [ISSUE-024](#issue-024).
 
 ### ISSUE-008
 
@@ -145,6 +150,7 @@ Stale process items from the migration report, corrected here.
 - Evidence: [../migration-acceptance.md](../migration-acceptance.md) section 12 lists "Docker image build" and Chrome-absent blockers and section 8 says Chrome is missing; section 13 states it "supersedes their Docker, live-data and browser blockers" and records a Docker build pass and Chrome runs. `package.json` `packageManager` and `.github/workflows/ci.yml` now pin Bun `1.4.2` (sections 9 and the header still mention 1.3.14).
 - Correction: treat sections 6, 8 and 12 as historical; the open items are in [../TODO.md](../TODO.md). Prior proofs stay in section 13 and are not re-attributed to this verification.
 - State closed (documentation note only; the older report text is left as the record).
+- Update 2026-10-03 (audit): `git ls-files` on this branch no longer contains `dockerfile` (removed in `c663112`), while `IS_DOCKER` handling remains in `apps/web/next.config.ts` and `turbo.json`, and `.dockerignore` still names it. The Docker build proofs in acceptance sections 6 and 13 therefore describe a file that is no longer in the tree. Tracked as a decision in [../TODO.md](../TODO.md).
 
 ### ISSUE-022
 
@@ -177,6 +183,23 @@ After a successful email login, the login form stays on `/login` — no client-s
   - Regression test: `apps/web/tests/login-redirect.test.ts`.
 - State closed.
 
+### ISSUE-024
+
+`user.resetPassword` looks the account up with the email exactly as typed, while stored emails are lower-cased.
+
+- Evidence (source, read 2026-10-03): `packages/auth/src/schemas.ts` `resetPasswordSchema.email` is plain `emailSchema` (no lower-casing); `packages/trpc/src/router/user.ts` `resetPassword` queries `equals(userRow.email, input.email)` and later `.where(drizzleEq(users.email, input.email))`. `updateUser` already lower-cases (`emailSchema.transform((email) => email.toLowerCase())`, same file line 97) because Better Auth stores and looks up lower-cased emails (see [ISSUE-008](#issue-008)).
+- Reproduce (needs the app and disposable DB, not run): sign up as `User@Example.com`, open `/reset-password`, enter the same mixed-case email with the right current password.
+- Expected: the reset succeeds. Actual (by reading): the lookup misses and the user gets the uniform "Email or current password is incorrect" error. Uncertainty: depends on whether signup lower-cases before insert; not run.
+- Follow-up: lower-case in the schema or procedure and add a test. State open.
+
+### ISSUE-025
+
+`user.resetPassword` has no attempt limit.
+
+- Evidence (source, read 2026-10-03): no throttle, counter or lockout in the `resetPassword` procedure; the only limiter is the proxy rate limiter, active only with `ENABLE_RATE_LIMITING=true`, `NODE_ENV=production` and Upstash configured ([ISSUE-020](#issue-020)). The procedure is public and verifies the current password, so it remains a password-guess surface even though error messages are now uniform ([ISSUE-007](#issue-007)).
+- Expected: bounded attempts per email or IP regardless of deployment config, or the flow moved behind a session. Actual: unlimited attempts unless the optional proxy limiter is on. Not exercised.
+- Follow-up: decide on a throttle or move the flow into the authenticated settings page. State open.
+
 ## Hypotheses
 
 ### ISSUE-009
@@ -193,6 +216,7 @@ Song titles may still show raw `&quot;` from the upstream API.
 
 - Basis: migration-acceptance section 13 saw raw entities; `song-list.tsx` now calls `decode(item.title)` and `apps/web/tests/song-list-decode.test.ts` exists, so it may be fixed in lists but not elsewhere (player bar, queue, search results, details header).
 - To confirm (browser): search a title containing a quote and inspect every surface. State needs-browser.
+- Update 2026-10-03 (audit, source read only): player bar and queue use `toQueue()` which calls `decode()` (`packages/types/src/media.ts`), details headers decode, but non-song search results (`search/[type]/[query]/_components/search-results.tsx`) pass the raw `title` and `subtitle` to `SliderCard`, and `components/slider/slider-card.tsx` renders `name` without decoding. Whether upstream titles for those entity types contain entities is not observed.
 
 ## Gaps (unexercised coverage)
 
