@@ -5,6 +5,7 @@ import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
   DialogTrigger,
 } from "@infinitunes/ui/components/dialog";
 import { Input } from "@infinitunes/ui/components/input";
@@ -97,10 +98,16 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
       />
 
       <DialogContent className="max-w-7xl shadow-md sm:max-w-7xl">
+        <DialogTitle className="sr-only">Search</DialogTitle>
+
         <div className="relative mr-4 mt-4">
-          <Search className="absolute left-2 top-3 size-4 text-muted-foreground" />
+          <Search
+            aria-hidden="true"
+            className="absolute left-2 top-3 size-4 text-muted-foreground"
+          />
 
           <Input
+            aria-label="Search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search"

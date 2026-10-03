@@ -14,9 +14,9 @@ export async function TopSearch() {
 
   return (
     <>
-      <p className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      <h3 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
         Trending Searches
-      </p>
+      </h3>
 
       <ScrollArea className="lg:hidden">
         <div className="flex space-x-4 pb-4">
@@ -44,10 +44,10 @@ export async function TopSearch() {
             href={getHref(t.perma_url, t.type)}
             className="flex gap-2 rounded-md p-2 hover:bg-secondary"
           >
-            <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded">
+            <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded">
               <Image
                 src={getImageSrc(t.image, "low")}
-                alt={decode(t.title)}
+                alt=""
                 fill
                 className="z-10 object-cover"
               />
@@ -55,7 +55,7 @@ export async function TopSearch() {
               <Skeleton className="size-full" />
             </div>
 
-            <div className="my-auto w-[calc(100%-3rem)]">
+            <div className="my-auto min-w-0 flex-1">
               <div className="truncate text-sm font-medium">
                 {decode(t.title)}
               </div>

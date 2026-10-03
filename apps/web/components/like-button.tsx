@@ -33,7 +33,7 @@ type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
 };
 
 export function LikeButton(props: LikeButtonProps) {
-  const { user, type, token, name, favourites, ...rest } = props;
+  const { user, type, token, name, favourites, className, ...rest } = props;
 
   const isFavorite =
     favourites?.songs.includes(token) ||
@@ -152,9 +152,14 @@ export function LikeButton(props: LikeButtonProps) {
         delay={0}
         aria-label="Like"
         onClick={likeHandler}
+        className={cn(
+          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+          className,
+        )}
         {...rest}
       >
         <Heart
+          aria-hidden="true"
           className={cn(
             "size-5 text-inherit transition-transform active:scale-105",
             optimisticLike && "fill-red-500 text-red-500",
