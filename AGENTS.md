@@ -213,8 +213,8 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
   validation schemas (`emailSchema`, `passwordSchema`, `loginSchema` (email-only),
   `signUpSchema`, `resetPasswordSchema`) from `packages/auth/src/schemas.ts`
   (subpath `@infinitunes/auth/schemas`). There is no username schema, plugin,
-  or client helper; the legacy nullable `username`/`displayUsername` DB columns
-  are preserved but unread by auth. Passkey support comes from the maintained
+  or client helper; the legacy `username`/`displayUsername` DB columns were
+  dropped by migration `0005_drop_username`. Passkey support comes from the maintained
   `@better-auth/passkey` package (server `passkey()`, client `passkeyClient()`),
   backed by the app-specific `infinitunes_passkey` table. The main
   `@infinitunes/auth` barrel pulls server-only `createAuth` (Better Auth, DB, bcrypt) into the graph, so client

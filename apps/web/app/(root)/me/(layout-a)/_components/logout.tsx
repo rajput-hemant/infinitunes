@@ -3,15 +3,28 @@
 import { authClient } from "@infinitunes/auth/client";
 import { Button } from "@infinitunes/ui/components/button";
 import { LogOut } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 export function LogoutButton() {
+  const router = useRouter();
+
   async function signOutHandler() {
-    toast.promise(authClient.signOut(), {
-      loading: "Signing out...",
-      success: "You have been signed out.",
-      error: "Something went wrong.",
-    });
+    toast.promise(
+      authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.replace("/login");
+            router.refresh();
+          },
+        },
+      }),
+      {
+        loading: "Signing out...",
+        success: "You have been signed out.",
+        error: "Something went wrong.",
+      },
+    );
   }
   return (
     <Button
