@@ -19,11 +19,11 @@ const playlistInput = z.object({
 
 const playlistSongsInput = z.object({
   playlistId: z.string(),
-  songs: z.array(z.string()),
+  songs: z.array(z.string().max(64)).max(500),
 });
 
 const favoriteInput = z.object({
-  token: z.string(),
+  token: z.string().max(64),
   type: z.enum(["song", "album", "playlist", "artist", "show"]),
 });
 

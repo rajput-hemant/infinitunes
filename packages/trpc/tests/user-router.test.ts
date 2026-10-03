@@ -229,6 +229,32 @@ describe("user router authorization", () => {
     expect(state.updates).toHaveLength(0);
   });
 
+  it("rejects oversized favorite tokens and song batches before writing", async () => {
+    state.playlist = { id: "playlist-1", userId: "user-123", songs: [] };
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await expect(
+      caller.user.addToFavorites({ token: "x".repeat(65), type: "song" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      caller.user.addSongsToPlaylist({
+        playlistId: "playlist-1",
+        songs: Array.from({ length: 501 }, (_, i) => `song-${i}`),
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      caller.user.addSongsToPlaylist({
+        playlistId: "playlist-1",
+        songs: ["x".repeat(65)],
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(state.updates).toHaveLength(0);
+    expect(state.inserts).toHaveLength(0);
+  });
+
   it("normalizes the updateUser email before writing", async () => {
     const caller = createCallerFactory(appRouter)({
       db,
