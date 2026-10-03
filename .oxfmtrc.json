@@ -17,16 +17,10 @@
     "preserveWhitespace": false
   },
   "ignorePatterns": [
-    "cache",
-    ".cache",
     "public",
-    "CHANGELOG.md",
-    ".yarn",
-    "dist",
     "node_modules",
     ".next",
     "build",
-    ".contentlayer",
     "migrations",
     "bun.lock"
   ]
