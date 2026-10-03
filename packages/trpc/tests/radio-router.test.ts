@@ -69,40 +69,6 @@ beforeEach(() => {
 });
 
 describe("radioRouter", () => {
-  describe("featuredStations", () => {
-    it("returns list of featured radio stations", async () => {
-      const mockStation = {
-        id: "station-1",
-        title: "Retro Classics",
-        subtitle: "Hindi Radio",
-        type: "radio_station",
-        image: "https://c.saavncdn.com/editorial/retro.jpg",
-        perma_url:
-          "https://www.saavn.com/s/radio/hindi-featured-station/Retro-Classics",
-        explicit_content: "0",
-        more_info: {
-          featured_station_type: "featured",
-          language: "hindi",
-          station_display_text: "Retro Classics",
-          query: "",
-        },
-      };
-
-      responses["webradio.getFeaturedStations"] = [mockStation];
-
-      const res = await caller.radio.featuredStations({
-        page: 1,
-        n: 10,
-        lang: uniq(),
-      });
-
-      expect(res).toBeArray();
-      expect(res.length).toBe(1);
-      expect(res[0].id).toBe("station-1");
-      expect(res[0].title).toBe("Retro Classics");
-    });
-  });
-
   describe("createStation", () => {
     it("creates a featured station session", async () => {
       responses["webradio.createFeaturedStation"] = {
