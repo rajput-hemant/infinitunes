@@ -2,7 +2,6 @@ import { createAuth } from "@infinitunes/auth";
 import { db } from "@infinitunes/db";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { cache } from "react";
 
 let authInstance: ReturnType<typeof createAuth> | undefined;
@@ -88,15 +87,3 @@ export const getUser = cache(async () => {
     image: session.user.image,
   };
 });
-
-/**
- * Checks if the current user is authenticated
- * If not, redirects to the login page
- */
-export const checkAuth = async () => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) redirect("/login");
-};

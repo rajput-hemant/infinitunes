@@ -2,7 +2,6 @@ import { decode } from "@infinitunes/types";
 import type { MediaType } from "@infinitunes/types";
 import { cn } from "@infinitunes/ui/lib/utils";
 import type { Route } from "next";
-import { toast } from "sonner";
 
 import { siteConfig } from "~/config/site";
 
@@ -90,12 +89,6 @@ export function getHref(
 
   const trailing = segments.slice(-count);
   return asRoute(`/${type}/${trailing.join("/")}`);
-}
-
-export function currentlyInDev() {
-  toast.info("This feature is currently in development.", {
-    description: "We're working on it and it'll be available soon.",
-  });
 }
 
 export function isMacOs() {
