@@ -69,6 +69,8 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
 }
 
 function PlayerInner({ user, playlists, favorites }: PlayerProps) {
+  const seekLabelId = React.useId();
+  const volumeLabelId = React.useId();
   // stores
   const [queue, setQueue] = useQueue();
   const [activeRadio] = useActiveRadioSession();
@@ -324,8 +326,11 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         !(isReady || queue.length) && "hidden lg:block",
       )}
     >
+      <span id={seekLabelId} className="sr-only">
+        Seek
+      </span>
       <Slider
-        aria-label="Seek"
+        aria-labelledby={seekLabelId}
         value={[pos]}
         max={duration || 1}
         onValueChange={(value: number | readonly number[], _details) => {
@@ -546,8 +551,11 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
               )}
             </button>
 
+            <span id={volumeLabelId} className="sr-only">
+              Volume
+            </span>
             <Slider
-              aria-label="Volume"
+              aria-labelledby={volumeLabelId}
               value={[isMuted ? 0 : volume * 100]}
               defaultValue={[75]}
               min={0}
@@ -593,8 +601,8 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 })}
               />
             ) : (
-              <Button size="icon" variant="ghost">
-                <MoreVertical />
+              <Button size="icon" variant="ghost" aria-label="More">
+                <MoreVertical aria-hidden="true" />
               </Button>
             )}
           </div>
