@@ -154,11 +154,9 @@ export const config = {
 };
 
 function getIP(req: NextRequest): string {
-  // @ts-expect-error ip is not available in NextRequest
-  let ip = req.ip ?? req.headers.get("x-real-ip");
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  if (!ip && forwardedFor) {
-    ip = forwardedFor.split(",").at(0) ?? "";
-  }
-  return ip;
+  return (
+    req.headers.get("x-real-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",").at(0) ||
+    ""
+  );
 }

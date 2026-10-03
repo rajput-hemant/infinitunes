@@ -15,7 +15,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-import { sidebarNav } from "~/config/nav";
+import { browseNav, sidebarNav } from "~/config/nav";
 import { cn } from "~/lib/utils";
 
 export function SecondaryNavbar() {
@@ -27,7 +27,7 @@ export function SecondaryNavbar() {
     setIsOpen((prev) => !prev);
   }
 
-  if (!sidebarNav.slice(0, 6).some((i) => i.href === pathname)) return null;
+  if (!browseNav.some((i) => i.href === pathname)) return null;
 
   return (
     <nav aria-label="Browse" className="border-b">

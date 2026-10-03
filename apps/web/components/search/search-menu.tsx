@@ -13,7 +13,7 @@ import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useDeferredValue, useEffect, useState } from "react";
 
-import { useEventListener } from "~/hooks/use-event-listner";
+import { useKeydown } from "~/hooks/use-keydown";
 import { useIsTyping } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
 import { cn, isMacOs } from "~/lib/utils";
@@ -40,7 +40,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
   const [_, setIsTyping] = useIsTyping();
 
-  useEventListener("keydown", (e: KeyboardEvent) => {
+  useKeydown((e: KeyboardEvent) => {
     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
       setIsOpen((isOpen) => !isOpen);

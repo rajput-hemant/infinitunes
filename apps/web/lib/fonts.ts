@@ -29,5 +29,3 @@ export const fontHeading = localFont({
   src: "../public/fonts/CalSans-SemiBold.woff",
   variable: "--font-heading",
 });
-
-// ...
