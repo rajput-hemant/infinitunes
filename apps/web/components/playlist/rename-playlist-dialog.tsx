@@ -26,6 +26,7 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { renamePlaylist } from "~/lib/actions";
+import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
 
 type FormData = z.infer<typeof newPlaylistSchema>;
@@ -65,7 +66,7 @@ export function RenamePlaylistDialog({
       await toast.promise(renamePlaylist(playlist.id, { name, description }), {
         loading: "Renaming playlist...",
         success: (updated) => `Playlist renamed to "${updated.name}"`,
-        error: (error) => error.message,
+        error: userMessage,
       });
       onOpenChange(false);
       router.refresh();

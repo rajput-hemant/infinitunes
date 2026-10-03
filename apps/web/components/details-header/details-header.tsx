@@ -314,6 +314,11 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
             <PlayButton
               type={kind === "season" ? "show" : kind}
+              season={
+                kind === "season"
+                  ? Number((item as ShowDetails).more_info.season_number)
+                  : undefined
+              }
               token={
                 kind === "season"
                   ? getId(item)

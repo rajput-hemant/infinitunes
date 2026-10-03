@@ -57,6 +57,13 @@ import { TileMoreButton } from "./song-list/more-button";
 const controlClass =
   "rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
 
+/** Sets `aria-valuetext` on the range input inside a Base UI slider root. */
+function setValueText(root: HTMLElement | null, text: string) {
+  root
+    ?.querySelector("input[type=range]")
+    ?.setAttribute("aria-valuetext", text);
+}
+
 type PlayerProps = {
   user?: User;
   playlists?: MyPlaylist[];
@@ -71,6 +78,8 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
 
 function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const seekLabelId = React.useId();
+  const seekRef = React.useRef<HTMLDivElement>(null);
+  const volumeRef = React.useRef<HTMLDivElement>(null);
   const volumeLabelId = React.useId();
   // stores
   const [queue, setQueue] = useQueue();
@@ -330,6 +339,18 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     }
   });
 
+  const seekFormat = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
+  const seekText = `${formatDuration(pos, seekFormat)} of ${formatDuration(duration, seekFormat)}`;
+  const volumeText = `${isMuted ? 0 : Math.round(volume * 100)} percent`;
+
+  // The Slider wrapper does not forward per-thumb props, so the readable value
+  // is set on the thumb's range input directly (see `setValueText`).
+  React.useEffect(() => setValueText(seekRef.current, seekText), [seekText]);
+  React.useEffect(
+    () => setValueText(volumeRef.current, volumeText),
+    [volumeText],
+  );
+
   return (
     <section
       aria-label="Player"
@@ -338,10 +359,14 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         !(isReady || queue.length) && "hidden lg:block",
       )}
     >
+      <output aria-live="polite" className="sr-only">
+        {current ? `Now playing ${current.name}, ${current.subtitle}` : ""}
+      </output>
       <span id={seekLabelId} className="sr-only">
         Seek
       </span>
       <Slider
+        ref={seekRef}
         aria-labelledby={seekLabelId}
         value={[pos]}
         max={duration || 1}
@@ -533,7 +558,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
           <p className="shrink-0 text-sm text-muted-foreground">
             {formatDuration(pos, pos >= 3600 ? "hh:mm:ss" : "mm:ss")}
             {" / "}
-            {formatDuration(duration, duration >= 3600 ? "hh:mm:ss" : "mm:ss")}
+            {formatDuration(duration, seekFormat)}
           </p>
 
           <div className="hidden items-center gap-4 xl:flex">
@@ -571,6 +596,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
               Volume
             </span>
             <Slider
+              ref={volumeRef}
               aria-labelledby={volumeLabelId}
               value={[isMuted ? 0 : volume * 100]}
               defaultValue={[75]}

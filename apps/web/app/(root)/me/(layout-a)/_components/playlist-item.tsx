@@ -16,9 +16,15 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
   let songsDetails: SongObj | undefined;
 
   if (songs.length) {
-    songsDetails = await api.song.details({
-      id: songs.slice(0, 4).join(","),
-    });
+    try {
+      songsDetails = await api.song.details({
+        id: songs.slice(0, 4).join(","),
+      });
+    } catch (error) {
+      // Cover art is decoration: show the placeholder instead of failing the
+      // whole library page for one playlist.
+      console.error(`playlist ${id}: failed to fetch cover songs`, error);
+    }
   }
 
   const imageSrcs = songsDetails?.songs.map((song) =>

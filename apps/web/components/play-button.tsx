@@ -2,7 +2,7 @@
 
 import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
 import { getToken, toQueue } from "@infinitunes/types";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
@@ -17,12 +17,13 @@ import { api } from "~/lib/trpc/client";
 type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   type: MediaType;
   token: string;
+  /** Season to queue when `type` is "show"; the first season when omitted. */
+  season?: number;
 };
 
 export function PlayButton(props: PlayButtonProps) {
-  const { type, token, children, ...restProps } = props;
+  const { type, token, season, children, ...restProps } = props;
 
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const [initialQueue, setQueue] = useQueue();
@@ -78,13 +79,15 @@ export function PlayButton(props: PlayButtonProps) {
           break;
         }
         case "show": {
-          const episodes = (await utils.show.episodes.fetch({
+          // `show.episodes` is output-less: upstream returns a list, but may
+          // return an object when the show has no episodes.
+          const episodes = await utils.show.episodes.fetch({
             id: token,
-            season: +pathname.split("/")[3],
+            season,
             page: 1,
             sort,
-          })) as unknown as Episode[];
-          queue = episodes;
+          });
+          queue = Array.isArray(episodes) ? episodes : [];
           break;
         }
         case "episode": {

@@ -55,6 +55,7 @@ import {
   removeSongsFromPlaylist,
 } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
+import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
@@ -201,7 +202,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     toast.promise(addSongsToPlaylist(id, [item.id]), {
       loading: "Adding songs to playlist...",
       success: `"${getItemName(item)}" added to "${name}" playlist`,
-      error: (error) => error.message,
+      error: userMessage,
       finally: () => setDialogOpen(false),
     });
   }
@@ -216,7 +217,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       {
         loading: "Removing from playlist...",
         success: `"${getItemName(item)}" removed from playlist`,
-        error: (error) => error.message,
+        error: userMessage,
         finally: () => router.refresh(),
       },
     );
