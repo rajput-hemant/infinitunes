@@ -4,7 +4,6 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import {
-  LOCAL_DEV_DATABASE,
   LOCAL_DEV_INFINITUNES,
   LOCAL_DEV_REDIS,
   LOCAL_DEV_USER,
@@ -14,7 +13,12 @@ import * as schema from "./schema";
 import { betterAuthAccounts, favorites, myPlaylists, users } from "./schema";
 
 async function seed() {
-  const databaseUrl = process.env.DATABASE_URL || LOCAL_DEV_DATABASE.url;
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error(
+      "[seed] DATABASE_URL is required. Copy .env.example to .env and run `bun run db:up` first.",
+    );
+  }
 
   assertLocalDatabase(databaseUrl);
 
