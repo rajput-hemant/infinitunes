@@ -1,15 +1,42 @@
 # Infinitunes Shared Local Development & Schema Compatibility Report
 
 **Repository Head:** `fm/infinitunes-shared-local-dev` (incorporates `b4cc30f` onto `migration/bun-monorepo`)  
-**Status:** Authoritative Shared Infrastructure Owner (Resource-only Compose, Bootstrap SQL, Shared Fixtures, Documentation)
+**Status:** Shared Infrastructure Owner & Canonical Local Setup
 
 ---
 
-## 1. Canonical Shared Fixtures & Contract
+## 1. Multi-Project Independent Startup Contract
 
-All projects consume this single canonical fixture via the documented environment variable `LOCAL_DEV_CONFIG`.
+Both **Infinitunes** and **Lipi** maintain self-contained local development configuration files in their own repositories. A developer can run `bun run db:up` (or `docker compose up -d`) from **either** project without needing to check out or start the other.
 
-- **Canonical JSON Path:** `local-dev/fixtures.json` (also tracked at `config/local-dev-fixture.json` and mirrored in `@infinitunes/db/fixtures`)
+To achieve seamless resource reuse and prevent duplicate containers or data loss, both projects share the exact same Compose identifiers:
+
+- **Compose Project Name:** `local-platforms` (`name: local-platforms`)
+- **PostgreSQL Container Name:** `local-platforms-postgres`
+- **PostgreSQL Data Volume:** `local_platforms_pgdata_18` (named volume: `local_platforms_pgdata_18`)
+- **Redis Container Name:** `local-platforms-redis`
+- **Redis Data Volume:** `local_platforms_redis_data` (named volume: `local_platforms_redis_data`)
+- **Serverless Redis HTTP Container Name:** `local-platforms-redis-rest`
+- **Shared Network Name:** `local_platforms_net` (named network: `local_platforms_net`)
+- **Host Loopback Bindings:**
+  - PostgreSQL: `127.0.0.1:5432:5432`
+  - Redis: `127.0.0.1:6379:6379`
+  - Serverless Redis HTTP: `127.0.0.1:8079:80`
+
+### Cross-Checkout Startup Reuse Verification
+
+Because the project name, container names, volume names, and network name are explicitly pinned:
+
+1. Running `bun run db:up` in Infinitunes launches `local-platforms-*`.
+2. Running `bun run db:up` in Lipi targets the exact same project and containers, reusing the active PostgreSQL and Redis instances without conflict.
+3. Neither repository depends on file paths or checkouts of the sibling repository.
+
+---
+
+## 2. Canonical Shared Fixtures & Contract
+
+Each repository maintains its own local copy of the canonical fixture at `local-dev/fixtures.json` (or reads a custom path via `LOCAL_DEV_CONFIG`).
+
 - **Shared Database Name:** `local_platforms`
 - **Default Database URL:** `postgresql://postgres:postgrespassword@127.0.0.1:5432/local_platforms`
 - **Local Redis Host & Port:** `127.0.0.1:6379`
@@ -39,7 +66,7 @@ AMA entities remain anonymous and isolated; no credential login is created or ne
 
 ---
 
-## 2. Shared `user` & Auth Table DDL
+## 3. Shared `user` & Auth Table DDL
 
 Infinitunes and Lipi share the exact same physical `public.user` table and Better Auth tables.
 
@@ -94,7 +121,7 @@ CREATE TABLE "user" (
 
 ---
 
-## 3. Table Prefixing & Schema Isolation
+## 4. Table Prefixing & Schema Isolation
 
 - **Infinitunes Tables:** `infinitunes_*`
   - `infinitunes_playlist`
@@ -107,7 +134,7 @@ CREATE TABLE "user" (
 
 ---
 
-## 4. Migration Ownership & Execution Order
+## 5. Migration Ownership & Execution Order
 
 ### The Migration Problem & Resolution
 
@@ -116,19 +143,20 @@ CREATE TABLE "user" (
   - Infinitunes uses the default `drizzle.__drizzle_migrations` history table.
   - Lipi uses a dedicated history table `drizzle.__lipi_migrations` for local development.
 - **Execution Order:**
-  1. **Start Infrastructure:** `docker compose up -d` (starts PostgreSQL, Redis, Redis-REST).
+  1. **Start Infrastructure:** `bun run db:up` (either repo).
   2. **Step 1 - Infinitunes Migrate:** `bun run db:migrate` in Infinitunes. This applies the shared baseline and creates the `user` and `better_auth_*` tables.
   3. **Step 2 - Lipi Migrate:** `bun run db:migrate` in Lipi. This runs against `drizzle.__lipi_migrations` and creates all `lipi_*` application tables without clashing on migration timestamps.
   4. **Step 3 - Seed:** Run `bun run db:seed` in each app. The seed is idempotent and safely updates/preserves the shared user.
 
 ---
 
-## 5. Shared Infrastructure Compose Specification
+## 6. Shared Infrastructure Compose Specification
 
-- **File:** `docker-compose.yml` (Infinitunes repository)
+- **File:** `docker-compose.yml` (self-contained in both repos)
+- **Top-level Name:** `name: local-platforms`
 - **Services:**
-  - `postgres`: Image `postgres:18.6-alpine`, port `127.0.0.1:5432:5432`, DB `local_platforms`, user `postgres`, password `postgrespassword`. Data volume `infinitunes_pgdata_18` mounted at `/var/lib/postgresql`.
+  - `postgres`: Image `postgres:18.6-alpine`, port `127.0.0.1:5432:5432`, DB `local_platforms`, user `postgres`, password `postgrespassword`. Data volume `local_platforms_pgdata_18` mounted at `/var/lib/postgresql`.
   - `redis`: Image `redis:7-alpine`, port `127.0.0.1:6379:6379`.
   - `redis-rest`: Image `hiett/serverless-redis-http:latest`, port `127.0.0.1:8079:80`.
-- **Host Binding:** `127.0.0.1` only for security and isolation.
+- **Host Binding:** `127.0.0.1` only for loopback isolation.
 - **Bootstrap Script:** `docker/bootstrap/01-init.sql` creates extensions `pgcrypto` and `uuid-ossp` on `local_platforms`.

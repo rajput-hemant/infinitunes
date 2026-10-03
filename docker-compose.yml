@@ -1,7 +1,9 @@
+name: local-platforms
+
 services:
   postgres:
     image: postgres:18.6-alpine
-    container_name: infinitunes-postgres
+    container_name: local-platforms-postgres
     restart: unless-stopped
     ports:
       - "127.0.0.1:5432:5432"
@@ -10,7 +12,7 @@ services:
       POSTGRES_PASSWORD: postgrespassword
       POSTGRES_DB: local_platforms
     volumes:
-      - infinitunes_pgdata_18:/var/lib/postgresql
+      - local_platforms_pgdata_18:/var/lib/postgresql
       - ./docker/bootstrap:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d local_platforms"]
@@ -20,12 +22,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: infinitunes-redis
+    container_name: local-platforms-redis
     restart: unless-stopped
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
-      - infinitunes_redis_data:/data
+      - local_platforms_redis_data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -34,7 +36,7 @@ services:
 
   redis-rest:
     image: hiett/serverless-redis-http:latest
-    container_name: infinitunes-redis-rest
+    container_name: local-platforms-redis-rest
     restart: unless-stopped
     ports:
       - "127.0.0.1:8079:80"
@@ -48,5 +50,11 @@ services:
         condition: service_healthy
 
 volumes:
-  infinitunes_pgdata_18:
-  infinitunes_redis_data:
+  local_platforms_pgdata_18:
+    name: local_platforms_pgdata_18
+  local_platforms_redis_data:
+    name: local_platforms_redis_data
+
+networks:
+  default:
+    name: local_platforms_net

@@ -13,11 +13,11 @@ Local development for **Infinitunes**, **Lipi**, and **AMA** uses a shared, reso
    - Pinned consistently across projects.
    - Apps run natively on host with hot reloading via `bun run dev`.
    - Migrations and seeds execute directly against the shared infrastructure.
-3. **Infinitunes owns shared development assets:**
-   - Resource-only `docker-compose.yml`
-   - Bootstrap SQL in `docker/bootstrap/`
-   - Canonical shared fixture in `local-dev/fixtures.json` and `@infinitunes/db/fixtures`
-   - Documentation consumed across sibling projects.
+3. **Independent Startup & Resource Sharing (`name: local-platforms`):**
+   - Both Infinitunes and Lipi own self-contained local development Compose files.
+   - Running `bun run db:up` from either repository connects to and reuses the exact same running containers (`local-platforms-*`), volumes (`local_platforms_pgdata_18`, `local_platforms_redis_data`), and network (`local_platforms_net`).
+   - Neither project requires the other's checkout to start infrastructure.
+   - Resource-only `docker-compose.yml`, bootstrap SQL in `docker/bootstrap/`, and canonical fixtures in `local-dev/fixtures.json`.
 
 ---
 
