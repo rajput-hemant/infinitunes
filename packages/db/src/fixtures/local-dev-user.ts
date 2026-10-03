@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
+import canonicalFixture from "../../../../local-dev/fixtures.json";
+
 export interface LocalDevUser {
   id: string;
   email: string;
@@ -62,63 +64,13 @@ export interface LocalDevFixture {
   infinitunes: LocalDevInfinitunes;
 }
 
-export const DEFAULT_LOCAL_DEV_FIXTURE: LocalDevFixture = {
-  version: "1.0.0",
-  description:
-    "Shared local development canonical fixtures for Infinitunes, Lipi, and AMA",
-  database: {
-    host: "127.0.0.1",
-    port: 5432,
-    user: "postgres",
-    password: "postgrespassword",
-    name: "local_platforms",
-    url: "postgresql://postgres:postgrespassword@127.0.0.1:5432/local_platforms",
-  },
-  redis: {
-    host: "127.0.0.1",
-    port: 6379,
-    restUrl: "http://127.0.0.1:8079",
-    restToken: "localdevtoken",
-  },
-  user: {
-    id: "a0000000-0000-4000-8000-000000000001",
-    email: "local@example.test",
-    password: "LocalDev123!",
-    name: "Local Developer",
-    username: "localdev",
-    displayUsername: "localdev",
-    emailVerified: true,
-  },
-  ama: {
-    actorId: "a0000000-0000-4000-8000-000000000002",
-    hostId: "a0000000-0000-4000-8000-000000000003",
-    actorName: "Anonymous Local Actor",
-    hostName: "Anonymous Local Host",
-    isAnonymous: true,
-  },
-  infinitunes: {
-    playlists: [
-      {
-        id: "b0000000-0000-4000-8000-000000000001",
-        name: "Local Favorites",
-        description: "Deterministic local development playlist",
-        songs: ["OF0RBBVqWXI", "c911v0kF"],
-      },
-    ],
-    favorites: {
-      id: "c0000000-0000-4000-8000-000000000001",
-      songs: ["OF0RBBVqWXI"],
-      albums: [],
-      playlists: ["b0000000-0000-4000-8000-000000000001"],
-      artists: [],
-      podcasts: [],
-    },
-  },
-};
+export const DEFAULT_LOCAL_DEV_FIXTURE: LocalDevFixture =
+  canonicalFixture as LocalDevFixture;
 
 /**
  * Loads the shared local dev fixture. If LOCAL_DEV_CONFIG environment variable
- * points to a valid JSON file, it parses that; otherwise uses DEFAULT_LOCAL_DEV_FIXTURE.
+ * points to a valid JSON file, it parses that; otherwise uses DEFAULT_LOCAL_DEV_FIXTURE
+ * sourced directly from canonical local-dev/fixtures.json.
  */
 export function getLocalDevFixture(): LocalDevFixture {
   const candidatePaths = [

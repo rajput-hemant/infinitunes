@@ -25,6 +25,8 @@ describe("local development fixtures", () => {
   it("exports AMA anonymous fixture actor and host", () => {
     expect(LOCAL_DEV_AMA.actorId).toBe("a0000000-0000-4000-8000-000000000002");
     expect(LOCAL_DEV_AMA.hostId).toBe("a0000000-0000-4000-8000-000000000003");
+    expect(LOCAL_DEV_AMA.actorName).toBe("Local Developer");
+    expect(LOCAL_DEV_AMA.hostName).toBe("Local Developer");
     expect(LOCAL_DEV_AMA.isAnonymous).toBe(true);
   });
 

@@ -1,3 +1,7 @@
+# Local development resources only (no app, no migrations). Keep this file
+# byte-identical with the copy in the other project: the project name, container
+# names, volumes, network and init SQL are the contract that lets either checkout
+# start, reuse and stop the same shared resources. See docs/local-development.md.
 name: local-platforms
 
 services:
@@ -13,7 +17,9 @@ services:
       POSTGRES_DB: local_platforms
     volumes:
       - local_platforms_pgdata_18:/var/lib/postgresql
-      - ./docker/bootstrap:/docker-entrypoint-initdb.d:ro
+    configs:
+      - source: postgres_init
+        target: /docker-entrypoint-initdb.d/01-init.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d local_platforms"]
       interval: 5s
@@ -21,7 +27,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:7-alpine
+    image: redis:7.4-alpine
     container_name: local-platforms-redis
     restart: unless-stopped
     ports:
@@ -35,7 +41,7 @@ services:
       retries: 5
 
   redis-rest:
-    image: hiett/serverless-redis-http:latest
+    image: hiett/serverless-redis-http:0.0.10
     container_name: local-platforms-redis-rest
     restart: unless-stopped
     ports:
@@ -48,6 +54,12 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+
+configs:
+  postgres_init:
+    content: |
+      CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+      CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 volumes:
   local_platforms_pgdata_18:

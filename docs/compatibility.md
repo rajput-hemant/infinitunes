@@ -156,7 +156,7 @@ CREATE TABLE "user" (
 - **Top-level Name:** `name: local-platforms`
 - **Services:**
   - `postgres`: Image `postgres:18.6-alpine`, port `127.0.0.1:5432:5432`, DB `local_platforms`, user `postgres`, password `postgrespassword`. Data volume `local_platforms_pgdata_18` mounted at `/var/lib/postgresql`.
-  - `redis`: Image `redis:7-alpine`, port `127.0.0.1:6379:6379`.
-  - `redis-rest`: Image `hiett/serverless-redis-http:latest`, port `127.0.0.1:8079:80`.
+  - `redis`: Image `redis:7.4-alpine`, port `127.0.0.1:6379:6379`.
+  - `redis-rest`: Image `hiett/serverless-redis-http:0.0.10`, port `127.0.0.1:8079:80`.
 - **Host Binding:** `127.0.0.1` only for loopback isolation.
-- **Bootstrap Script:** `docker/bootstrap/01-init.sql` creates extensions `pgcrypto` and `uuid-ossp` on `local_platforms`.
+- **Bootstrap Init:** Inline Compose configuration (`configs: postgres_init`) initializes extensions `pgcrypto` and `uuid-ossp` on `local_platforms` without repository path dependencies.

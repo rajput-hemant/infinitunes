@@ -27,8 +27,8 @@
   "ama": {
     "actorId": "a0000000-0000-4000-8000-000000000002",
     "hostId": "a0000000-0000-4000-8000-000000000003",
-    "actorName": "Anonymous Local Actor",
-    "hostName": "Anonymous Local Host",
+    "actorName": "Local Developer",
+    "hostName": "Local Developer",
     "isAnonymous": true
   },
   "infinitunes": {
@@ -37,21 +37,14 @@
         "id": "b0000000-0000-4000-8000-000000000001",
         "name": "Local Favorites",
         "description": "Deterministic local development playlist",
-        "songs": [
-          "OF0RBBVqWXI",
-          "c911v0kF"
-        ]
+        "songs": ["OF0RBBVqWXI", "c911v0kF"]
       }
     ],
     "favorites": {
       "id": "c0000000-0000-4000-8000-000000000001",
-      "songs": [
-        "OF0RBBVqWXI"
-      ],
+      "songs": ["OF0RBBVqWXI"],
       "albums": [],
-      "playlists": [
-        "b0000000-0000-4000-8000-000000000001"
-      ],
+      "playlists": ["b0000000-0000-4000-8000-000000000001"],
       "artists": [],
       "podcasts": []
     }

@@ -17,7 +17,7 @@ Local development for **Infinitunes**, **Lipi**, and **AMA** uses a shared, reso
    - Both Infinitunes and Lipi own self-contained local development Compose files.
    - Running `bun run db:up` from either repository connects to and reuses the exact same running containers (`local-platforms-*`), volumes (`local_platforms_pgdata_18`, `local_platforms_redis_data`), and network (`local_platforms_net`).
    - Neither project requires the other's checkout to start infrastructure.
-   - Resource-only `docker-compose.yml`, bootstrap SQL in `docker/bootstrap/`, and canonical fixtures in `local-dev/fixtures.json`.
+   - Resource-only `docker-compose.yml`, inline bootstrap config `postgres_init`, and canonical fixtures in `local-dev/fixtures.json`.
 
 ---
 
@@ -183,7 +183,7 @@ Open [http://localhost:3000](http://localhost:3000) and log in with:
 ## Safe Reset Limits & Volume Preservation
 
 - **Do NOT run global `docker system prune` or delete volumes.**
-- Data is stored in isolated volumes (`infinitunes_pgdata_18` and `infinitunes_redis_data`).
+- Data is stored in isolated volumes (`local_platforms_pgdata_18` and `local_platforms_redis_data`).
 - To safely reset database tables without losing Docker volumes, run:
   ```bash
   bun run db:reset
