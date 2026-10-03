@@ -24,13 +24,16 @@
     "./backfill": "./src/backfill.ts",
     "./drizzle.config": "./src/drizzle.config.ts",
     "./fixtures": "./src/fixtures/index.ts",
-    "./local-guard": "./src/fixtures/local-guard.ts"
+    "./local-guard": "./src/fixtures/local-guard.ts",
+    "./env": "./src/env.ts"
   },
   "dependencies": {
     "@infinitunes/env": "workspace:*",
     "bcryptjs": "catalog:",
     "drizzle-orm": "catalog:",
-    "postgres": "^3.4.9"
+    "postgres": "^3.4.9",
+    "@t3-oss/env-core": "^0.13.11",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
