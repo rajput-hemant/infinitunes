@@ -46,14 +46,14 @@ export default async function SearchPage({ params }: SearchPageProps) {
         </p>
       </header>
 
-      <main className="space-y-4 border-t">
+      <div className="space-y-4 border-t">
         <SearchNavbar type={type} query={query} />
         <SearchResults
           type={type}
           query={query}
           initialSearchResults={searchRes}
         />
-      </main>
+      </div>
     </div>
   );
 }

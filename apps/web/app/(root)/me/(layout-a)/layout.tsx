@@ -64,7 +64,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
       <Navbar />
 
-      <main className="mb-4 min-h-120">{children}</main>
+      <div className="mb-4 min-h-120">{children}</div>
     </section>
   );
 }

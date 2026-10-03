@@ -19,7 +19,7 @@ export default function Loading() {
         <Skeleton className="h-4 w-32" />
       </div>
 
-      <main className="space-y-4 border-t">
+      <div className="space-y-4 border-t">
         <div className="border-b">
           <div className="hidden h-full items-center gap-2 lg:flex">
             {navItems.map(({ title }) => {
@@ -42,7 +42,7 @@ export default function Loading() {
         ) : (
           <SliderListSkeleton length={40} />
         )}
-      </main>
+      </div>
     </div>
   );
 }

@@ -39,15 +39,17 @@ export default async function Layout({ children }: React.PropsWithChildren) {
         <Navbar />
         <div className="flex min-h-0 w-full flex-1">
           <Sidebar user={user} userPlaylists={userPlaylists} />
-          <SidebarInset className="min-w-0">
-            <main
-              id="main-content"
-              className="mx-auto w-full max-w-(--breakpoint-2xl) px-2 pt-2 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-4 sm:pt-4 lg:pb-24"
-            >
+          {/* SidebarInset renders the only main landmark. */}
+          <SidebarInset
+            id="main-content"
+            tabIndex={-1}
+            className="min-w-0 outline-none"
+          >
+            <div className="mx-auto w-full max-w-(--breakpoint-2xl) px-2 pt-2 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-4 sm:pt-4 lg:pb-24">
               <SecondaryNavbar />
               {children}
               <SiteFooter />
-            </main>
+            </div>
           </SidebarInset>
         </div>
       </AppSidebarProvider>
