@@ -16,7 +16,12 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@infinitunes/ui/components/sidebar";
-import { ListMusic, ListPlus, Plus } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@infinitunes/ui/components/tooltip";
+import { ListMusic, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import React from "react";
@@ -79,6 +84,23 @@ export function AppSidebarTrigger({
       aria-expanded={open}
       aria-controls="app-sidebar"
     />
+  );
+}
+
+function CreatePlaylistTooltip({ children }: { children: React.ReactElement }) {
+  const { isMobile, state } = useSidebar();
+
+  return (
+    <Tooltip>
+      <TooltipTrigger render={children} />
+      <TooltipContent
+        side="right"
+        align="center"
+        hidden={state !== "collapsed" || isMobile}
+      >
+        Create Playlist
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -163,18 +185,21 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                 <SidebarGroupContent>
                   <div className="mx-4 mt-2 space-y-2 group-data-[collapsible=icon]:mx-0">
                     {userPlaylists?.length === 0 ? (
-                      <NewPlaylistForm user={user}>
-                        <Button
-                          size="sm"
-                          title="Create Playlist"
-                          className="w-full truncate shadow-sm group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-0"
-                        >
-                          <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
-                          <span className="group-data-[collapsible=icon]:sr-only">
-                            Create Playlist
-                          </span>
-                        </Button>
-                      </NewPlaylistForm>
+                      <CreatePlaylistTooltip>
+                        <div>
+                          <NewPlaylistForm user={user}>
+                            <Button
+                              size="sm"
+                              className="w-full truncate shadow-sm group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-0"
+                            >
+                              <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
+                              <span className="group-data-[collapsible=icon]:sr-only">
+                                Create Playlist
+                              </span>
+                            </Button>
+                          </NewPlaylistForm>
+                        </div>
+                      </CreatePlaylistTooltip>
                     ) : null}
                   </div>
 
@@ -206,16 +231,17 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
 
           {!user && (
             <div className="mx-4 mt-2 space-y-2 group-data-[collapsible=icon]:mx-2">
-              <Link
-                href="/login"
-                title="Create Playlist"
-                className="flex w-full items-center rounded-md px-2 py-1 text-sm shadow-sm group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
-              >
-                <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
-                <span className="group-data-[collapsible=icon]:sr-only">
-                  Create Playlist
-                </span>
-              </Link>
+              <CreatePlaylistTooltip>
+                <Link
+                  href="/login"
+                  className="flex w-full items-center rounded-md px-2 py-1 text-sm shadow-sm group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                >
+                  <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
+                  <span className="group-data-[collapsible=icon]:sr-only">
+                    Create Playlist
+                  </span>
+                </Link>
+              </CreatePlaylistTooltip>
               <p className="text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
                 You need to be logged in to create a playlist.
               </p>

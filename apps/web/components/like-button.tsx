@@ -35,7 +35,7 @@ export function LikeButton(props: LikeButtonProps) {
 
   const [optimisticLike, setOptimisticLike] = React.useOptimistic(
     isFavorite ?? false,
-    (isLiked, _) => !isLiked,
+    (isLiked) => !isLiked,
   );
 
   function likeHandler() {
