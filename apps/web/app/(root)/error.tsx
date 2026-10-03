@@ -15,7 +15,7 @@ export default function Error({ error, retry }: ErrorProps) {
   }, [error]);
 
   return (
-    <div className="flex h-[calc(100vh-14rem)] flex-col items-center justify-center gap-4 lg:ml-[-16%]">
+    <div className="flex min-h-[calc(100dvh-14rem)] flex-col items-center justify-center gap-4">
       <Image
         src="/images/searching-duck.gif"
         width={100}
