@@ -36,12 +36,9 @@
         "@upstash/ratelimit": "^2.2.0",
         "@upstash/redis": "^1.39.0",
         "babel-plugin-react-compiler": "^1.0.0",
-        "bcryptjs": "^3.0.3",
         "better-auth": "^1.7.6",
-        "class-variance-authority": "^0.7.1",
         "cookies-next": "^6.1.1",
         "drizzle-orm": "^0.45.3",
-        "geist": "^1.7.2",
         "jotai": "^3.0.0",
         "lucide-react": "^1.48.0",
         "next": "^16.3.6",
@@ -57,19 +54,13 @@
         "zod": "^4.6.5",
       },
       "devDependencies": {
-        "@commitlint/cli": "^21.2.3",
-        "@commitlint/config-conventional": "^21.2.3",
         "@infinitunes/typescript-config": "workspace:*",
         "@next/env": "16.3.6",
         "@tailwindcss/postcss": "^4.3.3",
-        "@total-typescript/ts-reset": "^0.6.1",
-        "@types/bcryptjs": "^3.0.0",
         "@types/node": "26.6.3",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
         "drizzle-kit": "^0.31.11",
-        "husky": "^9.1.7",
-        "lint-staged": "^17.6.0",
         "oxfmt": "^0.70.0",
         "oxlint": "^1.85.0",
         "postcss": "8.5.28",
@@ -82,7 +73,6 @@
       "name": "@infinitunes/auth",
       "version": "0.1.0",
       "dependencies": {
-        "@better-auth/drizzle-adapter": "^1.7.6",
         "@better-auth/passkey": "^1.7.6",
         "@infinitunes/db": "workspace:*",
         "@infinitunes/env": "workspace:*",
@@ -93,7 +83,6 @@
       },
       "devDependencies": {
         "@infinitunes/typescript-config": "workspace:*",
-        "@types/bcryptjs": "^3.0.0",
         "@types/node": "^26.6.3",
         "typescript": "^7.0.2",
       },
@@ -109,7 +98,6 @@
       },
       "devDependencies": {
         "@infinitunes/typescript-config": "workspace:*",
-        "@types/bcryptjs": "^3.0.0",
         "@types/bun": "^1.4.2",
         "@types/node": "^26.6.3",
         "drizzle-kit": "^0.31.11",
@@ -148,7 +136,6 @@
       },
       "devDependencies": {
         "@infinitunes/typescript-config": "workspace:*",
-        "@types/bcryptjs": "^3.0.0",
         "@types/bun": "^1.4.2",
         "@types/crypto-js": "^4.2.2",
         "oxfmt": "^0.70.0",
@@ -668,7 +655,6 @@
 
     "@tanstack/react-query": ["@tanstack/react-query@5.104.0", "", { "dependencies": { "@tanstack/query-core": "5.104.0" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-e1TZmDCQnWIfiDVryIHeA6Idj+Lfx1hORLOhXS/l5wcgvtVD4yYqbTDl378sGQKIi2cSgb0TEMC9cKK8GGoJEw=="],
 
-    "@total-typescript/ts-reset": ["@total-typescript/ts-reset@0.6.1", "", {}, "sha512-cka47fVSo6lfQDIATYqb/vO1nvFfbPw7uWLayIXIhGETj0wcOOlrlkobOMDNQOFr9QOafegUPq13V2+6vtD7yg=="],
 
     "@trpc/client": ["@trpc/client@11.19.0", "", { "peerDependencies": { "@trpc/server": "11.19.0", "typescript": ">=5.7.2" }, "bin": { "intent": "bin/intent.js" } }, "sha512-0MKkPq6MejsKB5Opca1Rl22KVIaqo2+A1EiXyZ8EGUsl9TLrPdpGn+Usux20TZKFwnSC2+wI/WilqNJaP4ODfw=="],
 
@@ -690,7 +676,6 @@
 
     "@turbo/windows-arm64": ["@turbo/windows-arm64@2.11.4", "", { "os": "win32", "cpu": "arm64" }, "sha512-gh5lwDA2d4aBdLvTANhFsFEgxbBqKZ4m4dCyChw9GoX8b+Esk8H3p25Q+rlWCUVJ2o6Hne10ZTL0QSFfWD4gIA=="],
 
-    "@types/bcryptjs": ["@types/bcryptjs@3.0.0", "", { "dependencies": { "bcryptjs": "*" } }, "sha512-WRZOuCuaz8UcZZE4R5HXTco2goQSI2XxjGY3hbM/xDvwmqFWd4ivooImsMx65OKM6CtNKbnZ5YL+YwAwK7c1dg=="],
 
     "@types/bun": ["@types/bun@1.4.2", "", { "dependencies": { "bun-types": "1.4.2" } }, "sha512-GimotNn7+ZV0uVArItBbriZsR1oNf0+WTzPkdcFrzShI7k2norL0uzEaJT8T33dWr7O/c9ZDuAFQrctKCi72oQ=="],
 
@@ -970,7 +955,6 @@
 
     "fuzzysort": ["fuzzysort@3.1.0", "", {}, "sha512-sR9BNCjBg6LNgwvxlBd0sBABvQitkLzoVY9MYYROQVX/FvfJ4Mai9LsGhDgd8qYdds0bY77VzYd5iuB+v5rwQQ=="],
 
-    "geist": ["geist@1.7.2", "", { "peerDependencies": { "next": ">=13.2.0" } }, "sha512-Gu5lDFa3pLRyoBlBPf0QIFHVdWAnpco7fS1bJm41jyLPFoguBgiubseUN2oLXMgqZ7uxAxDoXcHMhCY/fOTTgg=="],
 
     "gensync": ["gensync@1.0.0-beta.2", "", {}, "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg=="],
 
