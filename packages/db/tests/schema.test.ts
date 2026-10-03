@@ -25,7 +25,6 @@ describe("schema exports", () => {
     expect(t.id).toBeDefined();
     expect(t.name).toBeDefined();
     expect(t.email).toBeDefined();
-    expect(t.username).toBeDefined();
     expect(t.password).toBeDefined();
     expect(t.emailVerified).toBeDefined();
     expect(t.image).toBeDefined();
@@ -35,7 +34,6 @@ describe("schema exports", () => {
     const t = schema.users;
     expect(t.betterAuthName).toBeDefined();
     expect(t.emailVerifiedBoolean).toBeDefined();
-    expect(t.displayUsername).toBeDefined();
     expect(t.createdAt).toBeDefined();
     expect(t.updatedAt).toBeDefined();
   });

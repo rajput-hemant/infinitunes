@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import React from "react";
 
 import { PlayerWrapper } from "~/components/player-wrapper";
@@ -13,7 +14,8 @@ import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 
 export default async function Layout({ children }: React.PropsWithChildren) {
-  const user = await getUser();
+  const [user, cookieStore] = await Promise.all([getUser(), cookies()]);
+  const sidebarOpen = cookieStore.get("sidebar_state")?.value !== "false";
 
   let userPlaylists;
   let userFavorites;
@@ -27,7 +29,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
   return (
     <React.Fragment>
-      <AppSidebarProvider>
+      <AppSidebarProvider defaultOpen={sidebarOpen}>
         <Navbar />
         <div className="flex min-h-0 w-full flex-1">
           <Sidebar user={user} userPlaylists={userPlaylists} />

@@ -90,6 +90,15 @@ describe("resetPasswordSchema", () => {
     expect(valid.success).toBe(true);
   });
 
+  it("trims and lowercases the email", () => {
+    const parsed = resetPasswordSchema.safeParse({
+      email: "  User@Example.COM ",
+      password: "OldPassword123!",
+      newPassword: "NewPassword123!",
+    });
+    expect(parsed.success && parsed.data.email).toBe("user@example.com");
+  });
+
   it("fails when any field is invalid", () => {
     const invalid = resetPasswordSchema.safeParse({
       email: "not-an-email",

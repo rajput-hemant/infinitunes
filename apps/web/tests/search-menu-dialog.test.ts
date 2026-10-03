@@ -1,6 +1,9 @@
 import { describe, expect, it } from "bun:test";
 
-const SEARCH_MENU = new URL("../components/search/search-menu.tsx", import.meta.url);
+const SEARCH_MENU = new URL(
+  "../components/search/search-menu.tsx",
+  import.meta.url,
+);
 
 describe("search menu dialog", () => {
   it("overrides stock sm max width and uses h-10 search input", async () => {

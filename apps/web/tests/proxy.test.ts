@@ -1,4 +1,5 @@
 import { beforeAll, describe, expect, it, mock } from "bun:test";
+
 import * as betterAuthCookies from "better-auth/cookies";
 import type { NextRequest } from "next/server";
 
@@ -31,7 +32,10 @@ process.env.SKIP_ENV_VALIDATION = "true";
 process.env.ENABLE_RATE_LIMITING = "false";
 process.env.NODE_ENV = "production";
 
-function createNextRequest(href: string, method: "GET" | "OPTIONS" = "GET"): NextRequest {
+function createNextRequest(
+  href: string,
+  method: "GET" | "OPTIONS" = "GET",
+): NextRequest {
   const nextUrl = new URL(href);
 
   return {
@@ -66,13 +70,17 @@ describe("proxy guest route access", () => {
   });
 
   it("allows guest /settings without redirecting to login", async () => {
-    const res = await proxy(createNextRequest("http://localhost:3000/settings"));
+    const res = await proxy(
+      createNextRequest("http://localhost:3000/settings"),
+    );
 
     expect(res.status).toBe(200);
   });
 
   it("redirects guest /me to login", async () => {
-    const res = await proxy(createNextRequest("http://localhost:3000/me/albums"));
+    const res = await proxy(
+      createNextRequest("http://localhost:3000/me/albums"),
+    );
 
     expect(res.status).toBe(307);
     expect((res as { headers: { location: string } }).headers.location).toBe(

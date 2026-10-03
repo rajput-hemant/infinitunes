@@ -1,3 +1,4 @@
+import { passkey } from "@better-auth/passkey";
 import type { DbClient } from "@infinitunes/db/client";
 import {
   betterAuthAccounts,
@@ -7,7 +8,6 @@ import {
   users,
 } from "@infinitunes/db/schema";
 import { createServerEnv } from "@infinitunes/env/server";
-import { passkey } from "@better-auth/passkey";
 import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
@@ -30,9 +30,7 @@ export function createAuth(
   const env = createServerEnv({ skipValidation: true });
   const baseURL = process.env.BETTER_AUTH_URL || env.AUTH_URL;
   const rpID =
-    process.env.BETTER_AUTH_RP_ID ||
-    safeHostname(baseURL) ||
-    "localhost";
+    process.env.BETTER_AUTH_RP_ID || safeHostname(baseURL) || "localhost";
 
   async function mirrorAccountPassword(userId: string) {
     const account = await db.query.betterAuthAccounts.findFirst({

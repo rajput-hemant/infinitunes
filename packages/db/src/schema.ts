@@ -19,7 +19,6 @@ export const users = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name"),
   email: text("email").notNull().unique(),
-  username: text("username").unique(),
   password: text("password"),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
@@ -29,7 +28,6 @@ export const users = pgTable("user", {
   emailVerifiedBoolean: boolean("emailVerifiedBoolean")
     .notNull()
     .default(false),
-  displayUsername: text("displayUsername"),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
 });
@@ -124,7 +122,7 @@ export const betterAuthVerifications = pgTable("better_auth_verification", {
 
 /* ---------------------------------------------------------------------------
  * Infinitunes passkey credentials (Better Auth @better-auth/passkey).
- * App-specific table; Lipi uses lipi_passkey with identical columns.
+ * App-specific table, prefixed to stay isolated in the shared database.
  * Column names mirror the plugin schema so the drizzle adapter maps them.
  * ------------------------------------------------------------------------- */
 

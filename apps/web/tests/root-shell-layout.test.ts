@@ -7,7 +7,7 @@ describe("root shell layout", () => {
   it("keeps the navbar inside the sidebar provider and above the inset row", async () => {
     const layout = await Bun.file(ROOT_LAYOUT).text();
 
-    expect(layout.indexOf("<AppSidebarProvider>")).toBeLessThan(
+    expect(layout.indexOf("<AppSidebarProvider")).toBeLessThan(
       layout.indexOf("<Navbar />"),
     );
     expect(layout.indexOf("<Navbar />")).toBeLessThan(
@@ -30,8 +30,8 @@ describe("root shell layout", () => {
 
     expect(sidebar).toContain("masterSidebarDesktopOffsetClassName");
     expect(sidebar).toContain("top-14 h-[calc(100svh-3.5rem)]");
-    expect(sidebar).toContain(
-      "<SidebarPrimitive className={masterSidebarDesktopOffsetClassName}",
+    expect(sidebar).toMatch(
+      /<SidebarPrimitive[^>]*className=\{masterSidebarDesktopOffsetClassName\}/,
     );
   });
 
@@ -61,13 +61,20 @@ describe("root shell layout", () => {
     );
   });
 
-  it("releases main-column space when the desktop sidebar is collapsed", async () => {
+  it("keeps an icon rail when the desktop sidebar is collapsed", async () => {
     const sidebar = await Bun.file(SIDEBAR).text();
 
-    expect(sidebar).toContain("w-0 shrink-0");
-    expect(sidebar).not.toMatch(/sidebar-gap\]\]:!w-/);
-    expect(sidebar).not.toMatch(
-      /\[&_\[data-slot=sidebar\]\[data-state=collapsed\].*sidebar-gap/,
+    expect(sidebar).toContain('collapsible="icon"');
+    expect(sidebar).toContain(
+      "has-[[data-slot=sidebar][data-state=collapsed]]:lg:w-(--sidebar-width-icon)",
     );
+    expect(sidebar).not.toContain("SidebarRail");
+  });
+
+  it("restores the persisted sidebar state on the server", async () => {
+    const layout = await Bun.file(ROOT_LAYOUT).text();
+
+    expect(layout).toContain('cookieStore.get("sidebar_state")');
+    expect(layout).toContain("<AppSidebarProvider defaultOpen={sidebarOpen}>");
   });
 });

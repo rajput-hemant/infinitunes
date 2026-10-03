@@ -14,12 +14,8 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@infinitunes/ui/components/sidebar";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@infinitunes/ui/components/tooltip";
 import { ListMusic, ListPlus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
@@ -43,7 +39,7 @@ export const masterSidebarDesktopOffsetClassName =
   "top-14 h-[calc(100svh-3.5rem)]";
 
 export const masterSidebarGapShellClassName =
-  "w-0 shrink-0 has-[[data-slot=sidebar][data-state=expanded]]:lg:w-[20%] has-[[data-slot=sidebar][data-state=expanded]]:xl:w-[15%] has-[[data-slot=sidebar][data-state=expanded]]:2xl:w-[12.5%]";
+  "w-0 shrink-0 transition-[width] duration-200 ease-linear has-[[data-slot=sidebar][data-state=collapsed]]:lg:w-(--sidebar-width-icon) has-[[data-slot=sidebar][data-state=expanded]]:lg:w-[20%] has-[[data-slot=sidebar][data-state=expanded]]:xl:w-[15%] has-[[data-slot=sidebar][data-state=expanded]]:2xl:w-[12.5%]";
 
 export const masterSidebarDesktopVisibilityClassName =
   "max-lg:[&_[data-slot=sidebar]]:!hidden max-lg:[&_[data-slot=sidebar-container]]:!hidden";
@@ -71,6 +67,21 @@ export function AppSidebarProvider({
   );
 }
 
+export function AppSidebarTrigger({
+  className,
+}: React.ComponentProps<typeof SidebarTrigger>) {
+  const { open } = useSidebar();
+
+  return (
+    <SidebarTrigger
+      className={className}
+      aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
+      aria-expanded={open}
+      aria-controls="app-sidebar"
+    />
+  );
+}
+
 export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
 
@@ -82,130 +93,138 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
         masterSidebarDesktopVisibilityClassName,
       )}
     >
-      <SidebarPrimitive className={masterSidebarDesktopOffsetClassName}>
-      <SidebarHeader>
-        <h3 className="pl-3 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-          Discover
-        </h3>
-      </SidebarHeader>
+      <SidebarPrimitive
+        id="app-sidebar"
+        collapsible="icon"
+        className={masterSidebarDesktopOffsetClassName}
+      >
+        <SidebarHeader className="group-data-[collapsible=icon]:hidden">
+          <h3 className="pl-3 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+            Discover
+          </h3>
+        </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {sidebarNav.slice(0, 6).map(({ title, href, icon: Icon }) => {
-                const isActive = href === "/" + (segment ?? "");
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {sidebarNav.slice(0, 6).map(({ title, href, icon: Icon }) => {
+                  const isActive = href === "/" + (segment ?? "");
 
-                return (
-                  <SidebarMenuItem key={title}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      render={
-                        <Link href={href} className="flex items-center">
-                          <Icon className="mr-2 size-5" />
-                          <span>{title}</span>
-                        </Link>
-                      }
-                    />
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                  return (
+                    <SidebarMenuItem key={title}>
+                      <SidebarMenuButton
+                        isActive={isActive}
+                        tooltip={title}
+                        render={
+                          <Link href={href} className="flex items-center">
+                            <Icon className="mr-2 size-5 shrink-0 group-data-[collapsible=icon]:mr-0" />
+                            <span>{title}</span>
+                          </Link>
+                        }
+                      />
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-        {!!user && (
-          <>
-            <SidebarGroup>
-              <SidebarGroupLabel>Library</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {sidebarNav.slice(6).map(({ title, href, icon: Icon }) => {
-                    const isActive = href === "/" + (segment ?? "");
+          {!!user && (
+            <>
+              <SidebarGroup>
+                <SidebarGroupLabel>Library</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {sidebarNav.slice(6).map(({ title, href, icon: Icon }) => {
+                      const isActive = href === "/" + (segment ?? "");
 
-                    return (
-                      <SidebarMenuItem key={title}>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          render={
-                            <Link href={href} className="flex items-center">
-                              <Icon className="mr-2 size-5 shrink-0" />
-                              <span>{title}</span>
-                            </Link>
-                          }
-                        />
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
+                      return (
+                        <SidebarMenuItem key={title}>
+                          <SidebarMenuButton
+                            isActive={isActive}
+                            tooltip={title}
+                            render={
+                              <Link href={href} className="flex items-center">
+                                <Icon className="mr-2 size-5 shrink-0 group-data-[collapsible=icon]:mr-0" />
+                                <span>{title}</span>
+                              </Link>
+                            }
+                          />
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
 
-            <SidebarGroup>
-              <SidebarGroupLabel>Playlists</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <div className="mx-4 mt-2 space-y-2">
-                  {userPlaylists?.length === 0 ? (
-                    <NewPlaylistForm user={user}>
-                      <Button size="sm" className="w-full truncate shadow-sm">
-                        <Plus className="mr-2 size-4 shrink-0" />
-                        Create Playlist
-                      </Button>
-                    </NewPlaylistForm>
-                  ) : null}
-                </div>
+              <SidebarGroup>
+                <SidebarGroupLabel>Playlists</SidebarGroupLabel>
+                <SidebarGroupContent>
+                  <div className="mx-4 mt-2 space-y-2 group-data-[collapsible=icon]:mx-0">
+                    {userPlaylists?.length === 0 ? (
+                      <NewPlaylistForm user={user}>
+                        <Button
+                          size="sm"
+                          title="Create Playlist"
+                          className="w-full truncate shadow-sm group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-0"
+                        >
+                          <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
+                          <span className="group-data-[collapsible=icon]:sr-only">
+                            Create Playlist
+                          </span>
+                        </Button>
+                      </NewPlaylistForm>
+                    ) : null}
+                  </div>
 
-                <SidebarMenu>
-                  {userPlaylists?.map(({ id, name }) => {
-                    return (
-                      <SidebarMenuItem key={id}>
-                        <SidebarMenuButton
-                          isActive={id === segment}
-                          render={
-                            <Link
-                              href={asRoute(`/me/playlist/${id}`)}
-                              className="group flex items-center justify-between"
-                            >
-                              <span className="flex items-center">
-                                <ListMusic className="mr-2 size-5" />
+                  <SidebarMenu>
+                    {userPlaylists?.map(({ id, name }) => {
+                      return (
+                        <SidebarMenuItem key={id}>
+                          <SidebarMenuButton
+                            isActive={id === segment}
+                            tooltip={name}
+                            render={
+                              <Link
+                                href={asRoute(`/me/playlist/${id}`)}
+                                className="flex items-center"
+                              >
+                                <ListMusic className="mr-2 size-5 shrink-0 group-data-[collapsible=icon]:mr-0" />
                                 <span>{name}</span>
-                              </span>
-                            </Link>
-                          }
-                        />
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </>
-        )}
+                              </Link>
+                            }
+                          />
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </SidebarGroup>
+            </>
+          )}
 
-        {!user && (
-          <div className="mx-4 mt-2 space-y-2">
-            <Link
-              href="/login"
-              className={cn(
-                "flex w-full items-center rounded-md px-2 py-1 text-sm shadow-sm",
-              )}
-            >
-              <Plus className="mr-2 size-4 shrink-0" />
-              Create Playlist
-            </Link>
-            <p className="text-center text-xs text-muted-foreground">
-              You need to be logged in to create a playlist.
-            </p>
-          </div>
-        )}
-      </SidebarContent>
-    </SidebarPrimitive>
+          {!user && (
+            <div className="mx-4 mt-2 space-y-2 group-data-[collapsible=icon]:mx-2">
+              <Link
+                href="/login"
+                title="Create Playlist"
+                className="flex w-full items-center rounded-md px-2 py-1 text-sm shadow-sm group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+              >
+                <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
+                <span className="group-data-[collapsible=icon]:sr-only">
+                  Create Playlist
+                </span>
+              </Link>
+              <p className="text-center text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                You need to be logged in to create a playlist.
+              </p>
+            </div>
+          )}
+        </SidebarContent>
+      </SidebarPrimitive>
     </div>
   );
 }
 
-export {
-  SidebarProvider,
-  SidebarTrigger,
-} from "@infinitunes/ui/components/sidebar";
 export { SidebarInset } from "@infinitunes/ui/components/sidebar";

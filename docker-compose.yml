@@ -1,8 +1,72 @@
+# Local development resources only (no app, no migrations). Keep this file
+# byte-identical with the copy in the other project: the project name, container
+# names, volumes, network and init SQL are the contract that lets either checkout
+# start, reuse and stop the same shared resources. See docs/local-development.md.
+name: local-platforms
+
 services:
-  infinitunes:
-    build:
-      context: .
-      dockerfile: dockerfile
-    image: infinitunes
+  postgres:
+    image: postgres:18.6-alpine
+    container_name: local-platforms-postgres
+    restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: local_platforms
+    volumes:
+      - local_platforms_pgdata_18:/var/lib/postgresql
+    configs:
+      - source: postgres_init
+        target: /docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d local_platforms"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: local-platforms-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - local_platforms_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis-rest:
+    image: hiett/serverless-redis-http:0.0.10
+    container_name: local-platforms-redis-rest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8079:80"
+    environment:
+      SRH_MODE: env
+      SRH_CONNECTION_STRING: redis://redis:6379
+      SRH_TOKEN: localdevtoken
+      SRH_CONNECTION_TIMEOUT: 1000
+    depends_on:
+      redis:
+        condition: service_healthy
+
+configs:
+  postgres_init:
+    content: |
+      CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+      CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+volumes:
+  local_platforms_pgdata_18:
+    name: local_platforms_pgdata_18
+  local_platforms_redis_data:
+    name: local_platforms_redis_data
+
+networks:
+  default:
+    name: local_platforms_net

@@ -26,6 +26,7 @@ const state: {
   }[];
   inserts: { table: string; values: Record<string, unknown> }[];
   updateError: Error | null;
+  lookups: string[];
 } = {
   playlist: null,
   user: null,
@@ -33,6 +34,7 @@ const state: {
   updates: [],
   inserts: [],
   updateError: null,
+  lookups: [],
 };
 
 const fakeDb = {
@@ -45,7 +47,24 @@ const fakeDb = {
       findFirst: async () => null,
     },
     users: {
-      findFirst: async () => state.user,
+      findFirst: async (opts?: {
+        columns?: { password?: boolean };
+        where?: unknown;
+      }) => {
+        if (typeof opts?.where === "function") {
+          const lookup = (
+            opts.where as (
+              row: { email: string },
+              ops: { eq: (col: string, value: string) => string },
+            ) => string
+          )({ email: "email" }, { eq: (_col, value) => value });
+          state.lookups.push(lookup);
+          if (state.user?.email !== lookup) return undefined;
+        }
+        if (!state.user || opts?.columns?.password !== false) return state.user;
+        const { password: _password, ...rest } = state.user;
+        return rest;
+      },
     },
     betterAuthAccounts: {
       findFirst: async ({
@@ -125,6 +144,7 @@ describe("user router authorization", () => {
     state.updates = [];
     state.inserts = [];
     state.updateError = null;
+    state.lookups = [];
   });
 
   it("rejects protected procedures without a session", async () => {
@@ -205,6 +225,23 @@ describe("user router authorization", () => {
     expect(state.updates[0]?.values).toEqual({ email: "new@example.com" });
   });
 
+  it("omits the password column from the updateUser return value", async () => {
+    state.user = {
+      id: "user-123",
+      email: "user@example.com",
+      password: await hash("CurrentPassword1!", 10),
+    };
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    const result = await caller.user.updateUser({ name: "New Name" });
+
+    expect(result).toMatchObject({ id: "user-123" });
+    expect(result).not.toHaveProperty("password");
+  });
+
   it("maps a duplicate email in updateUser to CONFLICT", async () => {
     state.updateError = new Error("Failed query", {
       cause: { code: "23505" },
@@ -263,6 +300,26 @@ describe("user router authorization", () => {
     expect(
       state.updates.some((update) => update.table === "better_auth_account"),
     ).toBe(false);
+  });
+
+  it("resets the password for a mixed-case, padded email", async () => {
+    state.user = {
+      id: "user-123",
+      email: "user@example.com",
+      password: await hash("CurrentPassword1!", 10),
+    };
+    const caller = createCallerFactory(appRouter)({ db, session: null });
+
+    await caller.user.resetPassword({
+      email: "  User@Example.COM ",
+      password: "CurrentPassword1!",
+      newPassword: "NewPassword2!",
+    });
+
+    expect(state.lookups).toEqual(["user@example.com"]);
+    const userUpdate = state.updates.find((update) => update.table === "user");
+    expect(userUpdate?.where).toContain("user@example.com");
+    expect(state.inserts).toHaveLength(1);
   });
 
   it("uses the credential account hash when an OAuth account sorts first", async () => {
