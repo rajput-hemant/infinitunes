@@ -25,7 +25,15 @@ const state: {
     where: unknown[];
   }[];
   inserts: { table: string; values: Record<string, unknown> }[];
-} = { playlist: null, user: null, accounts: [], updates: [], inserts: [] };
+  updateError: Error | null;
+} = {
+  playlist: null,
+  user: null,
+  accounts: [],
+  updates: [],
+  inserts: [],
+  updateError: null,
+};
 
 const fakeDb = {
   query: {
@@ -58,6 +66,7 @@ const fakeDb = {
   update: (table: typeof users | typeof betterAuthAccounts) => ({
     set: (values: Record<string, unknown>) => ({
       where: async (where: Parameters<PgDialect["sqlToQuery"]>[0]) => {
+        if (state.updateError) throw state.updateError;
         const { params } = new PgDialect().sqlToQuery(where);
         state.updates.push({
           table: getTableName(table),
@@ -115,6 +124,7 @@ describe("user router authorization", () => {
     state.accounts = [];
     state.updates = [];
     state.inserts = [];
+    state.updateError = null;
   });
 
   it("rejects protected procedures without a session", async () => {
@@ -134,7 +144,82 @@ describe("user router authorization", () => {
         password: "CurrentPassword1!",
         newPassword: "NewPassword2!",
       }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Email or current password is incorrect",
+    });
+  });
+
+  it("answers unknown email, wrong password and passwordless accounts identically", async () => {
+    const caller = createCallerFactory(appRouter)({ db, session: null });
+    const attempt = () =>
+      caller.user
+        .resetPassword({
+          email: "user@example.com",
+          password: "WrongPassword1!",
+          newPassword: "NewPassword2!",
+        })
+        .catch((error: unknown) => error);
+
+    const unknown = await attempt();
+
+    state.user = {
+      id: "user-123",
+      email: "user@example.com",
+      password: await hash("CurrentPassword1!", 10),
+    };
+    const wrongPassword = await attempt();
+
+    state.user = { id: "user-123", email: "user@example.com", password: null };
+    const passwordless = await attempt();
+
+    for (const error of [unknown, wrongPassword, passwordless]) {
+      expect(error).toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Email or current password is incorrect",
+      });
+    }
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it("rejects a malformed email in updateUser before writing", async () => {
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await expect(
+      caller.user.updateUser({ email: "not-an-email" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it("normalizes the updateUser email before writing", async () => {
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await caller.user.updateUser({ email: "New@Example.COM" });
+
+    expect(state.updates[0]?.values).toEqual({ email: "new@example.com" });
+  });
+
+  it("maps a duplicate email in updateUser to CONFLICT", async () => {
+    state.updateError = new Error("Failed query", {
+      cause: { code: "23505" },
+    });
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await expect(
+      caller.user.updateUser({ email: "taken@example.com" }),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+      message: "That email is already in use",
+    });
   });
 
   it("resets a legacy password by creating a credential account", async () => {

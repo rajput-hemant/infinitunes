@@ -1,4 +1,4 @@
-import { resetPasswordSchema } from "@infinitunes/auth/schemas";
+import { emailSchema, resetPasswordSchema } from "@infinitunes/auth/schemas";
 import {
   betterAuthAccounts,
   favorites,
@@ -94,8 +94,23 @@ export function removeSongAtPlaylistIndex(
 
 const updateUserInput = z.object({
   name: z.string().optional(),
-  email: z.string().optional(),
+  email: emailSchema.transform((email) => email.toLowerCase()).optional(),
 });
+
+const RESET_FAILED_MESSAGE = "Email or current password is incorrect";
+// Compared against when the account is unknown so response time matches a real wrong-password attempt.
+const DUMMY_PASSWORD_HASH =
+  "$2b$10$/YVbwAK93YPAIyotj7vK0.dw5mLxTUKozIQ6kci6xEX3oMGGQzV46";
+
+function isUniqueViolation(error: unknown): boolean {
+  const cause = error instanceof Error ? error.cause : undefined;
+  return (
+    typeof cause === "object" &&
+    cause !== null &&
+    "code" in cause &&
+    cause.code === "23505"
+  );
+}
 
 export const userRouter = router({
   getUserPlaylists: protectedProcedure.input(z.object({})).query(({ ctx }) =>
@@ -302,37 +317,24 @@ export const userRouter = router({
         where: (userRow, { eq: equals }) => equals(userRow.email, input.email),
       });
 
-      if (!userRecord) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "User not found, please try signing up",
-        });
-      }
-
-      const credentialAccount = await ctx.db.query.betterAuthAccounts.findFirst(
-        {
-          where: and(
-            drizzleEq(betterAuthAccounts.userId, userRecord.id),
-            drizzleEq(betterAuthAccounts.providerId, "credential"),
-          ),
-        },
+      const credentialAccount = userRecord
+        ? await ctx.db.query.betterAuthAccounts.findFirst({
+            where: and(
+              drizzleEq(betterAuthAccounts.userId, userRecord.id),
+              drizzleEq(betterAuthAccounts.providerId, "credential"),
+            ),
+          })
+        : undefined;
+      const storedHash = credentialAccount?.password ?? userRecord?.password;
+      const isPasswordValid = await compare(
+        input.password,
+        storedHash ?? DUMMY_PASSWORD_HASH,
       );
-      const storedHash = credentialAccount?.password ?? userRecord.password;
 
-      if (!storedHash) {
+      if (!userRecord || !storedHash || !isPasswordValid) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message:
-            "User does not have a password, you might have signed up with a social account",
-        });
-      }
-
-      const isPasswordValid = await compare(input.password, storedHash);
-
-      if (!isPasswordValid) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Previous password is incorrect, please try again",
+          message: RESET_FAILED_MESSAGE,
         });
       }
 
@@ -404,13 +406,24 @@ export const userRouter = router({
       if (input.name !== undefined) patch.betterAuthName = input.name;
       if (input.email !== undefined) patch.email = input.email;
       if (Object.keys(patch).length > 0) {
-        await ctx.db
-          .update(users)
-          .set(patch)
-          .where(drizzleEq(users.id, userId));
+        try {
+          await ctx.db
+            .update(users)
+            .set(patch)
+            .where(drizzleEq(users.id, userId));
+        } catch (error) {
+          if (isUniqueViolation(error)) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "That email is already in use",
+            });
+          }
+          throw error;
+        }
       }
 
       return ctx.db.query.users.findFirst({
+        columns: { password: false },
         where: drizzleEq(users.id, userId),
       });
     }),

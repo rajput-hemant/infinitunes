@@ -20,7 +20,8 @@ Partial: a source-grounded DRAFT verification skill and feature map exist ([.age
 - [ ] Execute the skill end to end with the chosen browser skill: launch, doctor, drive one feature, retain evidence, cleanup. Until then every feature stays DRAFT.
 - [ ] Browser proof of each feature file, auth first: [email](../.agents/skills/verify/features/auth-email.md), [passkey](../.agents/skills/verify/features/auth-passkey.md), [access control](../.agents/skills/verify/features/access-control.md), [account settings](../.agents/skills/verify/features/account-settings.md).
 - [ ] UI quality pass (390px and 1280px, light and dark, focus order, overlays): [ui-quality](../.agents/skills/verify/features/ui-quality.md).
-- [ ] Triage CONFIRMED items from the ledger in later ships: formatting, stubs ([ISSUE-003](checks/verification-issues.md#issue-003)), password reset oracle ([ISSUE-007](checks/verification-issues.md#issue-007)), email update validation ([ISSUE-008](checks/verification-issues.md#issue-008)).
+- [x] Password reset oracle ([ISSUE-007](checks/verification-issues.md#issue-007)), email update validation ([ISSUE-008](checks/verification-issues.md#issue-008)) and profile stubs ([ISSUE-005](checks/verification-issues.md#issue-005)) fixed 2026-10-03.
+- [ ] Triage remaining CONFIRMED items: formatting, remaining stubs ([ISSUE-003](checks/verification-issues.md#issue-003)), recently played ([ISSUE-004](checks/verification-issues.md#issue-004), needs a decision on where history is stored), reset-password throttling.
 
 ## Product
 

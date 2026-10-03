@@ -22,10 +22,10 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | [ISSUE-002](#issue-002) | CONFIRMED               | low      | lint warnings                                 | open           |
 | [ISSUE-003](#issue-003) | CONFIRMED               | medium   | stubbed actions                               | open           |
 | [ISSUE-004](#issue-004) | CONFIRMED               | low      | recently played                               | open           |
-| [ISSUE-005](#issue-005) | CONFIRMED               | low      | profile stubs                                 | open           |
+| [ISSUE-005](#issue-005) | CONFIRMED               | low      | profile stubs                                 | closed         |
 | [ISSUE-006](#issue-006) | CONFIRMED               | low      | route list mismatch                           | open           |
-| [ISSUE-007](#issue-007) | CONFIRMED               | medium   | password reset oracle                         | open           |
-| [ISSUE-008](#issue-008) | CONFIRMED               | medium   | email update validation                       | open           |
+| [ISSUE-007](#issue-007) | CONFIRMED               | medium   | password reset oracle                         | closed         |
+| [ISSUE-008](#issue-008) | CONFIRMED               | medium   | email update validation                       | closed         |
 | [ISSUE-009](#issue-009) | HYPOTHESIS              | low      | delete account                                | needs-browser  |
 | [ISSUE-010](#issue-010) | CONFIRMED               | low      | tRPC origin check                             | open           |
 | [ISSUE-011](#issue-011) | CONFIRMED (prior proof) | medium   | upstream outage = 500                         | open           |
@@ -72,7 +72,7 @@ Several visible actions were stubs that only showed the toast `This feature is c
   - **Remaining non-radio stubs**: `components/song-list/more-button.tsx` `like()` (menu `Add To Favourite`) and `components/sidebar.tsx:174` playlist-row button still call `currentlyInDev`.
 - Reproduce (browser, pending): open an album, `More Options` on a song, click `Add To Favourite`.
 - Expected: the action works or the item is hidden. Actual: toast says it is in development for remaining non-radio actions. `Like` on detail headers is real ([favorites](../../.agents/skills/verify/features/favorites.md)); the song-row item is not.
-- Follow-up: implement or remove remaining non-radio stubs. State remains open for the remaining stubs.
+- Update 2026-10-03 (`fm/infinitunes-pending-ui-completion`): song-row `Add To Favourite` now calls `addToFavorites`/`removeFromFavorites` (label flips to `Remove From Favourite`; hidden for episodes; signed-out shows a sign-in warning). Browser proof at 390px: DB `infinitunes_favorite.songs` gained then lost the token, label flipped after reload, no console errors. The sidebar playlist-row play stub (a button nested in a link, hidden until hover) was removed. State remains open only for `components/play-button.tsx`/episode paths still using `currentlyInDev`.
 
 ### ISSUE-004
 
@@ -111,7 +111,8 @@ Public `user.resetPassword` leaks account existence and acts as a password-guess
 
 - Evidence (source): `updateUserInput` is `email: z.string().optional()` (no `.email()`); the mutation writes `users.email` directly; the `email` column is `unique` (`packages/db/src/schema.ts`), so a duplicate raises a database error.
 - Expected: format validation, duplicate handling with a clear message, re-verification. Actual: any string is accepted; duplicate behavior and the surfaced error are unproven.
-- Follow-up: add schema validation and a duplicate case test. State open.
+- Reproduced 2026-10-03 over HTTP as a signed-in throwaway user: `email: "not-an-email"` was stored (the account could then no longer pass the email-only login schema), a duplicate email returned HTTP 500 with the raw SQL error, and the response body included the user's bcrypt `password` hash.
+- Fix: `email` uses `emailSchema` and is lower-cased (Better Auth looks up lower-cased emails), a unique violation maps to `CONFLICT` "That email is already in use", and the returned row omits `password`. Re-run: bad email 400, duplicate 409, valid update 200 without `password`; the settings form shows the conflict toast. Not added: re-verification (no email provider). State closed.
 
 ### ISSUE-010
 

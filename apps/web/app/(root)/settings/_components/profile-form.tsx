@@ -1,10 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  emailSchema,
-  passwordSchema,
-} from "@infinitunes/auth/schemas";
+import { emailSchema, passwordSchema } from "@infinitunes/auth/schemas";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +27,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@infinitunes/ui/components/tooltip";
-import { Eye, EyeOff, Pen } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -39,7 +36,6 @@ import { z } from "zod";
 
 import { useIsTyping } from "~/hooks/use-store";
 import { deleteUser, updateUser } from "~/lib/actions";
-import { currentlyInDev } from "~/lib/utils";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
   user: {
@@ -140,9 +136,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     className="w-96 shadow-xs"
                     {...field}
                   />
-                  <Button type="button" onClick={currentlyInDev}>
-                    Verify Email
-                  </Button>
                 </div>
                 <FieldDescription>
                   Your email will be used for account notifications.
@@ -265,15 +258,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
           fill
           className="rounded-full border p-1 shadow-xs"
         />
-
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={currentlyInDev}
-          className="absolute bottom-4 left-0 gap-2 shadow-xs"
-        >
-          <Pen size={14} /> Edit
-        </Button>
       </div>
     </div>
   );

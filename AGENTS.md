@@ -193,6 +193,7 @@ When updating this file, preserve this bar for all agents and keep entries conci
 - **Server vs Client Components**: Layouts and pages should remain Server Components where possible to fetch data and cookies efficiently. Isolate user interactivity (clicks, menus, forms) into dedicated Client Components with `"use client"`.
 - **Sidebar Layout Hierarchy**: Always nest `<Navbar />` inside `<SidebarInset>` above `<main>` within `<SidebarProvider>` to avoid breaking the horizontal layout.
 - **Component Imports**: Do not create local component files under `apps/web/components/ui`. Always reference the monorepo package `@infinitunes/ui/components/<name>` and exports in `packages/ui/package.json`.
+- **shadcn/ui is read-only**: Do not modify shadcn/ui components (`packages/ui/src/components`). Apply customizations in application components, wrappers, or composition instead.
 - **No barrel files in `apps/web/components`**: import from the source file
   (`~/components/slider/slider-card`), never a directory `index.ts`. Barrels were
   removed for tree-shaking/trace reasons; don't reintroduce them.

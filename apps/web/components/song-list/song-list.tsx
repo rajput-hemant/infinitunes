@@ -1,6 +1,11 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
-import { formatDuration, decode, getImageSrc, getToken } from "@infinitunes/types";
+import {
+  formatDuration,
+  decode,
+  getImageSrc,
+  getToken,
+} from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
@@ -176,6 +181,7 @@ export async function SongList(props: SongListProps) {
 
                 <TileMoreButton
                   user={user}
+                  favorites={favorites}
                   item={item}
                   showAlbum={showAlbum}
                   playlists={playlists}

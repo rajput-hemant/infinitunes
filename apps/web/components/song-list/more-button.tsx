@@ -1,6 +1,6 @@
 "use client";
 
-import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Queue, Song } from "@infinitunes/types";
 import { getImageSrc, toQueue } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
@@ -48,7 +48,12 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
-import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/db/queries";
+import {
+  addSongsToPlaylist,
+  addToFavorites,
+  removeFromFavorites,
+  removeSongsFromPlaylist,
+} from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
 import { cn, currentlyInDev } from "~/lib/utils";
 
@@ -59,6 +64,7 @@ import { TileMoreLinks } from "./more-links";
 
 type TileMoreButtonProps = {
   user?: User;
+  favorites?: Favorite;
   item: Song | Episode | Queue;
   showAlbum: boolean;
   playlists?: MyPlaylist[];
@@ -97,6 +103,7 @@ function getItemArtists(item: Song | Episode | Queue) {
 export function TileMoreButton(props: TileMoreButtonProps) {
   const {
     user,
+    favorites,
     item,
     showAlbum,
     playlists,
@@ -117,8 +124,31 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
   const utils = api.useUtils();
 
+  const isFavorite = favorites?.songs.includes(item.id) ?? false;
+
   function like() {
-    currentlyInDev();
+    if (!user) {
+      toast.warning("Unable to perform action. Please sign in.", {
+        description: "You need to sign in to like this item.",
+      });
+      return;
+    }
+
+    const name = getItemName(item);
+
+    if (isFavorite) {
+      toast.promise(removeFromFavorites(item.id, "song"), {
+        loading: "Removing from favorites...",
+        success: `Successfully removed "${name}" from favorites!`,
+        error: (e) => e.message,
+      });
+    } else {
+      toast.promise(addToFavorites(item.id, "song"), {
+        loading: "Adding Song to favorites...",
+        success: `"${name}" song added to favorites!`,
+        error: (e) => e.message,
+      });
+    }
   }
 
   function play() {
@@ -246,8 +276,9 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
   const menuItems: MenuItem[] = [
     {
-      label: "Add To Favourite",
+      label: isFavorite ? "Remove From Favourite" : "Add To Favourite",
       onClick: like,
+      hide: item.type !== "song",
       icon: Heart,
     },
     {
