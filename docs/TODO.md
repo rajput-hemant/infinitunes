@@ -18,6 +18,15 @@ Open items: **41** (each checklist line below carries a `[priority · kind]` tag
 
 Priorities: P0 data loss or broken deploy, P1 blocks promotion or a primary path is unproven, P2 user-visible defect or CI/security gap, P3 polish, low risk or coverage. No UI regression is confirmed: the Tailwind 4 overflow regression was fixed (acceptance section 13) and the remaining UI items are design gaps or unverified.
 
+## Collapsible sidebar (2026-10-03)
+
+Done and verified in a browser (Chrome via chrome-devtools-axi, fixture user, shared local DB): icon-rail collapse and expand by toggle click and Enter, tooltips on collapsed items, `aria-expanded` and label flip, `sidebar_state` cookie restored server-side after reload, widths 1024/1280/1440/1920 with no overflow or overlap, 800px and 390px unchanged, light and dark. Evidence: [docs/checks/evidence/sidebar-collapse](checks/evidence/sidebar-collapse).
+
+- [ ] [P3 · verification gap] Space key on the sidebar toggle was not exercised (the driver's synthetic Space did not toggle; Enter did). Native button behavior is expected. Evidence: this run. Status: open.
+- [ ] [P3 · improvement] Collapsed "Create Playlist" controls use a native `title` instead of the shared tooltip. Evidence: `apps/web/components/sidebar.tsx`. Status: open.
+- [ ] [P3 · improvement] Unused `ListPlus` import in `apps/web/components/sidebar.tsx` (pre-existing, flagged by oxlint). Status: open.
+- [ ] [P3 · verification gap] The mobile sheet sidebar has no trigger below `lg` (the navbar trigger is `hidden lg:flex`; mobile uses `MobileNav`). Unchanged by this work. Evidence: 390px run. Status: open.
+
 ## Migration promotion (Bun monorepo)
 
 From [migration-acceptance.md](migration-acceptance.md) section 12 and the [plan](migration-plan.md#acceptance-tests):

@@ -12,7 +12,7 @@ import { SignedOut } from "../auth-control";
 import { Icons } from "../icons";
 import { SearchMenu } from "../search/search-menu";
 import { TopSearch } from "../search/top-search";
-import { SidebarTrigger } from "../sidebar";
+import { AppSidebarTrigger } from "../sidebar";
 import { UserDropdown } from "../user-dropdown";
 import { LanguagePicker } from "./language-picker";
 import { MainNav } from "./main-nav";
@@ -37,7 +37,7 @@ export async function Navbar() {
           </div>
         </Link>
 
-        <SidebarTrigger className="hidden lg:flex" />
+        <AppSidebarTrigger className="hidden lg:flex" />
 
         <MainNav megaMenu={megaMenu} className="hidden lg:block" />
 
