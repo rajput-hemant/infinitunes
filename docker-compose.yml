@@ -47,8 +47,8 @@ services:
     ports:
       - "127.0.0.1:8079:80"
     environment:
-      SRH_MODE: standalone
-      SRH_REDIS_URL: redis://redis:6379
+      SRH_MODE: env
+      SRH_CONNECTION_STRING: redis://redis:6379
       SRH_TOKEN: localdevtoken
       SRH_CONNECTION_TIMEOUT: 1000
     depends_on:

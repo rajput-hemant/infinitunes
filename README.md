@@ -84,7 +84,6 @@ bun run db:up        # Start PostgreSQL & Redis in Docker
 bun run db:down      # Stop local infrastructure
 bun run db:migrate   # Run database migrations
 bun run db:seed      # Seed local deterministic data
-bun run db:reset     # Safely reset local database schema
 bun run dev          # Start Next.js development server
 bun run build        # Production build
 bun run lint         # Lint with Oxlint

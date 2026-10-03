@@ -35,7 +35,7 @@ Because the project name, container names, volume names, and network name are ex
 
 ## 2. Canonical Shared Fixtures & Contract
 
-Each repository maintains its own local copy of the canonical fixture at `local-dev/fixtures.json` (or reads a custom path via `LOCAL_DEV_CONFIG`).
+The single canonical fixture is `local-dev/fixtures.json` in Infinitunes. Other projects read it through an absolute `LOCAL_DEV_CONFIG` path and must not keep their own copy.
 
 - **Shared Database Name:** `local_platforms`
 - **Default Database URL:** `postgresql://postgres:postgrespassword@127.0.0.1:5432/local_platforms`

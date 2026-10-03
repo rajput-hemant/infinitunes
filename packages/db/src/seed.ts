@@ -9,16 +9,14 @@ import {
   LOCAL_DEV_REDIS,
   LOCAL_DEV_USER,
 } from "./fixtures/local-dev-user";
+import { assertLocalDatabase } from "./fixtures/local-guard";
 import * as schema from "./schema";
 import { betterAuthAccounts, favorites, myPlaylists, users } from "./schema";
 
 async function seed() {
-  if (process.env.NODE_ENV === "production") {
-    console.error("[seed] ABORTED: Cannot seed database in production mode!");
-    process.exit(1);
-  }
-
   const databaseUrl = process.env.DATABASE_URL || LOCAL_DEV_DATABASE.url;
+
+  assertLocalDatabase(databaseUrl);
 
   console.log(
     `[seed] Connecting to database: ${databaseUrl.replace(/:[^:@]*@/, ":***@")}`,
@@ -31,7 +29,7 @@ async function seed() {
     const hashedPassword = await hash(LOCAL_DEV_USER.password, 10);
 
     await db.transaction(async (tx) => {
-      // 1. Seed or preserve canonical shared user
+      // 1. Seed the canonical shared user; never adopt a different account
       const existingUsers = await tx
         .select()
         .from(users)
@@ -42,35 +40,39 @@ async function seed() {
           ),
         );
 
-      let targetUserId = LOCAL_DEV_USER.id;
+      for (const existing of existingUsers) {
+        if (
+          existing.id !== LOCAL_DEV_USER.id ||
+          existing.email !== LOCAL_DEV_USER.email
+        ) {
+          throw new Error(
+            `[seed] Refusing to seed: fixture id/email collides with a different user (id ${existing.id}, email ${existing.email}).`,
+          );
+        }
+      }
+
+      const targetUserId = LOCAL_DEV_USER.id;
 
       if (existingUsers.length === 0) {
         console.log(
           `[seed] Creating shared local user (${LOCAL_DEV_USER.email})...`,
         );
-        const [insertedUser] = await tx
-          .insert(users)
-          .values({
-            id: LOCAL_DEV_USER.id,
-            email: LOCAL_DEV_USER.email,
-            name: LOCAL_DEV_USER.name,
-            username: LOCAL_DEV_USER.username,
-            password: hashedPassword,
-            betterAuthName: LOCAL_DEV_USER.name,
-            emailVerifiedBoolean: LOCAL_DEV_USER.emailVerified,
-            displayUsername: LOCAL_DEV_USER.displayUsername,
-            emailVerified: new Date(),
-          })
-          .returning();
-        targetUserId = insertedUser.id;
+        await tx.insert(users).values({
+          id: LOCAL_DEV_USER.id,
+          email: LOCAL_DEV_USER.email,
+          name: LOCAL_DEV_USER.name,
+          username: LOCAL_DEV_USER.username,
+          password: hashedPassword,
+          betterAuthName: LOCAL_DEV_USER.name,
+          emailVerifiedBoolean: LOCAL_DEV_USER.emailVerified,
+          displayUsername: LOCAL_DEV_USER.displayUsername,
+          emailVerified: new Date(),
+        });
       } else {
-        console.log(
-          `[seed] User ${existingUsers[0].email} already exists; preserving existing record.`,
-        );
-        targetUserId = existingUsers[0].id;
+        console.log("[seed] Canonical local user already exists; preserving.");
       }
 
-      // 2. Seed Better Auth credential account
+      // 2. Seed the Better Auth credential account for the canonical user only
       const existingAccounts = await tx
         .select()
         .from(betterAuthAccounts)

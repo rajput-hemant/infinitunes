@@ -9,7 +9,6 @@
     "db:generate": "drizzle-kit generate --config=./src/drizzle.config.ts",
     "db:migrate": "bun src/migrate.ts",
     "db:seed": "bun src/seed.ts",
-    "db:reset": "bun src/reset.ts",
     "db:drop": "drizzle-kit drop --config=./src/drizzle.config.ts",
     "db:push": "drizzle-kit push --config=./src/drizzle.config.ts",
     "db:pull": "drizzle-kit introspect --config=./src/drizzle.config.ts",

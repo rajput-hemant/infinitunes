@@ -103,7 +103,6 @@ Default connection values in `.env.example`:
 DATABASE_URL=postgresql://postgres:postgrespassword@127.0.0.1:5432/local_platforms
 UPSTASH_REDIS_REST_URL=http://127.0.0.1:8079
 UPSTASH_REDIS_REST_TOKEN=localdevtoken
-LOCAL_DEV_CONFIG=./local-dev/fixtures.json
 AUTH_SECRET=local-development-secret-must-be-at-least-32-chars-long
 AUTH_URL=http://localhost:3000
 ```
@@ -165,29 +164,24 @@ Open [http://localhost:3000](http://localhost:3000) and log in with:
 
 ## Standard Commands Reference
 
-| Command              | Makefile Alias    | Description                                               |
-| :------------------- | :---------------- | :-------------------------------------------------------- |
-| `bun run db:up`      | `make db-up`      | Start local Docker infrastructure (PostgreSQL & Redis)    |
-| `bun run db:down`    | `make db-down`    | Stop local Docker infrastructure                          |
-| `bun run db:migrate` | `make db-migrate` | Apply schema migrations to local database                 |
-| `bun run db:seed`    | `make db-seed`    | Seed deterministic test user and application data         |
-| `bun run db:reset`   | —                 | Drop and recreate public schema (local-only safety guard) |
-| `bun run dev`        | `make dev`        | Start development server on host Bun                      |
-| `bun run build`      | `make build`      | Build application for production                          |
-| `bun run test`       | `make test`       | Run test suite                                            |
-| `bun run type-check` | `make typecheck`  | Run TypeScript type checks                                |
-| `bun run lint`       | `make lint`       | Run linter and formatting checks                          |
+| Command              | Makefile Alias    | Description                                            |
+| :------------------- | :---------------- | :----------------------------------------------------- |
+| `bun run db:up`      | `make db-up`      | Start local Docker infrastructure (PostgreSQL & Redis) |
+| `bun run db:down`    | `make db-down`    | Stop local Docker infrastructure                       |
+| `bun run db:migrate` | `make db-migrate` | Apply schema migrations to local database              |
+| `bun run db:seed`    | `make db-seed`    | Seed deterministic test user and application data      |
+| `bun run dev`        | `make dev`        | Start development server on host Bun                   |
+| `bun run build`      | `make build`      | Build application for production                       |
+| `bun run test`       | `make test`       | Run test suite                                         |
+| `bun run type-check` | `make typecheck`  | Run TypeScript type checks                             |
+| `bun run lint`       | `make lint`       | Run linter and formatting checks                       |
 
 ---
 
 ## Safe Reset Limits & Volume Preservation
 
 - **Do NOT run global `docker system prune` or delete volumes.**
-- Data is stored in isolated volumes (`local_platforms_pgdata_18` and `local_platforms_redis_data`).
-- To safely reset database tables without losing Docker volumes, run:
-  ```bash
-  bun run db:reset
-  bun run db:migrate
-  bun run db:seed
-  ```
-- `bun run db:reset` verifies that the target `DATABASE_URL` is pointing to localhost / 127.0.0.1 and refuses execution in production environments.
+- Data lives in `local_platforms_pgdata_18` and `local_platforms_redis_data`. Docker volumes created by earlier setups (for example `infinitunes_infinitunes_pgdata_18`, any PostgreSQL 17 volume) are left untouched and are **not** adopted automatically: PostgreSQL 18 cannot open PG17 data, so move old data with `pg_dump` / restore yourself if you need it.
+- There is no reset command. The shared database also holds Lipi (`lipi_*`) and the shared auth tables, so a blanket drop would remove their data too. To start clean, stop the stack (`bun run db:down`) and remove the named volumes yourself, deliberately and only once you are sure nothing in them is needed.
+- `bun run db:seed` only runs against a loopback `DATABASE_URL` host (`localhost`, `127.0.0.1`, `::1`; a `host=` query parameter is refused) and never with `NODE_ENV=production`. It inserts only the canonical fixture user in one transaction and aborts, writing nothing, if that id or email already belongs to a different account. It never attaches the documented password to an existing account, and re-running it adds no rows.
+- `LOCAL_DEV_CONFIG` is optional. When set it must point to an existing, schema-valid fixture JSON; anything else is an error, not a fallback.
