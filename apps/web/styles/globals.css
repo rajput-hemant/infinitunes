@@ -160,12 +160,29 @@
     @apply border-border outline-ring/50;
   }
 
+  :root {
+    /* player bar (5rem) + gap; below lg the 3.5rem mobile nav sits underneath it */
+    --toast-offset-bottom: 6rem;
+  }
+
+  @media (max-width: 1023.98px) {
+    :root {
+      --toast-offset-bottom: calc(9.5rem + env(safe-area-inset-bottom));
+    }
+  }
+
   html {
     @apply overflow-x-hidden font-sans;
   }
 
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
   body {
-    @apply bg-background text-foreground antialiased scroll-smooth max-w-full overflow-x-hidden;
+    @apply bg-background text-foreground antialiased max-w-full overflow-x-hidden;
   }
 
   img,

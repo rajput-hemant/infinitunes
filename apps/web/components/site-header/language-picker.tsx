@@ -83,7 +83,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
         <ToggleGroup
           value={selectedLanguages}
           onValueChange={(v) => setSelectedLanguages(v as Lang[])}
-          className="grid grid-cols-2 border-y py-2"
+          className="grid w-full grid-cols-2 border-y py-2"
         >
           {languages.map((lang) => (
             <ToggleGroupItem
