@@ -55,7 +55,7 @@ import {
   removeSongsFromPlaylist,
 } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
-import { cn, currentlyInDev } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
@@ -165,17 +165,12 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function play() {
-    if (item.type === "episode") {
-      currentlyInDev();
-      return;
-    }
-
     const songIndex = initialQueue.findIndex((q) => q.id === item.id);
 
     if (songIndex !== -1) {
       setCurrentIndex(songIndex);
     } else {
-      const queue = toQueue(item as Song);
+      const queue = "more_info" in item ? toQueue(item) : item;
       setQueue([queue]);
       setCurrentIndex(0);
     }
@@ -184,13 +179,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function addToQueue() {
-    if (item.type === "episode") {
-      currentlyInDev();
-      return;
-    }
-
-    const queue =
-      "more_info" in item ? toQueue(item as Song | Episode) : (item as Queue);
+    const queue = "more_info" in item ? toQueue(item) : item;
     setQueue((q) => [...q, queue]);
 
     toast(`"${getItemName(item)}" added to queue`);
