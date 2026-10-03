@@ -3,6 +3,10 @@ import { describe, expect, test } from "bun:test";
 import { pageMetadata } from "~/lib/metadata";
 import { ogImageUrl } from "~/lib/utils";
 
+function ogImage(meta: ReturnType<typeof pageMetadata>) {
+  return meta.openGraph!.images as { url: string; alt: string };
+}
+
 describe("pageMetadata", () => {
   test("mirrors title and description into openGraph and builds the OG image", () => {
     const image = "https://c.saavncdn.com/a-500x500.jpg";
@@ -36,14 +40,15 @@ describe("pageMetadata", () => {
   });
 
   test("percent-encodes ampersands so the image param is not truncated", () => {
-    const { openGraph } = pageMetadata({
-      title: "Download & Play",
-      description: "a & b",
-      url: "/",
-      image: "https://x/y.png",
-    });
     const url = new URL(
-      (openGraph?.images as { url: string }).url,
+      ogImage(
+        pageMetadata({
+          title: "Download & Play",
+          description: "a & b",
+          url: "/",
+          image: "https://x/y.png",
+        }),
+      ).url,
       "https://example.com",
     );
 
@@ -52,13 +57,13 @@ describe("pageMetadata", () => {
   });
 
   test("uses a custom alt when given", () => {
-    const { openGraph } = pageMetadata({
+    const meta = pageMetadata({
       title: "t",
       description: "d",
       url: "/",
       image: "i",
       alt: "Homepage",
     });
-    expect((openGraph?.images as { alt: string }).alt).toBe("Homepage");
+    expect(ogImage(meta).alt).toBe("Homepage");
   });
 });
