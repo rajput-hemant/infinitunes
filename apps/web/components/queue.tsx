@@ -15,6 +15,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListOrdered, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import * as React from "react";
 import { toast } from "sonner";
 
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
@@ -26,12 +27,28 @@ export function Queue() {
   const [queue, setQueue] = useQueue();
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
 
+  const listRef = React.useRef<HTMLOListElement>(null);
+
   function removeItem(id: string) {
+    const index = queue.findIndex((item) => item.id === id);
     const song = queue.find((item) => item.id === id);
     const next = removeFromQueue(queue, currentIndex, id);
 
     setQueue(next.queue);
     setCurrentIndex(next.currentIndex);
+
+    // The removed row takes focus with it: hand it to the row that took its
+    // place (or the last row), or to the list itself once the queue is empty.
+    requestAnimationFrame(() => {
+      const buttons = listRef.current?.querySelectorAll<HTMLButtonElement>(
+        "[data-queue-remove]",
+      );
+      if (buttons?.length) {
+        buttons[Math.min(index, buttons.length - 1)]?.focus();
+      } else {
+        listRef.current?.focus();
+      }
+    });
 
     if (song) {
       toast("Removed from queue", {
@@ -66,7 +83,7 @@ export function Queue() {
               Queue
             </span>
             <span>
-              {queue.length} Track{`${queue.length > 1 ? "s" : ""}`}
+              {queue.length} {queue.length === 1 ? "Track" : "Tracks"}
             </span>
           </SheetTitle>
           <SheetDescription>
@@ -75,7 +92,12 @@ export function Queue() {
         </SheetHeader>
 
         <ScrollArea className="px-4">
-          <ol className="space-y-2 text-muted-foreground">
+          <ol
+            ref={listRef}
+            tabIndex={-1}
+            aria-label="Queue"
+            className="space-y-2 text-muted-foreground outline-none"
+          >
             {queue.map((item) => (
               <li key={item.id} className="w-full">
                 <div className="group flex h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
@@ -129,6 +151,7 @@ export function Queue() {
 
                     <Button
                       variant="ghost"
+                      data-queue-remove=""
                       aria-label={`Remove ${item.name} from queue`}
                       onClick={() => removeItem(item.id)}
                       className="ml-auto size-8 shrink-0 p-0 text-destructive hover:bg-destructive hover:text-white"

@@ -23,6 +23,7 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { deletePlaylist } from "~/lib/actions";
+import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
 import { RenamePlaylistDialog } from "./rename-playlist-dialog";
@@ -47,7 +48,7 @@ export function PlaylistManageMenu({
       await toast.promise(deletePlaylist(playlist.id), {
         loading: "Deleting playlist...",
         success: `Playlist "${playlist.name}" deleted`,
-        error: (error) => error.message,
+        error: userMessage,
       });
       setDeleteOpen(false);
       if (redirectOnDelete) {

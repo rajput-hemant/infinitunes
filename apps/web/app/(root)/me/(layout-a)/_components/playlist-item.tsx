@@ -20,8 +20,10 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
       songsDetails = await api.song.details({
         id: songs.slice(0, 4).join(","),
       });
-    } catch {
-      songsDetails = undefined;
+    } catch (error) {
+      // Cover art is decoration: show the placeholder instead of failing the
+      // whole library page for one playlist.
+      console.error(`playlist ${id}: failed to fetch cover songs`, error);
     }
   }
 
