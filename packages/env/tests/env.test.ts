@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 import { createClientEnv } from "../src/client";
-import { clientSchema } from "../src/schema";
+import { clientSchema, createServerSchema } from "../src/schema";
 
 describe("clientSchema and NEXT_PUBLIC_APP_URL", () => {
   it("defaults NEXT_PUBLIC_APP_URL to https://infinitunes.rajputhemant.me when unset", () => {
@@ -49,5 +49,26 @@ describe("clientSchema and NEXT_PUBLIC_APP_URL", () => {
     expect(() =>
       clientSchema.NEXT_PUBLIC_APP_URL.parse("invalid-url"),
     ).toThrow();
+  });
+});
+
+describe("serverSchema AUTH_URL on Vercel", () => {
+  const parse = (ctx: Parameters<typeof createServerSchema>[0], url?: string) =>
+    createServerSchema(ctx).AUTH_URL.parse(url);
+
+  it("prefixes https:// onto the scheme-less VERCEL_URL host", () => {
+    expect(
+      parse({ vercel: true, vercelUrl: "infinitunes-abc.vercel.app" }),
+    ).toBe("https://infinitunes-abc.vercel.app");
+  });
+
+  it("leaves an already-qualified VERCEL_URL untouched", () => {
+    expect(
+      parse({ vercel: true, vercelUrl: "https://infinitunes.example.com" }),
+    ).toBe("https://infinitunes.example.com");
+  });
+
+  it("uses the configured AUTH_URL when not on Vercel", () => {
+    expect(parse({}, "http://localhost:3000")).toBe("http://localhost:3000");
   });
 });

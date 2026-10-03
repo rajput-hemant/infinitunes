@@ -1,5 +1,3 @@
-import path from "path";
-
 import type { NextConfig } from "next";
 
 // This is validation for the environment variables early in the build process.
@@ -7,10 +5,9 @@ import "./lib/env";
 import { IMAGE_CDN_HOSTS } from "./lib/image-hosts";
 
 const isProd = process.env.NODE_ENV === "production";
-const isDocker = process.env.IS_DOCKER === "true";
 
-// A CSP is intentionally not set here: it needs a nonce/allowlist pass over the
-// analytics script and inline theme bootstrap first (see review notes).
+// The Content-Security-Policy (report-only, per-request nonce) is set in
+// `proxy.ts`, not here.
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -41,13 +38,10 @@ const config: NextConfig = {
         hostname,
       })),
     ],
-    unoptimized: !isDocker,
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
-  output: isDocker ? "standalone" : undefined,
-  outputFileTracingRoot: isDocker ? path.join(__dirname, "../../") : undefined,
 };
 
 export default config;

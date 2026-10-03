@@ -10,6 +10,7 @@ import {
   DEFAULT_LOGIN_REDIRECT,
   userRoutes,
 } from "./config/routes";
+import { buildCsp, CSP_REPORT_ONLY_HEADER } from "./lib/csp";
 import { env } from "./lib/env";
 
 let ratelimit: Ratelimit | undefined;
@@ -31,41 +32,13 @@ export async function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const pathname = nextUrl.pathname;
 
-  // Origin / Referer check for /api/trpc requests
-  if (pathname.startsWith("/api/trpc") && req.method !== "OPTIONS") {
-    const origin = req.headers.get("origin");
-    const referer = req.headers.get("referer");
-    const host = req.headers.get("host");
+  const isTrpc = pathname.startsWith("/api/trpc");
 
-    const allowedOrigin =
-      env.AUTH_URL ?? (host ? `${nextUrl.protocol}//${host}` : null);
-
-    let isSameOrigin = false;
-
-    if (origin && allowedOrigin) {
-      try {
-        isSameOrigin = new URL(origin).origin === new URL(allowedOrigin).origin;
-      } catch {
-        isSameOrigin = false;
-      }
-    } else if (referer && allowedOrigin) {
-      try {
-        isSameOrigin =
-          new URL(referer).origin === new URL(allowedOrigin).origin;
-      } catch {
-        isSameOrigin = false;
-      }
-    } else if (!origin && !referer) {
-      // Same-origin server-to-server calls or direct internal fetches might omit origin/referer
-      isSameOrigin = true;
-    }
-
-    if (!isSameOrigin) {
-      return NextResponse.json(
-        { error: { message: "Forbidden: Invalid origin or referer" } },
-        { status: 403 },
-      );
-    }
+  if (isTrpc && !isSameOriginRequest(req)) {
+    return NextResponse.json(
+      { error: { message: "Forbidden: Invalid origin" } },
+      { status: 403 },
+    );
   }
 
   if (env.ENABLE_RATE_LIMITING === "true" && env.NODE_ENV === "production") {
@@ -118,7 +91,56 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL(`/${paths[0]}`, nextUrl));
   }
 
-  return NextResponse.next();
+  if (isTrpc) return NextResponse.next();
+
+  // Report-only: observe violations before ever enforcing. Next applies the
+  // nonce to its own scripts from the request header (dynamic pages only).
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = buildCsp({
+    nonce,
+    isDev: env.NODE_ENV === "development",
+    umami: Boolean(env.UMAMI_WEBSITE_ID),
+  });
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set(CSP_REPORT_ONLY_HEADER, csp);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set(CSP_REPORT_ONLY_HEADER, csp);
+  return response;
+}
+
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+
+function originOf(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * CSRF guard for /api/trpc. State-changing methods must send a matching
+ * `Origin` (browsers always do for same-origin POST; Referer is not enough).
+ * Safe methods may omit both headers but must match when one is present.
+ */
+function isSameOriginRequest(req: NextRequest): boolean {
+  if (req.method === "OPTIONS") return true;
+
+  const host = req.headers.get("host");
+  const allowed = originOf(
+    env.AUTH_URL ?? (host ? `${req.nextUrl.protocol}//${host}` : null),
+  );
+  const origin = req.headers.get("origin");
+  const referer = req.headers.get("referer");
+
+  if (!SAFE_METHODS.has(req.method)) {
+    return allowed !== null && originOf(origin) === allowed;
+  }
+  if (origin) return allowed !== null && originOf(origin) === allowed;
+  if (referer) return allowed !== null && originOf(referer) === allowed;
+  return true;
 }
 
 export const config = {
