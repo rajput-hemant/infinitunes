@@ -33,7 +33,6 @@ const state: {
   inserts: { table: string; values: Record<string, unknown> }[];
   deletes: { table: string; where: unknown[] }[];
   updateError: Error | null;
-  lookups: string[];
 } = {
   playlist: null,
   user: null,
@@ -42,7 +41,6 @@ const state: {
   inserts: [],
   deletes: [],
   updateError: null,
-  lookups: [],
 };
 
 const fakeDb = {
@@ -55,20 +53,7 @@ const fakeDb = {
       findFirst: async () => null,
     },
     users: {
-      findFirst: async (opts?: {
-        columns?: { password?: boolean };
-        where?: unknown;
-      }) => {
-        if (typeof opts?.where === "function") {
-          const lookup = (
-            opts.where as (
-              row: { email: string },
-              ops: { eq: (col: string, value: string) => string },
-            ) => string
-          )({ email: "email" }, { eq: (_col, value) => value });
-          state.lookups.push(lookup);
-          if (state.user?.email !== lookup) return undefined;
-        }
+      findFirst: async (opts?: { columns?: { password?: boolean } }) => {
         if (!state.user || opts?.columns?.password !== false) return state.user;
         const { password: _password, ...rest } = state.user;
         return rest;
@@ -132,7 +117,7 @@ const fakeDb = {
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));
 
 const { appRouter } = await import("../src/root");
-const { PLAYLIST_MAX_SONGS, removeSongAtPlaylistIndex } =
+const { FRESH_SESSION_MS, PLAYLIST_MAX_SONGS, removeSongAtPlaylistIndex } =
   await import("../src/router/user");
 const { createCallerFactory } = await import("../src/trpc");
 
@@ -173,7 +158,6 @@ describe("user router authorization", () => {
     state.inserts = [];
     state.deletes = [];
     state.updateError = null;
-    state.lookups = [];
   });
 
   it("rejects protected procedures without a session", async () => {
@@ -182,53 +166,6 @@ describe("user router authorization", () => {
     await expect(caller.user.getUserPlaylists({})).rejects.toMatchObject({
       code: "UNAUTHORIZED",
     });
-  });
-
-  it("keeps the logged-out reset flow callable without a session", async () => {
-    const caller = createCallerFactory(appRouter)({ db, session: null });
-
-    await expect(
-      caller.user.resetPasswordAnonymous({
-        email: "user@example.com",
-        password: "CurrentPassword1!",
-        newPassword: "NewPassword2!",
-      }),
-    ).rejects.toMatchObject({
-      code: "BAD_REQUEST",
-      message: "Email or current password is incorrect",
-    });
-  });
-
-  it("answers unknown email, wrong password and passwordless accounts identically", async () => {
-    const caller = createCallerFactory(appRouter)({ db, session: null });
-    const attempt = () =>
-      caller.user
-        .resetPasswordAnonymous({
-          email: "user@example.com",
-          password: "WrongPassword1!",
-          newPassword: "NewPassword2!",
-        })
-        .catch((error: unknown) => error);
-
-    const unknown = await attempt();
-
-    state.user = {
-      id: "user-123",
-      email: "user@example.com",
-      password: await hash("CurrentPassword1!", 10),
-    };
-    const wrongPassword = await attempt();
-
-    state.user = { id: "user-123", email: "user@example.com", password: null };
-    const passwordless = await attempt();
-
-    for (const error of [unknown, wrongPassword, passwordless]) {
-      expect(error).toMatchObject({
-        code: "BAD_REQUEST",
-        message: "Email or current password is incorrect",
-      });
-    }
-    expect(state.updates).toHaveLength(0);
   });
 
   it("rejects a malformed email in updateUser before writing", async () => {
@@ -347,112 +284,6 @@ describe("user router authorization", () => {
       code: "CONFLICT",
       message: "That email is already in use",
     });
-  });
-
-  it("resets a legacy password by creating a credential account", async () => {
-    state.user = {
-      id: "user-123",
-      email: "user@example.com",
-      password: await hash("CurrentPassword1!", 10),
-    };
-    state.accounts = [
-      {
-        id: "oauth-account",
-        userId: state.user.id,
-        accountId: "google-user",
-        providerId: "google",
-        password: null,
-      },
-    ];
-    const caller = createCallerFactory(appRouter)({ db, session: null });
-
-    await caller.user.resetPasswordAnonymous({
-      email: state.user.email,
-      password: "CurrentPassword1!",
-      newPassword: "NewPassword2!",
-    });
-
-    expect(state.inserts).toHaveLength(1);
-    expect(state.inserts[0]).toMatchObject({
-      table: "better_auth_account",
-      values: {
-        userId: state.user.id,
-        accountId: state.user.id,
-        providerId: "credential",
-      },
-    });
-    const insertedPassword = state.inserts[0]?.values.password;
-    expect(insertedPassword).toBeTypeOf("string");
-    expect(await compare("NewPassword2!", insertedPassword as string)).toBe(
-      true,
-    );
-    expect(state.updates.some((update) => update.table === "user")).toBe(true);
-    expect(
-      state.updates.some((update) => update.table === "better_auth_account"),
-    ).toBe(false);
-  });
-
-  it("resets the password for a mixed-case, padded email", async () => {
-    state.user = {
-      id: "user-123",
-      email: "user@example.com",
-      password: await hash("CurrentPassword1!", 10),
-    };
-    const caller = createCallerFactory(appRouter)({ db, session: null });
-
-    await caller.user.resetPasswordAnonymous({
-      email: "  User@Example.COM ",
-      password: "CurrentPassword1!",
-      newPassword: "NewPassword2!",
-    });
-
-    expect(state.lookups).toEqual(["user@example.com"]);
-    const userUpdate = state.updates.find((update) => update.table === "user");
-    expect(userUpdate?.where).toContain("user@example.com");
-    expect(state.inserts).toHaveLength(1);
-  });
-
-  it("uses the credential account hash when an OAuth account sorts first", async () => {
-    const credentialPassword = await hash("CurrentPassword1!", 10);
-    state.user = {
-      id: "user-123",
-      email: "user@example.com",
-      password: null,
-    };
-    state.accounts = [
-      {
-        id: "oauth-account",
-        userId: state.user.id,
-        accountId: "google-user",
-        providerId: "google",
-        password: null,
-      },
-      {
-        id: "credential-account",
-        userId: state.user.id,
-        accountId: state.user.id,
-        providerId: "credential",
-        password: credentialPassword,
-      },
-    ];
-    const caller = createCallerFactory(appRouter)({ db, session: null });
-
-    await caller.user.resetPasswordAnonymous({
-      email: state.user.email,
-      password: "CurrentPassword1!",
-      newPassword: "NewPassword2!",
-    });
-
-    const accountUpdate = state.updates.find(
-      (update) => update.table === "better_auth_account",
-    );
-    expect(accountUpdate?.where).toContain("credential-account");
-    const updatedPassword = accountUpdate?.values.password;
-    expect(updatedPassword).toBeTypeOf("string");
-    expect(await compare("NewPassword2!", updatedPassword as string)).toBe(
-      true,
-    );
-    expect(state.inserts).toHaveLength(0);
   });
 
   it("does not expose or mutate another user's playlist", async () => {
@@ -587,7 +418,7 @@ describe("user router authorization", () => {
     expect(state.deletes).toHaveLength(0);
   });
 
-  it("returns a clear error for passwordless accounts", async () => {
+  it("tells a passwordless account to use Forgot password for a password change", async () => {
     state.user = { id: "user-123", email: "user@example.com", password: null };
 
     await expect(
@@ -597,15 +428,122 @@ describe("user router authorization", () => {
       }),
     ).rejects.toMatchObject({
       code: "BAD_REQUEST",
-      message: expect.stringContaining("has no password"),
+      message: expect.stringContaining("Forgot password"),
     });
-    await expect(
-      signedIn().user.deleteUser({ password: "CurrentPassword1!" }),
-    ).rejects.toMatchObject({
+    expect(state.updates).toHaveLength(0);
+  });
+
+  describe("passwordless accounts use a fresh session", () => {
+    const sessionAge = (ms: number) =>
+      createCallerFactory(appRouter)({
+        db,
+        session: {
+          user: { id: "user-123" },
+          session: { token: "t", createdAt: new Date(Date.now() - ms) },
+        },
+      });
+
+    beforeEach(() => {
+      state.user = {
+        id: "user-123",
+        email: "user@example.com",
+        password: null,
+      };
+    });
+
+    it("deletes the account with a session created inside the window", async () => {
+      const deleted = await sessionAge(
+        FRESH_SESSION_MS - 60_000,
+      ).user.deleteUser({});
+
+      expect(deleted).toMatchObject({ id: "user-123" });
+      expect(state.deletes).toEqual([{ table: "user", where: ["user-123"] }]);
+    });
+
+    it("asks to sign in again with an older session", async () => {
+      await expect(
+        sessionAge(FRESH_SESSION_MS + 60_000).user.deleteUser({}),
+      ).rejects.toMatchObject({
+        code: "FORBIDDEN",
+        message: "Please sign in again to continue",
+      });
+      expect(state.deletes).toHaveLength(0);
+    });
+
+    it("treats a session with no creation time as stale", async () => {
+      await expect(signedIn("t").user.deleteUser({})).rejects.toMatchObject({
+        code: "FORBIDDEN",
+        message: "Please sign in again to continue",
+      });
+    });
+
+    it("changes the email only with a fresh session, and resets verification", async () => {
+      await expect(
+        sessionAge(FRESH_SESSION_MS + 60_000).user.updateUser({
+          email: "new@example.com",
+        }),
+      ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      expect(state.updates).toHaveLength(0);
+
+      await sessionAge(1000).user.updateUser({ email: "new@example.com" });
+
+      expect(state.updates[0]?.values).toEqual({
+        email: "new@example.com",
+        emailVerifiedBoolean: false,
+        emailVerified: null,
+      });
+    });
+
+    it("still ignores a stale session for a name-only update", async () => {
+      await sessionAge(FRESH_SESSION_MS + 60_000).user.updateUser({
+        name: "New Name",
+      });
+
+      expect(state.updates[0]?.values).toEqual({ betterAuthName: "New Name" });
+    });
+  });
+
+  it("does not let a fresh session bypass the password on an account that has one", async () => {
+    await seedPasswordUser();
+    const fresh = createCallerFactory(appRouter)({
+      db,
+      session: {
+        user: { id: "user-123" },
+        session: { token: "t", createdAt: new Date() },
+      },
+    });
+
+    await expect(fresh.user.deleteUser({})).rejects.toMatchObject({
       code: "BAD_REQUEST",
-      message: expect.stringContaining("has no password"),
+      message: "Enter your current password to continue",
     });
     expect(state.deletes).toHaveLength(0);
+  });
+
+  it("uses the credential account hash when an OAuth account sorts first", async () => {
+    state.user = { id: "user-123", email: "user@example.com", password: null };
+    state.accounts = [
+      {
+        id: "oauth-account",
+        userId: "user-123",
+        accountId: "google-user",
+        providerId: "google",
+        password: null,
+      },
+      {
+        id: "credential-account",
+        userId: "user-123",
+        accountId: "user-123",
+        providerId: "credential",
+        password: await hash("CurrentPassword1!", 10),
+      },
+    ];
+
+    await expect(
+      signedIn().user.deleteUser({ password: "WrongPassword1!" }),
+    ).rejects.toMatchObject({ message: "Current password is incorrect" });
+    await signedIn().user.deleteUser({ password: "CurrentPassword1!" });
+    expect(state.deletes).toHaveLength(1);
   });
 
   it("requires a password to delete the account", async () => {

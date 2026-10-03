@@ -7,8 +7,11 @@ type AuthSession = NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>;
 
 export type Session = {
   user: Pick<AuthSession["user"], "id">;
-  /** Current session's token, so password changes can keep it and revoke the rest. */
-  session?: Pick<AuthSession["session"], "token">;
+  /**
+   * Current session's token (so password changes can keep it and revoke the
+   * rest) and creation time (fresh-session checks for passwordless accounts).
+   */
+  session?: Partial<Pick<AuthSession["session"], "token" | "createdAt">>;
 } | null;
 
 export type TRPCContext = {

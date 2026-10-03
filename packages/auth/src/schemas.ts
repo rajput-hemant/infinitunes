@@ -40,10 +40,18 @@ export const changePasswordSchema = z.object({
   newPassword: passwordSchema,
 });
 
-/** Logged-out flow only (`/reset-password` page); it names the account by email. */
-export const resetPasswordSchema = z.object({
-  // Stored emails are lowercased; normalize before validating so lookups match.
+/** `/forgot-password`: names the account by email; the reply never confirms it exists. */
+export const forgotPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().pipe(emailSchema),
-  password: passwordSchema,
-  newPassword: passwordSchema,
 });
+
+/** `/reset-password?token=...`: the account comes from the emailed token. */
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });

@@ -81,6 +81,11 @@ export function createServerSchema(ctx: EnvContext = {}) {
     RATE_LIMITING_REQUESTS_PER_SECOND: z.coerce.number().default(50),
 
     UMAMI_WEBSITE_ID: z.string().optional(),
+
+    // Transactional email (password reset). Without a key the link is logged
+    // in development; in production sending fails closed (packages/auth mail).
+    RESEND_API_KEY: z.string().optional(),
+    EMAIL_FROM: z.string().optional(),
   } as const;
 }
 

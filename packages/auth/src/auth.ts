@@ -14,6 +14,23 @@ import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { and, eq } from "drizzle-orm";
 
+import { resetPasswordEmail } from "./emails";
+import { createSendEmail } from "./mail";
+import type { SendEmail } from "./mail";
+
+/** Reset links are single use and expire after an hour (Better Auth default, pinned). */
+export const RESET_TOKEN_TTL_SECONDS = 60 * 60;
+
+/**
+ * Per-IP throttles on the reset endpoints (Better Auth's built-in limiter,
+ * production only, in-memory so per server instance: a speed bump, not a hard
+ * global cap). The request endpoint is what sends mail, so it is the tight one.
+ */
+export const RESET_RATE_LIMITS = {
+  "/request-password-reset": { window: 60, max: 3 },
+  "/reset-password": { window: 60, max: 5 },
+} as const;
+
 function safeHostname(url: string | undefined): string | undefined {
   if (!url) return undefined;
   try {
@@ -25,12 +42,30 @@ function safeHostname(url: string | undefined): string | undefined {
 
 export function createAuth(
   db: DbClient,
-  options: { plugins?: BetterAuthPlugin[] } = {},
+  options: {
+    plugins?: BetterAuthPlugin[];
+    /** Overrides the Resend/console mailer (tests). */
+    sendEmail?: SendEmail;
+    /**
+     * Keeps work alive after the response (e.g. Next's `after`). Used so the
+     * reset email is sent off the request path: response time then does not
+     * reveal whether the address has an account.
+     */
+    runInBackground?: (promise: Promise<unknown>) => void;
+  } = {},
 ) {
   const env = createServerEnv({ skipValidation: true });
   const baseURL = process.env.BETTER_AUTH_URL || env.AUTH_URL;
   const rpID =
     process.env.BETTER_AUTH_RP_ID || safeHostname(baseURL) || "localhost";
+
+  const sendEmail =
+    options.sendEmail ??
+    createSendEmail({
+      apiKey: env.RESEND_API_KEY,
+      from: env.EMAIL_FROM,
+      nodeEnv: env.NODE_ENV,
+    });
 
   async function mirrorAccountPassword(userId: string) {
     const account = await db.query.betterAuthAccounts.findFirst({
@@ -75,6 +110,27 @@ export function createAuth(
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,
+      resetPasswordTokenExpiresIn: RESET_TOKEN_TTL_SECONDS,
+      // A reset proves control of the inbox: sign out every device.
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }) => {
+        // Never throw: a delivery failure must not turn the generic response
+        // into an account-existence signal. The link is not logged here.
+        try {
+          await sendEmail({
+            to: user.email,
+            ...resetPasswordEmail({
+              url,
+              expiresInMinutes: RESET_TOKEN_TTL_SECONDS / 60,
+            }),
+          });
+        } catch (error) {
+          console.error(
+            "[auth] password reset email failed:",
+            error instanceof Error ? error.message : "unknown error",
+          );
+        }
+      },
       password: {
         hash: async (password) => {
           return hash(password, 10);
@@ -153,7 +209,15 @@ export function createAuth(
       },
     },
 
+    rateLimit: {
+      enabled: env.NODE_ENV === "production",
+      customRules: { ...RESET_RATE_LIMITS },
+    },
+
     advanced: {
+      ...(options.runInBackground
+        ? { backgroundTasks: { handler: options.runInBackground } }
+        : {}),
       defaultCookieAttributes: {
         sameSite: "lax",
         secure: env.NODE_ENV === "production",

@@ -2,7 +2,7 @@ import { ResetPasswordForm } from "../_components/reset-password-form";
 
 export const metadata = {
   title: "Reset Password",
-  description: "Reset your password",
+  description: "Choose a new password",
 };
 
 export default function ResetPasswordPage() {
@@ -13,7 +13,7 @@ export default function ResetPasswordPage() {
       </h1>
 
       <p className="text-sm text-muted-foreground">
-        Enter your new password below.
+        Choose a new password for your account.
       </p>
 
       <ResetPasswordForm />

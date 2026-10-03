@@ -92,9 +92,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
     const emailChanged = formData.email !== user.email;
     const newPassword = formData.password;
 
-    if ((emailChanged || newPassword) && !formData.currentPassword) {
+    if (newPassword && !formData.currentPassword) {
       form.setError("currentPassword", {
-        message: "Enter your current password to change your email or password",
+        message: "Enter your current password to change your password",
       });
       return;
     }
@@ -128,7 +128,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   }
 
   async function deleteUserHandler() {
-    toast.promise(deleteUser(deletePassword), {
+    toast.promise(deleteUser(deletePassword || undefined), {
       loading: "Deleting Account...",
       success: "Account Deleted! Logging out...",
       error: userMessage,
@@ -208,7 +208,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   {...field}
                 />
                 <FieldDescription>
-                  Required to change your email or password.
+                  Required to change your password, and your email if you have a
+                  password. Passkey or OAuth only accounts can leave it blank if
+                  they signed in within the last 10 minutes.
                 </FieldDescription>
                 <FieldError errors={[fieldState.error]} />
               </Field>
@@ -305,7 +307,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   </AlertDialogTitle>
                   <AlertDialogDescription>
                     Once you delete your account, there is no going back. Please
-                    be certain.
+                    be certain. Accounts without a password (passkey or OAuth)
+                    can leave the password blank if they signed in within the
+                    last 10 minutes; otherwise sign in again first.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
 
@@ -315,7 +319,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   aria-label="Your password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder="Enter your password (if you have one)"
                 />
                 <Input
                   type="text"
@@ -330,9 +334,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
                     onClick={deleteUserHandler}
-                    disabled={
-                      confirmDelete !== "DELETE MY ACCOUNT" || !deletePassword
-                    }
+                    disabled={confirmDelete !== "DELETE MY ACCOUNT"}
                     className={buttonVariants({ variant: "destructive" })}
                   >
                     Delete Account

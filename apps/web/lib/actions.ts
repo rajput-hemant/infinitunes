@@ -1,11 +1,7 @@
 "use server";
 
-import type {
-  changePasswordSchema,
-  resetPasswordSchema,
-} from "@infinitunes/auth/schemas";
+import type { changePasswordSchema } from "@infinitunes/auth/schemas";
 import { updateTag } from "next/cache";
-import { redirect } from "next/navigation";
 import type { z } from "zod";
 
 import { api } from "./trpc/server";
@@ -16,14 +12,6 @@ export async function resetPassword(
   credentials: z.infer<typeof changePasswordSchema>,
 ) {
   await api.user.resetPassword(credentials);
-}
-
-/** Logged-out `/reset-password` page flow. */
-export async function resetPasswordAnonymous(
-  credentials: z.infer<typeof resetPasswordSchema>,
-) {
-  await api.user.resetPasswordAnonymous(credentials);
-  redirect("/login");
 }
 
 export async function createNewPlaylist(
@@ -57,6 +45,7 @@ export async function updateUser(data: {
   return await api.user.updateUser(data);
 }
 
-export async function deleteUser(password: string) {
+/** `password` is omitted by accounts that have none (fresh-session check). */
+export async function deleteUser(password?: string) {
   return await api.user.deleteUser({ password });
 }

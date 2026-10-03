@@ -4,14 +4,14 @@ import { AuthModal } from "../auth-modal";
 
 export const metadata = {
   title: "Reset Password",
-  description: "Reset your password",
+  description: "Choose a new password",
 };
 
 export default function ResetPasswordModal() {
   return (
     <AuthModal
       title="Reset Password"
-      description="Enter your email below to reset your password"
+      description="Choose a new password for your account"
     >
       <ResetPasswordForm />
     </AuthModal>

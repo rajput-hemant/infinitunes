@@ -165,7 +165,7 @@ export function LoginForm() {
 
       <p className="mx-auto mt-2 text-xs text-muted-foreground hover:text-foreground">
         <Link
-          href="/reset-password"
+          href="/forgot-password"
           className="inline-block py-2 underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-hidden"
         >
           Forgot password?
