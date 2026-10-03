@@ -10,7 +10,8 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { resetPassword } from "~/lib/actions";
+import { resetPasswordAnonymous } from "~/lib/actions";
+import { userMessage } from "~/lib/user-message";
 
 import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
@@ -47,10 +48,10 @@ export function ResetPasswordForm() {
     setIsSubmitting(true);
 
     try {
-      toast.promise(resetPassword({ ...formData }), {
+      toast.promise(resetPasswordAnonymous({ ...formData }), {
         loading: "Resetting Password...",
         success: "Password Reset Successfully",
-        error: (error) => error.message,
+        error: userMessage,
         finally: () => setIsSubmitting(false),
       });
     } catch (error) {

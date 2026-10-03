@@ -4,6 +4,7 @@ import {
   emailSchema,
   loginSchema,
   passwordSchema,
+  changePasswordSchema,
   resetPasswordSchema,
   signUpSchema,
 } from "../src/schemas";
@@ -106,5 +107,23 @@ describe("resetPasswordSchema", () => {
       newPassword: "NewPassword123!",
     });
     expect(invalid.success).toBe(false);
+  });
+});
+
+describe("changePasswordSchema", () => {
+  it("takes no email: the account comes from the session", () => {
+    const parsed = changePasswordSchema.safeParse({
+      password: "OldPassword123!",
+      newPassword: "NewPassword123!",
+    });
+    expect(parsed.success).toBe(true);
+  });
+
+  it("applies the password rules to the new password", () => {
+    const parsed = changePasswordSchema.safeParse({
+      password: "OldPassword123!",
+      newPassword: "weak",
+    });
+    expect(parsed.success).toBe(false);
   });
 });

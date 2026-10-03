@@ -5,7 +5,11 @@ import superjson from "superjson";
 
 type AuthSession = NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>;
 
-export type Session = { user: Pick<AuthSession["user"], "id"> } | null;
+export type Session = {
+  user: Pick<AuthSession["user"], "id">;
+  /** Current session's token, so password changes can keep it and revoke the rest. */
+  session?: Pick<AuthSession["session"], "token">;
+} | null;
 
 export type TRPCContext = {
   db: DbClient;

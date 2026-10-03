@@ -34,6 +34,13 @@ export const signUpSchema = z
     path: ["confirmPassword"],
   });
 
+/** Signed-in change: the account comes from the session, not the input. */
+export const changePasswordSchema = z.object({
+  password: passwordSchema,
+  newPassword: passwordSchema,
+});
+
+/** Logged-out flow only (`/reset-password` page); it names the account by email. */
 export const resetPasswordSchema = z.object({
   // Stored emails are lowercased; normalize before validating so lookups match.
   email: z.string().trim().toLowerCase().pipe(emailSchema),

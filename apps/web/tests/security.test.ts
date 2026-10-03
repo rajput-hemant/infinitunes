@@ -2,6 +2,11 @@ import { describe, expect, it, mock } from "bun:test";
 
 mock.module("server-only", () => ({}));
 
+const MOCK_PASSWORD = "Password123!";
+// bcrypt hash of MOCK_PASSWORD (apps/web does not depend on bcryptjs).
+const mockPasswordHash =
+  "$2b$04$/e1lPJxyxuthBkErU2qTiuIV4TKci6BlENLOPS79vO.TwXUwRHmYe";
+
 let mockUser: { id: string; name?: string; email?: string } | undefined;
 let mockPlaylist: { id: string; userId: string; songs: string[] } | null = null;
 let mockFavorites: {
@@ -33,7 +38,11 @@ mock.module("@infinitunes/db", () => ({
         findFirst: async () => mockFavorites,
       },
       users: {
-        findFirst: async () => null,
+        findFirst: async () =>
+          mockUser ? { id: mockUser.id, password: mockPasswordHash } : null,
+      },
+      betterAuthAccounts: {
+        findFirst: async () => undefined,
       },
     },
     select: () => ({
@@ -142,7 +151,7 @@ describe("Server action authorization security checks", () => {
 
     it("rejects deleteUser with Unauthorized", async () => {
       mockUser = undefined;
-      expect(deleteUser()).rejects.toThrow("Unauthorized");
+      expect(deleteUser(MOCK_PASSWORD)).rejects.toThrow("Unauthorized");
     });
   });
 
@@ -201,9 +210,16 @@ describe("Server action authorization security checks", () => {
 
     it("allows deleteUser using session user ID", async () => {
       mockUser = { id: "user-123" };
-      const result = await deleteUser();
+      const result = await deleteUser(MOCK_PASSWORD);
       expect(result).toBeDefined();
       expect(result.id).toBe("user-123");
+    });
+
+    it("rejects deleteUser with the wrong password", async () => {
+      mockUser = { id: "user-123" };
+      expect(deleteUser("Wrong-Password1!")).rejects.toThrow(
+        "Current password is incorrect",
+      );
     });
   });
 });
