@@ -6,10 +6,6 @@ const PLAYER_WRAPPER = new URL(
   import.meta.url,
 );
 const PLAYER = new URL("../components/player.tsx", import.meta.url);
-const MORE_BUTTON = new URL(
-  "../components/song-list/more-button.tsx",
-  import.meta.url,
-);
 
 describe("playerbar favorite-state and Add-label plumbing regression", () => {
   it("root layout fetches getUserFavorites and passes favorites to PlayerWrapper", async () => {
@@ -37,16 +33,8 @@ describe("playerbar favorite-state and Add-label plumbing regression", () => {
     expect(source).toContain("<TileMoreButton");
     expect(source).toContain("favorites={favorites}");
   });
-
-  it("more-button uses useOptimistic and startTransition with router.refresh", async () => {
-    const source = await Bun.file(MORE_BUTTON).text();
-
-    expect(source).toContain("React.useOptimistic");
-    expect(source).toContain("favorites?.songs.includes(item.id)");
-    expect(source).toContain("React.startTransition");
-    expect(source).toContain("setOptimisticFavorite(!isFavorite)");
-    expect(source).toContain("router.refresh()");
-  });
+  // The more-button's favorite state is covered by a rendered test:
+  // apps/web/tests/dom/favorite-state.test.tsx
 });
 
 describe("player a11y labels", () => {
