@@ -5,7 +5,7 @@
 ## Sub-features
 
 - Profile form (`settings/_components/profile-form.tsx`): Name, Email, New Password, `Save Changes` calls `updateUser` through a server action.
-- `Verify Email` button and avatar `Edit` button are stubs (toast `This feature is currently in development.`).
+- The former `Verify Email` and avatar `Edit` stub buttons (which showed an "in development" toast) are no longer in `profile-form.tsx` (source grep; not re-run in a browser).
 - Danger zone: `Delete Account` opens a confirm dialog that enables the action only after typing `DELETE MY ACCOUNT`; calls `deleteUser`.
 - Reset/change password page `/reset-password` (`reset-password-form.tsx`): email, current password, new password; calls public `user.resetPassword`, then redirects to `/login`.
 - Passkey management lives on the same settings page (see [auth-passkey.md](auth-passkey.md)).
