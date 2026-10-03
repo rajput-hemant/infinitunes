@@ -13,7 +13,16 @@ import { toast } from "sonner";
 
 import type { User } from "~/lib/auth";
 import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
-import { cn, currentlyInDev } from "~/lib/utils";
+import { cn } from "~/lib/utils";
+
+// Types the favorites table has a column for; other media types are not likable.
+const FAVORITE_TYPES = ["song", "album", "playlist", "artist", "show"] as const;
+
+function isFavoriteType(
+  type: MediaType,
+): type is (typeof FAVORITE_TYPES)[number] {
+  return (FAVORITE_TYPES as readonly string[]).includes(type);
+}
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   user?: User;
@@ -37,6 +46,10 @@ export function LikeButton(props: LikeButtonProps) {
     isFavorite ?? false,
     (isLiked) => !isLiked,
   );
+
+  if (!isFavoriteType(type)) {
+    return null;
+  }
 
   function likeHandler() {
     if (!user) {
@@ -130,9 +143,6 @@ export function LikeButton(props: LikeButtonProps) {
         }
         break;
       }
-
-      default:
-        currentlyInDev();
     }
   }
 
