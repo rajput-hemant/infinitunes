@@ -108,8 +108,10 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
 
   return (
-    <div
+    <nav
+      aria-label="Sidebar"
       className={cn(
+        "max-lg:hidden",
         masterSidebarWidthClassName,
         masterSidebarGapShellClassName,
         masterSidebarDesktopVisibilityClassName,
@@ -249,7 +251,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
           )}
         </SidebarContent>
       </SidebarPrimitive>
-    </div>
+    </nav>
   );
 }
 

@@ -2,7 +2,7 @@ import React from "react";
 
 import { cn } from "~/lib/utils";
 
-type LoadingSpinnerProps = React.ComponentProps<"div"> & {
+type LoadingSpinnerProps = React.ComponentProps<"output"> & {
   size?: "sm" | "md" | "lg";
 };
 
@@ -10,7 +10,7 @@ export default function LoadingSpinner(props: LoadingSpinnerProps) {
   const { size = "md", className, ...rest } = props;
 
   return (
-    <div
+    <output
       className={cn("grid size-full place-items-center", className)}
       {...rest}
     >
@@ -25,6 +25,6 @@ export default function LoadingSpinner(props: LoadingSpinnerProps) {
           },
         )}
       />
-    </div>
+    </output>
   );
 }
