@@ -4,20 +4,14 @@
   "workspaces": {
     "": {
       "name": "infinitunes",
-      "dependencies": {
-        "@trpc/client": "^11.19.0",
-        "@trpc/server": "^11.19.0",
-      },
       "devDependencies": {
         "@commitlint/cli": "^21.2.3",
         "@commitlint/config-conventional": "^21.2.3",
-        "@trpc/react-query": "^11.19.0",
         "@types/node": "^26.6.3",
         "husky": "^9.1.7",
         "lint-staged": "^17.6.0",
         "oxfmt": "^0.70.0",
         "oxlint": "^1.85.0",
-        "superjson": "^2.2.6",
         "turbo": "^2.11.4",
       },
     },
@@ -33,12 +27,14 @@
         "@infinitunes/types": "workspace:*",
         "@infinitunes/ui": "workspace:*",
         "@tanstack/react-query": "^5.104.0",
+        "@trpc/client": "^11.19.0",
+        "@trpc/react-query": "^11.19.0",
+        "@trpc/server": "^11.19.0",
         "@upstash/ratelimit": "^2.2.0",
         "@upstash/redis": "^1.39.0",
         "babel-plugin-react-compiler": "^1.0.0",
         "better-auth": "^1.7.6",
         "cookies-next": "^6.1.1",
-        "drizzle-orm": "^0.45.3",
         "jotai": "^3.0.0",
         "lucide-react": "^1.48.0",
         "next": "^16.3.6",
@@ -48,8 +44,8 @@
         "react-hook-form": "^7.89.0",
         "react-use-audio-player": "^4.0.2",
         "server-only": "^0.0.1",
-        "shadcn": "^4.21.0",
         "sonner": "^2.0.8",
+        "superjson": "^2.2.6",
         "tw-animate-css": "^1.4.0",
         "zod": "^4.6.5",
       },
@@ -57,13 +53,13 @@
         "@infinitunes/typescript-config": "workspace:*",
         "@next/env": "16.3.6",
         "@tailwindcss/postcss": "^4.3.3",
-        "@types/node": "26.6.3",
+        "@types/node": "^26.6.3",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
-        "drizzle-kit": "^0.31.11",
         "oxfmt": "^0.70.0",
         "oxlint": "^1.85.0",
         "postcss": "8.5.28",
+        "shadcn": "^4.21.0",
         "sharp": "^0.35.4",
         "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
@@ -172,6 +168,7 @@
         "@infinitunes/typescript-config": "workspace:*",
         "@types/react": "^19.3.0",
         "@types/react-dom": "^19.3.0",
+        "tailwindcss": "^4.3.3",
         "typescript": "^7.0.2",
       },
       "peerDependencies": {
@@ -655,7 +652,6 @@
 
     "@tanstack/react-query": ["@tanstack/react-query@5.104.0", "", { "dependencies": { "@tanstack/query-core": "5.104.0" }, "peerDependencies": { "react": "^18 || ^19" } }, "sha512-e1TZmDCQnWIfiDVryIHeA6Idj+Lfx1hORLOhXS/l5wcgvtVD4yYqbTDl378sGQKIi2cSgb0TEMC9cKK8GGoJEw=="],
 
-
     "@trpc/client": ["@trpc/client@11.19.0", "", { "peerDependencies": { "@trpc/server": "11.19.0", "typescript": ">=5.7.2" }, "bin": { "intent": "bin/intent.js" } }, "sha512-0MKkPq6MejsKB5Opca1Rl22KVIaqo2+A1EiXyZ8EGUsl9TLrPdpGn+Usux20TZKFwnSC2+wI/WilqNJaP4ODfw=="],
 
     "@trpc/react-query": ["@trpc/react-query@11.19.0", "", { "peerDependencies": { "@tanstack/react-query": "^5.80.3", "@trpc/client": "11.19.0", "@trpc/server": "11.19.0", "react": ">=18.2.0", "typescript": ">=5.7.2" } }, "sha512-TrqZBa/6weXX27mf0P2dMCI65duqO3B/wf9BkP1MezUWSUg7SRGJrIv6K8vjgjeHdafFBI1mmcqPEYXHF4AlVQ=="],
@@ -675,7 +671,6 @@
     "@turbo/windows-64": ["@turbo/windows-64@2.11.4", "", { "os": "win32", "cpu": "x64" }, "sha512-COr+++1GwDg09XbJdm3sP1gEQApeV43UknYP9h82qet1tAGJrGQAxKVTMrf2JMsMw8MkJRnQj3gAVuQmV1kIyQ=="],
 
     "@turbo/windows-arm64": ["@turbo/windows-arm64@2.11.4", "", { "os": "win32", "cpu": "arm64" }, "sha512-gh5lwDA2d4aBdLvTANhFsFEgxbBqKZ4m4dCyChw9GoX8b+Esk8H3p25Q+rlWCUVJ2o6Hne10ZTL0QSFfWD4gIA=="],
-
 
     "@types/bun": ["@types/bun@1.4.2", "", { "dependencies": { "bun-types": "1.4.2" } }, "sha512-GimotNn7+ZV0uVArItBbriZsR1oNf0+WTzPkdcFrzShI7k2norL0uzEaJT8T33dWr7O/c9ZDuAFQrctKCi72oQ=="],
 
@@ -954,7 +949,6 @@
     "function-bind": ["function-bind@1.1.2", "", {}, "sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA=="],
 
     "fuzzysort": ["fuzzysort@3.1.0", "", {}, "sha512-sR9BNCjBg6LNgwvxlBd0sBABvQitkLzoVY9MYYROQVX/FvfJ4Mai9LsGhDgd8qYdds0bY77VzYd5iuB+v5rwQQ=="],
-
 
     "gensync": ["gensync@1.0.0-beta.2", "", {}, "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg=="],
 
