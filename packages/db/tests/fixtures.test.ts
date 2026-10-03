@@ -7,7 +7,10 @@ import {
   getLocalDevFixture,
   parseLocalDevFixture,
 } from "../src/fixtures/local-dev-user";
-import { assertLocalDatabase } from "../src/fixtures/local-guard";
+import {
+  assertLocalDatabase,
+  isLocalDatabase,
+} from "../src/fixtures/local-guard";
 
 const canonicalFixturePath = join(
   import.meta.dirname,
@@ -26,7 +29,7 @@ describe("local development fixtures", () => {
     const fixture = parseLocalDevFixture(canonicalFixture);
     expect(fixture.user.id).toBe("a0000000-0000-4000-8000-000000000001");
     expect(fixture.user.email).toBe("local@example.test");
-    expect(fixture.user.password).toBe("LocalDev123!");
+    expect(fixture.user.password).toBe(canonicalFixture.user.password);
     expect(fixture.user.name).toBe("Local Developer");
     expect(fixture.user.emailVerified).toBe(true);
   });
@@ -48,7 +51,7 @@ describe("local development fixtures", () => {
     expect(fixture.database.name).toBe("local_platforms");
     expect(fixture.redis.port).toBe(6379);
     expect(fixture.redis.restUrl).toBe("http://127.0.0.1:8079");
-    expect(fixture.redis.restToken).toBe("localdevtoken");
+    expect(fixture.redis.restToken).toBe(canonicalFixture.redis.restToken);
   });
 
   it("getLocalDevFixture returns the canonical fixture when no path is given", () => {
@@ -118,5 +121,20 @@ describe("assertLocalDatabase", () => {
   it("refuses production and unparseable URLs", () => {
     refused("postgresql://u:p@localhost:5432/db", "production");
     refused("not a url");
+  });
+});
+
+describe("isLocalDatabase", () => {
+  it("mirrors assertLocalDatabase without throwing", () => {
+    expect(
+      isLocalDatabase("postgresql://u:p@127.0.0.1:5432/db", "development"),
+    ).toBe(true);
+    expect(
+      isLocalDatabase("postgresql://u:p@db.example.com/db", "development"),
+    ).toBe(false);
+    expect(
+      isLocalDatabase("postgresql://u:p@localhost:5432/db", "production"),
+    ).toBe(false);
+    expect(isLocalDatabase("not a url", "development")).toBe(false);
   });
 });
