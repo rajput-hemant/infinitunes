@@ -103,11 +103,13 @@
       "version": "0.1.0",
       "dependencies": {
         "@infinitunes/env": "workspace:*",
+        "bcryptjs": "^3.0.3",
         "drizzle-orm": "^0.45.3",
         "postgres": "^3.4.9",
       },
       "devDependencies": {
         "@infinitunes/typescript-config": "workspace:*",
+        "@types/bcryptjs": "^3.0.0",
         "@types/bun": "^1.4.2",
         "@types/node": "^26.6.3",
         "drizzle-kit": "^0.31.11",

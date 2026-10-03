@@ -28,60 +28,69 @@
 
 This is a Bun monorepo. The web app lives in `apps/web`.
 
-- Fetch latest source code from master branch.
+### Prerequisites
 
-```
+- [Bun](https://bun.sh) (v1.4.2)
+- [Docker](https://www.docker.com/)
+
+### Quick Start
+
+1. Clone repository and install dependencies:
+
+```bash
 git clone https://github.com/rajput-hemant/infinitunes
 cd infinitunes
-```
-
-- Rename **.env.example** => **.env.local**, add your own environment variables.
-
-- Install dependencies and start the dev server:
-
-```
 bun install
-bun dev
 ```
 
-- Other useful commands (run from the repo root):
+2. Configure environment:
 
+```bash
+cp .env.example .env
 ```
+
+3. Start local infrastructure (PostgreSQL 18 & Redis):
+
+```bash
+bun run db:up
+# Or: make db-up
+```
+
+4. Run migrations and seed deterministic local data:
+
+```bash
+bun run db:migrate
+bun run db:seed
+```
+
+5. Start the development server on host:
+
+```bash
+bun run dev
+# Or: make dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) and sign in with default credentials:
+
+- **Email:** `local@example.test`
+- **Password:** `LocalDev123!`
+
+For detailed architecture, table prefixing, and shared configuration with Lipi and AMA, see the [Local Development Guide](docs/local-development.md).
+
+### Useful Scripts
+
+```bash
+bun run db:up        # Start PostgreSQL & Redis in Docker
+bun run db:down      # Stop local infrastructure
+bun run db:migrate   # Run database migrations
+bun run db:seed      # Seed local deterministic data
+bun run db:reset     # Safely reset local database schema
+bun run dev          # Start Next.js development server
 bun run build        # Production build
 bun run lint         # Lint with Oxlint
 bun run fmt:check    # Check formatting with oxfmt
 bun run type-check   # Type check with TypeScript
 bun test             # Run tests
-```
-
-<div align=center>
-
-### Docker and Makefile
-
-</div>
-
-- Build the Docker Image and start the container:
-
-```
-make build
-make start
-```
-
-- Stop the Docker container:
-
-```
-make stop
-```
-
-- Other Makefile targets:
-
-```
-make install         # Install dependencies
-make dev             # Start dev server
-make lint            # Run linting and format checks
-make typecheck       # Run type checking
-make test            # Run tests
-make build-app       # Production build
 ```
 
 <div align=center>

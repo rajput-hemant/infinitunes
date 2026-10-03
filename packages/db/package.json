@@ -8,6 +8,8 @@
     "test": "bun test",
     "db:generate": "drizzle-kit generate --config=./src/drizzle.config.ts",
     "db:migrate": "bun src/migrate.ts",
+    "db:seed": "bun src/seed.ts",
+    "db:reset": "bun src/reset.ts",
     "db:drop": "drizzle-kit drop --config=./src/drizzle.config.ts",
     "db:push": "drizzle-kit push --config=./src/drizzle.config.ts",
     "db:pull": "drizzle-kit introspect --config=./src/drizzle.config.ts",
@@ -21,15 +23,18 @@
     "./db": "./src/db.ts",
     "./migrations": "./src/migrations/index.ts",
     "./backfill": "./src/backfill.ts",
-    "./drizzle.config": "./src/drizzle.config.ts"
+    "./drizzle.config": "./src/drizzle.config.ts",
+    "./fixtures": "./src/fixtures/index.ts"
   },
   "dependencies": {
     "@infinitunes/env": "workspace:*",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.45.3",
     "postgres": "^3.4.9"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
+    "@types/bcryptjs": "^3.0.0",
     "@types/bun": "^1.4.2",
     "@types/node": "^26.6.3",
     "drizzle-kit": "^0.31.11",
