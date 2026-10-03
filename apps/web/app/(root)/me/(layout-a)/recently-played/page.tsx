@@ -1,16 +1,19 @@
-import { Construction } from "lucide-react";
+import { History } from "lucide-react";
+
+import { LibraryEmpty } from "~/components/library/library-section";
+
+export const metadata = {
+  title: "Recently Played",
+  description: "Songs you listened to lately.",
+};
 
 export default function RecentlyPlayedPage() {
   return (
-    <div className="flex h-64 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-100">
-      <Construction
-        size={64}
-        className="fill-yellow-500 dark:fill-black dark:stroke-yellow-500"
-      />
-
-      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
-        Under development. <br /> Please check back later.
-      </h3>
-    </div>
+    <LibraryEmpty
+      icon={History}
+      title="Recently played is coming soon"
+      description="Listening history isn’t tracked yet. Keep listening, and it will appear here once it is."
+      action={{ href: "/", label: "Find Something to Play" }}
+    />
   );
 }

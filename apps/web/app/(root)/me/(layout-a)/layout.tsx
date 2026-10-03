@@ -6,6 +6,7 @@ import React from "react";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getUser } from "~/lib/auth";
+import { cn } from "~/lib/utils";
 
 import { LogoutButton } from "./_components/logout";
 import { Navbar } from "./_components/navbar";
@@ -19,27 +20,27 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
-        <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-full border transition-[width] duration-1000 md:w-56 xl:w-64">
+      <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:justify-start sm:gap-6 lg:gap-10">
+        <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-full border sm:w-32 lg:w-40">
           <ImageWithFallback
-            src={user.image ?? ""}
+            src={user.image || "/images/placeholder/user.jpg"}
             fallback="/images/placeholder/user.jpg"
-            alt={user.name ?? "~"}
+            alt=""
             fill
-            className="rounded-full p-1"
+            className={cn("rounded-full p-1", !user.image && "dark:invert")}
           />
 
           <Skeleton className="absolute inset-1 -z-10 rounded-full" />
         </div>
 
-        <div className="flex flex-col items-center justify-center gap-y-2 font-medium lg:items-start lg:gap-6">
-          <div className="text-center lg:text-start">
+        <div className="flex flex-col items-center justify-center gap-y-2 font-medium sm:items-start sm:gap-4">
+          <div className="text-center sm:text-start">
             <h1 className="max-w-5xl truncate font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
               {user.name ?? "User"}
             </h1>
 
             <small className="text-muted-foreground">
-              <Mail className="mr-1 inline-block size-4" />
+              <Mail aria-hidden className="mr-1 inline-block size-4" />
               {user.email ?? "you@example.com"}
             </small>
           </div>
@@ -53,7 +54,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
                 className: "w-24",
               })}
             >
-              <Edit className="mr-2 size-4" /> Edit
+              <Edit aria-hidden className="mr-2 size-4" /> Edit
             </Link>
 
             <LogoutButton />

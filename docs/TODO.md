@@ -23,6 +23,18 @@ Partial: a source-grounded DRAFT verification skill and feature map exist ([.age
 - [x] Password reset oracle ([ISSUE-007](checks/verification-issues.md#issue-007)), email update validation ([ISSUE-008](checks/verification-issues.md#issue-008)) and profile stubs ([ISSUE-005](checks/verification-issues.md#issue-005)) fixed 2026-10-03.
 - [ ] Triage remaining CONFIRMED items: formatting, remaining stubs ([ISSUE-003](checks/verification-issues.md#issue-003)), recently played ([ISSUE-004](checks/verification-issues.md#issue-004), needs a decision on where history is stored), reset-password throttling.
 
+## UI follow-ups (design review 2026-10-03)
+
+Found while polishing library and player. Priority is impact on users; none are confirmed regressions.
+
+- [ ] Medium: base-ui `Slider` does not forward `aria-label` to its thumb, so the seek and volume sliders have no accessible name (snapshot shows an unnamed `slider`). Fix through an app wrapper or the `Slider` `thumbProps`/label API; protected shadcn source stays untouched. Evidence: chrome-devtools snapshot at 390px while playing. Uncertain which base-ui prop is supported; check the installed version's docs.
+- [ ] Medium: player bar hides loop, shuffle, volume and queue below `lg`, so mobile users cannot reach them (only previous/play/next were exposed in this batch). Needs a design for a mobile expanded player sheet.
+- [ ] Low: the empty-state "More" button in `components/player.tsx` has no `aria-label`; left alone to avoid overlapping the favorite-state work in the same file.
+- [ ] Low: no shadcn `Empty` or `Alert` component is installed in `packages/ui`; `components/library/library-section.tsx` composes the existing tokens and `Button` instead. Add them with the shadcn CLI (explicit approval, since it writes to `packages/ui`) and swap the wrapper internals.
+- [ ] Low: other pages still repeat the gradient heading and dashed empty-state markup (for example search, settings); reuse `LibraryHeading`/`LibraryEmpty` or extract a general version.
+- [ ] Low: the liked-songs list and the other library tabs have no sort or filter, and no unlike action at the row level on mobile (the heart is desktop only). Needs a product decision.
+- [ ] Non-design: liked songs fetch all ids in one `song.details` call; if upstream rejects one id the whole list fails. Fetch in chunks and tolerate partial results (backend/query logic).
+
 ## Product
 
 - [ ] README still labels the app `[WIP]`; as a portfolio showcase, decide when it counts as finished (see [project.md](project.md#purpose)).

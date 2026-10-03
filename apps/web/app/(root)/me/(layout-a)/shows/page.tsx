@@ -1,6 +1,11 @@
 import { decode, getToken } from "@infinitunes/types";
-import { Ghost } from "lucide-react";
+import { Podcast } from "lucide-react";
 
+import {
+  LibraryEmpty,
+  LibraryHeading,
+  LibraryUnavailable,
+} from "~/components/library/library-section";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUserFavorites } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
@@ -48,9 +53,11 @@ export default async function LikedPodcastsPage() {
     if (shows.length) {
       return (
         <div className="space-y-4">
-          <h2 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-            Liked Podcasts
-          </h2>
+          <LibraryHeading
+            title="Liked Podcasts"
+            count={shows.length}
+            noun="podcast"
+          />
 
           <div className="flex w-full flex-wrap gap-4">
             {shows.map((show) => (
@@ -71,13 +78,14 @@ export default async function LikedPodcastsPage() {
     }
   }
 
-  return (
-    <div className="flex h-64 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-100">
-      <Ghost size={64} />
+  if (tokens.length) return <LibraryUnavailable what="liked podcasts" />;
 
-      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
-        Nothing here yet. <br /> Like some podcasts to see them here.
-      </h3>
-    </div>
+  return (
+    <LibraryEmpty
+      icon={Podcast}
+      title="No liked podcasts yet"
+      description="Tap the heart on a podcast and it will show up here."
+      action={{ href: "/show", label: "Browse Podcasts" }}
+    />
   );
 }

@@ -1,6 +1,11 @@
 import { decode } from "@infinitunes/types";
-import { Ghost } from "lucide-react";
+import { Mic2 } from "lucide-react";
 
+import {
+  LibraryEmpty,
+  LibraryHeading,
+  LibraryUnavailable,
+} from "~/components/library/library-section";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUserFavorites } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
@@ -25,9 +30,11 @@ export default async function LikedArtistsPage() {
     if (artists.length) {
       return (
         <div className="space-y-4">
-          <h2 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-            Liked Artists
-          </h2>
+          <LibraryHeading
+            title="Liked Artists"
+            count={artists.length}
+            noun="artist"
+          />
 
           <div className="flex w-full flex-wrap gap-4">
             {artists.map((artist) => (
@@ -46,13 +53,14 @@ export default async function LikedArtistsPage() {
     }
   }
 
-  return (
-    <div className="flex h-64 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-100">
-      <Ghost size={64} />
+  if (tokens.length) return <LibraryUnavailable what="liked artists" />;
 
-      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
-        Nothing here yet. <br /> Like some artists to see them here.
-      </h3>
-    </div>
+  return (
+    <LibraryEmpty
+      icon={Mic2}
+      title="No liked artists yet"
+      description="Tap the heart on an artist and it will show up here."
+      action={{ href: "/artist", label: "Browse Artists" }}
+    />
   );
 }

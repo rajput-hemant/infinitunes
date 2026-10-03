@@ -1,6 +1,11 @@
 import { decode } from "@infinitunes/types";
-import { Ghost } from "lucide-react";
+import { Disc3 } from "lucide-react";
 
+import {
+  LibraryEmpty,
+  LibraryHeading,
+  LibraryUnavailable,
+} from "~/components/library/library-section";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUserFavorites } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
@@ -25,9 +30,11 @@ export default async function LikedAlbumsPage() {
     if (albums.length) {
       return (
         <div className="space-y-4">
-          <h2 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-            Liked Albums
-          </h2>
+          <LibraryHeading
+            title="Liked Albums"
+            count={albums.length}
+            noun="album"
+          />
 
           <div className="flex w-full flex-wrap gap-4">
             {albums.map((album) => (
@@ -47,13 +54,14 @@ export default async function LikedAlbumsPage() {
     }
   }
 
-  return (
-    <div className="flex h-64 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-100">
-      <Ghost size={64} />
+  if (tokens.length) return <LibraryUnavailable what="liked albums" />;
 
-      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
-        Nothing here yet. <br /> Like some albums to see them here.
-      </h3>
-    </div>
+  return (
+    <LibraryEmpty
+      icon={Disc3}
+      title="No liked albums yet"
+      description="Tap the heart on an album and it will show up here."
+      action={{ href: "/album", label: "Browse Albums" }}
+    />
   );
 }

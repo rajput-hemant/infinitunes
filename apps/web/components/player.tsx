@@ -53,6 +53,9 @@ import { ImageWithFallback } from "./image-with-fallback";
 import { Queue } from "./queue";
 import { TileMoreButton } from "./song-list/more-button";
 
+const controlClass =
+  "rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+
 type PlayerProps = {
   user?: User;
   playlists?: MyPlaylist[];
@@ -319,6 +322,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
       )}
     >
       <Slider
+        aria-label="Seek"
         value={[pos]}
         max={duration || 1}
         onValueChange={(value: number | readonly number[], _details) => {
@@ -340,7 +344,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
           queue.length === 0 && "text-muted-foreground",
         )}
       >
-        <div className="flex w-full gap-4 lg:w-1/3">
+        <div className="flex w-full min-w-0 gap-4 lg:w-1/3">
           {queue.length && queue[currentIndex]?.image ? (
             <>
               <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
@@ -354,7 +358,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                 <Skeleton className="absolute inset-0 -z-10" />
               </div>
 
-              <div className="flex flex-col justify-center">
+              <div className="flex min-w-0 flex-col justify-center">
                 <Link
                   href={getHref(
                     queue[currentIndex].url,
@@ -390,7 +394,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
           )}
         </div>
 
-        <div className="flex justify-end lg:w-1/3 lg:justify-evenly">
+        <div className="flex shrink-0 items-center justify-end gap-3 lg:w-1/3 lg:justify-evenly lg:gap-0">
           <Tooltip>
             <TooltipTrigger
               delay={0}
@@ -399,6 +403,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                   aria-label={isLooping ? "Looping" : "Loop"}
                   onClick={loopHandler}
                   className={cn(
+                    controlClass,
                     "hidden lg:block",
                     !isLooping && !loopPlaylist && "text-muted-foreground",
                   )}
@@ -427,9 +432,9 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                 <button
                   aria-label="Previous"
                   onClick={skipToPrev}
-                  className="hidden lg:block"
+                  className={controlClass}
                 >
-                  <Icons.SkipBack className="size-10" />
+                  <Icons.SkipBack aria-hidden className="size-8 lg:size-10" />
                 </button>
               }
             />
@@ -443,6 +448,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                 <button
                   aria-label={isPlaying ? "Pause" : "Play"}
                   onClick={playPauseHandler}
+                  className={controlClass}
                 >
                   {isLoading ? (
                     <Loader2 className="animate-spin" />
@@ -464,9 +470,12 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                 <button
                   aria-label="Next"
                   onClick={skipToNext}
-                  className="hidden lg:block"
+                  className={controlClass}
                 >
-                  <Icons.SkipForward className="size-10" />
+                  <Icons.SkipForward
+                    aria-hidden
+                    className="size-8 lg:size-10"
+                  />
                 </button>
               }
             />
@@ -481,6 +490,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                   aria-label={isShuffle ? "Shuffling" : "Shuffle"}
                   onClick={() => setIsShuffle(!isShuffle)}
                   className={cn(
+                    controlClass,
                     "hidden lg:block",
                     !isShuffle && "text-muted-foreground",
                   )}
@@ -517,6 +527,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                 }
               }}
               className={cn(
+                controlClass,
                 "transition-opacity hover:opacity-100",
                 (!isReady || isMuted) && "text-muted-foreground opacity-50",
               )}
