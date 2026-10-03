@@ -35,7 +35,8 @@ export const signUpSchema = z
   });
 
 export const resetPasswordSchema = z.object({
-  email: emailSchema,
+  // Stored emails are lowercased; normalize before validating so lookups match.
+  email: z.string().trim().toLowerCase().pipe(emailSchema),
   password: passwordSchema,
   newPassword: passwordSchema,
 });
