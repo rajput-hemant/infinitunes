@@ -338,7 +338,7 @@ export const userRouter = router({
   renamePlaylist: protectedProcedure
     .input(renamePlaylistInput)
     .mutation(async ({ ctx, input }) => {
-      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
+      await getOwnedPlaylist(ctx, input.playlistId);
 
       const [updatedPlaylist] = await ctx.db
         .update(myPlaylists)
@@ -360,7 +360,7 @@ export const userRouter = router({
   deletePlaylist: protectedProcedure
     .input(playlistInput)
     .mutation(async ({ ctx, input }) => {
-      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
+      await getOwnedPlaylist(ctx, input.playlistId);
 
       const [deletedPlaylist] = await ctx.db
         .delete(myPlaylists)
