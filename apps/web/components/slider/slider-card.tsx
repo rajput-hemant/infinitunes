@@ -1,5 +1,5 @@
 import type { Quality, MediaType } from "@infinitunes/types";
-import { decode, getImageSrc, getToken } from "@infinitunes/types";
+import { decode, getImageSrc, parseToken } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -98,7 +98,7 @@ export function SliderCard(props: SliderCardProps) {
               <PlayButton
                 aria-label={`Play ${name}`}
                 type={type}
-                token={getToken(url)}
+                token={parseToken(url)}
                 className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
               >
                 <Play

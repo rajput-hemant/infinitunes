@@ -31,19 +31,9 @@ export const RESET_RATE_LIMITS = {
   "/reset-password": { window: 60, max: 5 },
 } as const;
 
-function safeHostname(url: string | undefined): string | undefined {
-  if (!url) return undefined;
+function parseUrl(url: string | undefined): URL | undefined {
   try {
-    return new URL(url).hostname || undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-function originOf(url: string | undefined): string | undefined {
-  if (!url) return undefined;
-  try {
-    return new URL(url).origin;
+    return url ? new URL(url) : undefined;
   } catch {
     return undefined;
   }
@@ -76,11 +66,12 @@ export function createAuth(
   const trustedOrigins = [
     ...new Set(
       [baseURL, vercelContext.vercelUrl, vercelContext.vercelProductionUrl]
-        .map((url) => originOf(url && resolveAuthUrl(url, {})))
+        .map((url) => parseUrl(url && resolveAuthUrl(url, {}))?.origin)
         .filter((origin): origin is string => origin !== undefined),
     ),
   ];
-  const rpID = env.BETTER_AUTH_RP_ID || safeHostname(baseURL) || "localhost";
+  const rpID =
+    env.BETTER_AUTH_RP_ID || parseUrl(baseURL)?.hostname || "localhost";
 
   const sendEmail =
     options.sendEmail ??
@@ -133,7 +124,6 @@ export function createAuth(
 
     emailAndPassword: {
       enabled: true,
-      requireEmailVerification: false,
       resetPasswordTokenExpiresIn: RESET_TOKEN_TTL_SECONDS,
       // A reset proves control of the inbox: sign out every device.
       revokeSessionsOnPasswordReset: true,
@@ -179,9 +169,6 @@ export function createAuth(
     session: {
       expiresIn: 60 * 60 * 24 * 30, // 30 days
       updateAge: 60 * 60 * 24, // 1 day
-      cookieCache: {
-        enabled: false,
-      },
     },
 
     account: {
@@ -249,9 +236,6 @@ export function createAuth(
       },
       database: {
         generateId: "uuid",
-      },
-      crossSubDomainCookies: {
-        enabled: false,
       },
     },
 

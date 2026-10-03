@@ -1,7 +1,7 @@
 "use client";
 
 import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
-import { getToken, toQueue } from "@infinitunes/types";
+import { toQueue } from "@infinitunes/types";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -39,11 +39,7 @@ export function PlayButton(props: PlayButtonProps) {
   const sort = (searchParams.get("sort") as Sort) ?? "desc";
 
   async function playHandler() {
-    const songIndex = findQueueIndex(
-      initialQueue,
-      { token, queueItemId },
-      getToken,
-    );
+    const songIndex = findQueueIndex(initialQueue, { token, queueItemId });
 
     if (songIndex !== -1) {
       setCurrentIndex(songIndex);

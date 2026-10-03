@@ -7,15 +7,15 @@ describe("authSchema AUTH_URL on Vercel", () => {
     authSchema(ctx).AUTH_URL.parse(url);
 
   it("prefixes https:// onto the scheme-less VERCEL_URL host", () => {
-    expect(
-      parse({ vercel: true, vercelUrl: "infinitunes-abc.vercel.app" }),
-    ).toBe("https://infinitunes-abc.vercel.app");
+    expect(parse({ vercelUrl: "infinitunes-abc.vercel.app" })).toBe(
+      "https://infinitunes-abc.vercel.app",
+    );
   });
 
   it("leaves an already-qualified VERCEL_URL untouched", () => {
-    expect(
-      parse({ vercel: true, vercelUrl: "https://infinitunes.example.com" }),
-    ).toBe("https://infinitunes.example.com");
+    expect(parse({ vercelUrl: "https://infinitunes.example.com" })).toBe(
+      "https://infinitunes.example.com",
+    );
   });
 
   it("uses the configured AUTH_URL when not on Vercel", () => {
@@ -26,7 +26,6 @@ describe("authSchema AUTH_URL on Vercel", () => {
     expect(
       parse(
         {
-          vercel: true,
           vercelUrl: "preview.vercel.app",
           vercelProductionUrl: "infinitunes.example.com",
         },
@@ -38,7 +37,6 @@ describe("authSchema AUTH_URL on Vercel", () => {
   it("falls back to the production domain before the deployment host", () => {
     expect(
       parse({
-        vercel: true,
         vercelUrl: "preview.vercel.app",
         vercelProductionUrl: "infinitunes.example.com",
       }),
@@ -46,14 +44,12 @@ describe("authSchema AUTH_URL on Vercel", () => {
   });
 
   it("uses VERCEL_URL on previews with no production domain", () => {
-    expect(parse({ vercel: true, vercelUrl: "preview.vercel.app" })).toBe(
+    expect(parse({ vercelUrl: "preview.vercel.app" })).toBe(
       "https://preview.vercel.app",
     );
   });
 
   it("adds https:// to a scheme-less explicit AUTH_URL", () => {
-    expect(parse({ vercel: true }, "music.example.com")).toBe(
-      "https://music.example.com",
-    );
+    expect(parse({}, "music.example.com")).toBe("https://music.example.com");
   });
 });
