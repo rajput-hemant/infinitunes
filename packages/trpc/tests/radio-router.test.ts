@@ -203,6 +203,26 @@ describe("radioRouter", () => {
       expect(songs.length).toBe(1);
       expect(songs[0].id).toBe("s3");
     });
+
+    it("never serves a repeated refill from the response cache", async () => {
+      // webradio.getSong is randomized per call; a cached answer would hand
+      // the player the same batch again and the station would run dry.
+      const input = {
+        stationId: "refill-station",
+        k: 10,
+        next: 1,
+        lang: uniq(),
+      };
+
+      responses["webradio.getSong"] = { "0": { song: mockSong("r1") } };
+      const first = await caller.radio.songs(input);
+
+      responses["webradio.getSong"] = { "0": { song: mockSong("r2") } };
+      const second = await caller.radio.songs(input);
+
+      expect(first[0].id).toBe("r1");
+      expect(second[0].id).toBe("r2");
+    });
   });
 
   describe("stationDetails", () => {

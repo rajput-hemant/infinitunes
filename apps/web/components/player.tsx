@@ -5,7 +5,7 @@ import {
   formatDuration,
   getDownloadLink,
   getImageSrc,
-  seededIndex,
+  pickShuffleIndex,
   toQueue,
 } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
@@ -137,8 +137,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     let index = latest.currentIndex;
 
     if (latest.isShuffle) {
-      const seed = `${latest.queue[latest.currentIndex]?.id ?? latest.currentIndex}:${latest.currentIndex}:end`;
-      index = seededIndex(seed, latest.queue.length);
+      if (!latest.isLooping) {
+        index = pickShuffleIndex(latest.queue.length, latest.currentIndex);
+      }
     } else {
       if (latest.currentIndex < latest.queue.length - 1) {
         if (!latest.isLooping) index = latest.currentIndex + 1;
@@ -152,25 +153,31 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     setCurrentIndex(index);
   }, [setCurrentIndex]);
 
+  // Depend on the resolved source, not on `queue`: `load` destroys and
+  // recreates the Howl, so keying on `queue` would restart the playing track
+  // whenever anything is queued, removed or radio-refilled.
+  const current = queue[currentIndex];
+  const hasCurrent = Boolean(current);
+  const audioSrc = current
+    ? getDownloadLink(current.download_url, streamQuality)
+    : "";
+
   React.useEffect(() => {
-    const current = queue[currentIndex];
-    if (queue.length && isPlayerInit && current) {
-      const audioSrc = getDownloadLink(current.download_url, streamQuality);
+    if (!isPlayerInit || !hasCurrent) return;
 
-      if (!audioSrc) {
-        toast.error("This song can't be played right now.");
-        return;
-      }
-
-      load(audioSrc, {
-        html5: true,
-        // onload: play,
-        autoplay: true,
-        initialMute: false,
-        onend: onEndHandler,
-      });
+    if (!audioSrc) {
+      toast.error("This song can't be played right now.");
+      return;
     }
-  }, [queue, streamQuality, currentIndex, isPlayerInit, load, onEndHandler]);
+
+    load(audioSrc, {
+      html5: true,
+      // onload: play,
+      autoplay: true,
+      initialMute: false,
+      onend: onEndHandler,
+    });
+  }, [audioSrc, hasCurrent, isPlayerInit, load, onEndHandler]);
 
   React.useEffect(() => {
     if (isDragging) {
@@ -196,11 +203,16 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     if (currentIndex >= queue.length - 3) {
       refillingRef.current = true;
       utils.radio.songs
-        .fetch({
-          stationId: activeRadio.stationId,
-          k: 10,
-          next: 1,
-        })
+        .fetch(
+          {
+            stationId: activeRadio.stationId,
+            k: 10,
+            next: 1,
+          },
+          // The app-wide staleTime is Infinity, which would hand back the first
+          // batch forever; every refill must hit upstream for fresh songs.
+          { staleTime: 0 },
+        )
         .then((moreSongs) => {
           if (moreSongs.length > 0) {
             const currentIds = new Set(queue.map((s) => s.id));
@@ -250,8 +262,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     let index = currentIndex;
 
     if (isShuffle) {
-      const seed = `${queue[currentIndex]?.id ?? currentIndex}:${currentIndex}:next`;
-      index = seededIndex(seed, queue.length);
+      index = pickShuffleIndex(queue.length, currentIndex);
     } else {
       if (currentIndex < queue.length - 1) {
         index = currentIndex + 1;
@@ -270,8 +281,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     let index;
 
     if (isShuffle) {
-      const seed = `${queue[currentIndex]?.id ?? currentIndex}:${currentIndex}:prev`;
-      index = seededIndex(seed, queue.length);
+      index = pickShuffleIndex(queue.length, currentIndex);
     } else {
       if (currentIndex > 0) {
         index = currentIndex - 1;
@@ -310,9 +320,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     } else if (e.key === "p" || (e.shiftKey && e.key === "ArrowLeft")) {
       skipToPrev();
     } else if (e.shiftKey && e.key === "ArrowUp") {
-      setVolume(volume + 0.05);
+      setVolume(Math.min(1, volume + 0.05));
     } else if (e.shiftKey && e.key === "ArrowDown") {
-      setVolume(volume - 0.05);
+      setVolume(Math.max(0, volume - 0.05));
     } else if (e.key === "l") {
       loopHandler();
     } else if (e.key === "s") {
@@ -521,9 +531,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
 
         <div className="hidden w-1/3 items-center justify-end gap-4 lg:flex">
           <p className="shrink-0 text-sm text-muted-foreground">
-            {formatDuration(pos, pos > 3600 ? "hh:mm:ss" : "mm:ss")}
+            {formatDuration(pos, pos >= 3600 ? "hh:mm:ss" : "mm:ss")}
             {" / "}
-            {formatDuration(duration, duration > 3600 ? "hh:mm:ss" : "mm:ss")}
+            {formatDuration(duration, duration >= 3600 ? "hh:mm:ss" : "mm:ss")}
           </p>
 
           <div className="hidden items-center gap-4 xl:flex">

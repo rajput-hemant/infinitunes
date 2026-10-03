@@ -1,7 +1,6 @@
 "use client";
 
-import type { Queue } from "@infinitunes/types";
-import { getImageSrc, getToken } from "@infinitunes/types";
+import { getImageSrc, getToken, removeFromQueue } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
@@ -18,30 +17,22 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { useQueue } from "~/hooks/use-store";
+import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
 import { getHref } from "~/lib/utils";
 
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
 
 export function Queue() {
   const [queue, setQueue] = useQueue();
+  const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
 
-  function removeFromQueue(id: string) {
-    let song: Queue;
+  function removeItem(id: string) {
+    const song = queue.find((item) => item.id === id);
+    const next = removeFromQueue(queue, currentIndex, id);
 
-    setQueue((prev) =>
-      prev.filter((item) => {
-        if (item.id === id) {
-          song = item;
-          return false;
-        }
+    setQueue(next.queue);
+    setCurrentIndex(next.currentIndex);
 
-        return true;
-      }),
-    );
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
     if (song) {
       toast("Removed from queue", {
         description: `Removed "${song.name}" from the queue`,
@@ -139,7 +130,7 @@ export function Queue() {
                     <Button
                       variant="ghost"
                       aria-label={`Remove ${item.name} from queue`}
-                      onClick={() => removeFromQueue(item.id)}
+                      onClick={() => removeItem(item.id)}
                       className="ml-auto size-8 shrink-0 p-0 text-destructive hover:bg-destructive hover:text-white"
                     >
                       <X aria-hidden className="size-4" />

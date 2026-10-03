@@ -112,6 +112,7 @@ export const radioRouter = router({
           next: input.next,
           language: input.lang,
         },
+        cache: false,
       });
 
       return extractSongsFromRadioResponse(result);
@@ -203,6 +204,7 @@ export const radioRouter = router({
             k: 20,
             language: stationLang,
           },
+          cache: false,
         });
         songs = extractSongsFromRadioResponse(songsRes);
       }
