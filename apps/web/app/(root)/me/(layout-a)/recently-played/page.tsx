@@ -1,3 +1,4 @@
+import type { Episode, Song } from "@infinitunes/types";
 import { History } from "lucide-react";
 
 import {
@@ -7,50 +8,49 @@ import {
 } from "~/components/library/library-section";
 import { PlayAllButton } from "~/components/library/play-all-button";
 import { SongList } from "~/components/song-list/song-list";
-import { fetchSongsChunked } from "~/lib/liked-songs";
+import { fetchSongsChunked, orderByIds } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
 export const metadata = {
   title: "Recently Played",
-  description: "Songs you listened to lately.",
+  description: "Songs and episodes you listened to lately.",
 };
 
 export default async function RecentlyPlayedPage() {
   const history = await api.history.list();
-  const ids = history.filter((item) => item.type === "song").map((i) => i.id);
+  const ids = history.map((item) => item.id);
 
   if (!ids.length) {
     return (
       <LibraryEmpty
         icon={History}
         title="Nothing played yet"
-        description="Songs you listen to will show up here, newest first."
+        description="Songs and episodes you listen to will show up here, newest first."
         action={{ href: "/", label: "Find Something to Play" }}
       />
     );
   }
 
-  const fetched = await fetchSongsChunked(ids, (input) =>
+  const fetched = await fetchSongsChunked<Song | Episode>(ids, (input) =>
     api.song.details(input),
   );
 
-  if (!fetched) return <LibraryUnavailable what="recently played songs" />;
+  if (!fetched) return <LibraryUnavailable what="recently played items" />;
 
-  const byId = new Map(fetched.map((song) => [song.id, song]));
-  const songs = ids.flatMap((id) => byId.get(id) ?? []);
+  const items = orderByIds(ids, fetched);
 
   return (
     <div className="space-y-4">
       <LibraryHeading
         title="Recently Played"
-        count={songs.length}
-        noun="song"
-        missing={ids.length - songs.length}
+        count={items.length}
+        noun="item"
+        missing={ids.length - items.length}
       >
-        <PlayAllButton items={songs} />
+        <PlayAllButton items={items} />
       </LibraryHeading>
 
-      <SongList items={songs} />
+      <SongList items={items} />
     </div>
   );
 }

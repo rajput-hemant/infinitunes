@@ -1,8 +1,8 @@
 import { describe, expect, it, spyOn } from "bun:test";
 
-import type { Song } from "@infinitunes/types";
+import type { Episode, Song } from "@infinitunes/types";
 
-import { chunk, fetchSongsChunked } from "../lib/liked-songs";
+import { chunk, fetchSongsChunked, orderByIds } from "../lib/liked-songs";
 
 const song = (id: string) => ({ id }) as Song;
 
@@ -33,5 +33,27 @@ describe("fetchSongsChunked", () => {
     });
     expect(songs).toBeUndefined();
     err.mockRestore();
+  });
+});
+
+describe("recently played mixed lists", () => {
+  it("resolves songs and episodes together and keeps history order", async () => {
+    const episode = (id: string) => ({ id, type: "episode" }) as Episode;
+    const details = async ({ id }: { id: string }) => ({
+      // upstream answers in its own order and drops unknown ids
+      songs: id
+        .split(",")
+        .filter((i) => i !== "gone")
+        .reverse()
+        .map((i) => (i.startsWith("EV") ? episode(i) : song(i))),
+    });
+    const ids = ["EV1", "s1", "gone", "EV2"];
+    const fetched = await fetchSongsChunked<Song | Episode>(ids, details);
+
+    expect(orderByIds(ids, fetched ?? []).map((i) => i.id)).toEqual([
+      "EV1",
+      "s1",
+      "EV2",
+    ]);
   });
 });
