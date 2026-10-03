@@ -92,7 +92,7 @@ describe("local development fixtures", () => {
 
 describe("assertLocalDatabase", () => {
   const ok = (url: string) =>
-    expect(() => assertLocalDatabase(url, undefined)).not.toThrow();
+    expect(() => assertLocalDatabase(url, "development")).not.toThrow();
   const refused = (url: string, env?: string) =>
     expect(() => assertLocalDatabase(url, env)).toThrow("Refusing");
 
