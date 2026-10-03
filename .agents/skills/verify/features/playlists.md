@@ -6,7 +6,7 @@
 
 - Create (`components/playlist/new-playlist-form.tsx`, placeholders `Enter playlist name`, `Enter playlist description`); cap of 10 playlists per user (error `You can only have 10 playlists, please delete one`).
 - Add songs (`add-to-playlist-dialog.tsx`, song menu `Add To Playlist`), remove (`Remove from Playlist`), rename (`rename-playlist-dialog.tsx`), delete (`PlaylistManageMenu`, label `Playlist options`).
-- Pages `/me/playlists` and `/me/playlist/[id]`; sidebar lists user playlists (its row action is a stub).
+- Pages `/me/playlists` and `/me/playlist/[id]`; the sidebar lists user playlists.
 - tRPC procedures in `user.ts`: `getUserPlaylists`, `getPlaylistDetails`, `addSongsToPlaylist`, `removeSongsFromPlaylist`, `renamePlaylist`, `deletePlaylist`, `createNewPlaylist`; cache tag `user_playlists`.
 
 ## How to get to it (user POV)

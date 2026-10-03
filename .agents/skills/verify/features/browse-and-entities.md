@@ -28,4 +28,4 @@ Observable end state: every index and entity route renders real catalogue data w
 
 - Pages fetch upstream at request time; an upstream outage looks like an app 500 (ISSUE-011).
 - `/mix`, `/label`, `/episode` have entity pages but no index; reach them from cards.
-- `proxy.ts` normalizes only names listed in `appRoutes`, which contains `/playlists`, not `/playlist` (ISSUE-006).
+- `proxy.ts` normalizes only names listed in `appRoutes`, which contains `/playlist` (ISSUE-006).

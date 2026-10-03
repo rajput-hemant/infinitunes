@@ -8,7 +8,7 @@
 - tRPC `user.addToFavorites`, `removeFromFavorites`, `getUserFavorites` (`packages/trpc/src/router/user.ts`); first favorite is an atomic upsert (`favorites-concurrency.test.ts`).
 - Types: song, album, playlist, artist, show; stored as arrays in `infinitunes_favorite`.
 - Lists: `/me/liked-songs`, `/me/albums`, `/me/artists`, `/me/shows`.
-- The `Add To Favourite` item in the song-row `More Options` menu is a stub (ISSUE-003).
+- The song-row `More Options` menu has `Add To Favourite` / `Remove From Favourite` (`components/song-list/more-button.tsx`), shown for songs only.
 
 ## How to get to it (user POV)
 
@@ -26,5 +26,5 @@ Observable end state: the favorites row and the library pages agree with each ac
 
 ## Gotchas
 
-- Song likes via the row menu are not implemented; use only what the UI exposes.
+- Song likes go through the row menu item; verify them in `/me/liked-songs`.
 - Check per-user isolation by creating two users and confirming neither sees the other's items.
