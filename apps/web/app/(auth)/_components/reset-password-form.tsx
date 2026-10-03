@@ -3,18 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { resetPasswordSchema } from "@infinitunes/auth/schemas";
 import { Button } from "@infinitunes/ui/components/button";
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-} from "@infinitunes/ui/components/field";
-import { Input } from "@infinitunes/ui/components/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@infinitunes/ui/components/tooltip";
-import { Eye, EyeOff, Key, Loader2 } from "lucide-react";
+import { Key, Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -23,7 +12,9 @@ import type z from "zod";
 
 import { resetPassword } from "~/lib/actions";
 
+import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
+import { PasswordField } from "./password-field";
 
 type FormData = z.infer<typeof resetPasswordSchema>;
 
@@ -34,18 +25,18 @@ const defaultValues: FormData = {
 };
 
 export function ResetPasswordForm() {
-  const [isPassVisible, setIsPassVisible] = React.useState(false);
-  const [isNewPassVisible, setIsNewPassVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const searchParams = useSearchParams();
   const authError = searchParams.get("error");
 
-  if (authError === "OAuthAccountNotLinked") {
-    toast.error("OAuth Account Not Linked", {
-      description: "This account is already linked with another provider.",
-    });
-  }
+  React.useEffect(() => {
+    if (authError === "OAuthAccountNotLinked") {
+      toast.error("OAuth Account Not Linked", {
+        description: "This account is already linked with another provider.",
+      });
+    }
+  }, [authError]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(resetPasswordSchema),
@@ -75,19 +66,12 @@ export function ResetPasswordForm() {
           control={form.control}
           name="email"
           render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">Email</FieldLabel>
-              <div className="relative">
-                <Input
-                  type="email"
-                  disabled={isSubmitting}
-                  placeholder="you@domain.com"
-                  className="shadow-xs"
-                  {...field}
-                />
-              </div>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+            <EmailField
+              field={field}
+              fieldState={fieldState}
+              autoComplete="email"
+              disabled={isSubmitting}
+            />
           )}
         />
 
@@ -95,44 +79,13 @@ export function ResetPasswordForm() {
           control={form.control}
           name="password"
           render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">Password</FieldLabel>
-              <div className="relative">
-                <Input
-                  type={isPassVisible ? "text" : "password"}
-                  disabled={isSubmitting}
-                  placeholder="••••••••••"
-                  className="h-10 pr-8 shadow-xs"
-                  {...field}
-                />
-                <Tooltip>
-                  <TooltipTrigger
-                    delay={150}
-                    aria-label={
-                      isPassVisible ? "Hide Password" : "Show Password"
-                    }
-                    tabIndex={-1}
-                    type="button"
-                    disabled={!field.value}
-                    onClick={() => setIsPassVisible(!isPassVisible)}
-                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    {isPassVisible ? (
-                      <EyeOff className="size-5" />
-                    ) : (
-                      <Eye className="size-5" />
-                    )}
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-                    <p className="text-xs">
-                      {isPassVisible ? "Hide Password" : "Show Password"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+            <PasswordField
+              field={field}
+              fieldState={fieldState}
+              label="Current password"
+              autoComplete="current-password"
+              disabled={isSubmitting}
+            />
           )}
         />
 
@@ -140,44 +93,13 @@ export function ResetPasswordForm() {
           control={form.control}
           name="newPassword"
           render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">New Password</FieldLabel>
-              <div className="relative">
-                <Input
-                  type={isNewPassVisible ? "text" : "password"}
-                  disabled={isSubmitting}
-                  placeholder="••••••••••"
-                  className="h-10 pr-8 shadow-xs"
-                  {...field}
-                />
-                <Tooltip>
-                  <TooltipTrigger
-                    delay={150}
-                    aria-label={
-                      isNewPassVisible ? "Hide Password" : "Show Password"
-                    }
-                    tabIndex={-1}
-                    type="button"
-                    disabled={!field.value}
-                    onClick={() => setIsNewPassVisible(!isNewPassVisible)}
-                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    {isNewPassVisible ? (
-                      <EyeOff className="size-5" />
-                    ) : (
-                      <Eye className="size-5" />
-                    )}
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-                    <p className="text-xs">
-                      {isNewPassVisible ? "Hide Password" : "Show Password"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+            <PasswordField
+              field={field}
+              fieldState={fieldState}
+              label="New password"
+              autoComplete="new-password"
+              disabled={isSubmitting}
+            />
           )}
         />
 

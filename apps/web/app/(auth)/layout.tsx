@@ -25,8 +25,8 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
   const imageUrl = `/images/artists/${seededIndex(today, 10)}.png`;
 
   return (
-    <div className="grid h-screen lg:grid-cols-2">
-      <div className="hidden h-full bg-zinc-900 p-10 text-white dark:border-r lg:flex lg:flex-col lg:justify-between">
+    <div className="grid min-h-dvh lg:grid-cols-2">
+      <div className="hidden bg-zinc-900 p-10 text-white dark:border-r lg:flex lg:flex-col lg:justify-between">
         <Link
           href="/"
           className={cn(
@@ -42,8 +42,8 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
           src={imageUrl}
           width={1280}
           height={640}
-          alt="Artist Image"
-          className="mx-auto max-w-md object-cover duration-1000 animate-in zoom-in-50"
+          alt=""
+          className="mx-auto max-w-md object-cover duration-1000 animate-in zoom-in-50 motion-reduce:animate-none"
         />
 
         <div className="mb-20 text-center 2xl:mb-32">
@@ -55,7 +55,13 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
       <AuthModeToggle />
 
       <div className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[350px] sm:p-0">
-        <Icons.Logo className="mx-auto size-14 drop-shadow-sm" />
+        <Link
+          href="/"
+          aria-label="Infinitunes home"
+          className="mx-auto rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <Icons.Logo className="size-14 drop-shadow-sm" />
+        </Link>
         {children}
         <p className="mx-auto px-10 text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}
