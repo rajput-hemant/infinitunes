@@ -46,19 +46,6 @@ export function absoluteUrl(path: string) {
         // development
         return `http://localhost:${process.env.PORT ?? 3000}${path}`;
     }
-  } else if (process.env.NETLIFY) {
-    switch (process.env.CONTEXT) {
-      case "production":
-        return `${siteConfig.url}${path}`;
-
-      case "deploy-preview":
-      case "branch-deploy":
-        return `https://${process.env.DEPLOY_PRIME_URL}${path}`;
-
-      default:
-        // development
-        return `http://localhost:${process.env.PORT ?? 3000}${path}`;
-    }
   } else {
     return `${siteConfig.url}${path}`;
   }

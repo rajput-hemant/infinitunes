@@ -42,10 +42,10 @@ export async function updateUser(data: {
   email?: string;
   currentPassword?: string;
 }) {
-  return await api.user.updateUser(data);
+  return api.user.updateUser(data);
 }
 
 /** `password` is omitted by accounts that have none (fresh-session check). */
 export async function deleteUser(password?: string) {
-  return await api.user.deleteUser({ password });
+  return api.user.deleteUser({ password });
 }
