@@ -31,15 +31,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 
 ## Build / delivery sharp edges
 
-- Env values live in one root file (`.env`, overridden by `.env.local`; copy `.env.example`).
-  Every entry point loads it explicitly with `bun --env-file` (`with-env` scripts in the root,
-  `apps/web` and `packages/db`); do not create `apps/web/.env*` value files. Turbo and T3 Env
-  never load files themselves.
-- Env schemas are package-owned (`packages/{auth,db,trpc}/src/env.ts`, exported as `./env`)
-  and composed in `apps/web/lib/env.ts` via T3 Env `extends`, which runs at build time and
-  fails without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
-- Turbo filters env vars: any build/runtime var must be listed in `turbo.json` `globalEnv`
-  (hashed) or `globalPassThroughEnv` (not hashed) to reach `next build`.
+- Env validation (`apps/web/lib/env.ts`) runs at build time and fails
+  without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
+- Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
+  must be listed in `turbo.json` `globalEnv` or `globalPassThroughEnv` to reach `next build`.
 - Turbo `outputs` are package-relative; the web build output is `.next/**`.
 - Docker is local-dev only (`docker-compose.yml` for Postgres/Redis); there is no
   production image, standalone output or `IS_DOCKER` flag. Production is Vercel.
