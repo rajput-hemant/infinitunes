@@ -12,6 +12,7 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
+import { findQueueIndex } from "~/lib/queue-position";
 import { api } from "~/lib/trpc/client";
 
 type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
@@ -19,10 +20,12 @@ type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   token: string;
   /** Season to queue when `type` is "show"; the first season when omitted. */
   season?: number;
+  /** Set when the button sits on a queue row: jump to that exact entry. */
+  queueItemId?: string;
 };
 
 export function PlayButton(props: PlayButtonProps) {
-  const { type, token, season, children, ...restProps } = props;
+  const { type, token, season, queueItemId, children, ...restProps } = props;
 
   const searchParams = useSearchParams();
 
@@ -36,8 +39,10 @@ export function PlayButton(props: PlayButtonProps) {
   const sort = (searchParams.get("sort") as Sort) ?? "desc";
 
   async function playHandler() {
-    const songIndex = initialQueue.findIndex(
-      (song) => token === getToken(song.url),
+    const songIndex = findQueueIndex(
+      initialQueue,
+      { token, queueItemId },
+      getToken,
     );
 
     if (songIndex !== -1) {
