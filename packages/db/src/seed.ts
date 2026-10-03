@@ -3,11 +3,7 @@ import { and, eq, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-import {
-  LOCAL_DEV_INFINITUNES,
-  LOCAL_DEV_REDIS,
-  LOCAL_DEV_USER,
-} from "./fixtures/local-dev-user";
+import { getLocalDevFixture } from "./fixtures/local-dev-user";
 import { assertLocalDatabase } from "./fixtures/local-guard";
 import * as schema from "./schema";
 import { betterAuthAccounts, favorites, myPlaylists, users } from "./schema";
@@ -22,6 +18,13 @@ async function seed() {
 
   assertLocalDatabase(databaseUrl);
 
+  const fixture = getLocalDevFixture();
+  const {
+    user: localDevUser,
+    infinitunes: localDevInfinitunes,
+    redis: localDevRedis,
+  } = fixture;
+
   console.log(
     `[seed] Connecting to database: ${databaseUrl.replace(/:[^:@]*@/, ":***@")}`,
   );
@@ -30,7 +33,7 @@ async function seed() {
   const db = drizzle(pgClient, { schema });
 
   try {
-    const hashedPassword = await hash(LOCAL_DEV_USER.password, 10);
+    const hashedPassword = await hash(localDevUser.password, 10);
 
     await db.transaction(async (tx) => {
       // 1. Seed the canonical shared user; never adopt a different account
@@ -39,15 +42,15 @@ async function seed() {
         .from(users)
         .where(
           or(
-            eq(users.id, LOCAL_DEV_USER.id),
-            eq(users.email, LOCAL_DEV_USER.email),
+            eq(users.id, localDevUser.id),
+            eq(users.email, localDevUser.email),
           ),
         );
 
       for (const existing of existingUsers) {
         if (
-          existing.id !== LOCAL_DEV_USER.id ||
-          existing.email !== LOCAL_DEV_USER.email
+          existing.id !== localDevUser.id ||
+          existing.email !== localDevUser.email
         ) {
           throw new Error(
             `[seed] Refusing to seed: fixture id/email collides with a different user (id ${existing.id}, email ${existing.email}).`,
@@ -55,19 +58,19 @@ async function seed() {
         }
       }
 
-      const targetUserId = LOCAL_DEV_USER.id;
+      const targetUserId = localDevUser.id;
 
       if (existingUsers.length === 0) {
         console.log(
-          `[seed] Creating shared local user (${LOCAL_DEV_USER.email})...`,
+          `[seed] Creating shared local user (${localDevUser.email})...`,
         );
         await tx.insert(users).values({
-          id: LOCAL_DEV_USER.id,
-          email: LOCAL_DEV_USER.email,
-          name: LOCAL_DEV_USER.name,
+          id: localDevUser.id,
+          email: localDevUser.email,
+          name: localDevUser.name,
           password: hashedPassword,
-          betterAuthName: LOCAL_DEV_USER.name,
-          emailVerifiedBoolean: LOCAL_DEV_USER.emailVerified,
+          betterAuthName: localDevUser.name,
+          emailVerifiedBoolean: localDevUser.emailVerified,
           emailVerified: new Date(),
         });
       } else {
@@ -102,7 +105,7 @@ async function seed() {
       }
 
       // 3. Seed deterministic Infinitunes playlists
-      for (const pl of LOCAL_DEV_INFINITUNES.playlists) {
+      for (const pl of localDevInfinitunes.playlists) {
         const existingPl = await tx
           .select()
           .from(myPlaylists)
@@ -133,13 +136,13 @@ async function seed() {
           `[seed] Creating deterministic favorites for user ${targetUserId}...`,
         );
         await tx.insert(favorites).values({
-          id: LOCAL_DEV_INFINITUNES.favorites.id,
+          id: localDevInfinitunes.favorites.id,
           userId: targetUserId,
-          songs: LOCAL_DEV_INFINITUNES.favorites.songs,
-          albums: LOCAL_DEV_INFINITUNES.favorites.albums,
-          playlists: LOCAL_DEV_INFINITUNES.favorites.playlists,
-          artists: LOCAL_DEV_INFINITUNES.favorites.artists,
-          podcasts: LOCAL_DEV_INFINITUNES.favorites.podcasts,
+          songs: localDevInfinitunes.favorites.songs,
+          albums: localDevInfinitunes.favorites.albums,
+          playlists: localDevInfinitunes.favorites.playlists,
+          artists: localDevInfinitunes.favorites.artists,
+          podcasts: localDevInfinitunes.favorites.podcasts,
         });
       } else {
         console.log("[seed] User favorites already exist; preserving.");
@@ -148,9 +151,9 @@ async function seed() {
 
     // 5. Check Redis reachability (only actual required data, no fake auth)
     const redisRestUrl =
-      process.env.UPSTASH_REDIS_REST_URL || LOCAL_DEV_REDIS.restUrl;
+      process.env.UPSTASH_REDIS_REST_URL || localDevRedis.restUrl;
     const redisRestToken =
-      process.env.UPSTASH_REDIS_REST_TOKEN || LOCAL_DEV_REDIS.restToken;
+      process.env.UPSTASH_REDIS_REST_TOKEN || localDevRedis.restToken;
 
     if (redisRestUrl) {
       try {

@@ -38,10 +38,7 @@ export async function deletePlaylist(playlistId: string) {
   return playlist;
 }
 
-export async function updateUser(data: {
-  name?: string;
-  email?: string;
-}) {
+export async function updateUser(data: { name?: string; email?: string }) {
   return await api.user.updateUser(data);
 }
 

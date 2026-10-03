@@ -26,10 +26,7 @@ async function createUserWithCaller(db: ReturnType<typeof createClient>) {
   return { caller, userId: user.id };
 }
 
-async function readSongs(
-  db: ReturnType<typeof createClient>,
-  userId: string,
-) {
+async function readSongs(db: ReturnType<typeof createClient>, userId: string) {
   const row = await db.query.favorites.findFirst({
     where: eq(favorites.userId, userId),
   });

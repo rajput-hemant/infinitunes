@@ -1,55 +1,65 @@
 import { describe, expect, it } from "bun:test";
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
-  DEFAULT_LOCAL_DEV_FIXTURE,
   getLocalDevFixture,
   parseLocalDevFixture,
-  LOCAL_DEV_DATABASE,
-  LOCAL_DEV_FIXTURE,
-  LOCAL_DEV_INFINITUNES,
-  LOCAL_DEV_REDIS,
-  LOCAL_DEV_USER,
 } from "../src/fixtures/local-dev-user";
 import { assertLocalDatabase } from "../src/fixtures/local-guard";
 
+const canonicalFixturePath = join(
+  import.meta.dirname,
+  "..",
+  "..",
+  "..",
+  "local-dev",
+  "fixtures.json",
+);
+const canonicalFixture = JSON.parse(
+  readFileSync(canonicalFixturePath, "utf-8"),
+);
+
 describe("local development fixtures", () => {
-  it("exports canonical shared user credentials", () => {
-    expect(LOCAL_DEV_USER.id).toBe("a0000000-0000-4000-8000-000000000001");
-    expect(LOCAL_DEV_USER.email).toBe("local@example.test");
-    expect(LOCAL_DEV_USER.password).toBe("LocalDev123!");
-    expect(LOCAL_DEV_USER.name).toBe("Local Developer");
-    expect(LOCAL_DEV_USER.emailVerified).toBe(true);
+  it("parses canonical shared user credentials", () => {
+    const fixture = parseLocalDevFixture(canonicalFixture);
+    expect(fixture.user.id).toBe("a0000000-0000-4000-8000-000000000001");
+    expect(fixture.user.email).toBe("local@example.test");
+    expect(fixture.user.password).toBe("LocalDev123!");
+    expect(fixture.user.name).toBe("Local Developer");
+    expect(fixture.user.emailVerified).toBe(true);
   });
 
-  it("exports Infinitunes deterministic playlists and favorites", () => {
-    expect(LOCAL_DEV_INFINITUNES.playlists.length).toBeGreaterThan(0);
-    expect(LOCAL_DEV_INFINITUNES.playlists[0].id).toBe(
+  it("parses Infinitunes deterministic playlists and favorites", () => {
+    const fixture = parseLocalDevFixture(canonicalFixture);
+    expect(fixture.infinitunes.playlists.length).toBeGreaterThan(0);
+    expect(fixture.infinitunes.playlists[0].id).toBe(
       "b0000000-0000-4000-8000-000000000001",
     );
-    expect(LOCAL_DEV_INFINITUNES.favorites.id).toBe(
+    expect(fixture.infinitunes.favorites.id).toBe(
       "c0000000-0000-4000-8000-000000000001",
     );
   });
 
-  it("exports canonical database and redis configs", () => {
-    expect(LOCAL_DEV_DATABASE.port).toBe(5432);
-    expect(LOCAL_DEV_DATABASE.name).toBe("local_platforms");
-    expect(LOCAL_DEV_REDIS.port).toBe(6379);
-    expect(LOCAL_DEV_REDIS.restUrl).toBe("http://127.0.0.1:8079");
-    expect(LOCAL_DEV_REDIS.restToken).toBe("localdevtoken");
+  it("parses canonical database and redis configs", () => {
+    const fixture = parseLocalDevFixture(canonicalFixture);
+    expect(fixture.database.port).toBe(5432);
+    expect(fixture.database.name).toBe("local_platforms");
+    expect(fixture.redis.port).toBe(6379);
+    expect(fixture.redis.restUrl).toBe("http://127.0.0.1:8079");
+    expect(fixture.redis.restToken).toBe("localdevtoken");
   });
 
   it("getLocalDevFixture returns the canonical fixture when no path is given", () => {
-    expect(getLocalDevFixture(undefined)).toBe(DEFAULT_LOCAL_DEV_FIXTURE);
+    const fixture = getLocalDevFixture(undefined);
+    expect(fixture.user.email).toBe("local@example.test");
   });
 
   it("loads a valid supplied config", () => {
     const dir = mkdtempSync(join(tmpdir(), "fixture-"));
     const file = join(dir, "f.json");
-    writeFileSync(file, JSON.stringify(DEFAULT_LOCAL_DEV_FIXTURE));
+    writeFileSync(file, JSON.stringify(canonicalFixture));
     expect(getLocalDevFixture(file).user.email).toBe("local@example.test");
   });
 
@@ -72,7 +82,7 @@ describe("local development fixtures", () => {
   });
 
   it("rejects a mistyped field", () => {
-    const broken = structuredClone(DEFAULT_LOCAL_DEV_FIXTURE) as unknown as {
+    const broken = structuredClone(canonicalFixture) as unknown as {
       user: { emailVerified: unknown };
     };
     broken.user.emailVerified = "yes";

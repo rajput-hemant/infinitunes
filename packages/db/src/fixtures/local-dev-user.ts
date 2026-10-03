@@ -52,8 +52,7 @@ export interface LocalDevFixture {
   infinitunes: LocalDevInfinitunes;
 }
 
-export const DEFAULT_LOCAL_DEV_FIXTURE: LocalDevFixture =
-  parseLocalDevFixture(canonicalFixture);
+const DEFAULT_LOCAL_DEV_FIXTURE = parseLocalDevFixture(canonicalFixture);
 
 type Rec = Record<string, unknown>;
 
@@ -183,9 +182,3 @@ export function getLocalDevFixture(
   }
   return parseLocalDevFixture(parsed);
 }
-
-export const LOCAL_DEV_FIXTURE = getLocalDevFixture();
-export const LOCAL_DEV_USER = LOCAL_DEV_FIXTURE.user;
-export const LOCAL_DEV_INFINITUNES = LOCAL_DEV_FIXTURE.infinitunes;
-export const LOCAL_DEV_DATABASE = LOCAL_DEV_FIXTURE.database;
-export const LOCAL_DEV_REDIS = LOCAL_DEV_FIXTURE.redis;

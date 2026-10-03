@@ -74,9 +74,7 @@ export default async function MyPlaylistsPage(props: Props) {
   const imageSrcs = playlistSongs
     .slice(0, 4)
     .map((song) => getImageSrc(song.image, "medium"))
-    .concat(
-      playlistSongs.length === 0 ? ["/images/placeholder/song.jpg"] : [],
-    );
+    .concat(playlistSongs.length === 0 ? ["/images/placeholder/song.jpg"] : []);
 
   return (
     <div className="space-y-4">

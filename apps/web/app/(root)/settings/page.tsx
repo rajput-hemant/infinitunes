@@ -4,8 +4,8 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 
-import { ProfileForm } from "./_components/profile-form";
 import { PasskeySettings } from "./_components/passkey-settings";
+import { ProfileForm } from "./_components/profile-form";
 
 export const metadata = {
   title: "Profile Settings",
