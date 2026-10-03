@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it, mock } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it, mock } from "bun:test";
 
 import * as betterAuthCookies from "better-auth/cookies";
 import type { NextRequest } from "next/server";
@@ -30,18 +30,27 @@ mock.module("next/server", () => ({
 
 process.env.SKIP_ENV_VALIDATION = "true";
 process.env.ENABLE_RATE_LIMITING = "false";
+const originalNodeEnv = process.env.NODE_ENV;
 process.env.NODE_ENV = "production";
+
+// bun runs every test file in one process; do not leak NODE_ENV=production
+// into unrelated suites (it broke `assertLocalDatabase` under `bun run test`).
+afterAll(() => {
+  if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
+  else process.env.NODE_ENV = originalNodeEnv;
+});
 
 function createNextRequest(
   href: string,
-  method: "GET" | "OPTIONS" = "GET",
+  method: "GET" | "POST" | "OPTIONS" = "GET",
+  headers: Record<string, string> = {},
 ): NextRequest {
   const nextUrl = new URL(href);
 
   return {
     nextUrl,
     method,
-    headers: new Headers(),
+    headers: new Headers(headers),
     ip: undefined,
   } as NextRequest;
 }
@@ -113,6 +122,72 @@ describe("proxy detail route normalization", () => {
       createNextRequest("http://localhost:3000/playlist/foo/bar"),
     );
 
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("proxy /api/trpc origin check", () => {
+  let proxy: typeof import("../proxy").proxy;
+  const url = "http://localhost:3000/api/trpc/song.details";
+  const call = (
+    headers: Record<string, string>,
+    method: "POST" | "OPTIONS" = "POST",
+  ) => proxy(createNextRequest(url, method, headers));
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../proxy"));
+  });
+
+  it("rejects a cross-origin Origin header", async () => {
+    const res = await call({
+      origin: "https://evil.example",
+      host: "localhost:3000",
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it("rejects a cross-origin Referer when Origin is absent", async () => {
+    const res = await call({
+      referer: "https://evil.example/page",
+      host: "localhost:3000",
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it("rejects a malformed Origin instead of throwing", async () => {
+    const res = await call({ origin: "not a url", host: "localhost:3000" });
+    expect(res.status).toBe(403);
+  });
+
+  it("does not let a lookalike host suffix pass", async () => {
+    const res = await call({
+      origin: "http://localhost:3000.evil.example",
+      host: "localhost:3000",
+    });
+    expect(res.status).toBe(403);
+  });
+
+  it("accepts same-origin Origin and Referer", async () => {
+    const withOrigin = await call({
+      origin: "http://localhost:3000",
+      host: "localhost:3000",
+    });
+    const withReferer = await call({
+      referer: "http://localhost:3000/search?q=x",
+      host: "localhost:3000",
+    });
+    expect(withOrigin.status).toBe(200);
+    expect(withReferer.status).toBe(200);
+  });
+
+  it("passes OPTIONS preflight through without an origin check", async () => {
+    const res = await call({ origin: "https://evil.example" }, "OPTIONS");
+    expect(res.status).toBe(200);
+  });
+
+  it("currently allows requests with neither Origin nor Referer (ISSUE-010)", async () => {
+    const res = await call({ host: "localhost:3000" });
     expect(res.status).toBe(200);
   });
 });
