@@ -51,13 +51,10 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
       {!deferredQuery.length && topSearch}
 
       {isLoading && (
-        <div
-          role="status"
-          className="text-center text-xs text-muted-foreground"
-        >
+        <output className="block text-center text-xs text-muted-foreground">
           <Loader2 aria-hidden className="mr-2 inline-block animate-spin" />{" "}
           Loading Results
-        </div>
+        </output>
       )}
 
       {searchResult && (

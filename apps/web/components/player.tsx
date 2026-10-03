@@ -321,8 +321,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   });
 
   return (
-    <div
-      role="region"
+    <section
       aria-label="Player"
       className={cn(
         "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0",
@@ -614,7 +613,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 

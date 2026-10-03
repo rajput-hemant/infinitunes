@@ -117,12 +117,9 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
         {deferredQuery.length ? (
           isLoading ? (
-            <div
-              role="status"
-              className="m-auto aspect-square h-16 animate-spin rounded-full border-y-2 border-primary py-10 lg:h-32"
-            >
+            <output className="m-auto block aspect-square h-16 animate-spin rounded-full border-y-2 border-primary py-10 lg:h-32">
               <span className="sr-only">Loading Results</span>
-            </div>
+            </output>
           ) : (
             result && <SearchAll query={query} data={result} />
           )
