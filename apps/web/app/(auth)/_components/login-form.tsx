@@ -4,18 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@infinitunes/auth/client";
 import { loginSchema } from "@infinitunes/auth/schemas";
 import { Button } from "@infinitunes/ui/components/button";
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-} from "@infinitunes/ui/components/field";
-import { Input } from "@infinitunes/ui/components/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@infinitunes/ui/components/tooltip";
-import { Eye, EyeOff, Fingerprint, Loader2, Mail } from "lucide-react";
+import { Fingerprint, Loader2, Mail } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
@@ -25,7 +14,9 @@ import type z from "zod";
 
 import { asRoute } from "~/lib/utils";
 
+import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
+import { PasswordField } from "./password-field";
 
 type FormData = z.infer<typeof loginSchema>;
 
@@ -36,7 +27,6 @@ const defaultValues: FormData = {
 
 export function LoginForm() {
   const router = useRouter();
-  const [isPassVisible, setIsPassVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isPasskeyLoading, setIsPasskeyLoading] = React.useState(false);
 
@@ -45,11 +35,13 @@ export function LoginForm() {
     searchParams.get("callbackUrl") || searchParams.get("redirect") || "/";
   const authError = searchParams.get("error");
 
-  if (authError === "OAuthAccountNotLinked") {
-    toast.error("OAuth Account Not Linked", {
-      description: "This account is already linked with another provider.",
-    });
-  }
+  React.useEffect(() => {
+    if (authError === "OAuthAccountNotLinked") {
+      toast.error("OAuth Account Not Linked", {
+        description: "This account is already linked with another provider.",
+      });
+    }
+  }, [authError]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(loginSchema),
@@ -116,20 +108,12 @@ export function LoginForm() {
           control={form.control}
           name="email"
           render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">Email</FieldLabel>
-              <div className="relative">
-                <Input
-                  type="email"
-                  autoComplete="email webauthn"
-                  disabled={isDisabled}
-                  placeholder="you@domain.com"
-                  className="h-10 pr-8 shadow-xs"
-                  {...field}
-                />
-              </div>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+            <EmailField
+              field={field}
+              fieldState={fieldState}
+              autoComplete="email webauthn"
+              disabled={isDisabled}
+            />
           )}
         />
 
@@ -137,45 +121,13 @@ export function LoginForm() {
           control={form.control}
           name="password"
           render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">Password</FieldLabel>
-              <div className="relative">
-                <Input
-                  type={isPassVisible ? "text" : "password"}
-                  autoComplete="current-password webauthn"
-                  disabled={isDisabled}
-                  placeholder="••••••••••"
-                  className="h-10 pr-8 shadow-xs"
-                  {...field}
-                />
-                <Tooltip>
-                  <TooltipTrigger
-                    delay={150}
-                    aria-label={
-                      isPassVisible ? "Hide Password" : "Show Password"
-                    }
-                    tabIndex={-1}
-                    type="button"
-                    disabled={!field.value}
-                    onClick={() => setIsPassVisible(!isPassVisible)}
-                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    {isPassVisible ? (
-                      <EyeOff className="size-5" />
-                    ) : (
-                      <Eye className="size-5" />
-                    )}
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-                    <p className="text-xs">
-                      {isPassVisible ? "Hide Password" : "Show Password"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+            <PasswordField
+              field={field}
+              fieldState={fieldState}
+              label="Password"
+              autoComplete="current-password webauthn"
+              disabled={isDisabled}
+            />
           )}
         />
 
@@ -213,7 +165,7 @@ export function LoginForm() {
       <p className="mx-auto mt-2 text-xs text-muted-foreground hover:text-foreground">
         <Link
           href="/reset-password"
-          className="underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-hidden"
+          className="inline-block py-2 underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-hidden"
         >
           Forgot password?
         </Link>
