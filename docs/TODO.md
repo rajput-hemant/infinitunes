@@ -33,6 +33,9 @@ Found while polishing library and player. Priority is impact on users; none are 
 - [ ] Low: no shadcn `Empty` or `Alert` component is installed in `packages/ui`; `components/library/library-section.tsx` composes the existing tokens and `Button` instead. Add them with the shadcn CLI (explicit approval, since it writes to `packages/ui`) and swap the wrapper internals.
 - [ ] Low: other pages still repeat the gradient heading and dashed empty-state markup (for example search, settings); reuse `LibraryHeading`/`LibraryEmpty` or extract a general version.
 - [ ] Low: the liked-songs list and the other library tabs have no sort or filter, and no unlike action at the row level on mobile (the heart is desktop only). Needs a product decision.
+- [ ] Low: library `error.tsx` uses `reset()`, which may not re-fetch a failed server component; Next documents `unstable_retry` for that. Check the installed docs and align the app's error boundaries (inherited convention). Uncertain, not reproduced.
+- [ ] Low: partial failures in liked albums/playlists/artists/podcasts render a shorter list with a count that understates the saved total; show a "some items could not load" note. `song.details` failure in liked songs is swallowed with no server-side log.
+- [ ] Low: tab label "Your Playlists" differs from the page heading "My Playlists"; pick one. Mobile previous/next are about 32px, below a 44px touch target.
 - [ ] Non-design: liked songs fetch all ids in one `song.details` call; if upstream rejects one id the whole list fails. Fetch in chunks and tolerate partial results (backend/query logic).
 
 ## Product
