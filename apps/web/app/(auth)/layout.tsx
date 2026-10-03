@@ -47,14 +47,14 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
         />
 
         <div className="mb-20 text-center 2xl:mb-32">
-          <h2 className="font-heading text-5xl">All Your Music.</h2>
+          <p className="font-heading text-5xl">All Your Music.</p>
           <em className="text-2xl text-muted-foreground">Anytime, anywhere.</em>
         </div>
       </div>
 
       <AuthModeToggle />
 
-      <div className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[350px] sm:p-0">
+      <main className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[350px] sm:p-0">
         <Link
           href="/"
           aria-label="Infinitunes home"
@@ -80,7 +80,7 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
           </Link>
           .
         </p>
-      </div>
+      </main>
     </div>
   );
 }

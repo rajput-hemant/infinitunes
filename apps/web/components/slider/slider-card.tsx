@@ -93,7 +93,7 @@ export function SliderCard(props: SliderCardProps) {
           <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
 
           {!hidePlayButton && (
-            <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-linear-to-b lg:group-hover:flex">
+            <div className="absolute inset-0 hidden from-transparent to-black group-focus-within:bg-linear-to-b group-hover:bg-linear-to-b lg:group-focus-within:flex lg:group-hover:flex">
               <PlayButton
                 aria-label={`Play ${name}`}
                 type={type}
@@ -117,11 +117,9 @@ export function SliderCard(props: SliderCardProps) {
                 className="mx-auto flex max-w-fit min-w-0 items-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 {isExplicit && (
-                  <Badge
-                    aria-label="Explicit"
-                    className="mr-1 rounded px-1 py-0 font-bold duration-0"
-                  >
-                    E
+                  <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
+                    <span aria-hidden="true">E</span>
+                    <span className="sr-only">Explicit</span>
                   </Badge>
                 )}
                 <span className="truncate">{name}</span>
@@ -129,11 +127,9 @@ export function SliderCard(props: SliderCardProps) {
             ) : (
               <div className="mx-auto flex max-w-fit items-center">
                 {isExplicit && (
-                  <Badge
-                    aria-label="Explicit"
-                    className="mr-1 rounded px-1 py-0 font-bold duration-0"
-                  >
-                    E
+                  <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
+                    <span aria-hidden="true">E</span>
+                    <span className="sr-only">Explicit</span>
                   </Badge>
                 )}
                 <span className="truncate">{name}</span>

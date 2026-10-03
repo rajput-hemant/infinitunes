@@ -143,11 +143,9 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           className="flex min-w-0 items-center justify-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:justify-start lg:text-start"
         >
           {getExplicit(item) && (
-            <Badge
-              aria-label="Explicit"
-              className="mr-2 shrink-0 rounded px-1 py-0 font-bold"
-            >
-              E
+            <Badge className="mr-2 shrink-0 rounded px-1 py-0 font-bold">
+              <span aria-hidden="true">E</span>
+              <span className="sr-only">Explicit</span>
             </Badge>
           )}
           <span className="truncate">{title}</span>

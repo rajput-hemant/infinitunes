@@ -28,7 +28,10 @@ export function MobileNav({ user }: Props) {
   );
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] items-start justify-between border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden">
+    <nav
+      aria-label="Primary"
+      className="fixed inset-x-0 bottom-0 z-50 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] items-start justify-between border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
+    >
       {filteredNavItems.slice().map(({ label, icon: Icon, href }) => {
         const isActive = href === pathname;
 

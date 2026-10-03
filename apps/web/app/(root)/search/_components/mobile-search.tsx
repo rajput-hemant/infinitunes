@@ -31,10 +31,16 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
 
   return (
     <>
+      <h1 className="sr-only">Search</h1>
+
       <div className="relative mx-auto max-w-md">
-        <Search className="absolute left-2 top-3 size-4 text-muted-foreground" />
+        <Search
+          aria-hidden
+          className="absolute left-2 top-3 size-4 text-muted-foreground"
+        />
 
         <Input
+          aria-label="Search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search"
@@ -45,8 +51,12 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
       {!deferredQuery.length && topSearch}
 
       {isLoading && (
-        <div className="text-center text-xs text-muted-foreground">
-          <Loader2 className="mr-2 inline-block animate-spin" /> Loading Results
+        <div
+          role="status"
+          className="text-center text-xs text-muted-foreground"
+        >
+          <Loader2 aria-hidden className="mr-2 inline-block animate-spin" />{" "}
+          Loading Results
         </div>
       )}
 
