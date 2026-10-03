@@ -1,12 +1,22 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 import { db } from "@infinitunes/db";
-import { betterAuthAccounts, users } from "@infinitunes/db/schema";
+import {
+  betterAuthAccounts,
+  betterAuthSessions,
+  myPlaylists,
+  users,
+} from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
 import { getTableName } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
 type TestUser = { id: string; email: string; password: string | null };
+type Write = {
+  table: string;
+  values: Record<string, unknown>;
+  where: unknown[];
+};
 type TestAccount = {
   id: string;
   userId: string;
@@ -19,12 +29,9 @@ const state: {
   playlist: { id: string; userId: string; songs: string[] } | null;
   user: TestUser | null;
   accounts: TestAccount[];
-  updates: {
-    table: string;
-    values: Record<string, unknown>;
-    where: unknown[];
-  }[];
+  updates: Write[];
   inserts: { table: string; values: Record<string, unknown> }[];
+  deletes: { table: string; where: unknown[] }[];
   updateError: Error | null;
   lookups: string[];
 } = {
@@ -33,6 +40,7 @@ const state: {
   accounts: [],
   updates: [],
   inserts: [],
+  deletes: [],
   updateError: null,
   lookups: [],
 };
@@ -82,18 +90,37 @@ const fakeDb = {
       },
     },
   },
-  update: (table: typeof users | typeof betterAuthAccounts) => ({
+  update: (
+    table: typeof users | typeof betterAuthAccounts | typeof myPlaylists,
+  ) => ({
     set: (values: Record<string, unknown>) => ({
-      where: async (where: Parameters<PgDialect["sqlToQuery"]>[0]) => {
-        if (state.updateError) throw state.updateError;
-        const { params } = new PgDialect().sqlToQuery(where);
-        state.updates.push({
-          table: getTableName(table),
-          values,
-          where: params,
+      where: (where: Parameters<PgDialect["sqlToQuery"]>[0]) => {
+        const done = (async () => {
+          if (state.updateError) throw state.updateError;
+          const { params } = new PgDialect().sqlToQuery(where);
+          state.updates.push({
+            table: getTableName(table),
+            values,
+            where: params,
+          });
+        })();
+        return Object.assign(done, {
+          returning: async () => {
+            await done;
+            return [{ ...state.playlist, ...values }];
+          },
         });
       },
     }),
+  }),
+  delete: (table: typeof betterAuthSessions | typeof users) => ({
+    where: (where: Parameters<PgDialect["sqlToQuery"]>[0]) => {
+      const { params } = new PgDialect().sqlToQuery(where);
+      state.deletes.push({ table: getTableName(table), where: params });
+      return Object.assign(Promise.resolve(), {
+        returning: async () => (state.user ? [state.user] : []),
+      });
+    },
   }),
   insert: (table: typeof betterAuthAccounts) => ({
     values: async (values: Record<string, unknown>) => {
@@ -105,7 +132,8 @@ const fakeDb = {
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));
 
 const { appRouter } = await import("../src/root");
-const { removeSongAtPlaylistIndex } = await import("../src/router/user");
+const { PLAYLIST_MAX_SONGS, removeSongAtPlaylistIndex } =
+  await import("../src/router/user");
 const { createCallerFactory } = await import("../src/trpc");
 
 describe("removeSongAtPlaylistIndex", () => {
@@ -143,6 +171,7 @@ describe("user router authorization", () => {
     state.accounts = [];
     state.updates = [];
     state.inserts = [];
+    state.deletes = [];
     state.updateError = null;
     state.lookups = [];
   });
@@ -155,11 +184,11 @@ describe("user router authorization", () => {
     });
   });
 
-  it("keeps password reset callable without a session", async () => {
+  it("keeps the logged-out reset flow callable without a session", async () => {
     const caller = createCallerFactory(appRouter)({ db, session: null });
 
     await expect(
-      caller.user.resetPassword({
+      caller.user.resetPasswordAnonymous({
         email: "user@example.com",
         password: "CurrentPassword1!",
         newPassword: "NewPassword2!",
@@ -174,7 +203,7 @@ describe("user router authorization", () => {
     const caller = createCallerFactory(appRouter)({ db, session: null });
     const attempt = () =>
       caller.user
-        .resetPassword({
+        .resetPasswordAnonymous({
           email: "user@example.com",
           password: "WrongPassword1!",
           newPassword: "NewPassword2!",
@@ -261,9 +290,20 @@ describe("user router authorization", () => {
       session: { user: { id: "user-123" } },
     });
 
-    await caller.user.updateUser({ email: "New@Example.COM" });
+    state.user = {
+      id: "user-123",
+      email: "old@example.com",
+      password: await hash("CurrentPassword1!", 10),
+    };
 
-    expect(state.updates[0]?.values).toEqual({ email: "new@example.com" });
+    await caller.user.updateUser({
+      email: "New@Example.COM",
+      currentPassword: "CurrentPassword1!",
+    });
+
+    expect(state.updates[0]?.values).toMatchObject({
+      email: "new@example.com",
+    });
   });
 
   it("omits the password column from the updateUser return value", async () => {
@@ -292,8 +332,17 @@ describe("user router authorization", () => {
       session: { user: { id: "user-123" } },
     });
 
+    state.user = {
+      id: "user-123",
+      email: "old@example.com",
+      password: await hash("CurrentPassword1!", 10),
+    };
+
     await expect(
-      caller.user.updateUser({ email: "taken@example.com" }),
+      caller.user.updateUser({
+        email: "taken@example.com",
+        currentPassword: "CurrentPassword1!",
+      }),
     ).rejects.toMatchObject({
       code: "CONFLICT",
       message: "That email is already in use",
@@ -317,7 +366,7 @@ describe("user router authorization", () => {
     ];
     const caller = createCallerFactory(appRouter)({ db, session: null });
 
-    await caller.user.resetPassword({
+    await caller.user.resetPasswordAnonymous({
       email: state.user.email,
       password: "CurrentPassword1!",
       newPassword: "NewPassword2!",
@@ -351,7 +400,7 @@ describe("user router authorization", () => {
     };
     const caller = createCallerFactory(appRouter)({ db, session: null });
 
-    await caller.user.resetPassword({
+    await caller.user.resetPasswordAnonymous({
       email: "  User@Example.COM ",
       password: "CurrentPassword1!",
       newPassword: "NewPassword2!",
@@ -388,7 +437,7 @@ describe("user router authorization", () => {
     ];
     const caller = createCallerFactory(appRouter)({ db, session: null });
 
-    await caller.user.resetPassword({
+    await caller.user.resetPasswordAnonymous({
       email: state.user.email,
       password: "CurrentPassword1!",
       newPassword: "NewPassword2!",
@@ -463,5 +512,244 @@ describe("user router authorization", () => {
     });
 
     await expect(caller.user.getUserPlaylists({})).resolves.toEqual([]);
+  });
+
+  const signedIn = (token?: string) =>
+    createCallerFactory(appRouter)({
+      db,
+      session: {
+        user: { id: "user-123" },
+        ...(token ? { session: { token } } : {}),
+      },
+    });
+
+  async function seedPasswordUser() {
+    state.user = {
+      id: "user-123",
+      email: "user@example.com",
+      password: await hash("CurrentPassword1!", 10),
+    };
+  }
+
+  it("rejects the signed-in password change without a session", async () => {
+    const caller = createCallerFactory(appRouter)({ db, session: null });
+
+    await expect(
+      caller.user.resetPassword({
+        password: "CurrentPassword1!",
+        newPassword: "NewPassword2!",
+      }),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
+  it("changes the session user's password and revokes only their other sessions", async () => {
+    await seedPasswordUser();
+
+    await signedIn("current-token").user.resetPassword({
+      password: "CurrentPassword1!",
+      newPassword: "NewPassword2!",
+    });
+
+    const userUpdate = state.updates.find((update) => update.table === "user");
+    expect(userUpdate?.where).toContain("user@example.com");
+    expect(
+      await compare("NewPassword2!", userUpdate?.values.password as string),
+    ).toBe(true);
+    expect(state.deletes).toHaveLength(1);
+    expect(state.deletes[0]?.table).toBe("better_auth_session");
+    expect(state.deletes[0]?.where).toEqual(["user-123", "current-token"]);
+  });
+
+  it("revokes every session when the current token is unknown", async () => {
+    await seedPasswordUser();
+
+    await signedIn().user.resetPassword({
+      password: "CurrentPassword1!",
+      newPassword: "NewPassword2!",
+    });
+
+    expect(state.deletes[0]?.where).toEqual(["user-123"]);
+  });
+
+  it("does not change the password or revoke sessions on a wrong current password", async () => {
+    await seedPasswordUser();
+
+    await expect(
+      signedIn("t").user.resetPassword({
+        password: "WrongPassword1!",
+        newPassword: "NewPassword2!",
+      }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Current password is incorrect",
+    });
+    expect(state.updates).toHaveLength(0);
+    expect(state.deletes).toHaveLength(0);
+  });
+
+  it("returns a clear error for passwordless accounts", async () => {
+    state.user = { id: "user-123", email: "user@example.com", password: null };
+
+    await expect(
+      signedIn("t").user.resetPassword({
+        password: "CurrentPassword1!",
+        newPassword: "NewPassword2!",
+      }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: expect.stringContaining("has no password"),
+    });
+    await expect(
+      signedIn().user.deleteUser({ password: "CurrentPassword1!" }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: expect.stringContaining("has no password"),
+    });
+    expect(state.deletes).toHaveLength(0);
+  });
+
+  it("requires a password to delete the account", async () => {
+    await seedPasswordUser();
+
+    await expect(
+      signedIn().user.deleteUser({} as { password: string }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      signedIn().user.deleteUser({ password: "WrongPassword1!" }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Current password is incorrect",
+    });
+    expect(state.deletes).toHaveLength(0);
+  });
+
+  it("deletes the account when the password matches", async () => {
+    await seedPasswordUser();
+
+    const deleted = await signedIn().user.deleteUser({
+      password: "CurrentPassword1!",
+    });
+
+    expect(deleted).toMatchObject({ id: "user-123" });
+    expect(state.deletes).toEqual([{ table: "user", where: ["user-123"] }]);
+  });
+
+  it("requires the current password to change the email", async () => {
+    await seedPasswordUser();
+
+    await expect(
+      signedIn().user.updateUser({ email: "new@example.com" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    await expect(
+      signedIn().user.updateUser({
+        email: "new@example.com",
+        currentPassword: "WrongPassword1!",
+      }),
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Current password is incorrect",
+    });
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it("resets email verification when the email changes", async () => {
+    await seedPasswordUser();
+
+    await signedIn().user.updateUser({
+      email: "new@example.com",
+      currentPassword: "CurrentPassword1!",
+    });
+
+    expect(state.updates[0]?.values).toEqual({
+      email: "new@example.com",
+      emailVerifiedBoolean: false,
+      emailVerified: null,
+    });
+  });
+
+  it("updates the name without a password, and ignores an unchanged email", async () => {
+    await seedPasswordUser();
+
+    await signedIn().user.updateUser({
+      name: "New Name",
+      email: "User@Example.com",
+    });
+
+    expect(state.updates).toHaveLength(1);
+    expect(state.updates[0]?.values).toEqual({ betterAuthName: "New Name" });
+  });
+
+  describe("addSongsToPlaylist cap", () => {
+    const songs = (n: number, prefix = "s") =>
+      Array.from({ length: n }, (_, i) => `${prefix}-${i}`);
+    const add = (input: string[]) =>
+      signedIn().user.addSongsToPlaylist({
+        playlistId: "playlist-1",
+        songs: input,
+      });
+
+    it("appends new songs at the end", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: ["a", "b"],
+      };
+
+      await add(["c"]);
+
+      expect(state.updates[0]?.values.songs).toEqual(["a", "b", "c"]);
+    });
+
+    it("accepts an add that stays under the cap", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: songs(PLAYLIST_MAX_SONGS - 10, "old"),
+      };
+
+      await add(songs(5));
+
+      expect(state.updates[0]?.values.songs).toHaveLength(
+        PLAYLIST_MAX_SONGS - 5,
+      );
+    });
+
+    it("accepts an add that lands exactly on the cap", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: songs(PLAYLIST_MAX_SONGS - 2, "old"),
+      };
+
+      await add(["x", "y"]);
+
+      expect(state.updates[0]?.values.songs).toHaveLength(PLAYLIST_MAX_SONGS);
+    });
+
+    it("rejects the whole add when it would exceed the cap", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: songs(PLAYLIST_MAX_SONGS - 1, "old"),
+      };
+
+      await expect(add(["x", "y"])).rejects.toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Playlist is full (5,000 songs)",
+      });
+      expect(state.updates).toHaveLength(0);
+    });
+
+    it("does not count songs already in the playlist or repeated in the add", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: songs(PLAYLIST_MAX_SONGS, "old"),
+      };
+
+      await add(["old-0", "old-1", "old-1"]);
+
+      expect(state.updates[0]?.values.songs).toHaveLength(PLAYLIST_MAX_SONGS);
+    });
   });
 });
