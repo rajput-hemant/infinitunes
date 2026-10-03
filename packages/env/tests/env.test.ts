@@ -51,4 +51,3 @@ describe("clientSchema and NEXT_PUBLIC_APP_URL", () => {
     ).toThrow();
   });
 });
-

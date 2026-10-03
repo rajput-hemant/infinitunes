@@ -13,8 +13,8 @@ import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { and, eq } from "drizzle-orm";
 
-import { authEnv, resolveAuthUrl } from "./env";
 import { resetPasswordEmail } from "./emails";
+import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
 
@@ -80,8 +80,7 @@ export function createAuth(
         .filter((origin): origin is string => origin !== undefined),
     ),
   ];
-  const rpID =
-    env.BETTER_AUTH_RP_ID || safeHostname(baseURL) || "localhost";
+  const rpID = env.BETTER_AUTH_RP_ID || safeHostname(baseURL) || "localhost";
 
   const sendEmail =
     options.sendEmail ??

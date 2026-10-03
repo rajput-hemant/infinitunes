@@ -1,7 +1,6 @@
-import { dbEnv } from "./env";
-
 import type { DbClient } from "./client";
 import { createClient } from "./client";
+import { dbEnv } from "./env";
 
 let client: DbClient | undefined;
 

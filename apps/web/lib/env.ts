@@ -1,14 +1,16 @@
-import { createEnv } from "@t3-oss/env-nextjs";
 import { authEnv } from "@infinitunes/auth/env";
 import { dbEnv } from "@infinitunes/db/env";
 import { clientSchema } from "@infinitunes/env/schema";
 import { trpcEnv } from "@infinitunes/trpc/env";
+import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
 export const env = createEnv({
   extends: [authEnv(), dbEnv(), trpcEnv()],
   shared: {
-    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
   },
   server: {
     UPSTASH_REDIS_REST_URL: z.url().optional(),

@@ -2,7 +2,7 @@
   "extends": "@infinitunes/typescript-config/base.json",
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["node"],
+    "types": ["node", "bun"],
     "paths": {
       "@/*": ["./src/*"]
     }

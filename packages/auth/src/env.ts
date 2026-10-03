@@ -8,7 +8,10 @@ export interface AuthEnvContext {
   vercelProductionUrl?: string;
 }
 
-export function resolveAuthUrl(explicit: string | undefined, ctx: AuthEnvContext) {
+export function resolveAuthUrl(
+  explicit: string | undefined,
+  ctx: AuthEnvContext,
+) {
   const url = explicit || ctx.vercelProductionUrl || ctx.vercelUrl;
   return url ? (/^https?:\/\//.test(url) ? url : `https://${url}`) : undefined;
 }
@@ -18,10 +21,13 @@ export function authSchema(ctx: AuthEnvContext = {}) {
     ctx.nodeEnv === "production" ? z.string().min(1) : z.string().optional();
 
   return {
-    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    NODE_ENV: z
+      .enum(["development", "test", "production"])
+      .default("development"),
     AUTH_SECRET: requiredInProduction(),
     AUTH_URL: z.preprocess(
-      (value) => resolveAuthUrl(typeof value === "string" ? value : undefined, ctx),
+      (value) =>
+        resolveAuthUrl(typeof value === "string" ? value : undefined, ctx),
       z.url(),
     ),
     GOOGLE_CLIENT_ID: requiredInProduction(),
@@ -36,7 +42,12 @@ export function authSchema(ctx: AuthEnvContext = {}) {
   };
 }
 
-export function authEnv(options: { runtimeEnv?: Record<string, string | undefined>; skipValidation?: boolean } = {}) {
+export function authEnv(
+  options: {
+    runtimeEnv?: Record<string, string | undefined>;
+    skipValidation?: boolean;
+  } = {},
+) {
   const runtimeEnv = options.runtimeEnv ?? process.env;
   return createEnv({
     server: authSchema({
@@ -47,6 +58,7 @@ export function authEnv(options: { runtimeEnv?: Record<string, string | undefine
     }),
     runtimeEnv,
     emptyStringAsUndefined: true,
-    skipValidation: options.skipValidation ?? runtimeEnv.SKIP_ENV_VALIDATION === "true",
+    skipValidation:
+      options.skipValidation ?? runtimeEnv.SKIP_ENV_VALIDATION === "true",
   });
 }

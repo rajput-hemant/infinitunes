@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test";
+
 import { authSchema } from "./env";
 
 describe("authSchema AUTH_URL on Vercel", () => {

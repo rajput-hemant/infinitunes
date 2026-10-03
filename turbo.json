@@ -17,15 +17,11 @@
       "cache": false
     },
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**"
-      ]
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "start": {
+      "dependsOn": ["^build"],
       "persistent": true,
       "cache": false
     },
@@ -78,8 +74,5 @@
     "BETTER_AUTH_RP_ID",
     "NEXT_PUBLIC_*"
   ],
-  "globalDependencies": [
-    ".env",
-    ".env.local"
-  ]
+  "globalDependencies": [".env", ".env.local"]
 }
