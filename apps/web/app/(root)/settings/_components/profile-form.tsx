@@ -63,6 +63,13 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const [deletePassword, setDeletePassword] = React.useState("");
 
   const [_, setIsTyping] = useIsTyping();
+  const uid = React.useId();
+  const ids = {
+    name: `${uid}-name`,
+    email: `${uid}-email`,
+    currentPassword: `${uid}-current-password`,
+    password: `${uid}-new-password`,
+  };
 
   React.useEffect(() => {
     setIsTyping(true);
@@ -137,10 +144,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
             name="name"
             render={({ field, fieldState }) => (
               <Field id="edit-profile" data-invalid={!!fieldState.error}>
-                <FieldLabel>Name</FieldLabel>
+                <FieldLabel htmlFor={ids.name}>Name</FieldLabel>
                 <div className="relative">
                   <Input
+                    id={ids.name}
                     type="text"
+                    aria-invalid={!!fieldState.error}
                     disabled={isSubmitting}
                     placeholder={user.name ?? "John Doe"}
                     className="w-full max-w-96 shadow-xs"
@@ -160,10 +169,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
             name="email"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
-                <FieldLabel>Email</FieldLabel>
+                <FieldLabel htmlFor={ids.email}>Email</FieldLabel>
                 <div className="relative flex gap-4">
                   <Input
+                    id={ids.email}
                     type="email"
+                    aria-invalid={!!fieldState.error}
                     disabled={isSubmitting}
                     placeholder={user.email ?? "you@example.com"}
                     className="w-full max-w-96 shadow-xs"
@@ -183,10 +194,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
             name="currentPassword"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
-                <FieldLabel>Current Password</FieldLabel>
+                <FieldLabel htmlFor={ids.currentPassword}>
+                  Current Password
+                </FieldLabel>
                 <Input
+                  id={ids.currentPassword}
                   type="password"
                   autoComplete="current-password"
+                  aria-invalid={!!fieldState.error}
                   disabled={isSubmitting}
                   placeholder="••••••••••"
                   className="w-full max-w-96 shadow-xs"
@@ -205,10 +220,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
             name="password"
             render={({ field, fieldState }) => (
               <Field id="change-password" data-invalid={!!fieldState.error}>
-                <FieldLabel>New Password</FieldLabel>
+                <FieldLabel htmlFor={ids.password}>New Password</FieldLabel>
                 <div className="relative w-full max-w-96">
                   <Input
+                    id={ids.password}
                     type={isPassVisible ? "text" : "password"}
+                    aria-invalid={!!fieldState.error}
                     disabled={isSubmitting}
                     autoComplete="new-password"
                     placeholder="••••••••••"
@@ -268,7 +285,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
               <small>Delete your account and all its associated data.</small>
             </div>
 
-            <AlertDialog>
+            <AlertDialog
+              onOpenChange={(open) => {
+                // Do not keep the typed password around after the dialog closes.
+                if (!open) {
+                  setDeletePassword("");
+                  setConfirmDelete("");
+                }
+              }}
+            >
               <AlertDialogTrigger
                 render={<Button variant="destructive">Delete Account</Button>}
               />
@@ -287,12 +312,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 <Input
                   type="password"
                   autoComplete="current-password"
+                  aria-label="Your password"
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
                   placeholder="Enter your password"
                 />
                 <Input
                   type="text"
+                  autoComplete="off"
+                  aria-label="Type DELETE MY ACCOUNT to confirm"
                   value={confirmDelete}
                   onChange={(e) => setConfirmDelete(e.target.value)}
                   placeholder="Type DELETE MY ACCOUNT to confirm!"
