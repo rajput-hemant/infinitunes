@@ -8,3 +8,4 @@ export { showRouter } from "./show";
 export { songRouter } from "./song";
 export { radioRouter } from "./radio";
 export { userRouter } from "./user";
+export { historyRouter } from "./history";

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
+import { getTableConfig } from "drizzle-orm/pg-core";
+
 import * as schema from "../src/schema";
 
 describe("schema exports", () => {
@@ -18,6 +20,16 @@ describe("schema exports", () => {
   it("exports app tables", () => {
     expect(schema.myPlaylists).toBeDefined();
     expect(schema.favorites).toBeDefined();
+    expect(schema.recentlyPlayed).toBeDefined();
+  });
+
+  it("recently_played is prefixed and keyed per user and item", () => {
+    const { name, indexes } = getTableConfig(schema.recentlyPlayed);
+    expect(name).toBe("infinitunes_recently_played");
+    const unique = indexes.find((i) => i.config.unique);
+    expect(
+      unique?.config.columns.map((c) => (c as { name: string }).name),
+    ).toEqual(["userId", "itemType", "itemId"]);
   });
 
   it("user table retains all legacy columns", () => {

@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   pgTable,
   primaryKey,
@@ -185,6 +186,31 @@ export const favorites = createTable("favorite", {
   podcasts: text("podcasts").array().default("{}").notNull(),
 });
 
+/** One row per user and played item; replaying bumps `playedAt`. */
+export const recentlyPlayed = createTable(
+  "recently_played",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("userId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    itemId: text("itemId").notNull(),
+    itemType: text("itemType").$type<"song" | "episode">().notNull(),
+    playedAt: timestamp("playedAt", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("infinitunes_recently_played_user_item_unique").on(
+      table.userId,
+      table.itemType,
+      table.itemId,
+    ),
+    index("infinitunes_recently_played_user_played_at_idx").on(
+      table.userId,
+      table.playedAt.desc(),
+    ),
+  ],
+);
+
 /* ---------------------------------------------------------------------------
  * Inferred types
  * ------------------------------------------------------------------------- */
@@ -197,6 +223,9 @@ export type NewPlaylist = typeof myPlaylists.$inferInsert;
 
 export type Favorite = typeof favorites.$inferSelect;
 export type NewFavorite = typeof favorites.$inferInsert;
+
+export type RecentlyPlayed = typeof recentlyPlayed.$inferSelect;
+export type NewRecentlyPlayed = typeof recentlyPlayed.$inferInsert;
 
 export type BetterAuthAccount = typeof betterAuthAccounts.$inferSelect;
 export type NewBetterAuthAccount = typeof betterAuthAccounts.$inferInsert;

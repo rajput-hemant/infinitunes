@@ -2,6 +2,7 @@ import {
   albumRouter,
   artistRouter,
   getRouter,
+  historyRouter,
   homeRouter,
   playlistRouter,
   searchRouter,
@@ -14,6 +15,7 @@ import { router } from "./trpc";
 
 export const appRouter = router({
   home: homeRouter,
+  history: historyRouter,
   song: songRouter,
   album: albumRouter,
   playlist: playlistRouter,
