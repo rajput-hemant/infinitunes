@@ -1,6 +1,7 @@
 import { getImageSrc, toCardItem } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
@@ -11,7 +12,16 @@ import { ogImageUrl } from "~/lib/utils";
 
 import { Lyrics } from "./_components/lyrics";
 
-const getSong = cache(async (token: string) => api.song.details({ token }));
+const getSong = cache(async (token: string) => {
+  try {
+    return await api.song.details({ token });
+  } catch (error) {
+    if ((error as { code?: unknown } | null)?.code === "NOT_FOUND") {
+      notFound();
+    }
+    throw error;
+  }
+});
 
 type SongDetailsPageProps = {
   params: Promise<{

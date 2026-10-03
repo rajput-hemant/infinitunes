@@ -8,6 +8,7 @@ import {
 import { PlayAllButton } from "~/components/library/play-all-button";
 import { SongList } from "~/components/song-list/song-list";
 import { getUserFavorites } from "~/lib/db/queries";
+import { fetchSongsChunked } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
 export const metadata = {
@@ -19,23 +20,19 @@ export default async function LikedSongsPage() {
   const favoriteSongs = await getUserFavorites();
 
   if (favoriteSongs && favoriteSongs.songs.length) {
-    const songsDetails = await api.song
-      .details({ id: favoriteSongs.songs.join(",") })
-      .catch(() => undefined);
+    const songs = await fetchSongsChunked(favoriteSongs.songs, (input) =>
+      api.song.details(input),
+    );
 
-    if (!songsDetails) return <LibraryUnavailable what="liked songs" />;
+    if (!songs) return <LibraryUnavailable what="liked songs" />;
 
     return (
       <div className="space-y-4">
-        <LibraryHeading
-          title="Liked Songs"
-          count={songsDetails.songs.length}
-          noun="song"
-        >
-          <PlayAllButton items={songsDetails.songs} />
+        <LibraryHeading title="Liked Songs" count={songs.length} noun="song">
+          <PlayAllButton items={songs} />
         </LibraryHeading>
 
-        <SongList items={songsDetails.songs} />
+        <SongList items={songs} />
       </div>
     );
   }
