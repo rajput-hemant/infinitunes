@@ -17,6 +17,7 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { asRoute, ogImageUrl } from "~/lib/utils";
 
@@ -26,11 +27,13 @@ const DEFAULT_SORT: Sort = "desc";
 
 // callers must pass a normalized sort so generateMetadata and the page share one cache entry
 const getShow = cache(async (token: string, season: number, sort: Sort) =>
-  api.show.details({
-    token,
-    season: `${season}`,
-    sort,
-  }),
+  orNotFound(
+    api.show.details({
+      token,
+      season: `${season}`,
+      sort,
+    }),
+  ),
 );
 
 type ShowDetailsPageProps = {

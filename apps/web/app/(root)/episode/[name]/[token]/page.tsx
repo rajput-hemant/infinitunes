@@ -3,15 +3,18 @@ import type { Metadata } from "next";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { ogImageUrl } from "~/lib/utils";
 
 const getEpisode = cache(async (token: string) =>
-  api.show.episodeDetails({
-    token,
-    season: 1,
-    sort: "desc",
-  }),
+  orNotFound(
+    api.show.episodeDetails({
+      token,
+      season: 1,
+      sort: "desc",
+    }),
+  ),
 );
 
 type EpisodeDetailsProps = {

@@ -10,6 +10,7 @@ import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { ogImageUrl } from "~/lib/utils";
 
@@ -19,11 +20,13 @@ import { CategoryFilter } from "./_components/category-filter";
 import { TABS } from "./_components/tabs";
 
 const getArtist = cache(async (token: string) =>
-  api.artist.details({
-    token,
-    n_song: 50,
-    n_album: 50,
-  }),
+  orNotFound(
+    api.artist.details({
+      token,
+      n_song: 50,
+      n_album: 50,
+    }),
+  ),
 );
 
 type Props = {

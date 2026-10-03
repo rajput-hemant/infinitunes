@@ -5,10 +5,13 @@ import { cache } from "react";
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { ogImageUrl } from "~/lib/utils";
 
-const getAlbum = cache(async (token: string) => api.album.details({ token }));
+const getAlbum = cache(async (token: string) =>
+  orNotFound(api.album.details({ token })),
+);
 
 type AlbumDetailsPageProps = {
   params: Promise<{ name: string; token: string }>;
