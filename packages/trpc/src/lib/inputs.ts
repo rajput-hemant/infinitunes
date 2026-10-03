@@ -4,10 +4,6 @@ const lang = z.string().optional();
 const page = z.coerce.number().optional();
 const n = z.coerce.number().optional();
 
-export const homeInput = z.object({
-  lang,
-});
-
 export const songInput = z.object({
   id: z.string().optional(),
   token: z.string().optional(),
@@ -84,8 +80,6 @@ export const showEpisodesInput = z.object({
   page,
   sort: z.string().optional(),
 });
-
-export const searchTopInput = z.object({});
 
 export const searchAllInput = z.object({
   q: z.string(),

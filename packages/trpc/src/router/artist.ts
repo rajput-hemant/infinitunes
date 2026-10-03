@@ -17,6 +17,26 @@ import {
   withDownloadUrl,
 } from "./utils";
 
+/** Paged artist songs/albums share one upstream shape; `finalize` post-processes the raw result. */
+function artistList(call: string, finalize?: (result: unknown) => void) {
+  return publicProcedure
+    .input(artistSongsAlbumsInput)
+    .query(async ({ input }) => {
+      const result = await api(call, {
+        query: {
+          artistId: input.id,
+          page: input.page,
+          category: input.cat,
+          sort_order: input.sort,
+          n_song: "50",
+        },
+        language: input.lang,
+      });
+      finalize?.(result);
+      return result;
+    });
+}
+
 export const artistRouter = router({
   details: publicProcedure
     .input(artistInput)
@@ -51,38 +71,11 @@ export const artistRouter = router({
       return result as Artist;
     }),
 
-  songs: publicProcedure
-    .input(artistSongsAlbumsInput)
-    .query(async ({ input }) => {
-      const result = await api(endpoints.artist.songs, {
-        query: {
-          artistId: input.id,
-          page: input.page,
-          category: input.cat,
-          sort_order: input.sort,
-          n_song: "50",
-        },
-        language: input.lang,
-      });
-      if (isRecord(result)) mapDownloadUrls(result.topSongs, "songs");
-      return result;
-    }),
+  songs: artistList(endpoints.artist.songs, (result) => {
+    if (isRecord(result)) mapDownloadUrls(result.topSongs, "songs");
+  }),
 
-  albums: publicProcedure
-    .input(artistSongsAlbumsInput)
-    .query(async ({ input }) => {
-      const result = await api(endpoints.artist.albums, {
-        query: {
-          artistId: input.id,
-          page: input.page,
-          category: input.cat,
-          sort_order: input.sort,
-          n_song: "50",
-        },
-        language: input.lang,
-      });
-      return result;
-    }),
+  albums: artistList(endpoints.artist.albums),
 
   topSongs: publicProcedure
     .input(artistTopSongsInput)

@@ -74,7 +74,7 @@ describe("secondary lists return [] instead of throwing NOT_FOUND", () => {
 
   it("search.top", async () => {
     responses = { "content.getTopSearches": [] };
-    expect(await caller.search.top({})).toEqual([]);
+    expect(await caller.search.top()).toEqual([]);
   });
 });
 
