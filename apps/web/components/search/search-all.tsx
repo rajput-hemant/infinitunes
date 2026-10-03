@@ -1,6 +1,6 @@
 import type { Quality, MediaType } from "@infinitunes/types";
 import type { AllSearch } from "@infinitunes/types";
-import { getImageSrc } from "@infinitunes/types";
+import { decode, getImageSrc } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
@@ -59,7 +59,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
                     <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded border">
                       <ImageWithFallback
                         src={getImageSrc(t.image, "low")}
-                        alt={t.title}
+                        alt={decode(t.title)}
                         fill
                         className={cn(
                           "z-10 object-cover",
@@ -74,11 +74,11 @@ export function SearchAll({ query, data }: SearchAllProps) {
 
                     <div className="my-auto w-[calc(100%-3rem)]">
                       <div className="truncate text-sm font-medium">
-                        {t.title}
+                        {decode(t.title)}
                       </div>
 
                       <div className="truncate text-xs capitalize text-muted-foreground">
-                        {t.subtitle}
+                        {t.subtitle ? decode(t.subtitle) : null}
                       </div>
                     </div>
                   </Link>
