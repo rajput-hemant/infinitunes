@@ -90,28 +90,6 @@ export type TagMix = {
   year: string;
 };
 
-export type Promo = {
-  explicit_content: string;
-  id: string;
-  image: string;
-  perma_url: string;
-  subtitle: string;
-  title: string;
-  type: MediaType;
-  language?: string;
-  list_count?: string;
-  list_type?: string;
-  list?: string;
-  play_count?: string;
-  year?: string;
-  more_info?: Partial<{
-    editorial_language: string;
-    position: string;
-    release_year: number;
-    square_image: string;
-  }>;
-};
-
 export type GlobalConfig = {
   random_songs_listid: GlobalConfigItem;
   weekly_top_songs_listid: GlobalConfigItem;

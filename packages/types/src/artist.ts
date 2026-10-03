@@ -101,16 +101,3 @@ export type ArtistSong = Omit<Song, "more_info"> & {
     artistMap: ArtistMap;
   };
 };
-
-export type ArtistSongsOrAlbums = {
-  artistId: string;
-  name: string;
-  image: string;
-  follower_count: string;
-  type: "artist";
-  isVerified: boolean;
-  dominantLanguage: string;
-  dominantType: string;
-  topSongs?: Omit<ArtistTopSongsOrAlbums<Song>, "albums">;
-  topAlbums?: Omit<ArtistTopSongsOrAlbums<Album>, "songs">;
-};
