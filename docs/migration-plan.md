@@ -125,9 +125,9 @@ Evidence is the recorded run in [migration-acceptance.md](migration-acceptance.m
 - [x] Root dev, build, lint, type-check, test, fmt:check, and DB forwarding commands resolve to the correct workspace (acceptance §3).
 - [x] Oxlint, oxfmt check, TypeScript pass (acceptance §4).
 - [x] Turbo production build passes (placeholder env plus `SKIP_ENV_VALIDATION`; acceptance §5b).
-- [x] Docker build passes after Bun pin and builder-stage fixes (acceptance §13).
+- [ ] Docker build passes after Bun pin and builder-stage fixes (acceptance §13). Reopened: the dockerfile was removed in c663112 (see TODO decision).
 - [x] Drizzle schema validation passes with no unexpected generated SQL or applied database changes (acceptance §7).
-- [x] Browser smoke tests cover landing, search, album/artist/song pages, playback, queue, downloads, light/dark themes, responsive navigation, dialogs, and error/not-found pages (acceptance §13).
+- [ ] Browser smoke tests cover landing, search, album/artist/song pages, playback, queue, downloads, light/dark themes, responsive navigation, dialogs, and error/not-found pages (acceptance §13). Reopened: queue item removal was not proven in §13.
 - [ ] Auth smoke tests cover credentials, OAuth entry points, session persistence, protected pages, playlist mutations, favorites, and logout using a non-production database (deferred, acceptance §12.2).
 - [ ] Tailwind 4 visual comparison covers desktop/mobile and light/dark screenshots (compiled CSS checked only, acceptance §11).
 - [ ] A Vercel preview builds from apps/web and validates routing, static assets, auth callback URLs, external API access, and environment loading (acceptance §12.4).
