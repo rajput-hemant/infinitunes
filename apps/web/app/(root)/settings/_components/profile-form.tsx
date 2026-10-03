@@ -35,7 +35,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { useIsTyping } from "~/hooks/use-store";
-import { deleteUser, resetPassword, updateUser } from "~/lib/actions";
+import { changePassword, deleteUser, updateUser } from "~/lib/actions";
 import { userMessage } from "~/lib/user-message";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
@@ -110,7 +110,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         }),
       });
       if (newPassword && formData.currentPassword) {
-        await resetPassword({
+        await changePassword({
           password: formData.currentPassword,
           newPassword,
         });

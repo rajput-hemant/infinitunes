@@ -8,7 +8,7 @@ import {
 } from "@infinitunes/db/schema";
 import { TRPCError } from "@trpc/server";
 import { compare, hash } from "bcryptjs";
-import { and, count, eq as drizzleEq, ne, sql } from "drizzle-orm";
+import { and, count, eq, ne, sql } from "drizzle-orm";
 import type { SQLWrapper } from "drizzle-orm";
 import { z } from "zod";
 
@@ -122,7 +122,7 @@ const PASSWORD_REQUIRED_MESSAGE = "Enter your current password to continue";
 
 async function loadCredentials(db: TRPCContext["db"], userId: string) {
   const userRecord = await db.query.users.findFirst({
-    where: drizzleEq(users.id, userId),
+    where: eq(users.id, userId),
   });
   if (!userRecord) {
     throw new TRPCError({ code: "UNAUTHORIZED", message: "Unauthorized" });
@@ -130,8 +130,8 @@ async function loadCredentials(db: TRPCContext["db"], userId: string) {
 
   const credentialAccount = await db.query.betterAuthAccounts.findFirst({
     where: and(
-      drizzleEq(betterAuthAccounts.userId, userId),
-      drizzleEq(betterAuthAccounts.providerId, "credential"),
+      eq(betterAuthAccounts.userId, userId),
+      eq(betterAuthAccounts.providerId, "credential"),
     ),
   });
 
@@ -212,13 +212,13 @@ async function storePassword(
   await db
     .update(users)
     .set({ password: hashedPassword })
-    .where(drizzleEq(users.email, userRecord.email));
+    .where(eq(users.email, userRecord.email));
 
   if (credentialAccount) {
     await db
       .update(betterAuthAccounts)
       .set({ password: hashedPassword, updatedAt: new Date() })
-      .where(drizzleEq(betterAuthAccounts.id, credentialAccount.id));
+      .where(eq(betterAuthAccounts.id, credentialAccount.id));
   } else {
     await db.insert(betterAuthAccounts).values({
       userId: userRecord.id,
@@ -239,11 +239,29 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
+async function getOwnedPlaylist(
+  ctx: { db: TRPCContext["db"]; session: NonNullable<Session> },
+  playlistId: string,
+) {
+  const playlist = await ctx.db.query.myPlaylists.findFirst({
+    where: eq(myPlaylists.id, playlistId),
+  });
+
+  if (!playlist) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Playlist not found" });
+  }
+
+  if (playlist.userId !== ctx.session.user.id) {
+    throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
+  }
+
+  return playlist;
+}
+
 export const userRouter = router({
-  getUserPlaylists: protectedProcedure.input(z.object({})).query(({ ctx }) =>
+  getUserPlaylists: protectedProcedure.query(({ ctx }) =>
     ctx.db.query.myPlaylists.findMany({
-      where: (playlistRow, { eq: equals }) =>
-        equals(playlistRow.userId, ctx.session.user.id),
+      where: eq(myPlaylists.userId, ctx.session.user.id),
     }),
   ),
 
@@ -251,8 +269,7 @@ export const userRouter = router({
     .input(playlistInput)
     .query(async ({ ctx, input }) => {
       const playlist = await ctx.db.query.myPlaylists.findFirst({
-        where: (playlistRow, { eq: equals }) =>
-          equals(playlistRow.id, input.playlistId),
+        where: eq(myPlaylists.id, input.playlistId),
       });
 
       return playlist?.userId === ctx.session.user.id ? playlist : undefined;
@@ -261,21 +278,7 @@ export const userRouter = router({
   addSongsToPlaylist: protectedProcedure
     .input(playlistSongsInput)
     .mutation(async ({ ctx, input }) => {
-      const playlist = await ctx.db.query.myPlaylists.findFirst({
-        where: (playlistRow, { eq: equals }) =>
-          equals(playlistRow.id, input.playlistId),
-      });
-
-      if (!playlist) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Playlist not found",
-        });
-      }
-
-      if (playlist.userId !== ctx.session.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
-      }
+      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
 
       const merged = [...new Set([...playlist.songs, ...input.songs])];
 
@@ -291,8 +294,8 @@ export const userRouter = router({
         .set({ songs: merged })
         .where(
           and(
-            drizzleEq(myPlaylists.id, input.playlistId),
-            drizzleEq(myPlaylists.userId, ctx.session.user.id),
+            eq(myPlaylists.id, input.playlistId),
+            eq(myPlaylists.userId, ctx.session.user.id),
           ),
         )
         .returning();
@@ -303,21 +306,7 @@ export const userRouter = router({
   removeSongsFromPlaylist: protectedProcedure
     .input(removeSongsFromPlaylistInput)
     .mutation(async ({ ctx, input }) => {
-      const playlist = await ctx.db.query.myPlaylists.findFirst({
-        where: (playlistRow, { eq: equals }) =>
-          equals(playlistRow.id, input.playlistId),
-      });
-
-      if (!playlist) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Playlist not found",
-        });
-      }
-
-      if (playlist.userId !== ctx.session.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
-      }
+      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
 
       const songs = removeSongAtPlaylistIndex(
         playlist.songs,
@@ -337,8 +326,8 @@ export const userRouter = router({
         .set({ songs })
         .where(
           and(
-            drizzleEq(myPlaylists.id, input.playlistId),
-            drizzleEq(myPlaylists.userId, ctx.session.user.id),
+            eq(myPlaylists.id, input.playlistId),
+            eq(myPlaylists.userId, ctx.session.user.id),
           ),
         )
         .returning();
@@ -349,21 +338,7 @@ export const userRouter = router({
   renamePlaylist: protectedProcedure
     .input(renamePlaylistInput)
     .mutation(async ({ ctx, input }) => {
-      const playlist = await ctx.db.query.myPlaylists.findFirst({
-        where: (playlistRow, { eq: equals }) =>
-          equals(playlistRow.id, input.playlistId),
-      });
-
-      if (!playlist) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Playlist not found",
-        });
-      }
-
-      if (playlist.userId !== ctx.session.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
-      }
+      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
 
       const [updatedPlaylist] = await ctx.db
         .update(myPlaylists)
@@ -373,8 +348,8 @@ export const userRouter = router({
         })
         .where(
           and(
-            drizzleEq(myPlaylists.id, input.playlistId),
-            drizzleEq(myPlaylists.userId, ctx.session.user.id),
+            eq(myPlaylists.id, input.playlistId),
+            eq(myPlaylists.userId, ctx.session.user.id),
           ),
         )
         .returning();
@@ -385,28 +360,14 @@ export const userRouter = router({
   deletePlaylist: protectedProcedure
     .input(playlistInput)
     .mutation(async ({ ctx, input }) => {
-      const playlist = await ctx.db.query.myPlaylists.findFirst({
-        where: (playlistRow, { eq: equals }) =>
-          equals(playlistRow.id, input.playlistId),
-      });
-
-      if (!playlist) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Playlist not found",
-        });
-      }
-
-      if (playlist.userId !== ctx.session.user.id) {
-        throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
-      }
+      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
 
       const [deletedPlaylist] = await ctx.db
         .delete(myPlaylists)
         .where(
           and(
-            drizzleEq(myPlaylists.id, input.playlistId),
-            drizzleEq(myPlaylists.userId, ctx.session.user.id),
+            eq(myPlaylists.id, input.playlistId),
+            eq(myPlaylists.userId, ctx.session.user.id),
           ),
         )
         .returning();
@@ -414,10 +375,9 @@ export const userRouter = router({
       return deletedPlaylist;
     }),
 
-  getUserFavorites: protectedProcedure.input(z.object({})).query(({ ctx }) =>
+  getUserFavorites: protectedProcedure.query(({ ctx }) =>
     ctx.db.query.favorites.findFirst({
-      where: (favoriteRow, { eq: equals }) =>
-        equals(favoriteRow.userId, ctx.session.user.id),
+      where: eq(favorites.userId, ctx.session.user.id),
     }),
   ),
 
@@ -443,27 +403,24 @@ export const userRouter = router({
     .input(favoriteInput)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const userFavorites = await ctx.db.query.favorites.findFirst({
-        where: (favoriteRow, { eq: equals }) =>
-          equals(favoriteRow.userId, userId),
-      });
+      const rows = await ctx.db
+        .update(favorites)
+        .set(favoritePatch(input.type, input.token, "remove"))
+        .where(eq(favorites.userId, userId))
+        .returning();
 
-      if (!userFavorites) {
+      if (rows.length === 0) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Favorites not found",
         });
       }
 
-      return ctx.db
-        .update(favorites)
-        .set(favoritePatch(input.type, input.token, "remove"))
-        .where(drizzleEq(favorites.userId, userId))
-        .returning();
+      return rows;
     }),
 
   /** Signed-in password change. The account comes from the session. */
-  resetPassword: protectedProcedure
+  changePassword: protectedProcedure
     .input(changePasswordSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
@@ -490,10 +447,10 @@ export const userRouter = router({
         .where(
           currentToken
             ? and(
-                drizzleEq(betterAuthSessions.userId, userId),
+                eq(betterAuthSessions.userId, userId),
                 ne(betterAuthSessions.token, currentToken),
               )
-            : drizzleEq(betterAuthSessions.userId, userId),
+            : eq(betterAuthSessions.userId, userId),
         );
     }),
 
@@ -503,7 +460,7 @@ export const userRouter = router({
       const [{ playlistsCount }] = await ctx.db
         .select({ playlistsCount: count() })
         .from(myPlaylists)
-        .where(drizzleEq(myPlaylists.userId, ctx.session.user.id));
+        .where(eq(myPlaylists.userId, ctx.session.user.id));
 
       if (playlistsCount >= 10) {
         throw new TRPCError({
@@ -520,13 +477,6 @@ export const userRouter = router({
           userId: ctx.session.user.id,
         })
         .returning();
-
-      if (!playlist) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to create playlist, please try again",
-        });
-      }
 
       return playlist;
     }),
@@ -546,7 +496,7 @@ export const userRouter = router({
       if (input.email !== undefined) {
         const current = await ctx.db.query.users.findFirst({
           columns: { email: true },
-          where: drizzleEq(users.id, userId),
+          where: eq(users.id, userId),
         });
         if (current?.email !== input.email) {
           await confirmIdentity(ctx, input.currentPassword);
@@ -557,10 +507,7 @@ export const userRouter = router({
       }
       if (Object.keys(patch).length > 0) {
         try {
-          await ctx.db
-            .update(users)
-            .set(patch)
-            .where(drizzleEq(users.id, userId));
+          await ctx.db.update(users).set(patch).where(eq(users.id, userId));
         } catch (error) {
           if (isUniqueViolation(error)) {
             throw new TRPCError({
@@ -574,7 +521,7 @@ export const userRouter = router({
 
       return ctx.db.query.users.findFirst({
         columns: { password: false },
-        where: drizzleEq(users.id, userId),
+        where: eq(users.id, userId),
       });
     }),
 
@@ -585,15 +532,8 @@ export const userRouter = router({
 
       const [deletedUser] = await ctx.db
         .delete(users)
-        .where(drizzleEq(users.id, ctx.session.user.id))
-        .returning();
-
-      if (!deletedUser) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to delete user, please try again",
-        });
-      }
+        .where(eq(users.id, ctx.session.user.id))
+        .returning({ id: users.id });
 
       return deletedUser;
     }),

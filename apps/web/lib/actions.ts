@@ -8,10 +8,10 @@ import { api } from "./trpc/server";
 import type { newPlaylistSchema } from "./validations";
 
 /** Signed-in change; other sessions are revoked server-side. */
-export async function resetPassword(
+export async function changePassword(
   credentials: z.infer<typeof changePasswordSchema>,
 ) {
-  await api.user.resetPassword(credentials);
+  await api.user.changePassword(credentials);
 }
 
 export async function createNewPlaylist(
