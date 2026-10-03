@@ -44,3 +44,10 @@ Found while polishing library and player. Priority is impact on users; none are 
 - [ ] README still labels the app `[WIP]`; as a portfolio showcase, decide when it counts as finished (see [project.md](project.md#purpose)).
 - [ ] Deferred seams from the plan (`packages/domain`, `packages/api-client`, `packages/player`) are not extracted; revisit only if a native app is pursued.
 - [ ] Medium: `username`/`displayUsername` were removed from `packages/db/src/schema.ts` (auth is email-only) but the production columns and the drizzle snapshot still have them, so the next `db:generate` would propose dropping them. Review that diff and keep the columns (or drop them deliberately) before generating. Evidence: schema vs `0000_baseline.sql`. Status: open.
+
+## shadcn source audit (2026-10-03)
+
+`bunx shadcn@latest add <name> --dry-run --diff` (CLI 4.21.1, style `base-nova`, `packages/ui/components.json`) was run for all 24 components in `packages/ui/src/components/ui`; nothing was written, reverted or updated. All differences below predate this task (history in `git log -- packages/ui/src/components/ui`). No automatic upstream update is authorized.
+
+- [ ] Pre-existing, intentional: orientation variants use `data-[orientation=horizontal|vertical]` instead of upstream `data-horizontal|vertical` in `field`, `scroll-area`, `separator`, `slider`, `tabs`, `toggle-group` (commit 27c7c65, 2026-09-26, guarded by `packages/ui/tests/orientation-attributes.test.ts`). Revisit if the installed `@base-ui/react` exposes the `data-horizontal`/`data-vertical` attributes, then upgrade through the CLI with approval.
+- [ ] Pre-existing, cosmetic only: import order and wrapping differ from upstream (oxfmt) in `alert-dialog`, `avatar`, `card`, `dialog`, `drawer`, `dropdown-menu`, `input`, `label`, `sheet`, `sidebar`, `sonner`, `toggle-group`, plus formatting-only differences in `accordion`, `badge`, `button`, `navigation-menu`, `skeleton`, `toggle`, `tooltip`. No behavioral change found.
