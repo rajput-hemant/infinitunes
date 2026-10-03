@@ -88,3 +88,31 @@ describe("proxy guest route access", () => {
     );
   });
 });
+
+describe("proxy detail route normalization", () => {
+  let proxy: typeof import("../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../proxy"));
+  });
+
+  it("redirects two-segment /playlist/<x> like other entity routes", async () => {
+    const res = await proxy(
+      createNextRequest("http://localhost:3000/playlist/foo"),
+    );
+
+    expect(res.status).toBe(307);
+    expect((res as { headers: { location: string } }).headers.location).toBe(
+      "http://localhost:3000/playlist",
+    );
+  });
+
+  it("leaves /playlist/<name>/<token> alone", async () => {
+    const res = await proxy(
+      createNextRequest("http://localhost:3000/playlist/foo/bar"),
+    );
+
+    expect(res.status).toBe(200);
+  });
+});

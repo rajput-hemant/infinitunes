@@ -20,7 +20,7 @@ export const appRoutes = [
   "/episode",
   "/label",
   "/mix",
-  "/playlists",
+  "/playlist",
   "/radio",
   "/search",
   "/show",
