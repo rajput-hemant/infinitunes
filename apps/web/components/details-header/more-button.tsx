@@ -244,6 +244,7 @@ export function MoreButton(props: MoreButtonProps) {
                     src={getImageSrc(image, "low")}
                     alt={name}
                     fill
+                    sizes="56px"
                     className="z-10 rounded-md"
                   />
 

@@ -87,6 +87,7 @@ export async function SongList(props: SongListProps) {
                       src={getImageSrc(item.image, "low")}
                       alt={item.title}
                       fill
+                      sizes="40px"
                       className="z-10 object-cover duration-300 group-hover:brightness-50"
                     />
 

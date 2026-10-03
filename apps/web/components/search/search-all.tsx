@@ -62,6 +62,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
                         src={getImageSrc(t.image, "low")}
                         alt=""
                         fill
+                        sizes="48px"
                         className={cn(
                           "z-10 object-cover",
                           getImageSrc(t.image, "low").includes("default") &&

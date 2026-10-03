@@ -60,10 +60,14 @@ export default async function ArtistDetailsPage(props: Props) {
   const { name, token } = await props.params;
   const { cat } = await props.searchParams;
 
+  // Start the artist fetch before the session lookup resolves so they overlap.
+  const artistPromise = getArtist(token);
+  artistPromise.catch(() => undefined);
+
   const user = await getUser();
 
   const [artist, playlists, favorites] = await Promise.all([
-    getArtist(token),
+    artistPromise,
     user ? getUserPlaylists() : undefined,
     user ? getUserFavorites() : undefined,
   ]);
