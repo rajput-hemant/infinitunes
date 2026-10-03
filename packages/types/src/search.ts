@@ -3,6 +3,29 @@ import type { ArtistMap, ArtistMini } from "./artist";
 import type { MediaType } from "./misc";
 import type { Song } from "./song";
 
+type PlaylistSearchItem = {
+  id: string;
+  title: string;
+  subtitle: string;
+  type: "playlist";
+  image: string;
+  perma_url: string;
+  explicit_content: string;
+  more_info: Partial<{
+    uid: string;
+    firstname: string;
+    lastname: string;
+    artist_name: string[] | null;
+    entity_type: string;
+    entity_sub_type: string;
+    video_available: boolean;
+    is_dolby_content: boolean | null;
+    sub_types: string | null;
+    song_count: string;
+    language: string;
+  }>;
+};
+
 type SearchResults<T> = {
   position: number;
   data: T[];
@@ -71,29 +94,7 @@ export type AllSearch = {
       language: string;
     };
   }>;
-  playlists: SearchResults<{
-    id: string;
-    title: string;
-    subtitle: string;
-    type: "playlist";
-    image: string;
-    perma_url: string;
-    explicit_content: string;
-    description: string;
-    more_info: Partial<{
-      uid: string;
-      firstname: string;
-      lastname: string;
-      artist_name: string[] | null;
-      entity_type: string;
-      entity_sub_type: string;
-      video_available: boolean;
-      is_dolby_content: boolean | null;
-      sub_types: string | null;
-      song_count: string;
-      language: string;
-    }>;
-  }>;
+  playlists: SearchResults<PlaylistSearchItem & { description: string }>;
   artists: SearchResults<{
     id: string;
     title: string;
@@ -136,28 +137,7 @@ export type SongSearch = Search<Song>;
 
 export type AlbumSearch = Search<Album>;
 
-export type PlaylistSearch = Search<{
-  id: string;
-  title: string;
-  subtitle: string;
-  type: "playlist";
-  image: string;
-  perma_url: string;
-  explicit_content: string;
-  more_info: Partial<{
-    uid: string;
-    firstname: string;
-    lastname: string;
-    artist_name: string[] | null;
-    entity_type: string;
-    entity_sub_type: string;
-    video_available: boolean;
-    is_dolby_content: boolean | null;
-    sub_types: string | null;
-    song_count: string;
-    language: string;
-  }>;
-}>;
+export type PlaylistSearch = Search<PlaylistSearchItem>;
 
 export type ArtistSearch = Search<{
   id: string;
