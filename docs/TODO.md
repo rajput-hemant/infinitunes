@@ -137,6 +137,18 @@ The 2026-10-03 deslop and ponytail review adds 105 open items (56 ponytail, 49 d
 - [ ] **PD-3** `[P3 · improvement · open]` The liked-songs list and the other library tabs have no sort or filter, and no row-level unlike action on mobile (the heart is desktop only). Captain 2026-10-03: not requested, left open.
 - [ ] **PD-5** `[P3 · improvement · open]` Deferred seams from the plan (`packages/domain`, `packages/api-client`, `packages/player`) are not extracted; revisit only if a native app is pursued.
 
+## Env validation delivery status (2026-10-03, records only)
+
+Outcome of the local env work, as reported at end of day. The env delivery as a whole is NOT complete; nothing below is landed or pushed.
+
+- `43da8ea` `fix: local dev auth, db and modal fixes`: the original fixes, captured in the source checkout.
+- `f8dd305` `refactor(env): package-owned env schemas and root env loading`: a partial snapshot, not validated complete.
+- `9d082c7` `chore(env): split provider, email and redis groups in .env.example`: the grouped `.env.example` in the source checkout. Complete (placeholders only, key lines unchanged from `e78fb76`).
+- `30f69ba` `refactor(env): single root env file, grouped example, package env fixes`: the validated root-env tree. Ready, but NOT landed on `migration/bun-monorepo` and NOT pushed.
+- Value consolidation (one shared set of real env values) is still unapplied; it was tested with synthetic values only.
+- Checks: the targeted checks that were run pass; the full test run has 2 baseline failures; a production build was not run.
+- Private evidence is stored by task id under the Firstmate data directory (`data/<task-id>/`), not in this repository.
+
 ## Deslop and ponytail review (2026-10-03)
 
 Whole-repo review run on the 468 tracked files at `30f69ba` (base branch `fm/infinitunes-local-env-validation-landing`), applying the `deslop` rules (unnecessary comments, abnormal defensive checks, `any`/cast escapes, deep nesting, inconsistent patterns) and the `ponytail-review` rules (delete / stdlib / native / yagni / shrink), extended from diff-only to every project-owned file. Findings only: no code, dependency, env or `AGENTS.md`/`CLAUDE.md` change was made. IDs `DS-n` (deslop) and `PT-n` (ponytail); every item is unchecked until a fixer lands it.
