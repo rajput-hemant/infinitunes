@@ -2,7 +2,7 @@
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Queue, Song } from "@infinitunes/types";
-import { getImageSrc, toQueue } from "@infinitunes/types";
+import { getImageSrc, newQueueItemId, toQueue } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -180,7 +180,11 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function addToQueue() {
-    const queue = "more_info" in item ? toQueue(item) : item;
+    // A queue item re-added from the player needs its own entry id.
+    const queue =
+      "more_info" in item
+        ? toQueue(item)
+        : { ...item, queueItemId: newQueueItemId() };
     setQueue((q) => [...q, queue]);
 
     toast(`"${getItemName(item)}" added to queue`);

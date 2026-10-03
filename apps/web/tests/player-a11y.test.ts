@@ -10,7 +10,8 @@ describe("player a11y (UI-26)", () => {
     expect(source).toContain("Now playing ${current.name}");
     expect(source).toContain("} of ${formatDuration(duration, seekFormat)}");
     expect(source).toContain("percent`");
-    expect(source).toContain('setAttribute("aria-valuetext", text)');
+    const expanded = await read("../components/expanded-player.tsx");
+    expect(expanded).toContain('setAttribute("aria-valuetext", text)');
   });
 
   it("queue pluralizes the track count and restores focus on removal", async () => {

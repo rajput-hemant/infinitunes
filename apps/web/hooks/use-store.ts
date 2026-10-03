@@ -4,12 +4,21 @@ import type {
   Queue,
   StreamQuality,
 } from "@infinitunes/types";
+import { ensureQueueItemIds } from "@infinitunes/types";
 import { atom, createStore, useAtom } from "jotai";
-import { atomWithStorage } from "jotai/utils";
+import { atomWithStorage, createJSONStorage } from "jotai/utils";
 
 const store = createStore();
 
-const queueAtom = atomWithStorage<Queue[]>("queue", []);
+// Queues persisted before `queueItemId` existed are backfilled on read.
+const baseQueueStorage = createJSONStorage<Queue[]>(() => localStorage);
+const queueStorage: typeof baseQueueStorage = {
+  ...baseQueueStorage,
+  getItem: (key, initialValue) =>
+    ensureQueueItemIds(baseQueueStorage.getItem(key, initialValue)),
+};
+
+const queueAtom = atomWithStorage<Queue[]>("queue", [], queueStorage);
 
 export function useQueue() {
   return useAtom(queueAtom, { store });
@@ -64,4 +73,11 @@ const activeRadioSessionAtom = atomWithStorage<ActiveRadioSession | null>(
 
 export function useActiveRadioSession() {
   return useAtom(activeRadioSessionAtom, { store });
+}
+
+const keyboardShortcutsAtom = atomWithStorage("keyboard_shortcuts", true);
+
+/** WCAG 2.1.4: single-key player shortcuts can be turned off. Default on. */
+export function useKeyboardShortcuts() {
+  return useAtom(keyboardShortcutsAtom, { store });
 }

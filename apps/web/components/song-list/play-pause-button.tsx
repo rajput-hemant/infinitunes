@@ -29,6 +29,8 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
       type="button"
       aria-label={isPlaying ? "Pause" : "Play"}
       onClick={isPlaying ? pause : play}
+      // Image scrim: must stay dark over arbitrary artwork in both themes, so
+      // it is deliberately not a theme token.
       className="absolute inset-0 z-10 w-full bg-black/40 text-secondary outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring dark:bg-black/75"
     >
       <Icon

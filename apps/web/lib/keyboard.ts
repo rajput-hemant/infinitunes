@@ -56,9 +56,14 @@ function isInteractive(el: ShortcutTarget): boolean {
 /**
  * Whether a global player shortcut must ignore this keydown. Shortcuts never
  * hijack text entry, modified chords (browser/OS shortcuts), or Space on a
- * focused control, where Space is the native activation key.
+ * focused control, where Space is the native activation key. When the user
+ * has turned shortcuts off (`enabled: false`) every key is ignored.
  */
-export function shouldIgnoreShortcut(event: ShortcutEvent): boolean {
+export function shouldIgnoreShortcut(
+  event: ShortcutEvent,
+  { enabled = true }: { enabled?: boolean } = {},
+): boolean {
+  if (!enabled) return true;
   if (event.defaultPrevented) return true;
   if (event.ctrlKey || event.metaKey || event.altKey) return true;
 

@@ -95,8 +95,39 @@ export function toCardItem(item: RawCardItem) {
   };
 }
 
+let queueItemCounter = 0;
+
+/** A fresh id for one queue entry; used for React keys and removal. */
+export function newQueueItemId(): string {
+  queueItemCounter += 1;
+  return `${Date.now().toString(36)}-${queueItemCounter}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/**
+ * Gives entries persisted before `queueItemId` existed (or otherwise missing
+ * it) an id, and re-ids any duplicate id so keys stay unique. Returns the same
+ * array when nothing needed fixing.
+ */
+export function ensureQueueItemIds(queue: Queue[]): Queue[] {
+  const seen = new Set<string>();
+  let changed = false;
+  const next = queue.map((item) => {
+    const existing = (item as Partial<Queue>).queueItemId;
+    if (existing && !seen.has(existing)) {
+      seen.add(existing);
+      return item;
+    }
+    changed = true;
+    const queueItemId = newQueueItemId();
+    seen.add(queueItemId);
+    return { ...item, queueItemId };
+  });
+  return changed ? next : queue;
+}
+
 export function toQueue(item: Song | Episode): Queue {
   return {
+    queueItemId: newQueueItemId(),
     id: item.id,
     name: decode(item.title),
     subtitle: decode(item.subtitle),
@@ -149,23 +180,26 @@ export function pickShuffleIndex(
 }
 
 /**
- * Removes every queue entry with `id` and re-anchors `currentIndex` so the
- * playing track stays selected when an earlier entry is removed. If the
- * playing entry itself is removed the index now points at the following track
- * (clamped to the new last index).
+ * Removes the queue entry at `removeIndex` (duplicates of the same track are
+ * separate entries) and re-anchors `currentIndex` so the playing entry stays
+ * selected when an earlier entry is removed. If the playing entry itself is
+ * removed the index now points at the following track (clamped to the new
+ * last index). An out-of-range index leaves the queue untouched.
  */
 export function removeFromQueue(
   queue: Queue[],
   currentIndex: number,
-  id: string,
+  removeIndex: number,
 ): { queue: Queue[]; currentIndex: number } {
-  if (!queue.some((item) => item.id === id)) return { queue, currentIndex };
-  const next = queue.filter((item) => item.id !== id);
-  const removedBefore = queue
-    .slice(0, currentIndex)
-    .filter((item) => item.id === id).length;
-  const index = Math.min(currentIndex - removedBefore, next.length - 1);
-  return { queue: next, currentIndex: Math.max(0, index) };
+  if (removeIndex < 0 || removeIndex >= queue.length) {
+    return { queue, currentIndex };
+  }
+  const next = queue.filter((_, i) => i !== removeIndex);
+  const index = removeIndex < currentIndex ? currentIndex - 1 : currentIndex;
+  return {
+    queue: next,
+    currentIndex: Math.max(0, Math.min(index, next.length - 1)),
+  };
 }
 
 const IMAGE_SIZE: Record<ImageQuality, number> = {
