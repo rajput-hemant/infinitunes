@@ -142,7 +142,12 @@ export function PlayButton(props: PlayButtonProps) {
   }
 
   return (
-    <button aria-label="Play" onClick={playHandler} {...restProps}>
+    <button
+      type="button"
+      aria-label="Play"
+      onClick={playHandler}
+      {...restProps}
+    >
       {children}
     </button>
   );

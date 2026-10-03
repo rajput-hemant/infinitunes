@@ -8,6 +8,7 @@ import Link from "next/link";
 import { asRoute, cn, getHref } from "~/lib/utils";
 
 import { ImageWithFallback } from "../image-with-fallback";
+import { getPlaceholderSrc } from "../placeholder-src";
 
 type SearchAllProps = {
   query: string;
@@ -25,9 +26,9 @@ export function SearchAll({ query, data }: SearchAllProps) {
           return (
             <section key={key}>
               <div className="flex">
-                <p className="pl-2 font-heading text-lg capitalize tracking-wider drop-shadow-sm">
+                <h3 className="pl-2 font-heading text-lg capitalize tracking-wider drop-shadow-sm">
                   {key.replace("_query", " Result")}
-                </p>
+                </h3>
 
                 {key !== "top_query" && (
                   <Link
@@ -56,23 +57,23 @@ export function SearchAll({ query, data }: SearchAllProps) {
                     href={getHref(t.perma_url, t.type)}
                     className="flex gap-2 rounded-md p-2 hover:bg-secondary"
                   >
-                    <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded border">
+                    <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded border">
                       <ImageWithFallback
                         src={getImageSrc(t.image, "low")}
-                        alt={decode(t.title)}
+                        alt=""
                         fill
                         className={cn(
                           "z-10 object-cover",
                           getImageSrc(t.image, "low").includes("default") &&
                             "dark:invert",
                         )}
-                        fallback={`/images/placeholder/${t.type}.jpg`}
+                        fallback={getPlaceholderSrc(t.type)}
                       />
 
                       <Skeleton className="size-full" />
                     </div>
 
-                    <div className="my-auto w-[calc(100%-3rem)]">
+                    <div className="my-auto min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">
                         {decode(t.title)}
                       </div>

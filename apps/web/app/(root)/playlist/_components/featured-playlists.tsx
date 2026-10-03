@@ -79,10 +79,10 @@ export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
           )}
         </div>
       ) : (
-        <h3 className="text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+        <h2 className="text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em>{" "}
           <span className="text-foreground">🤩</span>
-        </h3>
+        </h2>
       )}
     </div>
   );

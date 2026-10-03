@@ -9,6 +9,7 @@ import Link from "next/link";
 import { cn, getHref } from "~/lib/utils";
 
 import { ImageWithFallback } from "../image-with-fallback";
+import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
 
 export type SliderCardProps = {
@@ -78,12 +79,12 @@ export function SliderCard(props: SliderCardProps) {
 
           <ImageWithFallback
             src={imageSrc}
-            fallback={`/images/placeholder/${type}.jpg`}
+            fallback={getPlaceholderSrc(type)}
             width={200}
             height={200}
             alt={name}
             className={cn(
-              "size-full object-cover transition-transform duration-300 group-hover:scale-110",
+              "size-full object-cover transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100",
               !imageSrc && "dark:invert",
               imageSrc.includes("default") && "dark:invert",
             )}
@@ -94,6 +95,7 @@ export function SliderCard(props: SliderCardProps) {
           {!hidePlayButton && (
             <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-linear-to-b lg:group-hover:flex">
               <PlayButton
+                aria-label={`Play ${name}`}
                 type={type}
                 token={getToken(url)}
                 className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
@@ -108,7 +110,7 @@ export function SliderCard(props: SliderCardProps) {
         </div>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
-          <h4 className="w-full font-semibold lg:text-lg">
+          <h3 className="w-full font-semibold lg:text-lg">
             {href ? (
               <Link
                 href={href}
@@ -137,7 +139,7 @@ export function SliderCard(props: SliderCardProps) {
                 <span className="truncate">{name}</span>
               </div>
             )}
-          </h4>
+          </h3>
 
           <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">
             {subtitle}

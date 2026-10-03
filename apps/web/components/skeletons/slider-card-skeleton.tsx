@@ -14,24 +14,23 @@ export function SliderCardSkeleton(props: SliderCardSkeletonProps) {
   return (
     <div
       className={cn(
-        "pointer-events-none w-32 shrink-0 rounded-md sm:w-36 sm:border md:w-48 lg:w-56",
-        aspect === "video" && "w-44 border-none sm:w-48 md:w-64 lg:w-72",
+        "pointer-events-none w-32 shrink-0 rounded-md sm:w-36 md:w-48 lg:w-56",
+        aspect === "video" && "w-44 sm:w-48 md:w-64 lg:w-72",
       )}
     >
       <div className="size-full p-2">
         <Skeleton
           className={cn(
-            aspect === "video"
-              ? "aspect-video w-[160px] sm:w-[176px] md:w-[240px] lg:w-[272px]"
-              : "size-28 sm:size-[126px] md:size-[174px] lg:size-[206px]",
+            "w-full",
+            aspect === "video" ? "aspect-video" : "aspect-square",
             rounded && "rounded-full",
           )}
         />
 
-        <div className="mt-1 space-y-1 lg:space-y-1.5">
-          <Skeleton className={cn("h-6 w-full", hideSubtitle && "md:h-7")} />
+        <div className="mt-1">
+          <Skeleton className="h-6 w-full lg:h-7" />
 
-          {!hideSubtitle && <Skeleton className="h-3 w-full lg:h-3.5" />}
+          {!hideSubtitle && <Skeleton className="mt-1 h-3 w-full" />}
         </div>
       </div>
     </div>

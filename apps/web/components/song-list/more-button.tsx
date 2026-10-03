@@ -318,9 +318,12 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         <Drawer>
           <DrawerTrigger
             aria-label="More Options"
-            className="focus-visible:outline-hidden"
+            className="flex size-11 items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <MoreVertical className="size-6 hover:text-primary" />
+            <MoreVertical
+              aria-hidden="true"
+              className="size-6 hover:text-primary"
+            />
           </DrawerTrigger>
 
           <DrawerContent className="rounded-t-2xl">
@@ -416,9 +419,15 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="More Options"
-            className={cn("focus-visible:outline-hidden", className)}
+            className={cn(
+              "rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+              className,
+            )}
           >
-            <MoreVertical className="size-6 hover:text-primary" />
+            <MoreVertical
+              aria-hidden="true"
+              className="size-6 hover:text-primary"
+            />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent

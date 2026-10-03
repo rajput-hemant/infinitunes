@@ -23,6 +23,7 @@ import { asRoute, cn, getHref } from "~/lib/utils";
 import { DownloadButton } from "../download-button";
 import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
+import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
 import { MoreButton } from "./more-button";
 
@@ -121,7 +122,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           width={200}
           height={200}
           alt={title}
-          fallback={`/images/placeholder/${kind}.jpg`}
+          fallback={getPlaceholderSrc(kind)}
           className={cn(
             "size-full rounded-md object-cover",
             (kind === "artist" || kind === "label") && "scale-105",
@@ -139,17 +140,23 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
       <figcaption className="flex min-w-0 w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
         <h1
           title={title}
-          className="flex items-center truncate text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start"
+          className="flex min-w-0 items-center justify-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:justify-start lg:text-start"
         >
           {getExplicit(item) && (
-            <Badge className="mr-2 rounded px-1 py-0 font-bold">E</Badge>
+            <Badge
+              aria-label="Explicit"
+              className="mr-2 shrink-0 rounded px-1 py-0 font-bold"
+            >
+              E
+            </Badge>
           )}
-          {title}
+          <span className="truncate">{title}</span>
 
           {getVerified(item) && (
             <BadgeCheck
+              aria-label="Verified"
               fill="#3b82f6"
-              className="ml-2 inline-block text-background"
+              className="ml-2 inline-block shrink-0 text-background"
             />
           )}
         </h1>
