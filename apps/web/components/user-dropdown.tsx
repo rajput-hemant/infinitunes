@@ -23,6 +23,7 @@ import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 type UserDropdownProps = {
@@ -36,13 +37,24 @@ type UserDropdownProps = {
 
 export function UserDropdown({ user }: UserDropdownProps) {
   const { setTheme } = useTheme();
+  const router = useRouter();
 
   async function signOutHandler() {
-    toast.promise(authClient.signOut(), {
-      loading: "Signing out...",
-      success: "You have been signed out.",
-      error: "Something went wrong.",
-    });
+    toast.promise(
+      authClient.signOut({
+        fetchOptions: {
+          onSuccess: () => {
+            router.replace("/login");
+            router.refresh();
+          },
+        },
+      }),
+      {
+        loading: "Signing out...",
+        success: "You have been signed out.",
+        error: "Something went wrong.",
+      },
+    );
   }
 
   return (

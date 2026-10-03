@@ -20,14 +20,6 @@ export const users = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name"),
   email: text("email").notNull().unique(),
-  /**
-   * Legacy columns from the removed Better Auth username plugin. Nothing reads
-   * or writes them (auth is email-only), but production still has them and the
-   * drizzle snapshot records them. Keep them declared so `db:generate` does not
-   * propose a destructive DROP; remove only via a deliberate, reviewed migration.
-   */
-  username: text("username").unique(),
-  displayUsername: text("displayUsername"),
   password: text("password"),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
