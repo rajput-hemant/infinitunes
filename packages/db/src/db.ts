@@ -1,4 +1,4 @@
-import { createServerEnv } from "@infinitunes/env/server";
+import { dbEnv } from "./env";
 
 import type { DbClient } from "./client";
 import { createClient } from "./client";
@@ -7,7 +7,7 @@ let client: DbClient | undefined;
 
 export function getDb(): DbClient {
   if (!client) {
-    const env = createServerEnv({ skipValidation: true });
+    const env = dbEnv();
     const url = env.DATABASE_URL;
 
     if (!url) {

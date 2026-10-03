@@ -6,6 +6,58 @@
     "VERCEL",
     "VERCEL_URL",
     "VERCEL_PROJECT_PRODUCTION_URL",
+    "NEXT_TELEMETRY_DISABLED",
+    "PORT",
+    "LOCAL_DEV_CONFIG",
+    "NEXT_RUNTIME"
+  ],
+  "tasks": {
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
+      ]
+    },
+    "start": {
+      "persistent": true,
+      "cache": false
+    },
+    "lint": {},
+    "type-check": {},
+    "test": {},
+    "db:generate": {
+      "cache": false
+    },
+    "db:migrate": {
+      "cache": false
+    },
+    "db:drop": {
+      "cache": false
+    },
+    "db:push": {
+      "cache": false
+    },
+    "db:pull": {
+      "cache": false
+    },
+    "db:studio": {
+      "cache": false
+    },
+    "db:check": {
+      "cache": false
+    },
+    "db:seed": {
+      "cache": false
+    }
+  },
+  "globalEnv": [
     "AUTH_SECRET",
     "AUTH_URL",
     "GOOGLE_CLIENT_ID",
@@ -21,30 +73,13 @@
     "UMAMI_WEBSITE_ID",
     "RESEND_API_KEY",
     "EMAIL_FROM",
-    "NEXT_TELEMETRY_DISABLED",
-    "NEXT_PUBLIC_APP_URL"
+    "BETTER_AUTH_URL",
+    "BETTER_AUTH_SECRET",
+    "BETTER_AUTH_RP_ID",
+    "NEXT_PUBLIC_*"
   ],
-  "tasks": {
-    "dev": {
-      "persistent": true,
-      "cache": false
-    },
-    "build": {
-      "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
-    },
-    "start": {
-      "dependsOn": ["^build"]
-    },
-    "lint": {},
-    "type-check": {},
-    "test": {},
-    "db:generate": {},
-    "db:migrate": {},
-    "db:drop": {},
-    "db:push": {},
-    "db:pull": {},
-    "db:studio": {},
-    "db:check": {}
-  }
+  "globalDependencies": [
+    ".env",
+    ".env.local"
+  ]
 }
