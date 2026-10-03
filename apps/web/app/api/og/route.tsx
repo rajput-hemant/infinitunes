@@ -6,11 +6,24 @@ import { readFile } from "node:fs/promises";
 import { ImageResponse } from "next/og";
 
 import { siteConfig } from "~/config/site";
+import { parseAllowedImageUrl } from "~/lib/image-hosts";
 import { cn } from "~/lib/utils";
 
-async function fetchImage(url: string) {
-  const res = await fetch(url);
+const DEFAULT_IMAGE = "https://graph.org/file/16937ebb693470d804f31.png";
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+// Redirects are refused so an allowlisted host cannot bounce the server to an
+// internal address; the body is capped and the request time-boxed.
+async function fetchImage(url: URL) {
+  const res = await fetch(url, {
+    redirect: "error",
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!res.ok || !res.headers.get("content-type")?.startsWith("image/")) {
+    throw new Error("Image is not available");
+  }
   const buffer = await res.arrayBuffer();
+  if (buffer.byteLength > MAX_IMAGE_BYTES) throw new Error("Image too large");
   return buffer;
 }
 
@@ -28,16 +41,23 @@ export async function GET(request: Request) {
   const description =
     searchParams.get("description")?.slice(0, 300) ?? siteConfig.description;
 
-  const imageUrl =
-    searchParams.get("image") ??
-    "https://graph.org/file/16937ebb693470d804f31.png";
+  const requestedImage = searchParams.get("image");
+  // The default is a trusted constant; anything caller-supplied must be on the
+  // image CDN allowlist.
+  const imageUrl = requestedImage
+    ? parseAllowedImageUrl(requestedImage)
+    : new URL(DEFAULT_IMAGE);
+
+  if (!imageUrl) {
+    return new Response("Invalid image URL", { status: 400 });
+  }
 
   const isSquaredImage = searchParams.get("square") === "true";
 
-  const image = await fetchImage(imageUrl);
-  const font = await fetchFonts();
-
   try {
+    const image = await fetchImage(imageUrl);
+    const font = await fetchFonts();
+
     return new ImageResponse(
       <div tw="relative flex h-full bg-black text-white">
         <svg
