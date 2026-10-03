@@ -10,7 +10,7 @@ Branch under test: `fm/infinitunes-pstack-verification`, based on `migration/bun
 - **HYPOTHESIS**: suspected from source or history, not reproduced.
 - **GAP**: coverage not exercised. A GAP is not a failure and not a pass.
 
-No PASS is claimed for any browser or authenticated behavior. "Prior proof" means evidence recorded by an earlier run in [../migration-acceptance.md](../migration-acceptance.md) section 13; it was not re-run here.
+No PASS is claimed for any browser or authenticated behavior. "Prior proof" means evidence recorded by an earlier run in [migration-acceptance.md](migration-acceptance.md) section 13; it was not re-run here.
 
 State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 
@@ -147,10 +147,10 @@ An invalid song token renders the generic error page.
 
 Stale process items from the migration report, corrected here.
 
-- Evidence: [../migration-acceptance.md](../migration-acceptance.md) section 12 lists "Docker image build" and Chrome-absent blockers and section 8 says Chrome is missing; section 13 states it "supersedes their Docker, live-data and browser blockers" and records a Docker build pass and Chrome runs. `package.json` `packageManager` and `.github/workflows/ci.yml` now pin Bun `1.4.2` (sections 9 and the header still mention 1.3.14).
-- Correction: treat sections 6, 8 and 12 as historical; the open items are in [../TODO.md](../TODO.md). Prior proofs stay in section 13 and are not re-attributed to this verification.
+- Evidence: [migration-acceptance.md](migration-acceptance.md) section 12 lists "Docker image build" and Chrome-absent blockers and section 8 says Chrome is missing; section 13 states it "supersedes their Docker, live-data and browser blockers" and records a Docker build pass and Chrome runs. `package.json` `packageManager` and `.github/workflows/ci.yml` now pin Bun `1.4.2` (sections 9 and the header still mention 1.3.14).
+- Correction: treat sections 6, 8 and 12 as historical; the open items are in [TODO.md](../TODO.md). Prior proofs stay in section 13 and are not re-attributed to this verification.
 - State closed (documentation note only; the older report text is left as the record).
-- Update 2026-10-03 (audit): `git ls-files` on this branch no longer contains `dockerfile` (removed in `c663112`), while `IS_DOCKER` handling remains in `apps/web/next.config.ts` and `turbo.json`, and `.dockerignore` still names it. The Docker build proofs in acceptance sections 6 and 13 therefore describe a file that is no longer in the tree. Tracked as a decision in [../TODO.md](../TODO.md).
+- Update 2026-10-03 (audit): `git ls-files` on this branch no longer contains `dockerfile` (removed in `c663112`), while `IS_DOCKER` handling remains in `apps/web/next.config.ts` and `turbo.json`, and `.dockerignore` still names it. The Docker build proofs in acceptance sections 6 and 13 therefore describe a file that is no longer in the tree. Tracked as a decision in [TODO.md](../TODO.md).
 
 ### ISSUE-022
 
@@ -248,7 +248,7 @@ No Tailwind 3 baseline exists for visual comparison with the Tailwind 4 build.
 
 The Vercel preview built from `apps/web` (routing, assets, auth callback URLs, external API access, env loading) is unverified.
 
-- Source: [../TODO.md](../TODO.md). Needs hosting access; out of scope for local verification. State needs-decision.
+- Source: [TODO.md](../TODO.md). Needs hosting access; out of scope for local verification. State needs-decision.
 
 ### ISSUE-019
 
