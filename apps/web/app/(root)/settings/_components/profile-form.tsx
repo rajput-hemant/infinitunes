@@ -201,9 +201,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </form>
 
         <div id="delete-account" className="space-y-4">
-          <h3 className="font-heading text-lg text-destructive drop-shadow-md sm:text-xl md:text-2xl">
+          <h2 className="font-heading text-lg text-destructive drop-shadow-md sm:text-xl md:text-2xl">
             Danger Zone
-          </h3>
+          </h2>
           <Separator />
 
           <div className="flex flex-wrap items-center justify-between gap-4">

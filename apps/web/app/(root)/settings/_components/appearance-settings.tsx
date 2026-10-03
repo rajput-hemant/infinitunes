@@ -27,9 +27,9 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
   return (
     <div className="space-y-8 px-6">
       <section id="mode" className="space-y-4">
-        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Theme Mode
-        </h3>
+        </h2>
 
         <div className="flex gap-4">
           {["light", "dark"].map((mode) => (
@@ -75,9 +75,9 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
       </section>
 
       <section id="themes" className="space-y-4">
-        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Themes
-        </h3>
+        </h2>
 
         <div className="flex max-w-5xl flex-wrap gap-2">
           {themes.map(({ name, activeColor, label }) => (
@@ -85,6 +85,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               key={name}
               size="sm"
               variant="outline"
+              aria-pressed={name === theme}
               onClick={() => themeConfigHandler({ theme: name, radius })}
               className={cn(
                 "w-24 justify-start",
@@ -110,9 +111,9 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
       </section>
 
       <section id="radius" className="space-y-4">
-        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
           Radius
-        </h3>
+        </h2>
 
         <div className="flex flex-wrap gap-2">
           {RADIUS.map((value) => (
@@ -120,6 +121,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               size="sm"
               variant="outline"
               key={value}
+              aria-pressed={radius === value}
               onClick={() => themeConfigHandler({ theme, radius: value })}
               className={cn(
                 "w-24 capitalize",

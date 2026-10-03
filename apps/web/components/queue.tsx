@@ -92,7 +92,7 @@ export function Queue() {
                     <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                       <Image
                         src={getImageSrc(item.image, "low")}
-                        alt={item.name}
+                        alt=""
                         fill
                         sizes="40px"
                         className="z-10 object-cover duration-300 group-hover:brightness-50"

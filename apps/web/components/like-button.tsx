@@ -151,6 +151,7 @@ export function LikeButton(props: LikeButtonProps) {
       <TooltipTrigger
         delay={0}
         aria-label="Like"
+        aria-pressed={optimisticLike}
         onClick={likeHandler}
         className={cn(
           "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
@@ -162,7 +163,7 @@ export function LikeButton(props: LikeButtonProps) {
           aria-hidden="true"
           className={cn(
             "size-5 text-inherit transition-transform active:scale-105",
-            optimisticLike && "fill-red-500 text-red-500",
+            optimisticLike && "fill-destructive text-destructive",
           )}
         />
       </TooltipTrigger>

@@ -39,7 +39,7 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
 
             <div className="grid grid-cols-3 space-x-6 p-2 text-sm font-medium">
               <div className="border-r">
-                <h4 className="font-heading text-2xl">New releases</h4>
+                <h3 className="font-heading text-2xl">New releases</h3>
 
                 {megaMenu?.mega_menu?.new_releases?.map(
                   ({ title, perma_url }) => (
@@ -59,7 +59,7 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
               </div>
 
               <div className="border-r">
-                <h4 className="font-heading text-2xl">Top Playlist</h4>
+                <h3 className="font-heading text-2xl">Top Playlist</h3>
 
                 {megaMenu?.mega_menu?.top_playlists?.map(
                   ({ title, perma_url }) => (
@@ -75,7 +75,7 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
               </div>
 
               <div>
-                <h4 className="font-heading text-2xl">Top Artists</h4>
+                <h3 className="font-heading text-2xl">Top Artists</h3>
 
                 {megaMenu?.mega_menu?.top_artists?.map(
                   ({ title, perma_url }) => (
