@@ -32,13 +32,11 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
-    "@trpc/react-query": "^11.19.0",
     "@types/node": "^26.6.3",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
     "oxfmt": "^0.70.0",
     "oxlint": "^1.85.0",
-    "superjson": "^2.2.6",
     "turbo": "^2.11.4"
   },
   "lint-staged": {
@@ -54,9 +52,5 @@
       "@commitlint/config-conventional"
     ]
   },
-  "packageManager": "bun@1.4.2",
-  "dependencies": {
-    "@trpc/client": "^11.19.0",
-    "@trpc/server": "^11.19.0"
-  }
+  "packageManager": "bun@1.4.2"
 }
