@@ -1,4 +1,4 @@
-import { getImageSrc } from "@infinitunes/types";
+import { decode, getImageSrc } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Image from "next/image";
@@ -47,7 +47,7 @@ export async function TopSearch() {
             <div className="relative aspect-square h-12 min-h-fit overflow-hidden rounded">
               <Image
                 src={getImageSrc(t.image, "low")}
-                alt={t.title}
+                alt={decode(t.title)}
                 fill
                 className="z-10 object-cover"
               />
@@ -56,10 +56,12 @@ export async function TopSearch() {
             </div>
 
             <div className="my-auto w-[calc(100%-3rem)]">
-              <div className="truncate text-sm font-medium">{t.title}</div>
+              <div className="truncate text-sm font-medium">
+                {decode(t.title)}
+              </div>
 
               <div className="truncate text-xs capitalize text-muted-foreground">
-                {t.subtitle}
+                {t.subtitle ? decode(t.subtitle) : null}
               </div>
             </div>
           </Link>
