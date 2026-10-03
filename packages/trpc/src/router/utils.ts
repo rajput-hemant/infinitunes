@@ -1,5 +1,3 @@
-import { parseToken } from "@infinitunes/types";
-
 import { api } from "../lib/api";
 import { createDownloadLinks } from "../lib/download";
 import { endpoints } from "../lib/endpoints";
@@ -14,10 +12,6 @@ export function hasIdentity(
   key: string,
 ): value is Record<string, unknown> {
   return isRecord(value) && Boolean(value[key]);
-}
-
-export function tokenFromLink(link: string): string {
-  return parseToken(link);
 }
 
 export async function resolveNumericId(

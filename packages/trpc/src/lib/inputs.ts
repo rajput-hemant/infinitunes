@@ -11,7 +11,6 @@ export const homeInput = z.object({
 export const songInput = z.object({
   id: z.string().optional(),
   token: z.string().optional(),
-  link: z.string().optional(),
   lang,
 });
 
@@ -23,7 +22,6 @@ export const songRecommendInput = z.object({
 export const albumInput = z.object({
   id: z.string().optional(),
   token: z.string().optional(),
-  link: z.string().optional(),
   lang,
 });
 
@@ -40,7 +38,6 @@ export const albumSameYearInput = z.object({
 export const playlistInput = z.object({
   id: z.string().optional(),
   token: z.string().optional(),
-  link: z.string().optional(),
   lang,
 });
 
@@ -52,7 +49,6 @@ export const playlistRecommendInput = z.object({
 export const artistInput = z.object({
   id: z.string().optional(),
   token: z.string().optional(),
-  link: z.string().optional(),
   page: z.coerce.number().default(0),
   n_song: z.coerce.number().default(10),
   n_album: z.coerce.number().default(10),
@@ -78,7 +74,6 @@ export const artistTopSongsInput = z.object({
 
 export const showInput = z.object({
   token: z.string().optional(),
-  link: z.string().optional(),
   season: z.coerce.number().optional(),
   sort: z.string().optional(),
 });
@@ -132,7 +127,6 @@ export const getLyricsInput = z.object({
 
 export const getMixInput = z.object({
   token: z.string().optional(),
-  link: z.string().optional(),
   page,
   n: z.coerce.number().default(20),
   lang,
@@ -140,7 +134,6 @@ export const getMixInput = z.object({
 
 export const getLabelInput = z.object({
   token: z.string().optional(),
-  link: z.string().optional(),
   page,
   n_song: z.coerce.number().default(10),
   n_album: z.coerce.number().default(10),

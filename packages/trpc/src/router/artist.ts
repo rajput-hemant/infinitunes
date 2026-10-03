@@ -14,7 +14,6 @@ import {
   hasIdentity,
   isRecord,
   mapDownloadUrls,
-  tokenFromLink,
   withDownloadUrl,
 } from "./utils";
 
@@ -23,31 +22,18 @@ export const artistRouter = router({
     .input(artistInput)
     .output(z.custom<Artist>())
     .query(async ({ input }) => {
-      const { id, token, link, lang } = input;
-      if (!id && !link && !token) {
+      const { id, token, lang } = input;
+      if (!id && !token) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Please provide Artist id, link or token",
+          message: "Please provide Artist id or token",
         });
       }
-      if (id && link) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please provide either Artist id or link",
-        });
-      }
-      if (link && !link.includes("artist")) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please provide a valid JioSaavn link",
-        });
-      }
-      const t = token || tokenFromLink(link ?? "");
       const endpoint = id ? endpoints.artist.id : endpoints.artist.link;
       const result = await api(endpoint, {
         query: {
           artistId: id,
-          token: t,
+          token,
           type: id ? "" : "artist",
           p: input.page,
           n_song: input.n_song,
@@ -58,7 +44,7 @@ export const artistRouter = router({
       if (!hasIdentity(result, "artistId")) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Artist not found, please check the id or link",
+          message: "Artist not found, please check the id or token",
         });
       }
       mapDownloadUrls(result, "topSongs");

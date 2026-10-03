@@ -10,32 +10,21 @@ import {
   albumSameYearInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import {
-  hasIdentity,
-  mapDownloadUrls,
-  resolveNumericId,
-  tokenFromLink,
-} from "./utils";
+import { hasIdentity, mapDownloadUrls, resolveNumericId } from "./utils";
 
 export const albumRouter = router({
   details: publicProcedure
     .input(albumInput)
     .output(z.custom<Album>())
     .query(async ({ input }) => {
-      const { id, token, link, lang } = input;
-      if (!id && !link && !token) {
+      const { id, token, lang } = input;
+      if (!id && !token) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Please provide album id, link or a token",
+          message: "Please provide album id or a token",
         });
       }
-      if (link && !link.includes("album")) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please provide a valid JioSaavn link",
-        });
-      }
-      const t = token || tokenFromLink(link ?? "");
+      const t = token ?? "";
       const albumid = id ?? (await resolveNumericId(t, "album"));
       const result = await api(endpoints.album.id, {
         query: {
@@ -48,7 +37,7 @@ export const albumRouter = router({
       if (!hasIdentity(result, "id")) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "No album found, please check the id, link or token",
+          message: "No album found, please check the id or token",
         });
       }
       mapDownloadUrls(result, "list");
