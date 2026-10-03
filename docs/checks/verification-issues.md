@@ -2,7 +2,7 @@
 
 Single canonical ledger for Infinitunes verification. Feature files in [.agents/skills/verify/features](../../.agents/skills/verify/features/README.md) link here by ID and do not repeat issue text. Skill: [.agents/skills/verify/SKILL.md](../../.agents/skills/verify/SKILL.md) (DRAFT).
 
-Branch under test: `fm/infinitunes-pstack-verification`, based on `migration/bun-monorepo` @ `80bb29c`. Date: 2026-10-02.
+Branch under test: `migration/bun-monorepo` @ `9be77b9`. Date: 2026-10-02.
 
 ## Classification
 

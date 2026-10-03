@@ -13,7 +13,7 @@ Radio functionality replicates official JioSaavn web client semantics (`webradio
 - **Station Detail Page**: `/radio/[name]/[token]` loads station metadata and initial batch of station tracks via `api.radio.stationDetails`.
 - **Featured Station Playback**: Clicking the play button on station cards or the station detail header creates/resolves a station session (`api.radio.createStation({ type: "featured", ... })`), populates the player queue, and starts playback.
 - **Song & Artist Radio**: Selecting `Play Radio` from song action menus (`components/song-list/more-button.tsx`) or artist headers (`components/details-header/more-button.tsx`) spawns an artist-seeded radio session via `api.radio.createStation({ type: "artist", artistId, ... })`.
-- **Endless Queue Refill**: `apps/web/components/player.tsx` monitors active radio sessions stored in `activeRadioSessionAtom`. When playback reaches the end of the queue (≤2 tracks remaining), it asynchronously requests the next batch of 5 songs via `api.radio.songs({ stationId, next: 1 })` and appends them seamlessly.
+- **Endless Queue Refill**: `apps/web/components/player.tsx` monitors active radio sessions stored in `activeRadioSessionAtom`. When playback reaches the end of the queue (current track within the last 3 queue entries, `currentIndex >= queue.length - 3`), it asynchronously requests the next batch of 10 songs via `utils.radio.songs.fetch({ stationId, k: 10 })` and appends them seamlessly.
 - **Player State & Badge**: The player bar displays a live "Radio" badge alongside track details when a radio session is active.
 
 ## How to get to it (user POV)
@@ -32,7 +32,7 @@ Radio functionality replicates official JioSaavn web client semantics (`webradio
   - Fallback entity station creation.
   - Upstream error handling and graceful fallbacks.
   - Song payload decryption and `withDownloadUrl` pipeline.
-  - Rolling pagination/refill (`next: 1`, `count: 5`).
+  - Rolling pagination/refill (`k: 10`).
   - Synthetic station metadata and token decoding.
 - Type check: `bun run type-check` exits 0 across all workspaces.
 - Linter: `bun run lint` exits 0 with 0 errors.
@@ -50,4 +50,4 @@ Evidence screenshots in `/Users/rajput-hemant/Desktop/firstmate/data/infinitunes
 | Manual queue replaces radio session  | ✅ PASS | `06-manual-queue-cleared-radio.png`         | `activeRadio = null` when Play clicked on artist page                                                                                                       |
 | Mobile `/radio` (390×844)            | ✅ PASS | `07-radio-mobile-390px.png`                 | Station grid renders at mobile width                                                                                                                        |
 | Artist details-header "Play Radio"   | ✅ PASS | `06-verified-artist-play-radio-success.png` | `artistId` passed from `DetailsHeader`; station created with `...~^~artist_radio~^~459320`; 20 songs added to queue; `activeRadio` set. Fixed in ISSUE-022. |
-| Queue refill (≤2 tracks trigger)     | ⚠️ GAP  | —                                           | Requires actual audio playback; Howler won't advance without CDN-reachable src under headless Chrome. (Retained gap)                                        |
+| Queue refill (last-3 trigger)        | ⚠️ GAP  | —                                           | Requires actual audio playback; Howler won't advance without CDN-reachable src under headless Chrome. (Retained gap)                                        |

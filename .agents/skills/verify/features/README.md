@@ -18,7 +18,7 @@ Auth model: Better Auth with email + password, passkey (WebAuthn) and Google/Git
 | User playlists                             | [playlists.md](playlists.md)                     | user            | none            |
 | Library (`/me`)                            | [library.md](library.md)                         | user            | none            |
 | Appearance and preferences                 | [preferences.md](preferences.md)                 | guest           | none            |
-| Radio (stubbed; separate task)             | [radio.md](radio.md)                             | guest           | none            |
+| Radio                                      | [radio.md](radio.md)                             | guest           | none            |
 | UI quality and responsive layout           | [ui-quality.md](ui-quality.md)                   | both            | none            |
 
 ## Route inventory (from `apps/web/app`)
