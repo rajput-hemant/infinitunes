@@ -128,18 +128,23 @@ function originOf(value: string | null): string | null {
 function isSameOriginRequest(req: NextRequest): boolean {
   if (req.method === "OPTIONS") return true;
 
+  // The request's own host (browsers cannot forge it cross-site) plus the
+  // configured public URL, so previews and alternate domains keep working.
   const host = req.headers.get("host");
-  const allowed = originOf(
-    env.AUTH_URL ?? (host ? `${req.nextUrl.protocol}//${host}` : null),
-  );
+  const allowed = [
+    originOf(host ? `${req.nextUrl.protocol}//${host}` : null),
+    originOf(env.AUTH_URL ?? null),
+  ].filter((o): o is string => o !== null);
+  const isAllowed = (value: string | null) => {
+    const o = originOf(value);
+    return o !== null && allowed.includes(o);
+  };
   const origin = req.headers.get("origin");
   const referer = req.headers.get("referer");
 
-  if (!SAFE_METHODS.has(req.method)) {
-    return allowed !== null && originOf(origin) === allowed;
-  }
-  if (origin) return allowed !== null && originOf(origin) === allowed;
-  if (referer) return allowed !== null && originOf(referer) === allowed;
+  if (!SAFE_METHODS.has(req.method)) return isAllowed(origin);
+  if (origin) return isAllowed(origin);
+  if (referer) return isAllowed(referer);
   return true;
 }
 

@@ -4,6 +4,7 @@ export interface EnvContext {
   nodeEnv?: string;
   vercel?: boolean;
   vercelUrl?: string;
+  vercelProductionUrl?: string;
 }
 
 function authSecret(ctx: EnvContext) {
@@ -16,10 +17,22 @@ function withHttps(url: string) {
   return /^https?:\/\//.test(url) ? url : `https://${url}`;
 }
 
+/**
+ * Public base URL: an explicit AUTH_URL wins, then the project's production
+ * domain (VERCEL_PROJECT_PRODUCTION_URL), then this deployment's own host
+ * (VERCEL_URL, previews). Vercel's host variables are bare hosts (no scheme).
+ */
+export function resolveAuthUrl(
+  explicit: string | undefined,
+  ctx: EnvContext,
+): string | undefined {
+  const url = explicit || ctx.vercelProductionUrl || ctx.vercelUrl;
+  return url ? withHttps(url) : undefined;
+}
+
 function authUrl(ctx: EnvContext) {
   return z.preprocess(
-    // Vercel's VERCEL_URL is a bare host (no scheme).
-    (str) => (ctx.vercelUrl ? withHttps(ctx.vercelUrl) : str),
+    (str) => resolveAuthUrl(typeof str === "string" ? str : undefined, ctx),
     ctx.vercel ? z.string() : z.string().url(),
   );
 }
@@ -106,4 +119,5 @@ export const runtimeKeys = [
   "NODE_ENV",
   "VERCEL",
   "VERCEL_URL",
+  "VERCEL_PROJECT_PRODUCTION_URL",
 ] as const;

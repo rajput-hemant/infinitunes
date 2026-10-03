@@ -244,6 +244,54 @@ describe("Injected plugins and env precedence", () => {
   });
 });
 
+describe("Better Auth URL resolution", () => {
+  const keys = [
+    "BETTER_AUTH_URL",
+    "AUTH_URL",
+    "VERCEL_URL",
+    "VERCEL_PROJECT_PRODUCTION_URL",
+  ] as const;
+  const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+  const restore = () => {
+    for (const k of keys) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k];
+    }
+  };
+
+  it("uses the production domain as base URL and trusts the preview host", () => {
+    for (const k of keys) delete process.env[k];
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "infinitunes.example.com";
+    process.env.VERCEL_URL = "infinitunes-abc.vercel.app";
+    try {
+      const auth = createAuth(makeFakeDb());
+      expect(auth.options.baseURL).toBe("https://infinitunes.example.com");
+      expect(auth.options.trustedOrigins).toEqual([
+        "https://infinitunes.example.com",
+        "https://infinitunes-abc.vercel.app",
+      ]);
+    } finally {
+      restore();
+    }
+  });
+
+  it("lets an explicit AUTH_URL win and still trusts the Vercel hosts", () => {
+    for (const k of keys) delete process.env[k];
+    process.env.AUTH_URL = "https://auth.example.com";
+    process.env.VERCEL_URL = "infinitunes-abc.vercel.app";
+    try {
+      const auth = createAuth(makeFakeDb());
+      expect(auth.options.baseURL).toBe("https://auth.example.com");
+      expect(auth.options.trustedOrigins).toEqual([
+        "https://auth.example.com",
+        "https://infinitunes-abc.vercel.app",
+      ]);
+    } finally {
+      restore();
+    }
+  });
+});
+
 describe("Shared schema / table mapping", () => {
   it("uses the dedicated Better Auth tables and compatibility columns", () => {
     expect(getTableName(users)).toBe("user");

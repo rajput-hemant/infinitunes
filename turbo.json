@@ -5,6 +5,7 @@
     "NODE_ENV",
     "VERCEL",
     "VERCEL_URL",
+    "VERCEL_PROJECT_PRODUCTION_URL",
     "AUTH_SECRET",
     "AUTH_URL",
     "GOOGLE_CLIENT_ID",

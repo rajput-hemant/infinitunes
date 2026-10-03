@@ -189,6 +189,17 @@ describe("proxy /api/trpc origin check", () => {
     expect(res.status).toBe(200);
   });
 
+  it("accepts the request's own https host behind a custom domain", async () => {
+    const res = await proxy(
+      createNextRequest(
+        "https://music.example.com/api/trpc/song.details",
+        "POST",
+        { origin: "https://music.example.com", host: "music.example.com" },
+      ),
+    );
+    expect(res.status).toBe(200);
+  });
+
   it("lets GET and HEAD without Origin or Referer through", async () => {
     expect((await call({ host: "localhost:3000" }, "GET")).status).toBe(200);
     expect((await call({ host: "localhost:3000" }, "HEAD")).status).toBe(200);
