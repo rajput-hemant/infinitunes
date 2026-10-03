@@ -30,7 +30,11 @@ const config: NextConfig = {
   reactStrictMode: true,
   reactCompiler: true,
   typedRoutes: true,
-  compiler: { removeConsole: isProd },
+  // Keep error/warn: server-side fallbacks (shell data, recordPlay) log through
+  // console.error and would otherwise be invisible in production.
+  compiler: {
+    removeConsole: isProd ? { exclude: ["error", "warn"] } : false,
+  },
   images: {
     // Preserves the previous non-Docker behavior (images served as-is);
     // enabling the Next optimizer on Vercel is a pending decision.
