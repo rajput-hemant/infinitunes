@@ -1,4 +1,3 @@
-import { decode } from "@infinitunes/types";
 import { Mic2 } from "lucide-react";
 
 import {
@@ -34,15 +33,16 @@ export default async function LikedArtistsPage() {
             title="Liked Artists"
             count={artists.length}
             noun="artist"
+            missing={tokens.length - artists.length}
           />
 
           <div className="flex w-full flex-wrap gap-4">
             {artists.map((artist) => (
               <SliderCard
                 key={artist.artistId}
-                name={decode(artist.name)}
+                name={artist.name}
                 url={artist.urls.songs}
-                subtitle={decode(artist.subtitle)}
+                subtitle={artist.subtitle}
                 type={artist.type}
                 image={artist.image}
               />

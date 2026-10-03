@@ -96,8 +96,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
   }
 
   return (
-    <div className="flex w-full max-w-5xl justify-between gap-4 px-6 py-2">
-      <div className="space-y-6">
+    <div className="flex w-full max-w-5xl flex-col-reverse gap-6 px-6 py-2 md:flex-row md:justify-between md:gap-4">
+      <div className="min-w-0 flex-1 space-y-6">
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <Controller
             control={form.control}
@@ -110,7 +110,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     type="text"
                     disabled={isSubmitting}
                     placeholder={user.name ?? "John Doe"}
-                    className="w-96 shadow-xs"
+                    className="w-full max-w-96 shadow-xs"
                     {...field}
                   />
                 </div>
@@ -133,7 +133,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     type="email"
                     disabled={isSubmitting}
                     placeholder={user.email ?? "you@example.com"}
-                    className="w-96 shadow-xs"
+                    className="w-full max-w-96 shadow-xs"
                     {...field}
                   />
                 </div>
@@ -151,7 +151,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             render={({ field, fieldState }) => (
               <Field id="change-password" data-invalid={!!fieldState.error}>
                 <FieldLabel>New Password</FieldLabel>
-                <div className="relative w-96">
+                <div className="relative w-full max-w-96">
                   <Input
                     type={isPassVisible ? "text" : "password"}
                     disabled={isSubmitting}
@@ -172,9 +172,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
                     >
                       {isPassVisible ? (
-                        <EyeOff className="size-5" />
+                        <EyeOff aria-hidden className="size-5" />
                       ) : (
-                        <Eye className="size-5" />
+                        <Eye aria-hidden className="size-5" />
                       )}
                     </TooltipTrigger>
 
@@ -201,12 +201,12 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </form>
 
         <div id="delete-account" className="space-y-4">
-          <p className="text-3xl font-bold text-destructive drop-shadow-sm">
+          <h3 className="font-heading text-lg text-destructive drop-shadow-md sm:text-xl md:text-2xl">
             Danger Zone
-          </p>
+          </h3>
           <Separator />
 
-          <div className="flex justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="font-medium">Delete your account</p>
               <small>Delete your account and all its associated data.</small>
@@ -251,7 +251,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </div>
       </div>
 
-      <div className="relative size-52 overflow-hidden">
+      <div className="relative size-40 shrink-0 self-center overflow-hidden md:size-52 md:self-start">
         <Image
           src={user.image ?? "/images/placeholder/user.jpg"}
           alt={user.name ?? "Profile Photo"}

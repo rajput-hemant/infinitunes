@@ -13,6 +13,7 @@ import {
 import { Separator } from "@infinitunes/ui/components/separator";
 import { List, ListX } from "lucide-react";
 
+import { LibraryEmpty } from "~/components/library/library-section";
 import type { User } from "~/lib/auth";
 
 import { NewPlaylistForm } from "./new-playlist-form";
@@ -51,7 +52,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
                 >
                   {/* TODO: add image collage */}
                   <div className="size-12 rounded-md bg-muted">
-                    <List className="m-auto h-full" />
+                    <List aria-hidden className="m-auto h-full" />
                   </div>
                   <div className="flex flex-col truncate">
                     <p className="truncate font-medium">{name}</p>
@@ -63,12 +64,12 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
               ))}
             </div>
           ) : (
-            <div className="h-full rounded-md border border-dashed p-2">
-              <div className="flex h-full flex-col items-center justify-center gap-2 rounded-md bg-muted text-lg font-medium text-muted-foreground">
-                <ListX size={40} />
-                You do not have any playlist yet
-              </div>
-            </div>
+            <LibraryEmpty
+              icon={ListX}
+              title="No playlists yet"
+              description="Create a playlist to start saving songs."
+              className="min-h-64 lg:min-h-64"
+            />
           )}
         </div>
 

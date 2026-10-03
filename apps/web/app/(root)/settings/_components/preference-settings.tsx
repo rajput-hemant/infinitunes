@@ -93,11 +93,13 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
 
         <div
           id="stream-quality"
-          className="flex max-w-xl items-center justify-between"
+          className="flex max-w-xl flex-wrap items-center justify-between gap-2"
         >
-          <h4 className="w-40 text-muted-foreground">Stream Quality</h4>
+          <h4 className="w-40 shrink-0 text-muted-foreground">
+            Stream Quality
+          </h4>
 
-          <Separator className="data-[orientation=horizontal]:w-20" />
+          <Separator className="hidden data-[orientation=horizontal]:w-20 sm:block" />
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -116,7 +118,10 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                     )
                   </span>
 
-                  <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
+                  <ChevronDown
+                    aria-hidden
+                    className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180"
+                  />
                 </Button>
               }
             />
@@ -134,7 +139,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                   }}
                   className={cn(
                     "justify-between",
-                    quality === downloadQuality && "bg-accent/60",
+                    quality === streamQuality && "bg-accent/60",
                   )}
                 >
                   <span>{quality}</span>
@@ -147,11 +152,13 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
 
         <div
           id="download-quality"
-          className="flex max-w-xl items-center justify-between"
+          className="flex max-w-xl flex-wrap items-center justify-between gap-2"
         >
-          <h4 className="w-40 text-muted-foreground">Download Quality</h4>
+          <h4 className="w-40 shrink-0 text-muted-foreground">
+            Download Quality
+          </h4>
 
-          <Separator className="data-[orientation=horizontal]:w-20" />
+          <Separator className="hidden data-[orientation=horizontal]:w-20 sm:block" />
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -160,7 +167,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                   variant="outline"
                   className="group w-48 justify-between font-semibold capitalize"
                 >
-                  <span>{streamQuality}</span>
+                  <span>{downloadQuality}</span>
                   <span className="text-xs font-light">
                     (
                     {
@@ -169,7 +176,10 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                     }
                     )
                   </span>
-                  <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
+                  <ChevronDown
+                    aria-hidden
+                    className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180"
+                  />
                 </Button>
               }
             />
@@ -200,11 +210,11 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
 
         <div
           id="image-quality"
-          className="flex max-w-xl items-center justify-between"
+          className="flex max-w-xl flex-wrap items-center justify-between gap-2"
         >
-          <h4 className="w-40 text-muted-foreground">Image Quality</h4>
+          <h4 className="w-40 shrink-0 text-muted-foreground">Image Quality</h4>
 
-          <Separator className="data-[orientation=horizontal]:w-20" />
+          <Separator className="hidden data-[orientation=horizontal]:w-20 sm:block" />
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -214,7 +224,10 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
                   className="group w-48 justify-between font-semibold capitalize"
                 >
                   {imageQuality}
-                  <ChevronDown className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180" />
+                  <ChevronDown
+                    aria-hidden
+                    className="ml-2 size-4 transition-transform group-data-[state=open]:rotate-180"
+                  />
                 </Button>
               }
             />

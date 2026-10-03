@@ -1,4 +1,4 @@
-import { decode, getToken } from "@infinitunes/types";
+import { getToken } from "@infinitunes/types";
 import { Podcast } from "lucide-react";
 
 import {
@@ -57,15 +57,16 @@ export default async function LikedPodcastsPage() {
             title="Liked Podcasts"
             count={shows.length}
             noun="podcast"
+            missing={tokens.length - shows.length}
           />
 
           <div className="flex w-full flex-wrap gap-4">
             {shows.map((show) => (
               <SliderCard
                 key={show.show_details.id}
-                name={decode(show.show_details.title)}
+                name={show.show_details.title}
                 url={show.show_details.perma_url}
-                subtitle={decode(show.show_details.subtitle)}
+                subtitle={show.show_details.subtitle}
                 type="show"
                 image={show.show_details.image}
                 explicit={show.show_details.explicit_content}

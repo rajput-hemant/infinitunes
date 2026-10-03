@@ -40,7 +40,7 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
             <span className="sr-only">View {name}</span>
           </Link>
 
-          <div className="absolute right-1 top-1 z-20 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="absolute right-1 top-1 z-20 transition-opacity motion-reduce:transition-none pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
             <PlaylistManageMenu
               playlist={{ id, name, description }}
               triggerClassName="rounded-md bg-background/80 p-1 shadow-sm backdrop-blur-sm"
@@ -53,14 +53,14 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
         </div>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
-          <h4 className="w-full font-semibold lg:text-lg">
+          <h3 className="w-full font-semibold lg:text-lg">
             <Link
               href={asRoute(`/me/playlist/${id}`)}
               className="mx-auto flex max-w-fit items-center"
             >
               <span className="truncate">{name}</span>
             </Link>
-          </h4>
+          </h3>
 
           <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">
             {description}
