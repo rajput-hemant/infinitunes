@@ -1,6 +1,3 @@
-/* eslint-disable jsx-a11y/alt-text */
-/* eslint-disable @next/next/no-img-element */
-
 import { readFile } from "node:fs/promises";
 
 import { ImageResponse } from "next/og";
@@ -8,6 +5,13 @@ import { ImageResponse } from "next/og";
 import { siteConfig } from "~/config/site";
 import { parseAllowedImageUrl } from "~/lib/image-hosts";
 import { cn } from "~/lib/utils";
+
+// `@vercel/og` augments only HTML elements with the Tailwind `tw` prop.
+declare module "react" {
+  interface SVGAttributes<T> {
+    tw?: string;
+  }
+}
 
 const DEFAULT_IMAGE = "https://graph.org/file/16937ebb693470d804f31.png";
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -24,12 +28,13 @@ async function fetchImage(url: URL) {
   }
   const buffer = await res.arrayBuffer();
   if (buffer.byteLength > MAX_IMAGE_BYTES) throw new Error("Image too large");
-  return buffer;
+  const type = res.headers.get("content-type")?.split(";")[0];
+  return `data:${type};base64,${Buffer.from(buffer).toString("base64")}`;
 }
 
 // Read from disk rather than `fetch()`: on the Node runtime undici refuses
 // `file:` URLs, and the bundler rewrites this URL to the emitted asset.
-async function fetchFonts() {
+async function readFont() {
   return readFile(
     new URL("../../../public/fonts/CalSans-SemiBold.woff", import.meta.url),
   );
@@ -56,7 +61,7 @@ export async function GET(request: Request) {
 
   try {
     const image = await fetchImage(imageUrl);
-    const font = await fetchFonts();
+    const font = await readFont();
 
     return new ImageResponse(
       <div tw="relative flex h-full bg-black text-white">
@@ -66,7 +71,6 @@ export async function GET(request: Request) {
             transform: "translateX(-50%)",
             maskImage: "radial-gradient(closest-side,white,transparent)",
           }}
-          // @ts-expect-error property 'tw' does not exist on type svg
           tw="absolute left-1/2 top-1/2 ml-0 h-256 w-5xl"
         >
           <circle
@@ -90,7 +94,6 @@ export async function GET(request: Request) {
               <svg
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                // @ts-expect-error property 'tw' does not exist on type svg
                 tw="mt-1.5 mr-1 h-10 w-10"
               >
                 <path
@@ -111,7 +114,6 @@ export async function GET(request: Request) {
 
         <div tw="relative flex h-full w-1/2 overflow-hidden">
           <img
-            // @ts-expect-error arrayBuffer is not assignable to string
             src={image}
             tw={cn(
               "mx-8 my-auto w-4xl max-w-none rounded-2xl border border-zinc-800 shadow-lg shadow-[#e935c277]",
@@ -133,7 +135,7 @@ export async function GET(request: Request) {
       },
     );
   } catch (e) {
-    console.log((e as Error).message);
+    console.error(e instanceof Error ? e.message : e);
 
     return new Response(`Failed to generate the image`, {
       status: 500,

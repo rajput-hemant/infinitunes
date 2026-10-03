@@ -35,7 +35,7 @@ import React from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
-import { useEventListener } from "~/hooks/use-event-listner";
+import { useKeydown } from "~/hooks/use-keydown";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -364,7 +364,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
    * Keyboard shortcuts (Keybinds)
    * -----------------------------------------------------------------------------------------------*/
 
-  useEventListener("keydown", (e) => {
+  useKeydown((e) => {
     if (isTyping || shouldIgnoreShortcut(e, { enabled: shortcutsEnabled }))
       return;
 
