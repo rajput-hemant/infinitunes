@@ -5,7 +5,7 @@
 Migrate the existing application intact into apps/web, with Bun workspaces and Turborepo orchestration. Do not extract
 shared business logic yet. Reserve packages/* for future React Native-compatible modules.
 
-Before implementation, save this plan as docs/migration-plan.md. No source files, assets, migrations, ignored local
+Before implementation, save this plan as docs/plans/migration-plan.md. No source files, assets, migrations, ignored local
 environment files, or existing empty directories may be deleted during migration.
 
 ## Implementation Steps
@@ -24,7 +24,7 @@ environment files, or existing empty directories may be deleted during migration
      Shadcn, Drizzle, and app package configuration.
 
    - Name the app package @infinitunes/web.
-   - Keep @/* -> ./src/* local to the web app and preserve all internal imports.
+   - Keep @/* -> ./src/* local to the web app (Superseded: the app now uses `~/*` -> `apps/web/*`, no `src` dir) and preserve all internal imports.
    - Leave apps/native, packages/db, and other existing directories untouched. Do not scaffold React Native or extract
      packages.
 
@@ -44,7 +44,7 @@ environment files, or existing empty directories may be deleted during migration
      5. Remaining runtime and development dependencies, CI actions, Husky, commitlint, and lint-staged.
 
    - Use the latest compatible policy:
-     - Keep Auth.js on the newest v5 beta because stable v4 would require an authentication rewrite.
+     - Keep Auth.js on the newest v5 beta because stable v4 would require an authentication rewrite. (Superseded: auth is now Better Auth in `packages/auth`.)
      - Use the newest TypeScript release supported by Next.js builds, not TypeScript 7 while its required programmatic
        interface is unavailable.
 
@@ -88,11 +88,13 @@ environment files, or existing empty directories may be deleted during migration
 
    - Keep a bun test --pass-with-no-tests path until real tests exist, since the repository currently has none.
    - Update Docker for root workspace installation and apps/web standalone output. Build with Bun, copy the correct web
-     public, standalone, and static paths, and validate the final server entrypoint.
+     public, standalone, and static paths, and validate the final server entrypoint. (Superseded: there is no production
+     image; Docker is local-dev only and production is Vercel.)
 
-   - Stop copying .env.local into Docker image layers. Supply runtime/build variables through the environment.
+   - Stop copying .env.local into Docker image layers. Supply runtime/build variables through the environment. (Moot
+     with no production image.)
    - Document Vercel's project root as apps/web, Bun installation, build commands, and environment variables.
-   - Update README and Makefile to present Bun as the supported package manager.
+   - Update README (and the since-removed Makefile) to present Bun as the supported package manager.
 
 ## Parallel Agent Execution
 
