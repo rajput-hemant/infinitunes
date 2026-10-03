@@ -1,6 +1,11 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
-import { formatDuration, decode, getImageSrc, getToken } from "@infinitunes/types";
+import {
+  formatDuration,
+  decode,
+  getImageSrc,
+  getToken,
+} from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
@@ -21,10 +26,18 @@ type SongListProps = {
   items: (Song | Episode)[];
   showAlbum?: boolean;
   className?: string;
+  playlistId?: string;
+  playlistSongIndices?: number[];
 };
 
 export async function SongList(props: SongListProps) {
-  const { items, showAlbum = true, className } = props;
+  const {
+    items,
+    showAlbum = true,
+    className,
+    playlistId,
+    playlistSongIndices,
+  } = props;
 
   const user = await getUser();
 
@@ -41,7 +54,7 @@ export async function SongList(props: SongListProps) {
     <section className={className}>
       <ol className="space-y-2 text-muted-foreground">
         {items.map((item, i) => (
-          <li key={item.id}>
+          <li key={`${item.id}-${i}`}>
             <div className="group flex h-14 w-full cursor-pointer items-center justify-between overflow-hidden rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-xs">
               <div className="hidden w-[6%] lg:flex lg:justify-center xl:w-[4%]">
                 <span
@@ -168,9 +181,12 @@ export async function SongList(props: SongListProps) {
 
                 <TileMoreButton
                   user={user}
+                  favorites={favorites}
                   item={item}
                   showAlbum={showAlbum}
                   playlists={playlists}
+                  playlistId={playlistId}
+                  playlistSongIndex={playlistSongIndices?.[i]}
                 />
               </div>
             </div>

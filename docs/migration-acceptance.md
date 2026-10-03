@@ -256,3 +256,40 @@ credential/service-dependent checks (authenticated flows, live public-data
 rendering, Vercel preview, Tailwind pixel-level visual comparison) are deferred
 and listed above for captain action. No unexecuted check is claimed as passed
 and no secret is included in this report.
+
+---
+
+## 13. Local smoke pass (2026-10-02)
+
+Run against a disposable local PostgreSQL 17 container (removed afterwards),
+inert placeholder OAuth values, a throwaway `AUTH_SECRET` and the live public
+JioSaavn API. No shared or production database, credential or account was
+touched. Sections 6, 8 and 12 above describe the earlier state; this section
+supersedes their Docker, live-data and browser blockers.
+
+### Defects fixed
+
+| Defect                                                                                                               | Fix                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `docker compose build` failed: `oven/bun:1.3.14` cannot parse the committed `bun.lock` (`lockfileVersion` 2)         | Pin Bun `1.4.2` in `dockerfile`, `package.json` `packageManager` and `.github/workflows/ci.yml`             |
+| Docker build failed: `@t3-oss/env-core` not found, because per-package `node_modules` were not copied to the builder | Builder stage copies the whole `deps` stage (`COPY --from=deps /app ./`)                                    |
+| Settings quality rows overflowed: `Separator` `data-[orientation=horizontal]:w-full` overrode the plain `w-20` (TW4) | `preference-settings.tsx` passes `data-[orientation=horizontal]:w-20`; dropdown triggers now align at 827px |
+
+### Results
+
+| Check                                                                                                                                      | Result                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| `docker compose build`                                                                                                                     | PASS after the fixes above                                                                 |
+| Container smoke (`infinitunes` image, port 3200, DB via `host.docker.internal`)                                                            | PASS - `/`, `/album`, `/search/song/arijit`, `/login` 200; `/me` 307; `/nope` 404; CSS 200 |
+| Live data pages (`/`, `/album`, `/artist`, `/chart`, `/radio`, `/playlist`, `/show`, entity pages)                                         | PASS - HTTP 200 with real catalogue data                                                   |
+| Authenticated smoke: email+password signup, login, session persistence, protected `/me`, favorite, playlist create (row verified), logout  | PASS                                                                                       |
+| OAuth entry points (`/api/auth/sign-in/social`)                                                                                            | PASS to the provider redirect only; the provider round trip needs real credentials         |
+| Chrome browse, search page and dialog, album/song/artist pages, playback, next, queue dialog, download toast, settings, 404 and error page | PASS                                                                                       |
+| Light/dark and desktop (1280)/mobile (390) screenshots, no horizontal overflow on 16 routes at 390px                                       | PASS                                                                                       |
+| `lint`, `type-check`, `bun test`                                                                                                           | PASS                                                                                       |
+
+### Not proven
+
+- Passkey registration and login (needs an authenticator), adding a song to a playlist, queue item removal, and the OAuth provider round trip.
+- Tailwind 4 versus Tailwind 3 pixel comparison: only Tailwind 4 screenshots were captured; no pre-migration baseline build was rendered.
+- Pre-existing and out of scope: `fmt:check` reports 14 files untouched by this pass; song titles show raw `&quot;` from the upstream API; an invalid song token renders the generic error page.

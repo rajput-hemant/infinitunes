@@ -193,6 +193,7 @@ When updating this file, preserve this bar for all agents and keep entries conci
 - **Server vs Client Components**: Layouts and pages should remain Server Components where possible to fetch data and cookies efficiently. Isolate user interactivity (clicks, menus, forms) into dedicated Client Components with `"use client"`.
 - **Sidebar Layout Hierarchy**: Always nest `<Navbar />` inside `<SidebarInset>` above `<main>` within `<SidebarProvider>` to avoid breaking the horizontal layout.
 - **Component Imports**: Do not create local component files under `apps/web/components/ui`. Always reference the monorepo package `@infinitunes/ui/components/<name>` and exports in `packages/ui/package.json`.
+- **shadcn/ui is read-only**: Do not modify shadcn/ui components (`packages/ui/src/components`). Apply customizations in application components, wrappers, or composition instead.
 - **No barrel files in `apps/web/components`**: import from the source file
   (`~/components/slider/slider-card`), never a directory `index.ts`. Barrels were
   removed for tree-shaking/trace reasons; don't reintroduce them.
@@ -212,14 +213,19 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
 
 ## Shared constants across the monorepo
 
-- `@infinitunes/auth` exports `USERNAME_REGEX` / `USERNAME_MIN_LENGTH` / `USERNAME_MAX_LENGTH`
-  from `packages/auth/src/constants.ts` (subpath `@infinitunes/auth/constants`) and shared Zod auth
-  validation schemas (`usernameSchema`, `emailSchema`, `passwordSchema`, `loginSchema`, `signUpSchema`,
-  `resetPasswordSchema`) from `packages/auth/src/schemas.ts` (subpath `@infinitunes/auth/schemas`). The main
+- `@infinitunes/auth` exports shared Zod auth
+  validation schemas (`emailSchema`, `passwordSchema`, `loginSchema` (email-only),
+  `signUpSchema`, `resetPasswordSchema`) from `packages/auth/src/schemas.ts`
+  (subpath `@infinitunes/auth/schemas`). There is no username schema, plugin,
+  or client helper; the legacy nullable `username`/`displayUsername` DB columns
+  are preserved but unread by auth. Passkey support comes from the maintained
+  `@better-auth/passkey` package (server `passkey()`, client `passkeyClient()`),
+  backed by the app-specific `infinitunes_passkey` table. The main
   `@infinitunes/auth` barrel pulls server-only `createAuth` (Better Auth, DB, bcrypt) into the graph, so client
-  components must import these via `./constants` or `./schemas`, never from `@infinitunes/auth`.
+  components must import these via `./schemas`, never from `@infinitunes/auth`.
 - `createAuth` in `packages/auth/src/auth.ts` is platform-agnostic: it ships only
-  the `username` plugin and takes extra plugins via `createAuth(db, { plugins })`.
+  the `passkey` plugin (RP "Infinitunes", per-app `infinitunes_passkey` table)
+  and takes extra plugins via `createAuth(db, { plugins })`.
   The web app injects `nextCookies()` at its call site (`apps/web/lib/auth.ts`) -
   nothing under `@infinitunes/auth` may import `better-auth/next-js`. `createAuth`
   passes `secret`/`baseURL` into Better Auth (`BETTER_AUTH_*` wins over `AUTH_*`)

@@ -111,7 +111,7 @@ export type Radio = {
   more_info: {
     color?: string;
     description?: string;
-    featured_station_type: MediaType;
+    featured_station_type: MediaType | "featured";
     language: string;
     query?: string;
     station_display_text: string;

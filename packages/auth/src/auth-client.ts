@@ -1,12 +1,12 @@
 "use client";
 
-import { usernameClient } from "better-auth/client/plugins";
+import { passkeyClient } from "@better-auth/passkey/client";
 import { createAuthClient as createBetterAuthClient } from "better-auth/react";
 
 export function createAuthClient(options: { baseURL?: string } = {}) {
   return createBetterAuthClient({
     ...(options.baseURL ? { baseURL: options.baseURL } : {}),
-    plugins: [usernameClient()],
+    plugins: [passkeyClient()],
   });
 }
 

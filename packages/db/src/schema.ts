@@ -123,6 +123,29 @@ export const betterAuthVerifications = pgTable("better_auth_verification", {
 });
 
 /* ---------------------------------------------------------------------------
+ * Infinitunes passkey credentials (Better Auth @better-auth/passkey).
+ * App-specific table; Lipi uses lipi_passkey with identical columns.
+ * Column names mirror the plugin schema so the drizzle adapter maps them.
+ * ------------------------------------------------------------------------- */
+
+export const infinitunesPasskeys = pgTable("infinitunes_passkey", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name"),
+  publicKey: text("publicKey").notNull(),
+  userId: uuid("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  credentialID: text("credentialID").notNull().unique(),
+  counter: integer("counter").notNull().default(0),
+  deviceType: text("deviceType").notNull(),
+  backedUp: boolean("backedUp").notNull().default(false),
+  transports: text("transports"),
+  aaguid: text("aaguid"),
+  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+});
+
+/* ---------------------------------------------------------------------------
  * App tables
  * ------------------------------------------------------------------------- */
 
@@ -179,3 +202,6 @@ export type BetterAuthVerification =
   typeof betterAuthVerifications.$inferSelect;
 export type NewBetterAuthVerification =
   typeof betterAuthVerifications.$inferInsert;
+
+export type InfinitunesPasskey = typeof infinitunesPasskeys.$inferSelect;
+export type NewInfinitunesPasskey = typeof infinitunesPasskeys.$inferInsert;

@@ -1,6 +1,6 @@
 "use client";
 
-import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Queue, Song } from "@infinitunes/types";
 import { getImageSrc, toQueue } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
@@ -27,6 +27,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Heart,
+  ListMinus,
   ListMusic,
   ListOrdered,
   MoreVertical,
@@ -41,12 +42,19 @@ import React from "react";
 import { toast } from "sonner";
 
 import {
+  useActiveRadioSession,
   useCurrentSongIndex,
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
-import { addSongsToPlaylist } from "~/lib/db/queries";
+import {
+  addSongsToPlaylist,
+  addToFavorites,
+  removeFromFavorites,
+  removeSongsFromPlaylist,
+} from "~/lib/db/queries";
+import { api } from "~/lib/trpc/client";
 import { cn, currentlyInDev } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
@@ -56,9 +64,12 @@ import { TileMoreLinks } from "./more-links";
 
 type TileMoreButtonProps = {
   user?: User;
+  favorites?: Favorite;
   item: Song | Episode | Queue;
   showAlbum: boolean;
   playlists?: MyPlaylist[];
+  playlistId?: string;
+  playlistSongIndex?: number;
   className?: string;
 };
 
@@ -90,7 +101,16 @@ function getItemArtists(item: Song | Episode | Queue) {
 }
 
 export function TileMoreButton(props: TileMoreButtonProps) {
-  const { user, item, showAlbum, playlists, className } = props;
+  const {
+    user,
+    favorites,
+    item,
+    showAlbum,
+    playlists,
+    playlistId,
+    playlistSongIndex,
+    className,
+  } = props;
 
   const router = useRouter();
 
@@ -100,9 +120,48 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [initialQueue, setQueue] = useQueue();
   const [, setCurrentIndex] = useCurrentSongIndex();
+  const [, setActiveRadio] = useActiveRadioSession();
+
+  const utils = api.useUtils();
+
+  const [isFavorite, setOptimisticFavorite] = React.useOptimistic(
+    favorites?.songs.includes(item.id) ?? false,
+    (_current, update: boolean) => update,
+  );
 
   function like() {
-    currentlyInDev();
+    if (!user) {
+      toast.warning("Unable to perform action. Please sign in.", {
+        description: "You need to sign in to like this item.",
+      });
+      return;
+    }
+
+    const name = getItemName(item);
+
+    React.startTransition(async () => {
+      setOptimisticFavorite(!isFavorite);
+      const promise = isFavorite
+        ? removeFromFavorites(item.id, "song")
+        : addToFavorites(item.id, "song");
+
+      toast.promise(promise, {
+        loading: isFavorite
+          ? "Removing from favorites..."
+          : "Adding Song to favorites...",
+        success: isFavorite
+          ? `Successfully removed "${name}" from favorites!`
+          : `"${name}" song added to favorites!`,
+        error: (e) => e.message,
+      });
+
+      try {
+        await promise;
+        router.refresh();
+      } catch {
+        // Handled by toast.promise; transition failure reverts optimistic state
+      }
+    });
   }
 
   function play() {
@@ -158,14 +217,81 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     });
   }
 
-  function playRadio() {
-    currentlyInDev();
+  function removeFromPlaylist() {
+    if (!playlistId || playlistSongIndex === undefined) {
+      return;
+    }
+
+    toast.promise(
+      removeSongsFromPlaylist(playlistId, playlistSongIndex, item.id),
+      {
+        loading: "Removing from playlist...",
+        success: `"${getItemName(item)}" removed from playlist`,
+        error: (error) => error.message,
+        finally: () => router.refresh(),
+      },
+    );
+  }
+
+  async function playRadio() {
+    try {
+      toast.loading("Starting radio...", { id: "song-radio" });
+      const artists = getItemArtists(item);
+      const primary = artists?.[0];
+      const artistName = primary?.name;
+      const artistId = primary?.id;
+
+      const stationName = artistName || getItemName(item);
+      const radioType: "artist" | "featured" = artistName
+        ? "artist"
+        : "featured";
+
+      const { stationId } = await utils.client.radio.createStation.mutate({
+        type: radioType,
+        name: stationName,
+        artistId,
+        language:
+          "language" in item && typeof item.language === "string"
+            ? item.language
+            : undefined,
+      });
+
+      const radioSongs = await utils.radio.songs.fetch({
+        stationId,
+        k: 20,
+      });
+
+      if (!radioSongs.length) {
+        toast.error("Could not find songs for this radio", {
+          id: "song-radio",
+        });
+        return;
+      }
+
+      const radioQueue = radioSongs.map(toQueue);
+      setQueue(radioQueue);
+      setActiveRadio({
+        stationId,
+        name: `${stationName} Radio`,
+        type: radioType,
+      });
+      setCurrentIndex(0);
+      setIsPlayerInit(true);
+
+      toast.success(`Playing "${stationName} Radio"`, {
+        id: "song-radio",
+        description: `Added ${radioQueue.length} station tracks to queue`,
+      });
+    } catch {
+      toast.error("Unable to start radio station", { id: "song-radio" });
+    }
   }
 
   const menuItems: MenuItem[] = [
     {
-      label: "Add To Favourite",
+      label: isFavorite ? "Remove From Favourite" : "Add To Favourite",
       onClick: like,
+      hide: item.type !== "song",
       icon: Heart,
     },
     {
@@ -182,6 +308,13 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       label: "Add To Playlist",
       onClick: togglePlaylistDialog,
       icon: ListMusic,
+    },
+    {
+      label: "Remove from Playlist",
+      onClick: removeFromPlaylist,
+      hide:
+        !playlistId || playlistSongIndex === undefined || item.type !== "song",
+      icon: ListMinus,
     },
     {
       label: "Play Radio",

@@ -40,7 +40,7 @@ export function SliderCard(props: SliderCardProps) {
 
   const imageSrc = getImageSrc(image, "high");
   const isRadio = type === "radio_station";
-  const href = isRadio ? undefined : getHref(url, type);
+  const href = isRadio ? getHref(url, "radio") : getHref(url, type);
   const isExplicit =
     typeof explicit === "string" ? explicit === "true" : Boolean(explicit);
 

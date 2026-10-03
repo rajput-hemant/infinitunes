@@ -1,11 +1,9 @@
-import type { SongSearch } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { PlayButton } from "~/components/play-button";
 import { SongList } from "~/components/song-list/song-list";
-import { siteConfig } from "~/config/site";
 import { api } from "~/lib/trpc/server";
 import { getHref, ogImageUrl } from "~/lib/utils";
 
@@ -16,49 +14,46 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name, token } = await params;
 
-  const stations = await api.get.featuredStations({ page: 1, n: 50 });
-  const station = stations.find((s) => s.perma_url.endsWith(token));
+  try {
+    const details = await api.radio.stationDetails({ name, token });
+    const station = details.station;
 
-  if (!station) {
-    return { title: "Unknown Station" };
-  }
-
-  return {
-    title: station.title,
-    description: station.subtitle,
-    openGraph: {
+    return {
       title: station.title,
       description: station.subtitle,
-      url: getHref(station.perma_url, station.type),
-      images: {
-        url: ogImageUrl({
-          title: station.title,
-          description: station.subtitle,
-          image: getImageSrc(station.image, "high"),
-          square: true,
-        }),
-        alt: station.title,
+      openGraph: {
+        title: station.title,
+        description: station.subtitle,
+        url: getHref(station.perma_url, "radio"),
+        images: {
+          url: ogImageUrl({
+            title: station.title,
+            description: station.subtitle,
+            image: getImageSrc(station.image, "high"),
+            square: true,
+          }),
+          alt: station.title,
+        },
       },
-    },
-  };
+    };
+  } catch {
+    return { title: "Radio Station" };
+  }
 }
 
 export default async function RadioStationPage({ params }: Props) {
-  const { token } = await params;
+  const { name, token } = await params;
 
-  const [stations, songsResult] = await Promise.all([
-    api.get.featuredStations({ page: 1, n: 50 }),
-    api.search.byType({
-      q: token,
-      type: "songs",
-      page: 1,
-      n: 50,
-    }),
-  ]);
+  let station;
+  let songs = [];
 
-  const songs = songsResult as SongSearch;
-
-  const station = stations.find((s) => s.perma_url.endsWith(token));
+  try {
+    const details = await api.radio.stationDetails({ name, token });
+    station = details.station;
+    songs = details.songs;
+  } catch {
+    return notFound();
+  }
 
   if (!station) return notFound();
 
@@ -94,8 +89,12 @@ export default async function RadioStationPage({ params }: Props) {
         </figcaption>
       </figure>
 
-      {songs.results.length > 0 && (
-        <SongList items={songs.results} showAlbum={false} />
+      {songs.length > 0 ? (
+        <SongList items={songs} showAlbum={false} />
+      ) : (
+        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+          <p>Click Play to tune into this radio station.</p>
+        </div>
       )}
     </div>
   );

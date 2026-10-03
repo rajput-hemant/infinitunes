@@ -6,7 +6,6 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/auth-client.ts",
-    "./constants": "./src/constants.ts",
     "./schemas": "./src/schemas.ts"
   },
   "scripts": {
@@ -14,10 +13,11 @@
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "^1.7.6",
+    "@better-auth/passkey": "^1.7.6",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
-    "better-auth": "^1.7.6",
     "bcryptjs": "^3.0.3",
+    "better-auth": "^1.7.6",
     "drizzle-orm": "^0.45.3",
     "zod": "^4.6.5"
   },

@@ -6,33 +6,7 @@ import {
   passwordSchema,
   resetPasswordSchema,
   signUpSchema,
-  usernameSchema,
 } from "../src/schemas";
-
-describe("usernameSchema", () => {
-  it("accepts valid usernames between 8 and 15 characters", () => {
-    expect(usernameSchema.safeParse("validuser").success).toBe(true);
-    expect(usernameSchema.safeParse("user_name").success).toBe(true);
-    expect(usernameSchema.safeParse("user.name").success).toBe(true);
-    expect(usernameSchema.safeParse("user-name").success).toBe(true);
-    expect(usernameSchema.safeParse("12345678").success).toBe(true);
-    expect(usernameSchema.safeParse("user_1234567890").success).toBe(true);
-  });
-
-  it("rejects empty, short, or overly long usernames", () => {
-    expect(usernameSchema.safeParse("").success).toBe(false);
-    expect(usernameSchema.safeParse("short").success).toBe(false);
-    expect(usernameSchema.safeParse("toolongusername123456").success).toBe(
-      false,
-    );
-  });
-
-  it("rejects usernames with disallowed characters or spaces", () => {
-    expect(usernameSchema.safeParse("user name").success).toBe(false);
-    expect(usernameSchema.safeParse("user@name").success).toBe(false);
-    expect(usernameSchema.safeParse("user#1234").success).toBe(false);
-  });
-});
 
 describe("emailSchema", () => {
   it("accepts valid email addresses", () => {
@@ -64,36 +38,25 @@ describe("passwordSchema", () => {
 });
 
 describe("loginSchema", () => {
-  it("validates username logins", () => {
+  it("validates email logins and rejects username-shaped payloads", () => {
     const valid = loginSchema.safeParse({
-      type: "username",
-      username: "validuser",
-      password: "Password123!",
-    });
-    expect(valid.success).toBe(true);
-
-    const invalid = loginSchema.safeParse({
-      type: "username",
-      username: "bad",
-      password: "Password123!",
-    });
-    expect(invalid.success).toBe(false);
-  });
-
-  it("validates email logins", () => {
-    const valid = loginSchema.safeParse({
-      type: "email",
       email: "user@example.com",
       password: "Password123!",
     });
     expect(valid.success).toBe(true);
 
     const invalid = loginSchema.safeParse({
-      type: "email",
       email: "invalid-email",
       password: "Password123!",
     });
     expect(invalid.success).toBe(false);
+
+    const legacyUsername = loginSchema.safeParse({
+      type: "username",
+      username: "validuser",
+      password: "Password123!",
+    });
+    expect(legacyUsername.success).toBe(false);
   });
 });
 

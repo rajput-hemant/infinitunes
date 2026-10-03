@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getUser } from "~/lib/auth";
 
 import { ProfileForm } from "./_components/profile-form";
+import { PasskeySettings } from "./_components/passkey-settings";
 
 export const metadata = {
   title: "Profile Settings",
@@ -49,6 +50,8 @@ export default async function SettingsProfilePage() {
       </div>
 
       <ProfileForm user={user} />
+
+      <PasskeySettings />
     </div>
   );
 }

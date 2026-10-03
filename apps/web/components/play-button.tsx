@@ -7,6 +7,7 @@ import React from "react";
 import { toast } from "sonner";
 
 import {
+  useActiveRadioSession,
   useCurrentSongIndex,
   useIsPlayerInit,
   useQueue,
@@ -28,6 +29,7 @@ export function PlayButton(props: PlayButtonProps) {
   const [initialQueue, setQueue] = useQueue();
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [, setCurrentIndex] = useCurrentSongIndex();
+  const [, setActiveRadio] = useActiveRadioSession();
 
   const utils = api.useUtils();
 
@@ -43,6 +45,7 @@ export function PlayButton(props: PlayButtonProps) {
       return;
     } else {
       let queue: (Song | Episode)[] = [];
+      let isRadio = false;
 
       switch (type) {
         case "song": {
@@ -94,9 +97,30 @@ export function PlayButton(props: PlayButtonProps) {
           break;
         }
         case "radio_station": {
-          currentlyInDev();
-          return;
+          isRadio = true;
+          try {
+            const details = await utils.radio.stationDetails.fetch({ token });
+            if (!details.songs.length) {
+              toast.error("No songs found for this radio station");
+              return;
+            }
+            queue = details.songs;
+            setActiveRadio({
+              stationId: details.stationId,
+              name: details.station.title,
+              type: "featured",
+              language: details.station.more_info.language,
+            });
+          } catch (err) {
+            toast.error("Failed to load radio station");
+            return;
+          }
+          break;
         }
+      }
+
+      if (!isRadio) {
+        setActiveRadio(null);
       }
 
       const _queue = queue.map((item) => toQueue(item));

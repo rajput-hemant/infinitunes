@@ -25,7 +25,15 @@ const state: {
     where: unknown[];
   }[];
   inserts: { table: string; values: Record<string, unknown> }[];
-} = { playlist: null, user: null, accounts: [], updates: [], inserts: [] };
+  updateError: Error | null;
+} = {
+  playlist: null,
+  user: null,
+  accounts: [],
+  updates: [],
+  inserts: [],
+  updateError: null,
+};
 
 const fakeDb = {
   query: {
@@ -58,6 +66,7 @@ const fakeDb = {
   update: (table: typeof users | typeof betterAuthAccounts) => ({
     set: (values: Record<string, unknown>) => ({
       where: async (where: Parameters<PgDialect["sqlToQuery"]>[0]) => {
+        if (state.updateError) throw state.updateError;
         const { params } = new PgDialect().sqlToQuery(where);
         state.updates.push({
           table: getTableName(table),
@@ -77,7 +86,36 @@ const fakeDb = {
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));
 
 const { appRouter } = await import("../src/root");
+const { removeSongAtPlaylistIndex } = await import("../src/router/user");
 const { createCallerFactory } = await import("../src/trpc");
+
+describe("removeSongAtPlaylistIndex", () => {
+  it("removes only the occurrence at the given index when songId matches", () => {
+    expect(removeSongAtPlaylistIndex(["a", "a", "b"], 0, "a")).toEqual([
+      "a",
+      "b",
+    ]);
+    expect(removeSongAtPlaylistIndex(["a", "a", "b"], 1, "a")).toEqual([
+      "a",
+      "b",
+    ]);
+    expect(removeSongAtPlaylistIndex(["a", "a", "b"], 2, "b")).toEqual([
+      "a",
+      "a",
+    ]);
+    expect(removeSongAtPlaylistIndex(["a"], 1, "a")).toBeNull();
+  });
+
+  it("rejects a filtered-list index that points at a different stored song", () => {
+    const stored = ["A", "B", "C"];
+    expect(removeSongAtPlaylistIndex(stored, 1, "C")).toBeNull();
+    expect(removeSongAtPlaylistIndex(stored, 2, "C")).toEqual(["A", "B"]);
+  });
+
+  it("rejects stale songId at the correct db index", () => {
+    expect(removeSongAtPlaylistIndex(["A", "B", "C"], 2, "A")).toBeNull();
+  });
+});
 
 describe("user router authorization", () => {
   beforeEach(() => {
@@ -86,6 +124,7 @@ describe("user router authorization", () => {
     state.accounts = [];
     state.updates = [];
     state.inserts = [];
+    state.updateError = null;
   });
 
   it("rejects protected procedures without a session", async () => {
@@ -105,7 +144,82 @@ describe("user router authorization", () => {
         password: "CurrentPassword1!",
         newPassword: "NewPassword2!",
       }),
-    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+    ).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+      message: "Email or current password is incorrect",
+    });
+  });
+
+  it("answers unknown email, wrong password and passwordless accounts identically", async () => {
+    const caller = createCallerFactory(appRouter)({ db, session: null });
+    const attempt = () =>
+      caller.user
+        .resetPassword({
+          email: "user@example.com",
+          password: "WrongPassword1!",
+          newPassword: "NewPassword2!",
+        })
+        .catch((error: unknown) => error);
+
+    const unknown = await attempt();
+
+    state.user = {
+      id: "user-123",
+      email: "user@example.com",
+      password: await hash("CurrentPassword1!", 10),
+    };
+    const wrongPassword = await attempt();
+
+    state.user = { id: "user-123", email: "user@example.com", password: null };
+    const passwordless = await attempt();
+
+    for (const error of [unknown, wrongPassword, passwordless]) {
+      expect(error).toMatchObject({
+        code: "BAD_REQUEST",
+        message: "Email or current password is incorrect",
+      });
+    }
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it("rejects a malformed email in updateUser before writing", async () => {
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await expect(
+      caller.user.updateUser({ email: "not-an-email" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it("normalizes the updateUser email before writing", async () => {
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await caller.user.updateUser({ email: "New@Example.COM" });
+
+    expect(state.updates[0]?.values).toEqual({ email: "new@example.com" });
+  });
+
+  it("maps a duplicate email in updateUser to CONFLICT", async () => {
+    state.updateError = new Error("Failed query", {
+      cause: { code: "23505" },
+    });
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await expect(
+      caller.user.updateUser({ email: "taken@example.com" }),
+    ).rejects.toMatchObject({
+      code: "CONFLICT",
+      message: "That email is already in use",
+    });
   });
 
   it("resets a legacy password by creating a credential account", async () => {
@@ -213,6 +327,31 @@ describe("user router authorization", () => {
         playlistId: "playlist-victim",
         songs: ["attacker-song"],
       }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    });
+    await expect(
+      caller.user.removeSongsFromPlaylist({
+        playlistId: "playlist-victim",
+        index: 0,
+        songId: "existing-song",
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    });
+    await expect(
+      caller.user.renamePlaylist({
+        playlistId: "playlist-victim",
+        name: "Hijacked",
+      }),
+    ).rejects.toMatchObject({
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    });
+    await expect(
+      caller.user.deletePlaylist({ playlistId: "playlist-victim" }),
     ).rejects.toMatchObject({
       code: "FORBIDDEN",
       message: "Unauthorized",

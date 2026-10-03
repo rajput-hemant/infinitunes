@@ -4,6 +4,7 @@ import {
   betterAuthAccounts,
   betterAuthSessions,
   betterAuthVerifications,
+  infinitunesPasskeys,
   users,
 } from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
@@ -19,6 +20,7 @@ function makeFakeDb() {
     betterAuthAccounts,
     betterAuthSessions,
     betterAuthVerifications,
+    infinitunesPasskeys,
   };
   return {
     query,
@@ -123,6 +125,7 @@ describe("Better Auth configuration", () => {
           betterAuthAccounts,
           betterAuthSessions,
           betterAuthVerifications,
+          infinitunesPasskeys,
         },
       },
     } as unknown as Parameters<typeof createAuth>[0];
@@ -187,18 +190,18 @@ describe("Password hashing and credential verification", () => {
 });
 
 describe("Injected plugins and env precedence", () => {
-  it("ships only the username plugin by default, never next-cookies", () => {
+  it("ships only the passkey plugin by default, never next-cookies", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
-      "username",
+      "passkey",
     ]);
   });
 
-  it("appends caller-supplied plugins after the username plugin", () => {
+  it("appends caller-supplied plugins after the passkey plugin", () => {
     const marker = { id: "test-injected" } as unknown as BetterAuthPlugin;
     const auth = createAuth(makeFakeDb(), { plugins: [marker] });
     expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
-      "username",
+      "passkey",
       "test-injected",
     ]);
   });
@@ -251,5 +254,7 @@ describe("Shared schema / table mapping", () => {
     expect(getTableName(betterAuthVerifications)).toBe(
       "better_auth_verification",
     );
+    expect(getTableName(infinitunesPasskeys)).toBe("infinitunes_passkey");
+    expect(infinitunesPasskeys.credentialID.name).toBe("credentialID");
   });
 });

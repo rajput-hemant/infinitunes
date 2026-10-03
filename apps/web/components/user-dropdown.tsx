@@ -31,7 +31,6 @@ type UserDropdownProps = {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    username?: string | null;
   };
 };
 

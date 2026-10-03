@@ -352,6 +352,14 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               image={item.image}
               songs={songs ?? []}
               playlists={playlists}
+              artistId={
+                kind === "artist" ? (item as Artist).artistId : undefined
+              }
+              language={
+                kind === "artist"
+                  ? (item as Artist).dominantLanguage
+                  : songs[0]?.language
+              }
             />
           </div>
         )}

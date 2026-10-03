@@ -7,6 +7,7 @@ import {
   searchRouter,
   showRouter,
   songRouter,
+  radioRouter,
   userRouter,
 } from "./router";
 import { router } from "./trpc";
@@ -20,6 +21,7 @@ export const appRouter = router({
   show: showRouter,
   search: searchRouter,
   get: getRouter,
+  radio: radioRouter,
   user: userRouter,
 });
 

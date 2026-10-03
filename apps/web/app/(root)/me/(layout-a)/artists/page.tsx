@@ -1,16 +1,66 @@
-import { Construction } from "lucide-react";
+import { decode } from "@infinitunes/types";
+import { Mic2 } from "lucide-react";
 
-export default function LikedArtistsPage() {
+import {
+  LibraryEmpty,
+  LibraryHeading,
+  LibraryUnavailable,
+} from "~/components/library/library-section";
+import { SliderCard } from "~/components/slider/slider-card";
+import { getUserFavorites } from "~/lib/db/queries";
+import { api } from "~/lib/trpc/server";
+
+export const metadata = {
+  title: "Liked Artists",
+  description: "Your favorite artists in one place.",
+};
+
+export default async function LikedArtistsPage() {
+  const favorites = await getUserFavorites();
+  const tokens = [...new Set(favorites?.artists ?? [])];
+
+  if (tokens.length) {
+    const settled = await Promise.allSettled(
+      tokens.map((token) => api.artist.details({ id: token })),
+    );
+    const artists = settled.flatMap((result) =>
+      result.status === "fulfilled" ? [result.value] : [],
+    );
+
+    if (artists.length) {
+      return (
+        <div className="space-y-4">
+          <LibraryHeading
+            title="Liked Artists"
+            count={artists.length}
+            noun="artist"
+          />
+
+          <div className="flex w-full flex-wrap gap-4">
+            {artists.map((artist) => (
+              <SliderCard
+                key={artist.artistId}
+                name={decode(artist.name)}
+                url={artist.urls.songs}
+                subtitle={decode(artist.subtitle)}
+                type={artist.type}
+                image={artist.image}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+  }
+
+  if (tokens.length) return <LibraryUnavailable what="liked artists" />;
+
   return (
-    <div className="flex h-64 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-100">
-      <Construction
-        size={64}
-        className="fill-yellow-500 dark:fill-black dark:stroke-yellow-500"
-      />
-
-      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
-        Under development. <br /> Please check back later.
-      </h3>
-    </div>
+    <LibraryEmpty
+      icon={Mic2}
+      title="No liked artists yet"
+      description="Tap the heart on an artist and it will show up here."
+      action={{ href: "/artist", label: "Browse Artists" }}
+    />
   );
 }

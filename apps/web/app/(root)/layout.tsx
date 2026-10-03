@@ -10,15 +10,19 @@ import { SiteFooter } from "~/components/site-footer/footer";
 import { Navbar } from "~/components/site-header/navbar";
 import { SecondaryNavbar } from "~/components/site-header/secondary-navbar";
 import { getUser } from "~/lib/auth";
-import { getUserPlaylists } from "~/lib/db/queries";
+import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 
 export default async function Layout({ children }: React.PropsWithChildren) {
   const user = await getUser();
 
   let userPlaylists;
+  let userFavorites;
 
   if (user) {
-    userPlaylists = await getUserPlaylists();
+    [userPlaylists, userFavorites] = await Promise.all([
+      getUserPlaylists(),
+      getUserFavorites(),
+    ]);
   }
 
   return (
@@ -36,7 +40,11 @@ export default async function Layout({ children }: React.PropsWithChildren) {
           </SidebarInset>
         </div>
       </AppSidebarProvider>
-      <PlayerWrapper user={user} playlists={userPlaylists} />
+      <PlayerWrapper
+        user={user}
+        playlists={userPlaylists}
+        favorites={userFavorites}
+      />
     </React.Fragment>
   );
 }

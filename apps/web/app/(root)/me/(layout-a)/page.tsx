@@ -1,7 +1,11 @@
 import { Button } from "@infinitunes/ui/components/button";
-import { Plus } from "lucide-react";
+import { ListMusic, Plus } from "lucide-react";
 import React from "react";
 
+import {
+  LibraryEmpty,
+  LibraryHeading,
+} from "~/components/library/library-section";
 import { NewPlaylistForm } from "~/components/playlist/new-playlist-form";
 import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
 import { getUserPlaylists } from "~/lib/db/queries";
@@ -18,11 +22,11 @@ export default async function MyPlaylistsPage() {
 
   return (
     <section className="space-y-4">
-      <div className="flex justify-between">
-        <h2 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-          My Playlists
-        </h2>
-
+      <LibraryHeading
+        title="My Playlists"
+        count={playlists.length}
+        noun="playlist"
+      >
         {playlists.length > 0 && (
           <NewPlaylistForm>
             <Button size="sm">
@@ -31,7 +35,7 @@ export default async function MyPlaylistsPage() {
             </Button>
           </NewPlaylistForm>
         )}
-      </div>
+      </LibraryHeading>
 
       {playlists.length ? (
         <div className="flex w-full flex-wrap gap-4">
@@ -45,18 +49,18 @@ export default async function MyPlaylistsPage() {
           ))}
         </div>
       ) : (
-        <div className="flex h-44 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-100">
-          <h3 className="py-6 text-center font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
-            You don&apos;t have any playlist yet 😢.
-          </h3>
-
+        <LibraryEmpty
+          icon={ListMusic}
+          title="Create your first playlist"
+          description="Collect songs you love into playlists you can play any time."
+        >
           <NewPlaylistForm>
-            <Button>
+            <Button size="sm">
               <Plus className="mr-1 size-4" />
               Create Playlist
             </Button>
           </NewPlaylistForm>
-        </div>
+        </LibraryEmpty>
       )}
     </section>
   );

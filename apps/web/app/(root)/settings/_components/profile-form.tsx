@@ -1,11 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  emailSchema,
-  passwordSchema,
-  usernameSchema,
-} from "@infinitunes/auth/schemas";
+import { emailSchema, passwordSchema } from "@infinitunes/auth/schemas";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +27,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@infinitunes/ui/components/tooltip";
-import { Eye, EyeOff, Pen } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -40,7 +36,6 @@ import { z } from "zod";
 
 import { useIsTyping } from "~/hooks/use-store";
 import { deleteUser, updateUser } from "~/lib/actions";
-import { currentlyInDev } from "~/lib/utils";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
   user: {
@@ -48,13 +43,11 @@ type ProfileFormProps = React.ComponentProps<"div"> & {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    username?: string | null;
   };
 };
 
 const profileSchema = z.object({
   name: z.string().min(1, "Name is Required"),
-  username: usernameSchema,
   email: emailSchema,
   password: passwordSchema.optional(),
 });
@@ -75,7 +68,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
   const defaultValues: FormData = {
     name: user.name ?? "",
-    username: user.username ?? "",
     email: user.email ?? "",
   };
 
@@ -132,29 +124,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
 
           <Controller
             control={form.control}
-            name="username"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error}>
-                <FieldLabel>Username</FieldLabel>
-                <div className="relative">
-                  <Input
-                    type="text"
-                    disabled={isSubmitting}
-                    placeholder={user.name ?? "@johndoe"}
-                    className="w-96 shadow-xs"
-                    {...field}
-                  />
-                </div>
-                <FieldDescription>
-                  Your username will be used in your profile URL.
-                </FieldDescription>
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
-
-          <Controller
-            control={form.control}
             name="email"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
@@ -167,9 +136,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     className="w-96 shadow-xs"
                     {...field}
                   />
-                  <Button type="button" onClick={currentlyInDev}>
-                    Verify Email
-                  </Button>
                 </div>
                 <FieldDescription>
                   Your email will be used for account notifications.
@@ -292,15 +258,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
           fill
           className="rounded-full border p-1 shadow-xs"
         />
-
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={currentlyInDev}
-          className="absolute bottom-4 left-0 gap-2 shadow-xs"
-        >
-          <Pen size={14} /> Edit
-        </Button>
       </div>
     </div>
   );

@@ -160,6 +160,7 @@ export function SongListClient(props: SongListProps) {
 
                 <TileMoreButton
                   user={user}
+                  favorites={userFavorites}
                   item={item}
                   showAlbum={showAlbum}
                   playlists={userPlaylists}

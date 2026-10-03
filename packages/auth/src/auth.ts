@@ -3,27 +3,36 @@ import {
   betterAuthAccounts,
   betterAuthSessions,
   betterAuthVerifications,
+  infinitunesPasskeys,
   users,
 } from "@infinitunes/db/schema";
 import { createServerEnv } from "@infinitunes/env/server";
+import { passkey } from "@better-auth/passkey";
 import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { username } from "better-auth/plugins";
 import { and, eq } from "drizzle-orm";
 
-import {
-  USERNAME_MAX_LENGTH,
-  USERNAME_MIN_LENGTH,
-  USERNAME_REGEX,
-} from "./constants";
+function safeHostname(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url).hostname || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 export function createAuth(
   db: DbClient,
   options: { plugins?: BetterAuthPlugin[] } = {},
 ) {
   const env = createServerEnv({ skipValidation: true });
+  const baseURL = process.env.BETTER_AUTH_URL || env.AUTH_URL;
+  const rpID =
+    process.env.BETTER_AUTH_RP_ID ||
+    safeHostname(baseURL) ||
+    "localhost";
 
   async function mirrorAccountPassword(userId: string) {
     const account = await db.query.betterAuthAccounts.findFirst({
@@ -43,7 +52,7 @@ export function createAuth(
 
   return betterAuth({
     secret: process.env.BETTER_AUTH_SECRET || env.AUTH_SECRET,
-    baseURL: process.env.BETTER_AUTH_URL || env.AUTH_URL,
+    baseURL,
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: false,
@@ -52,6 +61,9 @@ export function createAuth(
         account: betterAuthAccounts,
         session: betterAuthSessions,
         verification: betterAuthVerifications,
+        // Keyed by resolved model name: the adapter addresses plugin tables
+        // via getModelName(), which returns "infinitunes_passkey".
+        infinitunes_passkey: infinitunesPasskeys,
       },
     }),
 
@@ -59,17 +71,6 @@ export function createAuth(
       fields: {
         name: "betterAuthName",
         emailVerified: "emailVerifiedBoolean",
-      },
-      additionalFields: {
-        username: {
-          type: "string",
-          required: false,
-          unique: true,
-        },
-        displayUsername: {
-          type: "string",
-          required: false,
-        },
       },
     },
 
@@ -116,13 +117,10 @@ export function createAuth(
       user: {
         create: {
           after: async (user) => {
-            const patch: Record<string, unknown> = {};
-            if (user.name !== undefined) patch.name = user.name;
-            if (user.username !== undefined) patch.username = user.username;
-            if (Object.keys(patch).length > 0) {
+            if (user.name !== undefined) {
               await db
                 .update(users)
-                .set(patch)
+                .set({ name: user.name })
                 .where(eq(users.id, user.id as string));
             }
             await mirrorAccountPassword(user.id as string);
@@ -130,13 +128,10 @@ export function createAuth(
         },
         update: {
           after: async (user) => {
-            const patch: Record<string, unknown> = {};
-            if (user.name !== undefined) patch.name = user.name;
-            if (user.username !== undefined) patch.username = user.username;
-            if (Object.keys(patch).length > 0) {
+            if (user.name !== undefined) {
               await db
                 .update(users)
-                .set(patch)
+                .set({ name: user.name })
                 .where(eq(users.id, user.id as string));
             }
           },
@@ -175,10 +170,13 @@ export function createAuth(
     },
 
     plugins: [
-      username({
-        minUsernameLength: USERNAME_MIN_LENGTH,
-        maxUsernameLength: USERNAME_MAX_LENGTH,
-        usernameValidator: (username) => USERNAME_REGEX.test(username),
+      passkey({
+        rpID,
+        rpName: "Infinitunes",
+        origin: baseURL,
+        schema: {
+          passkey: { modelName: "infinitunes_passkey" },
+        },
       }),
       ...(options.plugins ?? []),
     ],

@@ -72,10 +72,19 @@ mock.module("next/navigation", () => ({
   redirect: () => {},
 }));
 
-const { createNewPlaylist, deleteUser, updateUser } =
-  await import("../lib/actions");
-const { addSongsToPlaylist, addToFavorites, removeFromFavorites } =
-  await import("../lib/db/queries");
+const {
+  createNewPlaylist,
+  deletePlaylist,
+  deleteUser,
+  renamePlaylist,
+  updateUser,
+} = await import("../lib/actions");
+const {
+  addSongsToPlaylist,
+  addToFavorites,
+  removeFromFavorites,
+  removeSongsFromPlaylist,
+} = await import("../lib/db/queries");
 
 describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {
@@ -107,6 +116,25 @@ describe("Server action authorization security checks", () => {
       );
     });
 
+    it("rejects renamePlaylist with Unauthorized", async () => {
+      mockUser = undefined;
+      expect(
+        renamePlaylist("playlist-123", { name: "Hacked Playlist" }),
+      ).rejects.toThrow("Unauthorized");
+    });
+
+    it("rejects deletePlaylist with Unauthorized", async () => {
+      mockUser = undefined;
+      expect(deletePlaylist("playlist-123")).rejects.toThrow("Unauthorized");
+    });
+
+    it("rejects removeSongsFromPlaylist with Unauthorized", async () => {
+      mockUser = undefined;
+      expect(
+        removeSongsFromPlaylist("playlist-123", 0, "song-1"),
+      ).rejects.toThrow("Unauthorized");
+    });
+
     it("rejects updateUser with Unauthorized", async () => {
       mockUser = undefined;
       expect(updateUser({ name: "Attacker" })).rejects.toThrow("Unauthorized");
@@ -130,6 +158,23 @@ describe("Server action authorization security checks", () => {
       expect(
         addSongsToPlaylist("playlist-victim", ["attacker-song"]),
       ).rejects.toThrow("Unauthorized");
+    });
+
+    it("rejects playlist mutations for a foreign playlist", async () => {
+      mockUser = { id: "user-123" };
+      mockPlaylist = {
+        id: "playlist-victim",
+        userId: "user-456",
+        songs: ["existing-song"],
+      };
+
+      expect(
+        removeSongsFromPlaylist("playlist-victim", 0, "existing-song"),
+      ).rejects.toThrow("Unauthorized");
+      expect(
+        renamePlaylist("playlist-victim", { name: "Stolen name" }),
+      ).rejects.toThrow("Unauthorized");
+      expect(deletePlaylist("playlist-victim")).rejects.toThrow("Unauthorized");
     });
 
     it("allows addSongsToPlaylist for a playlist owned by session user", async () => {

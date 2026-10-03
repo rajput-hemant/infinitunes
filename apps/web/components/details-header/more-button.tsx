@@ -38,9 +38,15 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
-import { useQueue } from "~/hooks/use-store";
+import {
+  useActiveRadioSession,
+  useCurrentSongIndex,
+  useIsPlayerInit,
+  useQueue,
+} from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
 import { addSongsToPlaylist } from "~/lib/db/queries";
+import { api } from "~/lib/trpc/client";
 import { currentlyInDev } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
@@ -55,6 +61,8 @@ type MoreButtonProps = {
   subtitle: string;
   songs: Song[];
   playlists?: MyPlaylist[];
+  artistId?: string;
+  language?: string;
 };
 
 type MenuItem = {
@@ -65,7 +73,17 @@ type MenuItem = {
 };
 
 export function MoreButton(props: MoreButtonProps) {
-  const { user, name, subtitle, type, image, songs, playlists } = props;
+  const {
+    user,
+    name,
+    subtitle,
+    type,
+    image,
+    songs,
+    playlists,
+    artistId: initialArtistId,
+    language,
+  } = props;
 
   const router = useRouter();
 
@@ -73,6 +91,11 @@ export function MoreButton(props: MoreButtonProps) {
   const [isDialogOpen, setDialogOpen] = React.useState(false);
 
   const [, setQueue] = useQueue();
+  const [, setCurrentIndex] = useCurrentSongIndex();
+  const [, setIsPlayerInit] = useIsPlayerInit();
+  const [, setActiveRadio] = useActiveRadioSession();
+
+  const utils = api.useUtils();
 
   function addToQueue() {
     const songsPayload: Queue[] = songs.map((song) => toQueue(song));
@@ -109,8 +132,71 @@ export function MoreButton(props: MoreButtonProps) {
     );
   }
 
-  function playRadio() {
-    currentlyInDev();
+  async function playRadio() {
+    try {
+      toast.loading("Starting radio...", { id: "play-radio" });
+      let stationName = name;
+      let artistId: string | undefined = initialArtistId;
+      let radioType: "artist" | "featured" = "featured";
+
+      if (type === "artist") {
+        radioType = "artist";
+      } else if (
+        songs[0]?.more_info &&
+        typeof songs[0].more_info === "object" &&
+        "artistMap" in songs[0].more_info
+      ) {
+        const primary = (
+          songs[0].more_info.artistMap as {
+            primary_artists?: { id: string; name: string }[];
+          }
+        )?.primary_artists?.[0];
+        if (primary) {
+          stationName = primary.name;
+          artistId = primary.id;
+          radioType = "artist";
+        }
+      }
+
+      const stationLanguage = language || songs[0]?.language;
+
+      const { stationId } = await utils.client.radio.createStation.mutate({
+        type: radioType,
+        name: stationName,
+        artistId,
+        language: stationLanguage,
+      });
+
+      const radioSongs = await utils.radio.songs.fetch({
+        stationId,
+        k: 20,
+      });
+
+      if (!radioSongs.length) {
+        toast.error("Could not find songs for this radio", {
+          id: "play-radio",
+        });
+        return;
+      }
+
+      const radioQueue = radioSongs.map(toQueue);
+      setQueue(radioQueue);
+      setActiveRadio({
+        stationId,
+        name: `${stationName} Radio`,
+        type: radioType,
+        language: stationLanguage,
+      });
+      setCurrentIndex(0);
+      setIsPlayerInit(true);
+
+      toast.success(`Playing "${stationName} Radio"`, {
+        id: "play-radio",
+        description: `Added ${radioQueue.length} station tracks to queue`,
+      });
+    } catch {
+      toast.error("Unable to start radio station", { id: "play-radio" });
+    }
   }
 
   const menuItems: MenuItem[] = [

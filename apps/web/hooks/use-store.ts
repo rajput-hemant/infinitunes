@@ -1,4 +1,9 @@
-import type { ImageQuality, Queue, StreamQuality } from "@infinitunes/types";
+import type {
+  ActiveRadioSession,
+  ImageQuality,
+  Queue,
+  StreamQuality,
+} from "@infinitunes/types";
 import { atom, createStore, useAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
@@ -50,4 +55,13 @@ const isTyping = atom(false);
 
 export function useIsTyping() {
   return useAtom(isTyping, { store });
+}
+
+const activeRadioSessionAtom = atomWithStorage<ActiveRadioSession | null>(
+  "active_radio_session",
+  null,
+);
+
+export function useActiveRadioSession() {
+  return useAtom(activeRadioSessionAtom, { store });
 }

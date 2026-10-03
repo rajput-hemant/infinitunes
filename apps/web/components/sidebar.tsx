@@ -20,14 +20,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@infinitunes/ui/components/tooltip";
-import { ListMusic, ListPlus, Play, Plus } from "lucide-react";
+import { ListMusic, ListPlus, Plus } from "lucide-react";
 import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import React from "react";
 
 import { sidebarNav } from "~/config/nav";
 import type { User } from "~/lib/auth";
-import { asRoute, cn, currentlyInDev } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 import { NewPlaylistForm } from "./playlist/new-playlist-form";
 
@@ -170,12 +170,6 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                                 <ListMusic className="mr-2 size-5" />
                                 <span>{name}</span>
                               </span>
-                              <button
-                                onClick={currentlyInDev}
-                                className="invisible ml-auto rounded-full p-0.5 ring-offset-background duration-200 ease-in hover:outline-hidden hover:ring-2 hover:ring-ring hover:ring-offset-2 group-hover:visible"
-                              >
-                                <Play className="size-5" />
-                              </button>
                             </Link>
                           }
                         />

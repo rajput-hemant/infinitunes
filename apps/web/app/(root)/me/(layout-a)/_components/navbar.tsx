@@ -5,6 +5,7 @@ import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import React from "react";
 
 import { cn } from "~/lib/utils";
 
@@ -14,21 +15,29 @@ type NavItem = {
 };
 
 const navlist: NavItem[] = [
-  { title: "My Playlists", href: "/me" },
+  { title: "Your Playlists", href: "/me" },
   { title: "Recently Played", href: "/me/recently-played" },
   { title: "Liked Songs", href: "/me/liked-songs" },
-  { title: "Albums", href: "/me/albums" },
-  { title: "Playlists", href: "/me/playlists" },
-  { title: "Artists", href: "/me/artists" },
-  { title: "Podcasts", href: "/me/shows" },
+  { title: "Liked Albums", href: "/me/albums" },
+  { title: "Liked Playlists", href: "/me/playlists" },
+  { title: "Liked Artists", href: "/me/artists" },
+  { title: "Liked Podcasts", href: "/me/shows" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
+  const activeRef = React.useRef<HTMLAnchorElement>(null);
+
+  React.useEffect(() => {
+    activeRef.current?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [pathname]);
 
   return (
     <ScrollArea>
-      <nav className="flex gap-x-2 border-y">
+      <nav
+        aria-label="Library"
+        className="flex w-max min-w-full gap-x-2 border-y"
+      >
         {navlist.map(({ title, href }) => {
           const isActive = href === pathname;
 
@@ -41,8 +50,9 @@ export function Navbar() {
               )}
             >
               <Link
+                ref={isActive ? activeRef : undefined}
                 href={href}
-                title={title}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
                   "font-normal",

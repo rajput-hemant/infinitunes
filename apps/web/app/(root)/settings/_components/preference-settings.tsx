@@ -97,7 +97,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
         >
           <h4 className="w-40 text-muted-foreground">Stream Quality</h4>
 
-          <Separator className="w-20" />
+          <Separator className="data-[orientation=horizontal]:w-20" />
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -151,7 +151,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
         >
           <h4 className="w-40 text-muted-foreground">Download Quality</h4>
 
-          <Separator className="w-20" />
+          <Separator className="data-[orientation=horizontal]:w-20" />
 
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -204,7 +204,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
         >
           <h4 className="w-40 text-muted-foreground">Image Quality</h4>
 
-          <Separator className="w-20" />
+          <Separator className="data-[orientation=horizontal]:w-20" />
 
           <DropdownMenu>
             <DropdownMenuTrigger

@@ -1,16 +1,67 @@
-import { Construction } from "lucide-react";
+import { decode } from "@infinitunes/types";
+import { ListMusic } from "lucide-react";
 
-export default function LikedPlaylistsPage() {
+import {
+  LibraryEmpty,
+  LibraryHeading,
+  LibraryUnavailable,
+} from "~/components/library/library-section";
+import { SliderCard } from "~/components/slider/slider-card";
+import { getUserFavorites } from "~/lib/db/queries";
+import { api } from "~/lib/trpc/server";
+
+export const metadata = {
+  title: "Liked Playlists",
+  description: "Your favorite playlists in one place.",
+};
+
+export default async function LikedPlaylistsPage() {
+  const favorites = await getUserFavorites();
+  const tokens = [...new Set(favorites?.playlists ?? [])];
+
+  if (tokens.length) {
+    const settled = await Promise.allSettled(
+      tokens.map((token) => api.playlist.details({ id: token })),
+    );
+    const playlists = settled.flatMap((result) =>
+      result.status === "fulfilled" ? [result.value] : [],
+    );
+
+    if (playlists.length) {
+      return (
+        <div className="space-y-4">
+          <LibraryHeading
+            title="Liked Playlists"
+            count={playlists.length}
+            noun="playlist"
+          />
+
+          <div className="flex w-full flex-wrap gap-4">
+            {playlists.map((playlist) => (
+              <SliderCard
+                key={playlist.id}
+                name={decode(playlist.title)}
+                url={playlist.perma_url}
+                subtitle={decode(playlist.subtitle)}
+                type={playlist.type}
+                image={playlist.image}
+                explicit={playlist.explicit_content}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+  }
+
+  if (tokens.length) return <LibraryUnavailable what="liked playlists" />;
+
   return (
-    <div className="flex h-64 flex-col items-center justify-center space-y-4 rounded-md border border-dashed lg:h-100">
-      <Construction
-        size={64}
-        className="fill-yellow-500 dark:fill-black dark:stroke-yellow-500"
-      />
-
-      <h3 className="py-6 text-center font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
-        Under development. <br /> Please check back later.
-      </h3>
-    </div>
+    <LibraryEmpty
+      icon={ListMusic}
+      title="No liked playlists yet"
+      description="Tap the heart on a playlist and it will show up here."
+      action={{ href: "/playlist", label: "Browse Playlists" }}
+    />
   );
 }

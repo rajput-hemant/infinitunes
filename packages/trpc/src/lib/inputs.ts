@@ -153,3 +153,25 @@ export const getMegaMenuInput = z.object({
   entity: z.stringbool().optional(),
   lang,
 });
+
+export const createStationInput = z.object({
+  type: z.enum(["featured", "artist", "song"]).default("featured"),
+  name: z.string(),
+  language: z.string().optional(),
+  artistId: z.string().optional(),
+  query: z.string().optional(),
+  mode: z.string().optional(),
+});
+
+export const radioSongsInput = z.object({
+  stationId: z.string(),
+  k: z.coerce.number().int().min(1).max(50).default(20),
+  next: z.coerce.number().int().optional(),
+  lang: z.string().optional(),
+});
+
+export const stationDetailsInput = z.object({
+  name: z.string().optional(),
+  token: z.string(),
+  lang: z.string().optional(),
+});
