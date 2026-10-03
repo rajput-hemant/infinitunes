@@ -68,6 +68,8 @@ export const radioRouter = router({
               language: input.language,
               mode: input.mode ?? "",
             },
+            // Mints a per-listener session: never replay it from cache.
+            cache: false,
           },
         );
         if (isRecord(res) && typeof res.stationid === "string") {
@@ -84,6 +86,7 @@ export const radioRouter = router({
               language: input.language,
               query: input.query,
             },
+            cache: false,
           },
         );
         if (isRecord(res) && typeof res.stationid === "string") {

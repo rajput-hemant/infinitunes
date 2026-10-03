@@ -124,7 +124,7 @@ describe("history router", () => {
       recentlyPlayed.itemType,
       recentlyPlayed.itemId,
     ]);
-    expect(state.conflict?.set.playedAt).toBeInstanceOf(Date);
+    expect(render(state.conflict?.set.playedAt as SQL).sql).toBe("now()");
   });
 
   it("trims the user's history to the newest 50 after recording", async () => {

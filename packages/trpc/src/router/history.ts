@@ -1,5 +1,5 @@
 import { recentlyPlayed } from "@infinitunes/db/schema";
-import { and, desc, eq, notInArray } from "drizzle-orm";
+import { and, desc, eq, notInArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "../trpc";
@@ -26,7 +26,10 @@ export const historyRouter = router({
             recentlyPlayed.itemType,
             recentlyPlayed.itemId,
           ],
-          set: { playedAt: new Date() },
+          // Database clock, like the column's `defaultNow()`: a JS Date is sent
+          // as UTC wall-clock, which skews ordering against default-stamped
+          // rows when the database TimeZone is not UTC.
+          set: { playedAt: sql`now()` },
         });
 
       const keep = ctx.db

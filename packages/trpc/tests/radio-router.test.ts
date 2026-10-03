@@ -135,6 +135,26 @@ describe("radioRouter", () => {
       expect(calls).toContain("webradio.createArtistStation");
     });
 
+    it("never serves a cached station session to a second listener", async () => {
+      const language = uniq();
+      let n = 0;
+      const upstream = globalThis.fetch;
+      globalThis.fetch = async (input) => {
+        const url = new URL(String(input));
+        if (url.searchParams.get("__call") !== "webradio.createFeaturedStation")
+          return upstream(input);
+        return new Response(JSON.stringify({ stationid: `session-${++n}` }));
+      };
+      try {
+        const input = { type: "featured", name: "Same", language } as const;
+        const first = await caller.radio.createStation(input);
+        const second = await caller.radio.createStation(input);
+        expect(second.stationId).not.toBe(first.stationId);
+      } finally {
+        globalThis.fetch = upstream;
+      }
+    });
+
     it("falls back to featured station if artist station returns empty", async () => {
       responses["webradio.createArtistStation"] = [];
       responses["webradio.createFeaturedStation"] = {
