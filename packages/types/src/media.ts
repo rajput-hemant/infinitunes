@@ -113,17 +113,59 @@ export function toQueue(item: Song | Episode): Queue {
  * Formats the given duration in seconds to the given format
  * @param seconds The duration in seconds
  * @param format The format to format the duration in `hh:mm:ss` or `mm:ss`
- * @returns The formatted duration
+ * @returns The formatted duration. Hours (or minutes, in `mm:ss`) keep
+ * counting past 24h (or 60m) instead of wrapping, and missing, negative or
+ * non-numeric input renders as zero instead of throwing.
  */
 export function formatDuration(
   seconds: number | string,
   format: "hh:mm:ss" | "mm:ss",
 ) {
-  const date = new Date(Number(seconds) * 1000);
+  const parsed = Number(seconds);
+  const total = Number.isFinite(parsed) ? Math.max(0, Math.floor(parsed)) : 0;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const secs = total % 60;
 
-  return format === "hh:mm:ss"
-    ? date.toISOString().slice(11, 19)
-    : date.toISOString().slice(14, 19);
+  if (format === "hh:mm:ss") {
+    return `${pad(Math.floor(total / 3600))}:${pad(Math.floor(total / 60) % 60)}:${pad(secs)}`;
+  }
+  return `${pad(Math.floor(total / 60))}:${pad(secs)}`;
+}
+
+/**
+ * Picks the next shuffled queue index. Unlike a plain random pick it never
+ * returns `current` when another track exists: selecting the same index is a
+ * no-op for the player (no state change, so no reload) and playback would stop.
+ * `random` is injectable for tests.
+ */
+export function pickShuffleIndex(
+  length: number,
+  current: number,
+  random: () => number = Math.random,
+) {
+  if (length <= 1) return Math.max(0, Math.min(current, length - 1));
+  const offset = 1 + Math.floor(random() * (length - 1));
+  return (current + offset) % length;
+}
+
+/**
+ * Removes every queue entry with `id` and re-anchors `currentIndex` so the
+ * playing track stays selected when an earlier entry is removed. If the
+ * playing entry itself is removed the index now points at the following track
+ * (clamped to the new last index).
+ */
+export function removeFromQueue(
+  queue: Queue[],
+  currentIndex: number,
+  id: string,
+): { queue: Queue[]; currentIndex: number } {
+  if (!queue.some((item) => item.id === id)) return { queue, currentIndex };
+  const next = queue.filter((item) => item.id !== id);
+  const removedBefore = queue
+    .slice(0, currentIndex)
+    .filter((item) => item.id === id).length;
+  const index = Math.min(currentIndex - removedBefore, next.length - 1);
+  return { queue: next, currentIndex: Math.max(0, index) };
 }
 
 const IMAGE_SIZE: Record<ImageQuality, number> = {

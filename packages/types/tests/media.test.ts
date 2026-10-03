@@ -1,6 +1,13 @@
 import { describe, expect, it } from "bun:test";
 
-import { getDownloadLink, getImageSrc } from "../src/media";
+import {
+  formatDuration,
+  getDownloadLink,
+  getImageSrc,
+  pickShuffleIndex,
+  removeFromQueue,
+} from "../src/media";
+import type { Queue } from "../src/misc";
 
 const SONG_IMAGE =
   "https://c.saavncdn.com/679/Thunderclouds-English-2018-20180809032729-150x150.jpg";
@@ -82,5 +89,86 @@ describe("getDownloadLink", () => {
 
   it("returns an empty string when every split segment is blank", () => {
     expect(getDownloadLink(" , , ")).toBe("");
+  });
+});
+
+describe("formatDuration", () => {
+  it("formats mm:ss and hh:mm:ss", () => {
+    expect(formatDuration(65, "mm:ss")).toBe("01:05");
+    expect(formatDuration("3725", "hh:mm:ss")).toBe("01:02:05");
+  });
+
+  it("keeps counting minutes past one hour in mm:ss", () => {
+    // 1h 01m 40s must not wrap to "01:40"
+    expect(formatDuration(3700, "mm:ss")).toBe("61:40");
+  });
+
+  it("does not wrap hours after a day", () => {
+    expect(formatDuration(90000, "hh:mm:ss")).toBe("25:00:00");
+  });
+
+  it("does not throw for missing or non-numeric durations", () => {
+    expect(formatDuration(Number.NaN, "mm:ss")).toBe("00:00");
+    expect(formatDuration("", "mm:ss")).toBe("00:00");
+    expect(formatDuration("abc", "hh:mm:ss")).toBe("00:00:00");
+    expect(formatDuration(-5, "mm:ss")).toBe("00:00");
+  });
+});
+
+describe("pickShuffleIndex", () => {
+  it("never returns the current index when another track exists", () => {
+    for (let current = 0; current < 4; current++) {
+      for (const r of [0, 0.25, 0.5, 0.75, 0.999999]) {
+        expect(pickShuffleIndex(4, current, () => r)).not.toBe(current);
+      }
+    }
+  });
+
+  it("can reach every other index", () => {
+    const seen = new Set<number>();
+    for (let i = 0; i < 100; i++) {
+      seen.add(pickShuffleIndex(4, 1, () => i / 100));
+    }
+    expect([...seen].sort()).toEqual([0, 2, 3]);
+  });
+
+  it("returns the current index for single-track or empty queues", () => {
+    expect(pickShuffleIndex(1, 0, () => 0.5)).toBe(0);
+    expect(pickShuffleIndex(0, 0, () => 0.5)).toBe(0);
+  });
+});
+
+describe("removeFromQueue", () => {
+  const q = (...ids: string[]) =>
+    ids.map((id) => ({ id })) as unknown as Queue[];
+
+  it("keeps the playing track when an earlier one is removed", () => {
+    const next = removeFromQueue(q("a", "b", "c", "d"), 2, "a");
+    expect(next.queue.map((s) => s.id)).toEqual(["b", "c", "d"]);
+    expect(next.currentIndex).toBe(1);
+  });
+
+  it("leaves the index alone when a later track is removed", () => {
+    const next = removeFromQueue(q("a", "b", "c"), 0, "c");
+    expect(next.currentIndex).toBe(0);
+  });
+
+  it("clamps when the last track (playing) is removed", () => {
+    const next = removeFromQueue(q("a", "b", "c"), 2, "c");
+    expect(next.queue).toHaveLength(2);
+    expect(next.currentIndex).toBe(1);
+  });
+
+  it("resets to 0 when the queue empties", () => {
+    const next = removeFromQueue(q("a"), 0, "a");
+    expect(next.queue).toHaveLength(0);
+    expect(next.currentIndex).toBe(0);
+  });
+
+  it("is a no-op for an unknown id", () => {
+    const queue = q("a", "b");
+    const next = removeFromQueue(queue, 1, "zzz");
+    expect(next.queue).toBe(queue);
+    expect(next.currentIndex).toBe(1);
   });
 });
