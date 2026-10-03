@@ -3,13 +3,13 @@
 import type { Lang } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@infinitunes/ui/components/dropdown-menu";
+  Popover,
+  PopoverContent,
+  PopoverDescription,
+  PopoverHeader,
+  PopoverTitle,
+  PopoverTrigger,
+} from "@infinitunes/ui/components/popover";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -43,12 +43,13 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
       description: "Your language preferences have been updated.",
     });
 
+    setIsOpen(false);
     router.refresh();
   }
 
   return (
-    <DropdownMenu onOpenChange={(o) => setIsOpen(o)}>
-      <DropdownMenuTrigger
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger
         render={
           <Button
             size="sm"
@@ -67,23 +68,25 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
         }
       />
 
-      <DropdownMenuContent className="w-auto min-w-[18.5625rem]">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel className="p-4">
-            <span className="block font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
-              What music do you like?
-            </span>
+      <PopoverContent
+        align="end"
+        className="w-auto min-w-[18.5625rem] gap-0 p-0"
+      >
+        <PopoverHeader className="p-4">
+          <PopoverTitle className="font-heading text-lg text-foreground sm:text-xl md:text-2xl">
+            What music do you like?
+          </PopoverTitle>
 
-            <small className="text-xs text-muted-foreground">
-              Pick all the languages you want to listen to.
-            </small>
-          </DropdownMenuLabel>
-        </DropdownMenuGroup>
+          <PopoverDescription className="text-xs">
+            Pick all the languages you want to listen to.
+          </PopoverDescription>
+        </PopoverHeader>
 
         <ToggleGroup
           value={selectedLanguages}
           onValueChange={(v) => setSelectedLanguages(v as Lang[])}
-          className="grid w-full grid-cols-2 border-y py-2"
+          aria-label="Languages"
+          className="grid w-full grid-cols-2 border-y p-2"
         >
           {languages.map((lang) => (
             <ToggleGroupItem
@@ -97,12 +100,12 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
           ))}
         </ToggleGroup>
 
-        <DropdownMenuItem className="rounded-none focus:bg-transparent">
+        <div className="p-2">
           <Button onClick={updateLanguages} className="w-full text-lg">
             Save
           </Button>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </div>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@infinitunes/ui/components/dropdown-menu";
 import { Separator } from "@infinitunes/ui/components/separator";
-import { Toggle } from "@infinitunes/ui/components/toggle";
+import { Switch } from "@infinitunes/ui/components/switch";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -272,22 +272,18 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
             </p>
           </div>
 
-          <Toggle
-            variant="outline"
+          <Switch
             aria-labelledby="keyboard-shortcuts-label"
-            pressed={shortcutsEnabled}
-            onPressedChange={(pressed) => {
-              setShortcutsEnabled(pressed);
+            checked={shortcutsEnabled}
+            onCheckedChange={(checked) => {
+              setShortcutsEnabled(checked);
               toast.success(
-                pressed
+                checked
                   ? "Keyboard shortcuts turned on"
                   : "Keyboard shortcuts turned off",
               );
             }}
-            className="w-20"
-          >
-            {shortcutsEnabled ? "On" : "Off"}
-          </Toggle>
+          />
         </div>
       </section>
     </div>
