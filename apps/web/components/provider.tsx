@@ -12,6 +12,9 @@ import superjson from "superjson";
 
 import { api } from "~/lib/trpc/client";
 
+// Defined in globals.css: clears the fixed player bar and, below lg, the mobile nav.
+const TOAST_BOTTOM_OFFSET = "var(--toast-offset-bottom)";
+
 type Props = {
   theme?: ThemeProviderProps;
   children: React.ReactNode;
@@ -69,7 +72,10 @@ export default function Providers({ children, theme }: Props) {
           <TooltipProvider>{children}</TooltipProvider>
         </TRPCReactProvider>
 
-        <Toaster />
+        <Toaster
+          offset={{ bottom: TOAST_BOTTOM_OFFSET }}
+          mobileOffset={{ bottom: TOAST_BOTTOM_OFFSET }}
+        />
       </AudioPlayerProvider>
     </ThemeProvider>
   );

@@ -2,7 +2,6 @@ import { decode } from "@infinitunes/types";
 import type { MediaType } from "@infinitunes/types";
 import { cn } from "@infinitunes/ui/lib/utils";
 import type { Route } from "next";
-import { toast } from "sonner";
 
 import { siteConfig } from "~/config/site";
 
@@ -10,6 +9,23 @@ export { cn };
 
 export function asRoute(href: string): Route {
   return href as Route;
+}
+
+/**
+ * Returns `raw` only when it is a same-origin path (`/library?x=1`); anything
+ * else (absolute URLs, `//host`, `/\\host`, `javascript:`) falls back to `/`.
+ * Use for every user-controlled post-login redirect target.
+ */
+export function safeRedirectPath(raw: string | null | undefined): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
+  if (raw.includes("\\")) return "/";
+  try {
+    const url = new URL(raw, "http://localhost");
+    if (url.origin !== "http://localhost") return "/";
+  } catch {
+    return "/";
+  }
+  return raw;
 }
 
 /**
@@ -90,12 +106,6 @@ export function getHref(
 
   const trailing = segments.slice(-count);
   return asRoute(`/${type}/${trailing.join("/")}`);
-}
-
-export function currentlyInDev() {
-  toast.info("This feature is currently in development.", {
-    description: "We're working on it and it'll be available soon.",
-  });
 }
 
 export function isMacOs() {

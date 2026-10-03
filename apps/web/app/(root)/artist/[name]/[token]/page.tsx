@@ -10,6 +10,7 @@ import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { ogImageUrl } from "~/lib/utils";
 
@@ -19,11 +20,13 @@ import { CategoryFilter } from "./_components/category-filter";
 import { TABS } from "./_components/tabs";
 
 const getArtist = cache(async (token: string) =>
-  api.artist.details({
-    token,
-    n_song: 50,
-    n_album: 50,
-  }),
+  orNotFound(
+    api.artist.details({
+      token,
+      n_song: 50,
+      n_album: 50,
+    }),
+  ),
 );
 
 type Props = {
@@ -60,10 +63,14 @@ export default async function ArtistDetailsPage(props: Props) {
   const { name, token } = await props.params;
   const { cat } = await props.searchParams;
 
+  // Start the artist fetch before the session lookup resolves so they overlap.
+  const artistPromise = getArtist(token);
+  artistPromise.catch(() => undefined);
+
   const user = await getUser();
 
   const [artist, playlists, favorites] = await Promise.all([
-    getArtist(token),
+    artistPromise,
     user ? getUserPlaylists() : undefined,
     user ? getUserFavorites() : undefined,
   ]);

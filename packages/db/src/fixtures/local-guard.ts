@@ -29,3 +29,16 @@ export function assertLocalDatabase(
     );
   }
 }
+
+/** Non-throwing form of `assertLocalDatabase` for callers that only gate. */
+export function isLocalDatabase(
+  databaseUrl: string,
+  nodeEnv = process.env.NODE_ENV,
+): boolean {
+  try {
+    assertLocalDatabase(databaseUrl, nodeEnv);
+    return true;
+  } catch {
+    return false;
+  }
+}

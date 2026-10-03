@@ -1,6 +1,7 @@
+// oxlint-disable-next-line import/no-unassigned-import -- server-only guard is a side-effect import
 import "server-only";
 import { db } from "@infinitunes/db";
-import { createCaller, type AppRouter } from "@infinitunes/trpc";
+import { createCaller } from "@infinitunes/trpc";
 import { cache } from "react";
 
 import { getSession } from "~/lib/auth";

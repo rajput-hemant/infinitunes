@@ -1,3 +1,4 @@
+// oxlint-disable-next-line import/no-unassigned-import -- global stylesheet is a side-effect import
 import "~/styles/globals.css";
 import { type ThemeConfig } from "@infinitunes/types";
 import type { Metadata, Viewport } from "next";

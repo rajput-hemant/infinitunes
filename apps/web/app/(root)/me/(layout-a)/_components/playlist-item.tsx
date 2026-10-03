@@ -16,14 +16,20 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
   let songsDetails: SongObj | undefined;
 
   if (songs.length) {
-    songsDetails = await api.song.details({
-      id: songs.slice(0, 4).join(","),
-    });
+    try {
+      songsDetails = await api.song.details({
+        id: songs.slice(0, 4).join(","),
+      });
+    } catch (error) {
+      // Cover art is decoration: show the placeholder instead of failing the
+      // whole library page for one playlist.
+      console.error(`playlist ${id}: failed to fetch cover songs`, error);
+    }
   }
 
-  const imageSrcs = songsDetails?.songs.map((song) =>
-    getImageSrc(song.image, "medium"),
-  ) ?? ["/images/placeholder/song.jpg"];
+  const imageSrcs = songsDetails?.songs.length
+    ? songsDetails.songs.map((song) => getImageSrc(song.image, "medium"))
+    : ["/images/placeholder/song.jpg"];
 
   return (
     <Card
@@ -35,15 +41,15 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
         <div className="relative aspect-square w-full overflow-hidden rounded-md">
           <Link
             href={asRoute(`/me/playlist/${id}`)}
-            className="absolute inset-0 z-10"
+            className="absolute inset-0 z-10 rounded-md outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <span className="sr-only">View {name}</span>
           </Link>
 
-          <div className="absolute right-1 top-1 z-20 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="absolute right-1 top-1 z-20 transition-opacity motion-reduce:transition-none pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
             <PlaylistManageMenu
               playlist={{ id, name, description }}
-              triggerClassName="rounded-md bg-background/80 p-1 shadow-sm backdrop-blur-sm"
+              triggerClassName="rounded-md bg-background/80 p-2.5 shadow-sm backdrop-blur-sm"
             />
           </div>
 
@@ -53,14 +59,11 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
         </div>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
-          <h4 className="w-full font-semibold lg:text-lg">
-            <Link
-              href={asRoute(`/me/playlist/${id}`)}
-              className="mx-auto flex max-w-fit items-center"
-            >
+          <h3 className="w-full font-semibold lg:text-lg">
+            <span className="mx-auto flex max-w-fit items-center">
               <span className="truncate">{name}</span>
-            </Link>
-          </h4>
+            </span>
+          </h3>
 
           <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">
             {description}

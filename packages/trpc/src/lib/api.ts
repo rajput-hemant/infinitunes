@@ -19,6 +19,8 @@ export type ApiOptions = {
   query?: Record<string, string | number | boolean | undefined>;
   language?: string;
   signal?: AbortSignal;
+  /** Set false for randomized endpoints (e.g. radio batches) that must not be replayed from cache. */
+  cache?: boolean;
 };
 
 const CACHE_TTL = 60_000;
@@ -110,7 +112,13 @@ function isAbortError(err: unknown): boolean {
  */
 export async function api<T = unknown>(
   call: string,
-  { isVersion4 = true, query = {}, language, signal }: ApiOptions = {},
+  {
+    isVersion4 = true,
+    query = {},
+    language,
+    signal,
+    cache: useCache = true,
+  }: ApiOptions = {},
   fetchFn: typeof fetch = fetch,
 ): Promise<T> {
   const params = new URLSearchParams({
@@ -128,7 +136,7 @@ export async function api<T = unknown>(
   const langs = validLangs(language) || "hindi,english";
   const cacheKey = `${url}&L=${langs}`;
 
-  const cached = cacheGet(cacheKey);
+  const cached = useCache ? cacheGet(cacheKey) : undefined;
   if (cached) {
     return cached.data as T;
   }
@@ -171,7 +179,7 @@ export async function api<T = unknown>(
 
   try {
     const data = (await response.json()) as T;
-    cacheSet(cacheKey, data);
+    if (useCache) cacheSet(cacheKey, data);
     return data;
   } catch {
     throw new TRPCError({

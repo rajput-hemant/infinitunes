@@ -5,7 +5,7 @@ import {
   formatDuration,
   getDownloadLink,
   getImageSrc,
-  seededIndex,
+  pickShuffleIndex,
   toQueue,
 } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
@@ -45,6 +45,7 @@ import {
   useStreamQuality,
 } from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
+import { shouldIgnoreShortcut } from "~/lib/keyboard";
 import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
@@ -55,6 +56,13 @@ import { TileMoreButton } from "./song-list/more-button";
 
 const controlClass =
   "rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+
+/** Sets `aria-valuetext` on the range input inside a Base UI slider root. */
+function setValueText(root: HTMLElement | null, text: string) {
+  root
+    ?.querySelector("input[type=range]")
+    ?.setAttribute("aria-valuetext", text);
+}
 
 type PlayerProps = {
   user?: User;
@@ -69,6 +77,10 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
 }
 
 function PlayerInner({ user, playlists, favorites }: PlayerProps) {
+  const seekLabelId = React.useId();
+  const seekRef = React.useRef<HTMLDivElement>(null);
+  const volumeRef = React.useRef<HTMLDivElement>(null);
+  const volumeLabelId = React.useId();
   // stores
   const [queue, setQueue] = useQueue();
   const [activeRadio] = useActiveRadioSession();
@@ -134,8 +146,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     let index = latest.currentIndex;
 
     if (latest.isShuffle) {
-      const seed = `${latest.queue[latest.currentIndex]?.id ?? latest.currentIndex}:${latest.currentIndex}:end`;
-      index = seededIndex(seed, latest.queue.length);
+      if (!latest.isLooping) {
+        index = pickShuffleIndex(latest.queue.length, latest.currentIndex);
+      }
     } else {
       if (latest.currentIndex < latest.queue.length - 1) {
         if (!latest.isLooping) index = latest.currentIndex + 1;
@@ -149,25 +162,31 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     setCurrentIndex(index);
   }, [setCurrentIndex]);
 
+  // Depend on the resolved source, not on `queue`: `load` destroys and
+  // recreates the Howl, so keying on `queue` would restart the playing track
+  // whenever anything is queued, removed or radio-refilled.
+  const current = queue[currentIndex];
+  const hasCurrent = Boolean(current);
+  const audioSrc = current
+    ? getDownloadLink(current.download_url, streamQuality)
+    : "";
+
   React.useEffect(() => {
-    const current = queue[currentIndex];
-    if (queue.length && isPlayerInit && current) {
-      const audioSrc = getDownloadLink(current.download_url, streamQuality);
+    if (!isPlayerInit || !hasCurrent) return;
 
-      if (!audioSrc) {
-        toast.error("This song can't be played right now.");
-        return;
-      }
-
-      load(audioSrc, {
-        html5: true,
-        // onload: play,
-        autoplay: true,
-        initialMute: false,
-        onend: onEndHandler,
-      });
+    if (!audioSrc) {
+      toast.error("This song can't be played right now.");
+      return;
     }
-  }, [queue, streamQuality, currentIndex, isPlayerInit, load, onEndHandler]);
+
+    load(audioSrc, {
+      html5: true,
+      // onload: play,
+      autoplay: true,
+      initialMute: false,
+      onend: onEndHandler,
+    });
+  }, [audioSrc, hasCurrent, isPlayerInit, load, onEndHandler]);
 
   React.useEffect(() => {
     if (isDragging) {
@@ -193,11 +212,16 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     if (currentIndex >= queue.length - 3) {
       refillingRef.current = true;
       utils.radio.songs
-        .fetch({
-          stationId: activeRadio.stationId,
-          k: 10,
-          next: 1,
-        })
+        .fetch(
+          {
+            stationId: activeRadio.stationId,
+            k: 10,
+            next: 1,
+          },
+          // The app-wide staleTime is Infinity, which would hand back the first
+          // batch forever; every refill must hit upstream for fresh songs.
+          { staleTime: 0 },
+        )
         .then((moreSongs) => {
           if (moreSongs.length > 0) {
             const currentIds = new Set(queue.map((s) => s.id));
@@ -247,8 +271,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     let index = currentIndex;
 
     if (isShuffle) {
-      const seed = `${queue[currentIndex]?.id ?? currentIndex}:${currentIndex}:next`;
-      index = seededIndex(seed, queue.length);
+      index = pickShuffleIndex(queue.length, currentIndex);
     } else {
       if (currentIndex < queue.length - 1) {
         index = currentIndex + 1;
@@ -267,8 +290,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     let index;
 
     if (isShuffle) {
-      const seed = `${queue[currentIndex]?.id ?? currentIndex}:${currentIndex}:prev`;
-      index = seededIndex(seed, queue.length);
+      index = pickShuffleIndex(queue.length, currentIndex);
     } else {
       if (currentIndex > 0) {
         index = currentIndex - 1;
@@ -297,19 +319,19 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
    * -----------------------------------------------------------------------------------------------*/
 
   useEventListener("keydown", (e) => {
+    if (isTyping || shouldIgnoreShortcut(e)) return;
+
     if (e.key === " ") {
-      if (!isTyping) {
-        e.preventDefault();
-        playPauseHandler();
-      }
+      e.preventDefault();
+      playPauseHandler();
     } else if (e.key === "n" || (e.shiftKey && e.key === "ArrowRight")) {
       skipToNext();
     } else if (e.key === "p" || (e.shiftKey && e.key === "ArrowLeft")) {
       skipToPrev();
     } else if (e.shiftKey && e.key === "ArrowUp") {
-      setVolume(volume + 0.05);
+      setVolume(Math.min(1, volume + 0.05));
     } else if (e.shiftKey && e.key === "ArrowDown") {
-      setVolume(volume - 0.05);
+      setVolume(Math.max(0, volume - 0.05));
     } else if (e.key === "l") {
       loopHandler();
     } else if (e.key === "s") {
@@ -317,15 +339,35 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     }
   });
 
+  const seekFormat = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
+  const seekText = `${formatDuration(pos, seekFormat)} of ${formatDuration(duration, seekFormat)}`;
+  const volumeText = `${isMuted ? 0 : Math.round(volume * 100)} percent`;
+
+  // The Slider wrapper does not forward per-thumb props, so the readable value
+  // is set on the thumb's range input directly (see `setValueText`).
+  React.useEffect(() => setValueText(seekRef.current, seekText), [seekText]);
+  React.useEffect(
+    () => setValueText(volumeRef.current, volumeText),
+    [volumeText],
+  );
+
   return (
-    <div
+    <section
+      aria-label="Player"
       className={cn(
-        "fixed inset-x-0 bottom-14 z-40 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0",
+        "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0",
         !(isReady || queue.length) && "hidden lg:block",
       )}
     >
+      <output aria-live="polite" className="sr-only">
+        {current ? `Now playing ${current.name}, ${current.subtitle}` : ""}
+      </output>
+      <span id={seekLabelId} className="sr-only">
+        Seek
+      </span>
       <Slider
-        aria-label="Seek"
+        ref={seekRef}
+        aria-labelledby={seekLabelId}
         value={[pos]}
         max={duration || 1}
         onValueChange={(value: number | readonly number[], _details) => {
@@ -355,6 +397,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                   src={getImageSrc(queue[currentIndex].image, "low")}
                   alt={queue[currentIndex].name}
                   fill
+                  sizes="48px"
                   fallback="/images/placeholder/song.jpg"
                 />
 
@@ -370,13 +413,16 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                   className="group line-clamp-1 font-heading text-sm text-primary drop-shadow-sm"
                 >
                   {queue[currentIndex].name}
-                  <MoveUpRight className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible" />
+                  <MoveUpRight
+                    aria-hidden
+                    className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible"
+                  />
                 </Link>
 
                 <p className="line-clamp-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                   {activeRadio && (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                      <Radio className="size-2.5 animate-pulse" />
+                      <Radio aria-hidden className="size-2.5 animate-pulse" />
                       {activeRadio.name}
                     </span>
                   )}
@@ -397,7 +443,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-end gap-3 lg:w-1/3 lg:justify-evenly lg:gap-0">
+        <div className="flex shrink-0 items-center justify-end gap-0.5 lg:w-1/3 lg:justify-evenly lg:gap-0">
           <Tooltip>
             <TooltipTrigger
               delay={0}
@@ -412,9 +458,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                   )}
                 >
                   {isLooping ? (
-                    <Repeat1 strokeWidth={2} className="size-7" />
+                    <Repeat1 aria-hidden strokeWidth={2} className="size-7" />
                   ) : (
-                    <Repeat strokeWidth={2} className="size-7" />
+                    <Repeat aria-hidden strokeWidth={2} className="size-7" />
                   )}
                 </button>
               }
@@ -435,7 +481,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label="Previous"
                   onClick={skipToPrev}
-                  className={controlClass}
+                  className={cn(controlClass, "p-1.5 lg:p-0")}
                 >
                   <Icons.SkipBack aria-hidden className="size-8 lg:size-10" />
                 </button>
@@ -451,14 +497,14 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label={isPlaying ? "Pause" : "Play"}
                   onClick={playPauseHandler}
-                  className={controlClass}
+                  className={cn(controlClass, "p-1 lg:p-0")}
                 >
                   {isLoading ? (
-                    <Loader2 className="animate-spin" />
+                    <Loader2 aria-hidden className="size-10 animate-spin" />
                   ) : isPlaying ? (
-                    <Pause className="size-10" />
+                    <Pause aria-hidden className="size-10" />
                   ) : (
-                    <Icons.Play className="size-10" />
+                    <Icons.Play aria-hidden className="size-10" />
                   )}
                 </button>
               }
@@ -473,7 +519,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label="Next"
                   onClick={skipToNext}
-                  className={controlClass}
+                  className={cn(controlClass, "p-1.5 lg:p-0")}
                 >
                   <Icons.SkipForward
                     aria-hidden
@@ -498,7 +544,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                     !isShuffle && "text-muted-foreground",
                   )}
                 >
-                  <Shuffle strokeWidth={2.35} />
+                  <Shuffle aria-hidden strokeWidth={2.35} />
                 </button>
               }
             />
@@ -510,9 +556,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
 
         <div className="hidden w-1/3 items-center justify-end gap-4 lg:flex">
           <p className="shrink-0 text-sm text-muted-foreground">
-            {formatDuration(pos, pos > 3600 ? "hh:mm:ss" : "mm:ss")}
+            {formatDuration(pos, pos >= 3600 ? "hh:mm:ss" : "mm:ss")}
             {" / "}
-            {formatDuration(duration, duration > 3600 ? "hh:mm:ss" : "mm:ss")}
+            {formatDuration(duration, seekFormat)}
           </p>
 
           <div className="hidden items-center gap-4 xl:flex">
@@ -536,18 +582,22 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
               )}
             >
               {isMuted || volume === 0 ? (
-                <VolumeX />
+                <VolumeX aria-hidden />
               ) : volume < 0.33 ? (
-                <Volume />
+                <Volume aria-hidden />
               ) : volume < 0.66 ? (
-                <Volume1 />
+                <Volume1 aria-hidden />
               ) : (
-                <Volume2 strokeWidth={2} />
+                <Volume2 aria-hidden strokeWidth={2} />
               )}
             </button>
 
+            <span id={volumeLabelId} className="sr-only">
+              Volume
+            </span>
             <Slider
-              aria-label="Volume"
+              ref={volumeRef}
+              aria-labelledby={volumeLabelId}
               value={[isMuted ? 0 : volume * 100]}
               defaultValue={[75]}
               min={0}
@@ -593,14 +643,14 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 })}
               />
             ) : (
-              <Button size="icon" variant="ghost">
-                <MoreVertical />
+              <Button size="icon" variant="ghost" aria-label="More">
+                <MoreVertical aria-hidden="true" />
               </Button>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 

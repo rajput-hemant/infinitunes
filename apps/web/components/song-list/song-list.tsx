@@ -87,6 +87,7 @@ export async function SongList(props: SongListProps) {
                       src={getImageSrc(item.image, "low")}
                       alt={item.title}
                       fill
+                      sizes="40px"
                       className="z-10 object-cover duration-300 group-hover:brightness-50"
                     />
 
@@ -106,7 +107,7 @@ export async function SongList(props: SongListProps) {
                     showAlbum && "xl:w-2/3",
                   )}
                 >
-                  <h4 className="w-full truncate font-semibold">
+                  <h3 className="w-full truncate font-semibold">
                     <Link
                       href={getHref(
                         item.perma_url,
@@ -116,7 +117,7 @@ export async function SongList(props: SongListProps) {
                     >
                       {decode(item.title)}
                     </Link>
-                  </h4>
+                  </h3>
 
                   <ScrollArea className="w-full truncate pb-1">
                     {item.more_info.artistMap?.primary_artists?.map(
@@ -163,8 +164,11 @@ export async function SongList(props: SongListProps) {
                 )}
               </figure>
 
-              <div className="flex w-[12%] items-center justify-end gap-3 lg:w-[16%] lg:shrink-0 lg:justify-between xl:w-[12%] 2xl:w-[10%]">
-                <DownloadButton songs={[item]} />
+              <div className="flex shrink-0 items-center justify-end lg:w-[16%] lg:justify-between lg:gap-3 xl:w-[12%] 2xl:w-[10%]">
+                <DownloadButton
+                  songs={[item]}
+                  className="size-11 hover:text-primary lg:size-5"
+                />
 
                 <LikeButton
                   user={user}

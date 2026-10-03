@@ -12,12 +12,17 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useDownloadQuality } from "~/hooks/use-store";
+import { cn } from "~/lib/utils";
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   songs: (Song | Episode)[];
 };
 
-export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
+export function DownloadButton({
+  songs,
+  className,
+  ...rest
+}: DownloadButtonProps) {
   const [downloadQuality] = useDownloadQuality();
   const [isDownloading, setIsDownloading] = React.useState(false);
 
@@ -101,13 +106,17 @@ export function DownloadButton({ songs, ...rest }: DownloadButtonProps) {
         delay={0}
         aria-label={`Download ${songs.length} song${songs.length === 1 ? "" : "s"}`}
         onClick={downloadHandler}
+        className={cn(
+          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+          className,
+        )}
         {...rest}
         disabled={isDownloading}
       >
         {isDownloading ? (
-          <Loader className="size-5 animate-spin" />
+          <Loader aria-hidden="true" className="size-5 animate-spin" />
         ) : (
-          <CloudDownload className="size-5" />
+          <CloudDownload aria-hidden="true" className="size-5" />
         )}
       </TooltipTrigger>
 

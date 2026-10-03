@@ -13,7 +13,11 @@ export function LanguageBar({ language }: LanguageBarProps) {
     <ScrollArea className="border-b py-2">
       <ul className="flex space-x-2 py-1 sm:space-x-6 md:space-x-10 lg:space-x-12">
         <li>
-          <Link title="For You" href={asRoute("?")}>
+          <Link
+            title="For You"
+            href={asRoute("?")}
+            aria-current={language ? undefined : "page"}
+          >
             <Badge
               className={cn(
                 "bg-primary p-2 hover:shadow-sm lg:px-4",

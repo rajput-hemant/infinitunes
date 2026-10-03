@@ -1,10 +1,10 @@
 # Player, queue, download
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-003, ISSUE-016 in [verification-issues.md](../../../../docs/checks/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-003, ISSUE-016 in [verification-issues.md](../../../../docs/verification/verification-issues.md).
 
 ## Sub-features
 
-- Play from cards, song lists and details headers (`components/play-button.tsx`, `song-list/play-pause-button.tsx`); `radio_station` and episode play paths are stubs.
+- Play from cards, song lists and details headers (`components/play-button.tsx`, `song-list/play-pause-button.tsx`); `radio_station` and episode cards also play from there.
 - Player bar (`components/player.tsx`): `Previous`, play/pause, `Next`, seek, `Volume`.
 - Queue sheet (`components/queue.tsx`): list, remove item (toast `Removed from queue`).
 - Persistence in localStorage: `queue`, `current_song_index`, `stream_quality`, `download_quality`, `image_quality` (`apps/web/hooks/use-store.ts`).

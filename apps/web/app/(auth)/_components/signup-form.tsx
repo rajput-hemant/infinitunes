@@ -4,25 +4,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@infinitunes/auth/client";
 import { signUpSchema } from "@infinitunes/auth/schemas";
 import { Button } from "@infinitunes/ui/components/button";
-import {
-  Field,
-  FieldError,
-  FieldLabel,
-} from "@infinitunes/ui/components/field";
-import { Input } from "@infinitunes/ui/components/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@infinitunes/ui/components/tooltip";
-import { Eye, EyeOff, Loader2, Mail } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
+import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
+import { PasswordField } from "./password-field";
 
 type FormData = z.infer<typeof signUpSchema>;
 
@@ -33,18 +24,18 @@ const defaultValues: FormData = {
 };
 
 export function SignUpForm() {
-  const [isPassVisible, setIsPassVisible] = React.useState(false);
-  const [isConfirmPassVisible, setIsConfirmPassVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const searchParams = useSearchParams();
   const authError = searchParams.get("error");
 
-  if (authError === "OAuthAccountNotLinked") {
-    toast.error("OAuth Account Not Linked", {
-      description: "This account is already linked with another provider.",
-    });
-  }
+  React.useEffect(() => {
+    if (authError === "OAuthAccountNotLinked") {
+      toast.error("OAuth Account Not Linked", {
+        description: "This account is already linked with another provider.",
+      });
+    }
+  }, [authError]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(signUpSchema),
@@ -82,19 +73,12 @@ export function SignUpForm() {
           control={form.control}
           name="email"
           render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">Email</FieldLabel>
-              <div className="relative">
-                <Input
-                  type="email"
-                  disabled={isSubmitting}
-                  placeholder="you@domain.com"
-                  className="shadow-xs"
-                  {...field}
-                />
-              </div>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+            <EmailField
+              field={field}
+              fieldState={fieldState}
+              autoComplete="email"
+              disabled={isSubmitting}
+            />
           )}
         />
 
@@ -102,44 +86,13 @@ export function SignUpForm() {
           control={form.control}
           name="password"
           render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">Password</FieldLabel>
-              <div className="relative">
-                <Input
-                  type={isPassVisible ? "text" : "password"}
-                  disabled={isSubmitting}
-                  placeholder="••••••••••"
-                  className="h-10 pr-8 shadow-xs"
-                  {...field}
-                />
-                <Tooltip>
-                  <TooltipTrigger
-                    delay={150}
-                    aria-label={
-                      isPassVisible ? "Hide Password" : "Show Password"
-                    }
-                    tabIndex={-1}
-                    type="button"
-                    disabled={!field.value}
-                    onClick={() => setIsPassVisible(!isPassVisible)}
-                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    {isPassVisible ? (
-                      <EyeOff className="size-5" />
-                    ) : (
-                      <Eye className="size-5" />
-                    )}
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-                    <p className="text-xs">
-                      {isPassVisible ? "Hide Password" : "Show Password"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+            <PasswordField
+              field={field}
+              fieldState={fieldState}
+              label="Password"
+              autoComplete="new-password"
+              disabled={isSubmitting}
+            />
           )}
         />
 
@@ -147,46 +100,13 @@ export function SignUpForm() {
           control={form.control}
           name="confirmPassword"
           render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error}>
-              <FieldLabel className="sr-only">Confirm Password</FieldLabel>
-              <div className="relative">
-                <Input
-                  type={isConfirmPassVisible ? "text" : "password"}
-                  disabled={isSubmitting}
-                  placeholder="••••••••••"
-                  className="h-10 pr-8 shadow-xs"
-                  {...field}
-                />
-                <Tooltip>
-                  <TooltipTrigger
-                    delay={150}
-                    aria-label={
-                      isConfirmPassVisible ? "Hide Password" : "Show Password"
-                    }
-                    tabIndex={-1}
-                    type="button"
-                    disabled={!field.value}
-                    onClick={() =>
-                      setIsConfirmPassVisible(!isConfirmPassVisible)
-                    }
-                    className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-                  >
-                    {isConfirmPassVisible ? (
-                      <EyeOff className="size-5" />
-                    ) : (
-                      <Eye className="size-5" />
-                    )}
-                  </TooltipTrigger>
-
-                  <TooltipContent>
-                    <p className="text-xs">
-                      {isConfirmPassVisible ? "Hide Password" : "Show Password"}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </div>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
+            <PasswordField
+              field={field}
+              fieldState={fieldState}
+              label="Confirm password"
+              autoComplete="new-password"
+              disabled={isSubmitting}
+            />
           )}
         />
 

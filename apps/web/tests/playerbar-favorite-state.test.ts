@@ -48,3 +48,20 @@ describe("playerbar favorite-state and Add-label plumbing regression", () => {
     expect(source).toContain("router.refresh()");
   });
 });
+
+describe("player a11y labels", () => {
+  it("labels sliders via aria-labelledby (base-ui thumb ignores root aria-label)", async () => {
+    const source = await Bun.file(PLAYER).text();
+
+    expect(source).not.toContain('aria-label="Seek"');
+    expect(source).not.toContain('aria-label="Volume"');
+    expect(source).toContain("aria-labelledby={seekLabelId}");
+    expect(source).toContain("aria-labelledby={volumeLabelId}");
+  });
+
+  it("empty-state More button has an accessible name", async () => {
+    const source = await Bun.file(PLAYER).text();
+
+    expect(source).toContain('aria-label="More"');
+  });
+});

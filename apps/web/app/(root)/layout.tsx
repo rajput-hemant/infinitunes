@@ -29,12 +29,21 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
   return (
     <React.Fragment>
+      <a
+        href="#main-content"
+        className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-2 focus-visible:top-2 focus-visible:z-[60] focus-visible:rounded-md focus-visible:bg-background focus-visible:px-4 focus-visible:py-2 focus-visible:text-sm focus-visible:shadow-md focus-visible:ring-3 focus-visible:ring-ring/50"
+      >
+        Skip to content
+      </a>
       <AppSidebarProvider defaultOpen={sidebarOpen}>
         <Navbar />
         <div className="flex min-h-0 w-full flex-1">
           <Sidebar user={user} userPlaylists={userPlaylists} />
           <SidebarInset className="min-w-0">
-            <main className="p-2 pb-24 sm:p-4 sm:pb-24 lg:pb-10">
+            <main
+              id="main-content"
+              className="px-2 pt-2 pb-[calc(9rem+env(safe-area-inset-bottom))] sm:px-4 sm:pt-4 lg:pb-24"
+            >
               <SecondaryNavbar />
               {children}
               <SiteFooter />

@@ -12,18 +12,21 @@ import { cache } from "react";
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongList } from "~/components/song-list/song-list";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { asRoute, ogImageUrl } from "~/lib/utils";
 
 const getLabel = cache(async (token: string) =>
-  api.get.label({
-    token,
-    page: 0,
-    n_song: 50,
-    n_album: 50,
-    cat: "popularity",
-    sort: "asc",
-  }),
+  orNotFound(
+    api.get.label({
+      token,
+      page: 0,
+      n_song: 50,
+      n_album: 50,
+      cat: "popularity",
+      sort: "asc",
+    }),
+  ),
 );
 
 type LabelDetailsPageProps = {

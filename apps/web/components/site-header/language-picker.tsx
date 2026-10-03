@@ -53,7 +53,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
           <Button
             size="sm"
             variant="outline"
-            className="hidden size-10 space-x-1 p-0 shadow-xs lg:inline-flex lg:w-auto lg:space-x-2 lg:p-2"
+            className="size-10 space-x-1 p-0 shadow-xs lg:w-auto lg:space-x-2 lg:p-2"
           >
             <Languages className="aspect-square h-5 lg:h-4" />
             <span className="hidden lg:inline-block">Languages</span>
@@ -70,9 +70,9 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
       <DropdownMenuContent className="w-auto min-w-[18.5625rem]">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="p-4">
-            <h1 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+            <span className="block font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
               What music do you like?
-            </h1>
+            </span>
 
             <small className="text-xs text-muted-foreground">
               Pick all the languages you want to listen to.
@@ -83,7 +83,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
         <ToggleGroup
           value={selectedLanguages}
           onValueChange={(v) => setSelectedLanguages(v as Lang[])}
-          className="grid grid-cols-2 border-y py-2"
+          className="grid w-full grid-cols-2 border-y py-2"
         >
           {languages.map((lang) => (
             <ToggleGroupItem

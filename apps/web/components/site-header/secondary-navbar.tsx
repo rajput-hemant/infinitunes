@@ -7,6 +7,7 @@ import {
   Sheet,
   SheetContent,
   SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@infinitunes/ui/components/sheet";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -29,7 +30,7 @@ export function SecondaryNavbar() {
   if (!sidebarNav.slice(0, 6).some((i) => i.href === pathname)) return null;
 
   return (
-    <nav className="border-b">
+    <nav aria-label="Browse" className="border-b">
       <div className="hidden h-full items-center gap-2 lg:flex">
         <ScrollArea>
           <ul className="flex gap-2">
@@ -76,16 +77,16 @@ export function SecondaryNavbar() {
       <div className="lg:hidden">
         <Sheet open={isOpen} onOpenChange={toggleSheet}>
           <SheetTrigger className="mb-2 flex w-full justify-between">
-            <h4 className="text-lg font-semibold">Browse</h4>
+            <span className="text-lg font-semibold">Browse</span>
 
-            <ChevronDown />
+            <ChevronDown aria-hidden />
           </SheetTrigger>
 
           <SheetContent side="bottom" className="space-y-4 rounded-t-2xl">
             <SheetHeader>
-              <h2 className="font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent md:text-3xl">
+              <SheetTitle className="font-heading text-2xl font-normal drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent md:text-3xl">
                 Browse
-              </h2>
+              </SheetTitle>
             </SheetHeader>
 
             <Separator />
@@ -107,11 +108,11 @@ export function SecondaryNavbar() {
                     )}
                   >
                     <span>
-                      <Icon className="mr-2 inline-block size-5" />
+                      <Icon aria-hidden className="mr-2 inline-block size-5" />
                       {title}
                     </span>
 
-                    <ChevronRight />
+                    <ChevronRight aria-hidden />
                   </Link>
                 );
               })}

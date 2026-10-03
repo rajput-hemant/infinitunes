@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { languages } from "~/config/languages";
 import { siteConfig } from "~/config/site";
+import { footerOrEmpty } from "~/lib/shell-data";
 import { api } from "~/lib/trpc/server";
 import { asRoute } from "~/lib/utils";
 
@@ -9,9 +10,9 @@ import { Icons } from "../icons";
 import { ThemeToggleGroup } from "./theme-toggle-group";
 
 export async function SiteFooter() {
-  const { artist, actor, album, playlist } = await api.get.footer({
-    lang: "hindi",
-  });
+  const { artist, actor, album, playlist } = await footerOrEmpty(
+    api.get.footer({ lang: "hindi" }),
+  );
 
   const footerLinks = [
     { title: "Top Artist", data: artist },
@@ -32,13 +33,13 @@ export async function SiteFooter() {
               </span>
             </Link>
 
-            <div className="flex justify-center gap-4 text-muted-foreground md:mt-4">
+            <div className="flex justify-center text-muted-foreground md:mt-4">
               <a
                 aria-label="GitHub Repository"
                 href={siteConfig.links.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="duration-200 hover:text-foreground"
+                className="p-3 duration-200 hover:text-foreground"
               >
                 <Icons.GitHub className="size-4" />
               </a>
@@ -47,7 +48,7 @@ export async function SiteFooter() {
                 href={siteConfig.links.x}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="duration-200 hover:text-foreground"
+                className="p-3 duration-200 hover:text-foreground"
               >
                 <Icons.X className="size-4" />
               </a>
@@ -56,7 +57,7 @@ export async function SiteFooter() {
                 href={siteConfig.links.discord}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="duration-200 hover:text-foreground"
+                className="p-3 duration-200 hover:text-foreground"
               >
                 <Icons.Discord className="size-[18px]" />
               </a>
@@ -67,7 +68,7 @@ export async function SiteFooter() {
             <section key={title} className="flex flex-col gap-2.5">
               <h2 className="text-sm font-semibold lg:text-sm">{title}</h2>
 
-              <ul className="w-fit space-y-1">
+              <ul className="w-fit">
                 {data.map(({ id, title, action }) => (
                   <li
                     key={id}
@@ -75,6 +76,7 @@ export async function SiteFooter() {
                   >
                     <Link
                       href={asRoute(action.replace("featured", "playlist"))}
+                      className="block py-2"
                     >
                       {title}
                     </Link>
@@ -87,7 +89,7 @@ export async function SiteFooter() {
           <section className="flex flex-col gap-2.5">
             <h2 className="text-sm font-semibold lg:text-sm">Languages</h2>
 
-            <ul className="w-fit space-y-1">
+            <ul className="w-fit">
               {languages.map((lang) => (
                 <li
                   key={lang}
@@ -95,6 +97,7 @@ export async function SiteFooter() {
                 >
                   <Link
                     href={asRoute(`/album?lang=${lang.toLowerCase()}`)}
+                    className="block py-2"
                   >{`${lang} Songs`}</Link>
                 </li>
               ))}
@@ -103,7 +106,7 @@ export async function SiteFooter() {
         </div>
       </div>
 
-      <div className="mx-auto mt-4 flex max-w-7xl flex-col items-center justify-between gap-4 border-t py-6 lg:flex-row">
+      <div className="mx-auto mt-4 flex max-w-7xl px-5 sm:px-0 flex-col items-center justify-between gap-4 border-t py-6 lg:flex-row">
         <p className="max-w-4xl text-center text-xs text-muted-foreground lg:text-sm">
           <Link href="/" className="inline-flex items-center justify-center">
             <span className="font-heading text-base tracking-wide text-primary underline drop-shadow-md">

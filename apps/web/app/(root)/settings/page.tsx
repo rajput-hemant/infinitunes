@@ -1,7 +1,9 @@
-import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Ban } from "lucide-react";
-import Link from "next/link";
 
+import {
+  LibraryEmpty,
+  LibraryHeading,
+} from "~/components/library/library-section";
 import { getUser } from "~/lib/auth";
 
 import { PasskeySettings } from "./_components/passkey-settings";
@@ -17,37 +19,22 @@ export default async function SettingsProfilePage() {
 
   if (!user) {
     return (
-      <div className="flex h-full items-center justify-center p-20">
-        <div className="size-full rounded-md border-2 border-dashed p-4">
-          <div className="flex size-full flex-col items-center justify-center gap-4 rounded-md bg-muted">
-            <Ban className="size-32 text-destructive" />
-            <p className="text-3xl font-bold">
-              Please sign in to view this page.
-            </p>
-
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: "outline" })}
-            >
-              Sign in
-            </Link>
-          </div>
-        </div>
-      </div>
+      <LibraryEmpty
+        icon={Ban}
+        title="Please sign in to view this page"
+        description="Sign in to manage your account, appearance and preferences."
+        action={{ href: "/login", label: "Sign in" }}
+      />
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1 border-b p-4">
-        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
-          Account Settings
-        </h2>
-
-        <p className="text-sm text-muted-foreground">
-          This is how others will see you on the site.
-        </p>
-      </div>
+      <LibraryHeading
+        title="Account Settings"
+        description="This is how others will see you on the site."
+        className="border-b p-4"
+      />
 
       <ProfileForm user={user} />
 

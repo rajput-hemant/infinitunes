@@ -127,6 +127,8 @@ Set these in your Vercel project settings:
 | `DATABASE_URL`             | PostgreSQL connection string                      |
 | `UPSTASH_REDIS_REST_URL`   | Upstash Redis URL (optional, rate limiting)       |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis token (optional, rate limiting)     |
+| `ENABLE_RATE_LIMITING`     | `true`/`false` rate limiting toggle (default `false`) |
+| `RATE_LIMITING_REQUESTS_PER_SECOND` | Rate limit per second (default `50`)      |
 | `UMAMI_WEBSITE_ID`         | Umami analytics website ID (optional)             |
 
 [![Deploy with Vercel][deploy]][deploy-link]

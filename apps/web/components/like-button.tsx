@@ -13,7 +13,16 @@ import { toast } from "sonner";
 
 import type { User } from "~/lib/auth";
 import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
-import { cn, currentlyInDev } from "~/lib/utils";
+import { cn } from "~/lib/utils";
+
+// Types the favorites table has a column for; other media types are not likable.
+const FAVORITE_TYPES = ["song", "album", "playlist", "artist", "show"] as const;
+
+function isFavoriteType(
+  type: MediaType,
+): type is (typeof FAVORITE_TYPES)[number] {
+  return (FAVORITE_TYPES as readonly string[]).includes(type);
+}
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   user?: User;
@@ -24,7 +33,7 @@ type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
 };
 
 export function LikeButton(props: LikeButtonProps) {
-  const { user, type, token, name, favourites, ...rest } = props;
+  const { user, type, token, name, favourites, className, ...rest } = props;
 
   const isFavorite =
     favourites?.songs.includes(token) ||
@@ -35,8 +44,12 @@ export function LikeButton(props: LikeButtonProps) {
 
   const [optimisticLike, setOptimisticLike] = React.useOptimistic(
     isFavorite ?? false,
-    (isLiked, _) => !isLiked,
+    (isLiked) => !isLiked,
   );
+
+  if (!isFavoriteType(type)) {
+    return null;
+  }
 
   function likeHandler() {
     if (!user) {
@@ -130,9 +143,6 @@ export function LikeButton(props: LikeButtonProps) {
         }
         break;
       }
-
-      default:
-        currentlyInDev();
     }
   }
 
@@ -141,13 +151,19 @@ export function LikeButton(props: LikeButtonProps) {
       <TooltipTrigger
         delay={0}
         aria-label="Like"
+        aria-pressed={optimisticLike}
         onClick={likeHandler}
+        className={cn(
+          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+          className,
+        )}
         {...rest}
       >
         <Heart
+          aria-hidden="true"
           className={cn(
             "size-5 text-inherit transition-transform active:scale-105",
-            optimisticLike && "fill-red-500 text-red-500",
+            optimisticLike && "fill-destructive text-destructive",
           )}
         />
       </TooltipTrigger>

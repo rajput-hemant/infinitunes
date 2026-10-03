@@ -1,11 +1,14 @@
 import { getImageSrc } from "@infinitunes/types";
+import { buttonVariants } from "@infinitunes/ui/components/button";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { ImageWithFallback } from "~/components/image-with-fallback";
+import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { PlayButton } from "~/components/play-button";
 import { SongList } from "~/components/song-list/song-list";
 import { api } from "~/lib/trpc/server";
-import { getHref, ogImageUrl } from "~/lib/utils";
+import { cn, getHref, ogImageUrl } from "~/lib/utils";
 
 type Props = {
   params: Promise<{ name: string; token: string }>;
@@ -61,15 +64,18 @@ export default async function RadioStationPage({ params }: Props) {
     <div className="space-y-4">
       <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
         <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-full border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64">
-          <img
+          <ImageWithFallback
             src={getImageSrc(station.image, "high")}
+            width={200}
+            height={200}
             alt={station.title}
+            fallback={getPlaceholderSrc("radio_station")}
             className="size-full rounded-full object-cover"
           />
         </div>
 
         <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
-          <h1 className="flex items-center truncate text-center font-heading text-xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start">
+          <h1 className="max-w-full truncate text-center font-heading text-xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start">
             {station.title}
           </h1>
 
@@ -81,7 +87,10 @@ export default async function RadioStationPage({ params }: Props) {
             <PlayButton
               type="radio_station"
               token={token}
-              className="rounded-full px-10 text-xl font-bold shadow-xs"
+              className={cn(
+                buttonVariants(),
+                "rounded-full px-10 text-xl font-bold shadow-xs",
+              )}
             >
               Play
             </PlayButton>

@@ -3,14 +3,11 @@
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
-import { Separator } from "@infinitunes/ui/components/separator";
 import { usePathname, useRouter } from "next/navigation";
 
 type AuthModalProps = React.PropsWithChildren<{
@@ -28,7 +25,7 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
 
   return (
     <Dialog defaultOpen onOpenChange={(open) => !open && navigateBack()}>
-      <DialogContent className="gap-0 space-y-2 p-10 sm:max-w-[450px]">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 space-y-2 overflow-y-auto p-6 sm:max-w-[450px] sm:p-10">
         <DialogHeader>
           <DialogTitle className="text-center font-heading text-3xl font-normal drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-4xl md:text-5xl">
             {title}
@@ -54,22 +51,6 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
           </Button>
           .
         </p>
-
-        <Separator />
-
-        <DialogFooter className="flex pt-2">
-          <DialogClose
-            render={
-              <Button
-                variant="secondary"
-                onClick={navigateBack}
-                className="w-full border text-lg font-semibold shadow-xs"
-              >
-                Close
-              </Button>
-            }
-          />
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

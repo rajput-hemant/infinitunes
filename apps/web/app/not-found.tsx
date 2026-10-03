@@ -31,18 +31,18 @@ const LINKS: { title: string; href: Route }[] = [
 
 const NotFound = () => {
   return (
-    <section className="flex h-screen flex-col items-center justify-center gap-y-4">
+    <section className="flex min-h-dvh flex-col items-center justify-center gap-y-4 px-4 py-8 text-center">
       <Image
         src="/images/404.png"
         height={300}
         width={600}
         alt="404 not found"
-        className="drop-shadow-sm"
+        className="h-auto w-full max-w-xl drop-shadow-sm"
       />
 
       <h1 className="font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-3xl md:text-4xl">
         This page seems to be{" "}
-        <span className="text-red-500 underline underline-offset-4 selection:text-red-500">
+        <span className="text-destructive underline underline-offset-4 selection:text-destructive">
           missing
         </span>
         .
@@ -54,19 +54,21 @@ const NotFound = () => {
 
       <p className="text-lg font-normal italic">Try one of these:</p>
 
-      <div className="flex flex-wrap justify-center space-x-4 font-heading text-sm font-medium italic drop-shadow-sm sm:text-lg md:text-left lg:text-2xl">
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 font-heading text-sm font-medium italic drop-shadow-sm sm:text-lg lg:text-2xl">
         {LINKS.map(({ title, href }, i, arr) => (
           <React.Fragment key={i}>
             <Link
               key={title}
               href={href}
-              className="underline-offset-4 hover:underline"
+              className="inline-block py-1 underline-offset-4 hover:underline"
             >
               <span>{title}</span>
             </Link>
 
             {i !== arr.length - 1 && (
-              <span className="ml-4 text-muted-foreground">/</span>
+              <span aria-hidden className="text-muted-foreground">
+                /
+              </span>
             )}
           </React.Fragment>
         ))}

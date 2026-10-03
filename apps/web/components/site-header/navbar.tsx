@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { siteConfig } from "~/config/site";
 import { getUser } from "~/lib/auth";
+import { megaMenuOrEmpty } from "~/lib/shell-data";
 import { api } from "~/lib/trpc/server";
 import { cn } from "~/lib/utils";
 
@@ -22,7 +23,10 @@ export async function Navbar() {
   const cookiesStore = await cookies();
   const languages = cookiesStore.get("language")?.value?.split(",") ?? [];
 
-  const [user, megaMenu] = await Promise.all([getUser(), api.get.megaMenu({})]);
+  const [user, megaMenu] = await Promise.all([
+    getUser(),
+    megaMenuOrEmpty(api.get.megaMenu({})),
+  ]);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">

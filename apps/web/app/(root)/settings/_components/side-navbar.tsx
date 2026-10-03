@@ -65,7 +65,7 @@ const sidebarNavItems: SidebarNavItem[] = [
       },
       {
         title: "Themes",
-        hash: "theme",
+        hash: "themes",
         icon: <Palette className={iconClass} />,
       },
       {
@@ -105,7 +105,7 @@ const sidebarNavItems: SidebarNavItem[] = [
 
 export function SideNavbar() {
   return (
-    <nav className="flex flex-col gap-2">
+    <nav aria-label="Settings" className="flex flex-col gap-2">
       {sidebarNavItems.map(({ section, href, items }, i) => (
         <React.Fragment key={`${section}-${i}`}>
           <div key={i} className="hidden flex-col gap-2 lg:flex">

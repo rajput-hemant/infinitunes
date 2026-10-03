@@ -1,5 +1,5 @@
 import type { Quality, MediaType } from "@infinitunes/types";
-import { getImageSrc, getToken } from "@infinitunes/types";
+import { decode, getImageSrc, getToken } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -9,6 +9,7 @@ import Link from "next/link";
 import { cn, getHref } from "~/lib/utils";
 
 import { ImageWithFallback } from "../image-with-fallback";
+import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
 
 export type SliderCardProps = {
@@ -29,8 +30,8 @@ export function SliderCard(props: SliderCardProps) {
     url,
     type,
     image,
-    name,
-    subtitle,
+    name: rawName,
+    subtitle: rawSubtitle,
     explicit,
     aspect = "square",
     hidePlayButton,
@@ -38,6 +39,8 @@ export function SliderCard(props: SliderCardProps) {
     className,
   } = props;
 
+  const name = decode(rawName);
+  const subtitle = rawSubtitle ? decode(rawSubtitle) : rawSubtitle;
   const imageSrc = getImageSrc(image, "high");
   const isRadio = type === "radio_station";
   const href = isRadio ? getHref(url, "radio") : getHref(url, type);
@@ -64,23 +67,24 @@ export function SliderCard(props: SliderCardProps) {
           )}
         >
           {href ? (
-            <Link href={href} className="absolute inset-0 z-10">
-              <span className="sr-only">View {name}</span>
-            </Link>
+            <Link
+              href={href}
+              tabIndex={-1}
+              aria-hidden="true"
+              className="absolute inset-0 z-10"
+            />
           ) : (
-            <div className="absolute inset-0 z-10">
-              <span className="sr-only">View {name}</span>
-            </div>
+            <div className="absolute inset-0 z-10" />
           )}
 
           <ImageWithFallback
             src={imageSrc}
-            fallback={`/images/placeholder/${type}.jpg`}
+            fallback={getPlaceholderSrc(type)}
             width={200}
             height={200}
             alt={name}
             className={cn(
-              "size-full object-cover transition-transform duration-300 group-hover:scale-110",
+              "size-full object-cover transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100",
               !imageSrc && "dark:invert",
               imageSrc.includes("default") && "dark:invert",
             )}
@@ -89,8 +93,9 @@ export function SliderCard(props: SliderCardProps) {
           <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
 
           {!hidePlayButton && (
-            <div className="absolute inset-0 hidden from-transparent to-black group-hover:bg-linear-to-b lg:group-hover:flex">
+            <div className="absolute inset-0 hidden from-transparent to-black group-focus-within:bg-linear-to-b group-hover:bg-linear-to-b lg:group-focus-within:flex lg:group-hover:flex">
               <PlayButton
+                aria-label={`Play ${name}`}
                 type={type}
                 token={getToken(url)}
                 className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
@@ -105,12 +110,16 @@ export function SliderCard(props: SliderCardProps) {
         </div>
 
         <div className="mt-1 flex w-full flex-col items-center justify-between">
-          <h4 className="w-full font-semibold lg:text-lg">
+          <h3 className="w-full font-semibold lg:text-lg">
             {href ? (
-              <Link href={href} className="mx-auto flex max-w-fit items-center">
+              <Link
+                href={href}
+                className="mx-auto flex max-w-fit min-w-0 items-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
                 {isExplicit && (
                   <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
-                    E
+                    <span aria-hidden="true">E</span>
+                    <span className="sr-only">Explicit</span>
                   </Badge>
                 )}
                 <span className="truncate">{name}</span>
@@ -119,13 +128,14 @@ export function SliderCard(props: SliderCardProps) {
               <div className="mx-auto flex max-w-fit items-center">
                 {isExplicit && (
                   <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
-                    E
+                    <span aria-hidden="true">E</span>
+                    <span className="sr-only">Explicit</span>
                   </Badge>
                 )}
                 <span className="truncate">{name}</span>
               </div>
             )}
-          </h4>
+          </h3>
 
           <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">
             {subtitle}

@@ -76,13 +76,13 @@ export function OAuthButtons(props: OAuthButtonProps) {
         </span>
       </div>
 
-      <div className="mt-6 flex w-full flex-col space-y-2 text-white">
+      <div className="mt-6 flex w-full flex-col space-y-2">
         <Button
           size="sm"
           type="button"
           onClick={googleSignInHandler}
           disabled={isFormDisabled}
-          className="w-full font-semibold shadow-md"
+          className="h-9 w-full font-semibold shadow-md"
         >
           {oauthLoading === "google" ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -97,7 +97,7 @@ export function OAuthButtons(props: OAuthButtonProps) {
           type="button"
           onClick={githubSignInHandler}
           disabled={isFormDisabled}
-          className="w-full font-semibold shadow-md"
+          className="h-9 w-full font-semibold shadow-md"
         >
           {oauthLoading === "github" ? (
             <Loader2 className="mr-2 size-4 animate-spin" />

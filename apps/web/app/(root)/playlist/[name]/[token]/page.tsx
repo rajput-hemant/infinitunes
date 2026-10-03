@@ -5,11 +5,12 @@ import { cache } from "react";
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { ogImageUrl } from "~/lib/utils";
 
 const getPlaylist = cache(async (token: string) =>
-  api.playlist.details({ token }),
+  orNotFound(api.playlist.details({ token })),
 );
 
 type PlaylistPageProps = { params: Promise<{ name: string; token: string }> };

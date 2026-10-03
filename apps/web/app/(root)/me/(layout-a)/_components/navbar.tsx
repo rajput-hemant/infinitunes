@@ -15,7 +15,7 @@ type NavItem = {
 };
 
 const navlist: NavItem[] = [
-  { title: "Your Playlists", href: "/me" },
+  { title: "My Playlists", href: "/me" },
   { title: "Recently Played", href: "/me/recently-played" },
   { title: "Liked Songs", href: "/me/liked-songs" },
   { title: "Liked Albums", href: "/me/albums" },

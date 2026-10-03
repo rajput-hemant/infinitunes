@@ -47,7 +47,7 @@ import {
 import type { User } from "~/lib/auth";
 import { addSongsToPlaylist } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
-import { currentlyInDev } from "~/lib/utils";
+import { userMessage } from "~/lib/user-message";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
@@ -126,7 +126,7 @@ export function MoreButton(props: MoreButtonProps) {
       {
         loading: "Adding songs to playlist...",
         success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${name}" playlist`,
-        error: (error) => error.message,
+        error: userMessage,
         finally: () => setDialogOpen(false),
       },
     );
@@ -245,6 +245,7 @@ export function MoreButton(props: MoreButtonProps) {
                     src={getImageSrc(image, "low")}
                     alt={name}
                     fill
+                    sizes="56px"
                     className="z-10 rounded-md"
                   />
 

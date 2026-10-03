@@ -1,6 +1,6 @@
 # Infinitunes feature map (DRAFT)
 
-Every file here is **DRAFT** with `Last live proof: none`. Nothing has been driven in a browser. Driving steps name real routes and labels from source; the browser harness is pending the user-selected skill (see [../SKILL.md](../SKILL.md)). Issues live only in [docs/checks/verification-issues.md](../../../../docs/checks/verification-issues.md).
+Every file here is **DRAFT** with `Last live proof: none`. Nothing has been driven in a browser. Driving steps name real routes and labels from source; the browser harness is pending the user-selected skill (see [../SKILL.md](../SKILL.md)). Issues live only in [docs/verification/verification-issues.md](../../../../docs/verification/verification-issues.md).
 
 Auth model: Better Auth with email + password, passkey (WebAuthn) and Google/GitHub OAuth. There are no anonymous or guest accounts. A guest is simply a request with no session cookie; it can browse public pages, use the player and change local preferences, but `/me` redirects to `/login` and every user-data tRPC procedure returns `UNAUTHORIZED`.
 
@@ -18,7 +18,7 @@ Auth model: Better Auth with email + password, passkey (WebAuthn) and Google/Git
 | User playlists                             | [playlists.md](playlists.md)                     | user            | none            |
 | Library (`/me`)                            | [library.md](library.md)                         | user            | none            |
 | Appearance and preferences                 | [preferences.md](preferences.md)                 | guest           | none            |
-| Radio (stubbed; separate task)             | [radio.md](radio.md)                             | guest           | none            |
+| Radio                                      | [radio.md](radio.md)                             | guest           | none            |
 | UI quality and responsive layout           | [ui-quality.md](ui-quality.md)                   | both            | none            |
 
 ## Route inventory (from `apps/web/app`)

@@ -2,7 +2,7 @@
 
 Single canonical ledger for Infinitunes verification. Feature files in [.agents/skills/verify/features](../../.agents/skills/verify/features/README.md) link here by ID and do not repeat issue text. Skill: [.agents/skills/verify/SKILL.md](../../.agents/skills/verify/SKILL.md) (DRAFT).
 
-Branch under test: `fm/infinitunes-pstack-verification`, based on `migration/bun-monorepo` @ `80bb29c`. Date: 2026-10-02.
+Branch under test: `migration/bun-monorepo` @ `9be77b9`. Date: 2026-10-02.
 
 ## Classification
 
@@ -10,7 +10,7 @@ Branch under test: `fm/infinitunes-pstack-verification`, based on `migration/bun
 - **HYPOTHESIS**: suspected from source or history, not reproduced.
 - **GAP**: coverage not exercised. A GAP is not a failure and not a pass.
 
-No PASS is claimed for any browser or authenticated behavior. "Prior proof" means evidence recorded by an earlier run in [../migration-acceptance.md](../migration-acceptance.md) section 13; it was not re-run here.
+No PASS is claimed for any browser or authenticated behavior. "Prior proof" means evidence recorded by an earlier run in [migration-acceptance.md](migration-acceptance.md) section 13; it was not re-run here.
 
 State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 
@@ -65,6 +65,7 @@ Oxlint reports warnings, no errors.
 - Expected: no warnings. Actual: 47 warnings. Severity low; the trpc one is intentional and could be suppressed.
 - Follow-up: triage warnings, suppress the intentional import.
 - Update 2026-10-03 (audit, source read only, lint not re-run): `apps/web/components/play-button.tsx:16` and `apps/web/components/details-header/more-button.tsx:50` import `currentlyInDev` but never call it, so they are unused-import warnings that disappear once removed. State remains open.
+- Update 2026-10-03 (source grep): those `currentlyInDev` imports, and the helper itself, were removed (`4eae157`). The unused-import warnings are gone; the issue stays open for the remaining warnings (see TC-5 in `docs/TODO.md`).
 
 ### ISSUE-003
 
@@ -78,6 +79,7 @@ Several visible actions were stubs that only showed the toast `This feature is c
 - Update 2026-10-03 (`fm/infinitunes-pending-ui-completion`): song-row `Add To Favourite` now calls `addToFavorites`/`removeFromFavorites` (label flips to `Remove From Favourite`; hidden for episodes; signed-out shows a sign-in warning). Browser proof at 390px: DB `infinitunes_favorite.songs` gained then lost the token, label flipped after reload, no console errors. The sidebar playlist-row play stub (a button nested in a link, hidden until hover) was removed. State remains open only for `components/play-button.tsx`/episode paths still using `currentlyInDev`.
 - Update 2026-10-03 (audit, source read only, not re-run in a browser): `components/play-button.tsx` no longer calls `currentlyInDev` (it only imports it; `radio_station` plays real stations), so that part of the remaining-stubs note above is stale. Still stubbed in source: `components/like-button.tsx` `default:` branch calls `currentlyInDev()` for any type other than song, album, playlist, artist and show, and `DetailsHeader` renders `LikeButton` for every kind except `label`, so `Like` on a mix or episode details header shows the in-development toast; `components/song-list/more-button.tsx` `play()` and `addToQueue()` call `currentlyInDev()` for episode rows. Unconfirmed: whether radio-station and season headers reach the `default:` branch. State remains open.
 - Update 2026-10-03 (`fm/infinitunes-ui-polish-round-two`): Playerbar favorite state and stale Add label plumbing resolved. `apps/web/app/(root)/layout.tsx` now queries `getUserFavorites()` and forwards `favorites` through `PlayerWrapper` -> `Player` -> `TileMoreButton`. `TileMoreButton` in `apps/web/components/song-list/more-button.tsx` now manages `useOptimistic` favorite state with `startTransition` and `router.refresh()`, eliminating the stale Add label after addition without requiring page reload. Verified live across 390px, 768px, and 1280px viewports (light and dark modes, keyboard navigation): DB row in `infinitunes_favorite` gained and lost token, menu label flipped instantly to `Remove From Favourite` and back to `Add To Favourite`, 0 console errors. Remaining stubs: `components/play-button.tsx` and episode actions still calling `currentlyInDev`. State remains open.
+- Update 2026-10-03 (source grep): `currentlyInDev` no longer exists anywhere under `apps/` or `packages/` (removed in `4eae157`), and no source emits the `This feature is currently in development.` toast. Treat the `currentlyInDev` stub notes above as historical; re-verify the like-button `default:` branch and episode actions in a browser before closing.
 
 ### ISSUE-004
 
@@ -91,6 +93,7 @@ Several visible actions were stubs that only showed the toast `This feature is c
 Profile form has non-functional controls.
 
 - Evidence (source): `apps/web/app/(root)/settings/_components/profile-form.tsx` `Verify Email` button (`onClick={currentlyInDev}`, line ~143) and the avatar `Edit` button (line ~272).
+- Update 2026-10-03 (source grep): the `currentlyInDev` helper was removed (`4eae157`) and `profile-form.tsx` no longer contains a `Verify Email` or avatar `Edit` button, so the `currentlyInDev` reference above is historical. Not re-run in a browser.
 - Expected: functional or absent. Actual: info toast only. Follow-up: implement or remove. State open.
 
 ### ISSUE-006
@@ -147,10 +150,10 @@ An invalid song token renders the generic error page.
 
 Stale process items from the migration report, corrected here.
 
-- Evidence: [../migration-acceptance.md](../migration-acceptance.md) section 12 lists "Docker image build" and Chrome-absent blockers and section 8 says Chrome is missing; section 13 states it "supersedes their Docker, live-data and browser blockers" and records a Docker build pass and Chrome runs. `package.json` `packageManager` and `.github/workflows/ci.yml` now pin Bun `1.4.2` (sections 9 and the header still mention 1.3.14).
-- Correction: treat sections 6, 8 and 12 as historical; the open items are in [../TODO.md](../TODO.md). Prior proofs stay in section 13 and are not re-attributed to this verification.
+- Evidence: [migration-acceptance.md](migration-acceptance.md) section 12 lists "Docker image build" and Chrome-absent blockers and section 8 says Chrome is missing; section 13 states it "supersedes their Docker, live-data and browser blockers" and records a Docker build pass and Chrome runs. `package.json` `packageManager` and `.github/workflows/ci.yml` now pin Bun `1.4.2` (sections 9 and the header still mention 1.3.14).
+- Correction: treat sections 6, 8 and 12 as historical; the open items are in [TODO.md](../TODO.md). Prior proofs stay in section 13 and are not re-attributed to this verification.
 - State closed (documentation note only; the older report text is left as the record).
-- Update 2026-10-03 (audit): `git ls-files` on this branch no longer contains `dockerfile` (removed in `c663112`), while `IS_DOCKER` handling remains in `apps/web/next.config.ts` and `turbo.json`, and `.dockerignore` still names it. The Docker build proofs in acceptance sections 6 and 13 therefore describe a file that is no longer in the tree. Tracked as a decision in [../TODO.md](../TODO.md).
+- Update 2026-10-03 (audit): `git ls-files` on this branch no longer contains `dockerfile` (removed in `c663112`), while `IS_DOCKER` handling remains in `apps/web/next.config.ts` and `turbo.json`, and `.dockerignore` still names it. The Docker build proofs in acceptance sections 6 and 13 therefore describe a file that is no longer in the tree. Tracked as a decision in [TODO.md](../TODO.md).
 
 ### ISSUE-022
 
@@ -165,7 +168,7 @@ Artist details-header "Play Radio" creates a station but gets zero songs back �
   - Upstream behavior: without `artistId`, `createStation` falls back to `webradio.createFeaturedStation`, which returns a placeholder station session without songs. Subsequent fetch to `webradio.getSong` returns `{}`, yielding 0 songs. `radioSongs.length === 0` triggered toast error "Could not find songs for this radio" without updating `queue` or `activeRadio`.
   - Counterfactual proof: calling `createStation` with `{ type: "artist", name: "Arijit Singh", artistId: "461968", language: "hindi" }` immediately returns valid artist radio station ID (`...~^~artist_radio~^~461968`), and `radio.songs` returns tracks (first track "Haareya").
   - Fix: passed `artistId: kind === "artist" ? (item as Artist).artistId : undefined` and `language: kind === "artist" ? (item as Artist).dominantLanguage : songs[0]?.language` from `apps/web/components/details-header/details-header.tsx` to `MoreButton`. In `apps/web/components/details-header/more-button.tsx`, accepted `artistId` and `language` in `MoreButtonProps` and forwarded them in `createStation.mutate`.
-  - Live browser verification (run `infinitunes-radio-auth-fixes`, 2026-10-02, port 3152): clicking "More options → Play Radio" on `/artist/arijit-singh-songs/LlRWpHzy3Hk_` generated station `8J3VmbITmEJEOcO9bM98a2rtPB5QEODtuFEvS4n6uS0fbNiB2Vcbdw__~^~artist_radio~^~459320`, populated 20 station songs into `queue`, and set `active_radio_session` (`name: "Arijit Singh Radio"`, `type: "artist"`, `language: "hindi"`). Evidence: `evidence/06-verified-artist-play-radio-success.png`.
+  - Live browser verification (run `infinitunes-radio-auth-fixes`, 2026-10-02, port 3152): clicking "More options → Play Radio" on `/artist/arijit-singh-songs/LlRWpHzy3Hk_` generated station `8J3VmbITmEJEOcO9bM98a2rtPB5QEODtuFEvS4n6uS0fbNiB2Vcbdw__~^~artist_radio~^~459320`, populated 20 station songs into `queue`, and set `active_radio_session` (`name: "Arijit Singh Radio"`, `type: "artist"`, `language: "hindi"`). Evidence: `stored under the firstmate home, task infinitunes-collapsible-sidebar`.
   - Regression test: `apps/web/tests/details-header-radio.test.ts`.
 - State closed.
 
@@ -176,10 +179,10 @@ After a successful email login, the login form stays on `/login` — no client-s
 - Evidence (browser, 2026-10-02, run `browser-radio-3151` and re-reproduced on `infinitunes-radio-auth-fixes`):
   - Filled and submitted the login form at `/login` with `radiotest@example.com` / `Password123!`.
   - Network: `POST /api/auth/sign-in/email` 200, response includes `token`, `user`, `redirect:false`, and `set-cookie: better-auth.session_token`.
-  - URL after submit: remained `http://localhost:3152/login` with form inputs still rendered and toast "You have been signed in." displayed. Evidence: `evidence/02-repro-login-stays-on-login.png`.
+  - URL after submit: remained `http://localhost:3152/login` with form inputs still rendered and toast "You have been signed in." displayed. Evidence: `stored under the firstmate home, task infinitunes-collapsible-sidebar`.
   - Root cause: in `apps/web/app/(auth)/_components/login-form.tsx` `onSubmit()`, the success path only showed toast without invoking client-side navigation.
   - Fix: imported `useRouter` from `next/navigation` and `asRoute` from `~/lib/utils`. On successful email login and passkey sign-in, read `callbackUrl` (defaulting to `/`), then called `router.push(asRoute(callbackUrl))` and `router.refresh()`.
-  - Live browser verification (run `infinitunes-radio-auth-fixes`, 2026-10-02, port 3152): submitted valid email credentials on `/login`, page automatically redirected to `http://localhost:3152/` with title "Online Songs on Infinitunes: Download & Play Latest Music for Free | Infinitunes" and toast "You have been signed in." Evidence: `evidence/05-verified-login-redirect-home.png`.
+  - Live browser verification (run `infinitunes-radio-auth-fixes`, 2026-10-02, port 3152): submitted valid email credentials on `/login`, page automatically redirected to `http://localhost:3152/` with title "Online Songs on Infinitunes: Download & Play Latest Music for Free | Infinitunes" and toast "You have been signed in." Evidence: `stored under the firstmate home, task infinitunes-collapsible-sidebar`.
   - Regression test: `apps/web/tests/login-redirect.test.ts`.
 - State closed.
 
@@ -248,7 +251,7 @@ No Tailwind 3 baseline exists for visual comparison with the Tailwind 4 build.
 
 The Vercel preview built from `apps/web` (routing, assets, auth callback URLs, external API access, env loading) is unverified.
 
-- Source: [../TODO.md](../TODO.md). Needs hosting access; out of scope for local verification. State needs-decision.
+- Source: [TODO.md](../TODO.md). Needs hosting access; out of scope for local verification. State needs-decision.
 
 ### ISSUE-019
 

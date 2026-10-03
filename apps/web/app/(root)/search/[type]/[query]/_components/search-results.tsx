@@ -2,8 +2,9 @@
 
 import type { Album, SearchReturnType, Song } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, SearchX } from "lucide-react";
 
+import { LibraryEmpty } from "~/components/library/library-section";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
@@ -59,6 +60,16 @@ export function SearchResults(props: SearchResultsProps) {
     },
   });
 
+  if (!searchResults.length) {
+    return (
+      <LibraryEmpty
+        icon={SearchX}
+        title="No results found"
+        description={`Nothing matched “${query.replaceAll("%20", " ")}”. Check the spelling or try a different search.`}
+      />
+    );
+  }
+
   return (
     <>
       {type === "song" ? (
@@ -92,10 +103,10 @@ export function SearchResults(props: SearchResultsProps) {
           )}
         </div>
       ) : (
-        <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+        <h2 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em>{" "}
           <span className="text-foreground">🤩</span>
-        </h3>
+        </h2>
       )}
     </>
   );

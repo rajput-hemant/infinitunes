@@ -29,6 +29,7 @@ export function ImageCollage({ src }: { src: string[] }) {
           <Image
             src={image}
             fill
+            sizes="(min-width: 1280px) 256px, (min-width: 768px) 224px, 176px"
             alt="Song cover"
             className={cn(
               "object-cover",

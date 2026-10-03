@@ -9,12 +9,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 - `@infinitunes/types` is a pure leaf package (zero runtime deps). `User` is NOT
   re-exported from it; import `type { User }` from `@infinitunes/auth`, or from
   `apps/web/lib/auth.ts` which re-exports it for app components.
-- In `apps/web/package.json`, `bcryptjs` and `@types/bcryptjs`
-  are NOT redundant duplicates of workspace deps: `apps/web/lib/actions.ts`
-  imports `bcryptjs` directly, and Bun does not hoist sibling-workspace deps far
-  enough for `tsc` to resolve them. Don't "dedupe" these away - type-check
-  breaks. `postgres` and `pg`, by contrast, are unused in app source (provided
-  by `@infinitunes/db`) and are safe to drop.
+- `bcryptjs` is imported only by `packages/auth`, `packages/db` and `packages/trpc`
+  (it ships its own types; `@types/bcryptjs` is not needed). `apps/web` no longer
+  imports it. `postgres` and `pg` are unused in app source (provided by `@infinitunes/db`).
 - `@infinitunes/ui` (`packages/ui`) is web-only (DOM, Tailwind v4, Base UI,
   `next-themes`); never import it from a React Native or Expo app - mobile
   components belong in a separate package, not a wrapper around these.
@@ -234,3 +231,14 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
 - `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
   (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
   by both `apps/web` and `packages/trpc`; don't hand-roll another copy).
+
+<!-- BEGIN:turborepo-agent-rules -->
+
+# This is NOT the Turborepo you know
+
+Turborepo configuration, task behavior, and CLI commands can vary between installed versions and may differ from your training data. Resolve the `turbo` package from this file's directory or relevant workspace; in monorepos, it may not be visible from the repository root. For example, run `node -p "require.resolve('turbo/package.json')"` from a workspace that depends on `turbo`.
+
+Read `docs/README.md` inside that installed package first, then read the relevant pages from its `docs/` directory before changing Turborepo configuration or commands. Heed deprecation notices. These bundled docs match the installed package version and are available without network access.
+
+This block is written and re-added by `turbo` before repository-scoped commands when an AI agent is detected. In the Turborepo source repository, its template is defined in `crates/turborepo-cli/src/cli/agent_guidance.rs`. Removing the managed block while updates are enabled means a later qualifying invocation will add it again. Set `"agentGuidance": false` in the root `turbo.json` or `turbo.jsonc` to opt out; this does not remove an existing block. Keep the block committed with your work to avoid an uncommitted change on the next agent invocation.
+<!-- END:turborepo-agent-rules -->

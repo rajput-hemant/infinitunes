@@ -28,78 +28,82 @@ export const metadata = {
 export default async function HomePage() {
   const homedata = await api.home.home({});
 
-  return Object.entries(homedata).map(([key, section]) => {
-    if (
-      key === "modules" ||
-      key === "global_config" ||
-      key === "browse_discover" ||
-      !Array.isArray(section)
-    )
-      return null;
+  return (
+    <>
+      <h1 className="sr-only">{siteConfig.name} Homepage</h1>
 
-    const items = section as {
-      id: string;
-      title: string;
-      perma_url: string;
-      subtitle?: string;
-      type: MediaType;
-      image: string;
-      explicit_content?: string | boolean;
-    }[];
+      {Object.entries(homedata).map(([key, section]) => {
+        if (
+          key === "modules" ||
+          key === "global_config" ||
+          key === "browse_discover" ||
+          !Array.isArray(section)
+        )
+          return null;
 
-    return (
-      <section key={key} className="mb-4 space-y-4">
-        <header className="border-b pb-2">
-          <h1 className="sr-only">{siteConfig.name} Homepage</h1>
-        </header>
+        const items = section as {
+          id: string;
+          title: string;
+          perma_url: string;
+          subtitle?: string;
+          type: MediaType;
+          image: string;
+          explicit_content?: string | boolean;
+        }[];
 
-        <ScrollArea>
-          <div
-            className={cn("flex sm:gap-2 xl:pb-6", {
-              "grid grid-flow-col grid-rows-2 place-content-start": [
-                "trending",
-                "new_albums",
-                "charts",
-              ].includes(key),
-            })}
-          >
-            {items.map(
-              ({
-                id,
-                title: itemTitle,
-                perma_url,
-                subtitle,
-                type: itemType,
-                image,
-                explicit_content,
-              }) => {
-                const sectionTypeMap: Record<string, MediaType> = {
-                  new_albums: "album",
-                  charts: "playlist",
-                  top_playlists: "playlist",
-                  radio: "radio_station",
-                };
-                const effectiveType =
-                  itemType || sectionTypeMap[key] || "playlist";
+        return (
+          <section key={key} className="mb-4 space-y-4">
+            <div className="border-b pb-2" aria-hidden="true" />
 
-                return (
-                  <SliderCard
-                    key={id || itemTitle}
-                    name={itemTitle}
-                    url={perma_url}
-                    subtitle={subtitle}
-                    type={effectiveType}
-                    image={image}
-                    explicit={explicit_content}
-                  />
-                );
-              },
-            )}
-          </div>
+            <ScrollArea>
+              <div
+                className={cn("flex sm:gap-2 xl:pb-6", {
+                  "grid grid-flow-col grid-rows-2 place-content-start": [
+                    "trending",
+                    "new_albums",
+                    "charts",
+                  ].includes(key),
+                })}
+              >
+                {items.map(
+                  ({
+                    id,
+                    title: itemTitle,
+                    perma_url,
+                    subtitle,
+                    type: itemType,
+                    image,
+                    explicit_content,
+                  }) => {
+                    const sectionTypeMap: Record<string, MediaType> = {
+                      new_albums: "album",
+                      charts: "playlist",
+                      top_playlists: "playlist",
+                      radio: "radio_station",
+                    };
+                    const effectiveType =
+                      itemType || sectionTypeMap[key] || "playlist";
 
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
-      </section>
-    );
-  });
+                    return (
+                      <SliderCard
+                        key={id || itemTitle}
+                        name={itemTitle}
+                        url={perma_url}
+                        subtitle={subtitle}
+                        type={effectiveType}
+                        image={image}
+                        explicit={explicit_content}
+                      />
+                    );
+                  },
+                )}
+              </div>
+
+              <ScrollBar orientation="horizontal" />
+            </ScrollArea>
+          </section>
+        );
+      })}
+    </>
+  );
 }

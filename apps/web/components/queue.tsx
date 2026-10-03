@@ -1,7 +1,6 @@
 "use client";
 
-import type { Queue } from "@infinitunes/types";
-import { getImageSrc, getToken } from "@infinitunes/types";
+import { getImageSrc, getToken, removeFromQueue } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
@@ -16,32 +15,41 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListOrdered, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import * as React from "react";
 import { toast } from "sonner";
 
-import { useQueue } from "~/hooks/use-store";
+import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
 import { getHref } from "~/lib/utils";
 
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
 
 export function Queue() {
   const [queue, setQueue] = useQueue();
+  const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
 
-  function removeFromQueue(id: string) {
-    let song: Queue;
+  const listRef = React.useRef<HTMLOListElement>(null);
 
-    setQueue((prev) =>
-      prev.filter((item) => {
-        if (item.id === id) {
-          song = item;
-          return false;
-        }
+  function removeItem(id: string) {
+    const index = queue.findIndex((item) => item.id === id);
+    const song = queue.find((item) => item.id === id);
+    const next = removeFromQueue(queue, currentIndex, id);
 
-        return true;
-      }),
-    );
+    setQueue(next.queue);
+    setCurrentIndex(next.currentIndex);
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+    // The removed row takes focus with it: hand it to the row that took its
+    // place (or the last row), or to the list itself once the queue is empty.
+    requestAnimationFrame(() => {
+      const buttons = listRef.current?.querySelectorAll<HTMLButtonElement>(
+        "[data-queue-remove]",
+      );
+      if (buttons?.length) {
+        buttons[Math.min(index, buttons.length - 1)]?.focus();
+      } else {
+        listRef.current?.focus();
+      }
+    });
+
     if (song) {
       toast("Removed from queue", {
         description: `Removed "${song.name}" from the queue`,
@@ -54,8 +62,13 @@ export function Queue() {
     <Sheet>
       <SheetTrigger
         render={
-          <Button size="icon" variant="ghost" className="shrink-0">
-            <ListOrdered />
+          <Button
+            size="icon"
+            variant="ghost"
+            aria-label="Open queue"
+            className="shrink-0"
+          >
+            <ListOrdered aria-hidden />
           </Button>
         }
       />
@@ -70,7 +83,7 @@ export function Queue() {
               Queue
             </span>
             <span>
-              {queue.length} Track{`${queue.length > 1 ? "s" : ""}`}
+              {queue.length} {queue.length === 1 ? "Track" : "Tracks"}
             </span>
           </SheetTitle>
           <SheetDescription>
@@ -79,7 +92,12 @@ export function Queue() {
         </SheetHeader>
 
         <ScrollArea className="px-4">
-          <ol className="space-y-2 text-muted-foreground">
+          <ol
+            ref={listRef}
+            tabIndex={-1}
+            aria-label="Queue"
+            className="space-y-2 text-muted-foreground outline-none"
+          >
             {queue.map((item) => (
               <li key={item.id} className="w-full">
                 <div className="group flex h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
@@ -87,8 +105,9 @@ export function Queue() {
                     <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                       <Image
                         src={getImageSrc(item.image, "low")}
-                        alt={item.name}
+                        alt=""
                         fill
+                        sizes="40px"
                         className="z-10 object-cover duration-300 group-hover:brightness-50"
                       />
 
@@ -132,10 +151,12 @@ export function Queue() {
 
                     <Button
                       variant="ghost"
-                      onClick={() => removeFromQueue(item.id)}
-                      className="ml-auto size-5 p-0.5 text-destructive hover:bg-destructive hover:text-white"
+                      data-queue-remove=""
+                      aria-label={`Remove ${item.name} from queue`}
+                      onClick={() => removeItem(item.id)}
+                      className="ml-auto size-8 shrink-0 p-0 text-destructive hover:bg-destructive hover:text-white"
                     >
-                      <X className="size-4" />
+                      <X aria-hidden className="size-4" />
                     </Button>
                   </figure>
                 </div>

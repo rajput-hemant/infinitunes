@@ -55,7 +55,8 @@ import {
   removeSongsFromPlaylist,
 } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
-import { cn, currentlyInDev } from "~/lib/utils";
+import { userMessage } from "~/lib/user-message";
+import { cn } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
@@ -165,17 +166,12 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function play() {
-    if (item.type === "episode") {
-      currentlyInDev();
-      return;
-    }
-
     const songIndex = initialQueue.findIndex((q) => q.id === item.id);
 
     if (songIndex !== -1) {
       setCurrentIndex(songIndex);
     } else {
-      const queue = toQueue(item as Song);
+      const queue = "more_info" in item ? toQueue(item) : item;
       setQueue([queue]);
       setCurrentIndex(0);
     }
@@ -184,13 +180,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function addToQueue() {
-    if (item.type === "episode") {
-      currentlyInDev();
-      return;
-    }
-
-    const queue =
-      "more_info" in item ? toQueue(item as Song | Episode) : (item as Queue);
+    const queue = "more_info" in item ? toQueue(item) : item;
     setQueue((q) => [...q, queue]);
 
     toast(`"${getItemName(item)}" added to queue`);
@@ -212,7 +202,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     toast.promise(addSongsToPlaylist(id, [item.id]), {
       loading: "Adding songs to playlist...",
       success: `"${getItemName(item)}" added to "${name}" playlist`,
-      error: (error) => error.message,
+      error: userMessage,
       finally: () => setDialogOpen(false),
     });
   }
@@ -227,7 +217,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       {
         loading: "Removing from playlist...",
         success: `"${getItemName(item)}" removed from playlist`,
-        error: (error) => error.message,
+        error: userMessage,
         finally: () => router.refresh(),
       },
     );
@@ -329,9 +319,12 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         <Drawer>
           <DrawerTrigger
             aria-label="More Options"
-            className="focus-visible:outline-hidden"
+            className="flex size-11 items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <MoreVertical className="size-6 hover:text-primary" />
+            <MoreVertical
+              aria-hidden="true"
+              className="size-6 hover:text-primary"
+            />
           </DrawerTrigger>
 
           <DrawerContent className="rounded-t-2xl">
@@ -342,6 +335,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                     src={getImageSrc(item.image, "low")}
                     alt={getItemName(item)}
                     fill
+                    sizes="56px"
                     className="z-10 shrink-0 rounded-md"
                   />
 
@@ -427,9 +421,15 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="More Options"
-            className={cn("focus-visible:outline-hidden", className)}
+            className={cn(
+              "rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+              className,
+            )}
           >
-            <MoreVertical className="size-6 hover:text-primary" />
+            <MoreVertical
+              aria-hidden="true"
+              className="size-6 hover:text-primary"
+            />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent

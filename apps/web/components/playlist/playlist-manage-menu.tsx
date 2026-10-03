@@ -23,6 +23,7 @@ import * as React from "react";
 import { toast } from "sonner";
 
 import { deletePlaylist } from "~/lib/actions";
+import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
 import { RenamePlaylistDialog } from "./rename-playlist-dialog";
@@ -47,7 +48,7 @@ export function PlaylistManageMenu({
       await toast.promise(deletePlaylist(playlist.id), {
         loading: "Deleting playlist...",
         success: `Playlist "${playlist.name}" deleted`,
-        error: (error) => error.message,
+        error: userMessage,
       });
       setDeleteOpen(false);
       if (redirectOnDelete) {
@@ -64,21 +65,24 @@ export function PlaylistManageMenu({
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="Playlist options"
-          className={cn("focus-visible:outline-hidden", triggerClassName)}
+          className={cn(
+            "rounded-md outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50",
+            triggerClassName,
+          )}
         >
-          <MoreVertical className="size-6 hover:text-primary" />
+          <MoreVertical aria-hidden className="size-6 hover:text-primary" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="*:cursor-pointer">
           <DropdownMenuItem onClick={() => setRenameOpen(true)}>
-            <Pencil className="mr-2 size-4" />
+            <Pencil aria-hidden className="mr-2 size-4" />
             Rename
           </DropdownMenuItem>
           <DropdownMenuItem
             variant="destructive"
             onClick={() => setDeleteOpen(true)}
           >
-            <Trash2 className="mr-2 size-4" />
+            <Trash2 aria-hidden className="mr-2 size-4" />
             Delete playlist
           </DropdownMenuItem>
         </DropdownMenuContent>

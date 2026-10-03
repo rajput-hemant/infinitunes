@@ -2,10 +2,12 @@ import type { SongObj } from "@infinitunes/types";
 import { formatDuration, getImageSrc } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import { ListMusic } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ImageCollage } from "~/components/image-collage";
+import { LibraryEmpty } from "~/components/library/library-section";
 import { PlayButton } from "~/components/play-button";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { SongList } from "~/components/song-list/song-list";
@@ -151,12 +153,11 @@ export default async function MyPlaylistsPage(props: Props) {
           </h3>
         </>
       ) : (
-        <div className="h-96">
-          <h3 className="py-6 text-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
-            <em>Nothing to see here</em> 😢
-            <p>Try addding songs to the playlist</p>
-          </h3>
-        </div>
+        <LibraryEmpty
+          icon={ListMusic}
+          title="Nothing to see here"
+          description="Add songs to this playlist from any song’s menu and they will show up here."
+        />
       )}
     </div>
   );

@@ -1,6 +1,8 @@
 import type { Lang } from "@infinitunes/types";
 import { cookies } from "next/headers";
 
+import { LibraryHeading } from "~/components/library/library-section";
+
 import { PreferenceSettings } from "../_components/preference-settings";
 
 export const metadata = {
@@ -15,16 +17,11 @@ export default async function Page() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1 border-b p-4">
-        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
-          Preferences
-        </h2>
-
-        <p className="text-sm text-muted-foreground">
-          Configure your preferences like language, music stream, download
-          quality, etc.
-        </p>
-      </div>
+      <LibraryHeading
+        title="Preferences"
+        description="Configure your preferences like language, music stream, download quality, etc."
+        className="border-b p-4"
+      />
 
       <PreferenceSettings initialLanguages={languages as Lang[]} />
     </div>

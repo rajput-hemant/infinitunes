@@ -17,6 +17,7 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { asRoute, ogImageUrl } from "~/lib/utils";
 
@@ -26,11 +27,13 @@ const DEFAULT_SORT: Sort = "desc";
 
 // callers must pass a normalized sort so generateMetadata and the page share one cache entry
 const getShow = cache(async (token: string, season: number, sort: Sort) =>
-  api.show.details({
-    token,
-    season: `${season}`,
-    sort,
-  }),
+  orNotFound(
+    api.show.details({
+      token,
+      season: `${season}`,
+      sort,
+    }),
+  ),
 );
 
 type ShowDetailsPageProps = {
@@ -82,7 +85,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
     <div className="mb-4 space-y-4">
       <DetailsHeader item={show_details} />
 
-      <h2 className="font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
+      <h2 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
         {modules.seasons.title}
       </h2>
 
@@ -110,7 +113,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       </ScrollArea>
 
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
+        <h2 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           {modules.episodes.title}
         </h2>
 
@@ -148,7 +151,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         userPlaylists={playlists}
       />
 
-      <h2 className="font-heading text-xl drop-shadow-md sm:text-2xl md:text-3xl">
+      <h2 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
         {modules.show_details.title}
       </h2>
 

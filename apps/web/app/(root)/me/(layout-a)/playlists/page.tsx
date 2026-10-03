@@ -1,4 +1,3 @@
-import { decode } from "@infinitunes/types";
 import { ListMusic } from "lucide-react";
 
 import {
@@ -34,15 +33,16 @@ export default async function LikedPlaylistsPage() {
             title="Liked Playlists"
             count={playlists.length}
             noun="playlist"
+            missing={tokens.length - playlists.length}
           />
 
           <div className="flex w-full flex-wrap gap-4">
             {playlists.map((playlist) => (
               <SliderCard
                 key={playlist.id}
-                name={decode(playlist.title)}
+                name={playlist.title}
                 url={playlist.perma_url}
-                subtitle={decode(playlist.subtitle)}
+                subtitle={playlist.subtitle}
                 type={playlist.type}
                 image={playlist.image}
                 explicit={playlist.explicit_content}

@@ -1,6 +1,6 @@
 # UI quality and responsive layout
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-017, ISSUE-019 in [verification-issues.md](../../../../docs/checks/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-017, ISSUE-019 in [verification-issues.md](../../../../docs/verification/verification-issues.md).
 
 ## Sub-features
 
@@ -20,7 +20,7 @@ Every route, at 390px and 1280px, in light and dark.
 2. Tab through header, sidebar, player and dialogs; expect logical order, Esc closing overlays, focus returning to the trigger.
 3. Check loading skeletons, empty states and error pages for layout shift.
 4. Check touch targets on the player at 390px, and that the queue sheet and menus do not trap scroll.
-5. Capture screenshots under `docs/checks/evidence/<run-id>/`.
+5. Capture screenshots under `docs/evidence/<run-id>/`.
 
 Observable end state: documented per-route evidence; defects go to the ledger, not into this file.
 
