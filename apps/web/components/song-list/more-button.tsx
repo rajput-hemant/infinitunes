@@ -334,6 +334,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                     src={getImageSrc(item.image, "low")}
                     alt={getItemName(item)}
                     fill
+                    sizes="56px"
                     className="z-10 shrink-0 rounded-md"
                   />
 

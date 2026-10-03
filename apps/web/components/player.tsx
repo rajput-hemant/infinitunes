@@ -360,6 +360,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                   src={getImageSrc(queue[currentIndex].image, "low")}
                   alt={queue[currentIndex].name}
                   fill
+                  sizes="48px"
                   fallback="/images/placeholder/song.jpg"
                 />
 

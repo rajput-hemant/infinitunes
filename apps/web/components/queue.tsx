@@ -94,6 +94,7 @@ export function Queue() {
                         src={getImageSrc(item.image, "low")}
                         alt={item.name}
                         fill
+                        sizes="40px"
                         className="z-10 object-cover duration-300 group-hover:brightness-50"
                       />
 

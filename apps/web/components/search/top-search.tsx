@@ -49,6 +49,7 @@ export async function TopSearch() {
                 src={getImageSrc(t.image, "low")}
                 alt=""
                 fill
+                sizes="48px"
                 className="z-10 object-cover"
               />
 
