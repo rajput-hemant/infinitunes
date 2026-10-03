@@ -2,7 +2,39 @@ import { describe, expect, it } from "bun:test";
 
 import type { MediaType } from "@infinitunes/types";
 
-import { getHref, ogImageUrl } from "../lib/utils";
+import { getHref, ogImageUrl, shouldIgnoreShortcut } from "../lib/utils";
+
+describe("shouldIgnoreShortcut", () => {
+  const base = { ctrlKey: false, metaKey: false, altKey: false };
+
+  it("ignores browser chords such as Cmd+P and Ctrl+S", () => {
+    expect(shouldIgnoreShortcut({ ...base, metaKey: true, target: {} })).toBe(
+      true,
+    );
+    expect(shouldIgnoreShortcut({ ...base, ctrlKey: true, target: {} })).toBe(
+      true,
+    );
+  });
+
+  it("ignores typing in fields and contenteditable", () => {
+    for (const tagName of ["INPUT", "textarea", "SELECT"]) {
+      expect(shouldIgnoreShortcut({ ...base, target: { tagName } })).toBe(true);
+    }
+    expect(
+      shouldIgnoreShortcut({
+        ...base,
+        target: { tagName: "DIV", isContentEditable: true },
+      }),
+    ).toBe(true);
+  });
+
+  it("lets plain keypresses on the page through", () => {
+    expect(shouldIgnoreShortcut({ ...base, target: { tagName: "BODY" } })).toBe(
+      false,
+    );
+    expect(shouldIgnoreShortcut({ ...base, target: null })).toBe(false);
+  });
+});
 
 describe("getHref", () => {
   it("normalizes non-canonical internal-site.jiosaavn.com album URL with /s/<lang>/ prefix", () => {
