@@ -3,14 +3,11 @@
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
-import { Separator } from "@infinitunes/ui/components/separator";
 import { usePathname, useRouter } from "next/navigation";
 
 type AuthModalProps = React.PropsWithChildren<{
@@ -54,22 +51,6 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
           </Button>
           .
         </p>
-
-        <Separator />
-
-        <DialogFooter className="flex pt-2">
-          <DialogClose
-            render={
-              <Button
-                variant="secondary"
-                onClick={navigateBack}
-                className="w-full border text-lg font-semibold shadow-xs"
-              >
-                Close
-              </Button>
-            }
-          />
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

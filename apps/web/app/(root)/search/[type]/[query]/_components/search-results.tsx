@@ -2,8 +2,9 @@
 
 import type { Album, SearchReturnType, Song } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, SearchX } from "lucide-react";
 
+import { LibraryEmpty } from "~/components/library/library-section";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
@@ -58,6 +59,16 @@ export function SearchResults(props: SearchResultsProps) {
       }
     },
   });
+
+  if (!searchResults.length) {
+    return (
+      <LibraryEmpty
+        icon={SearchX}
+        title="No results found"
+        description={`Nothing matched “${query.replaceAll("%20", " ")}”. Check the spelling or try a different search.`}
+      />
+    );
+  }
 
   return (
     <>

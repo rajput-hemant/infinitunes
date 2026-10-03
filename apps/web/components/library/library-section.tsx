@@ -66,7 +66,7 @@ type LibraryStateProps = {
   children?: React.ReactNode;
 };
 
-function LibraryState(props: LibraryStateProps) {
+export function LibraryState(props: LibraryStateProps) {
   const { icon: Icon, title, description, className, children } = props;
 
   return (
