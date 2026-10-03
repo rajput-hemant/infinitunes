@@ -9,12 +9,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 - `@infinitunes/types` is a pure leaf package (zero runtime deps). `User` is NOT
   re-exported from it; import `type { User }` from `@infinitunes/auth`, or from
   `apps/web/lib/auth.ts` which re-exports it for app components.
-- In `apps/web/package.json`, `bcryptjs` and `@types/bcryptjs`
-  are NOT redundant duplicates of workspace deps: `apps/web/lib/actions.ts`
-  imports `bcryptjs` directly, and Bun does not hoist sibling-workspace deps far
-  enough for `tsc` to resolve them. Don't "dedupe" these away - type-check
-  breaks. `postgres` and `pg`, by contrast, are unused in app source (provided
-  by `@infinitunes/db`) and are safe to drop.
+- `bcryptjs` is imported only by `packages/auth`, `packages/db` and `packages/trpc`
+  (it ships its own types; `@types/bcryptjs` is not needed). `apps/web` no longer
+  imports it. `postgres` and `pg` are unused in app source (provided by `@infinitunes/db`).
 - `@infinitunes/ui` (`packages/ui`) is web-only (DOM, Tailwind v4, Base UI,
   `next-themes`); never import it from a React Native or Expo app - mobile
   components belong in a separate package, not a wrapper around these.
