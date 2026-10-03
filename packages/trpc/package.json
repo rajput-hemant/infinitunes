@@ -11,8 +11,6 @@
   "scripts": {
     "lint": "oxlint",
     "type-check": "tsc --noEmit",
-    "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
-    "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
     "test": "bun test"
   },
   "dependencies": {
