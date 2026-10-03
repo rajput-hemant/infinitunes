@@ -50,7 +50,7 @@ export default async function MyPlaylistsPage(props: Props) {
   const playlist = await getPlaylistDetails(id);
 
   if (!playlist) {
-    return notFound();
+    notFound();
   }
 
   const { name, description, songs } = playlist;
@@ -110,10 +110,10 @@ export default async function MyPlaylistsPage(props: Props) {
                 <span>
                   {" · "}
                   {formatDuration(
-                    `${playlistSongs.reduce(
+                    playlistSongs.reduce(
                       (acc, song) => acc + Number(song.more_info.duration),
                       0,
-                    )}`,
+                    ),
                     "mm:ss",
                   )}
                 </span>
