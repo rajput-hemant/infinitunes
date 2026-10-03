@@ -54,8 +54,13 @@ export function Queue() {
     <Sheet>
       <SheetTrigger
         render={
-          <Button size="icon" variant="ghost" className="shrink-0">
-            <ListOrdered />
+          <Button
+            size="icon"
+            variant="ghost"
+            aria-label="Open queue"
+            className="shrink-0"
+          >
+            <ListOrdered aria-hidden />
           </Button>
         }
       />
@@ -132,10 +137,11 @@ export function Queue() {
 
                     <Button
                       variant="ghost"
+                      aria-label={`Remove ${item.name} from queue`}
                       onClick={() => removeFromQueue(item.id)}
-                      className="ml-auto size-5 p-0.5 text-destructive hover:bg-destructive hover:text-white"
+                      className="ml-auto size-8 shrink-0 p-0 text-destructive hover:bg-destructive hover:text-white"
                     >
-                      <X className="size-4" />
+                      <X aria-hidden className="size-4" />
                     </Button>
                   </figure>
                 </div>

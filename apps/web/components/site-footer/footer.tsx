@@ -38,7 +38,7 @@ export async function SiteFooter() {
                 href={siteConfig.links.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="duration-200 hover:text-foreground"
+                className="-m-2 p-2 duration-200 hover:text-foreground"
               >
                 <Icons.GitHub className="size-4" />
               </a>
@@ -47,7 +47,7 @@ export async function SiteFooter() {
                 href={siteConfig.links.x}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="duration-200 hover:text-foreground"
+                className="-m-2 p-2 duration-200 hover:text-foreground"
               >
                 <Icons.X className="size-4" />
               </a>
@@ -56,7 +56,7 @@ export async function SiteFooter() {
                 href={siteConfig.links.discord}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="duration-200 hover:text-foreground"
+                className="-m-2 p-2 duration-200 hover:text-foreground"
               >
                 <Icons.Discord className="size-[18px]" />
               </a>
@@ -103,7 +103,7 @@ export async function SiteFooter() {
         </div>
       </div>
 
-      <div className="mx-auto mt-4 flex max-w-7xl flex-col items-center justify-between gap-4 border-t py-6 lg:flex-row">
+      <div className="mx-auto mt-4 flex max-w-7xl px-5 sm:px-0 flex-col items-center justify-between gap-4 border-t py-6 lg:flex-row">
         <p className="max-w-4xl text-center text-xs text-muted-foreground lg:text-sm">
           <Link href="/" className="inline-flex items-center justify-center">
             <span className="font-heading text-base tracking-wide text-primary underline drop-shadow-md">

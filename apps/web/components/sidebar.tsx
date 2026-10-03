@@ -234,7 +234,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
               <CreatePlaylistTooltip>
                 <Link
                   href="/login"
-                  className="flex w-full items-center rounded-md px-2 py-1 text-sm shadow-sm group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                  className="flex w-full items-center rounded-md px-2 py-1 text-sm shadow-sm outline-none hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                 >
                   <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
                   <span className="group-data-[collapsible=icon]:sr-only">

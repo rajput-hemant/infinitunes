@@ -28,7 +28,7 @@ export function MobileNav({ user }: Props) {
   );
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-50 flex h-14 items-center justify-between border-t bg-background lg:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-50 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] items-start justify-between border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden">
       {filteredNavItems.slice().map(({ label, icon: Icon, href }) => {
         const isActive = href === pathname;
 
@@ -36,12 +36,13 @@ export function MobileNav({ user }: Props) {
           <Link
             key={label}
             href={href}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex h-full w-1/4 flex-col items-center justify-center text-center text-muted-foreground duration-700 animate-in slide-in-from-bottom-full",
+              "flex h-14 w-1/4 flex-col items-center justify-center text-center text-muted-foreground duration-700 animate-in slide-in-from-bottom-full",
               isActive && "text-secondary-foreground",
             )}
           >
-            <Icon />
+            <Icon aria-hidden />
 
             <span className="text-xs font-semibold duration-200 animate-in slide-in-from-bottom-1/2">
               {label}

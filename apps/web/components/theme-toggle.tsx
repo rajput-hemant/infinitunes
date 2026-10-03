@@ -6,13 +6,13 @@ import { useTheme } from "next-themes";
 import { Icons } from "~/components/icons";
 
 function ThemeToggle() {
-  const { setTheme, theme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
 
   return (
     <Button
       size="icon"
       variant="outline"
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      onClick={() => setTheme(resolvedTheme === "light" ? "dark" : "light")}
     >
       <Icons.Sun
         className="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0"

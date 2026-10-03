@@ -322,7 +322,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   return (
     <div
       className={cn(
-        "fixed inset-x-0 bottom-14 z-40 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0",
+        "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0",
         !(isReady || queue.length) && "hidden lg:block",
       )}
     >
@@ -375,13 +375,16 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                   className="group line-clamp-1 font-heading text-sm text-primary drop-shadow-sm"
                 >
                   {queue[currentIndex].name}
-                  <MoveUpRight className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible" />
+                  <MoveUpRight
+                    aria-hidden
+                    className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible"
+                  />
                 </Link>
 
                 <p className="line-clamp-1 flex items-center gap-1.5 text-xs text-muted-foreground">
                   {activeRadio && (
                     <span className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                      <Radio className="size-2.5 animate-pulse" />
+                      <Radio aria-hidden className="size-2.5 animate-pulse" />
                       {activeRadio.name}
                     </span>
                   )}
@@ -402,7 +405,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
           )}
         </div>
 
-        <div className="flex shrink-0 items-center justify-end gap-3 lg:w-1/3 lg:justify-evenly lg:gap-0">
+        <div className="flex shrink-0 items-center justify-end gap-0.5 lg:w-1/3 lg:justify-evenly lg:gap-0">
           <Tooltip>
             <TooltipTrigger
               delay={0}
@@ -417,9 +420,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                   )}
                 >
                   {isLooping ? (
-                    <Repeat1 strokeWidth={2} className="size-7" />
+                    <Repeat1 aria-hidden strokeWidth={2} className="size-7" />
                   ) : (
-                    <Repeat strokeWidth={2} className="size-7" />
+                    <Repeat aria-hidden strokeWidth={2} className="size-7" />
                   )}
                 </button>
               }
@@ -440,7 +443,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label="Previous"
                   onClick={skipToPrev}
-                  className={controlClass}
+                  className={cn(controlClass, "p-1.5 lg:p-0")}
                 >
                   <Icons.SkipBack aria-hidden className="size-8 lg:size-10" />
                 </button>
@@ -456,14 +459,14 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label={isPlaying ? "Pause" : "Play"}
                   onClick={playPauseHandler}
-                  className={controlClass}
+                  className={cn(controlClass, "p-1 lg:p-0")}
                 >
                   {isLoading ? (
-                    <Loader2 className="animate-spin" />
+                    <Loader2 aria-hidden className="size-10 animate-spin" />
                   ) : isPlaying ? (
-                    <Pause className="size-10" />
+                    <Pause aria-hidden className="size-10" />
                   ) : (
-                    <Icons.Play className="size-10" />
+                    <Icons.Play aria-hidden className="size-10" />
                   )}
                 </button>
               }
@@ -478,7 +481,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label="Next"
                   onClick={skipToNext}
-                  className={controlClass}
+                  className={cn(controlClass, "p-1.5 lg:p-0")}
                 >
                   <Icons.SkipForward
                     aria-hidden
@@ -503,7 +506,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                     !isShuffle && "text-muted-foreground",
                   )}
                 >
-                  <Shuffle strokeWidth={2.35} />
+                  <Shuffle aria-hidden strokeWidth={2.35} />
                 </button>
               }
             />
@@ -541,13 +544,13 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
               )}
             >
               {isMuted || volume === 0 ? (
-                <VolumeX />
+                <VolumeX aria-hidden />
               ) : volume < 0.33 ? (
-                <Volume />
+                <Volume aria-hidden />
               ) : volume < 0.66 ? (
-                <Volume1 />
+                <Volume1 aria-hidden />
               ) : (
-                <Volume2 strokeWidth={2} />
+                <Volume2 aria-hidden strokeWidth={2} />
               )}
             </button>
 
