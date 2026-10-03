@@ -13,7 +13,7 @@ export function SliderList({ title, subtitle, items }: SliderListProps) {
   return (
     <section className="space-y-2">
       <header>
-        <h2 className="pl-2 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:pl-0">
+        <h2 className="pl-2 font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:pl-0">
           {title}
         </h2>
 
