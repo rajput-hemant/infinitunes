@@ -65,6 +65,7 @@ Oxlint reports warnings, no errors.
 - Expected: no warnings. Actual: 47 warnings. Severity low; the trpc one is intentional and could be suppressed.
 - Follow-up: triage warnings, suppress the intentional import.
 - Update 2026-10-03 (audit, source read only, lint not re-run): `apps/web/components/play-button.tsx:16` and `apps/web/components/details-header/more-button.tsx:50` import `currentlyInDev` but never call it, so they are unused-import warnings that disappear once removed. State remains open.
+- Update 2026-10-03 (source grep): those `currentlyInDev` imports, and the helper itself, were removed (`4eae157`). The unused-import warnings are gone; the issue stays open for the remaining warnings (see TC-5 in `docs/TODO.md`).
 
 ### ISSUE-003
 
@@ -78,6 +79,7 @@ Several visible actions were stubs that only showed the toast `This feature is c
 - Update 2026-10-03 (`fm/infinitunes-pending-ui-completion`): song-row `Add To Favourite` now calls `addToFavorites`/`removeFromFavorites` (label flips to `Remove From Favourite`; hidden for episodes; signed-out shows a sign-in warning). Browser proof at 390px: DB `infinitunes_favorite.songs` gained then lost the token, label flipped after reload, no console errors. The sidebar playlist-row play stub (a button nested in a link, hidden until hover) was removed. State remains open only for `components/play-button.tsx`/episode paths still using `currentlyInDev`.
 - Update 2026-10-03 (audit, source read only, not re-run in a browser): `components/play-button.tsx` no longer calls `currentlyInDev` (it only imports it; `radio_station` plays real stations), so that part of the remaining-stubs note above is stale. Still stubbed in source: `components/like-button.tsx` `default:` branch calls `currentlyInDev()` for any type other than song, album, playlist, artist and show, and `DetailsHeader` renders `LikeButton` for every kind except `label`, so `Like` on a mix or episode details header shows the in-development toast; `components/song-list/more-button.tsx` `play()` and `addToQueue()` call `currentlyInDev()` for episode rows. Unconfirmed: whether radio-station and season headers reach the `default:` branch. State remains open.
 - Update 2026-10-03 (`fm/infinitunes-ui-polish-round-two`): Playerbar favorite state and stale Add label plumbing resolved. `apps/web/app/(root)/layout.tsx` now queries `getUserFavorites()` and forwards `favorites` through `PlayerWrapper` -> `Player` -> `TileMoreButton`. `TileMoreButton` in `apps/web/components/song-list/more-button.tsx` now manages `useOptimistic` favorite state with `startTransition` and `router.refresh()`, eliminating the stale Add label after addition without requiring page reload. Verified live across 390px, 768px, and 1280px viewports (light and dark modes, keyboard navigation): DB row in `infinitunes_favorite` gained and lost token, menu label flipped instantly to `Remove From Favourite` and back to `Add To Favourite`, 0 console errors. Remaining stubs: `components/play-button.tsx` and episode actions still calling `currentlyInDev`. State remains open.
+- Update 2026-10-03 (source grep): `currentlyInDev` no longer exists anywhere under `apps/` or `packages/` (removed in `4eae157`), and no source emits the `This feature is currently in development.` toast. Treat the `currentlyInDev` stub notes above as historical; re-verify the like-button `default:` branch and episode actions in a browser before closing.
 
 ### ISSUE-004
 
@@ -91,6 +93,7 @@ Several visible actions were stubs that only showed the toast `This feature is c
 Profile form has non-functional controls.
 
 - Evidence (source): `apps/web/app/(root)/settings/_components/profile-form.tsx` `Verify Email` button (`onClick={currentlyInDev}`, line ~143) and the avatar `Edit` button (line ~272).
+- Update 2026-10-03 (source grep): the `currentlyInDev` helper was removed (`4eae157`) and `profile-form.tsx` no longer contains a `Verify Email` or avatar `Edit` button, so the `currentlyInDev` reference above is historical. Not re-run in a browser.
 - Expected: functional or absent. Actual: info toast only. Follow-up: implement or remove. State open.
 
 ### ISSUE-006

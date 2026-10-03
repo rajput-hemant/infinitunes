@@ -91,7 +91,7 @@ Pending the user-selected browser skill. Until then, use the route paths, labels
 - Auth form buttons: `Login with Email`, `Sign in with Passkey`; fields have placeholders `you@domain.com` and a password mask (labels are `sr-only`: `Email`, `Password`, `Confirm Password`).
 - Settings: `Save Changes`, `Delete Account`, confirm field placeholder `Type DELETE MY ACCOUNT to confirm!`, passkey section heading `Passkeys`.
 - Player storage keys (localStorage): `queue`, `current_song_index`, `stream_quality`, `download_quality`, `image_quality`.
-- Toasts (sonner) are the main success and error signal: e.g. `You have been signed in.`, `Account Created Successfully`, `Passkey added.`, `This feature is currently in development.`.
+- Toasts (sonner) are the main success and error signal: e.g. `You have been signed in.`, `Account Created Successfully`, `Passkey added.`.
 
 Non-browser drives that are allowed now:
 
