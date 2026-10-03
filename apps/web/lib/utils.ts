@@ -12,6 +12,23 @@ export function asRoute(href: string): Route {
 }
 
 /**
+ * Returns `raw` only when it is a same-origin path (`/library?x=1`); anything
+ * else (absolute URLs, `//host`, `/\\host`, `javascript:`) falls back to `/`.
+ * Use for every user-controlled post-login redirect target.
+ */
+export function safeRedirectPath(raw: string | null | undefined): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
+  if (raw.includes("\\")) return "/";
+  try {
+    const url = new URL(raw, "http://localhost");
+    if (url.origin !== "http://localhost") return "/";
+  } catch {
+    return "/";
+  }
+  return raw;
+}
+
+/**
  * Returns the absolute url for the given path based on the current environment
  * @param path The path to get the absolute url for
  * @returns The absolute url for the given path

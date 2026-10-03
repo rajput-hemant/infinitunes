@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import type { MediaType } from "@infinitunes/types";
 
-import { getHref, ogImageUrl } from "../lib/utils";
+import { getHref, ogImageUrl, safeRedirectPath } from "../lib/utils";
 
 describe("getHref", () => {
   it("normalizes non-canonical internal-site.jiosaavn.com album URL with /s/<lang>/ prefix", () => {
@@ -201,5 +201,34 @@ describe("ogImageUrl", () => {
   it("omits square when not requested", () => {
     const url = ogImageUrl({ title: "a", description: "b", image: "c" });
     expect(url).not.toContain("square");
+  });
+});
+
+describe("safeRedirectPath (open redirect)", () => {
+  it("keeps same-origin paths", () => {
+    expect(safeRedirectPath("/me/playlist/abc?x=1#y")).toBe(
+      "/me/playlist/abc?x=1#y",
+    );
+    expect(safeRedirectPath("/")).toBe("/");
+  });
+
+  it.each([
+    "https://evil.example",
+    "http://evil.example/a",
+    "//evil.example",
+    "///evil.example",
+    "/\\evil.example",
+    "\\\\evil.example",
+    "javascript:alert(1)",
+    "/\t/evil.example",
+    "evil.example",
+    "",
+  ])("falls back to / for %p", (raw) => {
+    expect(safeRedirectPath(raw)).toBe("/");
+  });
+
+  it("falls back to / when missing", () => {
+    expect(safeRedirectPath(null)).toBe("/");
+    expect(safeRedirectPath(undefined)).toBe("/");
   });
 });

@@ -93,7 +93,7 @@ export function removeSongAtPlaylistIndex(
 }
 
 const updateUserInput = z.object({
-  name: z.string().optional(),
+  name: z.string().trim().min(1).max(100).optional(),
   email: emailSchema.transform((email) => email.toLowerCase()).optional(),
 });
 
@@ -157,7 +157,12 @@ export const userRouter = router({
       const [updatedPlaylist] = await ctx.db
         .update(myPlaylists)
         .set({ songs: dedupSongs })
-        .where(drizzleEq(myPlaylists.id, input.playlistId))
+        .where(
+          and(
+            drizzleEq(myPlaylists.id, input.playlistId),
+            drizzleEq(myPlaylists.userId, ctx.session.user.id),
+          ),
+        )
         .returning();
 
       return updatedPlaylist;
@@ -198,7 +203,12 @@ export const userRouter = router({
       const [updatedPlaylist] = await ctx.db
         .update(myPlaylists)
         .set({ songs })
-        .where(drizzleEq(myPlaylists.id, input.playlistId))
+        .where(
+          and(
+            drizzleEq(myPlaylists.id, input.playlistId),
+            drizzleEq(myPlaylists.userId, ctx.session.user.id),
+          ),
+        )
         .returning();
 
       return updatedPlaylist;
@@ -229,7 +239,12 @@ export const userRouter = router({
           name: input.name,
           description: input.description,
         })
-        .where(drizzleEq(myPlaylists.id, input.playlistId))
+        .where(
+          and(
+            drizzleEq(myPlaylists.id, input.playlistId),
+            drizzleEq(myPlaylists.userId, ctx.session.user.id),
+          ),
+        )
         .returning();
 
       return updatedPlaylist;
@@ -256,7 +271,12 @@ export const userRouter = router({
 
       const [deletedPlaylist] = await ctx.db
         .delete(myPlaylists)
-        .where(drizzleEq(myPlaylists.id, input.playlistId))
+        .where(
+          and(
+            drizzleEq(myPlaylists.id, input.playlistId),
+            drizzleEq(myPlaylists.userId, ctx.session.user.id),
+          ),
+        )
         .returning();
 
       return deletedPlaylist;

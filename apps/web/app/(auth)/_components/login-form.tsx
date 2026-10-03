@@ -12,7 +12,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { asRoute } from "~/lib/utils";
+import { asRoute, safeRedirectPath } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
@@ -31,8 +31,9 @@ export function LoginForm() {
   const [isPasskeyLoading, setIsPasskeyLoading] = React.useState(false);
 
   const searchParams = useSearchParams();
-  const callbackUrl =
-    searchParams.get("callbackUrl") || searchParams.get("redirect") || "/";
+  const callbackUrl = safeRedirectPath(
+    searchParams.get("callbackUrl") || searchParams.get("redirect"),
+  );
   const authError = searchParams.get("error");
 
   React.useEffect(() => {

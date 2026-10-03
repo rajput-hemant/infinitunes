@@ -12,8 +12,9 @@ describe("ISSUE-023: email login form post-success redirect regression", () => {
     expect(source).toContain("useRouter");
     expect(source).toContain("const router = useRouter();");
     expect(source).toContain(
-      'searchParams.get("callbackUrl") || searchParams.get("redirect") || "/"',
+      'searchParams.get("callbackUrl") || searchParams.get("redirect")',
     );
+    expect(source).toContain("safeRedirectPath(");
     expect(source).toContain("router.push(asRoute(callbackUrl));");
     expect(source).toContain("router.refresh();");
   });

@@ -214,6 +214,21 @@ describe("user router authorization", () => {
     expect(state.updates).toHaveLength(0);
   });
 
+  it("rejects an empty or oversized updateUser name before writing", async () => {
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await expect(caller.user.updateUser({ name: "  " })).rejects.toMatchObject({
+      code: "BAD_REQUEST",
+    });
+    await expect(
+      caller.user.updateUser({ name: "x".repeat(101) }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(state.updates).toHaveLength(0);
+  });
+
   it("normalizes the updateUser email before writing", async () => {
     const caller = createCallerFactory(appRouter)({
       db,
