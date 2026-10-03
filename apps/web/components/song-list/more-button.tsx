@@ -124,7 +124,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
   const utils = api.useUtils();
 
-  const isFavorite = favorites?.songs.includes(item.id) ?? false;
+  const [isFavorite, setOptimisticFavorite] = React.useOptimistic(
+    favorites?.songs.includes(item.id) ?? false,
+    (_current, update: boolean) => update,
+  );
 
   function like() {
     if (!user) {
@@ -136,19 +139,29 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
     const name = getItemName(item);
 
-    if (isFavorite) {
-      toast.promise(removeFromFavorites(item.id, "song"), {
-        loading: "Removing from favorites...",
-        success: `Successfully removed "${name}" from favorites!`,
+    React.startTransition(async () => {
+      setOptimisticFavorite(!isFavorite);
+      const promise = isFavorite
+        ? removeFromFavorites(item.id, "song")
+        : addToFavorites(item.id, "song");
+
+      toast.promise(promise, {
+        loading: isFavorite
+          ? "Removing from favorites..."
+          : "Adding Song to favorites...",
+        success: isFavorite
+          ? `Successfully removed "${name}" from favorites!`
+          : `"${name}" song added to favorites!`,
         error: (e) => e.message,
       });
-    } else {
-      toast.promise(addToFavorites(item.id, "song"), {
-        loading: "Adding Song to favorites...",
-        success: `"${name}" song added to favorites!`,
-        error: (e) => e.message,
-      });
-    }
+
+      try {
+        await promise;
+        router.refresh();
+      } catch {
+        // Handled by toast.promise; transition failure reverts optimistic state
+      }
+    });
   }
 
   function play() {

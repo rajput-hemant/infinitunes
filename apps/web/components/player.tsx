@@ -1,6 +1,6 @@
 "use client";
 
-import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import {
   formatDuration,
   getDownloadLink,
@@ -59,13 +59,16 @@ const controlClass =
 type PlayerProps = {
   user?: User;
   playlists?: MyPlaylist[];
+  favorites?: Favorite;
 };
 
-export function Player({ user, playlists }: PlayerProps) {
-  return <PlayerInner user={user} playlists={playlists} />;
+export function Player({ user, playlists, favorites }: PlayerProps) {
+  return (
+    <PlayerInner user={user} playlists={playlists} favorites={favorites} />
+  );
 }
 
-function PlayerInner({ user, playlists }: PlayerProps) {
+function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   // stores
   const [queue, setQueue] = useQueue();
   const [activeRadio] = useActiveRadioSession();
@@ -583,6 +586,7 @@ function PlayerInner({ user, playlists }: PlayerProps) {
                 showAlbum
                 user={user}
                 playlists={playlists}
+                favorites={favorites}
                 className={buttonVariants({
                   size: "icon",
                   variant: "ghost",
