@@ -6,32 +6,25 @@ import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { songInput, songRecommendInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { isRecord, tokenFromLink, withDownloadUrl } from "./utils";
+import { isRecord, withDownloadUrl } from "./utils";
 
 export const songRouter = router({
   details: publicProcedure
     .input(songInput)
     .output(z.custom<SongObj>())
     .query(async ({ input }) => {
-      const { id, token, link, lang } = input;
-      if (!id && !link && !token) {
+      const { id, token, lang } = input;
+      if (!id && !token) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Please provide song id(s), link or a token",
+          message: "Please provide song id(s) or a token",
         });
       }
-      if (link && !link.includes("song")) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please provide a valid JioSaavn link",
-        });
-      }
-      const t = token || tokenFromLink(link ?? "");
       const endpoint = id ? endpoints.song.id : endpoints.song.link;
       const result = await api(endpoint, {
         query: {
           pids: id,
-          token: t,
+          token,
           type: "song",
         },
         language: lang,
@@ -39,7 +32,7 @@ export const songRouter = router({
       if (!isRecord(result) || !Array.isArray(result.songs)) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Song not found, please check the id, link or token",
+          message: "Song not found, please check the id or token",
         });
       }
       result.songs = result.songs.map((item) => withDownloadUrl(item));

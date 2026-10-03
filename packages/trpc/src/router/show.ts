@@ -6,31 +6,20 @@ import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { showEpisodesInput, showInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import {
-  isRecord,
-  mapDownloadUrls,
-  tokenFromLink,
-  withDownloadUrl,
-} from "./utils";
+import { isRecord, mapDownloadUrls, withDownloadUrl } from "./utils";
 
 function requireShowToken(
-  input: { token?: string; link?: string },
+  input: { token?: string },
   noun: "show" | "episode",
 ): string {
-  const { token, link } = input;
-  if (!link && !token) {
+  const { token } = input;
+  if (!token) {
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: `Please provide ${noun} token or link`,
+      message: `Please provide ${noun} token`,
     });
   }
-  if (link && !link.includes("shows")) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: `Please provide valid ${noun} link`,
-    });
-  }
-  return token || tokenFromLink(link ?? "");
+  return token;
 }
 
 export const showRouter = router({

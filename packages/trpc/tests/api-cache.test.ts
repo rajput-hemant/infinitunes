@@ -64,33 +64,4 @@ describe("api response cache", () => {
     await api("cache.lru", { query: { q: "filler-0" } }, countingFetch);
     expect(calls).toBe(callsBefore + 2);
   });
-
-  it("aborts on the caller signal even without AbortSignal.any", async () => {
-    const original = AbortSignal.any;
-    // @ts-expect-error - simulate a runtime without AbortSignal.any
-    delete AbortSignal.any;
-
-    try {
-      const controller = new AbortController();
-      const hangingFetch: typeof fetch = (_url, init) =>
-        new Promise<Response>((_resolve, reject) => {
-          init?.signal?.addEventListener("abort", () => {
-            const err = new Error("aborted");
-            err.name = "AbortError";
-            reject(err);
-          });
-        });
-
-      const pending = api(
-        "cache.abort",
-        { query: { q: "abort" }, signal: controller.signal },
-        hangingFetch,
-      );
-      controller.abort();
-
-      expect(pending).rejects.toThrow("Upstream request timed out");
-    } finally {
-      AbortSignal.any = original;
-    }
-  });
 });

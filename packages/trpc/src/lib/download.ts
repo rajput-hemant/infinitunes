@@ -1,6 +1,10 @@
+import { QUALITIES_MAP } from "@infinitunes/types";
 import CryptoJS from "crypto-js";
 
 import { trpcEnv } from "../env";
+
+const BITRATES = QUALITIES_MAP.map(({ bitrate }) => parseInt(bitrate, 10));
+const BITRATE_SUFFIX = new RegExp(`_(?:${BITRATES.join("|")})$`);
 
 /**
  * Decrypts a JioSaavn `encrypted_media_url` (base64 DES-ECB) into a playable
@@ -36,9 +40,8 @@ export function createDownloadLinks(
     // The decrypted URL already carries a bitrate suffix (usually `_96` or
     // `_160`). It has to be replaced, not appended to: the CDN 404s on
     // `..._96_320.mp4`.
-    const base = path.replace(/_(?:12|48|96|160|320)$/, "");
-    const bitrates = ["_12", "_48", "_96", "_160", "_320"];
-    return bitrates.map((id) => `${base}${id}${ext}`).join(",");
+    const base = path.replace(BITRATE_SUFFIX, "");
+    return BITRATES.map((rate) => `${base}_${rate}${ext}`).join(",");
   } catch (error) {
     console.error("[createDownloadLinks] failed to decrypt media URL", error);
     return "";
