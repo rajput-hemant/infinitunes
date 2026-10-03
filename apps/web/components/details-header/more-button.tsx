@@ -47,7 +47,6 @@ import {
 import type { User } from "~/lib/auth";
 import { addSongsToPlaylist } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
-import { currentlyInDev } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";

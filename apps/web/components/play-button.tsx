@@ -13,7 +13,6 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
-import { currentlyInDev } from "~/lib/utils";
 
 type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   type: MediaType;
@@ -111,7 +110,7 @@ export function PlayButton(props: PlayButtonProps) {
               type: "featured",
               language: details.station.more_info.language,
             });
-          } catch (err) {
+          } catch {
             toast.error("Failed to load radio station");
             return;
           }
@@ -123,14 +122,14 @@ export function PlayButton(props: PlayButtonProps) {
         setActiveRadio(null);
       }
 
-      const _queue = queue.map((item) => toQueue(item));
-      const first = _queue[0];
+      const queueItems = queue.map((item) => toQueue(item));
+      const first = queueItems[0];
       if (!first) return;
 
-      setQueue(_queue);
+      setQueue(queueItems);
 
       toast.success(
-        `${_queue.length} item${_queue.length > 1 ? "s" : ""} has been added to the queue`,
+        `${queueItems.length} item${queueItems.length > 1 ? "s" : ""} has been added to the queue`,
         {
           description: `Playing "${first.name}"`,
           position: "bottom-center",
