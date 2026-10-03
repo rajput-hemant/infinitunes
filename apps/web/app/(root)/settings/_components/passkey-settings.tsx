@@ -106,7 +106,7 @@ export function PasskeySettings() {
   return (
     <div className="w-full max-w-5xl space-y-4 px-6 py-2">
       <div>
-        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Passkeys
         </h2>
         <p className="text-sm text-muted-foreground">

@@ -75,7 +75,7 @@ export default async function RadioStationPage({ params }: Props) {
         </div>
 
         <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
-          <h1 className="max-w-full truncate text-center font-heading text-xl capitalize drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:text-start">
+          <h1 className="max-w-full truncate text-center font-heading text-xl capitalize drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:text-start">
             {station.title}
           </h1>
 

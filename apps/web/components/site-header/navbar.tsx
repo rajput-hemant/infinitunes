@@ -30,7 +30,7 @@ export async function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
-      <div className="container flex h-14 items-center space-x-4">
+      <div className="flex h-14 w-full items-center space-x-4 px-4 sm:px-8">
         <Link href="/" className="flex items-center">
           <div className="flex items-center gap-1">
             <Icons.Logo className="size-4" />

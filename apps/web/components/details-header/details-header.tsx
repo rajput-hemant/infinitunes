@@ -140,7 +140,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
       <figcaption className="flex min-w-0 w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
         <h1
           title={title}
-          className="flex min-w-0 items-center justify-center font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl lg:justify-start lg:text-start"
+          className="flex min-w-0 items-center justify-center font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:justify-start lg:text-start"
         >
           {getExplicit(item) && (
             <Badge className="mr-2 shrink-0 rounded px-1 py-0 font-bold">
@@ -151,6 +151,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           <span className="truncate">{title}</span>
 
           {getVerified(item) && (
+            // Verified-badge blue is a brand convention; the theme has no blue token.
             <BadgeCheck
               aria-label="Verified"
               fill="#3b82f6"

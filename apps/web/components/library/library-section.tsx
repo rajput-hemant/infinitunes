@@ -31,7 +31,7 @@ export function LibraryHeading(props: LibraryHeadingProps) {
       )}
     >
       <div className="min-w-0">
-        <h2 className="font-heading text-xl text-balance drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+        <h2 className="font-heading text-xl text-balance drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
           {title}
         </h2>
 

@@ -70,7 +70,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
       <DropdownMenuContent className="w-auto min-w-[18.5625rem]">
         <DropdownMenuGroup>
           <DropdownMenuLabel className="p-4">
-            <span className="block font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+            <span className="block font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
               What music do you like?
             </span>
 

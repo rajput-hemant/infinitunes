@@ -93,6 +93,7 @@ export function SliderCard(props: SliderCardProps) {
           <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
 
           {!hidePlayButton && (
+            // Image scrim: stays black in both themes so the play button reads over any artwork.
             <div className="absolute inset-0 hidden from-transparent to-black group-focus-within:bg-linear-to-b group-hover:bg-linear-to-b lg:group-focus-within:flex lg:group-hover:flex">
               <PlayButton
                 aria-label={`Play ${name}`}
