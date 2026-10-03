@@ -1,9 +1,8 @@
 /**
  * Migration metadata and entry-point for Drizzle migrator.
  *
- * The `migrationsFolder` path is relative to the consuming project's
- * working directory. A consumer that references this package should resolve
- * to `node_modules/@infinitunes/db/src/migrations` or use a bundler alias.
+ * `migrationsFolder` is the absolute filesystem path of this directory,
+ * resolved from this module's own URL, so it does not depend on the cwd.
  */
 
 export const migrationsFolder = new URL(".", import.meta.url).pathname;
