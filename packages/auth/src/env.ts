@@ -3,7 +3,6 @@ import { z } from "zod";
 
 export interface AuthEnvContext {
   nodeEnv?: string;
-  vercel?: boolean;
   vercelUrl?: string;
   vercelProductionUrl?: string;
 }
@@ -52,7 +51,6 @@ export function authEnv(
   return createEnv({
     server: authSchema({
       nodeEnv: runtimeEnv.NODE_ENV,
-      vercel: runtimeEnv.VERCEL === "1",
       vercelUrl: runtimeEnv.VERCEL_URL,
       vercelProductionUrl: runtimeEnv.VERCEL_PROJECT_PRODUCTION_URL,
     }),
