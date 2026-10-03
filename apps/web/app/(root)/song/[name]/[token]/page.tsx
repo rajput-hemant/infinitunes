@@ -1,4 +1,4 @@
-import { getImageSrc, getToken, toCardItem } from "@infinitunes/types";
+import { getImageSrc, parseToken, toCardItem } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
 import { cache } from "react";
@@ -61,7 +61,7 @@ async function fetcher(token: string) {
       ? api.get.lyrics({ id: song.id })
       : undefined,
     api.album.details({
-      token: getToken(song.more_info.album_url),
+      token: parseToken(song.more_info.album_url),
     }),
     api.song.recommendations({ id: song.id }),
     api.get.trending({ type: "song" }),
