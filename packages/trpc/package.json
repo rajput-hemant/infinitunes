@@ -18,20 +18,20 @@
     "@infinitunes/auth": "workspace:*",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/types": "workspace:*",
-    "@trpc/server": "^11.19.0",
-    "bcryptjs": "^3.0.3",
+    "@trpc/server": "catalog:",
+    "bcryptjs": "catalog:",
     "crypto-js": "^4.2.0",
-    "drizzle-orm": "^0.45.3",
-    "server-only": "^0.0.1",
-    "superjson": "^2.2.6",
-    "zod": "^4.6.5"
+    "drizzle-orm": "catalog:",
+    "server-only": "catalog:",
+    "superjson": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
-    "@types/bun": "^1.4.2",
+    "@types/bun": "catalog:",
     "@types/crypto-js": "^4.2.2",
-    "oxlint": "^1.85.0",
-    "oxfmt": "^0.70.0",
-    "typescript": "^7.0.2"
+    "oxlint": "catalog:",
+    "oxfmt": "catalog:",
+    "typescript": "catalog:"
   }
 }
