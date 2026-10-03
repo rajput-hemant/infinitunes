@@ -1,5 +1,5 @@
 import { hash } from "bcryptjs";
-import { and, eq, or } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -19,11 +19,7 @@ async function seed() {
   assertLocalDatabase(databaseUrl);
 
   const fixture = getLocalDevFixture();
-  const {
-    user: localDevUser,
-    infinitunes: localDevInfinitunes,
-    redis: localDevRedis,
-  } = fixture;
+  const { user: localDevUser, infinitunes: localDevInfinitunes } = fixture;
 
   console.log(
     `[seed] Connecting to database: ${databaseUrl.replace(/:[^:@]*@/, ":***@")}`,
@@ -60,11 +56,10 @@ async function seed() {
 
       const targetUserId = localDevUser.id;
 
-      if (existingUsers.length === 0) {
-        console.log(
-          `[seed] Creating shared local user (${localDevUser.email})...`,
-        );
-        await tx.insert(users).values({
+      // Every insert below is idempotent: existing rows are left untouched.
+      await tx
+        .insert(users)
+        .values({
           id: localDevUser.id,
           email: localDevUser.email,
           name: localDevUser.name,
@@ -72,70 +67,38 @@ async function seed() {
           betterAuthName: localDevUser.name,
           emailVerifiedBoolean: localDevUser.emailVerified,
           emailVerified: new Date(),
-        });
-      } else {
-        console.log("[seed] Canonical local user already exists; preserving.");
-      }
+        })
+        .onConflictDoNothing();
 
-      // 2. Seed the Better Auth credential account for the canonical user only
-      const existingAccounts = await tx
-        .select()
-        .from(betterAuthAccounts)
-        .where(
-          and(
-            eq(betterAuthAccounts.userId, targetUserId),
-            eq(betterAuthAccounts.providerId, "credential"),
-          ),
-        );
-
-      if (existingAccounts.length === 0) {
-        console.log(
-          `[seed] Creating Better Auth credential account for user ${targetUserId}...`,
-        );
-        await tx.insert(betterAuthAccounts).values({
+      // Better Auth credential account for the canonical user only
+      await tx
+        .insert(betterAuthAccounts)
+        .values({
           userId: targetUserId,
           providerId: "credential",
           accountId: targetUserId,
           password: hashedPassword,
-        });
-      } else {
-        console.log(
-          "[seed] Better Auth credential account already exists; preserving existing record.",
-        );
-      }
+        })
+        .onConflictDoNothing();
 
-      // 3. Seed deterministic Infinitunes playlists
+      // Deterministic Infinitunes playlists
       for (const pl of localDevInfinitunes.playlists) {
-        const existingPl = await tx
-          .select()
-          .from(myPlaylists)
-          .where(eq(myPlaylists.id, pl.id));
-
-        if (existingPl.length === 0) {
-          console.log(`[seed] Creating deterministic playlist: ${pl.name}...`);
-          await tx.insert(myPlaylists).values({
+        await tx
+          .insert(myPlaylists)
+          .values({
             id: pl.id,
             name: pl.name,
             description: pl.description,
             userId: targetUserId,
             songs: pl.songs,
-          });
-        } else {
-          console.log(`[seed] Playlist ${pl.id} already exists; preserving.`);
-        }
+          })
+          .onConflictDoNothing();
       }
 
-      // 4. Seed deterministic Infinitunes favorites
-      const existingFav = await tx
-        .select()
-        .from(favorites)
-        .where(eq(favorites.userId, targetUserId));
-
-      if (existingFav.length === 0) {
-        console.log(
-          `[seed] Creating deterministic favorites for user ${targetUserId}...`,
-        );
-        await tx.insert(favorites).values({
+      // Deterministic Infinitunes favorites
+      await tx
+        .insert(favorites)
+        .values({
           id: localDevInfinitunes.favorites.id,
           userId: targetUserId,
           songs: localDevInfinitunes.favorites.songs,
@@ -143,41 +106,9 @@ async function seed() {
           playlists: localDevInfinitunes.favorites.playlists,
           artists: localDevInfinitunes.favorites.artists,
           podcasts: localDevInfinitunes.favorites.podcasts,
-        });
-      } else {
-        console.log("[seed] User favorites already exist; preserving.");
-      }
+        })
+        .onConflictDoNothing();
     });
-
-    // 5. Check Redis reachability (only actual required data, no fake auth)
-    const redisRestUrl =
-      process.env.UPSTASH_REDIS_REST_URL || localDevRedis.restUrl;
-    const redisRestToken =
-      process.env.UPSTASH_REDIS_REST_TOKEN || localDevRedis.restToken;
-
-    if (redisRestUrl) {
-      try {
-        const res = await fetch(redisRestUrl, {
-          headers: {
-            Authorization: `Bearer ${redisRestToken}`,
-          },
-          signal: AbortSignal.timeout(2000),
-        });
-        if (res.ok) {
-          console.log(
-            `[seed] Redis REST adapter verified reachable at ${redisRestUrl}`,
-          );
-        } else {
-          console.log(
-            `[seed] Redis REST adapter ping returned status: ${res.status}`,
-          );
-        }
-      } catch {
-        console.log(
-          `[seed] Notice: Redis REST adapter at ${redisRestUrl} was not reached (service may not be running).`,
-        );
-      }
-    }
 
     console.log("[seed] Seeding successfully completed.");
   } finally {
