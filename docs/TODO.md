@@ -43,3 +43,4 @@ Found while polishing library and player. Priority is impact on users; none are 
 
 - [ ] README still labels the app `[WIP]`; as a portfolio showcase, decide when it counts as finished (see [project.md](project.md#purpose)).
 - [ ] Deferred seams from the plan (`packages/domain`, `packages/api-client`, `packages/player`) are not extracted; revisit only if a native app is pursued.
+- [ ] Medium: `username`/`displayUsername` were removed from `packages/db/src/schema.ts` (auth is email-only) but the production columns and the drizzle snapshot still have them, so the next `db:generate` would propose dropping them. Review that diff and keep the columns (or drop them deliberately) before generating. Evidence: schema vs `0000_baseline.sql`. Status: open.
