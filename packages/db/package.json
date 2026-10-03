@@ -23,7 +23,8 @@
     "./migrations": "./src/migrations/index.ts",
     "./backfill": "./src/backfill.ts",
     "./drizzle.config": "./src/drizzle.config.ts",
-    "./fixtures": "./src/fixtures/index.ts"
+    "./fixtures": "./src/fixtures/index.ts",
+    "./local-guard": "./src/fixtures/local-guard.ts"
   },
   "dependencies": {
     "@infinitunes/env": "workspace:*",
