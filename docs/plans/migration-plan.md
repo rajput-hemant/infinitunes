@@ -124,7 +124,6 @@ Evidence is the recorded run in [migration-acceptance.md](../verification/migrat
 - [x] Root dev, build, lint, type-check, test, fmt:check, and DB forwarding commands resolve to the correct workspace (acceptance §3).
 - [x] Oxlint, oxfmt check, TypeScript pass (acceptance §4).
 - [x] Turbo production build passes (placeholder env plus `SKIP_ENV_VALIDATION`; acceptance §5b).
-- [ ] Docker build passes (daemon was unavailable; Dockerfile only validated by inspection, acceptance §6).
 - [x] Drizzle schema validation passes with no unexpected generated SQL or applied database changes (acceptance §7).
 - [ ] Browser smoke tests cover landing, search, album/artist/song pages, playback, queue, downloads, light/dark themes, responsive navigation, dialogs, and error/not-found pages (Chrome absent; only HTTP-level not-found/static checks ran, acceptance §8).
 - [ ] Auth smoke tests cover credentials, OAuth entry points, session persistence, protected pages, playlist mutations, favorites, and logout using a non-production database (deferred, acceptance §12.2).

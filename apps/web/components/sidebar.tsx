@@ -46,6 +46,8 @@ export const masterSidebarDesktopOffsetClassName =
 export const masterSidebarGapShellClassName =
   "w-0 shrink-0 transition-[width] duration-200 ease-linear has-[[data-slot=sidebar][data-state=collapsed]]:lg:w-(--sidebar-width-icon) has-[[data-slot=sidebar][data-state=expanded]]:lg:w-[20%] has-[[data-slot=sidebar][data-state=expanded]]:xl:w-[15%] has-[[data-slot=sidebar][data-state=expanded]]:2xl:w-[12.5%]";
 
+// Below lg the sidebar renders as a sheet (portalled, so unaffected); this only
+// hides the desktop markup server-rendered before the viewport is known.
 export const masterSidebarDesktopVisibilityClassName =
   "max-lg:[&_[data-slot=sidebar]]:!hidden max-lg:[&_[data-slot=sidebar-container]]:!hidden";
 
@@ -106,6 +108,7 @@ function CreatePlaylistTooltip({ children }: { children: React.ReactElement }) {
 
 export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
+  const { setOpenMobile } = useSidebar();
 
   return (
     <nav
@@ -123,12 +126,17 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
         className={masterSidebarDesktopOffsetClassName}
       >
         <SidebarHeader className="group-data-[collapsible=icon]:hidden">
-          <p className="pl-3 font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+          <p className="pl-3 font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
             Discover
           </p>
         </SidebarHeader>
 
-        <SidebarContent>
+        {/* Close the mobile sheet once a link is followed. */}
+        <SidebarContent
+          onClick={(event) => {
+            if ((event.target as Element).closest("a")) setOpenMobile(false);
+          }}
+        >
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>

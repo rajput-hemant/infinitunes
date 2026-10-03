@@ -53,3 +53,22 @@ describe("shouldIgnoreShortcut", () => {
     ).toBe(true);
   });
 });
+
+describe("shouldIgnoreShortcut preference (WCAG 2.1.4)", () => {
+  it("ignores every key when shortcuts are turned off", () => {
+    for (const key of [" ", "n", "p", "l", "s"]) {
+      expect(
+        shouldIgnoreShortcut({ key, target: el("BODY") }, { enabled: false }),
+      ).toBe(true);
+    }
+  });
+
+  it("is on by default", () => {
+    expect(shouldIgnoreShortcut({ key: "n", target: el("BODY") }, {})).toBe(
+      false,
+    );
+    expect(
+      shouldIgnoreShortcut({ key: "n", target: el("BODY") }, { enabled: true }),
+    ).toBe(false);
+  });
+});

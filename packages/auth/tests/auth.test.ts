@@ -244,6 +244,54 @@ describe("Injected plugins and env precedence", () => {
   });
 });
 
+describe("Better Auth URL resolution", () => {
+  const keys = [
+    "BETTER_AUTH_URL",
+    "AUTH_URL",
+    "VERCEL_URL",
+    "VERCEL_PROJECT_PRODUCTION_URL",
+  ] as const;
+  const saved = Object.fromEntries(keys.map((k) => [k, process.env[k]]));
+  const restore = () => {
+    for (const k of keys) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k];
+    }
+  };
+
+  it("uses the production domain as base URL and trusts the preview host", () => {
+    for (const k of keys) delete process.env[k];
+    process.env.VERCEL_PROJECT_PRODUCTION_URL = "infinitunes.example.com";
+    process.env.VERCEL_URL = "infinitunes-abc.vercel.app";
+    try {
+      const auth = createAuth(makeFakeDb());
+      expect(auth.options.baseURL).toBe("https://infinitunes.example.com");
+      expect(auth.options.trustedOrigins).toEqual([
+        "https://infinitunes.example.com",
+        "https://infinitunes-abc.vercel.app",
+      ]);
+    } finally {
+      restore();
+    }
+  });
+
+  it("lets an explicit AUTH_URL win and still trusts the Vercel hosts", () => {
+    for (const k of keys) delete process.env[k];
+    process.env.AUTH_URL = "https://auth.example.com";
+    process.env.VERCEL_URL = "infinitunes-abc.vercel.app";
+    try {
+      const auth = createAuth(makeFakeDb());
+      expect(auth.options.baseURL).toBe("https://auth.example.com");
+      expect(auth.options.trustedOrigins).toEqual([
+        "https://auth.example.com",
+        "https://infinitunes-abc.vercel.app",
+      ]);
+    } finally {
+      restore();
+    }
+  });
+});
+
 describe("Shared schema / table mapping", () => {
   it("uses the dedicated Better Auth tables and compatibility columns", () => {
     expect(getTableName(users)).toBe("user");
@@ -256,5 +304,84 @@ describe("Shared schema / table mapping", () => {
     );
     expect(getTableName(infinitunesPasskeys)).toBe("infinitunes_passkey");
     expect(infinitunesPasskeys.credentialID.name).toBe("credentialID");
+  });
+});
+
+describe("Password reset configuration", () => {
+  it("pins a one-hour single-use token and revokes sessions on reset", () => {
+    const auth = createAuth(makeFakeDb());
+    expect(auth.options.emailAndPassword?.resetPasswordTokenExpiresIn).toBe(
+      3600,
+    );
+    expect(auth.options.emailAndPassword?.revokeSessionsOnPasswordReset).toBe(
+      true,
+    );
+    expect(auth.options.emailAndPassword?.sendResetPassword).toBeTypeOf(
+      "function",
+    );
+  });
+
+  it("emails the reset link and swallows delivery failures", async () => {
+    const sent: { to: string; text: string }[] = [];
+    const ok = createAuth(makeFakeDb(), {
+      sendEmail: async (email) => void sent.push(email),
+    });
+    await ok.options.emailAndPassword?.sendResetPassword?.({
+      user: { email: "user@example.com" } as never,
+      url: "https://app.test/api/auth/reset-password/tok",
+      token: "tok",
+    });
+    expect(sent[0]?.to).toBe("user@example.com");
+    expect(sent[0]?.text).toContain("/reset-password/tok");
+
+    const failing = createAuth(makeFakeDb(), {
+      sendEmail: async () => {
+        throw new Error("boom");
+      },
+    });
+    const original = console.error;
+    console.error = () => {};
+    try {
+      await expect(
+        failing.options.emailAndPassword?.sendResetPassword?.({
+          user: { email: "user@example.com" } as never,
+          url: "https://app.test/x",
+          token: "tok",
+        }),
+      ).resolves.toBeUndefined();
+    } finally {
+      console.error = original;
+    }
+  });
+
+  it("throttles the request endpoint after three calls a minute", async () => {
+    const previous = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
+    try {
+      const auth = createAuth(makeFakeDb(), { sendEmail: async () => {} });
+      expect(auth.options.rateLimit?.customRules).toMatchObject({
+        "/request-password-reset": { window: 60, max: 3 },
+      });
+      const request = () =>
+        auth.handler(
+          new Request("http://localhost:3000/api/auth/request-password-reset", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              origin: "http://localhost:3000",
+              "x-forwarded-for": "203.0.113.9",
+            },
+            body: JSON.stringify({ email: "user@example.com" }),
+          }),
+        );
+
+      const statuses: number[] = [];
+      for (let i = 0; i < 4; i++) statuses.push((await request()).status);
+
+      expect(statuses.slice(0, 3)).not.toContain(429);
+      expect(statuses[3]).toBe(429);
+    } finally {
+      process.env.NODE_ENV = previous;
+    }
   });
 });

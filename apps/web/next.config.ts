@@ -1,5 +1,3 @@
-import path from "path";
-
 import type { NextConfig } from "next";
 
 // This is validation for the environment variables early in the build process.
@@ -7,10 +5,9 @@ import "./lib/env";
 import { IMAGE_CDN_HOSTS } from "./lib/image-hosts";
 
 const isProd = process.env.NODE_ENV === "production";
-const isDocker = process.env.IS_DOCKER === "true";
 
-// A CSP is intentionally not set here: it needs a nonce/allowlist pass over the
-// analytics script and inline theme bootstrap first (see review notes).
+// The Content-Security-Policy (report-only, per-request nonce) is set in
+// `proxy.ts`, not here.
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -33,21 +30,25 @@ const config: NextConfig = {
   reactStrictMode: true,
   reactCompiler: true,
   typedRoutes: true,
-  compiler: { removeConsole: isProd },
+  // Keep error/warn: server-side fallbacks (shell data, recordPlay) log through
+  // console.error and would otherwise be invisible in production.
+  compiler: {
+    removeConsole: isProd ? { exclude: ["error", "warn"] } : false,
+  },
   images: {
+    // Preserves the previous non-Docker behavior (images served as-is);
+    // enabling the Next optimizer on Vercel is a pending decision.
+    unoptimized: true,
     remotePatterns: [
       ...IMAGE_CDN_HOSTS.map((hostname) => ({
         protocol: "https" as const,
         hostname,
       })),
     ],
-    unoptimized: !isDocker,
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
-  output: isDocker ? "standalone" : undefined,
-  outputFileTracingRoot: isDocker ? path.join(__dirname, "../../") : undefined,
 };
 
 export default config;

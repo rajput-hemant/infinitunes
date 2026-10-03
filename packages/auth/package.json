@@ -15,14 +15,14 @@
     "@better-auth/passkey": "^1.7.6",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
-    "bcryptjs": "^3.0.3",
-    "better-auth": "^1.7.6",
-    "drizzle-orm": "^0.45.3",
-    "zod": "^4.6.5"
+    "bcryptjs": "catalog:",
+    "better-auth": "catalog:",
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
-    "@types/node": "^26.6.3",
-    "typescript": "^7.0.2"
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

@@ -36,9 +36,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
   must be listed in `turbo.json` `globalPassThroughEnv` to reach `next build`.
 - Turbo `outputs` are package-relative; the web build output is `.next/**`.
-- Docker uses `apps/web` standalone output, which nests the server at
-  `apps/web/.next/standalone/apps/web/server.js` (entrypoint `node apps/web/server.js`).
-  `next.config.ts` sets `outputFileTracingRoot` to the repo root when `IS_DOCKER`.
+- Docker is local-dev only (`docker-compose.yml` for Postgres/Redis); there is no
+  production image, standalone output or `IS_DOCKER` flag. Production is Vercel.
 - `packages/trpc/src/lib/download.ts`'s `createDownloadLinks` needs `JIOSAAVN_DES_KEY`
   in `turbo.json` `globalPassThroughEnv` or every song's
   `download_url` silently comes back empty under `bun run dev`/`build`, which crashes

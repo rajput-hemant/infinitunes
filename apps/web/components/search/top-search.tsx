@@ -14,7 +14,7 @@ export async function TopSearch() {
 
   return (
     <>
-      <h3 className="font-heading text-xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
+      <h3 className="font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
         Trending Searches
       </h3>
 

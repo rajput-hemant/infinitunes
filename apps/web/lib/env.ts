@@ -9,5 +9,6 @@ export const env = createServerEnv({
     nodeEnv: process.env.NODE_ENV,
     vercel: process.env.VERCEL === "1",
     vercelUrl: process.env.VERCEL_URL,
+    vercelProductionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL,
   },
 });

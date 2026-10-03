@@ -1,6 +1,7 @@
 "use client";
 
-import { Cog, Compass, Home, Search, User2 } from "lucide-react";
+import { useSidebar } from "@infinitunes/ui/components/sidebar";
+import { Cog, Compass, Home, Library, Search, User2 } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -20,8 +21,12 @@ const mobileNavItems = [
   { label: "Settings", icon: Cog, href: "/settings" },
 ] satisfies { label: string; icon: typeof Home; href: Route }[];
 
+const itemClassName =
+  "flex h-14 min-w-0 flex-1 flex-col items-center justify-center text-center text-muted-foreground duration-700 animate-in slide-in-from-bottom-full";
+
 export function MobileNav({ user }: Props) {
   const pathname = usePathname();
+  const { openMobile, setOpenMobile } = useSidebar();
 
   const filteredNavItems = mobileNavItems.filter(({ label }) =>
     user ? label !== "Login" : label !== "Settings",
@@ -32,7 +37,7 @@ export function MobileNav({ user }: Props) {
       aria-label="Primary"
       className="fixed inset-x-0 bottom-0 z-50 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] items-start justify-between border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
-      {filteredNavItems.slice().map(({ label, icon: Icon, href }) => {
+      {filteredNavItems.map(({ label, icon: Icon, href }) => {
         const isActive = href === pathname;
 
         return (
@@ -41,7 +46,7 @@ export function MobileNav({ user }: Props) {
             href={href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex h-14 w-1/4 flex-col items-center justify-center text-center text-muted-foreground duration-700 animate-in slide-in-from-bottom-full",
+              itemClassName,
               isActive && "text-secondary-foreground",
             )}
           >
@@ -53,6 +58,20 @@ export function MobileNav({ user }: Props) {
           </Link>
         );
       })}
+
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={openMobile}
+        onClick={() => setOpenMobile(true)}
+        className={itemClassName}
+      >
+        <Library aria-hidden />
+
+        <span className="text-xs font-semibold duration-200 animate-in slide-in-from-bottom-1/2">
+          Library
+        </span>
+      </button>
     </nav>
   );
 }

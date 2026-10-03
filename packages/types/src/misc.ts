@@ -61,6 +61,8 @@ export type Category = "latest" | "alphabetical" | "popularity";
 export type Sort = "asc" | "desc";
 
 export type Queue = {
+  /** Unique per queue entry (the same track may be queued more than once). */
+  queueItemId: string;
   id: string;
   name: string;
   subtitle: string;

@@ -1,17 +1,27 @@
-import { emailSchema, resetPasswordSchema } from "@infinitunes/auth/schemas";
+import { changePasswordSchema, emailSchema } from "@infinitunes/auth/schemas";
 import {
   betterAuthAccounts,
+  betterAuthSessions,
   favorites,
   myPlaylists,
   users,
 } from "@infinitunes/db/schema";
 import { TRPCError } from "@trpc/server";
 import { compare, hash } from "bcryptjs";
-import { and, count, eq as drizzleEq, sql } from "drizzle-orm";
+import { and, count, eq as drizzleEq, ne, sql } from "drizzle-orm";
 import type { SQLWrapper } from "drizzle-orm";
 import { z } from "zod";
 
-import { protectedProcedure, publicProcedure, router } from "../trpc";
+import type { Session, TRPCContext } from "../trpc";
+import { protectedProcedure, router } from "../trpc";
+
+export const PLAYLIST_MAX_SONGS = 5000;
+
+/**
+ * Accounts without a password (passkey/OAuth only) confirm destructive actions
+ * with a recently created session instead of a password.
+ */
+export const FRESH_SESSION_MS = 10 * 60 * 1000;
 
 const playlistInput = z.object({
   playlistId: z.string(),
@@ -95,12 +105,129 @@ export function removeSongAtPlaylistIndex(
 const updateUserInput = z.object({
   name: z.string().trim().min(1).max(100).optional(),
   email: emailSchema.transform((email) => email.toLowerCase()).optional(),
+  /** Required (and verified) only when the email actually changes. */
+  currentPassword: z.string().max(200).optional(),
 });
 
-const RESET_FAILED_MESSAGE = "Email or current password is incorrect";
-// Compared against when the account is unknown so response time matches a real wrong-password attempt.
-const DUMMY_PASSWORD_HASH =
-  "$2b$10$/YVbwAK93YPAIyotj7vK0.dw5mLxTUKozIQ6kci6xEX3oMGGQzV46";
+/** Required for accounts that have a password; passwordless accounts omit it. */
+const deleteUserInput = z.object({
+  password: z.string().min(1).max(200).optional(),
+});
+
+const WRONG_PASSWORD_MESSAGE = "Current password is incorrect";
+const NO_PASSWORD_MESSAGE =
+  "This account has no password (it signs in with a passkey or OAuth). Use Forgot password on the login page to set one";
+const REAUTH_MESSAGE = "Please sign in again to continue";
+const PASSWORD_REQUIRED_MESSAGE = "Enter your current password to continue";
+
+async function loadCredentials(db: TRPCContext["db"], userId: string) {
+  const userRecord = await db.query.users.findFirst({
+    where: drizzleEq(users.id, userId),
+  });
+  if (!userRecord) {
+    throw new TRPCError({ code: "UNAUTHORIZED", message: "Unauthorized" });
+  }
+
+  const credentialAccount = await db.query.betterAuthAccounts.findFirst({
+    where: and(
+      drizzleEq(betterAuthAccounts.userId, userId),
+      drizzleEq(betterAuthAccounts.providerId, "credential"),
+    ),
+  });
+
+  return {
+    userRecord,
+    credentialAccount,
+    storedHash: credentialAccount?.password ?? userRecord.password,
+  };
+}
+
+async function assertPasswordMatches(storedHash: string, password: string) {
+  if (!(await compare(password, storedHash))) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: WRONG_PASSWORD_MESSAGE,
+    });
+  }
+}
+
+/**
+ * Verifies the signed-in user's password server-side against the credential
+ * account hash (falling back to the legacy `user.password`). Throws
+ * BAD_REQUEST when the account has no password or the password is wrong.
+ */
+async function verifyCurrentPassword(
+  db: TRPCContext["db"],
+  userId: string,
+  password: string,
+) {
+  const credentials = await loadCredentials(db, userId);
+  if (!credentials.storedHash) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: NO_PASSWORD_MESSAGE });
+  }
+  await assertPasswordMatches(credentials.storedHash, password);
+
+  return credentials;
+}
+
+/**
+ * Confirms the caller before a sensitive action: the current password for
+ * accounts that have one, otherwise a session created within
+ * `FRESH_SESSION_MS` (an unknown creation time counts as stale).
+ */
+async function confirmIdentity(
+  ctx: { db: TRPCContext["db"]; session: NonNullable<Session> },
+  password: string | undefined,
+) {
+  const { storedHash } = await loadCredentials(ctx.db, ctx.session.user.id);
+
+  if (storedHash) {
+    if (!password) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: PASSWORD_REQUIRED_MESSAGE,
+      });
+    }
+    await assertPasswordMatches(storedHash, password);
+    return;
+  }
+
+  const createdAt = ctx.session.session?.createdAt;
+  if (
+    !createdAt ||
+    Date.now() - new Date(createdAt).getTime() > FRESH_SESSION_MS
+  ) {
+    throw new TRPCError({ code: "FORBIDDEN", message: REAUTH_MESSAGE });
+  }
+}
+
+async function storePassword(
+  db: TRPCContext["db"],
+  userRecord: { id: string; email: string },
+  credentialAccount: { id: string } | undefined,
+  newPassword: string,
+) {
+  const hashedPassword = await hash(newPassword, 10);
+
+  await db
+    .update(users)
+    .set({ password: hashedPassword })
+    .where(drizzleEq(users.email, userRecord.email));
+
+  if (credentialAccount) {
+    await db
+      .update(betterAuthAccounts)
+      .set({ password: hashedPassword, updatedAt: new Date() })
+      .where(drizzleEq(betterAuthAccounts.id, credentialAccount.id));
+  } else {
+    await db.insert(betterAuthAccounts).values({
+      userId: userRecord.id,
+      accountId: userRecord.id,
+      providerId: "credential",
+      password: hashedPassword,
+    });
+  }
+}
 
 function isUniqueViolation(error: unknown): boolean {
   const cause = error instanceof Error ? error.cause : undefined;
@@ -150,13 +277,18 @@ export const userRouter = router({
         throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
       }
 
-      const dedupSongs = [
-        ...new Set([...input.songs, ...playlist.songs]),
-      ].slice(0, 100);
+      const merged = [...new Set([...playlist.songs, ...input.songs])];
+
+      if (merged.length > PLAYLIST_MAX_SONGS) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Playlist is full (5,000 songs)",
+        });
+      }
 
       const [updatedPlaylist] = await ctx.db
         .update(myPlaylists)
-        .set({ songs: dedupSongs })
+        .set({ songs: merged })
         .where(
           and(
             drizzleEq(myPlaylists.id, input.playlistId),
@@ -330,54 +462,39 @@ export const userRouter = router({
         .returning();
     }),
 
-  resetPassword: publicProcedure
-    .input(resetPasswordSchema)
+  /** Signed-in password change. The account comes from the session. */
+  resetPassword: protectedProcedure
+    .input(changePasswordSchema)
     .mutation(async ({ ctx, input }) => {
-      const userRecord = await ctx.db.query.users.findFirst({
-        where: (userRow, { eq: equals }) => equals(userRow.email, input.email),
-      });
-
-      const credentialAccount = userRecord
-        ? await ctx.db.query.betterAuthAccounts.findFirst({
-            where: and(
-              drizzleEq(betterAuthAccounts.userId, userRecord.id),
-              drizzleEq(betterAuthAccounts.providerId, "credential"),
-            ),
-          })
-        : undefined;
-      const storedHash = credentialAccount?.password ?? userRecord?.password;
-      const isPasswordValid = await compare(
+      const userId = ctx.session.user.id;
+      const { userRecord, credentialAccount } = await verifyCurrentPassword(
+        ctx.db,
+        userId,
         input.password,
-        storedHash ?? DUMMY_PASSWORD_HASH,
       );
 
-      if (!userRecord || !storedHash || !isPasswordValid) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: RESET_FAILED_MESSAGE,
-        });
-      }
+      await storePassword(
+        ctx.db,
+        userRecord,
+        credentialAccount,
+        input.newPassword,
+      );
 
-      const hashedPassword = await hash(input.newPassword, 10);
-
+      // Revoke every other session (stolen or forgotten devices) but keep the
+      // caller's. Deleted straight from the session table: Better Auth's
+      // revokeOtherSessions endpoint needs the request headers, which tRPC
+      // procedures do not receive.
+      const currentToken = ctx.session.session?.token;
       await ctx.db
-        .update(users)
-        .set({ password: hashedPassword })
-        .where(drizzleEq(users.email, input.email));
-
-      if (credentialAccount) {
-        await ctx.db
-          .update(betterAuthAccounts)
-          .set({ password: hashedPassword, updatedAt: new Date() })
-          .where(drizzleEq(betterAuthAccounts.id, credentialAccount.id));
-      } else {
-        await ctx.db.insert(betterAuthAccounts).values({
-          userId: userRecord.id,
-          accountId: userRecord.id,
-          providerId: "credential",
-          password: hashedPassword,
-        });
-      }
+        .delete(betterAuthSessions)
+        .where(
+          currentToken
+            ? and(
+                drizzleEq(betterAuthSessions.userId, userId),
+                ne(betterAuthSessions.token, currentToken),
+              )
+            : drizzleEq(betterAuthSessions.userId, userId),
+        );
     }),
 
   createNewPlaylist: protectedProcedure
@@ -422,9 +539,22 @@ export const userRouter = router({
       const patch: {
         betterAuthName?: string;
         email?: string;
+        emailVerifiedBoolean?: boolean;
+        emailVerified?: null;
       } = {};
       if (input.name !== undefined) patch.betterAuthName = input.name;
-      if (input.email !== undefined) patch.email = input.email;
+      if (input.email !== undefined) {
+        const current = await ctx.db.query.users.findFirst({
+          columns: { email: true },
+          where: drizzleEq(users.id, userId),
+        });
+        if (current?.email !== input.email) {
+          await confirmIdentity(ctx, input.currentPassword);
+          patch.email = input.email;
+          patch.emailVerifiedBoolean = false;
+          patch.emailVerified = null;
+        }
+      }
       if (Object.keys(patch).length > 0) {
         try {
           await ctx.db
@@ -449,8 +579,10 @@ export const userRouter = router({
     }),
 
   deleteUser: protectedProcedure
-    .input(z.object({}))
-    .mutation(async ({ ctx }) => {
+    .input(deleteUserInput)
+    .mutation(async ({ ctx, input }) => {
+      await confirmIdentity(ctx, input.password);
+
       const [deletedUser] = await ctx.db
         .delete(users)
         .where(drizzleEq(users.id, ctx.session.user.id))

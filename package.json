@@ -2,10 +2,32 @@
   "name": "infinitunes",
   "version": "0.3.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "@trpc/server": "^11.19.0",
+      "@types/bun": "^1.4.2",
+      "@types/node": "^26.6.3",
+      "@types/react": "^19.3.0",
+      "@types/react-dom": "^19.3.0",
+      "bcryptjs": "^3.0.3",
+      "better-auth": "^1.7.6",
+      "drizzle-orm": "^0.45.3",
+      "lucide-react": "^1.48.0",
+      "next-themes": "^0.4.6",
+      "oxfmt": "^0.70.0",
+      "oxlint": "^1.85.0",
+      "server-only": "^0.0.1",
+      "sonner": "^2.0.8",
+      "superjson": "^2.2.6",
+      "tailwindcss": "^4.3.3",
+      "typescript": "^7.0.2",
+      "zod": "^4.6.5"
+    }
+  },
   "type": "module",
   "scripts": {
     "dev": "turbo run dev",
@@ -13,7 +35,8 @@
     "start": "turbo run start",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
-    "test": "bun test --pass-with-no-tests",
+    "test": "bun test --pass-with-no-tests && bun run test:dom",
+    "test:dom": "cd apps/web/tests/dom && bun test",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
     "db:up": "docker compose up -d",
@@ -32,11 +55,12 @@
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",
     "@commitlint/config-conventional": "^21.2.3",
-    "@types/node": "^26.6.3",
+    "@happy-dom/global-registrator": "^20.14.5",
+    "@types/node": "catalog:",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.0",
-    "oxfmt": "^0.70.0",
-    "oxlint": "^1.85.0",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "turbo": "^2.11.4"
   },
   "lint-staged": {

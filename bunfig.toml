@@ -1,0 +1,3 @@
+[test]
+# DOM tests need a global DOM and run in their own process: `bun run test:dom`.
+pathIgnorePatterns = ["apps/web/tests/dom/**"]

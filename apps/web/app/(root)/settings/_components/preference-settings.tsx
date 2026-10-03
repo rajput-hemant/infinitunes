@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@infinitunes/ui/components/dropdown-menu";
 import { Separator } from "@infinitunes/ui/components/separator";
+import { Switch } from "@infinitunes/ui/components/switch";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -24,6 +25,7 @@ import { languages as languageList } from "~/config/languages";
 import {
   useDownloadQuality,
   useImageQuality,
+  useKeyboardShortcuts,
   useStreamQuality,
 } from "~/hooks/use-store";
 import { cn } from "~/lib/utils";
@@ -40,6 +42,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
   const [streamQuality, setStreamQuality] = useStreamQuality();
   const [downloadQuality, setDownloadQuality] = useDownloadQuality();
   const [imageQuality, setImageQuality] = useImageQuality();
+  const [shortcutsEnabled, setShortcutsEnabled] = useKeyboardShortcuts();
 
   const [selectedLanguages, setSelectedLanguages] = React.useState(
     props.initialLanguages,
@@ -60,7 +63,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
   return (
     <div className="space-y-8 px-6">
       <section id="language" className="space-y-4">
-        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Languages
         </h2>
 
@@ -87,7 +90,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
       </section>
 
       <section className="space-y-2">
-        <h2 className="pb-4 font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="pb-4 font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Quality Settings
         </h2>
 
@@ -250,6 +253,37 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+        </div>
+      </section>
+
+      <section id="keyboard-shortcuts" className="space-y-2">
+        <h2 className="pb-4 font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
+          Keyboard
+        </h2>
+
+        <div className="flex max-w-xl flex-wrap items-center justify-between gap-2">
+          <div className="space-y-1">
+            <h3 id="keyboard-shortcuts-label" className="text-muted-foreground">
+              Keyboard shortcuts
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Space, N, P, L and S control the player; Shift with the arrow keys
+              skips tracks and changes volume.
+            </p>
+          </div>
+
+          <Switch
+            aria-labelledby="keyboard-shortcuts-label"
+            checked={shortcutsEnabled}
+            onCheckedChange={(checked) => {
+              setShortcutsEnabled(checked);
+              toast.success(
+                checked
+                  ? "Keyboard shortcuts turned on"
+                  : "Keyboard shortcuts turned off",
+              );
+            }}
+          />
         </div>
       </section>
     </div>

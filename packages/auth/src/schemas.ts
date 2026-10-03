@@ -34,9 +34,24 @@ export const signUpSchema = z
     path: ["confirmPassword"],
   });
 
-export const resetPasswordSchema = z.object({
-  // Stored emails are lowercased; normalize before validating so lookups match.
-  email: z.string().trim().toLowerCase().pipe(emailSchema),
+/** Signed-in change: the account comes from the session, not the input. */
+export const changePasswordSchema = z.object({
   password: passwordSchema,
   newPassword: passwordSchema,
 });
+
+/** `/forgot-password`: names the account by email; the reply never confirms it exists. */
+export const forgotPasswordSchema = z.object({
+  email: z.string().trim().toLowerCase().pipe(emailSchema),
+});
+
+/** `/reset-password?token=...`: the account comes from the emailed token. */
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });

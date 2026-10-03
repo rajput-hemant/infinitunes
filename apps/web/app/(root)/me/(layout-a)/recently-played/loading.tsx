@@ -1,0 +1,17 @@
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
+
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
+
+export default function RecentlyPlayedLoading() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-8 w-72 sm:h-9" />
+
+      <div className="space-y-2">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <SongListSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  );
+}

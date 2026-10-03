@@ -41,14 +41,17 @@ import {
   useCurrentSongIndex,
   useIsPlayerInit,
   useIsTyping,
+  useKeyboardShortcuts,
   useQueue,
   useStreamQuality,
 } from "~/hooks/use-store";
 import type { User } from "~/lib/auth";
+import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
 import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
+import { ExpandedPlayer, setValueText } from "./expanded-player";
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
 import { Queue } from "./queue";
@@ -56,13 +59,6 @@ import { TileMoreButton } from "./song-list/more-button";
 
 const controlClass =
   "rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
-
-/** Sets `aria-valuetext` on the range input inside a Base UI slider root. */
-function setValueText(root: HTMLElement | null, text: string) {
-  root
-    ?.querySelector("input[type=range]")
-    ?.setAttribute("aria-valuetext", text);
-}
 
 type PlayerProps = {
   user?: User;
@@ -88,6 +84,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
   const [isTyping] = useIsTyping();
+  const [shortcutsEnabled] = useKeyboardShortcuts();
   // refs
   const frameRef = React.useRef<number>(0);
   // states
@@ -95,7 +92,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);
   const [pos, setPos] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
+  const [isExpanded, setIsExpanded] = React.useState(false);
   const refillingRef = React.useRef<boolean>(false);
+  const lastRecordedRef = React.useRef<string | null>(null);
 
   const utils = api.useUtils();
 
@@ -177,6 +176,19 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     if (!audioSrc) {
       toast.error("This song can't be played right now.");
       return;
+    }
+
+    // Once per queue entry: a quality change reloads the source but is not a
+    // new listen. Read the track through the ref to keep the deps stable.
+    const { queue: latestQueue, currentIndex: latestIndex } =
+      playbackStateRef.current;
+    const track = latestQueue[latestIndex];
+    if (track && lastRecordedRef.current !== track.queueItemId) {
+      lastRecordedRef.current = track.queueItemId;
+      void recordPlay({
+        id: track.id,
+        type: track.type === "episode" ? "episode" : "song",
+      });
     }
 
     load(audioSrc, {
@@ -314,12 +326,47 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     }
   }
 
+  function seekChange(value: number) {
+    setPos(value);
+  }
+
+  function seekCommit() {
+    seek(pos);
+    setPos(getPosition());
+    setIsDragging(false);
+  }
+
+  function volumeChange(percent: number) {
+    if (!isReady) return;
+    const newVolume = percent / 100;
+    setVolume(newVolume);
+    if (newVolume > 0 && isMuted) {
+      unmute();
+    }
+    if (newVolume === 0 && !isMuted) {
+      mute();
+    }
+  }
+
+  function toggleMute() {
+    if (!isReady) return;
+    if (isMuted) {
+      unmute();
+      if (volume === 0) {
+        setVolume(0.75);
+      }
+    } else {
+      mute();
+    }
+  }
+
   /* -----------------------------------------------------------------------------------------------
    * Keyboard shortcuts (Keybinds)
    * -----------------------------------------------------------------------------------------------*/
 
   useEventListener("keydown", (e) => {
-    if (isTyping || shouldIgnoreShortcut(e)) return;
+    if (isTyping || shouldIgnoreShortcut(e, { enabled: shortcutsEnabled }))
+      return;
 
     if (e.key === " ") {
       e.preventDefault();
@@ -370,14 +417,10 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         aria-labelledby={seekLabelId}
         value={[pos]}
         max={duration || 1}
-        onValueChange={(value: number | readonly number[], _details) => {
-          setPos(typeof value === "number" ? value : (value[0] as number));
-        }}
-        onValueCommitted={() => {
-          seek(pos);
-          setPos(getPosition());
-          setIsDragging(false);
-        }}
+        onValueChange={(value: number | readonly number[], _details) =>
+          seekChange(typeof value === "number" ? value : (value[0] as number))
+        }
+        onValueCommitted={seekCommit}
         onPointerDown={() => {
           setIsDragging(true);
         }}
@@ -389,7 +432,17 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
           queue.length === 0 && "text-muted-foreground",
         )}
       >
-        <div className="flex w-full min-w-0 gap-4 lg:w-1/3">
+        <div className="relative flex w-full min-w-0 gap-4 lg:w-1/3">
+          {current && (
+            // Below lg the transport row is the only other control, so the
+            // whole info area opens the expanded player.
+            <button
+              type="button"
+              aria-label="Open player"
+              onClick={() => setIsExpanded(true)}
+              className={cn(controlClass, "absolute inset-0 z-10 lg:hidden")}
+            />
+          )}
           {queue.length && queue[currentIndex]?.image ? (
             <>
               <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
@@ -564,17 +617,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
           <div className="hidden items-center gap-4 xl:flex">
             <button
               aria-label={isMuted ? "Unmute" : "Mute"}
-              onClick={() => {
-                if (!isReady) return;
-                if (isMuted) {
-                  unmute();
-                  if (volume === 0) {
-                    setVolume(0.75);
-                  }
-                } else {
-                  mute();
-                }
-              }}
+              onClick={toggleMute}
               className={cn(
                 controlClass,
                 "transition-opacity hover:opacity-100",
@@ -603,19 +646,11 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
               min={0}
               max={100}
               step={1}
-              onValueChange={(value: number | readonly number[], _details) => {
-                const v =
-                  typeof value === "number" ? value : (value[0] as number);
-                if (!isReady) return;
-                const newVolume = v / 100;
-                setVolume(newVolume);
-                if (newVolume > 0 && isMuted) {
-                  unmute();
-                }
-                if (newVolume === 0 && !isMuted) {
-                  mute();
-                }
-              }}
+              onValueChange={(value: number | readonly number[], _details) =>
+                volumeChange(
+                  typeof value === "number" ? value : (value[0] as number),
+                )
+              }
               className={cn(
                 "w-44 transition-opacity hover:opacity-100",
                 !isReady && "opacity-50",
@@ -650,6 +685,32 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
           </div>
         </div>
       </div>
+
+      <ExpandedPlayer
+        open={isExpanded}
+        onOpenChange={setIsExpanded}
+        track={current}
+        pos={pos}
+        duration={duration}
+        isPlaying={isPlaying}
+        isLoading={isLoading}
+        isLooping={isLooping}
+        loopPlaylist={loopPlaylist}
+        isShuffle={isShuffle}
+        isMuted={isMuted}
+        isReady={isReady}
+        volume={volume}
+        onSeekStart={() => setIsDragging(true)}
+        onSeekChange={seekChange}
+        onSeekCommit={seekCommit}
+        onVolumeChange={volumeChange}
+        onToggleMute={toggleMute}
+        onLoop={loopHandler}
+        onPrevious={skipToPrev}
+        onPlayPause={playPauseHandler}
+        onNext={skipToNext}
+        onToggleShuffle={() => setIsShuffle(!isShuffle)}
+      />
     </section>
   );
 }

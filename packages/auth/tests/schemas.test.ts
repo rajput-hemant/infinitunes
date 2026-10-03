@@ -2,8 +2,10 @@ import { describe, expect, it } from "bun:test";
 
 import {
   emailSchema,
+  forgotPasswordSchema,
   loginSchema,
   passwordSchema,
+  changePasswordSchema,
   resetPasswordSchema,
   signUpSchema,
 } from "../src/schemas";
@@ -80,31 +82,65 @@ describe("signUpSchema", () => {
   });
 });
 
-describe("resetPasswordSchema", () => {
-  it("validates reset password credentials", () => {
-    const valid = resetPasswordSchema.safeParse({
-      email: "user@example.com",
-      password: "OldPassword123!",
-      newPassword: "NewPassword123!",
-    });
-    expect(valid.success).toBe(true);
-  });
-
+describe("forgotPasswordSchema", () => {
   it("trims and lowercases the email", () => {
-    const parsed = resetPasswordSchema.safeParse({
+    const parsed = forgotPasswordSchema.safeParse({
       email: "  User@Example.COM ",
-      password: "OldPassword123!",
-      newPassword: "NewPassword123!",
     });
     expect(parsed.success && parsed.data.email).toBe("user@example.com");
   });
 
-  it("fails when any field is invalid", () => {
-    const invalid = resetPasswordSchema.safeParse({
-      email: "not-an-email",
+  it("rejects an invalid or missing email", () => {
+    expect(forgotPasswordSchema.safeParse({ email: "nope" }).success).toBe(
+      false,
+    );
+    expect(forgotPasswordSchema.safeParse({}).success).toBe(false);
+  });
+});
+
+describe("resetPasswordSchema", () => {
+  it("accepts a strong password that matches its confirmation", () => {
+    const valid = resetPasswordSchema.safeParse({
+      password: "NewPassword123!",
+      confirmPassword: "NewPassword123!",
+    });
+    expect(valid.success).toBe(true);
+  });
+
+  it("applies the shared password rules", () => {
+    const weak = resetPasswordSchema.safeParse({
+      password: "weak",
+      confirmPassword: "weak",
+    });
+    expect(weak.success).toBe(false);
+  });
+
+  it("flags a mismatched confirmation on confirmPassword", () => {
+    const result = resetPasswordSchema.safeParse({
+      password: "NewPassword123!",
+      confirmPassword: "Different123!",
+    });
+    expect(result.success).toBe(false);
+    expect(!result.success && result.error.issues[0]?.path).toEqual([
+      "confirmPassword",
+    ]);
+  });
+});
+
+describe("changePasswordSchema", () => {
+  it("takes no email: the account comes from the session", () => {
+    const parsed = changePasswordSchema.safeParse({
       password: "OldPassword123!",
       newPassword: "NewPassword123!",
     });
-    expect(invalid.success).toBe(false);
+    expect(parsed.success).toBe(true);
+  });
+
+  it("applies the password rules to the new password", () => {
+    const parsed = changePasswordSchema.safeParse({
+      password: "OldPassword123!",
+      newPassword: "weak",
+    });
+    expect(parsed.success).toBe(false);
   });
 });

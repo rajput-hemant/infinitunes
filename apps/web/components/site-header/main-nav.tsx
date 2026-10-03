@@ -26,12 +26,21 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
     <NavigationMenu className={className}>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <Link href="/">
-            <NavigationMenuTrigger>Music</NavigationMenuTrigger>
-          </Link>
+          <NavigationMenuTrigger>Music</NavigationMenuTrigger>
 
           <NavigationMenuContent className="p-6 md:w-[400px] lg:w-[1000px]">
-            <h2 className="font-heading text-2xl drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-4xl">
+            <NavigationMenuLink
+              render={
+                <Link
+                  href="/"
+                  className="mb-2 inline-block rounded-md text-sm font-medium text-muted-foreground hover:text-secondary-foreground"
+                >
+                  View all Music
+                </Link>
+              }
+            />
+
+            <h2 className="font-heading text-2xl drop-shadow-md text-foreground sm:text-2xl md:text-4xl">
               What&apos;s Hot on Infinitunes
             </h2>
 

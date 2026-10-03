@@ -27,7 +27,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
   return (
     <div className="space-y-8 px-6">
       <section id="mode" className="space-y-4">
-        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Theme Mode
         </h2>
 
@@ -75,7 +75,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
       </section>
 
       <section id="themes" className="space-y-4">
-        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Themes
         </h2>
 
@@ -100,6 +100,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               }
             >
               <span className="mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-(--theme-primary)">
+                {/* The swatch fill is each preset own primary, so no theme token applies. */}
                 {theme === name && (
                   <CheckIcon aria-hidden className="size-4 text-white" />
                 )}
@@ -111,7 +112,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
       </section>
 
       <section id="radius" className="space-y-4">
-        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Radius
         </h2>
 

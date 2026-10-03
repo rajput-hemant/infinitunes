@@ -2,13 +2,19 @@ import { createAuth } from "@infinitunes/auth";
 import { db } from "@infinitunes/db";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { cache } from "react";
 
 let authInstance: ReturnType<typeof createAuth> | undefined;
 
 export function getAuth(): ReturnType<typeof createAuth> {
   if (!authInstance) {
-    authInstance = createAuth(db, { plugins: [nextCookies()] });
+    authInstance = createAuth(db, {
+      plugins: [nextCookies()],
+      // Reset emails go out after the response so latency can't reveal
+      // whether an address has an account.
+      runInBackground: (promise) => after(promise),
+    });
   }
   return authInstance;
 }

@@ -15,8 +15,8 @@
   "dependencies": {},
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
-    "oxlint": "^1.85.0",
-    "oxfmt": "^0.70.0",
-    "typescript": "^7.0.2"
+    "oxlint": "catalog:",
+    "oxfmt": "catalog:",
+    "typescript": "catalog:"
   }
 }

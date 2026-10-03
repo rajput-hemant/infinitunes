@@ -1,5 +1,6 @@
 export {
   createServerSchema,
+  resolveAuthUrl,
   clientSchema,
   runtimeKeys,
   type EnvContext,

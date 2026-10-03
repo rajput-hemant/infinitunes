@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 
 // REG-100: OAuth buttons must not be descendants of the credential <form>.
-// The login/signup/reset forms are shared by the auth pages and the modal
-// intercepts, so asserting on these three sources covers every route.
-const FORMS = ["login-form.tsx", "signup-form.tsx", "reset-password-form.tsx"];
+// The login/signup forms are shared by the auth pages and the modal
+// intercepts, so asserting on these two sources covers every route.
+const FORMS = ["login-form.tsx", "signup-form.tsx"];
 
 async function read(name: string) {
   return Bun.file(new URL(name, import.meta.url)).text();

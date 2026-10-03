@@ -114,22 +114,26 @@ When importing the repository into Vercel, configure the following:
 
 Set these in your Vercel project settings:
 
-| Variable                   | Description                                       |
-| -------------------------- | ------------------------------------------------- |
-| `AUTH_SECRET`              | Secret for Better Auth sessions                   |
-| `AUTH_URL`                 | Your deployed app URL (for Better Auth)           |
-| `NEXT_PUBLIC_APP_URL`      | Public app URL (optional, fallback to default)    |
-| `JIOSAAVN_DES_KEY`         | DES key to decrypt JioSaavn media URLs            |
-| `GOOGLE_CLIENT_ID`         | Google OAuth client ID (optional unless prod)     |
-| `GOOGLE_CLIENT_SECRET`     | Google OAuth client secret (optional unless prod) |
-| `GITHUB_CLIENT_ID`         | GitHub OAuth client ID (optional unless prod)     |
-| `GITHUB_CLIENT_SECRET`     | GitHub OAuth client secret (optional unless prod) |
-| `DATABASE_URL`             | PostgreSQL connection string                      |
-| `UPSTASH_REDIS_REST_URL`   | Upstash Redis URL (optional, rate limiting)       |
-| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis token (optional, rate limiting)     |
-| `ENABLE_RATE_LIMITING`     | `true`/`false` rate limiting toggle (default `false`) |
-| `RATE_LIMITING_REQUESTS_PER_SECOND` | Rate limit per second (default `50`)      |
-| `UMAMI_WEBSITE_ID`         | Umami analytics website ID (optional)             |
+| Variable                            | Description                                                                           |
+| ----------------------------------- | ------------------------------------------------------------------------------------- |
+| `AUTH_SECRET`                       | Secret for Better Auth sessions                                                       |
+| `AUTH_URL`                          | Your deployed app URL (for Better Auth)                                               |
+| `NEXT_PUBLIC_APP_URL`               | Public app URL (optional, fallback to default)                                        |
+| `JIOSAAVN_DES_KEY`                  | DES key to decrypt JioSaavn media URLs                                                |
+| `GOOGLE_CLIENT_ID`                  | Google OAuth client ID (optional unless prod)                                         |
+| `GOOGLE_CLIENT_SECRET`              | Google OAuth client secret (optional unless prod)                                     |
+| `GITHUB_CLIENT_ID`                  | GitHub OAuth client ID (optional unless prod)                                         |
+| `GITHUB_CLIENT_SECRET`              | GitHub OAuth client secret (optional unless prod)                                     |
+| `DATABASE_URL`                      | PostgreSQL connection string                                                          |
+| `UPSTASH_REDIS_REST_URL`            | Upstash Redis URL (optional, rate limiting)                                           |
+| `UPSTASH_REDIS_REST_TOKEN`          | Upstash Redis token (optional, rate limiting)                                         |
+| `ENABLE_RATE_LIMITING`              | `true`/`false` rate limiting toggle (default `false`)                                 |
+| `RATE_LIMITING_REQUESTS_PER_SECOND` | Rate limit per second (default `50`)                                                  |
+| `UMAMI_WEBSITE_ID`                  | Umami analytics website ID (optional)                                                 |
+| `RESEND_API_KEY`                    | [Resend](https://resend.com) key for password-reset email (see below)                 |
+| `EMAIL_FROM`                        | Verified sender, e.g. `Infinitunes <no-reply@yourdomain.com>` (required with the key) |
+
+**Password reset email.** `/forgot-password` emails a single-use link (valid 1 hour; resetting signs out every device) via Resend's REST API. Without `RESEND_API_KEY` the link is printed to the server console in development; in production it fails closed: no email is sent, the error is logged (without the link) and the user still sees the generic "If an account exists..." message, so set both variables before deploying. The request endpoint is limited to 3 requests per minute per IP (Better Auth's in-memory limiter, production only, per server instance).
 
 [![Deploy with Vercel][deploy]][deploy-link]
 

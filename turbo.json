@@ -2,10 +2,10 @@
   "$schema": "https://turbo.build/schema.json",
   "globalPassThroughEnv": [
     "SKIP_ENV_VALIDATION",
-    "IS_DOCKER",
     "NODE_ENV",
     "VERCEL",
     "VERCEL_URL",
+    "VERCEL_PROJECT_PRODUCTION_URL",
     "AUTH_SECRET",
     "AUTH_URL",
     "GOOGLE_CLIENT_ID",
@@ -19,6 +19,8 @@
     "ENABLE_RATE_LIMITING",
     "RATE_LIMITING_REQUESTS_PER_SECOND",
     "UMAMI_WEBSITE_ID",
+    "RESEND_API_KEY",
+    "EMAIL_FROM",
     "NEXT_TELEMETRY_DISABLED",
     "NEXT_PUBLIC_APP_URL"
   ],
