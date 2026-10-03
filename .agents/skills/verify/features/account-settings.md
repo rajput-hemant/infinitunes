@@ -1,6 +1,6 @@
 # Account settings, password change, delete account
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-005, ISSUE-007, ISSUE-008, ISSUE-009 in [verification-issues.md](../../../../docs/checks/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-005, ISSUE-007, ISSUE-008, ISSUE-009 in [verification-issues.md](../../../../docs/verification/verification-issues.md).
 
 ## Sub-features
 
