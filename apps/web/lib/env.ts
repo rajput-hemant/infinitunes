@@ -7,11 +7,6 @@ import { z } from "zod";
 
 export const env = createEnv({
   extends: [authEnv(), dbEnv(), trpcEnv()],
-  shared: {
-    NODE_ENV: z
-      .enum(["development", "test", "production"])
-      .default("development"),
-  },
   server: {
     UPSTASH_REDIS_REST_URL: z.url().optional(),
     UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
@@ -21,7 +16,6 @@ export const env = createEnv({
   },
   client: clientSchema,
   experimental__runtimeEnv: {
-    NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   emptyStringAsUndefined: true,
