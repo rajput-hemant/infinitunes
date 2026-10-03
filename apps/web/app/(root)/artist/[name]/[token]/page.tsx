@@ -10,9 +10,10 @@ import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
+import { sanitizeRichText } from "~/lib/sanitize-rich-text";
 import { api } from "~/lib/trpc/server";
-import { ogImageUrl } from "~/lib/utils";
 
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
@@ -39,24 +40,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const artist = await getArtist(token);
 
-  return {
+  return pageMetadata({
     title: artist.name,
     description: artist.subtitle,
-    openGraph: {
-      title: artist.name,
-      description: artist.subtitle,
-      url: `/artist/${name}/${token}`,
-      images: {
-        url: ogImageUrl({
-          title: artist.name,
-          description: artist.subtitle,
-          image: getImageSrc(artist.image, "high"),
-          square: true,
-        }),
-        alt: artist.name,
-      },
-    },
-  };
+    url: `/artist/${name}/${token}`,
+    image: getImageSrc(artist.image, "high"),
+    square: true,
+  });
 }
 
 export default async function ArtistDetailsPage(props: Props) {
@@ -145,7 +135,7 @@ export default async function ArtistDetailsPage(props: Props) {
             <small
               className="leading-2"
               dangerouslySetInnerHTML={{
-                __html: decode(artist.bio ?? ""),
+                __html: sanitizeRichText(decode(artist.bio)),
               }}
             />
           )}

@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { ogImageUrl } from "~/lib/utils";
 
 const getEpisode = cache(async (token: string) =>
   orNotFound(
@@ -32,24 +32,13 @@ export async function generateMetadata({
   const episodeObj = await getEpisode(token);
   const episode = episodeObj.episodes[0];
 
-  return {
+  return pageMetadata({
     title: episode.title,
     description: episode.subtitle,
-    openGraph: {
-      title: episode.title,
-      description: episode.subtitle,
-      url: `/episode/${name}/${token}`,
-      images: {
-        url: ogImageUrl({
-          title: episode.title,
-          description: episode.subtitle,
-          image: getImageSrc(episode.image, "high"),
-          square: true,
-        }),
-        alt: episode.title,
-      },
-    },
-  };
+    url: `/episode/${name}/${token}`,
+    image: getImageSrc(episode.image, "high"),
+    square: true,
+  });
 }
 export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
   const { token } = await props.params;
