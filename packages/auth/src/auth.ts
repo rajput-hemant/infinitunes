@@ -7,6 +7,7 @@ import {
   infinitunesPasskeys,
   users,
 } from "@infinitunes/db/schema";
+import { resolveAuthUrl } from "@infinitunes/env/schema";
 import { createServerEnv } from "@infinitunes/env/server";
 import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
@@ -40,6 +41,15 @@ function safeHostname(url: string | undefined): string | undefined {
   }
 }
 
+function originOf(url: string | undefined): string | undefined {
+  if (!url) return undefined;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return undefined;
+  }
+}
+
 export function createAuth(
   db: DbClient,
   options: {
@@ -55,7 +65,22 @@ export function createAuth(
   } = {},
 ) {
   const env = createServerEnv({ skipValidation: true });
-  const baseURL = process.env.BETTER_AUTH_URL || env.AUTH_URL;
+  // skipValidation returns raw env, so resolve the Vercel fallbacks here too.
+  const vercelContext = {
+    vercelUrl: process.env.VERCEL_URL,
+    vercelProductionUrl: process.env.VERCEL_PROJECT_PRODUCTION_URL,
+  };
+  const baseURL =
+    process.env.BETTER_AUTH_URL || resolveAuthUrl(env.AUTH_URL, vercelContext);
+  // The base URL is trusted implicitly; also trust this deployment's own host
+  // (previews) and the production domain so CSRF/redirect checks pass there.
+  const trustedOrigins = [
+    ...new Set(
+      [baseURL, vercelContext.vercelUrl, vercelContext.vercelProductionUrl]
+        .map((url) => originOf(url && resolveAuthUrl(url, {})))
+        .filter((origin): origin is string => origin !== undefined),
+    ),
+  ];
   const rpID =
     process.env.BETTER_AUTH_RP_ID || safeHostname(baseURL) || "localhost";
 
@@ -86,6 +111,7 @@ export function createAuth(
   return betterAuth({
     secret: process.env.BETTER_AUTH_SECRET || env.AUTH_SECRET,
     baseURL,
+    trustedOrigins,
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: false,

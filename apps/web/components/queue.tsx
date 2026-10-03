@@ -84,6 +84,7 @@ export function QueueList() {
                   id={item.id}
                   type={item.type}
                   token={getToken(item.url)}
+                  queueItemId={item.queueItemId}
                 />
               </div>
 

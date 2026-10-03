@@ -5,6 +5,7 @@ import { Pause, Play } from "lucide-react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
+import { isCurrentTrack } from "~/lib/queue-position";
 import { cn } from "~/lib/utils";
 
 import { PlayButton } from "../play-button";
@@ -13,15 +14,20 @@ type TilePlayPauseButtonProps = {
   id: string;
   type: MediaType;
   token: string;
+  /** Set when this row is itself a queue entry, so duplicates stay distinct. */
+  queueItemId?: string;
 };
 
 export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
-  const { id, type, token } = props;
+  const { id, type, token, queueItemId } = props;
   const [queue] = useQueue();
   const [currentIndex] = useCurrentSongIndex();
   const { isPlaying, play, pause } = useAudioPlayerContext();
 
-  const isCurrentSong = queue[currentIndex]?.id === id;
+  const isCurrentSong = isCurrentTrack(queue, currentIndex, {
+    id,
+    queueItemId,
+  });
   const Icon = isPlaying ? Pause : Play;
 
   return isCurrentSong ? (
@@ -46,6 +52,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
     <PlayButton
       type={type}
       token={token}
+      queueItemId={queueItemId}
       className="absolute inset-0 z-20 outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
     >
       <Play
