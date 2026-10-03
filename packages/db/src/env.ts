@@ -9,7 +9,11 @@ export function dbEnv(
 ) {
   const runtimeEnv = options.runtimeEnv ?? process.env;
   return createEnv({
-    server: { DATABASE_URL: z.string().min(1, "DATABASE_URL is required") },
+    server: {
+      DATABASE_URL: z
+        .string({ error: "DATABASE_URL is required" })
+        .min(1, "DATABASE_URL is required"),
+    },
     runtimeEnv,
     emptyStringAsUndefined: true,
     skipValidation:

@@ -8,13 +8,13 @@ Tag format: `[priority · kind · status]`. Priorities: P0 data loss or broken d
 
 Sources: the 2026-10-03 source-read audit of the docs and ledger, plus the orchestrated work of the same day: design pass with four code-reading units and nine review areas (wave 1-3), then wave 4 (history `996958c`, edge `88ea1e0`, account `9900c38`, ui `928bb59`), wave 5 (player `9e4ead0`, infra `cbb97f3`/`7adc277`/`b05a907`) round 2 (`1a83463`, `568ac30`, `37b5baf`, plus `17de749` and `516726d`) and wave 6 (`3c766b9`, `36128bc`, `0630bc0`, `0390ef6`, `644dd22`, implementing the captain's round-2 answers), all merged on `migration/bun-monorepo` and not pushed, implementing the captain's decisions of 2026-10-03 (see the log below). Checks re-run for this index: `bun run fmt:check` (clean, 330 files at the last count), `bun run lint` (0 errors; `@infinitunes/web` 34-35 warnings between runs, see TC-6, `@infinitunes/trpc` 0, `@infinitunes/types` 0). Wave 3 merge gates: fmt:check clean, type-check 7/7, 308 tests 0 fail, lint 34 warnings 0 errors, `bunx bun@1.4.2 install --frozen-lockfile` passes. Wave 3-5 and round-2 gates: fmt:check clean, type-check 7/7, `bun run test` 365 plain + 14 DOM pass 0 fail, lint 34 warnings 0 errors, `bunx bun@1.4.2 install --frozen-lockfile` passes. Wave 6 final gates: fmt:check clean, type-check 7/7, `bun run test` 388 plain + 26 DOM pass 0 fail, lint 34 warnings 0 errors, `bunx bun@1.4.2 install --frozen-lockfile` passes. Wave 3-6 UI behavior was not browser-verified except the round-2 Chromium checks listed in C-91. Wave 6 is unit and DOM tested only: real email delivery, the live reset flow, Vercel URL behavior and Recently Played with real history were not exercised. Proposals are not counted as tasks.
 
-| Status | P0 | P1 | P2 | P3 | Total |
-| --- | --- | --- | --- | --- | --- |
-| open | 0 | 0 | 5 | 40 | 45 |
-| needs local environment | 0 | 4 | 13 | 11 | 28 |
-| decision needed | 0 | 1 | 0 | 6 | 7 |
-| done | 0 | 5 | 40 | 55 | 100 |
-| **Total** | 0 | 10 | 58 | 112 | 180 |
+| Status                  | P0  | P1  | P2  | P3  | Total |
+| ----------------------- | --- | --- | --- | --- | ----- |
+| open                    | 0   | 0   | 5   | 40  | 45    |
+| needs local environment | 0   | 4   | 13  | 11  | 28    |
+| decision needed         | 0   | 1   | 0   | 6   | 7     |
+| done                    | 0   | 5   | 40  | 55  | 100   |
+| **Total**               | 0   | 10  | 58  | 112 | 180   |
 
 180 items: 100 done, 45 open, 28 needs local environment, 7 decision needed; 14 proposals (not counted; 9 implemented or adopted in whole or part, 5 still open). Counts by kind: confirmed bug 7, decision 25, fix 80, improvement 37, verification gap 31.
 
@@ -109,6 +109,7 @@ Sources: the 2026-10-03 source-read audit of the docs and ledger, plus the orche
 - [ ] **DP-9** `[P3 · fix · open]` `bun audit` (bun 1.4.2): high `braces 3.0.3` GHSA-vfj7-8cjw-p6xm via shadcn > fast-glob > micromatch; moderate `esbuild <=0.24.2` GHSA-67mh-4wv8-2f99 via drizzle-kit; both dev-tool only; no upgrade done (D7).
 - [ ] **DP-13** `[P3 · decision · decision needed]` (R2-12) `sharp` has zero source references; kept because Next needs it if the image optimizer is enabled. Remove it or keep it: the optimizer decision (C-99, kept unoptimized) makes it unused; still the captain's call.
 - [ ] **DP-14** `[P3 · fix · open]` Two Next versions exist in `node_modules/.bun` (16.3.6 and 16.3.8; `@next/env` is pinned at 16.3.6, see DP-6): check which one the apps resolve and align them.
+- [x] **DP-15** `[P2 · improvement · done]` Env values now load from one root file (`.env`, overridden by `.env.local`) via `bun --env-file` in the root, `apps/web` and `packages/db` scripts; env schemas are package-owned (`packages/{auth,db,trpc}/src/env.ts`) and composed in `apps/web/lib/env.ts` with T3 Env `extends`; `turbo.json` hashes env through `globalEnv`. Evidence: fresh `type-check`/`lint --force`, `bun test`, root and direct-package `dev` on disposable data, Turbo dry-run hash changes with root-file values. Open: `db:migrate`/`db:seed`/`drizzle.config.ts` and `instrumentation.ts` still read `process.env.DATABASE_URL` directly by design (own error messages, `db:generate` needs no DB).
 
 ## Database and local dev
 
@@ -245,36 +246,36 @@ Reviewed, no action required: F5 silent `catch` at `player.tsx:214` is intention
 
 Items that cannot be finished in the cloud sandbox (bun 1.3.14, no database, no Docker or Redis, no authenticated browser, upstream returns 403).
 
-| ID | Reason |
-| --- | --- |
-| UI-1 | database + authenticated browser + reachable upstream for real-data pages, library, settings, in-use player, light/dark comparison |
-| UI-2 | browser for the 390/1280 light/dark focus and overlay pass |
-| UI-24 | network that reaches ui.shadcn.com for the shadcn CLI (`add empty alert`) |
-| UI-27 | browser to exercise Space on the sidebar toggle |
-| UI-29 | browser plus a pre-migration Tailwind 3 baseline |
-| PQ-1 | live upstream to confirm artist "Load more" paging |
-| PQ-8 | production build in a local browser to confirm the persisted queue restores on reload (R2-26) |
-| PQ-5 | playable audio and CDN reachability for radio refill |
-| CD-1 | browser plus a controlled upstream/DB outage |
-| CD-7 | authenticated browser for `LikeButton` default branch on radio/season headers |
-| SE-9 | production build plus a throwaway Upstash (Redis) database |
-| AU-1 | database, authenticated browser, passkey origin, real OAuth credentials |
-| AU-2 | database and authenticated browser |
-| AU-5 | Resend key and verified sender domain for real reset-email delivery |
-| AU-6 | database, mail sink or Resend key and browser for the live reset flow, emailed-link redirect and fresh-session path |
-| AU-3 | real OAuth test apps from the captain (gap accepted until then) |
-| PF-4 | image optimizer or production build; bun 1.4.2 (1.3.14 segfaults at exit) |
-| PF-5 | browser with playback for the Profiler |
-| PF-7 | live upstream to measure response sizes against the 2MB data-cache item limit (R2-13) |
-| TC-3 | database for the bcrypt/password-change paths |
-| DP-12 | local machine for a full production `bun run build` (sandbox OOM exit 137, bun 1.3.14 SIGILL) |
-| DP-8 | real `db:*` run to confirm the `pg` devDep; bun 1.4.2 lockfile check |
-| DB-4 | production build with local-dev fixtures |
-| DB-9 | database with history rows (including episodes) and a reachable upstream for Recently Played |
-| DB-8 | database to apply migration 0004 and exercise history, password-gated account paths and the playlist cap |
-| DV-1 | chosen browser skill, database, authenticated session |
-| DV-2 | Vercel preview (also PF-1 Data Cache hit, SE-5, the C-95 Vercel URL chain) |
-| DV-7 | database, authentication and upstream for the unverified wave 4-5 and round-2 UI and flows |
+| ID    | Reason                                                                                                                             |
+| ----- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| UI-1  | database + authenticated browser + reachable upstream for real-data pages, library, settings, in-use player, light/dark comparison |
+| UI-2  | browser for the 390/1280 light/dark focus and overlay pass                                                                         |
+| UI-24 | network that reaches ui.shadcn.com for the shadcn CLI (`add empty alert`)                                                          |
+| UI-27 | browser to exercise Space on the sidebar toggle                                                                                    |
+| UI-29 | browser plus a pre-migration Tailwind 3 baseline                                                                                   |
+| PQ-1  | live upstream to confirm artist "Load more" paging                                                                                 |
+| PQ-8  | production build in a local browser to confirm the persisted queue restores on reload (R2-26)                                      |
+| PQ-5  | playable audio and CDN reachability for radio refill                                                                               |
+| CD-1  | browser plus a controlled upstream/DB outage                                                                                       |
+| CD-7  | authenticated browser for `LikeButton` default branch on radio/season headers                                                      |
+| SE-9  | production build plus a throwaway Upstash (Redis) database                                                                         |
+| AU-1  | database, authenticated browser, passkey origin, real OAuth credentials                                                            |
+| AU-2  | database and authenticated browser                                                                                                 |
+| AU-5  | Resend key and verified sender domain for real reset-email delivery                                                                |
+| AU-6  | database, mail sink or Resend key and browser for the live reset flow, emailed-link redirect and fresh-session path                |
+| AU-3  | real OAuth test apps from the captain (gap accepted until then)                                                                    |
+| PF-4  | image optimizer or production build; bun 1.4.2 (1.3.14 segfaults at exit)                                                          |
+| PF-5  | browser with playback for the Profiler                                                                                             |
+| PF-7  | live upstream to measure response sizes against the 2MB data-cache item limit (R2-13)                                              |
+| TC-3  | database for the bcrypt/password-change paths                                                                                      |
+| DP-12 | local machine for a full production `bun run build` (sandbox OOM exit 137, bun 1.3.14 SIGILL)                                      |
+| DP-8  | real `db:*` run to confirm the `pg` devDep; bun 1.4.2 lockfile check                                                               |
+| DB-4  | production build with local-dev fixtures                                                                                           |
+| DB-9  | database with history rows (including episodes) and a reachable upstream for Recently Played                                       |
+| DB-8  | database to apply migration 0004 and exercise history, password-gated account paths and the playlist cap                           |
+| DV-1  | chosen browser skill, database, authenticated session                                                                              |
+| DV-2  | Vercel preview (also PF-1 Data Cache hit, SE-5, the C-95 Vercel URL chain)                                                         |
+| DV-7  | database, authentication and upstream for the unverified wave 4-5 and round-2 UI and flows                                         |
 
 ## Decisions for the captain
 
@@ -284,49 +285,49 @@ Remaining decisions only (items tagged `decision needed`): UI-37 target of the '
 
 Answers from the questionnaire; implementation commits are in [Completed](#completed).
 
-| Question | Answer | Status |
-| --- | --- | --- |
-| PD-1 promote to `master` | Not yet: local smoke and Vercel preview first; never promote from this work | open (PD-1) |
-| DP-10 Docker | Local development only: drop the production-image plumbing, keep `docker-compose` | done (C-67) |
-| PD-2 recently played | Implement, stored in the database per account | done (C-60) |
-| SE-1 reset password | Behind a session, keep the current-password check, revoke other sessions | done (C-61); anonymous page replaced (C-93) |
-| SE-2 delete account | Require the current password server-side | done (C-62); passkey/OAuth-only gap closed (C-94) |
-| SE-3 email change | Require the current password, reset `emailVerified` | done (C-63) |
-| SE-6 origin check | Require `Origin` on non-GET `/api/trpc` | done (C-65) |
-| UI-3 gradient headings | Plain `text-foreground` | done (C-73) |
-| UI-20 thumbnail play | Keep | done (C-77) |
-| PQ-2 queue duplicates | Allow, unique id per queue entry | done (C-69); follow-up done (C-98) |
-| PQ-3 playlist cap | 5,000, reject with BAD_REQUEST (YouTube/YT Music 5,000, Spotify 10,000, Apple no stated cap) | done (C-70) |
-| UI-4 nav | Trigger only opens the mega menu, panel gets a 'View all' link | done (C-74) |
-| UI-28 mobile sidebar | 'Library' item in `MobileNav` opens the sheet | done (C-78); hook edit kept (C-100) |
-| AU-3 OAuth | Accept the gap until the captain provides test apps | needs local environment (AU-3) |
-| AU-4 signup | Auto sign-in and redirect home | done (C-66) |
-| PF-1 caching | Explicit caching of public catalog fetches | done in code, not verified live (C-71) |
-| CD-4 `api()` | One retry on timeout/5xx for GETs, timeout covers the body | done (C-72) |
-| DP-11 turbo block | Commit and keep | done (C-68) |
-| PD-4 README `[WIP]` | Keep | done (C-92) |
-| PD-3 library sort/filter | Not requested | left open (PD-3) |
-| UI-15, UI-19, DP-6, PF-2 | Not selected | left as is (decision needed) |
-| Proposals: mobile player sheet, CSP report-only | Implement | done (C-79, C-81) |
-| Proposals: shortcuts setting | Implement | done with `Toggle` (C-80); now a Switch (C-97) |
-| Proposal: language picker Popover | Implement | done (C-97) |
-| Housekeeping: UI-8, UI-10 | Implement (keep BadgeCheck blue and image scrims with a comment) | done (C-75, C-76) |
-| Housekeeping: PR-4 catalogs, PR-7 happy-dom tests | Implement | catalogs done (C-82); tests partly (C-83, TC-1) |
+| Question                                          | Answer                                                                                       | Status                                            |
+| ------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| PD-1 promote to `master`                          | Not yet: local smoke and Vercel preview first; never promote from this work                  | open (PD-1)                                       |
+| DP-10 Docker                                      | Local development only: drop the production-image plumbing, keep `docker-compose`            | done (C-67)                                       |
+| PD-2 recently played                              | Implement, stored in the database per account                                                | done (C-60)                                       |
+| SE-1 reset password                               | Behind a session, keep the current-password check, revoke other sessions                     | done (C-61); anonymous page replaced (C-93)       |
+| SE-2 delete account                               | Require the current password server-side                                                     | done (C-62); passkey/OAuth-only gap closed (C-94) |
+| SE-3 email change                                 | Require the current password, reset `emailVerified`                                          | done (C-63)                                       |
+| SE-6 origin check                                 | Require `Origin` on non-GET `/api/trpc`                                                      | done (C-65)                                       |
+| UI-3 gradient headings                            | Plain `text-foreground`                                                                      | done (C-73)                                       |
+| UI-20 thumbnail play                              | Keep                                                                                         | done (C-77)                                       |
+| PQ-2 queue duplicates                             | Allow, unique id per queue entry                                                             | done (C-69); follow-up done (C-98)                |
+| PQ-3 playlist cap                                 | 5,000, reject with BAD_REQUEST (YouTube/YT Music 5,000, Spotify 10,000, Apple no stated cap) | done (C-70)                                       |
+| UI-4 nav                                          | Trigger only opens the mega menu, panel gets a 'View all' link                               | done (C-74)                                       |
+| UI-28 mobile sidebar                              | 'Library' item in `MobileNav` opens the sheet                                                | done (C-78); hook edit kept (C-100)               |
+| AU-3 OAuth                                        | Accept the gap until the captain provides test apps                                          | needs local environment (AU-3)                    |
+| AU-4 signup                                       | Auto sign-in and redirect home                                                               | done (C-66)                                       |
+| PF-1 caching                                      | Explicit caching of public catalog fetches                                                   | done in code, not verified live (C-71)            |
+| CD-4 `api()`                                      | One retry on timeout/5xx for GETs, timeout covers the body                                   | done (C-72)                                       |
+| DP-11 turbo block                                 | Commit and keep                                                                              | done (C-68)                                       |
+| PD-4 README `[WIP]`                               | Keep                                                                                         | done (C-92)                                       |
+| PD-3 library sort/filter                          | Not requested                                                                                | left open (PD-3)                                  |
+| UI-15, UI-19, DP-6, PF-2                          | Not selected                                                                                 | left as is (decision needed)                      |
+| Proposals: mobile player sheet, CSP report-only   | Implement                                                                                    | done (C-79, C-81)                                 |
+| Proposals: shortcuts setting                      | Implement                                                                                    | done with `Toggle` (C-80); now a Switch (C-97)    |
+| Proposal: language picker Popover                 | Implement                                                                                    | done (C-97)                                       |
+| Housekeeping: UI-8, UI-10                         | Implement (keep BadgeCheck blue and image scrims with a comment)                             | done (C-75, C-76)                                 |
+| Housekeeping: PR-4 catalogs, PR-7 happy-dom tests | Implement                                                                                    | catalogs done (C-82); tests partly (C-83, TC-1)   |
 
 ### Captain decisions log, round 2 (2026-10-03)
 
 Answers to the second questionnaire; implementation is wave 6.
 
-| Question | Answer | Status |
-| --- | --- | --- |
-| SE-13 anonymous reset | Industry-standard emailed-token flow with Resend | done in code (C-93); email delivery and live flow unverified (AU-5, AU-6) |
-| SE-12 passkey/OAuth-only accounts | Fresh-session check (10 min, FORBIDDEN 'Please sign in again to continue') | done, unit-tested (C-94) |
-| SE-11 auth URL | `AUTH_URL`, then `VERCEL_PROJECT_PRODUCTION_URL`, then `VERCEL_URL`; `trustedOrigins`; proxy accepts request host or `AUTH_URL` origin | done, unit-tested; Vercel behavior unverified (C-95, DV-2) |
-| PF-8 image optimizer | Keep `unoptimized` | decided, no change (C-99) |
-| UI-35 and UI-5 shadcn Popover and Switch | Approved | done (C-97) |
-| UI-36 `use-mobile` breakpoint | Keep | decided, no change (C-100) |
-| PD-6 Recently Played episodes | Show them | done (C-96); follow-ups CD-11, PQ-10, DB-9 |
-| PQ-9 current-track highlight | Compare `queueItemId` | done (C-98) |
+| Question                                 | Answer                                                                                                                                 | Status                                                                    |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| SE-13 anonymous reset                    | Industry-standard emailed-token flow with Resend                                                                                       | done in code (C-93); email delivery and live flow unverified (AU-5, AU-6) |
+| SE-12 passkey/OAuth-only accounts        | Fresh-session check (10 min, FORBIDDEN 'Please sign in again to continue')                                                             | done, unit-tested (C-94)                                                  |
+| SE-11 auth URL                           | `AUTH_URL`, then `VERCEL_PROJECT_PRODUCTION_URL`, then `VERCEL_URL`; `trustedOrigins`; proxy accepts request host or `AUTH_URL` origin | done, unit-tested; Vercel behavior unverified (C-95, DV-2)                |
+| PF-8 image optimizer                     | Keep `unoptimized`                                                                                                                     | decided, no change (C-99)                                                 |
+| UI-35 and UI-5 shadcn Popover and Switch | Approved                                                                                                                               | done (C-97)                                                               |
+| UI-36 `use-mobile` breakpoint            | Keep                                                                                                                                   | decided, no change (C-100)                                                |
+| PD-6 Recently Played episodes            | Show them                                                                                                                              | done (C-96); follow-ups CD-11, PQ-10, DB-9                                |
+| PQ-9 current-track highlight             | Compare `queueItemId`                                                                                                                  | done (C-98)                                                               |
 
 ## Proposals for review
 

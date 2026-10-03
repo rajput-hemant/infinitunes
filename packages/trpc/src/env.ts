@@ -11,7 +11,7 @@ export function trpcEnv(
   return createEnv({
     server: {
       JIOSAAVN_DES_KEY: z
-        .string()
+        .string({ error: "JIOSAAVN_DES_KEY is required for playback" })
         .min(1, "JIOSAAVN_DES_KEY is required for playback"),
     },
     runtimeEnv,

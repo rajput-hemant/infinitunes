@@ -1,5 +1,7 @@
 import CryptoJS from "crypto-js";
 
+import { trpcEnv } from "../env";
+
 /**
  * Decrypts a JioSaavn `encrypted_media_url` (base64 DES-ECB) into a playable
  * media URL. This is the only server-side transformation allowed on otherwise
@@ -10,7 +12,7 @@ export function createDownloadLinks(
 ): string {
   // Read lazily: Next.js and test runners can populate the env after this
   // module is first evaluated, and a key captured too early stays empty.
-  const desKey = process.env.JIOSAAVN_DES_KEY ?? "";
+  const desKey = trpcEnv({ skipValidation: true }).JIOSAAVN_DES_KEY ?? "";
   if (!encryptedMediaUrl || !desKey) return "";
 
   try {
