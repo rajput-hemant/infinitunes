@@ -149,6 +149,13 @@ Outcome of the local env work, as reported at end of day. The env delivery as a 
 - Checks: the targeted checks that were run pass; the full test run has 2 baseline failures; a production build was not run.
 - Private evidence is stored by task id under the Firstmate data directory (`data/<task-id>/`), not in this repository.
 
+### Feature integration outcome (2026-10-03)
+
+- Destination: `migration/bun-monorepo` only. Remote head at fetch time was `ab4c8d2`; it was already an ancestor of the review branch, so no incoming remote change was dropped.
+- Branch history now contains `43da8ea`, `f8dd305`, `30f69ba` and, via an ordinary merge, `9d082c7` (and its parent `e78fb76`). The only conflict was `.env.example`: both sides had the same variable names and values, and the finer-grained grouping from `9d082c7` (Google, GitHub, Email and Redis headings) was kept.
+- Published by a non-force push; the push result is recorded privately in `data/infinitunes-deslop-ponytail-review/feature-delivery-result.md`.
+- Limitations unchanged: no build, browser or new test run was done for this integration; the validation evidence is the earlier targeted checks (2 baseline test failures, no production build).
+
 ## Deslop and ponytail review (2026-10-03)
 
 Whole-repo review run on the 468 tracked files at `30f69ba` (base branch `fm/infinitunes-local-env-validation-landing`), applying the `deslop` rules (unnecessary comments, abnormal defensive checks, `any`/cast escapes, deep nesting, inconsistent patterns) and the `ponytail-review` rules (delete / stdlib / native / yagni / shrink), extended from diff-only to every project-owned file. Findings only: no code, dependency, env or `AGENTS.md`/`CLAUDE.md` change was made. IDs `DS-n` (deslop) and `PT-n` (ponytail); every item is unchecked until a fixer lands it.
