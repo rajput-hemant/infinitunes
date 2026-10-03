@@ -2,7 +2,6 @@
   "$schema": "https://turbo.build/schema.json",
   "globalPassThroughEnv": [
     "SKIP_ENV_VALIDATION",
-    "IS_DOCKER",
     "NODE_ENV",
     "VERCEL",
     "VERCEL_URL",

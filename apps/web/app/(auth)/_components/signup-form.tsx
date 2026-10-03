@@ -5,11 +5,13 @@ import { authClient } from "@infinitunes/auth/client";
 import { signUpSchema } from "@infinitunes/auth/schemas";
 import { Button } from "@infinitunes/ui/components/button";
 import { Loader2, Mail } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
+
+import { asRoute, safeRedirectPath } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
@@ -24,9 +26,13 @@ const defaultValues: FormData = {
 };
 
 export function SignUpForm() {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const searchParams = useSearchParams();
+  const callbackUrl = safeRedirectPath(
+    searchParams.get("callbackUrl") || searchParams.get("redirect"),
+  );
   const authError = searchParams.get("error");
 
   React.useEffect(() => {
@@ -55,7 +61,10 @@ export function SignUpForm() {
       if (error) {
         toast.error(error.message ?? "Something went wrong.");
       } else {
+        // Better Auth signs the new user in (autoSignIn defaults to true).
         toast.success("Account Created Successfully");
+        router.push(asRoute(callbackUrl));
+        router.refresh();
       }
     } catch (error) {
       const err = error as Error;

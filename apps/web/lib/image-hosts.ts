@@ -8,6 +8,9 @@ export const IMAGE_CDN_HOSTS = [
   "c.sop.saavncdn.com",
 ] as const;
 
+/** Hostnames serving the decrypted `download_url` audio (CSP `media-src`). */
+export const MEDIA_CDN_HOSTS = ["aac.saavncdn.com"] as const;
+
 /**
  * Parses a user-supplied image URL and returns it only when it is an
  * `https` URL on an allowlisted CDN host (no credentials, default port).

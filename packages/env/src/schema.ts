@@ -12,9 +12,14 @@ function authSecret(ctx: EnvContext) {
     : z.string().optional();
 }
 
+function withHttps(url: string) {
+  return /^https?:\/\//.test(url) ? url : `https://${url}`;
+}
+
 function authUrl(ctx: EnvContext) {
   return z.preprocess(
-    (str) => ctx.vercelUrl ?? str,
+    // Vercel's VERCEL_URL is a bare host (no scheme).
+    (str) => (ctx.vercelUrl ? withHttps(ctx.vercelUrl) : str),
     ctx.vercel ? z.string() : z.string().url(),
   );
 }
