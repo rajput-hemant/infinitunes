@@ -2,6 +2,8 @@ import type { ThemeConfig } from "@infinitunes/types";
 import { cookies } from "next/headers";
 import React from "react";
 
+import { LibraryHeading } from "~/components/library/library-section";
+
 import { AppearanceSettings } from "../_components/appearance-settings";
 
 export const metadata = {
@@ -19,16 +21,11 @@ export default async function Page() {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-1 border-b p-4">
-        <h2 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
-          Appearance
-        </h2>
-
-        <p className="text-sm text-muted-foreground">
-          Customize the appearance of the app. Automatically switch between day
-          and night themes.
-        </p>
-      </div>
+      <LibraryHeading
+        title="Appearance"
+        description="Customize the appearance of the app. Automatically switch between day and night themes."
+        className="border-b p-4"
+      />
 
       <AppearanceSettings theme={theme} radius={radius} />
     </div>

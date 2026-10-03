@@ -28,7 +28,12 @@ export default async function LikedSongsPage() {
 
     return (
       <div className="space-y-4">
-        <LibraryHeading title="Liked Songs" count={songs.length} noun="song">
+        <LibraryHeading
+          title="Liked Songs"
+          count={songs.length}
+          noun="song"
+          missing={favoriteSongs.songs.length - songs.length}
+        >
           <PlayAllButton items={songs} />
         </LibraryHeading>
 

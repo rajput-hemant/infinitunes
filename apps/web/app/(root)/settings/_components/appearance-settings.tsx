@@ -33,10 +33,16 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
 
         <div className="flex gap-4">
           {["light", "dark"].map((mode) => (
-            <div key={mode} onClick={() => setTheme(mode)}>
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={mode === themeMode}
+              onClick={() => setTheme(mode)}
+              className="group rounded-md text-left outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
               <div
                 className={cn(
-                  "cursor-pointer items-center rounded-md border bg-background p-2 hover:bg-accent hover:text-foreground",
+                  "items-center rounded-md border bg-background p-2 group-hover:bg-accent group-hover:text-foreground",
                   mode === themeMode && "border-2 border-primary",
                 )}
               >
@@ -63,7 +69,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               <span className="block w-full p-2 text-center text-sm font-normal capitalize text-muted-foreground">
                 {mode}
               </span>
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -93,7 +99,9 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               }
             >
               <span className="mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-(--theme-primary)">
-                {theme === name && <CheckIcon className="size-4 text-white" />}
+                {theme === name && (
+                  <CheckIcon aria-hidden className="size-4 text-white" />
+                )}
               </span>
               {label}
             </Button>

@@ -13,14 +13,23 @@ type LibraryHeadingProps = {
   title: string;
   count?: number;
   noun?: string;
+  description?: string;
+  missing?: number;
+  className?: string;
   children?: React.ReactNode;
 };
 
 export function LibraryHeading(props: LibraryHeadingProps) {
-  const { title, count, noun, children } = props;
+  const { title, count, noun, description, missing, className, children } =
+    props;
 
   return (
-    <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+    <div
+      className={cn(
+        "flex flex-wrap items-end justify-between gap-x-4 gap-y-2",
+        className,
+      )}
+    >
       <div className="min-w-0">
         <h2 className="font-heading text-xl text-balance drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-2xl md:text-3xl">
           {title}
@@ -29,6 +38,17 @@ export function LibraryHeading(props: LibraryHeadingProps) {
         {count !== undefined && noun && (
           <p className="text-sm text-muted-foreground tabular-nums">
             {count} {count === 1 ? noun : `${noun}s`}
+          </p>
+        )}
+
+        {description && (
+          <p className="text-sm text-muted-foreground">{description}</p>
+        )}
+
+        {missing !== undefined && missing > 0 && (
+          <p className="text-sm text-muted-foreground">
+            {missing} {missing === 1 ? "item" : "items"} couldn’t load. Refresh
+            to try again.
           </p>
         )}
       </div>

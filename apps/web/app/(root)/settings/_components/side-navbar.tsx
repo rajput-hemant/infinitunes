@@ -65,7 +65,7 @@ const sidebarNavItems: SidebarNavItem[] = [
       },
       {
         title: "Themes",
-        hash: "theme",
+        hash: "themes",
         icon: <Palette className={iconClass} />,
       },
       {

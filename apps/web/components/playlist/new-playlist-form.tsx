@@ -82,7 +82,10 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
             render={({ field, fieldState }) => (
               <Field orientation="vertical">
                 <FieldLabel className="text-xs">
-                  Playlist Name <span className="text-red-500">*</span>
+                  Playlist Name{" "}
+                  <span aria-hidden className="text-destructive">
+                    *
+                  </span>
                 </FieldLabel>
                 <FieldContent>
                   <Input

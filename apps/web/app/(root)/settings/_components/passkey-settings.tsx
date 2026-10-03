@@ -106,17 +106,26 @@ export function PasskeySettings() {
   return (
     <div className="w-full max-w-5xl space-y-4 px-6 py-2">
       <div>
-        <p className="text-3xl font-bold drop-shadow-sm">Passkeys</p>
-        <small className="text-muted-foreground">
+        <h3 className="font-heading text-lg drop-shadow-md dark:bg-linear-to-br dark:from-neutral-200 dark:to-neutral-600 dark:bg-clip-text dark:text-transparent sm:text-xl md:text-2xl">
+          Passkeys
+        </h3>
+        <p className="text-sm text-muted-foreground">
           Sign in without a password using your device. Adding a passkey
           requires you to be signed in.
-        </small>
+        </p>
       </div>
       <Separator />
 
       {isLoading ? (
-        <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" /> Loading passkeys...
+        <p
+          role="status"
+          className="flex items-center gap-2 text-sm text-muted-foreground"
+        >
+          <Loader2
+            aria-hidden
+            className="size-4 animate-spin motion-reduce:animate-none"
+          />{" "}
+          Loading passkeys...
         </p>
       ) : passkeys.length === 0 ? (
         <p className="text-sm text-muted-foreground">
@@ -130,7 +139,10 @@ export function PasskeySettings() {
               className="flex items-center justify-between gap-4 rounded-md border px-4 py-2"
             >
               <span className="flex min-w-0 items-center gap-2">
-                <Fingerprint className="size-4 shrink-0 text-muted-foreground" />
+                <Fingerprint
+                  aria-hidden
+                  className="size-4 shrink-0 text-muted-foreground"
+                />
                 <span className="truncate text-sm font-medium">
                   {passkey.name || "Passkey"}
                 </span>
@@ -143,9 +155,12 @@ export function PasskeySettings() {
                 onClick={() => deletePasskeyHandler(passkey.id)}
               >
                 {deletingId === passkey.id ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2
+                    aria-hidden
+                    className="size-4 animate-spin motion-reduce:animate-none"
+                  />
                 ) : (
-                  <Trash2 className="size-4" />
+                  <Trash2 aria-hidden className="size-4" />
                 )}
                 Remove
               </Button>
@@ -161,9 +176,12 @@ export function PasskeySettings() {
         className="shadow-xs"
       >
         {isAdding ? (
-          <Loader2 className="mr-2 size-4 animate-spin" />
+          <Loader2
+            aria-hidden
+            className="mr-2 size-4 animate-spin motion-reduce:animate-none"
+          />
         ) : (
-          <Plus className="mr-2 size-4" />
+          <Plus aria-hidden className="mr-2 size-4" />
         )}
         Add Passkey
       </Button>

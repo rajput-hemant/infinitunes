@@ -6,10 +6,10 @@ import React from "react";
 
 type ErrorProps = {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 };
 
-export default function LibraryError({ error, reset }: ErrorProps) {
+export default function LibraryError({ error, retry }: ErrorProps) {
   React.useEffect(() => {
     console.error(error);
   }, [error]);
@@ -32,7 +32,7 @@ export default function LibraryError({ error, reset }: ErrorProps) {
         safe, so try again.
       </p>
 
-      <Button size="sm" variant="outline" onClick={() => reset()}>
+      <Button size="sm" variant="outline" onClick={() => retry()}>
         Try Again
       </Button>
     </div>

@@ -1,4 +1,3 @@
-import { decode } from "@infinitunes/types";
 import { Disc3 } from "lucide-react";
 
 import {
@@ -34,15 +33,16 @@ export default async function LikedAlbumsPage() {
             title="Liked Albums"
             count={albums.length}
             noun="album"
+            missing={tokens.length - albums.length}
           />
 
           <div className="flex w-full flex-wrap gap-4">
             {albums.map((album) => (
               <SliderCard
                 key={album.id}
-                name={decode(album.title)}
+                name={album.title}
                 url={album.perma_url}
-                subtitle={decode(album.subtitle)}
+                subtitle={album.subtitle}
                 type={album.type}
                 image={album.image}
                 explicit={album.explicit_content}
