@@ -1,6 +1,6 @@
 # Project purpose
 
-Setup, Docker and Vercel deployment live in the root [README](../README.md#building-from-source).
+Setup, Docker and Vercel deployment live in the root [README](../../README.md#building-from-source).
 
 ## Purpose
 

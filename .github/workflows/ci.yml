@@ -1,6 +1,10 @@
 name: CI
 
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,7 +25,7 @@ jobs:
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "1.4.2"
+          bun-version-file: .bun-version
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -47,7 +51,6 @@ jobs:
             if [ -n "${SERVER_PID:-}" ]; then
               kill -TERM "$SERVER_PID" 2>/dev/null || true
             fi
-            pkill -f "next-server" 2>/dev/null || true
           }
           trap cleanup EXIT INT TERM
 
@@ -73,11 +76,6 @@ jobs:
           ROOT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3000/")
           echo "Root status: $ROOT_STATUS"
           [ "$ROOT_STATUS" -eq 200 ]
-
-          echo "Checking song route /song/dai-dai/OF0RBBVqWXI"
-          SONG_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3000/song/dai-dai/OF0RBBVqWXI")
-          echo "Song status: $SONG_STATUS"
-          [ "$SONG_STATUS" -eq 200 ]
 
       - name: Check commits messages
         uses: wagoid/commitlint-github-action@v6

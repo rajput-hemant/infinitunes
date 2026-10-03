@@ -27,31 +27,7 @@
     },
     "lint": {},
     "type-check": {},
-    "test": {},
-    "db:generate": {
-      "cache": false
-    },
-    "db:migrate": {
-      "cache": false
-    },
-    "db:drop": {
-      "cache": false
-    },
-    "db:push": {
-      "cache": false
-    },
-    "db:pull": {
-      "cache": false
-    },
-    "db:studio": {
-      "cache": false
-    },
-    "db:check": {
-      "cache": false
-    },
-    "db:seed": {
-      "cache": false
-    }
+    "test": {}
   },
   "globalEnv": [
     "AUTH_SECRET",

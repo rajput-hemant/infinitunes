@@ -7,14 +7,10 @@
     "dev": "bun run with-env next dev",
     "build": "bun run with-env next build",
     "start": "bun run with-env next start",
-    "preview": "bun run build && bun run start",
     "lint": "oxlint",
     "type-check": "tsc --noEmit",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
-    "ui": "bunx shadcn",
-    "clean": "rm -rf .next",
-    "cleani": "rm -rf .next && rm -rf node_modules && bun i",
     "with-env": "bun --env-file=../../.env --env-file=../../.env.local --bun"
   },
   "dependencies": {
@@ -51,7 +47,6 @@
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
-    "@next/env": "16.3.6",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "catalog:",
     "@types/react": "catalog:",

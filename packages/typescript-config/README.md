@@ -12,7 +12,7 @@ Extend the appropriate config in your package's `tsconfig.json`:
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "~/*": ["./*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
@@ -36,7 +36,7 @@ Extend the appropriate config in your package's `tsconfig.json`:
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "~/*": ["./*"]
     }
   },
   "include": [
@@ -68,7 +68,7 @@ Extend the appropriate config in your package's `tsconfig.json`:
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "~/*": ["./src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],

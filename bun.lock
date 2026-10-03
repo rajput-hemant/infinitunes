@@ -53,7 +53,6 @@
       },
       "devDependencies": {
         "@infinitunes/typescript-config": "workspace:*",
-        "@next/env": "16.3.6",
         "@tailwindcss/postcss": "^4.3.3",
         "@types/node": "catalog:",
         "@types/react": "catalog:",
@@ -181,11 +180,7 @@
       "peerDependencies": {
         "react": "^19.3.0",
         "react-dom": "^19.3.0",
-        "react-hook-form": "^7.89.0",
       },
-      "optionalPeers": [
-        "react-hook-form",
-      ],
     },
   },
   "catalog": {

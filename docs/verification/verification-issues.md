@@ -18,10 +18,10 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 
 | ID                      | Class                   | Severity | Area                                          | State          |
 | ----------------------- | ----------------------- | -------- | --------------------------------------------- | -------------- |
-| [ISSUE-001](#issue-001) | CONFIRMED               | low      | formatting gate                               | open           |
+| [ISSUE-001](#issue-001) | CONFIRMED               | low      | formatting gate                               | closed         |
 | [ISSUE-002](#issue-002) | CONFIRMED               | low      | lint warnings                                 | open           |
 | [ISSUE-003](#issue-003) | CONFIRMED               | medium   | stubbed actions                               | open           |
-| [ISSUE-004](#issue-004) | CONFIRMED               | low      | recently played                               | open           |
+| [ISSUE-004](#issue-004) | CONFIRMED               | low      | recently played                               | closed         |
 | [ISSUE-005](#issue-005) | CONFIRMED               | low      | profile stubs                                 | closed         |
 | [ISSUE-006](#issue-006) | CONFIRMED               | low      | route list mismatch                           | open           |
 | [ISSUE-007](#issue-007) | CONFIRMED               | medium   | password reset oracle                         | closed         |
@@ -41,7 +41,7 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | [ISSUE-021](#issue-021) | CONFIRMED               | low      | stale process notes                           | closed         |
 | [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | closed         |
 | [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | closed         |
-| [ISSUE-024](#issue-024) | CONFIRMED               | low      | reset password email not lower-cased          | open           |
+| [ISSUE-024](#issue-024) | CONFIRMED               | low      | reset password email not lower-cased          | closed         |
 | [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset password has no throttling              | open           |
 
 ## Confirmed
@@ -55,6 +55,7 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 - Expected: exit 0 (CI runs it first, `.github/workflows/ci.yml`). Actual: exit 1.
 - Same count as the prior note in migration-acceptance section 13 ("14 files untouched by this pass"), so no new drift since then.
 - Follow-up: run `bun run fmt` in a formatting-only change. Not fixed here (no product or formatting edits in this task).
+- Update 2026-10-03: closed; `bun run fmt:check` passes (C-11 in `docs/TODO.md`).
 
 ### ISSUE-002
 
@@ -87,6 +88,7 @@ Several visible actions were stubs that only showed the toast `This feature is c
 
 - Evidence (source): `apps/web/app/(root)/me/(layout-a)/recently-played/page.tsx` returns a `Construction` placeholder; `apps/web/config/nav.ts` lists `Recently Played` at `/me/recently-played`.
 - Expected: working history or no nav entry. Actual: placeholder. Follow-up: implement or hide. State open.
+- Update 2026-10-03: closed; recently played is implemented per account (C-60 in `docs/TODO.md`).
 
 ### ISSUE-005
 
@@ -194,6 +196,7 @@ After a successful email login, the login form stays on `/login` — no client-s
 - Reproduce (needs the app and disposable DB, not run): sign up as `User@Example.com`, open `/reset-password`, enter the same mixed-case email with the right current password.
 - Expected: the reset succeeds. Actual (by reading): the lookup misses and the user gets the uniform "Email or current password is incorrect" error. Uncertainty: depends on whether signup lower-cases before insert; not run.
 - Follow-up: lower-case in the schema or procedure and add a test. State open.
+- Update 2026-10-03: closed; the reset schema lower-cases the email (C-4 in `docs/TODO.md`).
 
 ### ISSUE-025
 

@@ -53,7 +53,6 @@ cp .env.example .env
 
 ```bash
 bun run db:up
-# Or: make db-up
 ```
 
 4. Run migrations and seed deterministic local data:
@@ -67,7 +66,6 @@ bun run db:seed
 
 ```bash
 bun run dev
-# Or: make dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and sign in with default credentials:
@@ -89,7 +87,7 @@ bun run build        # Production build
 bun run lint         # Lint with Oxlint
 bun run fmt:check    # Check formatting with oxfmt
 bun run type-check   # Type check with TypeScript
-bun test             # Run tests
+bun run test         # Run tests (plain + DOM suites)
 ```
 
 <div align=center>

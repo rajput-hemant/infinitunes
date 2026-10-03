@@ -2,24 +2,13 @@
 
 # dependencies
 node_modules
-/.pnp
-.pnp.js
 
 # testing
 /coverage
 
-# monorepo cache / output (per-package .gitignore handles app specifics)
-node_modules/.cache
-.pnpm-store
-
 # misc
 .DS_Store
 *.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
 
 # local env files
 .env*
@@ -40,9 +29,6 @@ next-env.d.ts
 
 # turbo
 .turbo
-
-# eslint
-.eslintcache
 
 # old bun binary lockfile (migrated to bun.lock)
 bun.lockb
