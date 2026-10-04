@@ -3,14 +3,31 @@ import { afterAll, beforeAll, describe, expect, it, mock } from "bun:test";
 import * as betterAuthCookies from "better-auth/cookies";
 import type { NextRequest } from "next/server";
 
-const fromEnv = mock(() => {
-  throw new Error("Redis.fromEnv must not run when rate limiting is off");
-});
+const fromEnv = mock(() => ({}) as never);
 
 const getSessionCookie = mock(() => undefined as string | undefined);
 
+const seenKeys: string[] = [];
+let limitSuccess = true;
+
 mock.module("@upstash/redis", () => ({
   Redis: { fromEnv },
+}));
+
+mock.module("@upstash/ratelimit", () => ({
+  Ratelimit: class {
+    static slidingWindow = () => ({});
+    limit = async (id: string) => {
+      seenKeys.push(id);
+      return {
+        limit: 50,
+        pending: Promise.resolve(),
+        remaining: limitSuccess ? 49 : 0,
+        reset: Date.now(),
+        success: limitSuccess,
+      };
+    };
+  },
 }));
 
 mock.module("better-auth/cookies", () => ({
@@ -29,7 +46,11 @@ mock.module("next/server", () => ({
 }));
 
 process.env.SKIP_ENV_VALIDATION = "true";
-process.env.ENABLE_RATE_LIMITING = "false";
+// Rate limiting ON for this file so the limiter path is exercised; the
+// Upstash clients are fully mocked (no network). `env` snapshots at import,
+// so per-test toggling cannot work: every suite below runs with the limiter
+// enabled and a succeeding bucket unless stated.
+process.env.ENABLE_RATE_LIMITING = "true";
 const originalNodeEnv = process.env.NODE_ENV;
 process.env.NODE_ENV = "production";
 
@@ -62,11 +83,11 @@ describe("proxy Upstash client laziness", () => {
     ({ proxy } = await import("../proxy"));
   });
 
-  it("does not construct Redis.fromEnv when rate limiting is disabled", async () => {
-    const res = await proxy(createNextRequest("http://localhost:3000/"));
-
-    expect(res.status).toBe(200);
+  it("constructs Redis.fromEnv lazily and only once", async () => {
     expect(fromEnv).not.toHaveBeenCalled();
+    await proxy(createNextRequest("http://localhost:3000/"));
+    await proxy(createNextRequest("http://localhost:3000/"));
+    expect(fromEnv).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -248,6 +269,45 @@ describe("proxy /api/trpc origin check", () => {
   it("passes OPTIONS preflight through without an origin check", async () => {
     const res = await call({ origin: "https://evil.example" }, "OPTIONS");
     expect(res.status).toBe(200);
+  });
+});
+
+describe("proxy rate-limit client key (SE-4)", () => {
+  let proxy: typeof import("../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../proxy"));
+  });
+
+  it("keys by x-real-ip first, then the first forwarded entry, trimmed", async () => {
+    seenKeys.length = 0;
+    await proxy(
+      createNextRequest("http://localhost:3000/", "GET", {
+        "x-real-ip": " 203.0.113.7 ",
+        "x-forwarded-for": "198.51.100.9, 203.0.113.1",
+      }),
+    );
+    await proxy(
+      createNextRequest("http://localhost:3000/", "GET", {
+        "x-forwarded-for": " 198.51.100.9 , 203.0.113.1",
+      }),
+    );
+    expect(seenKeys).toEqual(["203.0.113.7", "198.51.100.9"]);
+  });
+
+  it("returns 429 without leaking the key when the bucket is empty", async () => {
+    limitSuccess = false;
+    try {
+      const res = (await proxy(
+        createNextRequest("http://localhost:3000/", "GET", {
+          "x-forwarded-for": "198.51.100.9",
+        }),
+      )) as { status: number };
+      expect(res.status).toBe(429);
+    } finally {
+      limitSuccess = true;
+    }
   });
 });
 

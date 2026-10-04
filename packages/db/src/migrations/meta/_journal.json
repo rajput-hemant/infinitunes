@@ -43,6 +43,13 @@
       "when": 1791041292323,
       "tag": "0005_drop_username",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791126530537,
+      "tag": "0006_spotty_maverick",
+      "breakpoints": true
     }
   ]
 }
