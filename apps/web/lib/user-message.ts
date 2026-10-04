@@ -1,3 +1,5 @@
+import { getErrorCode } from "~/lib/error-code";
+
 const GENERIC_MESSAGE = "Something went wrong. Please try again.";
 
 /** tRPC codes whose server message is written for the user and safe to show. */
@@ -11,13 +13,6 @@ const USER_CODES = new Set([
 
 /** Next.js replaces server-action error messages with this in production. */
 const OMITTED_MESSAGE = "omitted in production builds";
-
-function readCode(error: unknown): string | undefined {
-  if (typeof error !== "object" || error === null) return undefined;
-  const { code, data } = error as { code?: unknown; data?: { code?: unknown } };
-  if (typeof code === "string") return code;
-  return typeof data?.code === "string" ? data.code : undefined;
-}
 
 /**
  * Maps a thrown error (a `TRPCError`, a `TRPCClientError`, or the plain `Error`
@@ -39,7 +34,7 @@ export function userMessage(
         : "";
   if (!message || message.includes(OMITTED_MESSAGE)) return fallback;
 
-  const code = readCode(error);
+  const code = getErrorCode(error);
   if (code === undefined || USER_CODES.has(code)) return message;
   return fallback;
 }

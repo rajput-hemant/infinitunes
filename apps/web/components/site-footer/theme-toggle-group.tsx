@@ -42,7 +42,7 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
       <ToggleGroupItem
         aria-label="Toggle Light Mode"
         value="light"
-        className="size-8 rounded-full px-2"
+        className="size-11 rounded-full px-2"
       >
         <SunMedium className="h-4" />
       </ToggleGroupItem>
@@ -50,7 +50,7 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
       <ToggleGroupItem
         aria-label="Toggle System Mode"
         value="system"
-        className="size-8 rounded-full px-2"
+        className="size-11 rounded-full px-2"
       >
         <Monitor className="h-4" />
       </ToggleGroupItem>
@@ -58,7 +58,7 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
       <ToggleGroupItem
         aria-label="Toggle Dark Mode"
         value="dark"
-        className="size-8 rounded-full px-2"
+        className="size-11 rounded-full px-2"
       >
         <Moon className="h-4" />
       </ToggleGroupItem>

@@ -87,12 +87,7 @@ environment files, or existing empty directories may be deleted during migration
      production build from the root.
 
    - Keep a bun test --pass-with-no-tests path until real tests exist, since the repository currently has none.
-   - Update Docker for root workspace installation and apps/web standalone output. Build with Bun, copy the correct web
-     public, standalone, and static paths, and validate the final server entrypoint. (Superseded: there is no production
-     image; Docker is local-dev only and production is Vercel.)
-
-   - Stop copying .env.local into Docker image layers. Supply runtime/build variables through the environment. (Moot
-     with no production image.)
+   - Keep Docker local-dev only. Production uses Vercel, with no production image or standalone-output requirement.
    - Document Vercel's project root as apps/web, Bun installation, build commands, and environment variables.
    - Update README (and the since-removed Makefile) to present Bun as the supported package manager.
 

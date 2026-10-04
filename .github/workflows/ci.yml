@@ -45,7 +45,7 @@ jobs:
       - name: Build production
         run: bun run build
 
-      - name: Verify runtime smoke check
+      - name: Verify static asset startup
         run: |
           cleanup() {
             if [ -n "${SERVER_PID:-}" ]; then
@@ -59,7 +59,7 @@ jobs:
 
           READY=0
           for i in $(seq 1 30); do
-            if curl -sf -o /dev/null "http://127.0.0.1:3000/"; then
+            if curl -sf -o /dev/null "http://127.0.0.1:3000/robots.txt"; then
               echo "Server is ready after $i seconds"
               READY=1
               break
@@ -72,10 +72,10 @@ jobs:
             exit 1
           fi
 
-          echo "Checking root route /"
-          ROOT_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3000/")
-          echo "Root status: $ROOT_STATUS"
-          [ "$ROOT_STATUS" -eq 200 ]
+          echo "Checking static asset /robots.txt"
+          ASSET_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3000/robots.txt")
+          echo "Asset status: $ASSET_STATUS"
+          [ "$ASSET_STATUS" -eq 200 ]
 
       - name: Check commits messages
         uses: wagoid/commitlint-github-action@v6

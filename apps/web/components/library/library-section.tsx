@@ -118,7 +118,7 @@ export function LibraryUnavailable({ what }: { what: string }) {
       <LibraryState
         icon={TriangleAlert}
         title={`Couldn’t load your ${what}`}
-        description="Your saved items are safe. The music service didn’t respond, so try again in a moment."
+        description="Your saved items are safe. We couldn’t load them from the music service. Try again in a moment."
       >
         <RetryButton />
       </LibraryState>

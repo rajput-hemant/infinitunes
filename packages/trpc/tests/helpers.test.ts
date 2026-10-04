@@ -116,7 +116,7 @@ describe("api helper", () => {
       return new Response("Server Error", { status: 500 });
     };
 
-    expect(api("test.call", {}, mockFetch)).rejects.toThrow(
+    await expect(api("test.call", {}, mockFetch)).rejects.toThrow(
       "Upstream returned 500",
     );
   });
@@ -126,7 +126,7 @@ describe("api helper", () => {
       return new Response("NOT JSON", { status: 200 });
     };
 
-    expect(
+    await expect(
       api("test.call", { query: { q: "invalid-json" } }, mockFetch),
     ).rejects.toThrow("Invalid JSON response from upstream");
   });

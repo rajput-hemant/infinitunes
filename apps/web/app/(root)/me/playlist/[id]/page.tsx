@@ -1,4 +1,3 @@
-import type { SongObj } from "@infinitunes/types";
 import { formatDuration, getImageSrc } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -7,11 +6,17 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { ImageCollage } from "~/components/image-collage";
-import { LibraryEmpty } from "~/components/library/library-section";
-import { PlayButton } from "~/components/play-button";
+import {
+  LibraryEmpty,
+  LibraryState,
+  LibraryUnavailable,
+} from "~/components/library/library-section";
+import { PlayAllButton } from "~/components/library/play-all-button";
+import { RetryButton } from "~/components/library/retry-button";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { SongList } from "~/components/song-list/song-list";
 import { getPlaylistDetails } from "~/lib/db/queries";
+import { fetchSongsChunked } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 import { cn } from "~/lib/utils";
 
@@ -55,23 +60,18 @@ export default async function MyPlaylistsPage(props: Props) {
 
   const { name, description, songs } = playlist;
 
-  let songsDetails: SongObj | undefined;
-
-  if (songs.length) {
-    songsDetails = await api.song.details({
-      id: songs.join(","),
-    });
-  }
-
-  const songById = new Map(
-    songsDetails?.songs.map((song) => [song.id, song]) ?? [],
+  const songsDetails = await fetchSongsChunked(songs, (input) =>
+    api.song.details(input),
   );
+
+  const songById = new Map(songsDetails?.map((song) => [song.id, song]) ?? []);
   const playlistEntries = songs.flatMap((songId, dbIndex) => {
     const song = songById.get(songId);
     return song ? [{ song, dbIndex }] : [];
   });
   const playlistSongs = playlistEntries.map(({ song }) => song);
   const playlistSongIndices = playlistEntries.map(({ dbIndex }) => dbIndex);
+  const unavailableCount = songs.length - playlistSongs.length;
 
   const imageSrcs = playlistSongs
     .slice(0, 4)
@@ -123,17 +123,15 @@ export default async function MyPlaylistsPage(props: Props) {
 
           {playlistSongs.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
-              <PlayButton
-                type="song"
-                // @ts-expect-error string[] is not assignable to string
-                token={songs}
+              <PlayAllButton
+                items={playlistSongs}
                 className={cn(
                   buttonVariants(),
                   "rounded-full px-10 text-xl font-bold shadow-xs",
                 )}
               >
                 Play
-              </PlayButton>
+              </PlayAllButton>
             </div>
           )}
         </figcaption>
@@ -141,6 +139,13 @@ export default async function MyPlaylistsPage(props: Props) {
 
       {playlistSongs.length ? (
         <>
+          {unavailableCount > 0 && (
+            <p role="status" className="text-sm text-muted-foreground">
+              {unavailableCount} saved song{unavailableCount === 1 ? "" : "s"}{" "}
+              couldn’t be loaded. Your saved songs are safe. Refresh to try
+              again.
+            </p>
+          )}
           <SongList
             items={playlistSongs}
             playlistId={id}
@@ -152,6 +157,16 @@ export default async function MyPlaylistsPage(props: Props) {
             <span className="text-foreground">🤩</span>
           </h3>
         </>
+      ) : songsDetails === undefined ? (
+        <LibraryUnavailable what="playlist songs" />
+      ) : songs.length > 0 ? (
+        <LibraryState
+          icon={ListMusic}
+          title="No saved songs are available"
+          description="Your playlist still contains its saved songs, but none are available from the music service right now."
+        >
+          <RetryButton />
+        </LibraryState>
       ) : (
         <LibraryEmpty
           icon={ListMusic}

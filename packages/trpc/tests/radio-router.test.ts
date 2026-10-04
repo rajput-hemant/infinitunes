@@ -140,7 +140,7 @@ describe("radioRouter", () => {
     it("throws NOT_FOUND when upstream returns no station ID", async () => {
       responses["webradio.createFeaturedStation"] = [];
 
-      expect(
+      await expect(
         caller.radio.createStation({
           type: "featured",
           name: "Nonexistent Station",

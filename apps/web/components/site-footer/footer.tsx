@@ -26,7 +26,7 @@ export async function SiteFooter() {
       <div className="mx-auto w-full max-w-none px-5 text-sm sm:max-w-[90%] sm:px-0 2xl:max-w-7xl">
         <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] items-stretch justify-between gap-y-10 sm:gap-x-6 md:flex md:flex-wrap">
           <div className="col-span-full flex justify-between md:flex-col md:justify-normal">
-            <Link href="/" className="flex items-start">
+            <Link href="/" className="flex min-h-11 min-w-11 items-start">
               <Icons.Logo className="mr-1 h-5" />
               <span className="font-heading tracking-wide drop-shadow-md">
                 {siteConfig.name}
@@ -39,7 +39,7 @@ export async function SiteFooter() {
                 href={siteConfig.links.github}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 duration-200 hover:text-foreground"
+                className="flex min-h-11 min-w-11 items-center justify-center p-3 duration-200 hover:text-foreground"
               >
                 <Icons.GitHub className="size-4" />
               </a>
@@ -48,7 +48,7 @@ export async function SiteFooter() {
                 href={siteConfig.links.x}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 duration-200 hover:text-foreground"
+                className="flex min-h-11 min-w-11 items-center justify-center p-3 duration-200 hover:text-foreground"
               >
                 <Icons.X className="size-4" />
               </a>
@@ -57,7 +57,7 @@ export async function SiteFooter() {
                 href={siteConfig.links.discord}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-3 duration-200 hover:text-foreground"
+                className="flex min-h-11 min-w-11 items-center justify-center p-3 duration-200 hover:text-foreground"
               >
                 <Icons.Discord className="size-[18px]" />
               </a>
@@ -76,7 +76,7 @@ export async function SiteFooter() {
                   >
                     <Link
                       href={asRoute(action.replace("featured", "playlist"))}
-                      className="block py-2"
+                      className="flex min-h-11 min-w-11 items-center"
                     >
                       {title}
                     </Link>
@@ -97,7 +97,7 @@ export async function SiteFooter() {
                 >
                   <Link
                     href={asRoute(`/album?lang=${lang.toLowerCase()}`)}
-                    className="block py-2"
+                    className="flex min-h-11 min-w-11 items-center"
                   >{`${lang} Songs`}</Link>
                 </li>
               ))}
@@ -107,17 +107,22 @@ export async function SiteFooter() {
       </div>
 
       <div className="mx-auto mt-4 flex max-w-7xl px-5 sm:px-0 flex-col items-center justify-between gap-4 border-t py-6 lg:flex-row">
-        <p className="max-w-4xl text-center text-xs text-muted-foreground lg:text-sm">
-          <Link href="/" className="inline-flex items-center justify-center">
+        <div className="max-w-4xl text-center text-xs text-muted-foreground lg:text-sm">
+          <Link
+            href="/"
+            className="flex min-h-11 min-w-11 items-center justify-center"
+          >
             <span className="font-heading text-base tracking-wide text-primary underline drop-shadow-md">
               {siteConfig.name}
             </span>
-          </Link>{" "}
-          is not affiliated with JioSaavn. All trademarks and copyrights belong
-          to their respective owners. All media, images, and songs are the
-          property of their respective owners. This site is for educational
-          purposes only.
-        </p>
+          </Link>
+          <p>
+            {siteConfig.name} is not affiliated with JioSaavn. All trademarks and
+            copyrights belong to their respective owners. All media, images, and
+            songs are the property of their respective owners. This site is for
+            educational purposes only.
+          </p>
+        </div>
 
         <ThemeToggleGroup className="w-fit" />
       </div>

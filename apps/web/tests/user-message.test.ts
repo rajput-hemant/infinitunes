@@ -52,6 +52,40 @@ describe("userMessage", () => {
     ).toBe(GENERIC);
   });
 
+  it("keeps user-facing messages with nested codes", () => {
+    const error = Object.assign(new Error("Playlist not found"), {
+      data: { code: "NOT_FOUND" },
+    });
+    expect(userMessage(error)).toBe("Playlist not found");
+  });
+
+  it("ignores malformed nested data", () => {
+    for (const data of [null, "BAD_GATEWAY", 502, {}, { code: 502 }]) {
+      expect(userMessage(Object.assign(new Error("Try again"), { data }))).toBe(
+        "Try again",
+      );
+    }
+  });
+
+  it("prefers any direct string code over the nested code", () => {
+    expect(
+      userMessage(
+        Object.assign(new Error("Name taken"), {
+          code: "CONFLICT",
+          data: { code: "BAD_GATEWAY" },
+        }),
+      ),
+    ).toBe("Name taken");
+    expect(
+      userMessage(
+        Object.assign(new Error("Internal detail"), {
+          code: "UNKNOWN_CODE",
+          data: { code: "NOT_FOUND" },
+        }),
+      ),
+    ).toBe(GENERIC);
+  });
+
   it("falls back for non-errors and uses a custom fallback", () => {
     expect(userMessage(undefined)).toBe(GENERIC);
     expect(userMessage(null, "Could not rename")).toBe("Could not rename");

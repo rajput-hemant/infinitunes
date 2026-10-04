@@ -32,7 +32,7 @@ export async function fetchSongsChunked<T extends Song | Episode = Song>(
       songs.push(...result.value.songs);
     } else {
       failed += 1;
-      console.error("liked-songs: failed to fetch a chunk", result.reason);
+      console.error("song-details: failed to fetch a chunk", result.reason);
     }
   }
 

@@ -42,7 +42,7 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | closed         |
 | [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | closed         |
 | [ISSUE-024](#issue-024) | CONFIRMED               | low      | reset password email not lower-cased          | closed         |
-| [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset password has no throttling              | open           |
+| [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset limits are local and production-only   | open           |
 
 ## Confirmed
 
@@ -96,7 +96,7 @@ Profile form has non-functional controls.
 
 - Evidence (source): `apps/web/app/(root)/settings/_components/profile-form.tsx` `Verify Email` button (`onClick={currentlyInDev}`, line ~143) and the avatar `Edit` button (line ~272).
 - Update 2026-10-03 (source grep): the `currentlyInDev` helper was removed (`4eae157`) and `profile-form.tsx` no longer contains a `Verify Email` or avatar `Edit` button, so the `currentlyInDev` reference above is historical. Not re-run in a browser.
-- Expected: functional or absent. Actual: info toast only. Follow-up: implement or remove. State open.
+- Update 2026-10-04 (source review): the profile form still has neither control. The removed controls satisfy the source-level acceptance criterion. State closed. No browser verification was authorized for this run.
 
 ### ISSUE-006
 
@@ -200,11 +200,12 @@ After a successful email login, the login form stays on `/login` — no client-s
 
 ### ISSUE-025
 
-`user.resetPassword` has no attempt limit.
+Better Auth reset limits use per-instance memory and run only in production.
 
-- Evidence (source, read 2026-10-03): no throttle, counter or lockout in the `resetPassword` procedure; the only limiter is the proxy rate limiter, active only with `ENABLE_RATE_LIMITING=true`, `NODE_ENV=production` and Upstash configured ([ISSUE-020](#issue-020)). The procedure is public and verifies the current password, so it remains a password-guess surface even though error messages are now uniform ([ISSUE-007](#issue-007)).
-- Expected: bounded attempts per email or IP regardless of deployment config, or the flow moved behind a session. Actual: unlimited attempts unless the optional proxy limiter is on. Not exercised.
-- Follow-up: decide on a throttle or move the flow into the authenticated settings page. State open.
+- Historical evidence (source, read 2026-10-03): the removed public `resetPassword` procedure had no throttle, counter or lockout. That procedure verified the current password and exposed a password-guess surface ([ISSUE-007](#issue-007)). This evidence does not describe the current reset flow.
+- Update 2026-10-04 (source review): `user.resetPassword` no longer exists. `packages/trpc/src/router/user.ts` exposes session-protected `changePassword`; anonymous reset uses Better Auth's emailed-token flow. `packages/auth/src/auth.ts` configures reset rate limits but enables them only in production and supplies no shared counter storage. The historical public password-guess procedure above is removed.
+- Expected: reset request limits shared across serverless instances. Actual source configuration uses per-instance memory and disables limits outside production. The proxy matcher excludes `/api/auth`, so its optional limiter does not cover Better Auth's reset endpoints. No runtime verification was authorized for this run.
+- Follow-up: implement shared storage under SE-17 and SE-4 in `docs/TODO.md`. State open.
 
 ## Hypotheses
 

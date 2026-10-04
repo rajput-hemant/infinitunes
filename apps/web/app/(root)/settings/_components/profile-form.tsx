@@ -231,7 +231,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     disabled={isSubmitting}
                     autoComplete="new-password"
                     placeholder="••••••••••"
-                    className="pr-8 shadow-xs"
+                    className="min-h-11 pr-14 shadow-xs"
                     {...field}
                   />
                   <Tooltip>
@@ -240,11 +240,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       aria-label={
                         isPassVisible ? "Hide Password" : "Show Password"
                       }
-                      tabIndex={-1}
                       type="button"
                       disabled={!field.value}
                       onClick={() => setIsPassVisible(!isPassVisible)}
-                      className="absolute inset-y-0 right-2 my-auto text-muted-foreground hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                      className="absolute inset-y-0 right-2 my-auto flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                     >
                       {isPassVisible ? (
                         <EyeOff aria-hidden className="size-5" />
