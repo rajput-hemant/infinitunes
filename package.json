@@ -9,7 +9,8 @@
     "start": "bun run with-env turbo run start",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
-    "test": "bun test --pass-with-no-tests && bun run test:dom",
+    "test": "bun test --pass-with-no-tests && bun run test:mocked && bun run test:dom",
+    "test:mocked": "cd apps/web/tests/mocked && bun test",
     "test:dom": "cd apps/web/tests/dom && bun test",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
@@ -69,7 +70,7 @@
       "oxfmt --write"
     ],
     "*.{ts,tsx,mdx}": [
-      "oxlint"
+      "oxlint --no-error-on-unmatched-pattern"
     ]
   },
   "commitlint": {
