@@ -48,6 +48,7 @@ import {
 import type { User } from "~/lib/auth";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
+import { playToRecord } from "~/lib/queue-position";
 import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
@@ -183,12 +184,10 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     const { queue: latestQueue, currentIndex: latestIndex } =
       playbackStateRef.current;
     const track = latestQueue[latestIndex];
-    if (track && lastRecordedRef.current !== track.queueItemId) {
+    const play = playToRecord(track, lastRecordedRef.current);
+    if (track && play) {
       lastRecordedRef.current = track.queueItemId;
-      void recordPlay({
-        id: track.id,
-        type: track.type === "episode" ? "episode" : "song",
-      });
+      void recordPlay(play);
     }
 
     load(audioSrc, {
