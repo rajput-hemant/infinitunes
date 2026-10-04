@@ -10,7 +10,6 @@ export const metadata = pageMetadata({
   title,
   description,
   url: "/artist",
-  image: "https://graph.org/file/f6f124cfb227a3c45ced5.png",
   alt: "Top Indian Music Artists",
 });
 

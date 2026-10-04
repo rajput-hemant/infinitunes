@@ -14,7 +14,6 @@ export const metadata = pageMetadata({
   title,
   description,
   url: "/album",
-  image: "https://graph.org/file/40972e692b4439ec36c6f.png",
   alt: "Top Albums",
 });
 

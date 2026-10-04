@@ -59,14 +59,14 @@ export function absoluteUrl(path: string) {
 export function ogImageUrl(params: {
   title: string;
   description: string;
-  image: string;
+  image?: string;
   square?: boolean;
 }) {
   const query = new URLSearchParams({
     title: decode(params.title),
     description: decode(params.description),
-    image: params.image,
   });
+  if (params.image) query.set("image", params.image);
   if (params.square) query.set("square", "true");
   return `/api/og?${query}`;
 }

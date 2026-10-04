@@ -15,7 +15,6 @@ export const metadata = pageMetadata({
   title,
   description,
   url: "/",
-  image: "https://graph.org/file/16937ebb693470d804f31.png",
   alt: `${siteConfig.name} Homepage`,
 });
 

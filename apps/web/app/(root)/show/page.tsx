@@ -14,7 +14,6 @@ export const metadata = pageMetadata({
   title,
   description,
   url: "/show",
-  image: "https://graph.org/file/d19f3d8420f985480bf5b.png",
   alt: "Original Podcasts",
 });
 
