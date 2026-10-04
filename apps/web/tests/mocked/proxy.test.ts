@@ -56,10 +56,10 @@ function createNextRequest(
 }
 
 describe("proxy Upstash client laziness", () => {
-  let proxy: typeof import("../proxy").proxy;
+  let proxy: typeof import("../../proxy").proxy;
 
   beforeAll(async () => {
-    ({ proxy } = await import("../proxy"));
+    ({ proxy } = await import("../../proxy"));
   });
 
   it("does not construct Redis.fromEnv when rate limiting is disabled", async () => {
@@ -71,11 +71,11 @@ describe("proxy Upstash client laziness", () => {
 });
 
 describe("proxy guest route access", () => {
-  let proxy: typeof import("../proxy").proxy;
+  let proxy: typeof import("../../proxy").proxy;
 
   beforeAll(async () => {
     getSessionCookie.mockImplementation(() => undefined);
-    ({ proxy } = await import("../proxy"));
+    ({ proxy } = await import("../../proxy"));
   });
 
   it("allows guest /settings without redirecting to login", async () => {
@@ -99,11 +99,11 @@ describe("proxy guest route access", () => {
 });
 
 describe("proxy auth routes with a session cookie", () => {
-  let proxy: typeof import("../proxy").proxy;
+  let proxy: typeof import("../../proxy").proxy;
 
   beforeAll(async () => {
     getSessionCookie.mockImplementation(() => "stale-or-valid-token");
-    ({ proxy } = await import("../proxy"));
+    ({ proxy } = await import("../../proxy"));
   });
 
   // The proxy cannot tell a valid session from a stale cookie; redirecting here
@@ -126,11 +126,11 @@ describe("proxy auth routes with a session cookie", () => {
 });
 
 describe("proxy detail route normalization", () => {
-  let proxy: typeof import("../proxy").proxy;
+  let proxy: typeof import("../../proxy").proxy;
 
   beforeAll(async () => {
     getSessionCookie.mockImplementation(() => undefined);
-    ({ proxy } = await import("../proxy"));
+    ({ proxy } = await import("../../proxy"));
   });
 
   it("redirects two-segment /playlist/<x> like other entity routes", async () => {
@@ -154,7 +154,7 @@ describe("proxy detail route normalization", () => {
 });
 
 describe("proxy /api/trpc origin check", () => {
-  let proxy: typeof import("../proxy").proxy;
+  let proxy: typeof import("../../proxy").proxy;
   const url = "http://localhost:3000/api/trpc/song.details";
   const call = (
     headers: Record<string, string>,
@@ -163,7 +163,7 @@ describe("proxy /api/trpc origin check", () => {
 
   beforeAll(async () => {
     getSessionCookie.mockImplementation(() => undefined);
-    ({ proxy } = await import("../proxy"));
+    ({ proxy } = await import("../../proxy"));
   });
 
   it("rejects a cross-origin Origin header", async () => {
@@ -252,13 +252,13 @@ describe("proxy /api/trpc origin check", () => {
 });
 
 describe("proxy CSP report-only header", () => {
-  let proxy: typeof import("../proxy").proxy;
+  let proxy: typeof import("../../proxy").proxy;
   const read = (res: unknown, name: string) =>
     (res as { headers: Headers }).headers.get(name);
 
   beforeAll(async () => {
     getSessionCookie.mockImplementation(() => undefined);
-    ({ proxy } = await import("../proxy"));
+    ({ proxy } = await import("../../proxy"));
   });
 
   it("sets a report-only CSP with a fresh nonce on page responses", async () => {

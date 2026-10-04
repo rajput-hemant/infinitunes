@@ -87,13 +87,13 @@ const {
   deleteUser,
   renamePlaylist,
   updateUser,
-} = await import("../lib/actions");
+} = await import("../../lib/actions");
 const {
   addSongsToPlaylist,
   addToFavorites,
   removeFromFavorites,
   removeSongsFromPlaylist,
-} = await import("../lib/db/queries");
+} = await import("../../lib/db/queries");
 
 describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {
