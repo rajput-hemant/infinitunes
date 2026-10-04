@@ -51,11 +51,8 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "oxfmt": "catalog:",
-    "oxlint": "catalog:",
     "postcss": "8.5.28",
     "shadcn": "^4.21.0",
-    "sharp": "^0.35.4",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
   }
