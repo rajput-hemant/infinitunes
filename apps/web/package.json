@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
-    "with-env": "bun --env-file=../../.env --env-file=../../.env.local --bun"
+    "with-env": "bun --env-file=../../.env --env-file=../../.env.local"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

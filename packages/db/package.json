@@ -15,16 +15,6 @@
     "db:studio": "drizzle-kit studio --config=./src/drizzle.config.ts",
     "db:check": "drizzle-kit check --config=./src/drizzle.config.ts"
   },
-  "exports": {
-    ".": "./src/db.ts",
-    "./schema": "./src/schema.ts",
-    "./client": "./src/client.ts",
-    "./migrations": "./src/migrations/index.ts",
-    "./backfill": "./src/backfill.ts",
-    "./fixtures": "./src/fixtures/index.ts",
-    "./local-guard": "./src/fixtures/local-guard.ts",
-    "./env": "./src/env.ts"
-  },
   "dependencies": {
     "@infinitunes/env": "workspace:*",
     "bcryptjs": "catalog:",
@@ -40,5 +30,15 @@
     "drizzle-kit": "^0.31.11",
     "pg": "^8.23.0",
     "typescript": "catalog:"
+  },
+  "exports": {
+    ".": "./src/db.ts",
+    "./schema": "./src/schema.ts",
+    "./client": "./src/client.ts",
+    "./migrations": "./src/migrations/index.ts",
+    "./backfill": "./src/backfill.ts",
+    "./fixtures": "./src/fixtures/index.ts",
+    "./local-guard": "./src/fixtures/local-guard.ts",
+    "./env": "./src/env.ts"
   }
 }
