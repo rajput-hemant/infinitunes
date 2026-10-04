@@ -9,7 +9,6 @@ export const metadata = pageMetadata({
   title,
   description,
   url: "/chart",
-  image: "https://graph.org/file/eaa488b6fbcd332148569.png",
   alt: "Top Music Charts",
 });
 export default async function ChartsPage() {

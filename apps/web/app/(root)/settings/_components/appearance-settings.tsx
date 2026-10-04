@@ -17,8 +17,8 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
 
   const { resolvedTheme: themeMode, setTheme } = useTheme();
 
-  function themeConfigHandler({ theme, radius }: ThemeConfig) {
-    setCookie("theme-config", JSON.stringify({ theme, radius }), {
+  function themeConfigHandler(config: ThemeConfig) {
+    setCookie("theme-config", JSON.stringify(config), {
       path: "/",
     });
     router.refresh();

@@ -7,7 +7,7 @@ import { cache } from "react";
 
 let authInstance: ReturnType<typeof createAuth> | undefined;
 
-export function getAuth(): ReturnType<typeof createAuth> {
+function getAuth(): ReturnType<typeof createAuth> {
   if (!authInstance) {
     authInstance = createAuth(db, {
       plugins: [nextCookies()],

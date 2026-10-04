@@ -43,7 +43,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   useKeydown((e: KeyboardEvent) => {
     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      setIsOpen((isOpen) => !isOpen);
+      setIsOpen((open) => !open);
     }
   });
 

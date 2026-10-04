@@ -43,6 +43,19 @@ describe("OG route image allowlist (SSRF)", () => {
     expect(source).toContain("parseAllowedImageUrl(requestedImage)");
     expect(source).toContain('redirect: "error"');
   });
+
+  it("serves a local default image instead of a third-party host", async () => {
+    const source = await Bun.file(
+      new URL("../app/api/og/route.tsx", import.meta.url),
+    ).text();
+    expect(source).not.toContain("graph.org");
+    expect(source).toContain("public/icon-512.png");
+    expect(
+      await Bun.file(
+        new URL("../public/icon-512.png", import.meta.url),
+      ).exists(),
+    ).toBe(true);
+  });
 });
 
 describe("security headers", () => {

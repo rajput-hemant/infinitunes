@@ -67,9 +67,9 @@ export function QueueList() {
     >
       {queue.map((item, index) => (
         <li key={item.queueItemId} className="w-full">
-          <div className="group flex h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
+          <div className="group flex min-h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
             <figure className="flex w-full items-center gap-4 overflow-hidden">
-              <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
+              <div className="relative aspect-square h-11 min-w-fit lg:h-10 overflow-hidden rounded">
                 <Image
                   src={getImageSrc(item.image, "low")}
                   alt=""
@@ -95,7 +95,7 @@ export function QueueList() {
                       item.url,
                       item.type === "song" ? "song" : "episode",
                     )}
-                    className="text-primary group-hover:text-primary lg:text-muted-foreground"
+                    className="flex min-h-11 items-center text-primary group-hover:text-primary lg:min-h-0 lg:text-muted-foreground"
                   >
                     {item.name}
                   </Link>
@@ -122,7 +122,7 @@ export function QueueList() {
                 data-queue-remove=""
                 aria-label={`Remove ${item.name} from queue`}
                 onClick={() => removeItem(index)}
-                className="ml-auto size-8 shrink-0 p-0 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                className="ml-auto size-11 shrink-0 p-0 lg:size-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
                 <X aria-hidden className="size-4" />
               </Button>

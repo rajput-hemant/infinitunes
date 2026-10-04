@@ -48,7 +48,7 @@ export function EpisodeList(props: EpisodeListProps) {
         }),
       initialPageParam: 1 as number,
       getNextPageParam: (_, allPages) => {
-        const allPagesLength = (allPages as Episode[][])
+        const allPagesLength = allPages
           .map((page) => page.length)
           .reduce((acc, curr) => acc + curr, 0);
 
@@ -57,7 +57,7 @@ export function EpisodeList(props: EpisodeListProps) {
       initialData: { pages: [initialEpisodes], pageParams: [1] },
     });
 
-  const episodes = (data.pages as Episode[][]).flat();
+  const episodes = data.pages.flat();
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,

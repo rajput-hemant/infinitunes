@@ -70,18 +70,16 @@ export function SearchResults(props: SearchResultsProps) {
         <SongListClient items={searchResults as Song[]} />
       ) : (
         <div className="flex w-full flex-wrap justify-between gap-y-4">
-          {searchResults.map(
-            ({ id, title, perma_url, subtitle, type, image }) => (
-              <SliderCard
-                key={id}
-                name={title}
-                url={perma_url}
-                subtitle={subtitle}
-                type={type}
-                image={image}
-              />
-            ),
-          )}
+          {searchResults.map((result) => (
+            <SliderCard
+              key={result.id}
+              name={result.title}
+              url={result.perma_url}
+              subtitle={result.subtitle}
+              type={result.type}
+              image={result.image}
+            />
+          ))}
         </div>
       )}
 

@@ -26,10 +26,11 @@ describe("player playback effects", () => {
     const source = await Bun.file(PLAYER).text();
 
     const guard = source.indexOf("This song can't be played right now.");
-    const record = source.indexOf("void recordPlay({");
+    const record = source.indexOf("void recordPlay(play");
     expect(guard).toBeGreaterThan(-1);
     expect(record).toBeGreaterThan(guard);
-    expect(source).toContain("lastRecordedRef.current !== track.queueItemId");
-    expect(source).toContain('track.type === "episode" ? "episode" : "song"');
+    // The once-per-queueItemId rule itself is covered by `playToRecord` in
+    // queue-position.test.ts.
+    expect(source).toContain("playToRecord(track, lastRecordedRef.current)");
   });
 });

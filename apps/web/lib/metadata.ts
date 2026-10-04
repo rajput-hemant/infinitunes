@@ -7,8 +7,8 @@ type PageMetadataInput = {
   description: string;
   /** Canonical path, e.g. `/album/<name>/<token>`. */
   url: string;
-  /** Artwork for the OG card (absolute URL or path). */
-  image: string;
+  /** Artwork for the OG card (absolute URL or path); omitted uses the local default. */
+  image?: string;
   /** Alt text for the OG image; defaults to `title`. */
   alt?: string;
   /** Crop the OG artwork to a square (entity artwork). */

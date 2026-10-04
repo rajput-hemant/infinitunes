@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import React from "react";
 
 import { siteConfig } from "~/config/site";
+import { buildShareUrl } from "~/lib/share";
+import type { SharePlatform } from "~/lib/share";
 import { cn } from "~/lib/utils";
 
 import { Icons } from "./icons";
@@ -16,7 +18,7 @@ type ShareOptionsProps = React.ComponentProps<"div"> & {
 
 type ShareOption = {
   label: string;
-  href?: string;
+  platform?: SharePlatform;
   icon: React.FC<{ className: string }>;
 };
 
@@ -27,32 +29,33 @@ const shareOptions: ShareOption[] = [
   },
   {
     label: "WhatsApp",
-    href: "https://github.com/rajput-hemant/infinitunes",
+    platform: "whatsapp",
     icon: ({ className }) => <Icons.WhatsApp className={className} />,
   },
   {
     label: "Telegram",
-    href: "https://github.com/rajput-hemant/infinitunes",
+    platform: "telegram",
     icon: ({ className }) => <Icons.Telegram className={className} />,
   },
   {
     label: "Twitter",
-    href: "https://github.com/rajput-hemant/infinitunes",
+    platform: "twitter",
     icon: ({ className }) => <Icons.X className={className} />,
   },
   {
     label: "Facebook",
-    href: "https://github.com/rajput-hemant/infinitunes",
+    platform: "facebook",
     icon: ({ className }) => <Icons.Facebook className={className} />,
   },
   {
     label: "Email",
-    href: "https://github.com/rajput-hemant/infinitunes",
+    platform: "email",
     icon: ({ className }) => <Mail className={className} />,
   },
 ];
 
-type MenuItemProps = ShareOption & {
+type MenuItemProps = Omit<ShareOption, "platform"> & {
+  href?: string;
   isDropDownItem?: boolean;
   copy: () => void;
   isCopied: boolean;
@@ -94,14 +97,20 @@ export function ShareOptions({ isDropDownItem, ...props }: ShareOptionsProps) {
 
   const [isCopied, setIsCopied] = React.useState(false);
 
+  const url = `${siteConfig.url}${pathname}`;
+
   function copy() {
-    navigator.clipboard.writeText(`${siteConfig.url}${pathname}`);
+    navigator.clipboard.writeText(url);
     setIsCopied(true);
   }
 
   return (
     <div {...props}>
-      {shareOptions.map(({ label, href, icon }, i) => {
+      {shareOptions.map(({ label, platform, icon }, i) => {
+        const href = platform
+          ? buildShareUrl(platform, { url, title: siteConfig.name })
+          : undefined;
+
         return isDropDownItem ? (
           <DropdownMenuItem key={i}>
             <MenuItem

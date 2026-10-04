@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
-import { findQueueIndex, isCurrentTrack } from "../lib/queue-position";
+import {
+  findQueueIndex,
+  isCurrentTrack,
+  playToRecord,
+} from "../lib/queue-position";
 
 const queue = [
   { id: "a", queueItemId: "q1", url: "https://x/song/a/tokA" },
@@ -42,5 +46,31 @@ describe("findQueueIndex", () => {
       1,
     );
     expect(findQueueIndex(queue, { token: "nope" })).toBe(-1);
+  });
+});
+
+describe("playToRecord", () => {
+  const track = (queueItemId: string, type: "song" | "episode" = "song") => ({
+    id: "a",
+    queueItemId,
+    type,
+  });
+
+  it("records a new queue entry", () => {
+    expect(playToRecord(track("q1"), null)).toEqual({ id: "a", type: "song" });
+    expect(playToRecord(track("q2"), "q1")).toEqual({ id: "a", type: "song" });
+  });
+
+  it("does not re-record the entry that was just recorded", () => {
+    expect(playToRecord(track("q1"), "q1")).toBeNull();
+  });
+
+  it("records the same song queued again, since its queueItemId differs", () => {
+    expect(playToRecord(track("q3"), "q1")).not.toBeNull();
+  });
+
+  it("maps episodes and ignores an empty queue", () => {
+    expect(playToRecord(track("q1", "episode"), null)?.type).toBe("episode");
+    expect(playToRecord(undefined, null)).toBeNull();
   });
 });

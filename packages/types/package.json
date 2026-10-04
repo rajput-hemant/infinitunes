@@ -3,9 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts"
-  },
   "scripts": {
     "lint": "oxlint",
     "type-check": "tsc --noEmit"
@@ -15,5 +12,8 @@
     "oxlint": "catalog:",
     "oxfmt": "catalog:",
     "typescript": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts"
   }
 }

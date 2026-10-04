@@ -14,7 +14,6 @@ export const metadata = pageMetadata({
   title,
   description,
   url: "/radio",
-  image: "https://graph.org/file/857b2fc40944dbb65b184.png",
   alt: "Top Indian Radio Stations",
 });
 

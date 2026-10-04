@@ -97,6 +97,20 @@ describe("router procedures", () => {
     expect(result.songs[0]?.download_url).toContain("_320.mp4");
   });
 
+  it("song.items resolves episode ids through the same endpoint", async () => {
+    calls = [];
+    responses = {
+      "song.getDetails": {
+        songs: [{ ...song("e1"), type: "episode" }, song("s1")],
+      },
+    };
+
+    const result = await caller.song.items({ id: "e1,s1" });
+
+    expect(calls).toEqual(["song.getDetails"]);
+    expect(result.songs.map((item) => item.type)).toEqual(["episode", "song"]);
+  });
+
   it("album.details returns album payload matching Album shape", async () => {
     const id = uniq();
     calls = [];

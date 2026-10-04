@@ -3,12 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./client": "./src/auth-client.ts",
-    "./schemas": "./src/schemas.ts",
-    "./env": "./src/env.ts"
-  },
   "scripts": {
     "type-check": "tsc --noEmit"
   },
@@ -27,5 +21,11 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/auth-client.ts",
+    "./schemas": "./src/schemas.ts",
+    "./env": "./src/env.ts"
   }
 }

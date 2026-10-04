@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
 
+import { unwrap } from "~/lib/action-result";
 import { deletePlaylist } from "~/lib/actions";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
@@ -45,7 +46,7 @@ export function PlaylistManageMenu({
 
   async function handleDelete() {
     try {
-      await toast.promise(deletePlaylist(playlist.id), {
+      await toast.promise(unwrap(deletePlaylist(playlist.id)), {
         loading: "Deleting playlist...",
         success: `Playlist "${playlist.name}" deleted`,
         error: userMessage,

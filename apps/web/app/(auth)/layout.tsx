@@ -2,11 +2,9 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import React from "react";
 
 import { Icons } from "~/components/icons";
-import { getUser } from "~/lib/auth";
 import { asRoute, cn } from "~/lib/utils";
 
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
@@ -18,13 +16,9 @@ function dailyArtistImage() {
 
 type AuthLayoutProps = React.PropsWithChildren;
 
-export default async function AuthLayout({ children }: AuthLayoutProps) {
-  const user = await getUser();
-
-  if (user) {
-    redirect("/");
-  }
-
+// Signed-in redirects live in each page (`redirectIfSignedIn`), because
+// `/reset-password?token=...` must stay reachable for a signed-in user.
+export default function AuthLayout({ children }: AuthLayoutProps) {
   const imageUrl = dailyArtistImage();
 
   return (

@@ -11,6 +11,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
+import { userMessage } from "~/lib/user-message";
 import { asRoute, safeRedirectPath } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
@@ -59,7 +60,9 @@ export function SignUpForm() {
       });
 
       if (error) {
-        toast.error(error.message ?? "Something went wrong.");
+        toast.error(
+          error.status < 500 ? userMessage(error.message) : userMessage(null),
+        );
       } else {
         // Better Auth signs the new user in (autoSignIn defaults to true).
         toast.success("Account Created Successfully");
@@ -69,7 +72,7 @@ export function SignUpForm() {
     } catch (error) {
       const err = error as Error;
       console.error(err.message);
-      toast.error(err.message);
+      toast.error(userMessage(err));
     } finally {
       setIsSubmitting(false);
     }

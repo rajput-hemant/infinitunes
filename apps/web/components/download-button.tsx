@@ -50,27 +50,15 @@ export function DownloadButton({
 
           const chunks: BlobPart[] = [];
 
-          const contentLength = parseInt(
-            response.headers.get("content-length") ?? "0",
-            10,
-          );
-
-          let receivedLength = 0;
-
           while (true) {
             const { done, value } = await reader.read();
 
             if (done) break;
 
             chunks.push(value!);
-            receivedLength += value!.length;
-
-            const progress = Math.floor((receivedLength / contentLength) * 100);
-
-            if (progress === 100) {
-              toast.success(`Downloaded ${name}`);
-            }
           }
+
+          toast.success(`Downloaded ${name}`);
 
           const blob = new Blob(chunks, { type: "audio/mp4" });
 

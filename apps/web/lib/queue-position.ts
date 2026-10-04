@@ -41,3 +41,17 @@ export function findQueueIndex(
   }
   return queue.findIndex((item) => parseToken(item.url) === target.token);
 }
+
+/**
+ * The listening-history entry to record when `track` starts, or `null` when it
+ * was already recorded. Keyed on the unique `queueItemId`, so a quality change
+ * that reloads the same entry is not a new listen, while the same song queued
+ * twice is.
+ */
+export function playToRecord(
+  track: Pick<Queue, "id" | "queueItemId" | "type"> | undefined,
+  lastRecordedId: string | null,
+): { id: string; type: "song" | "episode" } | null {
+  if (!track || track.queueItemId === lastRecordedId) return null;
+  return { id: track.id, type: track.type === "episode" ? "episode" : "song" };
+}

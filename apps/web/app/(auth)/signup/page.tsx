@@ -1,3 +1,5 @@
+import { redirectIfSignedIn } from "~/lib/auth-guard";
+
 import { SignUpForm } from "../_components/signup-form";
 
 export const metadata = {
@@ -5,7 +7,9 @@ export const metadata = {
   description: "Create a new account",
 };
 
-export default function SignUpPage() {
+export default async function SignUpPage() {
+  await redirectIfSignedIn();
+
   return (
     <div className="flex flex-col space-y-2 text-center">
       <h1 className="font-heading text-3xl drop-shadow-md text-foreground sm:text-4xl">

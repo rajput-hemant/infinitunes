@@ -14,7 +14,6 @@ export const metadata = pageMetadata({
   title,
   description,
   url: "/playlist",
-  image: "https://graph.org/file/f595784c3c1e13c2e23db.png",
   alt: "Top Featured Playlists",
 });
 type PageProps = { searchParams: Promise<{ page?: number; lang?: Lang }> };

@@ -80,15 +80,12 @@ export function PlayButton(props: PlayButtonProps) {
           break;
         }
         case "show": {
-          // `show.episodes` is output-less: upstream returns a list, but may
-          // return an object when the show has no episodes.
-          const episodes = await utils.show.episodes.fetch({
+          queue = await utils.show.episodes.fetch({
             id: token,
             season,
             page: 1,
             sort,
           });
-          queue = Array.isArray(episodes) ? episodes : [];
           break;
         }
         case "episode": {

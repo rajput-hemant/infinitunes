@@ -3,11 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": "./src/index.ts",
-    "./client": "./src/client.ts",
-    "./schema": "./src/schema.ts"
-  },
   "scripts": {
     "type-check": "tsc --noEmit"
   },
@@ -20,5 +15,10 @@
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts",
+    "./schema": "./src/schema.ts"
   }
 }

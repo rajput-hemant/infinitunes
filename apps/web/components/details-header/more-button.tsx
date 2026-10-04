@@ -44,6 +44,7 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
+import { unwrap } from "~/lib/action-result";
 import type { User } from "~/lib/auth";
 import { addSongsToPlaylist } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
@@ -117,15 +118,17 @@ export function MoreButton(props: MoreButtonProps) {
     }
   }
 
-  function addToPlaylist(id: string, name: string) {
+  function addToPlaylist(playlistId: string, playlistName: string) {
     toast.promise(
-      addSongsToPlaylist(
-        id,
-        songs.map(({ id }) => id),
+      unwrap(
+        addSongsToPlaylist(
+          playlistId,
+          songs.map((song) => song.id),
+        ),
       ),
       {
         loading: "Adding songs to playlist...",
-        success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${name}" playlist`,
+        success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${playlistName}" playlist`,
         error: userMessage,
         finally: () => setDialogOpen(false),
       },

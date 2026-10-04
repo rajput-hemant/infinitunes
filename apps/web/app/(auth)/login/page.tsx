@@ -1,6 +1,10 @@
+import { redirectIfSignedIn } from "~/lib/auth-guard";
+
 import { LoginForm } from "../_components/login-form";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  await redirectIfSignedIn();
+
   return (
     <div className="flex flex-col space-y-2 text-center">
       <h1 className="font-heading text-3xl drop-shadow-md text-foreground sm:text-4xl md:text-5xl">
