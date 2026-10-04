@@ -14,13 +14,13 @@ Sources: the 2026-10-03 source-read audit of the docs and ledger, plus the orche
 
 | Status                  | P0  | P1  | P2  | P3  | Total |
 | ----------------------- | --- | --- | --- | --- | ----- |
-| open                    | 0   | 0   | 5   | 40  | 45    |
+| open                    | 0   | 0   | 3   | 34  | 37    |
 | needs local environment | 0   | 4   | 14  | 12  | 30    |
-| decision needed         | 0   | 1   | 2   | 26  | 29    |
-| done                    | 0   | 5   | 46  | 138 | 189   |
+| decision needed         | 0   | 1   | 3   | 26  | 30    |
+| done                    | 0   | 5   | 47  | 144 | 196   |
 | **Total**               | 0   | 10  | 67  | 216 | 293   |
 
-293 items: 185 done, 49 open, 30 needs local environment, 29 decision needed (recounted by script from every item tag; includes the 112 deslop and ponytail items; the earlier 180-item table undercounted by one done P2 item outside Completed, DP-15); 14 proposals (not counted; 9 implemented or adopted in whole or part, 5 still open). Counts by kind: confirmed bug 7, decision 25, deslop 55, fix 80, improvement 38, ponytail 57, verification gap 31.
+293 items: 196 done, 37 open, 30 needs local environment, 30 decision needed (recounted by script from every item tag; includes the 112 deslop and ponytail items; the earlier 180-item table undercounted by one done P2 item outside Completed, DP-15); 14 proposals (not counted; 9 implemented or adopted in whole or part, 5 still open). Counts by kind: confirmed bug 7, decision 25, deslop 55, fix 80, improvement 38, ponytail 57, verification gap 31.
 
 The 2026-10-03 deslop and ponytail review (112 PT/DS items, including 7 new findings DS-53 to DS-58 and PT-63) is merged into the table above by item tag; its 15 out-of-scope observations (OBS-1 to OBS-15, not tasks, no priority) are not counted in the table and live in [its own section](#deslop-and-ponytail-review-2026-10-03). Scope: tests and UI component source (including `components/ui`) were excluded by the captain.
 
