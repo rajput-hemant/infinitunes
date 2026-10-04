@@ -1,3 +1,12 @@
 [test]
 # DOM tests need a global DOM and run in their own process: `bun run test:dom`.
-pathIgnorePatterns = ["apps/web/tests/dom/**"]
+# Files that `mock.module` shared modules (next/navigation, @infinitunes/db, ...)
+# leak the mock into every later file of the process, so each runs on its own:
+# `bun run test:isolated`.
+pathIgnorePatterns = [
+  "apps/web/tests/dom/**",
+  "apps/web/tests/proxy.test.ts",
+  "apps/web/tests/security.test.ts",
+  "packages/trpc/tests/history-router.test.ts",
+  "packages/trpc/tests/user-router.test.ts",
+]
