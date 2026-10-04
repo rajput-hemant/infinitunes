@@ -24,8 +24,10 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
+import { unwrap } from "~/lib/action-result";
 import { createNewPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
+import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
 
 const defaultValues: FormData = {
@@ -50,10 +52,10 @@ export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
 
   async function onSubmit({ name, description }: FormData) {
     try {
-      toast.promise(createNewPlaylist({ name, description }), {
+      toast.promise(unwrap(createNewPlaylist({ name, description })), {
         loading: "Creating playlist...",
         success: (d) => `Playlist "${d.name}" created successfully!`,
-        error: (e) => e.message,
+        error: userMessage,
         finally: () => setOpen(false),
       });
     } catch (error) {

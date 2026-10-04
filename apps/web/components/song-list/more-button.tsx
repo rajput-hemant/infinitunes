@@ -47,6 +47,7 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
+import { unwrap } from "~/lib/action-result";
 import type { User } from "~/lib/auth";
 import {
   addSongsToPlaylist,
@@ -142,9 +143,11 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
     React.startTransition(async () => {
       setOptimisticFavorite(!isFavorite);
-      const promise = isFavorite
-        ? removeFromFavorites(item.id, "song")
-        : addToFavorites(item.id, "song");
+      const promise = unwrap(
+        isFavorite
+          ? removeFromFavorites(item.id, "song")
+          : addToFavorites(item.id, "song"),
+      );
 
       toast.promise(promise, {
         loading: isFavorite
@@ -153,7 +156,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         success: isFavorite
           ? `Successfully removed "${name}" from favorites!`
           : `"${name}" song added to favorites!`,
-        error: (e) => e.message,
+        error: userMessage,
       });
 
       try {
@@ -203,7 +206,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function addToPlaylist(id: string, name: string) {
-    toast.promise(addSongsToPlaylist(id, [item.id]), {
+    toast.promise(unwrap(addSongsToPlaylist(id, [item.id])), {
       loading: "Adding songs to playlist...",
       success: `"${getItemName(item)}" added to "${name}" playlist`,
       error: userMessage,
@@ -217,7 +220,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     }
 
     toast.promise(
-      removeSongsFromPlaylist(playlistId, playlistSongIndex, item.id),
+      unwrap(removeSongsFromPlaylist(playlistId, playlistSongIndex, item.id)),
       {
         loading: "Removing from playlist...",
         success: `"${getItemName(item)}" removed from playlist`,

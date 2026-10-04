@@ -11,8 +11,10 @@ import { Heart } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
+import { unwrap } from "~/lib/action-result";
 import type { User } from "~/lib/auth";
 import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
+import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
 // Types the favorites table has a column for; other media types are not likable.
@@ -23,6 +25,56 @@ function isFavoriteType(
 ): type is (typeof FAVORITE_TYPES)[number] {
   return (FAVORITE_TYPES as readonly string[]).includes(type);
 }
+
+type FavoriteType = (typeof FAVORITE_TYPES)[number];
+
+const removedDefault = (name: string) =>
+  `Successfully removed "${name}" from favorites!`;
+
+// Favorites column and toast copy per likable type.
+const FAVORITE_COPY: Record<
+  FavoriteType,
+  {
+    key: keyof Pick<
+      Favorite,
+      "songs" | "albums" | "playlists" | "artists" | "podcasts"
+    >;
+    label: string;
+    removed: (name: string) => string;
+    added: (name: string) => string;
+  }
+> = {
+  song: {
+    key: "songs",
+    label: "Song",
+    removed: removedDefault,
+    added: (name) => `"${name}" song added to favorites!`,
+  },
+  album: {
+    key: "albums",
+    label: "Album",
+    removed: removedDefault,
+    added: (name) => `"${name}" album added to favorites!`,
+  },
+  playlist: {
+    key: "playlists",
+    label: "Playlist",
+    removed: (name) => `"${name}" playlist removed from favorites!`,
+    added: (name) => `"${name}" playlist added to favorites!`,
+  },
+  artist: {
+    key: "artists",
+    label: "Artist",
+    removed: removedDefault,
+    added: (name) => `"${name}" artist added to favorites!`,
+  },
+  show: {
+    key: "podcasts",
+    label: "Podcast",
+    removed: () => "Removed from favorites!",
+    added: () => "Added Podcast to favorites!",
+  },
+};
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   user?: User;
@@ -62,93 +114,30 @@ export function LikeButton(props: LikeButtonProps) {
 
     React.startTransition(async () => {
       setOptimisticLike(true);
-      let pending: ReturnType<typeof toast.promise> | undefined;
 
-      switch (type) {
-        case "song": {
-          if (favourites?.songs.includes(token)) {
-            pending = toast.promise(removeFromFavorites(token, type), {
+      const copy = FAVORITE_COPY[type];
+      const liked = favourites?.[copy.key].includes(token);
+      const pending = toast.promise(
+        unwrap(
+          liked
+            ? removeFromFavorites(token, type)
+            : addToFavorites(token, type),
+        ),
+        liked
+          ? {
               loading: "Removing from favorites...",
-              success: `Successfully removed "${name}" from favorites!`,
-              error: (e) => e.message,
-            });
-          } else {
-            pending = toast.promise(addToFavorites(token, type), {
-              loading: "Adding Song to favorites...",
-              success: `"${name}" song added to favorites!`,
-              error: (e) => e.message,
-            });
-          }
-          break;
-        }
-        case "album": {
-          if (favourites?.albums.includes(token)) {
-            pending = toast.promise(removeFromFavorites(token, type), {
-              loading: "Removing from favorites...",
-              success: `Successfully removed "${name}" from favorites!`,
-              error: (e) => e.message,
-            });
-          } else {
-            pending = toast.promise(addToFavorites(token, type), {
-              loading: "Adding Album to favorites...",
-              success: `"${name}" album added to favorites!`,
-              error: (e) => e.message,
-            });
-          }
-          break;
-        }
-        case "playlist": {
-          if (favourites?.playlists.includes(token)) {
-            pending = toast.promise(removeFromFavorites(token, type), {
-              loading: "Removing from favorites...",
-              success: `"${name}" playlist removed from favorites!`,
-              error: (e) => e.message,
-            });
-          } else {
-            pending = toast.promise(addToFavorites(token, type), {
-              loading: "Adding Playlist to favorites...",
-              success: `"${name}" playlist added to favorites!`,
-              error: (e) => e.message,
-            });
-          }
-          break;
-        }
-        case "artist": {
-          if (favourites?.artists.includes(token)) {
-            pending = toast.promise(removeFromFavorites(token, type), {
-              loading: "Removing from favorites...",
-              success: `Successfully removed "${name}" from favorites!`,
-              error: (e) => e.message,
-            });
-          } else {
-            pending = toast.promise(addToFavorites(token, type), {
-              loading: "Adding Artist to favorites...",
-              success: `"${name}" artist added to favorites!`,
-              error: (e) => e.message,
-            });
-          }
-          break;
-        }
-        case "show": {
-          if (favourites?.podcasts.includes(token)) {
-            pending = toast.promise(removeFromFavorites(token, type), {
-              loading: "Removing from favorites...",
-              success: "Removed from favorites!",
-              error: (e) => e.message,
-            });
-          } else {
-            pending = toast.promise(addToFavorites(token, type), {
-              loading: "Adding Podcast to favorites...",
-              success: "Added Podcast to favorites!",
-              error: (e) => e.message,
-            });
-          }
-          break;
-        }
-      }
+              success: copy.removed(name),
+              error: userMessage,
+            }
+          : {
+              loading: `Adding ${copy.label} to favorites...`,
+              success: copy.added(name),
+              error: userMessage,
+            },
+      );
 
       // Keep the optimistic state until the action settles (toast shows errors).
-      await pending?.unwrap().catch(() => undefined);
+      await pending.unwrap().catch(() => undefined);
     });
   }
 

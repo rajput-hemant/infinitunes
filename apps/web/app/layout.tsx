@@ -1,6 +1,7 @@
 // oxlint-disable-next-line import/no-unassigned-import -- global stylesheet is a side-effect import
 import "~/styles/globals.css";
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import Script from "next/script";
 import type React from "react";
 
@@ -19,6 +20,8 @@ type RootLayoutProps = {
 
 export default async function RootLayout({ modal, children }: RootLayoutProps) {
   const { theme, radius } = await getThemeConfig();
+  // Per-request CSP nonce set by `proxy.ts`; absent when the proxy did not run.
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -44,6 +47,7 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
 
       <Script
         async
+        nonce={nonce}
         src="https://us.umami.is/script.js"
         data-website-id={env.UMAMI_WEBSITE_ID}
       />

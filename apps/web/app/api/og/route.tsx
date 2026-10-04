@@ -13,7 +13,6 @@ declare module "react" {
   }
 }
 
-const DEFAULT_IMAGE = "https://graph.org/file/16937ebb693470d804f31.png";
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
 // Redirects are refused so an allowlisted host cannot bounce the server to an
@@ -40,6 +39,15 @@ async function readFont() {
   );
 }
 
+// Local default artwork (served from `public/`), so a missing `image` param
+// never triggers a third-party fetch. It is square, so it uses the square layout.
+async function readDefaultImage() {
+  const buffer = await readFile(
+    new URL("../../../public/icon-512.png", import.meta.url),
+  );
+  return `data:image/png;base64,${buffer.toString("base64")}`;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const title = searchParams.get("title")?.slice(0, 100) ?? siteConfig.name;
@@ -47,20 +55,19 @@ export async function GET(request: Request) {
     searchParams.get("description")?.slice(0, 300) ?? siteConfig.description;
 
   const requestedImage = searchParams.get("image");
-  // The default is a trusted constant; anything caller-supplied must be on the
-  // image CDN allowlist.
-  const imageUrl = requestedImage
-    ? parseAllowedImageUrl(requestedImage)
-    : new URL(DEFAULT_IMAGE);
+  // Anything caller-supplied must be on the image CDN allowlist.
+  const imageUrl = requestedImage ? parseAllowedImageUrl(requestedImage) : null;
 
-  if (!imageUrl) {
+  if (requestedImage && !imageUrl) {
     return new Response("Invalid image URL", { status: 400 });
   }
 
-  const isSquaredImage = searchParams.get("square") === "true";
+  const isSquaredImage = !imageUrl || searchParams.get("square") === "true";
 
   try {
-    const image = await fetchImage(imageUrl);
+    const image = imageUrl
+      ? await fetchImage(imageUrl)
+      : await readDefaultImage();
     const font = await readFont();
 
     return new ImageResponse(

@@ -25,6 +25,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
+import { unwrap } from "~/lib/action-result";
 import { renamePlaylist } from "~/lib/actions";
 import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
@@ -63,11 +64,14 @@ export function RenamePlaylistDialog({
 
   async function onSubmit({ name, description }: FormData) {
     try {
-      await toast.promise(renamePlaylist(playlist.id, { name, description }), {
-        loading: "Renaming playlist...",
-        success: (updated) => `Playlist renamed to "${updated.name}"`,
-        error: userMessage,
-      });
+      await toast.promise(
+        unwrap(renamePlaylist(playlist.id, { name, description })),
+        {
+          loading: "Renaming playlist...",
+          success: (updated) => `Playlist renamed to "${updated.name}"`,
+          error: userMessage,
+        },
+      );
       onOpenChange(false);
       router.refresh();
     } catch (error) {
