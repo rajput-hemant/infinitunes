@@ -11,16 +11,16 @@ mock.module("next/navigation", () => ({
     throw new Error("NEXT_REDIRECT");
   },
 }));
-mock.module("../app/(auth)/_components/login-form", () => ({
+mock.module("../../app/(auth)/_components/login-form", () => ({
   LoginForm: () => null,
 }));
-mock.module("../app/(auth)/_components/reset-password-form", () => ({
+mock.module("../../app/(auth)/_components/reset-password-form", () => ({
   ResetPasswordForm: () => null,
 }));
 
-const { default: LoginPage } = await import("../app/(auth)/login/page");
+const { default: LoginPage } = await import("../../app/(auth)/login/page");
 const { default: ResetPasswordPage } =
-  await import("../app/(auth)/reset-password/page");
+  await import("../../app/(auth)/reset-password/page");
 
 beforeEach(() => {
   user = undefined;
