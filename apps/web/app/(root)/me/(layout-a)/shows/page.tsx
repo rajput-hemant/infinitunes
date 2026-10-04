@@ -11,29 +11,13 @@ export const metadata = {
   description: "Your favorite podcasts in one place.",
 };
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function showTokenFromEpisodes(value: unknown): string | undefined {
-  const episodes = Array.isArray(value) ? value : [];
-  const first = episodes[0];
-
-  if (!isRecord(first) || !isRecord(first.more_info)) return undefined;
-
-  const showUrl = first.more_info.show_url;
-  return typeof showUrl === "string" && showUrl
-    ? parseToken(showUrl)
-    : undefined;
-}
-
 async function getShowDetails(id: string) {
   const episodes = await api.show.episodes({ id });
-  const token = showTokenFromEpisodes(episodes);
+  const showUrl = episodes[0]?.more_info.show_url;
 
-  if (!token) return undefined;
+  if (!showUrl) return undefined;
 
-  return api.show.details({ token });
+  return api.show.details({ token: parseToken(showUrl) });
 }
 
 export default async function LikedPodcastsPage() {
