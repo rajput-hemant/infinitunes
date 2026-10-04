@@ -1,8 +1,10 @@
 import type { ArtistMap } from "./artist";
 import type { Lang, Rights } from "./misc";
+import type { Episode } from "./show";
 
+/** `song.getDetails` resolves episode ids as well as song ids/tokens. */
 export type SongObj = {
-  songs: Song[];
+  songs: (Song | Episode)[];
   modules?: SongModules;
 };
 

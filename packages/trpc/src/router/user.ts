@@ -202,25 +202,23 @@ async function confirmIdentity(
 }
 
 async function storePassword(
-  db: TRPCContext["db"],
+  tx: Pick<TRPCContext["db"], "update" | "insert">,
   userRecord: { id: string; email: string },
   credentialAccount: { id: string } | undefined,
-  newPassword: string,
+  hashedPassword: string,
 ) {
-  const hashedPassword = await hash(newPassword, 10);
-
-  await db
+  await tx
     .update(users)
     .set({ password: hashedPassword })
     .where(eq(users.email, userRecord.email));
 
   if (credentialAccount) {
-    await db
+    await tx
       .update(betterAuthAccounts)
       .set({ password: hashedPassword, updatedAt: new Date() })
       .where(eq(betterAuthAccounts.id, credentialAccount.id));
   } else {
-    await db.insert(betterAuthAccounts).values({
+    await tx.insert(betterAuthAccounts).values({
       userId: userRecord.id,
       accountId: userRecord.id,
       providerId: "credential",
@@ -430,28 +428,27 @@ export const userRouter = router({
         input.password,
       );
 
-      await storePassword(
-        ctx.db,
-        userRecord,
-        credentialAccount,
-        input.newPassword,
-      );
+      const hashedPassword = await hash(input.newPassword, 10);
 
       // Revoke every other session (stolen or forgotten devices) but keep the
       // caller's. Deleted straight from the session table: Better Auth's
       // revokeOtherSessions endpoint needs the request headers, which tRPC
       // procedures do not receive.
       const currentToken = ctx.session.session?.token;
-      await ctx.db
-        .delete(betterAuthSessions)
-        .where(
-          currentToken
-            ? and(
-                eq(betterAuthSessions.userId, userId),
-                ne(betterAuthSessions.token, currentToken),
-              )
-            : eq(betterAuthSessions.userId, userId),
-        );
+      await ctx.db.transaction(async (tx) => {
+        await storePassword(tx, userRecord, credentialAccount, hashedPassword);
+
+        await tx
+          .delete(betterAuthSessions)
+          .where(
+            currentToken
+              ? and(
+                  eq(betterAuthSessions.userId, userId),
+                  ne(betterAuthSessions.token, currentToken),
+                )
+              : eq(betterAuthSessions.userId, userId),
+          );
+      });
     }),
 
   createNewPlaylist: protectedProcedure

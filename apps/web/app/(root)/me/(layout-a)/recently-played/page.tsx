@@ -1,4 +1,3 @@
-import type { Episode, Song } from "@infinitunes/types";
 import { History } from "lucide-react";
 
 import {
@@ -31,7 +30,7 @@ export default async function RecentlyPlayedPage() {
     );
   }
 
-  const fetched = await fetchSongsChunked<Song | Episode>(ids, (input) =>
+  const fetched = await fetchSongsChunked(ids, (input) =>
     api.song.details(input),
   );
 

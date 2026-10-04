@@ -13,19 +13,19 @@ export function chunk<T>(items: T[], size: number): T[][] {
 /**
  * Fetch song details in chunks, tolerating partial failure. Returns undefined
  * only when every chunk failed. Upstream `song.getDetails` also resolves
- * episode ids, so pass `Song | Episode` for mixed lists.
+ * episode ids, so items are `Song | Episode`.
  */
-export async function fetchSongsChunked<T extends Song | Episode = Song>(
+export async function fetchSongsChunked(
   ids: string[],
-  details: (input: { id: string }) => Promise<{ songs: T[] }>,
+  details: (input: { id: string }) => Promise<{ songs: (Song | Episode)[] }>,
   size = LIKED_SONGS_CHUNK_SIZE,
-): Promise<T[] | undefined> {
+): Promise<(Song | Episode)[] | undefined> {
   const chunks = chunk(ids, size);
   const results = await Promise.allSettled(
     chunks.map((c) => details({ id: c.join(",") })),
   );
 
-  const songs: T[] = [];
+  const songs: (Song | Episode)[] = [];
   let failed = 0;
   for (const result of results) {
     if (result.status === "fulfilled") {

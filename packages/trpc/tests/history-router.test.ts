@@ -74,6 +74,8 @@ const fakeDb = {
       });
     },
   }),
+  transaction: (fn: (tx: unknown) => Promise<unknown>): Promise<unknown> =>
+    fn(fakeDb),
 };
 
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));

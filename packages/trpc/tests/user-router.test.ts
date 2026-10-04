@@ -112,6 +112,8 @@ const fakeDb = {
       state.inserts.push({ table: getTableName(table), values });
     },
   }),
+  transaction: (fn: (tx: unknown) => Promise<unknown>): Promise<unknown> =>
+    fn(fakeDb),
 };
 
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));

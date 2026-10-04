@@ -1,4 +1,4 @@
-import type { EpisodeDetail, Show } from "@infinitunes/types";
+import type { Episode, EpisodeDetail, Show } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -6,7 +6,7 @@ import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { showEpisodesInput, showInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { isRecord, mapDownloadUrls, withDownloadUrl } from "./utils";
+import { mapDownloadUrls, withDownloadUrl } from "./utils";
 
 function requireShowToken(
   input: { token?: string },
@@ -41,6 +41,7 @@ export const showRouter = router({
 
   episodes: publicProcedure
     .input(showEpisodesInput)
+    .output(z.custom<Episode[]>())
     .query(async ({ input }) => {
       const result = await api(endpoints.show.episodes, {
         query: {
@@ -50,11 +51,10 @@ export const showRouter = router({
           sort_order: input.sort,
         },
       });
-      if (Array.isArray(result)) {
-        return result.map((item) => withDownloadUrl(item));
-      }
-      if (isRecord(result)) mapDownloadUrls(result, "episodes");
-      return result;
+      // Upstream answers with an object instead of a list when the show has no
+      // episodes for that page.
+      if (!Array.isArray(result)) return [];
+      return result.map((item) => withDownloadUrl(item)) as Episode[];
     }),
 
   episodeDetails: publicProcedure
