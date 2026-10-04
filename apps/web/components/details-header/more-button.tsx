@@ -44,6 +44,7 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
+import { unwrapAction } from "~/lib/action-result";
 import type { User } from "~/lib/auth";
 import { addSongsToPlaylist } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
@@ -119,9 +120,11 @@ export function MoreButton(props: MoreButtonProps) {
 
   function addToPlaylist(playlistId: string, playlistName: string) {
     toast.promise(
-      addSongsToPlaylist(
-        playlistId,
-        songs.map((song) => song.id),
+      unwrapAction(
+        addSongsToPlaylist(
+          playlistId,
+          songs.map((song) => song.id),
+        ),
       ),
       {
         loading: "Adding songs to playlist...",

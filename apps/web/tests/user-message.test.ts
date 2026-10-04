@@ -2,7 +2,6 @@ import { describe, expect, it } from "bun:test";
 
 import { TRPCError } from "@trpc/server";
 
-import { toActionError } from "../lib/error-code";
 import { userMessage } from "../lib/user-message";
 
 const GENERIC = "Something went wrong. Please try again.";
@@ -90,25 +89,5 @@ describe("userMessage", () => {
   it("falls back for non-errors and uses a custom fallback", () => {
     expect(userMessage(undefined)).toBe(GENERIC);
     expect(userMessage(null, "Could not rename")).toBe("Could not rename");
-  });
-
-  it("maps action-rewrapped errors by their preserved code", () => {
-    expect(
-      userMessage(
-        toActionError(
-          new TRPCError({ code: "NOT_FOUND", message: "Playlist not found" }),
-        ),
-      ),
-    ).toBe("Playlist not found");
-    expect(
-      userMessage(
-        toActionError(
-          new TRPCError({
-            code: "BAD_GATEWAY",
-            message: "upstream connect ECONNREFUSED 10.0.0.1",
-          }),
-        ),
-      ),
-    ).toBe(GENERIC);
   });
 });

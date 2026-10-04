@@ -35,6 +35,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { useIsTyping } from "~/hooks/use-store";
+import { unwrapAction } from "~/lib/action-result";
 import { changePassword, deleteUser, updateUser } from "~/lib/actions";
 import { userMessage } from "~/lib/user-message";
 
@@ -102,18 +103,22 @@ export function ProfileForm({ user }: ProfileFormProps) {
     setIsSubmitting(true);
 
     async function save() {
-      await updateUser({
-        name: formData.name,
-        ...(emailChanged && {
-          email: formData.email,
-          currentPassword: formData.currentPassword,
+      await unwrapAction(
+        updateUser({
+          name: formData.name,
+          ...(emailChanged && {
+            email: formData.email,
+            currentPassword: formData.currentPassword,
+          }),
         }),
-      });
+      );
       if (newPassword && formData.currentPassword) {
-        await changePassword({
-          password: formData.currentPassword,
-          newPassword,
-        });
+        await unwrapAction(
+          changePassword({
+            password: formData.currentPassword,
+            newPassword,
+          }),
+        );
       }
       form.setValue("currentPassword", "");
       form.setValue("password", "");
@@ -128,7 +133,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   }
 
   async function deleteUserHandler() {
-    toast.promise(deleteUser(deletePassword || undefined), {
+    toast.promise(unwrapAction(deleteUser(deletePassword || undefined)), {
       loading: "Deleting Account...",
       success: "Account Deleted! Logging out...",
       error: userMessage,

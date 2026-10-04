@@ -107,63 +107,91 @@ describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {
     it("rejects addToFavorites with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(addToFavorites("song_token", "song")).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(addToFavorites("song_token", "song")).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects removeFromFavorites with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(removeFromFavorites("song_token", "song")).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(removeFromFavorites("song_token", "song")).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects addSongsToPlaylist with Unauthorized", async () => {
       mockUser = undefined;
       await expect(
         addSongsToPlaylist("playlist-123", ["song-1"]),
-      ).rejects.toThrow("Unauthorized");
+      ).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects createNewPlaylist with Unauthorized", async () => {
       mockUser = undefined;
       await expect(
         createNewPlaylist({ name: "Hacked Playlist" }),
-      ).rejects.toThrow("Unauthorized");
+      ).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects renamePlaylist with Unauthorized", async () => {
       mockUser = undefined;
       await expect(
         renamePlaylist("playlist-123", { name: "Hacked Playlist" }),
-      ).rejects.toThrow("Unauthorized");
+      ).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects deletePlaylist with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(deletePlaylist("playlist-123")).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(deletePlaylist("playlist-123")).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects removeSongsFromPlaylist with Unauthorized", async () => {
       mockUser = undefined;
       await expect(
         removeSongsFromPlaylist("playlist-123", 0, "song-1"),
-      ).rejects.toThrow("Unauthorized");
+      ).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects updateUser with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(updateUser({ name: "Attacker" })).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(updateUser({ name: "Attacker" })).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects deleteUser with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(deleteUser(MOCK_PASSWORD)).rejects.toThrow("Unauthorized");
+      await expect(deleteUser(MOCK_PASSWORD)).resolves.toEqual({
+        ok: false,
+        code: "UNAUTHORIZED",
+        message: "Unauthorized",
+      });
     });
   });
 
@@ -178,7 +206,11 @@ describe("Server action authorization security checks", () => {
 
       await expect(
         addSongsToPlaylist("playlist-victim", ["attacker-song"]),
-      ).rejects.toThrow("Unauthorized");
+      ).resolves.toEqual({
+        ok: false,
+        code: "FORBIDDEN",
+        message: "Unauthorized",
+      });
     });
 
     it("rejects playlist mutations for a foreign playlist", async () => {
@@ -191,13 +223,23 @@ describe("Server action authorization security checks", () => {
 
       await expect(
         removeSongsFromPlaylist("playlist-victim", 0, "existing-song"),
-      ).rejects.toThrow("Unauthorized");
+      ).resolves.toEqual({
+        ok: false,
+        code: "FORBIDDEN",
+        message: "Unauthorized",
+      });
       await expect(
         renamePlaylist("playlist-victim", { name: "Stolen name" }),
-      ).rejects.toThrow("Unauthorized");
-      await expect(deletePlaylist("playlist-victim")).rejects.toThrow(
-        "Unauthorized",
-      );
+      ).resolves.toEqual({
+        ok: false,
+        code: "FORBIDDEN",
+        message: "Unauthorized",
+      });
+      await expect(deletePlaylist("playlist-victim")).resolves.toEqual({
+        ok: false,
+        code: "FORBIDDEN",
+        message: "Unauthorized",
+      });
     });
 
     it("allows addSongsToPlaylist for a playlist owned by session user", async () => {
@@ -209,7 +251,8 @@ describe("Server action authorization security checks", () => {
       };
 
       const result = await addSongsToPlaylist("playlist-own", ["new-song"]);
-      expect(result).toBeDefined();
+      expect(result).toMatchObject({ ok: true });
+      expect(result).toHaveProperty("value");
     });
 
     it("allows createNewPlaylist using session user ID without client passing userId", async () => {
@@ -218,22 +261,25 @@ describe("Server action authorization security checks", () => {
         name: "My New Playlist",
         description: "Test description",
       });
-      expect(result).toBeDefined();
-      expect(result.userId).toBe("user-123");
+      expect(result).toMatchObject({
+        ok: true,
+        value: { userId: "user-123" },
+      });
     });
 
     it("allows deleteUser using session user ID", async () => {
       mockUser = { id: "user-123" };
       const result = await deleteUser(MOCK_PASSWORD);
-      expect(result).toBeDefined();
-      expect(result.id).toBe("user-123");
+      expect(result).toMatchObject({ ok: true, value: { id: "user-123" } });
     });
 
     it("rejects deleteUser with the wrong password", async () => {
       mockUser = { id: "user-123" };
-      await expect(deleteUser("Wrong-Password1!")).rejects.toThrow(
-        "Current password is incorrect",
-      );
+      await expect(deleteUser("Wrong-Password1!")).resolves.toEqual({
+        ok: false,
+        code: "BAD_REQUEST",
+        message: "Current password is incorrect",
+      });
     });
   });
 
