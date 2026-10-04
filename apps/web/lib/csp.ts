@@ -7,7 +7,17 @@ const UMAMI_API_HOST = "https://api-gateway.umami.dev";
 
 const https = (hosts: readonly string[]) => hosts.map((h) => `https://${h}`);
 
-/** Builds the (report-only) Content-Security-Policy header value. */
+/**
+ * Builds the (report-only) Content-Security-Policy header value.
+ *
+ * Before enforcing: every page must render dynamically per request (a static or
+ * cached shell cannot carry the nonce; the root layout reads `cookies()` and
+ * `headers()`, so all HTML routes qualify today); each inline script needs the
+ * `x-nonce` header (the Umami script has it; `next-themes`' `ThemeProvider`
+ * inline script and the `dangerouslySetInnerHTML` blocks do not, so check
+ * them); `style-src` still allows `'unsafe-inline'`; and real violation
+ * reports from a browser on a preview deployment must come back clean.
+ */
 export function buildCsp({
   nonce,
   isDev = false,

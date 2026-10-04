@@ -47,3 +47,13 @@ describe("buildCsp", () => {
     expect(csp).not.toContain("umami");
   });
 });
+
+describe("root layout analytics script", () => {
+  it("carries the per-request nonce from the x-nonce header", async () => {
+    const source = await Bun.file(
+      new URL("../app/layout.tsx", import.meta.url),
+    ).text();
+    expect(source).toContain('.get("x-nonce")');
+    expect(source).toMatch(/<Script[^>]*nonce=\{nonce\}/s);
+  });
+});
