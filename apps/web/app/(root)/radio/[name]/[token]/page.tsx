@@ -1,9 +1,11 @@
 import { getImageSrc } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
+import { Radio } from "lucide-react";
 import type { Metadata } from "next";
 import { cache } from "react";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
+import { LibraryEmpty } from "~/components/library/library-section";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { PlayButton } from "~/components/play-button";
 import { SongList } from "~/components/song-list/song-list";
@@ -80,9 +82,12 @@ export default async function RadioStationPage({ params }: Props) {
       {songs.length > 0 ? (
         <SongList items={songs} showAlbum={false} />
       ) : (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          <p>Click Play to tune into this radio station.</p>
-        </div>
+        <LibraryEmpty
+          icon={Radio}
+          title="Ready to tune in"
+          titleAs="p"
+          description="Click Play to tune into this radio station."
+        />
       )}
     </div>
   );

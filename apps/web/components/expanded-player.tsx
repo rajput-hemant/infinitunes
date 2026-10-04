@@ -4,6 +4,7 @@ import { formatDuration, getImageSrc } from "@infinitunes/types";
 import type { Queue } from "@infinitunes/types";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -19,6 +20,7 @@ import {
   Shuffle,
   Volume2,
   VolumeX,
+  X,
 } from "lucide-react";
 import React from "react";
 
@@ -38,6 +40,9 @@ export function setValueText(root: HTMLElement | null, text: string) {
 // 44px minimum touch target.
 const buttonClass =
   "flex size-11 shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+
+// The slider control is only as tall as its thumb; stretch it to 44px.
+const sliderBandClass = "[&>div]:min-h-11";
 
 type ExpandedPlayerProps = {
   open: boolean;
@@ -89,6 +94,7 @@ export function ExpandedPlayer(props: ExpandedPlayerProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
+        showCloseButton={false}
         className="max-h-[92dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] motion-reduce:transition-none lg:hidden"
       >
         <SheetHeader>
@@ -100,6 +106,12 @@ export function ExpandedPlayer(props: ExpandedPlayerProps) {
           </SheetDescription>
         </SheetHeader>
         {track && <ExpandedBody {...props} track={track} />}
+        <SheetClose
+          aria-label="Close"
+          className={cn(buttonClass, "absolute top-1 right-3 hover:bg-muted")}
+        >
+          <X aria-hidden className="size-5" />
+        </SheetClose>
       </SheetContent>
     </Sheet>
   );
@@ -174,6 +186,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
           }
           onValueCommitted={props.onSeekCommit}
           onPointerDown={props.onSeekStart}
+          className={sliderBandClass}
         />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{formatDuration(pos, format)}</span>
@@ -270,7 +283,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
               typeof value === "number" ? value : (value[0] as number),
             )
           }
-          className={cn(!isReady && "opacity-50")}
+          className={cn(sliderBandClass, !isReady && "opacity-50")}
         />
       </div>
 

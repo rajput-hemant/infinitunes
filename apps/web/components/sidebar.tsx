@@ -92,14 +92,12 @@ export function AppSidebarTrigger({
 function CreatePlaylistTooltip({ children }: { children: React.ReactElement }) {
   const { isMobile, state } = useSidebar();
 
+  if (state !== "collapsed" || isMobile) return children;
+
   return (
     <Tooltip>
       <TooltipTrigger render={children} />
-      <TooltipContent
-        side="right"
-        align="center"
-        hidden={state !== "collapsed" || isMobile}
-      >
+      <TooltipContent side="right" align="center">
         Create Playlist
       </TooltipContent>
     </Tooltip>
@@ -108,7 +106,12 @@ function CreatePlaylistTooltip({ children }: { children: React.ReactElement }) {
 
 export function Sidebar({ user, userPlaylists }: SidebarProps) {
   const [segment] = useSelectedLayoutSegments();
-  const { setOpenMobile } = useSidebar();
+  const { setOpenMobile, state, isMobile } = useSidebar();
+
+  // The tooltip only labels the collapsed icon rail. Elsewhere it is hidden
+  // but still open on keyboard focus, and swallows the first Escape.
+  const railTooltip = (label: string) =>
+    state === "collapsed" && !isMobile ? label : undefined;
 
   return (
     <nav
@@ -147,7 +150,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                     <SidebarMenuItem key={title}>
                       <SidebarMenuButton
                         isActive={isActive}
-                        tooltip={title}
+                        tooltip={railTooltip(title)}
                         render={
                           <Link href={href} className="flex items-center">
                             <Icon className="mr-2 size-5 shrink-0 group-data-[collapsible=icon]:mr-0" />
@@ -175,7 +178,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                         <SidebarMenuItem key={title}>
                           <SidebarMenuButton
                             isActive={isActive}
-                            tooltip={title}
+                            tooltip={railTooltip(title)}
                             render={
                               <Link href={href} className="flex items-center">
                                 <Icon className="mr-2 size-5 shrink-0 group-data-[collapsible=icon]:mr-0" />
@@ -219,7 +222,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                         <SidebarMenuItem key={id}>
                           <SidebarMenuButton
                             isActive={id === segment}
-                            tooltip={name}
+                            tooltip={railTooltip(name)}
                             render={
                               <Link
                                 href={asRoute(`/me/playlist/${id}`)}

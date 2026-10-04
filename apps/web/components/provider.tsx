@@ -12,6 +12,8 @@ import superjson from "superjson";
 
 import { api } from "~/lib/trpc/client";
 
+import { ThemeColorSync } from "./theme-color-sync";
+
 // Defined in globals.css: clears the fixed player bar and, below lg, the mobile nav.
 const TOAST_BOTTOM_OFFSET = "var(--toast-offset-bottom)";
 
@@ -67,6 +69,7 @@ export default function Providers({ children, theme }: Props) {
       enableSystem
       {...theme}
     >
+      <ThemeColorSync />
       <AudioPlayerProvider>
         <TRPCReactProvider>
           <TooltipProvider>{children}</TooltipProvider>

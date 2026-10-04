@@ -67,14 +67,14 @@ export function QueueList() {
     >
       {queue.map((item, index) => (
         <li key={item.queueItemId} className="w-full">
-          <div className="group flex h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
+          <div className="group relative flex h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
             <figure className="flex w-full items-center gap-4 overflow-hidden">
-              <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
+              <div className="relative aspect-square h-11 min-w-fit overflow-hidden rounded">
                 <Image
                   src={getImageSrc(item.image, "low")}
                   alt=""
                   fill
-                  sizes="40px"
+                  sizes="44px"
                   className="z-10 object-cover duration-300 group-hover:brightness-50"
                 />
 
@@ -88,14 +88,14 @@ export function QueueList() {
                 />
               </div>
 
-              <figcaption className="flex flex-col">
+              <figcaption className="flex min-w-0 flex-1 flex-col">
                 <h4 className="w-full truncate font-semibold">
                   <Link
                     href={getHref(
                       item.url,
                       item.type === "song" ? "song" : "episode",
                     )}
-                    className="text-primary group-hover:text-primary lg:text-muted-foreground"
+                    className="text-primary group-hover:text-primary after:absolute after:inset-0 lg:text-muted-foreground"
                   >
                     {item.name}
                   </Link>
@@ -106,7 +106,7 @@ export function QueueList() {
                     <Link
                       key={artist.id}
                       href={getHref(artist.perma_url, "artist")}
-                      className="w-full truncate hover:text-foreground"
+                      className="relative z-10 w-full truncate hover:text-foreground"
                     >
                       {artist.name}
                       {i !== arr.length - 1 && ", "}
@@ -122,7 +122,7 @@ export function QueueList() {
                 data-queue-remove=""
                 aria-label={`Remove ${item.name} from queue`}
                 onClick={() => removeItem(index)}
-                className="ml-auto size-8 shrink-0 p-0 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                className="relative z-10 ml-auto size-11 shrink-0 p-0 text-destructive hover:bg-destructive hover:text-destructive-foreground"
               >
                 <X aria-hidden className="size-4" />
               </Button>
