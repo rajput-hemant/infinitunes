@@ -1,8 +1,9 @@
 import type { ArtistMap } from "./artist";
 import type { Lang, Rights } from "./misc";
+import type { Episode } from "./show";
 
-export type SongObj = {
-  songs: Song[];
+export type SongObj<T extends Song | Episode = Song> = {
+  songs: T[];
   modules?: SongModules;
 };
 

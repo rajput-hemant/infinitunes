@@ -10,6 +10,12 @@ export const songInput = z.object({
   lang,
 });
 
+/** Comma-separated ids that may name songs or episodes. */
+export const songItemsInput = z.object({
+  id: z.string(),
+  lang,
+});
+
 export const songRecommendInput = z.object({
   id: z.string(),
   lang,
