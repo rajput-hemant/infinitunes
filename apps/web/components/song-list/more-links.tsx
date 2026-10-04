@@ -22,10 +22,7 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
   return (
     <>
       <Wrapper isDropdownItem={isDropdownItem}>
-        <Link
-          href={getHref(itemUrl, type === "song" ? "song" : "show")}
-          className="cursor-pointer py-1"
-        >
+        <Link href={getHref(itemUrl, type)} className="cursor-pointer py-1">
           <Music className="mr-2 inline-block size-5" />
           {type === "song" ? "Song Details & Lyrics" : "View Episode Details"}
         </Link>
@@ -42,16 +39,6 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
           </Link>
         </Wrapper>
       )}
-
-      <Wrapper isDropdownItem={isDropdownItem}>
-        <Link
-          href={getHref(itemUrl, type === "song" ? "song" : "show")}
-          className="cursor-pointer py-1"
-        >
-          <Music className="mr-2 inline-block size-5" />
-          {type === "song" ? "Song Details & Lyrics" : "View Episode Details"}
-        </Link>
-      </Wrapper>
 
       {primaryArtists?.map(({ id, perma_url, name }) => (
         <Wrapper key={id} isDropdownItem={isDropdownItem}>
