@@ -114,6 +114,7 @@ export async function GET(request: Request) {
 
         <div tw="relative flex h-full w-1/2 overflow-hidden">
           <img
+            alt=""
             src={image}
             tw={cn(
               "mx-8 my-auto w-4xl max-w-none rounded-2xl border border-zinc-800 shadow-lg shadow-[#e935c277]",

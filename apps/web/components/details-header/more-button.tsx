@@ -117,15 +117,15 @@ export function MoreButton(props: MoreButtonProps) {
     }
   }
 
-  function addToPlaylist(id: string, name: string) {
+  function addToPlaylist(playlistId: string, playlistName: string) {
     toast.promise(
       addSongsToPlaylist(
-        id,
-        songs.map(({ id }) => id),
+        playlistId,
+        songs.map((song) => song.id),
       ),
       {
         loading: "Adding songs to playlist...",
-        success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${name}" playlist`,
+        success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${playlistName}" playlist`,
         error: userMessage,
         finally: () => setDialogOpen(false),
       },

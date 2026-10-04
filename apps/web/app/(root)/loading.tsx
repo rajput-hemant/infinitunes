@@ -9,8 +9,8 @@ export default function HomePageSkeleton() {
 
       <ScrollArea>
         <div className="grid grid-flow-col grid-rows-2 place-content-start sm:gap-2 xl:pb-6">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <SliderCardSkeleton key={i} />
+          {Array.from({ length: 20 }).map((_card, j) => (
+            <SliderCardSkeleton key={j} />
           ))}
         </div>
         <ScrollBar orientation="horizontal" />

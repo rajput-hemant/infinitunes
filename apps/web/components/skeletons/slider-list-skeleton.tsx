@@ -11,8 +11,8 @@ export function SliderListSkeleton({ length = 5 }) {
 
       <ScrollArea>
         <div className="flex space-x-4 pb-4">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <SliderCardSkeleton key={i} />
+          {Array.from({ length: 12 }).map((_card, j) => (
+            <SliderCardSkeleton key={j} />
           ))}
         </div>
         <ScrollBar orientation="horizontal" />

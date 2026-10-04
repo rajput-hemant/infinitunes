@@ -8,7 +8,7 @@ import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton"
 import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function LabelDetailsLoading() {
-  const [_, name] = usePathname().split("/").slice(1);
+  const [, name] = usePathname().split("/").slice(1);
 
   return (
     <div className="space-y-2">
