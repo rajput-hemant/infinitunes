@@ -81,7 +81,7 @@ mock.module("next/navigation", () => ({
   redirect: () => {},
 }));
 
-const { unwrap } = await import("../lib/action-result");
+const { unwrap } = await import("../../lib/action-result");
 const {
   createNewPlaylist,
   deletePlaylist,

@@ -104,6 +104,8 @@ export function LikeButton(props: LikeButtonProps) {
   }
 
   function likeHandler() {
+    if (!isFavoriteType(type)) return;
+
     if (!user) {
       toast.warning("Unable to perform action. Please sign in.", {
         description: "You need to sign in to like this item.",
