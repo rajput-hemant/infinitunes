@@ -117,10 +117,10 @@ export async function SiteFooter() {
             </span>
           </Link>
           <p>
-            {siteConfig.name} is not affiliated with JioSaavn. All trademarks and
-            copyrights belong to their respective owners. All media, images, and
-            songs are the property of their respective owners. This site is for
-            educational purposes only.
+            {siteConfig.name} is not affiliated with JioSaavn. All trademarks
+            and copyrights belong to their respective owners. All media, images,
+            and songs are the property of their respective owners. This site is
+            for educational purposes only.
           </p>
         </div>
 
