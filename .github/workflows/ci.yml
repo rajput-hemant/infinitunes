@@ -6,44 +6,76 @@ on:
   pull_request:
   workflow_dispatch:
 
-jobs:
-  build:
-    name: Run Type Check, Linters & Tests
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
 
-    env:
-      SKIP_ENV_VALIDATION: true
-      DATABASE_URL: postgres://ci:ci@127.0.0.1:1/ci
-      AUTH_SECRET: test-secret-key-that-is-at-least-32-chars-long
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  SKIP_ENV_VALIDATION: true
+  DATABASE_URL: postgres://ci:ci@127.0.0.1:1/ci
+  AUTH_SECRET: test-secret-key-that-is-at-least-32-chars-long
+
+jobs:
+  checks:
+    name: Format, Lint & Types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: .bun-version
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+      - name: Set up and install
+        uses: ./.github/actions/setup
 
       - name: Check formatting
         run: bun run fmt:check
 
       - name: Check linting
-        run: bun run lint
+        run: bun run --filter '*' lint
 
       - name: Check types
-        run: bun run type-check
+        run: bun run --filter '*' type-check
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up and install
+        uses: ./.github/actions/setup
 
       - name: Run tests
         run: bun run test
 
+  production:
+    name: Build & Smoke Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up and install
+        uses: ./.github/actions/setup
+
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: apps/web/.next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('bun.lock') }}-${{ hashFiles('apps/**/*.ts', 'apps/**/*.tsx', 'packages/**/*.ts', 'packages/**/*.tsx') }}
+          restore-keys: next-${{ runner.os }}-${{ hashFiles('bun.lock') }}-
+
       - name: Build production
-        run: bun run build
+        run: bun run --filter @infinitunes/web build
 
       - name: Verify static asset startup
         run: |
@@ -54,7 +86,7 @@ jobs:
           }
           trap cleanup EXIT INT TERM
 
-          bun run start &
+          bun run --filter @infinitunes/web start &
           SERVER_PID=$!
 
           READY=0
@@ -76,6 +108,34 @@ jobs:
           ASSET_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "http://127.0.0.1:3000/robots.txt")
           echo "Asset status: $ASSET_STATUS"
           [ "$ASSET_STATUS" -eq 200 ]
+
+  build:
+    name: Run Type Check, Linters & Tests
+    runs-on: ubuntu-latest
+    needs: [checks, test, production]
+    if: always()
+    timeout-minutes: 5
+
+    steps:
+      - name: Require all checks to pass
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          for r in $RESULTS; do
+            [ "$r" = "success" ] || exit 1
+          done
+
+  commitlint:
+    name: Commit Messages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Check commits messages
         uses: wagoid/commitlint-github-action@v6

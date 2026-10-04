@@ -71,13 +71,13 @@ export function SearchResults(props: SearchResultsProps) {
       ) : (
         <div className="flex w-full flex-wrap justify-between gap-y-4">
           {searchResults.map(
-            ({ id, title, perma_url, subtitle, type, image }) => (
+            ({ id, title, perma_url, subtitle, type: itemType, image }) => (
               <SliderCard
                 key={id}
                 name={title}
                 url={perma_url}
                 subtitle={subtitle}
-                type={type}
+                type={itemType}
                 image={image}
               />
             ),

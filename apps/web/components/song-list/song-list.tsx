@@ -121,14 +121,14 @@ export async function SongList(props: SongListProps) {
 
                   <ScrollArea className="w-full truncate pb-1">
                     {item.more_info.artistMap?.primary_artists?.map(
-                      (artist, i, arr) => (
+                      (artist, artistIndex, arr) => (
                         <Link
                           key={artist.id}
                           href={getHref(artist.perma_url, "artist")}
                           className="hover:text-foreground"
                         >
                           {artist.name}
-                          {i !== arr.length - 1 && ", "}
+                          {artistIndex !== arr.length - 1 && ", "}
                         </Link>
                       ),
                     )}

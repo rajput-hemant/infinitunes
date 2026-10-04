@@ -1,5 +1,6 @@
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import React from "react";
 
 import { SliderCardSkeleton } from "./slider-card-skeleton";
 
@@ -10,8 +11,8 @@ export function SliderListSkeleton({ length = 5 }) {
 
       <ScrollArea>
         <div className="flex space-x-4 pb-4">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <SliderCardSkeleton key={i} />
+          {Array.from({ length: 12 }).map((_card, cardIndex) => (
+            <SliderCardSkeleton key={cardIndex} />
           ))}
         </div>
         <ScrollBar orientation="horizontal" />

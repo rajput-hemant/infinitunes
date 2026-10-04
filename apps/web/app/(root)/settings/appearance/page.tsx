@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import React from "react";
 
 import { LibraryHeading } from "~/components/library/library-section";
 import { parseThemeConfig } from "~/lib/theme-config";

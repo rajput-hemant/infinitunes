@@ -108,20 +108,20 @@ export function ArtistsTopItems(props: Props) {
       <div className="flex w-full flex-wrap justify-between gap-y-4">
         {albums.map(
           ({
-            id,
+            id: albumId,
             title,
             perma_url,
             subtitle,
-            type,
+            type: albumType,
             image,
             explicit_content,
           }) => (
             <SliderCard
-              key={id}
+              key={albumId}
               name={title}
               url={perma_url}
               subtitle={subtitle}
-              type={type}
+              type={albumType}
               image={image}
               explicit={explicit_content}
             />

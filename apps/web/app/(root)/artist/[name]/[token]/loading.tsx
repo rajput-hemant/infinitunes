@@ -4,6 +4,7 @@ import { Badge } from "@infinitunes/ui/components/badge";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
+import React from "react";
 
 import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
 import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";

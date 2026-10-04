@@ -4,6 +4,7 @@ import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Sort } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import React from "react";
 
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
