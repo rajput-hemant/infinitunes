@@ -69,7 +69,7 @@ export async function SiteFooter() {
               <h2 className="text-sm font-semibold lg:text-sm">{title}</h2>
 
               <ul className="w-fit">
-                {data.map(({ id, title, action }) => (
+                {data.map(({ id, title: linkTitle, action }) => (
                   <li
                     key={id}
                     className="w-full text-xs text-muted-foreground hover:text-secondary-foreground"
@@ -78,7 +78,7 @@ export async function SiteFooter() {
                       href={asRoute(action.replace("featured", "playlist"))}
                       className="flex min-h-11 min-w-11 items-center"
                     >
-                      {title}
+                      {linkTitle}
                     </Link>
                   </li>
                 ))}

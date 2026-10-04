@@ -106,27 +106,17 @@ export function ArtistsTopItems(props: Props) {
       />
 
       <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {albums.map(
-          ({
-            id,
-            title,
-            perma_url,
-            subtitle,
-            type,
-            image,
-            explicit_content,
-          }) => (
-            <SliderCard
-              key={id}
-              name={title}
-              url={perma_url}
-              subtitle={subtitle}
-              type={type}
-              image={image}
-              explicit={explicit_content}
-            />
-          ),
-        )}
+        {albums.map((album) => (
+          <SliderCard
+            key={album.id}
+            name={album.title}
+            url={album.perma_url}
+            subtitle={album.subtitle}
+            type={album.type}
+            image={album.image}
+            explicit={album.explicit_content}
+          />
+        ))}
       </div>
 
       {hasNextPage ? (
