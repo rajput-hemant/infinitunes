@@ -35,10 +35,10 @@ jobs:
         run: bun run fmt:check
 
       - name: Check linting
-        run: bun run --filter '*' lint
+        run: bun run lint
 
       - name: Check types
-        run: bun run --filter '*' type-check
+        run: bun run type-check
 
   test:
     name: Tests
@@ -75,7 +75,7 @@ jobs:
           restore-keys: next-${{ runner.os }}-${{ hashFiles('bun.lock') }}-
 
       - name: Build production
-        run: bun run --filter @infinitunes/web build
+        run: bun run build
 
       - name: Verify static asset startup
         run: |
@@ -86,7 +86,7 @@ jobs:
           }
           trap cleanup EXIT INT TERM
 
-          bun run --filter @infinitunes/web start &
+          bun run start &
           SERVER_PID=$!
 
           READY=0

@@ -22,7 +22,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `apps/web` query and action modules are thin Next.js wrappers for those
   procedures and own cache invalidation or redirects.
 
-Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
+Bun workspaces. The Next.js app is `@infinitunes/web` at `apps/web`
 (`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
 `bun run fmt:check`, `bun run lint` (Oxlint), `bun run type-check`,
 `bun run test` (`bun test --pass-with-no-tests`), `bun run build`.
@@ -33,9 +33,9 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 
 - Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
-- Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
-  must be listed in `turbo.json` `globalEnv` or `globalPassThroughEnv` to reach `next build`.
-- Turbo `outputs` are package-relative; the web build output is `.next/**`.
+- Root scripts (`dev|build|start|lint|type-check`) use `bun run --filter`, not Turbo, because
+  `packageManager` is intentionally absent and Turbo refuses to run without it. The `turbo.json`
+  env lists (`globalEnv`, `globalPassThroughEnv`) only apply if Turbo itself runs a task.
 - Docker is local-dev only (`docker-compose.yml` for Postgres/Redis); there is no
   production image, standalone output or `IS_DOCKER` flag. Production is Vercel.
 - `packages/trpc/src/lib/download.ts`'s `createDownloadLinks` needs `JIOSAAVN_DES_KEY`
