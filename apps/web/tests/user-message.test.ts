@@ -91,3 +91,35 @@ describe("userMessage", () => {
     expect(userMessage(null, "Could not rename")).toBe("Could not rename");
   });
 });
+
+describe("server action results", () => {
+  it("round-trips a tRPC code across the action boundary", async () => {
+    const { toResult, unwrap } = await import("../lib/action-result");
+    const failed = await toResult(async () => {
+      throw new TRPCError({ code: "CONFLICT", message: "Name taken" });
+    });
+    expect(failed).toEqual({
+      ok: false,
+      code: "CONFLICT",
+      message: "Name taken",
+    });
+    const error = await unwrap(Promise.resolve(failed)).catch((e) => e);
+    expect(userMessage(error)).toBe("Name taken");
+  });
+
+  it("never sends internal messages and rethrows uncoded errors", async () => {
+    const { toResult } = await import("../lib/action-result");
+    const failed = await toResult(async () => {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "pg: down",
+      });
+    });
+    expect(failed).toMatchObject({ ok: false, message: GENERIC });
+    await expect(
+      toResult(async () => {
+        throw new Error("boom");
+      }),
+    ).rejects.toThrow("boom");
+  });
+});

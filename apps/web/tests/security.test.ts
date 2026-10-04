@@ -81,6 +81,7 @@ mock.module("next/navigation", () => ({
   redirect: () => {},
 }));
 
+const { unwrap } = await import("../lib/action-result");
 const {
   createNewPlaylist,
   deletePlaylist,
@@ -99,42 +100,42 @@ describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {
     it("rejects addToFavorites with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(addToFavorites("song_token", "song")).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(
+        unwrap(addToFavorites("song_token", "song")),
+      ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects removeFromFavorites with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(removeFromFavorites("song_token", "song")).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(
+        unwrap(removeFromFavorites("song_token", "song")),
+      ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects addSongsToPlaylist with Unauthorized", async () => {
       mockUser = undefined;
       await expect(
-        addSongsToPlaylist("playlist-123", ["song-1"]),
+        unwrap(addSongsToPlaylist("playlist-123", ["song-1"])),
       ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects createNewPlaylist with Unauthorized", async () => {
       mockUser = undefined;
       await expect(
-        createNewPlaylist({ name: "Hacked Playlist" }),
+        unwrap(createNewPlaylist({ name: "Hacked Playlist" })),
       ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects renamePlaylist with Unauthorized", async () => {
       mockUser = undefined;
       await expect(
-        renamePlaylist("playlist-123", { name: "Hacked Playlist" }),
+        unwrap(renamePlaylist("playlist-123", { name: "Hacked Playlist" })),
       ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects deletePlaylist with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(deletePlaylist("playlist-123")).rejects.toThrow(
+      await expect(unwrap(deletePlaylist("playlist-123"))).rejects.toThrow(
         "Unauthorized",
       );
     });
@@ -142,20 +143,22 @@ describe("Server action authorization security checks", () => {
     it("rejects removeSongsFromPlaylist with Unauthorized", async () => {
       mockUser = undefined;
       await expect(
-        removeSongsFromPlaylist("playlist-123", 0, "song-1"),
+        unwrap(removeSongsFromPlaylist("playlist-123", 0, "song-1")),
       ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects updateUser with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(updateUser({ name: "Attacker" })).rejects.toThrow(
+      await expect(unwrap(updateUser({ name: "Attacker" }))).rejects.toThrow(
         "Unauthorized",
       );
     });
 
     it("rejects deleteUser with Unauthorized", async () => {
       mockUser = undefined;
-      await expect(deleteUser(MOCK_PASSWORD)).rejects.toThrow("Unauthorized");
+      await expect(unwrap(deleteUser(MOCK_PASSWORD))).rejects.toThrow(
+        "Unauthorized",
+      );
     });
   });
 
@@ -169,7 +172,7 @@ describe("Server action authorization security checks", () => {
       };
 
       await expect(
-        addSongsToPlaylist("playlist-victim", ["attacker-song"]),
+        unwrap(addSongsToPlaylist("playlist-victim", ["attacker-song"])),
       ).rejects.toThrow("Unauthorized");
     });
 
@@ -182,12 +185,12 @@ describe("Server action authorization security checks", () => {
       };
 
       await expect(
-        removeSongsFromPlaylist("playlist-victim", 0, "existing-song"),
+        unwrap(removeSongsFromPlaylist("playlist-victim", 0, "existing-song")),
       ).rejects.toThrow("Unauthorized");
       await expect(
-        renamePlaylist("playlist-victim", { name: "Stolen name" }),
+        unwrap(renamePlaylist("playlist-victim", { name: "Stolen name" })),
       ).rejects.toThrow("Unauthorized");
-      await expect(deletePlaylist("playlist-victim")).rejects.toThrow(
+      await expect(unwrap(deletePlaylist("playlist-victim"))).rejects.toThrow(
         "Unauthorized",
       );
     });
@@ -200,30 +203,42 @@ describe("Server action authorization security checks", () => {
         songs: ["existing-song"],
       };
 
-      const result = await addSongsToPlaylist("playlist-own", ["new-song"]);
+      const result = await unwrap(
+        addSongsToPlaylist("playlist-own", ["new-song"]),
+      );
       expect(result).toBeDefined();
     });
 
     it("allows createNewPlaylist using session user ID without client passing userId", async () => {
       mockUser = { id: "user-123" };
-      const result = await createNewPlaylist({
-        name: "My New Playlist",
-        description: "Test description",
-      });
+      const result = await unwrap(
+        createNewPlaylist({
+          name: "My New Playlist",
+          description: "Test description",
+        }),
+      );
       expect(result).toBeDefined();
       expect(result.userId).toBe("user-123");
     });
 
     it("allows deleteUser using session user ID", async () => {
       mockUser = { id: "user-123" };
-      const result = await deleteUser(MOCK_PASSWORD);
+      const result = await unwrap(deleteUser(MOCK_PASSWORD));
       expect(result).toBeDefined();
       expect(result.id).toBe("user-123");
     });
 
+    it("returns a coded result instead of throwing", async () => {
+      mockUser = undefined;
+      expect(await deletePlaylist("playlist-123")).toMatchObject({
+        ok: false,
+        code: "UNAUTHORIZED",
+      });
+    });
+
     it("rejects deleteUser with the wrong password", async () => {
       mockUser = { id: "user-123" };
-      await expect(deleteUser("Wrong-Password1!")).rejects.toThrow(
+      await expect(unwrap(deleteUser("Wrong-Password1!"))).rejects.toThrow(
         "Current password is incorrect",
       );
     });

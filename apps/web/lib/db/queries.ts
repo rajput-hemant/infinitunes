@@ -2,6 +2,7 @@
 
 import { updateTag } from "next/cache";
 
+import { toResult } from "~/lib/action-result";
 import { api } from "~/lib/trpc/server";
 
 export async function getUserPlaylists() {
@@ -13,9 +14,11 @@ export async function getPlaylistDetails(playlistId: string) {
 }
 
 export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
-  const playlist = await api.user.addSongsToPlaylist({ playlistId, songs });
-  updateTag("user_playlists");
-  return playlist;
+  return toResult(async () => {
+    const playlist = await api.user.addSongsToPlaylist({ playlistId, songs });
+    updateTag("user_playlists");
+    return playlist;
+  });
 }
 
 export async function removeSongsFromPlaylist(
@@ -23,13 +26,15 @@ export async function removeSongsFromPlaylist(
   index: number,
   songId: string,
 ) {
-  const playlist = await api.user.removeSongsFromPlaylist({
-    playlistId,
-    index,
-    songId,
+  return toResult(async () => {
+    const playlist = await api.user.removeSongsFromPlaylist({
+      playlistId,
+      index,
+      songId,
+    });
+    updateTag("user_playlists");
+    return playlist;
   });
-  updateTag("user_playlists");
-  return playlist;
 }
 
 export async function getUserFavorites() {
@@ -40,16 +45,20 @@ export async function addToFavorites(
   token: string,
   type: "song" | "album" | "playlist" | "artist" | "show",
 ) {
-  const favorites = await api.user.addToFavorites({ token, type });
-  updateTag("user_favorites");
-  return favorites;
+  return toResult(async () => {
+    const favorites = await api.user.addToFavorites({ token, type });
+    updateTag("user_favorites");
+    return favorites;
+  });
 }
 
 export async function removeFromFavorites(
   token: string,
   type: "song" | "album" | "playlist" | "artist" | "show",
 ) {
-  const favorites = await api.user.removeFromFavorites({ token, type });
-  updateTag("user_favorites");
-  return favorites;
+  return toResult(async () => {
+    const favorites = await api.user.removeFromFavorites({ token, type });
+    updateTag("user_favorites");
+    return favorites;
+  });
 }
