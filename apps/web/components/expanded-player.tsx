@@ -4,6 +4,7 @@ import { formatDuration, getImageSrc } from "@infinitunes/types";
 import type { Queue } from "@infinitunes/types";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
   SheetDescription,
   SheetHeader,
@@ -19,6 +20,7 @@ import {
   Shuffle,
   Volume2,
   VolumeX,
+  X,
 } from "lucide-react";
 import React from "react";
 
@@ -89,9 +91,16 @@ export function ExpandedPlayer(props: ExpandedPlayerProps) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
+        showCloseButton={false}
         className="max-h-[92dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] motion-reduce:transition-none lg:hidden"
       >
-        <SheetHeader>
+        <SheetHeader className="relative pr-16">
+          <SheetClose
+            aria-label="Close"
+            className={cn(buttonClass, "absolute top-1 right-2")}
+          >
+            <X aria-hidden className="size-5" />
+          </SheetClose>
           <SheetTitle>Now playing</SheetTitle>
           <SheetDescription className="sr-only">
             {track
@@ -174,6 +183,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
           }
           onValueCommitted={props.onSeekCommit}
           onPointerDown={props.onSeekStart}
+          className="[&>*]:py-4"
         />
         <div className="flex justify-between text-xs text-muted-foreground">
           <span>{formatDuration(pos, format)}</span>
@@ -270,7 +280,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
               typeof value === "number" ? value : (value[0] as number),
             )
           }
-          className={cn(!isReady && "opacity-50")}
+          className={cn("[&>*]:py-4", !isReady && "opacity-50")}
         />
       </div>
 
