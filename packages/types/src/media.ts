@@ -5,34 +5,9 @@ import type {
   Queue,
   StreamQuality,
 } from "./misc";
-import { parseToken, QUALITIES_MAP } from "./misc";
+import { QUALITIES_MAP } from "./misc";
 import type { Episode } from "./show";
 import type { Song } from "./song";
-
-function xmur3(str: string) {
-  let h = 1779033703 ^ str.length;
-  for (let i = 0; i < str.length; i++) {
-    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  return (h ^= h >>> 16) >>> 0;
-}
-
-export function seededRandom(seed: string) {
-  let a = xmur3(seed);
-  return () => {
-    a |= 0;
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-export function seededIndex(seed: string, length: number) {
-  if (length <= 0) return 0;
-  return Math.floor(seededRandom(seed)() * length);
-}
 
 const ENTITY_MAP: Record<string, string> = {
   amp: "&",
@@ -59,13 +34,6 @@ export function decode(str: string | undefined | null): string {
       /&([a-z]+);/gi,
       (match, name: string) => ENTITY_MAP[name.toLowerCase()] ?? match,
     );
-}
-
-/**
- * Extracts the trailing token from a JioSaavn perma_url.
- */
-export function getToken(url: string | undefined): string {
-  return parseToken(url ?? "");
 }
 
 type RawCardItem = {

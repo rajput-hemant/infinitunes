@@ -50,7 +50,7 @@ function isMissingSecretError(error: unknown): boolean {
 
 /**
  * A production deployment whose env passed validation always has a real
- * `AUTH_SECRET` (`authSecret()` in `packages/env/src/schema.ts`), so a missing
+ * `AUTH_SECRET` (enforced by `packages/env`), so a missing
  * secret there is a genuine misconfiguration and must surface. The error is
  * only reachable in production when validation was deliberately skipped.
  */

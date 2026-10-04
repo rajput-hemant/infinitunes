@@ -1,6 +1,6 @@
 ---
 name: verify
-description: DRAFT verification skill for Infinitunes, the Next.js 16 music web app in apps/web (Bun monorepo). Use it to launch the app against a disposable local Postgres, check readiness, and drive or prove browse, search, player, auth (email, passkey, OAuth entry), settings and playlist flows. Browser recipes are pending the user-selected browser skill; nothing here is live-verified yet.
+description: DRAFT verification skill for Infinitunes, the Next.js 16 music web app in apps/web (Bun monorepo). Use it to launch the app against the local Docker Postgres, check readiness, and drive or prove browse, search, player, auth (email, passkey, OAuth entry), settings and playlist flows. Browser recipes are pending the user-selected browser skill; nothing here is live-verified yet.
 disable-model-invocation: true
 ---
 
@@ -26,58 +26,33 @@ Issues found while verifying are recorded once, in [docs/verification/verificati
 ## Prerequisites
 
 - Bun `1.4.2` (`packageManager` in root `package.json`; CI pins the same). Use Bun, never npm. One-off binaries via `bunx`.
-- Docker daemon, only for the disposable Postgres (the app needs `DATABASE_URL` for any session, favorites or playlist work).
+- Docker daemon, only for local Postgres and Redis (the app needs `DATABASE_URL` for any session, favorites or playlist work).
 - Outbound internet to the public JioSaavn API: browse, search, entity pages and playback metadata are fetched live at request time. Without it, public pages return 500 (see `ISSUE-011`).
-- A real browser skill chosen by the user (pending). Chrome was absent in the first migration pass (`docs/migration-acceptance.md` section 8) and present in section 13; re-check.
+- A real browser skill chosen by the user (pending). Chrome was absent in the first migration pass (`docs/verification/migration-acceptance.md` section 8) and present in section 13; re-check.
 - Never use: production database, real OAuth credentials, a shared authenticated browser profile, live payments, outgoing email.
-
-## Isolation
-
-One dev server and one database per run. Pick task-specific values and reuse them in every command:
-
-| Item               | Value                                        |
-| ------------------ | -------------------------------------------- |
-| Web port           | `3417` (production-style run may use `3418`) |
-| Postgres host port | `54417`                                      |
-| Container name     | `infinitunes-verify-pg`                      |
-| App origin         | `http://localhost:3417`                      |
-
-If `lsof -nP -iTCP:3417 -sTCP:LISTEN` or `docker ps -a --filter name=infinitunes-verify-pg` shows something you did not start, stop and pick another port or name. Never double-drive a shared instance, and never kill by process name.
 
 ## Launch
 
-Run from the repo root, serially, one worker.
+Follow [docs/local-development.md](../../../docs/local-development.md) (`bun run db:up`, `db:migrate`, `db:seed`, `dev`); it is the only supported way to start the stack, on app origin `http://localhost:3000`. Run serially, one worker. Two additions for a verification run:
 
-1. Install once: `bun install --frozen-lockfile`.
-2. Start a disposable database (inert credentials, bound to localhost):
-   `docker run -d --name infinitunes-verify-pg -e POSTGRES_PASSWORD=verify -e POSTGRES_DB=infinitunes -p 127.0.0.1:54417:5432 postgres:17`
-3. Export the environment in the shell that starts the app. Do not write `.env.local` (it is gitignored but easy to leave behind). Values are inert:
-   ```
-   export DATABASE_URL=postgres://postgres:verify@127.0.0.1:54417/infinitunes
-   export AUTH_SECRET=verify-secret-at-least-32-characters-long
-   export AUTH_URL=http://localhost:3417
-   export NEXT_PUBLIC_APP_URL=http://localhost:3417
-   export JIOSAAVN_DES_KEY=38346591
-   export GOOGLE_CLIENT_ID=inert GOOGLE_CLIENT_SECRET=inert GITHUB_CLIENT_ID=inert GITHUB_CLIENT_SECRET=inert
-   export ENABLE_RATE_LIMITING=false NEXT_TELEMETRY_DISABLED=1
-   ```
-   `JIOSAAVN_DES_KEY` is the value from `.env.example`; the env schema requires a non-empty key and playback fails without it. `AUTH_URL` must equal the origin the browser uses: the `/api/trpc` origin check in `apps/web/proxy.ts` and Better Auth's `baseURL` and passkey `rpID` derive from it.
-4. Create the schema: `bun run db:migrate` (runs `packages/db/src/migrate.ts` against `DATABASE_URL`). Do not use `db:push` against anything but this container.
-5. Start the app: `cd apps/web && bunx next dev -p 3417` (or `bun run dev` from root, which runs `turbo run dev` on port 3000; prefer the explicit port). For a production-style check: `bun run build` then `cd apps/web && bunx next start -p 3418` with `SKIP_ENV_VALIDATION` left unset.
-6. Ready when the log prints `Ready` and `curl -s -o /dev/null -w '%{http_code}' http://localhost:3417/login` prints `200`.
+- `JIOSAAVN_DES_KEY` is blank in `.env.example`; set it in `.env` or the shell (the env schema requires a non-empty key and playback fails without it).
+- `AUTH_URL` and `NEXT_PUBLIC_APP_URL` must equal the origin the browser uses: the `/api/trpc` origin check in `apps/web/proxy.ts` and Better Auth's `baseURL` and passkey `rpID` derive from it.
+
+If `lsof -nP -iTCP:3000 -sTCP:LISTEN` shows something you did not start, stop and pick another port. Never double-drive a shared instance, and never kill by process name. For a production-style check: `bun run build` then `cd apps/web && bunx next start` with `SKIP_ENV_VALIDATION` left unset.
+
+Ready when the log prints `Ready` and `curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/login` prints `200`.
 
 ## Doctor (read-only)
 
 Run first whenever anything looks off. It changes nothing.
 
 ```
-lsof -nP -iTCP:3417 -sTCP:LISTEN                         # we own the port (compare PID to the one you started)
-docker ps --filter name=infinitunes-verify-pg --format '{{.Names}} {{.Status}}'
-docker exec infinitunes-verify-pg pg_isready -U postgres
-curl -s -o /dev/null -w 'login %{http_code}\n' http://localhost:3417/login        # expect 200
-curl -s -o /dev/null -w 'me %{http_code} -> %{redirect_url}\n' http://localhost:3417/me   # expect 307 to /login as guest
-curl -s -o /dev/null -w 'nope %{http_code}\n' http://localhost:3417/nope-xyz      # expect 404
-curl -s -o /dev/null -w 'home %{http_code}\n' http://localhost:3417/              # 200 needs live JioSaavn API; 500 means upstream/DB problem
+lsof -nP -iTCP:3000 -sTCP:LISTEN                         # we own the port (compare PID to the one you started)
+docker compose ps
+curl -s -o /dev/null -w 'login %{http_code}\n' http://localhost:3000/login        # expect 200
+curl -s -o /dev/null -w 'me %{http_code} -> %{redirect_url}\n' http://localhost:3000/me   # expect 307 to /login as guest
+curl -s -o /dev/null -w 'nope %{http_code}\n' http://localhost:3000/nope-xyz      # expect 404
+curl -s -o /dev/null -w 'home %{http_code}\n' http://localhost:3000/              # 200 needs live JioSaavn API; 500 means upstream/DB problem
 ```
 
 Worth driving only if login is 200, `/me` redirects as guest, and the database answers. A 500 on `/` with the others healthy is an upstream or network problem, not an app verdict.
@@ -96,10 +71,10 @@ Pending the user-selected browser skill. Until then, use the route paths, labels
 Non-browser drives that are allowed now:
 
 ```
-bun run fmt:check && bun run lint && bun run type-check && bun test --pass-with-no-tests
+bun run fmt:check && bun run lint && bun run type-check && bun run test
 bun test packages/trpc/tests/user-router.test.ts packages/auth/tests/auth.test.ts apps/web/tests/proxy.test.ts
-curl -s -i http://localhost:3417/me | head -5            # guest redirect
-curl -s -i -X POST http://localhost:3417/api/trpc/user.getUserPlaylists -H 'origin: http://evil.example'   # expect 403 from the origin check
+curl -s -i http://localhost:3000/me | head -5            # guest redirect
+curl -s -i -X POST http://localhost:3000/api/trpc/user.getUserPlaylists -H 'origin: http://evil.example'   # expect 403 from the origin check
 ```
 
 ## Evidence
@@ -107,7 +82,7 @@ curl -s -i -X POST http://localhost:3417/api/trpc/user.getUserPlaylists -H 'orig
 Store proof under `docs/evidence/<run-id>/` (created by the run; not committed unless a reviewer needs it). Per proof capture: the action (command or step), the resulting state, and the side effect.
 
 - Exercise the real user path, not internal setters or test-only endpoints.
-- Verify side effects alongside what is visible: for auth, query the container (`docker exec infinitunes-verify-pg psql -U postgres -d infinitunes -c 'select id,email from "user"'`); for playlists and favorites, check the `infinitunes_playlist` and `infinitunes_favorite` rows.
+- Verify side effects alongside what is visible: for auth, query the container (`docker compose exec postgres psql -U postgres -d local_platforms -c 'select id,email from "user"'`); for playlists and favorites, check the `infinitunes_playlist` and `infinitunes_favorite` rows.
 - Mocks only where a production boundary already isolates the external system. JioSaavn is live and unmocked; OAuth stops at the provider redirect without real credentials.
 - Record each result in the feature file's `Last live proof:` line with date, run id and evidence path. Anything not exercised stays `none`.
 
@@ -115,11 +90,10 @@ Store proof under `docs/evidence/<run-id>/` (created by the run; not committed u
 
 Remove only what this run created; never remove evidence.
 
-1. Stop the dev server by the PID you started (`kill <pid>`; confirm with `lsof -nP -iTCP:3417 -sTCP:LISTEN`).
+1. Stop the dev server by the PID you started (`kill <pid>`; confirm with `lsof -nP -iTCP:3000 -sTCP:LISTEN`).
 2. Stop any browser bridge or watcher you started.
-3. `docker rm -f infinitunes-verify-pg` (deletes all disposable data, including test users and passkeys).
-4. `unset DATABASE_URL AUTH_SECRET AUTH_URL NEXT_PUBLIC_APP_URL JIOSAAVN_DES_KEY GOOGLE_CLIENT_ID GOOGLE_CLIENT_SECRET GITHUB_CLIENT_ID GITHUB_CLIENT_SECRET`
-5. Confirm `git status` shows no stray `.env.local`, `.next` is ignored, and `docs/evidence/` still exists.
+3. `bun run db:down` if you started the stack; the named volumes keep the data (see Resetting in `docs/local-development.md`).
+4. Confirm `git status` shows no stray `.env.local`, `.next` is ignored, and `docs/evidence/` still exists.
 
 ## Helpers
 

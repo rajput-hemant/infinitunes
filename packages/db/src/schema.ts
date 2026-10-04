@@ -20,14 +20,6 @@ export const users = pgTable("user", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name"),
   email: text("email").notNull().unique(),
-  /**
-   * Legacy columns from the removed Better Auth username plugin. Nothing reads
-   * or writes them (auth is email-only), but production still has them and the
-   * drizzle snapshot records them. Keep them declared so `db:generate` does not
-   * propose a destructive DROP; remove only via a deliberate, reviewed migration.
-   */
-  username: text("username").unique(),
-  displayUsername: text("displayUsername"),
   password: text("password"),
   emailVerified: timestamp("emailVerified", { mode: "date" }),
   image: text("image"),
@@ -163,8 +155,7 @@ export const myPlaylists = createTable("playlist", {
   userId: uuid("userId")
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  // @ts-expect-error string is not assignable to type 'string[]'
-  songs: text("songs").array().default("{}").notNull(),
+  songs: text("songs").array().default([]).notNull(),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -174,16 +165,11 @@ export const favorites = createTable("favorite", {
     .references(() => users.id, { onDelete: "cascade" })
     .notNull()
     .unique(),
-  // @ts-expect-error string is not assignable to type 'string[]'
-  songs: text("songs").array().default("{}").notNull(),
-  // @ts-expect-error string is not assignable to type 'string[]'
-  albums: text("albums").array().default("{}").notNull(),
-  // @ts-expect-error string is not assignable to type 'string[]'
-  playlists: text("playlists").array().default("{}").notNull(),
-  // @ts-expect-error string is not assignable to type 'string[]'
-  artists: text("artists").array().default("{}").notNull(),
-  // @ts-expect-error string is not assignable to type 'string[]'
-  podcasts: text("podcasts").array().default("{}").notNull(),
+  songs: text("songs").array().default([]).notNull(),
+  albums: text("albums").array().default([]).notNull(),
+  playlists: text("playlists").array().default([]).notNull(),
+  artists: text("artists").array().default([]).notNull(),
+  podcasts: text("podcasts").array().default([]).notNull(),
 });
 
 /** One row per user and played item; replaying bumps `playedAt`. */
@@ -216,23 +202,8 @@ export const recentlyPlayed = createTable(
  * ------------------------------------------------------------------------- */
 
 export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-
 export type MyPlaylist = typeof myPlaylists.$inferSelect;
-export type NewPlaylist = typeof myPlaylists.$inferInsert;
-
 export type Favorite = typeof favorites.$inferSelect;
-export type NewFavorite = typeof favorites.$inferInsert;
-
-export type RecentlyPlayed = typeof recentlyPlayed.$inferSelect;
-export type NewRecentlyPlayed = typeof recentlyPlayed.$inferInsert;
-
-export type BetterAuthAccount = typeof betterAuthAccounts.$inferSelect;
-export type NewBetterAuthAccount = typeof betterAuthAccounts.$inferInsert;
-
-export type BetterAuthSession = typeof betterAuthSessions.$inferSelect;
-export type NewBetterAuthSession = typeof betterAuthSessions.$inferInsert;
-
 export type BetterAuthVerification =
   typeof betterAuthVerifications.$inferSelect;
 export type NewBetterAuthVerification =

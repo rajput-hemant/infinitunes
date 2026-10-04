@@ -55,10 +55,8 @@ export const endpoints = {
     mega_menu: "webapi.getBrowseHoverDetails",
   },
   radio: {
-    featured_stations: "webradio.getFeaturedStations",
     create_featured_station: "webradio.createFeaturedStation",
     create_artist_station: "webradio.createArtistStation",
-    create_entity_station: "webradio.createEntityStation",
     get_song: "webradio.getSong",
   },
 } as const;

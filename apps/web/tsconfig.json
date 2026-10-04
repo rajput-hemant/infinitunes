@@ -1,17 +1,6 @@
 {
   "extends": "@infinitunes/typescript-config/nextjs.json",
   "compilerOptions": {
-    "allowJs": true,
-    "esModuleInterop": true,
-    "incremental": true,
-    "isolatedModules": true,
-    "jsx": "react-jsx",
-    "module": "esnext",
-    "moduleResolution": "Bundler",
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "strictNullChecks": true,
     "paths": {
       "~/*": ["./*"]
     }

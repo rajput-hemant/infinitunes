@@ -4,12 +4,7 @@ import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import {
-  appRoutes,
-  authRoutes,
-  DEFAULT_LOGIN_REDIRECT,
-  userRoutes,
-} from "./config/routes";
+import { appRoutes, userRoutes } from "./config/routes";
 import { buildCsp, CSP_REPORT_ONLY_HEADER } from "./lib/csp";
 import { env } from "./lib/env";
 
@@ -78,12 +73,9 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/login", nextUrl));
   }
 
-  const isAuthRoute = authRoutes.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`),
-  );
-  if (isAuthRoute && sessionToken) {
-    return NextResponse.redirect(new URL(DEFAULT_LOGIN_REDIRECT, nextUrl));
-  }
+  // Auth pages are deliberately not redirected here: the proxy only sees that a
+  // session cookie exists, not whether it is valid, so a stale cookie would lock
+  // the user out of /login. The (auth) layout redirects real sessions instead.
 
   const paths = pathname.split("/").slice(1);
 
@@ -162,11 +154,9 @@ export const config = {
 };
 
 function getIP(req: NextRequest): string {
-  // @ts-expect-error ip is not available in NextRequest
-  let ip = req.ip ?? req.headers.get("x-real-ip");
-  const forwardedFor = req.headers.get("x-forwarded-for");
-  if (!ip && forwardedFor) {
-    ip = forwardedFor.split(",").at(0) ?? "";
-  }
-  return ip;
+  return (
+    req.headers.get("x-real-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",").at(0) ||
+    ""
+  );
 }

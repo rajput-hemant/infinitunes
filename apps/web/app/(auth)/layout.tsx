@@ -1,4 +1,3 @@
-import { seededIndex } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
@@ -12,6 +11,11 @@ import { asRoute, cn } from "~/lib/utils";
 
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
 
+/** One artist image (0-9) per UTC day. */
+function dailyArtistImage() {
+  return `/images/artists/${Math.floor(Date.now() / 864e5) % 10}.png`;
+}
+
 type AuthLayoutProps = React.PropsWithChildren;
 
 export default async function AuthLayout({ children }: AuthLayoutProps) {
@@ -21,8 +25,7 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
     redirect("/");
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-  const imageUrl = `/images/artists/${seededIndex(today, 10)}.png`;
+  const imageUrl = dailyArtistImage();
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">

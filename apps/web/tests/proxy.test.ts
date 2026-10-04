@@ -98,6 +98,33 @@ describe("proxy guest route access", () => {
   });
 });
 
+describe("proxy auth routes with a session cookie", () => {
+  let proxy: typeof import("../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => "stale-or-valid-token");
+    ({ proxy } = await import("../proxy"));
+  });
+
+  // The proxy cannot tell a valid session from a stale cookie; redirecting here
+  // locked users with an expired session out of /login. The (auth) layout
+  // redirects real sessions instead.
+  for (const path of [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+  ]) {
+    it(`does not redirect ${path}`, async () => {
+      const res = await proxy(
+        createNextRequest(`http://localhost:3000${path}`),
+      );
+
+      expect(res.status).toBe(200);
+    });
+  }
+});
+
 describe("proxy detail route normalization", () => {
   let proxy: typeof import("../proxy").proxy;
 

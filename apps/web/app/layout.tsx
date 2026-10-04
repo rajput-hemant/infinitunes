@@ -1,16 +1,15 @@
 // oxlint-disable-next-line import/no-unassigned-import -- global stylesheet is a side-effect import
 import "~/styles/globals.css";
-import { type ThemeConfig } from "@infinitunes/types";
 import type { Metadata, Viewport } from "next";
-import { cookies } from "next/headers";
 import Script from "next/script";
-import React from "react";
+import type React from "react";
 
 import Providers from "~/components/provider";
 import { TailwindIndicator } from "~/components/tailwind-indicator";
 import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
+import { getThemeConfig } from "~/lib/theme-config";
 import { absoluteUrl, cn } from "~/lib/utils";
 
 type RootLayoutProps = {
@@ -18,55 +17,37 @@ type RootLayoutProps = {
   children: React.ReactNode;
 };
 
-const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  theme: "default",
-  radius: "default",
-};
-
 export default async function RootLayout({ modal, children }: RootLayoutProps) {
-  const cookieStore = await cookies();
-  const themeConfig = cookieStore.get("theme-config");
-
-  let { theme, radius } = DEFAULT_THEME_CONFIG;
-  if (themeConfig) {
-    try {
-      ({ theme, radius } = JSON.parse(themeConfig.value) as ThemeConfig);
-    } catch {
-      // keep DEFAULT_THEME_CONFIG
-    }
-  }
+  const { theme, radius } = await getThemeConfig();
 
   return (
-    <React.StrictMode>
-      <html lang="en" suppressHydrationWarning>
-        <body
-          className={cn(
-            Object.values(fonts).map((font) => font.variable),
-            "min-h-screen font-sans antialiased",
-            theme !== "default" && `theme-${theme}`,
-          )}
-          style={
-            radius === "default"
-              ? {}
-              : ({ "--radius": `${radius}rem` } as React.CSSProperties)
-          }
-        >
-          <Providers>
-            {children}
-            {modal}
-          </Providers>
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(
+          Object.values(fonts).map((font) => font.variable),
+          "min-h-screen font-sans antialiased",
+          theme !== "default" && `theme-${theme}`,
+        )}
+        style={
+          radius === "default"
+            ? undefined
+            : ({ "--radius": `${radius}rem` } as React.CSSProperties)
+        }
+      >
+        <Providers>
+          {children}
+          {modal}
+        </Providers>
 
-          <TailwindIndicator />
-        </body>
+        <TailwindIndicator />
+      </body>
 
-        {/* Umami Analytics */}
-        <Script
-          async
-          src="https://us.umami.is/script.js"
-          data-website-id={env.UMAMI_WEBSITE_ID}
-        />
-      </html>
-    </React.StrictMode>
+      <Script
+        async
+        src="https://us.umami.is/script.js"
+        data-website-id={env.UMAMI_WEBSITE_ID}
+      />
+    </html>
   );
 }
 
@@ -107,8 +88,6 @@ export const metadata: Metadata = {
       { url: "/favicon.ico", sizes: "32x32" },
       { url: "/favicon-16x16.png", type: "image/png", sizes: "16x16" },
       { url: "/favicon-32x32.png", type: "image/png", sizes: "32x32" },
-      { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
-      { url: "/icon-512.png", type: "image/png", sizes: "512x512" },
     ],
     apple: [{ url: "/apple-icon.png", type: "image/png" }],
   },

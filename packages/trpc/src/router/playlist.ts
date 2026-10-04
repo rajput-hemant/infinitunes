@@ -6,32 +6,21 @@ import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { playlistInput, playlistRecommendInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import {
-  hasIdentity,
-  mapDownloadUrls,
-  resolveNumericId,
-  tokenFromLink,
-} from "./utils";
+import { hasIdentity, mapDownloadUrls, resolveNumericId } from "./utils";
 
 export const playlistRouter = router({
   details: publicProcedure
     .input(playlistInput)
     .output(z.custom<Playlist>())
     .query(async ({ input }) => {
-      const { id, token, link, lang } = input;
-      if (!id && !link && !token) {
+      const { id, token, lang } = input;
+      if (!id && !token) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Please provide playlist id, link or a token",
+          message: "Please provide playlist id or a token",
         });
       }
-      if (link && !link.includes("featured")) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please provide a valid JioSaavn link",
-        });
-      }
-      const t = token || tokenFromLink(link ?? "");
+      const t = token ?? "";
       const listid = id ?? (await resolveNumericId(t, "playlist"));
       const result = await api(endpoints.playlist.id, {
         query: {
@@ -46,7 +35,7 @@ export const playlistRouter = router({
       if (!hasIdentity(result, "id")) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "No playlist found, please check the id, link or token",
+          message: "No playlist found, please check the id or token",
         });
       }
       mapDownloadUrls(result, "list");

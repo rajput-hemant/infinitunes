@@ -4,13 +4,12 @@ import { z } from "zod";
 
 import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
-import { homeInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
 import { isRecord, withDownloadUrl } from "./utils";
 
 export const homeRouter = router({
   home: publicProcedure
-    .input(homeInput)
+    .input(z.object({ lang: z.string().optional() }))
     .output(z.custom<Modules>())
     .query(async ({ input }) => {
       const result = await api(endpoints.modules.launch_data, {

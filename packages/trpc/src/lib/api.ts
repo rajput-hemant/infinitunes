@@ -113,39 +113,6 @@ export function clearApiCache(): void {
   cache.clear();
 }
 
-type CombinedSignal = { signal: AbortSignal; release: () => void };
-
-function combineSignals(
-  timeoutSignal: AbortSignal,
-  callerSignal: AbortSignal | undefined,
-): CombinedSignal {
-  if (!callerSignal) return { signal: timeoutSignal, release: () => {} };
-  if (typeof AbortSignal.any === "function") {
-    return {
-      signal: AbortSignal.any([callerSignal, timeoutSignal]),
-      release: () => {},
-    };
-  }
-
-  const controller = new AbortController();
-  const signals = [callerSignal, timeoutSignal];
-  const onAbort = (event: Event) => {
-    controller.abort((event.target as AbortSignal).reason);
-  };
-  const already = signals.find((s) => s.aborted);
-  if (already) {
-    controller.abort(already.reason);
-    return { signal: controller.signal, release: () => {} };
-  }
-  for (const s of signals) s.addEventListener("abort", onAbort, { once: true });
-  return {
-    signal: controller.signal,
-    release: () => {
-      for (const s of signals) s.removeEventListener("abort", onAbort);
-    },
-  };
-}
-
 function isAbortError(err: unknown): boolean {
   return (
     typeof err === "object" &&
@@ -186,11 +153,13 @@ async function attempt<T>(
 ): Promise<T> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  const combined = combineSignals(controller.signal, callerSignal);
+  const signal = callerSignal
+    ? AbortSignal.any([callerSignal, controller.signal])
+    : controller.signal;
   try {
     let response: Response;
     try {
-      response = await fetchFn(url, { ...init, signal: combined.signal });
+      response = await fetchFn(url, { ...init, signal });
     } catch (err) {
       throw fetchFailure(err);
     }
@@ -206,7 +175,7 @@ async function attempt<T>(
     try {
       return (await response.json()) as T;
     } catch (err) {
-      if (isAbortError(err) || combined.signal.aborted) {
+      if (isAbortError(err) || signal.aborted) {
         throw fetchFailure(err);
       }
       throw upstreamError(
@@ -217,7 +186,6 @@ async function attempt<T>(
     }
   } finally {
     clearTimeout(timeout);
-    combined.release();
   }
 }
 

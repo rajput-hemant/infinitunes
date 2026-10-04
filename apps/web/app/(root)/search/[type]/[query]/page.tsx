@@ -2,6 +2,7 @@ import { api } from "~/lib/trpc/server";
 
 import { SearchNavbar } from "./_components/search-navbar";
 import { SearchResults } from "./_components/search-results";
+import { SEARCH_TYPE_MAP } from "./_components/type-map";
 
 type SearchPageProps = {
   params: Promise<{
@@ -13,16 +14,9 @@ type SearchPageProps = {
 export default async function SearchPage({ params }: SearchPageProps) {
   const { query, type } = await params;
 
-  const mappedType =
-    type === "show" ? "podcasts" : type === "song" ? "songs" : `${type}s`;
   const searchRes = await api.search.byType({
     q: query,
-    type: mappedType as
-      | "songs"
-      | "albums"
-      | "playlists"
-      | "artists"
-      | "podcasts",
+    type: SEARCH_TYPE_MAP[type],
     page: 1,
     n: 50,
   });

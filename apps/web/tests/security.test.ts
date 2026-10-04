@@ -99,59 +99,63 @@ describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {
     it("rejects addToFavorites with Unauthorized", async () => {
       mockUser = undefined;
-      expect(addToFavorites("song_token", "song")).rejects.toThrow(
+      await expect(addToFavorites("song_token", "song")).rejects.toThrow(
         "Unauthorized",
       );
     });
 
     it("rejects removeFromFavorites with Unauthorized", async () => {
       mockUser = undefined;
-      expect(removeFromFavorites("song_token", "song")).rejects.toThrow(
+      await expect(removeFromFavorites("song_token", "song")).rejects.toThrow(
         "Unauthorized",
       );
     });
 
     it("rejects addSongsToPlaylist with Unauthorized", async () => {
       mockUser = undefined;
-      expect(addSongsToPlaylist("playlist-123", ["song-1"])).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(
+        addSongsToPlaylist("playlist-123", ["song-1"]),
+      ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects createNewPlaylist with Unauthorized", async () => {
       mockUser = undefined;
-      expect(createNewPlaylist({ name: "Hacked Playlist" })).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(
+        createNewPlaylist({ name: "Hacked Playlist" }),
+      ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects renamePlaylist with Unauthorized", async () => {
       mockUser = undefined;
-      expect(
+      await expect(
         renamePlaylist("playlist-123", { name: "Hacked Playlist" }),
       ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects deletePlaylist with Unauthorized", async () => {
       mockUser = undefined;
-      expect(deletePlaylist("playlist-123")).rejects.toThrow("Unauthorized");
+      await expect(deletePlaylist("playlist-123")).rejects.toThrow(
+        "Unauthorized",
+      );
     });
 
     it("rejects removeSongsFromPlaylist with Unauthorized", async () => {
       mockUser = undefined;
-      expect(
+      await expect(
         removeSongsFromPlaylist("playlist-123", 0, "song-1"),
       ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects updateUser with Unauthorized", async () => {
       mockUser = undefined;
-      expect(updateUser({ name: "Attacker" })).rejects.toThrow("Unauthorized");
+      await expect(updateUser({ name: "Attacker" })).rejects.toThrow(
+        "Unauthorized",
+      );
     });
 
     it("rejects deleteUser with Unauthorized", async () => {
       mockUser = undefined;
-      expect(deleteUser(MOCK_PASSWORD)).rejects.toThrow("Unauthorized");
+      await expect(deleteUser(MOCK_PASSWORD)).rejects.toThrow("Unauthorized");
     });
   });
 
@@ -164,7 +168,7 @@ describe("Server action authorization security checks", () => {
         songs: ["existing-song"],
       };
 
-      expect(
+      await expect(
         addSongsToPlaylist("playlist-victim", ["attacker-song"]),
       ).rejects.toThrow("Unauthorized");
     });
@@ -177,13 +181,15 @@ describe("Server action authorization security checks", () => {
         songs: ["existing-song"],
       };
 
-      expect(
+      await expect(
         removeSongsFromPlaylist("playlist-victim", 0, "existing-song"),
       ).rejects.toThrow("Unauthorized");
-      expect(
+      await expect(
         renamePlaylist("playlist-victim", { name: "Stolen name" }),
       ).rejects.toThrow("Unauthorized");
-      expect(deletePlaylist("playlist-victim")).rejects.toThrow("Unauthorized");
+      await expect(deletePlaylist("playlist-victim")).rejects.toThrow(
+        "Unauthorized",
+      );
     });
 
     it("allows addSongsToPlaylist for a playlist owned by session user", async () => {
@@ -217,7 +223,7 @@ describe("Server action authorization security checks", () => {
 
     it("rejects deleteUser with the wrong password", async () => {
       mockUser = { id: "user-123" };
-      expect(deleteUser("Wrong-Password1!")).rejects.toThrow(
+      await expect(deleteUser("Wrong-Password1!")).rejects.toThrow(
         "Current password is incorrect",
       );
     });

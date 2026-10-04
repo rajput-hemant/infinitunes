@@ -30,9 +30,9 @@
   },
   "type": "module",
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "start": "turbo run start",
+    "dev": "bun run with-env turbo run dev",
+    "build": "bun run with-env turbo run build",
+    "start": "bun run with-env turbo run start",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "test": "bun test --pass-with-no-tests && bun run test:dom",
@@ -50,7 +50,8 @@
     "db:studio": "bun run --filter @infinitunes/db db:studio",
     "db:check": "bun run --filter @infinitunes/db db:check",
     "ui": "bunx shadcn@latest --cwd packages/ui",
-    "prepare": "husky"
+    "prepare": "husky",
+    "with-env": "bun --env-file=.env --env-file=.env.local"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.3",

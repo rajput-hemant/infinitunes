@@ -34,12 +34,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
-  must be listed in `turbo.json` `globalPassThroughEnv` to reach `next build`.
+  must be listed in `turbo.json` `globalEnv` or `globalPassThroughEnv` to reach `next build`.
 - Turbo `outputs` are package-relative; the web build output is `.next/**`.
 - Docker is local-dev only (`docker-compose.yml` for Postgres/Redis); there is no
   production image, standalone output or `IS_DOCKER` flag. Production is Vercel.
 - `packages/trpc/src/lib/download.ts`'s `createDownloadLinks` needs `JIOSAAVN_DES_KEY`
-  in `turbo.json` `globalPassThroughEnv` or every song's
+  in `turbo.json` `globalEnv` or every song's
   `download_url` silently comes back empty under `bun run dev`/`build`, which crashes
   the player (empty Howler src). Every song array a router returns must be mapped
   through `withDownloadUrl` (`packages/trpc/src/router/utils.ts`) before reaching
@@ -213,8 +213,8 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
   validation schemas (`emailSchema`, `passwordSchema`, `loginSchema` (email-only),
   `signUpSchema`, `resetPasswordSchema`) from `packages/auth/src/schemas.ts`
   (subpath `@infinitunes/auth/schemas`). There is no username schema, plugin,
-  or client helper; the legacy nullable `username`/`displayUsername` DB columns
-  are preserved but unread by auth. Passkey support comes from the maintained
+  or client helper; the legacy `username`/`displayUsername` DB columns were
+  dropped by migration `0005_drop_username`. Passkey support comes from the maintained
   `@better-auth/passkey` package (server `passkey()`, client `passkeyClient()`),
   backed by the app-specific `infinitunes_passkey` table. The main
   `@infinitunes/auth` barrel pulls server-only `createAuth` (Better Auth, DB, bcrypt) into the graph, so client

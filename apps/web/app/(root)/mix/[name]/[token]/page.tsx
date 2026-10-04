@@ -4,9 +4,9 @@ import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SongList } from "~/components/song-list/song-list";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { ogImageUrl } from "~/lib/utils";
 
 const getMix = cache(async (token: string) =>
   orNotFound(api.get.mix({ token, page: 1, n: 20, lang: "hindi,english" })),
@@ -26,24 +26,13 @@ export async function generateMetadata({
 
   const mix = await getMix(token);
 
-  return {
+  return pageMetadata({
     title: mix.title,
     description: mix.subtitle,
-    openGraph: {
-      title: mix.title,
-      description: mix.subtitle,
-      url: `/mix/${name}/${token}`,
-      images: {
-        url: ogImageUrl({
-          title: mix.title,
-          description: mix.subtitle,
-          image: getImageSrc(mix.image, "high"),
-          square: true,
-        }),
-        alt: mix.title,
-      },
-    },
-  };
+    url: `/mix/${name}/${token}`,
+    image: getImageSrc(mix.image, "high"),
+    square: true,
+  });
 }
 export default async function MixDetailsPage(props: MixDetailsPageProps) {
   const { token } = await props.params;

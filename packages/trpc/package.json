@@ -5,13 +5,12 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./types": "./src/types.ts"
+    "./types": "./src/types.ts",
+    "./env": "./src/env.ts"
   },
   "scripts": {
     "lint": "oxlint",
     "type-check": "tsc --noEmit",
-    "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
-    "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
     "test": "bun test"
   },
   "dependencies": {
@@ -24,7 +23,8 @@
     "drizzle-orm": "catalog:",
     "server-only": "catalog:",
     "superjson": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "@t3-oss/env-core": "^0.13.11"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",

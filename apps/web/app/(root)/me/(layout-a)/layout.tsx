@@ -2,6 +2,7 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Edit, Mail } from "lucide-react";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import React from "react";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
@@ -14,8 +15,9 @@ import { Navbar } from "./_components/navbar";
 export default async function Layout({ children }: React.PropsWithChildren) {
   const user = await getUser();
 
+  // The proxy only checks that a session cookie exists; a stale one lands here.
   if (!user) {
-    return null;
+    redirect("/login");
   }
 
   return (

@@ -8,23 +8,16 @@ import { z } from "zod";
 
 import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
-import {
-  searchAllInput,
-  searchByTypeInput,
-  searchTopInput,
-} from "../lib/inputs";
+import { searchAllInput, searchByTypeInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
 import { hasIdentity, isRecord, withDownloadUrl } from "./utils";
 
 export const searchRouter = router({
-  top: publicProcedure
-    .input(searchTopInput)
-    .output(z.custom<TopSearch[]>())
-    .query(async () => {
-      const result = await api<TopSearch[]>(endpoints.search.top_search, {});
-      // Secondary discovery list on the search page.
-      return Array.isArray(result) ? result : [];
-    }),
+  top: publicProcedure.output(z.custom<TopSearch[]>()).query(async () => {
+    const result = await api<TopSearch[]>(endpoints.search.top_search, {});
+    // Secondary discovery list on the search page.
+    return Array.isArray(result) ? result : [];
+  }),
 
   all: publicProcedure
     .input(searchAllInput)

@@ -23,6 +23,27 @@ describe("orNotFound", () => {
     await expect(orNotFound(Promise.reject(upstream))).rejects.toBe(upstream);
   });
 
+  test("turns a nested NOT_FOUND code into Next's not-found signal", async () => {
+    await expect(
+      orNotFound(Promise.reject({ data: { code: "NOT_FOUND" } })),
+    ).rejects.toMatchObject({ digest: expect.stringContaining("404") });
+  });
+
+  test("ignores malformed nested data", () => {
+    for (const data of [null, "NOT_FOUND", 404, {}, { code: 404 }]) {
+      expect(isNotFoundError({ data })).toBe(false);
+    }
+  });
+
+  test("prefers any direct string code over the nested code", () => {
+    expect(
+      isNotFoundError({ code: "UNKNOWN_CODE", data: { code: "NOT_FOUND" } }),
+    ).toBe(false);
+    expect(
+      isNotFoundError({ code: "NOT_FOUND", data: { code: "BAD_GATEWAY" } }),
+    ).toBe(true);
+  });
+
   test("isNotFoundError ignores non-objects", () => {
     expect(isNotFoundError(null)).toBe(false);
     expect(isNotFoundError("NOT_FOUND")).toBe(false);

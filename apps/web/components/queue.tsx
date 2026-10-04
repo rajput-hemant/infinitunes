@@ -1,6 +1,6 @@
 "use client";
 
-import { getImageSrc, getToken, removeFromQueue } from "@infinitunes/types";
+import { getImageSrc, parseToken, removeFromQueue } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
@@ -83,7 +83,7 @@ export function QueueList() {
                 <TilePlayPauseButton
                   id={item.id}
                   type={item.type}
-                  token={getToken(item.url)}
+                  token={parseToken(item.url)}
                   queueItemId={item.queueItemId}
                 />
               </div>

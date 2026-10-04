@@ -1,8 +1,8 @@
-import type { ThemeConfig } from "@infinitunes/types";
 import { cookies } from "next/headers";
 import React from "react";
 
 import { LibraryHeading } from "~/components/library/library-section";
+import { parseThemeConfig } from "~/lib/theme-config";
 
 import { AppearanceSettings } from "../_components/appearance-settings";
 
@@ -13,11 +13,10 @@ export const metadata = {
 
 export default async function Page() {
   const cookieStore = await cookies();
-  const themeConfig = cookieStore.get("theme-config");
 
-  const { theme, radius } = JSON.parse(
-    themeConfig?.value ?? '{"theme":"default","radius":"default"}',
-  ) as ThemeConfig;
+  const { theme, radius } = parseThemeConfig(
+    cookieStore.get("theme-config")?.value,
+  );
 
   return (
     <div className="space-y-4">

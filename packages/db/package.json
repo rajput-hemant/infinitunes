@@ -7,8 +7,8 @@
     "type-check": "tsc --noEmit",
     "test": "bun test",
     "db:generate": "drizzle-kit generate --config=./src/drizzle.config.ts",
-    "db:migrate": "bun src/migrate.ts",
-    "db:seed": "bun src/seed.ts",
+    "db:migrate": "bun --env-file=../../.env --env-file=../../.env.local src/migrate.ts",
+    "db:seed": "bun --env-file=../../.env --env-file=../../.env.local src/seed.ts",
     "db:drop": "drizzle-kit drop --config=./src/drizzle.config.ts",
     "db:push": "drizzle-kit push --config=./src/drizzle.config.ts",
     "db:pull": "drizzle-kit introspect --config=./src/drizzle.config.ts",
@@ -19,18 +19,19 @@
     ".": "./src/db.ts",
     "./schema": "./src/schema.ts",
     "./client": "./src/client.ts",
-    "./db": "./src/db.ts",
     "./migrations": "./src/migrations/index.ts",
     "./backfill": "./src/backfill.ts",
-    "./drizzle.config": "./src/drizzle.config.ts",
     "./fixtures": "./src/fixtures/index.ts",
-    "./local-guard": "./src/fixtures/local-guard.ts"
+    "./local-guard": "./src/fixtures/local-guard.ts",
+    "./env": "./src/env.ts"
   },
   "dependencies": {
     "@infinitunes/env": "workspace:*",
     "bcryptjs": "catalog:",
     "drizzle-orm": "catalog:",
-    "postgres": "^3.4.9"
+    "postgres": "^3.4.9",
+    "@t3-oss/env-core": "^0.13.11",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",

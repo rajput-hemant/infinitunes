@@ -17,7 +17,7 @@ Settings (`/settings`) while signed in for enroll and remove; `/login` for sign-
 
 Needs a WebAuthn authenticator. With a CDP-capable browser skill, use a virtual authenticator (platform, resident key, user verification on).
 
-1. Launch on `localhost` with `AUTH_URL=http://localhost:3417` so `rpID` is `localhost`.
+1. Launch on `localhost` with `AUTH_URL=http://localhost:3000` so `rpID` is `localhost`.
 2. Sign up and log in by email (see [auth-email.md](auth-email.md)); open `/settings`.
 3. Click add passkey; expect toast `Passkey added.` and one list entry.
 4. Verify `select count(*) from infinitunes_passkey` is 1 for the user.

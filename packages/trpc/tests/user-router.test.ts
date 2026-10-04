@@ -163,7 +163,7 @@ describe("user router authorization", () => {
   it("rejects protected procedures without a session", async () => {
     const caller = createCallerFactory(appRouter)({ db, session: null });
 
-    await expect(caller.user.getUserPlaylists({})).rejects.toMatchObject({
+    await expect(caller.user.getUserPlaylists()).rejects.toMatchObject({
       code: "UNAUTHORIZED",
     });
   });
@@ -342,7 +342,7 @@ describe("user router authorization", () => {
       session: async () => ({ user: { id: "user-123" } }),
     });
 
-    await expect(caller.user.getUserPlaylists({})).resolves.toEqual([]);
+    await expect(caller.user.getUserPlaylists()).resolves.toEqual([]);
   });
 
   const signedIn = (token?: string) =>
@@ -366,7 +366,7 @@ describe("user router authorization", () => {
     const caller = createCallerFactory(appRouter)({ db, session: null });
 
     await expect(
-      caller.user.resetPassword({
+      caller.user.changePassword({
         password: "CurrentPassword1!",
         newPassword: "NewPassword2!",
       }),
@@ -376,7 +376,7 @@ describe("user router authorization", () => {
   it("changes the session user's password and revokes only their other sessions", async () => {
     await seedPasswordUser();
 
-    await signedIn("current-token").user.resetPassword({
+    await signedIn("current-token").user.changePassword({
       password: "CurrentPassword1!",
       newPassword: "NewPassword2!",
     });
@@ -394,7 +394,7 @@ describe("user router authorization", () => {
   it("revokes every session when the current token is unknown", async () => {
     await seedPasswordUser();
 
-    await signedIn().user.resetPassword({
+    await signedIn().user.changePassword({
       password: "CurrentPassword1!",
       newPassword: "NewPassword2!",
     });
@@ -406,7 +406,7 @@ describe("user router authorization", () => {
     await seedPasswordUser();
 
     await expect(
-      signedIn("t").user.resetPassword({
+      signedIn("t").user.changePassword({
         password: "WrongPassword1!",
         newPassword: "NewPassword2!",
       }),
@@ -422,7 +422,7 @@ describe("user router authorization", () => {
     state.user = { id: "user-123", email: "user@example.com", password: null };
 
     await expect(
-      signedIn("t").user.resetPassword({
+      signedIn("t").user.changePassword({
         password: "CurrentPassword1!",
         newPassword: "NewPassword2!",
       }),

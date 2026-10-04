@@ -74,14 +74,14 @@ describe("secondary lists return [] instead of throwing NOT_FOUND", () => {
 
   it("search.top", async () => {
     responses = { "content.getTopSearches": [] };
-    expect(await caller.search.top({})).toEqual([]);
+    expect(await caller.search.top()).toEqual([]);
   });
 });
 
 describe("missing primary entities still throw NOT_FOUND", () => {
   it("album.details", async () => {
     responses = { "webapi.get": {}, "content.getAlbumDetails": {} };
-    expect(caller.album.details({ token: uniq() })).rejects.toThrow(
+    await expect(caller.album.details({ token: uniq() })).rejects.toThrow(
       "No album found",
     );
   });

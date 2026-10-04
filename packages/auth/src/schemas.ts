@@ -3,7 +3,7 @@ import * as z from "zod";
 export const emailSchema = z
   .string()
   .min(1, "Email is Required")
-  .email("Please enter a valid email");
+  .pipe(z.email("Please enter a valid email"));
 
 export const passwordSchema = z
   .string()
@@ -27,7 +27,7 @@ export const signUpSchema = z
   .object({
     email: emailSchema,
     password: passwordSchema,
-    confirmPassword: passwordSchema,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

@@ -9,6 +9,8 @@ import {
 } from "@infinitunes/ui/components/accordion";
 import React from "react";
 
+import { sanitizeRichText } from "~/lib/sanitize-rich-text";
+
 type LyricsProps = { lyrics: Lyrics };
 
 export function Lyrics({ lyrics }: LyricsProps) {
@@ -39,7 +41,9 @@ export function Lyrics({ lyrics }: LyricsProps) {
           <p
             className="text-sm text-muted-foreground"
             dangerouslySetInnerHTML={{
-              __html: lyrics.lyrics + "<br/><br/>" + lyrics.lyrics_copyright,
+              __html: sanitizeRichText(
+                `${lyrics.lyrics}<br/><br/>${lyrics.lyrics_copyright}`,
+              ),
             }}
           />
         </AccordionContent>

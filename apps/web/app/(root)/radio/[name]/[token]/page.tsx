@@ -1,64 +1,43 @@
 import { getImageSrc } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { PlayButton } from "~/components/play-button";
 import { SongList } from "~/components/song-list/song-list";
+import { pageMetadata } from "~/lib/metadata";
+import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { cn, getHref, ogImageUrl } from "~/lib/utils";
+import { cn, getHref } from "~/lib/utils";
 
 type Props = {
   params: Promise<{ name: string; token: string }>;
 };
 
+const getStation = cache(async (name: string, token: string) =>
+  orNotFound(api.radio.stationDetails({ name, token })),
+);
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { name, token } = await params;
 
-  try {
-    const details = await api.radio.stationDetails({ name, token });
-    const station = details.station;
+  const { station } = await getStation(name, token);
 
-    return {
-      title: station.title,
-      description: station.subtitle,
-      openGraph: {
-        title: station.title,
-        description: station.subtitle,
-        url: getHref(station.perma_url, "radio"),
-        images: {
-          url: ogImageUrl({
-            title: station.title,
-            description: station.subtitle,
-            image: getImageSrc(station.image, "high"),
-            square: true,
-          }),
-          alt: station.title,
-        },
-      },
-    };
-  } catch {
-    return { title: "Radio Station" };
-  }
+  return pageMetadata({
+    title: station.title,
+    description: station.subtitle,
+    url: getHref(station.perma_url, "radio"),
+    image: getImageSrc(station.image, "high"),
+    square: true,
+  });
 }
 
 export default async function RadioStationPage({ params }: Props) {
   const { name, token } = await params;
 
-  let station;
-  let songs = [];
-
-  try {
-    const details = await api.radio.stationDetails({ name, token });
-    station = details.station;
-    songs = details.songs;
-  } catch {
-    return notFound();
-  }
-
-  if (!station) return notFound();
+  const { station, songs } = await getStation(name, token);
 
   return (
     <div className="space-y-4">

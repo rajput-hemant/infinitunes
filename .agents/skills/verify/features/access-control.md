@@ -19,10 +19,10 @@ Visit protected URLs directly while logged out, then logged in; try auth pages w
 
 Non-browser parts can run now against a launched app:
 
-1. `curl -si http://localhost:3417/me` as guest: expect `307` and `location: .../login`.
-2. `curl -si http://localhost:3417/settings`: expect `200` (guest empty state).
-3. `curl -si -X POST 'http://localhost:3417/api/trpc/user.getUserPlaylists' -H 'origin: http://evil.example'`: expect `403`.
-4. `curl -s 'http://localhost:3417/api/trpc/user.getUserPlaylists?input=%7B%7D'` with matching origin and no cookie: expect an `UNAUTHORIZED` tRPC error body.
+1. `curl -si http://localhost:3000/me` as guest: expect `307` and `location: .../login`.
+2. `curl -si http://localhost:3000/settings`: expect `200` (guest empty state).
+3. `curl -si -X POST 'http://localhost:3000/api/trpc/user.getUserPlaylists' -H 'origin: http://evil.example'`: expect `403`.
+4. `curl -s 'http://localhost:3000/api/trpc/user.getUserPlaylists?input=%7B%7D'` with matching origin and no cookie: expect an `UNAUTHORIZED` tRPC error body.
 
 Browser parts: log in, then open `/login` (expect redirect to `/`); log out, open `/me/liked-songs` (expect `/login`); confirm the guest settings page shows `Please sign in to view this page.` with a `Sign in` link, and the sidebar renders its guest branch instead of the playlist section (`components/sidebar.tsx`).
 

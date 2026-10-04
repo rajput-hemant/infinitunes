@@ -8,10 +8,10 @@ import { api } from "./trpc/server";
 import type { newPlaylistSchema } from "./validations";
 
 /** Signed-in change; other sessions are revoked server-side. */
-export async function resetPassword(
+export async function changePassword(
   credentials: z.infer<typeof changePasswordSchema>,
 ) {
-  await api.user.resetPassword(credentials);
+  await api.user.changePassword(credentials);
 }
 
 export async function createNewPlaylist(
@@ -42,10 +42,10 @@ export async function updateUser(data: {
   email?: string;
   currentPassword?: string;
 }) {
-  return await api.user.updateUser(data);
+  return api.user.updateUser(data);
 }
 
 /** `password` is omitted by accounts that have none (fresh-session check). */
 export async function deleteUser(password?: string) {
-  return await api.user.deleteUser({ password });
+  return api.user.deleteUser({ password });
 }

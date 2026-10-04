@@ -17,9 +17,10 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { asRoute, ogImageUrl } from "~/lib/utils";
+import { asRoute } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
 
@@ -37,7 +38,7 @@ const getShow = cache(async (token: string, season: number, sort: Sort) =>
 );
 
 type ShowDetailsPageProps = {
-  searchParams: Promise<{ sort: Sort }>;
+  searchParams: Promise<{ sort?: Sort }>;
   params: Promise<{ name: string; season: number; token: string }>;
 };
 
@@ -48,35 +49,24 @@ export async function generateMetadata({
 
   const { show_details: show } = await getShow(token, season, DEFAULT_SORT);
 
-  return {
+  return pageMetadata({
     title: show.title,
     description: show.subtitle,
-    openGraph: {
-      title: show.title,
-      description: show.subtitle,
-      url: `/show/${name}/${season}/${token}`,
-      images: {
-        url: ogImageUrl({
-          title: show.title,
-          description: show.subtitle,
-          image: getImageSrc(show.image, "high"),
-          square: true,
-        }),
-        alt: show.title,
-      },
-    },
-  };
+    url: `/show/${name}/${season}/${token}`,
+    image: getImageSrc(show.image, "high"),
+    square: true,
+  });
 }
 
 export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
-  const { sort } = await props.searchParams;
+  const { sort = DEFAULT_SORT } = await props.searchParams;
   const { season, token } = await props.params;
 
   const user = await getUser();
 
   const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
     await Promise.all([
-      getShow(token, season, sort ?? DEFAULT_SORT),
+      getShow(token, season, sort),
       user ? getUserFavorites() : undefined,
       user ? getUserPlaylists() : undefined,
     ]);
@@ -91,7 +81,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
 
       <ScrollArea>
         <div className="flex space-x-4 p-1 pb-4">
-          {seasons.reverse().map((s) => (
+          {seasons.toReversed().map((s) => (
             <SliderCard
               key={s.id}
               name={s.title}
@@ -102,7 +92,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
               aspect="video"
               hidePlayButton
               isCurrentSeason={
-                season == Number(s.more_info.season_number) &&
+                Number(season) === Number(s.more_info.season_number) &&
                 seasons.length > 1
               }
             />

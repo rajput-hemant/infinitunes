@@ -10,19 +10,13 @@ import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
 
+import { SEARCH_TYPE_MAP } from "./type-map";
+
 type SearchResultsProps = {
   query: string;
   type: "song" | "album" | "playlist" | "artist" | "show";
   initialSearchResults: SearchReturnType;
 };
-
-const typeMap = {
-  song: "songs",
-  album: "albums",
-  playlist: "playlists",
-  artist: "artists",
-  show: "podcasts",
-} as const;
 
 export function SearchResults(props: SearchResultsProps) {
   const { query, type, initialSearchResults } = props;
@@ -35,7 +29,7 @@ export function SearchResults(props: SearchResultsProps) {
       queryFn: ({ pageParam }) =>
         utils.search.byType.fetch({
           q: query,
-          type: typeMap[type],
+          type: SEARCH_TYPE_MAP[type],
           page: pageParam,
           n: 50,
         }),

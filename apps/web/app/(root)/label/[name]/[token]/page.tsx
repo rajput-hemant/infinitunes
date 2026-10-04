@@ -12,9 +12,10 @@ import { cache } from "react";
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongList } from "~/components/song-list/song-list";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { asRoute, ogImageUrl } from "~/lib/utils";
+import { asRoute } from "~/lib/utils";
 
 const getLabel = cache(async (token: string) =>
   orNotFound(
@@ -42,69 +43,44 @@ export async function generateMetadata({
   const { name, token } = await params;
 
   const label = await getLabel(token);
-  const description = "Record Label";
 
-  return {
+  return pageMetadata({
     title: label.name,
-    description,
-    openGraph: {
-      title: label.name,
-      description,
-      url: `/label/${name}/${token}`,
-      images: {
-        url: ogImageUrl({
-          title: label.name,
-          description: description,
-          image: getImageSrc(label.image, "high"),
-          square: true,
-        }),
-        alt: label.name,
-      },
-    },
-  };
+    description: "Record Label",
+    url: `/label/${name}/${token}`,
+    image: getImageSrc(label.image, "high"),
+    square: true,
+  });
 }
-
-const TABS = {
-  Songs: "Songs",
-  Albums: "Albums",
-};
 
 export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
   const { name, token } = await props.params;
 
   const label = await getLabel(token);
+  const tabHref = (tab: "songs" | "albums") =>
+    asRoute(`/label/${name.replace(/-(songs|albums)$/, `-${tab}`)}/${token}`);
 
   return (
     <div className="mb-4 space-y-4">
       <DetailsHeader item={label} />
 
-      <Tabs defaultValue={name.endsWith("-songs") ? TABS.Songs : TABS.Albums}>
+      <Tabs defaultValue={name.endsWith("-songs") ? "Songs" : "Albums"}>
         <TabsList className="mx-auto flex max-w-fit lg:mx-0">
-          {Object.entries(TABS).map(([key, value]) => (
-            <TabsTrigger
-              key={key}
-              value={value}
-              render={
-                <Link
-                  href={asRoute(
-                    `/label/${name.replace(
-                      /-(songs|albums)$/,
-                      value === TABS.Songs ? "-songs" : "-albums",
-                    )}/${token}`,
-                  )}
-                >
-                  {value}
-                </Link>
-              }
-            />
-          ))}
+          <TabsTrigger
+            value="Songs"
+            render={<Link href={tabHref("songs")}>Songs</Link>}
+          />
+          <TabsTrigger
+            value="Albums"
+            render={<Link href={tabHref("albums")}>Albums</Link>}
+          />
         </TabsList>
 
-        <TabsContent value={TABS.Songs}>
+        <TabsContent value="Songs">
           <SongList items={label.topSongs.songs} />
         </TabsContent>
 
-        <TabsContent value={TABS.Albums}>
+        <TabsContent value="Albums">
           <div className="flex w-full flex-wrap justify-between gap-y-4">
             {label.topAlbums.albums.map(
               ({ id, title, perma_url, subtitle, type, image }) => (

@@ -26,7 +26,7 @@ import Link from "next/link";
 import { useSelectedLayoutSegments } from "next/navigation";
 import React from "react";
 
-import { sidebarNav } from "~/config/nav";
+import { browseNav, libraryNav } from "~/config/nav";
 import type { User } from "~/lib/auth";
 import { asRoute, cn } from "~/lib/utils";
 
@@ -140,7 +140,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-                {sidebarNav.slice(0, 6).map(({ title, href, icon: Icon }) => {
+                {browseNav.map(({ title, href, icon: Icon }) => {
                   const isActive = href === "/" + (segment ?? "");
 
                   return (
@@ -168,7 +168,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                 <SidebarGroupLabel>Library</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <SidebarMenu>
-                    {sidebarNav.slice(6).map(({ title, href, icon: Icon }) => {
+                    {libraryNav.map(({ title, href, icon: Icon }) => {
                       const isActive = href === "/" + (segment ?? "");
 
                       return (

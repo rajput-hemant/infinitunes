@@ -15,13 +15,7 @@
   },
   "peerDependencies": {
     "react": "^19.3.0",
-    "react-dom": "^19.3.0",
-    "react-hook-form": "^7.89.0"
-  },
-  "peerDependenciesMeta": {
-    "react-hook-form": {
-      "optional": true
-    }
+    "react-dom": "^19.3.0"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

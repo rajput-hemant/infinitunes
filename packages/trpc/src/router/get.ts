@@ -33,7 +33,6 @@ import {
   hasIdentity,
   isRecord,
   mapDownloadUrls,
-  tokenFromLink,
   withDownloadUrl,
 } from "./utils";
 
@@ -179,22 +178,16 @@ export const getRouter = router({
     .input(getMixInput)
     .output(z.custom<Mix>())
     .query(async ({ input }) => {
-      const { token, link, lang } = input;
-      if (!link && !token) {
+      const { token, lang } = input;
+      if (!token) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Please provide a valid token or link",
-        });
-      }
-      if (link && !link.includes("mix")) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please provide a valid link",
+          message: "Please provide a valid token",
         });
       }
       const result = await api(endpoints.get.mix_details, {
         query: {
-          token: token || tokenFromLink(link ?? ""),
+          token,
           type: "mix",
           p: input.page,
           n: input.n,
@@ -205,8 +198,7 @@ export const getRouter = router({
       if (!hasIdentity(result, "id")) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message:
-            "Failed to fetch mix details, please provide a valid token or link",
+          message: "Failed to fetch mix details, please provide a valid token",
         });
       }
       mapDownloadUrls(result, "list");
@@ -217,22 +209,16 @@ export const getRouter = router({
     .input(getLabelInput)
     .output(z.custom<Label>())
     .query(async ({ input }) => {
-      const { token, link, lang } = input;
-      if (!link && !token) {
+      const { token, lang } = input;
+      if (!token) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "Please provide a token or a link",
-        });
-      }
-      if (link && !link.includes("label")) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Please provide a valid link",
+          message: "Please provide a token",
         });
       }
       const result = await api(endpoints.get.label_details, {
         query: {
-          token: token || tokenFromLink(link ?? ""),
+          token,
           type: "label",
           p: input.page,
           n_song: input.n_song,
@@ -246,7 +232,7 @@ export const getRouter = router({
         throw new TRPCError({
           code: "NOT_FOUND",
           message:
-            "Failed to fetch label details, please provide a valid token or link",
+            "Failed to fetch label details, please provide a valid token",
         });
       }
       if (isRecord(result.topSongs)) mapDownloadUrls(result.topSongs, "songs");

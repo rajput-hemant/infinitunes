@@ -1,13 +1,10 @@
 import { notFound } from "next/navigation";
 
+import { getErrorCode } from "~/lib/error-code";
+
 /** True for a tRPC error whose code says the upstream entity does not exist. */
 export function isNotFoundError(error: unknown): boolean {
-  return (
-    typeof error === "object" &&
-    error !== null &&
-    "code" in error &&
-    error.code === "NOT_FOUND"
-  );
+  return getErrorCode(error) === "NOT_FOUND";
 }
 
 /**

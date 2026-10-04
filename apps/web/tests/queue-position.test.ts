@@ -7,7 +7,6 @@ const queue = [
   { id: "b", queueItemId: "q2", url: "https://x/song/b/tokB" },
   { id: "a", queueItemId: "q3", url: "https://x/song/a/tokA" },
 ];
-const tokenOf = (url: string) => url.split("/").pop() ?? "";
 
 describe("isCurrentTrack", () => {
   it("highlights only the playing copy of a duplicated queue row", () => {
@@ -34,16 +33,14 @@ describe("isCurrentTrack", () => {
 
 describe("findQueueIndex", () => {
   it("jumps to the exact queue entry when given its queueItemId", () => {
-    expect(
-      findQueueIndex(queue, { token: "tokA", queueItemId: "q3" }, tokenOf),
-    ).toBe(2);
+    expect(findQueueIndex(queue, { token: "tokA", queueItemId: "q3" })).toBe(2);
   });
 
   it("falls back to the first token match otherwise", () => {
-    expect(findQueueIndex(queue, { token: "tokA" }, tokenOf)).toBe(0);
-    expect(
-      findQueueIndex(queue, { token: "tokB", queueItemId: "gone" }, tokenOf),
-    ).toBe(1);
-    expect(findQueueIndex(queue, { token: "nope" }, tokenOf)).toBe(-1);
+    expect(findQueueIndex(queue, { token: "tokA" })).toBe(0);
+    expect(findQueueIndex(queue, { token: "tokB", queueItemId: "gone" })).toBe(
+      1,
+    );
+    expect(findQueueIndex(queue, { token: "nope" })).toBe(-1);
   });
 });

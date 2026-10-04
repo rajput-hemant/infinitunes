@@ -17,7 +17,7 @@ type NavItem = {
   icon: LucideIcon;
 };
 
-export const sidebarNav: NavItem[] = [
+export const browseNav: NavItem[] = [
   {
     title: "Top Albums",
     href: "/album",
@@ -48,8 +48,9 @@ export const sidebarNav: NavItem[] = [
     href: "/radio",
     icon: Radio,
   },
+];
 
-  // authenticated routes
+export const libraryNav: NavItem[] = [
   {
     title: "Recently Played",
     href: "/me/recently-played",
@@ -61,3 +62,5 @@ export const sidebarNav: NavItem[] = [
     icon: Star,
   },
 ];
+
+export const sidebarNav: NavItem[] = [...browseNav, ...libraryNav];

@@ -7,9 +7,9 @@
 <!-- logo/title -->
 
 <picture>
-  <source media="(prefers-color-scheme: dark, (max-width:300px))" srcset="./apps/web/public/images/logo1920.png">
-  <source media="(prefers-color-scheme: light,(max-width:300px))" srcset="./apps/web/public/images/logo1500.png">
-  <img src="./apps/web/public/images/logo1920.png" width="300px" alt="infinitunes">
+  <source media="(prefers-color-scheme: dark, (max-width:300px))" srcset="./docs/assets/logo1920.png">
+  <source media="(prefers-color-scheme: light,(max-width:300px))" srcset="./docs/assets/logo1500.png">
+  <img src="./docs/assets/logo1920.png" width="300px" alt="infinitunes">
 </picture>
 
 ### [WIP] A Simple Music Player Web App made with Next.js + Tailwind.
@@ -53,7 +53,6 @@ cp .env.example .env
 
 ```bash
 bun run db:up
-# Or: make db-up
 ```
 
 4. Run migrations and seed deterministic local data:
@@ -67,7 +66,6 @@ bun run db:seed
 
 ```bash
 bun run dev
-# Or: make dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) and sign in with default credentials:
@@ -89,7 +87,7 @@ bun run build        # Production build
 bun run lint         # Lint with Oxlint
 bun run fmt:check    # Check formatting with oxfmt
 bun run type-check   # Type check with TypeScript
-bun test             # Run tests
+bun run test         # Run tests (plain + DOM suites)
 ```
 
 <div align=center>

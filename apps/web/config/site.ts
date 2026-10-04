@@ -13,9 +13,6 @@ export const siteConfig = {
     "A Simple Music Player Web App built using Next.js, shadcn/ui, TailwindCSS, DrizzleORM and more...",
 
   author: {
-    name: "Hemant Rajput",
-    url: "https://rajputhemant.me",
-    email: "68769346+rajput-hemant@users.noreply.github.com",
     x: "@rajput_hemant01",
   },
 
@@ -25,5 +22,3 @@ export const siteConfig = {
     x: "https://twitter.com/rajput_hemant01",
   },
 };
-
-export type SiteConfig = typeof siteConfig;

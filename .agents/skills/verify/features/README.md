@@ -25,7 +25,7 @@ Auth model: Better Auth with email + password, passkey (WebAuthn) and Google/Git
 
 Public: `/`, `/album`, `/album/[name]/[token]`, `/artist`, `/artist/[name]/[token]`, `/chart`, `/episode/[name]/[token]`, `/label/[name]/[token]`, `/mix/[name]/[token]`, `/playlist`, `/playlist/[name]/[token]`, `/radio`, `/radio/[name]/[token]`, `/search`, `/search/[type]/[query]`, `/show`, `/show/[name]/[season]/[token]`, `/song/[name]/[token]`, `/settings`, `/settings/appearance`, `/settings/preferences`.
 
-Auth pages (redirect to `/` when a session exists): `/login`, `/signup`, `/reset-password`, also intercepted as modals via `app/@modal/(.)login|signup|reset-password`.
+Auth pages (redirect to `/` when a session exists): `/login`, `/signup`, `/forgot-password`, `/reset-password`, also intercepted as modals via `app/@modal/(.)login|signup|forgot-password|reset-password`.
 
 Protected (`userRoutes = ["/me"]`): `/me`, `/me/albums`, `/me/artists`, `/me/liked-songs`, `/me/playlists`, `/me/playlist/[id]`, `/me/recently-played`, `/me/shows`.
 

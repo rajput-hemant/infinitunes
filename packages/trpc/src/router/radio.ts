@@ -7,20 +7,11 @@ import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import {
   createStationInput,
-  getPagedInput,
   radioSongsInput,
   stationDetailsInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
 import { isRecord, withDownloadUrl } from "./utils";
-
-function pagedQuery(input: { page?: number; n?: number; lang?: string }) {
-  return {
-    p: input.page,
-    n: input.n,
-    languages: input.lang,
-  };
-}
 
 function extractSongsFromRadioResponse(data: unknown): Song[] {
   if (!isRecord(data)) return [];
@@ -41,16 +32,6 @@ function extractSongsFromRadioResponse(data: unknown): Song[] {
 }
 
 export const radioRouter = router({
-  featuredStations: publicProcedure
-    .input(getPagedInput)
-    .output(z.custom<Radio[]>())
-    .query(async ({ input }) => {
-      const result = await api<Radio[]>(endpoints.radio.featured_stations, {
-        query: pagedQuery(input),
-      });
-      return Array.isArray(result) ? result : [];
-    }),
-
   createStation: publicProcedure
     .input(createStationInput)
     .output(z.object({ stationId: z.string() }))
@@ -125,8 +106,7 @@ export const radioRouter = router({
     .input(stationDetailsInput)
     .output(z.custom<StationDetailsResponse>())
     .query(async ({ input }) => {
-      // 1. Fetch featured stations to find matching metadata
-      const page1 = await api<Radio[]>(endpoints.radio.featured_stations, {
+      const page1 = await api<Radio[]>(endpoints.get.featured_stations, {
         query: { p: 1, n: 50, languages: input.lang },
       });
 
@@ -136,27 +116,21 @@ export const radioRouter = router({
         .replace(/-/g, " ")
         .toLowerCase();
 
-      let matchedStation = stations.find(
-        (s) =>
-          s.perma_url.endsWith(cleanToken) ||
-          parseToken(s.perma_url) === cleanToken ||
-          s.id === cleanToken ||
-          s.title.toLowerCase() === tokenNameMatch,
-      );
+      const matches = (s: Radio) =>
+        s.perma_url.endsWith(cleanToken) ||
+        parseToken(s.perma_url) === cleanToken ||
+        s.id === cleanToken ||
+        s.title.toLowerCase() === tokenNameMatch;
+
+      let matchedStation = stations.find(matches);
 
       // If not in first page and more stations exist, try second page
       if (!matchedStation && stations.length >= 50) {
-        const page2 = await api<Radio[]>(endpoints.radio.featured_stations, {
+        const page2 = await api<Radio[]>(endpoints.get.featured_stations, {
           query: { p: 2, n: 50, languages: input.lang },
         });
         if (Array.isArray(page2)) {
-          matchedStation = page2.find(
-            (s) =>
-              s.perma_url.endsWith(cleanToken) ||
-              parseToken(s.perma_url) === cleanToken ||
-              s.id === cleanToken ||
-              s.title.toLowerCase() === tokenNameMatch,
-          );
+          matchedStation = page2.find(matches);
         }
       }
 
@@ -182,7 +156,6 @@ export const radioRouter = router({
         },
       };
 
-      // 2. Create the station session
       const createRes = await api<{ stationid?: string }>(
         endpoints.radio.create_featured_station,
         {
@@ -190,6 +163,8 @@ export const radioRouter = router({
             name: station.title,
             language: stationLang,
           },
+          // Mints a per-listener session: never replay it from cache.
+          cache: false,
         },
       );
 
@@ -198,7 +173,6 @@ export const radioRouter = router({
           ? createRes.stationid
           : "";
 
-      // 3. Fetch initial songs batch
       let songs: Song[] = [];
       if (stationId) {
         const songsRes = await api(endpoints.radio.get_song, {

@@ -1,161 +1,72 @@
 import { existsSync, readFileSync } from "node:fs";
 
+import { z } from "zod";
+
 import canonicalFixture from "../../../../local-dev/fixtures.json";
 
-export interface LocalDevUser {
-  id: string;
-  email: string;
-  password: string;
-  name: string;
-  emailVerified: boolean;
-}
+const text = z.string().min(1);
+const strings = z.array(z.string());
 
-export interface LocalDevInfinitunes {
-  playlists: Array<{
-    id: string;
-    name: string;
-    description: string;
-    songs: string[];
-  }>;
-  favorites: {
-    id: string;
-    songs: string[];
-    albums: string[];
-    playlists: string[];
-    artists: string[];
-    podcasts: string[];
-  };
-}
+const fixtureSchema = z.object({
+  version: text,
+  description: text,
+  database: z.object({
+    host: text,
+    port: z.number().int(),
+    user: text,
+    password: text,
+    name: text,
+    url: text,
+  }),
+  redis: z.object({
+    host: text,
+    port: z.number().int(),
+    restUrl: text,
+    restToken: text,
+  }),
+  user: z.object({
+    id: text,
+    email: text,
+    password: text,
+    name: text,
+    emailVerified: z.boolean(),
+  }),
+  infinitunes: z.object({
+    playlists: z.array(
+      z.object({
+        id: text,
+        name: text,
+        description: text,
+        songs: strings,
+      }),
+    ),
+    favorites: z.object({
+      id: text,
+      songs: strings,
+      albums: strings,
+      playlists: strings,
+      artists: strings,
+      podcasts: strings,
+    }),
+  }),
+});
 
-export interface LocalDevDatabase {
-  host: string;
-  port: number;
-  user: string;
-  password: string;
-  name: string;
-  url: string;
-}
-
-export interface LocalDevRedis {
-  host: string;
-  port: number;
-  restUrl: string;
-  restToken: string;
-}
-
-export interface LocalDevFixture {
-  version: string;
-  description: string;
-  database: LocalDevDatabase;
-  redis: LocalDevRedis;
-  user: LocalDevUser;
-  infinitunes: LocalDevInfinitunes;
-}
+export type LocalDevFixture = z.infer<typeof fixtureSchema>;
 
 const DEFAULT_LOCAL_DEV_FIXTURE = parseLocalDevFixture(canonicalFixture);
 
-type Rec = Record<string, unknown>;
-
-function fail(path: string, expected: string): never {
-  throw new Error(
-    `[local-dev] Invalid LOCAL_DEV_CONFIG fixture: "${path}" must be ${expected}`,
-  );
-}
-
-function rec(value: unknown, path: string): Rec {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    fail(path, "an object");
-  }
-  return value as Rec;
-}
-
-function str(o: Rec, key: string, path: string): string {
-  const v = o[key];
-  if (typeof v !== "string" || v.length === 0) {
-    fail(`${path}.${key}`, "a non-empty string");
-  }
-  return v as string;
-}
-
-function num(o: Rec, key: string, path: string): number {
-  const v = o[key];
-  if (typeof v !== "number" || !Number.isInteger(v)) {
-    fail(`${path}.${key}`, "an integer");
-  }
-  return v as number;
-}
-
-function bool(o: Rec, key: string, path: string): boolean {
-  const v = o[key];
-  if (typeof v !== "boolean") fail(`${path}.${key}`, "a boolean");
-  return v as boolean;
-}
-
-function strings(o: Rec, key: string, path: string): string[] {
-  const v = o[key];
-  if (!Array.isArray(v) || v.some((x) => typeof x !== "string")) {
-    fail(`${path}.${key}`, "an array of strings");
-  }
-  return v as string[];
-}
-
 /** Validates a parsed fixture; throws on any missing or mistyped field. */
 export function parseLocalDevFixture(input: unknown): LocalDevFixture {
-  const root = rec(input, "$");
-  const db = rec(root.database, "database");
-  const redis = rec(root.redis, "redis");
-  const user = rec(root.user, "user");
-  const inf = rec(root.infinitunes, "infinitunes");
-  const fav = rec(inf.favorites, "infinitunes.favorites");
-  if (!Array.isArray(inf.playlists)) {
-    fail("infinitunes.playlists", "an array");
+  const result = fixtureSchema.safeParse(input);
+  if (!result.success) {
+    const problems = result.error.issues
+      .map((i) => `"${i.path.join(".") || "$"}": ${i.message}`)
+      .join("; ");
+    throw new Error(
+      `[local-dev] Invalid LOCAL_DEV_CONFIG fixture: ${problems}`,
+    );
   }
-
-  return {
-    version: str(root, "version", "$"),
-    description: str(root, "description", "$"),
-    database: {
-      host: str(db, "host", "database"),
-      port: num(db, "port", "database"),
-      user: str(db, "user", "database"),
-      password: str(db, "password", "database"),
-      name: str(db, "name", "database"),
-      url: str(db, "url", "database"),
-    },
-    redis: {
-      host: str(redis, "host", "redis"),
-      port: num(redis, "port", "redis"),
-      restUrl: str(redis, "restUrl", "redis"),
-      restToken: str(redis, "restToken", "redis"),
-    },
-    user: {
-      id: str(user, "id", "user"),
-      email: str(user, "email", "user"),
-      password: str(user, "password", "user"),
-      name: str(user, "name", "user"),
-      emailVerified: bool(user, "emailVerified", "user"),
-    },
-    infinitunes: {
-      playlists: inf.playlists.map((raw, i) => {
-        const path = `infinitunes.playlists[${i}]`;
-        const pl = rec(raw, path);
-        return {
-          id: str(pl, "id", path),
-          name: str(pl, "name", path),
-          description: str(pl, "description", path),
-          songs: strings(pl, "songs", path),
-        };
-      }),
-      favorites: {
-        id: str(fav, "id", "infinitunes.favorites"),
-        songs: strings(fav, "songs", "infinitunes.favorites"),
-        albums: strings(fav, "albums", "infinitunes.favorites"),
-        playlists: strings(fav, "playlists", "infinitunes.favorites"),
-        artists: strings(fav, "artists", "infinitunes.favorites"),
-        podcasts: strings(fav, "podcasts", "infinitunes.favorites"),
-      },
-    },
-  };
+  return result.data;
 }
 
 /**

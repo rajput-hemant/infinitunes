@@ -5,7 +5,7 @@ import { updateTag } from "next/cache";
 import { api } from "~/lib/trpc/server";
 
 export async function getUserPlaylists() {
-  return await api.user.getUserPlaylists({});
+  return await api.user.getUserPlaylists();
 }
 
 export async function getPlaylistDetails(playlistId: string) {
@@ -33,7 +33,7 @@ export async function removeSongsFromPlaylist(
 }
 
 export async function getUserFavorites() {
-  return await api.user.getUserFavorites({});
+  return await api.user.getUserFavorites();
 }
 
 export async function addToFavorites(

@@ -36,8 +36,8 @@ const config: NextConfig = {
     removeConsole: isProd ? { exclude: ["error", "warn"] } : false,
   },
   images: {
-    // Preserves the previous non-Docker behavior (images served as-is);
-    // enabling the Next optimizer on Vercel is a pending decision.
+    // Images are served as-is; enabling the Next optimizer on Vercel is a
+    // pending decision.
     unoptimized: true,
     remotePatterns: [
       ...IMAGE_CDN_HOSTS.map((hostname) => ({

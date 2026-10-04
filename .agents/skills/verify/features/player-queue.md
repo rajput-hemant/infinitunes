@@ -31,4 +31,4 @@ Observable end state: audio element advances, queue state persists across reload
 
 - Autoplay policies may require a real click gesture first.
 - Playback depends on upstream CDN availability; a failure is not necessarily an app bug.
-- Unit tests (`queue-sheet.test.ts`, `download-url.test.ts`) do not play audio.
+- Unit tests (`apps/web/tests/dom/queue-sheet.test.tsx`, `packages/trpc/tests/download-url.test.ts`) do not play audio.

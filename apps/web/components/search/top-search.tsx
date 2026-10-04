@@ -10,7 +10,7 @@ import { getHref } from "~/lib/utils";
 import { SliderCard } from "../slider/slider-card";
 
 export async function TopSearch() {
-  const topSearches = await api.search.top({});
+  const topSearches = await api.search.top();
 
   return (
     <>
