@@ -1,4 +1,4 @@
-import { getErrorCode } from "~/lib/error-code";
+import { getErrorCode, stripActionCode } from "~/lib/error-code";
 
 const GENERIC_MESSAGE = "Something went wrong. Please try again.";
 
@@ -15,12 +15,13 @@ const USER_CODES = new Set([
 const OMITTED_MESSAGE = "omitted in production builds";
 
 /**
- * Maps a thrown error (a `TRPCError`, a `TRPCClientError`, or the plain `Error`
- * a server action surfaces) to copy that is safe to put in a toast. Messages
- * for user-caused codes are kept; upstream failures (`BAD_GATEWAY`,
- * `TIMEOUT`, `INTERNAL_SERVER_ERROR`, ...) become generic copy. Server actions
- * drop the code, so an error without one keeps its message unless Next.js
- * already masked it. Log the original error separately.
+ * Maps a thrown error (a `TRPCError`, a `TRPCClientError`, an action error
+ * rewrapped by `toActionError`, or the plain `Error` a server action
+ * surfaces) to copy that is safe to put in a toast. Messages for user-caused
+ * codes are kept (without the `[CODE] ` transport prefix); upstream failures
+ * (`BAD_GATEWAY`, `TIMEOUT`, `INTERNAL_SERVER_ERROR`, ...) become generic
+ * copy. An error without any code keeps its message unless Next.js already
+ * masked it. Log the original error separately.
  */
 export function userMessage(
   error: unknown,
@@ -35,6 +36,8 @@ export function userMessage(
   if (!message || message.includes(OMITTED_MESSAGE)) return fallback;
 
   const code = getErrorCode(error);
-  if (code === undefined || USER_CODES.has(code)) return message;
+  if (code === undefined || USER_CODES.has(code)) {
+    return stripActionCode(message) || fallback;
+  }
   return fallback;
 }

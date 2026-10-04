@@ -74,7 +74,7 @@ type WrapperProps = {
   children: React.ReactNode;
 };
 
-export function Wrapper({ isDropdownItem, children }: WrapperProps) {
+function Wrapper({ isDropdownItem, children }: WrapperProps) {
   return isDropdownItem ? (
     <DropdownMenuItem render={children as React.ReactElement} />
   ) : (

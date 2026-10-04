@@ -267,10 +267,13 @@ export const userRouter = router({
     .input(playlistInput)
     .query(async ({ ctx, input }) => {
       const playlist = await ctx.db.query.myPlaylists.findFirst({
-        where: eq(myPlaylists.id, input.playlistId),
+        where: and(
+          eq(myPlaylists.id, input.playlistId),
+          eq(myPlaylists.userId, ctx.session.user.id),
+        ),
       });
 
-      return playlist?.userId === ctx.session.user.id ? playlist : undefined;
+      return playlist ?? undefined;
     }),
 
   addSongsToPlaylist: protectedProcedure

@@ -46,7 +46,22 @@ const state: {
 const fakeDb = {
   query: {
     myPlaylists: {
-      findFirst: async () => state.playlist,
+      findFirst: async ({
+        where,
+      }: {
+        where: Parameters<PgDialect["sqlToQuery"]>[0];
+      }) => {
+        // Honor the `where` clause like SQL would: every bound param must
+        // match the row, so a missing owner predicate exposes foreign rows.
+        if (!state.playlist || !where) return state.playlist;
+        const { params } = new PgDialect().sqlToQuery(where);
+        const row = state.playlist;
+        return (params as unknown[]).every(
+          (param) => param === row.id || param === row.userId,
+        )
+          ? row
+          : null;
+      },
       findMany: async () => [],
     },
     favorites: {
@@ -336,6 +351,22 @@ describe("user router authorization", () => {
       code: "FORBIDDEN",
       message: "Unauthorized",
     });
+  });
+
+  it("returns the owner's playlist from getPlaylistDetails", async () => {
+    state.playlist = {
+      id: "playlist-own",
+      userId: "user-123",
+      songs: ["song-1"],
+    };
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await expect(
+      caller.user.getPlaylistDetails({ playlistId: "playlist-own" }),
+    ).resolves.toMatchObject({ id: "playlist-own", userId: "user-123" });
   });
 
   it("resolves a lazy session thunk before authorizing", async () => {

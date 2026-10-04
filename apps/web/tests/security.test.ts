@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test";
+import { describe, expect, it, mock, spyOn } from "bun:test";
 
 mock.module("server-only", () => ({}));
 
@@ -18,10 +18,17 @@ let mockFavorites: {
   podcasts: string[];
 } | null = null;
 
+// Counts session resolutions through the mocked auth module, so the
+// recordPlay tests can prove the lookup happens once per play.
+let sessionCalls = 0;
+
 // Mock the auth module
 mock.module("~/lib/auth", () => ({
   getUser: async () => mockUser,
-  getSession: async () => (mockUser ? { user: { id: mockUser.id } } : null),
+  getSession: async () => {
+    sessionCalls += 1;
+    return mockUser ? { user: { id: mockUser.id } } : null;
+  },
   getAuth: () => ({}),
   auth: {},
 }));
@@ -94,6 +101,7 @@ const {
   removeFromFavorites,
   removeSongsFromPlaylist,
 } = await import("../lib/db/queries");
+const { recordPlay } = await import("../lib/history-actions");
 
 describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {
@@ -226,6 +234,38 @@ describe("Server action authorization security checks", () => {
       await expect(deleteUser("Wrong-Password1!")).rejects.toThrow(
         "Current password is incorrect",
       );
+    });
+  });
+
+  describe("recordPlay history wrapper", () => {
+    it("silently no-ops for logged-out users with one session lookup", async () => {
+      mockUser = undefined;
+      const err = spyOn(console, "error").mockImplementation(() => {});
+      try {
+        sessionCalls = 0;
+        await expect(
+          recordPlay({ id: "song-1", type: "song" }),
+        ).resolves.toBeUndefined();
+        expect(sessionCalls).toBe(1);
+        expect(err).not.toHaveBeenCalled();
+      } finally {
+        err.mockRestore();
+      }
+    });
+
+    it("resolves the session once per play and still logs failures", async () => {
+      mockUser = { id: "user-123" };
+      const err = spyOn(console, "error").mockImplementation(() => {});
+      try {
+        sessionCalls = 0;
+        await expect(
+          recordPlay({ id: "song-1", type: "song" }),
+        ).resolves.toBeUndefined();
+        expect(sessionCalls).toBe(1);
+        expect(err).toHaveBeenCalled();
+      } finally {
+        err.mockRestore();
+      }
     });
   });
 });

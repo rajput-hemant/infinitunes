@@ -1,6 +1,6 @@
 import type { Episode, Song } from "@infinitunes/types";
 
-export const LIKED_SONGS_CHUNK_SIZE = 25;
+const LIKED_SONGS_CHUNK_SIZE = 25;
 
 export function chunk<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
