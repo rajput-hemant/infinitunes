@@ -8,8 +8,19 @@ export async function register(): Promise<void> {
   const { isLocalDatabase } = await import("@infinitunes/db/local-guard");
   if (!isLocalDatabase(databaseUrl)) return;
 
-  const { getLocalDevFixture } = await import("@infinitunes/db/fixtures");
-  const { user, database, redis } = getLocalDevFixture();
+  let fixture: ReturnType<
+    typeof import("@infinitunes/db/fixtures").getLocalDevFixture
+  >;
+  try {
+    const { getLocalDevFixture } = await import("@infinitunes/db/fixtures");
+    fixture = getLocalDevFixture();
+  } catch (error) {
+    // The credentials banner is a convenience; a missing or invalid fixture
+    // file must not take down `next dev`.
+    console.warn("[local-dev] Skipping credentials banner:", error);
+    return;
+  }
+  const { user, database, redis } = fixture;
 
   const sections: Array<[string, Record<string, string | number>]> = [
     [
