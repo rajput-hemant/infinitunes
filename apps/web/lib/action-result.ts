@@ -1,5 +1,5 @@
 import { getErrorCode } from "~/lib/error-code";
-import { userMessage } from "~/lib/user-message";
+import { GENERIC_MESSAGE, userMessage } from "~/lib/user-message";
 
 /**
  * Next.js replaces the message of any error thrown by a server action with a
@@ -23,8 +23,8 @@ function isFrameworkSignal(error: unknown): boolean {
 }
 
 /**
- * Server side: failures become a result, with `UNKNOWN` for errors that carry
- * no code. Next.js control-flow signals rethrow so redirects keep working.
+ * Server side: failures become a result, with `UNKNOWN` and generic copy for
+ * errors that carry no code (their message may be internal). Next.js control-flow signals rethrow so redirects keep working.
  */
 export async function toResult<T>(
   run: () => Promise<T>,
@@ -33,10 +33,11 @@ export async function toResult<T>(
     return { ok: true, data: await run() };
   } catch (error) {
     if (isFrameworkSignal(error)) throw error;
+    const code = getErrorCode(error);
     return {
       ok: false,
-      code: getErrorCode(error) ?? "UNKNOWN",
-      message: userMessage(error),
+      code: code ?? "UNKNOWN",
+      message: code ? userMessage(error) : GENERIC_MESSAGE,
     };
   }
 }

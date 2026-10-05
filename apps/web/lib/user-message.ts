@@ -1,6 +1,6 @@
 import { getErrorCode } from "~/lib/error-code";
 
-const GENERIC_MESSAGE = "Something went wrong. Please try again.";
+export const GENERIC_MESSAGE = "Something went wrong. Please try again.";
 
 /** tRPC codes whose server message is written for the user and safe to show. */
 const USER_CODES = new Set([
