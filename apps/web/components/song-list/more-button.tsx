@@ -401,7 +401,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
                 <Separator className="-my-2 mb-2" />
 
-                <ShareOptions className="flex flex-col gap-4 p-4" />
+                <ShareOptions
+                  className="flex flex-col gap-4 p-4"
+                  title={getItemName(item)}
+                />
               </div>
 
               <Separator />
@@ -454,7 +457,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                     : label.replace("Song", "Episode")}
                 </DropdownMenuItem>
               ))}
-            <ShareSubMenu />
+            <ShareSubMenu title={getItemName(item)} />
             <DropdownMenuSeparator className="my-2" />
             <TileMoreLinks
               type={item.type}

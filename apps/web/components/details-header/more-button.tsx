@@ -303,7 +303,10 @@ export function MoreButton(props: MoreButtonProps) {
 
                 <Separator />
 
-                <ShareOptions className="flex flex-col gap-4 p-4" />
+                <ShareOptions
+                  className="flex flex-col gap-4 p-4"
+                  title={name}
+                />
               </div>
             </div>
 
@@ -345,7 +348,7 @@ export function MoreButton(props: MoreButtonProps) {
                   </DropdownMenuItem>
                 ))}
 
-              <ShareSubMenu />
+              <ShareSubMenu title={name} />
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

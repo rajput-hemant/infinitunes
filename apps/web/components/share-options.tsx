@@ -14,6 +14,7 @@ import { Icons } from "./icons";
 
 type ShareOptionsProps = React.ComponentProps<"div"> & {
   isDropDownItem?: boolean;
+  title?: string;
 };
 
 type ShareOption = {
@@ -92,7 +93,11 @@ function MenuItem({
   );
 }
 
-export function ShareOptions({ isDropDownItem, ...props }: ShareOptionsProps) {
+export function ShareOptions({
+  isDropDownItem,
+  title = siteConfig.name,
+  ...props
+}: ShareOptionsProps) {
   const pathname = usePathname();
 
   const [isCopied, setIsCopied] = React.useState(false);
@@ -108,7 +113,7 @@ export function ShareOptions({ isDropDownItem, ...props }: ShareOptionsProps) {
     <div {...props}>
       {shareOptions.map(({ label, platform, icon }, i) => {
         const href = platform
-          ? buildShareUrl(platform, { url, title: siteConfig.name })
+          ? buildShareUrl(platform, { url, title })
           : undefined;
 
         return isDropDownItem ? (

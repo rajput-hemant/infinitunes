@@ -8,7 +8,7 @@ import { Share2 } from "lucide-react";
 
 import { ShareOptions } from "./share-options";
 
-export function ShareSubMenu() {
+export function ShareSubMenu({ title }: { title?: string }) {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
@@ -18,7 +18,7 @@ export function ShareSubMenu() {
 
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
-          <ShareOptions isDropDownItem />
+          <ShareOptions isDropDownItem title={title} />
         </DropdownMenuSubContent>
       </DropdownMenuPortal>
     </DropdownMenuSub>
