@@ -5,7 +5,6 @@ import {
   formatDuration,
   getImageSrc,
   pickShuffleIndex,
-  toQueue,
 } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -35,6 +34,7 @@ import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
 import { useKeydown } from "~/hooks/use-keydown";
+import { useRadioRefill } from "~/hooks/use-radio-refill";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -93,7 +93,6 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const [pos, setPos] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const refillingRef = React.useRef<boolean>(false);
 
   const utils = api.useUtils();
 
@@ -191,40 +190,24 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     };
   }, [getPosition, isDragging]);
 
-  React.useEffect(() => {
-    if (!activeRadio || refillingRef.current || queue.length === 0) return;
-    if (currentIndex >= queue.length - 3) {
-      refillingRef.current = true;
-      utils.radio.songs
-        .fetch(
-          {
-            stationId: activeRadio.stationId,
-            k: 10,
-            next: 1,
-          },
-          // The app-wide staleTime is Infinity, which would hand back the first
-          // batch forever; every refill must hit upstream for fresh songs.
-          { staleTime: 0 },
-        )
-        .then((moreSongs) => {
-          if (moreSongs.length > 0) {
-            const currentIds = new Set(queue.map((s) => s.id));
-            const newItems = moreSongs
-              .filter((s) => !currentIds.has(s.id))
-              .map(toQueue);
-            if (newItems.length > 0) {
-              setQueue((prev) => [...prev, ...newItems]);
-            }
-          }
-        })
-        .catch(() => {
-          // Ignore transient background refill glitches
-        })
-        .finally(() => {
-          refillingRef.current = false;
-        });
-    }
-  }, [currentIndex, queue, activeRadio, utils, setQueue]);
+  const fetchRadioSongs = React.useCallback(
+    (stationId: string) =>
+      utils.radio.songs.fetch(
+        { stationId, k: 10, next: 1 },
+        // The app-wide staleTime is Infinity, which would hand back the first
+        // batch forever; every refill must hit upstream for fresh songs.
+        { staleTime: 0 },
+      ),
+    [utils],
+  );
+
+  useRadioRefill({
+    activeRadio,
+    queue,
+    currentIndex,
+    fetchSongs: fetchRadioSongs,
+    setQueue,
+  });
 
   function loopHandler() {
     if (!isReady) return;
