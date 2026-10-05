@@ -16,6 +16,7 @@ const state: {
   selectLimit: number | null;
   selectWhere: unknown[];
   selectOrder: unknown[];
+  deleteError: Error | null;
 } = {
   rows: [],
   inserted: [],
@@ -24,6 +25,7 @@ const state: {
   selectLimit: null,
   selectWhere: [],
   selectOrder: [],
+  deleteError: null,
 };
 
 const dialect = new PgDialect();
@@ -72,10 +74,20 @@ const fakeDb = {
         table: getTableName(table),
         where: render(where).params,
       });
+      if (state.deleteError) throw state.deleteError;
     },
   }),
-  transaction: (fn: (tx: unknown) => Promise<unknown>): Promise<unknown> =>
-    fn(fakeDb),
+  transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+    const inserted = [...state.inserted];
+    const deleted = [...state.deleted];
+    try {
+      return await fn(fakeDb);
+    } catch (error) {
+      state.inserted = inserted;
+      state.deleted = deleted;
+      throw error;
+    }
+  },
 };
 
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));
@@ -97,6 +109,7 @@ describe("history router", () => {
     state.selectLimit = null;
     state.selectWhere = [];
     state.selectOrder = [];
+    state.deleteError = null;
   });
 
   it("rejects record and list without a session", async () => {
@@ -139,6 +152,17 @@ describe("history router", () => {
     expect(state.deleted).toHaveLength(1);
     expect(state.deleted[0]?.table).toBe("infinitunes_recently_played");
     expect(state.deleted[0]?.where).toContain("user-1");
+  });
+
+  it("rolls back the upsert when trimming fails", async () => {
+    state.deleteError = new Error("trim failed");
+
+    await expect(
+      authed().history.record({ id: "abc", type: "song" }),
+    ).rejects.toThrow("trim failed");
+
+    expect(state.inserted).toHaveLength(0);
+    expect(state.deleted).toHaveLength(0);
   });
 
   it("rejects an empty or oversized id before writing", async () => {
