@@ -74,7 +74,7 @@ export function QueueList() {
                   src={getImageSrc(item.image, "low")}
                   alt=""
                   fill
-                  sizes="40px"
+                  sizes="44px"
                   className="z-10 object-cover duration-300 group-hover:brightness-50"
                 />
 
@@ -88,7 +88,7 @@ export function QueueList() {
                 />
               </div>
 
-              <figcaption className="flex flex-col">
+              <figcaption className="flex min-w-0 flex-1 flex-col">
                 <h4 className="w-full truncate font-semibold">
                   <Link
                     href={getHref(
@@ -106,7 +106,7 @@ export function QueueList() {
                     <Link
                       key={artist.id}
                       href={getHref(artist.perma_url, "artist")}
-                      className="w-full truncate hover:text-foreground"
+                      className="relative z-10 w-full truncate hover:text-foreground"
                     >
                       {artist.name}
                       {i !== arr.length - 1 && ", "}

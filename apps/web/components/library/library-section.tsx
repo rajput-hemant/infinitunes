@@ -10,7 +10,8 @@ import { cn } from "~/lib/utils";
 import { RetryButton } from "./retry-button";
 
 type LibraryHeadingProps = {
-  title: string;
+  title: React.ReactNode;
+  as?: "h1" | "h2";
   count?: number;
   noun?: string;
   description?: string;
@@ -20,8 +21,16 @@ type LibraryHeadingProps = {
 };
 
 export function LibraryHeading(props: LibraryHeadingProps) {
-  const { title, count, noun, description, missing, className, children } =
-    props;
+  const {
+    title,
+    as: Heading = "h2",
+    count,
+    noun,
+    description,
+    missing,
+    className,
+    children,
+  } = props;
 
   return (
     <div
@@ -31,9 +40,9 @@ export function LibraryHeading(props: LibraryHeadingProps) {
       )}
     >
       <div className="min-w-0">
-        <h2 className="font-heading text-xl text-balance drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+        <Heading className="font-heading text-xl text-balance drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
           {title}
-        </h2>
+        </Heading>
 
         {count !== undefined && noun && (
           <p className="text-sm text-muted-foreground tabular-nums">
@@ -61,13 +70,21 @@ export function LibraryHeading(props: LibraryHeadingProps) {
 type LibraryStateProps = {
   icon: LucideIcon;
   title: string;
+  titleAs?: "h3" | "p";
   description: string;
   className?: string;
   children?: React.ReactNode;
 };
 
 export function LibraryState(props: LibraryStateProps) {
-  const { icon: Icon, title, description, className, children } = props;
+  const {
+    icon: Icon,
+    title,
+    titleAs: Title = "h3",
+    description,
+    className,
+    children,
+  } = props;
 
   return (
     <div
@@ -80,7 +97,9 @@ export function LibraryState(props: LibraryStateProps) {
         <Icon aria-hidden className="size-7" />
       </span>
 
-      <h3 className="font-heading text-xl text-balance sm:text-2xl">{title}</h3>
+      <Title className="font-heading text-xl text-balance sm:text-2xl">
+        {title}
+      </Title>
 
       <p className="max-w-md text-pretty text-sm text-muted-foreground">
         {description}

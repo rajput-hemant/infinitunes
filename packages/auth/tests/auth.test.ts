@@ -2,6 +2,7 @@ import { describe, expect, it, beforeAll } from "bun:test";
 
 import {
   betterAuthAccounts,
+  betterAuthRateLimits,
   betterAuthSessions,
   betterAuthVerifications,
   infinitunesPasskeys,
@@ -9,7 +10,8 @@ import {
 } from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
 import type { BetterAuthPlugin } from "better-auth";
-import { getTableName } from "drizzle-orm";
+import { getTableName, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
 import { createAuth } from "../src/auth";
@@ -22,9 +24,169 @@ function makeFakeDb() {
     betterAuthVerifications,
     infinitunesPasskeys,
   };
+  // In-memory `rateLimit` model for the database-backed limiter (SE-17).
+  // Interprets the drizzle adapter's SQL the way the user-router tests do:
+  // every limiter query constrains `key`, numeric conditions carry the
+  // window/count operator in the query text. Other models keep the old
+  // behavior (lookups miss, writes throw), so existing tests are unaffected.
+  const rateRows = new Map<
+    string,
+    { key: string; count: number; lastRequest: number }
+  >();
+  const dialect = new PgDialect();
+  type Cond = { field: string; op: string; value: string | number };
+  const readConds = (where: SQL): Cond[] => {
+    const built = dialect.sqlToQuery(where) as unknown as {
+      sql: string;
+      params: unknown[];
+    };
+    const conds: Cond[] = [];
+    const pattern = /"(\w+)"\s*(<=|>=|<>|!=|=|<|>)\s*\$(\d+)/g;
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(built.sql)) !== null) {
+      const value = built.params[Number(match[3]) - 1];
+      if (typeof value === "string" || typeof value === "number") {
+        conds.push({ field: match[1], op: match[2], value });
+      }
+    }
+    return conds;
+  };
+  const matches = (
+    row: { key: string; count: number; lastRequest: number },
+    conds: Cond[],
+  ) => {
+    for (const cond of conds) {
+      if (cond.field === "key") {
+        if (row.key !== cond.value) return false;
+        continue;
+      }
+      if (cond.field !== "lastRequest" && cond.field !== "count") continue;
+      const value = cond.field === "count" ? row.count : row.lastRequest;
+      const num = cond.value;
+      if (typeof num !== "number") return false;
+      switch (cond.op) {
+        case "<":
+          if (!(value < num)) return false;
+          break;
+        case "<=":
+          if (!(value <= num)) return false;
+          break;
+        case ">":
+          if (!(value > num)) return false;
+          break;
+        case ">=":
+          if (!(value >= num)) return false;
+          break;
+        default:
+          if (!(value === num)) return false;
+      }
+    }
+    return true;
+  };
+  const filterRateRows = (conds: SQL[]) => {
+    if (conds.length === 0) return [...rateRows.values()];
+    const parsed = readConds(
+      sql.join(conds, sql.raw(" and ")) as unknown as SQL,
+    );
+    return [...rateRows.values()].filter((row) => matches(row, parsed));
+  };
+  const isRateTable = (table: unknown) => table === betterAuthRateLimits;
   return {
-    query,
-    update: () => ({ set: () => ({ where: () => Promise.resolve() }) }),
+    query: {
+      ...query,
+      // Present so model resolution succeeds; the adapter's plain findMany
+      // always takes the db.select path below, never this.
+      rateLimit: { findMany: async () => [] },
+    },
+    select: (cols?: Record<string, unknown>) => ({
+      from: (table: unknown) => {
+        if (!isRateTable(table)) {
+          // Preserve the old miss behavior for every other model: the
+          // adapter's catch treats this as "not found".
+          throw new TypeError("db.select is not supported in tests");
+        }
+        const where = (...conds: SQL[]) => {
+          // Awaited directly (findMany) and embedded via .limit into
+          // incrementOne's IN-subquery, so this is both thenable and chained.
+          const run = async () => filterRateRows(conds);
+          void cols;
+          return Object.assign(run(), {
+            limit: () => ({
+              getSQL: () => sql.join(conds, sql.raw(" and ")) as unknown as SQL,
+            }),
+          });
+        };
+        // findMany applies .limit before .where.
+        return { where, limit: () => ({ where }) };
+      },
+    }),
+    insert: (table: unknown) => {
+      if (!isRateTable(table)) throw new Error("unsupported fake insert");
+      return {
+        values: (values: {
+          key: string;
+          count: number;
+          lastRequest: number;
+        }) => ({
+          returning: async () => {
+            const row = { ...values };
+            rateRows.set(row.key, row);
+            return [row];
+          },
+        }),
+      };
+    },
+    update: (table: unknown) => {
+      if (!isRateTable(table)) {
+        return { set: () => ({ where: () => Promise.resolve() }) };
+      }
+      return {
+        set: (assignments: Record<string, unknown>) => ({
+          where: (where: SQL) => ({
+            returning: async () => {
+              const conds = readConds(where);
+              const row = [...rateRows.values()].find((r) => matches(r, conds));
+              // incrementOne only touches the row when its window/count
+              // guard still holds; otherwise the wrapper re-reads and denies.
+              if (!row) return [];
+              for (const [field, value] of Object.entries(assignments)) {
+                if (field !== "count" && field !== "lastRequest") continue;
+                if (
+                  typeof value === "object" &&
+                  value !== null &&
+                  "getSQL" in value
+                ) {
+                  const built = dialect.sqlToQuery(value as SQL) as unknown as {
+                    params: unknown[];
+                  };
+                  const delta = built.params.find((p) => typeof p === "number");
+                  if (field === "count" && typeof delta === "number") {
+                    row.count += delta;
+                  }
+                } else if (typeof value === "number") {
+                  (row as Record<string, number>)[field] = value;
+                }
+              }
+              return [row];
+            },
+          }),
+        }),
+      };
+    },
+    delete: (table: unknown) => ({
+      where: async (where: SQL) => {
+        if (!isRateTable(table)) return { rowCount: 0 };
+        const conds = readConds(where);
+        let pruned = 0;
+        for (const [key, row] of rateRows) {
+          if (matches(row, conds)) {
+            rateRows.delete(key);
+            pruned += 1;
+          }
+        }
+        return { rowCount: pruned };
+      },
+    }),
     _: { fullSchema: query },
   } as unknown as Parameters<typeof createAuth>[0];
 }
@@ -44,6 +206,15 @@ describe("Better Auth configuration", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.advanced?.database?.generateId).toBe("uuid");
     expect(auth.options.advanced?.generateId).toBeUndefined();
+  });
+
+  it("persists rate-limit counters in the database (SE-17)", () => {
+    const auth = createAuth(makeFakeDb());
+    expect(auth.options.rateLimit?.storage).toBe("database");
+    expect(auth.options.rateLimit?.customRules).toMatchObject({
+      "/request-password-reset": { window: 60, max: 3 },
+      "/reset-password": { window: 60, max: 5 },
+    });
   });
 
   it("disables implicit account linking", () => {

@@ -48,7 +48,7 @@ describe("recently played mixed lists", () => {
         .map((i) => (i.startsWith("EV") ? episode(i) : song(i))),
     });
     const ids = ["EV1", "s1", "gone", "EV2"];
-    const fetched = await fetchSongsChunked<Song | Episode>(ids, details);
+    const fetched = await fetchSongsChunked(ids, details);
 
     expect(orderByIds(ids, fetched ?? []).map((i) => i.id)).toEqual([
       "EV1",

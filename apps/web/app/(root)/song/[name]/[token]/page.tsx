@@ -1,6 +1,7 @@
 import { getImageSrc, parseToken, toCardItem } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
@@ -12,9 +13,12 @@ import { api } from "~/lib/trpc/server";
 
 import { Lyrics } from "./_components/lyrics";
 
-const getSong = cache(async (token: string) =>
-  orNotFound(api.song.details({ token })),
-);
+const getSong = cache(async (token: string) => {
+  const data = await orNotFound(api.song.details({ token }));
+  const song = data.songs[0];
+  if (song?.type !== "song") notFound();
+  return { song, modules: data.modules };
+});
 
 type SongDetailsPageProps = {
   params: Promise<{
@@ -28,8 +32,7 @@ export async function generateMetadata({
 }: SongDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const songObj = await getSong(token);
-  const song = songObj.songs[0];
+  const { song } = await getSong(token);
 
   return pageMetadata({
     title: song.title,
@@ -40,9 +43,8 @@ export async function generateMetadata({
   });
 }
 async function fetcher(token: string) {
-  const data = await getSong(token);
-  const song = data.songs[0];
-  const modules = data.modules!;
+  const { song, modules: songModules } = await getSong(token);
+  const modules = songModules!;
   const artistsTopSongsParams = modules.songsBysameArtists.source_params;
   const actorsTopSongsParams = modules.songsBysameActors.source_params;
   const isActorPresent = song.more_info.artistMap?.artists?.some(

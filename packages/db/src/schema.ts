@@ -1,4 +1,5 @@
 import {
+  bigint,
   boolean,
   index,
   integer,
@@ -119,6 +120,22 @@ export const betterAuthVerifications = pgTable("better_auth_verification", {
   expiresAt: timestamp("expiresAt", { mode: "date" }).notNull(),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+});
+
+/* ---------------------------------------------------------------------------
+ * Better Auth shared rate-limit counters (SE-17). Per-instance memory cannot
+ * cap abuse across serverless instances, so the limiter persists here:
+ * `rateLimit.storage: "database"` makes Better Auth address this table
+ * through the `rateLimit` model (fields key/count/lastRequest). The
+ * `infinitunes_` prefix keeps it inside `db:generate`'s tables filter and
+ * isolated in the shared database.
+ * ------------------------------------------------------------------------- */
+
+export const betterAuthRateLimits = pgTable("infinitunes_rate_limit", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull(),
+  lastRequest: bigint("lastRequest", { mode: "number" }).notNull(),
 });
 
 /* ---------------------------------------------------------------------------

@@ -20,8 +20,8 @@ export default function LabelDetailsLoading() {
         <SongListSkeleton length={20} />
       ) : (
         <div className="flex w-full flex-wrap justify-between gap-y-4">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <SliderCardSkeleton key={i} />
+          {Array.from({ length: 20 }).map((_card, cardIndex) => (
+            <SliderCardSkeleton key={cardIndex} />
           ))}
         </div>
       )}

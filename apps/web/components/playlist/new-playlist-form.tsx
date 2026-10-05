@@ -42,7 +42,7 @@ type NewPlaylistFormProps = {
   children: React.ReactNode;
 };
 
-export function NewPlaylistForm({ user, children }: NewPlaylistFormProps) {
+export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
   const [open, setOpen] = React.useState(false);
 
   const form = useForm<FormData>({
