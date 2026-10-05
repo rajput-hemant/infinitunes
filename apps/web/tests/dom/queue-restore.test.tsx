@@ -24,16 +24,32 @@ describe("persisted queue", () => {
     localStorage.setItem("current_song_index", "1");
 
     const container = document.createElement("div");
-    container.innerHTML = renderToString(<Probe />);
+    container.innerHTML = renderToString(
+      <>
+        <Probe />
+        <Probe />
+      </>,
+    );
     document.body.append(container);
     let root!: ReturnType<typeof hydrateRoot>;
     await act(async () => {
-      root = hydrateRoot(container, <Probe />);
+      root = hydrateRoot(
+        container,
+        <>
+          <Probe />
+          <Probe />
+        </>,
+      );
     });
 
-    expect(container.querySelector("output")?.textContent).toBe(
-      "Legacy without queueItemId",
+    // Every subscriber must see it, not only the first to mount.
+    const shown = [...container.querySelectorAll("output")].map(
+      (o) => o.textContent,
     );
+    expect(shown).toEqual([
+      "Legacy without queueItemId",
+      "Legacy without queueItemId",
+    ]);
     await act(async () => root.unmount());
   });
 });
