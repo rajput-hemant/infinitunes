@@ -172,4 +172,37 @@ describe("collapsible sidebar trigger", () => {
     expect(trigger(container).getAttribute("aria-expanded")).toBe("true");
     expect(state()).toBe("expanded");
   });
+
+  // happy-dom does not turn Enter/Space on a button into a click, so this
+  // checks what the app controls: the trigger stays natively activatable and
+  // nothing cancels or hijacks those keys.
+  it("keeps Enter and Space native: focusable, type=button, not cancelled", async () => {
+    const container = await mount(<DesktopShell />);
+    const button = trigger(container);
+    const state = () =>
+      document.querySelector("[data-slot=sidebar]")?.getAttribute("data-state");
+
+    button.focus();
+    expect(document.activeElement).toBe(button);
+    expect(button.getAttribute("type")).toBe("button");
+    expect(button.hasAttribute("disabled")).toBe(false);
+    expect(button.tabIndex).toBeGreaterThanOrEqual(0);
+
+    for (const [type, key] of [
+      ["keydown", "Enter"],
+      ["keydown", " "],
+      ["keyup", " "],
+    ] as const) {
+      const event = new KeyboardEvent(type, {
+        key,
+        bubbles: true,
+        cancelable: true,
+      });
+      await act(async () => {
+        button.dispatchEvent(event);
+      });
+      expect(event.defaultPrevented).toBe(false);
+    }
+    expect(state()).toBe("expanded");
+  });
 });
