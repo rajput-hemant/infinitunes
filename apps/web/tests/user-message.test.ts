@@ -107,7 +107,7 @@ describe("server action results", () => {
     expect(userMessage(error)).toBe("Name taken");
   });
 
-  it("never sends internal messages and rethrows uncoded errors", async () => {
+  it("never sends internal messages and maps uncoded errors to UNKNOWN", async () => {
     const { toResult } = await import("../lib/action-result");
     const failed = await toResult(async () => {
       throw new TRPCError({
@@ -120,6 +120,13 @@ describe("server action results", () => {
       toResult(async () => {
         throw new Error("boom");
       }),
-    ).rejects.toThrow("boom");
+    ).resolves.toMatchObject({ ok: false, code: "UNKNOWN", message: GENERIC });
+    await expect(
+      toResult(async () => {
+        throw Object.assign(new Error("NEXT_REDIRECT"), {
+          digest: "NEXT_REDIRECT;replace;/login;307;",
+        });
+      }),
+    ).rejects.toThrow("NEXT_REDIRECT");
   });
 });

@@ -243,4 +243,97 @@ describe("Server action authorization security checks", () => {
       );
     });
   });
+
+  describe("coded action results", () => {
+    const unauthorized = {
+      ok: false,
+      code: "UNAUTHORIZED",
+      message: "Unauthorized",
+    };
+    const forbidden = { ok: false, code: "FORBIDDEN", message: "Unauthorized" };
+
+    it("returns UNAUTHORIZED results for logged-out callers", async () => {
+      mockUser = undefined;
+      await expect(addToFavorites("song_token", "song")).resolves.toEqual(
+        unauthorized,
+      );
+      await expect(removeFromFavorites("song_token", "song")).resolves.toEqual(
+        unauthorized,
+      );
+      await expect(
+        addSongsToPlaylist("playlist-123", ["song-1"]),
+      ).resolves.toEqual(unauthorized);
+      await expect(
+        createNewPlaylist({ name: "Hacked Playlist" }),
+      ).resolves.toEqual(unauthorized);
+      await expect(
+        renamePlaylist("playlist-123", { name: "Hacked Playlist" }),
+      ).resolves.toEqual(unauthorized);
+      await expect(deletePlaylist("playlist-123")).resolves.toEqual(
+        unauthorized,
+      );
+      await expect(
+        removeSongsFromPlaylist("playlist-123", 0, "song-1"),
+      ).resolves.toEqual(unauthorized);
+      await expect(updateUser({ name: "Attacker" })).resolves.toEqual(
+        unauthorized,
+      );
+      await expect(deleteUser(MOCK_PASSWORD)).resolves.toEqual(unauthorized);
+    });
+
+    it("returns FORBIDDEN results for a foreign playlist", async () => {
+      mockUser = { id: "user-123" };
+      mockPlaylist = {
+        id: "playlist-victim",
+        userId: "user-456",
+        songs: ["existing-song"],
+      };
+      await expect(
+        addSongsToPlaylist("playlist-victim", ["attacker-song"]),
+      ).resolves.toEqual(forbidden);
+      await expect(
+        removeSongsFromPlaylist("playlist-victim", 0, "existing-song"),
+      ).resolves.toEqual(forbidden);
+      await expect(
+        renamePlaylist("playlist-victim", { name: "Stolen name" }),
+      ).resolves.toEqual(forbidden);
+      await expect(deletePlaylist("playlist-victim")).resolves.toEqual(
+        forbidden,
+      );
+    });
+
+    it("returns ok results carrying the data", async () => {
+      mockUser = { id: "user-123" };
+      mockPlaylist = {
+        id: "playlist-own",
+        userId: "user-123",
+        songs: ["existing-song"],
+      };
+      expect(
+        await addSongsToPlaylist("playlist-own", ["new-song"]),
+      ).toMatchObject({ ok: true });
+      expect(
+        await addSongsToPlaylist("playlist-own", ["new-song"]),
+      ).toHaveProperty("data");
+      expect(
+        await createNewPlaylist({
+          name: "My New Playlist",
+          description: "Test description",
+        }),
+      ).toMatchObject({ ok: true, data: { userId: "user-123" } });
+      expect(await deleteUser(MOCK_PASSWORD)).toMatchObject({
+        ok: true,
+        data: { id: "user-123" },
+      });
+    });
+
+    it("returns BAD_REQUEST for the wrong password", async () => {
+      mockUser = { id: "user-123" };
+      await expect(deleteUser("Wrong-Password1!")).resolves.toEqual({
+        ok: false,
+        code: "BAD_REQUEST",
+        message: "Current password is incorrect",
+      });
+    });
+  });
 });

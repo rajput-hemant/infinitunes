@@ -11,16 +11,33 @@ export type ActionResult<T> =
   | { ok: true; data: T }
   | { ok: false; code: string; message: string };
 
-/** Server side: coded (tRPC) failures become a result; anything else rethrows. */
+/** Next.js control flow (`redirect`, `notFound`, ...) is thrown with a `digest` and must propagate. */
+function isFrameworkSignal(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof error.digest === "string" &&
+    /^(NEXT_|HTTP_ERROR_FALLBACK)/.test(error.digest)
+  );
+}
+
+/**
+ * Server side: failures become a result, with `UNKNOWN` for errors that carry
+ * no code. Next.js control-flow signals rethrow so redirects keep working.
+ */
 export async function toResult<T>(
   run: () => Promise<T>,
 ): Promise<ActionResult<T>> {
   try {
     return { ok: true, data: await run() };
   } catch (error) {
-    const code = getErrorCode(error);
-    if (code === undefined) throw error;
-    return { ok: false, code, message: userMessage(error) };
+    if (isFrameworkSignal(error)) throw error;
+    return {
+      ok: false,
+      code: getErrorCode(error) ?? "UNKNOWN",
+      message: userMessage(error),
+    };
   }
 }
 

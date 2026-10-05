@@ -1,5 +1,12 @@
 [test]
 # `mock.module` and a global DOM leak across every file in one bun process, so
 # these directories run in their own process (`bun run test:mocked`,
-# `bun run test:dom`) and stay out of the plain run.
-pathIgnorePatterns = ["apps/web/tests/dom/**", "apps/web/tests/mocked/**"]
+# `bun run test:dom`) and stay out of the plain run. The two trpc router tests
+# mock `@infinitunes/db` with different fakes, so each runs alone
+# (`bun run test:isolated`).
+pathIgnorePatterns = [
+  "apps/web/tests/dom/**",
+  "apps/web/tests/mocked/**",
+  "packages/trpc/tests/history-router.test.ts",
+  "packages/trpc/tests/user-router.test.ts",
+]

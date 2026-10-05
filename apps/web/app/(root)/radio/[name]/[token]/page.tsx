@@ -84,7 +84,8 @@ export default async function RadioStationPage({ params }: Props) {
       ) : (
         <LibraryEmpty
           icon={Radio}
-          title="No songs yet"
+          title="Ready to tune in"
+          titleAs="p"
           description="Click Play to tune into this radio station."
         />
       )}
