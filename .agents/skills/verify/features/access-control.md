@@ -30,6 +30,6 @@ Observable end state: guest cannot read or mutate user data by page or API; sign
 
 ## Gotchas
 
-- Unit tests (`apps/web/tests/proxy.test.ts`, `security.test.ts`, `packages/trpc/tests/user-router.test.ts`) mock `next/server` and cookies, so they do not prove real redirects.
+- Unit tests (`apps/web/tests/mocked/proxy.test.ts`, `security.test.ts`, `packages/trpc/tests/user-router.test.ts`) mock `next/server` and cookies, so they do not prove real redirects.
 - `getSessionCookie` only checks cookie presence in the proxy; the server still validates the session for data (a forged cookie passes the redirect but not tRPC).
 - Rate limiting cannot be exercised without Upstash and a production build.

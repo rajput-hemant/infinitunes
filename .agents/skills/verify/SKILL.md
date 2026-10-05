@@ -72,7 +72,7 @@ Non-browser drives that are allowed now:
 
 ```
 bun run fmt:check && bun run lint && bun run type-check && bun run test
-bun test packages/trpc/tests/user-router.test.ts packages/auth/tests/auth.test.ts apps/web/tests/proxy.test.ts
+bun run test:routers && bun test packages/auth/tests/auth.test.ts && bun run test:mocked   # router and proxy suites mock modules, so each file runs in its own process
 curl -s -i http://localhost:3000/me | head -5            # guest redirect
 curl -s -i -X POST http://localhost:3000/api/trpc/user.getUserPlaylists -H 'origin: http://evil.example'   # expect 403 from the origin check
 ```
