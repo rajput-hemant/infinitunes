@@ -3,7 +3,6 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import {
   formatDuration,
-  getDownloadLink,
   getImageSrc,
   pickShuffleIndex,
   toQueue,
@@ -45,10 +44,10 @@ import {
   useQueue,
   useStreamQuality,
 } from "~/hooks/use-store";
+import { useTrackPlayback } from "~/hooks/use-track-playback";
 import type { User } from "~/lib/auth";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
-import { playToRecord } from "~/lib/queue-position";
 import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
@@ -95,7 +94,6 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
   const refillingRef = React.useRef<boolean>(false);
-  const lastRecordedRef = React.useRef<string | null>(null);
 
   const utils = api.useUtils();
 
@@ -162,42 +160,17 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     setCurrentIndex(index);
   }, [setCurrentIndex]);
 
-  // Depend on the resolved source, not on `queue`: `load` destroys and
-  // recreates the Howl, so keying on `queue` would restart the playing track
-  // whenever anything is queued, removed or radio-refilled.
+  useTrackPlayback({
+    queue,
+    currentIndex,
+    streamQuality,
+    isPlayerInit,
+    load,
+    onEnd: onEndHandler,
+    record: recordPlay,
+  });
+
   const current = queue[currentIndex];
-  const hasCurrent = Boolean(current);
-  const audioSrc = current
-    ? getDownloadLink(current.download_url, streamQuality)
-    : "";
-
-  React.useEffect(() => {
-    if (!isPlayerInit || !hasCurrent) return;
-
-    if (!audioSrc) {
-      toast.error("This song can't be played right now.");
-      return;
-    }
-
-    // Once per queue entry: a quality change reloads the source but is not a
-    // new listen. Read the track through the ref to keep the deps stable.
-    const { queue: latestQueue, currentIndex: latestIndex } =
-      playbackStateRef.current;
-    const track = latestQueue[latestIndex];
-    const play = playToRecord(track, lastRecordedRef.current);
-    if (track && play) {
-      lastRecordedRef.current = track.queueItemId;
-      void recordPlay(play);
-    }
-
-    load(audioSrc, {
-      html5: true,
-      // onload: play,
-      autoplay: true,
-      initialMute: false,
-      onend: onEndHandler,
-    });
-  }, [audioSrc, hasCurrent, isPlayerInit, load, onEndHandler]);
 
   React.useEffect(() => {
     if (isDragging) {
