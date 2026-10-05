@@ -42,7 +42,7 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | closed         |
 | [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | closed         |
 | [ISSUE-024](#issue-024) | CONFIRMED               | low      | reset password email not lower-cased          | closed         |
-| [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset limits are local and production-only   | open           |
+| [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset limits are local and production-only    | open           |
 
 ## Confirmed
 
@@ -67,6 +67,7 @@ Oxlint reports warnings, no errors.
 - Follow-up: triage warnings, suppress the intentional import.
 - Update 2026-10-03 (audit, source read only, lint not re-run): `apps/web/components/play-button.tsx:16` and `apps/web/components/details-header/more-button.tsx:50` import `currentlyInDev` but never call it, so they are unused-import warnings that disappear once removed. State remains open.
 - Update 2026-10-03 (source grep): those `currentlyInDev` imports, and the helper itself, were removed (`4eae157`). The unused-import warnings are gone; the issue stays open for the remaining warnings (see TC-5 in `docs/TODO.md`).
+- Revalidation 2026-10-05 (tests batch 3): `bun run --filter @infinitunes/web lint` exits 0 with 15 warnings; `bun run --filter @infinitunes/trpc lint` exits 0 without warnings. `bunx oxlint packages/ui/src/components/ui/sidebar.tsx` reports two `no-shadow` warnings at line 92 in protected source. UI behavior-affecting web warnings remain open pending the authorized browser slot; see TC-5 for classification.
 
 ### ISSUE-003
 
