@@ -50,7 +50,7 @@ export function ArtistsTopItems(props: Props) {
     getNextPageParam: (lastPage, allPages) =>
       (lastPage as { last_page: boolean }).last_page
         ? null
-        : allPages.length + 5,
+        : (allPages.pageParams[allPages.pageParams.length - 1] as number) + 1,
     initialData: {
       pages: [{ songs: initialSongs ?? [], total: 0, last_page: false }],
       pageParams: [1],
@@ -70,7 +70,7 @@ export function ArtistsTopItems(props: Props) {
     getNextPageParam: (lastPage, allPages) =>
       (lastPage as { last_page: boolean }).last_page
         ? null
-        : allPages.length + 2,
+        : (allPages.pageParams[allPages.pageParams.length - 1] as number) + 1,
     initialData: {
       pages: [{ albums: initialAlbums ?? [], total: 0, last_page: false }],
       pageParams: [1],
