@@ -273,11 +273,11 @@ describe("proxy /api/trpc origin check", () => {
 });
 
 describe("proxy rate-limit client key (SE-4)", () => {
-  let proxy: typeof import("../proxy").proxy;
+  let proxy: typeof import("../../proxy").proxy;
 
   beforeAll(async () => {
     getSessionCookie.mockImplementation(() => undefined);
-    ({ proxy } = await import("../proxy"));
+    ({ proxy } = await import("../../proxy"));
   });
 
   it("keys by x-real-ip first, then the first forwarded entry, trimmed", async () => {
