@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { appRoutes, userRoutes } from "./config/routes";
-import { buildCsp, CSP_REPORT_ONLY_HEADER } from "./lib/csp";
+import { buildCsp, cspHeaderName } from "./lib/csp";
 import { env } from "./lib/env";
 
 let ratelimit: Ratelimit | undefined;
@@ -85,8 +85,8 @@ export async function proxy(req: NextRequest) {
 
   if (isTrpc) return NextResponse.next();
 
-  // Report-only: observe violations before ever enforcing. Next applies the
-  // nonce to its own scripts from the request header (dynamic pages only).
+  // Next applies the nonce to its own scripts from the request header (dynamic
+  // pages only). `CSP_ENFORCE` chooses enforcing vs report-only.
   const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
   const csp = buildCsp({
     nonce,
@@ -95,9 +95,10 @@ export async function proxy(req: NextRequest) {
   });
   const requestHeaders = new Headers(req.headers);
   requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set(CSP_REPORT_ONLY_HEADER, csp);
+  const header = cspHeaderName();
+  requestHeaders.set(header, csp);
   const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set(CSP_REPORT_ONLY_HEADER, csp);
+  response.headers.set(header, csp);
   return response;
 }
 

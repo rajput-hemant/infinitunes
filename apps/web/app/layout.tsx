@@ -38,7 +38,7 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
             : ({ "--radius": `${radius}rem` } as React.CSSProperties)
         }
       >
-        <Providers>
+        <Providers nonce={nonce}>
           {children}
           {modal}
         </Providers>

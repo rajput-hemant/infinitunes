@@ -19,6 +19,8 @@ const TOAST_BOTTOM_OFFSET = "var(--toast-offset-bottom)";
 
 type Props = {
   theme?: ThemeProviderProps;
+  /** Per-request CSP nonce for the `next-themes` inline bootstrap script. */
+  nonce?: string;
   children: React.ReactNode;
 };
 
@@ -61,12 +63,13 @@ function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Providers({ children, theme }: Props) {
+export default function Providers({ children, theme, nonce }: Props) {
   return (
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
+      nonce={nonce}
       {...theme}
     >
       <ThemeColorSync />
