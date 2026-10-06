@@ -17,7 +17,7 @@ type Props = {
   initialAlbums?: Album[];
   category?: Category;
   user?: User;
-  userFavorites?: Favorite;
+  userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
 };
 

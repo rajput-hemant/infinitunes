@@ -25,7 +25,7 @@ type SongListProps = {
   user?: User;
   items: (Song | Episode)[];
   showAlbum?: boolean;
-  userFavorites?: Favorite;
+  userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
   className?: string;
 };

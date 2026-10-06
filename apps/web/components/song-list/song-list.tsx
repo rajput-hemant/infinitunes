@@ -43,12 +43,13 @@ export async function SongList(props: SongListProps) {
 
   const user = await getUser();
 
-  let playlists: MyPlaylist[] | undefined, favorites: Favorite | undefined;
+  let playlists: MyPlaylist[] | undefined,
+    favorites: Favorite | null | undefined;
 
   if (user) {
     [playlists, favorites] = await Promise.all([
       orFallback("user playlists", getUserPlaylists(), undefined),
-      orFallback("user favorites", getUserFavorites(), undefined),
+      orFallback("user favorites", getUserFavorites(), null),
     ]);
   }
 

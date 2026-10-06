@@ -22,9 +22,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
     user
       ? orFallback("user playlists", getUserPlaylists(), undefined)
       : undefined,
-    user
-      ? orFallback("user favorites", getUserFavorites(), undefined)
-      : undefined,
+    user ? orFallback("user favorites", getUserFavorites(), null) : undefined,
   ]);
 
   return (

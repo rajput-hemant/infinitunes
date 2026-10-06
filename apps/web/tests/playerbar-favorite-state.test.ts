@@ -19,14 +19,14 @@ describe("playerbar favorite-state and Add-label plumbing regression", () => {
   it("player-wrapper accepts favorites prop and passes it to Player", async () => {
     const source = await Bun.file(PLAYER_WRAPPER).text();
 
-    expect(source).toContain("favorites?: Favorite;");
+    expect(source).toContain("favorites?: Favorite | null;");
     expect(source).toContain("favorites={favorites}");
   });
 
   it("player accepts favorites in PlayerProps and PlayerInner, and passes favorites to TileMoreButton", async () => {
     const source = await Bun.file(PLAYER).text();
 
-    expect(source).toContain("favorites?: Favorite;");
+    expect(source).toContain("favorites?: Favorite | null;");
     expect(source).toContain(
       "function PlayerInner({ user, playlists, favorites }: PlayerProps)",
     );

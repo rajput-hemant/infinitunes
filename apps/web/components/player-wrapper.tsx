@@ -8,7 +8,7 @@ import type { User } from "~/lib/auth";
 type PlayerWrapperProps = {
   user?: User;
   playlists?: MyPlaylist[];
-  favorites?: Favorite;
+  favorites?: Favorite | null;
 };
 
 const Player = dynamic(

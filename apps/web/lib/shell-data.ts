@@ -14,11 +14,11 @@ export const EMPTY_FOOTER: FooterDetails = {
 };
 
 export function megaMenuOrEmpty(request: Promise<MegaMenu>): Promise<MegaMenu> {
-  return orFallback("megaMenu", request, EMPTY_MEGA_MENU);
+  return orFallback("megaMenu", request, EMPTY_MEGA_MENU, "shell");
 }
 
 export function footerOrEmpty(
   request: Promise<FooterDetails>,
 ): Promise<FooterDetails> {
-  return orFallback("footer", request, EMPTY_FOOTER);
+  return orFallback("footer", request, EMPTY_FOOTER, "shell");
 }

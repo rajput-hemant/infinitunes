@@ -68,9 +68,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
     await Promise.all([
       getShow(token, season, sort),
-      user
-        ? orFallback("user favorites", getUserFavorites(), undefined)
-        : undefined,
+      user ? orFallback("user favorites", getUserFavorites(), null) : undefined,
       user
         ? orFallback("user playlists", getUserPlaylists(), undefined)
         : undefined,

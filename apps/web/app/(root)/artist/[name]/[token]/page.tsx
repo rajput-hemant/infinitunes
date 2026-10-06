@@ -65,9 +65,7 @@ export default async function ArtistDetailsPage(props: Props) {
     user
       ? orFallback("user playlists", getUserPlaylists(), undefined)
       : undefined,
-    user
-      ? orFallback("user favorites", getUserFavorites(), undefined)
-      : undefined,
+    user ? orFallback("user favorites", getUserFavorites(), null) : undefined,
   ]);
 
   let selectedTab: TABS;

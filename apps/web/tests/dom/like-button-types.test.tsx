@@ -18,6 +18,9 @@ describe("LikeButton by media type", () => {
     "episode",
     "channel",
     "label",
+    // Not likable itself: DetailsHeader maps `season` to "show" before it
+    // reaches LikeButton (type={kind === "season" ? "show" : kind}).
+    "season",
   ] as const)("renders nothing for %s", (type) => {
     expect(render(type)).toBe("");
   });
@@ -28,4 +31,14 @@ describe("LikeButton by media type", () => {
       expect(render(type)).toContain('aria-label="Like"');
     },
   );
+
+  // A failed favorites read (null) is "unknown", not "not liked": the button
+  // must not offer a write it cannot do correctly.
+  it("disables the control when favorites could not be loaded", () => {
+    const html = renderToStaticMarkup(
+      <LikeButton type="song" token="t" name="Name" favourites={null} />,
+    );
+
+    expect(html).toContain("disabled");
+  });
 });

@@ -41,9 +41,14 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
         <Separator />
 
         <div className="min-h-64">
-          {playlists?.length !== 0 ? (
+          {playlists === undefined ? (
+            // Unknown, not empty: the library read failed.
+            <output className="flex min-h-64 items-center justify-center text-sm text-muted-foreground">
+              Couldn&apos;t load your playlists. You can still create a new one.
+            </output>
+          ) : playlists.length !== 0 ? (
             <div className="grid gap-2 sm:grid-cols-2">
-              {playlists?.map(({ id, name, songs }) => (
+              {playlists.map(({ id, name, songs }) => (
                 <Button
                   key={id}
                   variant="outline"
