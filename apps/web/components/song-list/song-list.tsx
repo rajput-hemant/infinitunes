@@ -70,11 +70,11 @@ export async function SongList(props: SongListProps) {
                   <PlayButton
                     type={item.type}
                     token={parseToken(item.perma_url)}
-                    className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground duration-300 hover:h-9 hover:border-primary hover:text-primary group-hover:flex"
+                    className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground transition-[transform,color,border-color] duration-150 ease-out hover:scale-110 hover:border-primary hover:text-primary group-hover:flex"
                   >
                     <Play
                       strokeWidth={9}
-                      className="h-full w-5 p-1 duration-300 group-hover/play:w-6"
+                      className="h-full w-5 p-1 transition-transform duration-150 ease-out group-hover/play:scale-110"
                     />
                   </PlayButton>
                 )}

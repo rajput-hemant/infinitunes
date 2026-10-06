@@ -89,7 +89,7 @@ export function LibraryState(props: LibraryStateProps) {
   return (
     <div
       className={cn(
-        "flex min-h-64 flex-col items-center justify-center gap-3 rounded-lg border border-dashed px-4 py-10 text-center lg:min-h-96",
+        "flex min-h-64 animate-in flex-col items-center justify-center gap-3 rounded-lg border border-dashed duration-200 ease-out fade-in slide-in-from-bottom-1 px-4 py-10 text-center lg:min-h-96",
         className,
       )}
     >

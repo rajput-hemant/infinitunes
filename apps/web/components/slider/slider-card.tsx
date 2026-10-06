@@ -99,12 +99,9 @@ export function SliderCard(props: SliderCardProps) {
                 aria-label={`Play ${name}`}
                 type={type}
                 token={parseToken(url)}
-                className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 duration-200 hover:w-16 active:w-14"
+                className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 transition-transform duration-150 ease-out hover:scale-125 active:scale-110"
               >
-                <Play
-                  strokeWidth={10}
-                  className="m-auto h-full w-6 p-0.5 duration-200 group-hover/play:w-8"
-                />
+                <Play strokeWidth={10} className="m-auto h-full w-6 p-0.5" />
               </PlayButton>
             </div>
           )}
