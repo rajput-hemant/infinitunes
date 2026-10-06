@@ -8,7 +8,13 @@ mock.module("server-only", () => ({}));
 mock.module("~/components/download-button", () => ({
   DownloadButton: () => null,
 }));
-mock.module("~/components/like-button", () => ({ LikeButton: () => null }));
+const likeProps: { name?: string }[] = [];
+mock.module("~/components/like-button", () => ({
+  LikeButton: (props: { name?: string }) => {
+    likeProps.push(props);
+    return null;
+  },
+}));
 mock.module("~/components/play-button", () => ({ PlayButton: () => null }));
 mock.module("~/components/song-list/more-button", () => ({
   TileMoreButton: () => null,
@@ -19,6 +25,7 @@ mock.module("~/components/song-list/play-pause-button", () => ({
 
 const { SongListClient } =
   await import("../../components/song-list/song-list.client");
+const { getItemName } = await import("../../components/song-list/item-name");
 
 const song = {
   id: "s1",
@@ -50,5 +57,22 @@ describe("D2: song rows decode HTML entities", () => {
     expect(html).toContain("Rock &amp; Roll");
     expect(html).toContain("Simon &amp; Garfunkel");
     expect(html).toContain("Black &amp; White");
+  });
+
+  it("decodes the album cell link text exactly once", () => {
+    const html = renderToStaticMarkup(<SongListClient items={[song]} />);
+    expect(html).toMatch(/>Black &amp; White<\/a>/);
+    expect(html).not.toContain("Black &amp;amp; White");
+  });
+
+  it("passes the decoded title to the like button", () => {
+    likeProps.length = 0;
+    renderToStaticMarkup(<SongListClient items={[song]} />);
+    expect(likeProps.map((p) => p.name)).toContain("Rock & Roll");
+  });
+
+  it("getItemName decodes song titles and keeps queue names as-is", () => {
+    expect(getItemName(song)).toBe("Rock & Roll");
+    expect(getItemName({ name: "Plain" } as never)).toBe("Plain");
   });
 });

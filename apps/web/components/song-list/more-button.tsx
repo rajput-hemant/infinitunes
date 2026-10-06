@@ -2,12 +2,7 @@
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Queue, Song } from "@infinitunes/types";
-import {
-  decode,
-  getImageSrc,
-  newQueueItemId,
-  toQueue,
-} from "@infinitunes/types";
+import { getImageSrc, newQueueItemId, toQueue } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -46,6 +41,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
+import { getItemName } from "~/components/song-list/item-name";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -86,10 +82,6 @@ type MenuItem = {
   hide?: boolean;
   icon: LucideIcon;
 };
-
-function getItemName(item: Song | Episode | Queue): string {
-  return "title" in item ? decode(item.title) : item.name;
-}
 
 function getItemUrl(item: Song | Episode | Queue): string {
   return "perma_url" in item ? item.perma_url : item.url;
