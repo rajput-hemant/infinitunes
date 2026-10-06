@@ -418,7 +418,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                     queue[currentIndex].url,
                     queue[currentIndex].type === "song" ? "song" : "episode",
                   )}
-                  className="group line-clamp-1 font-heading text-sm text-primary drop-shadow-sm"
+                  className="group line-clamp-1 font-heading text-sm text-primary dark:drop-shadow-sm"
                 >
                   {queue[currentIndex].name}
                   <MoveUpRight

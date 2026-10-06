@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { unwrap } from "~/lib/action-result";
 import { deletePlaylist } from "~/lib/actions";
 import { userMessage } from "~/lib/user-message";
-import { cn } from "~/lib/utils";
+import { cn, destructiveText } from "~/lib/utils";
 
 import { RenamePlaylistDialog } from "./rename-playlist-dialog";
 
@@ -106,7 +106,11 @@ export function PlaylistManageMenu({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} variant="destructive">
+            <AlertDialogAction
+              onClick={handleDelete}
+              variant="destructive"
+              className={destructiveText}
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

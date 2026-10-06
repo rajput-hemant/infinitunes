@@ -33,7 +33,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
     <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
       <DialogContent className="max-w-xl shadow-md">
         <DialogHeader>
-          <DialogTitle className="font-heading text-2xl font-normal drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+          <DialogTitle className="font-heading text-2xl font-normal dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
             Save to Playlist
           </DialogTitle>
         </DialogHeader>

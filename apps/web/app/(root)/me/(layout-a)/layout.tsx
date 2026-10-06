@@ -37,7 +37,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
         <div className="flex flex-col items-center justify-center gap-y-2 font-medium sm:items-start sm:gap-4">
           <div className="text-center sm:text-start">
-            <h1 className="max-w-5xl truncate font-heading text-2xl drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+            <h1 className="max-w-5xl truncate font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
               {user.name ?? "User"}
             </h1>
 

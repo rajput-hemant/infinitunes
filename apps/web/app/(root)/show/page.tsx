@@ -32,7 +32,7 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
   return (
     <div className="space-y-4">
       <header className="mt-4">
-        <h1 className="font-heading text-2xl capitalize drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+        <h1 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
           {trendingTitle}
         </h1>
 
@@ -72,7 +72,7 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      <h2 className="font-heading text-2xl capitalize drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+      <h2 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
         All Podcasts
       </h2>
 

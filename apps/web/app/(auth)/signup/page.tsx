@@ -12,7 +12,7 @@ export default async function SignUpPage() {
 
   return (
     <div className="flex flex-col space-y-2 text-center">
-      <h1 className="font-heading text-3xl drop-shadow-md text-foreground sm:text-4xl">
+      <h1 className="font-heading text-3xl dark:drop-shadow-md text-foreground sm:text-4xl">
         Create an Account
       </h1>
 

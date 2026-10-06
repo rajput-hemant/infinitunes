@@ -40,7 +40,7 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
               }
             />
 
-            <h2 className="font-heading text-2xl drop-shadow-md text-foreground sm:text-2xl md:text-4xl">
+            <h2 className="font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-4xl">
               What&apos;s Hot on Infinitunes
             </h2>
 

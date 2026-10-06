@@ -132,7 +132,7 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
 
       {albumSongs.length > 0 && (
         <>
-          <h2 className="pl-2 font-heading text-2xl drop-shadow-md text-foreground sm:text-3xl md:text-4xl lg:pl-0">
+          <h2 className="pl-2 font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl lg:pl-0">
             More from {song.more_info.album}
           </h2>
           <Separator />
