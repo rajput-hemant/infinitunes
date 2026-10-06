@@ -117,16 +117,13 @@ export function PasskeySettings() {
       <Separator />
 
       {isLoading ? (
-        <p
-          role="status"
-          className="flex items-center gap-2 text-sm text-muted-foreground"
-        >
+        <output className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2
             aria-hidden
             className="size-4 animate-spin motion-reduce:animate-none"
           />{" "}
           Loading passkeys...
-        </p>
+        </output>
       ) : passkeys.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No passkeys yet. Add one to enable passwordless sign-in.

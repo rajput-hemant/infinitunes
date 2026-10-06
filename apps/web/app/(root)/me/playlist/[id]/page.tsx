@@ -140,11 +140,11 @@ export default async function MyPlaylistsPage(props: Props) {
       {playlistSongs.length ? (
         <>
           {unavailableCount > 0 && (
-            <p role="status" className="text-sm text-muted-foreground">
+            <output className="block text-sm text-muted-foreground">
               {unavailableCount} saved song{unavailableCount === 1 ? "" : "s"}{" "}
               couldn’t be loaded. Your saved songs are safe. Refresh to try
               again.
-            </p>
+            </output>
           )}
           <SongList
             items={playlistSongs}
