@@ -71,6 +71,9 @@ describe("queue sheet", () => {
       document.querySelector('[data-slot="sheet-content"]')?.className,
     ).toContain("sm:max-w-xl!");
 
+    expect(document.body.textContent).toContain("1 Track");
+    expect(document.body.textContent).not.toContain("1 Tracks");
+
     const remove = document.querySelector<HTMLButtonElement>(
       "[data-queue-remove]",
     );
@@ -103,6 +106,7 @@ describe("queue sheet", () => {
         .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
         ?.click();
     });
+    expect(document.body.textContent).toContain("3 Tracks");
 
     await act(async () => {
       document
@@ -117,6 +121,7 @@ describe("queue sheet", () => {
       (item: QueueItem) => item.id,
     );
     expect(ids).toEqual(["a", "c"]);
+    expect(document.body.textContent).toContain("2 Tracks");
     expect(document.activeElement?.getAttribute("aria-label")).toBe(
       "Remove Song c from queue",
     );
