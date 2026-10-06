@@ -5,9 +5,10 @@ import {
   LibraryHeading,
   LibraryUnavailable,
 } from "~/components/library/library-section";
+import { LibrarySongList } from "~/components/library/library-song-list";
 import { PlayAllButton } from "~/components/library/play-all-button";
-import { SongList } from "~/components/song-list/song-list";
-import { getUserFavorites } from "~/lib/db/queries";
+import { getUser } from "~/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { fetchSongsChunked } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
@@ -17,7 +18,10 @@ export const metadata = {
 };
 
 export default async function LikedSongsPage() {
-  const favoriteSongs = await getUserFavorites();
+  const [user, favoriteSongs] = await Promise.all([
+    getUser(),
+    getUserFavorites(),
+  ]);
 
   if (favoriteSongs && favoriteSongs.songs.length) {
     const songs = await fetchSongsChunked(favoriteSongs.songs, (input) =>
@@ -25,6 +29,8 @@ export default async function LikedSongsPage() {
     );
 
     if (!songs) return <LibraryUnavailable what="liked songs" />;
+
+    const playlists = user ? await getUserPlaylists() : undefined;
 
     return (
       <div className="space-y-4">
@@ -37,7 +43,12 @@ export default async function LikedSongsPage() {
           <PlayAllButton items={songs} />
         </LibraryHeading>
 
-        <SongList items={songs} />
+        <LibrarySongList
+          user={user}
+          items={songs}
+          userFavorites={favoriteSongs}
+          userPlaylists={playlists}
+        />
       </div>
     );
   }

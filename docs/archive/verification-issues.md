@@ -42,7 +42,7 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | closed         |
 | [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | closed         |
 | [ISSUE-024](#issue-024) | CONFIRMED               | low      | reset password email not lower-cased          | closed         |
-| [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset limits are local and production-only   | open           |
+| [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset limits are local and production-only    | open           |
 
 ## Confirmed
 

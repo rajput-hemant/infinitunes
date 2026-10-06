@@ -5,8 +5,10 @@ import {
   LibraryHeading,
   LibraryUnavailable,
 } from "~/components/library/library-section";
+import { LibrarySongList } from "~/components/library/library-song-list";
 import { PlayAllButton } from "~/components/library/play-all-button";
-import { SongList } from "~/components/song-list/song-list";
+import { getUser } from "~/lib/auth";
+import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { fetchSongsChunked, orderByIds } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
@@ -38,6 +40,11 @@ export default async function RecentlyPlayedPage() {
 
   const items = orderByIds(ids, fetched);
 
+  const user = await getUser();
+  const [playlists, favorites] = user
+    ? await Promise.all([getUserPlaylists(), getUserFavorites()])
+    : [undefined, undefined];
+
   return (
     <div className="space-y-4">
       <LibraryHeading
@@ -49,7 +56,12 @@ export default async function RecentlyPlayedPage() {
         <PlayAllButton items={items} />
       </LibraryHeading>
 
-      <SongList items={items} />
+      <LibrarySongList
+        user={user}
+        items={items}
+        userFavorites={favorites}
+        userPlaylists={playlists}
+      />
     </div>
   );
 }
