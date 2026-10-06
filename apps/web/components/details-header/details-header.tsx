@@ -45,6 +45,11 @@ type DetailsItem =
   | Mix;
 
 /** `Label` is the only DetailsItem variant with no raw `type`/`id` field (it has `labelId` instead). */
+/** " · N Plays", or nothing when upstream has no play count. */
+function playsSegment(count: number | string | undefined): string {
+  return Number(count) > 0 ? ` · ${formatCount(count)} Plays` : "";
+}
+
 function isLabel(item: DetailsItem): item is Label {
   return "labelId" in item;
 }
@@ -156,7 +161,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               <span className="sr-only">Explicit</span>
             </Badge>
           )}
-          <span className="truncate">{title}</span>
+          <span className="break-words text-balance">{title}</span>
 
           {getVerified(item) && (
             // Verified-badge blue is a brand convention; the theme has no blue token.
@@ -201,8 +206,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
               <p className="capitalize">
                 {kind}
-                {" · "}
-                {formatCount((item as Song | Episode).play_count)} Plays
+                {playsSegment((item as Song | Episode).play_count)}
                 {" · "}
                 {formatDuration(
                   (item as Song | Episode).more_info.duration,
@@ -231,8 +235,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                 ))}
                 {" · "}
                 {formatCount((item as Album).more_info.song_count)} Songs
-                {" · "}
-                {formatCount((item as Album).play_count)} Plays
+                {playsSegment((item as Album).play_count)}
                 {" · "}
                 {formatDuration(albumDuration, "mm:ss")}
               </p>
@@ -255,8 +258,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
                 <p className="capitalize">
                   {kind}
-                  {" · "}
-                  {formatCount((item as Album).play_count)} Plays
+                  {playsSegment((item as Album).play_count)}
                 </p>
               </div>
             </>
