@@ -109,12 +109,6 @@ export function ExpandedPlayer(props: ExpandedPlayerProps) {
           </SheetDescription>
         </SheetHeader>
         {track && <ExpandedBody {...props} track={track} />}
-        <SheetClose
-          aria-label="Close"
-          className={cn(buttonClass, "absolute top-1 right-3 hover:bg-muted")}
-        >
-          <X aria-hidden className="size-5" />
-        </SheetClose>
       </SheetContent>
     </Sheet>
   );
