@@ -183,3 +183,33 @@ Error: An error occurred while loading instrumentation hook: [local-dev] LOCAL_D
 **Verdict**: **Confirmed** for the core requirement - credentials only print for loopback DATABASE_URL in development. Production build has no credentials. Non-loopback hosts skip the banner. The missing-fixture case currently throws (batch4 reconciliation notes this was fixed to warn+skip, but that fix is not in this branch yet).
 
 **Note**: Batch4 reconciled DB-4 as partially verified (direct `register()` runs tested, production bundle grepped, missing fixture throws). This adds the live `next dev` verification for loopback vs non-loopback which was the remaining gap.
+
+---
+
+## CD-1: Dead DATABASE_URL behavior ✅ CONFIRMED (behavior differs from original claim)
+
+**Task**: Stop/point `DATABASE_URL` at a dead port and confirm what a public page does now; the integration branch already degrades optional reads.
+
+**What was tested**: Point `DATABASE_URL` to a non-existent port (9999) and hit public pages.
+
+**Test Results**:
+
+**Test: Dev mode + dead DATABASE_URL (127.0.0.1:9999)**
+
+```
+$ DATABASE_URL=postgres://postgres:postgrespassword@127.0.0.1:9999/infinitunes_dead bun run dev
+$ curl -s -o /dev/null -w "%{http_code}" http://localhost:3000/
+200
+```
+
+**Behavior**:
+
+- Public pages (`/`, `/chart`, `/login`) return **HTTP 200**, not 500
+- Pages needing database (`/`, `/chart`) bail out to client-side rendering with `next/dynamic` bailout message
+- Pages NOT needing database (`/login`, `/forgot-password`, `/signup`) render fully
+- The `loading.tsx` shell is flushed first, then the error boundary takes over client-side
+- Navbar and footer degrade (CD-2 fix) instead of failing the page
+
+**Verdict**: **Confirmed** - The original claim "Public data pages return HTTP 500 when the JioSaavn API or database is unreachable" is **not accurate** for this branch. Pages return HTTP 200 with the loading shell, and error boundaries handle the database errors client-side. This matches the batch4 reconciliation finding that the HTTP 500 claim does not reproduce.
+
+**Note**: Batch4 reconciled CD-1 as "the HTTP 500 claim does not reproduce on this branch". This verification confirms that finding with live dev server tests.
