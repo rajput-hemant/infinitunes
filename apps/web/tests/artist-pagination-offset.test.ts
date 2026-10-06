@@ -1,70 +1,56 @@
-// Fixture-based regression test for PQ-1 pagination fix.
-// No live API needed; verifies getNextPageParam sequential offsets.
+// Shapes mirror live `artist.songs`/`artist.albums` responses for artist 459320
+// (evidence: PQ-1 batch4); no network needed.
+import {
+  ARTIST_LAST_INITIAL_PAGE,
+  nextArtistPage,
+  toArtistPage,
+} from "~/lib/artist-pagination";
 
-function getNextPageParam(
-  lastPage: { last_page: boolean },
-  allPages: unknown[],
-) {
-  return lastPage.last_page ? null : allPages.length + 1;
-}
-
-describe("artist pagination offsets (fixture regression)", () => {
-  const fixtureSongPages = [
-    { songs: [{ id: "s1", title: "A" }], last_page: false },
-    { songs: [{ id: "s2", title: "B" }], last_page: false },
-    { songs: [{ id: "s3", title: "C" }], last_page: true },
-  ];
-
-  const fixtureAlbumPages = [
-    { albums: [{ id: "a1", title: "X" }], last_page: false },
-    { albums: [{ id: "a2", title: "Y" }], last_page: false },
-    { albums: [{ id: "a3", title: "Z" }], last_page: true },
-  ];
-
-  it("songs progress sequentially (1 -> 2 -> 3) not by offset", () => {
-    expect(getNextPageParam(fixtureSongPages[0], [fixtureSongPages[0]])).toBe(
-      2,
+describe("artist pagination (live-shaped fixtures)", () => {
+  it("first fetched page follows the 50 items the artist page already holds", () => {
+    // n_song/n_album = 50 -> upstream pages 0-4 are already shown.
+    expect(nextArtistPage({ last_page: false }, ARTIST_LAST_INITIAL_PAGE)).toBe(
+      5,
     );
-    expect(
-      getNextPageParam(fixtureSongPages[1], [
-        fixtureSongPages[0],
-        fixtureSongPages[1],
-      ]),
-    ).toBe(3);
-    expect(
-      getNextPageParam(fixtureSongPages[2], [
-        fixtureSongPages[0],
-        fixtureSongPages[1],
-        fixtureSongPages[2],
-      ]),
-    ).toBeNull();
   });
 
-  it("albums progress sequentially (1 -> 2 -> 3) not by offset", () => {
-    expect(getNextPageParam(fixtureAlbumPages[0], [fixtureAlbumPages[0]])).toBe(
-      2,
-    );
-    expect(
-      getNextPageParam(fixtureAlbumPages[1], [
-        fixtureAlbumPages[0],
-        fixtureAlbumPages[1],
-      ]),
-    ).toBe(3);
-    expect(
-      getNextPageParam(fixtureAlbumPages[2], [
-        fixtureAlbumPages[0],
-        fixtureAlbumPages[1],
-        fixtureAlbumPages[2],
-      ]),
-    ).toBeNull();
+  it("advances one page at a time and stops on last_page", () => {
+    expect(nextArtistPage({ last_page: false }, 5)).toBe(6);
+    expect(nextArtistPage({ last_page: true }, 6)).toBeNull();
   });
 
-  it("previous broken offset behavior is refuted", () => {
-    // Before fix: songs used allPages.length + 5, albums + 2.
-    // With 1 initial page: songs would jump to 6, albums to 3 (skipping pages).
-    const brokenSongs = 1 + 5; // 6
-    const brokenAlbums = 1 + 2; // 3
-    expect(brokenSongs).toBe(6);
-    expect(brokenAlbums).toBe(3);
+  it("reads songs/albums nested under topSongs/topAlbums", () => {
+    const songs = toArtistPage<{ id: string }>(
+      {
+        artistId: "1",
+        topSongs: { songs: [{ id: "s1" }], total: 9, last_page: false },
+      },
+      "topSongs",
+      "songs",
+    );
+    expect(songs).toEqual({ items: [{ id: "s1" }], last_page: false });
+    const albums = toArtistPage<{ id: string }>(
+      { topAlbums: { albums: [{ id: "a1" }], total: 9, last_page: false } },
+      "topAlbums",
+      "albums",
+    );
+    expect(albums.items).toEqual([{ id: "a1" }]);
+  });
+
+  it("treats an empty page as the end even though upstream keeps last_page false", () => {
+    const page = toArtistPage(
+      { topSongs: { songs: [], total: 5199, last_page: false } },
+      "topSongs",
+      "songs",
+    );
+    expect(page.last_page).toBe(true);
+    expect(nextArtistPage(page, 9)).toBeNull();
+  });
+
+  it("does not throw on a missing section", () => {
+    expect(toArtistPage(null, "topSongs", "songs")).toEqual({
+      items: [],
+      last_page: true,
+    });
   });
 });

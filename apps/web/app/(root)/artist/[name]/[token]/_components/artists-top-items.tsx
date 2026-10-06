@@ -7,6 +7,11 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
+import {
+  ARTIST_LAST_INITIAL_PAGE,
+  nextArtistPage,
+  toArtistPage,
+} from "~/lib/artist-pagination";
 import type { User } from "~/lib/auth";
 import { api } from "~/lib/trpc/client";
 
@@ -39,50 +44,50 @@ export function ArtistsTopItems(props: Props) {
 
   const songResults = useInfiniteQuery({
     queryKey: [id, "artists-top-songs"],
-    queryFn: ({ pageParam }) =>
-      utils.artist.songs.fetch({
-        id,
-        page: pageParam,
-        cat: category,
-        sort,
-      }),
-    initialPageParam: 1 as number,
-    getNextPageParam: (lastPage, allPages) =>
-      (lastPage as { last_page: boolean }).last_page
-        ? null
-        : allPages.length + 1,
+    queryFn: async ({ pageParam }) =>
+      toArtistPage<Song>(
+        await utils.artist.songs.fetch({
+          id,
+          page: pageParam,
+          cat: category,
+          sort,
+        }),
+        "topSongs",
+        "songs",
+      ),
+    initialPageParam: ARTIST_LAST_INITIAL_PAGE + 1,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      nextArtistPage(lastPage, lastPageParam),
     initialData: {
-      pages: [{ songs: initialSongs ?? [], total: 0, last_page: false }],
-      pageParams: [1],
+      pages: [{ items: initialSongs ?? [], last_page: false }],
+      pageParams: [ARTIST_LAST_INITIAL_PAGE],
     },
   });
 
   const albumsResults = useInfiniteQuery({
     queryKey: [id, "artists-top-albums"],
-    queryFn: ({ pageParam }) =>
-      utils.artist.albums.fetch({
-        id,
-        page: pageParam,
-        cat: category,
-        sort,
-      }),
-    initialPageParam: 1 as number,
-    getNextPageParam: (lastPage, allPages) =>
-      (lastPage as { last_page: boolean }).last_page
-        ? null
-        : allPages.length + 1,
+    queryFn: async ({ pageParam }) =>
+      toArtistPage<Album>(
+        await utils.artist.albums.fetch({
+          id,
+          page: pageParam,
+          cat: category,
+          sort,
+        }),
+        "topAlbums",
+        "albums",
+      ),
+    initialPageParam: ARTIST_LAST_INITIAL_PAGE + 1,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      nextArtistPage(lastPage, lastPageParam),
     initialData: {
-      pages: [{ albums: initialAlbums ?? [], total: 0, last_page: false }],
-      pageParams: [1],
+      pages: [{ items: initialAlbums ?? [], last_page: false }],
+      pageParams: [ARTIST_LAST_INITIAL_PAGE],
     },
   });
 
-  const songs = songResults.data.pages.flatMap(
-    (page) => (page as { songs?: Song[] }).songs ?? [],
-  );
-  const albums = albumsResults.data.pages.flatMap(
-    (page) => (page as { albums?: Album[] }).albums ?? [],
-  );
+  const songs = songResults.data.pages.flatMap((page) => page.items);
+  const albums = albumsResults.data.pages.flatMap((page) => page.items);
 
   const hasNextPage = songResults.hasNextPage || albumsResults.hasNextPage;
   const isLoading =
