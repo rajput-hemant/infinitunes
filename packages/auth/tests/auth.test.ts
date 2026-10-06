@@ -266,6 +266,16 @@ describe("Better Auth configuration", () => {
     );
   });
 
+  it("rejects an over-long name on direct Better Auth create and update", () => {
+    const hooks = createAuth(makeFakeDb()).options.databaseHooks?.user;
+    const long = { name: "a".repeat(101) } as never;
+    const ok = { name: " " + "a".repeat(100) } as never;
+    expect(() => hooks?.create?.before?.(long)).toThrow(/at most 100/);
+    expect(() => hooks?.update?.before?.(long)).toThrow(/at most 100/);
+    expect(() => hooks?.create?.before?.(ok)).not.toThrow();
+    expect(() => hooks?.update?.before?.({} as never)).not.toThrow();
+  });
+
   it("mirrors the credential password when an OAuth account sorts first", async () => {
     const userId = "00000000-0000-0000-0000-000000000001";
     const accounts = [
