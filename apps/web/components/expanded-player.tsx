@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import React from "react";
 
+import { usePosition } from "~/lib/position-store";
+import type { PositionStore } from "~/lib/position-store";
 import { cn } from "~/lib/utils";
 
 import { Icons } from "./icons";
@@ -45,7 +47,7 @@ type ExpandedPlayerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   track: Queue | undefined;
-  pos: number;
+  position: PositionStore;
   duration: number;
   isPlaying: boolean;
   isLoading: boolean;
@@ -114,10 +116,53 @@ export function ExpandedPlayer(props: ExpandedPlayerProps) {
   );
 }
 
+/** Owns the per-frame position subscription so `ExpandedBody` stays still. */
+function ExpandedSeek({
+  position,
+  duration,
+  onSeekStart,
+  onSeekChange,
+  onSeekCommit,
+}: Pick<
+  ExpandedPlayerProps,
+  "position" | "duration" | "onSeekStart" | "onSeekChange" | "onSeekCommit"
+>) {
+  const pos = usePosition(position);
+  const seekLabelId = React.useId();
+  const seekRef = React.useRef<HTMLDivElement>(null);
+  const format = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
+  const seekText = `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`;
+
+  React.useEffect(() => setValueText(seekRef.current, seekText), [seekText]);
+
+  return (
+    <div className="space-y-2">
+      <span id={seekLabelId} className="sr-only">
+        Seek
+      </span>
+      <Slider
+        ref={seekRef}
+        aria-labelledby={seekLabelId}
+        value={[pos]}
+        max={duration || 1}
+        onValueChange={(value: number | readonly number[]) =>
+          onSeekChange(typeof value === "number" ? value : (value[0] as number))
+        }
+        onValueCommitted={onSeekCommit}
+        onPointerDown={onSeekStart}
+        className="[&>*]:py-4"
+      />
+      <div className="flex justify-between text-xs text-muted-foreground">
+        <span>{formatDuration(pos, format)}</span>
+        <span>{formatDuration(duration, format)}</span>
+      </div>
+    </div>
+  );
+}
+
 function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
   const {
     track,
-    pos,
     duration,
     isPlaying,
     isLoading,
@@ -129,17 +174,12 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
     volume,
   } = props;
 
-  const seekLabelId = React.useId();
   const volumeLabelId = React.useId();
   const queueHeadingId = React.useId();
-  const seekRef = React.useRef<HTMLDivElement>(null);
   const volumeRef = React.useRef<HTMLDivElement>(null);
 
-  const format = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
-  const seekText = `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`;
   const volumeText = `${isMuted ? 0 : Math.round(volume * 100)} percent`;
 
-  React.useEffect(() => setValueText(seekRef.current, seekText), [seekText]);
   React.useEffect(
     () => setValueText(volumeRef.current, volumeText),
     [volumeText],
@@ -167,29 +207,13 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
         </p>
       </div>
 
-      <div className="space-y-2">
-        <span id={seekLabelId} className="sr-only">
-          Seek
-        </span>
-        <Slider
-          ref={seekRef}
-          aria-labelledby={seekLabelId}
-          value={[pos]}
-          max={duration || 1}
-          onValueChange={(value: number | readonly number[]) =>
-            props.onSeekChange(
-              typeof value === "number" ? value : (value[0] as number),
-            )
-          }
-          onValueCommitted={props.onSeekCommit}
-          onPointerDown={props.onSeekStart}
-          className="[&>*]:py-4"
-        />
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>{formatDuration(pos, format)}</span>
-          <span>{formatDuration(duration, format)}</span>
-        </div>
-      </div>
+      <ExpandedSeek
+        position={props.position}
+        duration={duration}
+        onSeekStart={props.onSeekStart}
+        onSeekChange={props.onSeekChange}
+        onSeekCommit={props.onSeekCommit}
+      />
 
       <div className="flex items-center justify-between">
         <button

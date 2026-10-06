@@ -48,6 +48,8 @@ import { useTrackPlayback } from "~/hooks/use-track-playback";
 import type { User } from "~/lib/auth";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
+import { createPositionStore, usePosition } from "~/lib/position-store";
+import type { PositionStore } from "~/lib/position-store";
 import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
@@ -72,9 +74,69 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   );
 }
 
+// The only parts that follow the playhead every frame (PF-8); the rest of the
+// bar re-renders on real state changes only.
+function SeekBar({
+  position,
+  duration,
+  onChange,
+  onCommit,
+  onStart,
+}: {
+  position: PositionStore;
+  duration: number;
+  onChange: (value: number) => void;
+  onCommit: () => void;
+  onStart: () => void;
+}) {
+  const pos = usePosition(position);
+  const labelId = React.useId();
+  const ref = React.useRef<HTMLDivElement>(null);
+  const format = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
+  const text = `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`;
+
+  // The Slider wrapper does not forward per-thumb props, so the readable value
+  // is set on the thumb's range input directly (see `setValueText`).
+  React.useEffect(() => setValueText(ref.current, text), [text]);
+
+  return (
+    <>
+      <span id={labelId} className="sr-only">
+        Seek
+      </span>
+      <Slider
+        ref={ref}
+        aria-labelledby={labelId}
+        value={[pos]}
+        max={duration || 1}
+        onValueChange={(value: number | readonly number[], _details) =>
+          onChange(typeof value === "number" ? value : (value[0] as number))
+        }
+        onValueCommitted={onCommit}
+        onPointerDown={onStart}
+      />
+    </>
+  );
+}
+
+function TimeLabel({
+  position,
+  duration,
+}: {
+  position: PositionStore;
+  duration: number;
+}) {
+  const pos = usePosition(position);
+  return (
+    <p className="shrink-0 text-sm text-muted-foreground">
+      {formatDuration(pos, pos >= 3600 ? "hh:mm:ss" : "mm:ss")}
+      {" / "}
+      {formatDuration(duration, duration >= 3600 ? "hh:mm:ss" : "mm:ss")}
+    </p>
+  );
+}
+
 function PlayerInner({ user, playlists, favorites }: PlayerProps) {
-  const seekLabelId = React.useId();
-  const seekRef = React.useRef<HTMLDivElement>(null);
   const volumeRef = React.useRef<HTMLDivElement>(null);
   const volumeLabelId = React.useId();
   // stores
@@ -90,7 +152,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   // states
   const [isShuffle, setIsShuffle] = React.useState(false);
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);
-  const [pos, setPos] = React.useState(0);
+  const [position] = React.useState(createPositionStore);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
 
@@ -177,7 +239,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     }
 
     const animate = () => {
-      setPos(getPosition());
+      position.set(getPosition());
       frameRef.current = requestAnimationFrame(animate);
     };
 
@@ -188,7 +250,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         cancelAnimationFrame(frameRef.current);
       }
     };
-  }, [getPosition, isDragging]);
+  }, [getPosition, isDragging, position]);
 
   const fetchRadioSongs = React.useCallback(
     (stationId: string) =>
@@ -282,12 +344,12 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   }
 
   function seekChange(value: number) {
-    setPos(value);
+    position.set(value);
   }
 
   function seekCommit() {
-    seek(pos);
-    setPos(getPosition());
+    seek(position.get());
+    position.set(getPosition());
     setIsDragging(false);
   }
 
@@ -342,12 +404,10 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   });
 
   const seekFormat = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
-  const seekText = `${formatDuration(pos, seekFormat)} of ${formatDuration(duration, seekFormat)}`;
   const volumeText = `${isMuted ? 0 : Math.round(volume * 100)} percent`;
 
   // The Slider wrapper does not forward per-thumb props, so the readable value
   // is set on the thumb's range input directly (see `setValueText`).
-  React.useEffect(() => setValueText(seekRef.current, seekText), [seekText]);
   React.useEffect(
     () => setValueText(volumeRef.current, volumeText),
     [volumeText],
@@ -364,21 +424,12 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
       <output aria-live="polite" className="sr-only">
         {current ? `Now playing ${current.name}, ${current.subtitle}` : ""}
       </output>
-      <span id={seekLabelId} className="sr-only">
-        Seek
-      </span>
-      <Slider
-        ref={seekRef}
-        aria-labelledby={seekLabelId}
-        value={[pos]}
-        max={duration || 1}
-        onValueChange={(value: number | readonly number[], _details) =>
-          seekChange(typeof value === "number" ? value : (value[0] as number))
-        }
-        onValueCommitted={seekCommit}
-        onPointerDown={() => {
-          setIsDragging(true);
-        }}
+      <SeekBar
+        position={position}
+        duration={duration}
+        onChange={seekChange}
+        onCommit={seekCommit}
+        onStart={() => setIsDragging(true)}
       />
 
       <div
@@ -563,11 +614,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         </div>
 
         <div className="hidden w-1/3 items-center justify-end gap-4 lg:flex">
-          <p className="shrink-0 text-sm text-muted-foreground">
-            {formatDuration(pos, pos >= 3600 ? "hh:mm:ss" : "mm:ss")}
-            {" / "}
-            {formatDuration(duration, seekFormat)}
-          </p>
+          <TimeLabel position={position} duration={duration} />
 
           <div className="hidden items-center gap-4 xl:flex">
             <button
@@ -645,7 +692,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         open={isExpanded}
         onOpenChange={setIsExpanded}
         track={current}
-        pos={pos}
+        position={position}
         duration={duration}
         isPlaying={isPlaying}
         isLoading={isLoading}

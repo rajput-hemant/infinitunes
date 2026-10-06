@@ -10,6 +10,7 @@ import { AudioPlayerProvider } from "react-use-audio-player";
 import superjson from "superjson";
 
 import { ExpandedPlayer } from "../../components/expanded-player";
+import { createPositionStore } from "../../lib/position-store";
 import { api } from "../../lib/trpc/client";
 
 const track: QueueItem = {
@@ -46,7 +47,7 @@ describe("expanded player sheet", () => {
                   open
                   onOpenChange={noop}
                   track={track}
-                  pos={0}
+                  position={createPositionStore(0)}
                   duration={100}
                   isPlaying={false}
                   isLoading={false}
