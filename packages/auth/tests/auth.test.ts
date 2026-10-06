@@ -266,14 +266,40 @@ describe("Better Auth configuration", () => {
     );
   });
 
-  it("rejects an over-long name on direct Better Auth create and update", () => {
+  it("truncates an over-long OAuth name on create instead of failing sign-in", async () => {
     const hooks = createAuth(makeFakeDb()).options.databaseHooks?.user;
-    const long = { name: "a".repeat(101) } as never;
-    const ok = { name: " " + "a".repeat(100) } as never;
-    expect(() => hooks?.create?.before?.(long)).toThrow(/at most 100/);
-    expect(() => hooks?.update?.before?.(long)).toThrow(/at most 100/);
-    expect(() => hooks?.create?.before?.(ok)).not.toThrow();
-    expect(() => hooks?.update?.before?.({} as never)).not.toThrow();
+    expect(
+      await hooks?.create?.before?.({ name: "a".repeat(150) } as never),
+    ).toEqual({ data: { name: "a".repeat(100) } });
+    expect(
+      await hooks?.create?.before?.({ name: " " + "a".repeat(100) } as never),
+    ).toEqual({ data: { name: "a".repeat(100) } });
+  });
+
+  it("leaves create untouched when there is no string name", async () => {
+    const hooks = createAuth(makeFakeDb()).options.databaseHooks?.user;
+    for (const user of [{}, { name: undefined }, { name: null }]) {
+      expect(await hooks?.create?.before?.(user as never)).toBeUndefined();
+    }
+  });
+
+  it("rejects an over-long name on update and stores the trimmed one", async () => {
+    const hooks = createAuth(makeFakeDb()).options.databaseHooks?.user;
+    await expect(
+      Promise.resolve(
+        hooks?.update?.before?.({ name: "a".repeat(101) } as never),
+      ),
+    ).rejects.toThrow(/at most 100/);
+    expect(await hooks?.update?.before?.({ name: "  Ada  " } as never)).toEqual(
+      { data: { name: "Ada" } },
+    );
+  });
+
+  it("leaves partial updates without a name untouched", async () => {
+    const hooks = createAuth(makeFakeDb()).options.databaseHooks?.user;
+    for (const user of [{ name: undefined }, { image: "x.png" }, {}]) {
+      expect(await hooks?.update?.before?.(user as never)).toBeUndefined();
+    }
   });
 
   it("mirrors the credential password when an OAuth account sorts first", async () => {
