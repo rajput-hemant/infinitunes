@@ -1,6 +1,6 @@
 # Browser verification, 2026-10-06 (task/browser-verify)
 
-Tip under test: `origin/migration/bun-monorepo` at `15aa48c` (the run began on `9cdcffa`; PQ-8 was first observed there, then re-checked on the tip). Production build (`next build` then `next start -p 3200`), Chrome 154 headless via `chrome-devtools-axi`, real JioSaavn upstream, disposable Postgres 18 (`infinitunes_verify`), fixture user `local@example.test`, a second user created through the signup form. Screenshots: `docs/verification/screenshots/` (19 PNG, each under 400 KB). OAuth credentials were dummy values; no real provider was contacted beyond the redirect.
+The first pass ran on `15aa48c` (started on `9cdcffa`). After the orchestrator note the branch was rebased onto `migration/bun-monorepo` `741b454`, rebuilt, and the queue, player, radio, search-row and sheet findings re-checked on that tip (screenshots suffixed `-741b454`). Docs live under `docs/archive/` because the tip moved `docs/verification/` there. Production build (`next build` then `next start -p 3200`), Chrome 154 headless via `chrome-devtools-axi`, real JioSaavn upstream, disposable Postgres 18 (`infinitunes_verify`), fixture user `local@example.test`, a second user created through the signup form. Screenshots: `docs/archive/screenshots/` (23 PNG, each under 400 KB). OAuth credentials were dummy values; no real provider was contacted beyond the redirect.
 
 ## Method notes
 
@@ -47,3 +47,13 @@ Tip under test: `origin/migration/bun-monorepo` at `15aa48c` (the run began on `
 
 - Rewrite `.agents/skills/verify/SKILL.md` Drive and Evidence sections with the recipes that worked here: `chrome-devtools-axi` refs go stale after every action (take a fresh `snapshot` before each click and fill), `fill` needs a fresh snapshot per field, wait about 4 s after load for hydration before clicking Play, use `emulate --viewport "390x844x2,mobile,touch" --color-scheme dark|light`, set `localStorage.theme` then reload for next-themes, and the WebAuthn recipe (second CDP client, authenticator removed when its session ends, so keep it running).
 - Add a compose profile or distinct project name for private verification databases; two workers removed the shared container mid-run.
+
+## Re-check on the new tip (`741b454`, production build)
+
+- PQ-8: radio session playing, reload: the queue (20) and the "Drivetime" radio badge are restored and playback resumes (`pq8-radio-restored-on-741b454.png`). Still ok.
+- PQ-5: same run, 19 Next presses: queue 20 to 30 at the threshold, 0 duplicate ids, index 19. Still ok.
+- Queue sheet (UI-49): long and unbroken titles, 0 rows with the remove X outside the row (`ui49-queue-long-titles-1280-741b454.png`). Removal: toast, 30 to 29, focus moves to the next remove button. Sampling every 100 ms, the row stays at full height and opacity until it disappears between 100 and 210 ms; no height or opacity transition was observed on its wrapper (any animation on an inner element was not seen).
+- D1: expanded player sheet has exactly one Close button in the browser (`dv7-expanded-player-390-741b454.png`).
+- D3 is fixed upstream: long search-row titles now end with an ellipsis (`ui50-search-long-titles-390-741b454.png`).
+- UI-53 is also fixed upstream (`shrink-0` and `title`); my commit now only adds `min-w-0` on the text column and the regression test.
+- D2 still reproduces (`&amp;` rendered literally in search rows), and D4 still reproduces (3.97:1 on Logout and Delete Account in light mode). D5 and D6 were not re-checked.
