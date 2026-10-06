@@ -25,7 +25,8 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
 (`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
 `bun run fmt:check`, `bun run lint` (Oxlint), `bun run type-check`,
-`bun run test` (`bun test --pass-with-no-tests`), `bun run build`.
+`bun run test` (runs plain tests, then `test:mocked` for process-isolated `mock.module` suites,
+then `test:dom` for happy-dom tests), `bun run build`.
 DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 `@infinitunes/db` via `bun run --filter`. Single canonical `bun.lock` at root.
 
@@ -107,9 +108,10 @@ that are easy to get wrong again:
 - Procedures declare their raw shape with `.output(z.custom<T>())` against a
   `@infinitunes/types` type, so `apps/web` call sites must not re-cast. If you add
   an output type to a procedure, delete the `as unknown as` at its callers in the
-  same change; `artist.songs`/`artist.albums` and `show.episodes` are still
-  output-less on purpose (their call sites read a different shape than the router
-  returns). `z.custom` performs no runtime validation - it is a type declaration only.
+  same change; `artist.songs`/`artist.albums` remain output-less on purpose (their
+  call sites read a different shape than the router returns); `show.episodes` now
+  declares `Episode[]`, and `song.items` is the typed mixed song/episode procedure
+  (CD-11). `z.custom` performs no runtime validation - it is a type declaration only.
 - Secondary lists (recommendations, trending, same-year, top-songs, top searches)
   return `[]` when upstream is empty; only a missing primary entity throws
   `NOT_FOUND`. Pages `Promise.all` these, so throwing on empty fails the render.
@@ -199,7 +201,7 @@ When updating this file, preserve this bar for all agents and keep entries conci
 
 ## Zod 4 API
 
-The project uses Zod ^4.4.3. Key differences from Zod 3:
+The project uses Zod ^4.6.5. Key differences from Zod 3:
 
 - `z.string()` no longer accepts `required_error` / `invalid_type_error`. Use `error` instead (e.g. `z.string({ error: "..." })`).
 - `message` is deprecated; `error` is the replacement.
@@ -230,6 +232,9 @@ The project uses Zod ^4.4.3. Key differences from Zod 3:
 - `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
   (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
   by both `apps/web` and `packages/trpc`; don't hand-roll another copy).
+- Test layout: `apps/web/tests/` (plain), `apps/web/tests/mocked/` (process-isolated
+  `mock.module` suites), `apps/web/tests/dom/` (happy-dom behavior tests).
+  Skill/feature docs in `.agents/skills/verify/` and `.agents/skills/verify/features/` cite these.
 
 <!-- BEGIN:turborepo-agent-rules -->
 
