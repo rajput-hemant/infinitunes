@@ -38,6 +38,7 @@ import { useIsTyping } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
 import { changePassword, deleteUser, updateUser } from "~/lib/actions";
 import { userMessage } from "~/lib/user-message";
+import { cn, destructiveText } from "~/lib/utils";
 import { nameSchema } from "~/lib/validations";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
@@ -281,7 +282,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </form>
 
         <div id="delete-account" className="space-y-4">
-          <h2 className="font-heading text-lg text-destructive drop-shadow-md sm:text-xl md:text-2xl">
+          <h2 className="font-heading text-lg text-destructive dark:drop-shadow-md sm:text-xl md:text-2xl">
             Danger Zone
           </h2>
           <Separator />
@@ -302,7 +303,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
               }}
             >
               <AlertDialogTrigger
-                render={<Button variant="destructive">Delete Account</Button>}
+                render={
+                  <Button variant="destructive" className={destructiveText}>
+                    Delete Account
+                  </Button>
+                }
               />
 
               <AlertDialogContent>
@@ -340,7 +345,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   <AlertDialogAction
                     onClick={deleteUserHandler}
                     disabled={confirmDelete !== "DELETE MY ACCOUNT"}
-                    className={buttonVariants({ variant: "destructive" })}
+                    className={cn(
+                      buttonVariants({ variant: "destructive" }),
+                      destructiveText,
+                    )}
                   >
                     Delete Account
                   </AlertDialogAction>

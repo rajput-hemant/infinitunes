@@ -33,7 +33,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
     <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
       <DialogContent className="max-w-xl shadow-md">
         <DialogHeader>
-          <DialogTitle className="font-heading text-2xl font-normal drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+          <DialogTitle className="font-heading text-2xl font-normal dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
             Save to Playlist
           </DialogTitle>
         </DialogHeader>
@@ -58,7 +58,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
                   <div className="size-12 shrink-0 rounded-md bg-muted">
                     <List aria-hidden className="m-auto h-full" />
                   </div>
-                  <div className="flex flex-col truncate">
+                  <div className="flex min-w-0 flex-col truncate">
                     <p className="truncate font-medium" title={name}>
                       {name}
                     </p>

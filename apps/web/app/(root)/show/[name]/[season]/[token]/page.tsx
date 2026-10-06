@@ -78,7 +78,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
     <div className="mb-4 space-y-4">
       <DetailsHeader item={show_details} />
 
-      <h2 className="font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+      <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
         {modules.seasons.title}
       </h2>
 
@@ -106,7 +106,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       </ScrollArea>
 
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+        <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
           {modules.episodes.title}
         </h2>
 
@@ -144,7 +144,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         userPlaylists={playlists}
       />
 
-      <h2 className="font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+      <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
         {modules.show_details.title}
       </h2>
 

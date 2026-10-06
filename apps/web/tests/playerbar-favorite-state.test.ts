@@ -18,7 +18,7 @@ describe("playerbar favorite-state and Add-label plumbing regression", () => {
   it("player-wrapper accepts favorites prop and passes it to Player", async () => {
     const source = await Bun.file(PLAYER_WRAPPER).text();
 
-    expect(source).toContain("favorites?: Favorite;");
+    expect(source).toContain("favorites?: Favorite | null;");
     expect(source).toContain("favorites={favorites}");
   });
 

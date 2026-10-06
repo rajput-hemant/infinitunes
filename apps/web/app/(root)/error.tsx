@@ -19,7 +19,7 @@ export default function Error({ error, retry }: ErrorProps) {
     <div className="flex min-h-[calc(100dvh-14rem)] flex-col items-center justify-center gap-4">
       <ErrorIllustration />
 
-      <h1 className="font-heading text-3xl drop-shadow-sm text-foreground sm:text-4xl md:text-5xl">
+      <h1 className="font-heading text-3xl dark:drop-shadow-sm text-foreground sm:text-4xl md:text-5xl">
         Something went wrong!
       </h1>
       <Button variant="outline" onClick={() => retry()} className="shadow-xs">

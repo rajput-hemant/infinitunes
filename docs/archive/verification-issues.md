@@ -47,7 +47,7 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 | =======                                          |
 | [ISSUE-026](#issue-026)                          | CONFIRMED               | low      | queue lists the same artist twice             | closed         |
 
-> > > > > > > origin/migration/bun-monorepo:docs/verification/verification-issues.md
+> > > > > > > origin/migration/bun-monorepo:docs/archive/verification-issues.md
 
 ## Confirmed
 
@@ -79,7 +79,7 @@ Oxlint reports warnings, no errors.
 Several visible actions were stubs that only showed the toast `This feature is currently in development.`.
 
 - Evidence (updated 2026-10-02 on `fm/infinitunes-radio`):
-  - **Radio actions resolved**: `playRadio()` in `components/song-list/more-button.tsx`, `playRadio()` in `components/details-header/more-button.tsx`, and `components/play-button.tsx` for `radio_station` are now wired to real JioSaavn web radio station sessions (`api.radio.createStation`, `api.radio.songs`) and endless queue refills via `activeRadioSessionAtom` in `apps/web/components/player.tsx`. Verified via 9 unit/integration tests in `packages/trpc/tests/radio-router.test.ts` (pass). See [radio-research.md](./radio-research.md) and [.agents/skills/verify/features/radio.md](../../.agents/skills/verify/features/radio.md).
+  - **Radio actions resolved**: `playRadio()` in `components/song-list/more-button.tsx`, `playRadio()` in `components/details-header/more-button.tsx`, and `components/play-button.tsx` for `radio_station` are now wired to real JioSaavn web radio station sessions (`api.radio.createStation`, `api.radio.songs`) and endless queue refills via `activeRadioSessionAtom` in `apps/web/components/player.tsx`. Verified via 9 unit/integration tests in `packages/trpc/tests/radio-router.test.ts` (pass). See [radio-research.md](../research/radio-research.md) and [.agents/skills/verify/features/radio.md](../../.agents/skills/verify/features/radio.md).
   - **Remaining non-radio stubs**: `components/song-list/more-button.tsx` `like()` (menu `Add To Favourite`) and `components/sidebar.tsx:174` playlist-row button still call `currentlyInDev`.
 - Reproduce (browser, pending): open an album, `More Options` on a song, click `Add To Favourite`.
 - Expected: the action works or the item is hidden. Actual: toast says it is in development for remaining non-radio actions. `Like` on detail headers is real ([favorites](../../.agents/skills/verify/features/favorites.md)); the song-row item is not.

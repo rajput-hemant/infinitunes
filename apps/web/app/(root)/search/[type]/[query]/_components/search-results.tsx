@@ -95,7 +95,7 @@ export function SearchResults(props: SearchResultsProps) {
           )}
         </div>
       ) : (
-        <h2 className="py-6 text-center font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+        <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
           <em>Yay! You have seen it all</em>{" "}
           <span className="text-foreground">🤩</span>
         </h2>

@@ -27,6 +27,19 @@ describe("orFallback", () => {
     expect(errorLog.mock.calls[0]?.[0]).toContain("recommendations");
   });
 
+  test("logs an Error and returns the fallback for a non-Error rejection", async () => {
+    const result = await orFallback(
+      "tags",
+      Promise.reject("plain string failure"),
+      [],
+    );
+
+    expect(result).toEqual([]);
+    const logged = errorLog.mock.calls[0]?.[1];
+    expect(logged).toBeInstanceOf(Error);
+    expect((logged as Error).message).toBe("plain string failure");
+  });
+
   test("falls back quietly for a NOT_FOUND-coded error", async () => {
     const error = Object.assign(new Error("no lyrics"), { code: "NOT_FOUND" });
 

@@ -56,3 +56,7 @@ export type Playlist = {
   };
   modules?: PlaylistModules;
 };
+
+/** Length limits for a user playlist; the web form and the tRPC router both enforce them. */
+export const PLAYLIST_NAME_MAX = 100;
+export const PLAYLIST_DESCRIPTION_MAX = 255;

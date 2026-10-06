@@ -83,7 +83,7 @@ export function RenamePlaylistDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader className="space-y-0">
-          <DialogTitle className="font-heading text-2xl tracking-wide drop-shadow-md">
+          <DialogTitle className="font-heading text-2xl tracking-wide dark:drop-shadow-md">
             Rename Playlist
           </DialogTitle>
           <DialogDescription>

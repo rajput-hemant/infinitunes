@@ -54,7 +54,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
           <Button
             size="sm"
             variant="outline"
-            className="size-10 space-x-1 p-0 shadow-xs lg:w-auto lg:space-x-2 lg:p-2"
+            className="size-11 space-x-1 p-0 shadow-xs lg:h-10 lg:w-auto lg:space-x-2 lg:p-2"
           >
             <Languages className="aspect-square h-5 lg:h-4" />
             <span className="hidden lg:inline-block">Languages</span>

@@ -26,7 +26,7 @@ export function SearchAll({ query, data }: SearchAllProps) {
           return (
             <section key={key}>
               <div className="flex">
-                <h3 className="pl-2 font-heading text-lg capitalize tracking-wider drop-shadow-sm">
+                <h3 className="pl-2 font-heading text-lg capitalize tracking-wider dark:drop-shadow-sm">
                   {key.replace("_query", " Result")}
                 </h3>
 

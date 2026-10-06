@@ -1,5 +1,8 @@
 import * as z from "zod";
 
+/** Longest accepted display name; the server hooks in `createAuth` enforce it too (AU-8). */
+export const USER_NAME_MAX = 100;
+
 export const emailSchema = z
   .string()
   .min(1, "Email is Required")
@@ -31,7 +34,9 @@ export const signUpSchema = z
     name: z
       .string()
       .trim()
-      .max(100, { error: "Name must be at most 100 characters long" })
+      .max(USER_NAME_MAX, {
+        error: `Name must be at most ${USER_NAME_MAX} characters long`,
+      })
       .optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {

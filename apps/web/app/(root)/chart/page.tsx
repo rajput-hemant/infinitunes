@@ -16,7 +16,7 @@ export default async function ChartsPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="mt-4 font-heading text-2xl capitalize drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+      <h1 className="mt-4 font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
         Top Music Charts
       </h1>
 
@@ -45,7 +45,7 @@ export default async function ChartsPage() {
         )}
       </div>
 
-      <h2 className="py-6 text-center font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+      <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
         <em>Yay! You have seen it all</em>{" "}
         <span className="text-foreground">🤩</span>
       </h2>

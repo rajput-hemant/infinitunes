@@ -7,6 +7,8 @@ import { Fingerprint, Loader2, Plus, Trash2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
+import { destructiveText } from "~/lib/utils";
+
 type Passkey = {
   id: string;
   name?: string | null;
@@ -106,7 +108,7 @@ export function PasskeySettings() {
   return (
     <div className="w-full max-w-5xl space-y-4 px-6 py-2">
       <div>
-        <h2 className="font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg dark:drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Passkeys
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -148,6 +150,7 @@ export function PasskeySettings() {
                 type="button"
                 size="sm"
                 variant="destructive"
+                className={destructiveText}
                 disabled={deletingId !== null}
                 onClick={() => deletePasskeyHandler(passkey.id)}
               >

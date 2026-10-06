@@ -7,6 +7,9 @@ import { siteConfig } from "~/config/site";
 
 export { cn };
 
+/** Destructive text on the 10% tint: red-700 clears 4.5:1 in light, the token does in dark. */
+export const destructiveText = "text-red-700 dark:text-destructive";
+
 export function asRoute(href: string): Route {
   return href as Route;
 }

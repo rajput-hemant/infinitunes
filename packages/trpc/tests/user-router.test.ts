@@ -754,4 +754,59 @@ describe("user router authorization", () => {
       expect(state.updates[0]?.values.songs).toHaveLength(PLAYLIST_MAX_SONGS);
     });
   });
+
+  describe("playlist text limits", () => {
+    const own = () =>
+      createCallerFactory(appRouter)({
+        db,
+        session: { user: { id: "user-123" } },
+      });
+
+    it("rejects a 101-character name and a 256-character description on create", async () => {
+      await expect(
+        own().user.createNewPlaylist({ name: "n".repeat(101) }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(
+        own().user.createNewPlaylist({
+          name: "Valid name",
+          description: "d".repeat(256),
+        }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      expect(state.inserts).toHaveLength(0);
+    });
+
+    it("rejects the same overruns on rename without touching the row", async () => {
+      state.playlist = { id: "playlist-1", userId: "user-123", songs: [] };
+
+      await expect(
+        own().user.renamePlaylist({
+          playlistId: "playlist-1",
+          name: "n".repeat(101),
+        }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(
+        own().user.renamePlaylist({
+          playlistId: "playlist-1",
+          name: "Valid name",
+          description: "d".repeat(256),
+        }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      expect(state.updates).toHaveLength(0);
+    });
+
+    it("accepts a 100-character name and a 255-character description", async () => {
+      state.playlist = { id: "playlist-1", userId: "user-123", songs: [] };
+
+      await own().user.renamePlaylist({
+        playlistId: "playlist-1",
+        name: "n".repeat(100),
+        description: "d".repeat(255),
+      });
+
+      expect(state.updates[0]?.values).toMatchObject({
+        name: "n".repeat(100),
+        description: "d".repeat(255),
+      });
+    });
+  });
 });

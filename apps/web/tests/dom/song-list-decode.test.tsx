@@ -52,8 +52,17 @@ describe("song list titles", () => {
       </AppRouterContext.Provider>,
     );
 
-    // The only entity left is React's own single-pass escape of a literal "&".
-    expect(html).toContain("Tom &amp; Jerry &#x27;99");
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const link = [...doc.querySelectorAll("a")].find((a) =>
+      a.textContent?.includes("Jerry"),
+    );
+    const cover = doc.querySelector("img[alt]");
+
+    // Parsed DOM text/attributes are the decoded strings, one assertion per
+    // site so a failure names which one regressed.
+    expect(link?.textContent).toBe("Tom & Jerry '99");
+    expect(cover?.getAttribute("alt")).toBe("Tom & Jerry '99");
+    // The only entity left in the markup is React's own single-pass escape.
     expect(html).not.toContain("&amp;amp;");
     expect(html).not.toContain("&amp;#039;");
   });

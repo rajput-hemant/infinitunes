@@ -40,7 +40,7 @@ const NotFound = () => {
         className="h-auto w-full max-w-xl drop-shadow-sm"
       />
 
-      <h1 className="font-heading text-2xl drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+      <h1 className="font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
         This page seems to be{" "}
         <span className="text-destructive underline underline-offset-4 selection:text-destructive">
           missing
@@ -54,7 +54,7 @@ const NotFound = () => {
 
       <p className="text-lg font-normal italic">Try one of these:</p>
 
-      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 font-heading text-sm font-medium italic drop-shadow-sm sm:text-lg lg:text-2xl">
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 font-heading text-sm font-medium italic dark:drop-shadow-sm sm:text-lg lg:text-2xl">
         {LINKS.map(({ title, href }, i, arr) => (
           <React.Fragment key={i}>
             <Link

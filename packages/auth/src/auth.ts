@@ -12,12 +12,15 @@ import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError } from "better-auth/api";
 import { and, eq } from "drizzle-orm";
 
 import { resetPasswordEmail } from "./emails";
 import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
+import { USER_NAME_MAX } from "./schemas";
+import { originOf, parseUrl } from "./url";
 
 /** Reset links are single use and expire after an hour (Better Auth default, pinned). */
 export const RESET_TOKEN_TTL_SECONDS = 60 * 60;
@@ -33,12 +36,24 @@ export const RESET_RATE_LIMITS = {
   "/reset-password": { window: 60, max: 5 },
 } as const;
 
-function parseUrl(url: string | undefined): URL | undefined {
-  try {
-    return url ? new URL(url) : undefined;
-  } catch {
-    return undefined;
+/**
+ * Better Auth's own endpoints skip the Zod schemas, so cap the name here too.
+ * Returns the trimmed name, or undefined when there is nothing to store.
+ * `truncate` is for OAuth profiles (not user-typed): an over-long provider
+ * name must not block sign-in. User-typed updates are rejected instead.
+ */
+function normalizeName(
+  user: { name?: unknown },
+  mode: "truncate" | "reject",
+): { data: { name: string } } | undefined {
+  if (typeof user.name !== "string") return undefined;
+  const name = user.name.trim();
+  if (name.length > USER_NAME_MAX && mode === "reject") {
+    throw new APIError("BAD_REQUEST", {
+      message: `Name must be at most ${USER_NAME_MAX} characters long`,
+    });
   }
+  return { data: { name: name.slice(0, USER_NAME_MAX) } };
 }
 
 export function createAuth(
@@ -53,6 +68,12 @@ export function createAuth(
      * reveal whether the address has an account.
      */
     runInBackground?: (promise: Promise<unknown>) => void;
+    /**
+     * Headers Better Auth reads the client IP from (its rate limiter keys on
+     * it). Defaults to `x-forwarded-for`, which a client can forge unless a
+     * trusted proxy rewrites it, so callers should name a header they control.
+     */
+    ipAddressHeaders?: string[];
   } = {},
 ) {
   const env = authEnv({ skipValidation: true });
@@ -68,8 +89,8 @@ export function createAuth(
   const trustedOrigins = [
     ...new Set(
       [baseURL, vercelContext.vercelUrl, vercelContext.vercelProductionUrl]
-        .map((url) => parseUrl(url && resolveAuthUrl(url, {}))?.origin)
-        .filter((origin): origin is string => origin !== undefined),
+        .map((url) => originOf(url && resolveAuthUrl(url, {})))
+        .filter((origin): origin is string => origin !== null),
     ),
   ];
   const rpID =
@@ -184,6 +205,7 @@ export function createAuth(
     databaseHooks: {
       user: {
         create: {
+          before: async (user) => normalizeName(user, "truncate"),
           after: async (user) => {
             if (user.name !== undefined) {
               await db
@@ -195,6 +217,7 @@ export function createAuth(
           },
         },
         update: {
+          before: async (user) => normalizeName(user, "reject"),
           after: async (user) => {
             if (user.name !== undefined) {
               await db
@@ -230,6 +253,9 @@ export function createAuth(
     },
 
     advanced: {
+      ...(options.ipAddressHeaders
+        ? { ipAddress: { ipAddressHeaders: options.ipAddressHeaders } }
+        : {}),
       ...(options.runInBackground
         ? { backgroundTasks: { handler: options.runInBackground } }
         : {}),

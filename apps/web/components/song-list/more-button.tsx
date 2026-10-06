@@ -41,6 +41,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
+import { getItemName } from "~/components/song-list/item-name";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -81,10 +82,6 @@ type MenuItem = {
   hide?: boolean;
   icon: LucideIcon;
 };
-
-function getItemName(item: Song | Episode | Queue): string {
-  return "title" in item ? item.title : item.name;
-}
 
 function getItemUrl(item: Song | Episode | Queue): string {
   return "perma_url" in item ? item.perma_url : item.url;

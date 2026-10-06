@@ -26,6 +26,7 @@
     ".": "./src/index.ts",
     "./client": "./src/auth-client.ts",
     "./schemas": "./src/schemas.ts",
-    "./env": "./src/env.ts"
+    "./env": "./src/env.ts",
+    "./url": "./src/url.ts"
   }
 }
