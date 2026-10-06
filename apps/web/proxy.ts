@@ -33,11 +33,13 @@ function getRatelimit(kind: "global" | "auth") {
     limiter = new Ratelimit({
       redis,
       prefix: kind === "auth" ? "@upstash/ratelimit/auth" : undefined,
-      limiter: Ratelimit.slidingWindow(
-        ...(kind === "auth"
-          ? ([AUTH_LIMIT.requests, AUTH_LIMIT.window] as const)
-          : ([env.RATE_LIMITING_REQUESTS_PER_SECOND, "1 s"] as const)),
-      ),
+      limiter:
+        kind === "auth"
+          ? Ratelimit.slidingWindow(AUTH_LIMIT.requests, AUTH_LIMIT.window)
+          : Ratelimit.slidingWindow(
+              env.RATE_LIMITING_REQUESTS_PER_SECOND,
+              "1 s",
+            ),
     });
     limiters.set(kind, limiter);
   }
