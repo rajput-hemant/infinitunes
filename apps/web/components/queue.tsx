@@ -41,28 +41,81 @@ export function QueueList() {
     latest.current = { queue, currentIndex };
   });
 
+  // Pending exit timers by queueItemId; also the synchronous double-click guard.
+  const pending = React.useRef(new Map<string, number>());
+
   // The removed row takes focus with it: hand it to the row that took its
-  // place (or the last row), or to the list itself once the queue is empty.
-  const focusIndex = React.useRef<number | null>(null);
+  // place (or the last one still staying), or to the list once none is left.
+  const [focusIndex, setFocusIndex] = React.useState<number | null>(null);
   React.useEffect(() => {
-    if (focusIndex.current === null) return;
-    const index = focusIndex.current;
-    focusIndex.current = null;
+    if (focusIndex === null) return;
+    setFocusIndex(null);
 
     const buttons = listRef.current?.querySelectorAll<HTMLButtonElement>(
-      "[data-queue-remove]",
+      "[data-queue-remove]:not(:disabled)",
     );
     if (buttons?.length) {
-      buttons[Math.min(index, buttons.length - 1)]?.focus();
+      buttons[Math.min(focusIndex, buttons.length - 1)]?.focus();
     } else {
       listRef.current?.focus();
     }
-  });
+  }, [focusIndex]);
+
+  const commitRemoval = React.useCallback(
+    (queueItemId: string) => {
+      pending.current.delete(queueItemId);
+
+      const { queue: current, currentIndex: playing } = latest.current;
+      const index = current.findIndex(
+        (item) => item.queueItemId === queueItemId,
+      );
+      if (index === -1) return;
+
+      const next = removeFromQueue(current, playing, index);
+      latest.current = { queue: next.queue, currentIndex: next.currentIndex };
+
+      setQueue(next.queue);
+      setCurrentIndex(next.currentIndex);
+      setLeaving((ids) => {
+        const rest = new Set(ids);
+        rest.delete(queueItemId);
+        return rest;
+      });
+      setFocusIndex(index);
+    },
+    [setQueue, setCurrentIndex],
+  );
+
+  // The user already confirmed these removals, so closing the sheet mid-exit
+  // must finish them now rather than drop them.
+  React.useEffect(() => {
+    const timers = pending.current;
+    return () => {
+      for (const [queueItemId, timer] of [...timers]) {
+        window.clearTimeout(timer);
+        commitRemoval(queueItemId);
+      }
+    };
+  }, [commitRemoval]);
 
   function removeItem(queueItemId: string) {
-    const song = queue.find((item) => item.queueItemId === queueItemId);
-    setLeaving((ids) => new Set(ids).add(queueItemId));
-    window.setTimeout(() => commitRemoval(queueItemId), REMOVE_MS);
+    if (pending.current.has(queueItemId)) return;
+
+    const song = latest.current.queue.find(
+      (item) => item.queueItemId === queueItemId,
+    );
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // No exit transition to wait for.
+      pending.current.set(queueItemId, 0);
+      commitRemoval(queueItemId);
+    } else {
+      setLeaving((ids) => new Set(ids).add(queueItemId));
+      pending.current.set(
+        queueItemId,
+        window.setTimeout(() => commitRemoval(queueItemId), REMOVE_MS),
+      );
+    }
 
     if (song) {
       toast("Removed from queue", {
@@ -70,25 +123,6 @@ export function QueueList() {
         duration: 10000,
       });
     }
-  }
-
-  function commitRemoval(queueItemId: string) {
-    const { queue: current, currentIndex: playing } = latest.current;
-    const index = current.findIndex((item) => item.queueItemId === queueItemId);
-    if (index === -1) return;
-
-    const next = removeFromQueue(current, playing, index);
-    latest.current = { queue: next.queue, currentIndex: next.currentIndex };
-
-    setQueue(next.queue);
-    setCurrentIndex(next.currentIndex);
-    setLeaving((ids) => {
-      const rest = new Set(ids);
-      rest.delete(queueItemId);
-      return rest;
-    });
-
-    focusIndex.current = index;
   }
 
   return (
@@ -102,6 +136,8 @@ export function QueueList() {
         <li
           key={item.queueItemId}
           data-leaving={leaving.has(item.queueItemId) ? "" : undefined}
+          inert={leaving.has(item.queueItemId)}
+          aria-hidden={leaving.has(item.queueItemId) || undefined}
           className="grid w-full grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-200 ease-out data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
         >
           <div className="min-h-0 overflow-hidden pb-2">
@@ -159,6 +195,8 @@ export function QueueList() {
                   variant="ghost"
                   data-queue-remove=""
                   aria-label={`Remove ${item.name} from queue`}
+                  disabled={leaving.has(item.queueItemId)}
+                  tabIndex={leaving.has(item.queueItemId) ? -1 : undefined}
                   onClick={() => removeItem(item.queueItemId)}
                   className="relative z-10 ml-auto size-11 shrink-0 p-0 lg:size-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
                 >

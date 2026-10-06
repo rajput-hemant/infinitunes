@@ -111,8 +111,8 @@ export function DownloadButton({
           <Loader
             aria-hidden="true"
             className={cn(
-              "absolute inset-0 size-5 animate-spin transition-[opacity,scale] duration-150 ease-out",
-              !isDownloading && "scale-80 opacity-0",
+              "absolute inset-0 size-5 transition-[opacity,scale] duration-150 ease-out",
+              isDownloading ? "animate-spin" : "scale-80 opacity-0",
             )}
           />
         </span>
