@@ -69,23 +69,40 @@ mock.module("next/server", () => ({
   },
 }));
 
-process.env.SKIP_ENV_VALIDATION = "true";
-// Rate limiting ON for this file so the limiter path is exercised; the
-// Upstash clients are fully mocked (no network). `env` snapshots at import,
-// so per-test toggling cannot work: every suite below runs with the limiter
-// enabled and a succeeding bucket unless stated.
-process.env.ENABLE_RATE_LIMITING = "true";
-// Client IP headers are only trusted behind a configured proxy (see client-ip).
-process.env.TRUSTED_PROXY = "vercel";
-const originalNodeEnv = process.env.NODE_ENV;
-process.env.NODE_ENV = "production";
+// Pin every env var the proxy reads so the ambient environment (a developer's
+// shell or .env.local) cannot change results; originals are restored in afterAll.
+const pinnedEnv: Record<string, string | undefined> = {
+  SKIP_ENV_VALIDATION: "true",
+  // Rate limiting ON for this file so the limiter path is exercised; the
+  // Upstash clients are fully mocked (no network). `env` snapshots at import,
+  // so per-test toggling cannot work: every suite below runs with the limiter
+  // enabled and a succeeding bucket unless stated.
+  ENABLE_RATE_LIMITING: "true",
+  RATE_LIMITING_REQUESTS_PER_SECOND: "7",
+  // Client IP headers are only trusted behind a configured proxy (see client-ip).
+  TRUSTED_PROXY: "vercel",
+  NODE_ENV: "production",
+  UPSTASH_REDIS_REST_URL: undefined,
+  UPSTASH_REDIS_REST_TOKEN: undefined,
+  RATE_LIMIT_BYPASS_KEY_HASH: undefined,
+  AUTH_URL: undefined,
+  UMAMI_WEBSITE_ID: undefined,
+  VERCEL: undefined,
+};
+const originalEnv = Object.fromEntries(
+  Object.keys(pinnedEnv).map((k) => [k, process.env[k]]),
+);
+const setEnv = (values: Record<string, string | undefined>) => {
+  for (const [k, v] of Object.entries(values)) {
+    if (v === undefined) delete process.env[k];
+    else process.env[k] = v;
+  }
+};
+setEnv(pinnedEnv);
 
 // bun runs every test file in one process; do not leak NODE_ENV=production
 // into unrelated suites (it broke `assertLocalDatabase` under `bun run test`).
-afterAll(() => {
-  if (originalNodeEnv === undefined) delete process.env.NODE_ENV;
-  else process.env.NODE_ENV = originalNodeEnv;
-});
+afterAll(() => setEnv(originalEnv));
 
 function createNextRequest(
   href: string,
@@ -451,8 +468,8 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
     );
     const global = constructed.find((c) => c.prefix === undefined);
     expect(auth?.limiter).toEqual({ window: [10, "1 m"] });
-    // Env validation is skipped here, so the per-second count is unset.
-    expect(global?.limiter).toMatchObject({ window: [undefined, "1 s"] });
+    // Validation is skipped, so the pinned value arrives as a raw string.
+    expect(global?.limiter).toEqual({ window: ["7", "1 s"] });
     expect(constructed).toHaveLength(2);
     expect(windows).toHaveLength(2);
   });
