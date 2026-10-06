@@ -177,7 +177,7 @@ const countFormatter = new Intl.NumberFormat("en-US", {
 
 export function formatCount(n: number | string | undefined | null): string {
   const parsed = Number(n);
-  if (!Number.isFinite(parsed) || parsed < 0) return "0";
+  if (!Number.isFinite(parsed) || parsed <= 0) return "0";
   return countFormatter.format(parsed);
 }
 

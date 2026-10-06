@@ -25,6 +25,11 @@ describe("formatCount", () => {
     expect(formatCount(-5)).toBe("0");
     expect(formatCount("-10")).toBe("0");
   });
+
+  it("treats -0 and empty string as 0", () => {
+    expect(formatCount(-0)).toBe("0");
+    expect(formatCount("")).toBe("0");
+  });
 });
 
 describe("formatReleaseDate", () => {
