@@ -15,6 +15,7 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orFallback } from "~/lib/degrade";
 import { cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
@@ -46,8 +47,8 @@ export async function SongList(props: SongListProps) {
 
   if (user) {
     [playlists, favorites] = await Promise.all([
-      getUserPlaylists(),
-      getUserFavorites(),
+      orFallback("user playlists", getUserPlaylists(), undefined),
+      orFallback("user favorites", getUserFavorites(), undefined),
     ]);
   }
 

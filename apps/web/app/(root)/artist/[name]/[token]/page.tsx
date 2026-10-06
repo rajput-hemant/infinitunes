@@ -10,6 +10,7 @@ import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { sanitizeRichText } from "~/lib/sanitize-rich-text";
@@ -61,8 +62,12 @@ export default async function ArtistDetailsPage(props: Props) {
 
   const [artist, playlists, favorites] = await Promise.all([
     artistPromise,
-    user ? getUserPlaylists() : undefined,
-    user ? getUserFavorites() : undefined,
+    user
+      ? orFallback("user playlists", getUserPlaylists(), undefined)
+      : undefined,
+    user
+      ? orFallback("user favorites", getUserFavorites(), undefined)
+      : undefined,
   ]);
 
   let selectedTab: TABS;

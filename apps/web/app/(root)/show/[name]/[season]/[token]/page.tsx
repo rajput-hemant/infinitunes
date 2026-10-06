@@ -17,6 +17,7 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
@@ -67,8 +68,12 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
     await Promise.all([
       getShow(token, season, sort),
-      user ? getUserFavorites() : undefined,
-      user ? getUserPlaylists() : undefined,
+      user
+        ? orFallback("user favorites", getUserFavorites(), undefined)
+        : undefined,
+      user
+        ? orFallback("user playlists", getUserPlaylists(), undefined)
+        : undefined,
     ]);
 
   return (

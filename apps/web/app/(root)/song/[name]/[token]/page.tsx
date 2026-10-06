@@ -7,6 +7,7 @@ import { cache } from "react";
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
@@ -60,31 +61,45 @@ async function fetcher(token: string) {
     songsFromSameActors,
   ] = await Promise.all([
     song.more_info.has_lyrics === "true"
-      ? api.get.lyrics({ id: song.id })
+      ? orFallback("lyrics", api.get.lyrics({ id: song.id }), undefined)
       : undefined,
-    api.album.details({
-      token: parseToken(song.more_info.album_url),
-    }),
-    api.song.recommendations({ id: song.id }),
-    api.get.trending({ type: "song" }),
-    api.artist.topSongs({
-      artist_id: artistsTopSongsParams.artist_ids,
-      song_id: artistsTopSongsParams.song_id,
-      lang: artistsTopSongsParams.language,
-    }),
+    orFallback(
+      "album songs",
+      api.album.details({ token: parseToken(song.more_info.album_url) }),
+      undefined,
+    ),
+    orFallback(
+      "recommendations",
+      api.song.recommendations({ id: song.id }),
+      [],
+    ),
+    orFallback("trending", api.get.trending({ type: "song" }), []),
+    orFallback(
+      "songs from the same artists",
+      api.artist.topSongs({
+        artist_id: artistsTopSongsParams.artist_ids,
+        song_id: artistsTopSongsParams.song_id,
+        lang: artistsTopSongsParams.language,
+      }),
+      [],
+    ),
     isActorPresent
-      ? api.get.actorTopSongs({
-          actor_id: actorsTopSongsParams.actor_ids,
-          song_id: actorsTopSongsParams.song_id,
-          lang: actorsTopSongsParams.language,
-        })
+      ? orFallback(
+          "songs from the same actors",
+          api.get.actorTopSongs({
+            actor_id: actorsTopSongsParams.actor_ids,
+            song_id: actorsTopSongsParams.song_id,
+            lang: actorsTopSongsParams.language,
+          }),
+          undefined,
+        )
       : undefined,
   ]);
 
   return {
     song,
     lyrics,
-    albumSongs: Array.isArray(album.list)
+    albumSongs: Array.isArray(album?.list)
       ? album.list.filter((s) => s.id !== song.id)
       : [],
     recommendations,
