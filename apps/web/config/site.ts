@@ -1,4 +1,10 @@
-import { env } from "~/lib/env";
+import { createClientEnv } from "@infinitunes/env/client";
+
+const env = createClientEnv({
+  runtimeEnv: {
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+  },
+});
 
 export const siteConfig = {
   name: "Infinitunes",
