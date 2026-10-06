@@ -403,7 +403,6 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     }
   });
 
-  const seekFormat = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
   const volumeText = `${isMuted ? 0 : Math.round(volume * 100)} percent`;
 
   // The Slider wrapper does not forward per-thumb props, so the readable value
