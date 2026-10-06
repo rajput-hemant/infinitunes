@@ -2,7 +2,12 @@
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Queue, Song } from "@infinitunes/types";
-import { getImageSrc, newQueueItemId, toQueue } from "@infinitunes/types";
+import {
+  decode,
+  getImageSrc,
+  newQueueItemId,
+  toQueue,
+} from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -83,7 +88,7 @@ type MenuItem = {
 };
 
 function getItemName(item: Song | Episode | Queue): string {
-  return "title" in item ? item.title : item.name;
+  return "title" in item ? decode(item.title) : item.name;
 }
 
 function getItemUrl(item: Song | Episode | Queue): string {

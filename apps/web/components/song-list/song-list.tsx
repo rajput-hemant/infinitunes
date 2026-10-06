@@ -137,7 +137,7 @@ export async function SongList(props: SongListProps) {
                       href={getHref(item.more_info.album_url, "album")}
                       className="hover:text-primary"
                     >
-                      {item.more_info.album}
+                      {decode(item.more_info.album)}
                     </Link>
                   </p>
                 )}
@@ -159,7 +159,7 @@ export async function SongList(props: SongListProps) {
                   user={user}
                   type={item.type}
                   token={item.id}
-                  name={item.title}
+                  name={decode(item.title)}
                   favourites={favorites}
                   className="hidden hover:text-primary lg:block"
                 />

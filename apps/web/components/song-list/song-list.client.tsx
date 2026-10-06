@@ -79,7 +79,7 @@ export function SongListClient(props: SongListProps) {
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                     <Image
                       src={getImageSrc(item.image, "low")}
-                      alt={item.title}
+                      alt={decode(item.title)}
                       fill
                       sizes="40px"
                       className="z-10 object-cover duration-300 group-hover:brightness-50"
@@ -125,7 +125,7 @@ export function SongListClient(props: SongListProps) {
                       href={getHref(item.more_info.album_url, "album")}
                       className="hover:text-primary"
                     >
-                      {item.more_info.album}
+                      {decode(item.more_info.album)}
                     </Link>
                   </p>
                 )}
@@ -147,7 +147,7 @@ export function SongListClient(props: SongListProps) {
                   user={user}
                   type={item.type}
                   token={item.id}
-                  name={item.title}
+                  name={decode(item.title)}
                   favourites={userFavorites}
                   className="hidden size-5 hover:text-primary lg:block"
                 />
