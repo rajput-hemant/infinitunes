@@ -38,6 +38,7 @@ import { useIsTyping } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
 import { changePassword, deleteUser, updateUser } from "~/lib/actions";
 import { userMessage } from "~/lib/user-message";
+import { cn } from "~/lib/utils";
 import { nameSchema } from "~/lib/validations";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
@@ -302,7 +303,14 @@ export function ProfileForm({ user }: ProfileFormProps) {
               }}
             >
               <AlertDialogTrigger
-                render={<Button variant="destructive">Delete Account</Button>}
+                render={
+                  <Button
+                    variant="destructive"
+                    className="text-red-700 dark:text-destructive"
+                  >
+                    Delete Account
+                  </Button>
+                }
               />
 
               <AlertDialogContent>
@@ -340,7 +348,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   <AlertDialogAction
                     onClick={deleteUserHandler}
                     disabled={confirmDelete !== "DELETE MY ACCOUNT"}
-                    className={buttonVariants({ variant: "destructive" })}
+                    className={cn(
+                      buttonVariants({ variant: "destructive" }),
+                      "text-red-700 dark:text-destructive",
+                    )}
                   >
                     Delete Account
                   </AlertDialogAction>

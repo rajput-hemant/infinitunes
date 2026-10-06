@@ -148,6 +148,7 @@ export function PasskeySettings() {
                 type="button"
                 size="sm"
                 variant="destructive"
+                className="text-red-700 dark:text-destructive"
                 disabled={deletingId !== null}
                 onClick={() => deletePasskeyHandler(passkey.id)}
               >

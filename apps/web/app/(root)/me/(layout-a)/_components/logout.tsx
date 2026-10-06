@@ -31,7 +31,7 @@ export function LogoutButton() {
       size="sm"
       variant="destructive"
       onClick={signOutHandler}
-      className="w-24"
+      className="w-24 text-red-700 dark:text-destructive"
     >
       <LogOut className="mr-2 size-4" /> Logout
     </Button>

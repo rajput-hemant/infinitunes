@@ -106,7 +106,11 @@ export function PlaylistManageMenu({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} variant="destructive">
+            <AlertDialogAction
+              onClick={handleDelete}
+              variant="destructive"
+              className="text-red-700 dark:text-destructive"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
