@@ -25,7 +25,7 @@ export async function orFallback<T, F>(
     if (isNotFoundError(error)) return fallback;
     console.error(
       `[${scope}] ${label} unavailable, rendering without it`,
-      error,
+      error instanceof Error ? error : new Error(String(error)),
     );
     return fallback;
   }
