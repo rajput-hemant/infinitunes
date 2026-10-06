@@ -105,7 +105,8 @@ export function LikeButton(props: LikeButtonProps) {
   }
 
   function likeHandler() {
-    if (!isFavoriteType(type)) return;
+    // Unknown favorites state: a write would toggle blindly (see aria-disabled).
+    if (!isFavoriteType(type) || favourites === null) return;
 
     if (!user) {
       toast.warning("Unable to perform action. Please sign in.", {
@@ -150,10 +151,13 @@ export function LikeButton(props: LikeButtonProps) {
         delay={0}
         aria-label="Like"
         aria-pressed={optimisticLike}
-        disabled={favourites === null}
+        // Not `disabled`: on Base UI's trigger that only suppresses the
+        // tooltip, not the button, and a native-disabled button would never
+        // show why it is unavailable.
+        aria-disabled={favourites === null}
         onClick={likeHandler}
         className={cn(
-          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
+          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring aria-disabled:opacity-50",
           className,
         )}
         {...rest}
