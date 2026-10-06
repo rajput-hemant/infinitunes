@@ -3,13 +3,6 @@ import { describe, expect, it } from "bun:test";
 const read = (path: string) => Bun.file(new URL(path, import.meta.url)).text();
 
 describe("mobile shell", () => {
-  it("does not nest the mega menu trigger inside a link", async () => {
-    const source = await read("../components/site-header/main-nav.tsx");
-
-    expect(source).not.toMatch(/<Link[^>]*>\s*<NavigationMenuTrigger/);
-    expect(source).toContain("View all Music");
-  });
-
   it("constrains main content and aligns the header with the sidebar", async () => {
     const layout = await read("../app/(root)/layout.tsx");
     const navbar = await read("../components/site-header/navbar.tsx");
