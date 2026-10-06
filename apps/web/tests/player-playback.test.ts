@@ -11,10 +11,6 @@ describe("player playback effects", () => {
     expect(source).toContain("{ staleTime: 0 }");
   });
 
-  it("drives loading and history recording through useTrackPlayback", async () => {
-    const source = await Bun.file(PLAYER).text();
-
-    expect(source).toContain("useTrackPlayback({");
-    expect(source).toContain("record: recordPlay");
-  });
+  // Loading and history recording through the player is covered by a rendered
+  // test: apps/web/tests/dom/player-renders.test.tsx ("player track wiring").
 });

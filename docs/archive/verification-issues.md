@@ -16,33 +16,38 @@ State values: `open`, `closed`, `needs-browser`, `needs-decision`.
 
 ## Summary
 
-| ID                      | Class                   | Severity | Area                                          | State          |
-| ----------------------- | ----------------------- | -------- | --------------------------------------------- | -------------- |
-| [ISSUE-001](#issue-001) | CONFIRMED               | low      | formatting gate                               | closed         |
-| [ISSUE-002](#issue-002) | CONFIRMED               | low      | lint warnings                                 | open           |
-| [ISSUE-003](#issue-003) | CONFIRMED               | medium   | stubbed actions                               | open           |
-| [ISSUE-004](#issue-004) | CONFIRMED               | low      | recently played                               | closed         |
-| [ISSUE-005](#issue-005) | CONFIRMED               | low      | profile stubs                                 | closed         |
-| [ISSUE-006](#issue-006) | CONFIRMED               | low      | route list mismatch                           | open           |
-| [ISSUE-007](#issue-007) | CONFIRMED               | medium   | password reset oracle                         | closed         |
-| [ISSUE-008](#issue-008) | CONFIRMED               | medium   | email update validation                       | closed         |
-| [ISSUE-009](#issue-009) | HYPOTHESIS              | low      | delete account                                | needs-browser  |
-| [ISSUE-010](#issue-010) | CONFIRMED               | low      | tRPC origin check                             | open           |
-| [ISSUE-011](#issue-011) | CONFIRMED (prior proof) | medium   | upstream outage = 500                         | open           |
-| [ISSUE-012](#issue-012) | HYPOTHESIS              | low      | HTML entities in titles                       | needs-browser  |
-| [ISSUE-013](#issue-013) | CONFIRMED (prior proof) | low      | invalid song token                            | open           |
-| [ISSUE-014](#issue-014) | GAP                     | high     | passkey flows                                 | needs-browser  |
-| [ISSUE-015](#issue-015) | GAP                     | medium   | OAuth round trip                              | needs-decision |
-| [ISSUE-016](#issue-016) | GAP                     | medium   | add-to-playlist, queue removal                | needs-browser  |
-| [ISSUE-017](#issue-017) | GAP                     | low      | Tailwind 3 vs 4 baseline                      | needs-decision |
-| [ISSUE-018](#issue-018) | GAP                     | medium   | Vercel preview                                | needs-decision |
-| [ISSUE-019](#issue-019) | GAP                     | high     | no browser proof of any feature or UI quality | needs-browser  |
-| [ISSUE-020](#issue-020) | GAP                     | low      | rate limiting                                 | open           |
-| [ISSUE-021](#issue-021) | CONFIRMED               | low      | stale process notes                           | closed         |
-| [ISSUE-022](#issue-022) | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | closed         |
-| [ISSUE-023](#issue-023) | CONFIRMED               | low      | email login — no client-side redirect         | closed         |
-| [ISSUE-024](#issue-024) | CONFIRMED               | low      | reset password email not lower-cased          | closed         |
-| [ISSUE-025](#issue-025) | CONFIRMED               | medium   | reset limits are local and production-only    | open           |
+| ID                                               | Class                   | Severity | Area                                          | State          |
+| ------------------------------------------------ | ----------------------- | -------- | --------------------------------------------- | -------------- |
+| [ISSUE-001](#issue-001)                          | CONFIRMED               | low      | formatting gate                               | closed         |
+| [ISSUE-002](#issue-002)                          | CONFIRMED               | low      | lint warnings                                 | open           |
+| [ISSUE-003](#issue-003)                          | CONFIRMED               | medium   | stubbed actions                               | open           |
+| [ISSUE-004](#issue-004)                          | CONFIRMED               | low      | recently played                               | closed         |
+| [ISSUE-005](#issue-005)                          | CONFIRMED               | low      | profile stubs                                 | closed         |
+| [ISSUE-006](#issue-006)                          | CONFIRMED               | low      | route list mismatch                           | open           |
+| [ISSUE-007](#issue-007)                          | CONFIRMED               | medium   | password reset oracle                         | closed         |
+| [ISSUE-008](#issue-008)                          | CONFIRMED               | medium   | email update validation                       | closed         |
+| [ISSUE-009](#issue-009)                          | HYPOTHESIS              | low      | delete account                                | needs-browser  |
+| [ISSUE-010](#issue-010)                          | CONFIRMED               | low      | tRPC origin check                             | open           |
+| [ISSUE-011](#issue-011)                          | CONFIRMED (prior proof) | medium   | upstream outage = 500                         | open           |
+| [ISSUE-012](#issue-012)                          | HYPOTHESIS              | low      | HTML entities in titles                       | needs-browser  |
+| [ISSUE-013](#issue-013)                          | CONFIRMED (prior proof) | low      | invalid song token                            | open           |
+| [ISSUE-014](#issue-014)                          | GAP                     | high     | passkey flows                                 | needs-browser  |
+| [ISSUE-015](#issue-015)                          | GAP                     | medium   | OAuth round trip                              | needs-decision |
+| [ISSUE-016](#issue-016)                          | GAP                     | medium   | add-to-playlist, queue removal                | needs-browser  |
+| [ISSUE-017](#issue-017)                          | GAP                     | low      | Tailwind 3 vs 4 baseline                      | needs-decision |
+| [ISSUE-018](#issue-018)                          | GAP                     | medium   | Vercel preview                                | needs-decision |
+| [ISSUE-019](#issue-019)                          | GAP                     | high     | no browser proof of any feature or UI quality | needs-browser  |
+| [ISSUE-020](#issue-020)                          | GAP                     | low      | rate limiting                                 | open           |
+| [ISSUE-021](#issue-021)                          | CONFIRMED               | low      | stale process notes                           | closed         |
+| [ISSUE-022](#issue-022)                          | CONFIRMED               | medium   | artist header "Play Radio" silent failure     | closed         |
+| [ISSUE-023](#issue-023)                          | CONFIRMED               | low      | email login — no client-side redirect         | closed         |
+| [ISSUE-024](#issue-024)                          | CONFIRMED               | low      | reset password email not lower-cased          | closed         |
+| [ISSUE-025](#issue-025)                          | CONFIRMED               | medium   | reset limits are local and production-only    | open           |
+| <<<<<<< HEAD:docs/archive/verification-issues.md |
+| =======                                          |
+| [ISSUE-026](#issue-026)                          | CONFIRMED               | low      | queue lists the same artist twice             | closed         |
+
+> > > > > > > origin/migration/bun-monorepo:docs/verification/verification-issues.md
 
 ## Confirmed
 
@@ -67,6 +72,7 @@ Oxlint reports warnings, no errors.
 - Follow-up: triage warnings, suppress the intentional import.
 - Update 2026-10-03 (audit, source read only, lint not re-run): `apps/web/components/play-button.tsx:16` and `apps/web/components/details-header/more-button.tsx:50` import `currentlyInDev` but never call it, so they are unused-import warnings that disappear once removed. State remains open.
 - Update 2026-10-03 (source grep): those `currentlyInDev` imports, and the helper itself, were removed (`4eae157`). The unused-import warnings are gone; the issue stays open for the remaining warnings (see TC-5 in `docs/TODO.md`).
+- Revalidation 2026-10-05 (tests batch 3): `bun run --filter @infinitunes/web lint` exits 0 with 15 warnings; `bun run --filter @infinitunes/trpc lint` exits 0 without warnings. `bunx oxlint packages/ui/src/components/ui/sidebar.tsx` reports two `no-shadow` warnings at line 92 in protected source. UI behavior-affecting web warnings remain open pending the authorized browser slot; see TC-5 for classification.
 
 ### ISSUE-003
 
@@ -206,6 +212,14 @@ Better Auth reset limits use per-instance memory and run only in production.
 - Update 2026-10-04 (source review): `user.resetPassword` no longer exists. `packages/trpc/src/router/user.ts` exposes session-protected `changePassword`; anonymous reset uses Better Auth's emailed-token flow. `packages/auth/src/auth.ts` configures reset rate limits but enables them only in production and supplies no shared counter storage. The historical public password-guess procedure above is removed.
 - Expected: reset request limits shared across serverless instances. Actual source configuration uses per-instance memory and disables limits outside production. The proxy matcher excludes `/api/auth`, so its optional limiter does not cover Better Auth's reset endpoints. No runtime verification was authorized for this run.
 - Follow-up: implement shared storage under SE-17 and SE-4 in `docs/TODO.md`. State open.
+
+### ISSUE-026
+
+The queue (desktop sheet and mobile expanded player) listed one artist several times, for example `Sadhu Tiwari, Sadhu Tiwari`.
+
+- Evidence 2026-10-06 (Chromium via chrome-devtools-axi, app on port 4341, live JioSaavn data, logged out): queue built from the album `Hanuman Ansh` showed repeated artists in 8 of 11 rows. Upstream `song.details` for `FjwoXiZlaF8` returns `artistMap.artists` as `Sadhu Tiwari:music` and `Sadhu Tiwari:lyricist` (one entry per role, same id). `toQueue` in `packages/types/src/media.ts` copied that list, and `queue.tsx` keys links by artist id, so the repeat also produced duplicate React keys.
+- Fix: `toQueue` keeps one entry per artist id. Test `apps/web/tests/queue-artists.test.ts` (mutation-checked: removing the dedupe fails it). Re-checked live with a fresh queue: no repeated artists. A queue already saved in `localStorage` keeps its old entries until it is rebuilt.
+- State closed (see C-128 in `docs/TODO.md`).
 
 ## Hypotheses
 

@@ -5,10 +5,32 @@ import type {
   StreamQuality,
 } from "@infinitunes/types";
 import { ensureQueueItemIds } from "@infinitunes/types";
-import { atom, createStore, useAtom } from "jotai";
+import { atom, createStore, useSetAtom } from "jotai";
+import type { WritableAtom } from "jotai";
 import { atomWithStorage, createJSONStorage } from "jotai/utils";
+import * as React from "react";
 
 const store = createStore();
+
+// jotai's `useAtom` reads the value once at render and only listens for later
+// changes, so a component whose effect subscribes after another one has already
+// mounted an `atomWithStorage` atom (which restores localStorage on mount) never
+// sees the restored value. `useSyncExternalStore` re-reads the snapshot on
+// subscribe, so every consumer gets it, and it hydrates from the server value.
+function useAtom<Value, Args extends unknown[], Result>(
+  target: WritableAtom<Value, Args, Result>,
+  _options: { store: typeof store },
+) {
+  // A stable `subscribe`: a new identity would unsubscribe and resubscribe on
+  // every render, remounting the atom and re-reading storage each time.
+  const subscribe = React.useCallback(
+    (onChange: () => void) => store.sub(target, onChange),
+    [target],
+  );
+  const getSnapshot = React.useCallback(() => store.get(target), [target]);
+  const value = React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  return [value, useSetAtom(target, { store })] as const;
+}
 
 // Queues persisted before `queueItemId` existed are backfilled on read.
 const baseQueueStorage = createJSONStorage<Queue[]>(() => localStorage);

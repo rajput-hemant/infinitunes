@@ -3,22 +3,14 @@ import { describe, expect, it } from "bun:test";
 const read = (path: string) => Bun.file(new URL(path, import.meta.url)).text();
 
 describe("player a11y (UI-26)", () => {
-  it("announces track changes politely and names slider values", async () => {
-    const source = await read("../components/player.tsx");
-
-    expect(source).toContain('<output aria-live="polite"');
-    expect(source).toContain("Now playing ${current.name}");
-    expect(source).toContain("} of ${formatDuration(duration, seekFormat)}");
-    expect(source).toContain("percent`");
-    const expanded = await read("../components/expanded-player.tsx");
-    expect(expanded).toContain('setAttribute("aria-valuetext", text)');
-  });
-
+  // Announcing track changes and naming slider values is covered by rendered
+  // tests: apps/web/tests/dom/player-renders.test.tsx ("player a11y").
   it("queue pluralizes the track count and restores focus on removal", async () => {
     const source = await read("../components/queue.tsx");
 
-    expect(source).toContain('queue.length === 1 ? "Track" : "Tracks"');
-    expect(source).toContain("focusRequest");
+    // Count text ("1 Track" / "N Tracks") and focus restoration are covered by
+    // a rendered test: apps/web/tests/dom/queue-sheet.test.tsx. The remove
+    // hook stays a source contract because the behavior tests select by it.
     expect(source).toContain("data-queue-remove");
   });
 });
