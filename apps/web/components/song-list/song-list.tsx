@@ -85,7 +85,7 @@ export async function SongList(props: SongListProps) {
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                     <Image
                       src={getImageSrc(item.image, "low")}
-                      alt={item.title}
+                      alt={decode(item.title)}
                       fill
                       sizes="40px"
                       className="z-10 object-cover duration-300 group-hover:brightness-50"

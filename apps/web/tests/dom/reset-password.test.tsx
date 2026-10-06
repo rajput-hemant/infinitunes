@@ -6,6 +6,8 @@ import { act } from "react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
 
+import { setInputValue } from "./set-input-value";
+
 let result: { error: { status?: number; code?: string } | null } = {
   error: null,
 };
@@ -23,15 +25,6 @@ const { ResetPasswordForm } =
   await import("../../app/(auth)/_components/reset-password-form");
 
 type Router = NonNullable<React.ContextType<typeof AppRouterContext>>;
-
-function setValue(input: HTMLInputElement, value: string) {
-  input.value = value;
-  const tracker = Reflect.get(input, "_valueTracker") as
-    | { setValue(v: string): void }
-    | undefined;
-  tracker?.setValue("");
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-}
 
 async function mount(search: string) {
   const pushes: string[] = [];
@@ -62,8 +55,8 @@ async function fillAndSubmit(
     'input[autocomplete="new-password"]',
   );
   await act(async () => {
-    if (first) setValue(first, password);
-    if (second) setValue(second, confirm);
+    if (first) setInputValue(first, password);
+    if (second) setInputValue(second, confirm);
   });
   await act(async () => {
     container
