@@ -55,7 +55,6 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
                   onClick={() => addToPlaylist(id, name)}
                   className="h-14 justify-normal gap-2 px-1 text-start"
                 >
-                  {/* TODO: add image collage */}
                   <div className="size-12 shrink-0 rounded-md bg-muted">
                     <List aria-hidden className="m-auto h-full" />
                   </div>

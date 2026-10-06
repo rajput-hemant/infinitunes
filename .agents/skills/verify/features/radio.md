@@ -1,7 +1,7 @@
 # Radio
 
 **Status: LIVE PROOF (partial).** Featured station playback, song/artist row radio, artist details-header radio (fixed in ISSUE-022), manual queue clearing, and mobile rendering confirmed in browser runs `browser-radio-3151` and `infinitunes-radio-auth-fixes` (2026-10-02). Queue refill retained as gap pending playable audio.
-Issues: [ISSUE-003](../../../../docs/verification/verification-issues.md#issue-003), [ISSUE-022 (closed)](../../../../docs/verification/verification-issues.md#issue-022). Reference & API notes: [radio-research.md](../../../../docs/research/radio-research.md).
+Issues: [ISSUE-003](../../../../docs/archive/verification-issues.md#issue-003), [ISSUE-022 (closed)](../../../../docs/archive/verification-issues.md#issue-022). Reference & API notes: [radio-research.md](../../../../docs/research/radio-research.md).
 
 Last live proof: 2026-10-02, runs `browser-radio-3151` and `infinitunes-radio-auth-fixes` (evidence kept outside the repo).
 

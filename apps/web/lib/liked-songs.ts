@@ -48,3 +48,18 @@ export function orderByIds<T extends { id: string }>(
   const byId = new Map(items.map((item) => [item.id, item]));
   return ids.flatMap((id) => byId.get(id) ?? []);
 }
+
+/**
+ * Liked songs, newest like first. Favourites are stored append-only, so the
+ * stored order is oldest-first; reverse it before fetching and order the
+ * result by it (upstream does not guarantee order within a chunk).
+ */
+export async function fetchLikedSongsNewestFirst<T extends Song | Episode>(
+  stored: string[],
+  details: (input: { id: string }) => Promise<{ songs: T[] }>,
+  size?: number,
+): Promise<T[] | undefined> {
+  const ids = [...stored].reverse();
+  const fetched = await fetchSongsChunked(ids, details, size);
+  return fetched && orderByIds(ids, fetched);
+}
