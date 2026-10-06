@@ -54,7 +54,7 @@ const NotFound = () => {
 
       <p className="text-lg font-normal italic">Try one of these:</p>
 
-      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 font-heading text-sm font-medium italic drop-shadow-sm sm:text-lg lg:text-2xl">
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 font-heading text-sm font-medium italic dark:drop-shadow-sm sm:text-lg lg:text-2xl">
         {LINKS.map(({ title, href }, i, arr) => (
           <React.Fragment key={i}>
             <Link
