@@ -3,6 +3,8 @@ import { describe, expect, it, mock } from "bun:test";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 
+import { setInputValue } from "./set-input-value";
+
 // Only the network boundary is stubbed: the better-auth client answers the
 // reset request with whatever `result` holds.
 let result: { error: { status: number } | null } = { error: null };
@@ -19,15 +21,6 @@ mock.module("@infinitunes/auth/client", () => ({
 const { ForgotPasswordForm, FORGOT_PASSWORD_MESSAGE } =
   await import("../../app/(auth)/_components/forgot-password-form");
 
-function setValue(input: HTMLInputElement, value: string) {
-  input.value = value;
-  const tracker = Reflect.get(input, "_valueTracker") as
-    | { setValue(v: string): void }
-    | undefined;
-  tracker?.setValue("");
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-}
-
 async function submit(
   email: string,
   response: typeof result = { error: null },
@@ -43,7 +36,7 @@ async function submit(
     'input[type="email"]',
   );
   await act(async () => {
-    if (input) setValue(input, email);
+    if (input) setInputValue(input, email);
   });
   await act(async () => {
     container
