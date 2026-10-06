@@ -1,6 +1,7 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
 import {
+  decode,
   formatDuration,
   formatReleaseDate,
   getImageSrc,
@@ -102,10 +103,10 @@ export function SongListClient(props: SongListProps) {
                         item.perma_url,
                         item.type === "song" ? "song" : "episode",
                       )}
-                      title={item.title}
+                      title={decode(item.title)}
                       className="text-primary group-hover:text-primary lg:text-muted-foreground"
                     >
-                      {item.title}
+                      {decode(item.title)}
                     </Link>
                   </h3>
 
