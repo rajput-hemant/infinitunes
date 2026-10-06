@@ -197,7 +197,13 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                 <SidebarGroupLabel>Playlists</SidebarGroupLabel>
                 <SidebarGroupContent>
                   <div className="mx-4 mt-2 space-y-2 group-data-[collapsible=icon]:mx-0">
-                    {userPlaylists?.length === 0 ? (
+                    {userPlaylists === undefined ? (
+                      <output className="block text-center text-xs text-muted-foreground group-data-[collapsible=icon]:sr-only">
+                        Couldn&apos;t load your playlists
+                      </output>
+                    ) : null}
+                    {userPlaylists === undefined ||
+                    userPlaylists.length === 0 ? (
                       <CreatePlaylistTooltip>
                         <div>
                           <NewPlaylistForm user={user}>

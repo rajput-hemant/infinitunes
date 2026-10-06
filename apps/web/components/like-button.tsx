@@ -81,7 +81,8 @@ type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   type: MediaType;
   name: string;
   token: string;
-  favourites?: Favorite;
+  /** `null` means the favorites read failed: state unknown, so no writes. */
+  favourites?: Favorite | null;
 };
 
 export function LikeButton(props: LikeButtonProps) {
@@ -149,9 +150,10 @@ export function LikeButton(props: LikeButtonProps) {
         delay={0}
         aria-label="Like"
         aria-pressed={optimisticLike}
+        disabled={favourites === null}
         onClick={likeHandler}
         className={cn(
-          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
           className,
         )}
         {...rest}
@@ -166,7 +168,9 @@ export function LikeButton(props: LikeButtonProps) {
       </TooltipTrigger>
 
       <TooltipContent>
-        {optimisticLike ? "Unlike" : "Like"} `{name}`
+        {favourites === null
+          ? "Couldn't load your favorites"
+          : `${optimisticLike ? "Unlike" : "Like"} \`${name}\``}
       </TooltipContent>
     </Tooltip>
   );

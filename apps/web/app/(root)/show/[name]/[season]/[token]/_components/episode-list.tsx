@@ -18,7 +18,7 @@ type EpisodeListProps = {
   sort: Sort;
   totalEpisodes: number;
   initialEpisodes: Episode[];
-  userFavorites?: Favorite;
+  userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
 };
 

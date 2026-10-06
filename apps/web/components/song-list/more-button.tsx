@@ -66,7 +66,7 @@ import { TileMoreLinks } from "./more-links";
 
 type TileMoreButtonProps = {
   user?: User;
-  favorites?: Favorite;
+  favorites?: Favorite | null;
   item: Song | Episode | Queue;
   showAlbum: boolean;
   playlists?: MyPlaylist[];
@@ -288,7 +288,8 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     {
       label: isFavorite ? "Remove From Favourite" : "Add To Favourite",
       onClick: like,
-      hide: item.type !== "song",
+      // null: favorites failed to load, so the liked state is unknown.
+      hide: item.type !== "song" || favorites === null,
       icon: Heart,
     },
     {

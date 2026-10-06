@@ -1,3 +1,4 @@
+import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type {
   Album,
   Artist,
@@ -23,6 +24,7 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orFallback } from "~/lib/degrade";
 import { asRoute, cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
@@ -94,12 +96,13 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   const user = await getUser();
 
-  let playlists, favorites;
+  let playlists: MyPlaylist[] | undefined,
+    favorites: Favorite | null | undefined;
 
   if (user) {
     [playlists, favorites] = await Promise.all([
-      getUserPlaylists(),
-      getUserFavorites(),
+      orFallback("user playlists", getUserPlaylists(), undefined),
+      orFallback("user favorites", getUserFavorites(), null),
     ]);
   }
 

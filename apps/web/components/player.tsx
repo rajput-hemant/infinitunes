@@ -63,7 +63,7 @@ const controlClass =
 type PlayerProps = {
   user?: User;
   playlists?: MyPlaylist[];
-  favorites?: Favorite;
+  favorites?: Favorite | null;
 };
 
 export function Player({ user, playlists, favorites }: PlayerProps) {
