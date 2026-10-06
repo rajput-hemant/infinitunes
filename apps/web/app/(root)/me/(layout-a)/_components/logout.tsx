@@ -6,6 +6,8 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { cn, destructiveText } from "~/lib/utils";
+
 export function LogoutButton() {
   const router = useRouter();
 
@@ -31,7 +33,7 @@ export function LogoutButton() {
       size="sm"
       variant="destructive"
       onClick={signOutHandler}
-      className="w-24 text-red-700 dark:text-destructive"
+      className={cn("w-24", destructiveText)}
     >
       <LogOut className="mr-2 size-4" /> Logout
     </Button>

@@ -7,6 +7,8 @@ import { Fingerprint, Loader2, Plus, Trash2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
+import { destructiveText } from "~/lib/utils";
+
 type Passkey = {
   id: string;
   name?: string | null;
@@ -148,7 +150,7 @@ export function PasskeySettings() {
                 type="button"
                 size="sm"
                 variant="destructive"
-                className="text-red-700 dark:text-destructive"
+                className={destructiveText}
                 disabled={deletingId !== null}
                 onClick={() => deletePasskeyHandler(passkey.id)}
               >
