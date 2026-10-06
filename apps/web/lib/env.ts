@@ -25,7 +25,8 @@ export const env = createEnv({
       path: ["UPSTASH_REDIS_REST_URL"],
     }),
   experimental__runtimeEnv: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_APP_URL:
+      process.env.NEXT_PUBLIC_APP_URL ?? "https://infinitunes.rajputhemant.me",
   },
   emptyStringAsUndefined: true,
   skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
