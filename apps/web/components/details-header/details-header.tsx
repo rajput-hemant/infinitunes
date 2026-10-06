@@ -227,7 +227,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                   </Link>
                 ))}
                 {" · "}
-                {(item as Album).more_info.song_count ?? 0} Songs
+                {formatCount((item as Album).more_info.song_count)} Songs
                 {" · "}
                 {formatCount((item as Album).play_count)} Plays
                 {" · "}
