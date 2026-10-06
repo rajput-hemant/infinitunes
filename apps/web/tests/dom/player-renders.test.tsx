@@ -45,6 +45,20 @@ mock.module("../../lib/history-actions", () => ({
   recordPlay: (item: { id: string }) => void recorded.push(item.id),
 }));
 
+// Counts renders of a prop-less child of the bar: it re-renders only when the
+// whole `PlayerInner` does.
+let queueRenders = 0;
+const realQueue = await import("../../components/queue");
+// Bun rebinds module namespaces on mock, so keep the original component.
+const RealQueue = realQueue.Queue;
+mock.module("../../components/queue", () => ({
+  ...realQueue,
+  Queue: () => {
+    queueRenders++;
+    return <RealQueue />;
+  },
+}));
+
 const { Player } = await import("../../components/player");
 const { api } = await import("../../lib/trpc/client");
 
@@ -121,6 +135,7 @@ async function commitsOver(frames: number, isAdvancing: boolean) {
     );
   });
   const settled = commits;
+  queueRenders = 0;
   advancing = isAdvancing;
   await stepFrames(frames);
   advancing = false;
@@ -138,13 +153,16 @@ describe("player re-renders", () => {
     expect(commits).toBe(0);
   });
 
-  // Measured baseline (PF-5): every animation frame re-renders the whole bar,
-  // two commits per frame. Raise this only knowingly; lowering it is the goal.
-  it("commits at most twice per frame while the playhead advances", async () => {
+  // PF-8: the frame loop writes to a position store, so only the seek bar and
+  // time label subscribe. Before, `Queue` re-rendered on every frame.
+  it("keeps the rest of the bar still while the playhead advances", async () => {
     const frames = 60;
-    const { commits } = await commitsOver(frames, true);
+    const { commits, container } = await commitsOver(frames, true);
 
     expect(commits).toBeLessThanOrEqual(frames * 2);
+    expect(queueRenders).toBeLessThanOrEqual(2);
+    // The playhead still moves: the time label follows it.
+    expect(container.textContent).toMatch(/00:0[23] \/ 03:20/);
   });
 });
 

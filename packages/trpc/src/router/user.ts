@@ -1,4 +1,8 @@
-import { changePasswordSchema, emailSchema } from "@infinitunes/auth/schemas";
+import {
+  USER_NAME_MAX,
+  changePasswordSchema,
+  emailSchema,
+} from "@infinitunes/auth/schemas";
 import {
   betterAuthAccounts,
   betterAuthSessions,
@@ -111,7 +115,7 @@ export function removeSongAtPlaylistIndex(
 }
 
 const updateUserInput = z.object({
-  name: z.string().trim().min(1).max(100).optional(),
+  name: z.string().trim().min(1).max(USER_NAME_MAX).optional(),
   email: emailSchema.transform((email) => email.toLowerCase()).optional(),
   /** Required (and verified) only when the email actually changes. */
   currentPassword: z.string().max(200).optional(),

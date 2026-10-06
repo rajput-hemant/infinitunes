@@ -12,12 +12,14 @@ import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { APIError } from "better-auth/api";
 import { and, eq } from "drizzle-orm";
 
 import { resetPasswordEmail } from "./emails";
 import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
+import { USER_NAME_MAX } from "./schemas";
 import { originOf, parseUrl } from "./url";
 
 /** Reset links are single use and expire after an hour (Better Auth default, pinned). */
@@ -33,6 +35,26 @@ export const RESET_RATE_LIMITS = {
   "/request-password-reset": { window: 60, max: 3 },
   "/reset-password": { window: 60, max: 5 },
 } as const;
+
+/**
+ * Better Auth's own endpoints skip the Zod schemas, so cap the name here too.
+ * Returns the trimmed name, or undefined when there is nothing to store.
+ * `truncate` is for OAuth profiles (not user-typed): an over-long provider
+ * name must not block sign-in. User-typed updates are rejected instead.
+ */
+function normalizeName(
+  user: { name?: unknown },
+  mode: "truncate" | "reject",
+): { data: { name: string } } | undefined {
+  if (typeof user.name !== "string") return undefined;
+  const name = user.name.trim();
+  if (name.length > USER_NAME_MAX && mode === "reject") {
+    throw new APIError("BAD_REQUEST", {
+      message: `Name must be at most ${USER_NAME_MAX} characters long`,
+    });
+  }
+  return { data: { name: name.slice(0, USER_NAME_MAX) } };
+}
 
 export function createAuth(
   db: DbClient,
@@ -183,6 +205,7 @@ export function createAuth(
     databaseHooks: {
       user: {
         create: {
+          before: async (user) => normalizeName(user, "truncate"),
           after: async (user) => {
             if (user.name !== undefined) {
               await db
@@ -194,6 +217,7 @@ export function createAuth(
           },
         },
         update: {
+          before: async (user) => normalizeName(user, "reject"),
           after: async (user) => {
             if (user.name !== undefined) {
               await db
