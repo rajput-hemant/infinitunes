@@ -1,3 +1,4 @@
+import { originOf } from "@infinitunes/auth/url";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { getSessionCookie } from "better-auth/cookies";
@@ -5,22 +6,44 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { appRoutes, userRoutes } from "./config/routes";
+import { getClientKey, resolveTrustedProxy } from "./lib/client-ip";
 import { buildCsp, cspHeaderName } from "./lib/csp";
 import { env } from "./lib/env";
 
-let ratelimit: Ratelimit | undefined;
+/**
+ * Credential endpoints get a stricter per-client bucket on top of the global
+ * one. Better Auth's own limiter (burst of 3 per 10s on sign-in/up, plus the
+ * reset-password rules in `RESET_RATE_LIMITS`) stays authoritative for those
+ * paths; this adds a sustained cap with a trusted client key. The reset
+ * endpoints are left to Better Auth alone so they are not limited twice.
+ */
+const AUTH_CREDENTIAL_PATHS = new Set([
+  "/api/auth/sign-in/email",
+  "/api/auth/sign-up/email",
+]);
+const AUTH_LIMIT = { requests: 10, window: "1 m" } as const;
 
-function getRatelimit() {
-  if (!ratelimit) {
-    ratelimit = new Ratelimit({
-      redis: Redis.fromEnv(),
-      limiter: Ratelimit.slidingWindow(
-        env.RATE_LIMITING_REQUESTS_PER_SECOND,
-        "1s",
-      ),
+let redis: Redis | undefined;
+const limiters = new Map<"global" | "auth", Ratelimit>();
+
+function getRatelimit(kind: "global" | "auth") {
+  let limiter = limiters.get(kind);
+  if (!limiter) {
+    redis ??= Redis.fromEnv();
+    limiter = new Ratelimit({
+      redis,
+      prefix: kind === "auth" ? "@upstash/ratelimit/auth" : undefined,
+      limiter:
+        kind === "auth"
+          ? Ratelimit.slidingWindow(AUTH_LIMIT.requests, AUTH_LIMIT.window)
+          : Ratelimit.slidingWindow(
+              env.RATE_LIMITING_REQUESTS_PER_SECOND,
+              "1 s",
+            ),
     });
+    limiters.set(kind, limiter);
   }
-  return ratelimit;
+  return limiter;
 }
 
 export async function proxy(req: NextRequest) {
@@ -36,33 +59,65 @@ export async function proxy(req: NextRequest) {
     );
   }
 
+  const isAuthApi = pathname.startsWith("/api/auth");
+
   if (env.ENABLE_RATE_LIMITING === "true" && env.NODE_ENV === "production") {
-    const id = getIP(req) || "anonymous";
-    const { limit, pending, remaining, reset, success } =
-      await getRatelimit().limit(id);
+    const id = getClientKey(
+      req.headers,
+      resolveTrustedProxy(env.TRUSTED_PROXY, process.env.VERCEL),
+    );
+    const kinds: ("global" | "auth")[] =
+      isAuthApi && req.method === "POST" && AUTH_CREDENTIAL_PATHS.has(pathname)
+        ? ["global", "auth"]
+        : ["global"];
+    for (const kind of kinds) {
+      let result: Awaited<ReturnType<Ratelimit["limit"]>>;
+      try {
+        result = await getRatelimit(kind).limit(id);
+      } catch (error) {
+        // Fail open: a Redis outage must not take sign-in or pages down.
+        console.error(
+          `[proxy:ratelimit] ${kind} limiter failed; allowing`,
+          error,
+        );
+        continue;
+      }
+      const { limit, pending, remaining, reset, success } = result;
 
-    if (!success) {
-      return NextResponse.json(
-        {
-          error: {
-            message: "Too many requests",
-            limit,
-            pending,
-            remaining,
-            reset: `${reset - Date.now()}ms`,
-          },
-        },
+      if (result.reason === "timeout") {
+        console.error(`[proxy:ratelimit] ${kind} limiter timed out; allowing`);
+      }
 
-        {
-          status: 429,
-          headers: {
-            "x-ratelimit-limit": limit.toString(),
-            "x-ratelimit-remaining": remaining.toString(),
+      if (!success) {
+        return NextResponse.json(
+          {
+            error: {
+              message: "Too many requests",
+              limit,
+              pending,
+              remaining,
+              reset: `${reset - Date.now()}ms`,
+            },
           },
-        },
-      );
+
+          {
+            status: 429,
+            headers: {
+              "x-ratelimit-limit": limit.toString(),
+              "x-ratelimit-remaining": remaining.toString(),
+              "retry-after": Math.max(
+                1,
+                Math.ceil((reset - Date.now()) / 1000),
+              ).toString(),
+            },
+          },
+        );
+      }
     }
   }
+
+  // Better Auth owns origin checks, sessions and responses for its routes.
+  if (isAuthApi) return NextResponse.next();
 
   const sessionToken = getSessionCookie(req);
 
@@ -104,15 +159,6 @@ export async function proxy(req: NextRequest) {
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
-function originOf(value: string | null): string | null {
-  if (!value) return null;
-  try {
-    return new URL(value).origin;
-  } catch {
-    return null;
-  }
-}
-
 /**
  * CSRF guard for /api/trpc. State-changing methods must send a matching
  * `Origin` (browsers always do for same-origin POST; Referer is not enough).
@@ -145,19 +191,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for:
-     * - api routes EXCEPT /api/trpc (which is matched for rate limiting & origin check)
+     * - api routes EXCEPT /api/trpc and /api/auth (matched for rate limiting;
+     *   trpc also for the origin check)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    "/((?!api/(?!trpc)|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api/(?!trpc|auth)|_next/static|_next/image|favicon.ico).*)",
   ],
 };
-
-function getIP(req: NextRequest): string {
-  return (
-    req.headers.get("x-real-ip")?.trim() ||
-    req.headers.get("x-forwarded-for")?.split(",").at(0)?.trim() ||
-    ""
-  );
-}

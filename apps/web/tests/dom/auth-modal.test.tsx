@@ -14,7 +14,7 @@ afterEach(async () => {
   document.body.replaceChildren();
 });
 
-async function open() {
+async function open(pathname = "/login") {
   const calls: string[] = [];
   const router = {
     back: () => calls.push("back"),
@@ -27,7 +27,7 @@ async function open() {
   await act(async () => {
     root.render(
       <AppRouterContext.Provider value={router}>
-        <PathnameContext.Provider value="/login">
+        <PathnameContext.Provider value={pathname}>
           <AuthModal title="Welcome back" description="Sign in to continue">
             <input aria-label="Email" />
           </AuthModal>
@@ -39,7 +39,7 @@ async function open() {
 }
 
 const dialog = () => document.querySelector<HTMLElement>('[role="dialog"]');
-const buttons = () => [...document.querySelectorAll("button")];
+const buttons = () => [...(dialog()?.querySelectorAll("button") ?? [])];
 
 describe("auth modal close control", () => {
   it("offers exactly one labelled close control and no footer Close/Back", async () => {
@@ -64,12 +64,19 @@ describe("auth modal close control", () => {
     expect(calls).toEqual(["back"]);
   });
 
-  it("switches to sign up from the footer link", async () => {
-    const calls = await open();
-    const signUp = buttons().find((b) => b.textContent === "Sign up");
+  it.each([
+    ["/login", "Sign up", "replace /signup"],
+    ["/signup", "Login", "replace /login"],
+  ])(
+    "on %s the footer button is %s and calls %s",
+    async (path, label, call) => {
+      const calls = await open(path);
+      const toggle = buttons().find((b) => b.textContent === label);
 
-    await act(async () => signUp?.click());
+      expect(toggle).toBeDefined();
+      await act(async () => toggle?.click());
 
-    expect(calls).toEqual(["replace /signup"]);
-  });
+      expect(calls).toEqual([call]);
+    },
+  );
 });

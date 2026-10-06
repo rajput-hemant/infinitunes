@@ -322,7 +322,7 @@ describe("LibrarySongList", () => {
         const like = container.querySelector<HTMLButtonElement>(
           '[aria-label="Like"]',
         );
-        expect(like?.hasAttribute("data-trigger-disabled")).toBe(true);
+        expect(like?.getAttribute("aria-disabled")).toBe("true");
 
         const triggers = document.querySelectorAll<HTMLButtonElement>(
           '[aria-label="More Options"]',
@@ -347,7 +347,7 @@ describe("LibrarySongList", () => {
           '[aria-label="Like"]',
         );
         expect(like).not.toBeNull();
-        expect(like?.hasAttribute("data-trigger-disabled")).toBe(false);
+        expect(like?.getAttribute("aria-disabled")).toBe("false");
       },
       { userFavorites: undefined as Favorite | undefined },
     ));

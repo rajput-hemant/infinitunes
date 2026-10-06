@@ -44,7 +44,7 @@ const router = {
   prefetch() {},
 } as unknown as NonNullable<React.ContextType<typeof AppRouterContext>>;
 
-async function menuLabelsFor(favorites: Favorite | undefined) {
+async function menuLabelsFor(favorites: Favorite | null | undefined) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
@@ -92,5 +92,13 @@ describe("tile more-button favorite state", () => {
 
     expect(labels).toContain("Remove From Favourite");
     expect(labels).not.toContain("Add To Favourite");
+  });
+
+  it("hides the favourite action when favorites could not be loaded", async () => {
+    const labels = await menuLabelsFor(null);
+
+    expect(labels).toContain("Play Song Now");
+    expect(labels).not.toContain("Add To Favourite");
+    expect(labels).not.toContain("Remove From Favourite");
   });
 });

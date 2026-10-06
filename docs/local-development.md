@@ -70,6 +70,27 @@ It never changes an existing account.
 | `bun run type-check` | Type-check                       |
 | `bun run lint`       | Lint                             |
 
+## Rate limiting (production)
+
+Off by default; nothing needs Upstash to boot. It runs only when `NODE_ENV=production`. To turn it on set:
+
+| Variable                                             | Value                                                      |
+| ---------------------------------------------------- | ---------------------------------------------------------- |
+| `ENABLE_RATE_LIMITING`                               | `true` (env validation fails without the two Upstash vars) |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Upstash REST credentials                                   |
+| `TRUSTED_PROXY`                                      | optional; see below                                        |
+| `RATE_LIMITING_REQUESTS_PER_SECOND`                  | optional, default `50` per client                          |
+
+On Vercel `ENABLE_RATE_LIMITING=true` plus the credentials is enough: `TRUSTED_PROXY` defaults to `vercel`.
+
+`TRUSTED_PROXY` decides which client-IP headers the limiter believes, because `x-forwarded-for` is forgeable by any client that reaches the app directly:
+
+- `vercel`: Vercel overwrites the headers; uses `x-real-ip`, then the first `x-forwarded-for` entry. Default on Vercel.
+- `true`: one trusted reverse proxy that appends to `x-forwarded-for`; uses `x-real-ip`, then the last entry.
+- `false`: default elsewhere. Headers are ignored and all clients share one bucket, so the limit becomes a global cap. Safe, but set `true` or `vercel` for per-client limits.
+
+The limiter covers pages, `/api/trpc` and `/api/auth` with the global bucket. `POST /api/auth/sign-in/email` and `/sign-up/email` also get a stricter 10 per minute bucket. Better Auth's own database-backed limiter (3 per 10s on sign-in/up, 3 and 5 per minute on forgot/reset password) stays in place; the reset endpoints are not limited again in the proxy.
+
 ## Resetting
 
 There is no reset command. To start clean, run `bun run db:down`, then remove the two named volumes yourself. Volumes from older setups (including any PostgreSQL 17 volume) are never touched or adopted automatically; PostgreSQL 18 cannot read PG17 data, so move it with `pg_dump` and restore if needed. Never run `docker system prune` for this.

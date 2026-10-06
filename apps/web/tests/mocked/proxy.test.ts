@@ -1,4 +1,12 @@
-import { afterAll, beforeAll, describe, expect, it, mock } from "bun:test";
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from "bun:test";
 
 import * as betterAuthCookies from "better-auth/cookies";
 import type { NextRequest } from "next/server";
@@ -9,6 +17,10 @@ const getSessionCookie = mock(() => undefined as string | undefined);
 
 const seenKeys: string[] = [];
 let limitSuccess = true;
+let limitMode: "ok" | "reject" | "timeout" = "ok";
+let resetOffsetMs = 0;
+const windows: unknown[][] = [];
+const constructed: { prefix?: string; limiter: unknown }[] = [];
 
 mock.module("@upstash/redis", () => ({
   Redis: { fromEnv },
@@ -16,15 +28,23 @@ mock.module("@upstash/redis", () => ({
 
 mock.module("@upstash/ratelimit", () => ({
   Ratelimit: class {
-    static slidingWindow = () => ({});
+    static slidingWindow = (...args: unknown[]) => {
+      windows.push(args);
+      return { window: args };
+    };
+    constructor(opts: { prefix?: string; limiter: unknown }) {
+      constructed.push(opts);
+    }
     limit = async (id: string) => {
       seenKeys.push(id);
+      if (limitMode === "reject") throw new Error("redis down");
       return {
         limit: 50,
         pending: Promise.resolve(),
         remaining: limitSuccess ? 49 : 0,
-        reset: Date.now(),
-        success: limitSuccess,
+        reset: Date.now() + resetOffsetMs,
+        success: limitMode === "timeout" || limitSuccess,
+        reason: limitMode === "timeout" ? "timeout" : undefined,
       };
     };
   },
@@ -38,8 +58,12 @@ mock.module("better-auth/cookies", () => ({
 mock.module("next/server", () => ({
   NextResponse: {
     next: () => ({ status: 200, headers: new Headers() }),
-    json: (_body: unknown, init?: { status?: number }) => ({
+    json: (
+      _body: unknown,
+      init?: { status?: number; headers?: Record<string, string> },
+    ) => ({
       status: init?.status ?? 200,
+      headers: new Headers(init?.headers),
     }),
     redirect: (url: URL) => ({ status: 307, headers: { location: url.href } }),
   },
@@ -51,6 +75,8 @@ process.env.SKIP_ENV_VALIDATION = "true";
 // so per-test toggling cannot work: every suite below runs with the limiter
 // enabled and a succeeding bucket unless stated.
 process.env.ENABLE_RATE_LIMITING = "true";
+// Client IP headers are only trusted behind a configured proxy (see client-ip).
+process.env.TRUSTED_PROXY = "vercel";
 const originalNodeEnv = process.env.NODE_ENV;
 process.env.NODE_ENV = "production";
 
@@ -338,5 +364,139 @@ describe("proxy CSP report-only header", () => {
       }),
     );
     expect(read(res, "content-security-policy-report-only")).toBeNull();
+  });
+});
+
+describe("proxy /api/auth rate limiting (SE-4)", () => {
+  let proxy: typeof import("../../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../../proxy"));
+  });
+
+  it("limits /api/auth and then passes it through without CSP or redirects", async () => {
+    seenKeys.length = 0;
+    const res = (await proxy(
+      createNextRequest("http://localhost:3000/api/auth/get-session", "GET", {
+        "x-real-ip": "203.0.113.7",
+      }),
+    )) as { status: number; headers: Headers };
+    expect(seenKeys).toEqual(["203.0.113.7"]);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-security-policy-report-only")).toBeNull();
+  });
+
+  it("adds the strict bucket only for credential POSTs", async () => {
+    seenKeys.length = 0;
+    const headers = { "x-real-ip": "203.0.113.7" };
+    await proxy(
+      createNextRequest(
+        "http://localhost:3000/api/auth/sign-in/email",
+        "POST",
+        headers,
+      ),
+    );
+    expect(seenKeys).toHaveLength(2);
+    seenKeys.length = 0;
+    await proxy(
+      createNextRequest(
+        "http://localhost:3000/api/auth/request-password-reset",
+        "POST",
+        headers,
+      ),
+    );
+    await proxy(
+      createNextRequest(
+        "http://localhost:3000/api/auth/sign-in/email",
+        "GET",
+        headers,
+      ),
+    );
+    expect(seenKeys).toHaveLength(2);
+  });
+
+  it("returns 429 with Retry-After on /api/auth when the bucket is empty", async () => {
+    limitSuccess = false;
+    resetOffsetMs = 2500;
+    try {
+      const res = (await proxy(
+        createNextRequest(
+          "http://localhost:3000/api/auth/sign-in/email",
+          "POST",
+        ),
+      )) as { status: number; headers: Headers };
+      expect(res.status).toBe(429);
+      expect(res.headers.get("retry-after")).toBe("3");
+      resetOffsetMs = -5000;
+      const past = (await proxy(
+        createNextRequest(
+          "http://localhost:3000/api/auth/sign-in/email",
+          "POST",
+        ),
+      )) as { headers: Headers };
+      expect(past.headers.get("retry-after")).toBe("1");
+    } finally {
+      limitSuccess = true;
+      resetOffsetMs = 0;
+    }
+  });
+
+  it("builds the global and strict limiters with their own windows and prefixes", async () => {
+    await proxy(
+      createNextRequest("http://localhost:3000/api/auth/sign-in/email", "POST"),
+    );
+    const auth = constructed.find(
+      (c) => c.prefix === "@upstash/ratelimit/auth",
+    );
+    const global = constructed.find((c) => c.prefix === undefined);
+    expect(auth?.limiter).toEqual({ window: [10, "1 m"] });
+    // Env validation is skipped here, so the per-second count is unset.
+    expect(global?.limiter).toMatchObject({ window: [undefined, "1 s"] });
+    expect(constructed).toHaveLength(2);
+    expect(windows).toHaveLength(2);
+  });
+
+  it("fails open and logs when the limiter rejects", async () => {
+    const error = spyOn(console, "error").mockImplementation(() => {});
+    limitMode = "reject";
+    try {
+      const res = (await proxy(
+        createNextRequest(
+          "http://localhost:3000/api/auth/sign-in/email",
+          "POST",
+        ),
+      )) as { status: number };
+      expect(res.status).toBe(200);
+      expect(error).toHaveBeenCalledTimes(2);
+      expect(String(error.mock.calls[0]?.[0])).toContain("[proxy:ratelimit]");
+    } finally {
+      limitMode = "ok";
+      error.mockRestore();
+    }
+  });
+
+  it("logs a timed-out limiter result and lets the request through", async () => {
+    const error = spyOn(console, "error").mockImplementation(() => {});
+    limitMode = "timeout";
+    try {
+      const res = (await proxy(
+        createNextRequest("http://localhost:3000/api/auth/get-session"),
+      )) as { status: number };
+      expect(res.status).toBe(200);
+      expect(error).toHaveBeenCalledTimes(1);
+      expect(String(error.mock.calls[0]?.[0])).toContain("timed out");
+    } finally {
+      limitMode = "ok";
+      error.mockRestore();
+    }
+  });
+
+  it("matches /api/auth in the proxy matcher but not other api routes", async () => {
+    const { config } = await import("../../proxy");
+    const re = new RegExp(`^${config.matcher[0]}$`);
+    expect(re.test("/api/auth/sign-in/email")).toBe(true);
+    expect(re.test("/api/trpc/song.details")).toBe(true);
+    expect(re.test("/api/og")).toBe(false);
   });
 });
