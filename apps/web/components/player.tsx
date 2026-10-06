@@ -58,7 +58,7 @@ import { Queue } from "./queue";
 import { TileMoreButton } from "./song-list/more-button";
 
 const controlClass =
-  "rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "rounded-md outline-none transition-transform duration-150 ease-out focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96] motion-reduce:transition-none";
 
 type PlayerProps = {
   user?: User;
