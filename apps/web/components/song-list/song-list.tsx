@@ -55,11 +55,11 @@ export async function SongList(props: SongListProps) {
 
   return (
     <section className={className}>
-      <ol className="space-y-2 text-muted-foreground">
+      <ol className="flex flex-col gap-2 text-muted-foreground">
         {items.map((item, i) => (
           <li
             key={`${item.id}-${i}`}
-            className="[contain-intrinsic-size:auto_3.5rem] [content-visibility:auto]"
+            className="-m-2 p-2 [contain-intrinsic-size:auto_4.5rem] [content-visibility:auto]"
           >
             <div className="group flex h-14 w-full cursor-pointer items-center justify-between overflow-hidden rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-xs">
               <div className="hidden w-[6%] lg:flex lg:justify-center xl:w-[4%]">

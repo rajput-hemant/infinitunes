@@ -150,7 +150,9 @@ export function LibraryEmpty(props: LibraryEmptyProps) {
 
 export function LibraryUnavailable({ what }: { what: string }) {
   return (
-    <Alert className="mx-auto max-w-xl">
+    // Alert is a div component; the persistent state must not be assertive.
+    // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
+    <Alert role="status" className="mx-auto max-w-xl">
       <TriangleAlert aria-hidden />
       <AlertTitle>Couldn’t load your {what}</AlertTitle>
       <AlertDescription>

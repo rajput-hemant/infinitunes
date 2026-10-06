@@ -142,7 +142,7 @@ export function QueueList() {
           data-leaving={leaving.has(item.queueItemId) ? "" : undefined}
           inert={leaving.has(item.queueItemId)}
           aria-hidden={leaving.has(item.queueItemId) || undefined}
-          className="grid w-full [contain-intrinsic-size:auto_4rem] [content-visibility:auto] grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-200 ease-out data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
+          className="grid w-full [contain-intrinsic-size:auto_4.875rem] lg:[contain-intrinsic-size:auto_4rem] [content-visibility:auto] grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-200 ease-out data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
         >
           <div className="min-h-0 overflow-hidden pb-2">
             <div className="group relative flex min-h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">

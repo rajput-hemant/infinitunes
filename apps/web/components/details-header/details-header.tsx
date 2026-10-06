@@ -44,12 +44,20 @@ type DetailsItem =
   | Label
   | Mix;
 
-/** `Label` is the only DetailsItem variant with no raw `type`/`id` field (it has `labelId` instead). */
 /** " · N Plays", or nothing when upstream has no play count. */
 function playsSegment(count: number | string | undefined): string {
-  return Number(count) > 0 ? ` · ${formatCount(count)} Plays` : "";
+  return countSegment(count, "Plays");
 }
 
+/** " · N Fans" / " · N Listeners", or nothing when the count is missing or zero. */
+function countSegment(
+  count: number | string | undefined,
+  label: string,
+): string {
+  return Number(count) > 0 ? ` · ${formatCount(count)} ${label}` : "";
+}
+
+/** `Label` is the only DetailsItem variant with no raw `type`/`id` field (it has `labelId` instead). */
 function isLabel(item: DetailsItem): item is Label {
   return "labelId" in item;
 }
@@ -285,16 +293,15 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
           {kind === "season" && (
             <p>
-              Podcast{" · "}
-              {formatCount((item as ShowDetails).more_info.fan_count)} Fans
+              Podcast
+              {countSegment((item as ShowDetails).more_info.fan_count, "Fans")}
             </p>
           )}
 
           {kind === "artist" && (
             <p>
               Artist
-              {" · "}
-              {formatCount((item as Artist).fan_count)} Listeners
+              {countSegment((item as Artist).fan_count, "Listeners")}
             </p>
           )}
 
