@@ -172,6 +172,7 @@ export function QueueList() {
                         item.url,
                         item.type === "song" ? "song" : "episode",
                       )}
+                      title={item.name}
                       className="flex min-h-11 items-center text-primary group-hover:text-primary after:absolute after:inset-0 lg:min-h-0 lg:text-muted-foreground"
                     >
                       {item.name}
