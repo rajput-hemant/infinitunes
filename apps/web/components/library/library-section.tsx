@@ -1,4 +1,16 @@
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@infinitunes/ui/components/alert";
 import { buttonVariants } from "@infinitunes/ui/components/button";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+} from "@infinitunes/ui/components/empty";
 import type { LucideIcon } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import type { Route } from "next";
@@ -87,26 +99,31 @@ export function LibraryState(props: LibraryStateProps) {
   } = props;
 
   return (
-    <div
+    <Empty
       className={cn(
-        "flex min-h-64 animate-in flex-col items-center justify-center gap-3 rounded-lg border border-dashed duration-200 ease-out fade-in slide-in-from-bottom-1 px-4 py-10 text-center lg:min-h-96",
+        "min-h-64 flex-none animate-in gap-3 rounded-lg border px-4 py-10 duration-200 ease-out fade-in slide-in-from-bottom-1 lg:min-h-96",
         className,
       )}
     >
-      <span className="grid size-14 place-items-center rounded-full bg-muted text-muted-foreground">
-        <Icon aria-hidden className="size-7" />
-      </span>
+      <EmptyHeader className="items-center gap-3">
+        <EmptyMedia
+          variant="icon"
+          className="mb-0 size-14 rounded-full text-muted-foreground [&_svg:not([class*='size-'])]:size-7"
+        >
+          <Icon aria-hidden />
+        </EmptyMedia>
 
-      <Title className="font-heading text-xl text-balance sm:text-2xl">
-        {title}
-      </Title>
+        <Title className="font-heading text-xl text-balance sm:text-2xl">
+          {title}
+        </Title>
 
-      <p className="max-w-md text-pretty text-sm text-muted-foreground">
-        {description}
-      </p>
+        <EmptyDescription className="max-w-md text-pretty">
+          {description}
+        </EmptyDescription>
+      </EmptyHeader>
 
-      {children}
-    </div>
+      {children && <EmptyContent>{children}</EmptyContent>}
+    </Empty>
   );
 }
 
@@ -133,14 +150,16 @@ export function LibraryEmpty(props: LibraryEmptyProps) {
 
 export function LibraryUnavailable({ what }: { what: string }) {
   return (
-    <div role="alert">
-      <LibraryState
-        icon={TriangleAlert}
-        title={`Couldn’t load your ${what}`}
-        description="Your saved items are safe. We couldn’t load them from the music service. Try again in a moment."
-      >
+    <Alert className="mx-auto max-w-xl">
+      <TriangleAlert aria-hidden />
+      <AlertTitle>Couldn’t load your {what}</AlertTitle>
+      <AlertDescription>
+        Your saved items are safe. We couldn’t load them from the music service.
+        Try again in a moment.
+      </AlertDescription>
+      <div className="col-start-2 mt-2">
         <RetryButton />
-      </LibraryState>
-    </div>
+      </div>
+    </Alert>
   );
 }
