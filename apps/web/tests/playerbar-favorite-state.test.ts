@@ -5,7 +5,6 @@ const PLAYER_WRAPPER = new URL(
   "../components/player-wrapper.tsx",
   import.meta.url,
 );
-const PLAYER = new URL("../components/player.tsx", import.meta.url);
 
 describe("playerbar favorite-state and Add-label plumbing regression", () => {
   it("root layout fetches getUserFavorites and passes favorites to PlayerWrapper", async () => {
@@ -23,33 +22,13 @@ describe("playerbar favorite-state and Add-label plumbing regression", () => {
     expect(source).toContain("favorites={favorites}");
   });
 
-  it("player accepts favorites in PlayerProps and PlayerInner, and passes favorites to TileMoreButton", async () => {
-    const source = await Bun.file(PLAYER).text();
-
-    expect(source).toContain("favorites?: Favorite;");
-    expect(source).toContain(
-      "function PlayerInner({ user, playlists, favorites }: PlayerProps)",
-    );
-    expect(source).toContain("<TileMoreButton");
-    expect(source).toContain("favorites={favorites}");
-  });
-  // The more-button's favorite state is covered by a rendered test:
+  // The player-to-TileMoreButton favorites forwarding is covered by a rendered
+  // test: apps/web/tests/dom/player-renders.test.tsx ("player favorite
+  // plumbing"). The more-button's own favorite state is covered by
   // apps/web/tests/dom/favorite-state.test.tsx
 });
 
 describe("player a11y labels", () => {
-  it("labels sliders via aria-labelledby (base-ui thumb ignores root aria-label)", async () => {
-    const source = await Bun.file(PLAYER).text();
-
-    expect(source).not.toContain('aria-label="Seek"');
-    expect(source).not.toContain('aria-label="Volume"');
-    expect(source).toContain("aria-labelledby={seekLabelId}");
-    expect(source).toContain("aria-labelledby={volumeLabelId}");
-  });
-
-  it("empty-state More button has an accessible name", async () => {
-    const source = await Bun.file(PLAYER).text();
-
-    expect(source).toContain('aria-label="More"');
-  });
+  // Slider labelling and the empty-state More name are covered by rendered
+  // tests: apps/web/tests/dom/player-renders.test.tsx ("player a11y").
 });
