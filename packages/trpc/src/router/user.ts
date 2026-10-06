@@ -6,6 +6,10 @@ import {
   myPlaylists,
   users,
 } from "@infinitunes/db/schema";
+import {
+  PLAYLIST_DESCRIPTION_MAX,
+  PLAYLIST_NAME_MAX,
+} from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { compare, hash } from "bcryptjs";
 import { and, count, eq, ne, sql } from "drizzle-orm";
@@ -72,10 +76,14 @@ const newPlaylistInput = z.object({
   name: z
     .string()
     .min(3, { message: "Name must be at least 3 characters long" })
-    .max(100, { message: "Name must be at most 100 characters long" }),
+    .max(PLAYLIST_NAME_MAX, {
+      message: `Name must be at most ${PLAYLIST_NAME_MAX} characters long`,
+    }),
   description: z
     .string()
-    .max(255, { message: "Description must be at most 255 characters long" })
+    .max(PLAYLIST_DESCRIPTION_MAX, {
+      message: `Description must be at most ${PLAYLIST_DESCRIPTION_MAX} characters long`,
+    })
     .optional(),
 });
 
