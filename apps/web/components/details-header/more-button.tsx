@@ -103,7 +103,9 @@ export function MoreButton(props: MoreButtonProps) {
 
     setQueue((prev) => [...prev, ...songsPayload]);
 
-    toast(`Added ${songs.length} song${songs.length > 1 ? "s" : ""} to queue`);
+    toast(
+      `Added ${songs.length} song${songs.length === 1 ? "" : "s"} to queue`,
+    );
   }
 
   function togglePlaylistDialog() {
@@ -128,7 +130,7 @@ export function MoreButton(props: MoreButtonProps) {
       ),
       {
         loading: "Adding songs to playlist...",
-        success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${playlistName}" playlist`,
+        success: `${songs.length} song${songs.length === 1 ? "" : "s"} added to "${playlistName}" playlist`,
         error: userMessage,
         finally: () => setDialogOpen(false),
       },

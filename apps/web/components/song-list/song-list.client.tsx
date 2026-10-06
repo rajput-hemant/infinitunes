@@ -1,6 +1,11 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
-import { formatDuration, getImageSrc, parseToken } from "@infinitunes/types";
+import {
+  formatDuration,
+  formatReleaseDate,
+  getImageSrc,
+  parseToken,
+} from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Image from "next/image";
@@ -87,7 +92,7 @@ export function SongListClient(props: SongListProps) {
 
                 <figcaption
                   className={cn(
-                    "flex w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
+                    "flex min-w-0 w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
                     showAlbum && "xl:w-2/3",
                   )}
                 >
@@ -97,6 +102,7 @@ export function SongListClient(props: SongListProps) {
                         item.perma_url,
                         item.type === "song" ? "song" : "episode",
                       )}
+                      title={item.title}
                       className="text-primary group-hover:text-primary lg:text-muted-foreground"
                     >
                       {item.title}
@@ -132,13 +138,7 @@ export function SongListClient(props: SongListProps) {
 
                 {item.type === "episode" && (
                   <p className="hidden w-full pr-8 text-end lg:block">
-                    {new Date(
-                      String(item.more_info.release_date),
-                    ).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {formatReleaseDate(item.more_info.release_date)}
                   </p>
                 )}
               </figure>

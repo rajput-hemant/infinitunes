@@ -9,7 +9,12 @@ import type {
   ShowDetails,
   Song,
 } from "@infinitunes/types";
-import { decode, formatDuration, getImageSrc } from "@infinitunes/types";
+import {
+  decode,
+  formatCount,
+  formatDuration,
+  getImageSrc,
+} from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -194,10 +199,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               <p className="capitalize">
                 {kind}
                 {" · "}
-                {Number(
-                  (item as Song | Episode).play_count,
-                ).toLocaleString()}{" "}
-                Plays
+                {formatCount((item as Song | Episode).play_count)} Plays
                 {" · "}
                 {formatDuration(
                   (item as Song | Episode).more_info.duration,
@@ -227,7 +229,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                 {" · "}
                 {(item as Album).more_info.song_count ?? 0} Songs
                 {" · "}
-                {Number((item as Album).play_count || 0).toLocaleString()} Plays
+                {formatCount((item as Album).play_count)} Plays
                 {" · "}
                 {formatDuration(albumDuration, "mm:ss")}
               </p>
@@ -251,10 +253,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                 <p className="capitalize">
                   {kind}
                   {" · "}
-                  {Number(
-                    (item as Album).play_count || 0,
-                  ).toLocaleString()}{" "}
-                  Plays
+                  {formatCount((item as Album).play_count)} Plays
                 </p>
               </div>
             </>
@@ -282,10 +281,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           {kind === "season" && (
             <p>
               Podcast{" · "}
-              {Number(
-                (item as ShowDetails).more_info.fan_count || 0,
-              ).toLocaleString()}{" "}
-              Fans
+              {formatCount((item as ShowDetails).more_info.fan_count)} Fans
             </p>
           )}
 
@@ -293,8 +289,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
             <p>
               Artist
               {" · "}
-              {Number((item as Artist).fan_count || 0).toLocaleString()}{" "}
-              Listeners
+              {formatCount((item as Artist).fan_count)} Listeners
             </p>
           )}
 

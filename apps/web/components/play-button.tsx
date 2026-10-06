@@ -130,7 +130,7 @@ export function PlayButton(props: PlayButtonProps) {
       setQueue(queueItems);
 
       toast.success(
-        `${queueItems.length} item${queueItems.length > 1 ? "s" : ""} has been added to the queue`,
+        `${queueItems.length} item${queueItems.length === 1 ? "" : "s"} has been added to the queue`,
         {
           description: `Playing "${first.name}"`,
           position: "bottom-center",

@@ -51,13 +51,17 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
                   className="h-14 justify-normal gap-2 px-1 text-start"
                 >
                   {/* TODO: add image collage */}
-                  <div className="size-12 rounded-md bg-muted">
+                  <div className="size-12 shrink-0 rounded-md bg-muted">
                     <List aria-hidden className="m-auto h-full" />
                   </div>
                   <div className="flex flex-col truncate">
-                    <p className="truncate font-medium">{name}</p>
+                    <p className="truncate font-medium" title={name}>
+                      {name}
+                    </p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {songs.length ? songs.length : "No"} songs
+                      {songs.length === 0
+                        ? "No songs"
+                        : `${songs.length} ${songs.length === 1 ? "song" : "songs"}`}
                     </p>
                   </div>
                 </Button>

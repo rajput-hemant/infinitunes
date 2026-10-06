@@ -170,6 +170,29 @@ export function removeFromQueue(
   };
 }
 
+const countFormatter = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+export function formatCount(n: number | string | undefined | null): string {
+  const parsed = Number(n);
+  if (!Number.isFinite(parsed) || parsed < 0) return "0";
+  return countFormatter.format(parsed);
+}
+
+/** Formats a release date string, returning an empty string for missing or invalid input. */
+export function formatReleaseDate(dateStr: string | undefined | null): string {
+  if (!dateStr) return "";
+  const d = new Date(String(dateStr));
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 const IMAGE_SIZE: Record<ImageQuality, number> = {
   low: 50,
   medium: 150,
