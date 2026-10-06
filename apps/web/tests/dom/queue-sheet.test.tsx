@@ -78,6 +78,10 @@ describe("queue sheet", () => {
 
     await act(async () => {
       remove?.click();
+    });
+    await act(async () => {
+      // Removal commits once the 200ms exit transition has finished.
+      await new Promise((resolve) => setTimeout(resolve, 250));
       await new Promise((resolve) => requestAnimationFrame(resolve));
     });
 
@@ -110,6 +114,9 @@ describe("queue sheet", () => {
           '[aria-label="Remove Song b from queue"]',
         )
         ?.click();
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 250));
       await new Promise((resolve) => requestAnimationFrame(resolve));
     });
 
