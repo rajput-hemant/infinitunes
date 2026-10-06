@@ -18,6 +18,7 @@ import { resetPasswordEmail } from "./emails";
 import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
+import { originOf, parseUrl } from "./url";
 
 /** Reset links are single use and expire after an hour (Better Auth default, pinned). */
 export const RESET_TOKEN_TTL_SECONDS = 60 * 60;
@@ -32,14 +33,6 @@ export const RESET_RATE_LIMITS = {
   "/request-password-reset": { window: 60, max: 3 },
   "/reset-password": { window: 60, max: 5 },
 } as const;
-
-function parseUrl(url: string | undefined): URL | undefined {
-  try {
-    return url ? new URL(url) : undefined;
-  } catch {
-    return undefined;
-  }
-}
 
 export function createAuth(
   db: DbClient,
@@ -68,8 +61,8 @@ export function createAuth(
   const trustedOrigins = [
     ...new Set(
       [baseURL, vercelContext.vercelUrl, vercelContext.vercelProductionUrl]
-        .map((url) => parseUrl(url && resolveAuthUrl(url, {}))?.origin)
-        .filter((origin): origin is string => origin !== undefined),
+        .map((url) => originOf(url && resolveAuthUrl(url, {})))
+        .filter((origin): origin is string => origin !== null),
     ),
   ];
   const rpID =

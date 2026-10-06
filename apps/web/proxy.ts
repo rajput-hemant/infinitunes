@@ -1,3 +1,4 @@
+import { originOf } from "@infinitunes/auth/url";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { getSessionCookie } from "better-auth/cookies";
@@ -103,15 +104,6 @@ export async function proxy(req: NextRequest) {
 }
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
-
-function originOf(value: string | null): string | null {
-  if (!value) return null;
-  try {
-    return new URL(value).origin;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * CSRF guard for /api/trpc. State-changing methods must send a matching
