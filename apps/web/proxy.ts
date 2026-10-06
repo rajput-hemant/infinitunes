@@ -71,8 +71,22 @@ export async function proxy(req: NextRequest) {
         ? ["global", "auth"]
         : ["global"];
     for (const kind of kinds) {
-      const { limit, pending, remaining, reset, success } =
-        await getRatelimit(kind).limit(id);
+      let result: Awaited<ReturnType<Ratelimit["limit"]>>;
+      try {
+        result = await getRatelimit(kind).limit(id);
+      } catch (error) {
+        // Fail open: a Redis outage must not take sign-in or pages down.
+        console.error(
+          `[proxy:ratelimit] ${kind} limiter failed; allowing`,
+          error,
+        );
+        continue;
+      }
+      const { limit, pending, remaining, reset, success } = result;
+
+      if (result.reason === "timeout") {
+        console.error(`[proxy:ratelimit] ${kind} limiter timed out; allowing`);
+      }
 
       if (!success) {
         return NextResponse.json(
@@ -91,6 +105,10 @@ export async function proxy(req: NextRequest) {
             headers: {
               "x-ratelimit-limit": limit.toString(),
               "x-ratelimit-remaining": remaining.toString(),
+              "retry-after": Math.max(
+                1,
+                Math.ceil((reset - Date.now()) / 1000),
+              ).toString(),
             },
           },
         );

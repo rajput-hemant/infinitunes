@@ -1,4 +1,12 @@
-import { afterAll, beforeAll, describe, expect, it, mock } from "bun:test";
+import {
+  afterAll,
+  beforeAll,
+  describe,
+  expect,
+  it,
+  mock,
+  spyOn,
+} from "bun:test";
 
 import * as betterAuthCookies from "better-auth/cookies";
 import type { NextRequest } from "next/server";
@@ -9,6 +17,10 @@ const getSessionCookie = mock(() => undefined as string | undefined);
 
 const seenKeys: string[] = [];
 let limitSuccess = true;
+let limitMode: "ok" | "reject" | "timeout" = "ok";
+let resetOffsetMs = 0;
+const windows: unknown[][] = [];
+const constructed: { prefix?: string; limiter: unknown }[] = [];
 
 mock.module("@upstash/redis", () => ({
   Redis: { fromEnv },
@@ -16,15 +28,23 @@ mock.module("@upstash/redis", () => ({
 
 mock.module("@upstash/ratelimit", () => ({
   Ratelimit: class {
-    static slidingWindow = () => ({});
+    static slidingWindow = (...args: unknown[]) => {
+      windows.push(args);
+      return { window: args };
+    };
+    constructor(opts: { prefix?: string; limiter: unknown }) {
+      constructed.push(opts);
+    }
     limit = async (id: string) => {
       seenKeys.push(id);
+      if (limitMode === "reject") throw new Error("redis down");
       return {
         limit: 50,
         pending: Promise.resolve(),
         remaining: limitSuccess ? 49 : 0,
-        reset: Date.now(),
-        success: limitSuccess,
+        reset: Date.now() + resetOffsetMs,
+        success: limitMode === "timeout" || limitSuccess,
+        reason: limitMode === "timeout" ? "timeout" : undefined,
       };
     };
   },
@@ -38,8 +58,12 @@ mock.module("better-auth/cookies", () => ({
 mock.module("next/server", () => ({
   NextResponse: {
     next: () => ({ status: 200, headers: new Headers() }),
-    json: (_body: unknown, init?: { status?: number }) => ({
+    json: (
+      _body: unknown,
+      init?: { status?: number; headers?: Record<string, string> },
+    ) => ({
       status: init?.status ?? 200,
+      headers: new Headers(init?.headers),
     }),
     redirect: (url: URL) => ({ status: 307, headers: { location: url.href } }),
   },
@@ -392,8 +416,50 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
     expect(seenKeys).toHaveLength(2);
   });
 
-  it("returns 429 on /api/auth when the bucket is empty", async () => {
+  it("returns 429 with Retry-After on /api/auth when the bucket is empty", async () => {
     limitSuccess = false;
+    resetOffsetMs = 2500;
+    try {
+      const res = (await proxy(
+        createNextRequest(
+          "http://localhost:3000/api/auth/sign-in/email",
+          "POST",
+        ),
+      )) as { status: number; headers: Headers };
+      expect(res.status).toBe(429);
+      expect(res.headers.get("retry-after")).toBe("3");
+      resetOffsetMs = -5000;
+      const past = (await proxy(
+        createNextRequest(
+          "http://localhost:3000/api/auth/sign-in/email",
+          "POST",
+        ),
+      )) as { headers: Headers };
+      expect(past.headers.get("retry-after")).toBe("1");
+    } finally {
+      limitSuccess = true;
+      resetOffsetMs = 0;
+    }
+  });
+
+  it("builds the global and strict limiters with their own windows and prefixes", async () => {
+    await proxy(
+      createNextRequest("http://localhost:3000/api/auth/sign-in/email", "POST"),
+    );
+    const auth = constructed.find(
+      (c) => c.prefix === "@upstash/ratelimit/auth",
+    );
+    const global = constructed.find((c) => c.prefix === undefined);
+    expect(auth?.limiter).toEqual({ window: [10, "1 m"] });
+    // Env validation is skipped here, so the per-second count is unset.
+    expect(global?.limiter).toMatchObject({ window: [undefined, "1 s"] });
+    expect(constructed).toHaveLength(2);
+    expect(windows).toHaveLength(2);
+  });
+
+  it("fails open and logs when the limiter rejects", async () => {
+    const error = spyOn(console, "error").mockImplementation(() => {});
+    limitMode = "reject";
     try {
       const res = (await proxy(
         createNextRequest(
@@ -401,9 +467,28 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
           "POST",
         ),
       )) as { status: number };
-      expect(res.status).toBe(429);
+      expect(res.status).toBe(200);
+      expect(error).toHaveBeenCalledTimes(2);
+      expect(String(error.mock.calls[0]?.[0])).toContain("[proxy:ratelimit]");
     } finally {
-      limitSuccess = true;
+      limitMode = "ok";
+      error.mockRestore();
+    }
+  });
+
+  it("logs a timed-out limiter result and lets the request through", async () => {
+    const error = spyOn(console, "error").mockImplementation(() => {});
+    limitMode = "timeout";
+    try {
+      const res = (await proxy(
+        createNextRequest("http://localhost:3000/api/auth/get-session"),
+      )) as { status: number };
+      expect(res.status).toBe(200);
+      expect(error).toHaveBeenCalledTimes(1);
+      expect(String(error.mock.calls[0]?.[0])).toContain("timed out");
+    } finally {
+      limitMode = "ok";
+      error.mockRestore();
     }
   });
 
