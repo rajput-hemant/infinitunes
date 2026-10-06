@@ -33,7 +33,7 @@ export async function SiteFooter() {
               </span>
             </Link>
 
-            <div className="flex justify-center text-muted-foreground md:mt-4">
+            <div className="flex justify-center text-muted-foreground md:mt-4 gap-4">
               <a
                 aria-label="GitHub Repository"
                 href={siteConfig.links.github}
@@ -51,15 +51,6 @@ export async function SiteFooter() {
                 className="flex min-h-11 min-w-11 items-center justify-center p-3 duration-200 hover:text-foreground"
               >
                 <Icons.X className="size-4" />
-              </a>
-              <a
-                aria-label="Discord Server"
-                href={siteConfig.links.discord}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex min-h-11 min-w-11 items-center justify-center p-3 duration-200 hover:text-foreground"
-              >
-                <Icons.Discord className="size-[18px]" />
               </a>
             </div>
           </div>
