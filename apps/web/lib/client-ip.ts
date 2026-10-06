@@ -36,3 +36,21 @@ export function getClientKey(headers: Headers, mode: TrustedProxy): string {
   const real = headers.get("x-real-ip")?.trim();
   return real || forwarded?.at(0) || UNTRUSTED_CLIENT_KEY;
 }
+
+/**
+ * Header Better Auth reads the client IP from. The auth route overwrites it
+ * with `getClientKey`, so a forged copy never reaches Better Auth's limiter.
+ * A non-IP key (`untrusted`) is rejected by Better Auth, which then falls back
+ * to one shared per-path bucket.
+ */
+export const TRUSTED_CLIENT_IP_HEADER = "x-infinitunes-client-ip";
+
+/** Copy of `request` with the trusted client IP header overwritten. */
+export function withTrustedClientIp(
+  request: Request,
+  mode: TrustedProxy,
+): Request {
+  const headers = new Headers(request.headers);
+  headers.set(TRUSTED_CLIENT_IP_HEADER, getClientKey(request.headers, mode));
+  return new Request(request, { headers });
+}

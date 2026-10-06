@@ -46,6 +46,12 @@ export function createAuth(
      * reveal whether the address has an account.
      */
     runInBackground?: (promise: Promise<unknown>) => void;
+    /**
+     * Headers Better Auth reads the client IP from (its rate limiter keys on
+     * it). Defaults to `x-forwarded-for`, which a client can forge unless a
+     * trusted proxy rewrites it, so callers should name a header they control.
+     */
+    ipAddressHeaders?: string[];
   } = {},
 ) {
   const env = authEnv({ skipValidation: true });
@@ -223,6 +229,9 @@ export function createAuth(
     },
 
     advanced: {
+      ...(options.ipAddressHeaders
+        ? { ipAddress: { ipAddressHeaders: options.ipAddressHeaders } }
+        : {}),
       ...(options.runInBackground
         ? { backgroundTasks: { handler: options.runInBackground } }
         : {}),

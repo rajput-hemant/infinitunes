@@ -52,6 +52,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   deprecated in Next 16). Its font must be loaded with `readFile` from
   `node:fs/promises`, not `fetch()` - undici rejects the `file:` URL that
   `new URL(..., import.meta.url)` resolves to under Node.
+- Better Auth's own limiter must not read `x-forwarded-for`. `createAuth` takes
+  `ipAddressHeaders`; the web app passes only `x-infinitunes-client-ip`, which
+  `app/api/auth/[...all]/route.ts` overwrites via `withTrustedClientIp` (same
+  `TRUSTED_PROXY` logic as `proxy.ts`). A non-IP key (`untrusted`) makes Better
+  Auth use one shared per-path bucket.
 - `getUser()` in `apps/web/lib/auth.ts` swallows only Better Auth's
   no-secret-configured `BetterAuthError` (and only outside a validated
   production env), so a checkout with no `AUTH_SECRET` renders logged-out
