@@ -72,7 +72,7 @@ describe("buildCsp", () => {
   it("adds Umami hosts only when configured", () => {
     const withUmami = buildCsp({ nonce: "n", umami: true });
     expect(directive(withUmami, "script-src")).toContain("https://us.umami.is");
-    expect(withUmami).toContain("https://api-gateway.umami.dev");
+    expect(withUmami).toContain("https://gateway.umami.is");
     expect(csp).not.toContain("umami");
   });
 });

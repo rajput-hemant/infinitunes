@@ -14,7 +14,7 @@ export const cspHeaderName = (enforce: boolean = CSP_ENFORCE) =>
   enforce ? CSP_ENFORCING_HEADER : CSP_REPORT_ONLY_HEADER;
 
 const UMAMI_SCRIPT_HOST = "https://us.umami.is";
-const UMAMI_API_HOST = "https://api-gateway.umami.dev";
+const UMAMI_API_HOST = "https://gateway.umami.is";
 
 const https = (hosts: readonly string[]) => hosts.map((h) => `https://${h}`);
 
