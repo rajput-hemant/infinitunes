@@ -336,7 +336,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               }
               className={cn(
                 buttonVariants(),
-                "rounded-full px-10 text-xl font-bold shadow-xs",
+                "h-11 rounded-full px-10 text-xl font-bold shadow-xs lg:h-8",
               )}
             >
               Play
@@ -350,7 +350,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               favourites={favorites}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
-                "rounded-full shadow-xs",
+                "size-11 rounded-full shadow-xs lg:size-8",
               )}
             />
 
@@ -358,7 +358,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               songs={songs ?? []}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
-                "rounded-full shadow-xs",
+                "size-11 rounded-full shadow-xs lg:size-8",
               )}
             />
 
