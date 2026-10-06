@@ -75,7 +75,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             size="sm"
             variant="outline"
             className={cn(
-              "flex size-10 p-0 shadow-xs lg:w-60 lg:justify-start lg:px-3 lg:py-2",
+              "flex size-11 p-0 shadow-xs lg:h-10 lg:w-60 lg:justify-start lg:px-3 lg:py-2",
               className,
             )}
           >
