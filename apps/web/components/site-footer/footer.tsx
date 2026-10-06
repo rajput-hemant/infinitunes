@@ -28,7 +28,7 @@ export async function SiteFooter() {
           <div className="col-span-full flex justify-between md:flex-col md:justify-normal">
             <Link href="/" className="flex min-h-11 min-w-11 items-start">
               <Icons.Logo className="mr-1 h-5" />
-              <span className="font-heading tracking-wide drop-shadow-md">
+              <span className="font-heading tracking-wide dark:drop-shadow-md">
                 {siteConfig.name}
               </span>
             </Link>
@@ -112,7 +112,7 @@ export async function SiteFooter() {
             href="/"
             className="flex min-h-11 min-w-11 items-center justify-center"
           >
-            <span className="font-heading text-base tracking-wide text-primary underline drop-shadow-md">
+            <span className="font-heading text-base tracking-wide text-primary underline dark:drop-shadow-md">
               {siteConfig.name}
             </span>
           </Link>

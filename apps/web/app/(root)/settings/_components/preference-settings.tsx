@@ -63,7 +63,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
   return (
     <div className="space-y-8 px-6">
       <section id="language" className="space-y-4">
-        <h2 className="font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
+        <h2 className="font-heading text-lg dark:drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Languages
         </h2>
 
@@ -90,7 +90,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
       </section>
 
       <section className="space-y-2">
-        <h2 className="pb-4 font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
+        <h2 className="pb-4 font-heading text-lg dark:drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Quality Settings
         </h2>
 
@@ -257,7 +257,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
       </section>
 
       <section id="keyboard-shortcuts" className="space-y-2">
-        <h2 className="pb-4 font-heading text-lg drop-shadow-md text-foreground sm:text-xl md:text-2xl">
+        <h2 className="pb-4 font-heading text-lg dark:drop-shadow-md text-foreground sm:text-xl md:text-2xl">
           Keyboard
         </h2>
 

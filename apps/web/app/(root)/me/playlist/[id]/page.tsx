@@ -91,7 +91,7 @@ export default async function MyPlaylistsPage(props: Props) {
           <div className="flex w-full max-w-full items-center justify-center gap-2 lg:justify-start">
             <h1
               title={name}
-              className="flex min-w-0 items-center truncate text-center font-heading text-xl capitalize drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:text-start"
+              className="flex min-w-0 items-center truncate text-center font-heading text-xl capitalize dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:text-start"
             >
               {name}
             </h1>
@@ -152,7 +152,7 @@ export default async function MyPlaylistsPage(props: Props) {
             playlistSongIndices={playlistSongIndices}
           />
 
-          <h3 className="py-6 text-center font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+          <h3 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
             <em>Yay! You have seen it all</em>{" "}
             <span className="text-foreground">🤩</span>
           </h3>

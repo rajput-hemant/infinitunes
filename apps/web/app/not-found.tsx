@@ -40,7 +40,7 @@ const NotFound = () => {
         className="h-auto w-full max-w-xl drop-shadow-sm"
       />
 
-      <h1 className="font-heading text-2xl drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+      <h1 className="font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
         This page seems to be{" "}
         <span className="text-destructive underline underline-offset-4 selection:text-destructive">
           missing

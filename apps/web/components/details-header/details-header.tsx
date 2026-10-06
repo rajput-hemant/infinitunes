@@ -161,7 +161,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
       <figcaption className="flex min-w-0 w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
         <h1
           title={title}
-          className="flex min-w-0 items-center justify-center font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:justify-start lg:text-start"
+          className="flex min-w-0 items-center justify-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:justify-start lg:text-start"
         >
           {getExplicit(item) && (
             <Badge className="mr-2 shrink-0 rounded px-1 py-0 font-bold">

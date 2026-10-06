@@ -52,7 +52,7 @@ export function LibraryHeading(props: LibraryHeadingProps) {
       )}
     >
       <div className="min-w-0">
-        <Heading className="font-heading text-xl text-balance drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+        <Heading className="font-heading text-xl text-balance dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
           {title}
         </Heading>
 

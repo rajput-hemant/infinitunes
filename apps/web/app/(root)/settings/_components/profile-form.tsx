@@ -281,7 +281,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         </form>
 
         <div id="delete-account" className="space-y-4">
-          <h2 className="font-heading text-lg text-destructive drop-shadow-md sm:text-xl md:text-2xl">
+          <h2 className="font-heading text-lg text-destructive dark:drop-shadow-md sm:text-xl md:text-2xl">
             Danger Zone
           </h2>
           <Separator />

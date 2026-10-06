@@ -231,7 +231,7 @@ export function Queue() {
       >
         <SheetHeader className="space-y-0 px-4">
           <SheetTitle className="flex items-center justify-between pr-4">
-            <span className="font-heading text-2xl capitalize tracking-wide drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+            <span className="font-heading text-2xl capitalize tracking-wide dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
               Queue
             </span>
             <span>

@@ -129,7 +129,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
         className={masterSidebarDesktopOffsetClassName}
       >
         <SidebarHeader className="group-data-[collapsible=icon]:hidden">
-          <p className="pl-3 font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+          <p className="pl-3 font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
             Discover
           </p>
         </SidebarHeader>

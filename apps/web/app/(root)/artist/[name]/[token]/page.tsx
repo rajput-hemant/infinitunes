@@ -97,7 +97,7 @@ export default async function ArtistDetailsPage(props: Props) {
         <Separator className="my-4" />
 
         <TabsContent value={TABS.Overview} className="space-y-4">
-          <h2 className="pl-2 font-heading text-xl drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+          <h2 className="pl-2 font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:pl-0">
             {artist.modules?.topSongs?.title}
           </h2>
           <SongList items={topSongs.slice(0, 10)} />
