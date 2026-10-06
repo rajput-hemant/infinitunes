@@ -115,7 +115,7 @@ environment files, or existing empty directories may be deleted during migration
 
 ## Acceptance Tests
 
-Evidence is the recorded run in [migration-acceptance.md](../verification/migration-acceptance.md); open items are tracked in [TODO.md](../TODO.md).
+Evidence is the recorded run in [migration-acceptance.md](../archive/migration-acceptance.md); open items are tracked in [TODO.md](../TODO.md).
 
 - [x] `bun install --frozen-lockfile` succeeds from a fresh checkout (acceptance §2).
 - [x] Root dev, build, lint, type-check, test, fmt:check, and DB forwarding commands resolve to the correct workspace (acceptance §3).

@@ -41,23 +41,31 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
         <Separator />
 
         <div className="min-h-64">
-          {playlists?.length !== 0 ? (
+          {playlists === undefined ? (
+            // Unknown, not empty: the library read failed.
+            <output className="flex min-h-64 items-center justify-center text-sm text-muted-foreground">
+              Couldn&apos;t load your playlists. You can still create a new one.
+            </output>
+          ) : playlists.length !== 0 ? (
             <div className="grid gap-2 sm:grid-cols-2">
-              {playlists?.map(({ id, name, songs }) => (
+              {playlists.map(({ id, name, songs }) => (
                 <Button
                   key={id}
                   variant="outline"
                   onClick={() => addToPlaylist(id, name)}
                   className="h-14 justify-normal gap-2 px-1 text-start"
                 >
-                  {/* TODO: add image collage */}
-                  <div className="size-12 rounded-md bg-muted">
+                  <div className="size-12 shrink-0 rounded-md bg-muted">
                     <List aria-hidden className="m-auto h-full" />
                   </div>
                   <div className="flex flex-col truncate">
-                    <p className="truncate font-medium">{name}</p>
+                    <p className="truncate font-medium" title={name}>
+                      {name}
+                    </p>
                     <p className="truncate text-xs text-muted-foreground">
-                      {songs.length ? songs.length : "No"} songs
+                      {songs.length === 0
+                        ? "No songs"
+                        : `${songs.length} ${songs.length === 1 ? "song" : "songs"}`}
                     </p>
                   </div>
                 </Button>

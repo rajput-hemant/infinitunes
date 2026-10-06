@@ -1,5 +1,11 @@
 import * as z from "zod";
 
+export const nameSchema = z
+  .string()
+  .trim()
+  .min(1, { error: "Name is Required" })
+  .max(100, { error: "Name must be at most 100 characters long" });
+
 export const newPlaylistSchema = z.object({
   name: z
     .string()

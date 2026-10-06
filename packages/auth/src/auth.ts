@@ -2,6 +2,7 @@ import { passkey } from "@better-auth/passkey";
 import type { DbClient } from "@infinitunes/db/client";
 import {
   betterAuthAccounts,
+  betterAuthRateLimits,
   betterAuthSessions,
   betterAuthVerifications,
   infinitunesPasskeys,
@@ -23,8 +24,9 @@ export const RESET_TOKEN_TTL_SECONDS = 60 * 60;
 
 /**
  * Per-IP throttles on the reset endpoints (Better Auth's built-in limiter,
- * production only, in-memory so per server instance: a speed bump, not a hard
- * global cap). The request endpoint is what sends mail, so it is the tight one.
+ * production only). Counters live in `infinitunes_rate_limit` (SE-17), so the
+ * cap holds across serverless instances. The request endpoint is what sends
+ * mail, so it is the tight one.
  */
 export const RESET_RATE_LIMITS = {
   "/request-password-reset": { window: 60, max: 3 },
@@ -109,6 +111,7 @@ export function createAuth(
         account: betterAuthAccounts,
         session: betterAuthSessions,
         verification: betterAuthVerifications,
+        rateLimit: betterAuthRateLimits,
         // Keyed by resolved model name: the adapter addresses plugin tables
         // via getModelName(), which returns "infinitunes_passkey".
         infinitunes_passkey: infinitunesPasskeys,
@@ -222,6 +225,7 @@ export function createAuth(
 
     rateLimit: {
       enabled: env.NODE_ENV === "production",
+      storage: "database",
       customRules: { ...RESET_RATE_LIMITS },
     },
 

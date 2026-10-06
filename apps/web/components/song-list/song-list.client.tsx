@@ -1,6 +1,12 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
-import { formatDuration, getImageSrc, parseToken } from "@infinitunes/types";
+import {
+  decode,
+  formatDuration,
+  formatReleaseDate,
+  getImageSrc,
+  parseToken,
+} from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Image from "next/image";
@@ -19,7 +25,7 @@ type SongListProps = {
   user?: User;
   items: (Song | Episode)[];
   showAlbum?: boolean;
-  userFavorites?: Favorite;
+  userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
   className?: string;
 };
@@ -54,11 +60,11 @@ export function SongListClient(props: SongListProps) {
                   <PlayButton
                     type={item.type}
                     token={parseToken(item.perma_url)}
-                    className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground duration-300 hover:h-9 hover:border-primary hover:text-primary group-hover:flex"
+                    className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground transition-[transform,color,border-color] duration-150 ease-out hover:scale-110 hover:border-primary hover:text-primary group-hover:flex"
                   >
                     <Play
                       strokeWidth={9}
-                      className="h-full w-5 p-1 duration-300 group-hover/play:w-6"
+                      className="h-full w-5 p-1 transition-transform duration-150 ease-out group-hover/play:scale-110"
                     />
                   </PlayButton>
                 )}
@@ -87,7 +93,7 @@ export function SongListClient(props: SongListProps) {
 
                 <figcaption
                   className={cn(
-                    "flex w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
+                    "flex min-w-0 w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
                     showAlbum && "xl:w-2/3",
                   )}
                 >
@@ -97,9 +103,10 @@ export function SongListClient(props: SongListProps) {
                         item.perma_url,
                         item.type === "song" ? "song" : "episode",
                       )}
+                      title={decode(item.title)}
                       className="text-primary group-hover:text-primary lg:text-muted-foreground"
                     >
-                      {item.title}
+                      {decode(item.title)}
                     </Link>
                   </h3>
 
@@ -132,13 +139,7 @@ export function SongListClient(props: SongListProps) {
 
                 {item.type === "episode" && (
                   <p className="hidden w-full pr-8 text-end lg:block">
-                    {new Date(
-                      String(item.more_info.release_date),
-                    ).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {formatReleaseDate(item.more_info.release_date)}
                   </p>
                 )}
               </figure>

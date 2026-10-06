@@ -1,3 +1,5 @@
+// Intentional: exposes this module as the `Icons` namespace that every `Icons.X` caller uses.
+// oxlint-disable-next-line import/no-self-import
 export * as Icons from "./icons";
 
 export type IconProps = React.SVGProps<SVGSVGElement> & { size?: number };

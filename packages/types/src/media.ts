@@ -93,6 +93,11 @@ export function ensureQueueItemIds(queue: Queue[]): Queue[] {
   return changed ? next : queue;
 }
 
+/** The upstream lists one entry per role (music, lyricist), so one artist repeats. */
+function uniqueArtists<T extends { id: string }>(artists: T[]): T[] {
+  return [...new Map(artists.map((a) => [a.id, a])).values()];
+}
+
 export function toQueue(item: Song | Episode): Queue {
   return {
     queueItemId: newQueueItemId(),
@@ -102,7 +107,7 @@ export function toQueue(item: Song | Episode): Queue {
     url: item.perma_url,
     type: item.type,
     image: getImageSrc(item.image),
-    artists: item.more_info.artistMap?.artists ?? [],
+    artists: uniqueArtists(item.more_info.artistMap?.artists ?? []),
     download_url: item.download_url ?? item.more_info.download_url ?? "",
     duration: Number(item.more_info.duration) || 0,
   };
@@ -168,6 +173,29 @@ export function removeFromQueue(
     queue: next,
     currentIndex: Math.max(0, Math.min(index, next.length - 1)),
   };
+}
+
+const countFormatter = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
+export function formatCount(n: number | string | undefined | null): string {
+  const parsed = Number(n);
+  if (!Number.isFinite(parsed) || parsed <= 0) return "0";
+  return countFormatter.format(parsed);
+}
+
+/** Formats a release date string, returning an empty string for missing or invalid input. */
+export function formatReleaseDate(dateStr: string | undefined | null): string {
+  if (!dateStr) return "";
+  const d = new Date(String(dateStr));
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 const IMAGE_SIZE: Record<ImageQuality, number> = {

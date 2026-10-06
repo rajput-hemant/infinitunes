@@ -12,11 +12,15 @@ import superjson from "superjson";
 
 import { api } from "~/lib/trpc/client";
 
+import { ThemeColorSync } from "./theme-color-sync";
+
 // Defined in globals.css: clears the fixed player bar and, below lg, the mobile nav.
 const TOAST_BOTTOM_OFFSET = "var(--toast-offset-bottom)";
 
 type Props = {
   theme?: ThemeProviderProps;
+  /** Per-request CSP nonce for the `next-themes` inline bootstrap script. */
+  nonce?: string;
   children: React.ReactNode;
 };
 
@@ -59,14 +63,16 @@ function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Providers({ children, theme }: Props) {
+export default function Providers({ children, theme, nonce }: Props) {
   return (
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
+      nonce={nonce}
       {...theme}
     >
+      <ThemeColorSync />
       <AudioPlayerProvider>
         <TRPCReactProvider>
           <TooltipProvider>{children}</TooltipProvider>

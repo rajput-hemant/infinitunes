@@ -12,14 +12,17 @@ import { Navbar } from "~/components/site-header/navbar";
 import { SecondaryNavbar } from "~/components/site-header/secondary-navbar";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orFallback } from "~/lib/degrade";
 
 export default async function Layout({ children }: React.PropsWithChildren) {
   const [user, cookieStore] = await Promise.all([getUser(), cookies()]);
   const sidebarOpen = cookieStore.get("sidebar_state")?.value !== "false";
 
   const [userPlaylists, userFavorites] = await Promise.all([
-    user ? getUserPlaylists() : undefined,
-    user ? getUserFavorites() : undefined,
+    user
+      ? orFallback("user playlists", getUserPlaylists(), undefined)
+      : undefined,
+    user ? orFallback("user favorites", getUserFavorites(), null) : undefined,
   ]);
 
   return (

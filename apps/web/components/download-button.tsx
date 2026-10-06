@@ -100,11 +100,22 @@ export function DownloadButton({
         {...rest}
         disabled={isDownloading}
       >
-        {isDownloading ? (
-          <Loader aria-hidden="true" className="size-5 animate-spin" />
-        ) : (
-          <CloudDownload aria-hidden="true" className="size-5" />
-        )}
+        <span className="relative size-5">
+          <CloudDownload
+            aria-hidden="true"
+            className={cn(
+              "absolute inset-0 size-5 transition-[opacity,scale] duration-150 ease-out",
+              isDownloading && "scale-80 opacity-0",
+            )}
+          />
+          <Loader
+            aria-hidden="true"
+            className={cn(
+              "absolute inset-0 size-5 transition-[opacity,scale] duration-150 ease-out",
+              isDownloading ? "animate-spin" : "scale-80 opacity-0",
+            )}
+          />
+        </span>
       </TooltipTrigger>
 
       <TooltipContent>

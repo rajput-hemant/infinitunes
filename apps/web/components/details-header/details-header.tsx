@@ -1,3 +1,4 @@
+import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type {
   Album,
   Artist,
@@ -9,7 +10,12 @@ import type {
   ShowDetails,
   Song,
 } from "@infinitunes/types";
-import { decode, formatDuration, getImageSrc } from "@infinitunes/types";
+import {
+  decode,
+  formatCount,
+  formatDuration,
+  getImageSrc,
+} from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -18,6 +24,7 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orFallback } from "~/lib/degrade";
 import { asRoute, cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
@@ -89,12 +96,13 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   const user = await getUser();
 
-  let playlists, favorites;
+  let playlists: MyPlaylist[] | undefined,
+    favorites: Favorite | null | undefined;
 
   if (user) {
     [playlists, favorites] = await Promise.all([
-      getUserPlaylists(),
-      getUserFavorites(),
+      orFallback("user playlists", getUserPlaylists(), undefined),
+      orFallback("user favorites", getUserFavorites(), null),
     ]);
   }
 
@@ -113,7 +121,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
     <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
-          "relative aspect-square w-44 shrink-0 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64",
+          "relative aspect-square w-44 shrink-0 overflow-hidden rounded-md border p-1 shadow-md transition-shadow duration-300 hover:shadow-xl md:w-56 xl:w-64",
           (kind === "artist" || kind === "label") && "rounded-full",
         )}
       >
@@ -194,10 +202,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               <p className="capitalize">
                 {kind}
                 {" · "}
-                {Number(
-                  (item as Song | Episode).play_count,
-                ).toLocaleString()}{" "}
-                Plays
+                {formatCount((item as Song | Episode).play_count)} Plays
                 {" · "}
                 {formatDuration(
                   (item as Song | Episode).more_info.duration,
@@ -225,9 +230,9 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                   </Link>
                 ))}
                 {" · "}
-                {(item as Album).more_info.song_count ?? 0} Songs
+                {formatCount((item as Album).more_info.song_count)} Songs
                 {" · "}
-                {Number((item as Album).play_count || 0).toLocaleString()} Plays
+                {formatCount((item as Album).play_count)} Plays
                 {" · "}
                 {formatDuration(albumDuration, "mm:ss")}
               </p>
@@ -251,10 +256,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                 <p className="capitalize">
                   {kind}
                   {" · "}
-                  {Number(
-                    (item as Album).play_count || 0,
-                  ).toLocaleString()}{" "}
-                  Plays
+                  {formatCount((item as Album).play_count)} Plays
                 </p>
               </div>
             </>
@@ -282,10 +284,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           {kind === "season" && (
             <p>
               Podcast{" · "}
-              {Number(
-                (item as ShowDetails).more_info.fan_count || 0,
-              ).toLocaleString()}{" "}
-              Fans
+              {formatCount((item as ShowDetails).more_info.fan_count)} Fans
             </p>
           )}
 
@@ -293,8 +292,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
             <p>
               Artist
               {" · "}
-              {Number((item as Artist).fan_count || 0).toLocaleString()}{" "}
-              Listeners
+              {formatCount((item as Artist).fan_count)} Listeners
             </p>
           )}
 

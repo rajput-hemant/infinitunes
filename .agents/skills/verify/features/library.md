@@ -1,6 +1,6 @@
 # Library (`/me`)
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-004, ISSUE-006 in [verification-issues.md](../../../../docs/verification/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-004, ISSUE-006 in [verification-issues.md](../../../../docs/archive/verification-issues.md).
 
 ## Sub-features
 

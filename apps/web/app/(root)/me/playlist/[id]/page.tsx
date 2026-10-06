@@ -81,7 +81,7 @@ export default async function MyPlaylistsPage(props: Props) {
   return (
     <div className="space-y-4">
       <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
-        <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64">
+        <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-md border p-1 shadow-md transition-shadow duration-300 hover:shadow-xl md:w-56 xl:w-64">
           <ImageCollage src={imageSrcs} />
 
           <Skeleton className="absolute inset-0 -z-10" />
@@ -140,11 +140,11 @@ export default async function MyPlaylistsPage(props: Props) {
       {playlistSongs.length ? (
         <>
           {unavailableCount > 0 && (
-            <p role="status" className="text-sm text-muted-foreground">
+            <output className="block text-sm text-muted-foreground">
               {unavailableCount} saved song{unavailableCount === 1 ? "" : "s"}{" "}
               couldn’t be loaded. Your saved songs are safe. Refresh to try
               again.
-            </p>
+            </output>
           )}
           <SongList
             items={playlistSongs}

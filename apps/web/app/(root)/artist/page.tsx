@@ -1,3 +1,5 @@
+import { formatCount } from "@infinitunes/types";
+
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
@@ -29,7 +31,7 @@ export default async function TopArtistsPage() {
               key={artistid}
               name={name}
               url={perma_url}
-              subtitle={`${follower_count.toLocaleString()} Fans`}
+              subtitle={`${formatCount(follower_count)} Fans`}
               type="artist"
               image={image}
             />

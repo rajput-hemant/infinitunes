@@ -1,0 +1,21 @@
+name: Set up Bun and install
+description: Install Bun at the pinned version and workspace dependencies from the cached store
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .bun-version
+
+    - name: Cache Bun package store
+      uses: actions/cache@v4
+      with:
+        path: ~/.bun/install/cache
+        key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
+        restore-keys: bun-${{ runner.os }}-
+
+    - name: Install dependencies
+      shell: bash
+      run: bun install --frozen-lockfile

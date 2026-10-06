@@ -38,6 +38,7 @@ import { useIsTyping } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
 import { changePassword, deleteUser, updateUser } from "~/lib/actions";
 import { userMessage } from "~/lib/user-message";
+import { nameSchema } from "~/lib/validations";
 
 type ProfileFormProps = React.ComponentProps<"div"> & {
   user: {
@@ -49,7 +50,7 @@ type ProfileFormProps = React.ComponentProps<"div"> & {
 };
 
 const profileSchema = z.object({
-  name: z.string().min(1, "Name is Required"),
+  name: nameSchema,
   email: emailSchema,
   currentPassword: z.string().optional(),
   password: passwordSchema.or(z.literal("")).optional(),

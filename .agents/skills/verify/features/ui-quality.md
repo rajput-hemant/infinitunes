@@ -1,6 +1,6 @@
 # UI quality and responsive layout
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-017, ISSUE-019 in [verification-issues.md](../../../../docs/verification/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-017, ISSUE-019 in [verification-issues.md](../../../../docs/archive/verification-issues.md).
 
 ## Sub-features
 

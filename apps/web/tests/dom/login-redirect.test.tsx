@@ -6,6 +6,8 @@ import { act } from "react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
 
+import { setInputValue } from "./set-input-value";
+
 // Only the network boundary is replaced: the better-auth client is a stub that
 // answers the sign-in calls. This file runs in its own bun process.
 let signInError: { message: string } | null = null;
@@ -23,18 +25,6 @@ mock.module("@infinitunes/auth/client", () => ({
 const { LoginForm } = await import("../../app/(auth)/_components/login-form");
 
 type Router = NonNullable<React.ContextType<typeof AppRouterContext>>;
-
-/** Sets a value the way a user edit would. */
-function setValue(input: HTMLInputElement, value: string) {
-  input.value = value;
-  // happy-dom's setter also updates React's value tracker, which would make
-  // React see "no change"; reset it so the input event registers.
-  const tracker = Reflect.get(input, "_valueTracker") as
-    | { setValue(v: string): void }
-    | undefined;
-  tracker?.setValue("");
-  input.dispatchEvent(new Event("input", { bubbles: true }));
-}
 
 /** Fills the form, submits it and returns the router calls it triggered. */
 async function signIn(
@@ -68,8 +58,8 @@ async function signIn(
     'input[autocomplete^="current-password"]',
   );
   await act(async () => {
-    if (email) setValue(email, "user@example.com");
-    if (password) setValue(password, "Passw0rd!");
+    if (email) setInputValue(email, "user@example.com");
+    if (password) setInputValue(password, "Passw0rd!");
   });
 
   await act(async () => {

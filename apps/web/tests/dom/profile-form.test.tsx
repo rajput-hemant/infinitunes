@@ -51,4 +51,43 @@ describe("profile form accessibility", () => {
       container.querySelector("input[autocomplete=new-password]"),
     ).not.toBeNull();
   });
+
+  it("keeps the password visibility toggle keyboard reachable", async () => {
+    const container = await mount();
+
+    const toggle = container.querySelector(
+      'button[aria-label="Show Password"]',
+    ) as HTMLElement;
+    expect(toggle).not.toBeNull();
+    expect(toggle.getAttribute("tabindex")).toBeNull();
+
+    const input = container.querySelector(
+      "input[autocomplete=new-password]",
+    ) as HTMLInputElement;
+    const setter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      "value",
+    )?.set;
+    await act(async () => {
+      setter?.call(input, "s3cret-new");
+      input.dispatchEvent(new window.Event("input", { bubbles: true }));
+    });
+
+    const enabled = container.querySelector(
+      'button[aria-label="Show Password"]',
+    ) as HTMLElement;
+    await act(async () => {
+      enabled.click();
+    });
+    expect(
+      container.querySelector('button[aria-label="Hide Password"]'),
+    ).not.toBeNull();
+    expect(
+      (
+        container.querySelector(
+          "input[autocomplete=new-password]",
+        ) as HTMLInputElement
+      ).type,
+    ).toBe("text");
+  });
 });

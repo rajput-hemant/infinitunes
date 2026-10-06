@@ -1,6 +1,12 @@
 import { describe, expect, it } from "bun:test";
 
-import { buildCsp } from "../lib/csp";
+import {
+  buildCsp,
+  CSP_ENFORCE,
+  cspHeaderName,
+  CSP_ENFORCING_HEADER,
+  CSP_REPORT_ONLY_HEADER,
+} from "../lib/csp";
 
 describe("buildCsp", () => {
   const csp = buildCsp({ nonce: "abc123" });
@@ -40,20 +46,46 @@ describe("buildCsp", () => {
     ]);
   });
 
+  it("locks down directives that do not fall back to default-src", () => {
+    expect(directive(csp, "object-src")).toEqual(["'none'"]);
+    expect(directive(csp, "base-uri")).toEqual(["'self'"]);
+    expect(directive(csp, "form-action")).toEqual(["'self'"]);
+  });
+
+  it("embeds exactly the nonce it is given", () => {
+    const a = buildCsp({ nonce: "AAA" });
+    const b = buildCsp({ nonce: "BBB" });
+    expect(a).toContain("'nonce-AAA'");
+    expect(a).not.toContain("BBB");
+    expect(b).toContain("'nonce-BBB'");
+  });
+
+  it("never allows inline or remote scripts beyond the nonce", () => {
+    const scripts = directive(
+      buildCsp({ nonce: "n", umami: true }),
+      "script-src",
+    );
+    expect(scripts).not.toContain("'unsafe-inline'");
+    expect(scripts).not.toContain("*");
+  });
+
   it("adds Umami hosts only when configured", () => {
     const withUmami = buildCsp({ nonce: "n", umami: true });
     expect(directive(withUmami, "script-src")).toContain("https://us.umami.is");
-    expect(withUmami).toContain("https://api-gateway.umami.dev");
+    expect(withUmami).toContain("https://gateway.umami.is");
     expect(csp).not.toContain("umami");
   });
 });
 
-describe("root layout analytics script", () => {
-  it("carries the per-request nonce from the x-nonce header", async () => {
-    const source = await Bun.file(
-      new URL("../app/layout.tsx", import.meta.url),
-    ).text();
-    expect(source).toContain('.get("x-nonce")');
-    expect(source).toMatch(/<Script[^>]*nonce=\{nonce\}/s);
+describe("cspHeaderName", () => {
+  it("picks the enforcing header only when asked", () => {
+    expect(cspHeaderName(true)).toBe(CSP_ENFORCING_HEADER);
+    expect(cspHeaderName(false)).toBe(CSP_REPORT_ONLY_HEADER);
+  });
+
+  it("follows CSP_ENFORCE by default", () => {
+    expect(cspHeaderName()).toBe(
+      CSP_ENFORCE ? CSP_ENFORCING_HEADER : CSP_REPORT_ONLY_HEADER,
+    );
   });
 });

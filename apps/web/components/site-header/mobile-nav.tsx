@@ -22,7 +22,7 @@ const mobileNavItems = [
 ] satisfies { label: string; icon: typeof Home; href: Route }[];
 
 const itemClassName =
-  "flex h-14 min-w-0 flex-1 flex-col items-center justify-center text-center text-muted-foreground duration-700 animate-in slide-in-from-bottom-full";
+  "flex h-14 min-w-0 flex-1 flex-col items-center justify-center text-center text-muted-foreground duration-300 animate-in fade-in";
 
 export function MobileNav({ user }: Props) {
   const pathname = usePathname();
@@ -52,9 +52,7 @@ export function MobileNav({ user }: Props) {
           >
             <Icon aria-hidden />
 
-            <span className="text-xs font-semibold duration-200 animate-in slide-in-from-bottom-1/2">
-              {label}
-            </span>
+            <span className="text-xs font-semibold">{label}</span>
           </Link>
         );
       })}
@@ -68,9 +66,7 @@ export function MobileNav({ user }: Props) {
       >
         <Library aria-hidden />
 
-        <span className="text-xs font-semibold duration-200 animate-in slide-in-from-bottom-1/2">
-          Library
-        </span>
+        <span className="text-xs font-semibold">Library</span>
       </button>
     </nav>
   );

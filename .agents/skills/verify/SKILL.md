@@ -21,14 +21,14 @@ disable-model-invocation: true
 
 Browser recipes are pending the user-selected browser skill. Until it exists: no browser automation, screenshots, UI driving, Playwright/Cypress runs or `next-dev-loop`. Non-browser checks (below) are allowed.
 
-Issues found while verifying are recorded once, in [docs/verification/verification-issues.md](../../../docs/verification/verification-issues.md). Feature files link to issue IDs there instead of repeating them.
+Issues found while verifying are recorded once, in [docs/archive/verification-issues.md](../../../docs/archive/verification-issues.md). Feature files link to issue IDs there instead of repeating them.
 
 ## Prerequisites
 
 - Bun `1.4.2` (`packageManager` in root `package.json`; CI pins the same). Use Bun, never npm. One-off binaries via `bunx`.
 - Docker daemon, only for local Postgres and Redis (the app needs `DATABASE_URL` for any session, favorites or playlist work).
 - Outbound internet to the public JioSaavn API: browse, search, entity pages and playback metadata are fetched live at request time. Without it, public pages return 500 (see `ISSUE-011`).
-- A real browser skill chosen by the user (pending). Chrome was absent in the first migration pass (`docs/verification/migration-acceptance.md` section 8) and present in section 13; re-check.
+- A real browser skill chosen by the user (pending). Chrome was absent in the first migration pass (`docs/archive/migration-acceptance.md` section 8) and present in section 13; re-check.
 - Never use: production database, real OAuth credentials, a shared authenticated browser profile, live payments, outgoing email.
 
 ## Launch
@@ -72,7 +72,7 @@ Non-browser drives that are allowed now:
 
 ```
 bun run fmt:check && bun run lint && bun run type-check && bun run test
-bun test packages/trpc/tests/user-router.test.ts packages/auth/tests/auth.test.ts apps/web/tests/proxy.test.ts
+bun run test:routers && bun test packages/auth/tests/auth.test.ts && bun run test:mocked   # router and proxy suites mock modules, so each file runs in its own process
 curl -s -i http://localhost:3000/me | head -5            # guest redirect
 curl -s -i -X POST http://localhost:3000/api/trpc/user.getUserPlaylists -H 'origin: http://evil.example'   # expect 403 from the origin check
 ```

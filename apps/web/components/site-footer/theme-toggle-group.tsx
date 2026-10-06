@@ -6,26 +6,23 @@ import {
 } from "@infinitunes/ui/components/toggle-group";
 import { Monitor, Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useRef, useCallback } from "react";
+import { useSyncExternalStore } from "react";
 
 import { cn } from "~/lib/utils";
+
+// Never changes after hydration; only the server/client snapshots differ.
+const subscribeNever = () => () => {};
 
 type ThemeToggleGroupProps = {
   className?: string;
 };
 
 export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
-  const isMountedRef = useRef(false);
-
-  useEffect(() => {
-    isMountedRef.current = true;
-
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
-  const isMounted = useCallback(() => isMountedRef.current, []);
+  const isMounted = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
 
   const { theme, setTheme } = useTheme();
 
@@ -35,7 +32,7 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
 
   return (
     <ToggleGroup
-      value={[isMounted() ? (theme ?? "system") : "system"]}
+      value={[isMounted ? (theme ?? "system") : "system"]}
       onValueChange={(v) => handleThemeChange(v[0])}
       className={cn("rounded-full border p-1", className)}
     >

@@ -30,7 +30,7 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
     <div className="pointer-events-none mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
       <div
         className={cn(
-          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-md transition-[width_shadow] duration-500 hover:shadow-xl md:w-56 xl:w-64",
+          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-md transition-shadow duration-300 hover:shadow-xl md:w-56 xl:w-64",
           (type === "artist" || type === "label") && "rounded-full",
         )}
       >

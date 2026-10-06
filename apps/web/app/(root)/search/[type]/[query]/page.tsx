@@ -1,3 +1,4 @@
+import { LibraryHeading } from "~/components/library/library-section";
 import { api } from "~/lib/trpc/server";
 
 import { SearchNavbar } from "./_components/search-navbar";
@@ -23,22 +24,22 @@ export default async function SearchPage({ params }: SearchPageProps) {
 
   return (
     <div className="mb-4 space-y-4">
-      <header>
-        <h1 className="text-center font-heading text-2xl capitalize drop-shadow-md text-foreground sm:text-3xl md:text-start md:text-4xl">
-          Search Results for{" "}
-          <span className="block md:inline-block">
-            &apos;
-            <em className="font-bold underline underline-offset-4">
-              {query.replaceAll("%20", " ")}
-            </em>
-            &apos;
-          </span>
-        </h1>
-
-        <p className="text-center text-sm text-muted-foreground md:text-start">
-          {searchRes.total} Results
-        </p>
-      </header>
+      <LibraryHeading
+        as="h1"
+        title={
+          <>
+            Search Results for{" "}
+            <span className="block md:inline-block">
+              &apos;
+              <em className="font-bold underline underline-offset-4">
+                {query.replaceAll("%20", " ")}
+              </em>
+              &apos;
+            </span>
+          </>
+        }
+        description={`${searchRes.total} Results`}
+      />
 
       <div className="space-y-4 border-t">
         <SearchNavbar type={type} query={query} />

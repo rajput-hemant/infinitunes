@@ -66,7 +66,7 @@ import { TileMoreLinks } from "./more-links";
 
 type TileMoreButtonProps = {
   user?: User;
-  favorites?: Favorite;
+  favorites?: Favorite | null;
   item: Song | Episode | Queue;
   showAlbum: boolean;
   playlists?: MyPlaylist[];
@@ -288,7 +288,8 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     {
       label: isFavorite ? "Remove From Favourite" : "Add To Favourite",
       onClick: like,
-      hide: item.type !== "song",
+      // null: favorites failed to load, so the liked state is unknown.
+      hide: item.type !== "song" || favorites === null,
       icon: Heart,
     },
     {
@@ -401,7 +402,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
                 <Separator className="-my-2 mb-2" />
 
-                <ShareOptions className="flex flex-col gap-4 p-4" />
+                <ShareOptions
+                  className="flex flex-col gap-4 p-4"
+                  title={getItemName(item)}
+                />
               </div>
 
               <Separator />
@@ -454,7 +458,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                     : label.replace("Song", "Episode")}
                 </DropdownMenuItem>
               ))}
-            <ShareSubMenu />
+            <ShareSubMenu title={getItemName(item)} />
             <DropdownMenuSeparator className="my-2" />
             <TileMoreLinks
               type={item.type}

@@ -1,5 +1,5 @@
 import { getErrorCode } from "~/lib/error-code";
-import { userMessage } from "~/lib/user-message";
+import { GENERIC_MESSAGE, userMessage } from "~/lib/user-message";
 
 /**
  * Next.js replaces the message of any error thrown by a server action with a
@@ -11,16 +11,34 @@ export type ActionResult<T> =
   | { ok: true; data: T }
   | { ok: false; code: string; message: string };
 
-/** Server side: coded (tRPC) failures become a result; anything else rethrows. */
+/** Next.js control flow (`redirect`, `notFound`, ...) is thrown with a `digest` and must propagate. */
+function isFrameworkSignal(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof error.digest === "string" &&
+    /^(NEXT_|HTTP_ERROR_FALLBACK)/.test(error.digest)
+  );
+}
+
+/**
+ * Server side: failures become a result, with `UNKNOWN` and generic copy for
+ * errors that carry no code (their message may be internal). Next.js control-flow signals rethrow so redirects keep working.
+ */
 export async function toResult<T>(
   run: () => Promise<T>,
 ): Promise<ActionResult<T>> {
   try {
     return { ok: true, data: await run() };
   } catch (error) {
+    if (isFrameworkSignal(error)) throw error;
     const code = getErrorCode(error);
-    if (code === undefined) throw error;
-    return { ok: false, code, message: userMessage(error) };
+    return {
+      ok: false,
+      code: code ?? "UNKNOWN",
+      message: code ? userMessage(error) : GENERIC_MESSAGE,
+    };
   }
 }
 

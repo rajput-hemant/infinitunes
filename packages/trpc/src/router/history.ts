@@ -17,36 +17,38 @@ export const historyRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      await ctx.db
-        .insert(recentlyPlayed)
-        .values({ userId, itemId: input.id, itemType: input.type })
-        .onConflictDoUpdate({
-          target: [
-            recentlyPlayed.userId,
-            recentlyPlayed.itemType,
-            recentlyPlayed.itemId,
-          ],
-          // Database clock, like the column's `defaultNow()`: a JS Date is sent
-          // as UTC wall-clock, which skews ordering against default-stamped
-          // rows when the database TimeZone is not UTC.
-          set: { playedAt: sql`now()` },
-        });
+      await ctx.db.transaction(async (tx) => {
+        await tx
+          .insert(recentlyPlayed)
+          .values({ userId, itemId: input.id, itemType: input.type })
+          .onConflictDoUpdate({
+            target: [
+              recentlyPlayed.userId,
+              recentlyPlayed.itemType,
+              recentlyPlayed.itemId,
+            ],
+            // Database clock, like the column's `defaultNow()`: a JS Date is sent
+            // as UTC wall-clock, which skews ordering against default-stamped
+            // rows when the database TimeZone is not UTC.
+            set: { playedAt: sql`now()` },
+          });
 
-      const keep = ctx.db
-        .select({ id: recentlyPlayed.id })
-        .from(recentlyPlayed)
-        .where(eq(recentlyPlayed.userId, userId))
-        .orderBy(desc(recentlyPlayed.playedAt))
-        .limit(HISTORY_LIMIT);
+        const keep = tx
+          .select({ id: recentlyPlayed.id })
+          .from(recentlyPlayed)
+          .where(eq(recentlyPlayed.userId, userId))
+          .orderBy(desc(recentlyPlayed.playedAt))
+          .limit(HISTORY_LIMIT);
 
-      await ctx.db
-        .delete(recentlyPlayed)
-        .where(
-          and(
-            eq(recentlyPlayed.userId, userId),
-            notInArray(recentlyPlayed.id, keep),
-          ),
-        );
+        await tx
+          .delete(recentlyPlayed)
+          .where(
+            and(
+              eq(recentlyPlayed.userId, userId),
+              notInArray(recentlyPlayed.id, keep),
+            ),
+          );
+      });
 
       return { ok: true as const };
     }),

@@ -103,7 +103,9 @@ export function MoreButton(props: MoreButtonProps) {
 
     setQueue((prev) => [...prev, ...songsPayload]);
 
-    toast(`Added ${songs.length} song${songs.length > 1 ? "s" : ""} to queue`);
+    toast(
+      `Added ${songs.length} song${songs.length === 1 ? "" : "s"} to queue`,
+    );
   }
 
   function togglePlaylistDialog() {
@@ -128,7 +130,7 @@ export function MoreButton(props: MoreButtonProps) {
       ),
       {
         loading: "Adding songs to playlist...",
-        success: `${songs.length} song${songs.length > 1 ? "s" : ""} added to "${playlistName}" playlist`,
+        success: `${songs.length} song${songs.length === 1 ? "" : "s"} added to "${playlistName}" playlist`,
         error: userMessage,
         finally: () => setDialogOpen(false),
       },
@@ -303,7 +305,10 @@ export function MoreButton(props: MoreButtonProps) {
 
                 <Separator />
 
-                <ShareOptions className="flex flex-col gap-4 p-4" />
+                <ShareOptions
+                  className="flex flex-col gap-4 p-4"
+                  title={name}
+                />
               </div>
             </div>
 
@@ -345,7 +350,7 @@ export function MoreButton(props: MoreButtonProps) {
                   </DropdownMenuItem>
                 ))}
 
-              <ShareSubMenu />
+              <ShareSubMenu title={name} />
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

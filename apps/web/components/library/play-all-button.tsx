@@ -14,6 +14,11 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 
+/** Neutral toast title for a played list: episodes are tracks too. */
+export function playAllToastTitle(count: number): string {
+  return `${count} ${count === 1 ? "track" : "tracks"} added to the queue`;
+}
+
 export function PlayAllButton({
   items,
   children,
@@ -37,9 +42,7 @@ export function PlayAllButton({
     setCurrentIndex(0);
     setIsPlayerInit(true);
 
-    const trackLabel = queue.length === 1 ? "track" : "tracks";
-
-    toast.success(`${queue.length} ${trackLabel} added to the queue`, {
+    toast.success(playAllToastTitle(queue.length), {
       description: `Playing “${queue[0]?.name}”`,
       position: "bottom-center",
     });

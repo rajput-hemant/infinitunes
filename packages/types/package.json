@@ -9,6 +9,7 @@
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
+    "@types/bun": "catalog:",
     "oxlint": "catalog:",
     "oxfmt": "catalog:",
     "typescript": "catalog:"

@@ -3,10 +3,8 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import {
   formatDuration,
-  getDownloadLink,
   getImageSrc,
   pickShuffleIndex,
-  toQueue,
 } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -36,6 +34,7 @@ import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
 import { useKeydown } from "~/hooks/use-keydown";
+import { useRadioRefill } from "~/hooks/use-radio-refill";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -45,10 +44,10 @@ import {
   useQueue,
   useStreamQuality,
 } from "~/hooks/use-store";
+import { useTrackPlayback } from "~/hooks/use-track-playback";
 import type { User } from "~/lib/auth";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
-import { playToRecord } from "~/lib/queue-position";
 import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
@@ -59,12 +58,12 @@ import { Queue } from "./queue";
 import { TileMoreButton } from "./song-list/more-button";
 
 const controlClass =
-  "rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+  "rounded-md outline-none transition-transform duration-150 ease-out focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96] motion-reduce:transition-none";
 
 type PlayerProps = {
   user?: User;
   playlists?: MyPlaylist[];
-  favorites?: Favorite;
+  favorites?: Favorite | null;
 };
 
 export function Player({ user, playlists, favorites }: PlayerProps) {
@@ -94,8 +93,6 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const [pos, setPos] = React.useState(0);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
-  const refillingRef = React.useRef<boolean>(false);
-  const lastRecordedRef = React.useRef<string | null>(null);
 
   const utils = api.useUtils();
 
@@ -162,42 +159,17 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     setCurrentIndex(index);
   }, [setCurrentIndex]);
 
-  // Depend on the resolved source, not on `queue`: `load` destroys and
-  // recreates the Howl, so keying on `queue` would restart the playing track
-  // whenever anything is queued, removed or radio-refilled.
+  useTrackPlayback({
+    queue,
+    currentIndex,
+    streamQuality,
+    isPlayerInit,
+    load,
+    onEnd: onEndHandler,
+    record: recordPlay,
+  });
+
   const current = queue[currentIndex];
-  const hasCurrent = Boolean(current);
-  const audioSrc = current
-    ? getDownloadLink(current.download_url, streamQuality)
-    : "";
-
-  React.useEffect(() => {
-    if (!isPlayerInit || !hasCurrent) return;
-
-    if (!audioSrc) {
-      toast.error("This song can't be played right now.");
-      return;
-    }
-
-    // Once per queue entry: a quality change reloads the source but is not a
-    // new listen. Read the track through the ref to keep the deps stable.
-    const { queue: latestQueue, currentIndex: latestIndex } =
-      playbackStateRef.current;
-    const track = latestQueue[latestIndex];
-    const play = playToRecord(track, lastRecordedRef.current);
-    if (track && play) {
-      lastRecordedRef.current = track.queueItemId;
-      void recordPlay(play);
-    }
-
-    load(audioSrc, {
-      html5: true,
-      // onload: play,
-      autoplay: true,
-      initialMute: false,
-      onend: onEndHandler,
-    });
-  }, [audioSrc, hasCurrent, isPlayerInit, load, onEndHandler]);
 
   React.useEffect(() => {
     if (isDragging) {
@@ -218,40 +190,24 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     };
   }, [getPosition, isDragging]);
 
-  React.useEffect(() => {
-    if (!activeRadio || refillingRef.current || queue.length === 0) return;
-    if (currentIndex >= queue.length - 3) {
-      refillingRef.current = true;
-      utils.radio.songs
-        .fetch(
-          {
-            stationId: activeRadio.stationId,
-            k: 10,
-            next: 1,
-          },
-          // The app-wide staleTime is Infinity, which would hand back the first
-          // batch forever; every refill must hit upstream for fresh songs.
-          { staleTime: 0 },
-        )
-        .then((moreSongs) => {
-          if (moreSongs.length > 0) {
-            const currentIds = new Set(queue.map((s) => s.id));
-            const newItems = moreSongs
-              .filter((s) => !currentIds.has(s.id))
-              .map(toQueue);
-            if (newItems.length > 0) {
-              setQueue((prev) => [...prev, ...newItems]);
-            }
-          }
-        })
-        .catch(() => {
-          // Ignore transient background refill glitches
-        })
-        .finally(() => {
-          refillingRef.current = false;
-        });
-    }
-  }, [currentIndex, queue, activeRadio, utils, setQueue]);
+  const fetchRadioSongs = React.useCallback(
+    (stationId: string) =>
+      utils.radio.songs.fetch(
+        { stationId, k: 10, next: 1 },
+        // The app-wide staleTime is Infinity, which would hand back the first
+        // batch forever; every refill must hit upstream for fresh songs.
+        { staleTime: 0 },
+      ),
+    [utils],
+  );
+
+  useRadioRefill({
+    activeRadio,
+    queue,
+    currentIndex,
+    fetchSongs: fetchRadioSongs,
+    setQueue,
+  });
 
   function loopHandler() {
     if (!isReady) return;

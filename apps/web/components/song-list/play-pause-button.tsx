@@ -43,7 +43,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
         aria-hidden="true"
         strokeWidth={isPlaying ? 2 : 9}
         className={cn(
-          "m-auto h-full w-6 p-1 duration-300 hover:w-8 dark:invert",
+          "m-auto h-full w-6 p-1 transition-transform duration-150 ease-out hover:scale-125 dark:invert",
           isPlaying && "p-0.5",
         )}
       />
@@ -58,7 +58,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
       <Play
         aria-hidden="true"
         strokeWidth={9}
-        className="absolute inset-0 z-20 m-auto hidden h-full w-6 p-1 text-secondary duration-300 hover:w-8 group-focus-within:block group-hover:block dark:invert"
+        className="absolute inset-0 z-20 m-auto hidden h-full w-6 p-1 text-secondary transition-transform duration-150 ease-out hover:scale-125 group-focus-within:block group-hover:block dark:invert"
       />
     </PlayButton>
   );

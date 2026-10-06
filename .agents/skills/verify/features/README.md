@@ -1,6 +1,6 @@
 # Infinitunes feature map (DRAFT)
 
-Every file here is **DRAFT** with `Last live proof: none`. Nothing has been driven in a browser. Driving steps name real routes and labels from source; the browser harness is pending the user-selected skill (see [../SKILL.md](../SKILL.md)). Issues live only in [docs/verification/verification-issues.md](../../../../docs/verification/verification-issues.md).
+Every file here is **DRAFT** with `Last live proof: none`. Nothing has been driven in a browser. Driving steps name real routes and labels from source; the browser harness is pending the user-selected skill (see [../SKILL.md](../SKILL.md)). Issues live only in [docs/archive/verification-issues.md](../../../../docs/archive/verification-issues.md).
 
 Auth model: Better Auth with email + password, passkey (WebAuthn) and Google/GitHub OAuth. There are no anonymous or guest accounts. A guest is simply a request with no session cookie; it can browse public pages, use the player and change local preferences, but `/me` redirects to `/login` and every user-data tRPC procedure returns `UNAUTHORIZED`.
 

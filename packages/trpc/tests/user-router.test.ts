@@ -33,6 +33,7 @@ const state: {
   inserts: { table: string; values: Record<string, unknown> }[];
   deletes: { table: string; where: unknown[] }[];
   updateError: Error | null;
+  deleteError: Error | null;
 } = {
   playlist: null,
   user: null,
@@ -41,12 +42,28 @@ const state: {
   inserts: [],
   deletes: [],
   updateError: null,
+  deleteError: null,
 };
 
 const fakeDb = {
   query: {
     myPlaylists: {
-      findFirst: async () => state.playlist,
+      findFirst: async ({
+        where,
+      }: {
+        where: Parameters<PgDialect["sqlToQuery"]>[0];
+      }) => {
+        // Honor the `where` clause like SQL would: every bound param must
+        // match the row, so a missing owner predicate exposes foreign rows.
+        if (!state.playlist || !where) return state.playlist;
+        const { params } = new PgDialect().sqlToQuery(where);
+        const row = state.playlist;
+        return (params as unknown[]).every(
+          (param) => param === row.id || param === row.userId,
+        )
+          ? row
+          : null;
+      },
       findMany: async () => [],
     },
     favorites: {
@@ -102,6 +119,7 @@ const fakeDb = {
     where: (where: Parameters<PgDialect["sqlToQuery"]>[0]) => {
       const { params } = new PgDialect().sqlToQuery(where);
       state.deletes.push({ table: getTableName(table), where: params });
+      if (state.deleteError) throw state.deleteError;
       return Object.assign(Promise.resolve(), {
         returning: async () => (state.user ? [state.user] : []),
       });
@@ -112,6 +130,19 @@ const fakeDb = {
       state.inserts.push({ table: getTableName(table), values });
     },
   }),
+  transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
+    const updates = [...state.updates];
+    const inserts = [...state.inserts];
+    const deletes = [...state.deletes];
+    try {
+      return await fn(fakeDb);
+    } catch (error) {
+      state.updates = updates;
+      state.inserts = inserts;
+      state.deletes = deletes;
+      throw error;
+    }
+  },
 };
 
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));
@@ -158,6 +189,7 @@ describe("user router authorization", () => {
     state.inserts = [];
     state.deletes = [];
     state.updateError = null;
+    state.deleteError = null;
   });
 
   it("rejects protected procedures without a session", async () => {
@@ -336,6 +368,22 @@ describe("user router authorization", () => {
     });
   });
 
+  it("returns the owner's playlist from getPlaylistDetails", async () => {
+    state.playlist = {
+      id: "playlist-own",
+      userId: "user-123",
+      songs: ["song-1"],
+    };
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+    });
+
+    await expect(
+      caller.user.getPlaylistDetails({ playlistId: "playlist-own" }),
+    ).resolves.toMatchObject({ id: "playlist-own", userId: "user-123" });
+  });
+
   it("resolves a lazy session thunk before authorizing", async () => {
     const caller = createCallerFactory(appRouter)({
       db,
@@ -389,6 +437,22 @@ describe("user router authorization", () => {
     expect(state.deletes).toHaveLength(1);
     expect(state.deletes[0]?.table).toBe("better_auth_session");
     expect(state.deletes[0]?.where).toEqual(["user-123", "current-token"]);
+  });
+
+  it("rolls back password writes when session revocation fails", async () => {
+    await seedPasswordUser();
+    state.deleteError = new Error("session revoke failed");
+
+    await expect(
+      signedIn("current-token").user.changePassword({
+        password: "CurrentPassword1!",
+        newPassword: "NewPassword2!",
+      }),
+    ).rejects.toThrow("session revoke failed");
+
+    expect(state.updates).toHaveLength(0);
+    expect(state.inserts).toHaveLength(0);
+    expect(state.deletes).toHaveLength(0);
   });
 
   it("revokes every session when the current token is unknown", async () => {

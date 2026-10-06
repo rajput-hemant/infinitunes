@@ -10,6 +10,7 @@ import { TailwindIndicator } from "~/components/tailwind-indicator";
 import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
+import { THEME_COLOR } from "~/lib/theme-color";
 import { getThemeConfig } from "~/lib/theme-config";
 import { absoluteUrl, cn } from "~/lib/utils";
 
@@ -37,7 +38,7 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
             : ({ "--radius": `${radius}rem` } as React.CSSProperties)
         }
       >
-        <Providers>
+        <Providers nonce={nonce}>
           {children}
           {modal}
         </Providers>
@@ -62,8 +63,8 @@ export const viewport: Viewport = {
   maximumScale: 5,
   userScalable: true,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
+    { media: "(prefers-color-scheme: light)", color: THEME_COLOR.light },
+    { media: "(prefers-color-scheme: dark)", color: THEME_COLOR.dark },
   ],
 };
 

@@ -3,6 +3,7 @@ import type { Episode, Song } from "@infinitunes/types";
 import {
   formatDuration,
   decode,
+  formatReleaseDate,
   getImageSrc,
   parseToken,
 } from "@infinitunes/types";
@@ -14,6 +15,7 @@ import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orFallback } from "~/lib/degrade";
 import { cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
@@ -41,12 +43,13 @@ export async function SongList(props: SongListProps) {
 
   const user = await getUser();
 
-  let playlists: MyPlaylist[] | undefined, favorites: Favorite | undefined;
+  let playlists: MyPlaylist[] | undefined,
+    favorites: Favorite | null | undefined;
 
   if (user) {
     [playlists, favorites] = await Promise.all([
-      getUserPlaylists(),
-      getUserFavorites(),
+      orFallback("user playlists", getUserPlaylists(), undefined),
+      orFallback("user favorites", getUserFavorites(), null),
     ]);
   }
 
@@ -70,11 +73,11 @@ export async function SongList(props: SongListProps) {
                   <PlayButton
                     type={item.type}
                     token={parseToken(item.perma_url)}
-                    className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground duration-300 hover:h-9 hover:border-primary hover:text-primary group-hover:flex"
+                    className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground transition-[transform,color,border-color] duration-150 ease-out hover:scale-110 hover:border-primary hover:text-primary group-hover:flex"
                   >
                     <Play
                       strokeWidth={9}
-                      className="h-full w-5 p-1 duration-300 group-hover/play:w-6"
+                      className="h-full w-5 p-1 transition-transform duration-150 ease-out group-hover/play:scale-110"
                     />
                   </PlayButton>
                 )}
@@ -85,7 +88,7 @@ export async function SongList(props: SongListProps) {
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                     <Image
                       src={getImageSrc(item.image, "low")}
-                      alt={item.title}
+                      alt={decode(item.title)}
                       fill
                       sizes="40px"
                       className="z-10 object-cover duration-300 group-hover:brightness-50"
@@ -103,7 +106,7 @@ export async function SongList(props: SongListProps) {
 
                 <figcaption
                   className={cn(
-                    "flex w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
+                    "flex min-w-0 w-full flex-col lg:w-[calc(100%-0.5rem)] lg:flex-row",
                     showAlbum && "xl:w-2/3",
                   )}
                 >
@@ -113,6 +116,7 @@ export async function SongList(props: SongListProps) {
                         item.perma_url,
                         item.type === "song" ? "song" : "episode",
                       )}
+                      title={decode(item.title)}
                       className="text-primary group-hover:text-primary lg:text-muted-foreground"
                     >
                       {decode(item.title)}
@@ -153,13 +157,7 @@ export async function SongList(props: SongListProps) {
 
                 {item.type === "episode" && (
                   <p className="hidden w-full pr-8 text-end lg:block">
-                    {new Date(
-                      String(item.more_info.release_date),
-                    ).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
+                    {formatReleaseDate(item.more_info.release_date)}
                   </p>
                 )}
               </figure>
