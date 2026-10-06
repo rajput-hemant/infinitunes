@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
 import { getHref } from "~/lib/utils";
 
+import { ArtistLinks } from "./song-list/artist-links";
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
 
 /** Exit transition length; the row is removed from state once it finishes. */
@@ -141,7 +142,7 @@ export function QueueList() {
           data-leaving={leaving.has(item.queueItemId) ? "" : undefined}
           inert={leaving.has(item.queueItemId)}
           aria-hidden={leaving.has(item.queueItemId) || undefined}
-          className="grid w-full grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-200 ease-out data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
+          className="grid w-full [contain-intrinsic-size:auto_4.875rem] lg:[contain-intrinsic-size:auto_4rem] [content-visibility:auto] grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-200 ease-out data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
         >
           <div className="min-h-0 overflow-hidden pb-2">
             <div className="group relative flex min-h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
@@ -179,20 +180,11 @@ export function QueueList() {
                     </Link>
                   </h4>
 
-                  <ScrollArea className="w-full max-w-[400px] pb-1">
-                    {item.artists.map((artist, i, arr) => (
-                      <Link
-                        key={artist.id}
-                        href={getHref(artist.perma_url, "artist")}
-                        className="relative z-10 w-full truncate hover:text-foreground"
-                      >
-                        {artist.name}
-                        {i !== arr.length - 1 && ", "}
-                      </Link>
-                    ))}
-
-                    <ScrollBar orientation="horizontal" className="h-1.5" />
-                  </ScrollArea>
+                  <ArtistLinks
+                    artists={item.artists}
+                    className="max-w-[400px]"
+                    linkClassName="relative z-10"
+                  />
                 </figcaption>
 
                 <Button

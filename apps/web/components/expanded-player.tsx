@@ -165,7 +165,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
       </div>
 
       <div className="min-w-0 text-center">
-        <p className="truncate font-heading text-lg text-foreground">
+        <p className="font-heading text-lg text-balance break-words text-foreground">
           {track.name}
         </p>
         <p className="truncate text-sm text-muted-foreground">

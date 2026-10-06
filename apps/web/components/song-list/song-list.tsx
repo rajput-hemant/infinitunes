@@ -7,7 +7,6 @@ import {
   getImageSrc,
   parseToken,
 } from "@infinitunes/types";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Image from "next/image";
@@ -21,6 +20,7 @@ import { cn, getHref } from "~/lib/utils";
 import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";
 import { PlayButton } from "../play-button";
+import { ArtistLinks } from "./artist-links";
 import { TileMoreButton } from "./more-button";
 import { TilePlayPauseButton } from "./play-pause-button";
 
@@ -55,9 +55,12 @@ export async function SongList(props: SongListProps) {
 
   return (
     <section className={className}>
-      <ol className="space-y-2 text-muted-foreground">
+      <ol className="flex flex-col gap-2 text-muted-foreground">
         {items.map((item, i) => (
-          <li key={`${item.id}-${i}`}>
+          <li
+            key={`${item.id}-${i}`}
+            className="-m-2 p-2 [contain-intrinsic-size:auto_4.5rem] [content-visibility:auto]"
+          >
             <div className="group flex h-14 w-full cursor-pointer items-center justify-between overflow-hidden rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-xs">
               <div className="hidden w-[6%] lg:flex lg:justify-center xl:w-[4%]">
                 <span
@@ -123,25 +126,9 @@ export async function SongList(props: SongListProps) {
                     </Link>
                   </h3>
 
-                  <ScrollArea className="w-full truncate pb-1">
-                    {item.more_info.artistMap?.primary_artists?.map(
-                      (artist, index, arr) => (
-                        <Link
-                          key={artist.id}
-                          href={getHref(artist.perma_url, "artist")}
-                          className="hover:text-foreground"
-                        >
-                          {artist.name}
-                          {index !== arr.length - 1 && ", "}
-                        </Link>
-                      ),
-                    )}
-
-                    <ScrollBar
-                      orientation="horizontal"
-                      className="mt-1 h-1 w-full"
-                    />
-                  </ScrollArea>
+                  <ArtistLinks
+                    artists={item.more_info.artistMap?.primary_artists ?? []}
+                  />
                 </figcaption>
 
                 {showAlbum && item.type !== "episode" && (
