@@ -1,6 +1,11 @@
 import { describe, expect, it } from "bun:test";
 
-import { getClientKey, resolveTrustedProxy } from "~/lib/client-ip";
+import {
+  TRUSTED_CLIENT_IP_HEADER,
+  getClientKey,
+  resolveTrustedProxy,
+  withTrustedClientIp,
+} from "~/lib/client-ip";
 
 const h = (init: Record<string, string>) => new Headers(init);
 
@@ -71,5 +76,45 @@ describe("resolveTrustedProxy", () => {
     expect(resolveTrustedProxy("true", undefined)).toBe("true");
     expect(resolveTrustedProxy(undefined, "1")).toBe("vercel");
     expect(resolveTrustedProxy(undefined, undefined)).toBe("false");
+  });
+});
+
+describe("withTrustedClientIp", () => {
+  const req = (init: Record<string, string>) =>
+    new Request("https://example.com/api/auth/sign-in/email", {
+      method: "POST",
+      body: "{}",
+      headers: init,
+    });
+
+  it("overwrites a forged trusted-IP header with the resolved client key", () => {
+    const stamped = withTrustedClientIp(
+      req({
+        [TRUSTED_CLIENT_IP_HEADER]: "6.6.6.6",
+        "x-real-ip": "203.0.113.7",
+      }),
+      "vercel",
+    );
+    expect(stamped.headers.get(TRUSTED_CLIENT_IP_HEADER)).toBe("203.0.113.7");
+  });
+
+  it("true: stamps only the last forwarded entry", () => {
+    const stamped = withTrustedClientIp(
+      req({ "x-forwarded-for": "6.6.6.6, 198.51.100.9" }),
+      "true",
+    );
+    expect(stamped.headers.get(TRUSTED_CLIENT_IP_HEADER)).toBe("198.51.100.9");
+  });
+
+  it("false: ignores forgeable headers and keeps the body", async () => {
+    const stamped = withTrustedClientIp(
+      req({
+        "x-forwarded-for": "6.6.6.6",
+        [TRUSTED_CLIENT_IP_HEADER]: "6.6.6.6",
+      }),
+      "false",
+    );
+    expect(stamped.headers.get(TRUSTED_CLIENT_IP_HEADER)).toBe("untrusted");
+    expect(await stamped.text()).toBe("{}");
   });
 });

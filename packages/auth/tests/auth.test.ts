@@ -217,6 +217,18 @@ describe("Better Auth configuration", () => {
     });
   });
 
+  it("reads the client IP only from the configured headers", () => {
+    const auth = createAuth(makeFakeDb(), {
+      ipAddressHeaders: ["x-infinitunes-client-ip"],
+    });
+    expect(auth.options.advanced?.ipAddress?.ipAddressHeaders).toEqual([
+      "x-infinitunes-client-ip",
+    ]);
+    expect(
+      createAuth(makeFakeDb()).options.advanced?.ipAddress,
+    ).toBeUndefined();
+  });
+
   it("disables implicit account linking", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.account?.accountLinking?.enabled).toBe(false);
