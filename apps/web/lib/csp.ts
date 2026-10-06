@@ -1,6 +1,17 @@
 import { IMAGE_CDN_HOSTS, MEDIA_CDN_HOSTS } from "./image-hosts";
 
+export const CSP_ENFORCING_HEADER = "content-security-policy";
 export const CSP_REPORT_ONLY_HEADER = "content-security-policy-report-only";
+
+/**
+ * The single switch between observing and enforcing the policy. Keep `false`
+ * until a real browser session on a production build shows no violations
+ * (SE-10/SE-18), then flip it to `true`.
+ */
+export const CSP_ENFORCE = false;
+
+export const cspHeaderName = (enforce: boolean = CSP_ENFORCE) =>
+  enforce ? CSP_ENFORCING_HEADER : CSP_REPORT_ONLY_HEADER;
 
 const UMAMI_SCRIPT_HOST = "https://us.umami.is";
 const UMAMI_API_HOST = "https://api-gateway.umami.dev";
@@ -8,15 +19,18 @@ const UMAMI_API_HOST = "https://api-gateway.umami.dev";
 const https = (hosts: readonly string[]) => hosts.map((h) => `https://${h}`);
 
 /**
- * Builds the (report-only) Content-Security-Policy header value.
+ * Builds the Content-Security-Policy header value (see `CSP_ENFORCE`).
  *
- * Before enforcing: every page must render dynamically per request (a static or
- * cached shell cannot carry the nonce; the root layout reads `cookies()` and
- * `headers()`, so all HTML routes qualify today); each inline script needs the
- * `x-nonce` header (the Umami script has it; `next-themes`' `ThemeProvider`
- * inline script and the `dangerouslySetInnerHTML` blocks do not, so check
- * them); `style-src` still allows `'unsafe-inline'`; and real violation
- * reports from a browser on a preview deployment must come back clean.
+ * Prerequisites for enforcing (SE-15): every HTML route renders dynamically per
+ * request (the root layout reads `cookies()` and `headers()`), so the nonce is
+ * available. Both inline scripts carry it: the Umami `<Script>` and the
+ * `next-themes` bootstrap (`nonce` prop on `ThemeProvider`, passed from the root
+ * layout). The two `dangerouslySetInnerHTML` blocks (lyrics, artist bio) render
+ * `sanitizeRichText` output as markup, not script, so `script-src` does not
+ * apply to them. `style-src` keeps `'unsafe-inline'` on purpose: the layout sets
+ * `style` attributes server-side and Sonner/Next inject `<style>` tags, and
+ * style injection cannot run script. `object-src`, `base-uri` and `form-action`
+ * are locked down because they do not fall back to `default-src`.
  */
 export function buildCsp({
   nonce,
@@ -44,6 +58,9 @@ export function buildCsp({
       ...https(MEDIA_CDN_HOSTS),
       ...(umami ? [UMAMI_SCRIPT_HOST, UMAMI_API_HOST] : []),
     ],
+    "object-src": ["'none'"],
+    "base-uri": ["'self'"],
+    "form-action": ["'self'"],
     "frame-ancestors": ["'none'"],
   };
 
