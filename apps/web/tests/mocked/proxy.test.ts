@@ -51,6 +51,8 @@ process.env.SKIP_ENV_VALIDATION = "true";
 // so per-test toggling cannot work: every suite below runs with the limiter
 // enabled and a succeeding bucket unless stated.
 process.env.ENABLE_RATE_LIMITING = "true";
+// Client IP headers are only trusted behind a configured proxy (see client-ip).
+process.env.TRUSTED_PROXY = "vercel";
 const originalNodeEnv = process.env.NODE_ENV;
 process.env.NODE_ENV = "production";
 
@@ -338,5 +340,78 @@ describe("proxy CSP report-only header", () => {
       }),
     );
     expect(read(res, "content-security-policy-report-only")).toBeNull();
+  });
+});
+
+describe("proxy /api/auth rate limiting (SE-4)", () => {
+  let proxy: typeof import("../../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../../proxy"));
+  });
+
+  it("limits /api/auth and then passes it through without CSP or redirects", async () => {
+    seenKeys.length = 0;
+    const res = (await proxy(
+      createNextRequest("http://localhost:3000/api/auth/get-session", "GET", {
+        "x-real-ip": "203.0.113.7",
+      }),
+    )) as { status: number; headers: Headers };
+    expect(seenKeys).toEqual(["203.0.113.7"]);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-security-policy-report-only")).toBeNull();
+  });
+
+  it("adds the strict bucket only for credential POSTs", async () => {
+    seenKeys.length = 0;
+    const headers = { "x-real-ip": "203.0.113.7" };
+    await proxy(
+      createNextRequest(
+        "http://localhost:3000/api/auth/sign-in/email",
+        "POST",
+        headers,
+      ),
+    );
+    expect(seenKeys).toHaveLength(2);
+    seenKeys.length = 0;
+    await proxy(
+      createNextRequest(
+        "http://localhost:3000/api/auth/request-password-reset",
+        "POST",
+        headers,
+      ),
+    );
+    await proxy(
+      createNextRequest(
+        "http://localhost:3000/api/auth/sign-in/email",
+        "GET",
+        headers,
+      ),
+    );
+    expect(seenKeys).toHaveLength(2);
+  });
+
+  it("returns 429 on /api/auth when the bucket is empty", async () => {
+    limitSuccess = false;
+    try {
+      const res = (await proxy(
+        createNextRequest(
+          "http://localhost:3000/api/auth/sign-in/email",
+          "POST",
+        ),
+      )) as { status: number };
+      expect(res.status).toBe(429);
+    } finally {
+      limitSuccess = true;
+    }
+  });
+
+  it("matches /api/auth in the proxy matcher but not other api routes", async () => {
+    const { config } = await import("../../proxy");
+    const re = new RegExp(`^${config.matcher[0]}$`);
+    expect(re.test("/api/auth/sign-in/email")).toBe(true);
+    expect(re.test("/api/trpc/song.details")).toBe(true);
+    expect(re.test("/api/og")).toBe(false);
   });
 });
