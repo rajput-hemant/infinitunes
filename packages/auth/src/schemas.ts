@@ -28,7 +28,11 @@ export const signUpSchema = z
     email: emailSchema,
     password: passwordSchema,
     confirmPassword: z.string().min(1, "Please confirm your password"),
-    name: z.string().trim().max(100).optional(),
+    name: z
+      .string()
+      .trim()
+      .max(100, { error: "Name must be at most 100 characters long" })
+      .optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",

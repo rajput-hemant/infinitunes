@@ -92,6 +92,16 @@ describe("signUpSchema", () => {
     expect(valid.success).toBe(true);
   });
 
+  it("accepts name with leading/trailing whitespace within 100 chars after trim", () => {
+    const valid = signUpSchema.safeParse({
+      email: "user@example.com",
+      password: "Password123!",
+      confirmPassword: "Password123!",
+      name: " " + "a".repeat(100),
+    });
+    expect(valid.success).toBe(true);
+  });
+
   it("fails when password and confirmPassword differ", () => {
     const invalid = signUpSchema.safeParse({
       email: "user@example.com",
