@@ -20,6 +20,7 @@ Sources: the 2026-10-03 source-read audit of the docs and ledger, plus the orche
 | done                    | 0   | 5   | 49  | 159 | 213   |
 | **Total**               | 0   | 10  | 71  | 221 | 302   |
 
+Playback batch4 (2026-10-06): PQ-1/PQ-5/CD-1/PF-7/PF-8 source-prep validated; no edits; private evidence at /Users/rajput-hemant/Desktop/firstmate/data/infinitunes-catalog-proof-batch4-20261006/evidence/; report at same private path; paused for heavy-phase scheduling; no new done/open counts added.
 Playback batch3 (2026-10-05) after this recount: CD-7, PF-5 and DS-58 moved from needs local environment to done (C-124 to C-127 added), CD-1 moved from P2 confirmed bug to P3 verification gap (same status), PF-8 added as open. The totals below are not recomputed.
 
 302 items: 213 done, 25 open, 32 needs local environment, 32 decision needed (recounted by script from every item tag after wave 7; includes the 112 deslop and ponytail items; wave 7 added 9 items: UI-38, TC-10, DV-8, DV-9, DV-10, DP-16, SE-18 and the done entries C-122 and C-123; the 2026-10-03 table said 293); 14 proposals (not counted; 9 implemented or adopted in whole or part, 5 still open). Counts by kind: confirmed bug 7, decision 27, deslop 55, fix 83, improvement 41, ponytail 57, verification gap 32.
