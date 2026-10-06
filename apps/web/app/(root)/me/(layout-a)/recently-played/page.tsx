@@ -6,9 +6,9 @@ import {
   LibraryUnavailable,
 } from "~/components/library/library-section";
 import { LibrarySongList } from "~/components/library/library-song-list";
-import { PlayAllButton } from "~/components/library/play-all-button";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
+import { orFallback } from "~/lib/degrade";
 import { fetchSongsChunked, orderByIds } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
@@ -32,18 +32,16 @@ export default async function RecentlyPlayedPage() {
     );
   }
 
-  const fetched = await fetchSongsChunked(ids, (input) =>
-    api.song.items(input),
-  );
+  const [fetched, user, playlists, favorites] = await Promise.all([
+    fetchSongsChunked(ids, (input) => api.song.items(input)),
+    getUser(),
+    orFallback("user playlists", getUserPlaylists(), undefined),
+    orFallback("user favorites", getUserFavorites(), null),
+  ]);
 
   if (!fetched) return <LibraryUnavailable what="recently played items" />;
 
   const items = orderByIds(ids, fetched);
-
-  const user = await getUser();
-  const [playlists, favorites] = user
-    ? await Promise.all([getUserPlaylists(), getUserFavorites()])
-    : [undefined, undefined];
 
   return (
     <div className="space-y-4">
@@ -52,15 +50,14 @@ export default async function RecentlyPlayedPage() {
         count={items.length}
         noun="item"
         missing={ids.length - items.length}
-      >
-        <PlayAllButton items={items} />
-      </LibraryHeading>
+      />
 
       <LibrarySongList
         user={user}
         items={items}
         userFavorites={favorites}
         userPlaylists={playlists}
+        recentLabel="Recently played"
       />
     </div>
   );

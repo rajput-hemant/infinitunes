@@ -2,7 +2,12 @@ import { describe, expect, it, spyOn } from "bun:test";
 
 import type { Episode, Song } from "@infinitunes/types";
 
-import { chunk, fetchSongsChunked, orderByIds } from "../lib/liked-songs";
+import {
+  chunk,
+  fetchLikedSongsNewestFirst,
+  fetchSongsChunked,
+  orderByIds,
+} from "../lib/liked-songs";
 
 const song = (id: string) => ({ id }) as Song;
 
@@ -55,5 +60,36 @@ describe("recently played mixed lists", () => {
       "s1",
       "EV2",
     ]);
+  });
+});
+
+describe("fetchLikedSongsNewestFirst", () => {
+  it("returns the newest like first from an insertion-ordered list", async () => {
+    // addToFavorites appends, so the stored list is oldest-first.
+    const stored = ["first", "second", "third", "fourth", "fifth"];
+    // Upstream answers each chunk in scrambled order.
+    const details = async ({ id }: { id: string }) => ({
+      songs: id.split(",").reverse().map(song),
+    });
+
+    const songs = await fetchLikedSongsNewestFirst(stored, details, 2);
+
+    expect(songs?.map((s) => s.id)).toEqual([
+      "fifth",
+      "fourth",
+      "third",
+      "second",
+      "first",
+    ]);
+    expect(stored[0]).toBe("first");
+  });
+
+  it("returns undefined when every chunk fails", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    const songs = await fetchLikedSongsNewestFirst(["a"], async () => {
+      throw new Error("boom");
+    });
+    expect(songs).toBeUndefined();
+    err.mockRestore();
   });
 });

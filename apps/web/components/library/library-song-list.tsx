@@ -9,28 +9,32 @@ import React from "react";
 import type { User } from "~/lib/auth";
 
 import { SongListClient } from "../song-list/song-list.client";
+import { PlayAllButton } from "./play-all-button";
 
 type SortKey = "recent" | "title" | "artist";
 
-const SORT_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "recent", label: "Recently added" },
-  { value: "title", label: "Title A-Z" },
-  { value: "artist", label: "Artist A-Z" },
-];
+/** Lowercase and strip diacritics so "beyonce" finds "Beyoncé". */
+function fold(text: string): string {
+  return text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase();
+}
 
+/** Artist names and subtitles arrive HTML-encoded (`Rock &amp; Roll`). */
 function primaryArtists(item: Song | Episode): string[] {
   return (
-    item.more_info.artistMap?.primary_artists?.map((artist) => artist.name) ??
-    []
+    item.more_info.artistMap?.primary_artists?.map((artist) =>
+      decode(artist.name),
+    ) ?? []
   );
 }
 
 function matchesQuery(item: Song | Episode, query: string): boolean {
-  const haystack = [decode(item.title), item.subtitle, ...primaryArtists(item)]
-    .join(" ")
-    .toLocaleLowerCase();
+  const haystack = [
+    decode(item.title),
+    decode(item.subtitle),
+    ...primaryArtists(item),
+  ].join(" ");
 
-  return haystack.includes(query);
+  return fold(haystack).includes(query);
 }
 
 function compareTitle(a: Song | Episode, b: Song | Episode): number {
@@ -48,27 +52,37 @@ function compareArtist(a: Song | Episode, b: Song | Episode): number {
 type LibrarySongListProps = {
   user?: User;
   items: (Song | Episode)[];
-  userFavorites?: Favorite;
+  userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
   showAlbum?: boolean;
   className?: string;
+  /** Label of the default (server-order) sort, e.g. "Recently played". */
+  recentLabel?: string;
 };
 
 /**
  * Client-side sort and text filter over an already-loaded song list.
- * `recent` keeps the server order (recently added / recently played first).
+ * `recent` keeps the server order, which callers pass newest-first.
+ * Play All plays the visible (sorted and filtered) order.
  * Row-level unlike on mobile lives in each row's more-options menu
  * (`TileMoreButton` renders the favourite toggle in the mobile drawer).
  */
 export function LibrarySongList(props: LibrarySongListProps) {
-  const { user, items, userFavorites, userPlaylists, showAlbum, className } =
-    props;
+  const {
+    user,
+    items,
+    userFavorites,
+    userPlaylists,
+    showAlbum,
+    className,
+    recentLabel = "Recently added",
+  } = props;
 
   const [query, setQuery] = React.useState("");
   const [sort, setSort] = React.useState<SortKey>("recent");
 
   const visible = React.useMemo(() => {
-    const q = query.trim().toLocaleLowerCase();
+    const q = fold(query.trim());
     const filtered = q ? items.filter((item) => matchesQuery(item, q)) : items;
 
     if (sort === "title") return [...filtered].sort(compareTitle);
@@ -96,18 +110,27 @@ export function LibrarySongList(props: LibrarySongListProps) {
             onChange={(e) => setSort(e.target.value as SortKey)}
             className="h-9 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring"
           >
-            {SORT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
+            <option value="recent">{recentLabel}</option>
+            <option value="title">Title A-Z</option>
+            <option value="artist">Artist A-Z</option>
           </select>
         </label>
 
-        {(query || sort !== "recent") && visible.length > 0 && (
-          <output className="text-sm text-muted-foreground tabular-nums">
+        {query.trim() && visible.length > 0 && (
+          <output
+            aria-live="off"
+            className="text-sm text-muted-foreground tabular-nums"
+          >
             {visible.length} of {items.length}
           </output>
+        )}
+
+        {visible.length > 0 && (
+          <PlayAllButton items={visible} className="sm:ml-auto">
+            {visible.length === items.length
+              ? undefined
+              : `Play ${visible.length} shown`}
+          </PlayAllButton>
         )}
       </div>
 

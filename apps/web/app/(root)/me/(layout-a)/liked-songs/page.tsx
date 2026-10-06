@@ -6,10 +6,10 @@ import {
   LibraryUnavailable,
 } from "~/components/library/library-section";
 import { LibrarySongList } from "~/components/library/library-song-list";
-import { PlayAllButton } from "~/components/library/play-all-button";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { fetchSongsChunked } from "~/lib/liked-songs";
+import { orFallback } from "~/lib/degrade";
+import { fetchLikedSongsNewestFirst } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
 export const metadata = {
@@ -18,19 +18,27 @@ export const metadata = {
 };
 
 export default async function LikedSongsPage() {
+  // Optional data starts now so it overlaps the favourites read and the
+  // song-details fetch instead of waiting behind them.
+  const playlistsRequest = orFallback(
+    "user playlists",
+    getUserPlaylists(),
+    undefined,
+  );
   const [user, favoriteSongs] = await Promise.all([
     getUser(),
     getUserFavorites(),
   ]);
 
   if (favoriteSongs && favoriteSongs.songs.length) {
-    const songs = await fetchSongsChunked(favoriteSongs.songs, (input) =>
-      api.song.details(input),
-    );
+    const [songs, playlists] = await Promise.all([
+      fetchLikedSongsNewestFirst(favoriteSongs.songs, (input) =>
+        api.song.details(input),
+      ),
+      playlistsRequest,
+    ]);
 
     if (!songs) return <LibraryUnavailable what="liked songs" />;
-
-    const playlists = user ? await getUserPlaylists() : undefined;
 
     return (
       <div className="space-y-4">
@@ -39,9 +47,7 @@ export default async function LikedSongsPage() {
           count={songs.length}
           noun="song"
           missing={favoriteSongs.songs.length - songs.length}
-        >
-          <PlayAllButton items={songs} />
-        </LibraryHeading>
+        />
 
         <LibrarySongList
           user={user}
