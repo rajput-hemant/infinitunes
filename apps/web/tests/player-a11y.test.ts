@@ -18,7 +18,7 @@ describe("player a11y (UI-26)", () => {
     const source = await read("../components/queue.tsx");
 
     expect(source).toContain('queue.length === 1 ? "Track" : "Tracks"');
-    expect(source).toContain("focusIndex");
+    expect(source).toContain("focusRequest");
     expect(source).toContain("data-queue-remove");
   });
 });

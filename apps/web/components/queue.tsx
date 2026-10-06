@@ -46,20 +46,23 @@ export function QueueList() {
 
   // The removed row takes focus with it: hand it to the row that took its
   // place (or the last one still staying), or to the list once none is left.
-  const [focusIndex, setFocusIndex] = React.useState<number | null>(null);
+  // A fresh object per request so repeating an index still re-runs the effect.
+  const [focusRequest, setFocusRequest] = React.useState<{
+    index: number;
+  } | null>(null);
   React.useEffect(() => {
-    if (focusIndex === null) return;
-    setFocusIndex(null);
+    if (!focusRequest) return;
+    const { index } = focusRequest;
 
     const buttons = listRef.current?.querySelectorAll<HTMLButtonElement>(
       "[data-queue-remove]:not(:disabled)",
     );
     if (buttons?.length) {
-      buttons[Math.min(focusIndex, buttons.length - 1)]?.focus();
+      buttons[Math.min(index, buttons.length - 1)]?.focus();
     } else {
       listRef.current?.focus();
     }
-  }, [focusIndex]);
+  }, [focusRequest]);
 
   const commitRemoval = React.useCallback(
     (queueItemId: string) => {
@@ -81,7 +84,7 @@ export function QueueList() {
         rest.delete(queueItemId);
         return rest;
       });
-      setFocusIndex(index);
+      setFocusRequest({ index });
     },
     [setQueue, setCurrentIndex],
   );
