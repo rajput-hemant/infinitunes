@@ -1,6 +1,6 @@
 # Guest vs user access, proxy and tRPC boundary
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-006, ISSUE-010, ISSUE-020 in [verification-issues.md](../../../../docs/verification/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-006, ISSUE-010, ISSUE-020 in [verification-issues.md](../../../../docs/archive/verification-issues.md).
 
 ## Sub-features
 
