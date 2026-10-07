@@ -360,60 +360,62 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
             <Separator className="mb-2 mt-4" />
 
-            <div
-              className="relative flex flex-col gap-2 px-4 transition-transform duration-300"
-              style={{ transform: `translateX(${traslateX}%)` }}
-            >
-              {menuItems
-                .filter(({ hide }) => !hide)
-                .map(({ icon: Icon, label, onClick }, i) => (
-                  <button
-                    key={i}
-                    onClick={onClick}
-                    className="flex h-11 items-center font-medium"
-                  >
-                    <Icon className="mr-2 size-5" />
-                    {item.type === "song"
-                      ? label
-                      : label.replace("Song", "Episode")}
-                  </button>
-                ))}
-
-              <button
-                onClick={() => setTranslateX(-110)}
-                className="flex h-11 items-center font-medium"
+            <div className="min-h-0 overflow-x-hidden overflow-y-auto">
+              <div
+                className="relative flex flex-col gap-2 px-4 transition-transform duration-300"
+                style={{ transform: `translateX(${traslateX}%)` }}
               >
-                <Share2 className="mr-2 size-5" />
-                Share
-                <ChevronRight className="ml-auto size-5" />
-              </button>
+                {menuItems
+                  .filter(({ hide }) => !hide)
+                  .map(({ icon: Icon, label, onClick }, i) => (
+                    <button
+                      key={i}
+                      onClick={onClick}
+                      className="flex h-11 shrink-0 items-center font-medium"
+                    >
+                      <Icon className="mr-2 size-5" />
+                      {item.type === "song"
+                        ? label
+                        : label.replace("Song", "Episode")}
+                    </button>
+                  ))}
 
-              <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
-                  onClick={() => setTranslateX(0)}
-                  className="flex h-11 items-center px-4 font-medium"
+                  onClick={() => setTranslateX(-110)}
+                  className="flex h-11 shrink-0 items-center font-medium"
                 >
-                  <ChevronLeft className="mr-2 size-5" />
-                  Back
+                  <Share2 className="mr-2 size-5" />
+                  Share
+                  <ChevronRight className="ml-auto size-5" />
                 </button>
 
-                <Separator className="-my-2 mb-2" />
+                <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
+                  <button
+                    onClick={() => setTranslateX(0)}
+                    className="flex h-11 shrink-0 items-center px-4 font-medium"
+                  >
+                    <ChevronLeft className="mr-2 size-5" />
+                    Back
+                  </button>
 
-                <ShareOptions
-                  className="flex flex-col p-4 [&_a]:flex [&_a]:min-h-11 [&_a]:items-center [&_button]:flex [&_button]:min-h-11 [&_button]:items-center"
-                  title={getItemName(item)}
+                  <Separator className="-my-2 mb-2" />
+
+                  <ShareOptions
+                    className="flex flex-col p-4 [&_a]:flex [&_a]:min-h-11 [&_a]:items-center [&_button]:flex [&_button]:min-h-11 [&_button]:items-center"
+                    title={getItemName(item)}
+                  />
+                </div>
+
+                <Separator />
+
+                <TileMoreLinks
+                  type={item.type}
+                  itemUrl={getItemUrl(item)}
+                  albumUrl={getItemAlbumUrl(item)}
+                  showAlbum={item.type === "song" ? showAlbum : false}
+                  primaryArtists={getItemArtists(item)}
                 />
               </div>
-
-              <Separator />
-
-              <TileMoreLinks
-                type={item.type}
-                itemUrl={getItemUrl(item)}
-                albumUrl={getItemAlbumUrl(item)}
-                showAlbum={item.type === "song" ? showAlbum : false}
-                primaryArtists={getItemArtists(item)}
-              />
             </div>
 
             <Separator className="my-4" />

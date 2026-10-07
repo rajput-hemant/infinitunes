@@ -24,7 +24,7 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
       <Wrapper isDropdownItem={isDropdownItem}>
         <Link
           href={getHref(itemUrl, type)}
-          className="cursor-pointer py-3 lg:py-1"
+          className="min-h-11 shrink-0 cursor-pointer py-3 lg:min-h-0 lg:py-1"
         >
           <Music className="mr-2 inline-block size-5" />
           {type === "song" ? "Song Details & Lyrics" : "View Episode Details"}
@@ -35,7 +35,7 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
         <Wrapper isDropdownItem={isDropdownItem}>
           <Link
             href={getHref(albumUrl, "album")}
-            className="cursor-pointer py-3 lg:py-1"
+            className="min-h-11 shrink-0 cursor-pointer py-3 lg:min-h-0 lg:py-1"
           >
             <Disc className="mr-2 inline-block size-5" />
             More from Album
@@ -48,7 +48,7 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
           <Link
             key={id}
             href={getHref(perma_url, "artist")}
-            className="cursor-pointer py-3 lg:py-1"
+            className="min-h-11 shrink-0 cursor-pointer py-3 lg:min-h-0 lg:py-1"
           >
             <Mic2 className="mr-2 inline-block size-5" />
             More From {name}
