@@ -1,6 +1,7 @@
 "use client";
 
 import type { MegaMenu } from "@infinitunes/types";
+import { decode } from "@infinitunes/types";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -118,7 +119,7 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
 const ListItem = React.forwardRef<
   React.ElementRef<typeof Link>,
   React.ComponentProps<typeof Link>
->(({ className, children, ...props }, ref) => {
+>(({ className, children, title, ...props }, ref) => {
   return (
     <NavigationMenuLink
       render={
@@ -128,9 +129,12 @@ const ListItem = React.forwardRef<
             "block space-y-1 rounded-md py-1.5 text-muted-foreground duration-150 hover:text-secondary-foreground",
             className,
           )}
+          title={title ? decode(title) : title}
           {...props}
         >
-          <span className="line-clamp-1">{children}</span>
+          <span className="line-clamp-1">
+            {typeof children === "string" ? decode(children) : children}
+          </span>
         </Link>
       }
     />
