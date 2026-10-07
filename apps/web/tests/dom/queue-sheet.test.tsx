@@ -189,6 +189,11 @@ describe("queue sheet", () => {
         expect(row?.hasAttribute("data-leaving")).toBe(true);
         expect(row?.hasAttribute("inert")).toBe(true);
         expect(row?.getAttribute("aria-hidden")).toBe("true");
+        // The row gap lives in padding, which a 0fr grid row does not collapse:
+        // it must animate away too or the list snaps up 8px when the row drops.
+        expect(row?.firstElementChild?.className).toContain(
+          "group-data-leaving/row:pb-0",
+        );
       }
 
       // b has committed, c is still leaving: focus must skip the leaving row.
