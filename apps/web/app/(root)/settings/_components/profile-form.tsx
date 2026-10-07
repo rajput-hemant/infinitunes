@@ -29,6 +29,7 @@ import {
 } from "@infinitunes/ui/components/tooltip";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -60,6 +61,7 @@ const profileSchema = z.object({
 type FormData = z.infer<typeof profileSchema>;
 
 export function ProfileForm({ user }: ProfileFormProps) {
+  const router = useRouter();
   const [isPassVisible, setIsPassVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState("");
@@ -135,7 +137,15 @@ export function ProfileForm({ user }: ProfileFormProps) {
   }
 
   async function deleteUserHandler() {
-    toast.promise(unwrap(deleteUser(deletePassword || undefined)), {
+    const deletion = unwrap(deleteUser(deletePassword || undefined)).then(
+      () => {
+        // The session row is gone with the user; leave the stale signed-in page.
+        router.replace("/");
+        router.refresh();
+      },
+    );
+
+    toast.promise(deletion, {
       loading: "Deleting Account...",
       success: "Account Deleted! Logging out...",
       error: userMessage,
