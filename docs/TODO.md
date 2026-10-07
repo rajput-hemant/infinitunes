@@ -31,8 +31,8 @@ The 2026-10-03 deslop and ponytail review (112 PT/DS items, including 7 new find
 
 Known verification gaps that no item above closes on its own:
 
-- No browser verification of the UI changes from the decisions task: shadow clipping, `sr-only` credits and the "+N more" suffix (UI-48, UI-56 to UI-58), and the Empty and Alert states (UI-24).
-- Not covered by any browser run: 320px, 1920px, 200% zoom, forced-colors, the mega menu, reduced motion, seek drag and CSP report behavior (UI-1, UI-59).
+- Browser-verified 2026-10-07 ([record](verification/browser-verify2-2026-10-07.md)): no "NaN Plays" (UI-48, real counts only), `sr-only` credits and "+N more" (UI-56 to UI-58, seen on one playlist), no drop-shadow clipping, queue row removal (UI-40), mega menu at 1280, 320 and 1920 overflow, reduced-motion mobile nav. Three defects found and fixed (`9bc5092`, `099ae55`, `611f78c`). Still open: the Empty and Alert states (UI-24, needs a database) and UI-48 with a genuinely missing play count.
+- Not covered by any browser run: 200% zoom, forced-colors, seek drag and CSP report behavior (UI-1, UI-59). The 320px, 1920px, mega menu and reduced-motion checks are in the 2026-10-07 record above (logged out only).
 - The Better Auth limiter keyed on the trusted client IP (SE-4, SE-17) was unit and proxy tested; its live behavior was not exercised.
 - PF-8 was not checked with real audio or a seek drag.
 - D5 (44px targets) was measured only on `/album` at 390px, not on playlist or library pages; contrast (D4) was computed, not measured on the signed-in buttons; signed-in contrast was not measured at all ([a11y-polish record](verification/a11y-polish-2026-10-06.md)).
