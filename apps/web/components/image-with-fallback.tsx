@@ -16,6 +16,7 @@ export function ImageWithFallback(props: ImageWithFallbackProps) {
   // Remember which `src` failed so a new `src` starts without an error.
   const [failedSrc, setFailedSrc] = React.useState<typeof src | null>(null);
   const error = failedSrc === src;
+  if (failedSrc !== null && !error) setFailedSrc(null);
 
   return (
     <Image

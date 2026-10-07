@@ -41,7 +41,7 @@ afterEach(async () => {
 });
 
 describe("ImageWithFallback", () => {
-  it("swaps to the fallback on error and resets when src changes", async () => {
+  it("swaps to the fallback on error and retries after src changes away and back", async () => {
     const view = (src: string) => (
       <ImageWithFallback src={src} fallback="/fb.png" alt="x" />
     );
@@ -56,6 +56,9 @@ describe("ImageWithFallback", () => {
 
     await act(async () => root.render(view("/b.png")));
     expect(img().getAttribute("src")).toBe("/b.png");
+
+    await act(async () => root.render(view("/a.png")));
+    expect(img().getAttribute("src")).toBe("/a.png");
   });
 });
 
