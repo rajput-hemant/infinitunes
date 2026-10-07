@@ -26,11 +26,12 @@ const navlist: NavItem[] = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const activeRef = React.useRef<HTMLAnchorElement>(null);
-
-  React.useEffect(() => {
-    activeRef.current?.scrollIntoView({ inline: "center", block: "nearest" });
-  }, [pathname]);
+  // Attached only to the active link, so it runs when the active tab changes.
+  const scrollActiveIntoView = React.useCallback(
+    (node: HTMLAnchorElement | null) =>
+      node?.scrollIntoView({ inline: "center", block: "nearest" }),
+    [],
+  );
 
   return (
     <ScrollArea>
@@ -50,7 +51,7 @@ export function Navbar() {
               )}
             >
               <Link
-                ref={isActive ? activeRef : undefined}
+                ref={isActive ? scrollActiveIntoView : undefined}
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
