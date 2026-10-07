@@ -370,7 +370,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                   <button
                     key={i}
                     onClick={onClick}
-                    className="flex h-8 items-center font-medium"
+                    className="flex h-11 items-center font-medium"
                   >
                     <Icon className="mr-2 size-5" />
                     {item.type === "song"
@@ -381,7 +381,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
               <button
                 onClick={() => setTranslateX(-110)}
-                className="flex h-8 items-center font-medium"
+                className="flex h-11 items-center font-medium"
               >
                 <Share2 className="mr-2 size-5" />
                 Share
@@ -391,7 +391,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
               <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
                   onClick={() => setTranslateX(0)}
-                  className="flex h-8 items-center px-4 font-medium"
+                  className="flex h-11 items-center px-4 font-medium"
                 >
                   <ChevronLeft className="mr-2 size-5" />
                   Back
@@ -400,7 +400,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 <Separator className="-my-2 mb-2" />
 
                 <ShareOptions
-                  className="flex flex-col gap-4 p-4"
+                  className="flex flex-col p-4 [&_a]:flex [&_a]:min-h-11 [&_a]:items-center [&_button]:flex [&_button]:min-h-11 [&_button]:items-center"
                   title={getItemName(item)}
                 />
               </div>
@@ -419,7 +419,9 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             <Separator className="my-4" />
 
             <DrawerFooter className="pt-0 sm:justify-center">
-              <DrawerClose className={buttonVariants()}>Cancel</DrawerClose>
+              <DrawerClose className={buttonVariants({ className: "h-11" })}>
+                Cancel
+              </DrawerClose>
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
