@@ -126,12 +126,12 @@ export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
           <DialogFooter className="pt-4">
             <DialogClose
               render={
-                <Button size="sm" variant="secondary">
+                <Button size="sm" variant="secondary" className="h-11 lg:h-7">
                   Cancel
                 </Button>
               }
             />
-            <Button type="submit" size="sm">
+            <Button type="submit" size="sm" className="h-11 lg:h-7">
               Create Playlist
             </Button>
           </DialogFooter>

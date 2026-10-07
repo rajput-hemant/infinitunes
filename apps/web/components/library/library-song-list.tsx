@@ -99,7 +99,7 @@ export function LibrarySongList(props: LibrarySongListProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by title or artist"
-          className="h-9 w-full sm:max-w-xs"
+          className="h-11 w-full sm:max-w-xs lg:h-9"
         />
 
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -108,7 +108,7 @@ export function LibrarySongList(props: LibrarySongListProps) {
             aria-label="Sort songs"
             value={sort}
             onChange={(e) => setSort(e.target.value as SortKey)}
-            className="h-9 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring"
+            className="h-11 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring lg:h-9"
           >
             <option value="recent">{recentLabel}</option>
             <option value="title">Title A-Z</option>
@@ -126,7 +126,7 @@ export function LibrarySongList(props: LibrarySongListProps) {
         )}
 
         {visible.length > 0 && (
-          <PlayAllButton items={visible} className="sm:ml-auto">
+          <PlayAllButton items={visible} className="h-11 sm:ml-auto lg:h-7">
             {visible.length === items.length
               ? undefined
               : `Play ${visible.length} shown`}

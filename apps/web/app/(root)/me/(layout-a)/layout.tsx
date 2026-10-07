@@ -53,7 +53,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
               className={buttonVariants({
                 size: "sm",
                 variant: "secondary",
-                className: "w-24",
+                className: "h-11 w-24 lg:h-7",
               })}
             >
               <Edit aria-hidden className="mr-2 size-4" /> Edit
