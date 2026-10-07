@@ -140,12 +140,17 @@ export function RenamePlaylistDialog({
           <DialogFooter className="pt-4">
             <DialogClose
               render={
-                <Button size="sm" variant="secondary" type="button">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  type="button"
+                  className="h-11 lg:h-7"
+                >
                   Cancel
                 </Button>
               }
             />
-            <Button type="submit" size="sm">
+            <Button type="submit" size="sm" className="h-11 lg:h-7">
               Save
             </Button>
           </DialogFooter>

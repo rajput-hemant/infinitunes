@@ -33,7 +33,7 @@ export function LogoutButton() {
       size="sm"
       variant="destructive"
       onClick={signOutHandler}
-      className={cn("w-24", destructiveText)}
+      className={cn("h-11 w-24 lg:h-7", destructiveText)}
     >
       <LogOut className="mr-2 size-4" /> Logout
     </Button>

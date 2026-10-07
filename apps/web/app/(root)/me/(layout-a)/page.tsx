@@ -29,7 +29,7 @@ export default async function MyPlaylistsPage() {
       >
         {playlists.length > 0 && (
           <NewPlaylistForm>
-            <Button size="sm">
+            <Button size="sm" className="h-11 lg:h-7">
               <Plus className="mr-1 size-4" />
               Create Playlist
             </Button>
@@ -55,7 +55,7 @@ export default async function MyPlaylistsPage() {
           description="Collect songs you love into playlists you can play any time."
         >
           <NewPlaylistForm>
-            <Button size="sm">
+            <Button size="sm" className="h-11 lg:h-7">
               <Plus className="mr-1 size-4" />
               Create Playlist
             </Button>

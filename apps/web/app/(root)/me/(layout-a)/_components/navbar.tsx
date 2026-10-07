@@ -46,7 +46,7 @@ export function Navbar() {
             <div
               key={title}
               className={cn(
-                "inline-block h-full shrink-0 border-b-2 border-transparent py-2 hover:border-primary",
+                "inline-block h-full shrink-0 border-b-2 border-transparent py-0.5 lg:py-2 hover:border-primary",
                 isActive && "border-primary",
               )}
             >
@@ -56,7 +56,7 @@ export function Navbar() {
                 aria-current={isActive ? "page" : undefined}
                 className={cn(
                   buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
-                  "font-normal",
+                  "h-11 font-normal lg:h-8",
                   isActive && "font-medium",
                 )}
               >

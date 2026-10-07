@@ -2,7 +2,12 @@ import { describe, expect, it } from "bun:test";
 
 import type { MediaType } from "@infinitunes/types";
 
-import { getHref, ogImageUrl, safeRedirectPath } from "../lib/utils";
+import {
+  destructiveText,
+  getHref,
+  ogImageUrl,
+  safeRedirectPath,
+} from "../lib/utils";
 
 describe("getHref", () => {
   it("normalizes non-canonical internal-site.jiosaavn.com album URL with /s/<lang>/ prefix", () => {
@@ -230,5 +235,11 @@ describe("safeRedirectPath (open redirect)", () => {
   it("falls back to / when missing", () => {
     expect(safeRedirectPath(null)).toBe("/");
     expect(safeRedirectPath(undefined)).toBe("/");
+  });
+});
+
+describe("destructiveText", () => {
+  it("uses red-300 in dark: the destructive token measured 4.28:1 on the dialog tint", () => {
+    expect(destructiveText).toBe("text-red-700 dark:text-red-300");
   });
 });
