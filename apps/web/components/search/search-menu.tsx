@@ -39,6 +39,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   // The dialog is open for the path it was opened on, so navigating closes it.
   const [openPath, setOpenPath] = useState<string | null>(null);
   const isOpen = openPath === pathname;
+  if (openPath !== null && !isOpen) setOpenPath(null);
   const mounted = useSyncExternalStore(
     subscribeNever,
     () => true,
