@@ -1,11 +1,6 @@
 "use client";
 
-import type {
-  Album,
-  ArtistSearch,
-  SearchReturnType,
-  Song,
-} from "@infinitunes/types";
+import type { SearchReturnType, Song } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, SearchX } from "lucide-react";
 
@@ -27,19 +22,28 @@ type SearchResultsProps = {
 
 type SearchEntry = SearchReturnType["results"][number];
 
-type CardResult = Album | ArtistSearch["results"][number];
+type CardEntry = Exclude<SearchEntry, Song>;
 
 /** Artist results are named `name`; every other card type uses `title`. */
-function getCardTitle(result: CardResult) {
+function getCardTitle(result: CardEntry) {
   return "name" in result ? result.name : result.title;
 }
 
-function getCardSubtitle(result: CardResult) {
+function getCardSubtitle(result: CardEntry) {
   return "subtitle" in result ? result.subtitle : result.role;
+}
+
+/** Podcast (show) results carry artwork as `image_file_url`; they have no `image`. */
+function getCardImage(result: CardEntry) {
+  return result.type === "show" ? result.image_file_url : result.image;
 }
 
 function isSongEntry(result: SearchEntry): result is Song {
   return result.type === "song";
+}
+
+function isCardEntry(result: SearchEntry): result is CardEntry {
+  return !isSongEntry(result);
 }
 
 export function SearchResults(props: SearchResultsProps) {
@@ -92,14 +96,14 @@ export function SearchResults(props: SearchResultsProps) {
         <SongListClient items={searchResults.filter(isSongEntry)} />
       ) : (
         <div className={searchUi.grid}>
-          {(searchResults as CardResult[]).map((result) => (
+          {searchResults.filter(isCardEntry).map((result) => (
             <SliderCard
               key={result.id}
               name={getCardTitle(result)}
               url={result.perma_url}
               subtitle={getCardSubtitle(result)}
               type={result.type}
-              image={result.image}
+              image={getCardImage(result)}
               className={searchUi.gridCard}
             />
           ))}

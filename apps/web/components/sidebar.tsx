@@ -178,11 +178,10 @@ const sectionLabelClassName =
   "h-auto px-3 pb-1 text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] text-muted-foreground uppercase group-data-[collapsible=icon]:hidden";
 
 type SidebarPlaylistsProps = {
-  user: User;
   userPlaylists: MyPlaylist[];
 };
 
-function SidebarPlaylists({ user, userPlaylists }: SidebarPlaylistsProps) {
+function SidebarPlaylists({ userPlaylists }: SidebarPlaylistsProps) {
   const pathname = usePathname();
 
   return (
@@ -192,7 +191,7 @@ function SidebarPlaylists({ user, userPlaylists }: SidebarPlaylistsProps) {
           Playlists
         </SidebarGroupLabel>
 
-        <NewPlaylistForm user={user}>
+        <NewPlaylistForm>
           <Button
             variant="ghost"
             aria-label="Create Playlist"
@@ -236,7 +235,7 @@ function CreatePlaylistPrompt({ user, userPlaylists }: SidebarProps) {
       ) : null}
 
       {user ? (
-        <NewPlaylistForm user={user}>
+        <NewPlaylistForm>
           <Button
             variant="outline"
             className={cn(controlStyles.text, "w-full truncate")}
@@ -340,7 +339,7 @@ function SidebarContents({ user, userPlaylists }: SidebarProps) {
         )}
 
         {user && hasPlaylists ? (
-          <SidebarPlaylists user={user} userPlaylists={userPlaylists} />
+          <SidebarPlaylists userPlaylists={userPlaylists} />
         ) : (
           <CreatePlaylistPrompt user={user} userPlaylists={userPlaylists} />
         )}

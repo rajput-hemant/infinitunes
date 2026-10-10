@@ -4,8 +4,8 @@ import { DENSITIES } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Layout, Monitor, Moon, RotateCcw, Rows3, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
 
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
 
@@ -36,18 +36,12 @@ const MODES = [
   },
 ] as const;
 
-const subscribeNever = () => () => {};
-
 export function AppearanceSettings() {
   const { config, update, reset, isDefault } = useThemeConfig();
   const { theme: storedTheme, setTheme } = useTheme();
   // next-themes only knows the stored mode on the client; wait for hydration so
   // server and first client render agree.
-  const hydrated = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
+  const hydrated = useIsHydrated();
   const theme = hydrated ? storedTheme : undefined;
 
   return (

@@ -2,15 +2,12 @@
 
 import type { Lang, Radio } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2, Radio as RadioIcon } from "lucide-react";
+import { Radio as RadioIcon } from "lucide-react";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
-import {
-  CatalogEmpty,
-  CatalogEnd,
-} from "~/app/(root)/browse/_components/catalog-states";
+import { CatalogEmpty } from "~/app/(root)/browse/_components/catalog-states";
+import { CatalogLoadMore } from "~/components/catalog-load-more";
 import { SliderCard } from "~/components/slider/slider-card";
-import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
 
 type FeaturedStationsProps = {
@@ -36,15 +33,6 @@ export function FeaturedStations({
     });
 
   const stations = data.pages.flat();
-
-  const [ref] = useIntersectionObserver({
-    threshold: 0.5,
-    onChange(isIntersecting) {
-      if (isIntersecting) {
-        fetchNextPage();
-      }
-    },
-  });
 
   if (stations.length === 0) {
     return (
@@ -82,20 +70,11 @@ export function FeaturedStations({
         )}
       </CatalogGrid>
 
-      {hasNextPage ? (
-        <div
-          ref={ref}
-          className="flex items-center justify-center gap-2 py-6 text-sm font-medium text-muted-foreground"
-        >
-          {isFetchingNextPage && (
-            <>
-              <Loader2 className="size-5 animate-spin" /> Loading...
-            </>
-          )}
-        </div>
-      ) : (
-        <CatalogEnd />
-      )}
+      <CatalogLoadMore
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={fetchNextPage}
+      />
     </div>
   );
 }

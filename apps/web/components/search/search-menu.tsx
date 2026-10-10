@@ -10,14 +10,9 @@ import {
 } from "@infinitunes/ui/components/dialog";
 import { Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import {
-  type ReactNode,
-  useDeferredValue,
-  useEffect,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { type ReactNode, useDeferredValue, useEffect, useState } from "react";
 
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useKeydown } from "~/hooks/use-keydown";
 import { useIsTyping } from "~/hooks/use-store";
 import { controlStyles } from "~/lib/control-styles";
@@ -30,8 +25,6 @@ import { resolveSearchState } from "./search-status";
 import { searchUi } from "./search-ui";
 import { useRecentSearches } from "./use-recent-searches";
 import { useSearchPaletteKeys } from "./use-search-palette-keys";
-
-const subscribeNever = () => () => {};
 
 const LISTBOX_ID = "search-palette-listbox";
 
@@ -47,11 +40,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   const [openPath, setOpenPath] = useState<string | null>(null);
   const isOpen = openPath === pathname;
   if (openPath !== null && !isOpen) setOpenPath(null);
-  const mounted = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
+  const mounted = useIsHydrated();
 
   const setIsOpen = (open: boolean) => {
     if (open) setQuery("");
