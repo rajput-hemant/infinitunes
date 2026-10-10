@@ -1,67 +1,50 @@
-import { beforeEach, describe, expect, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
 
-import {
-  api,
-  apiCacheSize,
-  CACHE_MAX_ENTRIES,
-  clearApiCache,
-} from "../src/lib/api";
+import { db } from "@infinitunes/db";
 
-const okFetch: typeof fetch = async () =>
-  new Response(JSON.stringify({ ok: true }), { status: 200 });
+import { api, revalidateSeconds } from "../src/lib/api";
+import { endpoints } from "../src/lib/endpoints";
+import { appRouter } from "../src/root";
+import { createCallerFactory } from "../src/trpc";
 
-describe("api response cache", () => {
-  beforeEach(() => {
-    clearApiCache();
-  });
-
-  it("serves a repeated call from cache without hitting upstream twice", async () => {
+describe("raw API transport", () => {
+  it("routes public catalog calls through the injected API without resolving a session", async () => {
     let calls = 0;
-    const countingFetch: typeof fetch = async () => {
+    let sessions = 0;
+    const fetchFn: typeof fetch = async () => {
       calls++;
-      return new Response(JSON.stringify({ ok: true }), { status: 200 });
+      return Response.json([]);
     };
-
-    await api("cache.hit", { query: { q: "same" } }, countingFetch);
-    await api("cache.hit", { query: { q: "same" } }, countingFetch);
-
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: async () => {
+        sessions++;
+        return null;
+      },
+      catalogApi: (call, options) => api(call, options, fetchFn),
+    });
+    expect(await caller.get.charts({ page: 1, n: 1 })).toEqual([]);
     expect(calls).toBe(1);
-    expect(apiCacheSize()).toBe(1);
+    expect(sessions).toBe(0);
   });
-
-  it("never grows past CACHE_MAX_ENTRIES for distinct keys", async () => {
-    for (let i = 0; i < CACHE_MAX_ENTRIES + 120; i++) {
-      await api("cache.bound", { query: { q: `key-${i}` } }, okFetch);
-    }
-
-    expect(apiCacheSize()).toBe(CACHE_MAX_ENTRIES);
-  });
-
-  it("evicts the least recently used key first", async () => {
+  it("does not retain responses in a process cache", async () => {
     let calls = 0;
-    const countingFetch: typeof fetch = async () => {
-      calls++;
-      return new Response(JSON.stringify({ ok: true }), { status: 200 });
-    };
+    const fetchFn: typeof fetch = async () => Response.json({ count: ++calls });
+    expect(await api(endpoints.get.charts, {}, fetchFn)).toEqual({ count: 1 });
+    expect(await api(endpoints.get.charts, {}, fetchFn)).toEqual({ count: 2 });
+  });
 
-    await api("cache.lru", { query: { q: "oldest" } }, countingFetch);
-    for (let i = 0; i < CACHE_MAX_ENTRIES - 1; i++) {
-      await api("cache.lru", { query: { q: `filler-${i}` } }, countingFetch);
+  it("keeps encrypted-media detail lifetimes at most ten minutes", () => {
+    for (const call of [
+      endpoints.song.id,
+      endpoints.song.link,
+      endpoints.album.id,
+      endpoints.playlist.id,
+    ]) {
+      expect(revalidateSeconds(call)).toBe(600);
     }
-    // Re-reading the oldest key refreshes its recency, so the next insert must
-    // evict a filler instead.
-    await api("cache.lru", { query: { q: "oldest" } }, countingFetch);
-    const callsBefore = calls;
-    await api("cache.lru", { query: { q: "overflow" } }, countingFetch);
-
-    expect(apiCacheSize()).toBe(CACHE_MAX_ENTRIES);
-    // one new upstream call for "overflow" only; "oldest" was a cache hit
-    expect(calls).toBe(callsBefore + 1);
-
-    await api("cache.lru", { query: { q: "oldest" } }, countingFetch);
-    expect(calls).toBe(callsBefore + 1);
-
-    await api("cache.lru", { query: { q: "filler-0" } }, countingFetch);
-    expect(calls).toBe(callsBefore + 2);
+    expect(revalidateSeconds(endpoints.get.mega_menu)).toBe(3600);
+    expect(revalidateSeconds(endpoints.get.footer_details)).toBe(3600);
+    expect(revalidateSeconds(endpoints.album.same_year)).toBe(3600);
   });
 });

@@ -7,7 +7,7 @@ const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
  */
 export function assertLocalDatabase(
   databaseUrl: string,
-  nodeEnv = process.env.NODE_ENV,
+  nodeEnv: string | undefined = process.env.NODE_ENV,
 ): void {
   if (nodeEnv === "production") {
     throw new Error("[local-dev] Refusing to run: NODE_ENV is production.");
@@ -33,7 +33,7 @@ export function assertLocalDatabase(
 /** Non-throwing form of `assertLocalDatabase` for callers that only gate. */
 export function isLocalDatabase(
   databaseUrl: string,
-  nodeEnv = process.env.NODE_ENV,
+  nodeEnv: string | undefined = process.env.NODE_ENV,
 ): boolean {
   try {
     assertLocalDatabase(databaseUrl, nodeEnv);

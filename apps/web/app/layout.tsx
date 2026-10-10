@@ -1,7 +1,6 @@
 // oxlint-disable-next-line import/no-unassigned-import -- global stylesheet is a side-effect import
 import "~/styles/globals.css";
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
 import Script from "next/script";
 import type React from "react";
 
@@ -11,7 +10,7 @@ import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
 import { THEME_COLOR } from "~/lib/theme-color";
-import { getThemeConfig } from "~/lib/theme-config";
+import { THEME_BOOTSTRAP_SCRIPT } from "~/lib/theme-script";
 import { absoluteUrl, cn } from "~/lib/utils";
 
 type RootLayoutProps = {
@@ -19,26 +18,19 @@ type RootLayoutProps = {
   children: React.ReactNode;
 };
 
-export default async function RootLayout({ modal, children }: RootLayoutProps) {
-  const { theme, radius } = await getThemeConfig();
-  // Per-request CSP nonce set by `proxy.ts`; absent when the proxy did not run.
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
-
+export default function RootLayout({ modal, children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
           Object.values(fonts).map((font) => font.variable),
           "min-h-screen font-sans antialiased",
-          theme !== "default" && `theme-${theme}`,
         )}
-        style={
-          radius === "default"
-            ? undefined
-            : ({ "--radius": `${radius}rem` } as React.CSSProperties)
-        }
+        // The bootstrap script adds the theme preset class and `--radius`.
+        suppressHydrationWarning
       >
-        <Providers nonce={nonce}>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
+        <Providers>
           {children}
           {modal}
         </Providers>
@@ -48,7 +40,6 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
 
       <Script
         async
-        nonce={nonce}
         src="https://us.umami.is/script.js"
         data-website-id={env.UMAMI_WEBSITE_ID}
       />

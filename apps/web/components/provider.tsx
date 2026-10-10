@@ -19,8 +19,6 @@ const TOAST_BOTTOM_OFFSET = "var(--toast-offset-bottom)";
 
 type Props = {
   theme?: ThemeProviderProps;
-  /** Per-request CSP nonce for the `next-themes` inline bootstrap script. */
-  nonce?: string;
   children: React.ReactNode;
 };
 
@@ -63,13 +61,15 @@ function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Providers({ children, theme, nonce }: Props) {
+export default function Providers({ children, theme }: Props) {
   return (
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
-      nonce={nonce}
+      // `lib/theme-script.ts` already sets the class before paint; a
+      // non-executable type keeps next-themes' own copy out of CSP's way.
+      scriptProps={{ type: "application/json" }}
       {...theme}
     >
       <ThemeColorSync />

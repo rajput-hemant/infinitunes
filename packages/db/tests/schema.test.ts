@@ -26,13 +26,18 @@ describe("schema exports", () => {
     ).toEqual(["userId", "itemType", "itemId"]);
   });
 
-  it("user table keeps shared fields and removes Auth.js-only columns", () => {
-    const columns = getTableConfig(schema.users).columns.map((c) => c.name);
-    expect(columns).toContain("id");
-    expect(columns).toContain("email");
-    expect(columns).toContain("image");
-    for (const column of ["name", "password", "emailVerified"]) {
-      expect(columns).not.toContain(column);
+  it("user table keeps the shared columns and drops Auth.js-only ones", () => {
+    const columns = getTableConfig(schema.users).columns;
+    const names = columns.map((c) => c.name);
+    for (const column of ["id", "email", "image", "name", "password"]) {
+      expect(names).toContain(column);
+    }
+    expect(names).not.toContain("emailVerified");
+    // Sibling apps leave these null, so they must stay nullable.
+    for (const column of columns.filter((c) =>
+      ["name", "password"].includes(c.name),
+    )) {
+      expect(column.notNull).toBe(false);
     }
   });
 

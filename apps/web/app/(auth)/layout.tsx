@@ -2,6 +2,7 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { connection } from "next/server";
 import React from "react";
 
 import { Icons } from "~/components/icons";
@@ -19,7 +20,11 @@ type AuthLayoutProps = React.PropsWithChildren;
 
 // Signed-in redirects live in each page (`redirectIfSignedIn`), because
 // `/reset-password?token=...` must stay reachable for a signed-in user.
-export default function AuthLayout({ children }: AuthLayoutProps) {
+// TODO: Cache Components adoption. Keep daily artwork at request time until the auth shell is migrated.
+export const instant = false;
+
+export default async function AuthLayout({ children }: AuthLayoutProps) {
+  await connection();
   const imageUrl = dailyArtistImage();
 
   return (

@@ -27,13 +27,7 @@ export type ApiOptions = {
   timeoutMs?: number;
 };
 
-/**
- * Next Data Cache TTLs (seconds) for public catalog calls, keyed by upstream
- * `__call`. Anything absent is never cached by Next: search/autocomplete,
- * lyrics, radio (`webradio.*`, randomized) and anything user specific. The
- * cache key is URL + request headers, and the only header that varies is the
- * language cookie, so it never depends on the visitor's session.
- */
+/** Public catalog cache lifetimes in seconds; absent calls stay uncached. */
 export const REVALIDATE_SECONDS: Readonly<Record<string, number>> = {
   [endpoints.modules.launch_data]: 600,
   [endpoints.get.charts]: 600,
@@ -59,9 +53,19 @@ export const REVALIDATE_SECONDS: Readonly<Record<string, number>> = {
   [endpoints.artist.albums]: 600,
   [endpoints.artist.top_songs]: 600,
   [endpoints.show.episodes]: 600,
+  [endpoints.search.top_search]: 600,
+  [endpoints.search.all]: 600,
+  [endpoints.search.songs]: 600,
+  [endpoints.search.albums]: 600,
+  [endpoints.search.artists]: 600,
+  [endpoints.search.playlists]: 600,
+  [endpoints.search.more]: 600,
+  [endpoints.get.actor_top_songs]: 600,
+  [endpoints.get.featured_stations]: 600,
+  [endpoints.get.lyrics]: 600,
 };
 
-/** TTL for the Next Data Cache, or undefined when the call must not be cached. */
+/** TTL for catalog caching, or undefined when the call must not be cached. */
 export function revalidateSeconds(
   call: string,
   useCache = true,
@@ -71,47 +75,6 @@ export function revalidateSeconds(
 
 const MAX_ATTEMPTS = 2;
 const RETRY_DELAY_MS = 200;
-
-const CACHE_TTL = 60_000;
-
-/** Hard ceiling on cached upstream responses; oldest entries are evicted first. */
-export const CACHE_MAX_ENTRIES = 500;
-
-type CacheEntry = { expires: number; data: unknown };
-
-/** Insertion order doubles as LRU recency: re-reads move a key to the end. */
-const cache = new Map<string, CacheEntry>();
-
-function cacheGet(key: string): CacheEntry | undefined {
-  const entry = cache.get(key);
-  if (!entry) return undefined;
-  if (entry.expires <= Date.now()) {
-    cache.delete(key);
-    return undefined;
-  }
-  cache.delete(key);
-  cache.set(key, entry);
-  return entry;
-}
-
-function cacheSet(key: string, data: unknown): void {
-  cache.delete(key);
-  cache.set(key, { expires: Date.now() + CACHE_TTL, data });
-  while (cache.size > CACHE_MAX_ENTRIES) {
-    const oldest = cache.keys().next();
-    if (oldest.done) break;
-    cache.delete(oldest.value);
-  }
-}
-
-/** Test/ops helpers for the module-level cache. */
-export function apiCacheSize(): number {
-  return cache.size;
-}
-
-export function clearApiCache(): void {
-  cache.clear();
-}
 
 function isAbortError(err: unknown): boolean {
   return (
@@ -130,7 +93,7 @@ export function isTransientUpstreamError(error: unknown): boolean {
   return error instanceof TRPCError && transient.has(error);
 }
 
-function upstreamError(
+export function upstreamError(
   code: "TIMEOUT" | "BAD_GATEWAY",
   message: string,
   retryable: boolean,
@@ -146,12 +109,10 @@ function fetchFailure(err: unknown): TRPCError {
     : upstreamError("BAD_GATEWAY", "Upstream network failure", true);
 }
 
-type NextFetchInit = RequestInit & { next?: { revalidate: number } };
-
 /** One bounded attempt; the timeout also covers reading the body. */
 async function attempt<T>(
   url: string,
-  init: NextFetchInit,
+  init: RequestInit,
   timeoutMs: number,
   callerSignal: AbortSignal | undefined,
   fetchFn: typeof fetch,
@@ -207,7 +168,6 @@ export async function api<T = unknown>(
     query = {},
     language,
     signal,
-    cache: useCache = true,
     timeoutMs = 10_000,
   }: ApiOptions = {},
   fetchFn: typeof fetch = fetch,
@@ -225,27 +185,17 @@ export async function api<T = unknown>(
 
   const url = `${BASE_URL}?__call=${call}&${params.toString()}`;
   const langs = validLangs(language) || "hindi,english";
-  const cacheKey = `${url}&L=${langs}`;
-
-  const cached = useCache ? cacheGet(cacheKey) : undefined;
-  if (cached) {
-    return cached.data as T;
-  }
-
-  const revalidate = revalidateSeconds(call, useCache);
-  const init: NextFetchInit = {
+  const init: RequestInit = {
     headers: {
       cookie: `L=${langs}; gdpr_acceptance=true; DL=english`,
       "user-agent":
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
     },
-    ...(revalidate !== undefined ? { next: { revalidate } } : {}),
   };
 
   for (let n = 1; ; n++) {
     try {
       const data = await attempt<T>(url, init, timeoutMs, signal, fetchFn);
-      if (useCache) cacheSet(cacheKey, data);
       return data;
     } catch (err) {
       const retry =

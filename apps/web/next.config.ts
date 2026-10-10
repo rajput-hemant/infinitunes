@@ -6,7 +6,7 @@ import { IMAGE_CDN_HOSTS } from "./lib/image-hosts";
 
 const isProd = process.env.NODE_ENV === "production";
 
-// The Content-Security-Policy (report-only, per-request nonce) is set in
+// The Content-Security-Policy (report-only, hash-based) is set in
 // `proxy.ts`, not here.
 const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -27,6 +27,7 @@ const securityHeaders = [
 ];
 
 const config: NextConfig = {
+  cacheComponents: true,
   reactStrictMode: true,
   reactCompiler: true,
   typedRoutes: true,

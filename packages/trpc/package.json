@@ -32,6 +32,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./types": "./src/types.ts",
-    "./env": "./src/env.ts"
+    "./env": "./src/env.ts",
+    "./api": "./src/lib/api.ts"
   }
 }

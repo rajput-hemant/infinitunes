@@ -1,5 +1,4 @@
 import type { ThemeConfig } from "@infinitunes/types";
-import { cookies } from "next/headers";
 
 export const DEFAULT_THEME_CONFIG: ThemeConfig = {
   theme: "default",
@@ -33,9 +32,4 @@ export function parseThemeConfig(raw: string | undefined): ThemeConfig {
       ? (radius as ThemeConfig["radius"])
       : DEFAULT_THEME_CONFIG.radius,
   };
-}
-
-/** Reads and parses the `theme-config` cookie. */
-export async function getThemeConfig(): Promise<ThemeConfig> {
-  return parseThemeConfig((await cookies()).get("theme-config")?.value);
 }

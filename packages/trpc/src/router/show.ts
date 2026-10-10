@@ -2,7 +2,6 @@ import type { Episode, EpisodeDetail, Show } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { showEpisodesInput, showInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
@@ -26,7 +25,7 @@ export const showRouter = router({
   details: publicProcedure
     .input(showInput)
     .output(z.custom<Show>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await api(endpoints.show.show_details, {
         query: {
           token: requireShowToken(input, "show"),
@@ -42,7 +41,7 @@ export const showRouter = router({
   episodes: publicProcedure
     .input(showEpisodesInput)
     .output(z.custom<Episode[]>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await api(endpoints.show.episodes, {
         query: {
           show_id: input.id,
@@ -60,7 +59,7 @@ export const showRouter = router({
   episodeDetails: publicProcedure
     .input(showInput)
     .output(z.custom<EpisodeDetail>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await api(endpoints.show.episode_details, {
         query: {
           token: requireShowToken(input, "episode"),
