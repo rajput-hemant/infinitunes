@@ -6,6 +6,7 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
@@ -38,6 +39,13 @@ export async function generateMetadata({
 }
 export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
   const { token } = await props.params;
+  // Trending does not depend on the playlist; start it before the playlist
+  // resolves. orFallback never rejects, so an early notFound() is safe.
+  const trending = orFallback(
+    "trending",
+    api.get.trending({ type: "playlist" }),
+    [],
+  );
   const playlist = await getPlaylist(token);
 
   const songs = Array.isArray(playlist.list) ? playlist.list : [];
@@ -49,11 +57,11 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
 
       <SongList items={songs} />
 
-      <Suspense fallback={<SliderListSkeleton />}>
+      <Suspense fallback={<SliderListSkeleton length={1} />}>
         <PlaylistRecommendations playlist={playlist} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton />}>
-        <PlaylistTrending playlist={playlist} />
+      <Suspense fallback={<SliderListSkeleton length={1} />}>
+        <PlaylistTrending playlist={playlist} trending={trending} />
       </Suspense>
 
       {artists.length > 0 && (

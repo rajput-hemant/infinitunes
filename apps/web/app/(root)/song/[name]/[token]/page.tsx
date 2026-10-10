@@ -16,6 +16,8 @@ import { api } from "~/lib/trpc/server";
 
 import { Lyrics } from "./_components/lyrics";
 
+type TrendingSongs = Awaited<ReturnType<typeof api.get.trending>>;
+
 const getSong = cache(async (token: string) => {
   const data = await orNotFound(api.song.details({ token }));
   const song = data.songs[0];
@@ -45,14 +47,8 @@ export async function generateMetadata({
     square: true,
   });
 }
-async function SongLyrics({ token }: { token: string }) {
-  const { song } = await getSong(token);
-  if (song.more_info.has_lyrics !== "true") return null;
-  const lyrics = await orFallback(
-    "lyrics",
-    api.get.lyrics({ id: song.id }),
-    undefined,
-  );
+async function SongLyrics({ id }: { id: string }) {
+  const lyrics = await orFallback("lyrics", api.get.lyrics({ id }), undefined);
   return lyrics ? <Lyrics lyrics={lyrics} /> : null;
 }
 
@@ -78,29 +74,31 @@ async function SongAlbumSongs({ token }: { token: string }) {
 }
 
 async function SongRecommendations({ token }: { token: string }) {
-  const [{ modules }, items] = await Promise.all([
-    getSong(token),
-    getSong(token).then(({ song: currentSong }) =>
-      orFallback(
-        "recommendations",
-        api.song.recommendations({ id: currentSong.id }),
-        [],
-      ),
-    ),
-  ]);
+  const { song, modules } = await getSong(token);
+  const items = await orFallback(
+    "recommendations",
+    api.song.recommendations({ id: song.id }),
+    [],
+  );
   return items.length ? (
-    <SliderList title={modules!.reco.title} items={items.map(toCardItem)} />
+    <SliderList
+      title={modules?.reco?.title ?? "Recommended Songs"}
+      items={items.map(toCardItem)}
+    />
   ) : null;
 }
 
-async function SongTrending({ token }: { token: string }) {
-  const [{ modules }, items] = await Promise.all([
-    getSong(token),
-    orFallback("trending", api.get.trending({ type: "song" }), []),
-  ]);
+async function SongTrending({
+  token,
+  trending,
+}: {
+  token: string;
+  trending: Promise<TrendingSongs>;
+}) {
+  const [{ modules }, items] = await Promise.all([getSong(token), trending]);
   return items.length ? (
     <SliderList
-      title={modules!.currentlyTrending.title}
+      title={modules?.currentlyTrending?.title ?? "Trending"}
       items={items.map(toCardItem)}
     />
   ) : null;
@@ -108,7 +106,9 @@ async function SongTrending({ token }: { token: string }) {
 
 async function SongSameArtists({ token }: { token: string }) {
   const { modules } = await getSong(token);
-  const params = modules!.songsBysameArtists.source_params;
+  const section = modules?.songsBysameArtists;
+  if (!section) return null;
+  const params = section.source_params;
   const items = await orFallback(
     "songs from the same artists",
     api.artist.topSongs({
@@ -119,22 +119,21 @@ async function SongSameArtists({ token }: { token: string }) {
     [],
   );
   return items.length ? (
-    <SliderList
-      title={modules!.songsBysameArtists.title}
-      items={items.map(toCardItem)}
-    />
+    <SliderList title={section.title} items={items.map(toCardItem)} />
   ) : null;
 }
 
 async function SongSameActors({ token }: { token: string }) {
   const { song, modules } = await getSong(token);
+  const section = modules?.songsBysameActors;
   if (
+    !section ||
     !song.more_info.artistMap?.artists?.some(
       (artist) => artist.role === "starring",
     )
   )
     return null;
-  const params = modules!.songsBysameActors.source_params;
+  const params = section.source_params;
   const items = await orFallback(
     "songs from the same actors",
     api.get.actorTopSongs({
@@ -145,21 +144,33 @@ async function SongSameActors({ token }: { token: string }) {
     undefined,
   );
   return items?.length ? (
-    <SliderList
-      title={modules!.songsBysameActors.title}
-      items={items.map(toCardItem)}
-    />
+    <SliderList title={section.title} items={items.map(toCardItem)} />
   ) : null;
 }
 
 export default async function SongDetailsPage(props: SongDetailsPageProps) {
   const { token } = await props.params;
 
+  // Trending does not depend on the song; start it before the song resolves.
+  // orFallback never rejects, so an early notFound() leaves nothing unhandled.
+  const trending = orFallback(
+    "trending",
+    api.get.trending({ type: "song" }),
+    [],
+  );
   const { song, modules } = await getSong(token);
 
   return (
     <div className="space-y-4">
       <DetailsHeader item={song} />
+
+      {song.more_info.has_lyrics === "true" && (
+        <Suspense
+          fallback={<div className="h-24 animate-pulse rounded bg-muted" />}
+        >
+          <SongLyrics id={song.id} />
+        </Suspense>
+      )}
 
       <Suspense
         fallback={
@@ -171,26 +182,21 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
       >
         <SongAlbumSongs token={token} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton />}>
+      <Suspense fallback={<SliderListSkeleton length={1} />}>
         <SongRecommendations token={token} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton />}>
-        <SongTrending token={token} />
+      <Suspense fallback={<SliderListSkeleton length={1} />}>
+        <SongTrending token={token} trending={trending} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton />}>
+      <Suspense fallback={<SliderListSkeleton length={1} />}>
         <SongSameArtists token={token} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton />}>
+      <Suspense fallback={<SliderListSkeleton length={1} />}>
         <SongSameActors token={token} />
-      </Suspense>
-      <Suspense
-        fallback={<div className="h-24 animate-pulse rounded bg-muted" />}
-      >
-        <SongLyrics token={token} />
       </Suspense>
 
       <SliderList
-        title={modules!.artists.title}
+        title={modules?.artists?.title ?? "Artists"}
         items={(song.more_info.artistMap?.artists ?? []).map((artist) => ({
           id: artist.id,
           name: artist.name,

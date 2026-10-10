@@ -106,7 +106,7 @@ async function ShowEpisodeSection({
       </div>
 
       <EpisodeList
-        key={show.episodes[0].id}
+        key={show.episodes[0]?.id}
         user={user}
         showId={show.show_details.id}
         season={Number(show.show_details.more_info.season_number)}

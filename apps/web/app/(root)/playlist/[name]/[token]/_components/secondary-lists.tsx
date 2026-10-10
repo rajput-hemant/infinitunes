@@ -4,6 +4,7 @@ import { SliderList } from "~/components/slider/slider-list";
 import { api } from "~/lib/trpc/server";
 
 type Playlist = Awaited<ReturnType<typeof api.playlist.details>>;
+type TrendingPlaylists = Awaited<ReturnType<typeof api.get.trending>>;
 
 export async function PlaylistRecommendations({
   playlist,
@@ -24,11 +25,14 @@ export async function PlaylistRecommendations({
   ) : null;
 }
 
-export async function PlaylistTrending({ playlist }: { playlist: Playlist }) {
-  const [result] = await Promise.allSettled([
-    api.get.trending({ type: "playlist" }),
-  ]);
-  const items = result.status === "fulfilled" ? result.value : [];
+export async function PlaylistTrending({
+  playlist,
+  trending,
+}: {
+  playlist: Playlist;
+  trending: Promise<TrendingPlaylists>;
+}) {
+  const items = await trending;
   return (
     <SliderList
       title={
