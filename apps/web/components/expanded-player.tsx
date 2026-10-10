@@ -1,6 +1,8 @@
 "use client";
 
-import type { Queue } from "@infinitunes/types";
+import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { ActiveRadioSession, Queue } from "@infinitunes/types";
+import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
   Sheet,
   SheetClose,
@@ -12,6 +14,9 @@ import {
 import { ChevronDown } from "lucide-react";
 
 import { GlassSurface } from "~/components/glass/glass-surface";
+import { TileMoreButton } from "~/components/song-list/more-button";
+import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import type { PositionStore } from "~/lib/position-store";
 import { cn } from "~/lib/utils";
 
@@ -27,6 +32,11 @@ export type ExpandedPlayerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   track: Queue | undefined;
+  /** Station the queue is playing from, if any. */
+  radio?: ActiveRadioSession | null;
+  user?: User;
+  playlists?: MyPlaylist[];
+  favorites?: Favorite | null;
   position: PositionStore;
   duration: number;
   isPlaying: boolean;
@@ -53,6 +63,7 @@ export function ExpandedPlayer({
   open,
   onOpenChange,
   track,
+  radio,
   ...body
 }: ExpandedPlayerProps) {
   const swipe = useSwipe({
@@ -98,7 +109,30 @@ export function ExpandedPlayer({
           >
             <ChevronDown aria-hidden className="size-5" />
           </SheetClose>
-          <SheetTitle>Now playing</SheetTitle>
+          <SheetTitle className="sr-only">Now playing</SheetTitle>
+          <p className="truncate px-12 text-xs/4 text-muted-foreground">
+            Playing from{" "}
+            <b className="font-semibold text-foreground">
+              {radio?.name ?? "Queue"}
+            </b>
+          </p>
+          {track && (
+            <TileMoreButton
+              item={track}
+              showAlbum
+              user={body.user}
+              playlists={body.playlists}
+              favorites={body.favorites}
+              className={cn(
+                buttonVariants({
+                  size: "icon",
+                  variant: "ghost",
+                  className: controlStyles.headerIcon,
+                }),
+                "absolute top-3 right-2 md:right-4",
+              )}
+            />
+          )}
           <SheetDescription className="sr-only">
             {track
               ? `${track.name}, ${track.subtitle}. Player controls and queue.`

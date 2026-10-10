@@ -65,10 +65,11 @@ export function Queue({ open, onOpenChange }: QueueProps) {
       className={cn(
         "fixed z-45 flex flex-col overflow-hidden rounded-lg transition-[opacity,translate,visibility] duration-base ease-spring",
         "right-3 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] left-3 h-[min(28rem,calc(100dvh-12rem))]",
-        "md:bottom-23 md:left-auto md:h-[min(34rem,calc(100dvh-7.5rem))] md:w-[min(22rem,calc(100vw-1.5rem))]",
+        // Scoped below 1440 so the docked column rules are not outranked.
+        "md:max-[1439px]:bottom-23 md:max-[1439px]:left-auto md:max-[1439px]:h-[min(34rem,calc(100dvh-7.5rem))] md:max-[1439px]:w-[min(22rem,calc(100vw-1.5rem))]",
         // Concentric with the 0.5rem inset: sidebar radius (lg + 6px), and the
         // column is the shell's `--queue-w` minus the inset on its outer edge.
-        "min-[1440px]:inset-y-2 min-[1440px]:right-2 min-[1440px]:h-auto min-[1440px]:w-[calc(var(--queue-w)-0.5rem)] min-[1440px]:rounded-[calc(var(--radius-lg)+0.375rem)]",
+        "min-[1440px]:inset-y-2 min-[1440px]:right-2 min-[1440px]:left-auto min-[1440px]:h-auto min-[1440px]:w-[calc(var(--queue-w)-0.5rem)] min-[1440px]:rounded-[calc(var(--radius-lg)+0.375rem)]",
         open
           ? "visible opacity-100"
           : "invisible opacity-0 min-[1440px]:translate-x-full",
