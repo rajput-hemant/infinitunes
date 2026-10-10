@@ -842,3 +842,41 @@ html[data-motion="reduced"]
   :is([data-glass-role="tabbar"], [data-glass-role="player"]) {
   transition-property: opacity !important;
 }
+/* Below 1440 the queue morphs out of the player: clip, lift and materialize together. */
+@media (max-width: 1439px) {
+  [data-glass-role="queue"] {
+    transform-origin: calc(100% - 8rem) 100%;
+    clip-path: inset(calc(100% - 3rem) 5rem 0 calc(100% - 13rem) round 999px);
+    transform: translateY(4.75rem);
+    filter: blur(6px);
+    transition:
+      clip-path 0.46s var(--lg-ease-crit),
+      transform 0.46s var(--lg-ease),
+      opacity 0.22s,
+      filter 0.3s,
+      visibility 0.46s;
+  }
+  [data-glass-role="queue"][data-state="open"] {
+    clip-path: inset(-4rem round calc(var(--r-lg) + 4rem));
+    transform: none;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-glass-role="queue"] {
+    transition:
+      opacity 0.2s,
+      visibility 0.2s !important;
+    clip-path: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+html[data-motion="reduced"] [data-glass-role="queue"] {
+  transition:
+    opacity 0.2s,
+    visibility 0.2s !important;
+  clip-path: none !important;
+  transform: none !important;
+  filter: none !important;
+}
