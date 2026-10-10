@@ -62,11 +62,8 @@ async function seed() {
         .values({
           id: localDevUser.id,
           email: localDevUser.email,
-          name: localDevUser.name,
-          password: hashedPassword,
           betterAuthName: localDevUser.name,
           emailVerifiedBoolean: localDevUser.emailVerified,
-          emailVerified: new Date(),
         })
         .onConflictDoNothing();
 

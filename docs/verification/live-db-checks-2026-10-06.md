@@ -64,7 +64,7 @@ SELECT * FROM infinitunes_favorite;
 
 1. Current password hash verification (credential account hash)
 2. New password hashing with bcrypt cost 10
-3. Transactional update of both `users.password` and `betterAuthAccounts.password`
+3. Transactional update of both `users.password` and `betterAuthAccounts.password` (historical evidence; migration 0007 removes the legacy user password mirror)
 4. New password verification works, old password no longer works
 5. Session revocation logic (keep current token, delete others)
 

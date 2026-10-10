@@ -11,7 +11,7 @@ import { compare, hash } from "bcryptjs";
 import { getTableName } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
-type TestUser = { id: string; email: string; password: string | null };
+type TestUser = { id: string; email: string };
 type Write = {
   table: string;
   values: Record<string, unknown>;
@@ -70,11 +70,7 @@ const fakeDb = {
       findFirst: async () => null,
     },
     users: {
-      findFirst: async (opts?: { columns?: { password?: boolean } }) => {
-        if (!state.user || opts?.columns?.password !== false) return state.user;
-        const { password: _password, ...rest } = state.user;
-        return rest;
-      },
+      findFirst: async () => state.user,
     },
     betterAuthAccounts: {
       findFirst: async ({
@@ -262,8 +258,16 @@ describe("user router authorization", () => {
     state.user = {
       id: "user-123",
       email: "old@example.com",
-      password: await hash("CurrentPassword1!", 10),
     };
+    state.accounts = [
+      {
+        id: "credential-123",
+        userId: "user-123",
+        accountId: "user-123",
+        providerId: "credential",
+        password: await hash("CurrentPassword1!", 10),
+      },
+    ];
 
     await caller.user.updateUser({
       email: "New@Example.COM",
@@ -279,7 +283,6 @@ describe("user router authorization", () => {
     state.user = {
       id: "user-123",
       email: "user@example.com",
-      password: await hash("CurrentPassword1!", 10),
     };
     const caller = createCallerFactory(appRouter)({
       db,
@@ -304,8 +307,17 @@ describe("user router authorization", () => {
     state.user = {
       id: "user-123",
       email: "old@example.com",
-      password: await hash("CurrentPassword1!", 10),
     };
+
+    state.accounts = [
+      {
+        id: "credential-123",
+        userId: "user-123",
+        accountId: "user-123",
+        providerId: "credential",
+        password: await hash("CurrentPassword1!", 10),
+      },
+    ];
 
     await expect(
       caller.user.updateUser({
@@ -406,8 +418,16 @@ describe("user router authorization", () => {
     state.user = {
       id: "user-123",
       email: "user@example.com",
-      password: await hash("CurrentPassword1!", 10),
     };
+    state.accounts = [
+      {
+        id: "credential-123",
+        userId: "user-123",
+        accountId: "user-123",
+        providerId: "credential",
+        password: await hash("CurrentPassword1!", 10),
+      },
+    ];
   }
 
   it("rejects the signed-in password change without a session", async () => {
@@ -429,11 +449,14 @@ describe("user router authorization", () => {
       newPassword: "NewPassword2!",
     });
 
-    const userUpdate = state.updates.find((update) => update.table === "user");
-    expect(userUpdate?.where).toContain("user@example.com");
+    const accountUpdate = state.updates.find(
+      (update) => update.table === "better_auth_account",
+    );
+    expect(accountUpdate?.where).toContain("credential-123");
     expect(
-      await compare("NewPassword2!", userUpdate?.values.password as string),
+      await compare("NewPassword2!", accountUpdate?.values.password as string),
     ).toBe(true);
+    expect(state.updates.some((update) => update.table === "user")).toBe(false);
     expect(state.deletes).toHaveLength(1);
     expect(state.deletes[0]?.table).toBe("better_auth_session");
     expect(state.deletes[0]?.where).toEqual(["user-123", "current-token"]);
@@ -483,7 +506,7 @@ describe("user router authorization", () => {
   });
 
   it("tells a passwordless account to use Forgot password for a password change", async () => {
-    state.user = { id: "user-123", email: "user@example.com", password: null };
+    state.user = { id: "user-123", email: "user@example.com" };
 
     await expect(
       signedIn("t").user.changePassword({
@@ -511,7 +534,6 @@ describe("user router authorization", () => {
       state.user = {
         id: "user-123",
         email: "user@example.com",
-        password: null,
       };
     });
 
@@ -554,7 +576,6 @@ describe("user router authorization", () => {
       expect(state.updates[0]?.values).toEqual({
         email: "new@example.com",
         emailVerifiedBoolean: false,
-        emailVerified: null,
       });
     });
 
@@ -585,7 +606,7 @@ describe("user router authorization", () => {
   });
 
   it("uses the credential account hash when an OAuth account sorts first", async () => {
-    state.user = { id: "user-123", email: "user@example.com", password: null };
+    state.user = { id: "user-123", email: "user@example.com" };
     state.accounts = [
       {
         id: "oauth-account",
@@ -665,7 +686,6 @@ describe("user router authorization", () => {
     expect(state.updates[0]?.values).toEqual({
       email: "new@example.com",
       emailVerifiedBoolean: false,
-      emailVerified: null,
     });
   });
 

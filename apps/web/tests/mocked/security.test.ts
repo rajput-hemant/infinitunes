@@ -38,11 +38,17 @@ mock.module("@infinitunes/db", () => ({
         findFirst: async () => mockFavorites,
       },
       users: {
-        findFirst: async () =>
-          mockUser ? { id: mockUser.id, password: mockPasswordHash } : null,
+        findFirst: async () => (mockUser ? { id: mockUser.id } : null),
       },
       betterAuthAccounts: {
-        findFirst: async () => undefined,
+        findFirst: async () =>
+          mockUser
+            ? {
+                userId: mockUser.id,
+                providerId: "credential",
+                password: mockPasswordHash,
+              }
+            : undefined,
       },
     },
     select: () => ({
