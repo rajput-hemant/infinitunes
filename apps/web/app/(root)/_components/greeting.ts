@@ -9,6 +9,6 @@ export function greetingForHour(hour: number): string {
 
 /** "Good evening, Ada", or just the salutation while signed out or loading. */
 export function formatGreeting(salutation: string, name?: string | null) {
-  const trimmed = name?.trim();
-  return trimmed ? `${salutation}, ${trimmed}` : salutation;
+  const first = name?.trim().split(/\s+/)[0];
+  return first ? `${salutation}, ${first}` : salutation;
 }

@@ -42,6 +42,19 @@ describe("HomeGreeting", () => {
     expect(text).toMatch(/^Good (morning|afternoon|evening), Ada$/);
   });
 
+  it("greets by the first name of a full name", async () => {
+    sessionName = "Local Developer";
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    roots.push(root);
+    await act(async () => root.render(<HomeGreeting />));
+
+    expect(container.querySelector("h1")?.textContent).toMatch(
+      /^Good (morning|afternoon|evening), Local$/,
+    );
+  });
+
   it("omits the name when signed out", async () => {
     sessionName = null;
     const container = document.createElement("div");

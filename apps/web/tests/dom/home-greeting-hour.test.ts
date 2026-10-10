@@ -22,6 +22,16 @@ describe("formatGreeting", () => {
     expect(formatGreeting("Good evening", "Ada")).toBe("Good evening, Ada");
   });
 
+  it("greets by first name and keeps a single-word name whole", () => {
+    expect(formatGreeting("Good evening", "Local Developer")).toBe(
+      "Good evening, Local",
+    );
+    expect(formatGreeting("Good evening", "  Ada   Lovelace ")).toBe(
+      "Good evening, Ada",
+    );
+    expect(formatGreeting("Good evening", "Ada")).toBe("Good evening, Ada");
+  });
+
   it("falls back to the bare salutation without a usable name", () => {
     expect(formatGreeting(FALLBACK_GREETING)).toBe("Welcome");
     expect(formatGreeting("Good morning", null)).toBe("Good morning");

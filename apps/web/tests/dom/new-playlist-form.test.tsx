@@ -1,4 +1,4 @@
-import { describe, expect, it, mock } from "bun:test";
+import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -48,6 +48,42 @@ describe("new playlist dialog", () => {
     await act(async () => container.querySelector("button")?.click());
     expect(nameInput()?.value).toBe("");
     expect(createNewPlaylist).not.toHaveBeenCalled();
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+});
+
+describe("new playlist sheet", () => {
+  const realMatchMedia = window.matchMedia;
+
+  afterEach(() => {
+    window.matchMedia = realMatchMedia;
+  });
+
+  it("presents as a bottom sheet below 768px and still opens empty", async () => {
+    window.matchMedia = ((query: string) => ({
+      matches: true,
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    })) as unknown as typeof window.matchMedia;
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <NewPlaylistForm>
+          <button type="button">Open</button>
+        </NewPlaylistForm>,
+      );
+    });
+
+    await act(async () => container.querySelector("button")?.click());
+    expect(document.querySelector('[data-slot="drawer-popup"]')).not.toBeNull();
+    expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull();
+    expect(nameInput()?.value).toBe("");
 
     await act(async () => root.unmount());
     container.remove();
