@@ -1,10 +1,12 @@
 import { getImageSrc } from "@infinitunes/types";
 import type { Queue } from "@infinitunes/types";
+import { Button } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Slider } from "@infinitunes/ui/components/slider";
 import {
   Loader2,
   ListOrdered,
+  Mic2,
   Pause,
   Repeat,
   Repeat1,
@@ -12,12 +14,14 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import * as React from "react";
 
 import type { ExpandedPlayerProps } from "~/components/expanded-player";
 import { GlassSurface } from "~/components/glass/glass-surface";
 import { Icons } from "~/components/icons";
 import { ImageWithFallback } from "~/components/image-with-fallback";
+import { LikeButton } from "~/components/like-button";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -29,18 +33,29 @@ import {
   washButtonClass,
   washGlassButtonClass,
 } from "./controls";
+import { ExpandedPane, type PaneTab } from "./expanded-pane";
 import { ExpandedSeek } from "./expanded-seek";
-import { QueueList } from "./queue-list";
 import { loopModeOf } from "./track-index";
+
+const PHONE_TABS = [
+  { id: "lyrics", label: "Lyrics", Icon: Mic2 },
+  { id: "queue", label: "Up next", Icon: ListOrdered },
+] as const satisfies readonly {
+  id: PaneTab;
+  label: string;
+  Icon: LucideIcon;
+}[];
 
 type ExpandedBodyProps = Omit<
   ExpandedPlayerProps,
-  "open" | "onOpenChange" | "track"
+  "open" | "onOpenChange" | "track" | "playlists" | "radio"
 > & { track: Queue };
 
 /** The large artwork, title, transport and queue of the expanded player. */
 export function ExpandedBody({
   track,
+  user,
+  favorites,
   position,
   duration,
   isPlaying,
@@ -63,13 +78,19 @@ export function ExpandedBody({
   onToggleShuffle,
 }: ExpandedBodyProps) {
   const volumeLabelId = React.useId();
-  const queueHeadingId = React.useId();
-  const queueRegionId = React.useId();
-  const [showQueue, setShowQueue] = React.useState(false);
+  const paneId = React.useId();
+  const [tab, setTab] = React.useState<PaneTab>("queue");
+  const [showPane, setShowPane] = React.useState(false);
   const volumeRef = useSliderValueText(
     `${isMuted ? 0 : Math.round(volume * 100)} percent`,
   );
   const loopMode = loopModeOf(isLooping, loopPlaylist);
+
+  // Phones reveal the pane on demand: the active button closes it again.
+  function togglePhonePane(next: PaneTab) {
+    setShowPane(!(showPane && tab === next));
+    setTab(next);
+  }
 
   return (
     <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)] md:items-center md:gap-12 md:px-12 md:pt-16">
@@ -90,13 +111,23 @@ export function ExpandedBody({
           <Skeleton className="absolute inset-0 -z-10" />
         </div>
 
-        <div className="mt-2 min-w-0 text-left md:mt-5">
-          <p className="font-heading text-2xl/8 font-bold text-balance break-words text-foreground">
-            {track.name}
-          </p>
-          <p className="truncate text-base/6 text-muted-foreground">
-            {track.subtitle}
-          </p>
+        <div className="mt-2 flex items-center justify-between gap-4 text-left md:mt-5">
+          <div className="min-w-0">
+            <p className="font-heading text-2xl/8 font-bold text-balance break-words text-foreground">
+              {track.name}
+            </p>
+            <p className="truncate text-base/6 text-muted-foreground">
+              {track.subtitle}
+            </p>
+          </div>
+          <LikeButton
+            user={user}
+            type={track.type}
+            token={track.id}
+            name={track.name}
+            favourites={favorites}
+            className="shrink-0"
+          />
         </div>
 
         <ExpandedSeek
@@ -206,38 +237,36 @@ export function ExpandedBody({
             }
             className={cn(scrubClass, "[&>*]:py-3", !isReady && "opacity-50")}
           />
-          <button
-            type="button"
-            aria-label="Up next"
-            aria-expanded={showQueue}
-            aria-controls={queueRegionId}
-            onClick={() => setShowQueue(!showQueue)}
-            className={cn(
-              washButtonClass,
-              "md:hidden",
-              showQueue ? "text-primary" : "text-muted-foreground",
-            )}
-          >
-            <ListOrdered aria-hidden className="size-5" />
-          </button>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 md:hidden">
+          {PHONE_TABS.map(({ id, label, Icon }) => (
+            <Button
+              key={id}
+              variant="ghost"
+              aria-expanded={showPane && tab === id}
+              aria-controls={paneId}
+              onClick={() => togglePhonePane(id)}
+              className={cn(
+                controlStyles.text,
+                showPane && tab === id
+                  ? "text-primary"
+                  : "text-muted-foreground",
+              )}
+            >
+              <Icon aria-hidden className="size-4" />
+              {label}
+            </Button>
+          ))}
         </div>
       </div>
-      <section
-        id={queueRegionId}
-        aria-labelledby={queueHeadingId}
-        className={cn(
-          "max-h-[50dvh] min-h-0 overflow-y-auto rounded-md p-2 md:block md:h-[min(36rem,70dvh)] md:max-h-none",
-          !showQueue && "hidden",
-        )}
-      >
-        <h3
-          id={queueHeadingId}
-          className="px-2 pt-2 pb-1 text-[0.6875rem]/4 font-semibold tracking-[0.06em] text-muted-foreground uppercase"
-        >
-          Up next
-        </h3>
-        <QueueList upNextOnly />
-      </section>
+      <ExpandedPane
+        id={paneId}
+        track={track}
+        tab={tab}
+        onTabChange={setTab}
+        visible={showPane}
+      />
     </div>
   );
 }

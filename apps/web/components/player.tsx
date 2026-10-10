@@ -379,6 +379,10 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
         open={isExpanded}
         onOpenChange={setIsExpanded}
         track={current}
+        radio={activeRadio}
+        user={user}
+        playlists={playlists}
+        favorites={favorites}
         position={position}
         duration={duration}
         isPlaying={isPlaying}

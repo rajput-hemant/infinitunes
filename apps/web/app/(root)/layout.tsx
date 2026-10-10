@@ -40,13 +40,14 @@ export default async function Layout({ children }: PropsWithChildren) {
       </a>
       <AppSidebarProvider defaultOpen={sidebarOpen}>
         <Sidebar user={user} userPlaylists={userPlaylists} />
-        <div className="flex min-w-0 flex-1 flex-col">
+        {/* Reserves the docked queue column, so toolbar and main both shrink. */}
+        <div className="flex min-w-0 flex-1 flex-col transition-[margin] duration-base ease-spring min-[1440px]:in-data-[queue=open]:mr-(--queue-w)">
           <Navbar />
           {/* SidebarInset renders the only main landmark. */}
           <SidebarInset
             id="main-content"
             tabIndex={-1}
-            className="min-w-0 bg-transparent outline-none min-[1440px]:in-data-[queue=open]:mr-(--queue-w) transition-[margin] duration-base ease-spring"
+            className="min-w-0 bg-transparent outline-none"
           >
             <div className="mx-auto w-full max-w-400 px-page pt-2 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-36">
               <SecondaryNavbar />
