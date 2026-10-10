@@ -14,6 +14,8 @@ import type { GlassSize } from "~/lib/glass/lens-math";
 import { prefersReducedMotion } from "~/lib/glass/motion";
 import { materializes } from "~/lib/glass/overlays";
 import type { GlassRole } from "~/lib/glass/overlays";
+import { inkOverflowOrigin } from "~/lib/glass/shadow-overflow";
+import type { Origin } from "~/lib/glass/shadow-overflow";
 
 import { encodeLensMaps } from "./lens-maps";
 import type { LensMapEncoder } from "./lens-maps";
@@ -107,6 +109,7 @@ function createFilter(
   width: number,
   height: number,
   radius: number,
+  origin: Origin,
   target: GlassTarget,
 ): LensFilter | null {
   const defs = document.querySelector("#lg-defs defs");
@@ -121,11 +124,18 @@ function createFilter(
   });
   if (!maps) return null;
 
-  const box = { x: 0, y: 0, width, height, preserveAspectRatio: "none" };
+  // Offset every primitive by -origin so the maps sit on the border box (see inkOverflowOrigin).
+  const box = {
+    x: -origin.x,
+    y: -origin.y,
+    width,
+    height,
+    preserveAspectRatio: "none",
+  };
   const element = svg("filter", {
     id,
-    x: 0,
-    y: 0,
+    x: -origin.x,
+    y: -origin.y,
     width,
     height,
     filterUnits: "userSpaceOnUse",
@@ -200,15 +210,17 @@ function applyLens(el: HTMLElement) {
     return;
   }
   const radius = radiusOf(el, width, height);
+  const origin = inkOverflowOrigin(getComputedStyle(el).boxShadow);
   const key = lensKey(
     width,
     height,
     radius,
     entry.target.size,
     Boolean(entry.target.magnify),
+    origin,
   );
   const hit = cache.getOrCreate(key, (id) =>
-    createFilter(id, width, height, radius, entry.target),
+    createFilter(id, width, height, radius, origin, entry.target),
   );
   if (!hit) {
     // No defs host or no canvas: leave the frosted path in place.
