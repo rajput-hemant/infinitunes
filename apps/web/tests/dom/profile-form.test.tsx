@@ -49,6 +49,13 @@ async function mount() {
 }
 
 describe("profile form accessibility", () => {
+  it("shows the account initial and a non-submitting Change avatar action", async () => {
+    const container = await mount();
+
+    expect(findButton(container, "Change avatar").type).toBe("button");
+    expect(container.textContent).toContain("A");
+  });
+
   it("associates every visible label with its input", async () => {
     const container = await mount();
 

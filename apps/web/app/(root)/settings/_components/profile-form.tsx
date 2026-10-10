@@ -41,6 +41,21 @@ type ProfileFormProps = {
   };
 };
 
+/** Mockup `.input`: flat `--fill` field, lifting to the card colour on focus. */
+const inputClass = cn(
+  controlStyles.textLg,
+  "w-full rounded-sm border-0 bg-fill px-3 shadow-none hover:bg-fill-2 focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary dark:bg-fill dark:hover:bg-fill-2 dark:focus-visible:bg-card",
+);
+const labelClass = "text-[0.8125rem] leading-5 font-semibold";
+const squareButtonClass = cn(
+  controlStyles.text,
+  "rounded-sm border-0 bg-fill px-3 font-semibold hover:bg-fill-2 active:bg-fill-3 dark:bg-fill dark:hover:bg-fill-2",
+);
+const primaryButtonClass = cn(
+  controlStyles.text,
+  "rounded-sm px-3 font-semibold",
+);
+
 const profileSchema = z.object({
   name: nameSchema,
   email: emailSchema,
@@ -123,10 +138,16 @@ export function ProfileForm({ user }: ProfileFormProps) {
     });
   }
 
-  const inputClass = cn(controlStyles.text, "w-full shadow-xs");
+  const initial = (user.name || user.email || "?")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-10">
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10"
+    >
       <SettingsSection
         id="profile"
         title="Account Settings"
@@ -139,7 +160,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
               name="name"
               render={({ field, fieldState }) => (
                 <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor={ids.name}>Name</FieldLabel>
+                  <FieldLabel htmlFor={ids.name} className={labelClass}>
+                    Name
+                  </FieldLabel>
                   <Input
                     id={ids.name}
                     type="text"
@@ -162,7 +185,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
               name="email"
               render={({ field, fieldState }) => (
                 <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor={ids.email}>Email</FieldLabel>
+                  <FieldLabel htmlFor={ids.email} className={labelClass}>
+                    Email
+                  </FieldLabel>
                   <Input
                     id={ids.email}
                     type="email"
@@ -184,20 +209,34 @@ export function ProfileForm({ user }: ProfileFormProps) {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className={controlStyles.textLg}
+                className={primaryButtonClass}
               >
                 Save Changes
               </Button>
             </div>
           </div>
 
-          <div className="relative size-20 shrink-0 order-first justify-self-center overflow-hidden sm:size-28 md:order-none">
-            <Image
-              src={user.image ?? "/images/placeholder/user.jpg"}
-              alt={user.name ?? "Profile Photo"}
-              fill
-              className="rounded-full border p-1 shadow-xs"
-            />
+          <div className="order-first grid justify-items-center gap-3 md:order-none">
+            <div
+              aria-hidden
+              className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-linear-to-br from-primary to-[color-mix(in_srgb,var(--primary)_40%,black)] text-[1.75rem] leading-none font-bold text-primary-foreground shadow-lg md:size-28 md:text-[2.5rem]"
+            >
+              {user.image ? (
+                <Image src={user.image} alt="" fill className="object-cover" />
+              ) : (
+                initial
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() =>
+                toast.info("Avatar uploads are not available yet.")
+              }
+              className={squareButtonClass}
+            >
+              Change avatar
+            </Button>
           </div>
         </div>
       </SettingsSection>
@@ -213,7 +252,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
             name="currentPassword"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor={ids.currentPassword}>
+                <FieldLabel
+                  htmlFor={ids.currentPassword}
+                  className={labelClass}
+                >
                   Current Password
                 </FieldLabel>
                 <Input
@@ -241,7 +283,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
             name="password"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor={ids.password}>New Password</FieldLabel>
+                <FieldLabel htmlFor={ids.password} className={labelClass}>
+                  New Password
+                </FieldLabel>
                 <div className="relative w-full">
                   <Input
                     id={ids.password}
@@ -293,7 +337,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className={controlStyles.textLg}
+              className={primaryButtonClass}
             >
               Update Password
             </Button>

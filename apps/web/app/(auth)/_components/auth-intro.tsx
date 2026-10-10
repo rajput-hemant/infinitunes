@@ -5,7 +5,7 @@ type AuthIntroProps = {
 
 export function AuthIntro({ title, description }: AuthIntroProps) {
   return (
-    <div className="text-center">
+    <div>
       <h1 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em] text-foreground">
         {title}
       </h1>
