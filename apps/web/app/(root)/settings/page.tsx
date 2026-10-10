@@ -1,11 +1,9 @@
 import { Ban } from "lucide-react";
 
-import {
-  LibraryEmpty,
-  LibraryHeading,
-} from "~/components/library/library-section";
+import { LibraryEmpty } from "~/components/library/library-section";
 import { getUser } from "~/lib/auth";
 
+import { DeleteAccountSection } from "./_components/delete-account-section";
 import { PasskeySettings } from "./_components/passkey-settings";
 import { ProfileForm } from "./_components/profile-form";
 
@@ -29,16 +27,12 @@ export default async function SettingsProfilePage() {
   }
 
   return (
-    <div className="space-y-4">
-      <LibraryHeading
-        title="Account Settings"
-        description="This is how others will see you on the site."
-        className="border-b p-4"
-      />
-
+    <>
       <ProfileForm user={user} />
 
       <PasskeySettings />
-    </div>
+
+      <DeleteAccountSection />
+    </>
   );
 }
