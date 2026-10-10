@@ -33,11 +33,12 @@ import {
   Share2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
+import { ImageWithFallback } from "~/components/image-with-fallback";
+import { getPlaceholderSrc } from "~/components/placeholder-src";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -246,11 +247,12 @@ export function MoreButton(props: MoreButtonProps) {
             <DrawerHeader className="pb-0">
               <div className="flex gap-2 truncate">
                 <div className="relative aspect-square h-14 rounded-md">
-                  <Image
+                  <ImageWithFallback
                     src={getImageSrc(image, "low")}
                     alt={name}
                     fill
                     sizes="56px"
+                    fallback={getPlaceholderSrc(type)}
                     className="z-10 rounded-md"
                   />
 

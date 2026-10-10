@@ -36,11 +36,12 @@ import {
   Share2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
+import { ImageWithFallback } from "~/components/image-with-fallback";
+import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { getItemName } from "~/components/song-list/item-name";
 import {
   useActiveRadioSession,
@@ -336,11 +337,12 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             <DrawerHeader className="pb-0">
               <div className="flex items-center gap-2 truncate">
                 <div className="relative aspect-square h-14 rounded-md">
-                  <Image
+                  <ImageWithFallback
                     src={getImageSrc(item.image, "low")}
                     alt={getItemName(item)}
                     fill
                     sizes="56px"
+                    fallback={getPlaceholderSrc("song")}
                     className="z-10 shrink-0 rounded-md"
                   />
 

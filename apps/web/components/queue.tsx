@@ -13,11 +13,12 @@ import {
 } from "@infinitunes/ui/components/sheet";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListOrdered, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 
+import { ImageWithFallback } from "~/components/image-with-fallback";
+import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
 import { getHref } from "~/lib/utils";
 
@@ -148,11 +149,12 @@ export function QueueList() {
             <div className="group relative flex min-h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
               <figure className="flex w-full items-center gap-4 overflow-hidden">
                 <div className="relative aspect-square h-11 min-w-fit lg:h-10 overflow-hidden rounded">
-                  <Image
+                  <ImageWithFallback
                     src={getImageSrc(item.image, "low")}
-                    alt=""
+                    alt={item.name}
                     fill
                     sizes="44px"
+                    fallback={getPlaceholderSrc("song")}
                     className="z-10 object-cover duration-300 group-hover:brightness-50"
                   />
 

@@ -9,9 +9,10 @@ import {
 } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
+import { ImageWithFallback } from "~/components/image-with-fallback";
+import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
@@ -89,11 +90,12 @@ export async function SongList(props: SongListProps) {
               <figure className="flex items-center justify-between gap-4 overflow-hidden lg:w-[86%]">
                 {showAlbum && (
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
-                    <Image
+                    <ImageWithFallback
                       src={getImageSrc(item.image, "low")}
                       alt={decode(item.title)}
                       fill
                       sizes="40px"
+                      fallback={getPlaceholderSrc("song")}
                       className="z-10 object-cover duration-300 group-hover:brightness-50"
                     />
 
