@@ -71,6 +71,71 @@ describe("fetchSongsChunked", () => {
     }
   });
 
+  it("rethrows an outage that hits mid-recovery instead of truncating", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const ids = ["a", "b", "c", "d"];
+      const outage = Object.assign(new Error("Unavailable"), {
+        code: "BAD_GATEWAY",
+      });
+      const details = async ({ id }: { id: string }) => {
+        if (id.includes(",") || id === "a")
+          throw Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+        if (id === "c") throw outage;
+        return { songs: [song(id)] };
+      };
+      await expect(fetchSongsChunked(ids, details, 2)).rejects.toBe(outage);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("rethrows the original error when every id in a chunk is NOT_FOUND", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const original = Object.assign(new Error("batch gone"), {
+        code: "NOT_FOUND",
+      });
+      const details = async ({ id }: { id: string }) => {
+        throw id.includes(",")
+          ? original
+          : Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+      };
+      expect(await fetchSongsChunked(["a", "b"], details)).toBeUndefined();
+      expect(err.mock.calls.some((call) => call[1] === original)).toBe(true);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("bounds recovery concurrency, keeps order and logs one summary", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const ids = Array.from({ length: 12 }, (_, i) => `id-${i}`);
+      let active = 0;
+      let peak = 0;
+      const details = async ({ id }: { id: string }) => {
+        if (id.includes(","))
+          throw Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 2));
+        active -= 1;
+        if (id === "id-5")
+          throw Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+        return { songs: [song(id)] };
+      };
+      const result = await fetchSongsChunked(ids, details, 2);
+      expect(result?.map((item) => item.id)).toEqual(
+        ids.filter((id) => id !== "id-5"),
+      );
+      expect(peak).toBeLessThanOrEqual(3);
+      expect(err).toHaveBeenCalledTimes(1);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
   it("returns undefined when every chunk fails", async () => {
     const err = spyOn(console, "error").mockImplementation(() => {});
     const songs = await fetchSongsChunked(["a"], async () => {

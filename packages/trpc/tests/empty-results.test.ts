@@ -128,6 +128,52 @@ describe("secondary upstream outages", () => {
     });
   }
 
+  it("keeps persistent 4xx and invalid-JSON BAD_GATEWAY errors visible", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+      for (const respond of [
+        () => new Response("nope", { status: 403 }),
+        () => new Response("nope", { status: 404 }),
+        () => new Response("<html>", { status: 200 }),
+      ]) {
+        clearApiCache();
+        globalThis.fetch = async () => respond();
+        await expect(
+          caller.song.recommendations({ id: uniq() }),
+        ).rejects.toMatchObject({ code: "BAD_GATEWAY" });
+      }
+    } finally {
+      globalThis.fetch = originalFetch;
+      clearApiCache();
+    }
+  });
+
+  it("degrades upstream 5xx", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+      clearApiCache();
+      globalThis.fetch = async () => new Response("down", { status: 503 });
+      expect(await caller.song.recommendations({ id: uniq() })).toEqual([]);
+    } finally {
+      globalThis.fetch = originalFetch;
+      clearApiCache();
+    }
+  });
+
+  it("does not hide NOT_FOUND, BAD_REQUEST or non-tRPC errors", async () => {
+    const { secondaryList } = await import("../src/router/utils");
+    const errors = [
+      new TRPCError({ code: "NOT_FOUND" }),
+      new TRPCError({ code: "BAD_REQUEST" }),
+      new Error("Network unreachable"),
+    ];
+    for (const error of errors) {
+      await expect(secondaryList(() => Promise.reject(error))).rejects.toBe(
+        error,
+      );
+    }
+  });
+
   it("does not hide programming errors in secondary lists", async () => {
     const { secondaryList } = await import("../src/router/utils");
     const error = new TRPCError({ code: "INTERNAL_SERVER_ERROR" });

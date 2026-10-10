@@ -1,6 +1,4 @@
-import { TRPCError } from "@trpc/server";
-
-import { api } from "../lib/api";
+import { api, isTransientUpstreamError } from "../lib/api";
 import { createDownloadLinks } from "../lib/download";
 import { endpoints } from "../lib/endpoints";
 
@@ -50,18 +48,14 @@ export function mapDownloadUrls(value: unknown, key: string): void {
   value[key] = list.map((item) => withDownloadUrl(item));
 }
 
-/** Optional catalog lists can disappear during an upstream outage. */
+/** Optional catalog lists degrade to [] on transient upstream failures only (timeout, network, 5xx); 4xx and invalid JSON stay visible. */
 export async function secondaryList<T>(
   request: () => Promise<T>,
 ): Promise<T | []> {
   try {
     return await request();
   } catch (error) {
-    if (
-      !(error instanceof TRPCError) ||
-      (error.code !== "BAD_GATEWAY" && error.code !== "TIMEOUT")
-    )
-      throw error;
+    if (!isTransientUpstreamError(error)) throw error;
     console.error("catalog: secondary list unavailable", error);
     return [];
   }
