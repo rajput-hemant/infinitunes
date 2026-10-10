@@ -66,7 +66,7 @@ export function AccentPicker() {
         title="Custom color"
         className={cn(
           swatchStyles,
-          "overflow-hidden bg-conic from-red-500 via-yellow-400 via-lime-400 via-cyan-400 via-blue-500 via-fuchsia-500 to-red-500",
+          "overflow-hidden bg-[conic-gradient(var(--color-red-500),var(--color-yellow-400),var(--color-lime-400),var(--color-cyan-400),var(--color-blue-500),var(--color-fuchsia-500),var(--color-red-500))]",
           isCustom &&
             "ring-2 ring-primary ring-offset-4 ring-offset-background",
         )}

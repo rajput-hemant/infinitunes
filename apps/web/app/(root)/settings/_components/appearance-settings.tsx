@@ -11,6 +11,7 @@ import {
 import { Button } from "@infinitunes/ui/components/button";
 import { Layout, Monitor, Moon, RotateCcw, Rows3, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 
 import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
@@ -51,9 +52,19 @@ const TEXT_SIZE_LABELS = {
 
 const RADIUS_MAX_PX = radiusToPx(RADIUS_MAX_REM);
 
+const subscribeNever = () => () => {};
+
 export function AppearanceSettings() {
   const { config, update, reset, isDefault } = useThemeConfig();
-  const { theme, setTheme } = useTheme();
+  const { theme: storedTheme, setTheme } = useTheme();
+  // next-themes only knows the stored mode on the client; wait for hydration so
+  // server and first client render agree.
+  const hydrated = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+  const theme = hydrated ? storedTheme : undefined;
 
   return (
     <div className="grid items-start gap-10 min-[90rem]:grid-cols-[minmax(0,1fr)_18rem]">
