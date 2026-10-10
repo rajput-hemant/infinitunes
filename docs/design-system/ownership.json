@@ -175,6 +175,79 @@
       "apps/web/tests/dom/reset-password.test.tsx",
       "apps/web/tests/dom/password-toggle.test.tsx",
       "apps/web/tests/dom/error-boundaries.test.tsx"
+    ],
+    "ds2-wp0": ["docs/design-system/liquid-glass-research.md"],
+    "ds2-wp2": [
+      "apps/web/styles/glass.css",
+      "apps/web/components/glass/**",
+      "apps/web/lib/glass/**",
+      "apps/web/tests/glass*",
+      "apps/web/tests/dom/glass*",
+      "docs/design-system/glass.md",
+      "apps/web/app/layout.tsx"
+    ],
+    "ds2-wp3": [
+      "apps/web/components/sidebar.tsx",
+      "apps/web/components/site-header/**",
+      "apps/web/components/site-footer/**",
+      "apps/web/app/(root)/layout.tsx",
+      "apps/web/tests/root-shell-layout.test.ts",
+      "apps/web/tests/mobile-shell.test.ts",
+      "apps/web/tests/sidebar-inset-layout.test.ts",
+      "apps/web/tests/dom/main-nav.test.tsx",
+      "apps/web/tests/dom/sidebar-shell.test.tsx"
+    ],
+    "ds2-wp4": [
+      "apps/web/components/player.tsx",
+      "apps/web/components/player-wrapper.tsx",
+      "apps/web/components/expanded-player.tsx",
+      "apps/web/components/queue.tsx",
+      "apps/web/components/player/**",
+      "apps/web/tests/player*",
+      "apps/web/tests/queue*",
+      "apps/web/tests/dom/player*",
+      "apps/web/tests/dom/expanded-player*",
+      "apps/web/tests/dom/queue*",
+      "apps/web/tests/dom/track-playback*",
+      "apps/web/tests/dom/radio-refill*"
+    ],
+    "ds2-wp5": [
+      "apps/web/components/user-dropdown.tsx",
+      "apps/web/components/share-options.tsx",
+      "apps/web/components/share-submenu.tsx",
+      "apps/web/components/song-list/more-button.tsx",
+      "apps/web/components/details-header/more-button.tsx",
+      "apps/web/components/search/**",
+      "apps/web/components/library/**",
+      "apps/web/components/playlist/**",
+      "apps/web/app/@modal/**",
+      "apps/web/tests/user-dropdown-menu.test.ts",
+      "apps/web/tests/search-menu-dialog.test.ts",
+      "apps/web/tests/dom/search-menu*",
+      "apps/web/tests/dom/share-options*",
+      "apps/web/tests/dom/add-to-playlist-dialog*",
+      "apps/web/tests/dom/auth-modal*"
+    ],
+    "ds2-wp6": [
+      "apps/web/app/(root)/settings/**",
+      "apps/web/tests/dom/preference-settings*",
+      "apps/web/tests/dom/settings*",
+      "apps/web/tests/dom/appearance*",
+      "apps/web/tests/dom/liquid-glass*"
+    ],
+    "ds2-wp7": [
+      "apps/web/components/details-header/**",
+      "apps/web/components/play-button.tsx",
+      "apps/web/app/(root)/page.tsx",
+      "apps/web/app/(root)/_components/**",
+      "apps/web/app/(root)/browse/**",
+      "apps/web/components/skeletons/**",
+      "apps/web/tests/details-header*",
+      "apps/web/tests/dom/play-button*",
+      "apps/web/tests/dom/browse*",
+      "apps/web/tests/dom/home*",
+      "apps/web/tests/dom/details-header*"
     ]
-  }
+  },
+  "$comment_ds2": "ds2-* units are phase 2 work packages. They overlap phase 1 units on purpose; check only your ds2 unit. ds2-wp7 excludes details-header/more-button.tsx by agreement (owned by ds2-wp5)."
 }
