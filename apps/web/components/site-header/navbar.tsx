@@ -38,7 +38,11 @@ export async function Navbar() {
 
       <ToolbarNavigation />
 
-      <MainNav megaMenu={megaMenu} className="hidden lg:block" />
+      {/* A docked queue (1440 and up) takes the column the mega menu needs; the mockup toolbar has no such links. */}
+      <MainNav
+        megaMenu={megaMenu}
+        className="hidden lg:block min-[1440px]:in-data-[queue=open]:hidden!"
+      />
 
       <div data-toolbar-title className="min-w-0 flex-1" />
 

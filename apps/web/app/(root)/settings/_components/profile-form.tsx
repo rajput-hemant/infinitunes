@@ -41,16 +41,9 @@ type ProfileFormProps = {
   };
 };
 
-/** Mockup `.input`: flat `--fill` field, lifting to the card colour on focus. */
-const inputClass = cn(
-  controlStyles.textLg,
-  "w-full rounded-sm border-0 bg-fill px-3 shadow-none hover:bg-fill-2 focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary dark:bg-fill dark:hover:bg-fill-2 dark:focus-visible:bg-card",
-);
+const inputClass = cn(controlStyles.textLg, controlStyles.flatInput);
 const labelClass = "text-[0.8125rem] leading-5 font-semibold";
-const squareButtonClass = cn(
-  controlStyles.text,
-  "rounded-sm border-0 bg-fill px-3 font-semibold hover:bg-fill-2 active:bg-fill-3 dark:bg-fill dark:hover:bg-fill-2",
-);
+const squareButtonClass = cn(controlStyles.text, controlStyles.squareButton);
 const primaryButtonClass = cn(
   controlStyles.text,
   "rounded-sm px-3 font-semibold",
