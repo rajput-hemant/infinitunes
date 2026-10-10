@@ -1,8 +1,8 @@
 import type { Lang } from "@infinitunes/types";
-import { buttonVariants } from "@infinitunes/ui/components/button";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 import { megaMenuOrEmpty } from "~/lib/shell-data";
@@ -16,7 +16,10 @@ import { AppSidebarTrigger } from "../sidebar";
 import { UserDropdown } from "../user-dropdown";
 import { LanguagePicker } from "./language-picker";
 import { MainNav } from "./main-nav";
+import { Toolbar } from "./toolbar";
 import { ToolbarNavigation } from "./toolbar-navigation";
+
+const capsuleClassName = "flex items-center rounded-full p-0.5";
 
 export async function Navbar() {
   const cookiesStore = await cookies();
@@ -28,7 +31,7 @@ export async function Navbar() {
   ]);
 
   return (
-    <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] w-full items-center gap-1 bg-background px-2 pt-[env(safe-area-inset-top)] md:h-14 md:gap-2 md:px-[max(var(--page-pad),calc((100%-100rem)/2))] md:pt-0">
+    <Toolbar>
       <AppSidebarTrigger className="hidden md:inline-flex" />
 
       <ToolbarNavigation />
@@ -36,25 +39,34 @@ export async function Navbar() {
       <MainNav megaMenu={megaMenu} className="hidden lg:block" />
 
       <div className="flex flex-1 items-center justify-end gap-1 md:gap-2">
-        <SearchMenu topSearch={<TopSearch />} />
+        <GlassSurface size="s" glassRole="toolbar" className={capsuleClassName}>
+          <SearchMenu topSearch={<TopSearch />} />
+        </GlassSurface>
 
-        <LanguagePicker initialLanguages={languages as Lang[]} />
+        <GlassSurface size="s" glassRole="toolbar" className={capsuleClassName}>
+          <LanguagePicker initialLanguages={languages as Lang[]} />
+          <UserDropdown user={user} />
+        </GlassSurface>
 
         <SignedOut>
-          <Link
-            href="/login"
-            className={cn(
-              buttonVariants({ size: "sm" }),
-              controlStyles.text,
-              "hidden md:flex",
-            )}
+          <GlassSurface
+            variant="tinted"
+            size="s"
+            glassRole="toolbar"
+            render={
+              <Link
+                href="/login"
+                className={cn(
+                  controlStyles.text,
+                  "hidden items-center rounded-full font-medium md:flex",
+                )}
+              />
+            }
           >
             Sign In
-          </Link>
+          </GlassSurface>
         </SignedOut>
-
-        <UserDropdown user={user} />
       </div>
-    </header>
+    </Toolbar>
   );
 }

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import React from "react";
 
+import { GlassEdge } from "~/components/glass/glass-edge";
 import { PlayerWrapper } from "~/components/player-wrapper";
 import {
   AppSidebarProvider,
@@ -45,7 +46,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
           <SidebarInset
             id="main-content"
             tabIndex={-1}
-            className="min-w-0 outline-none min-[1440px]:in-data-[queue=open]:mr-(--queue-w) transition-[margin] duration-base ease-spring"
+            className="min-w-0 bg-transparent outline-none min-[1440px]:in-data-[queue=open]:mr-(--queue-w) transition-[margin] duration-base ease-spring"
           >
             <div className="mx-auto w-full max-w-400 px-page pt-2 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-36">
               <SecondaryNavbar />
@@ -54,6 +55,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
             </div>
           </SidebarInset>
         </div>
+        <GlassEdge />
         <MobileNav user={user} />
       </AppSidebarProvider>
       <PlayerWrapper

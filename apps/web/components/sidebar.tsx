@@ -25,6 +25,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { browseNav, isNavActive, libraryNav } from "~/config/nav";
 import type { NavItem } from "~/config/nav";
 import { siteConfig } from "~/config/site";
@@ -52,11 +53,30 @@ const providerStyle: SidebarProviderStyle = {
   "--sidebar-width-icon": "4.5rem",
 };
 
+// The bottom glass edge clears the sidebar at its current width and the docked
+// queue. Set on the provider so the edge, a sibling of the sidebar, inherits it.
+const edgeClassName =
+  "[--g-edge-l:var(--sidebar-width)] has-[[data-slot=sidebar][data-state=collapsed]]:[--g-edge-l:var(--sidebar-width-icon)] md:max-lg:[--g-edge-l:var(--sidebar-width-icon)] min-[1440px]:in-data-[queue=open]:[--g-edge-r:var(--queue-w)]";
+
+// A floating panel inset 0.5rem from the screen edges. The gap keeps the full
+// width, so the content column never moves when the sidebar floats.
+const floatingPanelClassName =
+  "inset-y-2 left-2 h-auto w-[calc(var(--sidebar-width)-0.5rem)] group-data-[side=left]:border-r-0 data-[side=left]:left-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)-0.5rem)] [&>[data-slot=sidebar-inner]]:bg-transparent";
+
+const glassPanelRadiusClassName = "rounded-[calc(var(--r-lg)+6px)]";
+
 export function AppSidebarProvider({
   style,
+  className,
   ...props
 }: React.ComponentProps<typeof SidebarProvider>) {
-  return <SidebarProvider style={{ ...providerStyle, ...style }} {...props} />;
+  return (
+    <SidebarProvider
+      className={cn(edgeClassName, className)}
+      style={{ ...providerStyle, ...style }}
+      {...props}
+    />
+  );
 }
 
 export function AppSidebarTrigger({
@@ -246,6 +266,32 @@ function CreatePlaylistPrompt({ user, userPlaylists }: SidebarProps) {
   );
 }
 
+// The desktop sidebar is a floating glass surface. Inside the mobile sheet the
+// sheet is already the glass, so the panel stays plain there.
+function SidebarPanel({ children }: React.PropsWithChildren) {
+  const { isMobile } = useSidebar();
+  const className = "flex min-h-0 flex-1 flex-col";
+
+  if (isMobile) {
+    return (
+      <nav aria-label="Sidebar" className={className}>
+        {children}
+      </nav>
+    );
+  }
+
+  return (
+    <GlassSurface
+      render={<nav aria-label="Sidebar" />}
+      size="xl"
+      glassRole="sidebar"
+      className={cn(className, glassPanelRadiusClassName)}
+    >
+      {children}
+    </GlassSurface>
+  );
+}
+
 function SidebarContents({ user, userPlaylists }: SidebarProps) {
   const pathname = usePathname();
   const { state, isMobile, setOpenMobile } = useSidebar();
@@ -253,7 +299,7 @@ function SidebarContents({ user, userPlaylists }: SidebarProps) {
   const hasPlaylists = userPlaylists !== undefined && userPlaylists.length > 0;
 
   return (
-    <nav aria-label="Sidebar" className="flex min-h-0 flex-1 flex-col">
+    <SidebarPanel>
       <SidebarHeader className="p-2 pb-0">
         <SidebarLogo />
       </SidebarHeader>
@@ -299,7 +345,7 @@ function SidebarContents({ user, userPlaylists }: SidebarProps) {
           <CreatePlaylistPrompt user={user} userPlaylists={userPlaylists} />
         )}
       </SidebarContent>
-    </nav>
+    </SidebarPanel>
   );
 }
 
@@ -310,17 +356,21 @@ function TabletRail({ user }: Pick<SidebarProps, "user">) {
   const pathname = usePathname();
 
   return (
-    <nav
-      aria-label="Sidebar"
-      data-collapsible="icon"
-      className="group no-scrollbar sticky top-0 hidden h-svh w-(--sidebar-width-icon) shrink-0 flex-col gap-6 overflow-y-auto border-r bg-sidebar p-2 md:max-lg:flex"
+    <GlassSurface
+      render={<nav aria-label="Sidebar" data-collapsible="icon" />}
+      size="xl"
+      glassRole="sidebar"
+      className={cn(
+        "group no-scrollbar sticky top-2 ml-2 hidden h-[calc(100svh-1rem)] w-[calc(var(--sidebar-width-icon)-0.5rem)] shrink-0 flex-col gap-6 self-start overflow-y-auto p-2 md:max-lg:flex",
+        glassPanelRadiusClassName,
+      )}
     >
       <SidebarLogo />
       <SidebarNavList items={browseNav} pathname={pathname} collapsed />
       {user && (
         <SidebarNavList items={libraryNav} pathname={pathname} collapsed />
       )}
-    </nav>
+    </GlassSurface>
   );
 }
 
@@ -329,7 +379,11 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
     <>
       {/* The desktop markup is server-rendered before the viewport is known. */}
       <div className="shrink-0 max-lg:hidden">
-        <SidebarPrimitive id="app-sidebar" collapsible="icon">
+        <SidebarPrimitive
+          id="app-sidebar"
+          collapsible="icon"
+          className={floatingPanelClassName}
+        >
           <SidebarContents user={user} userPlaylists={userPlaylists} />
         </SidebarPrimitive>
       </div>
