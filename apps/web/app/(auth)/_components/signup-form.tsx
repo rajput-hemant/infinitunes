@@ -11,17 +11,18 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
-import { asRoute, cn, safeRedirectPath } from "~/lib/utils";
+import { asRoute, safeRedirectPath } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
+import { authPrimaryButtonStyles } from "./field-styles";
 import { OAuthButtons } from "./oauth-buttons";
 import { PasswordField } from "./password-field";
+import { PASSWORD_HINT } from "./password-hint";
 
-type FormData = z.infer<typeof signUpSchema>;
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
-const defaultValues: FormData = {
+const defaultValues: SignUpFormData = {
   email: "",
   password: "",
   confirmPassword: "",
@@ -45,12 +46,12 @@ export function SignUpForm() {
     }
   }, [authError]);
 
-  const form = useForm<FormData>({
+  const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues,
   });
 
-  async function onSubmit(formData: FormData) {
+  async function onSubmit(formData: SignUpFormData) {
     setIsSubmitting(true);
 
     try {
@@ -70,9 +71,8 @@ export function SignUpForm() {
         router.refresh();
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
-      toast.error(userMessage(err));
+      console.error(error);
+      toast.error(userMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +82,7 @@ export function SignUpForm() {
     <div className="flex flex-col gap-4">
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="order-2 flex flex-col gap-3"
+        className="order-2 grid gap-4"
       >
         <Controller
           control={form.control}
@@ -105,6 +105,7 @@ export function SignUpForm() {
               field={field}
               fieldState={fieldState}
               label="Password"
+              description={PASSWORD_HINT}
               autoComplete="new-password"
               disabled={isSubmitting}
             />
@@ -128,7 +129,7 @@ export function SignUpForm() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className={cn(controlStyles.text, "w-full")}
+          className={authPrimaryButtonStyles}
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -142,6 +143,7 @@ export function SignUpForm() {
       <div className="order-1">
         <OAuthButtons
           isFormDisabled={isSubmitting}
+          callbackUrl={callbackUrl}
           setIsSubmitting={setIsSubmitting}
         />
       </div>

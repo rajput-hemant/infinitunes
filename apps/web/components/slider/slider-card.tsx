@@ -106,7 +106,7 @@ export function SliderCard(props: SliderCardProps) {
             aria-label={`Play ${name}`}
             type={type}
             token={parseToken(url)}
-            className="absolute right-2 bottom-2 z-20 flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition duration-base ease-spring pointer-fine:translate-y-1.5 pointer-fine:scale-90 pointer-fine:opacity-0 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-none"
+            className="absolute right-2 bottom-2 z-20 flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition duration-base ease-spring pointer-fine:translate-y-1.5 pointer-fine:scale-90 pointer-fine:opacity-0 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-none pointer-coarse:after:absolute pointer-coarse:after:-inset-1"
           >
             <Play className="size-4 fill-current" />
           </PlayButton>

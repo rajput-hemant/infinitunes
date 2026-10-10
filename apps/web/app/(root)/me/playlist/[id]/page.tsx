@@ -3,6 +3,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListMusic } from "lucide-react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { ImageCollage } from "~/components/image-collage";
 import {
@@ -19,16 +20,20 @@ import { getPlaylistDetails } from "~/lib/db/queries";
 import { fetchSongsChunked } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
-type Props = {
+type PlaylistPageProps = {
   params: Promise<{
     id: string;
   }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+const getPlaylist = cache((id: string) => getPlaylistDetails(id));
+
+export async function generateMetadata({
+  params,
+}: PlaylistPageProps): Promise<Metadata> {
   const { id } = await params;
 
-  const playlist = await getPlaylistDetails(id);
+  const playlist = await getPlaylist(id);
 
   if (!playlist) {
     return {
@@ -48,10 +53,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function MyPlaylistsPage(props: Props) {
-  const { id } = await props.params;
+export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
+  const { id } = await params;
 
-  const playlist = await getPlaylistDetails(id);
+  const playlist = await getPlaylist(id);
 
   if (!playlist) {
     notFound();

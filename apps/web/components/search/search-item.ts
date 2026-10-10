@@ -15,8 +15,25 @@ export type SearchItem = {
   image: string;
 };
 
-export function getSearchItems(group: AllSearch[keyof AllSearch]) {
-  return group.data as SearchItem[];
+function isSearchItem(value: unknown): value is SearchItem {
+  if (typeof value !== "object" || value === null) return false;
+  return (
+    "id" in value &&
+    typeof value.id === "string" &&
+    "title" in value &&
+    typeof value.title === "string" &&
+    "type" in value &&
+    typeof value.type === "string" &&
+    "image" in value &&
+    typeof value.image === "string"
+  );
+}
+
+export function getSearchItems(
+  group: AllSearch[keyof AllSearch],
+): SearchItem[] {
+  const entries: readonly unknown[] = group.data;
+  return entries.filter(isSearchItem);
 }
 
 /** Artists in the combined search carry no `perma_url`, so they open their results list. */

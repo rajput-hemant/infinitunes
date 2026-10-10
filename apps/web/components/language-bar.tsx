@@ -12,7 +12,7 @@ const chipBase = cn(
   "inline-flex shrink-0 items-center gap-2 px-3 text-[0.8125rem] leading-5 font-medium transition-[background-color,transform] duration-fast active:scale-96",
 );
 
-function chipClass(selected: boolean) {
+export function chipClass(selected: boolean) {
   return selected
     ? cn(chipBase, "bg-foreground text-background")
     : cn(chipBase, "bg-fill hover:bg-fill-2");
@@ -24,12 +24,12 @@ export function LanguageBar({ language }: LanguageBarProps) {
       <ul className="flex gap-2">
         <li>
           <Link
-            title="For You"
+            title="All"
             href={asRoute("?")}
-            aria-pressed={!language}
+            aria-current={!language ? "page" : undefined}
             className={chipClass(!language)}
           >
-            For&nbsp;you
+            All
           </Link>
         </li>
 
@@ -41,7 +41,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
               <Link
                 title={lang}
                 href={asRoute(`?lang=${lang.toLowerCase()}`)}
-                aria-pressed={selected}
+                aria-current={selected ? "page" : undefined}
                 className={chipClass(selected)}
               >
                 {lang}

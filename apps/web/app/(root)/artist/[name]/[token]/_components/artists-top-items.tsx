@@ -5,6 +5,7 @@ import type { Album, Category, Song } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import {
@@ -17,7 +18,7 @@ import { controlStyles } from "~/lib/control-styles";
 import { api } from "~/lib/trpc/client";
 import { cn } from "~/lib/utils";
 
-type Props = {
+type ArtistsTopItemsProps = {
   id: string;
   type: "songs" | "albums";
   initialSongs?: Song[];
@@ -28,7 +29,7 @@ type Props = {
   userPlaylists?: MyPlaylist[];
 };
 
-export function ArtistsTopItems(props: Props) {
+export function ArtistsTopItems(props: ArtistsTopItemsProps) {
   const {
     id,
     type,
@@ -92,7 +93,7 @@ export function ArtistsTopItems(props: Props) {
   const albums = albumsResults.data.pages.flatMap((page) => page.items);
 
   const hasNextPage = songResults.hasNextPage || albumsResults.hasNextPage;
-  const isLoading =
+  const isFetchingMore =
     songResults.isFetchingNextPage || albumsResults.isFetchingNextPage;
 
   const clickHandler = () => {
@@ -112,7 +113,7 @@ export function ArtistsTopItems(props: Props) {
         userPlaylists={userPlaylists}
       />
 
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
+      <CatalogGrid>
         {albums.map((album) => (
           <SliderCard
             key={album.id}
@@ -124,7 +125,7 @@ export function ArtistsTopItems(props: Props) {
             explicit={album.explicit_content}
           />
         ))}
-      </div>
+      </CatalogGrid>
 
       {hasNextPage && (
         <Button
@@ -132,7 +133,7 @@ export function ArtistsTopItems(props: Props) {
           className={cn(controlStyles.text, "mx-auto my-4 flex text-center")}
           onClick={clickHandler}
         >
-          {isLoading ? "Loading..." : "Load More"}
+          {isFetchingMore ? "Loading..." : "Load More"}
         </Button>
       )}
     </>

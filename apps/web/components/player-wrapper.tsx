@@ -25,5 +25,3 @@ export function PlayerWrapper({
 }: PlayerWrapperProps) {
   return <Player user={user} playlists={playlists} favorites={favorites} />;
 }
-
-export default PlayerWrapper;

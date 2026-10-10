@@ -4,7 +4,7 @@ import { NewPlaylistForm } from "./new-playlist-form";
 
 export function NewPlaylistCard() {
   return (
-    <div className="w-32 shrink-0 p-2 sm:w-36 md:w-48 lg:w-56">
+    <div className="w-full">
       <NewPlaylistForm>
         <button
           type="button"

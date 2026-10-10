@@ -17,7 +17,7 @@ const getEpisode = cache(async (token: string) =>
   ),
 );
 
-type EpisodeDetailsProps = {
+type EpisodeDetailsPageProps = {
   params: Promise<{
     name: string;
     token: string;
@@ -26,7 +26,7 @@ type EpisodeDetailsProps = {
 
 export async function generateMetadata({
   params,
-}: EpisodeDetailsProps): Promise<Metadata> {
+}: EpisodeDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
   const episodeObj = await getEpisode(token);
@@ -40,22 +40,23 @@ export async function generateMetadata({
     square: true,
   });
 }
-export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
+export default async function EpisodeDetailsPage(
+  props: EpisodeDetailsPageProps,
+) {
   const { token } = await props.params;
 
   const episodeObj = await getEpisode(token);
+  const episode = episodeObj.episodes[0];
 
   return (
     <div className="flex flex-col gap-(--page-gap)">
-      <DetailsHeader item={episodeObj.episodes[0]} />
+      <DetailsHeader item={episode} />
 
       <section className="flex max-w-2xl flex-col gap-4 rounded-md bg-card p-6 ring-1 ring-inset ring-border">
         <h2 className="font-heading text-xl capitalize text-foreground sm:text-2xl md:text-3xl">
           {episodeObj.modules.episode_details.title}
         </h2>
-        <p className="text-muted-foreground">
-          {episodeObj.episodes[0].more_info.description}
-        </p>
+        <p className="text-muted-foreground">{episode.more_info.description}</p>
       </section>
     </div>
   );

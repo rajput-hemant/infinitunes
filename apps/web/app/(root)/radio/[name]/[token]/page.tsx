@@ -14,7 +14,7 @@ import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 import { cn, getHref } from "~/lib/utils";
 
-type Props = {
+type RadioStationPageProps = {
   params: Promise<{ name: string; token: string }>;
 };
 
@@ -22,7 +22,9 @@ const getStation = cache(async (name: string, token: string) =>
   orNotFound(api.radio.stationDetails({ name, token })),
 );
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: RadioStationPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
   const { station } = await getStation(name, token);
@@ -36,7 +38,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function RadioStationPage({ params }: Props) {
+export default async function RadioStationPage({
+  params,
+}: RadioStationPageProps) {
   const { name, token } = await params;
 
   const { station, songs } = await getStation(name, token);

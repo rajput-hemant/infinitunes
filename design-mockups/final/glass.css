@@ -1,0 +1,297 @@
+/* Liquid Glass. Loaded after style.css and overrides every glass rule there. Spec: glass-spec.md.
+   Surfaces opt in with data-glass="regular|clear|tinted" and data-glass-size="s|m|l|xl" (glass.js tags the mockup).
+   The refraction lens is an SVG filter injected per element size by glass.js as --g-lens-url; it only applies
+   under html.lg-lens (Chromium capability check). Every other path keeps tint, blur, saturation, rim and shadow. */
+
+/* ---------- User-adjustable parameters (Settings > Appearance > Liquid Glass writes these inline) ---------- */
+:root {
+  --glass-tint: 0.14;          /* tint alpha */
+  --glass-blur: 3px;           /* base blur, multiplied per size class */
+  --glass-sat: 1.8;
+  --glass-spec: 1;             /* rim and highlight strength */
+  --glass-shadow: 1;
+  --glass-refraction: 30;      /* px, read by glass.js for feDisplacementMap scale */
+  --glass-bri: 1.06;
+  --glass-tint-c: #fff;
+  --g-sh-k: 1;                 /* shadow weight, heavier in dark */
+  --g-rim-k: 1;
+  --g-art-l: 0.5;              /* playing artwork luminance, from glass.js */
+  --g-adapt: calc((1 - var(--g-art-l)) * 0.1);
+  --g-blob-1: #f472b6; --g-blob-2: #818cf8; --g-blob-3: #38bdf8;
+  --lg-ease: cubic-bezier(0.32, 1.18, 0.5, 1);   /* spring-like, slight overshoot, for CSS-only morphs */
+  --lg-ease-crit: cubic-bezier(0.2, 0.9, 0.25, 1);
+}
+html.dark {
+  --glass-tint: 0.24;
+  --glass-tint-c: #1e1e22;
+  --glass-bri: 0.9;
+  --g-sh-k: 2.2;
+  --g-rim-k: 0.62;
+  --g-adapt: calc(var(--g-art-l) * 0.12);
+}
+html.lg-accent-tint { --glass-tint-c: color-mix(in srgb, var(--accent) 22%, #fff); }
+html.dark.lg-accent-tint { --glass-tint-c: color-mix(in srgb, var(--accent) 26%, #1e1e22); }
+
+/* ---------- Ambient colour field: what the glass refracts ---------- */
+#ambient { opacity: var(--ambient, 0.62); }
+#ambient::before {
+  content: ""; position: absolute; inset: -10%;
+  background:
+    radial-gradient(38% 34% at 12% 18%, var(--g-blob-1), transparent 70%),
+    radial-gradient(42% 38% at 88% 26%, var(--g-blob-2), transparent 70%),
+    radial-gradient(50% 42% at 55% 92%, var(--g-blob-3), transparent 72%);
+}
+#ambient img { opacity: 0.85; }
+#ambient::after { background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--bg) 30%, transparent) 75%); }
+html.dark #ambient::after { background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 8%, transparent), color-mix(in srgb, var(--bg) 42%, transparent) 75%); }
+
+/* ---------- The material ---------- */
+html [data-glass][data-glass-size] {
+  --g-dim: 0;
+  --g-a: calc(var(--glass-tint) + var(--g-a-add, 0) + var(--g-adapt));
+  --g-text: var(--text);
+  --muted: color-mix(in srgb, var(--g-text) var(--g-muted-k, 88%), transparent);
+  color: var(--g-text);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / calc(0.12 * var(--glass-spec) * var(--g-rim-k))), transparent 42%),
+    linear-gradient(rgb(0 0 0 / var(--g-dim)) 0 0),
+    color-mix(in srgb, var(--glass-tint-c) calc(min(var(--g-a), 0.97) * 100%), transparent);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) * var(--g-k, 1))) saturate(var(--glass-sat)) brightness(var(--glass-bri)) contrast(var(--g-con, 1));
+  backdrop-filter: blur(calc(var(--glass-blur) * var(--g-k, 1))) saturate(var(--glass-sat)) brightness(var(--glass-bri)) contrast(var(--g-con, 1));
+  box-shadow: var(--g-inner), var(--g-drop);
+  isolation: isolate;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.004em;
+  --g-inner:
+    inset 0 1px 1px rgb(255 255 255 / calc(0.5 * var(--glass-spec) * var(--g-rim-k))),
+    inset 0 -1px 1px rgb(255 255 255 / calc(0.16 * var(--glass-spec) * var(--g-rim-k))),
+    inset 0 0 18px rgb(255 255 255 / calc(0.12 * var(--glass-spec) * var(--g-rim-k))),
+    inset 0 0 0 0.5px rgb(255 255 255 / calc(0.24 * var(--glass-spec) * var(--g-rim-k)));
+}
+/* Refraction: lens first, then a small blur that also hides displacement aliasing. */
+html.lg-lens [data-glass][data-glass-size]:not([data-glass-size="xl"]) {
+  backdrop-filter: var(--g-lens-url,) blur(calc(var(--glass-blur) * var(--g-k, 1))) saturate(var(--glass-sat)) brightness(var(--glass-bri)) contrast(var(--g-con, 1));
+}
+/* Specular rim: bright top-left, weaker bottom-right, peaking in the curved corners. --g-light follows the pointer. */
+html [data-glass][data-glass-size]::before {
+  content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(var(--g-light, 135deg),
+    rgb(255 255 255 / calc(0.95 * var(--glass-spec) * var(--g-rim-k))) 0%,
+    rgb(255 255 255 / calc(0.34 * var(--glass-spec) * var(--g-rim-k))) 16%,
+    rgb(255 255 255 / calc(0.07 * var(--glass-spec) * var(--g-rim-k))) 40%,
+    rgb(255 255 255 / calc(0.07 * var(--glass-spec) * var(--g-rim-k))) 60%,
+    rgb(255 255 255 / calc(0.3 * var(--glass-spec) * var(--g-rim-k))) 84%,
+    rgb(255 255 255 / calc(0.7 * var(--glass-spec) * var(--g-rim-k))) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+/* Illumination: glow brightens from the touch point while pressed. */
+html [data-glass][data-glass-size]::after {
+  content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle 8rem at var(--g-px, 50%) var(--g-py, 0%), rgb(255 255 255 / calc(0.34 * var(--g-press, 0) * var(--glass-spec))), transparent 72%);
+}
+
+/* Size classes: bigger reads thicker (more diffusion, more tint, deeper shadow, weaker lens in glass.js). */
+[data-glass-size="s"] { --g-k: 1; --g-drop: 0 0 0 0.5px rgb(0 0 0 / calc(0.05 * var(--glass-shadow))), 0 1px 2px rgb(0 0 0 / calc(0.06 * var(--glass-shadow) * var(--g-sh-k))), 0 6px 18px -4px rgb(0 0 0 / calc(0.18 * var(--glass-shadow) * var(--g-sh-k))); }
+html [data-glass-size="m"] { --g-k: 1.75; --g-a-add: 0.26; --g-con: 0.6; --g-drop: 0 0 0 0.5px rgb(0 0 0 / calc(0.05 * var(--glass-shadow))), 0 2px 6px rgb(0 0 0 / calc(0.07 * var(--glass-shadow) * var(--g-sh-k))), 0 14px 36px -10px rgb(0 0 0 / calc(0.26 * var(--glass-shadow) * var(--g-sh-k))); }
+html [data-glass-size="l"] { --g-k: 3; --g-a-add: 0.38; --g-drop: 0 0 0 0.5px rgb(0 0 0 / calc(0.05 * var(--glass-shadow))), 0 4px 12px rgb(0 0 0 / calc(0.08 * var(--glass-shadow) * var(--g-sh-k))), 0 30px 70px -18px rgb(0 0 0 / calc(0.34 * var(--glass-shadow) * var(--g-sh-k))); }
+html [data-glass-size="xl"] { --g-k: 3.5; --g-a-add: 0.26; --g-drop: 0 0 0 0.5px rgb(0 0 0 / calc(0.04 * var(--glass-shadow))), 0 10px 40px -20px rgb(0 0 0 / calc(0.2 * var(--glass-shadow) * var(--g-sh-k))); }
+
+/* Text-bearing m surfaces (player, toasts) hold AA at the extremes: backdrop contrast pulls toward mid grey,
+   tint floor 0.40 light / 0.46 dark (glass-spec.md section 5). */
+html.dark [data-glass-size="m"] { --g-a-add: 0.3; --g-con: 0.5; }
+html.dark [data-glass] { --g-muted-k: 94%; }
+
+/* Variants. Clear: almost no tint, a dimming layer scaled by what is behind (AA for white text), white glyphs. */
+html [data-glass="clear"][data-glass-size],
+html.lg-v-clear [data-glass="regular"]:is([data-glass-size="s"], [data-glass-size="m"]),
+html .bar.lg-over-art:not(.titled) [data-glass="regular"][data-glass-size] {
+  --glass-tint-c: #fff; --g-a: 0.06; --g-k: 0.6; --g-con: 1;
+  --g-dim: calc(0.16 + 0.44 * var(--g-art-l));
+  --g-text: #fff; --g-rim-k: 1;
+  --muted: rgb(255 255 255 / 0.8);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
+}
+html [data-glass="tinted"][data-glass-size],
+html.lg-v-tinted [data-glass="regular"]:is([data-glass-size="s"], [data-glass-size="m"]) {
+  --glass-tint-c: var(--accent); --g-a: calc(0.7 + var(--glass-tint)); --g-dim: 0;
+  --g-text: var(--on-accent); --g-rim-k: 1;
+}
+/* Vibrancy: secondary text on glass is a touch heavier. */
+[data-glass] small, [data-glass] .muted { font-weight: 500; }
+
+/* Positioning hosts for the rim and glow layers. */
+.hero .cap, .bar .searchbox, .bar .nav-arrows, .bar .tb-group, .bar .back, .bar .btn.pri, .np .pl-ctl .big, .np-top .ib, .preview .glass { position: relative; }
+
+/* Controls inside glass: press feedback is the JS spring (scale + glow), not the flat :active shrink. */
+[data-glass] :is(.ib, .btn, .chip):active, [data-glass]:is(.ib, .btn):active { transform: none; }
+[data-glass] .ib:hover, [data-glass] .btn.ghost:hover { background: rgb(127 127 127 / 0.14); }
+
+/* ---------- Surfaces ---------- */
+/* Floating sidebar and wide queue pane: blur-only regular material, consistent 0.5rem inset, concentric radius. */
+@media (min-width: 768px) {
+  .side { top: 0.5rem; height: calc(100dvh - 1rem); margin: 0.5rem 0 0.5rem 0.5rem; border-right: 0; border-radius: calc(var(--r-lg) + 6px); }
+}
+@media (min-width: 1440px) {
+  .qpane, html.q-open .qpane { top: 0.5rem; height: calc(100dvh - 1rem); margin: 0.5rem 0.5rem 0.5rem 0; border-left: 0; border-radius: calc(var(--r-lg) + 6px); }
+  html.lg-lens .qpane[data-glass][data-glass-size] { backdrop-filter: blur(calc(var(--glass-blur) * 3.5)) saturate(var(--glass-sat)) brightness(var(--glass-bri)) contrast(var(--g-con, 1)); }
+  .qpane[data-glass-size] { --g-a-add: 0.26; }
+}
+/* Below 1440 the queue morphs out of the player: clip, lift and materialize together. */
+@media (max-width: 1439px) {
+  .qpane {
+    transform-origin: calc(100% - 8rem) 100%;
+    clip-path: inset(calc(100% - 3rem) 5rem 0 calc(100% - 13rem) round 999px);
+    transform: translateY(4.75rem); filter: blur(6px); opacity: 0;
+    transition: clip-path 0.46s var(--lg-ease-crit), transform 0.46s var(--lg-ease), opacity 0.22s, filter 0.3s, visibility 0.46s;
+  }
+  html.q-open .qpane { clip-path: inset(-4rem round calc(var(--r-lg) + 4rem)); transform: none; filter: none; opacity: 1; }
+}
+
+/* Player: concentric artwork radius (outer radius minus inset). */
+.player { --pl-r: calc(var(--r-lg) + 4px); border-radius: var(--pl-r); transition: left 0.3s var(--spring), right 0.3s var(--spring), bottom 0.45s var(--lg-ease), height 0.45s var(--lg-ease); }
+.player .pl-now img { border-radius: max(4px, calc(var(--pl-r) - 10px)); }
+.player .pl-now b { font-weight: 650; }
+
+/* Toolbar: grouped glass capsules, no bar background. */
+.bar .nav-arrows, .bar .tb-group { align-items: center; gap: 0; padding: 2px; border-radius: 999px; }
+.bar .tb-group { display: flex; }
+.bar .nav-arrows .ib, .bar .tb-group .ib, .bar .tb-group .btn { border-radius: 999px; }
+.bar .tb-group { flex: none; }
+.bar .searchbox { height: 2.25rem; border-radius: 999px; }
+@media (max-width: 767px) { .bar .searchbox { width: var(--ctl); height: var(--ctl); } }
+.bar .searchbox kbd { background: rgb(127 127 127 / 0.14); box-shadow: none; }
+.bar .back { border-radius: 999px; }
+.bar .btn.pri[data-glass] { border-radius: 999px; }
+
+/* Scroll edge effect replaces the scrolled bar background and divider: progressive blur plus a soft fade. */
+html .bar.scrolled { background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.bar::before, .bar::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  inset: 0 0 auto;
+}
+.bar::before {
+  height: calc(100% + 1.75rem);
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--bg) 62%, transparent), color-mix(in srgb, var(--bg) 30%, transparent) 55%, transparent);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent); mask-image: linear-gradient(to bottom, #000 40%, transparent);
+}
+.bar::after {
+  height: calc(100% + 0.5rem); background: none;
+  -webkit-backdrop-filter: blur(8px) saturate(1.3); backdrop-filter: blur(8px) saturate(1.3);
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent); mask-image: linear-gradient(to bottom, #000 30%, transparent);
+}
+.bar.scrolled::before, .bar.scrolled::after { opacity: 1; }
+/* Bottom edge under the floating player: soft on wide screens, hard on phones. */
+.lg-edge-bottom {
+  position: fixed; z-index: 35; left: var(--side-w); right: 0; bottom: 0; height: 3.5rem; pointer-events: none;
+  background: linear-gradient(to top, color-mix(in srgb, var(--bg) 30%, transparent), transparent);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to top, #000 25%, transparent); mask-image: linear-gradient(to top, #000 25%, transparent);
+}
+html.q-open .lg-edge-bottom { right: var(--q-w); }
+html.auth-page .lg-edge-bottom { display: none; }
+@media (max-width: 1439px) { html.q-open .lg-edge-bottom { right: 0; } }
+
+/* ---------- Selection lens: tab bar and segmented controls ---------- */
+.lg-sel {
+  position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; border-radius: 999px;
+  background: var(--fill-2); transform-origin: center; will-change: transform;
+  transition: opacity 0.2s, background-color 0.2s, box-shadow 0.2s;
+}
+#tabbar > a, .seg > button { position: relative; z-index: 1; }
+#tabbar, .seg { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.seg { position: relative; }
+.seg > button.on, html.dark .seg > button.on { background: none; box-shadow: none; }
+.seg > .lg-sel { border-radius: max(0px, calc(var(--r-ctl) - 2px)); background: var(--surface); box-shadow: var(--shadow-sm); }
+html.dark .seg > .lg-sel { background: var(--fill-2); box-shadow: none; }
+/* Lifted while pressed or dragged: the indicator becomes a clear, magnifying droplet above the items. */
+.lg-sel.lifted {
+  z-index: 2; background: rgb(255 255 255 / 0.06);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.7), inset 0 0 0 0.5px rgb(255 255 255 / 0.5), inset 0 0 10px rgb(255 255 255 / 0.25), 0 6px 16px -4px rgb(0 0 0 / 0.22);
+  -webkit-backdrop-filter: blur(0.5px) saturate(1.6) brightness(1.08); backdrop-filter: blur(0.5px) saturate(1.6) brightness(1.08);
+}
+html.lg-lens .lg-sel.lifted { backdrop-filter: var(--g-lens-url,) blur(0.5px) saturate(1.6) brightness(1.08); }
+[data-glass]:not(#tabbar) .seg > .lg-sel.lifted { backdrop-filter: none; -webkit-backdrop-filter: none; } /* no glass on glass */
+
+@media (max-width: 767px) {
+  #tabbar { border-radius: 999px; transition: right 0.5s var(--lg-ease), height 0.5s var(--lg-ease); }
+  #tabbar > a { border-radius: 999px; transition: color 0.2s, opacity 0.25s, flex-grow 0.5s var(--lg-ease); }
+  #tabbar > a.on { background: none; }
+  .player { --pl-r: 999px; }
+  .player .pl-now img { border-radius: 50%; }
+  /* Minimized on scroll down: the tab bar collapses to the current tab and the player slides into its row. */
+  html.tab-min #tabbar { right: calc(100% - 0.625rem - 3.25rem); height: 3.25rem; padding: 0.25rem; }
+  html.tab-min #tabbar > a:not(.on) { flex: 0 0 0; opacity: 0; overflow: hidden; pointer-events: none; }
+  html.tab-min #tabbar > a span, html.tab-min #tabbar > .lg-sel { opacity: 0; }
+  html.tab-min #tabbar > a.on { color: var(--accent); }
+  html.tab-min .player { bottom: calc(0.625rem + env(safe-area-inset-bottom)); left: calc(0.625rem + 3.25rem + 0.5rem); height: 3.25rem; }
+  /* Hard style: a shorter, steeper ramp that ends at the tab bar's top edge. */
+  .lg-edge-bottom {
+    left: 0; height: calc(5rem + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, color-mix(in srgb, var(--bg) 55%, transparent) 30%, transparent);
+    -webkit-mask-image: linear-gradient(to top, #000 60%, transparent); mask-image: linear-gradient(to top, #000 60%, transparent);
+  }
+}
+
+/* ---------- Layers: materialize (opacity, scale, blur together; glass.js ramps the lens) ---------- */
+@keyframes lg-materialize { from { opacity: 0; transform: scale(0.92); filter: blur(10px); } 60% { filter: blur(0); } }
+.toast { animation: lg-materialize 0.34s var(--lg-ease); }
+@media (min-width: 768px) { .menu { animation: lg-materialize 0.34s var(--lg-ease); } }
+.menu .mh, .palette .pin, .palette .pfoot { border-color: rgb(127 127 127 / 0.16); }
+.msep { background: rgb(127 127 127 / 0.18); }
+.mi:hover, .mi:focus-visible, .prow:hover, .prow.sel { background: rgb(127 127 127 / 0.16); }
+.np-right .np-scroll { background: color-mix(in srgb, var(--bg) 40%, transparent); }
+.rank { background: rgb(0 0 0 / 0.55); color: #fff; }
+
+/* ---------- Settings: Liquid Glass panel ---------- */
+.lg-panel { display: grid; gap: 0.25rem; max-width: 40rem; }
+.lg-panel > h3 { margin-bottom: 0.5rem; }
+.lg-panel.off .lg-range, .lg-panel.off .lg-variant { opacity: 0.45; pointer-events: none; }
+.lg-panel .srow { max-width: none; }
+.lg-demo {
+  position: relative; height: 15rem; border-radius: calc(var(--r-lg) + 6px); overflow: hidden; isolation: isolate; margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6 45%, #ec4899 80%, #f97316);
+}
+.lg-demo i { position: absolute; border-radius: 50%; filter: blur(2px); z-index: -1; }
+.lg-demo .b1 { width: 9rem; height: 9rem; left: 38%; top: -2rem; background: #22d3ee; }
+.lg-demo .b2 { width: 7rem; height: 7rem; right: 6%; bottom: 1rem; background: #facc15; }
+.lg-demo .b3 { width: 5rem; height: 5rem; left: 6%; top: 1.25rem; background: #f43f5e; }
+.lg-demo-txt { position: absolute; left: 1.25rem; top: 2.25rem; z-index: -1; color: #fff; font: 800 clamp(3rem, 7vw, 4.25rem)/0.92 var(--font-head); letter-spacing: -0.04em; }
+.lg-demo-card { position: absolute; left: 1rem; bottom: 1rem; width: min(15rem, 55%); padding: 1rem; border-radius: 1.5rem; display: grid; gap: 0.25rem; }
+.lg-demo-card b { font-size: 1rem; }
+.lg-demo-dot { position: absolute; right: 1.25rem; top: 1.25rem; width: 3.5rem; height: 3.5rem; border-radius: 50%; display: grid; place-items: center; }
+.lg-demo-dot svg { width: 1.25rem; height: 1.25rem; }
+.lg-demo-pill { position: absolute; right: 1rem; bottom: 1.25rem; height: 2.75rem; padding: 0 1.25rem; border-radius: 999px; display: flex; align-items: center; gap: 1rem; font-weight: 600; }
+.lg-range { max-width: none; }
+.lg-range label { min-width: 9.5rem; font-weight: 600; font-size: 0.8125rem; }
+
+/* ---------- Fallbacks and accessibility ---------- */
+html.glass-off [data-glass][data-glass-size] {
+  --g-a: 1; --glass-tint-c: var(--surface); --g-dim: 0; --g-text: var(--text); --muted: var(--muted);
+  -webkit-backdrop-filter: none; backdrop-filter: none; text-shadow: none;
+}
+html.glass-off [data-glass="tinted"][data-glass-size] { --glass-tint-c: var(--accent); --g-text: var(--on-accent); }
+@media (prefers-reduced-transparency: reduce) {
+  html [data-glass][data-glass-size] { --g-a: 0.86; }
+  html [data-glass="clear"][data-glass-size] { --g-dim: 0.62; --g-a: 0.04; }
+  #ambient { opacity: calc(var(--ambient, 0.62) * 0.5); }
+}
+@media (prefers-contrast: more) {
+  html [data-glass][data-glass-size] {
+    --glass-tint-c: var(--surface); --g-a: 0.97; --g-dim: 0; --g-text: var(--text); --muted: var(--text);
+    -webkit-backdrop-filter: none; backdrop-filter: none; text-shadow: none;
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--text) 60%, transparent), var(--g-drop);
+  }
+  html [data-glass][data-glass-size]::before { display: none; }
+  html [data-glass="tinted"][data-glass-size] { --glass-tint-c: var(--accent); --g-text: var(--on-accent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu, .toast, .dialog, .palette { animation: fade 0.2s ease !important; }
+  .qpane { transition: opacity 0.2s, visibility 0.2s !important; clip-path: none !important; transform: none !important; filter: none !important; }
+  #tabbar, .player { transition-property: opacity !important; }
+}
+html.reduce-motion :is(.menu, .toast, .dialog, .palette) { animation: fade 0.2s ease !important; }
+html.reduce-motion :is(#tabbar, .player) { transition-property: opacity !important; }
+html.reduce-motion .qpane { transition: opacity 0.2s, visibility 0.2s !important; clip-path: none !important; transform: none !important; filter: none !important; }

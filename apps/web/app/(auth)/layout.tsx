@@ -6,8 +6,6 @@ import { Icons } from "~/components/icons";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
-import { AuthModeToggle } from "./_components/auth-mode-toggle";
-
 const ART_IMAGES = [
   "/images/artists/0.png",
   "/images/artists/1.png",
@@ -25,6 +23,12 @@ const ART_IMAGES = [
 
 type AuthLayoutProps = React.PropsWithChildren;
 
+// Signed-in redirects live in each page (`redirectIfSignedIn`), because
+// `/reset-password?token=...` must stay reachable for a signed-in user. They
+// read the session at request time, so the auth pages opt out of validation.
+// TODO: Cache Components adoption. Move the session read behind Suspense.
+export const instant = false;
+
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="grid min-h-dvh md:grid-cols-[1.1fr_1fr]">
@@ -37,8 +41,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             className="aspect-square w-full rounded-(--r-sm) object-cover opacity-85"
           />
         ))}
-        <div className="absolute inset-x-6 bottom-6 rounded-(--r-lg) bg-[rgba(20,20,22,0.45)] p-6 text-white backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
-          <h2 className="font-heading text-[1.75rem] font-bold leading-[1.15] tracking-[-0.025em]">
+        <div className="absolute inset-x-6 bottom-6 rounded-(--r-lg) bg-black/45 p-6 text-white inset-shadow-2xs inset-shadow-white/20">
+          <h2 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em]">
             Millions of songs.
             <br />
             Zero cost.
@@ -49,7 +53,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         </div>
       </div>
 
-      <div className="relative flex min-h-dvh w-full items-center justify-center p-6 sm:p-8">
+      <div className="relative grid min-h-dvh w-full place-items-center px-6 py-8">
         <Link
           href="/"
           aria-label="Close"
@@ -61,21 +65,17 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           <X className="size-4" />
         </Link>
 
-        <AuthModeToggle />
-
-        <div className="w-full max-w-[352px] space-y-4">
-          <div className="flex justify-center pb-2">
-            <Link
-              href="/"
-              aria-label="Infinitunes home"
-              className="flex items-center gap-2"
-            >
-              <Icons.Logo className="size-8" />
-              <span className="font-heading text-lg font-bold">
-                infinitunes
-              </span>
-            </Link>
-          </div>
+        <div className="grid w-full max-w-88 gap-4">
+          <Link
+            href="/"
+            aria-label="Infinitunes home"
+            className="mb-2 flex items-center gap-2 justify-self-start rounded-sm font-heading text-lg/6 font-bold tracking-tight lowercase"
+          >
+            <span className="grid size-7 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground">
+              <Icons.Logo className="size-4" />
+            </span>
+            infinitunes
+          </Link>
           {children}
         </div>
       </div>

@@ -153,6 +153,7 @@ function applyPrefs() {
   h.style.setProperty("--base", p.size + "px");
   $('meta[name="theme-color"]').content = dark ? "#0b0b0c" : "#f5f5f7";
   localStorage.setItem("inf-prefs", JSON.stringify(p));
+  window.Glass && Glass.apply();
 }
 darkMQ.addEventListener("change", applyPrefs);
 function setPref(k, v) { S.prefs[k] = v; applyPrefs(); if (Router.current().name === "settings") refresh(); }
@@ -230,7 +231,7 @@ const gcov = (o) => `<div class="gcov" style="--g:${GRADS[o.grad % GRADS.length]
 function card(o) {
   const art = o.grad != null ? gcov(o) : `<img src="${cover(o, 500)}" alt="" loading="lazy">`;
   return `<div class="card${o.round ? " round" : ""}" data-go="${o.go}" title="${esc(o.title)}">
-    <div class="art">${art}${o.rank ? `<span class="rank glass">${o.rank}</span>` : ""}<button class="play" data-act="playcard" data-src="${o.go}" aria-label="Play ${esc(o.title)}">${icon("play")}</button></div>
+    <div class="art">${art}${o.rank ? `<span class="rank">${o.rank}</span>` : ""}<button class="play" data-act="playcard" data-src="${o.go}" aria-label="Play ${esc(o.title)}">${icon("play")}</button></div>
     <div><b class="ell">${esc(o.title)}</b><small class="ell">${esc(o.subtitle || "")}</small></div></div>`;
 }
 const A = (a) => ({ ...a, go: "album/" + a.id });
@@ -287,7 +288,7 @@ function home() {
   return ["Home", `
     <div class="phead"><div><h1 class="ptitle">${greet}${S.loggedIn ? ", " + esc(S.user.name) : ""}</h1><p class="psub">Fresh picks in ${[...S.langs].map((l) => l[0].toUpperCase() + l.slice(1)).join(" and ")}.</p></div>
       <button class="btn" data-act="surprise" aria-label="Surprise Me - Add songs to queue and play">${icon("sparkles")} Surprise me</button></div>
-    <div class="chips" style="margin-bottom:1.25rem"><button class="chip on">For you</button>${MOCK.languages.slice(0, 10).map((l) => `<button class="chip" data-go="albums/${l.toLowerCase()}">${l}</button>`).join("")}</div>
+    <div class="chips"><button class="chip on">For you</button>${MOCK.languages.slice(0, 10).map((l) => `<button class="chip" data-go="albums/${l.toLowerCase()}">${l}</button>`).join("")}</div>
     <div class="hero-row">
       <div class="hero" data-go="playlist/${hero.id}"><img src="${src(hero.img)}" alt="">
         <div class="cap glass"><small>Featured playlist</small><h2>${esc(hero.title)}</h2><span class="muted">The biggest international songs this year, updated weekly.</span>
@@ -318,7 +319,7 @@ function albums(lang) {
   const list = MOCK.albums.map(A);
   return ["Top Albums", `<div class="phead"><div><h1 class="ptitle">Top Albums</h1><p class="psub">${lang ? lang[0].toUpperCase() + lang.slice(1) + " albums trending this week" : "Trending across your languages"}</p></div>
       <div class="seg"><button class="${v === "grid" ? "on" : ""}" data-act="view" data-v="grid" aria-label="Grid view">${icon("grid")}</button><button class="${v === "list" ? "on" : ""}" data-act="view" data-v="list" aria-label="List view">${icon("rows")}</button></div></div>
-    <div class="chips" style="margin-bottom:1.5rem"><button class="chip${!lang ? " on" : ""}" data-go="albums">All</button>${MOCK.languages.map((l) => `<button class="chip${lang === l.toLowerCase() ? " on" : ""}" data-go="albums/${l.toLowerCase()}">${l}</button>`).join("")}</div>
+    <div class="chips"><button class="chip${!lang ? " on" : ""}" data-go="albums">All</button>${MOCK.languages.map((l) => `<button class="chip${lang === l.toLowerCase() ? " on" : ""}" data-go="albums/${l.toLowerCase()}">${l}</button>`).join("")}</div>
     ${v === "grid" ? grid(list) : `<div class="tl">${MOCK.albums.map((a, k) => `<div class="tr" data-go="album/${a.id}"><span class="n"><em>${k + 1}</em></span><span class="ti"><img src="${src(a.img)}" alt=""><span class="tt"><b>${esc(a.title)}</b><small>${esc(a.subtitle)}</small></span></span><span class="ar">${esc(a.subtitle)}</span><span class="t-al"></span><span class="du">${a.year}</span><span class="ac">${likeItem("album:" + a.id)}</span></div>`).join("")}</div>`}`];
 }
 const simplePage = (title, sub, items) => [title, `<div class="phead"><div><h1 class="ptitle">${title}</h1><p class="psub">${sub}</p></div></div>${grid(items)}`];
@@ -337,7 +338,7 @@ function album(id) {
       meta: `${arId ? `<a data-go="artist/${arId}">${esc(a.subtitle)}</a>` : esc(a.subtitle)}<span>·</span><span>${a.year}</span><span>·</span><span>${list.length} songs, ${totalTime(list)}</span>`,
       actions: playBtns("album/" + id, "album:" + id, { title: a.title }) })
     + `<div class="list-tools"><span class="muted">${list.length} songs</span>${densityToggle()}</div>${tracks(list, "album-" + id)}
-    <p class="muted" style="font-size:0.75rem;margin-top:1rem">Released ${a.year}. ℗ ${a.year} ${id === "dhurandhar" ? "Jio Studios" : "Sony Music"}. <a class="link" data-go="label/${LABEL.id}">View label</a></p>
+    <p class="muted t-caption" style="margin-top:1rem">Released ${a.year}. ℗ ${a.year} ${id === "dhurandhar" ? "Jio Studios" : "Sony Music"}. <a class="link" data-go="label/${LABEL.id}">View label</a></p>
     ${shelf("More from " + esc(a.subtitle), MOCK.albums.slice(1, 9).map(A))}${shelf("You might also like", MOCK.playlists.map(PL))}`];
 }
 
@@ -358,10 +359,10 @@ function song(id) {
       meta: `${s.arId ? `<a data-go="artist/${s.arId}">${esc(s.a)}</a>` : esc(s.a)}<span>·</span>${s.alId ? `<a data-go="album/${s.alId}">${esc(s.al)}</a>` : `<span>${esc(s.al)}</span>`}<span>·</span><span>2026</span><span>·</span><span>${s.d}</span><span>·</span><span>1.2M plays</span>`,
       actions: `<button class="btn pri lg" data-act="playone" data-id="${s.id}">${icon("play")} Play</button><button class="ib${S.liked.has(s.id) ? " on" : ""}" data-act="like" data-id="${s.id}" aria-label="Like">${icon("heart", "fill")}</button><button class="ib" data-act="download" data-id="${s.id}" aria-label="Download">${icon("download")}</button><button class="ib" data-act="share" data-title="${esc(s.t)}" aria-label="Share">${icon("share")}</button><button class="ib" data-act="more" data-id="${s.id}" aria-label="More options">${icon("more")}</button>` })
     + `<div class="two" style="margin-top:1rem">
-      <section class="panel lyrics"><div class="sec-h"><h2 style="font-size:1rem">Lyrics</h2><span class="muted" style="font-size:0.75rem">Preview</span></div>
-        ${[80, 64, 72, 50, 0, 76, 58, 68].map((w, k) => (w ? `<div class="skel" style="height:0.875rem;width:${w}%;margin:0 0 0.75rem;${k === 2 ? "background:var(--fill-2)" : ""}"></div>` : `<div style="height:0.75rem"></div>`)).join("")}
-        <p class="muted" style="font-size:0.75rem;margin-top:1rem;font-weight:400">Synced lyrics appear here when available.</p></section>
-      <section class="panel"><div class="sec-h"><h2 style="font-size:1rem">Details</h2></div>
+      <section class="panel lyrics"><div class="sec-h sm"><h2>Lyrics</h2><span class="muted t-caption">Preview</span></div>
+        ${[80, 64, 72, 50, 0, 76, 58, 68].map((w, k) => (w ? `<div class="skel" style="height:0.75rem;width:${w}%;margin:0 0 0.75rem;${k === 2 ? "background:var(--fill-2)" : ""}"></div>` : `<div style="height:0.75rem"></div>`)).join("")}
+        <p class="muted t-caption" style="margin-top:1rem;font-weight:400">Synced lyrics appear here when available.</p></section>
+      <section class="panel"><div class="sec-h sm"><h2>Details</h2></div>
         <dl class="kv"><dt>Album</dt><dd>${s.alId ? `<a class="link" data-go="album/${s.alId}">${esc(s.al)}</a>` : esc(s.al)}</dd><dt>Artist</dt><dd>${esc(s.a)}</dd><dt>Language</dt><dd>English</dd><dt>Duration</dt><dd>${s.d}</dd><dt>Label</dt><dd><a class="link" data-go="label/${LABEL.id}">${LABEL.name}</a></dd><dt>Quality</dt><dd>${S.stream}</dd><dt>Copyright</dt><dd class="muted">℗ 2026</dd></dl></section>
     </div>
     <section class="sec"><div class="sec-h"><h2>More from ${esc(s.al)}</h2><a class="link" data-go="album/${s.alId || "michael"}">See album</a></div>${tracks(more.filter((x) => x.id !== s.id).slice(0, 5), "song-more")}</section>
@@ -415,7 +416,7 @@ function episode(id) {
   const e = EPS.find((x) => x.id === id) || EPS[0];
   return [e.t, dhead({ img: e.i, kind: "Episode", title: e.t, meta: `<a data-go="show/${SHOW.id}">${SHOW.title}</a><span>·</span><span>${e.al}</span><span>·</span><span>${e.d}</span>`,
       actions: `<button class="btn pri lg" data-act="playone" data-id="${e.id}">${icon("play")} Play episode</button><button class="ib${S.liked.has(e.id) ? " on" : ""}" data-act="like" data-id="${e.id}" aria-label="Like">${icon("heart", "fill")}</button><button class="ib" data-act="share" data-title="${esc(e.t)}" aria-label="Share">${icon("share")}</button>` })
-    + `<section class="panel" style="max-width:44rem"><h2 style="font-size:1rem;margin-bottom:0.5rem">About this episode</h2><p class="muted" style="margin:0">Placeholder episode notes. The real page renders the episode description, release date and the show it belongs to.</p></section>
+    + `<section class="panel" style="max-width:44rem"><h2 class="t-sub" style="margin-bottom:0.5rem">About this episode</h2><p class="muted" style="margin:0">Placeholder episode notes. The real page renders the episode description, release date and the show it belongs to.</p></section>
     <section class="sec"><div class="sec-h"><h2>More episodes</h2><a class="link" data-go="show/${SHOW.id}">All episodes</a></div>${tracks(EPS.filter((x) => x.id !== id), "ep-more", "ep")}</section>`];
 }
 
@@ -430,7 +431,7 @@ function results(q) {
 function search(params) {
   if (!params.length) {
     return ["Search", `<div class="phead"><div><h1 class="ptitle">Search</h1></div></div>
-      <button class="searchbox" data-act="palette" style="width:100%;height:2.75rem;margin-bottom:1.5rem">${icon("search")}<span>Songs, albums, artists, podcasts</span><kbd>⌘K</kbd></button>
+      <button class="searchbox lg" data-act="palette" style="margin-bottom:1.5rem">${icon("search")}<span>Songs, albums, artists, podcasts</span><kbd>⌘K</kbd></button>
       ${S.recentSearches.length ? `<section><div class="sec-h"><h2>Recent searches</h2><button class="link" data-act="clearrecent">Clear</button></div><div class="chips">${S.recentSearches.map((q) => `<button class="chip" data-go="search/${encodeURIComponent(q)}">${icon("clock")} ${esc(q)}</button>`).join("")}</div></section>` : ""}
       <section class="sec"><div class="sec-h"><h2>Top searches</h2></div>${tracks(NEW.slice(0, 5), "top-search")}</section>
       <section class="sec"><div class="sec-h"><h2>Browse all</h2></div>${browseTiles()}</section>`];
@@ -440,10 +441,10 @@ function search(params) {
   const q = type === "all" ? params[0] : params[1];
   const { r, none } = results(q);
   const top = r.artists[0] ? AR(r.artists[0]) : r.albums[0] ? A(r.albums[0]) : SG(r.songs[0]);
-  const seg = `<div class="chips" style="margin-bottom:1.5rem">${[["all", "All"], ...types.map((t) => [t, t[0].toUpperCase() + t.slice(1)])].map(([t, l]) => `<button class="chip${t === type ? " on" : ""}" data-go="${t === "all" ? "search/" + encodeURIComponent(q) : "search/" + t + "/" + encodeURIComponent(q)}">${l}</button>`).join("")}</div>`;
+  const seg = `<div class="chips">${[["all", "All"], ...types.map((t) => [t, t[0].toUpperCase() + t.slice(1)])].map(([t, l]) => `<button class="chip${t === type ? " on" : ""}" data-go="${t === "all" ? "search/" + encodeURIComponent(q) : "search/" + t + "/" + encodeURIComponent(q)}">${l}</button>`).join("")}</div>`;
   const body = {
     all: `<div class="two sr"><section><div class="sec-h"><h2>Top result</h2></div>
-        <div class="panel" data-go="${top.go}" style="cursor:pointer;display:grid;gap:0.75rem"><img src="${src(top.img, 500)}" alt="" style="width:6rem;height:6rem;object-fit:cover;border-radius:${top.round ? "50%" : "var(--r)"};box-shadow:var(--shadow-sm)"><div><h3 style="font-size:1.5rem;letter-spacing:-0.02em">${esc(top.title)}</h3><span class="muted">${esc(top.subtitle)}</span></div><div><button class="btn pri" data-act="playall" data-src="${top.go}">${icon("play")} Play</button></div></div></section>
+        <div class="panel" data-go="${top.go}" style="cursor:pointer;display:grid;gap:0.75rem"><img src="${src(top.img, 500)}" alt="" style="width:6rem;height:6rem;object-fit:cover;border-radius:${top.round ? "50%" : "var(--r)"};box-shadow:var(--shadow-sm)"><div><h3 class="t-headline">${esc(top.title)}</h3><span class="muted">${esc(top.subtitle)}</span></div><div><button class="btn pri" data-act="playall" data-src="${top.go}">${icon("play")} Play</button></div></div></section>
         <section><div class="sec-h"><h2>Songs</h2><a class="link" data-go="search/songs/${encodeURIComponent(q)}">See all</a></div>${tracks(r.songs.slice(0, 4), "sr-songs")}</section></div>
       ${r.albums.length ? shelf("Albums", r.albums.map(A)) : ""}${r.artists.length ? shelf("Artists", r.artists.map(AR)) : ""}${r.playlists.length ? shelf("Playlists", r.playlists.map(PL)) : ""}${r.shows.length ? shelf("Podcasts", r.shows.map(SH)) : ""}`,
     songs: tracks(r.songs, "sr-all"),
@@ -461,7 +462,7 @@ function me(tab = "") {
   const liked = [...S.liked].map(byId).filter(Boolean);
   const items = (type, list) => list.filter((x) => S.likedItems.has(type + ":" + x.id));
   const body = {
-    "": `<div class="grid"><button class="card" data-act="newpl" style="text-align:left"><div class="art" style="display:grid;place-items:center;border:1.5px dashed var(--line);box-shadow:none;background:none">${icon("plus")}</div><div><b>New playlist</b><small>Start a collection</small></div></button>${S.playlists.map((p) => `<div class="card" data-go="me/playlist/${p.id}"><div class="art" style="display:grid;grid-template-columns:1fr 1fr">${[0, 1, 2, 3].map((k) => { const s = plSongs(p); return s.length ? `<img src="${src(s[k % s.length].i)}" alt="">` : ""; }).join("")}</div><div><b class="ell">${esc(p.name)}</b><small>${p.songs.length} songs</small></div></div>`).join("")}</div>`,
+    "": `<div class="grid"><button class="card" data-act="newpl" style="text-align:left"><div class="art new">${icon("plus")}</div><div><b>New playlist</b><small>Start a collection</small></div></button>${S.playlists.map((p) => `<div class="card" data-go="me/playlist/${p.id}"><div class="art" style="display:grid;grid-template-columns:1fr 1fr">${[0, 1, 2, 3].map((k) => { const s = plSongs(p); return s.length ? `<img src="${src(s[k % s.length].i)}" alt="">` : ""; }).join("")}</div><div><b class="ell">${esc(p.name)}</b><small>${p.songs.length} songs</small></div></div>`).join("")}</div>`,
     "recently-played": `<div class="list-tools"><button class="btn pri" data-act="playlist-list" data-k="recent">${icon("play")} Play all</button>${densityToggle()}</div>${tracks(S.recentPlayed.map(byId), "recent")}`,
     "liked-songs": liked.length ? `<div class="list-tools"><button class="btn pri" data-act="playlist-list" data-k="liked">${icon("play")} Play all</button>${densityToggle()}</div>${tracks(liked, "liked")}` : empty("heart", "Songs you like will appear here", "Tap the heart on any song to save it.", `<button class="btn" data-go="home">Find songs</button>`),
     albums: items("album", MOCK.albums).length ? grid(items("album", MOCK.albums).map(A)) : empty("disc", "No saved albums", "Save albums to find them quickly."),
@@ -506,7 +507,7 @@ function settings(page = "") {
           <div><button class="btn pri sq" data-act="toast" data-msg="Profile updated">Save Changes</button></div></div>
           <div style="display:grid;justify-items:center;gap:0.75rem"><div class="avatar">${esc(S.user.name[0])}</div><button class="btn" data-act="toast" data-msg="Avatar picker opens here">Change avatar</button></div></div></section>
       <section class="set-sec" id="password"><h2>Change Password</h2><p>Required to change your password, and your email if you have a password. Passkey or OAuth only accounts can leave it blank if they signed in within the last 10 minutes.</p>
-        <div class="fields" style="display:grid;gap:1.125rem;max-width:28rem">
+        <div class="fields" style="max-width:28rem">
           <div class="field"><label for="f-cur">Current Password</label><div class="pw"><input id="f-cur" class="input" type="password" value="password123"><button class="ib" data-act="peek" aria-label="Show password">${icon("eye")}</button></div></div>
           <div class="field"><label for="f-new">New Password</label><div class="pw"><input id="f-new" class="input" type="password"><button class="ib" data-act="peek" aria-label="Show password">${icon("eye")}</button></div><small>Enter your new password to change your password.</small></div>
           <div><button class="btn pri sq" data-act="toast" data-msg="Password updated">Update Password</button></div></div></section>
@@ -521,24 +522,25 @@ function settings(page = "") {
       <section class="set-sec" id="accent"><h2>Accent Color</h2><p>Used for buttons, active states, progress and highlights.</p>
         <div class="swatches">${MOCK.themes.map(([n, c]) => `<button class="swatch${p.accent === c ? " on" : ""}" style="--c:${c}" data-act="pref-accent" data-v="${c}" aria-label="${n}" title="${n[0].toUpperCase() + n.slice(1)}"></button>`).join("")}
           <label class="swatch custom${custom ? " on" : ""}" style="--c:${p.accent}" title="Custom color"><input type="color" value="${p.accent}" data-input="accent" aria-label="Custom accent color"></label>
-          <span class="muted" style="font:500 0.75rem ui-monospace,monospace;margin-left:0.25rem">${p.accent.toUpperCase()}</span></div></section>
+          <span class="mono muted" style="margin-left:0.25rem">${p.accent.toUpperCase()}</span></div></section>
       <section class="set-sec" id="radius"><h2>Radius</h2><p>Roundness of cards, buttons and sheets.</p>
         <div class="opts">${RADII.map(([l, v]) => `<button class="opt${p.radius === v ? " on" : ""}" data-act="pref-radius" data-v="${v}" style="border-radius:${v}px">${l}</button>`).join("")}</div>
         <div class="range-row"><input type="range" min="0" max="24" step="1" value="${p.radius}" data-input="radius" aria-label="Corner radius"><output>${p.radius}px</output></div></section>
       <section class="set-sec" id="type"><h2>Typography</h2><p>Fonts for the interface and for headings, plus text size. Rounded and Serif use the system faces in Safari; the app would ship web fonts so every browser matches.</p>
-        <div class="srow" style="display:block;border:0;padding:0"><div class="lbl" style="margin-bottom:0.5rem"><b>Interface font</b></div><div class="opts">${Object.entries(FONTS).map(([k, [l, f]]) => `<button class="opt fontopt${p.font === k ? " on" : ""}" data-act="pref-font" data-v="${k}"><b style="font-family:${esc(f)}">Aa</b><small>${l}</small></button>`).join("")}</div></div>
-        <div class="srow" style="display:block;border:0;padding:0"><div class="lbl" style="margin-bottom:0.5rem"><b>Heading font</b></div><div class="opts">${Object.entries(FONTS).map(([k, [l, f]]) => `<button class="opt fontopt${p.head === k ? " on" : ""}" data-act="pref-head" data-v="${k}"><b style="font-family:${esc(f)}">Ag</b><small>${l}</small></button>`).join("")}</div></div>
-        <div class="srow" style="display:block;border:0;padding:0"><div class="lbl" style="margin-bottom:0.5rem"><b>Text size</b><small>Layout and controls scale with the text.</small></div><div class="opts">${[[15, "Small"], [16, "Default"], [17, "Large"], [18, "Larger"]].map(([v, l]) => opt(p.size === v, "pref-size", v, l)).join("")}</div></div></section>
+        <div class="srow stack"><div class="lbl" style="margin-bottom:0.5rem"><b>Interface font</b></div><div class="opts">${Object.entries(FONTS).map(([k, [l, f]]) => `<button class="opt fontopt${p.font === k ? " on" : ""}" data-act="pref-font" data-v="${k}"><b style="font-family:${esc(f)}">Aa</b><small>${l}</small></button>`).join("")}</div></div>
+        <div class="srow stack"><div class="lbl" style="margin-bottom:0.5rem"><b>Heading font</b></div><div class="opts">${Object.entries(FONTS).map(([k, [l, f]]) => `<button class="opt fontopt${p.head === k ? " on" : ""}" data-act="pref-head" data-v="${k}"><b style="font-family:${esc(f)}">Ag</b><small>${l}</small></button>`).join("")}</div></div>
+        <div class="srow stack"><div class="lbl" style="margin-bottom:0.5rem"><b>Text size</b><small>Layout and controls scale with the text.</small></div><div class="opts">${[[15, "Small"], [16, "Default"], [17, "Large"], [18, "Larger"]].map(([v, l]) => opt(p.size === v, "pref-size", v, l)).join("")}</div></div></section>
       <section class="set-sec" id="density"><h2>Density</h2><p>Comfortable rows with artwork, or a compact table with an album column.</p><div class="opts">${opt(p.density === "comfortable", "pref-density", "comfortable", "Comfortable", icon("rows"))}${opt(p.density === "compact", "pref-density", "compact", "Compact", icon("layout"))}</div></section>
       <section class="set-sec" id="material"><h2>Glass and motion</h2><p>Liquid Glass lets artwork glow through toolbars, the player and sheets.</p>
         <div class="opts">${opt(p.glass === "liquid", "pref-glass", "liquid", "Liquid glass", icon("layers"))}${opt(p.glass === "subtle", "pref-glass", "subtle", "Subtle")}${opt(p.glass === "off", "pref-glass", "off", "Solid")}</div>
-        <div style="max-width:40rem"><div class="srow"><div class="lbl"><b>Ambient artwork</b><small>Tint the background with the playing song's artwork.</small></div>${sw(p.ambient, "pref-ambient", "Ambient artwork")}</div>
+        ${window.Glass ? Glass.settingsPanel() : ""}
+        <div style="max-width:40rem">
         <div class="srow"><div class="lbl"><b>Reduce motion</b><small>Replace springs and slides with simple fades. Follows your system setting automatically.</small></div>${sw(p.motion, "pref-motion", "Reduce motion")}</div></div></section>
       <div><button class="btn sq" data-act="pref-reset">${icon("refresh")} Reset to defaults</button></div>
     </div>
     <aside class="preview" aria-label="Preview"><img src="${src(S.now.i, 500)}" alt="">
-      <div class="glass" style="display:flex;align-items:center;gap:0.625rem"><img src="${src(S.now.i)}" alt="" style="width:2.5rem;height:2.5rem;border-radius:var(--r-sm)"><div style="flex:1;min-width:0"><b class="ell" style="display:block">${esc(S.now.t)}</b><small class="muted">${esc(S.now.a)}</small></div><span class="ib" style="background:var(--accent);color:var(--on-accent)">${icon("play")}</span></div>
-      <div class="glass" style="display:grid;gap:0.625rem"><h3 style="font-size:1.125rem;letter-spacing:-0.015em">Heading preview</h3><span class="muted">Body text at the current size.</span><div style="display:flex;gap:0.5rem;flex-wrap:wrap"><span class="btn pri">Primary</span><span class="btn">Secondary</span><span class="chip on">Chip</span></div></div></aside></div>`;
+      <div class="glass" style="display:flex;align-items:center;gap:0.75rem"><img src="${src(S.now.i)}" alt="" style="width:2.5rem;height:2.5rem;border-radius:var(--r-sm)"><div style="flex:1;min-width:0"><b class="ell" style="display:block">${esc(S.now.t)}</b><small class="muted">${esc(S.now.a)}</small></div><span class="ib" style="background:var(--accent);color:var(--on-accent)">${icon("play")}</span></div>
+      <div class="glass" style="display:grid;gap:0.75rem"><h3 class="t-sub">Heading preview</h3><span class="muted">Body text at the current size.</span><div style="display:flex;gap:0.5rem;flex-wrap:wrap"><span class="btn pri">Primary</span><span class="btn">Secondary</span><span class="chip on">Chip</span></div></div></aside></div>`;
   } else {
     const q = (id, label, key, list, help) => `<div class="srow" id="${id}"><div class="lbl"><b>${label}</b><small>${help}</small></div><select class="input" data-input="${key}" aria-label="${label}">${list.map((v) => `<option${S[key] === v ? " selected" : ""}>${v}</option>`).join("")}</select></div>`;
     body = `<section class="set-sec" id="language"><h2>Languages</h2><p>Pick the languages you want on Home, Charts and New releases.</p>
@@ -553,7 +555,7 @@ function settings(page = "") {
 
 /* Auth: full page when opened directly, dialog when opened from inside the app (like the @modal intercepting routes). */
 function authCard(kind, inDialog) {
-  const oauth = `<div class="alt"><button class="btn sq" data-act="authdone">${icon("github")} GitHub</button><button class="btn sq" data-act="authdone"><b style="font-size:0.95rem">G</b> Google</button></div>`;
+  const oauth = `<div class="alt"><button class="btn sq" data-act="authdone">${icon("github")} GitHub</button><button class="btn sq" data-act="authdone"><b>G</b> Google</button></div>`;
   const pw = (id, l, help = "", forgot = false) => `<div class="field"><div style="display:flex;justify-content:space-between"><label for="${id}">${l}</label>${forgot ? `<a class="link" data-go="forgot-password">Forgot password?</a>` : ""}</div><div class="pw"><input id="${id}" class="input" type="password" autocomplete="current-password"><button class="ib" data-act="peek" aria-label="Show password">${icon("eye")}</button></div>${help ? `<small>${help}</small>` : ""}</div>`;
   const email = `<div class="field"><label for="a-mail">Email</label><input id="a-mail" class="input" type="email" placeholder="name@example.com" autocomplete="email"></div>`;
   const c = {
@@ -571,18 +573,18 @@ function authPage(kind) {
 }
 
 const prose = (t, secs) => [t, `<div class="phead"><div><h1 class="ptitle">${t}</h1><p class="psub">Last updated 1 October 2026</p></div></div><div class="prose">${secs.map((s) => `<h2>${s}</h2><p>Placeholder legal copy for the mockup. The real page renders the full ${t.toLowerCase()} text with the same heading rhythm and a readable 42rem measure.</p>`).join("")}</div>`];
-const notFound = () => ["Not found", `<div class="empty" style="margin-top:2rem;padding:4rem 1rem"><div style="font:800 4.5rem/1 var(--font-head);letter-spacing:-0.05em;background:linear-gradient(135deg,var(--accent),var(--text));-webkit-background-clip:text;background-clip:text;color:transparent">404</div><h3 style="font-size:1.25rem">This page took a wrong turn</h3><p>The link may be broken, or the page may have moved.</p><div class="actions" style="margin:0"><button class="btn pri" data-go="home">${icon("home")} Go home</button><button class="btn" data-act="palette">${icon("search")} Search</button></div></div>`];
+const notFound = () => ["Not found", `<div class="empty" style="margin-top:2rem;padding:4rem 1rem"><div class="t-display-xl" style="background:linear-gradient(135deg,var(--accent),var(--text));-webkit-background-clip:text;background-clip:text;color:transparent">404</div><h3 class="t-section">This page took a wrong turn</h3><p>The link may be broken, or the page may have moved.</p><div class="actions" style="margin:0"><button class="btn pri" data-go="home">${icon("home")} Go home</button><button class="btn" data-act="palette">${icon("search")} Search</button></div></div>`];
 
 function states() {
-  const sk = (n) => `<div class="grid">${Array.from({ length: n }, () => `<div class="card"><div class="art skel" style="box-shadow:none"></div><div class="skel" style="height:0.75rem;width:80%"></div><div class="skel" style="height:0.625rem;width:50%"></div></div>`).join("")}</div>`;
-  const skr = `<div class="tl">${Array.from({ length: 4 }, () => `<div class="tr"><span class="n"><span class="skel" style="width:1rem;height:0.75rem"></span></span><span class="ti"><span class="skel" style="width:var(--art);height:var(--art)"></span><span style="display:grid;gap:0.375rem;flex:1"><span class="skel" style="height:0.75rem;width:60%"></span><span class="skel" style="height:0.625rem;width:30%"></span></span></span><span class="ar"><span class="skel" style="height:0.75rem;width:70%;display:block"></span></span><span class="t-al"></span><span class="du"></span><span></span></div>`).join("")}</div>`;
+  const sk = (n) => `<div class="grid">${Array.from({ length: n }, () => `<div class="card"><div class="art skel" style="box-shadow:none"></div><div class="skel" style="height:0.75rem;width:80%"></div><div class="skel" style="height:0.5rem;width:50%"></div></div>`).join("")}</div>`;
+  const skr = `<div class="tl">${Array.from({ length: 4 }, () => `<div class="tr"><span class="n"><span class="skel" style="width:1rem;height:0.75rem"></span></span><span class="ti"><span class="skel" style="width:var(--art);height:var(--art)"></span><span style="display:grid;gap:0.5rem;flex:1"><span class="skel" style="height:0.75rem;width:60%"></span><span class="skel" style="height:0.5rem;width:30%"></span></span></span><span class="ar"><span class="skel" style="height:0.75rem;width:70%;display:block"></span></span><span class="t-al"></span><span class="du"></span><span></span></div>`).join("")}</div>`;
   return ["States and dialogs", `<div class="phead"><div><h1 class="ptitle">States and dialogs</h1><p class="psub">Every loading, empty, error and overlay pattern in one place, for review.</p></div></div>
     <section class="sec"><div class="sec-h"><h2>Overlays</h2></div><div class="chips" style="flex-wrap:wrap">
       ${[["newpl", "Create playlist"], ["addto", "Add to playlist"], ["more-demo", "Song menu"], ["share", "Share"], ["langs", "Language picker"], ["user", "User menu"], ["palette", "Search palette"], ["shortcuts", "Keyboard shortcuts"], ["delacct", "Confirm dialog"], ["np", "Now playing"], ["queue", "Queue"]].map(([a, l]) => `<button class="chip" data-act="${a}" data-id="mj-8">${l}</button>`).join("")}
       <button class="chip" data-act="toast" data-msg="Added to queue">Toast</button><button class="chip" data-go="login">Login dialog</button></div></section>
     <section class="sec"><div class="sec-h"><h2>Loading</h2></div>${sk(6)}<div style="margin-top:1.5rem">${skr}</div></section>
     <section class="sec"><div class="sec-h"><h2>Empty</h2></div>${empty("listmusic", "Create your first playlist", "Collect songs you love into playlists you can play any time.", `<button class="btn pri" data-act="newpl">${icon("plus")} Create Playlist</button>`)}</section>
-    <section class="sec" id="err"><div class="sec-h"><h2>Error</h2></div><div class="empty"><div class="ic" style="color:#dc2626">${icon("alert")}</div><h3>Something went wrong</h3><p>We could not load this section. Check your connection and try again.</p><button class="btn" data-act="retry">${icon("refresh")} Retry</button></div></section>`];
+    <section class="sec" id="err"><div class="sec-h"><h2>Error</h2></div><div class="empty"><div class="ic err">${icon("alert")}</div><h3>Something went wrong</h3><p>We could not load this section. Check your connection and try again.</p><button class="btn" data-act="retry">${icon("refresh")} Retry</button></div></section>`];
 }
 
 const MAP = [
@@ -648,7 +650,7 @@ function renderSide(path) {
   $("#side").innerHTML = `<a class="logo" data-go="home"><i>${icon("music")}</i><span>infinitunes</span></a>
     <nav class="nav">${NAV.map(([p, ic, l]) => `<a class="${on(p)}" data-go="${p}" title="${l}">${icon(ic)}<span>${l}</span></a>`).join("")}</nav>
     <nav class="nav"><div class="nav-h">Library</div>${LIB.map(([p, ic, l]) => `<a class="${on(p)}" data-go="${p}" title="${l}">${icon(ic)}<span>${l}</span></a>`).join("")}</nav>
-    <nav class="nav pls"><div class="nav-h">Playlists <button class="ib" style="width:1.5rem;height:1.5rem" data-act="newpl" aria-label="Create Playlist">${icon("plus")}</button></div>${S.playlists.map((p) => `<a class="${on("me/playlist/" + p.id)}" data-go="me/playlist/${p.id}"><img src="${src(plSongs(p)[0]?.i || ALB.img)}" alt=""><span>${esc(p.name)}</span></a>`).join("")}</nav>
+    <nav class="nav pls"><div class="nav-h">Playlists <button class="ib xs" data-act="newpl" aria-label="Create Playlist">${icon("plus")}</button></div>${S.playlists.map((p) => `<a class="${on("me/playlist/" + p.id)}" data-go="me/playlist/${p.id}"><img src="${src(plSongs(p)[0]?.i || ALB.img)}" alt=""><span>${esc(p.name)}</span></a>`).join("")}</nav>
     <div class="side-foot"><a data-go="map">Route map</a><a data-go="states">States</a><a href="../index.html">All variants</a></div>`;
 }
 const ROOTS = ["home", "search", "browse", "me", "settings"];
@@ -661,8 +663,8 @@ function renderBar(r, title) {
     <div class="nav-arrows"><button class="ib" data-back aria-label="Back">${icon("left")}</button><button class="ib" data-act="fwd" aria-label="Forward">${icon("right")}</button></div>
     <div class="title grow">${esc(title)}</div>
     <button class="searchbox" data-act="palette" aria-label="Search">${icon("search")}<span>Search</span><kbd>⌘K</kbd></button>
-    <button class="btn ghost lang-btn" data-act="langs" aria-label="Choose languages">${icon("langs")}<span>${S.langs.size} languages</span></button>
-    ${S.loggedIn ? `<button class="ib" data-act="user" aria-label="Open user menu"><span class="avatar sm">${esc(S.user.name[0])}</span></button>` : `<button class="btn pri" data-go="login">Log in</button>`}`;
+    <div class="tb-group"><button class="btn ghost lang-btn" data-act="langs" aria-label="Choose languages">${icon("langs")}<span>${S.langs.size} languages</span></button>
+    ${S.loggedIn ? `<button class="ib" data-act="user" aria-label="Open user menu"><span class="avatar sm">${esc(S.user.name[0])}</span></button>` : ""}</div>${S.loggedIn ? "" : `<button class="btn pri" data-go="login">Log in</button>`}`;
 }
 function renderTabbar(path) {
   const t = [["home", "home", "Home"], ["search", "search", "Search"], ["browse", "compass", "Browse"], ["me", "library", "Library"], ["settings", "settings", "Settings"]];
@@ -677,7 +679,7 @@ function renderPlayer() {
       <button class="ib big" data-act="toggle" aria-label="${S.playing ? "Pause" : "Play"}">${icon(S.playing ? "pause" : "play")}</button>
       <button class="ib" data-act="next" aria-label="Next">${icon("next")}</button>
       <button class="ib dot${S.repeat ? " on" : ""}" data-act="repeat" aria-label="Loop">${icon(rep)}</button></div>
-      <div class="scrub"><span class="t-cur">${fmt(S.pos)}</span><div class="track" data-scrub role="slider" aria-label="Seek" aria-valuemax="${secs(s.d)}"><div class="fill"></div></div><span>${s.d}</span></div></div>
+      <div class="scrub"><span class="t-cur">${fmt(S.pos)}</span><div class="track" data-scrub tabindex="0" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="${secs(s.d)}" aria-valuenow="${Math.round(S.pos)}" aria-valuetext="${fmt(S.pos)}"><div class="fill"></div></div><span>${s.d}</span></div></div>
     <div class="pl-right">
       <button class="ib like hide-m${S.liked.has(s.id) ? " on" : ""}" data-act="like" data-id="${s.id}" aria-label="Like">${icon("heart", "fill")}</button>
       <button class="ib hide-m${S.qOpen ? " on" : ""}" data-act="queue" aria-label="Open queue">${icon("queue")}</button>
@@ -696,6 +698,7 @@ function progress() {
   $$(".track .fill").forEach((f) => (f.style.width = pct));
   $$(".pl-mini-prog i").forEach((f) => (f.style.width = pct));
   $$(".t-cur").forEach((t) => (t.textContent = fmt(S.pos)));
+  $$(".track[data-scrub]").forEach((t) => { t.setAttribute("aria-valuenow", Math.round(S.pos)); t.setAttribute("aria-valuetext", fmt(S.pos)); });
 }
 function renderQueue() {
   const q = S.queue;
@@ -705,7 +708,7 @@ function renderQueue() {
       <div class="q-label">Up next <button class="link" data-act="clearq">Clear</button></div>${q.length ? q.map(qrow).join("") : `<p class="muted" style="padding:0 0.5rem">Nothing queued. Autoplay continues with similar songs.</p>`}
       <div class="q-label">Autoplay</div>${NEW.slice(5, 9).map((s) => qrow(s, -2)).join("")}</div>`;
 }
-const qrow = (s, k) => `<div class="qrow" data-act="${k >= 0 ? "playq" : k === -2 ? "playone" : ""}" data-k="${k}" data-id="${s.id}"><img src="${src(s.i)}" alt=""><div class="ell"><b class="ell">${k === -1 && S.playing ? EQ + " " : ""}${esc(s.t)}</b><small class="ell">${esc(s.a)}</small></div>${k >= 0 ? `<button class="ib" data-act="rmq" data-k="${k}" aria-label="Remove from queue">${icon("x")}</button>` : `<span class="muted" style="font-size:0.75rem">${s.d}</span>`}</div>`;
+const qrow = (s, k) => `<div class="qrow" data-act="${k >= 0 ? "playq" : k === -2 ? "playone" : ""}" data-k="${k}" data-id="${s.id}"><img src="${src(s.i)}" alt=""><div class="ell"><b class="ell">${k === -1 && S.playing ? EQ + " " : ""}${esc(s.t)}</b><small class="ell">${esc(s.a)}</small></div>${k >= 0 ? `<button class="ib" data-act="rmq" data-k="${k}" aria-label="Remove from queue">${icon("x")}</button>` : `<span class="muted t-caption">${s.d}</span>`}</div>`;
 
 /* ---------- Playback ---------- */
 let timer;
@@ -808,7 +811,7 @@ function userMenu(anchor) {
     `<div class="mh"><span class="avatar sm" style="width:2.5rem;height:2.5rem">${esc(S.user.name[0])}</span><div class="ell"><b>${esc(S.user.name)}</b><small>${esc(S.user.email)}</small></div></div>`), { anchor, clear: true });
 }
 function langMenu(anchor) {
-  openLayer(`<div class="menu glass" style="width:20rem"><div class="mpad"><b>Languages</b><p class="muted" style="margin:0.125rem 0 0.5rem;font-size:0.75rem">Shapes Home, Charts and New releases.</p>
+  openLayer(`<div class="menu glass" style="width:20rem"><div class="mpad"><b>Languages</b><p class="muted t-caption" style="margin:0.125rem 0 0.5rem">Shapes Home, Charts and New releases.</p>
     <div class="opts">${MOCK.languages.map((l) => `<button class="chip${S.langs.has(l.toLowerCase()) ? " on" : ""}" data-act="lang" data-v="${l.toLowerCase()}">${l}</button>`).join("")}</div>
     <button class="btn pri sq block" style="margin-top:0.75rem" data-act="langsave">Save</button></div></div>`, { anchor, clear: true });
 }
@@ -874,12 +877,12 @@ function renderNP() {
     <div class="np-top"><span class="grabber"></span><button class="ib" data-act="npclose" aria-label="Close">${icon("down")}</button><small class="muted ell">Playing from <b style="color:var(--text)">${esc(s.al)}</b></small><button class="ib" data-act="more" data-id="${s.id}" aria-label="More options">${icon("more")}</button></div>
     <div class="np-in"><div class="np-left"><img class="np-art" src="${src(s.i, 500)}" alt=""><div>
       <div class="np-meta"><div class="ell"><h2 class="ell">${esc(s.t)}</h2>${s.arId ? `<a data-go="artist/${s.arId}">${esc(s.a)}</a>` : `<span class="muted">${esc(s.a)}</span>`}</div><button class="ib like${S.liked.has(s.id) ? " on" : ""}" data-act="like" data-id="${s.id}" aria-label="Like">${icon("heart", "fill")}</button></div>
-      <div class="scrub"><span class="t-cur">${fmt(S.pos)}</span><div class="track" data-scrub><div class="fill"></div></div><span>${s.d}</span></div>
+      <div class="scrub"><span class="t-cur">${fmt(S.pos)}</span><div class="track" data-scrub tabindex="0" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="${secs(s.d)}" aria-valuenow="${Math.round(S.pos)}" aria-valuetext="${fmt(S.pos)}"><div class="fill"></div></div><span>${s.d}</span></div>
       <div class="pl-ctl"><button class="ib dot${S.shuffle ? " on" : ""}" data-act="shuffle" aria-label="Shuffle">${icon("shuffle")}</button><button class="ib" data-act="prev" aria-label="Previous">${icon("prev")}</button><button class="ib big" data-act="toggle" aria-label="${S.playing ? "Pause" : "Play"}">${icon(S.playing ? "pause" : "play")}</button><button class="ib" data-act="next" aria-label="Next">${icon("next")}</button><button class="ib dot${S.repeat ? " on" : ""}" data-act="repeat" aria-label="Loop">${icon(S.repeat === 2 ? "repeat1" : "repeat")}</button></div>
       <div class="np-vol"><button class="ib" data-act="mute" aria-label="Mute">${icon(S.muted ? "mute" : "vol")}</button><input type="range" min="0" max="1" step="0.01" value="${S.muted ? 0 : S.vol}" data-input="vol" aria-label="Volume"></div>
       <div class="np-vol show-m" style="justify-content:space-between"><button class="btn ghost" data-act="nptab" data-v="lyrics">${icon("lyrics")} Lyrics</button><button class="btn ghost" data-act="nptab" data-v="queue">${icon("queue")} Up next</button></div></div></div>
     <div class="np-right"><div class="seg"><button class="${tab === "queue" ? "on" : ""}" data-act="nptab" data-v="queue">Up next</button><button class="${tab === "lyrics" ? "on" : ""}" data-act="nptab" data-v="lyrics">Lyrics</button></div>
-      <div class="np-scroll glass">${tab === "queue" ? S.queue.map(qrow).join("") || `<p class="muted">Queue is empty.</p>` : `<div class="lyrics" style="padding:0.5rem">${["Synced lyrics", "scroll here in time", "with the music.", "The current line", "is highlighted", "like this one."].map((l, k) => `<p class="${k === 4 ? "cur" : ""}">${l}</p>`).join("")}<p class="muted" style="font-size:0.75rem;font-weight:400">Placeholder lines, not real lyrics.</p></div>`}</div></div></div>`;
+      <div class="np-scroll">${tab === "queue" ? S.queue.map(qrow).join("") || `<p class="muted">Queue is empty.</p>` : `<div class="lyrics" style="padding:0.5rem">${["Synced lyrics", "scroll here in time", "with the music.", "The current line", "is highlighted", "like this one."].map((l, k) => `<p class="${k === 4 ? "cur" : ""}">${l}</p>`).join("")}<p class="muted t-caption" style="font-weight:400">Placeholder lines, not real lyrics.</p></div>`}</div></div></div>`;
   progress();
 }
 
@@ -1002,10 +1005,10 @@ const ACT = {
   plmanage: (d, el) => openLayer(menu([mi("pencil", "Rename", "rename", `data-id="${d.id}"`), mi("pencil", "Edit description", "rename", `data-id="${d.id}"`), mi("share", "Share", "toast", 'data-msg="Link copied"'), SEP, mi("trash", "Delete playlist", "delpl", `data-id="${d.id}"`, "danger")]), { anchor: el, clear: true }),
   rename: (d) => { const p = S.playlists.find((x) => x.id === d.id); dialog("Rename playlist", "", `<div style="display:grid;gap:1rem"><div class="field"><label for="pl-name">Name</label><input id="pl-name" class="input" value="${esc(p.name)}"></div><div class="field"><label for="pl-desc">Description</label><textarea id="pl-desc" class="input">${esc(p.desc)}</textarea></div></div>`, `${cancel}<button class="btn pri" data-act="saverename" data-id="${d.id}">Save</button>`); },
   saverename: (d) => { const p = S.playlists.find((x) => x.id === d.id); p.name = $("#pl-name").value.trim() || p.name; p.desc = $("#pl-desc").value.trim(); closeLayer(true); toast("Playlist updated"); refresh(); },
-  delpl: (d) => { const p = S.playlists.find((x) => x.id === d.id); dialog("Delete playlist?", `"${esc(p.name)}" will be removed from your library. This cannot be undone.`, "", `${cancel}<button class="btn pri" style="background:#dc2626;color:#fff" data-act="confirmdel" data-id="${d.id}">Delete</button>`); },
+  delpl: (d) => { const p = S.playlists.find((x) => x.id === d.id); dialog("Delete playlist?", `"${esc(p.name)}" will be removed from your library. This cannot be undone.`, "", `${cancel}<button class="btn pri danger" data-act="confirmdel" data-id="${d.id}">Delete</button>`); },
   confirmdel: (d) => { S.playlists = S.playlists.filter((x) => x.id !== d.id); closeLayer(true); toast("Playlist deleted", "trash"); Router.go("me"); },
   rmpl: (d) => { const p = S.playlists.find((x) => "pl:" + x.id === d.extra); p.songs = p.songs.filter((x) => x !== d.id); closeLayer(true); toast(`Removed from ${p.name}`, "trash"); refresh(); },
-  delacct: () => dialog("Delete account?", "Your playlists, likes and history will be permanently deleted. This cannot be undone.", "", `${cancel}<button class="btn pri" style="background:#dc2626;color:#fff" data-act="close">Delete Account</button>`),
+  delacct: () => dialog("Delete account?", "Your playlists, likes and history will be permanently deleted. This cannot be undone.", "", `${cancel}<button class="btn pri danger" data-act="close">Delete Account</button>`),
   shortcuts: () => shortcuts(),
   logout: () => { S.loggedIn = false; closeLayer(true); toast("Logged out", "logout"); Router.go("login"); },
   authdone: () => { S.loggedIn = true; closeLayer(true); toast(`Welcome back, ${S.user.name}`); Router.go("home"); },
@@ -1022,7 +1025,7 @@ const ACT = {
   retry: (d, el) => { el.innerHTML = `${icon("refresh")} Retrying`; el.disabled = true; setTimeout(() => { $("#err").innerHTML = `<div class="sec-h"><h2>Error, recovered</h2></div>${grid(MOCK.albums.slice(0, 4).map(A))}`; toast("Loaded"); }, 900); },
   "pref-mode": (d) => setPref("mode", d.v), "pref-accent": (d) => setPref("accent", d.v), "pref-radius": (d) => setPref("radius", +d.v),
   "pref-font": (d) => setPref("font", d.v), "pref-head": (d) => setPref("head", d.v), "pref-size": (d) => setPref("size", +d.v),
-  "pref-density": (d) => setPref("density", d.v), "pref-glass": (d) => setPref("glass", d.v),
+  "pref-density": (d) => setPref("density", d.v), "pref-glass": (d) => { delete S.prefs.lg; setPref("glass", d.v); },
   "pref-ambient": () => setPref("ambient", !S.prefs.ambient), "pref-motion": () => setPref("motion", !S.prefs.motion),
   "pref-reset": () => { S.prefs = { ...DEF }; applyPrefs(); refresh(); toast("Appearance reset"); },
 };
@@ -1061,6 +1064,30 @@ document.addEventListener("pointerdown", (e) => {
   t.addEventListener("pointermove", seek);
   t.addEventListener("pointerup", up, { once: true });
 }, true);
+// Focusable roots: anchors get a real href (Router still handles the click), clickable non-controls get
+// tabindex and a role, and Enter (links) or Enter/Space (buttons) activates them.
+function focusRoots() {
+  $$("a[data-go]:not([href])").forEach((a) => (a.href = "#/" + a.dataset.go));
+  $$("[data-go]:not(a,button,[tabindex]), .tr[data-id]:not([tabindex]), .qrow[data-act]:not([data-act='']):not([tabindex]), .pl-now:not([tabindex])").forEach((el) => {
+    el.tabIndex = 0;
+    if (!el.hasAttribute("role")) el.setAttribute("role", el.dataset.go ? "link" : "button");
+  });
+}
+let focusRaf = 0;
+new MutationObserver(() => { if (!focusRaf) focusRaf = requestAnimationFrame(() => { focusRaf = 0; focusRoots(); }); }).observe(document.body, { childList: true, subtree: true });
+document.addEventListener("keydown", (e) => {
+  const el = e.target;
+  if (el.matches?.("[data-scrub]") && ["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp", "Home", "End"].includes(e.key)) {
+    e.preventDefault(); e.stopImmediatePropagation();
+    const max = secs(S.now.d);
+    S.pos = e.key === "Home" ? 0 : e.key === "End" ? max - 1 : Math.max(0, Math.min(max - 1, S.pos + (e.key === "ArrowRight" || e.key === "ArrowUp" ? 5 : -5)));
+    progress();
+    return;
+  }
+  if (el.tabIndex === 0 && !/^(A|BUTTON|INPUT|TEXTAREA|SELECT)$/.test(el.tagName) && (e.key === "Enter" || (e.key === " " && el.getAttribute("role") === "button"))) {
+    e.preventDefault(); e.stopImmediatePropagation(); el.click();
+  }
+}, true);
 document.addEventListener("keydown", (e) => {
   const typing = /INPUT|TEXTAREA|SELECT/.test(e.target.tagName);
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); palette(); return; }
@@ -1088,3 +1115,4 @@ applyPrefs();
 document.documentElement.classList.toggle("q-open", S.qOpen);
 renderPlayer(); renderQueue();
 Router.start(render);
+focusRoots();

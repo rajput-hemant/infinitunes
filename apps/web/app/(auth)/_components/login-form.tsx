@@ -12,16 +12,20 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { controlStyles } from "~/lib/control-styles";
 import { asRoute, cn, safeRedirectPath } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
+import {
+  authLinkStyles,
+  authPrimaryButtonStyles,
+  authSquareLgButtonStyles,
+} from "./field-styles";
 import { OAuthButtons } from "./oauth-buttons";
 import { PasswordField } from "./password-field";
 
-type FormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>;
 
-const defaultValues: FormData = {
+const defaultValues: LoginFormData = {
   email: "",
   password: "",
 };
@@ -45,12 +49,12 @@ export function LoginForm() {
     }
   }, [authError]);
 
-  const form = useForm<FormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues,
   });
 
-  async function onSubmit(formData: FormData) {
+  async function onSubmit(formData: LoginFormData) {
     setIsSubmitting(true);
 
     try {
@@ -67,8 +71,9 @@ export function LoginForm() {
         router.refresh();
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
+      console.error(
+        error instanceof Error ? error.message : "Something went wrong.",
+      );
       toast.error("Something went wrong.");
     } finally {
       setIsSubmitting(false);
@@ -93,8 +98,9 @@ export function LoginForm() {
         router.refresh();
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
+      console.error(
+        error instanceof Error ? error.message : "Passkey sign-in failed.",
+      );
       toast.error("Passkey sign-in failed.");
     } finally {
       setIsPasskeyLoading(false);
@@ -107,7 +113,7 @@ export function LoginForm() {
     <div className="flex flex-col gap-4">
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="order-2 flex flex-col gap-3"
+        className="order-2 grid gap-4"
       >
         <Controller
           control={form.control}
@@ -130,25 +136,27 @@ export function LoginForm() {
               field={field}
               fieldState={fieldState}
               label="Password"
+              labelAction={
+                <Link
+                  href="/forgot-password"
+                  className={cn(
+                    authLinkStyles,
+                    "rounded-sm text-xs outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+                  )}
+                >
+                  Forgot password?
+                </Link>
+              }
               autoComplete="current-password webauthn"
               disabled={isDisabled}
             />
           )}
         />
 
-        <div className="flex justify-end">
-          <Link
-            href="/forgot-password"
-            className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            Forgot password?
-          </Link>
-        </div>
-
         <Button
           type="submit"
           disabled={isDisabled}
-          className={cn(controlStyles.text, "w-full")}
+          className={authPrimaryButtonStyles}
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -159,13 +167,13 @@ export function LoginForm() {
         </Button>
       </form>
 
-      <div className="order-1 flex flex-col gap-3">
+      <div className="order-1 grid gap-4">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={isDisabled}
           onClick={passkeySignInHandler}
-          className={cn(controlStyles.text, "w-full")}
+          className={authSquareLgButtonStyles}
         >
           {isPasskeyLoading ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -177,6 +185,7 @@ export function LoginForm() {
 
         <OAuthButtons
           isFormDisabled={isDisabled}
+          callbackUrl={callbackUrl}
           setIsSubmitting={setIsSubmitting}
         />
       </div>

@@ -7,6 +7,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
   useTransition,
 } from "react";
 import { toast } from "sonner";
@@ -19,6 +20,7 @@ import {
 
 import { saveThemeConfig } from "./actions";
 import { applyThemeConfig } from "./html";
+import { readStoredThemeConfig } from "./stored";
 
 /** Quiet period before a burst of changes (a slider drag) is persisted. */
 const SAVE_DELAY_MS = 300;
@@ -40,29 +42,38 @@ export const ThemeConfigContext = createContext<ThemeConfigContextValue | null>(
 );
 
 type ThemeConfigProviderProps = {
-  /** The config the server rendered `<html>` with. */
-  initial: ThemeConfig;
   children: React.ReactNode;
 };
 
-export function ThemeConfigProvider({
-  initial,
-  children,
-}: ThemeConfigProviderProps) {
-  const [config, setConfig] = useState(initial);
+const subscribeNever = () => () => {};
+
+/**
+ * The root layout is static, so it cannot know the saved config. Before first
+ * paint `lib/theme-script.ts` already applied it to `<html>`; this provider
+ * reads the same cookie in the browser for the settings UI (`null` during
+ * server render and hydration) and only writes to `<html>` once it knows the
+ * config, so it never clobbers the pre-paint values with defaults.
+ */
+export function ThemeConfigProvider({ children }: ThemeConfigProviderProps) {
+  const stored = useSyncExternalStore(
+    subscribeNever,
+    readStoredThemeConfig,
+    () => null,
+  );
+  const [draft, setDraft] = useState<ThemeConfig | null>(null);
   const [isSaving, startSaving] = useTransition();
-  const latest = useRef(config);
+  const config = draft ?? stored ?? DEFAULT_THEME_CONFIG;
+  const latest = useRef<ThemeConfig | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  // Runs after every render, not only when `config` changes: a server refresh
-  // re-renders `<html>` from the saved cookie and can lag behind a drag in progress.
+  // Also repairs a cookie saved before it carried the pre-paint `html` field.
   useLayoutEffect(() => {
-    applyThemeConfig(document.documentElement, config);
+    if (draft ?? stored) applyThemeConfig(document.documentElement, config);
   });
 
   const commit = useCallback((next: ThemeConfig) => {
     latest.current = next;
-    setConfig(next);
+    setDraft(next);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
       startSaving(async () => {
@@ -79,7 +90,12 @@ export function ThemeConfigProvider({
 
   const update = useCallback(
     (patch: Partial<ThemeConfig>) =>
-      commit(normalizeThemeConfig({ ...latest.current, ...patch })),
+      commit(
+        normalizeThemeConfig({
+          ...(latest.current ?? readStoredThemeConfig()),
+          ...patch,
+        }),
+      ),
     [commit],
   );
   const reset = useCallback(() => commit(DEFAULT_THEME_CONFIG), [commit]);

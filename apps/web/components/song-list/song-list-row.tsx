@@ -8,18 +8,15 @@ import {
   parseToken,
 } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import { AudioLines, Play } from "lucide-react";
+import { AudioLines } from "lucide-react";
 import Link from "next/link";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import type { User } from "~/lib/auth";
-import { controlStyles } from "~/lib/control-styles";
 import { cn, getHref } from "~/lib/utils";
 
-import { DownloadButton } from "../download-button";
 import { LikeButton } from "../like-button";
-import { PlayButton } from "../play-button";
 import { ArtistLinks } from "./artist-links";
 import { TileMoreButton } from "./more-button";
 import { TilePlayPauseButton } from "./play-pause-button";
@@ -59,8 +56,6 @@ export function SongListRow(props: SongListRowProps) {
 
   const artists = item.more_info.artistMap?.primary_artists ?? [];
   const isEpisode = item.type === "episode";
-  const hoverHidesNumber =
-    !showAlbum && "group-hover/row:invisible group-focus-within/row:invisible";
 
   return (
     <SongRow
@@ -76,59 +71,35 @@ export function SongListRow(props: SongListRowProps) {
           "relative hidden size-full place-items-center tabular-nums md:grid",
         )}
       >
-        <span
-          className={cn(
-            "truncate group-data-current/row:hidden",
-            hoverHidesNumber,
-          )}
-        >
+        <span className="truncate group-data-current/row:hidden">
           {index + 1}
         </span>
 
         <AudioLines
           aria-hidden="true"
-          className={cn(
-            "hidden size-4 text-primary group-data-current/row:block group-data-playing/row:animate-pulse",
-            hoverHidesNumber,
-          )}
+          className="hidden size-4 text-primary group-data-current/row:block group-data-playing/row:animate-pulse"
         />
-
-        {!showAlbum && (
-          <PlayButton
-            type={item.type}
-            token={parseToken(item.perma_url)}
-            className={cn(
-              controlStyles.rowIcon,
-              "absolute inset-0 m-auto grid place-items-center outline-hidden transition-colors duration-fast hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
-              rowActionReveal,
-            )}
-          >
-            <Play aria-hidden="true" className="size-4 fill-current" />
-          </PlayButton>
-        )}
       </div>
 
       <div className="flex min-w-0 items-center gap-3">
-        {showAlbum && (
-          <div className="relative size-art shrink-0 overflow-hidden rounded-[calc(var(--r-sm)*0.75)]">
-            <ImageWithFallback
-              src={getImageSrc(item.image, "low")}
-              alt={decode(item.title)}
-              fill
-              sizes="3rem"
-              fallback={getPlaceholderSrc("song")}
-              className="z-10 object-cover duration-base group-hover/row:brightness-50"
-            />
+        <div className="relative size-art shrink-0 overflow-hidden rounded-[calc(var(--r-sm)*0.75)]">
+          <ImageWithFallback
+            src={getImageSrc(item.image, "low")}
+            alt={decode(item.title)}
+            fill
+            sizes="3rem"
+            fallback={getPlaceholderSrc("song")}
+            className="z-10 object-cover duration-base group-hover/row:brightness-50"
+          />
 
-            <Skeleton className="absolute inset-0 rounded-none" />
+          <Skeleton className="absolute inset-0 rounded-none" />
 
-            <TilePlayPauseButton
-              id={item.id}
-              type={item.type}
-              token={parseToken(item.perma_url)}
-            />
-          </div>
-        )}
+          <TilePlayPauseButton
+            id={item.id}
+            type={item.type}
+            token={parseToken(item.perma_url)}
+          />
+        </div>
 
         <div className="grid min-w-0">
           <h3 className="truncate font-medium text-foreground">
@@ -184,11 +155,6 @@ export function SongListRow(props: SongListRowProps) {
       </span>
 
       <div className="flex shrink-0 items-center justify-end gap-1 text-muted-foreground">
-        <DownloadButton
-          songs={[item]}
-          className={cn("hover:text-foreground", rowActionReveal)}
-        />
-
         {/* Below md the row menu carries Add/Remove Favourite. */}
         <LikeButton
           user={user}

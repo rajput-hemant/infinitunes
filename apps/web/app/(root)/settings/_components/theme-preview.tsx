@@ -1,18 +1,25 @@
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Play } from "lucide-react";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
-const card = "grid gap-3 rounded-md border border-line bg-card/70 p-3";
+import { GlassBackdrop } from "./glass-backdrop";
 
+/** The Appearance page's live preview: sample content on glass over the colour field. */
 export function ThemePreview() {
   return (
     <aside
       aria-label="Live preview"
-      className="relative isolate grid min-h-60 content-end gap-3 overflow-hidden rounded-lg bg-linear-to-br from-primary/50 via-primary/20 to-card p-5 min-[90rem]:sticky min-[90rem]:top-20"
+      className="relative isolate grid min-h-60 content-end gap-3 overflow-hidden rounded-lg p-5 min-[90rem]:sticky min-[90rem]:top-20"
     >
-      <div className={cn(card, "grid-cols-[auto_1fr_auto] items-center")}>
+      <GlassBackdrop />
+
+      <GlassSurface
+        size="m"
+        className="grid grid-cols-[auto_1fr_auto] items-center gap-3 rounded-md p-3"
+      >
         <div className="size-art rounded-sm bg-primary/30" />
         <div className="min-w-0">
           <p className="truncate font-semibold">Now playing</p>
@@ -26,9 +33,9 @@ export function ThemePreview() {
         >
           <Play aria-hidden className="size-4 fill-current" />
         </span>
-      </div>
+      </GlassSurface>
 
-      <div className={card}>
+      <GlassSurface size="m" className="grid gap-3 rounded-md p-3">
         <h3 className="font-heading text-lg">Heading preview</h3>
         <p className="text-muted-foreground">Body text at the current size.</p>
         <div className="flex flex-wrap gap-2">
@@ -57,7 +64,7 @@ export function ThemePreview() {
             Chip
           </span>
         </div>
-      </div>
+      </GlassSurface>
     </aside>
   );
 }

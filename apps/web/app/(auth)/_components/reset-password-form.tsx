@@ -12,29 +12,29 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
+import { authPrimaryButtonStyles } from "./field-styles";
 import { PasswordField } from "./password-field";
+import { PASSWORD_HINT } from "./password-hint";
 
-type FormData = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
-const defaultValues: FormData = { password: "", confirmPassword: "" };
+const defaultValues: ResetPasswordFormData = {
+  password: "",
+  confirmPassword: "",
+};
 
 function InvalidLink() {
   return (
-    <div role="alert" className="mt-4 space-y-3 text-sm">
+    <div role="alert" className="space-y-3 text-sm">
       <p className="text-muted-foreground">
         This reset link is invalid or has expired. Links work once and last for
         1 hour.
       </p>
       <Link
         href="/forgot-password"
-        className={cn(
-          buttonVariants(),
-          controlStyles.textLg,
-          "w-full rounded-sm px-3",
-        )}
+        className={cn(buttonVariants(), authPrimaryButtonStyles)}
       >
         Request a new link
       </Link>
@@ -51,14 +51,14 @@ export function ResetPasswordForm() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isTokenRejected, setIsTokenRejected] = React.useState(false);
 
-  const form = useForm<FormData>({
+  const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues,
   });
 
   if (!token || linkError || isTokenRejected) return <InvalidLink />;
 
-  async function onSubmit(formData: FormData) {
+  async function onSubmit(formData: ResetPasswordFormData) {
     if (!token) return;
     setIsSubmitting(true);
 
@@ -79,7 +79,7 @@ export function ResetPasswordForm() {
         router.push("/login");
       }
     } catch (error) {
-      console.error((error as Error).message);
+      console.error(error);
       toast.error("Something went wrong.");
     } finally {
       setIsSubmitting(false);
@@ -87,7 +87,7 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
       <Controller
         control={form.control}
         name="password"
@@ -96,6 +96,7 @@ export function ResetPasswordForm() {
             field={field}
             fieldState={fieldState}
             label="New password"
+            description={PASSWORD_HINT}
             autoComplete="new-password"
             disabled={isSubmitting}
           />
@@ -119,7 +120,7 @@ export function ResetPasswordForm() {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className={cn(controlStyles.textLg, "w-full rounded-sm px-3")}
+        className={authPrimaryButtonStyles}
       >
         {isSubmitting ? (
           <Loader2 className="mr-2 size-4 animate-spin" />

@@ -3,10 +3,12 @@ import { ShelfItem } from "./shelf-item";
 import type { SliderCardProps } from "./slider-card";
 import { SliderCard } from "./slider-card";
 
+type SliderListItem = { id: string } & SliderCardProps;
+
 type SliderListProps = {
   title: string;
   subtitle?: string;
-  items: ({ id: string } & SliderCardProps)[];
+  items: SliderListItem[];
 };
 
 export function SliderList({ title, subtitle, items }: SliderListProps) {
@@ -23,7 +25,7 @@ export function SliderList({ title, subtitle, items }: SliderListProps) {
       </header>
 
       <Shelf>
-        {items?.map(({ id, ...props }) => (
+        {items.map(({ id, ...props }) => (
           <ShelfItem key={id}>
             <SliderCard {...props} />
           </ShelfItem>

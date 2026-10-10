@@ -10,13 +10,9 @@ import {
 } from "@infinitunes/ui/components/dialog";
 import { Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import {
-  useDeferredValue,
-  useEffect,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { type ReactNode, useDeferredValue, useEffect, useState } from "react";
 
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useKeydown } from "~/hooks/use-keydown";
 import { useIsTyping } from "~/hooks/use-store";
 import { controlStyles } from "~/lib/control-styles";
@@ -30,13 +26,11 @@ import { searchUi } from "./search-ui";
 import { useRecentSearches } from "./use-recent-searches";
 import { useSearchPaletteKeys } from "./use-search-palette-keys";
 
-const subscribeNever = () => () => {};
-
 const LISTBOX_ID = "search-palette-listbox";
 
 type SearchMenuProps = {
   className?: string;
-  topSearch: React.ReactNode;
+  topSearch: ReactNode;
 };
 
 export function SearchMenu({ topSearch, className }: SearchMenuProps) {
@@ -46,11 +40,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   const [openPath, setOpenPath] = useState<string | null>(null);
   const isOpen = openPath === pathname;
   if (openPath !== null && !isOpen) setOpenPath(null);
-  const mounted = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
+  const mounted = useIsHydrated();
 
   const setIsOpen = (open: boolean) => {
     if (open) setQuery("");
@@ -105,7 +95,8 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             <kbd
               className={cn(
                 searchUi.kbd,
-                "pointer-events-none hidden lg:inline-grid",
+                // On glass the key cap is a translucent fill, never the opaque card colour.
+                "pointer-events-none hidden bg-fill inset-ring-0 lg:inline-grid",
               )}
             >
               {mounted && isMacOs() ? "⌘" : "Ctrl"} K
@@ -116,8 +107,9 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
       <DialogContent
         data-search-palette
+        data-glass-role="palette"
         showCloseButton={false}
-        className="top-[12vh] flex max-h-[min(88dvh,100%)] translate-y-0 flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-160"
+        className="top-[12vh] flex max-h-[min(88dvh,100%)] translate-y-0 flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-160 max-md:inset-0 max-md:size-full max-md:max-h-none max-md:max-w-none max-md:translate-none max-md:rounded-none max-md:pt-[env(safe-area-inset-top)]"
       >
         <DialogTitle className="sr-only">Search</DialogTitle>
 
@@ -149,7 +141,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           </DialogClose>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto md:max-h-[min(60vh,32rem)]">
           <SearchPaletteBody
             query={deferredQuery}
             listboxId={LISTBOX_ID}
@@ -160,7 +152,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           />
         </div>
 
-        <div className="hidden shrink-0 items-center gap-4 border-t border-border px-4 py-2 text-xs leading-4 text-muted-foreground sm:flex">
+        <div className="hidden shrink-0 items-center gap-4 border-t border-border px-4 py-2 text-xs leading-4 text-muted-foreground md:flex">
           <span className="inline-flex items-center gap-1">
             <kbd className={searchUi.kbd}>↑</kbd>
             <kbd className={searchUi.kbd}>↓</kbd>

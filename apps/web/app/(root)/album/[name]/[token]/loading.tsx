@@ -1,5 +1,3 @@
-import React from "react";
-
 import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
 import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
 import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";

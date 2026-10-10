@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { ImageProps } from "next/image";
-import React from "react";
+import { useState } from "react";
 
 import { cn } from "~/lib/utils";
 
@@ -16,9 +16,7 @@ export function ImageWithFallback(props: ImageWithFallbackProps) {
   const effectiveSrc = src ? src : fallback;
 
   // Remember which `src` failed so a new `src` starts without an error.
-  const [failedSrc, setFailedSrc] = React.useState<typeof effectiveSrc | null>(
-    null,
-  );
+  const [failedSrc, setFailedSrc] = useState<typeof effectiveSrc | null>(null);
   const error = failedSrc === effectiveSrc;
   if (failedSrc !== null && !error) setFailedSrc(null);
 

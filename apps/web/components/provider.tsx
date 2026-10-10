@@ -1,6 +1,5 @@
 "use client";
 
-import type { ThemeConfig } from "@infinitunes/types";
 import { Toaster } from "@infinitunes/ui/components/sonner";
 import { TooltipProvider } from "@infinitunes/ui/components/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,10 +20,6 @@ const TOAST_BOTTOM_OFFSET = "var(--toast-offset-bottom)";
 
 type Props = {
   theme?: ThemeProviderProps;
-  /** Per-request CSP nonce for the `next-themes` inline bootstrap script. */
-  nonce?: string;
-  /** The appearance config the server rendered `<html>` with. */
-  themeConfig: ThemeConfig;
   children: React.ReactNode;
 };
 
@@ -67,21 +62,18 @@ function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Providers({
-  children,
-  theme,
-  nonce,
-  themeConfig,
-}: Props) {
+export default function Providers({ children, theme }: Props) {
   return (
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
       enableSystem
-      nonce={nonce}
+      // `lib/theme-script.ts` already sets the class before paint; a
+      // non-executable type keeps next-themes' own copy out of CSP's way.
+      scriptProps={{ type: "application/json" }}
       {...theme}
     >
-      <ThemeConfigProvider initial={themeConfig}>
+      <ThemeConfigProvider>
         <ThemeColorSync />
         <AudioPlayerProvider>
           <TRPCReactProvider>

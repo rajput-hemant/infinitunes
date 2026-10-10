@@ -13,13 +13,11 @@ import {
 import { List, ListX } from "lucide-react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
-import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 
 import { NewPlaylistForm } from "./new-playlist-form";
 
 type AddToPlaylistDialogProps = {
-  user?: User;
   isDialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
   playlists?: MyPlaylist[];
@@ -27,7 +25,7 @@ type AddToPlaylistDialogProps = {
 };
 
 export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
-  const { user, isDialogOpen, setDialogOpen, playlists, addToPlaylist } = props;
+  const { isDialogOpen, setDialogOpen, playlists, addToPlaylist } = props;
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
@@ -89,7 +87,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
             }
           />
 
-          <NewPlaylistForm user={user}>
+          <NewPlaylistForm>
             <Button className={controlStyles.textLg}>
               Create New Playlist
             </Button>

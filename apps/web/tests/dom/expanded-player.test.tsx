@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import type { Queue as QueueItem } from "@infinitunes/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
+import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -32,45 +33,57 @@ const trpcClient = api.createClient({
 
 const noop = () => {};
 
+const router = {
+  push: noop,
+  replace: noop,
+  refresh: noop,
+  back: noop,
+  forward: noop,
+  prefetch: noop,
+  hmrRefresh: noop,
+};
+
 async function mountExpanded() {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
   await act(async () => {
     root.render(
-      <SearchParamsContext.Provider value={new URLSearchParams()}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <AudioPlayerProvider>
-              <ExpandedPlayer
-                open
-                onOpenChange={noop}
-                track={track}
-                position={createPositionStore(0)}
-                duration={100}
-                isPlaying={false}
-                isLoading={false}
-                isLooping={false}
-                loopPlaylist={false}
-                isShuffle={false}
-                isMuted={false}
-                isReady
-                volume={1}
-                onSeekStart={noop}
-                onSeekChange={noop}
-                onSeekCommit={noop}
-                onVolumeChange={noop}
-                onToggleMute={noop}
-                onLoop={noop}
-                onPrevious={noop}
-                onPlayPause={noop}
-                onNext={noop}
-                onToggleShuffle={noop}
-              />
-            </AudioPlayerProvider>
-          </QueryClientProvider>
-        </api.Provider>
-      </SearchParamsContext.Provider>,
+      <AppRouterContext.Provider value={router}>
+        <SearchParamsContext.Provider value={new URLSearchParams()}>
+          <api.Provider client={trpcClient} queryClient={queryClient}>
+            <QueryClientProvider client={queryClient}>
+              <AudioPlayerProvider>
+                <ExpandedPlayer
+                  open
+                  onOpenChange={noop}
+                  track={track}
+                  position={createPositionStore(0)}
+                  duration={100}
+                  isPlaying={false}
+                  isLoading={false}
+                  isLooping={false}
+                  loopPlaylist={false}
+                  isShuffle={false}
+                  isMuted={false}
+                  isReady
+                  volume={1}
+                  onSeekStart={noop}
+                  onSeekChange={noop}
+                  onSeekCommit={noop}
+                  onVolumeChange={noop}
+                  onToggleMute={noop}
+                  onLoop={noop}
+                  onPrevious={noop}
+                  onPlayPause={noop}
+                  onNext={noop}
+                  onToggleShuffle={noop}
+                />
+              </AudioPlayerProvider>
+            </QueryClientProvider>
+          </api.Provider>
+        </SearchParamsContext.Provider>
+      </AppRouterContext.Provider>,
     );
   });
   return root;
@@ -88,20 +101,122 @@ describe("expanded player sheet", () => {
     await act(async () => root.unmount());
   });
 
-  it("keeps the queue behind a toggle on phones", async () => {
+  it("keeps the pane behind phone toggles that name the view", async () => {
     const root = await mountExpanded();
-    const toggle = document.querySelector<HTMLButtonElement>(
-      'button[aria-label="Up next"]',
-    );
+    const toggle = (label: string) =>
+      [...document.querySelectorAll<HTMLButtonElement>("button")].find(
+        (button) =>
+          button.hasAttribute("aria-expanded") &&
+          button.textContent?.trim() === label,
+      );
     const region = () =>
-      document.getElementById(toggle?.getAttribute("aria-controls") ?? "");
+      document.getElementById(
+        toggle("Up next")?.getAttribute("aria-controls") ?? "",
+      );
 
-    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle("Up next")?.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle("Lyrics")?.getAttribute("aria-expanded")).toBe("false");
     expect(region()?.classList.contains("hidden")).toBe(true);
 
-    await act(async () => toggle?.click());
-    expect(toggle?.getAttribute("aria-pressed")).toBe("true");
+    await act(async () => toggle("Up next")?.click());
+    expect(toggle("Up next")?.getAttribute("aria-expanded")).toBe("true");
     expect(region()?.classList.contains("hidden")).toBe(false);
+
+    await act(async () => toggle("Lyrics")?.click());
+    expect(toggle("Up next")?.getAttribute("aria-expanded")).toBe("false");
+    expect(toggle("Lyrics")?.getAttribute("aria-expanded")).toBe("true");
+
+    await act(async () => toggle("Lyrics")?.click());
+    expect(region()?.classList.contains("hidden")).toBe(true);
+
+    await act(async () => root.unmount());
+  });
+
+  it("names the source, and offers More options and Like", async () => {
+    const root = await mountExpanded();
+    const dialog = document.querySelector('[role="dialog"]');
+
+    expect(dialog?.textContent).toContain("Playing from");
+    expect(dialog?.textContent).toContain("Queue");
+    expect(
+      dialog?.querySelector('button[aria-label="More Options"]'),
+    ).not.toBeNull();
+    expect(
+      dialog?.querySelector('button[aria-label="Like"][aria-pressed="false"]'),
+    ).not.toBeNull();
+
+    await act(async () => root.unmount());
+  });
+
+  it("moves between the pane tabs with the arrow keys", async () => {
+    const root = await mountExpanded();
+    const tabs = () => [
+      ...document.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    ];
+    const press = (key: string) =>
+      act(async () => {
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent("keydown", { key, bubbles: true }),
+        );
+      });
+
+    // Roving tabindex: only the selected tab is a tab stop, and only it
+    // points at the one panel that is rendered.
+    expect(tabs().map((t) => t.tabIndex)).toEqual([0, -1]);
+    expect(tabs().map((t) => t.hasAttribute("aria-controls"))).toEqual([
+      true,
+      false,
+    ]);
+    expect(
+      document.getElementById(tabs()[0].getAttribute("aria-controls") ?? ""),
+    ).not.toBeNull();
+
+    await act(async () => tabs()[0].focus());
+    await press("ArrowRight");
+    expect(tabs()[1].getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(tabs()[1]);
+    expect(tabs().map((t) => t.tabIndex)).toEqual([-1, 0]);
+
+    await press("ArrowRight");
+    expect(tabs()[0].getAttribute("aria-selected")).toBe("true");
+    await press("ArrowLeft");
+    expect(tabs()[1].getAttribute("aria-selected")).toBe("true");
+
+    await act(async () => root.unmount());
+  });
+
+  it("keeps the toggle names stable while aria-pressed carries the state", async () => {
+    const root = await mountExpanded();
+    for (const label of ["Shuffle", "Loop", "Mute"]) {
+      expect(
+        document.querySelector(`button[aria-label="${label}"][aria-pressed]`),
+      ).not.toBeNull();
+    }
+    await act(async () => root.unmount());
+  });
+
+  it("switches the pane to Lyrics and shows the empty state when there are none", async () => {
+    const root = await mountExpanded();
+    const tab = (label: string) =>
+      [...document.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find(
+        (button) => button.textContent === label,
+      );
+
+    expect(tab("Up next")?.getAttribute("aria-selected")).toBe("true");
+    expect(tab("Lyrics")?.getAttribute("aria-selected")).toBe("false");
+
+    await act(async () => tab("Lyrics")?.click());
+    expect(tab("Lyrics")?.getAttribute("aria-selected")).toBe("true");
+    expect(
+      document
+        .querySelector('[role="tabpanel"]')
+        ?.getAttribute("aria-labelledby"),
+    ).toBe(tab("Lyrics")?.id);
+    // No lyrics endpoint in the test environment: the query fails.
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 50)));
+    expect(document.querySelector('[role="tabpanel"]')?.textContent).toContain(
+      "No lyrics available",
+    );
 
     await act(async () => root.unmount());
   });

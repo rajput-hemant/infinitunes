@@ -20,7 +20,10 @@ type SearchRowProps = {
   subtitle?: string;
   visual: SearchRowVisual;
   round?: boolean;
-  /** Marks the row as a listbox option that the palette keyboard hook can select. */
+  /**
+   * A listbox option: the combobox input keeps focus and drives it through
+   * aria-activedescendant, so the row itself is out of the tab order.
+   */
   option?: boolean;
   onSelect?: () => void;
 };
@@ -32,7 +35,11 @@ export function SearchRow(props: SearchRowProps) {
     <Link
       href={href}
       onClick={onSelect}
-      {...(option && { role: "option", "data-search-option": "" })}
+      {...(option && {
+        role: "option",
+        tabIndex: -1,
+        "data-search-option": "",
+      })}
       className={searchUi.row}
     >
       <span className={cn(searchUi.art, round && searchUi.artRound)}>

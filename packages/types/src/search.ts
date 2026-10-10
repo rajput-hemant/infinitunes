@@ -152,23 +152,25 @@ export type ArtistSearch = Search<{
   is_followed: boolean;
 }>;
 
-export type PodcastSearch = Search<{
+type PodcastSearchItem = {
   id: string;
   title: string;
   subtitle: string;
-  type: string;
+  type: "show";
   image_file_url: string;
+  square_image_url: string;
   partner_name: string;
   label_name: string;
   explicit_content: number;
   song_info: string;
   latest_season_sequence: number;
-  square_image_url: string;
   artists: ArtistMini[];
   featured_artists: ArtistMini[];
   primary_artists: ArtistMini[];
   perma_url: string;
-}>;
+};
+
+export type PodcastSearch = Search<PodcastSearchItem>;
 
 export type SearchReturnType =
   | SongSearch

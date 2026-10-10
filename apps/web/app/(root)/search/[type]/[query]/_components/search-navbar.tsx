@@ -7,7 +7,7 @@ import { cn } from "~/lib/utils";
 
 import type { SearchType } from "./type-map";
 
-type Props = {
+type SearchNavbarProps = {
   type: SearchType;
   query: string;
 };
@@ -21,7 +21,7 @@ export const navItems = [
   { title: "Podcasts", type: "show" },
 ] as const;
 
-export function SearchNavbar({ type, query }: Props) {
+export function SearchNavbar({ type, query }: SearchNavbarProps) {
   return (
     <nav aria-label="Filter search results">
       <div className={searchUi.chipsRow}>

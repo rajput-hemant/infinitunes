@@ -165,7 +165,7 @@ export function LikeButton(props: LikeButtonProps) {
         {...rest}
       >
         <Heart
-          aria-hidden="true"
+          aria-hidden
           className={cn(
             "size-4.5 transition-transform duration-fast ease-out active:scale-96",
             optimisticLike && "fill-primary text-primary",

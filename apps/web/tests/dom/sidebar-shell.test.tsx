@@ -13,6 +13,7 @@ import {
   Sidebar as AppSidebar,
 } from "../../components/sidebar";
 import { MobileNav } from "../../components/site-header/mobile-nav";
+import { Toolbar } from "../../components/site-header/toolbar";
 import type { User } from "../../lib/auth";
 
 const router = {} as never;
@@ -324,7 +325,64 @@ describe("sidebar collapse", () => {
   });
 });
 
+// happy-dom keeps scrollY as a plain property, so tests set it and fire the
+// scroll event the hooks listen for.
+const originalScrollY = Object.getOwnPropertyDescriptor(window, "scrollY");
+function setScrollY(y: number) {
+  Object.defineProperty(window, "scrollY", { configurable: true, value: y });
+  window.dispatchEvent(new Event("scroll"));
+}
+const restoreScrollY = () => {
+  if (originalScrollY)
+    Object.defineProperty(window, "scrollY", originalScrollY);
+  else Reflect.deleteProperty(window, "scrollY");
+};
+
 describe("tab bar", () => {
+  afterEach(() => {
+    document.documentElement.removeAttribute("data-tab-min");
+    restoreScrollY();
+  });
+
+  it("is one glass item per tab, and only the current one is marked", async () => {
+    const container = await mount(<MobileShell />, "/browse/x");
+    const items = container.querySelectorAll(
+      "nav[aria-label=Primary] > [data-glass-item]",
+    );
+    const current = [...items].filter((item) =>
+      item.hasAttribute("aria-current"),
+    );
+
+    expect(items).toHaveLength(5);
+    expect(current.map((item) => item.textContent)).toEqual(["Browse"]);
+  });
+
+  it("minimizes after scrolling down and expands on scrolling back to the top", async () => {
+    await mount(<MobileShell />, "/search");
+    setScrollY(0);
+
+    setScrollY(60);
+    expect(document.documentElement.dataset.tabMin).toBe("true");
+
+    setScrollY(20);
+    expect(document.documentElement.dataset.tabMin).toBeUndefined();
+  });
+
+  it("expands on a tap instead of navigating away from the current tab", async () => {
+    const container = await mount(<MobileShell />, "/search");
+    setScrollY(0);
+    setScrollY(60);
+    const current = container.querySelector(
+      "a[aria-current=page]",
+    ) as HTMLElement;
+
+    expect(document.documentElement.dataset.tabMin).toBe("true");
+
+    await act(async () => current.click());
+
+    expect(document.documentElement.dataset.tabMin).toBeUndefined();
+  });
+
   it("marks the current tab", async () => {
     const container = await mount(<MobileShell />, "/search");
     const current = container.querySelectorAll("a[aria-current=page]");
@@ -341,5 +399,40 @@ describe("tab bar", () => {
         .find((a) => a.textContent === "Home")
         ?.hasAttribute("aria-current"),
     ).toBe(false);
+  });
+});
+
+describe("toolbar scroll edge", () => {
+  afterEach(restoreScrollY);
+
+  it("sets data-scrolled on the toolbar once the page scrolls past the threshold", async () => {
+    const container = await mount(<Toolbar>Title</Toolbar>);
+    const edge = container.querySelector<HTMLElement>(
+      '[data-glass-edge="top"]',
+    );
+
+    expect(edge?.dataset.scrolled).toBe("false");
+
+    setScrollY(120);
+    expect(edge?.dataset.scrolled).toBe("true");
+
+    setScrollY(0);
+    expect(edge?.dataset.scrolled).toBe("false");
+  });
+});
+
+describe("glass sidebar", () => {
+  beforeEach(() => setWidth(1280));
+
+  it("is one glass surface with no glass nested inside it", async () => {
+    await mount(
+      <AppSidebarProvider>
+        <AppSidebar user={user} userPlaylists={[{ id: "p1", name: "Focus" }]} />
+      </AppSidebarProvider>,
+    );
+    const panel = document.querySelector("[data-glass-role=sidebar]");
+
+    expect(panel).not.toBeNull();
+    expect(panel?.querySelector("[data-glass]")).toBeNull();
   });
 });

@@ -37,4 +37,11 @@ export const controlStyles = Object.freeze({
   transportPlayMini: `size-10 rounded-(--r-ctl) ${iconHitArea}`,
   // Expanded player Play. 56px.
   transportPlay: "size-14 rounded-(--r-ctl)",
+  // Mockup `.input` surface: flat fill that lifts to the card colour on focus.
+  // Compose with a size role (`textLg`), which supplies the height.
+  flatInput:
+    "w-full rounded-sm border-0 bg-fill px-3 shadow-none hover:bg-fill-2 focus-visible:bg-card focus-visible:ring-2 focus-visible:ring-primary dark:bg-fill dark:hover:bg-fill-2 dark:focus-visible:bg-card",
+  // Mockup `.btn.sq` surface: square-cornered secondary action. Compose with a size role.
+  squareButton:
+    "rounded-sm border-0 bg-fill px-3 font-semibold hover:bg-fill-2 active:bg-fill-3 dark:bg-fill dark:hover:bg-fill-2",
 });

@@ -25,6 +25,7 @@ import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import {
   ChevronLeft,
+  CloudDownload,
   ChevronRight,
   ListMusic,
   ListOrdered,
@@ -34,9 +35,10 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
+import { useDownloadSongs } from "~/components/download-button";
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import {
@@ -73,6 +75,8 @@ type MenuItem = {
   label: string;
   onClick: () => void;
   hide?: boolean;
+  /** The header shows its own button for this action from md up. */
+  phoneOnly?: boolean;
   icon: LucideIcon;
 };
 
@@ -91,8 +95,8 @@ export function MoreButton(props: MoreButtonProps) {
 
   const router = useRouter();
 
-  const [traslateX, setTranslateX] = React.useState(0);
-  const [isDialogOpen, setDialogOpen] = React.useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const [, setQueue] = useQueue();
   const [, setCurrentIndex] = useCurrentSongIndex();
@@ -100,6 +104,7 @@ export function MoreButton(props: MoreButtonProps) {
   const [, setActiveRadio] = useActiveRadioSession();
 
   const utils = api.useUtils();
+  const { isDownloading, download } = useDownloadSongs(songs);
 
   function addToQueue() {
     const songsPayload: Queue[] = songs.map((song) => toQueue(song));
@@ -149,16 +154,8 @@ export function MoreButton(props: MoreButtonProps) {
 
       if (type === "artist") {
         radioType = "artist";
-      } else if (
-        songs[0]?.more_info &&
-        typeof songs[0].more_info === "object" &&
-        "artistMap" in songs[0].more_info
-      ) {
-        const primary = (
-          songs[0].more_info.artistMap as {
-            primary_artists?: { id: string; name: string }[];
-          }
-        )?.primary_artists?.[0];
+      } else {
+        const primary = songs[0]?.more_info.artistMap?.primary_artists?.[0];
         if (primary) {
           stationName = primary.name;
           artistId = primary.id;
@@ -226,12 +223,19 @@ export function MoreButton(props: MoreButtonProps) {
       hide: type === "show" || type === "mix",
       icon: Radio,
     },
+    {
+      label: "Download",
+      onClick: download,
+      hide: songs.length === 0 || isDownloading,
+      phoneOnly: true,
+      icon: CloudDownload,
+    },
   ];
 
   return (
     <div>
       <div className="md:hidden">
-        <Drawer>
+        <Drawer onOpenChange={(open) => !open && setIsSharing(false)}>
           <DrawerTrigger
             render={
               <Button
@@ -274,33 +278,43 @@ export function MoreButton(props: MoreButtonProps) {
 
             <div
               className="relative flex min-h-[300px] flex-col gap-4 px-4 transition-transform duration-300"
-              style={{ transform: `translateX(${traslateX}%)` }}
+              style={{ transform: `translateX(${isSharing ? -110 : 0}%)` }}
             >
-              {menuItems
-                .filter(({ hide }) => !hide)
-                .map(({ icon: Icon, label, onClick }, i) => (
-                  <button
-                    key={i}
-                    onClick={onClick}
-                    className="flex h-(--ctl-lg) items-center font-medium"
-                  >
-                    <Icon className="mr-2 size-5" />
-                    {label}
-                  </button>
-                ))}
-
-              <button
-                onClick={() => setTranslateX(-110)}
-                className="flex h-(--ctl-lg) items-center font-medium"
+              <div
+                inert={isSharing}
+                aria-hidden={isSharing}
+                className="flex flex-col gap-4"
               >
-                <Share2 className="mr-2 size-5" />
-                Share
-                <ChevronRight className="ml-auto size-5" />
-              </button>
+                {menuItems
+                  .filter(({ hide }) => !hide)
+                  .map(({ icon: Icon, label, onClick }) => (
+                    <button
+                      key={label}
+                      onClick={onClick}
+                      className="flex h-(--ctl-lg) items-center font-medium"
+                    >
+                      <Icon className="mr-2 size-5" />
+                      {label}
+                    </button>
+                  ))}
 
-              <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
-                  onClick={() => setTranslateX(0)}
+                  onClick={() => setIsSharing(true)}
+                  className="flex h-(--ctl-lg) items-center font-medium"
+                >
+                  <Share2 className="mr-2 size-5" />
+                  Share
+                  <ChevronRight className="ml-auto size-5" />
+                </button>
+              </div>
+
+              <div
+                inert={!isSharing}
+                aria-hidden={!isSharing}
+                className="absolute left-[110%] min-w-full space-y-2 bg-background"
+              >
+                <button
+                  onClick={() => setIsSharing(false)}
                   className="flex h-(--ctl-lg) items-center px-4 font-medium"
                 >
                   <ChevronLeft className="mr-2 size-5" />
@@ -351,10 +365,10 @@ export function MoreButton(props: MoreButtonProps) {
           <DropdownMenuContent align="start">
             <DropdownMenuGroup>
               {menuItems
-                .filter(({ hide }) => !hide)
-                .map(({ icon: Icon, label, onClick }, i) => (
+                .filter(({ hide, phoneOnly }) => !hide && !phoneOnly)
+                .map(({ icon: Icon, label, onClick }) => (
                   <DropdownMenuItem
-                    key={i}
+                    key={label}
                     onClick={onClick}
                     className="cursor-pointer"
                   >
@@ -371,7 +385,6 @@ export function MoreButton(props: MoreButtonProps) {
 
       {!!user && (
         <AddToPlaylistDialog
-          user={user}
           isDialogOpen={isDialogOpen}
           setDialogOpen={setDialogOpen}
           playlists={playlists}

@@ -10,7 +10,9 @@ import { AudioPlayerProvider } from "react-use-audio-player";
 import * as sonner from "sonner";
 import superjson from "superjson";
 
-import { Queue, useQueuePane } from "../../components/queue";
+import { useQueuePane } from "../../components/player/use-queue-pane";
+import { Queue } from "../../components/queue";
+import { THEME_BOOTSTRAP_SCRIPT } from "../../lib/theme-script";
 import { api } from "../../lib/trpc/client";
 
 function song(id: string): QueueItem {
@@ -305,7 +307,7 @@ function Pane() {
       <button
         type="button"
         aria-label="Toggle queue"
-        aria-pressed={pane.open}
+        aria-expanded={pane.open}
         onClick={() => pane.setOpen(!pane.open)}
       />
       <Queue open={pane.open} onOpenChange={pane.setOpen} />
@@ -343,6 +345,8 @@ describe("queue pane open state", () => {
     window.matchMedia = realMatchMedia;
     document.body.innerHTML = "";
     document.documentElement.removeAttribute("data-queue");
+    document.documentElement.removeAttribute("class");
+    document.documentElement.removeAttribute("style");
   });
 
   it("docks at 1440px, persists the choice and tells the shell", async () => {
@@ -351,13 +355,13 @@ describe("queue pane open state", () => {
     localStorage.setItem("current_song_index", "0");
     const root = await mountPane();
 
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("true");
     expect(pane()?.hasAttribute("inert")).toBe(false);
     expect(document.documentElement.getAttribute("data-queue")).toBe("open");
 
     await act(async () => toggle()?.click());
 
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
     expect(pane()?.hasAttribute("inert")).toBe(true);
     expect(localStorage.getItem("queue_open")).toBe("false");
     expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
@@ -368,16 +372,57 @@ describe("queue pane open state", () => {
     await act(async () => root.unmount());
   });
 
+  // The shell reserves the column from the attribute before the client-only
+  // player mounts, so mounting must keep it rather than flip it.
+  it("keeps the attribute the bootstrap script set before first paint", async () => {
+    setViewport(true);
+    localStorage.setItem("queue", JSON.stringify([song("a")]));
+    localStorage.removeItem("queue_open");
+    new Function(THEME_BOOTSTRAP_SCRIPT)();
+    expect(document.documentElement.getAttribute("data-queue")).toBe("open");
+
+    const root = await mountPane();
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("true");
+    expect(document.documentElement.getAttribute("data-queue")).toBe("open");
+
+    await act(async () => root.unmount());
+  });
+
+  it("agrees with the bootstrap script when the user closed the docked pane", async () => {
+    setViewport(true);
+    localStorage.setItem("queue_open", "false");
+    new Function(THEME_BOOTSTRAP_SCRIPT)();
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    const root = await mountPane();
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
+  it("drops the bootstrap attribute on a narrow viewport", async () => {
+    setViewport(false);
+    localStorage.removeItem("queue_open");
+    new Function(THEME_BOOTSTRAP_SCRIPT)();
+    expect(document.documentElement.getAttribute("data-queue")).toBe("open");
+
+    const root = await mountPane();
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
   it("floats below 1440px, starts closed and does not persist", async () => {
     setViewport(false);
     localStorage.removeItem("queue_open");
     const root = await mountPane();
 
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
     expect(pane()?.hasAttribute("inert")).toBe(true);
 
     await act(async () => toggle()?.click());
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("true");
     expect(localStorage.getItem("queue_open")).toBeNull();
     expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
 
@@ -394,7 +439,7 @@ describe("queue pane open state", () => {
         new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
       );
     });
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
 
     await act(async () => toggle()?.click());
     await act(async () => {
@@ -402,7 +447,7 @@ describe("queue pane open state", () => {
         .querySelector<HTMLButtonElement>('[aria-label="Close queue"]')
         ?.click();
     });
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
 
     await act(async () => root.unmount());
   });

@@ -13,7 +13,6 @@ import {
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
 import { useRouter } from "next/navigation";
-import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -26,7 +25,7 @@ import { newPlaylistSchema } from "~/lib/validations";
 
 import { PlaylistFields } from "./playlist-fields";
 
-type FormData = z.infer<typeof newPlaylistSchema>;
+type PlaylistFormData = z.infer<typeof newPlaylistSchema>;
 
 type RenamePlaylistDialogProps = {
   playlist: Pick<MyPlaylist, "id" | "name" | "description">;
@@ -39,42 +38,6 @@ export function RenamePlaylistDialog({
   open,
   onOpenChange,
 }: RenamePlaylistDialogProps) {
-  const router = useRouter();
-
-  const form = useForm<FormData>({
-    resolver: zodResolver(newPlaylistSchema),
-    defaultValues: {
-      name: playlist.name,
-      description: playlist.description ?? "",
-    },
-  });
-
-  React.useEffect(() => {
-    if (open) {
-      form.reset({
-        name: playlist.name,
-        description: playlist.description ?? "",
-      });
-    }
-  }, [open, playlist.name, playlist.description, form]);
-
-  async function onSubmit({ name, description }: FormData) {
-    try {
-      await toast.promise(
-        unwrap(renamePlaylist(playlist.id, { name, description })),
-        {
-          loading: "Renaming playlist...",
-          success: (updated) => `Playlist renamed to "${updated.name}"`,
-          error: userMessage,
-        },
-      );
-      onOpenChange(false);
-      router.refresh();
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : error);
-    }
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -87,30 +50,75 @@ export function RenamePlaylistDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
-          <PlaylistFields control={form.control} />
-
-          <DialogFooter>
-            <DialogClose
-              render={
-                <Button
-                  variant="secondary"
-                  type="button"
-                  className={controlStyles.textLg}
-                >
-                  Cancel
-                </Button>
-              }
-            />
-            <Button type="submit" className={controlStyles.textLg}>
-              Save
-            </Button>
-          </DialogFooter>
-        </form>
+        <RenamePlaylistForm
+          playlist={playlist}
+          onDone={() => onOpenChange(false)}
+        />
       </DialogContent>
     </Dialog>
+  );
+}
+
+type RenamePlaylistFormProps = {
+  playlist: Pick<MyPlaylist, "id" | "name" | "description">;
+  onDone: () => void;
+};
+
+/**
+ * Mounted inside the dialog's content, so it is created fresh each time the
+ * dialog opens and starts from the playlist's current values.
+ */
+function RenamePlaylistForm({ playlist, onDone }: RenamePlaylistFormProps) {
+  const router = useRouter();
+
+  const form = useForm<PlaylistFormData>({
+    resolver: zodResolver(newPlaylistSchema),
+    defaultValues: {
+      name: playlist.name,
+      description: playlist.description ?? "",
+    },
+  });
+
+  async function onSubmit({ name, description }: PlaylistFormData) {
+    try {
+      await toast.promise(
+        unwrap(renamePlaylist(playlist.id, { name, description })),
+        {
+          loading: "Renaming playlist...",
+          success: (updated) => `Playlist renamed to "${updated.name}"`,
+          error: userMessage,
+        },
+      );
+      onDone();
+      router.refresh();
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : error);
+    }
+  }
+
+  return (
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="flex flex-col gap-4"
+    >
+      <PlaylistFields control={form.control} />
+
+      <DialogFooter>
+        <DialogClose
+          render={
+            <Button
+              variant="secondary"
+              type="button"
+              className={controlStyles.textLg}
+            >
+              Cancel
+            </Button>
+          }
+        />
+        <Button type="submit" className={controlStyles.textLg}>
+          Save
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }

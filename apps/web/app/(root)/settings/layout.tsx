@@ -12,10 +12,12 @@ export default function SettingsLayout({ children }: React.PropsWithChildren) {
         </p>
       </header>
 
-      <div className="grid items-start gap-4 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
         <SettingsNav />
 
-        <div className="grid min-w-0 gap-10">{children}</div>
+        <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10">
+          {children}
+        </div>
       </div>
     </div>
   );

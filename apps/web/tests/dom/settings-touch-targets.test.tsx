@@ -5,6 +5,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 
 import { controlStyles } from "../../lib/control-styles";
+import { createTestRouter } from "./settings-test-utils";
 
 mock.module("../../lib/theme/actions", () => ({
   saveThemeConfig: async () => {},
@@ -15,9 +16,8 @@ const { PreferenceSettings } =
 const { AppearanceSettings } =
   await import("../../app/(root)/settings/_components/appearance-settings");
 const { ThemeConfigProvider } = await import("../../lib/theme/provider");
-const { DEFAULT_THEME_CONFIG } = await import("../../lib/theme-config");
 
-const heightClass = (style: string) => style.split(" ")[0]!;
+const heightClass = (style: string) => style.split(" ")[0] ?? "";
 
 async function mount(node: React.ReactNode) {
   const container = document.createElement("div");
@@ -31,7 +31,7 @@ async function mount(node: React.ReactNode) {
 describe("settings touch targets", () => {
   it("sizes preference buttons from the shared control styles", async () => {
     const container = await mount(
-      <AppRouterContext.Provider value={{ refresh() {} } as never}>
+      <AppRouterContext.Provider value={createTestRouter()}>
         <PreferenceSettings initialLanguages={[]} />
       </AppRouterContext.Provider>,
     );
@@ -47,7 +47,7 @@ describe("settings touch targets", () => {
 
   it("sizes every appearance option from the shared control styles", async () => {
     const container = await mount(
-      <ThemeConfigProvider initial={DEFAULT_THEME_CONFIG}>
+      <ThemeConfigProvider>
         <AppearanceSettings />
       </ThemeConfigProvider>,
     );

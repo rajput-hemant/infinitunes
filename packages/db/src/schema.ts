@@ -21,6 +21,10 @@ export const users = pgTable("user", {
   email: text("email").notNull().unique(),
   image: text("image"),
 
+  /* Shared with Lipi, which mirrors the display name and credential hash here */
+  name: text("name"),
+  password: text("password"),
+
   /* Better Auth core compatibility fields */
   betterAuthName: text("betterAuthName").notNull().default(""),
   emailVerifiedBoolean: boolean("emailVerifiedBoolean")

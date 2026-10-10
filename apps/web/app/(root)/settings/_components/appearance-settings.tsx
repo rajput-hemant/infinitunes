@@ -1,29 +1,22 @@
 "use client";
 
-import {
-  DENSITIES,
-  FONT_IDS,
-  HEADING_FONT_IDS,
-  RADIUS_MAX_REM,
-  RADIUS_PRESETS,
-  TEXT_SIZES,
-} from "@infinitunes/types";
+import { DENSITIES } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Layout, Monitor, Moon, RotateCcw, Rows3, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
 
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
-import { FONT_FACES } from "~/lib/theme/fonts";
 
 import { AccentPicker } from "./accent-picker";
-import { radiusPatch, radiusToPx } from "./appearance-options";
 import { LiquidGlassSettings } from "./liquid-glass-settings";
 import { OptionGroup } from "./option-group";
-import { RangeField } from "./range-field";
-import { SettingsSection, SwitchRow } from "./settings-section";
+import { RadiusSettings } from "./radius-settings";
+import { SwitchRow } from "./settings-row";
+import { SettingsSection } from "./settings-section";
 import { ThemePreview } from "./theme-preview";
+import { TypographySettings } from "./typography-settings";
 
 const MODES = [
   {
@@ -43,32 +36,17 @@ const MODES = [
   },
 ] as const;
 
-const TEXT_SIZE_LABELS = {
-  15: "Small",
-  16: "Default",
-  17: "Large",
-  18: "Larger",
-} as const;
-
-const RADIUS_MAX_PX = radiusToPx(RADIUS_MAX_REM);
-
-const subscribeNever = () => () => {};
-
 export function AppearanceSettings() {
   const { config, update, reset, isDefault } = useThemeConfig();
   const { theme: storedTheme, setTheme } = useTheme();
   // next-themes only knows the stored mode on the client; wait for hydration so
   // server and first client render agree.
-  const hydrated = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
+  const hydrated = useIsHydrated();
   const theme = hydrated ? storedTheme : undefined;
 
   return (
-    <div className="grid items-start gap-10 min-[90rem]:grid-cols-[minmax(0,1fr)_18rem]">
-      <div className="grid min-w-0 gap-10">
+    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-10 min-[90rem]:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10">
         <SettingsSection
           id="mode"
           title="Theme Mode"
@@ -90,83 +68,9 @@ export function AppearanceSettings() {
           <AccentPicker />
         </SettingsSection>
 
-        <SettingsSection
-          id="radius"
-          title="Radius"
-          description="Roundness of cards, buttons and sheets."
-        >
-          <OptionGroup
-            label="Radius preset"
-            value={config.radius}
-            onValueChange={(radius) => update({ radius })}
-            options={RADIUS_PRESETS.map((radius) => ({
-              value: radius,
-              label: radius === 1 ? "1.0" : String(radius),
-              style: { borderRadius: `${radius}rem` },
-            }))}
-          />
-          <RangeField
-            label="Corner radius"
-            min={0}
-            max={RADIUS_MAX_PX}
-            step={1}
-            value={radiusToPx(config.radius)}
-            format={(px) => `${px}px`}
-            onValueChange={(px) => update(radiusPatch(px))}
-          />
-        </SettingsSection>
+        <RadiusSettings />
 
-        <SettingsSection
-          id="type"
-          title="Typography"
-          description="Fonts for the interface and for headings, plus text size."
-        >
-          <div className="grid gap-4">
-            <div className="space-y-2">
-              <p className="text-sm/5 font-semibold">Interface font</p>
-              <OptionGroup
-                label="Interface font"
-                value={config.font}
-                onValueChange={(font) => update({ font })}
-                options={FONT_IDS.map((font) => ({
-                  value: font,
-                  label: FONT_FACES[font].label,
-                  preview: { text: "Aa", fontFamily: FONT_FACES[font].family },
-                }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-sm/5 font-semibold">Heading font</p>
-              <OptionGroup
-                label="Heading font"
-                value={config.headingFont}
-                onValueChange={(headingFont) => update({ headingFont })}
-                options={HEADING_FONT_IDS.map((font) => ({
-                  value: font,
-                  label: FONT_FACES[font].label,
-                  preview: { text: "Ag", fontFamily: FONT_FACES[font].family },
-                }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <p className="text-sm/5 font-semibold">Text size</p>
-              <p className="text-xs/4 text-muted-foreground">
-                Layout and controls scale with the text.
-              </p>
-              <OptionGroup
-                label="Text size"
-                value={config.textSize}
-                onValueChange={(textSize) => update({ textSize })}
-                options={TEXT_SIZES.map((size) => ({
-                  value: size,
-                  label: TEXT_SIZE_LABELS[size],
-                }))}
-              />
-            </div>
-          </div>
-        </SettingsSection>
+        <TypographySettings />
 
         <SettingsSection
           id="density"

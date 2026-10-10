@@ -41,22 +41,42 @@ Defined in `local-dev/fixtures.json` (loaded by `packages/db/src/fixtures/local-
 
 Auth is email and password only. `LOCAL_DEV_CONFIG` can point to another fixture file; when set it must exist and match the schema, otherwise seeding fails.
 
+`bun run dev` prints the email and password once at startup (`[local-dev] Sign in with ...`, from `apps/web/instrumentation.ts`). It prints only when `DATABASE_URL` is a loopback host and `NODE_ENV` is not `production`; production builds drop the code entirely.
+
 ## Database layout
 
-- The `user` table and the `better_auth_*` tables are unprefixed and may be shared with other applications using the same database.
-- Migration 0007 drops legacy auth tables and user columns. The shared-table warning above means it must not run against a database shared with a sibling app; use a dedicated Infinitunes database. Unmirrored legacy data blocks removal and must be migrated with the previous release first.
+- The `user` table and the `better_auth_*` tables are unprefixed and shared with other applications using the same database (see [Shared database](#shared-database-with-lipi)).
 - Infinitunes tables are prefixed `infinitunes_` so they cannot collide with other entities.
-- Migrations are in `packages/db/src/migrations`; `bun run db:migrate` creates everything Infinitunes needs on an empty database.
+- Migrations are in `packages/db/src/migrations`; `bun run db:migrate` creates everything Infinitunes needs on an empty database, or on one a sibling app already populated.
 
 ## Seed
 
-`bun run db:seed` is idempotent and inserts only the fixture user, its credential, one playlist and favorites, in one transaction. It refuses to run when:
+`bun run db:seed` is idempotent. In one transaction it inserts the fixture user and credential, then sample data owned by that user, all from `local-dev/fixtures.json` (plain ids and tokens, no JioSaavn call at seed time):
+
+| Table                         | Rows                                                                                                     |
+| :---------------------------- | :------------------------------------------------------------------------------------------------------- |
+| `infinitunes_playlist`        | 2 playlists (2 and 3 songs)                                                                              |
+| `infinitunes_favorite`        | 1 row: 3 liked songs, 2 albums, 2 artists, 1 JioSaavn playlist (song, album, artist and playlist tokens) |
+| `infinitunes_recently_played` | 3 songs, played 5, 30 and 120 minutes ago                                                                |
+
+Every insert is `ON CONFLICT DO NOTHING`, so a rerun adds nothing and never changes an existing row. If a sibling app seeded the same user first, the user and credential are reused. Seeding refuses to run when:
 
 - `DATABASE_URL` is not a loopback host (`localhost`, `127.0.0.1`, `::1`) or sets `host` in its query string
 - `NODE_ENV=production`
 - the fixture id or email already belongs to a different user
 
-It never changes an existing account.
+A user who already has a favorites row keeps it, so the sample favorites only appear on a fresh account.
+
+## Shared database with Lipi
+
+Infinitunes and Lipi use one database (`local_platforms`) and one set of accounts, so the same login works in both apps. Either app may migrate and seed first.
+
+- **Tables.** Infinitunes owns `infinitunes_*`. `user` and `better_auth_*` are shared; Lipi documents their column contract. Infinitunes declares `user.name` and `user.password` (nullable) because Lipi writes them. Only the seed sets `name`; the app uses `betterAuthName`. Do not make them required.
+- **Idempotent baseline.** `0000_baseline.sql` uses `CREATE TABLE IF NOT EXISTS`, `CREATE UNIQUE INDEX IF NOT EXISTS` and foreign keys guarded by `duplicate_object`, so it reuses tables Lipi created first. Existing databases are unaffected: drizzle applies by timestamp, not file content.
+- **Migrations 0007 and 0008.** 0007 keeps its guard that blocks when legacy `user.password` hashes have no matching Better Auth credential (Lipi always writes both), but no longer drops `user.name` and `user.password`. Databases that already ran the old 0007 get both columns back from 0008 (`ADD COLUMN IF NOT EXISTS`); their previous values are gone.
+- **History and filtering.** Infinitunes history lives in `drizzle.__drizzle_migrations`; Lipi uses `drizzle.__lipi_migrations` and `drizzle.__lipi_auth_migrations`. `tablesFilter` is `infinitunes_*`, which limits `db:push` and `db:pull` to Infinitunes tables. `db:generate` diffs the snapshot and still includes the shared auth tables, and `db:studio` ignores the filter and lists every table in `schema.ts` including the shared auth tables, so edit users there with care.
+- **Cookies.** Cookies are not port-isolated on `localhost`, so two apps would overwrite each other's `better-auth.session_token`. Outside production Infinitunes uses the cookie prefix `infinitunes` (`infinitunes.session_token`), set in `apps/web/lib/session-cookie.ts` for both Better Auth and `proxy.ts`. Sessions are therefore per app: sign in once in each. Production keeps the default name so existing sessions survive. Nothing needs `BETTER_AUTH_SECRET` to match across apps.
+- **Verified.** `packages/db/tests/shared-database.test.ts` creates a scratch database holding Lipi-style auth tables, an app table and history, runs `db:migrate` and `db:seed` twice, and checks nothing was duplicated, altered or dropped. It runs when `TEST_MIGRATION_DATABASE_URL` points at a disposable Postgres admin URL; it creates and drops its own databases.
 
 ## Commands
 

@@ -138,7 +138,8 @@
   --fill-2: rgb(0 0 0 / 0.08);
   --fill-3: rgb(0 0 0 / 0.12);
   --scrim: rgb(0 0 0 / 0.28);
-  --ambient: 0.22;
+  /* The mockup default: glass needs a colour field to refract; see docs/design-system/glass.md. */
+  --ambient: 0.62;
 
   /* One base radius; every corner derives from it. */
   --radius: 0.75rem;
@@ -185,7 +186,6 @@
   --fill-2: rgb(255 255 255 / 0.12);
   --fill-3: rgb(255 255 255 / 0.18);
   --scrim: rgb(0 0 0 / 0.5);
-  --ambient: 0.32;
 }
 
 /* Density: the row and artwork sizes the lists and tables use. */
@@ -264,13 +264,6 @@
   }
 }
 
-@media (prefers-reduced-transparency: reduce) {
-  :root,
-  .dark {
-    --ambient: 0;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-fast: 0.01ms;
@@ -337,7 +330,7 @@
   }
 
   html {
-    @apply overflow-x-hidden font-sans;
+    @apply overflow-x-clip font-sans;
     /* Scales rem, so controls and spacing grow with the text size. */
     font-size: calc(100% * var(--text-scale, 1));
   }
@@ -349,7 +342,7 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased max-w-full overflow-x-hidden;
+    @apply bg-background text-foreground antialiased max-w-full overflow-x-clip;
     font-size: 0.875rem;
     line-height: 1.45;
     letter-spacing: -0.003em;
@@ -387,5 +380,6 @@
 @media (min-width: 120rem) {
   :root {
     --side-w: 16.5rem;
+    --queue-w: 22rem;
   }
 }

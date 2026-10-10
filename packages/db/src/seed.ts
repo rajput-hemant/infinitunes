@@ -1,12 +1,18 @@
 import { hash } from "bcryptjs";
-import { eq, or } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import { getLocalDevFixture } from "./fixtures/local-dev-user";
 import { assertLocalDatabase } from "./fixtures/local-guard";
 import * as schema from "./schema";
-import { betterAuthAccounts, favorites, myPlaylists, users } from "./schema";
+import {
+  betterAuthAccounts,
+  favorites,
+  myPlaylists,
+  recentlyPlayed,
+  users,
+} from "./schema";
 
 async function seed() {
   const databaseUrl = process.env.DATABASE_URL;
@@ -62,6 +68,7 @@ async function seed() {
         .values({
           id: localDevUser.id,
           email: localDevUser.email,
+          name: localDevUser.name,
           betterAuthName: localDevUser.name,
           emailVerifiedBoolean: localDevUser.emailVerified,
         })
@@ -105,6 +112,20 @@ async function seed() {
           podcasts: localDevInfinitunes.favorites.podcasts,
         })
         .onConflictDoNothing();
+
+      // Database clock, like the column default: a JS Date would skew against
+      // a non-UTC server TimeZone.
+      for (const item of localDevInfinitunes.recentlyPlayed) {
+        await tx
+          .insert(recentlyPlayed)
+          .values({
+            userId: targetUserId,
+            itemId: item.id,
+            itemType: item.type,
+            playedAt: sql`now() - ${item.minutesAgo} * interval '1 minute'`,
+          })
+          .onConflictDoNothing();
+      }
     });
 
     console.log("[seed] Seeding successfully completed.");

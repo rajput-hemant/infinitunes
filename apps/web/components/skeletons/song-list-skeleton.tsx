@@ -26,9 +26,7 @@ export function SongListSkeleton(props: SongListSkeletonProps) {
           </div>
 
           <div className="flex min-w-0 items-center gap-3">
-            {showAlbum && (
-              <Skeleton className="size-art shrink-0 rounded-[calc(var(--r-sm)*0.75)]" />
-            )}
+            <Skeleton className="size-art shrink-0 rounded-[calc(var(--r-sm)*0.75)]" />
 
             <div className="grid min-w-0 flex-1 gap-1.5">
               <Skeleton className="h-3 w-3/5" />

@@ -45,6 +45,24 @@ describe("local development fixtures", () => {
     );
   });
 
+  it("parses sample favorites, playlists and recently played", () => {
+    const { infinitunes } = parseLocalDevFixture(canonicalFixture);
+    expect(infinitunes.playlists.length).toBeGreaterThanOrEqual(2);
+    for (const playlist of infinitunes.playlists) {
+      expect(playlist.songs.length).toBeGreaterThan(0);
+    }
+    expect(infinitunes.favorites.songs.length).toBeGreaterThan(0);
+    expect(infinitunes.favorites.albums.length).toBeGreaterThan(0);
+    expect(infinitunes.favorites.artists.length).toBeGreaterThan(0);
+    expect(infinitunes.recentlyPlayed.length).toBeGreaterThan(0);
+  });
+
+  it("defaults recently played to empty for older fixture files", () => {
+    const older = structuredClone(canonicalFixture);
+    delete older.infinitunes.recentlyPlayed;
+    expect(parseLocalDevFixture(older).infinitunes.recentlyPlayed).toEqual([]);
+  });
+
   it("parses canonical database and redis configs", () => {
     const fixture = parseLocalDevFixture(canonicalFixture);
     expect(fixture.database.port).toBe(5432);

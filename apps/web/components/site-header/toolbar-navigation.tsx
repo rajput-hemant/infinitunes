@@ -5,11 +5,14 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { siteConfig } from "~/config/site";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 import { Icons } from "../icons";
+
+const historyButtonClassName = cn(controlStyles.headerIcon, "rounded-full");
 
 /**
  * Leading toolbar controls. From tablet up the sidebar carries the brand, so
@@ -25,30 +28,41 @@ export function ToolbarNavigation() {
       {isHome && (
         <Link
           href="/"
-          className="flex items-center gap-1 pl-2 font-heading lowercase md:hidden"
+          className="flex h-10 items-center gap-2 pl-2 font-heading text-lg/6 font-bold tracking-tight lowercase md:hidden"
         >
-          <Icons.Logo className="size-4" />
+          <span className="grid size-7 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground">
+            <Icons.Logo className="size-4" />
+          </span>
           {siteConfig.name}
         </Link>
       )}
 
-      <Button
-        variant="ghost"
-        aria-label="Go back"
-        onClick={() => router.back()}
-        className={cn(controlStyles.headerIcon, isHome && "max-md:hidden")}
+      <GlassSurface
+        size="s"
+        glassRole="toolbar"
+        className={cn(
+          "flex items-center rounded-full p-0.5",
+          isHome && "max-md:hidden",
+        )}
       >
-        <ChevronLeft aria-hidden className="size-4" />
-      </Button>
+        <Button
+          variant="ghost"
+          aria-label="Go back"
+          onClick={() => router.back()}
+          className={historyButtonClassName}
+        >
+          <ChevronLeft aria-hidden className="size-4" />
+        </Button>
 
-      <Button
-        variant="ghost"
-        aria-label="Go forward"
-        onClick={() => router.forward()}
-        className={cn(controlStyles.headerIcon, "max-md:hidden")}
-      >
-        <ChevronRight aria-hidden className="size-4" />
-      </Button>
+        <Button
+          variant="ghost"
+          aria-label="Go forward"
+          onClick={() => router.forward()}
+          className={cn(historyButtonClassName, "max-md:hidden")}
+        >
+          <ChevronRight aria-hidden className="size-4" />
+        </Button>
+      </GlassSurface>
     </div>
   );
 }

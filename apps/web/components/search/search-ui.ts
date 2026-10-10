@@ -1,4 +1,4 @@
-/** Shared class strings for search surfaces. The palette shell stays plain so a glass layer can wrap it later. */
+/** Shared class strings for search surfaces. The palette itself is a glass dialog (see SearchMenu). */
 export const searchUi = {
   trigger:
     "flex items-center justify-center gap-2 bg-transparent px-0 text-foreground shadow-none transition-colors duration-fast hover:bg-fill-2 lg:h-(--ctl-lg) lg:w-64 lg:justify-start lg:bg-fill lg:px-3 lg:text-sm lg:text-muted-foreground xl:w-80",
@@ -26,5 +26,5 @@ export const searchUi = {
   artRound: "rounded-full",
   panel: "rounded-md bg-card p-6 inset-ring inset-ring-border dark:bg-fill",
   grid: "grid grid-cols-2 gap-x-3 gap-y-6 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] md:gap-x-4 xl:grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] min-[1920px]:grid-cols-[repeat(auto-fill,minmax(12rem,1fr))] min-[2560px]:grid-cols-[repeat(auto-fill,minmax(13rem,1fr))]",
-  gridCard: "w-full min-w-0 sm:w-full md:w-full lg:w-full",
+  gridCard: "w-full min-w-0",
 } as const;

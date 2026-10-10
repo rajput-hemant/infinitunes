@@ -1,6 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 
-import type { Song } from "@infinitunes/types";
+import type { Queue, Song } from "@infinitunes/types";
+import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 mock.module("server-only", () => ({}));
@@ -23,9 +24,7 @@ mock.module("~/components/song-list/play-pause-button", () => ({
   TilePlayPauseButton: () => null,
 }));
 mock.module("~/components/song-list/song-row", () => ({
-  SongRow: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
+  SongRow: ({ children }: { children: ReactNode }) => <div>{children}</div>,
 }));
 
 const { SongListClient } =
@@ -78,6 +77,18 @@ describe("D2: song rows decode HTML entities", () => {
 
   it("getItemName decodes song titles and keeps queue names as-is", () => {
     expect(getItemName(song)).toBe("Rock & Roll");
-    expect(getItemName({ name: "Plain" } as never)).toBe("Plain");
+    const queueEntry: Queue = {
+      queueItemId: "q1",
+      id: "s1",
+      name: "Plain",
+      subtitle: "",
+      url: "",
+      type: "song",
+      image: "",
+      artists: [],
+      download_url: "",
+      duration: 0,
+    };
+    expect(getItemName(queueEntry)).toBe("Plain");
   });
 });

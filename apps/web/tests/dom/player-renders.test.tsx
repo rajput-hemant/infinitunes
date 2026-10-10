@@ -16,6 +16,7 @@ import {
 import { createRoot, type Root } from "react-dom/client";
 import superjson from "superjson";
 
+import { getGlassArtwork } from "../../components/glass/glass-store";
 import { useIsPlayerInit } from "../../hooks/use-store";
 
 let position = 0;
@@ -257,6 +258,30 @@ describe("player track wiring", () => {
   });
 });
 
+// The engine follows the playing track: the ambient field and the adaptive
+// tint read the 500px artwork the player publishes.
+describe("player glass wiring", () => {
+  it("publishes the current track's 500px artwork and clears it on unmount", async () => {
+    await mountPlayer();
+    expect(getGlassArtwork()).toBe("https://c.saavncdn.com/x-500x500.jpg");
+
+    await act(async () => roots.splice(0).forEach((r) => r.unmount()));
+    expect(getGlassArtwork()).toBeNull();
+  });
+
+  it("renders the bar and the queue as sibling glass surfaces", async () => {
+    await mountPlayer();
+    const bar = document.querySelector('[data-glass-role="player"]');
+    const pane = document.querySelector('[data-glass-role="queue"]');
+
+    expect(bar?.getAttribute("data-glass-size")).toBe("m");
+    expect(pane?.getAttribute("data-glass-size")).toBe("l");
+    expect(bar?.contains(pane)).toBe(false);
+    expect(pane?.contains(bar)).toBe(false);
+    expect(bar?.querySelector("[data-glass]")).toBeNull();
+  });
+});
+
 // Behavior replacement for the player-a11y and playerbar a11y-labels source
 // tests: the mounted player announces, labels and names values for real.
 describe("player a11y", () => {
@@ -292,17 +317,17 @@ describe("player a11y", () => {
     const button = () =>
       document.querySelector<HTMLButtonElement>('button[aria-label="Queue"]');
     const pane = () => document.querySelector("aside#player-queue");
-    expect(button()?.getAttribute("aria-pressed")).toBe("false");
+    expect(button()?.getAttribute("aria-expanded")).toBe("false");
     expect(pane()?.hasAttribute("inert")).toBe(true);
 
     await act(async () => button()?.click());
-    expect(button()?.getAttribute("aria-pressed")).toBe("true");
+    expect(button()?.getAttribute("aria-expanded")).toBe("true");
     expect(pane()?.hasAttribute("inert")).toBe(false);
 
     await act(async () => {
       window.dispatchEvent(new KeyboardEvent("keydown", { key: "q" }));
     });
-    expect(button()?.getAttribute("aria-pressed")).toBe("false");
+    expect(button()?.getAttribute("aria-expanded")).toBe("false");
     expect(pane()?.hasAttribute("inert")).toBe(true);
   });
 
@@ -318,7 +343,11 @@ describe("player a11y", () => {
   it("shows an accessible More button when the queue is empty", async () => {
     await mountPlayer({ queue: [] });
 
-    expect(document.querySelector('[aria-label="More"]')).not.toBeNull();
+    const more = document.querySelector<HTMLButtonElement>(
+      '[aria-label="More"]',
+    );
+    expect(more).not.toBeNull();
+    expect(more?.disabled).toBe(true);
   });
 });
 

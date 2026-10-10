@@ -1,16 +1,20 @@
 import { toCardItem } from "@infinitunes/types";
 
 import { SliderList } from "~/components/slider/slider-list";
+import { orFallback } from "~/lib/degrade";
 import { api } from "~/lib/trpc/server";
 
 type Album = Awaited<ReturnType<typeof api.album.details>>;
 type TrendingAlbums = Awaited<ReturnType<typeof api.get.trending>>;
 
-export async function AlbumRecommendations({ album }: { album: Album }) {
-  const [result] = await Promise.allSettled([
+type AlbumProps = { album: Album };
+
+export async function AlbumRecommendations({ album }: AlbumProps) {
+  const items = await orFallback(
+    "album recommendations",
     api.album.recommendations({ id: album.id }),
-  ]);
-  const items = result.status === "fulfilled" ? result.value : [];
+    [],
+  );
   return items.length ? (
     <SliderList
       title={album.modules?.reco?.title ?? "Recommended Albums"}
@@ -19,13 +23,12 @@ export async function AlbumRecommendations({ album }: { album: Album }) {
   ) : null;
 }
 
-export async function AlbumTrending({
-  album,
-  trending,
-}: {
+type AlbumTrendingProps = {
   album: Album;
   trending: Promise<TrendingAlbums>;
-}) {
+};
+
+export async function AlbumTrending({ album, trending }: AlbumTrendingProps) {
   const items = await trending;
   return items.length ? (
     <SliderList
@@ -35,11 +38,12 @@ export async function AlbumTrending({
   ) : null;
 }
 
-export async function AlbumSameYear({ album }: { album: Album }) {
-  const [result] = await Promise.allSettled([
+export async function AlbumSameYear({ album }: AlbumProps) {
+  const items = await orFallback(
+    "albums from the same year",
     api.album.sameYear({ year: `${album.year}` }),
-  ]);
-  const items = result.status === "fulfilled" ? result.value : [];
+    [],
+  );
   return items.length ? (
     <SliderList
       title={

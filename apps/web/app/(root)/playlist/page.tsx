@@ -1,14 +1,13 @@
 import type { Lang } from "@infinitunes/types";
 
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
-import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
 
 import { FeaturedPlaylists } from "./_components/featured-playlists";
 
-const title = ` Best Songs ${new Date().getFullYear()} - Online Downloads and Playlists @${siteConfig.name}`;
+const title = `Best Songs ${new Date().getFullYear()} - Online Downloads and Playlists @${siteConfig.name}`;
 const description = `The music buffs at Saavn have created music playlists which include a huge variety of songs from various genres such as festivals, devotional, film, wedding, dance & more.`;
 
 export const metadata = pageMetadata({
@@ -30,8 +29,6 @@ export default async function PlaylistsPage({ searchParams }: PageProps) {
 
   return (
     <div>
-      <LanguageBar language={lang} />
-
       <CatalogHeader title={`${lang ? `${lang} Music` : "Top"} Playlists`} />
 
       <FeaturedPlaylists

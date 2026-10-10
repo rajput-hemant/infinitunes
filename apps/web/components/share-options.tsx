@@ -19,10 +19,12 @@ type ShareOptionsProps = React.ComponentProps<"div"> & {
   title?: string;
 };
 
+type ShareIconProps = { className: string };
+
 type ShareOption = {
   label: string;
   platform?: SharePlatform;
-  icon: React.FC<{ className: string }>;
+  icon: (props: ShareIconProps) => React.ReactNode;
 };
 
 const shareOptions: ShareOption[] = [
@@ -130,13 +132,13 @@ export function ShareOptions({
 
   return (
     <div {...props}>
-      {shareOptions.map(({ label, platform, icon }, i) => {
+      {shareOptions.map(({ label, platform, icon }) => {
         const href = platform
           ? buildShareUrl(platform, { url, title })
           : undefined;
 
         return isDropDownItem ? (
-          <DropdownMenuItem key={i} className="p-0">
+          <DropdownMenuItem key={label} className="p-0">
             <MenuItem
               label={label}
               href={href}
@@ -147,7 +149,7 @@ export function ShareOptions({
           </DropdownMenuItem>
         ) : (
           <MenuItem
-            key={i}
+            key={label}
             label={label}
             href={href}
             icon={icon}

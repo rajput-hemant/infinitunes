@@ -29,6 +29,17 @@ const everyField: ThemeConfig = {
   glass: "solid",
   ambient: false,
   reduceMotion: true,
+  glassTuning: {
+    variant: "tinted",
+    tint: 0.5,
+    blur: 10,
+    refraction: 20,
+    sat: 2.0,
+    spec: 0.5,
+    shadow: 0.5,
+    ambientLevel: 0.5,
+    accentTint: true,
+  },
 };
 
 describe("parseThemeConfig", () => {
@@ -48,7 +59,25 @@ describe("parseThemeConfig", () => {
       glass: "liquid",
       ambient: true,
       reduceMotion: false,
+      glassTuning: {
+        variant: "regular",
+        tint: null,
+        blur: 3,
+        refraction: 30,
+        sat: 1.8,
+        spec: 1,
+        shadow: 1,
+        ambientLevel: 0.62,
+        accentTint: false,
+      },
     });
+  });
+
+  test("keeps a fully transparent glass tint", () => {
+    const raw = JSON.stringify({
+      glassTuning: { ...DEFAULT_THEME_CONFIG.glassTuning, tint: 0 },
+    });
+    expect(parseThemeConfig(raw).glassTuning.tint).toBe(0);
   });
 
   test("falls back on malformed JSON instead of throwing", () => {
@@ -233,7 +262,7 @@ describe("themeConfigToHtml", () => {
     expect(style).toEqual({});
     expect(attributes).toEqual({
       "data-density": "comfortable",
-      "data-glass": "liquid",
+      "data-glass-level": "liquid",
       "data-ambient": "on",
       "data-motion": "full",
       "data-font": "system",
@@ -244,11 +273,13 @@ describe("themeConfigToHtml", () => {
   test("maps every option onto an attribute", () => {
     expect(themeConfigToHtml(everyField).attributes).toEqual({
       "data-density": "compact",
-      "data-glass": "solid",
+      "data-glass-level": "solid",
       "data-ambient": "off",
       "data-motion": "reduced",
       "data-font": "serif",
       "data-heading-font": "mono",
+      "data-glass-variant": "tinted",
+      "data-glass-accent-tint": "true",
     });
   });
 
@@ -296,6 +327,7 @@ function fakeTarget() {
   const properties = new Map<string, string>();
   const target: ThemeTarget = {
     setAttribute: (name, value) => void attributes.set(name, value),
+    removeAttribute: (name) => void attributes.delete(name),
     style: {
       setProperty: (name, value) => void properties.set(name, value),
       removeProperty: (name) => {
@@ -337,5 +369,13 @@ describe("applyThemeConfig", () => {
       "--radius": "0.5rem",
       "--text-scale": "1.0625",
     });
+  });
+
+  test("drops the pre-rename data-glass attribute so <html> never reads as a surface", () => {
+    const { target, attributes } = fakeTarget();
+    target.setAttribute("data-glass", "liquid");
+    applyThemeConfig(target, DEFAULT_THEME_CONFIG);
+    expect(attributes.has("data-glass")).toBe(false);
+    expect(attributes.get("data-glass-level")).toBe("liquid");
   });
 });

@@ -2,6 +2,7 @@ import { Button } from "@infinitunes/ui/components/button";
 import { ListMusic, Plus } from "lucide-react";
 import React from "react";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import {
   LibraryEmpty,
   LibraryHeading,
@@ -31,7 +32,7 @@ export default async function MyPlaylistsPage() {
       />
 
       {playlists.length ? (
-        <div className="flex w-full flex-wrap gap-4">
+        <CatalogGrid>
           <NewPlaylistCard />
 
           {playlists.map((playlist) => (
@@ -42,7 +43,7 @@ export default async function MyPlaylistsPage() {
               <PlaylistItem playlist={playlist} />
             </React.Suspense>
           ))}
-        </div>
+        </CatalogGrid>
       ) : (
         <LibraryEmpty
           icon={ListMusic}

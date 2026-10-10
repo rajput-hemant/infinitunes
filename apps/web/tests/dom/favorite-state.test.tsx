@@ -161,7 +161,8 @@ describe("tile more-button mobile menu", () => {
         const actions = [
           ...(scroll?.querySelectorAll("button.shrink-0") ?? []),
         ];
-        expect(actions).toHaveLength(8);
+        // Song menu actions: favourite, play, queue, playlist, remove, radio, download, share.
+        expect(actions).toHaveLength(9);
         expect(
           actions.some(
             (action) => action.textContent === "Remove from Playlist",

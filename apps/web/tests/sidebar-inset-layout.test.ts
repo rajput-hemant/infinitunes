@@ -2,16 +2,6 @@ import { describe, expect, it } from "bun:test";
 
 import { isNavActive } from "../config/nav";
 
-const ROOT_LAYOUT_SOURCE = new URL("../app/(root)/layout.tsx", import.meta.url);
-
-describe("sidebar inset layout", () => {
-  it("keeps the inset shrinkable inside flex layouts at the call site", async () => {
-    const source = await Bun.file(ROOT_LAYOUT_SOURCE).text();
-
-    expect(source).toMatch(/<SidebarInset[^>]*className="min-w-0[^"]*"/);
-  });
-});
-
 describe("isNavActive", () => {
   it("matches an item on its own path and below it", () => {
     expect(isNavActive("/album", "/album")).toBe(true);

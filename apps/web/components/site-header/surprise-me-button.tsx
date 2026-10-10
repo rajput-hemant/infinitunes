@@ -1,7 +1,7 @@
 "use client";
 
 import { toQueue } from "@infinitunes/types";
-import type { Lang, Song } from "@infinitunes/types";
+import type { Song } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -16,11 +16,13 @@ import {
 } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
 
+import { isLang } from "./lang-guard";
+
 function shuffle<T>(items: T[]): T[] {
   const out = [...items];
   for (let i = out.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j]!, out[i]!];
+    [out[i], out[j]] = [out[j], out[i]];
   }
   return out;
 }
@@ -30,7 +32,8 @@ export function SurpriseMeButton({
   onQueued,
   ...props
 }: ComponentProps<typeof Button> & { onQueued?: () => void }) {
-  const lang = useSearchParams().get("lang") as Lang | null;
+  const rawLang = useSearchParams().get("lang");
+  const lang = rawLang && isLang(rawLang) ? rawLang : null;
 
   const [queue, setQueue] = useQueue();
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();

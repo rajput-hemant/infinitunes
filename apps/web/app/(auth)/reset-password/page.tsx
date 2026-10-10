@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { redirectIfSignedIn } from "~/lib/auth-guard";
 
+import { AuthIntro } from "../_components/auth-intro";
+import { authLinkStyles } from "../_components/field-styles";
 import { ResetPasswordForm } from "../_components/reset-password-form";
 
 export const metadata = {
@@ -19,23 +21,16 @@ export default async function ResetPasswordPage({
   if (!(await searchParams).token) await redirectIfSignedIn();
 
   return (
-    <div className="space-y-4">
-      <div className="text-center">
-        <h1 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em] text-foreground">
-          Reset password
-        </h1>
-        <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          Choose a new password for your account.
-        </p>
-      </div>
+    <div className="grid gap-4">
+      <AuthIntro
+        title="Reset password"
+        description="Choose a new password for your account."
+      />
 
       <ResetPasswordForm />
 
       <p className="text-center text-xs text-muted-foreground">
-        <Link
-          href="/login"
-          className="font-medium text-primary underline-offset-4 hover:underline"
-        >
+        <Link href="/login" className={authLinkStyles}>
           Back to log in
         </Link>
       </p>

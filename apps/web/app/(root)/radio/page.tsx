@@ -1,7 +1,6 @@
 import type { Lang } from "@infinitunes/types";
 
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
-import { LanguageBar } from "~/components/language-bar";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
 
@@ -18,14 +17,14 @@ export const metadata = pageMetadata({
   alt: "Top Indian Radio Stations",
 });
 
-type Props = {
+type RadioPageProps = {
   searchParams: Promise<{
     page?: number;
     lang?: Lang;
   }>;
 };
 
-export default async function RadioPage(props: Props) {
+export default async function RadioPage(props: RadioPageProps) {
   const { page = 1, lang } = await props.searchParams;
 
   const radioStations = await api.get.featuredStations({
@@ -36,9 +35,10 @@ export default async function RadioPage(props: Props) {
 
   return (
     <div>
-      <LanguageBar language={lang} />
-
-      <CatalogHeader title="Radio Stations" />
+      <CatalogHeader
+        title="Radio"
+        subtitle="Endless stations for every mood."
+      />
 
       <FeaturedStations
         key={radioStations[0]?.id ?? "stations"}
