@@ -235,14 +235,19 @@
       "apps/web/tests/dom/search-menu*",
       "apps/web/tests/dom/share-options*",
       "apps/web/tests/dom/add-to-playlist-dialog*",
-      "apps/web/tests/dom/auth-modal*"
+      "apps/web/tests/dom/auth-modal*",
+      "apps/web/styles/glass.css",
+      "apps/web/tests/glass-overlay*",
+      "apps/web/tests/dom/glass-overlay*"
     ],
     "ds2-wp6": [
       "apps/web/app/(root)/settings/**",
       "apps/web/tests/dom/preference-settings*",
       "apps/web/tests/dom/settings*",
       "apps/web/tests/dom/appearance*",
-      "apps/web/tests/dom/liquid-glass*"
+      "apps/web/tests/dom/liquid-glass*",
+      "apps/web/tests/dom/liquid-glass*",
+      "apps/web/tests/dom/glass-tuning*"
     ],
     "ds2-wp7": [
       "apps/web/components/details-header/**",
