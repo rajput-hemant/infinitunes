@@ -22,6 +22,8 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `apps/web` query and action modules are thin Next.js wrappers for those
   procedures and own cache invalidation or redirects.
 
+Knip is installed for manual dead-code analysis; do not apply its findings automatically.
+
 Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
 (`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
 `bun run fmt:check`, `bun run lint` (Oxlint), `bun run type-check`,
@@ -37,6 +39,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
   must be listed in `turbo.json` `globalEnv` or `globalPassThroughEnv` to reach `next build`.
 - Turbo `outputs` are package-relative; the web build output is `.next/**`.
+- `@next/env` and `postcss` are deliberately exact-pinned (kept in step with the Next.js and Tailwind toolchain); loosen only after checking both.
 - Docker is local-dev only (`docker-compose.yml` for Postgres/Redis); there is no
   production image, standalone output or `IS_DOCKER` flag. Production is Vercel.
 - `packages/trpc/src/lib/download.ts`'s `createDownloadLinks` needs `JIOSAAVN_DES_KEY`
@@ -203,6 +206,8 @@ When updating this file, preserve this bar for all agents and keep entries conci
 - **Per-request dedup**: when `generateMetadata` and the page body need the same
   fetch, wrap the fetcher in `cache()` from `"react"` at module scope and call it
   from both, with identical arguments (see the `song`/`album`/`show` detail pages).
+- **Avoid `Date.now()` in layout bodies**: a bare `Date.now()` in a layout body
+  trips the react-purity lint; use a module-level helper (see `dailyArtistImage()`).
 
 ## Zod 4 API
 

@@ -6,8 +6,8 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 import React from "react";
 
+import { AlbumGridSkeleton } from "~/components/skeletons/album-grid-skeleton";
 import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
-import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
 import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function ArtistDetailsSkeleton() {
@@ -33,11 +33,7 @@ export default function ArtistDetailsSkeleton() {
           <Skeleton className="h-10 w-[138px]" />
         )}
         {/-albums$/.test(name) ? (
-          <div className="flex w-full flex-wrap justify-between gap-y-4">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <SliderCardSkeleton key={i} />
-            ))}
-          </div>
+          <AlbumGridSkeleton />
         ) : (
           <SongListSkeleton length={10} />
         )}

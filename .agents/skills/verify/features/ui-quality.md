@@ -1,6 +1,6 @@
 # UI quality and responsive layout
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-017, ISSUE-019 in [verification-issues.md](../../../../docs/archive/verification-issues.md).
+Last live proof: 2026-10-10, [skill-verify record](../../../../docs/verification/skill-verify-2026-10-10.md). Signed-in 320, 200% zoom (640x400), 1920 and 390 light forced colors; the rest of the sweep is in earlier records. Issues: ISSUE-017, ISSUE-019 in [verification-issues.md](../../../../docs/archive/verification-issues.md).
 
 ## Sub-features
 

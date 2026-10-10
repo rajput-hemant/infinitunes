@@ -17,7 +17,7 @@
 ## Driving it with browser skill (pending)
 
 1. Signed in as a throwaway user, open `/settings`; change Name, save, reload; expect the new name.
-2. Change the password via the New Password field; log out and log in with the new password. Check `better_auth_account.password` and `user.password` hashes both changed (they are mirrored).
+2. Change the password via the New Password field; log out and log in with the new password. Check `better_auth_account.password` changed.
 3. Open `/reset-password` with no token or a bad token; expect the invalid-link message. Reset with a real emailed link is only testable with a configured mail sender.
 4. Delete account: type the phrase, confirm; expect the user row and dependent playlist and favorite rows gone and a logged-out state.
 5. Guest opens `/settings`: expect `Please sign in to view this page.`, no form.

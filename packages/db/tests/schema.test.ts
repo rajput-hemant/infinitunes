@@ -5,12 +5,6 @@ import { getTableConfig } from "drizzle-orm/pg-core";
 import * as schema from "../src/schema";
 
 describe("schema exports", () => {
-  it("exports all legacy auth tables", () => {
-    expect(schema.users).toBeDefined();
-    expect(schema.accounts).toBeDefined();
-    expect(schema.verificationTokens).toBeDefined();
-  });
-
   it("exports all better auth tables", () => {
     expect(schema.betterAuthAccounts).toBeDefined();
     expect(schema.betterAuthSessions).toBeDefined();
@@ -32,14 +26,14 @@ describe("schema exports", () => {
     ).toEqual(["userId", "itemType", "itemId"]);
   });
 
-  it("user table retains all legacy columns", () => {
-    const t = schema.users;
-    expect(t.id).toBeDefined();
-    expect(t.name).toBeDefined();
-    expect(t.email).toBeDefined();
-    expect(t.password).toBeDefined();
-    expect(t.emailVerified).toBeDefined();
-    expect(t.image).toBeDefined();
+  it("user table keeps shared fields and removes Auth.js-only columns", () => {
+    const columns = getTableConfig(schema.users).columns.map((c) => c.name);
+    expect(columns).toContain("id");
+    expect(columns).toContain("email");
+    expect(columns).toContain("image");
+    for (const column of ["name", "password", "emailVerified"]) {
+      expect(columns).not.toContain(column);
+    }
   });
 
   it("user table has Better Auth compatibility columns", () => {

@@ -10,7 +10,12 @@ import {
   albumSameYearInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { hasIdentity, mapDownloadUrls, resolveNumericId } from "./utils";
+import {
+  hasIdentity,
+  mapDownloadUrls,
+  resolveNumericId,
+  secondaryList,
+} from "./utils";
 
 export const albumRouter = router({
   details: publicProcedure
@@ -48,12 +53,14 @@ export const albumRouter = router({
     .input(albumRecommendInput)
     .output(z.custom<Album[]>())
     .query(async ({ input }) => {
-      const result = await api<Album[]>(endpoints.album.recommend, {
-        query: {
-          albumid: input.id,
-          language: input.lang,
-        },
-      });
+      const result = await secondaryList(() =>
+        api<Album[]>(endpoints.album.recommend, {
+          query: {
+            albumid: input.id,
+            language: input.lang,
+          },
+        }),
+      );
       // Secondary list: no recommendations is not a missing album.
       return Array.isArray(result) ? result : [];
     }),
@@ -62,12 +69,14 @@ export const albumRouter = router({
     .input(albumSameYearInput)
     .output(z.custom<Album[]>())
     .query(async ({ input }) => {
-      const result = await api<Album[]>(endpoints.album.same_year, {
-        query: {
-          album_year: input.year,
-          album_lang: input.lang,
-        },
-      });
+      const result = await secondaryList(() =>
+        api<Album[]>(endpoints.album.same_year, {
+          query: {
+            album_year: input.year,
+            album_lang: input.lang,
+          },
+        }),
+      );
       // Secondary list on the album page.
       return Array.isArray(result) ? result : [];
     }),

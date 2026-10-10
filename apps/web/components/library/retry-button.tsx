@@ -13,6 +13,7 @@ export function RetryButton() {
     <Button
       size="sm"
       variant="outline"
+      className="h-11 lg:h-7"
       disabled={isPending}
       onClick={() => startTransition(() => router.refresh())}
     >

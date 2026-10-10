@@ -1,4 +1,4 @@
-import { api } from "../lib/api";
+import { api, isTransientUpstreamError } from "../lib/api";
 import { createDownloadLinks } from "../lib/download";
 import { endpoints } from "../lib/endpoints";
 
@@ -46,4 +46,17 @@ export function mapDownloadUrls(value: unknown, key: string): void {
   const list = value[key];
   if (!Array.isArray(list)) return;
   value[key] = list.map((item) => withDownloadUrl(item));
+}
+
+/** Optional catalog lists degrade to [] on transient upstream failures only (timeout, network, 5xx); 4xx and invalid JSON stay visible. */
+export async function secondaryList<T>(
+  request: () => Promise<T>,
+): Promise<T | []> {
+  try {
+    return await request();
+  } catch (error) {
+    if (!isTransientUpstreamError(error)) throw error;
+    console.error("catalog: secondary list unavailable", error);
+    return [];
+  }
 }

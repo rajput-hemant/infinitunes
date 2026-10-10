@@ -150,7 +150,7 @@ async function loadCredentials(db: TRPCContext["db"], userId: string) {
   return {
     userRecord,
     credentialAccount,
-    storedHash: credentialAccount?.password ?? userRecord.password,
+    storedHash: credentialAccount?.password,
   };
 }
 
@@ -165,7 +165,7 @@ async function assertPasswordMatches(storedHash: string, password: string) {
 
 /**
  * Verifies the signed-in user's password server-side against the credential
- * account hash (falling back to the legacy `user.password`). Throws
+ * account hash. Throws
  * BAD_REQUEST when the account has no password or the password is wrong.
  */
 async function verifyCurrentPassword(
@@ -215,15 +215,10 @@ async function confirmIdentity(
 
 async function storePassword(
   tx: Pick<TRPCContext["db"], "update" | "insert">,
-  userRecord: { id: string; email: string },
+  userRecord: { id: string },
   credentialAccount: { id: string } | undefined,
   hashedPassword: string,
 ) {
-  await tx
-    .update(users)
-    .set({ password: hashedPassword })
-    .where(eq(users.email, userRecord.email));
-
   if (credentialAccount) {
     await tx
       .update(betterAuthAccounts)
@@ -502,7 +497,6 @@ export const userRouter = router({
         betterAuthName?: string;
         email?: string;
         emailVerifiedBoolean?: boolean;
-        emailVerified?: null;
       } = {};
       if (input.name !== undefined) patch.betterAuthName = input.name;
       if (input.email !== undefined) {
@@ -514,7 +508,6 @@ export const userRouter = router({
           await confirmIdentity(ctx, input.currentPassword);
           patch.email = input.email;
           patch.emailVerifiedBoolean = false;
-          patch.emailVerified = null;
         }
       }
       if (Object.keys(patch).length > 0) {
@@ -532,7 +525,6 @@ export const userRouter = router({
       }
 
       return ctx.db.query.users.findFirst({
-        columns: { password: false },
         where: eq(users.id, userId),
       });
     }),

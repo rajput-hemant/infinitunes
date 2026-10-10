@@ -351,4 +351,33 @@ describe("LibrarySongList", () => {
       },
       { userFavorites: undefined as Favorite | undefined },
     ));
+
+  it("offers Remove From Favourite in the mobile row menu for a liked song", () =>
+    withList(
+      async (container) => {
+        expect(container.querySelectorAll("li").length).toBeGreaterThan(0);
+        const triggers = document.querySelectorAll<HTMLButtonElement>(
+          '[aria-label="More Options"]',
+        );
+        // The mobile drawer trigger renders before the desktop dropdown.
+        await act(async () => {
+          triggers[0]?.click();
+        });
+        const labels = [...document.querySelectorAll("button")].map(
+          (el) => el.textContent,
+        );
+        expect(labels).toContain("Remove From Favourite");
+      },
+      {
+        userFavorites: {
+          id: "f1",
+          userId: "u1",
+          songs: ["s1"],
+          albums: [],
+          playlists: [],
+          artists: [],
+          podcasts: [],
+        },
+      },
+    ));
 });

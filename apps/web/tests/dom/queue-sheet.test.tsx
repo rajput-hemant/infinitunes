@@ -98,6 +98,39 @@ describe("queue sheet", () => {
     await act(async () => root.unmount());
   });
 
+  it("gives queue artist links a 24px mobile touch target", async () => {
+    const artist = {
+      id: "a1",
+      name: "Singer",
+      perma_url: "https://www.jiosaavn.com/artist/singer/a1",
+      type: "artist" as const,
+      image: "",
+      role: "",
+    };
+    localStorage.setItem(
+      "queue",
+      JSON.stringify([{ ...song("a"), artists: [artist] }]),
+    );
+    localStorage.setItem("current_song_index", "0");
+
+    const root = await mount();
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
+        ?.click();
+    });
+
+    const link = document.querySelector<HTMLAnchorElement>(
+      'ol[aria-label="Queue"] a[href*="/artist/"]',
+    );
+    expect(link?.textContent).toBe("Singer");
+    // 24px minimum on touch, desktop keeps the plain inline link.
+    expect(link?.className).toContain("min-h-6");
+    expect(link?.className).toContain("lg:min-h-0");
+
+    await act(async () => root.unmount());
+  });
+
   it("hands focus to the row that took the removed row's place", async () => {
     localStorage.setItem(
       "queue",
@@ -189,6 +222,11 @@ describe("queue sheet", () => {
         expect(row?.hasAttribute("data-leaving")).toBe(true);
         expect(row?.hasAttribute("inert")).toBe(true);
         expect(row?.getAttribute("aria-hidden")).toBe("true");
+        // The row gap lives in padding, which a 0fr grid row does not collapse:
+        // it must animate away too or the list snaps up 8px when the row drops.
+        expect(row?.firstElementChild?.className).toContain(
+          "group-data-leaving/row:pb-0",
+        );
       }
 
       // b has committed, c is still leaving: focus must skip the leaving row.

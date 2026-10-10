@@ -35,7 +35,6 @@
     "./schema": "./src/schema.ts",
     "./client": "./src/client.ts",
     "./migrations": "./src/migrations/index.ts",
-    "./backfill": "./src/backfill.ts",
     "./fixtures": "./src/fixtures/index.ts",
     "./local-guard": "./src/fixtures/local-guard.ts",
     "./env": "./src/env.ts"

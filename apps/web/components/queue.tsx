@@ -13,11 +13,12 @@ import {
 } from "@infinitunes/ui/components/sheet";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListOrdered, X } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 
+import { ImageWithFallback } from "~/components/image-with-fallback";
+import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
 import { getHref } from "~/lib/utils";
 
@@ -142,17 +143,18 @@ export function QueueList() {
           data-leaving={leaving.has(item.queueItemId) ? "" : undefined}
           inert={leaving.has(item.queueItemId)}
           aria-hidden={leaving.has(item.queueItemId) || undefined}
-          className="grid w-full [contain-intrinsic-size:auto_4.875rem] lg:[contain-intrinsic-size:auto_4rem] [content-visibility:auto] grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-200 ease-out data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
+          className="group/row grid w-full [contain-intrinsic-size:auto_4.875rem] lg:[contain-intrinsic-size:auto_4rem] [content-visibility:auto] grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-200 ease-out data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
         >
-          <div className="min-h-0 overflow-hidden pb-2">
+          <div className="min-h-0 overflow-hidden pb-2 transition-[padding] duration-200 ease-out group-data-leaving/row:pb-0">
             <div className="group relative flex min-h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
               <figure className="flex w-full items-center gap-4 overflow-hidden">
                 <div className="relative aspect-square h-11 min-w-fit lg:h-10 overflow-hidden rounded">
-                  <Image
+                  <ImageWithFallback
                     src={getImageSrc(item.image, "low")}
                     alt=""
                     fill
                     sizes="44px"
+                    fallback={getPlaceholderSrc("song")}
                     className="z-10 object-cover duration-300 group-hover:brightness-50"
                   />
 
@@ -183,7 +185,7 @@ export function QueueList() {
                   <ArtistLinks
                     artists={item.artists}
                     className="max-w-[400px]"
-                    linkClassName="relative z-10"
+                    linkClassName="relative z-10 inline-flex min-h-6 items-center lg:inline lg:min-h-0"
                   />
                 </figcaption>
 

@@ -19,13 +19,13 @@ function findTrigger(container: HTMLElement) {
   );
 }
 
-async function mount() {
+async function mount(menu: MegaMenu = megaMenu) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
   roots.push(root);
   await act(async () => {
-    root.render(<MainNav megaMenu={megaMenu} />);
+    root.render(<MainNav megaMenu={menu} />);
   });
   return container;
 }
@@ -54,6 +54,28 @@ describe("MainNav", () => {
     const link = [...document.querySelectorAll("a")].find((a) =>
       a.textContent?.includes("View all Music"),
     );
-    expect(link?.getAttribute("href")).toBe("/");
+    expect(link?.getAttribute("href")).toBe("/search");
+  });
+
+  it("decodes HTML entities in item titles", async () => {
+    const container = await mount({
+      mega_menu: {
+        ...megaMenu.mega_menu,
+        new_releases: [
+          {
+            title: "Bhootni Ka (From &quot;Udta Teer&quot;)",
+            perma_url: "https://www.jiosaavn.com/song/bhootni-ka/Qy1TVzp4XmQ",
+          },
+        ],
+      },
+    } as MegaMenu);
+
+    await act(async () => findTrigger(container)?.click());
+
+    const link = [...document.querySelectorAll("a")].find((a) =>
+      a.getAttribute("href")?.includes("Qy1TVzp4XmQ"),
+    );
+    expect(link?.textContent).toBe('Bhootni Ka (From "Udta Teer")');
+    expect(link?.getAttribute("title")).toBe('Bhootni Ka (From "Udta Teer")');
   });
 });

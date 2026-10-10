@@ -127,7 +127,7 @@ export default async function MyPlaylistsPage(props: Props) {
                 items={playlistSongs}
                 className={cn(
                   buttonVariants(),
-                  "rounded-full px-10 text-xl font-bold shadow-xs",
+                  "h-11 rounded-full px-10 text-xl font-bold shadow-xs lg:h-8",
                 )}
               >
                 Play

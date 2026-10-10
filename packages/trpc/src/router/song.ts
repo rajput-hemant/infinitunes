@@ -6,7 +6,7 @@ import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { songInput, songItemsInput, songRecommendInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { isRecord, withDownloadUrl } from "./utils";
+import { isRecord, secondaryList, withDownloadUrl } from "./utils";
 
 async function fetchSongObj(input: {
   id?: string;
@@ -56,12 +56,14 @@ export const songRouter = router({
     .input(songRecommendInput)
     .output(z.custom<Song[]>())
     .query(async ({ input }) => {
-      const result = await api(endpoints.song.recommend, {
-        query: {
-          pid: input.id,
-          language: input.lang,
-        },
-      });
+      const result = await secondaryList(() =>
+        api(endpoints.song.recommend, {
+          query: {
+            pid: input.id,
+            language: input.lang,
+          },
+        }),
+      );
       // Recommendations are a secondary list: an empty upstream answer is a
       // valid "nothing to show", not a missing entity.
       if (!Array.isArray(result)) return [];

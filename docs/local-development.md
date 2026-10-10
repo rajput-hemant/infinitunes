@@ -44,6 +44,7 @@ Auth is email and password only. `LOCAL_DEV_CONFIG` can point to another fixture
 ## Database layout
 
 - The `user` table and the `better_auth_*` tables are unprefixed and may be shared with other applications using the same database.
+- Migration 0007 drops legacy auth tables and user columns. The shared-table warning above means it must not run against a database shared with a sibling app; use a dedicated Infinitunes database. Unmirrored legacy data blocks removal and must be migrated with the previous release first.
 - Infinitunes tables are prefixed `infinitunes_` so they cannot collide with other entities.
 - Migrations are in `packages/db/src/migrations`; `bun run db:migrate` creates everything Infinitunes needs on an empty database.
 

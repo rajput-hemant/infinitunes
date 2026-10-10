@@ -21,9 +21,10 @@ export const passwordSchema = z
   )
   .min(8, "Password must be at least 8 characters long.");
 
+/** Sign-in only checks presence: accounts made under older, weaker rules must still get in. */
 export const loginSchema = z.object({
   email: emailSchema,
-  password: passwordSchema,
+  password: z.string().min(1, "Password is Required"),
 });
 
 export const signUpSchema = z

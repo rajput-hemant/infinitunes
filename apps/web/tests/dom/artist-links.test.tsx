@@ -40,11 +40,19 @@ describe("ArtistLinks", () => {
 
   it("keeps credits past the visible three as links for assistive tech", () => {
     const html = renderToStaticMarkup(<ArtistLinks artists={artists} />);
-    const hidden = /<span class="sr-only">(.*?)<\/span><\/p>/.exec(html)?.[1];
+    const hidden = /<span class="sr-only[^"]*">(.*?)<\/span><\/p>/.exec(
+      html,
+    )?.[1];
 
     expect(hidden).toContain('href="/artist/D/D"');
     expect(hidden).toContain('href="/artist/E/E"');
     expect(hidden).not.toContain('href="/artist/C/C"');
+  });
+
+  it("reveals the hidden credits while one of them has keyboard focus", () => {
+    const html = renderToStaticMarkup(<ArtistLinks artists={artists} />);
+
+    expect(html).toContain("focus-within:not-sr-only");
   });
 
   it("exposes the single hidden credit when there are four", () => {

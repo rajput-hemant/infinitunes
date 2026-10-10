@@ -3,9 +3,11 @@ import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { AlbumGridSkeleton } from "~/components/skeletons/album-grid-skeleton";
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
@@ -30,6 +32,50 @@ const getArtist = cache(async (token: string) =>
     }),
   ),
 );
+
+const getArtistLibrary = cache(
+  async (userPromise: ReturnType<typeof getUser>) => {
+    const user = await userPromise;
+    const [playlists, favorites] = user
+      ? await Promise.all([
+          orFallback("user playlists", getUserPlaylists(), undefined),
+          orFallback("user favorites", getUserFavorites(), null),
+        ])
+      : [undefined, undefined];
+    return { user, playlists, favorites };
+  },
+);
+
+async function ArtistLibraryTab({
+  artist,
+  category,
+  userPromise,
+  type,
+}: {
+  artist: Awaited<ReturnType<typeof getArtist>>;
+  category?: Category;
+  userPromise: ReturnType<typeof getUser>;
+  type: "songs" | "albums";
+}) {
+  const { user, playlists, favorites } = await getArtistLibrary(userPromise);
+  const topSongs = artist.topSongs ?? [];
+
+  return (
+    <>
+      <ArtistsTopItems
+        key={type === "songs" ? topSongs[0]?.id : artist.topAlbums?.[0]?.id}
+        id={artist.artistId}
+        type={type}
+        category={category}
+        user={user}
+        userFavorites={favorites}
+        userPlaylists={playlists}
+        initialSongs={type === "songs" ? topSongs : undefined}
+        initialAlbums={type === "albums" ? artist.topAlbums : undefined}
+      />
+    </>
+  );
+}
 
 type Props = {
   params: Promise<{ name: string; token: string }>;
@@ -58,15 +104,9 @@ export default async function ArtistDetailsPage(props: Props) {
   const artistPromise = getArtist(token);
   artistPromise.catch(() => undefined);
 
-  const user = await getUser();
-
-  const [artist, playlists, favorites] = await Promise.all([
-    artistPromise,
-    user
-      ? orFallback("user playlists", getUserPlaylists(), undefined)
-      : undefined,
-    user ? orFallback("user favorites", getUserFavorites(), null) : undefined,
-  ]);
+  const userPromise = getUser();
+  userPromise.catch(() => undefined);
+  const artist = await artistPromise;
 
   let selectedTab: TABS;
 
@@ -105,32 +145,26 @@ export default async function ArtistDetailsPage(props: Props) {
 
         <TabsContent value={TABS.Songs}>
           <CategoryFilter category={cat ?? "popularity"} />
-
-          <ArtistsTopItems
-            key={topSongs[0]?.id}
-            id={artist.artistId}
-            type="songs"
-            category={cat}
-            user={user}
-            userFavorites={favorites}
-            userPlaylists={playlists}
-            initialSongs={topSongs}
-          />
+          <Suspense fallback={<SongListSkeleton length={10} />}>
+            <ArtistLibraryTab
+              artist={artist}
+              category={cat}
+              userPromise={userPromise}
+              type="songs"
+            />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value={TABS.Albums}>
           <CategoryFilter category={cat ?? "popularity"} />
-
-          <ArtistsTopItems
-            key={artist.topAlbums?.[0]?.id}
-            id={artist.artistId}
-            type="albums"
-            category={cat}
-            user={user}
-            userFavorites={favorites}
-            userPlaylists={playlists}
-            initialAlbums={artist.topAlbums}
-          />
+          <Suspense fallback={<AlbumGridSkeleton />}>
+            <ArtistLibraryTab
+              artist={artist}
+              category={cat}
+              userPromise={userPromise}
+              type="albums"
+            />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value={TABS.Biography} className="max-w-3xl">

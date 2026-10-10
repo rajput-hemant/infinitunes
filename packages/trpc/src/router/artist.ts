@@ -14,6 +14,7 @@ import {
   hasIdentity,
   isRecord,
   mapDownloadUrls,
+  secondaryList,
   withDownloadUrl,
 } from "./utils";
 
@@ -81,16 +82,18 @@ export const artistRouter = router({
     .input(artistTopSongsInput)
     .output(z.custom<Song[]>())
     .query(async ({ input }) => {
-      const result = await api(endpoints.artist.top_songs, {
-        query: {
-          artist_ids: input.artist_id,
-          song_id: input.song_id,
-          page: input.page,
-          category: input.cat,
-          sort_order: input.sort,
-          language: input.lang,
-        },
-      });
+      const result = await secondaryList(() =>
+        api(endpoints.artist.top_songs, {
+          query: {
+            artist_ids: input.artist_id,
+            song_id: input.song_id,
+            page: input.page,
+            category: input.cat,
+            sort_order: input.sort,
+            language: input.lang,
+          },
+        }),
+      );
       // Secondary "more from these artists" list on the song page.
       if (!Array.isArray(result)) return [];
       return result.map((item) => withDownloadUrl(item)) as Song[];

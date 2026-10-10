@@ -36,8 +36,7 @@ const config: NextConfig = {
     removeConsole: isProd ? { exclude: ["error", "warn"] } : false,
   },
   images: {
-    // Images are served as-is; enabling the Next optimizer on Vercel is a
-    // pending decision.
+    // Images are served as-is without Next.js optimization.
     unoptimized: true,
     remotePatterns: [
       ...IMAGE_CDN_HOSTS.map((hostname) => ({

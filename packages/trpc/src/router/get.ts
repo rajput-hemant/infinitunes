@@ -33,6 +33,7 @@ import {
   hasIdentity,
   isRecord,
   mapDownloadUrls,
+  secondaryList,
   withDownloadUrl,
 } from "./utils";
 
@@ -48,32 +49,34 @@ export const getRouter = router({
   trending: publicProcedure
     .input(getTrendingInput)
     .output(z.custom<Trending>())
-    .query(async ({ input }) => {
-      const lang = input.lang?.split(",")[0];
-      const query: Record<string, string> = {};
-      if (lang) query.entity_language = lang;
-      if (input.type) query.entity_type = input.type;
+    .query(({ input }) =>
+      secondaryList(async () => {
+        const lang = input.lang?.split(",")[0];
+        const query: Record<string, string> = {};
+        if (lang) query.entity_language = lang;
+        if (input.type) query.entity_type = input.type;
 
-      let result = await api(endpoints.get.trending, { query });
-      if (!Array.isArray(result) || result.length === 0) {
-        if (input.type) {
-          const fallback = await api(endpoints.get.trending, {
-            query: lang ? { entity_language: lang } : {},
-          });
-          result = Array.isArray(fallback)
-            ? fallback.filter(
-                (item) => isRecord(item) && item.type === input.type,
-              )
-            : [];
+        let result = await api(endpoints.get.trending, { query });
+        if (!Array.isArray(result) || result.length === 0) {
+          if (input.type) {
+            const fallback = await api(endpoints.get.trending, {
+              query: lang ? { entity_language: lang } : {},
+            });
+            result = Array.isArray(fallback)
+              ? fallback.filter(
+                  (item) => isRecord(item) && item.type === input.type,
+                )
+              : [];
+          }
         }
-      }
-      // Trending is a secondary carousel on entity pages; an empty upstream
-      // answer must not fail the page that fetches it alongside its entity.
-      if (!Array.isArray(result)) return [];
-      // trending mixes songs, albums and playlists; withDownloadUrl no-ops on
-      // entities without an encrypted_media_url
-      return result.map((item) => withDownloadUrl(item)) as Trending;
-    }),
+        // Trending is a secondary carousel on entity pages; an empty upstream
+        // answer must not fail the page that fetches it alongside its entity.
+        if (!Array.isArray(result)) return [];
+        // trending mixes songs, albums and playlists; withDownloadUrl no-ops on
+        // entities without an encrypted_media_url
+        return result.map((item) => withDownloadUrl(item)) as Trending;
+      }),
+    ),
 
   featuredPlaylists: publicProcedure
     .input(getPagedInput)
@@ -133,13 +136,15 @@ export const getRouter = router({
     .input(getActorTopSongsInput)
     .output(z.custom<Song[]>())
     .query(async ({ input }) => {
-      const result = await api(endpoints.get.actor_top_songs, {
-        query: {
-          actor_ids: input.actor_id,
-          song_id: input.song_id,
-          language: input.lang,
-        },
-      });
+      const result = await secondaryList(() =>
+        api(endpoints.get.actor_top_songs, {
+          query: {
+            actor_ids: input.actor_id,
+            song_id: input.song_id,
+            language: input.lang,
+          },
+        }),
+      );
       // Secondary "songs from the same actors" list on the song page.
       if (!Array.isArray(result)) return [];
       return result.map((item) => withDownloadUrl(item)) as Song[];

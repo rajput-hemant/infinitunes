@@ -13,20 +13,20 @@ type ImageWithFallbackProps = ImageProps & {
 export function ImageWithFallback(props: ImageWithFallbackProps) {
   const { fallback, alt, src, className, ...restProps } = props;
 
-  const [error, setError] = React.useState<React.SyntheticEvent<
-    HTMLImageElement,
-    Event
-  > | null>(null);
+  const effectiveSrc = src ? src : fallback;
 
-  React.useEffect(() => {
-    setError(null);
-  }, [src]);
+  // Remember which `src` failed so a new `src` starts without an error.
+  const [failedSrc, setFailedSrc] = React.useState<typeof effectiveSrc | null>(
+    null,
+  );
+  const error = failedSrc === effectiveSrc;
+  if (failedSrc !== null && !error) setFailedSrc(null);
 
   return (
     <Image
-      src={error ? fallback : src}
+      src={error ? fallback : effectiveSrc}
       alt={alt}
-      onError={setError}
+      onError={() => setFailedSrc(effectiveSrc)}
       className={cn(className, error && "dark:invert")}
       {...restProps}
     />

@@ -88,7 +88,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               aria-pressed={name === theme}
               onClick={() => themeConfigHandler({ theme: name, radius })}
               className={cn(
-                "w-24 justify-start",
+                "w-24 justify-start min-h-11 lg:min-h-0",
                 name === theme && "border-2 border-primary",
               )}
               style={
@@ -125,7 +125,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               aria-pressed={radius === value}
               onClick={() => themeConfigHandler({ theme, radius: value })}
               className={cn(
-                "w-24 capitalize",
+                "w-24 capitalize min-h-11 lg:min-h-0",
                 radius === value && "border-2 border-primary",
               )}
               style={

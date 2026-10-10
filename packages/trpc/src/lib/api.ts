@@ -125,6 +125,11 @@ function isAbortError(err: unknown): boolean {
 /** Errors worth one more attempt: timeouts, network failures and 5xx. */
 const transient = new WeakSet<TRPCError>();
 
+/** True for timeouts, network failures and upstream 5xx; false for 4xx and bad bodies. */
+export function isTransientUpstreamError(error: unknown): boolean {
+  return error instanceof TRPCError && transient.has(error);
+}
+
 function upstreamError(
   code: "TIMEOUT" | "BAD_GATEWAY",
   message: string,

@@ -1,11 +1,31 @@
 import { describe, expect, it, mock } from "bun:test";
 
+import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
+import type React from "react";
 import { createRoot } from "react-dom/client";
 
+import { setInputValue } from "./set-input-value";
+
 // `server-only` throws outside the react-server condition; the actions behind
-// the form only need it to import, nothing here submits.
+// the form only need it to import.
 mock.module("server-only", () => ({}));
+
+const calls: string[] = [];
+mock.module("../../lib/actions", () => ({
+  updateUser: async () => ({ ok: true, data: {} }),
+  changePassword: async () => ({ ok: true, data: {} }),
+  deleteUser: async () => ({ ok: true, data: { id: "u1" } }),
+}));
+
+const router = {
+  push: (href: string) => calls.push(`push ${href}`),
+  replace: (href: string) => calls.push(`replace ${href}`),
+  refresh: () => calls.push("refresh"),
+  back() {},
+  forward() {},
+  prefetch() {},
+} as unknown as NonNullable<React.ContextType<typeof AppRouterContext>>;
 
 const { ProfileForm } =
   await import("../../app/(root)/settings/_components/profile-form");
@@ -16,9 +36,11 @@ async function mount() {
   const root = createRoot(container);
   await act(async () => {
     root.render(
-      <ProfileForm
-        user={{ id: "u1", name: "Ada", email: "ada@example.com" }}
-      />,
+      <AppRouterContext.Provider value={router}>
+        <ProfileForm
+          user={{ id: "u1", name: "Ada", email: "ada@example.com" }}
+        />
+      </AppRouterContext.Provider>,
     );
   });
   return container;
@@ -89,5 +111,42 @@ describe("profile form accessibility", () => {
         ) as HTMLInputElement
       ).type,
     ).toBe("text");
+  });
+
+  it("leaves the signed-in page once the account is deleted", async () => {
+    const container = await mount();
+    calls.length = 0;
+
+    const open = [...container.querySelectorAll("button")].find(
+      (b) => b.textContent?.trim() === "Delete Account",
+    ) as HTMLButtonElement;
+    await act(async () => {
+      open.click();
+    });
+
+    const password = document.querySelector(
+      '[role="alertdialog"] input[type="password"]',
+    ) as HTMLInputElement;
+    const confirm = document.querySelector(
+      '[role="alertdialog"] input[type="text"]',
+    ) as HTMLInputElement;
+    await act(async () => {
+      setInputValue(password, "Secret-1234!");
+      setInputValue(confirm, "DELETE MY ACCOUNT");
+    });
+
+    const action = [
+      ...document.querySelectorAll('[role="alertdialog"] button'),
+    ].find(
+      (b) => b.textContent?.trim() === "Delete Account",
+    ) as HTMLButtonElement;
+    await act(async () => {
+      action.click();
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 20));
+    });
+
+    expect(calls).toEqual(["replace /", "refresh"]);
   });
 });

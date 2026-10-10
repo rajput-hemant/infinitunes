@@ -53,7 +53,7 @@ export function ArtistLinks(props: ArtistLinksProps) {
       {rest.length > 0 && (
         <>
           <span className="shrink-0 whitespace-pre"> +{rest.length} more</span>
-          <span className="sr-only">
+          <span className="sr-only focus-within:not-sr-only focus-within:shrink-0 focus-within:pl-1">
             {rest.map((artist, index) =>
               renderLink(artist, index === rest.length - 1),
             )}

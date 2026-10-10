@@ -11,9 +11,10 @@ import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
@@ -59,20 +60,74 @@ export async function generateMetadata({
   });
 }
 
+async function ShowEpisodeSection({
+  show,
+  sort,
+  userPromise,
+}: {
+  show: Awaited<ReturnType<typeof getShow>>;
+  sort: Sort;
+  userPromise: ReturnType<typeof getUser>;
+}) {
+  const user = await userPromise;
+  const [favorites, playlists] = user
+    ? await Promise.all([
+        orFallback("user favorites", getUserFavorites(), null),
+        orFallback("user playlists", getUserPlaylists(), undefined),
+      ])
+    : [undefined, undefined];
+
+  return (
+    <>
+      <div className="flex items-center justify-between">
+        <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+          {show.modules.episodes.title}
+        </h2>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button size="sm" variant="outline" className="w-28 md:w-36">
+                {sort === "asc" ? "Oldest" : "Newest"}
+                <ChevronDown className="ml-auto size-5" />
+              </Button>
+            }
+          />
+
+          <DropdownMenuContent className="w-28 *:cursor-pointer md:w-36">
+            <DropdownMenuItem
+              render={<Link href={asRoute("?sort=desc")}>Newest</Link>}
+            />
+            <DropdownMenuItem
+              render={<Link href={asRoute("?sort=asc")}>Oldest</Link>}
+            />
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <EpisodeList
+        key={show.episodes[0]?.id}
+        user={user}
+        showId={show.show_details.id}
+        season={Number(show.show_details.more_info.season_number)}
+        sort={sort}
+        totalEpisodes={Number(show.show_details.more_info.total_episodes)}
+        initialEpisodes={show.episodes}
+        userFavorites={favorites}
+        userPlaylists={playlists}
+      />
+    </>
+  );
+}
+
 export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const { sort = DEFAULT_SORT } = await props.searchParams;
   const { season, token } = await props.params;
 
-  const user = await getUser();
-
-  const [{ episodes, modules, seasons, show_details }, favorites, playlists] =
-    await Promise.all([
-      getShow(token, season, sort),
-      user ? orFallback("user favorites", getUserFavorites(), null) : undefined,
-      user
-        ? orFallback("user playlists", getUserPlaylists(), undefined)
-        : undefined,
-    ]);
+  const userPromise = getUser();
+  userPromise.catch(() => undefined);
+  const show = await getShow(token, season, sort);
+  const { modules, seasons, show_details } = show;
 
   return (
     <div className="mb-4 space-y-4">
@@ -105,44 +160,16 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      <div className="flex items-center justify-between">
-        <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          {modules.episodes.title}
-        </h2>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button size="sm" variant="outline" className="w-28 md:w-36">
-                {sort === "asc" ? "Oldest" : "Newest"}
-                <ChevronDown className="ml-auto size-5" />
-              </Button>
-            }
-          />
-
-          <DropdownMenuContent className="w-28 *:cursor-pointer md:w-36">
-            <DropdownMenuItem
-              render={<Link href={asRoute("?sort=desc")}>Newest</Link>}
-            />
-
-            <DropdownMenuItem
-              render={<Link href={asRoute("?sort=asc")}>Oldest</Link>}
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <EpisodeList
-        key={episodes[0].id}
-        user={user}
-        showId={show_details.id}
-        season={Number(show_details.more_info.season_number)}
-        sort={sort}
-        totalEpisodes={Number(show_details.more_info.total_episodes)}
-        initialEpisodes={episodes}
-        userFavorites={favorites}
-        userPlaylists={playlists}
-      />
+      <Suspense
+        fallback={
+          <>
+            <div className="h-9 w-full animate-pulse rounded bg-muted" />
+            <SongListSkeleton length={10} />
+          </>
+        }
+      >
+        <ShowEpisodeSection show={show} sort={sort} userPromise={userPromise} />
+      </Suspense>
 
       <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
         {modules.show_details.title}

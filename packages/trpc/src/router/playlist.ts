@@ -6,7 +6,12 @@ import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { playlistInput, playlistRecommendInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { hasIdentity, mapDownloadUrls, resolveNumericId } from "./utils";
+import {
+  hasIdentity,
+  mapDownloadUrls,
+  resolveNumericId,
+  secondaryList,
+} from "./utils";
 
 export const playlistRouter = router({
   details: publicProcedure
@@ -46,12 +51,14 @@ export const playlistRouter = router({
     .input(playlistRecommendInput)
     .output(z.custom<Playlist[]>())
     .query(async ({ input }) => {
-      const result = await api<Playlist[]>(endpoints.playlist.recommend, {
-        query: {
-          listid: input.id,
-          language: input.lang,
-        },
-      });
+      const result = await secondaryList(() =>
+        api<Playlist[]>(endpoints.playlist.recommend, {
+          query: {
+            listid: input.id,
+            language: input.lang,
+          },
+        }),
+      );
       // Secondary list: no recommendations is not a missing playlist.
       return Array.isArray(result) ? result : [];
     }),

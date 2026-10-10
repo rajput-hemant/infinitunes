@@ -138,7 +138,10 @@ export function LibraryEmpty(props: LibraryEmptyProps) {
   return (
     <LibraryState {...rest}>
       {action && (
-        <Link href={action.href} className={buttonVariants({ size: "sm" })}>
+        <Link
+          href={action.href}
+          className={buttonVariants({ size: "sm", className: "h-11 lg:h-7" })}
+        >
           {action.label}
         </Link>
       )}

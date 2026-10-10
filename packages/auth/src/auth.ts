@@ -13,7 +13,6 @@ import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError } from "better-auth/api";
-import { and, eq } from "drizzle-orm";
 
 import { resetPasswordEmail } from "./emails";
 import { authEnv, resolveAuthUrl } from "./env";
@@ -104,22 +103,6 @@ export function createAuth(
       nodeEnv: env.NODE_ENV,
     });
 
-  async function mirrorAccountPassword(userId: string) {
-    const account = await db.query.betterAuthAccounts.findFirst({
-      where: and(
-        eq(betterAuthAccounts.userId, userId),
-        eq(betterAuthAccounts.providerId, "credential"),
-      ),
-    });
-
-    if (account?.password) {
-      await db
-        .update(users)
-        .set({ password: account.password })
-        .where(eq(users.id, userId));
-    }
-  }
-
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET || env.AUTH_SECRET,
     baseURL,
@@ -206,42 +189,9 @@ export function createAuth(
       user: {
         create: {
           before: async (user) => normalizeName(user, "truncate"),
-          after: async (user) => {
-            if (user.name !== undefined) {
-              await db
-                .update(users)
-                .set({ name: user.name })
-                .where(eq(users.id, user.id as string));
-            }
-            await mirrorAccountPassword(user.id as string);
-          },
         },
         update: {
           before: async (user) => normalizeName(user, "reject"),
-          after: async (user) => {
-            if (user.name !== undefined) {
-              await db
-                .update(users)
-                .set({ name: user.name })
-                .where(eq(users.id, user.id as string));
-            }
-          },
-        },
-      },
-      account: {
-        create: {
-          after: async (account) => {
-            if (account.password) {
-              await mirrorAccountPassword(account.userId as string);
-            }
-          },
-        },
-        update: {
-          after: async (account) => {
-            if (account.password) {
-              await mirrorAccountPassword(account.userId as string);
-            }
-          },
         },
       },
     },

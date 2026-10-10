@@ -11,7 +11,12 @@ import {
 import { Input } from "@infinitunes/ui/components/input";
 import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useDeferredValue, useEffect, useState } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { useKeydown } from "~/hooks/use-keydown";
 import { useIsTyping } from "~/hooks/use-store";
@@ -19,6 +24,8 @@ import { api } from "~/lib/trpc/client";
 import { cn, isMacOs } from "~/lib/utils";
 
 import { SearchAll } from "./search-all";
+
+const subscribeNever = () => () => {};
 
 type SearchMenuProps = {
   className?: string;
@@ -29,12 +36,20 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   const pathname = usePathname();
 
   const [query, setQuery] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  // The dialog is open for the path it was opened on, so navigating closes it.
+  const [openPath, setOpenPath] = useState<string | null>(null);
+  const isOpen = openPath === pathname;
+  if (openPath !== null && !isOpen) setOpenPath(null);
+  const mounted = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const setIsOpen = (open: boolean) => {
+    if (open) setQuery("");
+    setOpenPath(open ? pathname : null);
+  };
 
   const deferredQuery = useDeferredValue(query.trim());
 
@@ -43,22 +58,13 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   useKeydown((e: KeyboardEvent) => {
     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
       e.preventDefault();
-      setIsOpen((open) => !open);
+      setIsOpen(!isOpen);
     }
   });
 
   useEffect(() => {
-    if (isOpen) {
-      setIsTyping(true);
-    } else {
-      setIsTyping(false);
-      setQuery("");
-    }
+    setIsTyping(isOpen);
   }, [isOpen, setIsTyping]);
-
-  useEffect(() => {
-    setIsOpen(false);
-  }, [pathname]);
 
   const { data: searchResult, isLoading } = api.search.all.useQuery(
     { q: deferredQuery },
