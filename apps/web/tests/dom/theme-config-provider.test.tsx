@@ -10,7 +10,6 @@ mock.module("~/lib/theme/actions", () => ({
 
 const { ThemeConfigProvider } = await import("~/lib/theme/provider");
 const { useThemeConfig } = await import("~/hooks/use-theme-config");
-const { DEFAULT_THEME_CONFIG } = await import("~/lib/theme-config");
 
 const probe: { api?: ReturnType<typeof useThemeConfig> } = {};
 function Probe() {
@@ -26,14 +25,39 @@ function api() {
   return probe.api;
 }
 
+const { serializeThemeCookie } = await import("~/lib/theme/cookie");
+const { DEFAULT_THEME_CONFIG } = await import("~/lib/theme-config");
+
 describe("ThemeConfigProvider", () => {
+  it("exposes the saved cookie config and keeps the pre-paint values", async () => {
+    const stored = { ...DEFAULT_THEME_CONFIG, density: "compact" as const };
+    document.cookie = `theme-config=${encodeURIComponent(serializeThemeCookie(stored))}; path=/`;
+    document.documentElement.setAttribute("data-density", "compact");
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <ThemeConfigProvider>
+          <Probe />
+        </ThemeConfigProvider>,
+      );
+    });
+    expect(api().config.density).toBe("compact");
+    expect(document.documentElement.getAttribute("data-density")).toBe(
+      "compact",
+    );
+    await act(async () => root.unmount());
+    document.cookie = "theme-config=; path=/; max-age=0";
+  });
+
   it("applies instantly, debounces the save, resets", async () => {
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
     await act(async () => {
       root.render(
-        <ThemeConfigProvider initial={DEFAULT_THEME_CONFIG}>
+        <ThemeConfigProvider>
           <Probe />
         </ThemeConfigProvider>,
       );

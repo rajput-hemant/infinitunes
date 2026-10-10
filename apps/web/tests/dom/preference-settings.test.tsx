@@ -20,16 +20,13 @@ const { AppearanceSettings } =
 const { LiquidGlassSettings } =
   await import("../../app/(root)/settings/_components/liquid-glass-settings");
 const { ThemeConfigProvider } = await import("../../lib/theme/provider");
-const { DEFAULT_THEME_CONFIG } = await import("../../lib/theme-config");
 
 async function mountAppearance(node: React.ReactNode) {
   const container = document.createElement("div");
   document.body.append(container);
   await act(async () => {
     createRoot(container).render(
-      <ThemeConfigProvider initial={DEFAULT_THEME_CONFIG}>
-        {node}
-      </ThemeConfigProvider>,
+      <ThemeConfigProvider>{node}</ThemeConfigProvider>,
     );
   });
   return container;

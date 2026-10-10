@@ -15,7 +15,6 @@ const { PreferenceSettings } =
 const { AppearanceSettings } =
   await import("../../app/(root)/settings/_components/appearance-settings");
 const { ThemeConfigProvider } = await import("../../lib/theme/provider");
-const { DEFAULT_THEME_CONFIG } = await import("../../lib/theme-config");
 
 const heightClass = (style: string) => style.split(" ")[0]!;
 
@@ -47,7 +46,7 @@ describe("settings touch targets", () => {
 
   it("sizes every appearance option from the shared control styles", async () => {
     const container = await mount(
-      <ThemeConfigProvider initial={DEFAULT_THEME_CONFIG}>
+      <ThemeConfigProvider>
         <AppearanceSettings />
       </ThemeConfigProvider>,
     );
