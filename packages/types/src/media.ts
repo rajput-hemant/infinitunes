@@ -204,6 +204,8 @@ const IMAGE_SIZE: Record<ImageQuality, number> = {
   high: 500,
 };
 
+const DEFAULT_PLACEHOLDER = "/images/placeholder/song.jpg";
+
 function withSize(url: string, size: number) {
   return url.replace(
     /([-_])\d+x\d+(?=\.\w+(?:\?.*)?$)/,
@@ -216,6 +218,7 @@ export function getImageSrc(
   quality?: ImageQuality,
   width?: number,
 ) {
+  if (!image) return DEFAULT_PLACEHOLDER;
   const link = typeof image === "string" ? image : String(image);
   const sized = link.replace(/^http:\/\//, "https://");
   if (!quality) return sized;

@@ -1,12 +1,13 @@
 import { decode, getImageSrc } from "@infinitunes/types";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import Image from "next/image";
 import Link from "next/link";
 
 import { api } from "~/lib/trpc/server";
 import { getHref } from "~/lib/utils";
 
+import { ImageWithFallback } from "../image-with-fallback";
+import { getPlaceholderSrc } from "../placeholder-src";
 import { SliderCard } from "../slider/slider-card";
 
 export async function TopSearch() {
@@ -45,12 +46,13 @@ export async function TopSearch() {
             className="flex gap-2 rounded-md p-2 hover:bg-secondary"
           >
             <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded">
-              <Image
+              <ImageWithFallback
                 src={getImageSrc(t.image, "low")}
                 alt=""
                 fill
                 sizes="48px"
                 className="z-10 object-cover"
+                fallback={getPlaceholderSrc("song")}
               />
 
               <Skeleton className="size-full" />

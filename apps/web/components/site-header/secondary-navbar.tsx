@@ -18,8 +18,6 @@ import React from "react";
 import { browseNav, sidebarNav } from "~/config/nav";
 import { cn } from "~/lib/utils";
 
-import { SurpriseMeButton } from "./surprise-me-button";
-
 export function SecondaryNavbar() {
   const pathname = usePathname();
 
@@ -67,11 +65,13 @@ export function SecondaryNavbar() {
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
 
-        <SurpriseMeButton
+        <Button
           size="sm"
           variant="secondary"
           className="ml-auto shrink-0 hover:shadow-sm"
-        />
+        >
+          Surprise Me
+        </Button>
       </div>
 
       <div className="lg:hidden">
@@ -121,11 +121,9 @@ export function SecondaryNavbar() {
             <Separator />
 
             <div className="my-4 w-full space-y-4">
-              <SurpriseMeButton
-                onQueued={() => setIsOpen(false)}
-                variant="secondary"
-                className="w-full hover:shadow-sm"
-              />
+              <Button variant="secondary" className="w-full hover:shadow-sm">
+                Surprise Me
+              </Button>
               <Separator />
               <Button variant="ghost" onClick={toggleSheet} className="w-full">
                 Cancel

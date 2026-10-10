@@ -33,7 +33,7 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
             <NavigationMenuLink
               render={
                 <Link
-                  href="/search"
+                  href="/"
                   className="mb-2 inline-block rounded-md text-sm font-medium text-muted-foreground hover:text-secondary-foreground"
                 >
                   View all Music

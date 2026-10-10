@@ -36,7 +36,6 @@ import {
   Share2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -60,6 +59,8 @@ import { api } from "~/lib/trpc/client";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
+import { ImageWithFallback } from "../image-with-fallback";
+import { getPlaceholderSrc } from "../placeholder-src";
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
 import { ShareSubMenu } from "../share-submenu";
@@ -336,12 +337,13 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             <DrawerHeader className="pb-0">
               <div className="flex items-center gap-2 truncate">
                 <div className="relative aspect-square h-14 rounded-md">
-                  <Image
+                  <ImageWithFallback
                     src={getImageSrc(item.image, "low")}
                     alt={getItemName(item)}
                     fill
                     sizes="56px"
                     className="z-10 shrink-0 rounded-md"
+                    fallback={getPlaceholderSrc("song")}
                   />
 
                   <Skeleton className="absolute inset-0 size-full" />
