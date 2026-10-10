@@ -11,7 +11,6 @@ import {
 import { SiteFooter } from "~/components/site-footer/footer";
 import { MobileNav } from "~/components/site-header/mobile-nav";
 import { Navbar } from "~/components/site-header/navbar";
-import { SecondaryNavbar } from "~/components/site-header/secondary-navbar";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
@@ -50,7 +49,6 @@ export default async function Layout({ children }: PropsWithChildren) {
             className="min-w-0 bg-transparent outline-none"
           >
             <div className="mx-auto w-full max-w-400 px-page pt-2 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-36">
-              <SecondaryNavbar />
               {children}
               <SiteFooter />
             </div>

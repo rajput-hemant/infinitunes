@@ -380,5 +380,6 @@
 @media (min-width: 120rem) {
   :root {
     --side-w: 16.5rem;
+    --queue-w: 22rem;
   }
 }
