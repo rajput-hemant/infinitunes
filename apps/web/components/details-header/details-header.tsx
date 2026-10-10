@@ -15,11 +15,12 @@ import {
   formatCount,
   formatDuration,
   getImageSrc,
+  parseToken,
 } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Play, Shuffle } from "lucide-react";
 import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
@@ -34,6 +35,7 @@ import { LikeButton } from "../like-button";
 import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
 import { MoreButton } from "./more-button";
+import { ShareButton } from "./share-button";
 
 type DetailsItem =
   | Album
@@ -138,6 +140,16 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
     kind === "song" ? (item as Song).more_info.album_url : undefined;
 
   const permaUrl = "perma_url" in item ? item.perma_url : "";
+
+  const playType = kind === "season" ? "show" : kind;
+  const playSeason =
+    kind === "season"
+      ? Number((item as ShowDetails).more_info.season_number)
+      : undefined;
+  const playToken =
+    kind === "season"
+      ? getId(item)
+      : parseToken(kind === "artist" ? (item as Artist).urls.songs : permaUrl);
 
   const isRound = kind === "artist" || kind === "label";
 
@@ -311,26 +323,32 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
         {kind !== "label" && (
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2 md:justify-start">
             <PlayButton
-              type={kind === "season" ? "show" : kind}
-              season={
-                kind === "season"
-                  ? Number((item as ShowDetails).more_info.season_number)
-                  : undefined
-              }
-              token={
-                kind === "season"
-                  ? getId(item)
-                  : (kind === "artist" ? (item as Artist).urls.songs : permaUrl)
-                      .split("/")
-                      .pop()!
-              }
+              type={playType}
+              season={playSeason}
+              token={playToken}
               className={cn(
                 buttonVariants(),
                 controlStyles.hero,
                 "text-sm font-semibold",
               )}
             >
+              <Play aria-hidden="true" className="size-4 fill-current" />
               Play
+            </PlayButton>
+
+            <PlayButton
+              shuffle
+              type={playType}
+              season={playSeason}
+              token={playToken}
+              className={cn(
+                buttonVariants({ variant: "secondary" }),
+                controlStyles.hero,
+                "text-sm font-semibold",
+              )}
+            >
+              <Shuffle aria-hidden="true" className="size-4" />
+              Shuffle
             </PlayButton>
 
             <LikeButton
@@ -352,6 +370,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                 controlStyles.headerIcon,
               )}
             />
+
+            <ShareButton title={title} />
 
             <MoreButton
               user={user}

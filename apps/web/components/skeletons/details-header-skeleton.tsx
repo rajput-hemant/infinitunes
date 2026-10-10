@@ -53,6 +53,8 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
         {type !== "label" && (
           <div className="mt-5 flex flex-wrap items-center justify-center gap-2 md:justify-start">
             <Skeleton className={cn(controlStyles.hero, "w-24")} />
+            <Skeleton className={cn(controlStyles.hero, "w-24")} />
+            <Skeleton className={controlStyles.headerIcon} />
             <Skeleton className={controlStyles.headerIcon} />
             <Skeleton className={controlStyles.headerIcon} />
             <Skeleton className={controlStyles.headerIcon} />
