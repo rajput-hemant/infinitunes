@@ -3,7 +3,7 @@ import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function MixDetailsLoading() {
   return (
-    <div className="mb-4 space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeaderSkeleton type="mix" />
       <SongListSkeleton length={20} />
     </div>

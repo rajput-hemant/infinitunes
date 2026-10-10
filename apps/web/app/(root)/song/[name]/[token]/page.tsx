@@ -1,5 +1,4 @@
 import { getImageSrc, parseToken, toCardItem } from "@infinitunes/types";
-import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
@@ -63,13 +62,12 @@ async function SongAlbumSongs({ token }: { token: string }) {
     ? album.list.filter((item) => item.id !== song.id)
     : [];
   return songs.length ? (
-    <>
-      <h2 className="pl-2 font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl lg:pl-0">
+    <section className="flex flex-col gap-4">
+      <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
         More from {song.more_info.album}
       </h2>
-      <Separator />
       <SongList items={songs} />
-    </>
+    </section>
   ) : null;
 }
 
@@ -161,12 +159,12 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
   const { song, modules } = await getSong(token);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={song} />
 
       {song.more_info.has_lyrics === "true" && (
         <Suspense
-          fallback={<div className="h-24 animate-pulse rounded bg-muted" />}
+          fallback={<div className="h-24 animate-pulse rounded-md bg-muted" />}
         >
           <SongLyrics id={song.id} />
         </Suspense>
@@ -174,8 +172,8 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
 
       <Suspense
         fallback={
-          <div className="space-y-4">
-            <div className="h-8 w-72 animate-pulse rounded bg-muted" />
+          <div className="flex flex-col gap-(--page-gap)">
+            <div className="h-8 w-72 animate-pulse rounded-md bg-muted" />
             <SongListSkeleton length={5} />
           </div>
         }

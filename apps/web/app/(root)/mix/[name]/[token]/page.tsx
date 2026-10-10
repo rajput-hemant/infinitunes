@@ -40,7 +40,7 @@ export default async function MixDetailsPage(props: MixDetailsPageProps) {
   const mix = await getMix(token);
 
   return (
-    <div className="mb-4 space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={mix} />
 
       <SongList items={Array.isArray(mix.list) ? mix.list : []} />

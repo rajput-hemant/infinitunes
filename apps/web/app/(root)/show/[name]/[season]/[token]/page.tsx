@@ -81,7 +81,7 @@ async function ShowEpisodeSection({
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+        <h2 className="font-heading text-xl text-foreground sm:text-2xl md:text-3xl">
           {show.modules.episodes.title}
         </h2>
 
@@ -134,10 +134,19 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const { modules, seasons, show_details } = show;
 
   return (
-    <div className="mb-4 space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={show_details} />
 
-      <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+      <section className="flex flex-col gap-4">
+        <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+          {modules.show_details.title}
+        </h2>
+        <p className="max-w-2xl text-muted-foreground">
+          {show_details.more_info.description}
+        </p>
+      </section>
+
+      <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
         {modules.seasons.title}
       </h2>
 
@@ -167,21 +176,13 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       <Suspense
         fallback={
           <>
-            <div className="h-9 w-full animate-pulse rounded bg-muted" />
+            <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
             <SongListSkeleton length={10} />
           </>
         }
       >
         <ShowEpisodeSection show={show} sort={sort} userPromise={userPromise} />
       </Suspense>
-
-      <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-        {modules.show_details.title}
-      </h2>
-
-      <blockquote className="max-w-4xl italic text-muted-foreground">
-        {show_details.more_info.description}
-      </blockquote>
     </div>
   );
 }

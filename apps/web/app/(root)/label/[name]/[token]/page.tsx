@@ -61,7 +61,7 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
     asRoute(`/label/${name.replace(/-(songs|albums)$/, `-${tab}`)}/${token}`);
 
   return (
-    <div className="mb-4 space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={label} />
 
       <Tabs defaultValue={name.endsWith("-songs") ? "Songs" : "Albums"}>
@@ -81,7 +81,7 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
         </TabsContent>
 
         <TabsContent value="Albums">
-          <div className="flex w-full flex-wrap justify-between gap-y-4">
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-6 max-sm:gap-4">
             {label.topAlbums.albums.map(
               ({ id, title, perma_url, subtitle, type, image }) => (
                 <SliderCard

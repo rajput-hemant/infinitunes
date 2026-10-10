@@ -4,7 +4,7 @@ import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-ske
 
 export default function EpisodeDetailsLoading() {
   return (
-    <div className="mb-4 space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeaderSkeleton type="episode" />
 
       <Skeleton className="h-8 w-44 sm:h-9 md:h-10 md:w-72" />

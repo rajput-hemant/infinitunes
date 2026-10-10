@@ -52,7 +52,7 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
   const artists = playlist.more_info.artists ?? [];
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={playlist} />
 
       <SongList items={songs} />
