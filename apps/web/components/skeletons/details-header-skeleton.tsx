@@ -1,6 +1,7 @@
 import type { MediaType } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
+import { detailBandClassName } from "~/components/details-header/details-header-band";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -27,7 +28,7 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
   )[type];
 
   return (
-    <div className="pointer-events-none mb-6 grid items-end justify-items-center gap-4 rounded-lg p-4 md:grid-cols-[auto_minmax(0,1fr)] md:justify-items-stretch md:gap-8 md:p-6">
+    <div className={cn("pointer-events-none", detailBandClassName)}>
       <Skeleton
         className={cn(
           "aspect-square w-[min(60vw,14rem)] rounded-md md:w-36 lg:w-44 min-[90rem]:w-56",

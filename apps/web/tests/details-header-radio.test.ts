@@ -16,12 +16,11 @@ describe("ISSUE-022: artist details-header Play Radio regression", () => {
 
     expect(source).toContain("artistId={");
     expect(source).toContain(
-      'kind === "artist" ? (item as Artist).artistId : undefined',
+      'isKind(item, "artist") ? item.artistId : undefined',
     );
     expect(source).toContain("language={");
-    expect(source).toContain(
-      'kind === "artist"\n                  ? (item as Artist).dominantLanguage\n                  : songs[0]?.language',
-    );
+    expect(source).toContain("? item.dominantLanguage");
+    expect(source).toContain("songs[0]?.language");
   });
 
   it("more-button accepts artistId and passes it to radio.createStation", async () => {

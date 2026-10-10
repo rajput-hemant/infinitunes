@@ -1,4 +1,3 @@
-import type { Lang } from "@infinitunes/types";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
@@ -14,6 +13,7 @@ import { SearchMenu } from "../search/search-menu";
 import { TopSearch } from "../search/top-search";
 import { AppSidebarTrigger } from "../sidebar";
 import { UserDropdown } from "../user-dropdown";
+import { isLang } from "./lang-guard";
 import { LanguagePicker } from "./language-picker";
 import { MainNav } from "./main-nav";
 import { Toolbar } from "./toolbar";
@@ -23,7 +23,9 @@ const capsuleClassName = "flex items-center rounded-full p-0.5";
 
 export async function Navbar() {
   const cookiesStore = await cookies();
-  const languages = cookiesStore.get("language")?.value?.split(",") ?? [];
+  const languages = (
+    cookiesStore.get("language")?.value?.split(",") ?? []
+  ).filter(isLang);
 
   const [user, megaMenu] = await Promise.all([
     getUser(),
@@ -38,13 +40,15 @@ export async function Navbar() {
 
       <MainNav megaMenu={megaMenu} className="hidden lg:block" />
 
-      <div className="flex flex-1 items-center justify-end gap-1 md:gap-2">
+      <div data-toolbar-title className="min-w-0 flex-1" />
+
+      <div className="flex items-center justify-end gap-1 md:gap-2">
         <GlassSurface size="s" glassRole="toolbar" className={capsuleClassName}>
           <SearchMenu topSearch={<TopSearch />} />
         </GlassSurface>
 
         <GlassSurface size="s" glassRole="toolbar" className={capsuleClassName}>
-          <LanguagePicker initialLanguages={languages as Lang[]} />
+          <LanguagePicker initialLanguages={languages} />
           <UserDropdown user={user} />
         </GlassSurface>
 

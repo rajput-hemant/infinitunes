@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
@@ -91,8 +91,8 @@ export function MoreButton(props: MoreButtonProps) {
 
   const router = useRouter();
 
-  const [traslateX, setTranslateX] = React.useState(0);
-  const [isDialogOpen, setDialogOpen] = React.useState(false);
+  const [translateX, setTranslateX] = useState(0);
+  const [isDialogOpen, setDialogOpen] = useState(false);
 
   const [, setQueue] = useQueue();
   const [, setCurrentIndex] = useCurrentSongIndex();
@@ -149,16 +149,8 @@ export function MoreButton(props: MoreButtonProps) {
 
       if (type === "artist") {
         radioType = "artist";
-      } else if (
-        songs[0]?.more_info &&
-        typeof songs[0].more_info === "object" &&
-        "artistMap" in songs[0].more_info
-      ) {
-        const primary = (
-          songs[0].more_info.artistMap as {
-            primary_artists?: { id: string; name: string }[];
-          }
-        )?.primary_artists?.[0];
+      } else {
+        const primary = songs[0]?.more_info.artistMap?.primary_artists?.[0];
         if (primary) {
           stationName = primary.name;
           artistId = primary.id;
@@ -274,13 +266,13 @@ export function MoreButton(props: MoreButtonProps) {
 
             <div
               className="relative flex min-h-[300px] flex-col gap-4 px-4 transition-transform duration-300"
-              style={{ transform: `translateX(${traslateX}%)` }}
+              style={{ transform: `translateX(${translateX}%)` }}
             >
               {menuItems
                 .filter(({ hide }) => !hide)
-                .map(({ icon: Icon, label, onClick }, i) => (
+                .map(({ icon: Icon, label, onClick }) => (
                   <button
-                    key={i}
+                    key={label}
                     onClick={onClick}
                     className="flex h-(--ctl-lg) items-center font-medium"
                   >
@@ -352,9 +344,9 @@ export function MoreButton(props: MoreButtonProps) {
             <DropdownMenuGroup>
               {menuItems
                 .filter(({ hide }) => !hide)
-                .map(({ icon: Icon, label, onClick }, i) => (
+                .map(({ icon: Icon, label, onClick }) => (
                   <DropdownMenuItem
-                    key={i}
+                    key={label}
                     onClick={onClick}
                     className="cursor-pointer"
                   >
