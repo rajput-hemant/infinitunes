@@ -47,9 +47,11 @@ import {
 } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { addSongsToPlaylist } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
 import { userMessage } from "~/lib/user-message";
+import { cn } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
 import { ShareOptions } from "../share-options";
@@ -236,7 +238,7 @@ export function MoreButton(props: MoreButtonProps) {
                 aria-label="More options"
                 size="icon"
                 variant="outline"
-                className="size-11 rounded-full shadow-xs lg:size-8"
+                className={controlStyles.heroIcon}
               >
                 <MoreVertical className="size-5" />
               </Button>
@@ -280,7 +282,7 @@ export function MoreButton(props: MoreButtonProps) {
                   <button
                     key={i}
                     onClick={onClick}
-                    className="flex h-8 items-center font-medium"
+                    className="flex h-11 items-center font-medium"
                   >
                     <Icon className="mr-2 size-5" />
                     {label}
@@ -289,7 +291,7 @@ export function MoreButton(props: MoreButtonProps) {
 
               <button
                 onClick={() => setTranslateX(-110)}
-                className="flex h-8 items-center font-medium"
+                className="flex h-11 items-center font-medium"
               >
                 <Share2 className="mr-2 size-5" />
                 Share
@@ -299,7 +301,7 @@ export function MoreButton(props: MoreButtonProps) {
               <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
                   onClick={() => setTranslateX(0)}
-                  className="flex h-8 items-center px-4 font-medium"
+                  className="flex h-11 items-center px-4 font-medium"
                 >
                   <ChevronLeft className="mr-2 size-5" />
                   Back
@@ -317,7 +319,16 @@ export function MoreButton(props: MoreButtonProps) {
             <Separator className="my-4" />
 
             <DrawerFooter className="pt-0 sm:justify-center">
-              <DrawerClose render={<Button>Cancel</Button>} />
+              <DrawerClose
+                render={
+                  <Button
+                    variant="outline"
+                    className={cn(controlStyles.text, "w-full")}
+                  >
+                    Cancel
+                  </Button>
+                }
+              />
             </DrawerFooter>
           </DrawerContent>
         </Drawer>
@@ -330,7 +341,7 @@ export function MoreButton(props: MoreButtonProps) {
                 aria-label="More options"
                 size="icon"
                 variant="outline"
-                className="size-11 rounded-full shadow-xs lg:size-8"
+                className={controlStyles.heroIcon}
               >
                 <MoreVertical className="size-5" />
               </Button>

@@ -13,7 +13,9 @@ import {
   toArtistPage,
 } from "~/lib/artist-pagination";
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { api } from "~/lib/trpc/client";
+import { cn } from "~/lib/utils";
 
 type Props = {
   id: string;
@@ -127,7 +129,7 @@ export function ArtistsTopItems(props: Props) {
       {hasNextPage ? (
         <Button
           variant="outline"
-          className="mx-auto my-4 flex rounded-full text-center"
+          className={cn(controlStyles.text, "mx-auto my-4 flex text-center")}
           onClick={clickHandler}
         >
           {isLoading ? "Loading..." : "Load More"}
