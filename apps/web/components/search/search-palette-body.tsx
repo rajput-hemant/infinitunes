@@ -2,6 +2,7 @@ import { Clock, Search } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { SearchAll } from "./search-all";
+import { SearchGoTo } from "./search-go-to";
 import { searchHref } from "./search-query";
 import { SearchRow } from "./search-row";
 import type { SearchState } from "./search-status";
@@ -21,6 +22,7 @@ type SearchPaletteBodyProps = {
 export function SearchPaletteBody(props: SearchPaletteBodyProps) {
   const { query, listboxId, results, recent, topSearch, onSelect } = props;
   const recentLabelId = `${listboxId}-recent`;
+  const goToLabelId = `${listboxId}-go-to`;
 
   return (
     <div className="p-2">
@@ -72,6 +74,7 @@ export function SearchPaletteBody(props: SearchPaletteBodyProps) {
               </div>
             ) : null}
             {topSearch}
+            <SearchGoTo labelId={goToLabelId} onSelect={onSelect} />
           </>
         )}
       </div>

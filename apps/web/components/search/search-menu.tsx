@@ -116,8 +116,9 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
       <DialogContent
         data-search-palette
+        data-glass-role="palette"
         showCloseButton={false}
-        className="top-[12vh] flex max-h-[min(88dvh,100%)] translate-y-0 flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-160"
+        className="top-[12vh] flex max-h-[min(88dvh,100%)] translate-y-0 flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-160 max-md:inset-0 max-md:size-full max-md:max-h-none max-md:max-w-none max-md:translate-none max-md:rounded-none max-md:pt-[env(safe-area-inset-top)]"
       >
         <DialogTitle className="sr-only">Search</DialogTitle>
 
@@ -149,7 +150,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           </DialogClose>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto md:max-h-[min(60vh,32rem)]">
           <SearchPaletteBody
             query={deferredQuery}
             listboxId={LISTBOX_ID}
@@ -160,7 +161,7 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
           />
         </div>
 
-        <div className="hidden shrink-0 items-center gap-4 border-t border-border px-4 py-2 text-xs leading-4 text-muted-foreground sm:flex">
+        <div className="hidden shrink-0 items-center gap-4 border-t border-border px-4 py-2 text-xs leading-4 text-muted-foreground md:flex">
           <span className="inline-flex items-center gap-1">
             <kbd className={searchUi.kbd}>↑</kbd>
             <kbd className={searchUi.kbd}>↓</kbd>

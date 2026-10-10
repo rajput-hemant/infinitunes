@@ -9,7 +9,8 @@
 
    Popups styled by slot (keep in step with OVERLAY_TARGETS in lib/glass/overlays.ts, a test checks it):
    popover-content, dropdown-menu-content, dropdown-menu-sub-content, dialog-content, alert-dialog-content,
-   sheet-content, drawer-popup and the sonner toast. Tooltips stay solid on purpose. */
+   sheet-content, drawer-popup and the sonner toast. Tooltips (tooltip-content) take the small s material and no
+   lens, so they are not in OVERLAY_TARGETS: the engine attaches no lens to them. */
 
 /* ---------- Tuning variables (the theme writes the --glass-* ones inline when the user changes them) ---------- */
 :root {
@@ -135,6 +136,7 @@ html[data-ambient="off"] [data-glass-ambient] {
     [data-slot="sheet-content"],
     [data-slot="drawer-popup"],
     [data-sonner-toast],
+    [data-slot="tooltip-content"],
     [data-glass-selector],
     [data-glass-edge="top"]
   ) {
@@ -156,7 +158,8 @@ html
     [data-slot="alert-dialog-content"],
     [data-slot="sheet-content"],
     [data-slot="drawer-popup"],
-    [data-sonner-toast]
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
   ) {
   --g-dim: 0;
   --g-a: calc(var(--glass-tint) + var(--g-a-add, 0) + var(--g-adapt));
@@ -235,7 +238,8 @@ html
     [data-slot="alert-dialog-content"],
     [data-slot="sheet-content"],
     [data-slot="drawer-popup"],
-    [data-sonner-toast]
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
   )::before {
   content: "";
   position: absolute;
@@ -272,7 +276,8 @@ html
     [data-slot="alert-dialog-content"],
     [data-slot="sheet-content"],
     [data-slot="drawer-popup"],
-    [data-sonner-toast]
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
   )::after {
   content: "";
   position: absolute;
@@ -288,7 +293,7 @@ html
 }
 
 /* Size classes: bigger reads thicker (more diffusion, more tint, deeper shadow, weaker lens). */
-html [data-glass-size="s"] {
+html :is([data-glass-size="s"], [data-slot="tooltip-content"]) {
   --g-k: 1;
   --g-drop:
     0 0 0 0.5px rgb(0 0 0 / calc(0.05 * var(--glass-shadow))),
@@ -340,6 +345,15 @@ html.dark :is([data-glass-size="m"], [data-sonner-toast]) {
   --g-a-add: 0.3;
   --g-con: 0.5;
 }
+/* Tooltips are text-bearing but 12px, so they take the m contrast floor (same values) to hold AA on any backdrop. */
+html [data-slot="tooltip-content"] {
+  --g-a-add: 0.26;
+  --g-con: 0.6;
+}
+html.dark [data-slot="tooltip-content"] {
+  --g-a-add: 0.3;
+  --g-con: 0.5;
+}
 html.dark
   :is(
     [data-glass][data-glass-size],
@@ -350,7 +364,8 @@ html.dark
     [data-slot="alert-dialog-content"],
     [data-slot="sheet-content"],
     [data-slot="drawer-popup"],
-    [data-sonner-toast]
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
   ) {
   --g-muted-k: 94%;
 }
@@ -395,7 +410,8 @@ html
     [data-slot="alert-dialog-content"],
     [data-slot="sheet-content"],
     [data-slot="drawer-popup"],
-    [data-sonner-toast]
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
   )
   :is(small, .text-muted-foreground) {
   font-weight: 500;
@@ -412,7 +428,8 @@ html
     [data-slot="alert-dialog-content"],
     [data-slot="sheet-content"],
     [data-slot="drawer-popup"],
-    [data-sonner-toast]
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
   )
   :is(button, a, [role="button"]):active,
 html button[data-glass]:active,
@@ -666,7 +683,8 @@ html[data-glass-level="solid"]
     [data-slot="alert-dialog-content"],
     [data-slot="sheet-content"],
     [data-slot="drawer-popup"],
-    [data-sonner-toast]
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
   ) {
   --g-a: 1;
   --glass-tint-c: var(--g-surface);
@@ -692,7 +710,8 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
       [data-slot="alert-dialog-content"],
       [data-slot="sheet-content"],
       [data-slot="drawer-popup"],
-      [data-sonner-toast]
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
     ) {
     --g-a: 0.86;
   }
@@ -715,7 +734,8 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
       [data-slot="alert-dialog-content"],
       [data-slot="sheet-content"],
       [data-slot="drawer-popup"],
-      [data-sonner-toast]
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
     ) {
     --glass-tint-c: var(--g-surface);
     --g-a: 0.97;
@@ -739,7 +759,8 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
       [data-slot="alert-dialog-content"],
       [data-slot="sheet-content"],
       [data-slot="drawer-popup"],
-      [data-sonner-toast]
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
     )::before {
     display: none;
   }
@@ -760,7 +781,8 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
       [data-slot="alert-dialog-content"],
       [data-slot="sheet-content"],
       [data-slot="drawer-popup"],
-      [data-sonner-toast]
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
     ) {
     forced-color-adjust: auto;
     background: Canvas;
@@ -782,7 +804,8 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
       [data-slot="alert-dialog-content"],
       [data-slot="sheet-content"],
       [data-slot="drawer-popup"],
-      [data-sonner-toast]
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
     )::before,
   html
     :is(
@@ -794,7 +817,8 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
       [data-slot="alert-dialog-content"],
       [data-slot="sheet-content"],
       [data-slot="drawer-popup"],
-      [data-sonner-toast]
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
     )::after,
   [data-glass-ambient],
   [data-glass-edge]::before,

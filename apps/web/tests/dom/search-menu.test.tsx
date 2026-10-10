@@ -15,6 +15,20 @@ mock.module("../../components/search/search-all", () => ({
 
 const { SearchMenu } = await import("../../components/search/search-menu");
 const roots: Root[] = [];
+const GO_TO_HREFS = ["/chart", "/me", "/settings/appearance"];
+
+const optionsIn = () => [
+  ...document.querySelectorAll<HTMLElement>("[data-search-option]"),
+];
+
+// happy-dom does not bubble element events up to window, where the hook listens.
+function pressKey(input: HTMLElement | null, key: string) {
+  return act(async () => {
+    const event = new KeyboardEvent("keydown", { key });
+    Object.defineProperty(event, "target", { value: input });
+    window.dispatchEvent(event);
+  });
+}
 
 afterEach(async () => {
   await act(async () => roots.splice(0).forEach((root) => root.unmount()));
@@ -82,30 +96,31 @@ it("drives option selection from the combobox with arrows and Enter", async () =
 
   await act(async () => container.querySelector("button")?.click());
   const input = document.querySelector<HTMLInputElement>('[role="combobox"]');
-  const options = () => [
-    ...document.querySelectorAll<HTMLElement>("[data-search-option]"),
-  ];
-  // happy-dom does not bubble element events up to window, where the hook listens.
-  const press = (key: string) =>
-    act(async () => {
-      const event = new KeyboardEvent("keydown", { key });
-      Object.defineProperty(event, "target", { value: input });
-      window.dispatchEvent(event);
-    });
+  const options = optionsIn;
+  const selectedStates = () =>
+    options().map((o) => o.getAttribute("aria-selected"));
+  const press = (key: string) => pressKey(input, key);
 
   expect(input?.getAttribute("aria-controls")).toBe(
     document.querySelector('[role="listbox"]')?.id ?? "",
   );
-  expect(options().map((o) => o.getAttribute("aria-selected"))).toEqual([
+  // The two test options, then the three Go to pages.
+  expect(selectedStates()).toEqual([
     "true",
+    "false",
+    "false",
+    "false",
     "false",
   ]);
   expect(input?.getAttribute("aria-activedescendant")).toBe(options()[0]?.id);
 
   await press("ArrowDown");
-  expect(options().map((o) => o.getAttribute("aria-selected"))).toEqual([
+  expect(selectedStates()).toEqual([
     "false",
     "true",
+    "false",
+    "false",
+    "false",
   ]);
   expect(input?.getAttribute("aria-activedescendant")).toBe(options()[1]?.id);
 
@@ -113,5 +128,52 @@ it("drives option selection from the combobox with arrows and Enter", async () =
   expect(clicked).toEqual(["two"]);
 
   await press("ArrowDown");
-  expect(options()[0]?.getAttribute("aria-selected")).toBe("true");
+  expect(selectedStates()[2]).toBe("true");
+});
+
+it("lists the Go to pages as options, outside the tab order", async () => {
+  const { container } = await renderMenu(<p>Top searches</p>);
+  await act(async () => container.querySelector("button")?.click());
+
+  const goTo = document.getElementById(`search-palette-listbox-go-to`);
+  expect(goTo?.textContent).toBe("Go to");
+  const hrefs = optionsIn().map((o) => o.getAttribute("href"));
+  expect(hrefs).toEqual(GO_TO_HREFS);
+  expect(optionsIn().map((o) => o.tabIndex)).toEqual([-1, -1, -1]);
+});
+
+it("moves the active option through Go to with arrows, wrapping at both ends", async () => {
+  const { container } = await renderMenu(<p>Top searches</p>);
+  await act(async () => container.querySelector("button")?.click());
+  const input = document.querySelector<HTMLInputElement>('[role="combobox"]');
+  const activeHref = () => {
+    const id = input?.getAttribute("aria-activedescendant");
+    return optionsIn()
+      .find((o) => o.id === id)
+      ?.getAttribute("href");
+  };
+
+  expect(activeHref()).toBe("/chart");
+  await pressKey(input, "ArrowUp");
+  expect(activeHref()).toBe("/settings/appearance");
+  await pressKey(input, "ArrowDown");
+  expect(activeHref()).toBe("/chart");
+  await pressKey(input, "ArrowDown");
+  await pressKey(input, "ArrowDown");
+  expect(activeHref()).toBe("/settings/appearance");
+});
+
+it("renders the phone palette as the glass palette role with its key hints", async () => {
+  const { container } = await renderMenu(<p>Top searches</p>);
+  await act(async () => container.querySelector("button")?.click());
+
+  const palette = document.querySelector<HTMLElement>("[data-search-palette]");
+  expect(palette?.dataset.glassRole).toBe("palette");
+  const hints = palette?.querySelectorAll("kbd") ?? [];
+  expect([...hints].map((kbd) => kbd.textContent)).toEqual([
+    "↑",
+    "↓",
+    "↵",
+    "esc",
+  ]);
 });
