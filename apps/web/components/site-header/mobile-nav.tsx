@@ -2,73 +2,76 @@
 
 import { useSidebar } from "@infinitunes/ui/components/sidebar";
 import { Cog, Compass, Home, Library, Search, User2 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { isNavActive } from "~/config/nav";
 import type { User } from "~/lib/auth";
-import { controlStyles } from "~/lib/control-styles";
-import { asRoute, cn } from "~/lib/utils";
+import { asRoute } from "~/lib/utils";
 
 type Props = {
   user?: User;
 };
 
-const mobileNavItems = [
+type Tab = { label: string; icon: LucideIcon; href: Route };
+
+const primaryTabs: Tab[] = [
   { label: "Home", icon: Home, href: "/" },
   { label: "Search", icon: Search, href: "/search" },
   { label: "Browse", icon: Compass, href: asRoute("/browse") },
-  { label: "Login", icon: User2, href: "/login" },
-  { label: "Settings", icon: Cog, href: "/settings" },
-] satisfies { label: string; icon: typeof Home; href: Route }[];
+];
+
+const loginTab: Tab = { label: "Login", icon: User2, href: "/login" };
+const settingsTab: Tab = { label: "Settings", icon: Cog, href: "/settings" };
 
 const itemClassName =
-  "flex h-14 min-w-0 flex-1 flex-col items-center justify-center text-center text-muted-foreground duration-300 animate-in fade-in";
+  "grid flex-1 place-content-center justify-items-center gap-1 rounded-[calc(var(--radius-2xl)-0.25rem)] text-[0.625rem]/3 font-semibold text-muted-foreground transition duration-fast active:scale-96 aria-[current=page]:bg-fill-2 aria-[current=page]:text-foreground aria-[current=page]:[&_svg]:text-primary";
+
+type TabLinkProps = {
+  tab: Tab;
+  pathname: string | null;
+};
+
+function TabLink({ tab: { label, icon: Icon, href }, pathname }: TabLinkProps) {
+  return (
+    <Link
+      href={href}
+      aria-current={isNavActive(pathname, href) ? "page" : undefined}
+      className={itemClassName}
+    >
+      <Icon aria-hidden className="size-6" />
+      {label}
+    </Link>
+  );
+}
 
 export function MobileNav({ user }: Props) {
   const pathname = usePathname();
   const { openMobile, setOpenMobile } = useSidebar();
 
-  const filteredNavItems = mobileNavItems.filter(({ label }) =>
-    user ? label !== "Login" : label !== "Settings",
-  );
-
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-50 flex h-[calc(3.5rem+env(safe-area-inset-bottom))] items-start justify-between border-t bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex h-16 items-stretch gap-1 rounded-2xl border bg-card p-1 shadow-lg md:hidden"
     >
-      {filteredNavItems.map(({ label, icon: Icon, href }) => {
-        const isActive = href === pathname;
-
-        return (
-          <Link
-            key={label}
-            href={href}
-            aria-current={isActive ? "page" : undefined}
-            className={cn(
-              itemClassName,
-              isActive && "text-secondary-foreground",
-            )}
-          >
-            <Icon aria-hidden />
-
-            <span className="text-xs font-semibold">{label}</span>
-          </Link>
-        );
-      })}
+      {primaryTabs.map((tab) => (
+        <TabLink key={tab.label} tab={tab} pathname={pathname} />
+      ))}
 
       <button
         type="button"
         aria-haspopup="dialog"
         aria-expanded={openMobile}
         onClick={() => setOpenMobile(true)}
-        className={cn(itemClassName, controlStyles.headerIcon, "self-center")}
+        className={itemClassName}
       >
-        <Library aria-hidden />
-
-        <span className="text-xs font-semibold">Library</span>
+        <Library aria-hidden className="size-6" />
+        Library
       </button>
+
+      <TabLink tab={user ? settingsTab : loginTab} pathname={pathname} />
     </nav>
   );
 }

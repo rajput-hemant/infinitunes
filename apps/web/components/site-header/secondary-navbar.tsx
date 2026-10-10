@@ -15,7 +15,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
 
-import { browseNav, sidebarNav } from "~/config/nav";
+import { browseNav, isNavActive, sidebarNav } from "~/config/nav";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -33,45 +33,30 @@ export function SecondaryNavbar() {
   if (!browseNav.some((i) => i.href === pathname)) return null;
 
   return (
-    <nav aria-label="Browse" className="border-b">
+    <nav aria-label="Browse" className="mb-6 border-b">
       <div className="hidden h-full items-center gap-2 lg:flex">
         <ScrollArea className="min-w-0 flex-1">
-          <ul className="flex gap-2">
-            {sidebarNav.map(({ title, href }) => {
-              const isActive = href === pathname;
-
-              return (
-                <li
-                  key={title}
-                  title={title}
-                  className={cn(
-                    "inline-block h-full shrink-0 border-b-2 border-transparent py-2 hover:border-primary",
-                    isActive && "border-primary",
-                  )}
+          <ul className="flex gap-6">
+            {sidebarNav.map(({ title, href }) => (
+              <li key={title} className="shrink-0">
+                <Link
+                  href={href}
+                  aria-current={
+                    isNavActive(pathname, href) ? "page" : undefined
+                  }
+                  className="relative flex h-10 items-center text-sm font-semibold text-muted-foreground transition-colors duration-fast -outline-offset-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:rounded-full hover:text-foreground aria-[current=page]:text-foreground aria-[current=page]:after:bg-primary pointer-coarse:h-11"
                 >
-                  <Link
-                    href={href}
-                    className={cn(
-                      buttonVariants({
-                        size: "sm",
-                        variant: isActive ? "secondary" : "ghost",
-                      }),
-                      controlStyles.text,
-                      isActive && "font-medium",
-                    )}
-                  >
-                    {title}
-                  </Link>
-                </li>
-              );
-            })}
+                  {title}
+                </Link>
+              </li>
+            ))}
           </ul>
           <ScrollBar orientation="horizontal" />
         </ScrollArea>
 
         <SurpriseMeButton
           variant="secondary"
-          className={cn(controlStyles.text, "ml-auto shrink-0 hover:shadow-sm")}
+          className={cn(controlStyles.text, "ml-auto shrink-0")}
         />
       </div>
 
@@ -99,7 +84,7 @@ export function SecondaryNavbar() {
 
             <div>
               {sidebarNav.map(({ title, href, icon: Icon }) => {
-                const isActive = href === pathname;
+                const isActive = isNavActive(pathname, href);
 
                 return (
                   <Link
@@ -110,8 +95,7 @@ export function SecondaryNavbar() {
                       buttonVariants({ size: "sm", variant: "ghost" }),
                       controlStyles.text,
                       "my-1 flex justify-between text-muted-foreground",
-                      isActive &&
-                        "bg-secondary font-bold text-secondary-foreground",
+                      isActive && "bg-fill-2 font-semibold text-foreground",
                     )}
                   >
                     <span>
@@ -131,7 +115,7 @@ export function SecondaryNavbar() {
               <SurpriseMeButton
                 onQueued={() => setIsOpen(false)}
                 variant="secondary"
-                className={cn(controlStyles.text, "w-full hover:shadow-sm")}
+                className={cn(controlStyles.text, "w-full")}
               />
               <Separator />
               <Button

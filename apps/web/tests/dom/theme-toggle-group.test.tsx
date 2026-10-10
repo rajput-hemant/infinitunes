@@ -4,6 +4,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 
 import { ThemeToggleGroup } from "../../components/site-footer/theme-toggle-group";
+import { controlStyles } from "../../lib/control-styles";
 
 describe("footer theme buttons (UI-32)", () => {
   it("renders three labelled 44px targets with roving tab stops", async () => {
@@ -26,9 +27,12 @@ describe("footer theme buttons (UI-32)", () => {
       return button;
     });
 
-    // 44px targets via the app-side size class (no shadcn edits).
+    // Touch size comes from the shared control contract (no shadcn edits).
     for (const button of buttons) {
-      expect(button.className.split(" ")).toContain("size-11");
+      const classes = button.className.split(" ");
+      for (const cls of controlStyles.headerIcon.split(" ")) {
+        expect(classes).toContain(cls);
+      }
     }
 
     // Roving tabindex (Base UI toggle-group arrow-key pattern): exactly one
