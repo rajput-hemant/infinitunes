@@ -363,7 +363,6 @@ export function MoreButton(props: MoreButtonProps) {
 
       {!!user && (
         <AddToPlaylistDialog
-          user={user}
           isDialogOpen={isDialogOpen}
           setDialogOpen={setDialogOpen}
           playlists={playlists}
