@@ -285,3 +285,10 @@ Read `docs/README.md` inside that installed package first, then read the relevan
 
 This block is written and re-added by `turbo` before repository-scoped commands when an AI agent is detected. In the Turborepo source repository, its template is defined in `crates/turborepo-cli/src/cli/agent_guidance.rs`. Removing the managed block while updates are enabled means a later qualifying invocation will add it again. Set `"agentGuidance": false` in the root `turbo.json` or `turbo.jsonc` to opt out; this does not remove an existing block. Keep the block committed with your work to avoid an uncommitted change on the next agent invocation.
 <!-- END:turborepo-agent-rules -->
+
+## Liquid Glass lens sharp edge
+
+Chromium resolves a `backdrop-filter: url(#...)` filter's user space against the element's ink overflow (outer
+`box-shadow` reach), not its border box. `apps/web/components/glass/lens-registry.ts` offsets the filter by
+`inkOverflowOrigin` (`apps/web/lib/glass/shadow-overflow.ts`); without it, shadowed popups blur only partly under the
+lens engine while `?lens=0` looks fine. Re-check popup blur after Chromium upgrades. See `docs/design-system/glass.md`.
