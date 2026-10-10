@@ -60,19 +60,28 @@ export type LensConditions = {
   level: GlassLevel;
   reducedTransparency: boolean;
   highContrast: boolean;
+  /** `forced-colors: active`: system colors only, no field behind. */
+  forcedColors: boolean;
 };
 
 /**
  * The lens runs when the browser can refract, the level is not Solid, and the
- * user has not asked for less transparency or more contrast.
+ * user has not asked for less transparency, more contrast or forced colors.
  */
 export function lensActive({
   capable,
   level,
   reducedTransparency,
   highContrast,
+  forcedColors,
 }: LensConditions): boolean {
-  return capable && level !== "solid" && !reducedTransparency && !highContrast;
+  return (
+    capable &&
+    level !== "solid" &&
+    !reducedTransparency &&
+    !highContrast &&
+    !forcedColors
+  );
 }
 
 /** Value of `html[data-glass-engine]`, which the stylesheet keys the lens rules on. */

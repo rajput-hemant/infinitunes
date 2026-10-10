@@ -82,6 +82,27 @@ const resizeObserver =
         }
       });
 
+if (typeof window !== "undefined") {
+  // A resized window moves viewport-anchored surfaces without resizing them.
+  window.addEventListener("resize", () =>
+    entries.forEach((_, el) => schedule(el)),
+  );
+}
+
+/**
+ * The ink-overflow origin depends on where the surface sits, and an anchored
+ * popup is positioned and animated in after it registers: re-read it once the
+ * motion on the surface itself ends.
+ */
+function settled(event: Event) {
+  if (
+    event.target instanceof HTMLElement &&
+    event.target === event.currentTarget
+  ) {
+    schedule(event.target);
+  }
+}
+
 function setScale(filter: LensFilter, progress: number) {
   filter.displacement.setAttribute(
     "scale",
@@ -210,7 +231,11 @@ function applyLens(el: HTMLElement) {
     return;
   }
   const radius = radiusOf(el, width, height);
-  const origin = inkOverflowOrigin(getComputedStyle(el).boxShadow);
+  const rect = el.getBoundingClientRect();
+  const origin = inkOverflowOrigin(getComputedStyle(el).boxShadow, {
+    x: rect.left,
+    y: rect.top,
+  });
   const key = lensKey(
     width,
     height,
@@ -287,6 +312,8 @@ export function registerGlass(
       ramp: materializes(target.role),
     });
     resizeObserver?.observe(el);
+    el.addEventListener("animationend", settled);
+    el.addEventListener("transitionend", settled);
     schedule(el);
   }
   return () => unregisterGlass(el);
@@ -297,6 +324,8 @@ export function unregisterGlass(el: HTMLElement) {
   if (!entry) return;
   clearTimeout(entry.timer);
   resizeObserver?.unobserve(el);
+  el.removeEventListener("animationend", settled);
+  el.removeEventListener("transitionend", settled);
   el.style.removeProperty("--g-lens-url");
   entries.delete(el);
 }

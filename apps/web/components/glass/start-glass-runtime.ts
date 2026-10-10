@@ -74,6 +74,7 @@ export function startGlassRuntime(): () => void {
     "(prefers-reduced-transparency: reduce)",
   );
   const contrast = window.matchMedia("(prefers-contrast: more)");
+  const forced = window.matchMedia("(forced-colors: active)");
 
   const evaluate = () => {
     const active = lensActive({
@@ -81,6 +82,7 @@ export function startGlassRuntime(): () => void {
       level: levelOf(root),
       reducedTransparency: transparency.matches,
       highContrast: contrast.matches,
+      forcedColors: forced.matches,
     });
     const style = getComputedStyle(root);
     const engine: GlassEngine = active ? "lens" : "frost";
@@ -147,6 +149,7 @@ export function startGlassRuntime(): () => void {
 
   transparency.addEventListener("change", evaluate);
   contrast.addEventListener("change", evaluate);
+  forced.addEventListener("change", evaluate);
   const stopLight = installPointerLight();
   const stopPress = installPressGel();
 
@@ -155,6 +158,7 @@ export function startGlassRuntime(): () => void {
     stopPress();
     transparency.removeEventListener("change", evaluate);
     contrast.removeEventListener("change", evaluate);
+    forced.removeEventListener("change", evaluate);
     rootObserver.disconnect();
     bodyObserver.disconnect();
     cancelAnimationFrame(evalFrame);

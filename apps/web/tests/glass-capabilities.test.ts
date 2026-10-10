@@ -55,6 +55,7 @@ describe("lensActive", () => {
     level: "liquid",
     reducedTransparency: false,
     highContrast: false,
+    forcedColors: false,
   } as const;
 
   test("runs when capable and nothing opts out", () => {
@@ -62,10 +63,11 @@ describe("lensActive", () => {
     expect(lensActive({ ...on, level: "subtle" })).toBe(true);
   });
 
-  test("is off for Solid, reduced transparency, more contrast, or no support", () => {
+  test("is off for Solid, reduced transparency, more contrast, forced colors, or no support", () => {
     expect(lensActive({ ...on, level: "solid" })).toBe(false);
     expect(lensActive({ ...on, reducedTransparency: true })).toBe(false);
     expect(lensActive({ ...on, highContrast: true })).toBe(false);
+    expect(lensActive({ ...on, forcedColors: true })).toBe(false);
     expect(lensActive({ ...on, capable: false })).toBe(false);
   });
 });

@@ -30,4 +30,25 @@ describe("inkOverflowOrigin", () => {
       ),
     ).toEqual({ x: 87, y: 57 });
   });
+
+  test("is capped by the distance to the viewport's left and top edges", () => {
+    const shadow = "rgba(0, 0, 0, 0.34) 0px 30px 70px -18px";
+    expect(inkOverflowOrigin(shadow, { x: 1023, y: 48 })).toEqual({
+      x: 87,
+      y: 48,
+    });
+    expect(inkOverflowOrigin(shadow, { x: 20, y: 400 })).toEqual({
+      x: 20,
+      y: 57,
+    });
+  });
+
+  test("never goes negative for a surface scrolled past the viewport edge", () => {
+    expect(
+      inkOverflowOrigin("rgba(0, 0, 0, 0.34) 0px 30px 70px -18px", {
+        x: -40,
+        y: -12,
+      }),
+    ).toEqual({ x: 0, y: 0 });
+  });
 });

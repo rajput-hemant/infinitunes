@@ -28,8 +28,15 @@ function splitShadows(value: string): string[] {
  * shadows reach past the left and top edges. A lens sized to the border box
  * must be offset by the negative of this, or its region and maps are shifted
  * and the part of the surface outside the shifted region stays unfiltered.
+ *
+ * `viewport` is the border box's distance from the viewport's left and top
+ * edges; the reach is capped by it because Chromium clips the ink overflow to
+ * the viewport (a menu 48px from the top has a y origin of 48, not 57).
  */
-export function inkOverflowOrigin(boxShadow: string): Origin {
+export function inkOverflowOrigin(
+  boxShadow: string,
+  viewport: Origin = { x: Infinity, y: Infinity },
+): Origin {
   let x = 0;
   let y = 0;
   for (const shadow of splitShadows(boxShadow)) {
@@ -43,5 +50,9 @@ export function inkOverflowOrigin(boxShadow: string): Origin {
     x = Math.max(x, reach - dx);
     y = Math.max(y, reach - dy);
   }
-  return { x: Math.round(x), y: Math.round(y) };
+  // The ink overflow is clipped to the viewport: an element 48px from the top has at most 48px of it above.
+  return {
+    x: Math.round(Math.min(x, Math.max(0, viewport.x))),
+    y: Math.round(Math.min(y, Math.max(0, viewport.y))),
+  };
 }
