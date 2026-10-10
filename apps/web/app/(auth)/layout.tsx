@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
+import { ArtistSpotlight } from "~/components/artist-spotlight";
 import { Icons } from "~/components/icons";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
@@ -17,8 +18,6 @@ const ART_IMAGES = [
   "/images/artists/7.png",
   "/images/artists/8.png",
   "/images/artists/9.png",
-  "/images/artists/0.png",
-  "/images/artists/1.png",
 ];
 
 type AuthLayoutProps = React.PropsWithChildren;
@@ -32,15 +31,8 @@ export const instant = false;
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <div className="grid min-h-dvh md:grid-cols-[1.1fr_1fr]">
-      <div className="relative sticky top-0 hidden h-dvh overflow-hidden bg-black p-2 md:grid md:grid-cols-3 md:content-start md:gap-2">
-        {ART_IMAGES.map((src, i) => (
-          <img
-            key={i}
-            src={src}
-            alt=""
-            className="aspect-square w-full rounded-(--r-sm) object-cover opacity-85"
-          />
-        ))}
+      <div className="sticky top-0 hidden h-dvh overflow-hidden bg-black md:block">
+        <ArtistSpotlight images={ART_IMAGES} />
         <div className="absolute inset-x-6 bottom-6 rounded-(--r-lg) bg-black/45 p-6 text-white inset-shadow-2xs inset-shadow-white/20">
           <h2 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em]">
             Millions of songs.
