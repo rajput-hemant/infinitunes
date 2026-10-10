@@ -159,7 +159,7 @@ describe("tile more-button mobile menu", () => {
         expect(scroll?.classList.contains("overflow-x-hidden")).toBe(true);
 
         const actions = [
-          ...(scroll?.querySelectorAll("button.h-\\(--ctl-lg\\)") ?? []),
+          ...(scroll?.querySelectorAll("button.shrink-0") ?? []),
         ];
         expect(actions).toHaveLength(8);
         expect(
