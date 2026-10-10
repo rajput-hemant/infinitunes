@@ -1,19 +1,10 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import {
-  formatDuration,
-  getImageSrc,
-  pickShuffleIndex,
-} from "@infinitunes/types";
+import { getImageSrc, pickShuffleIndex } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Slider } from "@infinitunes/ui/components/slider";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@infinitunes/ui/components/tooltip";
 import {
   Loader2,
   MoreVertical,
@@ -35,6 +26,8 @@ import React from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
+import { useGlassArtwork } from "~/hooks/use-glass-artwork";
 import { useKeydown } from "~/hooks/use-keydown";
 import { useRadioRefill } from "~/hooks/use-radio-refill";
 import {
@@ -51,51 +44,22 @@ import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
-import { createPositionStore, usePosition } from "~/lib/position-store";
-import type { PositionStore } from "~/lib/position-store";
+import { createPositionStore } from "~/lib/position-store";
 import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
-import {
-  ActiveDot,
-  ExpandedPlayer,
-  scrubClass,
-  setValueText,
-} from "./expanded-player";
+import { ExpandedPlayer } from "./expanded-player";
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
+import { BarButton } from "./player/bar-button";
+import { ActiveDot, scrubClass, setValueText } from "./player/controls";
+import { MiniProgress, SeekBar } from "./player/seek-bar";
+import { trackArtworkUrl } from "./player/track-artwork";
 import { Queue, useQueuePane } from "./queue";
 import { TileMoreButton } from "./song-list/more-button";
 
-const controlClass =
-  "rounded-ctl transition-transform duration-fast ease-spring active:scale-[0.96]";
-
 // Distance a drag on the mini player must travel upward to open the expanded view.
 const SWIPE_UP_PX = 40;
-
-type BarButtonProps = React.ComponentProps<"button"> & { tooltip: string };
-
-function BarButton({ tooltip, className, ...props }: BarButtonProps) {
-  return (
-    <Tooltip>
-      <TooltipTrigger
-        delay={0}
-        render={
-          <button
-            type="button"
-            className={cn(
-              controlClass,
-              "inline-flex items-center justify-center",
-              className,
-            )}
-            {...props}
-          />
-        }
-      />
-      <TooltipContent>{tooltip}</TooltipContent>
-    </Tooltip>
-  );
-}
 
 type PlayerProps = {
   user?: User;
@@ -104,83 +68,6 @@ type PlayerProps = {
 };
 
 export function Player({ user, playlists, favorites }: PlayerProps) {
-  return (
-    <PlayerInner user={user} playlists={playlists} favorites={favorites} />
-  );
-}
-
-// The only parts that follow the playhead every frame (PF-8); the rest of the
-// bar re-renders on real state changes only.
-function SeekBar({
-  position,
-  duration,
-  onChange,
-  onCommit,
-  onStart,
-}: {
-  position: PositionStore;
-  duration: number;
-  onChange: (value: number) => void;
-  onCommit: () => void;
-  onStart: () => void;
-}) {
-  const pos = usePosition(position);
-  const labelId = React.useId();
-  const ref = React.useRef<HTMLDivElement>(null);
-  const format = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
-  const text = `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`;
-
-  // The Slider wrapper does not forward per-thumb props, so the readable value
-  // is set on the thumb's range input directly (see `setValueText`).
-  React.useEffect(() => setValueText(ref.current, text), [text]);
-
-  return (
-    <div className="flex w-full min-w-0 items-center gap-2 text-xs/4 tabular-nums text-muted-foreground">
-      <span aria-hidden>{formatDuration(pos, format)}</span>
-      <span id={labelId} className="sr-only">
-        Seek
-      </span>
-      <Slider
-        ref={ref}
-        aria-labelledby={labelId}
-        value={[pos]}
-        max={duration || 1}
-        onValueChange={(value: number | readonly number[], _details) =>
-          onChange(typeof value === "number" ? value : (value[0] as number))
-        }
-        onValueCommitted={onCommit}
-        onPointerDown={onStart}
-        className={scrubClass}
-      />
-      <span aria-hidden>{formatDuration(duration, format)}</span>
-    </div>
-  );
-}
-
-function MiniProgress({
-  position,
-  duration,
-}: {
-  position: PositionStore;
-  duration: number;
-}) {
-  const progress = usePosition(position);
-  return (
-    <div
-      aria-hidden
-      className="absolute inset-x-4 bottom-0 h-0.5 overflow-hidden rounded-full bg-fill-2 md:hidden"
-    >
-      <div
-        className="h-full bg-primary"
-        style={{
-          width: `${duration > 0 ? Math.min(100, (progress / duration) * 100) : 0}%`,
-        }}
-      />
-    </div>
-  );
-}
-
-function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const volumeRef = React.useRef<HTMLDivElement>(null);
   const volumeLabelId = React.useId();
   // stores
@@ -278,6 +165,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   });
 
   const current = queue[currentIndex];
+  useGlassArtwork(trackArtworkUrl(current));
 
   React.useEffect(() => {
     if (isDragging) {
@@ -463,11 +351,15 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
 
   return (
     <>
-      <section
-        aria-label="Player"
+      <GlassSurface
+        render={<section aria-label="Player" />}
+        size="m"
+        glassRole="player"
         className={cn(
-          "@container fixed right-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 z-40 h-14 rounded-full border border-border bg-card text-card-foreground shadow-lg transition-[right] duration-base ease-spring md:bottom-3 md:left-21 md:h-18 md:rounded-xl lg:left-[calc(var(--side-w)+0.75rem)]",
-          pane.open && "min-[1440px]:right-[calc(var(--queue-w)+0.75rem)]",
+          // `--pl-r` is the concentric radius the artwork derives from: the
+          // bar is r-lg + 4px, the phone pill is fully round.
+          "@container fixed right-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 z-40 h-14 [--pl-r:999px] rounded-(--pl-r) transition-[left,right] duration-base ease-spring md:bottom-3 md:left-21 md:h-18 md:[--pl-r:calc(var(--radius-lg)+0.25rem)] lg:left-[calc(var(--side-w)+0.75rem)]",
+          "min-[1440px]:in-data-[queue=open]:right-[calc(var(--queue-w)+0.75rem)]",
           !(isReady || queue.length) && "hidden md:block",
         )}
       >
@@ -503,12 +395,12 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 type="button"
                 aria-label="Open player"
                 onClick={() => setIsExpanded(true)}
-                className={cn(controlClass, "absolute inset-0 z-10 md:hidden")}
+                className="absolute inset-0 z-10 rounded-full md:hidden"
               />
             )}
             {current?.image ? (
               <>
-                <div className="relative size-10 shrink-0 overflow-hidden rounded-full md:size-12 md:rounded-sm">
+                <div className="relative size-10 shrink-0 overflow-hidden rounded-[max(0.25rem,calc(var(--pl-r)-0.625rem))] max-md:rounded-full md:size-12">
                   <ImageWithFallback
                     src={getImageSrc(current.image, "low")}
                     alt={current.name}
@@ -743,7 +635,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         </div>
 
         <MiniProgress position={position} duration={duration} />
-      </section>
+      </GlassSurface>
 
       <Queue open={pane.open} onOpenChange={pane.setOpen} />
 
@@ -775,5 +667,3 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     </>
   );
 }
-
-export default PlayerInner;

@@ -9,12 +9,12 @@ const setCookie = (raw: string) => {
   document.cookie = `theme-config=${encodeURIComponent(raw)}; path=/`;
 };
 
-// The color-scheme step always sets a class and `color-scheme`; these are the
-// parts only the appearance step can add.
+// The color-scheme step always sets a class and `color-scheme`, and the queue
+// step sets `data-queue`; these are the parts only the appearance step can add.
 const appliedByAppearance = () => [
   ...document.documentElement
     .getAttributeNames()
-    .filter((n) => n !== "class" && n !== "style"),
+    .filter((n) => n !== "class" && n !== "style" && n !== "data-queue"),
   ...(document.documentElement.style.cssText.match(/--[a-z-]+(?=:)/g) ?? []),
 ];
 
@@ -85,5 +85,45 @@ describe("theme bootstrap script", () => {
     localStorage.setItem("theme", "<script>");
     run();
     expect(document.documentElement.className).toBe("");
+  });
+
+  describe("docked queue flag", () => {
+    const queueAttr = () => document.documentElement.getAttribute("data-queue");
+
+    it("marks the queue open when nothing is stored (open is the default)", () => {
+      run();
+      expect(queueAttr()).toBe("open");
+    });
+
+    it("marks the queue open when the stored flag is true", () => {
+      localStorage.setItem("queue_open", "true");
+      run();
+      expect(queueAttr()).toBe("open");
+    });
+
+    it("leaves the attribute off when the user closed the queue", () => {
+      localStorage.setItem("queue_open", "false");
+      run();
+      expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+    });
+
+    it("never throws when storage is unavailable", () => {
+      const original = Object.getOwnPropertyDescriptor(
+        globalThis,
+        "localStorage",
+      );
+      Object.defineProperty(globalThis, "localStorage", {
+        configurable: true,
+        get() {
+          throw new Error("blocked");
+        },
+      });
+      try {
+        expect(run).not.toThrow();
+      } finally {
+        if (original)
+          Object.defineProperty(globalThis, "localStorage", original);
+      }
+    });
   });
 });

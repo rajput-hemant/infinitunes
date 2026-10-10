@@ -16,6 +16,7 @@ import {
 import { createRoot, type Root } from "react-dom/client";
 import superjson from "superjson";
 
+import { getGlassArtwork } from "../../components/glass/glass-store";
 import { useIsPlayerInit } from "../../hooks/use-store";
 
 let position = 0;
@@ -254,6 +255,30 @@ describe("player track wiring", () => {
       getDownloadLink(playableQueue[0].download_url, "excellent"),
     ]);
     expect(recorded).toEqual(["a"]);
+  });
+});
+
+// The engine follows the playing track: the ambient field and the adaptive
+// tint read the 500px artwork the player publishes.
+describe("player glass wiring", () => {
+  it("publishes the current track's 500px artwork and clears it on unmount", async () => {
+    await mountPlayer();
+    expect(getGlassArtwork()).toBe("https://c.saavncdn.com/x-500x500.jpg");
+
+    await act(async () => roots.splice(0).forEach((r) => r.unmount()));
+    expect(getGlassArtwork()).toBeNull();
+  });
+
+  it("renders the bar and the queue as sibling glass surfaces", async () => {
+    await mountPlayer();
+    const bar = document.querySelector('[data-glass-role="player"]');
+    const pane = document.querySelector('[data-glass-role="queue"]');
+
+    expect(bar?.getAttribute("data-glass-size")).toBe("m");
+    expect(pane?.getAttribute("data-glass-size")).toBe("l");
+    expect(bar?.contains(pane)).toBe(false);
+    expect(pane?.contains(bar)).toBe(false);
+    expect(bar?.querySelector("[data-glass]")).toBeNull();
   });
 });
 
