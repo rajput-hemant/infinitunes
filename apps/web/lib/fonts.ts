@@ -11,10 +11,11 @@ import localFont from "next/font/local";
 /*
  * Each face owns a custom property; `styles/globals.css` maps `data-font` and
  * `data-heading-font` onto `--font-sans` and `--font-heading`, so switching
- * fonts needs no re-render. Only the default faces (Inter, Cal Sans,
- * Devanagari) are preloaded; the others are declared but fetched the first
- * time a selected font actually renders. All Latin faces are variable fonts,
- * so one file covers every weight.
+ * fonts needs no re-render. Only Inter (latin) and the heading face (Cal Sans)
+ * are preloaded; the others, Devanagari included, are declared but fetched
+ * the first time a selected font actually renders (Devanagari via its
+ * unicode-range split). All Latin faces are variable fonts, so one file covers
+ * every weight.
  */
 
 export const fontInter = Inter({
@@ -56,10 +57,11 @@ export const fontSansDevanagari = Noto_Sans_Devanagari({
   subsets: ["devanagari", "latin"],
   weight: ["400", "600", "700"],
   display: "swap",
+  preload: false,
 });
 
 export const fontCalSans = localFont({
-  src: "../public/fonts/CalSans-SemiBold.woff",
+  src: "../public/fonts/CalSans-SemiBold.woff2",
   variable: "--font-cal-sans",
   display: "swap",
 });

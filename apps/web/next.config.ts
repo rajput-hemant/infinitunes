@@ -26,6 +26,17 @@ const securityHeaders = [
     : []),
 ];
 
+// Public files keep their names when their contents change, so they cannot be
+// `immutable`; a day of freshness with a week of stale-while-revalidate keeps
+// revisits cheap without pinning a replaced file. Next's `/_next/static`
+// output is content-hashed and already served as immutable.
+const publicAssetHeaders = [
+  {
+    key: "Cache-Control",
+    value: "public, max-age=86400, stale-while-revalidate=604800",
+  },
+];
+
 const config: NextConfig = {
   cacheComponents: true,
   reactStrictMode: true,
@@ -47,7 +58,16 @@ const config: NextConfig = {
     ],
   },
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/images/:path*", headers: publicAssetHeaders },
+      { source: "/fonts/:path*", headers: publicAssetHeaders },
+      {
+        source:
+          "/:icon(icon-192\\.png|icon-512\\.png|apple-icon\\.png|favicon\\.ico|favicon-16x16\\.png|favicon-32x32\\.png)",
+        headers: publicAssetHeaders,
+      },
+    ];
   },
 };
 
