@@ -18,6 +18,13 @@ function nameInput() {
   return document.querySelector<HTMLInputElement>('input[type="text"]');
 }
 
+// The form loads on first open, so wait for it to mount.
+async function untilNameInput() {
+  for (let i = 0; i < 50 && !nameInput(); i++) {
+    await act(async () => new Promise((r) => setTimeout(r, 10)));
+  }
+}
+
 describe("new playlist dialog", () => {
   it("opens empty every time, so a stale name cannot be submitted twice", async () => {
     const container = document.createElement("div");
@@ -32,6 +39,7 @@ describe("new playlist dialog", () => {
     });
 
     await act(async () => container.querySelector("button")?.click());
+    await untilNameInput();
     const first = nameInput();
     expect(first?.value).toBe("");
     await act(async () => setInputValue(first as HTMLInputElement, "Road"));
@@ -46,8 +54,36 @@ describe("new playlist dialog", () => {
     expect(nameInput()).toBeNull();
 
     await act(async () => container.querySelector("button")?.click());
+    await untilNameInput();
     expect(nameInput()?.value).toBe("");
     expect(createNewPlaylist).not.toHaveBeenCalled();
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+});
+
+describe("new playlist dialog, lazy form", () => {
+  it("opens the form after it loads and focuses the name field", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <NewPlaylistForm>
+          <button type="button">Open</button>
+        </NewPlaylistForm>,
+      );
+    });
+
+    expect(nameInput()).toBeNull();
+    await act(async () => container.querySelector("button")?.click());
+    await untilNameInput();
+
+    expect(
+      document.querySelector('[data-slot="dialog-content"]'),
+    ).not.toBeNull();
+    expect(document.activeElement).toBe(nameInput());
 
     await act(async () => root.unmount());
     container.remove();
@@ -81,6 +117,7 @@ describe("new playlist sheet", () => {
     });
 
     await act(async () => container.querySelector("button")?.click());
+    await untilNameInput();
     expect(document.querySelector('[data-slot="drawer-popup"]')).not.toBeNull();
     expect(document.querySelector('[data-slot="dialog-content"]')).toBeNull();
     expect(nameInput()?.value).toBe("");

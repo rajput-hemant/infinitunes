@@ -351,6 +351,7 @@ describe("queue pane open state", () => {
 
   it("docks at 1440px, persists the choice and tells the shell", async () => {
     setViewport(true);
+    localStorage.setItem("queue_open", "true");
     localStorage.setItem("queue", JSON.stringify([song("a"), song("b")]));
     localStorage.setItem("current_song_index", "0");
     const root = await mountPane();
@@ -377,7 +378,7 @@ describe("queue pane open state", () => {
   it("keeps the attribute the bootstrap script set before first paint", async () => {
     setViewport(true);
     localStorage.setItem("queue", JSON.stringify([song("a")]));
-    localStorage.removeItem("queue_open");
+    localStorage.setItem("queue_open", "true");
     new Function(THEME_BOOTSTRAP_SCRIPT)();
     expect(document.documentElement.getAttribute("data-queue")).toBe("open");
 
@@ -401,9 +402,23 @@ describe("queue pane open state", () => {
     await act(async () => root.unmount());
   });
 
+  it("starts closed on a first visit at 1440px, without the shell column", async () => {
+    setViewport(true);
+    localStorage.removeItem("queue_open");
+    new Function(THEME_BOOTSTRAP_SCRIPT)();
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    const root = await mountPane();
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
+    expect(pane()?.hasAttribute("inert")).toBe(true);
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
   it("drops the bootstrap attribute on a narrow viewport", async () => {
     setViewport(false);
-    localStorage.removeItem("queue_open");
+    localStorage.setItem("queue_open", "true");
     new Function(THEME_BOOTSTRAP_SCRIPT)();
     expect(document.documentElement.getAttribute("data-queue")).toBe("open");
 

@@ -103,12 +103,13 @@ describe("font switching", () => {
       "Hanken_Grotesk",
       "Source_Serif_4",
       "JetBrains_Mono",
+      "Noto_Sans_Devanagari",
     ]) {
       const block =
         new RegExp(`${face}\\(\\{[^}]*\\}\\)`).exec(fonts)?.[0] ?? "";
       expect(block, face).toContain("preload: false");
     }
-    for (const face of ["Inter", "Noto_Sans_Devanagari"]) {
+    for (const face of ["Inter"]) {
       const block =
         new RegExp(`${face}\\(\\{[^}]*\\}\\)`).exec(fonts)?.[0] ?? "";
       expect(block, face).not.toContain("preload: false");

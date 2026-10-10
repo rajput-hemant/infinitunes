@@ -48,7 +48,14 @@ export function targetFor(el: HTMLElement): GlassTarget | null {
   return { size, role };
 }
 
-function register(el: HTMLElement) {
+/**
+ * Registers one surface with the lens registry. React-rendered surfaces call
+ * this from their own effect (see `useGlassRegistration`), which only runs once
+ * that surface is hydrated: the lens writes `--g-lens-url` onto the element,
+ * and doing that to server HTML React has not reached yet is a hydration
+ * attribute mismatch.
+ */
+export function register(el: HTMLElement) {
   const target = targetFor(el);
   if (!target) return;
   registerGlass(el, target);
@@ -74,6 +81,7 @@ export function startGlassRuntime(): () => void {
     "(prefers-reduced-transparency: reduce)",
   );
   const contrast = window.matchMedia("(prefers-contrast: more)");
+  const forced = window.matchMedia("(forced-colors: active)");
 
   const evaluate = () => {
     const active = lensActive({
@@ -81,6 +89,7 @@ export function startGlassRuntime(): () => void {
       level: levelOf(root),
       reducedTransparency: transparency.matches,
       highContrast: contrast.matches,
+      forcedColors: forced.matches,
     });
     const style = getComputedStyle(root);
     const engine: GlassEngine = active ? "lens" : "frost";
@@ -104,8 +113,10 @@ export function startGlassRuntime(): () => void {
     }
   };
 
+  // Surfaces in the server HTML are not scanned here: they may not be hydrated
+  // yet, so each registers itself from its own effect. This observer picks up
+  // everything added to the document afterwards (popups, client-rendered UI).
   evaluate();
-  document.querySelectorAll<HTMLElement>(GLASS_SELECTOR).forEach(register);
 
   const rootObserver = new MutationObserver(queueEvaluate);
   rootObserver.observe(root, {
@@ -147,6 +158,7 @@ export function startGlassRuntime(): () => void {
 
   transparency.addEventListener("change", evaluate);
   contrast.addEventListener("change", evaluate);
+  forced.addEventListener("change", evaluate);
   const stopLight = installPointerLight();
   const stopPress = installPressGel();
 
@@ -155,6 +167,7 @@ export function startGlassRuntime(): () => void {
     stopPress();
     transparency.removeEventListener("change", evaluate);
     contrast.removeEventListener("change", evaluate);
+    forced.removeEventListener("change", evaluate);
     rootObserver.disconnect();
     bodyObserver.disconnect();
     cancelAnimationFrame(evalFrame);

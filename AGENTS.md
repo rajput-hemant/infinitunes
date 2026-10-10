@@ -289,6 +289,11 @@ This block is written and re-added by `turbo` before repository-scoped commands 
 ## Liquid Glass lens sharp edge
 
 Chromium resolves a `backdrop-filter: url(#...)` filter's user space against the element's ink overflow (outer
-`box-shadow` reach), not its border box. `apps/web/components/glass/lens-registry.ts` offsets the filter by
-`inkOverflowOrigin` (`apps/web/lib/glass/shadow-overflow.ts`); without it, shadowed popups blur only partly under the
-lens engine while `?lens=0` looks fine. Re-check popup blur after Chromium upgrades. See `docs/design-system/glass.md`.
+`box-shadow` reach), not its border box, and clips that overflow to the viewport. `apps/web/components/glass/lens-registry.ts`
+offsets the filter by `inkOverflowOrigin(boxShadow, {x: rect.left, y: rect.top})` (`apps/web/lib/glass/shadow-overflow.ts`):
+the shadow reach, capped by the surface's distance from the viewport's left/top edge (a menu 48px from the top has
+origin y 48, not 57; ignoring the cap left a crisp strip at its bottom). The origin is re-read on `animationend`,
+`transitionend` and window resize because anchored popups settle after they register. Verify with an feFlood
+filter or a high-contrast stripe layer behind the popup, using full-page screenshots (`clip:` screenshots drop
+backdrop filters). Under `forced-colors: active` the runtime picks `frost` and CSS drops every glass backdrop-filter.
+See `docs/design-system/glass.md`.

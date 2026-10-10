@@ -71,7 +71,7 @@ export async function Navbar() {
               />
             }
           >
-            Sign In
+            Log in
           </GlassSurface>
         </SignedOut>
       </div>

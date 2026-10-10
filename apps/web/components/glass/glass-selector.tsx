@@ -3,6 +3,7 @@
 import { cn } from "@infinitunes/ui/lib/utils";
 import * as React from "react";
 
+import { useGlassRegistration } from "~/hooks/use-glass-registration";
 import { useMergedRef } from "~/hooks/use-merged-ref";
 
 import { useGlassSelector } from "./use-glass-selector";
@@ -34,6 +35,7 @@ export function GlassSelector({
 }: GlassSelectorProps) {
   const hostRef = React.useRef<HTMLElement | null>(null);
   useGlassSelector(hostRef, onPick);
+  useGlassRegistration(hostRef);
   const ref = useMergedRef<HTMLElement>(hostRef, callerRef, render?.props.ref);
 
   const merged = {

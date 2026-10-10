@@ -5,7 +5,12 @@ import { z } from "zod";
 import { endpoints } from "../lib/endpoints";
 import { showEpisodesInput, showInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import { mapDownloadUrls, withDownloadUrl } from "./utils";
+import {
+  hasIdentity,
+  isRecord,
+  mapDownloadUrls,
+  withDownloadUrl,
+} from "./utils";
 
 function requireShowToken(
   input: { token?: string },
@@ -34,6 +39,13 @@ export const showRouter = router({
           sort_order: input.sort,
         },
       });
+      // Upstream answers `{ status: "failure" }` for an unknown token.
+      if (!isRecord(result) || !hasIdentity(result.show_details, "id")) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No show found, please check the token",
+        });
+      }
       mapDownloadUrls(result, "episodes");
       return result as Show;
     }),
@@ -68,6 +80,17 @@ export const showRouter = router({
           sort_order: input.sort,
         },
       });
+      // Upstream answers with an empty placeholder episode for an unknown token.
+      if (
+        !isRecord(result) ||
+        !Array.isArray(result.episodes) ||
+        !hasIdentity(result.episodes[0], "id")
+      ) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "No episode found, please check the token",
+        });
+      }
       mapDownloadUrls(result, "episodes");
       return result as EpisodeDetail;
     }),

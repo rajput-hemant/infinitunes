@@ -18,12 +18,13 @@ export function useIsWide() {
 }
 
 /**
- * Only the docked pane is a standing preference. Read on init (the player is
+ * Only the docked pane is a standing preference, and it starts closed: a
+ * first visit has nothing queued, so an empty column would only take space. Read on init (the player is
  * client-only) so the first paint already has the saved side. The same key is
  * read before first paint by `QUEUE_STEP` in `lib/theme-script.ts`, which sets
  * `data-queue` so the shell reserves the column before this mounts.
  */
-const dockedOpenAtom = atomWithStorage("queue_open", true, undefined, {
+const dockedOpenAtom = atomWithStorage("queue_open", false, undefined, {
   getOnInit: true,
 });
 

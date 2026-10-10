@@ -32,7 +32,7 @@ export function QuickPicks({ items }: QuickPicksProps) {
               className="flex h-12 items-center gap-2 overflow-hidden rounded-sm bg-fill pr-3 text-[0.8125rem] leading-5 font-semibold transition-colors duration-fast hover:bg-fill-2 active:scale-98 md:h-14 md:gap-3 motion-reduce:transition-none"
             >
               <ImageWithFallback
-                src={getImageSrc(image, "high")}
+                src={getImageSrc(image, "medium")}
                 fallback={getPlaceholderSrc("album")}
                 width={56}
                 height={56}

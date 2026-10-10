@@ -87,7 +87,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               value={lang.toLowerCase()}
               className={cn(
                 controlStyles.text,
-                "min-w-20 rounded-sm bg-fill text-sm font-medium hover:bg-fill-2 aria-pressed:bg-primary/10 aria-pressed:inset-ring-2 aria-pressed:inset-ring-primary",
+                "min-w-20 rounded-sm bg-fill text-sm font-medium hover:bg-fill-2 aria-pressed:bg-primary/10 aria-pressed:inset-ring-1 aria-pressed:inset-ring-primary",
               )}
             >
               {lang}

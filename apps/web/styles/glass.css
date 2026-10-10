@@ -23,7 +23,8 @@
   --glass-bri: 1.06;
   --glass-tint-c: #fff;
   --g-sh-k: 1; /* shadow weight, heavier in dark */
-  --g-rim-k: 1;
+  /* Rim strength. Softer than the mockup's 1 / 0.62: the owner found the rims too contrasty. */
+  --g-rim-k: 0.6;
   --g-art-l: 0.5; /* playing artwork luminance, from useGlassArtwork */
   --g-adapt: calc((1 - var(--g-art-l)) * 0.1);
   --g-blob-1: #f472b6;
@@ -50,7 +51,7 @@
   --glass-tint-c: #1e1e22;
   --glass-bri: 0.9;
   --g-sh-k: 2.2;
-  --g-rim-k: 0.62;
+  --g-rim-k: 0.3;
   --g-adapt: calc(var(--g-art-l) * 0.12);
 }
 /* Subtle level: the mockup preset. User overrides are inline on <html> and still win. */
@@ -94,6 +95,38 @@ html[data-ambient="off"] [data-glass-ambient] {
   transform: scale(10);
   filter: blur(4px) saturate(160%);
   opacity: 0.85;
+}
+/* Each page wash sits in a layer that crossfades (PageWash): the image arrives hidden, fades in over the previous
+   one, and the previous fades out. */
+[data-glass-ambient] [data-page-art-layer] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  /* Leaving waits a beat, so a wash survives the skeleton between two detail pages. */
+  transition: opacity 0.6s 0.35s;
+}
+[data-glass-ambient] [data-page-art-layer][data-shown] {
+  opacity: 1;
+  transition-delay: 0s;
+}
+/* A detail page's artwork (useGlassPageArtwork): the same blown-up tiny copy, masked so it fades into the page
+   colour down the viewport instead of ending at an edge, and (where scroll timelines exist) gone by half a screen. */
+[data-glass-ambient] img[data-page-art] {
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 82%);
+  mask-image: linear-gradient(to bottom, #000 30%, transparent 82%);
+}
+@supports (animation-timeline: scroll()) {
+  [data-glass-ambient] img[data-page-art] {
+    animation: g-page-art-out linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 60vh;
+  }
+}
+@keyframes g-page-art-out {
+  to {
+    opacity: 0;
+  }
 }
 [data-glass-ambient]::before {
   content: "";
@@ -389,7 +422,7 @@ html.dark
     --g-con: 1;
     --g-dim: calc(0.16 + 0.44 * var(--g-art-l));
     --g-text: #fff;
-    --g-rim-k: 1;
+    --g-rim-k: 0.6;
     --muted-foreground: rgb(255 255 255 / 0.8);
     text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
   }
@@ -400,7 +433,7 @@ html.dark
     --g-a: calc(0.7 + var(--glass-tint));
     --g-dim: 0;
     --g-text: var(--g-on-accent);
-    --g-rim-k: 1;
+    --g-rim-k: 0.6;
   }
 }
 /* Vibrancy: secondary text on glass is a touch heavier. */
@@ -845,6 +878,27 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
   [data-glass-indicator] {
     background: Highlight;
     forced-color-adjust: none;
+  }
+  /* Repeated :root outranks the lens, tint and indicator rules above, whatever their specificity. */
+  html:root:root:root
+    :is(
+      [data-glass][data-glass-size],
+      [data-glass-indicator],
+      [data-slot="popover-content"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"],
+      [data-glass-edge]
+    ),
+  html:root:root:root [data-glass-edge]::before,
+  html:root:root:root [data-glass-edge]::after {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 /* Reduced motion (OS setting or the in-app switch): the tab bar and player change position without a transition. */

@@ -58,7 +58,7 @@ export function ThemePreview() {
           <span
             className={cn(
               controlStyles.text,
-              "inline-flex items-center bg-primary/10 font-medium text-foreground inset-ring-2 inset-ring-primary",
+              "inline-flex items-center bg-primary/10 font-medium text-foreground inset-ring-1 inset-ring-primary",
             )}
           >
             Chip

@@ -3,6 +3,7 @@
 import { cn } from "@infinitunes/ui/lib/utils";
 import * as React from "react";
 
+import { useGlassRegistration } from "~/hooks/use-glass-registration";
 import { useMergedRef } from "~/hooks/use-merged-ref";
 import type { GlassSize } from "~/lib/glass/lens-math";
 import type { GlassRole } from "~/lib/glass/overlays";
@@ -49,7 +50,13 @@ export const GlassSurface = React.forwardRef<HTMLElement, GlassSurfaceProps>(
     },
     forwardedRef,
   ) {
-    const ref = useMergedRef<HTMLElement>(forwardedRef, render?.props.ref);
+    const hostRef = React.useRef<HTMLElement | null>(null);
+    const ref = useMergedRef<HTMLElement>(
+      forwardedRef,
+      render?.props.ref,
+      hostRef,
+    );
+    useGlassRegistration(hostRef, variant, size, lens, glassRole);
     const merged = {
       ...(render?.props ?? {}),
       ...props,

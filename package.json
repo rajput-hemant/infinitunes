@@ -9,6 +9,7 @@
     "start": "bun run with-env turbo run start",
     "lint": "turbo run lint",
     "knip": "knip",
+    "budget": "bun scripts/check-budget.ts",
     "type-check": "turbo run type-check",
     "test": "bun test --pass-with-no-tests && bun run test:isolated",
     "test:isolated": "bun scripts/test-isolated.ts",

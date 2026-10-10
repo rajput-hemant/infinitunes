@@ -5,7 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { CatalogLoadMore } from "~/components/catalog-load-more";
-import { SliderCard } from "~/components/slider/slider-card";
+import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
 import { api } from "~/lib/trpc/client";
 
 type FeaturedPlaylistsProps = {
@@ -36,16 +36,12 @@ export function FeaturedPlaylists({
     <div>
       <CatalogGrid>
         {featuredPlaylists.map(
-          ({
-            id,
-            title,
-            perma_url,
-            subtitle,
-            type,
-            image,
-            explicit_content,
-          }) => (
+          (
+            { id, title, perma_url, subtitle, type, image, explicit_content },
+            index,
+          ) => (
             <SliderCard
+              priority={index < FIRST_ROW_CARDS}
               key={id}
               name={title}
               url={perma_url}

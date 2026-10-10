@@ -29,9 +29,10 @@ import { GlassSurface } from "~/components/glass/glass-surface";
 import { browseNav, isNavActive, libraryNav } from "~/config/nav";
 import type { NavItem } from "~/config/nav";
 import { siteConfig } from "~/config/site";
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { asRoute, cn } from "~/lib/utils";
+import { asRoute, cn, isMacOs } from "~/lib/utils";
 
 import { Icons } from "./icons";
 import { NewPlaylistForm } from "./playlist/new-playlist-form";
@@ -83,20 +84,47 @@ export function AppSidebarTrigger({
   className,
 }: React.ComponentProps<typeof SidebarTrigger>) {
   const { open, openMobile, isMobile } = useSidebar();
+  const isMac = useIsHydrated() && isMacOs();
   const expanded = isMobile ? openMobile : open;
+  const label = expanded ? "Collapse sidebar" : "Expand sidebar";
 
+  // A round toolbar capsule like the history pill. The ghost button's own
+  // `aria-expanded:bg-muted` would keep it a solid dark disc while open, so the
+  // fill is cleared and only hover and press paint it.
   return (
-    <SidebarTrigger
-      className={cn(controlStyles.headerIcon, className)}
-      aria-label={expanded ? "Collapse sidebar" : "Expand sidebar"}
-      aria-expanded={expanded}
-      aria-controls="app-sidebar"
-    />
+    <GlassSurface
+      size="s"
+      glassRole="toolbar"
+      className={cn("flex items-center rounded-full p-0.5", className)}
+    >
+      <Tooltip>
+        <TooltipTrigger
+          data-slot="sidebar-trigger"
+          render={
+            <SidebarTrigger
+              className={cn(
+                controlStyles.headerIcon,
+                "rounded-full aria-expanded:bg-transparent aria-expanded:hover:bg-muted",
+              )}
+              aria-label={label}
+              aria-expanded={expanded}
+              aria-controls="app-sidebar"
+            />
+          }
+        />
+        <TooltipContent side="bottom">
+          {label}
+          <kbd data-slot="kbd" className="font-sans opacity-70">
+            {isMac ? "\u2318 B" : "Ctrl B"}
+          </kbd>
+        </TooltipContent>
+      </Tooltip>
+    </GlassSurface>
   );
 }
 
-function SidebarLogo() {
-  return (
+function SidebarLogo({ collapsed }: { collapsed: boolean }) {
+  const link = (
     <Link
       href="/"
       className="flex h-10 items-center gap-2 rounded-sm px-3 font-heading text-lg/6 font-bold tracking-tight lowercase group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
@@ -108,6 +136,17 @@ function SidebarLogo() {
         {siteConfig.name}
       </span>
     </Link>
+  );
+
+  if (!collapsed) return link;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger render={link} />
+      <TooltipContent side="right" align="center">
+        {siteConfig.name}
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -303,7 +342,7 @@ function SidebarContents({ user, userPlaylists }: SidebarProps) {
   return (
     <SidebarPanel>
       <SidebarHeader className="p-2 pb-0">
-        <SidebarLogo />
+        <SidebarLogo collapsed={collapsed} />
       </SidebarHeader>
 
       {/* Close the mobile sheet once a link is followed. */}
@@ -367,7 +406,7 @@ function TabletRail({ user }: Pick<SidebarProps, "user">) {
         glassPanelRadiusClassName,
       )}
     >
-      <SidebarLogo />
+      <SidebarLogo collapsed />
       <SidebarNavList items={browseNav} pathname={pathname} collapsed />
       {user && (
         <SidebarNavList items={libraryNav} pathname={pathname} collapsed />
