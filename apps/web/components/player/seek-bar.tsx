@@ -5,7 +5,7 @@ import * as React from "react";
 import { usePosition } from "~/lib/position-store";
 import type { PositionStore } from "~/lib/position-store";
 
-import { scrubClass, setValueText } from "./controls";
+import { scrubClass, sliderValueOf, useSliderValueText } from "./controls";
 
 type SeekBarProps = {
   position: PositionStore;
@@ -26,13 +26,10 @@ export function SeekBar({
 }: SeekBarProps) {
   const pos = usePosition(position);
   const labelId = React.useId();
-  const ref = React.useRef<HTMLDivElement>(null);
   const format = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
-  const text = `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`;
-
-  // The Slider wrapper does not forward per-thumb props, so the readable value
-  // is set on the thumb's range input directly (see `setValueText`).
-  React.useEffect(() => setValueText(ref.current, text), [text]);
+  const ref = useSliderValueText(
+    `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`,
+  );
 
   return (
     <div className="flex w-full min-w-0 items-center gap-2 text-xs/4 tabular-nums text-muted-foreground">
@@ -45,8 +42,8 @@ export function SeekBar({
         aria-labelledby={labelId}
         value={[pos]}
         max={duration || 1}
-        onValueChange={(value: number | readonly number[], _details) =>
-          onChange(typeof value === "number" ? value : (value[0] as number))
+        onValueChange={(value: number | readonly number[]) =>
+          onChange(sliderValueOf(value))
         }
         onValueCommitted={onCommit}
         onPointerDown={onStart}
