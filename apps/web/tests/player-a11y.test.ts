@@ -16,9 +16,8 @@ describe("PlayButton season (PQ-4)", () => {
       "../components/details-header/details-header.tsx",
     );
 
-    expect(source).toContain(
-      "Number((item as ShowDetails).more_info.season_number)",
-    );
+    expect(source).toContain('isKind(item, "season")');
+    expect(source).toContain("Number(item.more_info.season_number)");
   });
 });
 
