@@ -19,9 +19,9 @@ import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
 import { PasswordField } from "./password-field";
 
-type FormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<typeof loginSchema>;
 
-const defaultValues: FormData = {
+const defaultValues: LoginFormData = {
   email: "",
   password: "",
 };
@@ -45,12 +45,12 @@ export function LoginForm() {
     }
   }, [authError]);
 
-  const form = useForm<FormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues,
   });
 
-  async function onSubmit(formData: FormData) {
+  async function onSubmit(formData: LoginFormData) {
     setIsSubmitting(true);
 
     try {

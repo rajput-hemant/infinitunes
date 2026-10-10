@@ -26,6 +26,8 @@ const { LoginForm } = await import("../../app/(auth)/_components/login-form");
 
 type Router = NonNullable<React.ContextType<typeof AppRouterContext>>;
 
+const noop = () => {};
+
 /** Fills the form, submits it and returns the router calls it triggered. */
 async function signIn(
   search: string,
@@ -33,10 +35,15 @@ async function signIn(
 ) {
   signInError = error;
   const calls: string[] = [];
-  const router = {
+  const router: Router = {
+    back: noop,
+    forward: noop,
+    prefetch: noop,
+    replace: noop,
+    bfcacheId: "test",
     push: (href: string) => calls.push(`push ${href}`),
     refresh: () => calls.push("refresh"),
-  } as unknown as Router;
+  };
 
   const container = document.createElement("div");
   document.body.append(container);

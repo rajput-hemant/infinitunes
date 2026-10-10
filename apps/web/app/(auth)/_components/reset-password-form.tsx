@@ -17,9 +17,12 @@ import { cn } from "~/lib/utils";
 
 import { PasswordField } from "./password-field";
 
-type FormData = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
-const defaultValues: FormData = { password: "", confirmPassword: "" };
+const defaultValues: ResetPasswordFormData = {
+  password: "",
+  confirmPassword: "",
+};
 
 function InvalidLink() {
   return (
@@ -51,14 +54,14 @@ export function ResetPasswordForm() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isTokenRejected, setIsTokenRejected] = React.useState(false);
 
-  const form = useForm<FormData>({
+  const form = useForm<ResetPasswordFormData>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues,
   });
 
   if (!token || linkError || isTokenRejected) return <InvalidLink />;
 
-  async function onSubmit(formData: FormData) {
+  async function onSubmit(formData: ResetPasswordFormData) {
     if (!token) return;
     setIsSubmitting(true);
 
@@ -79,7 +82,7 @@ export function ResetPasswordForm() {
         router.push("/login");
       }
     } catch (error) {
-      console.error((error as Error).message);
+      console.error(error);
       toast.error("Something went wrong.");
     } finally {
       setIsSubmitting(false);

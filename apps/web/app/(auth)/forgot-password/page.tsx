@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { redirectIfSignedIn } from "~/lib/auth-guard";
 
+import { AuthIntro } from "../_components/auth-intro";
 import { ForgotPasswordForm } from "../_components/forgot-password-form";
 
 export const metadata = {
@@ -14,14 +15,10 @@ export default async function ForgotPasswordPage() {
 
   return (
     <div className="space-y-4">
-      <div className="text-center">
-        <h1 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em] text-foreground">
-          Forgot password
-        </h1>
-        <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          We will email you a link to reset it.
-        </p>
-      </div>
+      <AuthIntro
+        title="Forgot password"
+        description="We will email you a link to reset it."
+      />
 
       <ForgotPasswordForm />
 

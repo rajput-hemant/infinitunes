@@ -43,13 +43,13 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             className="aspect-square w-full rounded-(--r-sm) object-cover opacity-85"
           />
         ))}
-        <div className="absolute inset-x-6 bottom-6 rounded-(--r-lg) bg-[rgba(20,20,22,0.45)] p-6 text-white backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
-          <h2 className="font-heading text-[1.75rem] font-bold leading-[1.15] tracking-[-0.025em]">
+        <div className="absolute inset-x-6 bottom-6 rounded-(--r-lg) bg-card p-6 text-card-foreground">
+          <h2 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em]">
             Millions of songs.
             <br />
             Zero cost.
           </h2>
-          <p className="mt-2 text-sm text-white/75">
+          <p className="mt-2 text-sm text-muted-foreground">
             Stream Hindi, English, Punjabi and more, in up to 320kbps.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
         <AuthModeToggle />
 
-        <div className="w-full max-w-[352px] space-y-4">
+        <div className="w-full max-w-88 space-y-4">
           <div className="flex justify-center pb-2">
             <Link
               href="/"

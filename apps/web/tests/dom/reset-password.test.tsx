@@ -26,11 +26,19 @@ const { ResetPasswordForm } =
 
 type Router = NonNullable<React.ContextType<typeof AppRouterContext>>;
 
+const noop = () => {};
+
 async function mount(search: string) {
   const pushes: string[] = [];
-  const router = {
+  const router: Router = {
+    back: noop,
+    forward: noop,
+    refresh: noop,
+    prefetch: noop,
+    replace: noop,
+    bfcacheId: "test",
     push: (href: string) => pushes.push(href),
-  } as unknown as Router;
+  };
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);

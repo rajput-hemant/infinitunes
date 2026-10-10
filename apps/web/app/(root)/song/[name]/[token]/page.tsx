@@ -24,6 +24,18 @@ const getSong = cache(async (token: string) => {
   return { song, modules: data.modules };
 });
 
+type SongDetails = Awaited<ReturnType<typeof getSong>>["song"];
+
+function hasStarringArtist(song: SongDetails) {
+  return (
+    song.more_info.artistMap?.artists?.some(
+      (artist) => artist.role === "starring",
+    ) ?? false
+  );
+}
+
+type TokenProps = { token: string };
+
 type SongDetailsPageProps = {
   params: Promise<{
     name: string;
@@ -46,12 +58,14 @@ export async function generateMetadata({
     square: true,
   });
 }
-async function SongLyrics({ id }: { id: string }) {
+type SongLyricsProps = { id: string };
+
+async function SongLyrics({ id }: SongLyricsProps) {
   const lyrics = await orFallback("lyrics", api.get.lyrics({ id }), undefined);
   return lyrics ? <Lyrics lyrics={lyrics} /> : null;
 }
 
-async function SongAlbumSongs({ token }: { token: string }) {
+async function SongAlbumSongs({ token }: TokenProps) {
   const { song } = await getSong(token);
   const album = await orFallback(
     "album songs",
@@ -71,7 +85,7 @@ async function SongAlbumSongs({ token }: { token: string }) {
   ) : null;
 }
 
-async function SongRecommendations({ token }: { token: string }) {
+async function SongRecommendations({ token }: TokenProps) {
   const { song, modules } = await getSong(token);
   const items = await orFallback(
     "recommendations",
@@ -86,13 +100,11 @@ async function SongRecommendations({ token }: { token: string }) {
   ) : null;
 }
 
-async function SongTrending({
-  token,
-  trending,
-}: {
-  token: string;
+type SongTrendingProps = TokenProps & {
   trending: Promise<TrendingSongs>;
-}) {
+};
+
+async function SongTrending({ token, trending }: SongTrendingProps) {
   const [{ modules }, items] = await Promise.all([getSong(token), trending]);
   return items.length ? (
     <SliderList
@@ -102,7 +114,7 @@ async function SongTrending({
   ) : null;
 }
 
-async function SongSameArtists({ token }: { token: string }) {
+async function SongSameArtists({ token }: TokenProps) {
   const { modules } = await getSong(token);
   const section = modules?.songsBysameArtists;
   if (!section) return null;
@@ -121,16 +133,10 @@ async function SongSameArtists({ token }: { token: string }) {
   ) : null;
 }
 
-async function SongSameActors({ token }: { token: string }) {
+async function SongSameActors({ token }: TokenProps) {
   const { song, modules } = await getSong(token);
   const section = modules?.songsBysameActors;
-  if (
-    !section ||
-    !song.more_info.artistMap?.artists?.some(
-      (artist) => artist.role === "starring",
-    )
-  )
-    return null;
+  if (!section || !hasStarringArtist(song)) return null;
   const params = section.source_params;
   const items = await orFallback(
     "songs from the same actors",
@@ -189,14 +195,11 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
       <Suspense fallback={<SliderListSkeleton length={1} />}>
         <SongSameArtists token={token} />
       </Suspense>
-      {modules?.songsBysameActors &&
-        song.more_info.artistMap?.artists?.some(
-          (artist) => artist.role === "starring",
-        ) && (
-          <Suspense fallback={<SliderListSkeleton length={1} />}>
-            <SongSameActors token={token} />
-          </Suspense>
-        )}
+      {modules?.songsBysameActors && hasStarringArtist(song) && (
+        <Suspense fallback={<SliderListSkeleton length={1} />}>
+          <SongSameActors token={token} />
+        </Suspense>
+      )}
 
       <SliderList
         title={modules?.artists?.title ?? "Artists"}

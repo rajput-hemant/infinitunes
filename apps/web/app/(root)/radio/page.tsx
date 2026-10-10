@@ -18,14 +18,14 @@ export const metadata = pageMetadata({
   alt: "Top Indian Radio Stations",
 });
 
-type Props = {
+type RadioPageProps = {
   searchParams: Promise<{
     page?: number;
     lang?: Lang;
   }>;
 };
 
-export default async function RadioPage(props: Props) {
+export default async function RadioPage(props: RadioPageProps) {
   const { page = 1, lang } = await props.searchParams;
 
   const radioStations = await api.get.featuredStations({
