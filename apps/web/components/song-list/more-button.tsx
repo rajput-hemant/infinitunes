@@ -429,10 +429,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
             <DrawerFooter className="pt-0 sm:justify-center">
               <DrawerClose
-                className={buttonVariants({
-                  variant: "outline",
-                  className: controlStyles.text,
-                })}
+                className={buttonVariants({ className: controlStyles.text })}
               >
                 Cancel
               </DrawerClose>

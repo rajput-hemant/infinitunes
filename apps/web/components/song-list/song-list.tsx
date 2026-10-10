@@ -166,10 +166,10 @@ export async function SongList(props: SongListProps) {
                   token={item.id}
                   name={decode(item.title)}
                   favourites={favorites}
-                  className="hidden hover:text-primary lg:block"
+                  className="hidden hover:text-primary lg:inline-flex"
                 />
 
-                <span className="hidden shrink-0 truncate lg:block">
+                <span className="hidden w-12 shrink-0 text-center tabular-nums lg:block">
                   {formatDuration(item.more_info.duration, "mm:ss")}
                 </span>
 

@@ -167,7 +167,7 @@ export function LikeButton(props: LikeButtonProps) {
         <Heart
           aria-hidden="true"
           className={cn(
-            "m-auto size-5 text-inherit transition-transform duration-150 ease-out active:scale-95",
+            "size-5 text-inherit transition-transform duration-150 ease-out active:scale-95",
             optimisticLike && "fill-destructive text-destructive",
           )}
         />

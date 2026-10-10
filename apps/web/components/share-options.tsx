@@ -4,6 +4,7 @@ import { DropdownMenuItem } from "@infinitunes/ui/components/dropdown-menu";
 import { Clipboard, Mail } from "lucide-react";
 import { usePathname } from "next/navigation";
 import React from "react";
+import { toast } from "sonner";
 
 import { siteConfig } from "~/config/site";
 import { buildShareUrl } from "~/lib/share";
@@ -98,7 +99,7 @@ function MenuItem({
           isDropDownItem && "h-4",
         )}
       />
-      <span className="grid" aria-live="polite">
+      <span className="grid">
         <span
           aria-hidden={isCopied}
           className={cn(
@@ -136,6 +137,7 @@ export function ShareOptions({
   function copy() {
     navigator.clipboard.writeText(url);
     setIsCopied(true);
+    toast.success("Link copied");
   }
 
   return (

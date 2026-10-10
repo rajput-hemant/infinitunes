@@ -154,10 +154,10 @@ export function SongListClient(props: SongListProps) {
                   token={item.id}
                   name={decode(item.title)}
                   favourites={userFavorites}
-                  className="hidden hover:text-primary lg:block"
+                  className="hidden hover:text-primary lg:inline-flex"
                 />
 
-                <span className="mx-auto hidden truncate lg:block">
+                <span className="hidden w-12 shrink-0 text-center tabular-nums lg:block">
                   {formatDuration(item.more_info.duration, "mm:ss")}
                 </span>
 
