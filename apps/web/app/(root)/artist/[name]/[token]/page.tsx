@@ -1,6 +1,5 @@
 import type { Category } from "@infinitunes/types";
 import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
-import { Separator } from "@infinitunes/ui/components/separator";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
 import { cache, Suspense } from "react";
@@ -120,8 +119,6 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
 
       <Tabs defaultValue={selectedTab}>
         <ArtistsTabList showBio={Boolean(artist.bio)} />
-
-        <Separator className="my-4" />
 
         <TabsContent
           value={TABS.Overview}

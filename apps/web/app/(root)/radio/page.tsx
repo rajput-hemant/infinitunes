@@ -38,7 +38,10 @@ export default async function RadioPage(props: RadioPageProps) {
     <div>
       <LanguageBar language={lang} />
 
-      <CatalogHeader title="Radio Stations" />
+      <CatalogHeader
+        title="Radio"
+        subtitle="Endless stations for every mood."
+      />
 
       <FeaturedStations
         key={radioStations[0]?.id ?? "stations"}

@@ -9,6 +9,7 @@ import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
 import { getHref } from "~/lib/utils";
 
+import { HomeHeader } from "./_components/home-header";
 import { HomeHero } from "./_components/home-hero";
 import { homeItems } from "./_components/home-items";
 import { QuickPicks } from "./_components/quick-picks";
@@ -62,7 +63,7 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-(--page-gap)">
-      <h1 className="sr-only">{siteConfig.name} Homepage</h1>
+      <HomeHeader />
 
       {(featured || quickPicks.length > 0) && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">

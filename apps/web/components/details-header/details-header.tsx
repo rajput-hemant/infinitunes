@@ -75,13 +75,14 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   return (
     <DetailsHeaderFrame title={title} className={detailBandClassName}>
+      {/* Mockup .bgart: a tiny image blown up 10x so the blur reads as soft color. */}
       <ImageWithFallback
         src={getImageSrc(item.image, "low")}
         alt=""
-        fill
-        sizes="50vw"
+        width={50}
+        height={50}
         fallback={getPlaceholderSrc(kind)}
-        className="-z-20 object-cover opacity-(--ambient) [mask-image:linear-gradient(to_bottom,black_35%,transparent_95%)]"
+        className="absolute -top-[5%] -left-[5%] -z-20 size-[11%] origin-top-left scale-10 rounded-none object-cover opacity-60 blur-[4px] saturate-[1.6] [mask-image:linear-gradient(to_bottom,black_35%,transparent_95%)]"
       />
 
       <div
@@ -177,6 +178,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               className={cn(
                 buttonVariants({ size: "icon", variant: "ghost" }),
                 controlStyles.headerIcon,
+                "max-md:hidden",
               )}
             />
 

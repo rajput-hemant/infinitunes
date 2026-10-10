@@ -51,11 +51,8 @@ function saveBlob(blob: Blob, filename: string) {
   anchor.click();
 }
 
-export function DownloadButton({
-  songs,
-  className,
-  ...rest
-}: DownloadButtonProps) {
+/** Downloads every song at the chosen quality; `isDownloading` disables the trigger meanwhile. */
+export function useDownloadSongs(songs: (Song | Episode)[]) {
   const [downloadQuality] = useDownloadQuality();
   const [isDownloading, setIsDownloading] = React.useState(false);
 
@@ -77,7 +74,7 @@ export function DownloadButton({
     saveBlob(new Blob(chunks, { type: "audio/mp4" }), `${song.title}.m4a`);
   }
 
-  async function downloadHandler() {
+  async function download() {
     setIsDownloading(true);
     try {
       await Promise.all(songs.map((song) => downloadSong(song)));
@@ -88,12 +85,22 @@ export function DownloadButton({
     }
   }
 
+  return { isDownloading, download };
+}
+
+export function DownloadButton({
+  songs,
+  className,
+  ...rest
+}: DownloadButtonProps) {
+  const { isDownloading, download } = useDownloadSongs(songs);
+
   return (
     <Tooltip>
       <TooltipTrigger
         delay={0}
         aria-label={`Download ${songs.length} song${songs.length === 1 ? "" : "s"}`}
-        onClick={downloadHandler}
+        onClick={download}
         className={cn(
           controlStyles.rowIcon,
           "inline-flex items-center justify-center text-muted-foreground outline-hidden transition-colors duration-fast hover:bg-fill hover:text-foreground active:bg-fill-2 focus-visible:ring-2 focus-visible:ring-ring",

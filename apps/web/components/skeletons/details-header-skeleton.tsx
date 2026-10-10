@@ -56,7 +56,9 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
             <Skeleton className={cn(controlStyles.hero, "w-24")} />
             <Skeleton className={cn(controlStyles.hero, "w-24")} />
             <Skeleton className={controlStyles.headerIcon} />
-            <Skeleton className={controlStyles.headerIcon} />
+            <Skeleton
+              className={cn(controlStyles.headerIcon, "max-md:hidden")}
+            />
             <Skeleton className={controlStyles.headerIcon} />
             <Skeleton className={controlStyles.headerIcon} />
           </div>

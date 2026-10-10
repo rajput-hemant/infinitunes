@@ -33,11 +33,17 @@ export function HomeHero({ playlist }: HomeHeroProps) {
         fill
         sizes="(min-width: 1024px) 55vw, 100vw"
         alt=""
-        className="-z-10 rounded-none object-cover object-[center_20%] saturate-[1.1]"
+        className="-z-20 rounded-none object-cover object-[center_20%] saturate-[1.1]"
       />
 
-      <div className="relative m-3 grid max-w-104 gap-2 rounded-[calc(var(--r-lg)-0.5rem)] bg-card px-4 py-4 text-card-foreground md:m-4 md:px-5">
-        <p className="text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] text-muted-foreground uppercase">
+      {/* Image scrim: stays dark over arbitrary artwork in both themes, so it is not a theme token. */}
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 -z-10 bg-linear-to-t from-black/75 via-black/30 to-transparent"
+      />
+
+      <div className="relative m-3 grid max-w-104 gap-2 px-4 py-4 text-white md:m-4 md:px-5">
+        <p className="text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] text-white/75 uppercase">
           Featured playlist
         </p>
 
@@ -51,7 +57,7 @@ export function HomeHero({ playlist }: HomeHeroProps) {
         </h2>
 
         {playlist.subtitle && (
-          <p className="hidden text-sm leading-5 text-muted-foreground md:block">
+          <p className="hidden text-sm leading-5 text-white/75 md:block">
             {decode(playlist.subtitle)}
           </p>
         )}
