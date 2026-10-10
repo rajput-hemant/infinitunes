@@ -18,9 +18,14 @@ const segmentClassName = cn(
 
 type ThemeToggleGroupProps = {
   className?: string;
+  /** Segments share the row evenly, for use inside a menu or sheet. */
+  stretch?: boolean;
 };
 
-export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
+export function ThemeToggleGroup({
+  className,
+  stretch = false,
+}: ThemeToggleGroupProps) {
   const isMounted = useIsHydrated();
 
   const { theme, setTheme } = useTheme();
@@ -33,30 +38,35 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
     <ToggleGroup
       value={[isMounted ? (theme ?? "system") : "system"]}
       onValueChange={(v) => handleThemeChange(v[0])}
-      className={cn("gap-0.5 rounded-ctl bg-fill p-0.5", className)}
+      aria-label="Theme"
+      className={cn(
+        "gap-0.5 rounded-ctl bg-fill p-0.5",
+        stretch && "flex w-full",
+        className,
+      )}
     >
       <ToggleGroupItem
         aria-label="Toggle Light Mode"
         value="light"
-        className={segmentClassName}
+        className={cn(segmentClassName, stretch && "w-auto flex-1")}
       >
         <SunMedium aria-hidden className="size-4" />
       </ToggleGroupItem>
 
       <ToggleGroupItem
-        aria-label="Toggle System Mode"
-        value="system"
-        className={segmentClassName}
+        aria-label="Toggle Dark Mode"
+        value="dark"
+        className={cn(segmentClassName, stretch && "w-auto flex-1")}
       >
-        <Monitor aria-hidden className="size-4" />
+        <Moon aria-hidden className="size-4" />
       </ToggleGroupItem>
 
       <ToggleGroupItem
-        aria-label="Toggle Dark Mode"
-        value="dark"
-        className={segmentClassName}
+        aria-label="Toggle System Mode"
+        value="system"
+        className={cn(segmentClassName, stretch && "w-auto flex-1")}
       >
-        <Moon aria-hidden className="size-4" />
+        <Monitor aria-hidden className="size-4" />
       </ToggleGroupItem>
     </ToggleGroup>
   );
