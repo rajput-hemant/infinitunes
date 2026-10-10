@@ -1,8 +1,8 @@
-import React from "react";
+import type { ComponentProps } from "react";
 
 import { cn } from "~/lib/utils";
 
-type LoadingSpinnerProps = React.ComponentProps<"output"> & {
+type LoadingSpinnerProps = ComponentProps<"output"> & {
   size?: "sm" | "md" | "lg";
 };
 
