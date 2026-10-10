@@ -1,6 +1,6 @@
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
-
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
+import { Shelf } from "~/components/slider/shelf";
+import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
@@ -34,36 +34,31 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
     <div>
       <CatalogHeader title={trendingTitle} subtitle={trendingSubtitle} />
 
-      <ScrollArea>
-        <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 pb-6">
-          {trendingPodcasts.map(
-            ({
-              id,
-              title: podcastTitle,
-              perma_url,
-              subtitle,
-              type,
-              image,
-              explicit_content,
-            }) => {
-              return (
-                <SliderCard
-                  key={id}
-                  name={podcastTitle}
-                  url={perma_url}
-                  subtitle={subtitle}
-                  type={type}
-                  image={image}
-                  explicit={explicit_content}
-                  hidePlayButton
-                />
-              );
-            },
-          )}
-        </div>
-
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      <Shelf rows={2}>
+        {trendingPodcasts.map(
+          ({
+            id,
+            title: podcastTitle,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <ShelfItem key={id}>
+              <SliderCard
+                name={podcastTitle}
+                url={perma_url}
+                subtitle={subtitle}
+                type={type}
+                image={image}
+                explicit={explicit_content}
+                hidePlayButton
+              />
+            </ShelfItem>
+          ),
+        )}
+      </Shelf>
 
       <h2 className="mt-8 mb-3 text-xl leading-7 font-bold tracking-[-0.015em]">
         All Podcasts

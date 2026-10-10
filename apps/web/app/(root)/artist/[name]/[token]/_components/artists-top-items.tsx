@@ -5,6 +5,7 @@ import type { Album, Category, Song } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import {
@@ -112,7 +113,7 @@ export function ArtistsTopItems(props: Props) {
         userPlaylists={userPlaylists}
       />
 
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
+      <CatalogGrid>
         {albums.map((album) => (
           <SliderCard
             key={album.id}
@@ -124,7 +125,7 @@ export function ArtistsTopItems(props: Props) {
             explicit={album.explicit_content}
           />
         ))}
-      </div>
+      </CatalogGrid>
 
       {hasNextPage && (
         <Button
