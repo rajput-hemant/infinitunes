@@ -143,6 +143,7 @@ export function SongListClient(props: SongListProps) {
                   className="size-11 hover:text-primary lg:size-5"
                 />
 
+                {/* Below lg the row menu carries Add/Remove Favourite. */}
                 <LikeButton
                   user={user}
                   type={item.type}

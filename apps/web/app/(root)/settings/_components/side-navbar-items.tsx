@@ -26,7 +26,7 @@ export function SideNavItems({ items, href, ...props }: SideNavItemsProps) {
           href={asRoute(`${href}#${hash}`)}
           className={cn(
             buttonVariants({ size: "sm", variant: "ghost" }),
-            "justify-start text-muted-foreground",
+            "justify-start text-muted-foreground min-h-11 lg:min-h-0",
             windowHash === hash
               ? "bg-muted text-foreground"
               : "underline-offset-4 hover:bg-muted hover:underline",
