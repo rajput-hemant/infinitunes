@@ -1,128 +1,228 @@
 "use client";
 
-import { RADIUS_PRESETS } from "@infinitunes/types";
+import {
+  DENSITIES,
+  FONT_IDS,
+  HEADING_FONT_IDS,
+  RADIUS_MAX_REM,
+  RADIUS_PRESETS,
+  TEXT_SIZES,
+} from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
-import { CheckIcon } from "lucide-react";
+import { Layout, Monitor, Moon, RotateCcw, Rows3, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 
-import { themes } from "~/config/themes";
 import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
-import { cn } from "~/lib/utils";
+import { FONT_FACES } from "~/lib/theme/fonts";
+
+import { AccentPicker } from "./accent-picker";
+import { radiusPatch, radiusToPx } from "./appearance-options";
+import { LiquidGlassSettings } from "./liquid-glass-settings";
+import { OptionGroup } from "./option-group";
+import { RangeField } from "./range-field";
+import { SettingsSection, SwitchRow } from "./settings-section";
+import { ThemePreview } from "./theme-preview";
+
+const MODES = [
+  {
+    value: "light",
+    label: "Light",
+    icon: <Sun aria-hidden className="size-4" />,
+  },
+  {
+    value: "dark",
+    label: "Dark",
+    icon: <Moon aria-hidden className="size-4" />,
+  },
+  {
+    value: "system",
+    label: "System",
+    icon: <Monitor aria-hidden className="size-4" />,
+  },
+] as const;
+
+const TEXT_SIZE_LABELS = {
+  15: "Small",
+  16: "Default",
+  17: "Large",
+  18: "Larger",
+} as const;
+
+const RADIUS_MAX_PX = radiusToPx(RADIUS_MAX_REM);
+
+const subscribeNever = () => () => {};
 
 export function AppearanceSettings() {
-  const {
-    config: { accent: theme, radius },
-    update,
-  } = useThemeConfig();
-
-  const { resolvedTheme: themeMode, setTheme } = useTheme();
+  const { config, update, reset, isDefault } = useThemeConfig();
+  const { theme: storedTheme, setTheme } = useTheme();
+  // next-themes only knows the stored mode on the client; wait for hydration so
+  // server and first client render agree.
+  const hydrated = useSyncExternalStore(
+    subscribeNever,
+    () => true,
+    () => false,
+  );
+  const theme = hydrated ? storedTheme : undefined;
 
   return (
-    <div className="space-y-8 px-6">
-      <section id="mode" className="space-y-4">
-        <h2 className="font-heading text-lg dark:drop-shadow-md text-foreground sm:text-xl md:text-2xl">
-          Theme Mode
-        </h2>
+    <div className="grid items-start gap-10 min-[90rem]:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="grid min-w-0 gap-10">
+        <SettingsSection
+          id="mode"
+          title="Theme Mode"
+          description="Choose how Infinitunes looks to you."
+        >
+          <OptionGroup
+            label="Theme mode"
+            value={theme}
+            onValueChange={setTheme}
+            options={MODES}
+          />
+        </SettingsSection>
 
-        <div className="flex gap-4">
-          {["light", "dark"].map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              aria-pressed={mode === themeMode}
-              onClick={() => setTheme(mode)}
-              className="group rounded-md text-left outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50"
-            >
-              <div
-                className={cn(
-                  "items-center rounded-md border bg-background p-2 group-hover:bg-accent group-hover:text-foreground",
-                  mode === themeMode && "border-primary ring-1 ring-primary",
-                )}
-              >
-                <div
-                  className={cn(mode, "space-y-2 rounded-sm bg-background p-2")}
-                >
-                  <div className="space-y-2 rounded-md bg-muted p-2 shadow-xs">
-                    <div className="h-2 w-[80px] rounded-lg bg-muted-foreground/25" />
-                    <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
-                  </div>
+        <SettingsSection
+          id="accent"
+          title="Accent Color"
+          description="Used for buttons, active states, progress and highlights."
+        >
+          <AccentPicker />
+        </SettingsSection>
 
-                  <div className="flex items-center space-x-2 rounded-md bg-muted p-2 shadow-xs">
-                    <div className="size-4 rounded-full bg-muted-foreground/25" />
-                    <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
-                  </div>
+        <SettingsSection
+          id="radius"
+          title="Radius"
+          description="Roundness of cards, buttons and sheets."
+        >
+          <OptionGroup
+            label="Radius preset"
+            value={config.radius}
+            onValueChange={(radius) => update({ radius })}
+            options={RADIUS_PRESETS.map((radius) => ({
+              value: radius,
+              label: radius === 1 ? "1.0" : String(radius),
+              style: { borderRadius: `${radius}rem` },
+            }))}
+          />
+          <RangeField
+            label="Corner radius"
+            min={0}
+            max={RADIUS_MAX_PX}
+            step={1}
+            value={radiusToPx(config.radius)}
+            format={(px) => `${px}px`}
+            onValueChange={(px) => update(radiusPatch(px))}
+          />
+        </SettingsSection>
 
-                  <div className="flex items-center space-x-2 rounded-md bg-muted p-2 shadow-xs">
-                    <div className="size-4 rounded-full bg-muted-foreground/25" />
-                    <div className="h-2 w-[100px] rounded-lg bg-muted-foreground/25" />
-                  </div>
-                </div>
-              </div>
+        <SettingsSection
+          id="type"
+          title="Typography"
+          description="Fonts for the interface and for headings, plus text size."
+        >
+          <div className="grid gap-4">
+            <div className="space-y-2">
+              <p className="text-sm/5 font-semibold">Interface font</p>
+              <OptionGroup
+                label="Interface font"
+                value={config.font}
+                onValueChange={(font) => update({ font })}
+                options={FONT_IDS.map((font) => ({
+                  value: font,
+                  label: FONT_FACES[font].label,
+                  preview: { text: "Aa", fontFamily: FONT_FACES[font].family },
+                }))}
+              />
+            </div>
 
-              <span className="block w-full p-2 text-center text-sm font-normal capitalize text-muted-foreground">
-                {mode}
-              </span>
-            </button>
-          ))}
+            <div className="space-y-2">
+              <p className="text-sm/5 font-semibold">Heading font</p>
+              <OptionGroup
+                label="Heading font"
+                value={config.headingFont}
+                onValueChange={(headingFont) => update({ headingFont })}
+                options={HEADING_FONT_IDS.map((font) => ({
+                  value: font,
+                  label: FONT_FACES[font].label,
+                  preview: { text: "Ag", fontFamily: FONT_FACES[font].family },
+                }))}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-sm/5 font-semibold">Text size</p>
+              <p className="text-xs/4 text-muted-foreground">
+                Layout and controls scale with the text.
+              </p>
+              <OptionGroup
+                label="Text size"
+                value={config.textSize}
+                onValueChange={(textSize) => update({ textSize })}
+                options={TEXT_SIZES.map((size) => ({
+                  value: size,
+                  label: TEXT_SIZE_LABELS[size],
+                }))}
+              />
+            </div>
+          </div>
+        </SettingsSection>
+
+        <SettingsSection
+          id="density"
+          title="Density"
+          description="Comfortable rows with artwork, or a compact table with an album column."
+        >
+          <OptionGroup
+            label="Density"
+            value={config.density}
+            onValueChange={(density) => update({ density })}
+            options={DENSITIES.map((density) => ({
+              value: density,
+              label: density === "compact" ? "Compact" : "Comfortable",
+              icon:
+                density === "compact" ? (
+                  <Layout aria-hidden className="size-4" />
+                ) : (
+                  <Rows3 aria-hidden className="size-4" />
+                ),
+            }))}
+          />
+        </SettingsSection>
+
+        <SettingsSection
+          id="material"
+          title="Glass and motion"
+          description="Liquid Glass lets artwork glow through toolbars, the player and sheets."
+        >
+          <LiquidGlassSettings />
+          <div className="max-w-2xl">
+            <SwitchRow
+              label="Reduce motion"
+              help="Replace springs and slides with simple fades. Follows your system setting automatically."
+              checked={config.reduceMotion}
+              onCheckedChange={(reduceMotion) => update({ reduceMotion })}
+            />
+          </div>
+        </SettingsSection>
+
+        <div>
+          <Button
+            variant="outline"
+            disabled={isDefault && theme === "system"}
+            onClick={() => {
+              reset();
+              setTheme("system");
+            }}
+            className={controlStyles.textLg}
+          >
+            <RotateCcw aria-hidden className="size-4" />
+            Reset to defaults
+          </Button>
         </div>
-      </section>
+      </div>
 
-      <section id="themes" className="space-y-4">
-        <h2 className="font-heading text-lg dark:drop-shadow-md text-foreground sm:text-xl md:text-2xl">
-          Themes
-        </h2>
-
-        <div className="flex max-w-5xl flex-wrap gap-2">
-          {themes.map(({ name, label, hex }) => (
-            <Button
-              key={name}
-              variant="outline"
-              aria-pressed={name === theme}
-              onClick={() => update({ accent: name })}
-              className={cn(
-                controlStyles.text,
-                "w-28 justify-start",
-                name === theme && "border-primary ring-1 ring-primary",
-              )}
-            >
-              <span
-                className="flex size-5 shrink-0 items-center justify-center rounded-full text-white"
-                style={{ backgroundColor: hex }}
-              >
-                {theme === name && (
-                  <CheckIcon aria-hidden className="size-3.5" />
-                )}
-              </span>
-              {label}
-            </Button>
-          ))}
-        </div>
-      </section>
-
-      <section id="radius" className="space-y-4">
-        <h2 className="font-heading text-lg dark:drop-shadow-md text-foreground sm:text-xl md:text-2xl">
-          Radius
-        </h2>
-
-        <div className="flex flex-wrap gap-2">
-          {RADIUS_PRESETS.map((value) => (
-            <Button
-              variant="outline"
-              key={value}
-              aria-pressed={radius === value}
-              onClick={() => update({ radius: value })}
-              className={cn(
-                controlStyles.text,
-                "w-24 capitalize",
-                radius === value && "border-primary ring-1 ring-primary",
-              )}
-            >
-              {value}
-            </Button>
-          ))}
-        </div>
-      </section>
+      <ThemePreview />
     </div>
   );
 }
