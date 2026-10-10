@@ -13,22 +13,16 @@ type ImageWithFallbackProps = ImageProps & {
 export function ImageWithFallback(props: ImageWithFallbackProps) {
   const { fallback, alt, src, className, ...restProps } = props;
 
-  // If src is empty/undefined, use fallback immediately to avoid
-  // "empty string passed to src" warnings.
-  const effectiveSrc = src ? src : fallback;
-
   // Remember which `src` failed so a new `src` starts without an error.
-  const [failedSrc, setFailedSrc] = React.useState<typeof effectiveSrc | null>(
-    null,
-  );
-  const error = failedSrc === effectiveSrc;
+  const [failedSrc, setFailedSrc] = React.useState<typeof src | null>(null);
+  const error = failedSrc === src;
   if (failedSrc !== null && !error) setFailedSrc(null);
 
   return (
     <Image
-      src={error ? fallback : effectiveSrc}
+      src={error ? fallback : src}
       alt={alt}
-      onError={() => setFailedSrc(effectiveSrc)}
+      onError={() => setFailedSrc(src)}
       className={cn(className, error && "dark:invert")}
       {...restProps}
     />
