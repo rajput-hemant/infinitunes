@@ -98,6 +98,39 @@ describe("queue sheet", () => {
     await act(async () => root.unmount());
   });
 
+  it("gives queue artist links a 24px mobile touch target", async () => {
+    const artist = {
+      id: "a1",
+      name: "Singer",
+      perma_url: "https://www.jiosaavn.com/artist/singer/a1",
+      type: "artist" as const,
+      image: "",
+      role: "",
+    };
+    localStorage.setItem(
+      "queue",
+      JSON.stringify([{ ...song("a"), artists: [artist] }]),
+    );
+    localStorage.setItem("current_song_index", "0");
+
+    const root = await mount();
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
+        ?.click();
+    });
+
+    const link = document.querySelector<HTMLAnchorElement>(
+      'ol[aria-label="Queue"] a[href*="/artist/"]',
+    );
+    expect(link?.textContent).toBe("Singer");
+    // 24px minimum on touch, desktop keeps the plain inline link.
+    expect(link?.className).toContain("min-h-6");
+    expect(link?.className).toContain("lg:min-h-0");
+
+    await act(async () => root.unmount());
+  });
+
   it("hands focus to the row that took the removed row's place", async () => {
     localStorage.setItem(
       "queue",
