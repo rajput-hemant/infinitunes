@@ -5,6 +5,8 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { CatalogEnd } from "~/app/(root)/browse/_components/catalog-states";
 import { SliderCard } from "~/components/slider/slider-card";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
@@ -40,7 +42,7 @@ export function TopPodcasts({ initialTopShows }: Props) {
 
   return (
     <>
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
+      <CatalogGrid>
         {podcasts.map(
           ({
             id,
@@ -63,12 +65,12 @@ export function TopPodcasts({ initialTopShows }: Props) {
             />
           ),
         )}
-      </div>
+      </CatalogGrid>
 
       {hasNextPage ? (
         <div
           ref={ref}
-          className="flex items-center justify-center gap-2 py-6 font-bold text-muted-foreground"
+          className="flex items-center justify-center gap-2 py-6 text-sm font-medium text-muted-foreground"
         >
           {isFetchingNextPage && (
             <>
@@ -77,10 +79,7 @@ export function TopPodcasts({ initialTopShows }: Props) {
           )}
         </div>
       ) : (
-        <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
+        <CatalogEnd />
       )}
     </>
   );

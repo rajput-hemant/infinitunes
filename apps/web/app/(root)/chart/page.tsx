@@ -1,3 +1,11 @@
+import { Music } from "lucide-react";
+
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
+import {
+  CatalogEmpty,
+  CatalogEnd,
+} from "~/app/(root)/browse/_components/catalog-states";
 import { SliderCard } from "~/components/slider/slider-card";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
@@ -15,40 +23,45 @@ export default async function ChartsPage() {
   const charts = await api.get.charts({ page: 1, n: 50 });
 
   return (
-    <div className="space-y-4">
-      <h1 className="mt-4 font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-        Top Music Charts
-      </h1>
+    <div>
+      <CatalogHeader title="Top Music Charts" />
 
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {charts.map(
-          ({
-            id,
-            title: chartTitle,
-            perma_url,
-            subtitle,
-            type,
-            image,
-            explicit_content,
-          }) => (
-            <SliderCard
-              key={id}
-              name={chartTitle}
-              url={perma_url}
-              subtitle={subtitle}
-              type={type}
-              image={image}
-              explicit={explicit_content}
-              aspect="video"
-            />
-          ),
-        )}
-      </div>
+      {charts.length === 0 ? (
+        <CatalogEmpty
+          icon={Music}
+          title="No charts yet"
+          description="Charts are updated regularly. Check back soon."
+        />
+      ) : (
+        <>
+          <CatalogGrid>
+            {charts.map(
+              ({
+                id,
+                title: chartTitle,
+                perma_url,
+                subtitle,
+                type,
+                image,
+                explicit_content,
+              }) => (
+                <SliderCard
+                  key={id}
+                  name={chartTitle}
+                  url={perma_url}
+                  subtitle={subtitle}
+                  type={type}
+                  image={image}
+                  explicit={explicit_content}
+                  aspect="video"
+                />
+              ),
+            )}
+          </CatalogGrid>
 
-      <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-        <em>Yay! You have seen it all</em>{" "}
-        <span className="text-foreground">🤩</span>
-      </h2>
+          <CatalogEnd />
+        </>
+      )}
     </div>
   );
 }

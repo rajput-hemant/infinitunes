@@ -1,5 +1,6 @@
 import type { Lang } from "@infinitunes/types";
 
+import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
 import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
@@ -27,12 +28,10 @@ export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
   const topAlbums = await api.get.topAlbums({ page, n: 50, lang });
 
   return (
-    <div className="space-y-4">
+    <div>
       <LanguageBar language={lang} />
 
-      <h1 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-        {`New ${lang ?? ""} Songs`}
-      </h1>
+      <CatalogHeader title={`New ${lang ?? ""} Songs`} />
 
       <TopAlbums
         key={topAlbums.data[0].id}

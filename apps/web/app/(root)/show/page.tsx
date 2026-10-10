@@ -1,5 +1,6 @@
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 
+import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
@@ -30,16 +31,8 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
   const trendingSubtitle = trendingGroup?.module.subtitle ?? "";
 
   return (
-    <div className="space-y-4">
-      <header className="mt-4">
-        <h1 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-          {trendingTitle}
-        </h1>
-
-        <p className="pl-1 font-medium text-muted-foreground">
-          {trendingSubtitle}
-        </p>
-      </header>
+    <div>
+      <CatalogHeader title={trendingTitle} subtitle={trendingSubtitle} />
 
       <ScrollArea>
         <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 pb-6">
@@ -72,7 +65,7 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
         <ScrollBar orientation="horizontal" />
       </ScrollArea>
 
-      <h2 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+      <h2 className="mt-8 mb-3 text-xl leading-7 font-bold tracking-[-0.015em]">
         All Podcasts
       </h2>
 

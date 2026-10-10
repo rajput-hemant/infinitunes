@@ -2,9 +2,14 @@
 
 import type { Lang, Radio } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
+import { Loader2, Radio as RadioIcon } from "lucide-react";
 import React from "react";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import {
+  CatalogEmpty,
+  CatalogEnd,
+} from "~/app/(root)/browse/_components/catalog-states";
 import { SliderCard } from "~/components/slider/slider-card";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
@@ -42,9 +47,19 @@ export function FeaturedStations({
     },
   });
 
+  if (stations.length === 0) {
+    return (
+      <CatalogEmpty
+        icon={RadioIcon}
+        title="No radio stations"
+        description="Try another language or check back later."
+      />
+    );
+  }
+
   return (
-    <div className="py-6">
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
+    <div>
+      <CatalogGrid>
         {stations.map(
           ({
             id,
@@ -66,12 +81,12 @@ export function FeaturedStations({
             />
           ),
         )}
-      </div>
+      </CatalogGrid>
 
       {hasNextPage ? (
         <div
           ref={ref}
-          className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
+          className="flex items-center justify-center gap-2 py-6 text-sm font-medium text-muted-foreground"
         >
           {isFetchingNextPage && (
             <>
@@ -80,10 +95,7 @@ export function FeaturedStations({
           )}
         </div>
       ) : (
-        <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
+        <CatalogEnd />
       )}
     </div>
   );
