@@ -7,6 +7,7 @@ import React from "react";
 import { toast } from "sonner";
 
 import { siteConfig } from "~/config/site";
+import { controlStyles } from "~/lib/control-styles";
 import { buildShareUrl } from "~/lib/share";
 import type { SharePlatform } from "~/lib/share";
 import { cn } from "~/lib/utils";
@@ -58,47 +59,34 @@ const shareOptions: ShareOption[] = [
 
 type MenuItemProps = Omit<ShareOption, "platform"> & {
   href?: string;
-  isDropDownItem?: boolean;
   copy: () => void;
   isCopied: boolean;
 };
 
-function MenuItem({
-  label,
-  href,
-  icon: Icon,
-  isDropDownItem,
-  copy,
-  isCopied,
-}: MenuItemProps) {
+const itemStyles = cn(
+  controlStyles.textLg,
+  "flex items-center gap-3 rounded-sm px-3 transition-colors duration-fast hover:bg-fill-2 active:bg-fill-3",
+);
+
+function MenuItem({ label, href, icon: Icon, copy, isCopied }: MenuItemProps) {
   return href ? (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex min-h-11 items-center"
+      className={itemStyles}
     >
-      <Icon
-        className={cn(
-          "mr-2 inline-block aspect-square h-5",
-          isDropDownItem && "h-4",
-        )}
-      />
+      <Icon className="size-4" />
       {label}
     </a>
   ) : (
     <button
       type="button"
       onClick={copy}
-      className="inline-flex min-h-11 items-center"
+      className={itemStyles}
       aria-label={isCopied ? "Link Copied" : "Copy Link"}
     >
-      <Clipboard
-        className={cn(
-          "mr-2 inline-block aspect-square h-5",
-          isDropDownItem && "h-4",
-        )}
-      />
+      <Clipboard className="size-4" />
       <span className="grid">
         <span
           aria-hidden={isCopied}
@@ -148,12 +136,11 @@ export function ShareOptions({
           : undefined;
 
         return isDropDownItem ? (
-          <DropdownMenuItem key={i} className="h-11 py-0">
+          <DropdownMenuItem key={i} className="p-0">
             <MenuItem
               label={label}
               href={href}
               icon={icon}
-              isDropDownItem
               copy={copy}
               isCopied={isCopied}
             />
@@ -164,7 +151,6 @@ export function ShareOptions({
             label={label}
             href={href}
             icon={icon}
-            isDropDownItem={isDropDownItem}
             copy={copy}
             isCopied={isCopied}
           />

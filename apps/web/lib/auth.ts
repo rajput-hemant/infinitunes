@@ -6,7 +6,6 @@ import { after } from "next/server";
 import { cache } from "react";
 
 import { TRUSTED_CLIENT_IP_HEADER } from "./client-ip";
-import { sessionCookiePrefix } from "./session-cookie";
 
 let authInstance: ReturnType<typeof createAuth> | undefined;
 
@@ -17,7 +16,6 @@ function getAuth(): ReturnType<typeof createAuth> {
       // Only the header the auth route stamps from the trusted-proxy logic
       // (client-ip.ts); the forgeable x-forwarded-for is never consulted.
       ipAddressHeaders: [TRUSTED_CLIENT_IP_HEADER],
-      cookiePrefix: sessionCookiePrefix(),
       // Reset emails go out after the response so latency can't reveal
       // whether an address has an account.
       runInBackground: (promise) => after(promise),

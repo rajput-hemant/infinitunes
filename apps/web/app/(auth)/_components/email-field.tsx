@@ -9,6 +9,9 @@ import { Input } from "@infinitunes/ui/components/input";
 import React from "react";
 import type { ControllerFieldState } from "react-hook-form";
 
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
+
 type EmailFieldProps = {
   field: Pick<
     React.ComponentProps<"input">,
@@ -39,7 +42,7 @@ export function EmailField(props: EmailFieldProps) {
         disabled={disabled}
         aria-invalid={!!fieldState.error}
         placeholder="you@domain.com"
-        className="h-11 shadow-xs"
+        className={cn(controlStyles.text, "w-full shadow-xs")}
         {...field}
       />
       <FieldError errors={[fieldState.error]} />

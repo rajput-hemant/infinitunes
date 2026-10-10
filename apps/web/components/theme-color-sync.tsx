@@ -5,8 +5,8 @@ import React from "react";
 /**
  * Keeps `<meta name="theme-color">` equal to the rendered `--background`.
  * The static tags follow the OS scheme only; this also follows the in-app
- * light/dark choice (`html` class) and the color preset (`body` class), and
- * re-applies after Next replaces the head tags.
+ * light/dark choice (`html` class), and re-applies after Next replaces the
+ * head tags. Surfaces are shared by every accent, so nothing else moves it.
  */
 export function ThemeColorSync() {
   React.useEffect(() => {
@@ -40,10 +40,6 @@ export function ThemeColorSync() {
     const observer = new MutationObserver(schedule);
     observer.observe(document.head, { childList: true });
     observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-    observer.observe(document.body, {
       attributes: true,
       attributeFilter: ["class"],
     });

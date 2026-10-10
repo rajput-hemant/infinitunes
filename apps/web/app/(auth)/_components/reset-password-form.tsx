@@ -30,7 +30,11 @@ function InvalidLink() {
       </p>
       <Link
         href="/forgot-password"
-        className={cn(buttonVariants(), controlStyles.text, "w-full")}
+        className={cn(
+          buttonVariants(),
+          controlStyles.textLg,
+          "w-full rounded-sm px-3",
+        )}
       >
         Request a new link
       </Link>
@@ -115,7 +119,7 @@ export function ResetPasswordForm() {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className={cn(controlStyles.text, "w-full")}
+        className={cn(controlStyles.textLg, "w-full rounded-sm px-3")}
       >
         {isSubmitting ? (
           <Loader2 className="mr-2 size-4 animate-spin" />

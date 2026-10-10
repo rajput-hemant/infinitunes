@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { redirectIfSignedIn } from "~/lib/auth-guard";
 
 import { ResetPasswordForm } from "../_components/reset-password-form";
@@ -14,21 +16,29 @@ type ResetPasswordPageProps = {
 export default async function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {
-  // The emailed token proves intent, so a signed-in user may use the link;
-  // without one this page is only for signed-out visitors.
   if (!(await searchParams).token) await redirectIfSignedIn();
 
   return (
-    <div className="flex flex-col space-y-2 text-center">
-      <h1 className="font-heading text-3xl dark:drop-shadow-xl text-foreground sm:text-4xl">
-        Reset Password
-      </h1>
-
-      <p className="text-sm text-muted-foreground">
-        Choose a new password for your account.
-      </p>
+    <div className="space-y-4">
+      <div className="text-center">
+        <h1 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em] text-foreground">
+          Reset password
+        </h1>
+        <p className="mt-1 text-sm leading-5 text-muted-foreground">
+          Choose a new password for your account.
+        </p>
+      </div>
 
       <ResetPasswordForm />
+
+      <p className="text-center text-xs text-muted-foreground">
+        <Link
+          href="/login"
+          className="font-medium text-primary underline-offset-4 hover:underline"
+        >
+          Back to log in
+        </Link>
+      </p>
     </div>
   );
 }

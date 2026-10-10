@@ -1,7 +1,4 @@
-import { createHash } from "node:crypto";
-
 import { IMAGE_CDN_HOSTS, MEDIA_CDN_HOSTS } from "./image-hosts";
-import { THEME_BOOTSTRAP_SCRIPT } from "./theme-script";
 
 export const CSP_ENFORCING_HEADER = "content-security-policy";
 export const CSP_REPORT_ONLY_HEADER = "content-security-policy-report-only";
@@ -21,45 +18,35 @@ const UMAMI_API_HOST = "https://gateway.umami.is";
 
 const https = (hosts: readonly string[]) => hosts.map((h) => `https://${h}`);
 
-/** CSP source expression allowing exactly this inline script text. */
-export const scriptHash = (script: string) =>
-  `'sha256-${createHash("sha256").update(script).digest("base64")}'`;
-
-/**
- * Every inline script the app ships. Hashes come from the same strings the
- * layout renders, so they cannot drift from the markup. Next's own inline
- * scripts (the RSC payload pushes) are not listed: their text differs per page.
- */
-const INLINE_SCRIPT_HASHES = [scriptHash(THEME_BOOTSTRAP_SCRIPT)];
-
 /**
  * Builds the Content-Security-Policy header value (see `CSP_ENFORCE`).
  *
- * There is no per-request nonce, so the root layout stays prerenderable. The
- * app's inline script is allowed by hash (`INLINE_SCRIPT_HASHES`); the Umami
- * `<Script>` is external and allowed by host. Next's RSC payload scripts are
- * inline with per-page text, so a hash policy cannot cover them: resolve that
- * (for example `strict-dynamic` with SRI) before flipping `CSP_ENFORCE`. The two
- * `dangerouslySetInnerHTML` blocks (lyrics, artist bio) render
+ * Prerequisites for enforcing (SE-15): every HTML route renders dynamically per
+ * request (the root layout reads `cookies()` and `headers()`), so the nonce is
+ * available. Both inline scripts carry it: the Umami `<Script>` and the
+ * `next-themes` bootstrap (`nonce` prop on `ThemeProvider`, passed from the root
+ * layout). The two `dangerouslySetInnerHTML` blocks (lyrics, artist bio) render
  * `sanitizeRichText` output as markup, not script, so `script-src` does not
- * apply to them. `style-src` keeps `'unsafe-inline'` on purpose: Sonner/Next
- * inject `<style>` tags and the theme script sets `--radius` inline, and style
- * injection cannot run script. `object-src`, `base-uri` and `form-action` are
- * locked down because they do not fall back to `default-src`.
+ * apply to them. `style-src` keeps `'unsafe-inline'` on purpose: the layout sets
+ * `style` attributes server-side and Sonner/Next inject `<style>` tags, and
+ * style injection cannot run script. `object-src`, `base-uri` and `form-action`
+ * are locked down because they do not fall back to `default-src`.
  */
 export function buildCsp({
+  nonce,
   isDev = false,
   umami = false,
 }: {
+  nonce: string;
   isDev?: boolean;
   umami?: boolean;
-} = {}): string {
+}): string {
   const directives: Record<string, string[]> = {
     "default-src": ["'self'"],
     // 'unsafe-eval' is dev-only (React debugging); see Next's CSP guide.
     "script-src": [
       "'self'",
-      ...INLINE_SCRIPT_HASHES,
+      `'nonce-${nonce}'`,
       ...(isDev ? ["'unsafe-eval'"] : []),
       ...(umami ? [UMAMI_SCRIPT_HOST] : []),
     ],

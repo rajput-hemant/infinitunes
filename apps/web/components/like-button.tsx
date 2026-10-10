@@ -159,7 +159,7 @@ export function LikeButton(props: LikeButtonProps) {
         onClick={likeHandler}
         className={cn(
           controlStyles.rowIcon,
-          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring aria-disabled:opacity-50",
+          "inline-flex items-center justify-center text-muted-foreground outline-hidden transition-colors duration-fast hover:bg-fill hover:text-foreground active:bg-fill-2 focus-visible:ring-2 focus-visible:ring-ring aria-disabled:opacity-40",
           className,
         )}
         {...rest}
@@ -167,8 +167,8 @@ export function LikeButton(props: LikeButtonProps) {
         <Heart
           aria-hidden="true"
           className={cn(
-            "size-5 text-inherit transition-transform duration-150 ease-out active:scale-95",
-            optimisticLike && "fill-destructive text-destructive",
+            "size-4.5 transition-transform duration-fast ease-out active:scale-96",
+            optimisticLike && "fill-primary text-primary",
           )}
         />
       </TooltipTrigger>

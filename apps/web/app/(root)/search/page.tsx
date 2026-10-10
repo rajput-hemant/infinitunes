@@ -1,11 +1,16 @@
-import { TopSearch } from "~/components/search/top-search";
+import { searchUi } from "~/components/search/search-ui";
 
 import { MobileSearch } from "./_components/mobile-search";
+import { TopSearches } from "./_components/top-searches";
 
 export default function SearchPage() {
   return (
-    <div className="size-full min-h-[calc(100vh-13.5rem)] space-y-4">
-      <MobileSearch topSearch={<TopSearch />} />
+    <div className="space-y-6">
+      <header className="pt-2">
+        <h1 className={searchUi.pageTitle}>Search</h1>
+      </header>
+
+      <MobileSearch topSearches={<TopSearches />} />
     </div>
   );
 }

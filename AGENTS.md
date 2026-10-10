@@ -34,18 +34,6 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 
 ## Build / delivery sharp edges
 
-- Cache Components are enabled. `apps/web/lib/cached-api.ts` owns the catalog
-  `use cache` boundary, injected into both tRPC callers; the shared transport
-  stays Next-independent and needs no `transpilePackages`. Endpoint, normalized
-  query, language, version and timeout form the cache arguments.
-  `REVALIDATE_SECONDS` sets revalidate and hard expiry (600s for media-bearing
-  details, 3600s for menus/footer/same-year); failures are thrown, with upstream
-  classification preserved across the serialized error boundary.
-- Incremental adoption is deferred with `instant = false` in `(root)/layout.tsx`
-  (session/sidebar cookies and navigation) and `(auth)/layout.tsx` (request-time
-  daily artwork, after `connection()`). These route groups still need shell
-  migration; `/chart` also opts out locally for dev navigation validation.
-  The app root itself remains static-capable.
 - Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
@@ -169,16 +157,6 @@ and `SKIP_ENV_VALIDATION=true` only skips schema validation in `@infinitunes/env
 supply `DATABASE_URL`. Keep initialization lazy; eager evaluation at module scope breaks
 `SKIP_ENV_VALIDATION=true bun run build`.
 
-## Shared local database
-
-`user` and `better_auth_*` are shared with the Lipi app in one local Postgres
-(`docs/local-development.md`, "Shared database with Lipi"). Keep the baseline
-migration idempotent (`IF NOT EXISTS`), never drop or require `user.name` /
-`user.password` (Lipi writes them), and keep the non-production session cookie
-prefix distinct (`apps/web/lib/session-cookie.ts`, used by Better Auth and
-`proxy.ts`). Opt-in DB tests need `TEST_MIGRATION_DATABASE_URL` (a disposable
-admin URL).
-
 ## Media URL shapes (playback / artwork)
 
 Both are single strings, and both carry a _replaceable_ token - the recurring
@@ -219,7 +197,7 @@ When updating this file, preserve this bar for all agents and keep entries conci
 ## React and Next.js Best Practices
 
 - **Server vs Client Components**: Layouts and pages should remain Server Components where possible to fetch data and cookies efficiently. Isolate user interactivity (clicks, menus, forms) into dedicated Client Components with `"use client"`.
-- **Sidebar Layout Hierarchy**: Always nest `<Navbar />` inside `<SidebarInset>` above `<main>` within `<SidebarProvider>` to avoid breaking the horizontal layout.
+- **Sidebar Layout Hierarchy**: Keep `<Navbar />` in the content column above `<main>` (the `SidebarInset`), within `<SidebarProvider>`, so the layout stays horizontal and the page has one `main` landmark.
 - **Component Imports**: Do not create local component files under `apps/web/components/ui`. Always reference the monorepo package `@infinitunes/ui/components/<name>` and exports in `packages/ui/package.json`.
 - **shadcn/ui is read-only**: Do not modify shadcn/ui components (`packages/ui/src/components`). Apply customizations in application components, wrappers, or composition instead.
 - **No barrel files in `apps/web/components`**: import from the source file

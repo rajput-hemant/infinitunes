@@ -1,12 +1,19 @@
-import { describe, expect, it } from "bun:test";
+import { beforeEach, describe, expect, it } from "bun:test";
 
-import { api, REVALIDATE_SECONDS, revalidateSeconds } from "../src/lib/api";
+import {
+  api,
+  clearApiCache,
+  REVALIDATE_SECONDS,
+  revalidateSeconds,
+} from "../src/lib/api";
 import { endpoints } from "../src/lib/endpoints";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status });
 
 describe("api retry", () => {
+  beforeEach(clearApiCache);
+
   it("retries once on a 5xx and returns the second response", async () => {
     let calls = 0;
     const fetchFn: typeof fetch = async () =>
@@ -136,7 +143,9 @@ describe("api retry", () => {
 });
 
 describe("api caching policy", () => {
-  it("caches public catalog calls and leaves randomized radio uncached", () => {
+  beforeEach(clearApiCache);
+
+  it("caches public catalog calls and leaves search/radio/lyrics uncached", () => {
     for (const call of [
       endpoints.modules.launch_data,
       endpoints.get.charts,
@@ -145,24 +154,24 @@ describe("api caching policy", () => {
       endpoints.song.recommend,
       endpoints.album.id,
       endpoints.artist.id,
-      ...Object.values(endpoints.search),
-      endpoints.get.lyrics,
-      endpoints.get.actor_top_songs,
-      endpoints.get.featured_stations,
     ]) {
       expect(revalidateSeconds(call)).toBeGreaterThan(0);
     }
 
-    const uncached = [...Object.values(endpoints.radio)];
+    const uncached = [
+      ...Object.values(endpoints.search),
+      ...Object.values(endpoints.radio),
+      endpoints.get.lyrics,
+    ];
     for (const call of uncached) {
       expect(revalidateSeconds(call)).toBeUndefined();
     }
     for (const call of Object.keys(REVALIDATE_SECONDS)) {
-      expect(Object.values(endpoints.radio)).not.toContain(call);
+      expect(call.startsWith("webradio.")).toBe(false);
     }
   });
 
-  it("leaves fetch caching to the platform wrapper", async () => {
+  it("passes next.revalidate to fetch only for allowlisted calls", async () => {
     const inits: (RequestInit & { next?: unknown })[] = [];
     const fetchFn: typeof fetch = async (_url, init) => {
       inits.push(init ?? {});
@@ -172,7 +181,9 @@ describe("api caching policy", () => {
     await api(endpoints.modules.launch_data, {}, fetchFn);
     await api(endpoints.search.all, { query: { query: "x" } }, fetchFn);
 
-    expect(inits[0]?.next).toBeUndefined();
+    expect(inits[0]?.next).toEqual({
+      revalidate: REVALIDATE_SECONDS[endpoints.modules.launch_data],
+    });
     expect(inits[1]?.next).toBeUndefined();
   });
 

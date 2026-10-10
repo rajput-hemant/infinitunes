@@ -1,94 +1,99 @@
-import type { Quality, MediaType } from "@infinitunes/types";
 import type { AllSearch } from "@infinitunes/types";
-import { decode, getImageSrc } from "@infinitunes/types";
-import { Separator } from "@infinitunes/ui/components/separator";
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
-import { asRoute, cn, getHref } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 
-import { ImageWithFallback } from "../image-with-fallback";
-import { getPlaceholderSrc } from "../placeholder-src";
+import { getSearchItemHref, getSearchItems } from "./search-item";
+import { searchHref } from "./search-query";
+import { SearchRow } from "./search-row";
+import { searchUi } from "./search-ui";
 
 type SearchAllProps = {
   query: string;
   data: AllSearch;
+  /** `palette` lists capped groups as listbox options; `page` adds a View all link per group. */
+  variant?: "palette" | "page";
+  onSelect?: () => void;
 };
 
-export function SearchAll({ query, data }: SearchAllProps) {
+type SearchGroup = {
+  label: string;
+  routeType?: string;
+  paletteLimit: number;
+};
+
+const GROUPS: Partial<Record<string, SearchGroup>> = {
+  topquery: { label: "Top result", paletteLimit: 0 },
+  songs: { label: "Songs", routeType: "song", paletteLimit: 4 },
+  artists: { label: "Artists", routeType: "artist", paletteLimit: 3 },
+  albums: { label: "Albums", routeType: "album", paletteLimit: 3 },
+  playlists: { label: "Playlists", routeType: "playlist", paletteLimit: 3 },
+  shows: { label: "Podcasts", routeType: "show", paletteLimit: 3 },
+  episodes: { label: "Episodes", paletteLimit: 0 },
+};
+
+export function SearchAll(props: SearchAllProps) {
+  const { query, data, variant = "page", onSelect } = props;
+  const isPalette = variant === "palette";
+  const trimmed = query.trim();
+
   return (
-    <div className="gap-2 space-y-4 md:grid md:grid-cols-2 md:space-y-0 lg:grid-cols-3 xl:grid-cols-4">
+    <>
       {Object.entries(data)
         .sort(([, a], [, b]) => a.position - b.position)
-        .map(([key, value]) => {
-          if (!value.data.length) return null;
+        .map(([key, group]) => {
+          const config = GROUPS[key];
+          const limit = isPalette ? (config?.paletteLimit ?? 3) : undefined;
+          if (limit === 0) return null;
+
+          const items = getSearchItems(group).slice(0, limit);
+          if (!items.length) return null;
+
+          const labelId = `search-group-${key}`;
+          const routeType = config?.routeType;
 
           return (
-            <section key={key}>
-              <div className="flex">
-                <h3 className="pl-2 font-heading text-lg capitalize tracking-wider dark:drop-shadow-sm">
-                  {key.replace("_query", " Result")}
-                </h3>
-
-                {key !== "top_query" && (
+            <div
+              key={key}
+              role={isPalette ? "group" : undefined}
+              aria-labelledby={isPalette ? labelId : undefined}
+            >
+              <div
+                className={cn(
+                  searchUi.groupLabel,
+                  !isPalette && "flex items-center justify-between",
+                )}
+              >
+                {isPalette ? (
+                  <span id={labelId}>{config?.label ?? key}</span>
+                ) : (
+                  <h3>{config?.label ?? key}</h3>
+                )}
+                {!isPalette && routeType ? (
                   <Link
-                    href={asRoute(`/search/${key.slice(0, -1)}/${query}`)}
-                    className="ml-auto rounded-full border px-2 py-1 text-xs text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
+                    href={searchHref(trimmed, routeType)}
+                    className={cn(searchUi.link, "tracking-normal normal-case")}
                   >
                     View all
                   </Link>
-                )}
+                ) : null}
               </div>
 
-              <Separator className="my-2" />
-
-              {value.data.map((item) => {
-                const t = item as unknown as {
-                  id: string;
-                  title: string;
-                  perma_url: string;
-                  subtitle?: string;
-                  type: MediaType;
-                  image: Quality;
-                };
-                return (
-                  <Link
-                    key={t.id}
-                    href={getHref(t.perma_url, t.type)}
-                    className="flex gap-2 rounded-md p-2 hover:bg-secondary"
-                  >
-                    <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded border">
-                      <ImageWithFallback
-                        src={getImageSrc(t.image, "low")}
-                        alt=""
-                        fill
-                        sizes="48px"
-                        className={cn(
-                          "z-10 object-cover",
-                          getImageSrc(t.image, "low").includes("default") &&
-                            "dark:invert",
-                        )}
-                        fallback={getPlaceholderSrc(t.type)}
-                      />
-
-                      <Skeleton className="size-full" />
-                    </div>
-
-                    <div className="my-auto min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">
-                        {decode(t.title)}
-                      </div>
-
-                      <div className="truncate text-xs capitalize text-muted-foreground">
-                        {t.subtitle ? decode(t.subtitle) : null}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </section>
+              {items.map((item) => (
+                <SearchRow
+                  key={item.id}
+                  href={getSearchItemHref(item)}
+                  title={item.title}
+                  subtitle={item.subtitle ?? item.extra}
+                  visual={{ kind: "image", src: item.image, type: item.type }}
+                  round={item.type === "artist"}
+                  option={isPalette}
+                  onSelect={onSelect}
+                />
+              ))}
+            </div>
           );
         })}
-    </div>
+    </>
   );
 }

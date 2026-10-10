@@ -6,26 +6,25 @@ import type {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { searchAllInput, searchByTypeInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
 import { hasIdentity, isRecord, secondaryList, withDownloadUrl } from "./utils";
 
 export const searchRouter = router({
-  top: publicProcedure
-    .output(z.custom<TopSearch[]>())
-    .query(async ({ ctx: { catalogApi: api } }) => {
-      const result = await secondaryList(() =>
-        api<TopSearch[]>(endpoints.search.top_search, {}),
-      );
-      // Secondary discovery list on the search page.
-      return Array.isArray(result) ? result : [];
-    }),
+  top: publicProcedure.output(z.custom<TopSearch[]>()).query(async () => {
+    const result = await secondaryList(() =>
+      api<TopSearch[]>(endpoints.search.top_search, {}),
+    );
+    // Secondary discovery list on the search page.
+    return Array.isArray(result) ? result : [];
+  }),
 
   all: publicProcedure
     .input(searchAllInput)
     .output(z.custom<AllSearch>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const result = await api<AllSearch>(endpoints.search.all, {
         query: { query: input.q },
         isVersion4: false,
@@ -42,7 +41,7 @@ export const searchRouter = router({
   byType: publicProcedure
     .input(searchByTypeInput)
     .output(z.custom<SearchReturnType>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       if (input.type === "podcasts") {
         const result = await api(endpoints.search.more, {
           query: {

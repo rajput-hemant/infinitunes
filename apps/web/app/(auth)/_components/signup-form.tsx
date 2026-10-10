@@ -65,7 +65,6 @@ export function SignUpForm() {
           error.status < 500 ? userMessage(error.message) : userMessage(null),
         );
       } else {
-        // Better Auth signs the new user in (autoSignIn defaults to true).
         toast.success("Account Created Successfully");
         router.push(asRoute(callbackUrl));
         router.refresh();
@@ -80,8 +79,11 @@ export function SignUpForm() {
   }
 
   return (
-    <>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
+    <div className="flex flex-col gap-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="order-2 flex flex-col gap-3"
+      >
         <Controller
           control={form.control}
           name="email"
@@ -137,10 +139,12 @@ export function SignUpForm() {
         </Button>
       </form>
 
-      <OAuthButtons
-        isFormDisabled={isSubmitting}
-        setIsSubmitting={setIsSubmitting}
-      />
-    </>
+      <div className="order-1">
+        <OAuthButtons
+          isFormDisabled={isSubmitting}
+          setIsSubmitting={setIsSubmitting}
+        />
+      </div>
+    </div>
   );
 }

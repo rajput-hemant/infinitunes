@@ -29,6 +29,8 @@ const router = {
 
 const { ProfileForm } =
   await import("../../app/(root)/settings/_components/profile-form");
+const { DeleteAccountSection } =
+  await import("../../app/(root)/settings/_components/delete-account-section");
 
 async function mount() {
   const container = document.createElement("div");
@@ -40,6 +42,7 @@ async function mount() {
         <ProfileForm
           user={{ id: "u1", name: "Ada", email: "ada@example.com" }}
         />
+        <DeleteAccountSection />
       </AppRouterContext.Provider>,
     );
   });

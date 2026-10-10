@@ -16,6 +16,7 @@ import type {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import {
   getActorTopSongsInput,
@@ -48,7 +49,7 @@ export const getRouter = router({
   trending: publicProcedure
     .input(getTrendingInput)
     .output(z.custom<Trending>())
-    .query(({ input, ctx: { catalogApi: api } }) =>
+    .query(({ input }) =>
       secondaryList(async () => {
         const lang = input.lang?.split(",")[0];
         const query: Record<string, string> = {};
@@ -80,7 +81,7 @@ export const getRouter = router({
   featuredPlaylists: publicProcedure
     .input(getPagedInput)
     .output(z.custom<FeaturedPlaylists>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       return api<FeaturedPlaylists>(endpoints.get.featured_playlists, {
         query: pagedQuery(input),
       });
@@ -89,7 +90,7 @@ export const getRouter = router({
   charts: publicProcedure
     .input(getPagedInput)
     .output(z.custom<Chart[]>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       return api<Chart[]>(endpoints.get.charts, {
         query: pagedQuery(input),
       });
@@ -98,7 +99,7 @@ export const getRouter = router({
   topShows: publicProcedure
     .input(getPagedInput)
     .output(z.custom<TopShows>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       return api<TopShows>(endpoints.get.top_shows, {
         query: pagedQuery(input),
       });
@@ -107,7 +108,7 @@ export const getRouter = router({
   topArtists: publicProcedure
     .input(getPagedInput)
     .output(z.custom<TopArtists>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       return api<TopArtists>(endpoints.get.top_artists, {
         query: pagedQuery(input),
       });
@@ -116,7 +117,7 @@ export const getRouter = router({
   topAlbums: publicProcedure
     .input(getPagedInput)
     .output(z.custom<TopAlbum>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       return api<TopAlbum>(endpoints.get.top_albums, {
         query: pagedQuery(input),
       });
@@ -125,7 +126,7 @@ export const getRouter = router({
   featuredStations: publicProcedure
     .input(getPagedInput)
     .output(z.custom<Radio[]>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       return api<Radio[]>(endpoints.get.featured_stations, {
         query: pagedQuery(input),
       });
@@ -134,7 +135,7 @@ export const getRouter = router({
   actorTopSongs: publicProcedure
     .input(getActorTopSongsInput)
     .output(z.custom<Song[]>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const result = await secondaryList(() =>
         api(endpoints.get.actor_top_songs, {
           query: {
@@ -152,7 +153,7 @@ export const getRouter = router({
   lyrics: publicProcedure
     .input(getLyricsInput)
     .output(z.custom<Lyrics>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const result = await api<Lyrics>(endpoints.get.lyrics, {
         query: { lyrics_id: input.id },
       });
@@ -168,7 +169,7 @@ export const getRouter = router({
   footer: publicProcedure
     .input(getFooterInput)
     .output(z.custom<FooterDetails>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       return api<FooterDetails>(endpoints.get.footer_details, {
         query: {
           language: input.lang?.split(",")[0] ?? "hindi",
@@ -181,7 +182,7 @@ export const getRouter = router({
   mix: publicProcedure
     .input(getMixInput)
     .output(z.custom<Mix>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const { token, lang } = input;
       if (!token) {
         throw new TRPCError({
@@ -212,7 +213,7 @@ export const getRouter = router({
   label: publicProcedure
     .input(getLabelInput)
     .output(z.custom<Label>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const { token, lang } = input;
       if (!token) {
         throw new TRPCError({
@@ -246,7 +247,7 @@ export const getRouter = router({
   megaMenu: publicProcedure
     .input(getMegaMenuInput)
     .output(z.custom<MegaMenu>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       return api<MegaMenu>(endpoints.get.mega_menu, {
         query: {
           is_entity_page: `${input.entity ?? false}`,

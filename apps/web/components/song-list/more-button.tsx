@@ -322,20 +322,17 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
   return (
     <>
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <Drawer>
           <DrawerTrigger
             aria-label="More Options"
             className={cn(
               controlStyles.rowIcon,
-              "flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+              "flex items-center justify-center outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
               className,
             )}
           >
-            <MoreVertical
-              aria-hidden="true"
-              className="size-5 hover:text-primary"
-            />
+            <MoreVertical aria-hidden="true" className="size-5" />
           </DrawerTrigger>
 
           <DrawerContent className="rounded-t-2xl">
@@ -378,7 +375,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                     <button
                       key={i}
                       onClick={onClick}
-                      className="flex h-11 shrink-0 items-center font-medium"
+                      className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
                     >
                       <Icon className="mr-2 size-5" />
                       {item.type === "song"
@@ -389,7 +386,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
                 <button
                   onClick={() => setTranslateX(-110)}
-                  className="flex h-11 shrink-0 items-center font-medium"
+                  className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
                 >
                   <Share2 className="mr-2 size-5" />
                   Share
@@ -399,7 +396,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                 <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                   <button
                     onClick={() => setTranslateX(0)}
-                    className="flex h-11 shrink-0 items-center px-4 font-medium"
+                    className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
                   >
                     <ChevronLeft className="mr-2 size-5" />
                     Back
@@ -408,7 +405,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
                   <Separator className="-my-2 mb-2" />
 
                   <ShareOptions
-                    className="flex flex-col p-4 [&_a]:flex [&_a]:min-h-11 [&_a]:items-center [&_button]:flex [&_button]:min-h-11 [&_button]:items-center"
+                    className="flex flex-col p-4 [&_a]:flex [&_a]:min-h-(--ctl-lg) [&_a]:items-center [&_button]:flex [&_button]:min-h-(--ctl-lg) [&_button]:items-center"
                     title={getItemName(item)}
                   />
                 </div>
@@ -438,20 +435,17 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         </Drawer>
       </div>
 
-      <div className="hidden lg:block">
+      <div className="hidden md:block">
         <DropdownMenu>
           <DropdownMenuTrigger
             aria-label="More Options"
             className={cn(
               controlStyles.rowIcon,
-              "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+              "inline-flex items-center justify-center outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
               className,
             )}
           >
-            <MoreVertical
-              aria-hidden="true"
-              className="size-5 hover:text-primary"
-            />
+            <MoreVertical aria-hidden="true" className="size-5" />
           </DropdownMenuTrigger>
 
           <DropdownMenuContent

@@ -3,7 +3,6 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
-import { siteConfig } from "~/config/site";
 import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 import { megaMenuOrEmpty } from "~/lib/shell-data";
@@ -11,14 +10,13 @@ import { api } from "~/lib/trpc/server";
 import { cn } from "~/lib/utils";
 
 import { SignedOut } from "../auth-control";
-import { Icons } from "../icons";
 import { SearchMenu } from "../search/search-menu";
 import { TopSearch } from "../search/top-search";
 import { AppSidebarTrigger } from "../sidebar";
 import { UserDropdown } from "../user-dropdown";
 import { LanguagePicker } from "./language-picker";
 import { MainNav } from "./main-nav";
-import { MobileNav } from "./mobile-nav";
+import { ToolbarNavigation } from "./toolbar-navigation";
 
 export async function Navbar() {
   const cookiesStore = await cookies();
@@ -30,45 +28,33 @@ export async function Navbar() {
   ]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background">
-      <div className="flex h-14 w-full items-center space-x-4 px-4 sm:px-8">
-        <Link href="/" className="flex items-center">
-          <div className="flex items-center gap-1">
-            <Icons.Logo className="size-4" />
+    <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] w-full items-center gap-1 bg-background px-2 pt-[env(safe-area-inset-top)] md:h-14 md:gap-2 md:px-[max(var(--page-pad),calc((100%-100rem)/2))] md:pt-0">
+      <AppSidebarTrigger className="hidden md:inline-flex" />
 
-            <span className="font-heading lowercase tracking-wide">
-              {siteConfig.name}
-            </span>
-          </div>
-        </Link>
+      <ToolbarNavigation />
 
-        <AppSidebarTrigger className="hidden lg:flex" />
+      <MainNav megaMenu={megaMenu} className="hidden lg:block" />
 
-        <MainNav megaMenu={megaMenu} className="hidden lg:block" />
+      <div className="flex flex-1 items-center justify-end gap-1 md:gap-2">
+        <SearchMenu topSearch={<TopSearch />} />
 
-        <div className="flex flex-1 items-center justify-end gap-2">
-          <SearchMenu topSearch={<TopSearch />} className="hidden lg:flex" />
+        <LanguagePicker initialLanguages={languages as Lang[]} />
 
-          <LanguagePicker initialLanguages={languages as Lang[]} />
+        <SignedOut>
+          <Link
+            href="/login"
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              controlStyles.text,
+              "hidden md:flex",
+            )}
+          >
+            Sign In
+          </Link>
+        </SignedOut>
 
-          <SignedOut>
-            <Link
-              href="/login"
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                controlStyles.text,
-                "hidden shadow-xs lg:flex",
-              )}
-            >
-              Sign In
-            </Link>
-          </SignedOut>
-
-          <UserDropdown user={user} />
-        </div>
+        <UserDropdown user={user} />
       </div>
-
-      <MobileNav user={user} />
     </header>
   );
 }

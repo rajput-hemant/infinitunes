@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
-import { Separator } from "@infinitunes/ui/components/separator";
 import { List, ListX } from "lucide-react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
@@ -32,64 +31,57 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
-      <DialogContent className="max-w-xl shadow-md">
+      <DialogContent className="sm:max-w-120">
         <DialogHeader>
-          <DialogTitle className="font-heading text-2xl font-normal dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+          <DialogTitle className="font-heading text-xl font-bold tracking-tight">
             Save to Playlist
           </DialogTitle>
         </DialogHeader>
 
-        <Separator />
-
-        <div className="min-h-64">
-          {playlists === undefined ? (
-            // Unknown, not empty: the library read failed.
-            <output className="flex min-h-64 items-center justify-center text-sm text-muted-foreground">
-              Couldn&apos;t load your playlists. You can still create a new one.
-            </output>
-          ) : playlists.length !== 0 ? (
-            <div className="grid gap-2 sm:grid-cols-2">
-              {playlists.map(({ id, name, songs }) => (
-                <Button
-                  key={id}
-                  variant="outline"
-                  onClick={() => addToPlaylist(id, name)}
-                  className="h-14 justify-normal gap-2 px-1 text-start"
-                >
-                  <div className="size-12 shrink-0 rounded-md bg-muted">
-                    <List aria-hidden className="m-auto h-full" />
-                  </div>
-                  <div className="flex min-w-0 flex-col truncate">
-                    <p className="truncate font-medium" title={name}>
-                      {name}
-                    </p>
-                    <p className="truncate text-xs text-muted-foreground">
-                      {songs.length === 0
-                        ? "No songs"
-                        : `${songs.length} ${songs.length === 1 ? "song" : "songs"}`}
-                    </p>
-                  </div>
-                </Button>
-              ))}
-            </div>
-          ) : (
-            <LibraryEmpty
-              icon={ListX}
-              title="No playlists yet"
-              description="Create a playlist to start saving songs."
-              className="min-h-64 lg:min-h-64"
-            />
-          )}
-        </div>
-
-        <Separator />
+        {playlists === undefined ? (
+          // Unknown, not empty: the library read failed.
+          <output className="block py-12 text-center text-muted-foreground">
+            Couldn&apos;t load your playlists. You can still create a new one.
+          </output>
+        ) : playlists.length !== 0 ? (
+          <div className="-mx-2 flex max-h-80 flex-col gap-1 overflow-y-auto">
+            {playlists.map(({ id, name, songs }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => addToPlaylist(id, name)}
+                className="flex w-full items-center gap-3 rounded-sm px-3 py-1 text-start transition-colors duration-fast hover:bg-fill-2 active:bg-fill-2"
+              >
+                <div className="grid size-art shrink-0 place-items-center rounded-[calc(var(--r-sm)*0.75)] bg-fill text-muted-foreground">
+                  <List aria-hidden className="size-4" />
+                </div>
+                <div className="flex min-w-0 flex-col">
+                  <p className="truncate font-medium" title={name}>
+                    {name}
+                  </p>
+                  <p className="truncate text-muted-foreground">
+                    {songs.length === 0
+                      ? "No songs"
+                      : `${songs.length} ${songs.length === 1 ? "song" : "songs"}`}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <LibraryEmpty
+            icon={ListX}
+            title="No playlists yet"
+            description="Create a playlist to start saving songs."
+          />
+        )}
 
         <DialogFooter>
           <DialogClose
             render={
               <Button
-                variant="outline"
-                className={controlStyles.text}
+                variant="secondary"
+                className={controlStyles.textLg}
                 onClick={() => setDialogOpen(false)}
               >
                 Cancel
@@ -98,7 +90,9 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
           />
 
           <NewPlaylistForm user={user}>
-            <Button className={controlStyles.text}>Create New Playlist</Button>
+            <Button className={controlStyles.textLg}>
+              Create New Playlist
+            </Button>
           </NewPlaylistForm>
         </DialogFooter>
       </DialogContent>

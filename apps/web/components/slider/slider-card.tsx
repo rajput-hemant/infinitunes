@@ -1,7 +1,6 @@
 import type { Quality, MediaType } from "@infinitunes/types";
 import { decode, getImageSrc, parseToken } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
-import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Link from "next/link";
@@ -43,103 +42,104 @@ export function SliderCard(props: SliderCardProps) {
   const subtitle = rawSubtitle ? decode(rawSubtitle) : rawSubtitle;
   const imageSrc = getImageSrc(image, "high");
   const isRadio = type === "radio_station";
+  const round = isRadio || type === "artist";
   const href = isRadio ? getHref(url, "radio") : getHref(url, type);
   const isExplicit =
     typeof explicit === "string" ? explicit === "true" : Boolean(explicit);
 
+  const label = (
+    <>
+      {isExplicit && (
+        <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
+          <span aria-hidden="true">E</span>
+          <span className="sr-only">Explicit</span>
+        </Badge>
+      )}
+      <span className="truncate">{name}</span>
+    </>
+  );
+
   return (
-    <Card
-      title={name}
+    <div
       className={cn(
-        "group w-32 shrink-0 cursor-pointer gap-0 border-none bg-transparent py-0 shadow-none ring-0 transition-shadow duration-200 hover:bg-accent hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56",
-        aspect === "video" && "w-44 border-none! sm:w-48 md:w-64 lg:w-72",
+        "group flex min-w-0 flex-col gap-2",
         isCurrentSeason &&
-          "ring-2 ring-ring ring-offset-2 ring-offset-background",
+          "rounded-md ring-2 ring-ring ring-offset-2 ring-offset-background",
         className,
       )}
     >
-      <CardContent className="size-full p-2">
-        <div
+      <div
+        className={cn(
+          "relative overflow-hidden bg-fill shadow-sm transition-[transform,box-shadow] duration-base ease-spring group-hover:shadow-md group-active:scale-98",
+          aspect === "square" ? "aspect-square" : "aspect-video",
+          round ? "rounded-full" : "rounded-md",
+        )}
+      >
+        {href ? (
+          <Link
+            href={href}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="absolute inset-0 z-10"
+          />
+        ) : (
+          <div className="absolute inset-0 z-10" />
+        )}
+
+        <ImageWithFallback
+          src={imageSrc}
+          fallback={getPlaceholderSrc(type)}
+          width={200}
+          height={200}
+          alt={name}
           className={cn(
-            "relative w-full overflow-hidden rounded-md",
-            aspect === "square" ? "aspect-square" : "aspect-video",
-            ["radio_station", "artist"].includes(type) && "rounded-full border",
+            "size-full object-cover",
+            !imageSrc && "dark:invert",
+            imageSrc.includes("default") && "dark:invert",
           )}
-        >
+        />
+
+        <Skeleton className="absolute inset-0 -z-10 size-full" />
+
+        {!hidePlayButton && (
+          <PlayButton
+            aria-label={`Play ${name}`}
+            type={type}
+            token={parseToken(url)}
+            className="absolute right-2 bottom-2 z-20 flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition duration-base ease-spring pointer-fine:translate-y-1.5 pointer-fine:scale-90 pointer-fine:opacity-0 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-none"
+          >
+            <Play className="size-4 fill-current" />
+          </PlayButton>
+        )}
+      </div>
+
+      <div
+        className={cn(
+          "flex min-w-0 flex-col",
+          round && "items-center text-center",
+        )}
+      >
+        <h3 className="w-full text-[0.8125rem] leading-5 font-semibold">
           {href ? (
             <Link
               href={href}
-              tabIndex={-1}
-              aria-hidden="true"
-              className="absolute inset-0 z-10"
-            />
+              className="flex max-w-full min-w-0 items-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {label}
+            </Link>
           ) : (
-            <div className="absolute inset-0 z-10" />
+            <span className="flex max-w-full min-w-0 items-center">
+              {label}
+            </span>
           )}
+        </h3>
 
-          <ImageWithFallback
-            src={imageSrc}
-            fallback={getPlaceholderSrc(type)}
-            width={200}
-            height={200}
-            alt={name}
-            className={cn(
-              "size-full object-cover transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none motion-reduce:group-hover:scale-100",
-              !imageSrc && "dark:invert",
-              imageSrc.includes("default") && "dark:invert",
-            )}
-          />
-
-          <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
-
-          {!hidePlayButton && (
-            // Image scrim: stays black in both themes so the play button reads over any artwork.
-            <div className="absolute inset-0 hidden from-transparent to-black group-focus-within:bg-linear-to-b group-hover:bg-linear-to-b lg:group-focus-within:flex lg:group-hover:flex">
-              <PlayButton
-                aria-label={`Play ${name}`}
-                type={type}
-                token={parseToken(url)}
-                className="group/play z-20 m-auto aspect-square w-12 rounded-full bg-muted/75 transition-transform duration-150 ease-out pointer-fine:hover:scale-105 pointer-fine:active:scale-100 motion-reduce:transition-none motion-reduce:hover:scale-100 motion-reduce:active:scale-100"
-              >
-                <Play strokeWidth={10} className="m-auto h-full w-6 p-0.5" />
-              </PlayButton>
-            </div>
-          )}
-        </div>
-
-        <div className="mt-1 flex w-full flex-col items-center justify-between">
-          <h3 className="w-full font-semibold lg:text-lg">
-            {href ? (
-              <Link
-                href={href}
-                className="mx-auto flex max-w-fit min-w-0 items-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                {isExplicit && (
-                  <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
-                    <span aria-hidden="true">E</span>
-                    <span className="sr-only">Explicit</span>
-                  </Badge>
-                )}
-                <span className="truncate">{name}</span>
-              </Link>
-            ) : (
-              <div className="mx-auto flex max-w-fit items-center">
-                {isExplicit && (
-                  <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
-                    <span aria-hidden="true">E</span>
-                    <span className="sr-only">Explicit</span>
-                  </Badge>
-                )}
-                <span className="truncate">{name}</span>
-              </div>
-            )}
-          </h3>
-
-          <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">
+        {subtitle && (
+          <span className="w-full truncate text-xs leading-4 text-muted-foreground capitalize">
             {subtitle}
           </span>
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
   );
 }

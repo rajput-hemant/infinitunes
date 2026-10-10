@@ -22,6 +22,11 @@ mock.module("~/components/song-list/more-button", () => ({
 mock.module("~/components/song-list/play-pause-button", () => ({
   TilePlayPauseButton: () => null,
 }));
+mock.module("~/components/song-list/song-row", () => ({
+  SongRow: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+}));
 
 const { SongListClient } =
   await import("../../components/song-list/song-list.client");

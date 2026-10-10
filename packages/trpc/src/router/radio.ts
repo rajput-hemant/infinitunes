@@ -3,6 +3,7 @@ import { parseToken } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import {
   createStationInput,
@@ -34,7 +35,7 @@ export const radioRouter = router({
   createStation: publicProcedure
     .input(createStationInput)
     .output(z.object({ stationId: z.string() }))
-    .mutation(async ({ input, ctx: { catalogApi: api } }) => {
+    .mutation(async ({ input }) => {
       let stationId = "";
 
       if (input.type === "artist" && input.artistId) {
@@ -87,7 +88,7 @@ export const radioRouter = router({
   songs: publicProcedure
     .input(radioSongsInput)
     .output(z.custom<Song[]>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const result = await api(endpoints.radio.get_song, {
         query: {
           stationid: input.stationId,
@@ -104,7 +105,7 @@ export const radioRouter = router({
   stationDetails: publicProcedure
     .input(stationDetailsInput)
     .output(z.custom<StationDetailsResponse>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const page1 = await api<Radio[]>(endpoints.get.featured_stations, {
         query: { p: 1, n: 50, languages: input.lang },
       });

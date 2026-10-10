@@ -3,8 +3,6 @@ import type { DbClient } from "@infinitunes/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 
-import { api } from "./lib/api";
-
 type AuthSession = NonNullable<Awaited<ReturnType<Auth["api"]["getSession"]>>>;
 
 export type Session = {
@@ -18,7 +16,6 @@ export type Session = {
 
 export type TRPCContext = {
   db: DbClient;
-  catalogApi?: typeof api;
   /**
    * A loaded session, or a thunk. The RSC caller passes `getSession` so
    * public procedures skip the lookup; the HTTP adapter passes the value.
@@ -38,9 +35,7 @@ async function resolveSession(
 }
 
 export const router = t.router;
-export const publicProcedure = t.procedure.use(({ ctx, next }) =>
-  next({ ctx: { ...ctx, catalogApi: ctx.catalogApi ?? api } }),
-);
+export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(async ({ ctx, next }) => {
   const session = await resolveSession(ctx.session);
 

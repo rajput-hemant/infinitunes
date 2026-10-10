@@ -2,19 +2,17 @@ import type { Episode, Song, SongObj } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { songInput, songItemsInput, songRecommendInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
 import { isRecord, secondaryList, withDownloadUrl } from "./utils";
 
-async function fetchSongObj(
-  input: {
-    id?: string;
-    token?: string;
-    lang?: string;
-  },
-  api: typeof import("../lib/api").api,
-): Promise<SongObj<Song | Episode>> {
+async function fetchSongObj(input: {
+  id?: string;
+  token?: string;
+  lang?: string;
+}): Promise<SongObj<Song | Episode>> {
   const { id, token, lang } = input;
   if (!id && !token) {
     throw new TRPCError({
@@ -46,21 +44,18 @@ export const songRouter = router({
   details: publicProcedure
     .input(songInput)
     .output(z.custom<SongObj>())
-    .query(
-      async ({ input, ctx: { catalogApi: api } }) =>
-        (await fetchSongObj(input, api)) as SongObj,
-    ),
+    .query(async ({ input }) => (await fetchSongObj(input)) as SongObj),
 
   // Upstream also resolves episode ids through the same endpoint.
   items: publicProcedure
     .input(songItemsInput)
     .output(z.custom<SongObj<Song | Episode>>())
-    .query(({ input, ctx: { catalogApi: api } }) => fetchSongObj(input, api)),
+    .query(({ input }) => fetchSongObj(input)),
 
   recommendations: publicProcedure
     .input(songRecommendInput)
     .output(z.custom<Song[]>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const result = await secondaryList(() =>
         api(endpoints.song.recommend, {
           query: {

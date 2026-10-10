@@ -1,5 +1,4 @@
 import type { MediaType } from "@infinitunes/types";
-import { Button } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { controlStyles } from "~/lib/control-styles";
@@ -12,83 +11,51 @@ type DetailsHeaderSkeletonProps = {
 export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
   const subtileSkeletonCount = (
     {
-      album: 2,
+      album: 1,
       artist: 1,
       channel: 1,
-      episode: 3,
-      label: 1,
+      episode: 2,
+      label: 0,
       mix: 1,
       playlist: 1,
       radio: 1,
       radio_station: 1,
-      season: 2,
-      show: 2,
+      season: 1,
+      show: 1,
       song: 3,
     } satisfies Record<MediaType, number>
   )[type];
 
   return (
-    <div className="pointer-events-none mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
-      <div
+    <div className="pointer-events-none mb-6 grid items-end justify-items-center gap-4 rounded-lg p-4 md:grid-cols-[auto_minmax(0,1fr)] md:justify-items-stretch md:gap-8 md:p-6">
+      <Skeleton
         className={cn(
-          "relative aspect-square w-44 overflow-hidden rounded-md border p-1 shadow-md transition-shadow duration-300 hover:shadow-xl md:w-56 xl:w-64",
+          "aspect-square w-[min(60vw,14rem)] rounded-md md:w-36 lg:w-44 min-[90rem]:w-56",
           (type === "artist" || type === "label") && "rounded-full",
         )}
-      >
-        <Skeleton
-          className={cn(
-            "absolute inset-1",
-            (type === "artist" || type === "label") && "rounded-full",
-          )}
-        />
-      </div>
+      />
 
-      <div className="flex min-w-0 w-full flex-col items-center justify-center font-medium lg:items-start lg:gap-2 lg:p-1">
-        <div className="space-y-2">
-          <Skeleton className="h-6 w-72 max-w-full sm:h-7 md:h-8 md:w-96 lg:h-9" />
+      <div className="flex min-w-0 w-full flex-col items-center md:items-start">
+        <Skeleton className="h-4 w-20" />
 
-          <div className="space-y-2 text-sm text-muted-foreground">
-            {Array.from({ length: subtileSkeletonCount }).map((_, i) => (
-              <Skeleton
-                key={i}
-                className="mx-auto h-5 max-w-full lg:mx-0"
-                style={{ width: `${256 - i * 32}px` }}
-              />
-            ))}
-          </div>
+        <Skeleton className="mt-1 mb-2 h-8 w-72 max-w-full md:h-10 md:w-96 lg:h-12" />
+
+        <div className="flex w-full flex-col items-center gap-1 md:items-start">
+          {Array.from({ length: subtileSkeletonCount }).map((_, i) => (
+            <Skeleton
+              key={i}
+              className="h-5 max-w-full"
+              style={{ width: `${256 - i * 32}px` }}
+            />
+          ))}
         </div>
 
         {type !== "label" && (
-          <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
-            <Button
-              className={cn(
-                controlStyles.hero,
-                "text-base font-semibold text-primary",
-              )}
-            >
-              Play
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              className={controlStyles.heroIcon}
-            >
-              <Skeleton className="size-5 rounded-full" />
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              className={controlStyles.heroIcon}
-            >
-              <Skeleton className="size-5 rounded-full" />
-            </Button>
-            <Button
-              size="icon"
-              variant="outline"
-              className={controlStyles.heroIcon}
-            >
-              <Skeleton className="size-5 rounded-full" />
-            </Button>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 md:justify-start">
+            <Skeleton className={cn(controlStyles.hero, "w-24")} />
+            <Skeleton className={controlStyles.headerIcon} />
+            <Skeleton className={controlStyles.headerIcon} />
+            <Skeleton className={controlStyles.headerIcon} />
           </div>
         )}
       </div>

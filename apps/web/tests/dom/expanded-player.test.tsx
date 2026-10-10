@@ -32,53 +32,76 @@ const trpcClient = api.createClient({
 
 const noop = () => {};
 
+async function mountExpanded() {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  await act(async () => {
+    root.render(
+      <SearchParamsContext.Provider value={new URLSearchParams()}>
+        <api.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <AudioPlayerProvider>
+              <ExpandedPlayer
+                open
+                onOpenChange={noop}
+                track={track}
+                position={createPositionStore(0)}
+                duration={100}
+                isPlaying={false}
+                isLoading={false}
+                isLooping={false}
+                loopPlaylist={false}
+                isShuffle={false}
+                isMuted={false}
+                isReady
+                volume={1}
+                onSeekStart={noop}
+                onSeekChange={noop}
+                onSeekCommit={noop}
+                onVolumeChange={noop}
+                onToggleMute={noop}
+                onLoop={noop}
+                onPrevious={noop}
+                onPlayPause={noop}
+                onNext={noop}
+                onToggleShuffle={noop}
+              />
+            </AudioPlayerProvider>
+          </QueryClientProvider>
+        </api.Provider>
+      </SearchParamsContext.Provider>,
+    );
+  });
+  return root;
+}
+
 describe("expanded player sheet", () => {
   it("renders exactly one Close button", async () => {
-    const container = document.createElement("div");
-    document.body.append(container);
-    const root = createRoot(container);
-    await act(async () => {
-      root.render(
-        <SearchParamsContext.Provider value={new URLSearchParams()}>
-          <api.Provider client={trpcClient} queryClient={queryClient}>
-            <QueryClientProvider client={queryClient}>
-              <AudioPlayerProvider>
-                <ExpandedPlayer
-                  open
-                  onOpenChange={noop}
-                  track={track}
-                  position={createPositionStore(0)}
-                  duration={100}
-                  isPlaying={false}
-                  isLoading={false}
-                  isLooping={false}
-                  loopPlaylist={false}
-                  isShuffle={false}
-                  isMuted={false}
-                  isReady
-                  volume={1}
-                  onSeekStart={noop}
-                  onSeekChange={noop}
-                  onSeekCommit={noop}
-                  onVolumeChange={noop}
-                  onToggleMute={noop}
-                  onLoop={noop}
-                  onPrevious={noop}
-                  onPlayPause={noop}
-                  onNext={noop}
-                  onToggleShuffle={noop}
-                />
-              </AudioPlayerProvider>
-            </QueryClientProvider>
-          </api.Provider>
-        </SearchParamsContext.Provider>,
-      );
-    });
+    const root = await mountExpanded();
 
     const closes = document.querySelectorAll(
       '[role="dialog"] button[aria-label="Close"]',
     );
     expect(closes).toHaveLength(1);
+
+    await act(async () => root.unmount());
+  });
+
+  it("keeps the queue behind a toggle on phones", async () => {
+    const root = await mountExpanded();
+    const toggle = document.querySelector<HTMLButtonElement>(
+      'button[aria-label="Up next"]',
+    );
+    const region = () =>
+      document.getElementById(toggle?.getAttribute("aria-controls") ?? "");
+
+    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+    expect(region()?.classList.contains("hidden")).toBe(true);
+
+    await act(async () => toggle?.click());
+    expect(toggle?.getAttribute("aria-pressed")).toBe("true");
+    expect(region()?.classList.contains("hidden")).toBe(false);
 
     await act(async () => root.unmount());
   });

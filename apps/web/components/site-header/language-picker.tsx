@@ -54,17 +54,17 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
         render={
           <Button
             aria-label="Choose languages"
-            variant="outline"
+            variant="ghost"
             className={cn(
               controlStyles.headerIcon,
-              "space-x-1 p-0 shadow-xs lg:w-auto lg:space-x-2 lg:px-3",
+              "gap-2 p-0 md:w-auto md:px-3",
             )}
           >
             <Languages aria-hidden="true" className="aspect-square size-4" />
-            <span className="hidden text-sm lg:inline-block">Languages</span>
+            <span className="hidden text-sm md:inline-block">Languages</span>
             <ChevronDown
               className={cn(
-                "hidden size-4 duration-300 lg:inline-block",
+                "hidden size-4 duration-base md:inline-block",
                 isOpen && "rotate-180",
               )}
             />

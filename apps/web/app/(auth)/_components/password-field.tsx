@@ -49,7 +49,7 @@ export function PasswordField(props: PasswordFieldProps) {
           disabled={disabled}
           aria-invalid={!!fieldState.error}
           placeholder="••••••••••"
-          className="h-11 pr-12 shadow-xs"
+          className={cn(controlStyles.text, "w-full pr-10 shadow-xs")}
           {...field}
         />
         <Tooltip>
@@ -65,9 +65,9 @@ export function PasswordField(props: PasswordFieldProps) {
             )}
           >
             {isVisible ? (
-              <EyeOff aria-hidden className="size-5" />
+              <EyeOff aria-hidden className="size-4" />
             ) : (
-              <Eye aria-hidden className="size-5" />
+              <Eye aria-hidden className="size-4" />
             )}
           </TooltipTrigger>
 

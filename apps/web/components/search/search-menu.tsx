@@ -1,15 +1,14 @@
 "use client";
 
-import type { AllSearch } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogTitle,
   DialogTrigger,
 } from "@infinitunes/ui/components/dialog";
-import { Input } from "@infinitunes/ui/components/input";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import {
   useDeferredValue,
@@ -24,9 +23,16 @@ import { controlStyles } from "~/lib/control-styles";
 import { api } from "~/lib/trpc/client";
 import { cn, isMacOs } from "~/lib/utils";
 
-import { SearchAll } from "./search-all";
+import { SearchField } from "./search-field";
+import { SearchPaletteBody } from "./search-palette-body";
+import { resolveSearchState } from "./search-status";
+import { searchUi } from "./search-ui";
+import { useRecentSearches } from "./use-recent-searches";
+import { useSearchPaletteKeys } from "./use-search-palette-keys";
 
 const subscribeNever = () => () => {};
+
+const LISTBOX_ID = "search-palette-listbox";
 
 type SearchMenuProps = {
   className?: string;
@@ -37,7 +43,6 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   const pathname = usePathname();
 
   const [query, setQuery] = useState("");
-  // The dialog is open for the path it was opened on, so navigating closes it.
   const [openPath, setOpenPath] = useState<string | null>(null);
   const isOpen = openPath === pathname;
   if (openPath !== null && !isOpen) setOpenPath(null);
@@ -54,7 +59,13 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
   const deferredQuery = useDeferredValue(query.trim());
 
-  const [_, setIsTyping] = useIsTyping();
+  const [, setIsTyping] = useIsTyping();
+  const { recent, add } = useRecentSearches();
+  const { activeOptionId } = useSearchPaletteKeys({
+    enabled: isOpen,
+    listboxId: LISTBOX_ID,
+    resetKey: deferredQuery,
+  });
 
   useKeydown((e: KeyboardEvent) => {
     if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -67,73 +78,103 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
     setIsTyping(isOpen);
   }, [isOpen, setIsTyping]);
 
-  const { data: searchResult, isLoading } = api.search.all.useQuery(
+  const { data, error } = api.search.all.useQuery(
     { q: deferredQuery },
-    { enabled: deferredQuery.length > 0 },
+    { enabled: deferredQuery.length > 0, retry: false },
   );
 
-  const result = searchResult as AllSearch | undefined;
+  const results = resolveSearchState(data, error);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger
         render={
           <Button
-            size="sm"
-            variant="outline"
+            type="button"
+            variant="ghost"
+            aria-label="Search"
+            aria-keyshortcuts="Control+K Meta+K"
             className={cn(
-              "flex p-0 text-sm shadow-xs lg:w-60 lg:justify-start lg:px-3",
-              className,
               controlStyles.headerIcon,
+              searchUi.trigger,
+              className,
             )}
           >
-            <Search
-              aria-hidden="true"
-              className="inline-block size-4 lg:mr-2"
-            />
-            <span className="sr-only">Search</span>
-
-            <span className="hidden lg:inline-block">Search...</span>
-
-            <kbd className="pointer-events-none ml-auto hidden h-6 select-none items-center rounded border bg-muted px-1.5 font-mono text-[10px] font-medium lg:block">
-              <span className="text-xs">
-                {mounted && isMacOs() ? "⌘" : "Ctrl"}
-              </span>{" "}
-              K
+            <Search aria-hidden="true" className="size-5 lg:size-4" />
+            <span className="hidden flex-1 text-left lg:inline">Search</span>
+            <kbd
+              className={cn(
+                searchUi.kbd,
+                "pointer-events-none hidden lg:inline-grid",
+              )}
+            >
+              {mounted && isMacOs() ? "⌘" : "Ctrl"} K
             </kbd>
           </Button>
         }
       />
 
-      <DialogContent className="max-w-7xl shadow-md sm:max-w-7xl">
+      <DialogContent
+        data-search-palette
+        showCloseButton={false}
+        className="top-[12vh] flex max-h-[min(88dvh,100%)] translate-y-0 flex-col gap-0 overflow-hidden rounded-lg p-0 sm:max-w-160"
+      >
         <DialogTitle className="sr-only">Search</DialogTitle>
 
-        <div className="relative mr-4 mt-4">
-          <Search
-            aria-hidden="true"
-            className="absolute left-2 top-3 size-4 text-muted-foreground"
-          />
-
-          <Input
+        <div className="flex shrink-0 items-center border-b border-border pr-3">
+          <SearchField
+            variant="palette"
             aria-label="Search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search"
-            className="h-10 w-full pl-8"
+            placeholder="Search songs, albums, artists, podcasts"
+            className="min-w-0 flex-1"
+            combobox={{
+              listboxId: LISTBOX_ID,
+              expanded: isOpen,
+              activeOptionId,
+            }}
+          />
+          <DialogClose
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                aria-label="Close"
+                className={controlStyles.headerIcon}
+              />
+            }
+          >
+            <X aria-hidden="true" className="size-4" />
+          </DialogClose>
+        </div>
+
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <SearchPaletteBody
+            query={deferredQuery}
+            listboxId={LISTBOX_ID}
+            results={results}
+            recent={recent}
+            topSearch={topSearch}
+            onSelect={() => add(deferredQuery)}
           />
         </div>
 
-        {deferredQuery.length ? (
-          isLoading ? (
-            <output className="m-auto block aspect-square h-16 animate-spin rounded-full border-y-2 border-primary py-10 lg:h-32">
-              <span className="sr-only">Loading Results</span>
-            </output>
-          ) : (
-            result && <SearchAll query={query} data={result} />
-          )
-        ) : (
-          topSearch
-        )}
+        <div className="hidden shrink-0 items-center gap-4 border-t border-border px-4 py-2 text-xs leading-4 text-muted-foreground sm:flex">
+          <span className="inline-flex items-center gap-1">
+            <kbd className={searchUi.kbd}>↑</kbd>
+            <kbd className={searchUi.kbd}>↓</kbd>
+            navigate
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <kbd className={searchUi.kbd}>↵</kbd>
+            open
+          </span>
+          <span className="inline-flex items-center gap-1">
+            <kbd className={searchUi.kbd}>esc</kbd>
+            close
+          </span>
+        </div>
       </DialogContent>
     </Dialog>
   );

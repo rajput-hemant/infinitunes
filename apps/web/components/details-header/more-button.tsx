@@ -230,15 +230,15 @@ export function MoreButton(props: MoreButtonProps) {
 
   return (
     <div>
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <Drawer>
           <DrawerTrigger
             render={
               <Button
                 aria-label="More options"
                 size="icon"
-                variant="outline"
-                className={controlStyles.heroIcon}
+                variant="ghost"
+                className={controlStyles.headerIcon}
               >
                 <MoreVertical className="size-5" />
               </Button>
@@ -282,7 +282,7 @@ export function MoreButton(props: MoreButtonProps) {
                   <button
                     key={i}
                     onClick={onClick}
-                    className="flex h-11 items-center font-medium"
+                    className="flex h-(--ctl-lg) items-center font-medium"
                   >
                     <Icon className="mr-2 size-5" />
                     {label}
@@ -291,7 +291,7 @@ export function MoreButton(props: MoreButtonProps) {
 
               <button
                 onClick={() => setTranslateX(-110)}
-                className="flex h-11 items-center font-medium"
+                className="flex h-(--ctl-lg) items-center font-medium"
               >
                 <Share2 className="mr-2 size-5" />
                 Share
@@ -301,7 +301,7 @@ export function MoreButton(props: MoreButtonProps) {
               <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
                   onClick={() => setTranslateX(0)}
-                  className="flex h-11 items-center px-4 font-medium"
+                  className="flex h-(--ctl-lg) items-center px-4 font-medium"
                 >
                   <ChevronLeft className="mr-2 size-5" />
                   Back
@@ -333,15 +333,15 @@ export function MoreButton(props: MoreButtonProps) {
           </DrawerContent>
         </Drawer>
       </div>
-      <div className="hidden lg:block">
+      <div className="hidden md:block">
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
               <Button
                 aria-label="More options"
                 size="icon"
-                variant="outline"
-                className={controlStyles.heroIcon}
+                variant="ghost"
+                className={controlStyles.headerIcon}
               >
                 <MoreVertical className="size-5" />
               </Button>

@@ -1,5 +1,12 @@
 import { formatCount } from "@infinitunes/types";
+import { Users } from "lucide-react";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
+import {
+  CatalogEmpty,
+  CatalogEnd,
+} from "~/app/(root)/browse/_components/catalog-states";
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
@@ -17,32 +24,38 @@ export const metadata = pageMetadata({
 
 export default async function TopArtistsPage() {
   const topArtists = await api.get.topArtists({ page: 1, n: 50 });
+  const artists = topArtists?.top_artists ?? [];
 
   return (
-    <div className="my-4 space-y-4">
-      <h1 className="font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-        Top Artists
-      </h1>
+    <div>
+      <CatalogHeader title="Top Artists" />
 
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
-        {topArtists?.top_artists?.map(
-          ({ artistid, name, perma_url, follower_count, image }) => (
-            <SliderCard
-              key={artistid}
-              name={name}
-              url={perma_url}
-              subtitle={`${formatCount(follower_count)} Fans`}
-              type="artist"
-              image={image}
-            />
-          ),
-        )}
-      </div>
+      {artists.length === 0 ? (
+        <CatalogEmpty
+          icon={Users}
+          title="No artists yet"
+          description="Check back later for the top artists."
+        />
+      ) : (
+        <>
+          <CatalogGrid>
+            {artists.map(
+              ({ artistid, name, perma_url, follower_count, image }) => (
+                <SliderCard
+                  key={artistid}
+                  name={name}
+                  url={perma_url}
+                  subtitle={`${formatCount(follower_count)} Fans`}
+                  type="artist"
+                  image={image}
+                />
+              ),
+            )}
+          </CatalogGrid>
 
-      <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-        <em>Yay! You have seen it all</em>{" "}
-        <span className="text-foreground">🤩</span>
-      </h2>
+          <CatalogEnd />
+        </>
+      )}
     </div>
   );
 }

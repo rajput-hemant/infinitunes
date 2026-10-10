@@ -10,8 +10,8 @@ export const metadata = {
 export default function ForgotPasswordModal() {
   return (
     <AuthModal
-      title="Forgot Password"
-      description="Enter your email and we will send you a reset link"
+      title="Forgot password"
+      description="We will email you a link to reset it."
     >
       <ForgotPasswordForm />
     </AuthModal>

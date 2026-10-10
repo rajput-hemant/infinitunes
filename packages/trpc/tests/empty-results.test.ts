@@ -3,6 +3,8 @@ import { beforeAll, describe, expect, it } from "bun:test";
 import { db } from "@infinitunes/db";
 import { TRPCError } from "@trpc/server";
 
+import { clearApiCache } from "../src/lib/api";
+
 process.env.JIOSAAVN_DES_KEY ??= "38346591";
 
 async function createTestCaller() {
@@ -15,6 +17,7 @@ let caller: Awaited<ReturnType<typeof createTestCaller>>;
 /** Upstream `__call` value -> JSON body, set per test. */
 let responses: Record<string, unknown> = {};
 
+/** Distinct query per test so the in-memory api cache never cross-talks. */
 let seq = 0;
 const uniq = () => `empty-${++seq}`;
 
@@ -91,6 +94,7 @@ describe("secondary upstream outages", () => {
   for (const code of ["BAD_GATEWAY", "TIMEOUT"] as const) {
     it(`degrades secondary lists on ${code} while primary errors propagate`, async () => {
       const originalFetch = globalThis.fetch;
+      clearApiCache();
       globalThis.fetch = async () => {
         if (code === "TIMEOUT")
           throw new DOMException("Timed out", "AbortError");
@@ -119,6 +123,7 @@ describe("secondary upstream outages", () => {
         ).rejects.toMatchObject({ code });
       } finally {
         globalThis.fetch = originalFetch;
+        clearApiCache();
       }
     });
   }
@@ -131,6 +136,7 @@ describe("secondary upstream outages", () => {
         () => new Response("nope", { status: 404 }),
         () => new Response("<html>", { status: 200 }),
       ]) {
+        clearApiCache();
         globalThis.fetch = async () => respond();
         await expect(
           caller.song.recommendations({ id: uniq() }),
@@ -138,16 +144,19 @@ describe("secondary upstream outages", () => {
       }
     } finally {
       globalThis.fetch = originalFetch;
+      clearApiCache();
     }
   });
 
   it("degrades upstream 5xx", async () => {
     const originalFetch = globalThis.fetch;
     try {
+      clearApiCache();
       globalThis.fetch = async () => new Response("down", { status: 503 });
       expect(await caller.song.recommendations({ id: uniq() })).toEqual([]);
     } finally {
       globalThis.fetch = originalFetch;
+      clearApiCache();
     }
   });
 

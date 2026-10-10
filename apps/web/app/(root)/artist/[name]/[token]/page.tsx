@@ -128,7 +128,7 @@ export default async function ArtistDetailsPage(props: Props) {
   const topSongs = artist.topSongs ?? [];
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={artist} />
 
       <Tabs defaultValue={selectedTab}>
@@ -136,8 +136,11 @@ export default async function ArtistDetailsPage(props: Props) {
 
         <Separator className="my-4" />
 
-        <TabsContent value={TABS.Overview} className="space-y-4">
-          <h2 className="pl-2 font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+        <TabsContent
+          value={TABS.Overview}
+          className="flex flex-col gap-(--page-gap)"
+        >
+          <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
             {artist.modules?.topSongs?.title}
           </h2>
           <SongList items={topSongs.slice(0, 10)} />
@@ -169,8 +172,8 @@ export default async function ArtistDetailsPage(props: Props) {
 
         <TabsContent value={TABS.Biography} className="max-w-3xl">
           {artist.bio && (
-            <small
-              className="leading-2"
+            <div
+              className="rounded-md bg-card p-6 text-sm leading-6 text-muted-foreground ring-1 ring-inset ring-border"
               dangerouslySetInnerHTML={{
                 __html: sanitizeRichText(decode(artist.bio)),
               }}

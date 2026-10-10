@@ -13,7 +13,7 @@ export function RetryButton() {
 
   return (
     <Button
-      variant="outline"
+      variant="secondary"
       className={controlStyles.text}
       disabled={isPending}
       onClick={() => startTransition(() => router.refresh())}

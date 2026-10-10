@@ -2,6 +2,7 @@ import type { Modules } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
+import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { publicProcedure, router } from "../trpc";
 import { isRecord, withDownloadUrl } from "./utils";
@@ -10,7 +11,7 @@ export const homeRouter = router({
   home: publicProcedure
     .input(z.object({ lang: z.string().optional() }))
     .output(z.custom<Modules>())
-    .query(async ({ input, ctx: { catalogApi: api } }) => {
+    .query(async ({ input }) => {
       const result = await api(endpoints.modules.launch_data, {
         language: input.lang,
       });

@@ -1,52 +1,55 @@
 import type { Lang } from "@infinitunes/types";
-import { Badge } from "@infinitunes/ui/components/badge";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import Link from "next/link";
 
 import { languages } from "~/config/languages";
+import { controlStyles } from "~/lib/control-styles";
 import { asRoute, cn } from "~/lib/utils";
 
 type LanguageBarProps = { language?: Lang };
 
+const chipBase = cn(
+  controlStyles.text,
+  "inline-flex shrink-0 items-center gap-2 px-3 text-[0.8125rem] leading-5 font-medium transition-[background-color,transform] duration-fast active:scale-96",
+);
+
+function chipClass(selected: boolean) {
+  return selected
+    ? cn(chipBase, "bg-foreground text-background")
+    : cn(chipBase, "bg-fill hover:bg-fill-2");
+}
+
 export function LanguageBar({ language }: LanguageBarProps) {
   return (
-    <ScrollArea className="border-b py-2">
-      <ul className="flex space-x-2 py-1 sm:space-x-6 md:space-x-10 lg:space-x-12">
+    <div className="mb-6 overflow-x-auto p-0.5 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <ul className="flex gap-2">
         <li>
           <Link
             title="For You"
             href={asRoute("?")}
-            aria-current={language ? undefined : "page"}
+            aria-pressed={!language}
+            className={chipClass(!language)}
           >
-            <Badge
-              className={cn(
-                "bg-primary p-2 hover:shadow-sm lg:px-4",
-                language && "bg-primary-foreground text-primary hover:bg-muted",
-              )}
-            >
-              For&nbsp;you
-            </Badge>
+            For&nbsp;you
           </Link>
         </li>
 
-        {languages.map((lang) => (
-          <li key={lang}>
-            <Link title={lang} href={asRoute(`?lang=${lang.toLowerCase()}`)}>
-              <Badge
-                className={cn(
-                  "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-xs lg:px-4",
-                  language === lang.toLowerCase() &&
-                    "bg-primary! text-primary-foreground",
-                )}
+        {languages.map((lang) => {
+          const selected = language === lang.toLowerCase();
+
+          return (
+            <li key={lang}>
+              <Link
+                title={lang}
+                href={asRoute(`?lang=${lang.toLowerCase()}`)}
+                aria-pressed={selected}
+                className={chipClass(selected)}
               >
                 {lang}
-              </Badge>
-            </Link>
-          </li>
-        ))}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
-
-      <ScrollBar orientation="horizontal" className="invisible" />
-    </ScrollArea>
+    </div>
   );
 }

@@ -1,24 +1,23 @@
 "use client";
 
-import { getImageSrc, parseToken, removeFromQueue } from "@infinitunes/types";
-import { Button } from "@infinitunes/ui/components/button";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@infinitunes/ui/components/sheet";
+  formatDuration,
+  getImageSrc,
+  parseToken,
+  removeFromQueue,
+} from "@infinitunes/types";
+import { Button } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import { ListOrdered, X } from "lucide-react";
+import { useAtom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
+import { X } from "lucide-react";
 import Link from "next/link";
 import * as React from "react";
 import { toast } from "sonner";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
+import { useKeydown } from "~/hooks/use-keydown";
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
 import { controlStyles } from "~/lib/control-styles";
 import { cn, getHref } from "~/lib/utils";
@@ -29,8 +28,8 @@ import { TilePlayPauseButton } from "./song-list/play-pause-button";
 /** Exit transition length; the row is removed from state once it finishes. */
 const REMOVE_MS = 200;
 
-/** The queue rows, shared by the desktop sheet and the mobile player sheet. */
-export function QueueList() {
+/** The queue rows, shared by the docked pane and expanded player. */
+export function QueueList({ upNextOnly = false }: { upNextOnly?: boolean }) {
   const [queue, setQueue] = useQueue();
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
 
@@ -138,25 +137,25 @@ export function QueueList() {
       aria-label="Queue"
       className="text-muted-foreground outline-none"
     >
-      {queue.map((item) => (
-        <li
-          key={item.queueItemId}
-          data-leaving={leaving.has(item.queueItemId) ? "" : undefined}
-          inert={leaving.has(item.queueItemId)}
-          aria-hidden={leaving.has(item.queueItemId) || undefined}
-          className="group/row grid w-full [contain-intrinsic-size:auto_4.875rem] lg:[contain-intrinsic-size:auto_4rem] [content-visibility:auto] grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-200 ease-out data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
-        >
-          <div className="min-h-0 overflow-hidden pb-2 transition-[padding] duration-200 ease-out group-data-leaving/row:pb-0">
-            <div className="group relative flex min-h-14 w-full cursor-pointer items-center justify-between truncate rounded-md border px-2 text-sm transition-shadow duration-150 hover:shadow-md">
-              <figure className="flex w-full items-center gap-4 overflow-hidden">
-                <div className="relative aspect-square h-11 min-w-fit lg:h-10 overflow-hidden rounded">
+      {queue.map((item, index) =>
+        upNextOnly && index <= currentIndex ? null : (
+          <li
+            key={item.queueItemId}
+            data-leaving={leaving.has(item.queueItemId) ? "" : undefined}
+            inert={leaving.has(item.queueItemId)}
+            aria-hidden={leaving.has(item.queueItemId) || undefined}
+            className="group/row grid w-full [contain-intrinsic-size:auto_3rem] [content-visibility:auto] grid-rows-[1fr] transition-[grid-template-rows,opacity,translate] duration-base ease-spring data-leaving:-translate-x-2 data-leaving:grid-rows-[0fr] data-leaving:opacity-0"
+          >
+            <div className="min-h-0 overflow-hidden pb-0.5 transition-[padding] duration-base ease-spring group-data-leaving/row:pb-0">
+              <div className="group relative grid min-h-12 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-sm px-2 py-1 text-sm transition-colors duration-fast hover:bg-fill focus-within:bg-fill active:bg-fill-2">
+                <div className="relative size-art shrink-0 overflow-hidden rounded-sm">
                   <ImageWithFallback
                     src={getImageSrc(item.image, "low")}
                     alt=""
                     fill
                     sizes="44px"
                     fallback={getPlaceholderSrc("song")}
-                    className="z-10 object-cover duration-300 group-hover:brightness-50"
+                    className="z-10 object-cover"
                   />
 
                   <Skeleton className="absolute inset-0 rounded" />
@@ -169,15 +168,15 @@ export function QueueList() {
                   />
                 </div>
 
-                <figcaption className="flex min-w-0 flex-1 flex-col">
-                  <h4 className="w-full truncate font-semibold">
+                <div className="flex min-w-0 flex-col">
+                  <h4 className="w-full truncate text-[0.8125rem]/5 font-medium">
                     <Link
                       href={getHref(
                         item.url,
                         item.type === "song" ? "song" : "episode",
                       )}
                       title={item.name}
-                      className="flex min-h-11 items-center text-primary group-hover:text-primary after:absolute after:inset-0 lg:min-h-0 lg:text-muted-foreground"
+                      className="flex min-h-11 items-center text-foreground after:absolute after:inset-0 lg:min-h-0"
                     >
                       {item.name}
                     </Link>
@@ -188,80 +187,199 @@ export function QueueList() {
                     className="max-w-[400px]"
                     linkClassName="relative z-10 inline-flex min-h-6 items-center lg:inline lg:min-h-0"
                   />
-                </figcaption>
+                </div>
 
-                <Button
-                  variant="ghost"
-                  data-queue-remove=""
-                  aria-label={`Remove ${item.name} from queue`}
-                  disabled={leaving.has(item.queueItemId)}
-                  tabIndex={leaving.has(item.queueItemId) ? -1 : undefined}
-                  onClick={() => removeItem(item.queueItemId)}
-                  className={cn(
-                    controlStyles.rowIcon,
-                    "relative z-10 ml-auto shrink-0 p-0 text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                <div className="flex items-center gap-1">
+                  {item.duration > 0 && (
+                    <span className="text-xs/4 tabular-nums">
+                      {formatDuration(item.duration, "mm:ss")}
+                    </span>
                   )}
-                >
-                  <X aria-hidden className="size-5" />
-                </Button>
-              </figure>
+                  <Button
+                    variant="ghost"
+                    data-queue-remove=""
+                    aria-label={`Remove ${item.name} from queue`}
+                    disabled={leaving.has(item.queueItemId)}
+                    tabIndex={leaving.has(item.queueItemId) ? -1 : undefined}
+                    onClick={() => removeItem(item.queueItemId)}
+                    className={cn(
+                      controlStyles.rowIcon,
+                      "relative z-10 shrink-0 p-0 text-muted-foreground opacity-0 transition-opacity duration-fast hover:bg-fill-2 hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 group-focus-within:opacity-100 pointer-coarse:opacity-100",
+                    )}
+                  >
+                    <X aria-hidden className="size-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
-          </div>
-        </li>
-      ))}
+          </li>
+        ),
+      )}
     </ol>
   );
 }
 
-export function Queue() {
-  const [queue] = useQueue();
+const WIDE_QUERY = "(min-width: 1440px)";
+
+function subscribeWide(onChange: () => void) {
+  const query = window.matchMedia(WIDE_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+const isWide = () => window.matchMedia(WIDE_QUERY).matches;
+
+// Only the docked pane is a standing preference. Read on init (the player is
+// client-only) so the first paint already has the saved side.
+const dockedOpenAtom = atomWithStorage("queue_open", true, undefined, {
+  getOnInit: true,
+});
+
+/**
+ * Open state of the queue pane. At 1440px and up it docks beside the content
+ * and the choice persists; below that it floats over the page and starts
+ * closed on every visit.
+ */
+export function useQueuePane() {
+  const docked = React.useSyncExternalStore(subscribeWide, isWide, () => false);
+  const [dockedOpen, setDockedOpen] = useAtom(dockedOpenAtom);
+  const [floatingOpen, setFloatingOpen] = React.useState(false);
+  const open = docked ? dockedOpen : floatingOpen;
+
+  // The shell reads this to reserve the pane's column; it is not a React prop
+  // because the player sits outside the page layout.
+  React.useEffect(() => {
+    if (!(docked && open)) return;
+    const root = document.documentElement;
+    root.dataset.queue = "open";
+    return () => root.removeAttribute("data-queue");
+  }, [docked, open]);
+
+  return {
+    docked,
+    open,
+    setOpen: docked ? setDockedOpen : setFloatingOpen,
+  };
+}
+
+type QueueProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+const sectionLabel =
+  "flex items-center justify-between px-2 pt-3 pb-1 text-[0.6875rem]/4 font-semibold tracking-[0.06em] text-muted-foreground uppercase";
+
+export function Queue({ open, onOpenChange }: QueueProps) {
+  const [queue, setQueue] = useQueue();
+  const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
+  const current = queue[currentIndex];
+  const upNext = queue.length - currentIndex - 1;
+
+  // Rows mount on first open, so a closed pane costs nothing, and stay
+  // mounted afterwards so the exit transition keeps its content.
+  const [hasOpened, setHasOpened] = React.useState(open);
+  if (open && !hasOpened) setHasOpened(true);
+
+  const paneRef = React.useRef<HTMLElement>(null);
+  useKeydown((event) => {
+    if (
+      event.key === "Escape" &&
+      event.target instanceof Node &&
+      paneRef.current?.contains(event.target)
+    ) {
+      onOpenChange(false);
+    }
+  });
+
+  function clearUpNext() {
+    setQueue(queue.slice(0, currentIndex + 1));
+    setCurrentIndex(currentIndex);
+  }
 
   return (
-    <Sheet>
-      <SheetTrigger
-        render={
-          <Button
-            size="icon"
-            variant="ghost"
-            aria-label="Open queue"
-            className={cn(controlStyles.headerIcon, "shrink-0")}
-          >
-            <ListOrdered aria-hidden className="size-5" />
-          </Button>
-        }
-      />
-
-      <SheetContent
-        dir="right"
-        className="flex flex-col space-y-2 px-2 sm:max-w-xl!"
-      >
-        <SheetHeader className="space-y-0 px-4">
-          <SheetTitle className="flex items-center justify-between pr-4">
-            <span className="font-heading text-2xl capitalize tracking-wide dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-              Queue
-            </span>
-            <span>
-              {queue.length} {queue.length === 1 ? "Track" : "Tracks"}
-            </span>
-          </SheetTitle>
-          <SheetDescription>
-            View and manage the songs in your queue
-          </SheetDescription>
-        </SheetHeader>
-
-        <ScrollArea className="px-4">
-          <QueueList />
-
-          <ScrollBar orientation="vertical" />
-        </ScrollArea>
-
-        {/* <SheetFooter className="px-4">
-          <Button>Submit</Button>
-          <SheetClose>
-            <Button variant="outline">Cancel</Button>
-          </SheetClose>
-        </SheetFooter> */}
-      </SheetContent>
-    </Sheet>
+    <aside
+      id="player-queue"
+      ref={paneRef}
+      aria-label="Queue"
+      inert={!open}
+      className={cn(
+        "fixed z-45 flex flex-col overflow-hidden rounded-lg border border-border bg-card text-card-foreground transition-[opacity,translate,visibility] duration-base ease-spring",
+        "right-3 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] left-3 h-[min(28rem,calc(100dvh-12rem))]",
+        "md:bottom-23 md:left-auto md:h-[min(34rem,calc(100dvh-7.5rem))] md:w-[min(22rem,calc(100vw-1.5rem))]",
+        "min-[1440px]:inset-y-2 min-[1440px]:right-2 min-[1440px]:h-auto min-[1440px]:w-(--queue-w) min-[1440px]:rounded-xl",
+        open
+          ? "visible opacity-100"
+          : "invisible translate-y-2 opacity-0 min-[1440px]:translate-x-full min-[1440px]:translate-y-0",
+      )}
+    >
+      <div className="flex h-14 shrink-0 items-center justify-between pr-3 pl-5">
+        <h2 className="text-sm/5 font-bold text-foreground">
+          Queue{" "}
+          <span className="font-normal text-muted-foreground">
+            {queue.length} {queue.length === 1 ? "Track" : "Tracks"}
+          </span>
+        </h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Close queue"
+          onClick={() => onOpenChange(false)}
+          className={controlStyles.headerIcon}
+        >
+          <X aria-hidden className="size-5" />
+        </Button>
+      </div>
+      {hasOpened && (
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 min-[1440px]:pb-28">
+          {current && (
+            <div className="hidden px-2 pb-4 min-[1440px]:block">
+              <div className="relative aspect-square overflow-hidden rounded-md">
+                <ImageWithFallback
+                  src={getImageSrc(current.image, "high")}
+                  alt=""
+                  fill
+                  sizes="320px"
+                  fallback={getPlaceholderSrc("song")}
+                  className="object-cover"
+                />
+                <Skeleton className="absolute inset-0 -z-10" />
+              </div>
+            </div>
+          )}
+          {current && (
+            <>
+              <h3 className={sectionLabel}>Now playing</h3>
+              <div className="px-2 py-1">
+                <p className="truncate text-[0.8125rem]/5 font-medium text-foreground">
+                  {current.name}
+                </p>
+                <p className="truncate text-xs/4 text-muted-foreground">
+                  {current.subtitle}
+                </p>
+              </div>
+            </>
+          )}
+          <h3 className={sectionLabel}>
+            Up next
+            {upNext > 0 && (
+              <button
+                type="button"
+                onClick={clearUpNext}
+                className="rounded-sm text-[0.8125rem]/5 font-semibold tracking-normal text-primary normal-case"
+              >
+                Clear
+              </button>
+            )}
+          </h3>
+          <QueueList upNextOnly />
+          {upNext === 0 && (
+            <p className="px-2 text-sm text-muted-foreground">
+              Nothing queued. Autoplay continues with similar songs.
+            </p>
+          )}
+        </div>
+      )}
+    </aside>
   );
 }

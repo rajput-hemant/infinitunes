@@ -9,7 +9,6 @@ import { appRoutes, userRoutes } from "./config/routes";
 import { getClientKey, resolveTrustedProxy } from "./lib/client-ip";
 import { buildCsp, cspHeaderName } from "./lib/csp";
 import { env } from "./lib/env";
-import { sessionCookiePrefix } from "./lib/session-cookie";
 
 /**
  * Credential endpoints get a stricter per-client bucket on top of the global
@@ -120,9 +119,7 @@ export async function proxy(req: NextRequest) {
   // Better Auth owns origin checks, sessions and responses for its routes.
   if (isAuthApi) return NextResponse.next();
 
-  const sessionToken = getSessionCookie(req, {
-    cookiePrefix: sessionCookiePrefix(),
-  });
+  const sessionToken = getSessionCookie(req);
 
   const isUserRoute = userRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
@@ -143,15 +140,20 @@ export async function proxy(req: NextRequest) {
 
   if (isTrpc) return NextResponse.next();
 
-  // `CSP_ENFORCE` chooses enforcing vs report-only.
-  const response = NextResponse.next();
-  response.headers.set(
-    cspHeaderName(),
-    buildCsp({
-      isDev: env.NODE_ENV === "development",
-      umami: Boolean(env.UMAMI_WEBSITE_ID),
-    }),
-  );
+  // Next applies the nonce to its own scripts from the request header (dynamic
+  // pages only). `CSP_ENFORCE` chooses enforcing vs report-only.
+  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
+  const csp = buildCsp({
+    nonce,
+    isDev: env.NODE_ENV === "development",
+    umami: Boolean(env.UMAMI_WEBSITE_ID),
+  });
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-nonce", nonce);
+  const header = cspHeaderName();
+  requestHeaders.set(header, csp);
+  const response = NextResponse.next({ request: { headers: requestHeaders } });
+  response.headers.set(header, csp);
   return response;
 }
 

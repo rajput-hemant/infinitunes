@@ -1,11 +1,12 @@
 import type { MediaType } from "@infinitunes/types";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
+import { decode } from "@infinitunes/types";
 
+import { Shelf } from "~/components/slider/shelf";
+import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
-import { cn } from "~/lib/utils";
 
 const title = `Online Songs on ${siteConfig.name}: Download & Play Latest Music for Free`;
 
@@ -50,41 +51,40 @@ export default async function HomePage() {
   const homedata = await api.home.home({});
 
   return (
-    <>
+    <div className="flex flex-col gap-(--page-gap)">
       <h1 className="sr-only">{siteConfig.name} Homepage</h1>
 
       {Object.entries(homedata).map(([key, section]) => {
         if (SKIPPED_SECTIONS.has(key) || !Array.isArray(section)) return null;
 
         const items = section as HomeItem[];
+        const sectionTitle = homedata.modules?.[key]?.title;
 
         return (
-          <section key={key} className="mb-4 space-y-4">
-            <div className="border-b pb-2" aria-hidden="true" />
+          <section key={key} className="space-y-3">
+            {sectionTitle && (
+              <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
+                {decode(sectionTitle)}
+              </h2>
+            )}
 
-            <ScrollArea>
-              <div
-                className={cn("flex sm:gap-2 xl:pb-6", {
-                  "grid grid-flow-col grid-rows-2 place-content-start":
-                    GRID_SECTIONS.has(key),
-                })}
-              >
-                {items.map(
-                  ({
-                    id,
-                    title: itemTitle,
-                    perma_url,
-                    subtitle,
-                    type: itemType,
-                    image,
-                    explicit_content,
-                  }) => {
-                    const effectiveType =
-                      itemType || SECTION_TYPE[key] || "playlist";
+            <Shelf rows={GRID_SECTIONS.has(key) ? 2 : 1}>
+              {items.map(
+                ({
+                  id,
+                  title: itemTitle,
+                  perma_url,
+                  subtitle,
+                  type: itemType,
+                  image,
+                  explicit_content,
+                }) => {
+                  const effectiveType =
+                    itemType || SECTION_TYPE[key] || "playlist";
 
-                    return (
+                  return (
+                    <ShelfItem key={id || itemTitle}>
                       <SliderCard
-                        key={id || itemTitle}
                         name={itemTitle}
                         url={perma_url}
                         subtitle={subtitle}
@@ -92,16 +92,14 @@ export default async function HomePage() {
                         image={image}
                         explicit={explicit_content}
                       />
-                    );
-                  },
-                )}
-              </div>
-
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+                    </ShelfItem>
+                  );
+                },
+              )}
+            </Shelf>
           </section>
         );
       })}
-    </>
+    </div>
   );
 }

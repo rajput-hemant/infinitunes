@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>infinitunes - D: Search-first Dock</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="hdr"></header>
+<main id="app"></main>
+<div id="toast"></div>
+<div id="pill" class="pill">
+  <div class="pill-main" data-np>
+    <img id="pArt" alt="">
+    <div class="pill-txt"><b id="pTitle"></b><span id="pArtist"></span></div>
+  </div>
+  <button class="ib" data-pp aria-label="Play or pause" id="pBtn"></button>
+  <div class="pbar"><i id="pFill"></i></div>
+</div>
+<nav id="dock" class="dock"></nav>
+<section id="np" class="np"></section>
+<section id="auth" class="auth"></section>
+<div id="menu" class="menu"></div>
+<script src="../shared/data.js"></script>
+<script src="../shared/router.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

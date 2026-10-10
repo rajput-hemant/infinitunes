@@ -126,7 +126,7 @@ export function ArtistsTopItems(props: Props) {
         ))}
       </div>
 
-      {hasNextPage ? (
+      {hasNextPage && (
         <Button
           variant="outline"
           className={cn(controlStyles.text, "mx-auto my-4 flex text-center")}
@@ -134,11 +134,6 @@ export function ArtistsTopItems(props: Props) {
         >
           {isLoading ? "Loading..." : "Load More"}
         </Button>
-      ) : (
-        <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
       )}
     </>
   );

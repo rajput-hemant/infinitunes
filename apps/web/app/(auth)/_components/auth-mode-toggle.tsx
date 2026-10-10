@@ -8,7 +8,8 @@ import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 export function AuthModeToggle() {
-  const isLoginPage = usePathname() === "/login";
+  const pathname = usePathname();
+  const isLoginPage = pathname === "/login";
 
   return (
     <Link

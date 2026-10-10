@@ -12,16 +12,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
-import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldLabel,
-} from "@infinitunes/ui/components/field";
-import { Input } from "@infinitunes/ui/components/input";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
@@ -30,6 +23,8 @@ import { renamePlaylist } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
+
+import { PlaylistFields } from "./playlist-fields";
 
 type FormData = z.infer<typeof newPlaylistSchema>;
 
@@ -84,7 +79,7 @@ export function RenamePlaylistDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader className="space-y-0">
-          <DialogTitle className="font-heading text-2xl tracking-wide dark:drop-shadow-md">
+          <DialogTitle className="font-heading text-xl font-bold tracking-tight">
             Rename Playlist
           </DialogTitle>
           <DialogDescription>
@@ -92,65 +87,25 @@ export function RenamePlaylistDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-          <Controller
-            name="name"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field orientation="vertical">
-                <FieldLabel className="text-xs">
-                  Playlist Name{" "}
-                  <span aria-hidden className="text-destructive">
-                    *
-                  </span>
-                </FieldLabel>
-                <FieldContent>
-                  <Input
-                    type="text"
-                    required
-                    placeholder="Enter playlist name"
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError>{fieldState.error.message}</FieldError>
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          />
-          <Controller
-            name="description"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field orientation="vertical">
-                <FieldLabel className="text-xs">Description</FieldLabel>
-                <FieldContent>
-                  <Input
-                    type="text"
-                    placeholder="Enter playlist description"
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError>{fieldState.error.message}</FieldError>
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          />
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="flex flex-col gap-4"
+        >
+          <PlaylistFields control={form.control} />
 
-          <DialogFooter className="pt-4">
+          <DialogFooter>
             <DialogClose
               render={
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   type="button"
-                  className={controlStyles.text}
+                  className={controlStyles.textLg}
                 >
                   Cancel
                 </Button>
               }
             />
-            <Button type="submit" className={controlStyles.text}>
+            <Button type="submit" className={controlStyles.textLg}>
               Save
             </Button>
           </DialogFooter>

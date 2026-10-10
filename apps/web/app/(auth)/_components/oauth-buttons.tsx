@@ -69,31 +69,8 @@ export function OAuthButtons(props: OAuthButtonProps) {
   }
 
   return (
-    <>
-      <div className="relative py-2">
-        <span className="absolute inset-x-0 inset-y-1/2 border-t" />
-
-        <span className="relative mx-auto flex w-fit bg-background px-2 text-xs uppercase text-muted-foreground transition-colors duration-0">
-          Or continue with
-        </span>
-      </div>
-
-      <div className="mt-6 flex w-full flex-col space-y-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={googleSignInHandler}
-          disabled={isFormDisabled}
-          className={cn(controlStyles.text, "w-full")}
-        >
-          {oauthLoading === "google" ? (
-            <Loader2 className="mr-2 size-4 animate-spin" />
-          ) : (
-            <Google className="mr-2 size-4" />
-          )}
-          Google
-        </Button>
-
+    <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-2">
         <Button
           type="button"
           variant="outline"
@@ -108,7 +85,26 @@ export function OAuthButtons(props: OAuthButtonProps) {
           )}
           GitHub
         </Button>
+
+        <Button
+          type="button"
+          variant="outline"
+          onClick={googleSignInHandler}
+          disabled={isFormDisabled}
+          className={cn(controlStyles.text, "w-full")}
+        >
+          {oauthLoading === "google" ? (
+            <Loader2 className="mr-2 size-4 animate-spin" />
+          ) : (
+            <Google className="mr-2 size-4" />
+          )}
+          Google
+        </Button>
       </div>
-    </>
+
+      <div className="flex items-center gap-3 text-xs text-muted-foreground before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
+        or
+      </div>
+    </div>
   );
 }

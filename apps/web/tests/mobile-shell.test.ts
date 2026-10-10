@@ -7,7 +7,7 @@ describe("mobile shell", () => {
     const layout = await read("../app/(root)/layout.tsx");
     const navbar = await read("../components/site-header/navbar.tsx");
 
-    expect(layout).toContain("max-w-(--breakpoint-2xl)");
+    expect(layout).toContain("max-w-400");
     expect(navbar).not.toContain('className="container');
   });
 });

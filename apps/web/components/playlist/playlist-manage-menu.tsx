@@ -69,11 +69,11 @@ export function PlaylistManageMenu({
           aria-label="Playlist options"
           className={cn(
             controlStyles.rowIcon,
-            "inline-flex items-center justify-center rounded-md outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50",
+            "inline-flex items-center justify-center outline-hidden transition-colors duration-fast hover:bg-fill focus-visible:ring-3 focus-visible:ring-ring/50",
             triggerClassName,
           )}
         >
-          <MoreVertical aria-hidden className="size-5 hover:text-primary" />
+          <MoreVertical aria-hidden className="size-4" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="*:cursor-pointer">
@@ -107,13 +107,13 @@ export function PlaylistManageMenu({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className={controlStyles.text}>
+            <AlertDialogCancel className={controlStyles.textLg}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               variant="destructive"
-              className={cn(controlStyles.text, destructiveText)}
+              className={cn(controlStyles.textLg, destructiveText)}
             >
               Delete
             </AlertDialogAction>

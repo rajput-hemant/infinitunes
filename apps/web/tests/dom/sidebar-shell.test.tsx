@@ -3,14 +3,17 @@ import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 import { Sidebar, SidebarContent } from "@infinitunes/ui/components/sidebar";
 import { useIsMobile } from "@infinitunes/ui/hooks/use-mobile";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { PathnameContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import {
   AppSidebarProvider,
   AppSidebarTrigger,
+  Sidebar as AppSidebar,
 } from "../../components/sidebar";
 import { MobileNav } from "../../components/site-header/mobile-nav";
+import type { User } from "../../lib/auth";
 
 const router = {} as never;
 const roots: Root[] = [];
@@ -22,7 +25,7 @@ const setWidth = (width: number) =>
     }
   ).happyDOM.setViewport({ width });
 
-async function mount(ui: React.ReactNode) {
+async function mount(ui: React.ReactNode, pathname: string | null = null) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
@@ -30,7 +33,9 @@ async function mount(ui: React.ReactNode) {
   await act(async () => {
     root.render(
       <AppRouterContext.Provider value={router}>
-        {ui}
+        <PathnameContext.Provider value={pathname}>
+          {ui}
+        </PathnameContext.Provider>
       </AppRouterContext.Provider>,
     );
   });
@@ -204,5 +209,137 @@ describe("collapsible sidebar trigger", () => {
       expect(event.defaultPrevented).toBe(false);
     }
     expect(state()).toBe("expanded");
+  });
+});
+
+const user = {
+  id: "u1",
+  name: "U",
+  email: "u@x.dev",
+  emailVerified: true,
+  image: null,
+  createdAt: new Date(0),
+  updatedAt: new Date(0),
+} satisfies User;
+
+const link = (name: string) =>
+  [...document.querySelectorAll("a")].find(
+    (a) => a.textContent?.trim() === name && a.closest("[data-slot=sidebar]"),
+  );
+
+describe("sidebar active route", () => {
+  beforeEach(() => setWidth(1280));
+
+  it("marks the library item for its own route, not just a top-level segment", async () => {
+    await mount(
+      <AppSidebarProvider>
+        <AppSidebar user={user} userPlaylists={[]} />
+      </AppSidebarProvider>,
+      "/me/recently-played",
+    );
+
+    expect(link("Recently Played")?.getAttribute("aria-current")).toBe("page");
+    expect(link("Your Favorite")?.hasAttribute("aria-current")).toBe(false);
+    expect(link("Top Albums")?.hasAttribute("aria-current")).toBe(false);
+  });
+
+  it("keeps a browse item active on its detail pages", async () => {
+    await mount(
+      <AppSidebarProvider>
+        <AppSidebar />
+      </AppSidebarProvider>,
+      "/album/some-album",
+    );
+
+    expect(link("Top Albums")?.getAttribute("aria-current")).toBe("page");
+    expect(link("Top Charts")?.hasAttribute("aria-current")).toBe(false);
+  });
+
+  it("marks the matching playlist", async () => {
+    await mount(
+      <AppSidebarProvider>
+        <AppSidebar
+          user={user}
+          userPlaylists={[
+            { id: "p1", name: "Road trip" },
+            { id: "p2", name: "Focus" },
+          ]}
+        />
+      </AppSidebarProvider>,
+      "/me/playlist/p2",
+    );
+
+    expect(link("Focus")?.getAttribute("aria-current")).toBe("page");
+    expect(link("Road trip")?.hasAttribute("aria-current")).toBe(false);
+  });
+});
+
+describe("sidebar collapse", () => {
+  beforeEach(() => setWidth(1280));
+
+  const collapsible = () =>
+    document
+      .querySelector("[data-slot=sidebar]")
+      ?.getAttribute("data-collapsible");
+
+  function Shell({ defaultOpen }: { defaultOpen?: boolean }) {
+    return (
+      <AppSidebarProvider defaultOpen={defaultOpen}>
+        <AppSidebarTrigger />
+        <AppSidebar user={user} userPlaylists={[]} />
+      </AppSidebarProvider>
+    );
+  }
+
+  it("collapses to the icon rail from the toolbar trigger and the keyboard", async () => {
+    const container = await mount(<Shell />);
+    const trigger = container.querySelector(
+      "[data-slot=sidebar-trigger]",
+    ) as HTMLButtonElement;
+
+    expect(collapsible()).toBe("");
+
+    await act(async () => trigger.click());
+    expect(collapsible()).toBe("icon");
+
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "b", ctrlKey: true }),
+      );
+    });
+    expect(collapsible()).toBe("");
+  });
+
+  it("starts collapsed when the persisted state says so", async () => {
+    await mount(<Shell defaultOpen={false} />);
+
+    expect(collapsible()).toBe("icon");
+  });
+
+  it("keeps every nav link named while collapsed", async () => {
+    await mount(<Shell defaultOpen={false} />);
+
+    expect(link("Top Albums")).toBeDefined();
+    expect(link("Recently Played")).toBeDefined();
+  });
+});
+
+describe("tab bar", () => {
+  it("marks the current tab", async () => {
+    const container = await mount(<MobileShell />, "/search");
+    const current = container.querySelectorAll("a[aria-current=page]");
+
+    expect(current).toHaveLength(1);
+    expect(current[0]?.textContent).toBe("Search");
+  });
+
+  it("does not mark Home on other routes", async () => {
+    const container = await mount(<MobileShell />, "/search/foo");
+
+    expect(
+      [...container.querySelectorAll("a")]
+        .find((a) => a.textContent === "Home")
+        ?.hasAttribute("aria-current"),
+    ).toBe(false);
   });
 });

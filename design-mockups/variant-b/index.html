@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infinitunes - Variant B, Editorial Top Nav</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top" id="top">
+  <div class="top-in">
+    <div class="left">
+      <button class="ib only-m" id="burger" aria-label="Menu" data-icon="menu"></button>
+      <a class="logo" data-go="home" href="#/home"><span class="dot" data-icon="music"></span>Infinitunes</a>
+    </div>
+    <nav class="tabs only-d" id="tabs">
+      <a data-go="home" data-nav="home" href="#/home">Home</a>
+      <a data-go="browse" data-nav="browse" href="#/browse">Browse</a>
+      <a data-go="chart" data-nav="chart" href="#/chart">Charts</a>
+      <a data-go="shows" data-nav="shows" href="#/shows">Podcasts</a>
+      <a data-go="me" data-nav="me" href="#/me">Library</a>
+    </nav>
+    <div class="right">
+      <label class="sbox only-d"><span data-icon="search"></span><input data-search placeholder="Search" aria-label="Search"></label>
+      <button class="ib only-m" data-go="search" aria-label="Search" data-icon="search"></button>
+      <div class="avwrap">
+        <button class="av" id="avbtn" aria-label="Account">H</button>
+        <div class="menu" id="menu">
+          <div class="mh">Hemant<small>hemant@example.test</small></div>
+          <a data-go="me" href="#/me">Library</a>
+          <a data-go="settings" href="#/settings">Settings</a>
+          <a data-go="login" href="#/login">Logout</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer">
+  <div class="dh"><a class="logo" data-go="home" href="#/home"><span class="dot" data-icon="music"></span>Infinitunes</a><button class="ib" id="dclose" aria-label="Close" data-icon="x"></button></div>
+  <div class="dg">Menu</div>
+  <a data-go="home" data-nav="home" href="#/home">Home</a>
+  <a data-go="browse" data-nav="browse" href="#/browse">Browse</a>
+  <a data-go="chart" data-nav="chart" href="#/chart">Charts</a>
+  <a data-go="shows" data-nav="shows" href="#/shows">Podcasts</a>
+  <a data-go="me" data-nav="me" href="#/me">Library</a>
+  <div class="dg">Library</div>
+  <a data-go="me/playlists" href="#/me/playlists">My Playlists</a>
+  <a data-go="me/recent" href="#/me/recent">Recently Played</a>
+  <a data-go="me/songs" href="#/me/songs">Liked Songs</a>
+  <a data-go="me/albums" href="#/me/albums">Liked Albums</a>
+  <div class="dg">Account</div>
+  <a data-go="settings" href="#/settings">Settings</a>
+  <a data-go="login" href="#/login">Logout</a>
+</aside>
+
+<main id="app"></main>
+
+<div class="player" id="player">
+  <img id="pArt" alt="">
+  <div class="pmeta"><b id="pTitle"></b><span id="pArtist"></span></div>
+  <div class="pctl">
+    <button class="ib only-d" data-skip="-1" aria-label="Previous" data-icon="prev"></button>
+    <button class="pp" id="pPlay" aria-label="Play"></button>
+    <button class="ib only-d" data-skip="1" aria-label="Next" data-icon="next"></button>
+  </div>
+  <div class="pbar"><span id="pCur">0:00</span><div class="bar"><i id="pFill"></i></div><span id="pDur">0:00</span></div>
+  <button class="ib only-d" id="pLike" aria-label="Like" data-icon="heart"></button>
+</div>
+
+<section class="np" id="np">
+  <div class="np-top"><button class="ib" id="npClose" aria-label="Close" data-icon="down"></button><span>Now Playing</span><span style="width:32px"></span></div>
+  <img id="npArt" alt="">
+  <div class="np-t"><b id="npTitle"></b><span id="npArtist"></span></div>
+  <div class="np-bar"><div class="bar"><i id="npFill"></i></div><div class="np-time"><span id="npCur">0:00</span><span id="npDur">0:00</span></div></div>
+  <div class="np-ctl">
+    <button class="ib" data-skip="-1" aria-label="Previous" data-icon="prev"></button>
+    <button class="pp big" id="npPlay" aria-label="Play"></button>
+    <button class="ib" data-skip="1" aria-label="Next" data-icon="next"></button>
+  </div>
+</section>
+
+<a class="allv" href="../index.html">All variants</a>
+
+<script src="../shared/data.js"></script>
+<script src="../shared/router.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

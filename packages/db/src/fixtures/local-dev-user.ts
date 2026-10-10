@@ -48,15 +48,6 @@ const fixtureSchema = z.object({
       artists: strings,
       podcasts: strings,
     }),
-    recentlyPlayed: z
-      .array(
-        z.object({
-          id: text,
-          type: z.enum(["song", "episode"]),
-          minutesAgo: z.number().int().nonnegative(),
-        }),
-      )
-      .default([]),
   }),
 });
 

@@ -1,28 +1,65 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, mock } from "bun:test";
 
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 
-import { PreferenceSettings } from "../../app/(root)/settings/_components/preference-settings";
+import { controlStyles } from "../../lib/control-styles";
+
+mock.module("../../lib/theme/actions", () => ({
+  saveThemeConfig: async () => {},
+}));
+
+const { PreferenceSettings } =
+  await import("../../app/(root)/settings/_components/preference-settings");
+const { AppearanceSettings } =
+  await import("../../app/(root)/settings/_components/appearance-settings");
+const { ThemeConfigProvider } = await import("../../lib/theme/provider");
+const { DEFAULT_THEME_CONFIG } = await import("../../lib/theme-config");
+
+const heightClass = (style: string) => style.split(" ")[0]!;
+
+async function mount(node: React.ReactNode) {
+  const container = document.createElement("div");
+  document.body.append(container);
+  await act(async () => {
+    createRoot(container).render(node);
+  });
+  return container;
+}
 
 describe("settings touch targets", () => {
-  it("gives preference controls a fixed 44px height", async () => {
-    const container = document.createElement("div");
-    document.body.append(container);
-    await act(async () => {
-      createRoot(container).render(
-        <AppRouterContext.Provider value={{ refresh() {} } as never}>
-          <PreferenceSettings initialLanguages={[]} />
-        </AppRouterContext.Provider>,
-      );
-    });
+  it("sizes preference buttons from the shared control styles", async () => {
+    const container = await mount(
+      <AppRouterContext.Provider value={{ refresh() {} } as never}>
+        <PreferenceSettings initialLanguages={[]} />
+      </AppRouterContext.Provider>,
+    );
 
     const controls = container.querySelectorAll("button");
     expect(controls.length).toBeGreaterThan(0);
+    const allowed = [controlStyles.text, controlStyles.textLg].map(heightClass);
     for (const control of controls) {
-      expect(control.className).toContain("h-11");
-      expect(control.className).not.toContain("lg:min-h-0");
+      const classes = control.className.split(" ");
+      expect(allowed.some((height) => classes.includes(height))).toBe(true);
+    }
+  });
+
+  it("sizes every appearance option from the shared control styles", async () => {
+    const container = await mount(
+      <ThemeConfigProvider initial={DEFAULT_THEME_CONFIG}>
+        <AppearanceSettings />
+      </ThemeConfigProvider>,
+    );
+
+    const options = container.querySelectorAll(
+      "[role=radiogroup][aria-label='Density'] label",
+    );
+    expect(options.length).toBe(2);
+    for (const option of options) {
+      expect(option.className.split(" ")).toContain(
+        heightClass(controlStyles.text),
+      );
     }
   });
 });
