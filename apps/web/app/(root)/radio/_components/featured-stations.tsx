@@ -3,7 +3,6 @@
 import type { Lang, Radio } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, Radio as RadioIcon } from "lucide-react";
-import React from "react";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import {
@@ -30,13 +29,13 @@ export function FeaturedStations({
       queryKey: ["featured-stations", lang],
       queryFn: ({ pageParam }) =>
         utils.get.featuredStations.fetch({ page: pageParam, n: 50, lang }),
-      initialPageParam: 1 as number,
+      initialPageParam: 1,
       getNextPageParam: (stations, allPages) =>
-        (stations as Radio[]).length < 50 ? null : allPages.length + 1,
+        stations.length < 50 ? null : allPages.length + 1,
       initialData: { pages: [initialStations], pageParams: [1] },
     });
 
-  const stations = (data.pages as Radio[][]).flat();
+  const stations = data.pages.flat();
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,

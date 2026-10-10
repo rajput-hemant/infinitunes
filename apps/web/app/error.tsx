@@ -13,14 +13,14 @@ type ErrorProps = {
   retry: () => void;
 };
 
-export default function Error({ error, retry }: ErrorProps) {
+export default function RouteError({ error, retry }: ErrorProps) {
   React.useEffect(() => {
     console.error(error);
   }, [error]);
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center p-4">
-      <div className="flex w-full max-w-[352px] flex-col items-center gap-3 rounded-(--radius) border border-dashed border-border p-8 text-center">
+      <div className="flex w-full max-w-88 flex-col items-center gap-3 rounded-(--radius) border border-dashed border-border p-8 text-center">
         <ErrorIllustration />
 
         <h1 className="font-heading text-xl font-bold leading-7 text-foreground">

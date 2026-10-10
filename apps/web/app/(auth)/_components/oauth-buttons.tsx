@@ -10,6 +10,8 @@ import { GitHub, Google } from "~/components/icons";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
+type OAuthProvider = "google" | "github";
+
 type OAuthButtonProps = {
   isFormDisabled: boolean;
   setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
@@ -18,16 +20,14 @@ type OAuthButtonProps = {
 export function OAuthButtons(props: OAuthButtonProps) {
   const { isFormDisabled, setIsSubmitting } = props;
 
-  const [oauthLoading, setOauthLoading] = React.useState<"google" | "github">();
+  const [oauthLoading, setOauthLoading] = React.useState<OAuthProvider>();
 
-  async function googleSignInHandler() {
-    setOauthLoading("google");
+  async function signInWithProvider(provider: OAuthProvider) {
+    setOauthLoading(provider);
     setIsSubmitting(true);
 
     try {
-      const { error } = await authClient.signIn.social({
-        provider: "google",
-      });
+      const { error } = await authClient.signIn.social({ provider });
 
       if (error) {
         toast.error(error.message ?? "Something went wrong.");
@@ -35,32 +35,7 @@ export function OAuthButtons(props: OAuthButtonProps) {
         toast.success("You have been signed in.");
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
-      toast.error("Something went wrong.");
-    } finally {
-      setIsSubmitting(false);
-      setOauthLoading(undefined);
-    }
-  }
-
-  async function githubSignInHandler() {
-    setOauthLoading("github");
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await authClient.signIn.social({
-        provider: "github",
-      });
-
-      if (error) {
-        toast.error(error.message ?? "Something went wrong.");
-      } else {
-        toast.success("You have been signed in.");
-      }
-    } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
+      console.error(error);
       toast.error("Something went wrong.");
     } finally {
       setIsSubmitting(false);
@@ -74,7 +49,7 @@ export function OAuthButtons(props: OAuthButtonProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={githubSignInHandler}
+          onClick={() => signInWithProvider("github")}
           disabled={isFormDisabled}
           className={cn(controlStyles.text, "w-full")}
         >
@@ -89,7 +64,7 @@ export function OAuthButtons(props: OAuthButtonProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={googleSignInHandler}
+          onClick={() => signInWithProvider("google")}
           disabled={isFormDisabled}
           className={cn(controlStyles.text, "w-full")}
         >

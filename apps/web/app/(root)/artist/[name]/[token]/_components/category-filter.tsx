@@ -8,7 +8,7 @@ type CategoryFilterProps = {
   category: Category;
 };
 
-const CategoryMap = {
+const CategoryMap: Record<Category, string> = {
   popularity: "Popular",
   latest: "Date",
   alphabetical: "Name",
@@ -18,7 +18,12 @@ export function CategoryFilter({ category }: CategoryFilterProps) {
   return (
     <div className="my-6 flex space-x-2">
       {Object.entries(CategoryMap).map(([key, value]) => (
-        <Link key={key} title={value} href={asRoute(`?cat=${key}`)}>
+        <Link
+          key={key}
+          title={value}
+          href={asRoute(`?cat=${key}`)}
+          aria-current={category === key ? "true" : undefined}
+        >
           <Badge
             className={cn(
               "bg-primary-foreground p-2 text-primary hover:bg-muted hover:shadow-xs lg:px-4",

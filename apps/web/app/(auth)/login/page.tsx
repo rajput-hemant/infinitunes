@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { redirectIfSignedIn } from "~/lib/auth-guard";
 
+import { AuthIntro } from "../_components/auth-intro";
 import { LoginForm } from "../_components/login-form";
 
 export const metadata = {
@@ -14,14 +15,10 @@ export default async function LoginPage() {
 
   return (
     <div className="space-y-4">
-      <div className="text-center">
-        <h1 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em] text-foreground">
-          Welcome back
-        </h1>
-        <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          Log in to sync your library across devices.
-        </p>
-      </div>
+      <AuthIntro
+        title="Welcome back"
+        description="Log in to sync your library across devices."
+      />
 
       <LoginForm />
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirectIfSignedIn } from "~/lib/auth-guard";
 import { asRoute } from "~/lib/utils";
 
+import { AuthIntro } from "../_components/auth-intro";
 import { SignUpForm } from "../_components/signup-form";
 
 export const metadata = {
@@ -15,14 +16,10 @@ export default async function SignUpPage() {
 
   return (
     <div className="space-y-4">
-      <div className="text-center">
-        <h1 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em] text-foreground">
-          Create your account
-        </h1>
-        <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          Free forever. No credit card needed.
-        </p>
-      </div>
+      <AuthIntro
+        title="Create your account"
+        description="Free forever. No credit card needed."
+      />
 
       <SignUpForm />
 

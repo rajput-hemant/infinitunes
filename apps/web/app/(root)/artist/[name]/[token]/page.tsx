@@ -21,7 +21,7 @@ import { api } from "~/lib/trpc/server";
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
 import { CategoryFilter } from "./_components/category-filter";
-import { TABS } from "./_components/tabs";
+import { tabForSlug, TABS } from "./_components/tabs";
 
 const getArtist = cache(async (token: string) =>
   orNotFound(
@@ -46,43 +46,45 @@ const getArtistLibrary = cache(
   },
 );
 
+type ArtistLibraryTabProps = {
+  artist: Awaited<ReturnType<typeof getArtist>>;
+  category?: Category;
+  userPromise: ReturnType<typeof getUser>;
+  type: "songs" | "albums";
+};
+
 async function ArtistLibraryTab({
   artist,
   category,
   userPromise,
   type,
-}: {
-  artist: Awaited<ReturnType<typeof getArtist>>;
-  category?: Category;
-  userPromise: ReturnType<typeof getUser>;
-  type: "songs" | "albums";
-}) {
+}: ArtistLibraryTabProps) {
   const { user, playlists, favorites } = await getArtistLibrary(userPromise);
   const topSongs = artist.topSongs ?? [];
 
   return (
-    <>
-      <ArtistsTopItems
-        key={type === "songs" ? topSongs[0]?.id : artist.topAlbums?.[0]?.id}
-        id={artist.artistId}
-        type={type}
-        category={category}
-        user={user}
-        userFavorites={favorites}
-        userPlaylists={playlists}
-        initialSongs={type === "songs" ? topSongs : undefined}
-        initialAlbums={type === "albums" ? artist.topAlbums : undefined}
-      />
-    </>
+    <ArtistsTopItems
+      key={type === "songs" ? topSongs[0]?.id : artist.topAlbums?.[0]?.id}
+      id={artist.artistId}
+      type={type}
+      category={category}
+      user={user}
+      userFavorites={favorites}
+      userPlaylists={playlists}
+      initialSongs={type === "songs" ? topSongs : undefined}
+      initialAlbums={type === "albums" ? artist.topAlbums : undefined}
+    />
   );
 }
 
-type Props = {
+type ArtistDetailsPageProps = {
   params: Promise<{ name: string; token: string }>;
   searchParams: Promise<{ cat?: Category }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ArtistDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
   const artist = await getArtist(token);
@@ -96,7 +98,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function ArtistDetailsPage(props: Props) {
+export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
   const { name, token } = await props.params;
   const { cat } = await props.searchParams;
 
@@ -108,22 +110,7 @@ export default async function ArtistDetailsPage(props: Props) {
   userPromise.catch(() => undefined);
   const artist = await artistPromise;
 
-  let selectedTab: TABS;
-
-  switch (name.split("-").pop()) {
-    case "songs":
-      selectedTab = TABS.Songs;
-      break;
-    case "albums":
-      selectedTab = TABS.Albums;
-      break;
-    case "bio":
-      selectedTab = TABS.Biography;
-      break;
-    default:
-      selectedTab = TABS.Overview;
-      break;
-  }
+  const selectedTab = tabForSlug(name.split("-").pop());
 
   const topSongs = artist.topSongs ?? [];
 

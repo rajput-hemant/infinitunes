@@ -31,11 +31,11 @@ import { EpisodeList } from "./_components/episode-list";
 const DEFAULT_SORT: Sort = "desc";
 
 // callers must pass a normalized sort so generateMetadata and the page share one cache entry
-const getShow = cache(async (token: string, season: number, sort: Sort) =>
+const getShow = cache(async (token: string, season: string, sort: Sort) =>
   orNotFound(
     api.show.details({
       token,
-      season: `${season}`,
+      season,
       sort,
     }),
   ),
@@ -43,7 +43,7 @@ const getShow = cache(async (token: string, season: number, sort: Sort) =>
 
 type ShowDetailsPageProps = {
   searchParams: Promise<{ sort?: Sort }>;
-  params: Promise<{ name: string; season: number; token: string }>;
+  params: Promise<{ name: string; season: string; token: string }>;
 };
 
 export async function generateMetadata({
@@ -62,15 +62,17 @@ export async function generateMetadata({
   });
 }
 
+type ShowEpisodeSectionProps = {
+  show: Awaited<ReturnType<typeof getShow>>;
+  sort: Sort;
+  userPromise: ReturnType<typeof getUser>;
+};
+
 async function ShowEpisodeSection({
   show,
   sort,
   userPromise,
-}: {
-  show: Awaited<ReturnType<typeof getShow>>;
-  sort: Sort;
-  userPromise: ReturnType<typeof getUser>;
-}) {
+}: ShowEpisodeSectionProps) {
   const user = await userPromise;
   const [favorites, playlists] = user
     ? await Promise.all([

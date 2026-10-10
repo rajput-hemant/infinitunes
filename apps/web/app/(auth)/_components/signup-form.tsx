@@ -19,9 +19,9 @@ import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
 import { PasswordField } from "./password-field";
 
-type FormData = z.infer<typeof signUpSchema>;
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
-const defaultValues: FormData = {
+const defaultValues: SignUpFormData = {
   email: "",
   password: "",
   confirmPassword: "",
@@ -45,12 +45,12 @@ export function SignUpForm() {
     }
   }, [authError]);
 
-  const form = useForm<FormData>({
+  const form = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
     defaultValues,
   });
 
-  async function onSubmit(formData: FormData) {
+  async function onSubmit(formData: SignUpFormData) {
     setIsSubmitting(true);
 
     try {
@@ -70,9 +70,8 @@ export function SignUpForm() {
         router.refresh();
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
-      toast.error(userMessage(err));
+      console.error(error);
+      toast.error(userMessage(error));
     } finally {
       setIsSubmitting(false);
     }

@@ -11,11 +11,10 @@ import { toast } from "sonner";
 import type z from "zod";
 
 import { controlStyles } from "~/lib/control-styles";
+import { GENERIC_MESSAGE } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
-
-type FormData = z.input<typeof forgotPasswordSchema>;
 
 /** Shown for every valid submission, so the page never reveals which emails have accounts. */
 export const FORGOT_PASSWORD_MESSAGE =
@@ -26,7 +25,7 @@ export function ForgotPasswordForm() {
   const [isSent, setIsSent] = React.useState(false);
 
   const form = useForm<
-    FormData,
+    z.input<typeof forgotPasswordSchema>,
     unknown,
     z.output<typeof forgotPasswordSchema>
   >({
@@ -46,13 +45,13 @@ export function ForgotPasswordForm() {
       if (error?.status === 429) {
         toast.error("Too many requests. Please wait a minute and try again.");
       } else if (error) {
-        toast.error("Something went wrong. Please try again.");
+        toast.error(GENERIC_MESSAGE);
       } else {
         setIsSent(true);
       }
     } catch (error) {
-      console.error((error as Error).message);
-      toast.error("Something went wrong. Please try again.");
+      console.error(error);
+      toast.error(GENERIC_MESSAGE);
     } finally {
       setIsSubmitting(false);
     }
