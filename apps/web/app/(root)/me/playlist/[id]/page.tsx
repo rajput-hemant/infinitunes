@@ -14,6 +14,7 @@ import { PlayAllButton } from "~/components/library/play-all-button";
 import { RetryButton } from "~/components/library/retry-button";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { SongList } from "~/components/song-list/song-list";
+import { controlStyles } from "~/lib/control-styles";
 import { getPlaylistDetails } from "~/lib/db/queries";
 import { fetchSongsChunked } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
@@ -121,7 +122,12 @@ export default async function MyPlaylistsPage(props: Props) {
 
           {playlistSongs.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
-              <PlayAllButton items={playlistSongs}>Play</PlayAllButton>
+              <PlayAllButton
+                items={playlistSongs}
+                className={controlStyles.hero}
+              >
+                Play
+              </PlayAllButton>
             </div>
           )}
         </figcaption>
