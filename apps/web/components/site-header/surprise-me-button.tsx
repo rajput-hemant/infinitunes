@@ -4,6 +4,7 @@ import { toQueue } from "@infinitunes/types";
 import type { Lang, Song } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useSearchParams } from "next/navigation";
+import { useRef, useState } from "react";
 import type { ComponentProps } from "react";
 import { toast } from "sonner";
 
@@ -25,17 +26,31 @@ function shuffle<T>(items: T[]): T[] {
 }
 
 /** Like jiosaavn.com: replaces the queue with a shuffled batch of trending songs and plays it. */
-export function SurpriseMeButton(props: ComponentProps<typeof Button>) {
+export function SurpriseMeButton({
+  onQueued,
+  ...props
+}: ComponentProps<typeof Button> & { onQueued?: () => void }) {
   const lang = useSearchParams().get("lang") as Lang | null;
 
-  const [, setQueue] = useQueue();
-  const [, setCurrentIndex] = useCurrentSongIndex();
+  const [queue, setQueue] = useQueue();
+  const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
   const [, setIsPlayerInit] = useIsPlayerInit();
-  const [, setActiveRadio] = useActiveRadioSession();
+  const [activeRadio, setActiveRadio] = useActiveRadioSession();
+  const [pending, setPending] = useState(false);
+
+  // Latest playback state, read after the await to detect a newer choice.
+  const playback = { queue, currentIndex, activeRadio };
+  const latest = useRef(playback);
+  latest.current = playback;
+  const inFlight = useRef(false);
 
   const utils = api.useUtils();
 
   async function surprise() {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setPending(true);
+    const start = latest.current;
     try {
       const trending = await utils.get.trending.fetch({
         type: "song",
@@ -44,6 +59,14 @@ export function SurpriseMeButton(props: ComponentProps<typeof Button>) {
       const songs = trending.filter(
         (item): item is Song => item.type === "song",
       );
+      const now = latest.current;
+      if (
+        now.queue !== start.queue ||
+        now.currentIndex !== start.currentIndex ||
+        now.activeRadio !== start.activeRadio
+      ) {
+        return;
+      }
       if (!songs.length) {
         toast.error("No songs found right now");
         return;
@@ -58,8 +81,12 @@ export function SurpriseMeButton(props: ComponentProps<typeof Button>) {
         description: `Playing “${queue[0]?.name}”`,
         position: "bottom-center",
       });
+      onQueued?.();
     } catch {
       toast.error("Failed to load songs");
+    } finally {
+      inFlight.current = false;
+      setPending(false);
     }
   }
 
@@ -67,6 +94,7 @@ export function SurpriseMeButton(props: ComponentProps<typeof Button>) {
     <Button
       aria-label="Surprise Me - Add songs to queue and play"
       onClick={surprise}
+      disabled={pending}
       {...props}
     >
       Surprise Me

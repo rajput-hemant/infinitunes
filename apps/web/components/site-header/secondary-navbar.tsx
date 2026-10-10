@@ -122,6 +122,7 @@ export function SecondaryNavbar() {
 
             <div className="my-4 w-full space-y-4">
               <SurpriseMeButton
+                onQueued={() => setIsOpen(false)}
                 variant="secondary"
                 className="w-full hover:shadow-sm"
               />
