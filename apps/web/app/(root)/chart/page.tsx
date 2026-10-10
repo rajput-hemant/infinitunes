@@ -27,7 +27,7 @@ export default async function ChartsPage() {
 
   return (
     <div>
-      <CatalogHeader title="Top Music Charts" />
+      <CatalogHeader title="Top Charts" subtitle="Updated every Friday." />
 
       {charts.length === 0 ? (
         <CatalogEmpty

@@ -28,7 +28,10 @@ export function ArtistsTabList({ showBio }: ArtistsTabListProps) {
   };
 
   return (
-    <TabsList className="mx-auto flex w-fit lg:mx-0 lg:*:w-1/3 lg:*:px-5">
+    <TabsList
+      variant="line"
+      className="mb-4 w-full justify-start gap-6 overflow-x-auto border-b border-border p-0 [scrollbar-width:none] group-data-[orientation=horizontal]/tabs:h-auto [&::-webkit-scrollbar]:hidden"
+    >
       {Object.values(TABS).map((tab) => {
         if (!showBio && tab === TABS.Biography) return null;
 
@@ -37,6 +40,7 @@ export function ArtistsTabList({ showBio }: ArtistsTabListProps) {
             key={tab}
             value={tab}
             onClick={() => router.push(hrefFor(tab))}
+            className="h-10 flex-none rounded-none px-0 font-semibold text-muted-foreground after:rounded-full after:bg-primary group-data-[orientation=horizontal]/tabs:after:-bottom-px data-active:text-foreground pointer-coarse:h-11"
           >
             {tab}
           </TabsTrigger>

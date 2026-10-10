@@ -25,6 +25,7 @@ import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import {
   ChevronLeft,
+  CloudDownload,
   ChevronRight,
   ListMusic,
   ListOrdered,
@@ -37,6 +38,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { useDownloadSongs } from "~/components/download-button";
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import {
@@ -73,6 +75,8 @@ type MenuItem = {
   label: string;
   onClick: () => void;
   hide?: boolean;
+  /** The header shows its own button for this action from md up. */
+  phoneOnly?: boolean;
   icon: LucideIcon;
 };
 
@@ -100,6 +104,7 @@ export function MoreButton(props: MoreButtonProps) {
   const [, setActiveRadio] = useActiveRadioSession();
 
   const utils = api.useUtils();
+  const { isDownloading, download } = useDownloadSongs(songs);
 
   function addToQueue() {
     const songsPayload: Queue[] = songs.map((song) => toQueue(song));
@@ -217,6 +222,13 @@ export function MoreButton(props: MoreButtonProps) {
       onClick: playRadio,
       hide: type === "show" || type === "mix",
       icon: Radio,
+    },
+    {
+      label: "Download",
+      onClick: download,
+      hide: songs.length === 0 || isDownloading,
+      phoneOnly: true,
+      icon: CloudDownload,
     },
   ];
 
@@ -343,7 +355,7 @@ export function MoreButton(props: MoreButtonProps) {
           <DropdownMenuContent align="start">
             <DropdownMenuGroup>
               {menuItems
-                .filter(({ hide }) => !hide)
+                .filter(({ hide, phoneOnly }) => !hide && !phoneOnly)
                 .map(({ icon: Icon, label, onClick }) => (
                   <DropdownMenuItem
                     key={label}

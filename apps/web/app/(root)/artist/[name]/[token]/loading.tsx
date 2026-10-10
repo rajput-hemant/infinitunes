@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@infinitunes/ui/components/badge";
-import { Separator } from "@infinitunes/ui/components/separator";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -16,9 +15,8 @@ export default function ArtistDetailsSkeleton() {
   return (
     <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeaderSkeleton type="artist" />
-      <Skeleton className="h-10 w-[284px]" />
-      <Separator className="my-4" />
-      <div className="mt-2">
+      <div className="flex flex-col gap-2">
+        <Skeleton className="mb-4 h-10 w-full max-w-71 pointer-coarse:h-11" />
         {/-(songs|albums)$/.test(name) ? (
           <div className="my-6 flex space-x-2">
             <Badge className="p-2 px-4 text-primary">Popular</Badge>

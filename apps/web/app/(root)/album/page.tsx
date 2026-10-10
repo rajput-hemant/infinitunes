@@ -31,7 +31,14 @@ export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
     <div>
       <LanguageBar language={lang} />
 
-      <CatalogHeader title={`New ${lang ?? ""} Songs`} />
+      <CatalogHeader
+        title="Top Albums"
+        subtitle={
+          lang
+            ? `${lang[0].toUpperCase()}${lang.slice(1)} albums trending this week`
+            : "Trending across your languages"
+        }
+      />
 
       <TopAlbums
         key={topAlbums.data[0].id}

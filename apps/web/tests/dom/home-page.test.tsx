@@ -42,6 +42,9 @@ mock.module("~/lib/trpc/server", () => ({
 mock.module("~/lib/trpc/client", () => ({
   api: { useUtils: () => ({}) },
 }));
+mock.module("@infinitunes/auth/client", () => ({
+  useSession: () => ({ data: null }),
+}));
 mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));

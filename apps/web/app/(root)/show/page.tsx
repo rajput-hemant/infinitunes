@@ -28,11 +28,14 @@ export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
   const trendingGroup = topShows.trendingPodcasts?.[0];
   const trendingPodcasts = trendingGroup?.items ?? [];
   const trendingTitle = trendingGroup?.module.title ?? "Trending Podcasts";
-  const trendingSubtitle = trendingGroup?.module.subtitle ?? "";
 
   return (
     <div>
-      <CatalogHeader title={trendingTitle} subtitle={trendingSubtitle} />
+      <CatalogHeader title="Podcasts" subtitle="Top shows across languages." />
+
+      <h2 className="mb-3 text-xl leading-7 font-bold tracking-[-0.015em]">
+        {trendingTitle}
+      </h2>
 
       <Shelf rows={2}>
         {trendingPodcasts.map(
