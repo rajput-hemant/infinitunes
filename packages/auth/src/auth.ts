@@ -73,6 +73,12 @@ export function createAuth(
      * trusted proxy rewrites it, so callers should name a header they control.
      */
     ipAddressHeaders?: string[];
+    /**
+     * Prefix of Better Auth's cookies (`<prefix>.session_token`). Cookies are
+     * not port-isolated on localhost, so apps sharing one never overwrite each
+     * other's session with a distinct prefix. Default: `better-auth`.
+     */
+    cookiePrefix?: string;
   } = {},
 ) {
   const env = authEnv({ skipValidation: true });
@@ -206,6 +212,7 @@ export function createAuth(
       ...(options.ipAddressHeaders
         ? { ipAddress: { ipAddressHeaders: options.ipAddressHeaders } }
         : {}),
+      ...(options.cookiePrefix ? { cookiePrefix: options.cookiePrefix } : {}),
       ...(options.runInBackground
         ? { backgroundTasks: { handler: options.runInBackground } }
         : {}),

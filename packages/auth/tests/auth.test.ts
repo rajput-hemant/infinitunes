@@ -232,6 +232,16 @@ describe("Better Auth configuration", () => {
     ).toBeUndefined();
   });
 
+  it("prefixes cookies only when asked", () => {
+    expect(
+      createAuth(makeFakeDb(), { cookiePrefix: "infinitunes" }).options.advanced
+        ?.cookiePrefix,
+    ).toBe("infinitunes");
+    expect(
+      createAuth(makeFakeDb()).options.advanced?.cookiePrefix,
+    ).toBeUndefined();
+  });
+
   it("disables implicit account linking", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.account?.accountLinking?.enabled).toBe(false);
