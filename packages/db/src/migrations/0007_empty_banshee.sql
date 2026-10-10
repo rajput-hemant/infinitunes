@@ -43,6 +43,4 @@ END $$;
 --> statement-breakpoint
 DROP TABLE IF EXISTS "account" CASCADE;--> statement-breakpoint
 DROP TABLE IF EXISTS "verificationToken" CASCADE;--> statement-breakpoint
-ALTER TABLE "user" DROP COLUMN IF EXISTS "name";--> statement-breakpoint
-ALTER TABLE "user" DROP COLUMN IF EXISTS "password";--> statement-breakpoint
 ALTER TABLE "user" DROP COLUMN IF EXISTS "emailVerified";

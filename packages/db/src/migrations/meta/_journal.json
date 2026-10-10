@@ -57,6 +57,13 @@
       "when": 1791615203858,
       "tag": "0007_empty_banshee",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791643123538,
+      "tag": "0008_restore_shared_user_columns",
+      "breakpoints": true
     }
   ]
 }

@@ -169,6 +169,16 @@ and `SKIP_ENV_VALIDATION=true` only skips schema validation in `@infinitunes/env
 supply `DATABASE_URL`. Keep initialization lazy; eager evaluation at module scope breaks
 `SKIP_ENV_VALIDATION=true bun run build`.
 
+## Shared local database
+
+`user` and `better_auth_*` are shared with the Lipi app in one local Postgres
+(`docs/local-development.md`, "Shared database with Lipi"). Keep the baseline
+migration idempotent (`IF NOT EXISTS`), never drop or require `user.name` /
+`user.password` (Lipi writes them), and keep the non-production session cookie
+prefix distinct (`apps/web/lib/session-cookie.ts`, used by Better Auth and
+`proxy.ts`). Opt-in DB tests need `TEST_MIGRATION_DATABASE_URL` (a disposable
+admin URL).
+
 ## Media URL shapes (playback / artwork)
 
 Both are single strings, and both carry a _replaceable_ token - the recurring

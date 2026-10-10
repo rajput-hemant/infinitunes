@@ -9,6 +9,7 @@ import { appRoutes, userRoutes } from "./config/routes";
 import { getClientKey, resolveTrustedProxy } from "./lib/client-ip";
 import { buildCsp, cspHeaderName } from "./lib/csp";
 import { env } from "./lib/env";
+import { sessionCookiePrefix } from "./lib/session-cookie";
 
 /**
  * Credential endpoints get a stricter per-client bucket on top of the global
@@ -119,7 +120,9 @@ export async function proxy(req: NextRequest) {
   // Better Auth owns origin checks, sessions and responses for its routes.
   if (isAuthApi) return NextResponse.next();
 
-  const sessionToken = getSessionCookie(req);
+  const sessionToken = getSessionCookie(req, {
+    cookiePrefix: sessionCookiePrefix(),
+  });
 
   const isUserRoute = userRoutes.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
