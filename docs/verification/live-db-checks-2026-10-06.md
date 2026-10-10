@@ -40,7 +40,7 @@ $ bun run --filter @infinitunes/db db:seed
 **Verification** (after both runs):
 
 ```sql
-SELECT id, email, name FROM "user";
+SELECT id, email, "betterAuthName" FROM "user";
 -- 1 row: a0000000-0000-4000-8000-000000000001 | local@example.test | Local Developer
 
 SELECT * FROM infinitunes_playlist;
@@ -75,13 +75,13 @@ cd packages/db
 DATABASE_URL=postgres://postgres:postgrespassword@127.0.0.1:3100/infinitunes_live bun run test-tc3.ts
 ```
 
-**Output**:
+**Historical output** (before migration 0007; the user password column is now removed):
 
 ```
 === Testing real bcrypt/password-change paths (TC-3) ===
 
 1. Checking current password hash...
-   User record password: set
+   Legacy user record password (removed by migration 0007): set
    Credential account password: set
    Stored hash source: credential account
    Original password matches: true
@@ -110,7 +110,7 @@ DATABASE_URL=postgres://postgres:postgrespassword@127.0.0.1:3100/infinitunes_liv
 
 - Password verification against credential account hash works
 - bcrypt cost 10 hashing works
-- Transactional update of both password columns works
+- Historical transactional update of both password columns worked; current code updates only the Better Auth credential password
 - Session revocation (keeping current token) works
 - All paths exercise real database operations, not mocks
 

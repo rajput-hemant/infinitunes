@@ -66,6 +66,20 @@ try {
     ? await client`SELECT count(*)::int AS "rowCount" FROM drizzle.__drizzle_migrations`
     : [{ rowCount: 0 }];
 
+  if (rowCount > 0) {
+    const [{ legacy }] = await client`
+      SELECT EXISTS (
+        SELECT 1 FROM drizzle.__drizzle_migrations
+        WHERE created_at < ${baseline.when}
+      ) AS legacy
+    `;
+    if (legacy) {
+      throw new Error(
+        "Legacy migration history detected. Migrate this database with the previous release first before applying the current baseline and migration 0007.",
+      );
+    }
+  }
+
   if (rowCount === 0) {
     await applyBaselineIdempotently();
   }
