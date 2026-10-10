@@ -1,19 +1,24 @@
 import Link from "next/link";
 
+import { searchHref } from "~/components/search/search-query";
 import { searchUi } from "~/components/search/search-ui";
-import { asRoute, cn } from "~/lib/utils";
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
+
+import type { SearchType } from "./type-map";
 
 type Props = {
-  type: string;
+  type: SearchType;
   query: string;
 };
 
 export const navItems = [
-  { title: "Playlists", type: "playlist" },
+  { title: "All", type: "all" },
   { title: "Songs", type: "song" },
   { title: "Albums", type: "album" },
-  { title: "Podcasts", type: "show" },
+  { title: "Playlists", type: "playlist" },
   { title: "Artists", type: "artist" },
+  { title: "Podcasts", type: "show" },
 ] as const;
 
 export function SearchNavbar({ type, query }: Props) {
@@ -25,9 +30,14 @@ export function SearchNavbar({ type, query }: Props) {
 
           return (
             <Link
-              key={title}
-              href={asRoute(`/search/${navType}/${query}`)}
-              className={cn(searchUi.chip, isActive && searchUi.chipActive)}
+              key={navType}
+              href={searchHref(query, navType)}
+              className={cn(
+                controlStyles.text,
+                searchUi.chip,
+                "px-3",
+                isActive && searchUi.chipActive,
+              )}
               aria-current={isActive ? "page" : undefined}
             >
               {title}

@@ -1,6 +1,11 @@
 "use client";
 
-import type { Album, SearchReturnType, Song } from "@infinitunes/types";
+import type {
+  Album,
+  ArtistSearch,
+  SearchReturnType,
+  Song,
+} from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, SearchX } from "lucide-react";
 
@@ -11,13 +16,25 @@ import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
 
+import type { ListSearchType } from "./type-map";
 import { SEARCH_TYPE_MAP } from "./type-map";
 
 type SearchResultsProps = {
   query: string;
-  type: "song" | "album" | "playlist" | "artist" | "show";
+  type: ListSearchType;
   initialSearchResults: SearchReturnType;
 };
+
+type CardResult = Album | ArtistSearch["results"][number];
+
+/** Artist results are named `name`; every other card type uses `title`. */
+function getCardTitle(result: CardResult) {
+  return "name" in result ? result.name : result.title;
+}
+
+function getCardSubtitle(result: CardResult) {
+  return "subtitle" in result ? result.subtitle : result.role;
+}
 
 export function SearchResults(props: SearchResultsProps) {
   const { query, type, initialSearchResults } = props;
@@ -43,7 +60,7 @@ export function SearchResults(props: SearchResultsProps) {
     });
 
   const searchResults = (data.pages as SearchReturnType[]).flatMap(
-    (page) => page.results as (Album | Song)[],
+    (page) => page.results as (Song | CardResult)[],
   );
 
   const [ref] = useIntersectionObserver({
@@ -60,7 +77,7 @@ export function SearchResults(props: SearchResultsProps) {
       <LibraryEmpty
         icon={SearchX}
         title="No results found"
-        description={`Nothing matched "${query.replaceAll("%20", " ")}". Check the spelling or try a different search.`}
+        description={`Nothing matched "${query}". Check the spelling or try a different search.`}
       />
     );
   }
@@ -70,16 +87,16 @@ export function SearchResults(props: SearchResultsProps) {
       {type === "song" ? (
         <SongListClient items={searchResults as Song[]} />
       ) : (
-        <div className="grid grid-cols-2 gap-x-3 gap-y-5 md:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] md:gap-x-4 md:gap-y-6">
-          {searchResults.map((result) => (
+        <div className={searchUi.grid}>
+          {(searchResults as CardResult[]).map((result) => (
             <SliderCard
               key={result.id}
-              name={result.title}
+              name={getCardTitle(result)}
               url={result.perma_url}
-              subtitle={result.subtitle}
+              subtitle={getCardSubtitle(result)}
               type={result.type}
               image={result.image}
-              className="w-full min-w-0 shrink"
+              className={searchUi.gridCard}
             />
           ))}
         </div>

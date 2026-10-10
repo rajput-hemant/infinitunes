@@ -1,47 +1,45 @@
+import { notFound } from "next/navigation";
+
+import { decodeSearchQuery } from "~/components/search/search-query";
 import { searchUi } from "~/components/search/search-ui";
 import { api } from "~/lib/trpc/server";
 
+import { AllResults } from "./_components/all-results";
 import { SearchNavbar } from "./_components/search-navbar";
 import { SearchResults } from "./_components/search-results";
-import { SEARCH_TYPE_MAP } from "./_components/type-map";
+import { isSearchType, SEARCH_TYPE_MAP } from "./_components/type-map";
 
 type SearchPageProps = {
-  params: Promise<{
-    type: "song" | "album" | "playlist" | "artist" | "show";
-    query: string;
-  }>;
+  params: Promise<{ type: string; query: string }>;
 };
 
 export default async function SearchPage({ params }: SearchPageProps) {
-  const { query, type } = await params;
-  const label = query.replaceAll("%20", " ");
-
-  const searchRes = await api.search.byType({
-    q: query,
-    type: SEARCH_TYPE_MAP[type],
-    page: 1,
-    n: 50,
-  });
+  const { type, query: segment } = await params;
+  if (!isSearchType(type)) notFound();
+  const query = decodeSearchQuery(segment);
 
   return (
     <div className="mb-4 space-y-6">
-      <header className="space-y-1">
-        <h1 className={searchUi.pageTitle}>
-          Results for &quot;{label}&quot;
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {searchRes.total} results
-        </p>
+      <header className="pt-2">
+        <h1 className={searchUi.pageTitle}>Results for &quot;{query}&quot;</h1>
       </header>
 
-      <div className="space-y-6">
-        <SearchNavbar type={type} query={query} />
+      <SearchNavbar type={type} query={query} />
+
+      {type === "all" ? (
+        <AllResults query={query} />
+      ) : (
         <SearchResults
           type={type}
           query={query}
-          initialSearchResults={searchRes}
+          initialSearchResults={await api.search.byType({
+            q: query,
+            type: SEARCH_TYPE_MAP[type],
+            page: 1,
+            n: 50,
+          })}
         />
-      </div>
+      )}
     </div>
   );
 }

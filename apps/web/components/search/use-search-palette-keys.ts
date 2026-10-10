@@ -1,60 +1,88 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useKeydown } from "~/hooks/use-keydown";
 
-import { searchUi } from "./search-ui";
+const OPTION_SELECTOR = "[data-search-option]";
 
-const ROW_SELECTOR = "[data-search-palette-row]";
+function getOptions(listboxId: string) {
+  const listbox = document.getElementById(listboxId);
+  return listbox
+    ? [...listbox.querySelectorAll<HTMLElement>(OPTION_SELECTOR)]
+    : [];
+}
 
-export function useSearchPaletteKeys(enabled: boolean, listboxId: string) {
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const selectedRef = useRef(selectedIndex);
-  selectedRef.current = selectedIndex;
+type SearchPaletteKeysOptions = {
+  enabled: boolean;
+  listboxId: string;
+  /** Selection returns to the first option whenever this changes. */
+  resetKey: string;
+};
 
+/**
+ * Keyboard selection for a combobox whose options are rendered elsewhere
+ * (partly by Server Components). Options are found in the DOM, given ids and
+ * `aria-selected`; the id of the selected one is returned for `aria-activedescendant`.
+ */
+export function useSearchPaletteKeys(options: SearchPaletteKeysOptions) {
+  const { enabled, listboxId, resetKey } = options;
+
+  const [index, setIndex] = useState(0);
+
+  const scope = `${enabled}:${resetKey}`;
+  const [seenScope, setSeenScope] = useState(scope);
+  if (seenScope !== scope) {
+    setSeenScope(scope);
+    setIndex(0);
+  }
+
+  // Options mount after this hook (portal, results, streamed server rows), so the DOM is watched.
   useEffect(() => {
-    if (!enabled) setSelectedIndex(-1);
-  }, [enabled]);
-
-  useKeydown((e: KeyboardEvent) => {
     if (!enabled) return;
-    const listbox = document.getElementById(listboxId);
-    if (!listbox) return;
+    const sync = () => {
+      const rows = getOptions(listboxId);
+      const selected = Math.min(index, rows.length - 1);
+      rows.forEach((row, i) => {
+        row.id = `${listboxId}-option-${i}`;
+        row.setAttribute("aria-selected", String(i === selected));
+      });
+    };
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [enabled, listboxId, index]);
 
-    const rows = [...listbox.querySelectorAll<HTMLElement>(ROW_SELECTOR)];
+  useKeydown((event) => {
+    const input = event.target;
+    if (
+      !enabled ||
+      event.isComposing ||
+      !(input instanceof HTMLInputElement) ||
+      input.getAttribute("aria-controls") !== listboxId
+    ) {
+      return;
+    }
+
+    const rows = getOptions(listboxId);
     if (!rows.length) return;
+    const selected = Math.min(index, rows.length - 1);
 
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((i) => (i + 1 >= rows.length ? 0 : i + 1));
+    if (event.key === "Enter") {
+      event.preventDefault();
+      rows[selected]?.click();
       return;
     }
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((i) => (i <= 0 ? rows.length - 1 : i - 1));
-      return;
-    }
-    if (e.key === "Enter" && selectedRef.current >= 0) {
-      e.preventDefault();
-      rows[selectedRef.current]?.click();
-    }
+
+    const step =
+      event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+    if (!step) return;
+    event.preventDefault();
+    const next = (selected + step + rows.length) % rows.length;
+    setIndex(next);
+    rows[next]?.scrollIntoView?.({ block: "nearest" });
   });
 
-  useEffect(() => {
-    if (!enabled) return;
-    const listbox = document.getElementById(listboxId);
-    if (!listbox) return;
-
-    const rows = listbox.querySelectorAll<HTMLElement>(ROW_SELECTOR);
-    rows.forEach((row, index) => {
-      const selected = index === selectedIndex;
-      row.setAttribute("aria-selected", selected ? "true" : "false");
-      row.classList.toggle(searchUi.paletteRowSelected, selected);
-    });
-  }, [enabled, listboxId, selectedIndex]);
-
-  const resetSelection = useCallback(() => setSelectedIndex(-1), []);
-
-  return { selectedIndex, resetSelection };
+  return { activeOptionId: `${listboxId}-option-${index}` };
 }

@@ -1,60 +1,109 @@
 "use client";
 
-import type { AllSearch } from "@infinitunes/types";
-import React from "react";
+import { Clock } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useDeferredValue, useEffect, useState } from "react";
 
 import { SearchAll } from "~/components/search/search-all";
 import { SearchField } from "~/components/search/search-field";
-import LoadingSpinner from "~/components/loading-spinner";
+import { searchHref } from "~/components/search/search-query";
+import {
+  resolveSearchState,
+  SearchStatus,
+} from "~/components/search/search-status";
+import { searchUi } from "~/components/search/search-ui";
+import { useRecentSearches } from "~/components/search/use-recent-searches";
 import { useIsTyping } from "~/hooks/use-store";
+import { controlStyles } from "~/lib/control-styles";
 import { api } from "~/lib/trpc/client";
+import { cn } from "~/lib/utils";
 
 type MobileSearchProps = {
-  topSearch: React.JSX.Element;
+  /** Server-rendered discovery list, shown while the field is empty. */
+  topSearches: React.ReactNode;
 };
 
-export function MobileSearch({ topSearch }: MobileSearchProps) {
-  const [query, setQuery] = React.useState("");
+export function MobileSearch({ topSearches }: MobileSearchProps) {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query.trim());
+  const isIdle = deferredQuery.length === 0;
 
-  const deferredQuery = React.useDeferredValue(query.trim());
-  const [_, setIsTyping] = useIsTyping();
+  const [, setIsTyping] = useIsTyping();
+  const { recent, add, clear } = useRecentSearches();
 
-  const { data: searchResult, isLoading } = api.search.all.useQuery(
+  const { data, error } = api.search.all.useQuery(
     { q: deferredQuery },
-    { enabled: deferredQuery.length > 0 },
+    { enabled: !isIdle, retry: false },
   );
 
-  React.useEffect(() => {
-    if (deferredQuery.length) setIsTyping(true);
-    else setIsTyping(false);
-  }, [deferredQuery, setIsTyping]);
+  const results = resolveSearchState(data, error);
+
+  useEffect(() => {
+    setIsTyping(!isIdle);
+  }, [isIdle, setIsTyping]);
+
+  const openResults = (value: string) => {
+    add(value);
+    router.push(searchHref(value));
+  };
 
   return (
-    <>
-      <h1 className="sr-only">Search</h1>
+    <div className="space-y-6">
+      <search>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (query.trim()) openResults(query);
+          }}
+        >
+          <SearchField
+            aria-label="Search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Songs, albums, artists, podcasts"
+          />
+        </form>
+      </search>
 
-      <SearchField
-        size="lg"
-        aria-label="Search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Songs, albums, artists, podcasts"
-        className="mb-6"
-      />
-
-      {!deferredQuery.length && topSearch}
-
-      {isLoading ? (
-        <LoadingSpinner size="sm" className="py-10" />
-      ) : null}
-
-      {searchResult ? (
+      {isIdle ? (
+        <>
+          {recent.length ? (
+            <section aria-labelledby="recent-searches">
+              <div className="mb-3 flex items-center justify-between gap-4">
+                <h2 id="recent-searches" className={searchUi.sectionTitle}>
+                  Recent searches
+                </h2>
+                <button type="button" onClick={clear} className={searchUi.link}>
+                  Clear
+                </button>
+              </div>
+              <div className={searchUi.chipsRow}>
+                {recent.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => openResults(item)}
+                    className={cn(controlStyles.text, searchUi.chip, "px-3")}
+                  >
+                    <Clock aria-hidden="true" className="size-4" />
+                    {item}
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
+          {topSearches}
+        </>
+      ) : results.status === "ready" ? (
         <SearchAll
-          query={query}
-          data={searchResult as AllSearch}
-          showSeeAllLink={false}
+          query={deferredQuery}
+          data={results.data}
+          onSelect={() => add(deferredQuery)}
         />
-      ) : null}
-    </>
+      ) : (
+        <SearchStatus query={deferredQuery} state={results} />
+      )}
+    </div>
   );
 }
