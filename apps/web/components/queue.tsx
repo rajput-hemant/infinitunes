@@ -151,7 +151,7 @@ export function QueueList() {
                 <div className="relative aspect-square h-11 min-w-fit lg:h-10 overflow-hidden rounded">
                   <ImageWithFallback
                     src={getImageSrc(item.image, "low")}
-                    alt={item.name}
+                    alt=""
                     fill
                     sizes="44px"
                     fallback={getPlaceholderSrc("song")}
