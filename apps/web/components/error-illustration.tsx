@@ -14,7 +14,7 @@ export function ErrorIllustration() {
 
       <span
         aria-hidden
-        className="hidden size-28 place-items-center rounded-full bg-muted text-muted-foreground motion-reduce:grid"
+        className="hidden size-28 place-items-center rounded-full bg-destructive/10 text-destructive motion-reduce:grid"
       >
         <SearchX className="size-12" />
       </span>

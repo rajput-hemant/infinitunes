@@ -96,24 +96,24 @@ export function DownloadButton({
         onClick={downloadHandler}
         className={cn(
           controlStyles.rowIcon,
-          "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+          "inline-flex items-center justify-center text-muted-foreground outline-hidden transition-colors duration-fast hover:bg-fill hover:text-foreground active:bg-fill-2 focus-visible:ring-2 focus-visible:ring-ring",
           className,
         )}
         {...rest}
         disabled={isDownloading}
       >
-        <span className="relative size-5">
+        <span className="relative size-4.5">
           <CloudDownload
             aria-hidden="true"
             className={cn(
-              "absolute inset-0 size-5 transition-[opacity,scale] duration-150 ease-out",
+              "absolute inset-0 size-4.5 transition-[opacity,scale] duration-fast ease-out",
               isDownloading && "scale-80 opacity-0",
             )}
           />
           <Loader
             aria-hidden="true"
             className={cn(
-              "absolute inset-0 size-5 transition-[opacity,scale] duration-150 ease-out",
+              "absolute inset-0 size-4.5 transition-[opacity,scale] duration-fast ease-out",
               isDownloading ? "animate-spin" : "scale-80 opacity-0",
             )}
           />

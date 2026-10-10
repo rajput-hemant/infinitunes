@@ -27,7 +27,7 @@ export function ImageWithFallback(props: ImageWithFallbackProps) {
       src={error ? fallback : effectiveSrc}
       alt={alt}
       onError={() => setFailedSrc(effectiveSrc)}
-      className={cn(className, error && "dark:invert")}
+      className={cn("rounded-md", className, error && "dark:invert")}
       {...restProps}
     />
   );
