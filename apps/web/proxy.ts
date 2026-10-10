@@ -140,20 +140,15 @@ export async function proxy(req: NextRequest) {
 
   if (isTrpc) return NextResponse.next();
 
-  // Next applies the nonce to its own scripts from the request header (dynamic
-  // pages only). `CSP_ENFORCE` chooses enforcing vs report-only.
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = buildCsp({
-    nonce,
-    isDev: env.NODE_ENV === "development",
-    umami: Boolean(env.UMAMI_WEBSITE_ID),
-  });
-  const requestHeaders = new Headers(req.headers);
-  requestHeaders.set("x-nonce", nonce);
-  const header = cspHeaderName();
-  requestHeaders.set(header, csp);
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set(header, csp);
+  // `CSP_ENFORCE` chooses enforcing vs report-only.
+  const response = NextResponse.next();
+  response.headers.set(
+    cspHeaderName(),
+    buildCsp({
+      isDev: env.NODE_ENV === "development",
+      umami: Boolean(env.UMAMI_WEBSITE_ID),
+    }),
+  );
   return response;
 }
 

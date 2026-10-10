@@ -364,14 +364,14 @@ describe("proxy CSP report-only header", () => {
     ({ proxy } = await import("../../proxy"));
   });
 
-  it("sets a report-only CSP with a fresh nonce on page responses", async () => {
-    const first = await proxy(createNextRequest("http://localhost:3000/"));
-    const second = await proxy(createNextRequest("http://localhost:3000/"));
-    const header = "content-security-policy-report-only";
+  it("sets a report-only CSP with script hashes and no nonce on page responses", async () => {
+    const res = await proxy(createNextRequest("http://localhost:3000/"));
+    const csp = read(res, "content-security-policy-report-only");
 
-    expect(read(first, header)).toMatch(/script-src 'self' 'nonce-[^']+'/);
-    expect(read(first, header)).not.toBe(read(second, header));
-    expect(read(first, "content-security-policy")).toBeNull();
+    expect(csp).toMatch(/script-src 'self' 'sha256-[A-Za-z0-9+/]+=*'/);
+    expect(csp).not.toContain("nonce");
+    expect(read(res, "content-security-policy")).toBeNull();
+    expect(read(res, "x-middleware-request-x-nonce")).toBeNull();
   });
 
   it("does not add a CSP to /api/trpc responses", async () => {
