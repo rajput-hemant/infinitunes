@@ -4,6 +4,7 @@ import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
+import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
 
 import { TopPodcasts } from "./_components/top-podcasts";
@@ -18,12 +19,17 @@ export const metadata = pageMetadata({
   alt: "Original Podcasts",
 });
 
-type TopPodcastsPageProps = { searchParams: Promise<{ page?: number }> };
+type TopPodcastsPageProps = {
+  searchParams: Promise<{ page?: string | string[] }>;
+};
 
 export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
-  const { page = 1 } = await props.searchParams;
+  const { page } = await props.searchParams;
 
-  const topShows = await api.get.topShows({ page, n: 50 });
+  const topShows = await api.get.topShows({
+    page: parsePageParam(page),
+    n: 50,
+  });
 
   const trendingGroup = topShows.trendingPodcasts?.[0];
   const trendingPodcasts = trendingGroup?.items ?? [];

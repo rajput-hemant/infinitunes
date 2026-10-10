@@ -2,6 +2,7 @@ import type { Lang } from "@infinitunes/types";
 
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
 import { pageMetadata } from "~/lib/metadata";
+import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
 
 import { FeaturedStations } from "./_components/featured-stations";
@@ -19,16 +20,16 @@ export const metadata = pageMetadata({
 
 type RadioPageProps = {
   searchParams: Promise<{
-    page?: number;
+    page?: string | string[];
     lang?: Lang;
   }>;
 };
 
 export default async function RadioPage(props: RadioPageProps) {
-  const { page = 1, lang } = await props.searchParams;
+  const { page, lang } = await props.searchParams;
 
   const radioStations = await api.get.featuredStations({
-    page,
+    page: parsePageParam(page),
     n: 50,
     lang,
   });

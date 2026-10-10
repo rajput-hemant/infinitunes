@@ -4,6 +4,7 @@ import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
 import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
+import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
 
 import { TopAlbums } from "./_components/top-albums";
@@ -19,13 +20,17 @@ export const metadata = pageMetadata({
 });
 
 type AlbumsPageProps = {
-  searchParams: Promise<{ page?: number; lang?: Lang }>;
+  searchParams: Promise<{ page?: string | string[]; lang?: Lang }>;
 };
 
 export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
-  const { page = 1, lang } = await searchParams;
+  const { page, lang } = await searchParams;
 
-  const topAlbums = await api.get.topAlbums({ page, n: 50, lang });
+  const topAlbums = await api.get.topAlbums({
+    page: parsePageParam(page),
+    n: 50,
+    lang,
+  });
 
   return (
     <div>
@@ -41,7 +46,7 @@ export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
       />
 
       <TopAlbums
-        key={topAlbums.data[0].id}
+        key={topAlbums.data[0]?.id ?? "albums"}
         initialAlbums={topAlbums}
         lang={lang}
       />
