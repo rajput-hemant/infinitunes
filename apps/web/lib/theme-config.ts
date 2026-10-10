@@ -75,7 +75,7 @@ function clamp(v: unknown, min: number, max: number, fallback: number): number {
 function clampTint(v: unknown): number | null {
   if (v === null) return null;
   if (typeof v !== "number" || !Number.isFinite(v)) return null;
-  return Math.max(0.1, Math.min(1, v));
+  return Math.max(0, Math.min(1, v));
 }
 
 function toGlassTuning(value: unknown): GlassTuning {

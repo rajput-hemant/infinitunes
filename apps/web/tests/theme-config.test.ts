@@ -73,6 +73,13 @@ describe("parseThemeConfig", () => {
     });
   });
 
+  test("keeps a fully transparent glass tint", () => {
+    const raw = JSON.stringify({
+      glassTuning: { ...DEFAULT_THEME_CONFIG.glassTuning, tint: 0 },
+    });
+    expect(parseThemeConfig(raw).glassTuning.tint).toBe(0);
+  });
+
   test("falls back on malformed JSON instead of throwing", () => {
     for (const raw of ["{not json", "{", "undefined", "\u0000", '{"a":']) {
       expect(parseThemeConfig(raw)).toEqual(DEFAULT_THEME_CONFIG);
