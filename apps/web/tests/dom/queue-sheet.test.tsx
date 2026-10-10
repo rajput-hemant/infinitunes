@@ -10,7 +10,7 @@ import { AudioPlayerProvider } from "react-use-audio-player";
 import * as sonner from "sonner";
 import superjson from "superjson";
 
-import { Queue } from "../../components/queue";
+import { Queue, useQueuePane } from "../../components/queue";
 import { api } from "../../lib/trpc/client";
 
 function song(id: string): QueueItem {
@@ -32,6 +32,14 @@ const trpcClient = api.createClient({
   links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
 });
 
+const noop = () => {};
+
+// The pane lists upcoming tracks only, so every queue starts with the playing "p".
+const storedIds = () =>
+  JSON.parse(localStorage.getItem("queue") ?? "[]")
+    .map((item: QueueItem) => item.id)
+    .filter((id: string) => id !== "p");
+
 async function mount() {
   const container = document.createElement("div");
   document.body.append(container);
@@ -42,7 +50,7 @@ async function mount() {
         <api.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <AudioPlayerProvider>
-              <Queue />
+              <Queue open onOpenChange={noop} />
             </AudioPlayerProvider>
           </QueryClientProvider>
         </api.Provider>
@@ -52,28 +60,14 @@ async function mount() {
   return root;
 }
 
-describe("queue sheet", () => {
+describe("queue pane", () => {
   it("removes the last track and hands focus to the list", async () => {
-    localStorage.setItem("queue", JSON.stringify([song("a")]));
+    localStorage.setItem("queue", JSON.stringify([song("p"), song("a")]));
     localStorage.setItem("current_song_index", "0");
 
     const root = await mount();
 
-    const trigger = document.querySelector<HTMLButtonElement>(
-      '[aria-label="Open queue"]',
-    );
-    expect(trigger).not.toBeNull();
-    await act(async () => {
-      trigger?.click();
-    });
-
-    // Overrides the stock sheet `sm:max-w-sm` for master parity.
-    expect(
-      document.querySelector('[data-slot="sheet-content"]')?.className,
-    ).toContain("sm:max-w-xl!");
-
-    expect(document.body.textContent).toContain("1 Track");
-    expect(document.body.textContent).not.toContain("1 Tracks");
+    expect(document.body.textContent).toContain("2 Tracks");
 
     const remove = document.querySelector<HTMLButtonElement>(
       "[data-queue-remove]",
@@ -89,7 +83,9 @@ describe("queue sheet", () => {
       await new Promise((resolve) => requestAnimationFrame(resolve));
     });
 
-    expect(JSON.parse(localStorage.getItem("queue") ?? "null")).toEqual([]);
+    expect(storedIds()).toEqual([]);
+    expect(document.body.textContent).toContain("1 Track");
+    expect(document.body.textContent).not.toContain("1 Tracks");
     expect(document.querySelector("[data-queue-remove]")).toBeNull();
     expect(document.activeElement).toBe(
       document.querySelector('ol[aria-label="Queue"]'),
@@ -109,16 +105,11 @@ describe("queue sheet", () => {
     };
     localStorage.setItem(
       "queue",
-      JSON.stringify([{ ...song("a"), artists: [artist] }]),
+      JSON.stringify([song("p"), { ...song("a"), artists: [artist] }]),
     );
     localStorage.setItem("current_song_index", "0");
 
     const root = await mount();
-    await act(async () => {
-      document
-        .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
-        ?.click();
-    });
 
     const link = document.querySelector<HTMLAnchorElement>(
       'ol[aria-label="Queue"] a[href*="/artist/"]',
@@ -134,17 +125,12 @@ describe("queue sheet", () => {
   it("hands focus to the row that took the removed row's place", async () => {
     localStorage.setItem(
       "queue",
-      JSON.stringify([song("a"), song("b"), song("c")]),
+      JSON.stringify([song("p"), song("a"), song("b"), song("c")]),
     );
     localStorage.setItem("current_song_index", "0");
 
     const root = await mount();
-    await act(async () => {
-      document
-        .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
-        ?.click();
-    });
-    expect(document.body.textContent).toContain("3 Tracks");
+    expect(document.body.textContent).toContain("4 Tracks");
 
     await act(async () => {
       document
@@ -158,11 +144,8 @@ describe("queue sheet", () => {
       await new Promise((resolve) => requestAnimationFrame(resolve));
     });
 
-    const ids = JSON.parse(localStorage.getItem("queue") ?? "[]").map(
-      (item: QueueItem) => item.id,
-    );
-    expect(ids).toEqual(["a", "c"]);
-    expect(document.body.textContent).toContain("2 Tracks");
+    expect(storedIds()).toEqual(["a", "c"]);
+    expect(document.body.textContent).toContain("3 Tracks");
     expect(document.activeElement?.getAttribute("aria-label")).toBe(
       "Remove Song c from queue",
     );
@@ -179,21 +162,10 @@ describe("queue sheet", () => {
       document.querySelector<HTMLButtonElement>(
         `[aria-label="Remove Song ${id} from queue"]`,
       );
-    const storedIds = () =>
-      JSON.parse(localStorage.getItem("queue") ?? "[]").map(
-        (item: QueueItem) => item.id,
-      );
-
     async function open(ids: string[]) {
-      localStorage.setItem("queue", JSON.stringify(ids.map(song)));
+      localStorage.setItem("queue", JSON.stringify(["p", ...ids].map(song)));
       localStorage.setItem("current_song_index", "0");
-      const root = await mount();
-      await act(async () => {
-        document
-          .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
-          ?.click();
-      });
-      return root;
+      return mount();
     }
 
     const realMatchMedia = window.matchMedia;
@@ -292,7 +264,7 @@ describe("queue sheet", () => {
       await act(async () => root.unmount());
     });
 
-    it("still removes the row when the sheet unmounts mid-transition", async () => {
+    it("still removes the row when the pane unmounts mid-transition", async () => {
       const errors = spyOn(console, "error");
       const root = await open(["a", "b"]);
 
@@ -310,5 +282,151 @@ describe("queue sheet", () => {
       expect(errors).not.toHaveBeenCalled();
       errors.mockRestore();
     });
+  });
+});
+
+function setViewport(wide: boolean) {
+  window.matchMedia = ((query: string) => ({
+    matches: wide && query === "(min-width: 1440px)",
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    onchange: null,
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+}
+
+function Pane() {
+  const pane = useQueuePane();
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Toggle queue"
+        aria-pressed={pane.open}
+        onClick={() => pane.setOpen(!pane.open)}
+      />
+      <Queue open={pane.open} onOpenChange={pane.setOpen} />
+    </>
+  );
+}
+
+async function mountPane() {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  await act(async () => {
+    root.render(
+      <SearchParamsContext.Provider value={new URLSearchParams()}>
+        <api.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <AudioPlayerProvider>
+              <Pane />
+            </AudioPlayerProvider>
+          </QueryClientProvider>
+        </api.Provider>
+      </SearchParamsContext.Provider>,
+    );
+  });
+  return root;
+}
+
+const toggle = () =>
+  document.querySelector<HTMLButtonElement>('[aria-label="Toggle queue"]');
+const pane = () => document.querySelector("aside#player-queue");
+
+describe("queue pane open state", () => {
+  const realMatchMedia = window.matchMedia;
+  afterEach(() => {
+    window.matchMedia = realMatchMedia;
+    document.body.innerHTML = "";
+    document.documentElement.removeAttribute("data-queue");
+  });
+
+  it("docks at 1440px, persists the choice and tells the shell", async () => {
+    setViewport(true);
+    localStorage.setItem("queue", JSON.stringify([song("a"), song("b")]));
+    localStorage.setItem("current_song_index", "0");
+    const root = await mountPane();
+
+    expect(toggle()?.getAttribute("aria-pressed")).toBe("true");
+    expect(pane()?.hasAttribute("inert")).toBe(false);
+    expect(document.documentElement.getAttribute("data-queue")).toBe("open");
+
+    await act(async () => toggle()?.click());
+
+    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(pane()?.hasAttribute("inert")).toBe(true);
+    expect(localStorage.getItem("queue_open")).toBe("false");
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => toggle()?.click());
+    expect(localStorage.getItem("queue_open")).toBe("true");
+
+    await act(async () => root.unmount());
+  });
+
+  it("floats below 1440px, starts closed and does not persist", async () => {
+    setViewport(false);
+    localStorage.removeItem("queue_open");
+    const root = await mountPane();
+
+    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(pane()?.hasAttribute("inert")).toBe(true);
+
+    await act(async () => toggle()?.click());
+    expect(toggle()?.getAttribute("aria-pressed")).toBe("true");
+    expect(localStorage.getItem("queue_open")).toBeNull();
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
+  it("closes on Escape and from the close button", async () => {
+    setViewport(false);
+    const root = await mountPane();
+
+    await act(async () => toggle()?.click());
+    await act(async () => {
+      pane()?.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+    });
+    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+
+    await act(async () => toggle()?.click());
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>('[aria-label="Close queue"]')
+        ?.click();
+    });
+    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+
+    await act(async () => root.unmount());
+  });
+
+  it("clears only the upcoming tracks", async () => {
+    setViewport(false);
+    localStorage.setItem(
+      "queue",
+      JSON.stringify([song("a"), song("b"), song("c")]),
+    );
+    localStorage.setItem("current_song_index", "1");
+    const root = await mountPane();
+    await act(async () => toggle()?.click());
+
+    await act(async () => {
+      [...document.querySelectorAll<HTMLButtonElement>("aside button")]
+        .find((button) => button.textContent === "Clear")
+        ?.click();
+    });
+
+    expect(storedIds()).toEqual(["a", "b"]);
+    expect(localStorage.getItem("current_song_index")).toBe("1");
+    expect(document.body.textContent).toContain("Nothing queued");
+
+    await act(async () => root.unmount());
   });
 });
