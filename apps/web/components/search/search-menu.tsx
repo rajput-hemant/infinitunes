@@ -95,7 +95,8 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             <kbd
               className={cn(
                 searchUi.kbd,
-                "pointer-events-none hidden lg:inline-grid",
+                // On glass the key cap is a translucent fill, never the opaque card colour.
+                "pointer-events-none hidden bg-fill inset-ring-0 lg:inline-grid",
               )}
             >
               {mounted && isMacOs() ? "⌘" : "Ctrl"} K

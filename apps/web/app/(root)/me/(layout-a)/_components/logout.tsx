@@ -16,7 +16,7 @@ export function LogoutButton() {
       onClick={signOut}
       className={cn(controlStyles.text, destructiveText)}
     >
-      <LogOut className="mr-2 size-4" /> Logout
+      <LogOut aria-hidden className="mr-2 size-4" /> Log out
     </Button>
   );
 }
