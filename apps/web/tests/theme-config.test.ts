@@ -255,7 +255,7 @@ describe("themeConfigToHtml", () => {
     expect(style).toEqual({});
     expect(attributes).toEqual({
       "data-density": "comfortable",
-      "data-glass": "liquid",
+      "data-glass-level": "liquid",
       "data-ambient": "on",
       "data-motion": "full",
       "data-font": "system",
@@ -266,7 +266,7 @@ describe("themeConfigToHtml", () => {
   test("maps every option onto an attribute", () => {
     expect(themeConfigToHtml(everyField).attributes).toEqual({
       "data-density": "compact",
-      "data-glass": "solid",
+      "data-glass-level": "solid",
       "data-ambient": "off",
       "data-motion": "reduced",
       "data-font": "serif",
@@ -362,5 +362,13 @@ describe("applyThemeConfig", () => {
       "--radius": "0.5rem",
       "--text-scale": "1.0625",
     });
+  });
+
+  test("drops the pre-rename data-glass attribute so <html> never reads as a surface", () => {
+    const { target, attributes } = fakeTarget();
+    target.setAttribute("data-glass", "liquid");
+    applyThemeConfig(target, DEFAULT_THEME_CONFIG);
+    expect(attributes.has("data-glass")).toBe(false);
+    expect(attributes.get("data-glass-level")).toBe("liquid");
   });
 });

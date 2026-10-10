@@ -138,7 +138,8 @@
   --fill-2: rgb(0 0 0 / 0.08);
   --fill-3: rgb(0 0 0 / 0.12);
   --scrim: rgb(0 0 0 / 0.28);
-  --ambient: 0.22;
+  /* The mockup default: glass needs a colour field to refract; see docs/design-system/glass.md. */
+  --ambient: 0.62;
 
   /* One base radius; every corner derives from it. */
   --radius: 0.75rem;
@@ -185,7 +186,6 @@
   --fill-2: rgb(255 255 255 / 0.12);
   --fill-3: rgb(255 255 255 / 0.18);
   --scrim: rgb(0 0 0 / 0.5);
-  --ambient: 0.32;
 }
 
 /* Density: the row and artwork sizes the lists and tables use. */
@@ -261,13 +261,6 @@
   .dark {
     --line: rgb(255 255 255 / 0.35);
     --muted-foreground: #c0c0c6;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  :root,
-  .dark {
-    --ambient: 0;
   }
 }
 
