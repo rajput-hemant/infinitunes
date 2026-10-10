@@ -96,6 +96,25 @@ html[data-ambient="off"] [data-glass-ambient] {
   filter: blur(4px) saturate(160%);
   opacity: 0.85;
 }
+/* A detail page's artwork (useGlassPageArtwork): the same blown-up tiny copy, masked so it fades into the page
+   colour down the viewport instead of ending at an edge, and (where scroll timelines exist) gone by half a screen. */
+[data-glass-ambient] img[data-page-art] {
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 82%);
+  mask-image: linear-gradient(to bottom, #000 30%, transparent 82%);
+}
+@supports (animation-timeline: scroll()) {
+  [data-glass-ambient] img[data-page-art] {
+    animation: g-page-art-out linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 60vh;
+  }
+}
+@keyframes g-page-art-out {
+  to {
+    opacity: 0;
+  }
+}
 [data-glass-ambient]::before {
   content: "";
   position: absolute;

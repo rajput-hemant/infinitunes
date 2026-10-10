@@ -6,9 +6,12 @@ import { createRoot, type Root } from "react-dom/client";
 import { GlassAmbient } from "../../components/glass/glass-ambient";
 import {
   getGlassArtwork,
+  getGlassPageArtwork,
   setGlassArtwork,
+  setGlassPageArtwork,
 } from "../../components/glass/glass-store";
 import { useGlassArtwork } from "../../hooks/use-glass-artwork";
+import { useGlassPageArtwork } from "../../hooks/use-glass-page-artwork";
 
 const roots: Root[] = [];
 const html = document.documentElement;
@@ -28,6 +31,7 @@ afterEach(async () => {
   await act(async () => roots.splice(0).forEach((r) => r.unmount()));
   document.body.replaceChildren();
   setGlassArtwork(null);
+  setGlassPageArtwork(null);
   html.removeAttribute("style");
 });
 
@@ -105,5 +109,45 @@ describe("useGlassArtwork", () => {
         value: RealImage,
       });
     }
+  });
+});
+
+function Page({ url }: { url: string | null }) {
+  useGlassPageArtwork(url);
+  return null;
+}
+
+describe("useGlassPageArtwork", () => {
+  it("paints the page artwork into the ambient field and clears it on unmount", async () => {
+    const field = await mount(<GlassAmbient />);
+    const page = await mount(<Page url="https://cdn.test/page.jpg" />);
+    const img = () => field.container.querySelector("img[data-page-art]");
+    expect(img()?.getAttribute("src")).toBe("https://cdn.test/page.jpg");
+    expect(getGlassPageArtwork()).toBe("https://cdn.test/page.jpg");
+
+    await act(async () => page.reactRoot.unmount());
+    expect(img()).toBeNull();
+    expect(getGlassPageArtwork()).toBeNull();
+  });
+
+  it("keeps the playing artwork in its own slot", async () => {
+    const field = await mount(<GlassAmbient />);
+    await act(async () => setGlassArtwork("https://cdn.test/track.jpg"));
+    await mount(<Page url="https://cdn.test/page.jpg" />);
+    expect(field.container.querySelectorAll("img")).toHaveLength(2);
+    expect(getGlassArtwork()).toBe("https://cdn.test/track.jpg");
+  });
+
+  it("follows navigation between pages and ignores an empty url", async () => {
+    const field = await mount(<GlassAmbient />);
+    const page = await mount(<Page url="https://cdn.test/a.jpg" />);
+    await act(async () =>
+      page.reactRoot.render(<Page url="https://cdn.test/b.jpg" />),
+    );
+    expect(
+      field.container.querySelector("img[data-page-art]")?.getAttribute("src"),
+    ).toBe("https://cdn.test/b.jpg");
+    await act(async () => page.reactRoot.render(<Page url={null} />));
+    expect(getGlassPageArtwork()).toBeNull();
   });
 });

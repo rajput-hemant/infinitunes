@@ -88,26 +88,38 @@ export function AppSidebarTrigger({
   const expanded = isMobile ? openMobile : open;
   const label = expanded ? "Collapse sidebar" : "Expand sidebar";
 
+  // A round toolbar capsule like the history pill. The ghost button's own
+  // `aria-expanded:bg-muted` would keep it a solid dark disc while open, so the
+  // fill is cleared and only hover and press paint it.
   return (
-    <Tooltip>
-      <TooltipTrigger
-        data-slot="sidebar-trigger"
-        render={
-          <SidebarTrigger
-            className={cn(controlStyles.headerIcon, className)}
-            aria-label={label}
-            aria-expanded={expanded}
-            aria-controls="app-sidebar"
-          />
-        }
-      />
-      <TooltipContent side="bottom">
-        {label}
-        <kbd data-slot="kbd" className="font-sans opacity-70">
-          {isMac ? "\u2318 B" : "Ctrl B"}
-        </kbd>
-      </TooltipContent>
-    </Tooltip>
+    <GlassSurface
+      size="s"
+      glassRole="toolbar"
+      className={cn("flex items-center rounded-full p-0.5", className)}
+    >
+      <Tooltip>
+        <TooltipTrigger
+          data-slot="sidebar-trigger"
+          render={
+            <SidebarTrigger
+              className={cn(
+                controlStyles.headerIcon,
+                "rounded-full aria-expanded:bg-transparent aria-expanded:hover:bg-muted",
+              )}
+              aria-label={label}
+              aria-expanded={expanded}
+              aria-controls="app-sidebar"
+            />
+          }
+        />
+        <TooltipContent side="bottom">
+          {label}
+          <kbd data-slot="kbd" className="font-sans opacity-70">
+            {isMac ? "\u2318 B" : "Ctrl B"}
+          </kbd>
+        </TooltipContent>
+      </Tooltip>
+    </GlassSurface>
   );
 }
 
