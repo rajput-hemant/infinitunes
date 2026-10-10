@@ -33,6 +33,8 @@ export function HomeHero({ playlist }: HomeHeroProps) {
         fill
         sizes="(min-width: 1024px) 55vw, 100vw"
         alt=""
+        loading="eager"
+        fetchPriority="high"
         className="-z-20 rounded-none object-cover object-[center_20%] saturate-[1.1]"
       />
 

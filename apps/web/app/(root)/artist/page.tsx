@@ -7,7 +7,7 @@ import {
   CatalogEmpty,
   CatalogEnd,
 } from "~/app/(root)/browse/_components/catalog-states";
-import { SliderCard } from "~/components/slider/slider-card";
+import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
@@ -40,8 +40,9 @@ export default async function TopArtistsPage() {
         <>
           <CatalogGrid>
             {artists.map(
-              ({ artistid, name, perma_url, follower_count, image }) => (
+              ({ artistid, name, perma_url, follower_count, image }, index) => (
                 <SliderCard
+                  priority={index < FIRST_ROW_CARDS}
                   key={artistid}
                   name={name}
                   url={perma_url}

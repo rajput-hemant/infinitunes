@@ -55,6 +55,8 @@ export default async function RadioStationPage({
             height={200}
             alt={station.title}
             fallback={getPlaceholderSrc("radio_station")}
+            loading="eager"
+            fetchPriority="high"
             className="size-full rounded-full object-cover"
           />
         </div>

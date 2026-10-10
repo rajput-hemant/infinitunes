@@ -122,12 +122,22 @@ describe("useGlassPageArtwork", () => {
     const field = await mount(<GlassAmbient />);
     const page = await mount(<Page url="https://cdn.test/page.jpg" />);
     const img = () => field.container.querySelector("img[data-page-art]");
+    const layer = () => img()?.parentElement;
     expect(img()?.getAttribute("src")).toBe("https://cdn.test/page.jpg");
+    // It arrives hidden and fades in once the image has loaded.
+    expect(layer()?.hasAttribute("data-shown")).toBe(false);
+    await act(async () => img()?.dispatchEvent(new Event("load")));
+    expect(layer()?.hasAttribute("data-shown")).toBe(true);
     expect(getGlassPageArtwork()).toBe("https://cdn.test/page.jpg");
 
     await act(async () => page.reactRoot.unmount());
-    expect(img()).toBeNull();
     expect(getGlassPageArtwork()).toBeNull();
+    // The wash fades out before it is removed.
+    expect(layer()?.hasAttribute("data-shown")).toBe(false);
+    await act(async () =>
+      layer()?.dispatchEvent(new Event("transitionend", { bubbles: true })),
+    );
+    expect(img()).toBeNull();
   });
 
   it("keeps the playing artwork in its own slot", async () => {
@@ -145,9 +155,52 @@ describe("useGlassPageArtwork", () => {
       page.reactRoot.render(<Page url="https://cdn.test/b.jpg" />),
     );
     expect(
-      field.container.querySelector("img[data-page-art]")?.getAttribute("src"),
-    ).toBe("https://cdn.test/b.jpg");
+      field.container.querySelector('img[data-page-art][src$="b.jpg"]'),
+    ).not.toBeNull();
     await act(async () => page.reactRoot.render(<Page url={null} />));
     expect(getGlassPageArtwork()).toBeNull();
+  });
+
+  it("keeps the previous wash until the next page's artwork has loaded, then crossfades", async () => {
+    const field = await mount(<GlassAmbient />);
+    const layerOf = (name: string) =>
+      field.container.querySelector(`img[data-page-art][src$="${name}"]`)
+        ?.parentElement;
+    const loaded = (name: string) =>
+      act(async () =>
+        layerOf(name)?.firstElementChild?.dispatchEvent(new Event("load")),
+      );
+    const page = await mount(<Page url="https://cdn.test/a.jpg" />);
+    await loaded("a.jpg");
+    expect(layerOf("a.jpg")?.hasAttribute("data-shown")).toBe(true);
+
+    await act(async () =>
+      page.reactRoot.render(<Page url="https://cdn.test/b.jpg" />),
+    );
+    // b is still loading: a stays on screen, so the field never flashes empty.
+    expect(layerOf("a.jpg")?.hasAttribute("data-shown")).toBe(true);
+    expect(layerOf("b.jpg")?.hasAttribute("data-shown")).toBe(false);
+
+    await loaded("b.jpg");
+    expect(layerOf("b.jpg")?.hasAttribute("data-shown")).toBe(true);
+    expect(layerOf("a.jpg")?.hasAttribute("data-shown")).toBe(false);
+
+    await act(async () =>
+      layerOf("a.jpg")?.dispatchEvent(
+        new Event("transitionend", { bubbles: true }),
+      ),
+    );
+    expect(layerOf("a.jpg")).toBeUndefined();
+  });
+
+  it("ignores a stale image that finishes loading after the page moved on", async () => {
+    const field = await mount(<GlassAmbient />);
+    const page = await mount(<Page url="https://cdn.test/a.jpg" />);
+    const stale = field.container.querySelector("img[data-page-art]");
+    await act(async () =>
+      page.reactRoot.render(<Page url="https://cdn.test/b.jpg" />),
+    );
+    await act(async () => stale?.dispatchEvent(new Event("load")));
+    expect(stale?.parentElement?.hasAttribute("data-shown")).toBe(false);
   });
 });

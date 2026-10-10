@@ -205,6 +205,25 @@ describe("Better Auth configuration", () => {
     process.env.GITHUB_CLIENT_SECRET = "test-github-client-secret";
   });
 
+  it("registers only the social providers that have credentials", () => {
+    const both = createAuth(makeFakeDb());
+    expect(Object.keys(both.options.socialProviders ?? {}).sort()).toEqual([
+      "github",
+      "google",
+    ]);
+
+    const saved = process.env.GITHUB_CLIENT_SECRET;
+    delete process.env.GITHUB_CLIENT_SECRET;
+    try {
+      const googleOnly = createAuth(makeFakeDb());
+      expect(Object.keys(googleOnly.options.socialProviders ?? {})).toEqual([
+        "google",
+      ]);
+    } finally {
+      process.env.GITHUB_CLIENT_SECRET = saved;
+    }
+  });
+
   it("generates UUID primary keys via advanced.database.generateId", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.advanced?.database?.generateId).toBe("uuid");

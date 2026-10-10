@@ -91,6 +91,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           height={224}
           alt={title}
           fallback={getPlaceholderSrc(kind)}
+          loading="eager"
+          fetchPriority="high"
           className="size-full object-cover"
         />
 

@@ -11,6 +11,9 @@ import { ImageWithFallback } from "../image-with-fallback";
 import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
 
+/** Cards in a catalog grid's first row: above the fold, so they load eagerly. */
+export const FIRST_ROW_CARDS = 6;
+
 export type SliderCardProps = {
   name: string;
   type: MediaType;
@@ -22,6 +25,8 @@ export type SliderCardProps = {
   aspect?: "square" | "video";
   hidePlayButton?: boolean;
   isCurrentSeason?: boolean;
+  /** Above the fold (the LCP candidate): load eagerly at high fetch priority. */
+  priority?: boolean;
 };
 
 export function SliderCard(props: SliderCardProps) {
@@ -35,6 +40,7 @@ export function SliderCard(props: SliderCardProps) {
     aspect = "square",
     hidePlayButton,
     isCurrentSeason,
+    priority,
     className,
   } = props;
 
@@ -92,6 +98,8 @@ export function SliderCard(props: SliderCardProps) {
           width={200}
           height={200}
           alt={name}
+          loading={priority ? "eager" : undefined}
+          fetchPriority={priority ? "high" : undefined}
           className={cn(
             "size-full object-cover",
             !imageSrc && "dark:invert",

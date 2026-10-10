@@ -35,7 +35,7 @@ export function BrowseTile({
 
       {image && (
         <ImageWithFallback
-          src={getImageSrc(image, "high")}
+          src={getImageSrc(image, "medium")}
           fallback={getPlaceholderSrc("playlist")}
           width={72}
           height={72}

@@ -7,6 +7,7 @@ import {
   getGlassPageArtwork,
   subscribeGlassArtwork,
 } from "./glass-store";
+import { PageWash } from "./page-wash";
 
 const noArtwork = () => null;
 
@@ -33,18 +34,7 @@ export function GlassAmbient() {
     <div data-glass-ambient aria-hidden="true">
       {/* A tiny copy scaled up: the blur costs a fraction of blurring it full size. */}
       {artwork ? <img alt="" src={artwork} decoding="async" /> : null}
-      {pageArtwork ? (
-        <img
-          key={pageArtwork}
-          data-page-art
-          alt=""
-          src={pageArtwork}
-          decoding="async"
-          onError={(event) => {
-            event.currentTarget.hidden = true;
-          }}
-        />
-      ) : null}
+      <PageWash url={pageArtwork} />
     </div>
   );
 }
