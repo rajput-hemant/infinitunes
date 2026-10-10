@@ -1,8 +1,3 @@
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@infinitunes/ui/components/alert";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
   Empty,
@@ -53,7 +48,7 @@ export function LibraryHeading(props: LibraryHeadingProps) {
       )}
     >
       <div className="min-w-0">
-        <Heading className="font-heading text-xl text-balance dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+        <Heading className="font-heading text-xl font-bold tracking-tight text-balance text-foreground sm:text-2xl">
           {title}
         </Heading>
 
@@ -85,6 +80,7 @@ type LibraryStateProps = {
   title: string;
   titleAs?: "h3" | "p";
   description: string;
+  tone?: "default" | "error";
   className?: string;
   children?: React.ReactNode;
 };
@@ -95,6 +91,7 @@ export function LibraryState(props: LibraryStateProps) {
     title,
     titleAs: Title = "h3",
     description,
+    tone = "default",
     className,
     children,
   } = props;
@@ -102,23 +99,26 @@ export function LibraryState(props: LibraryStateProps) {
   return (
     <Empty
       className={cn(
-        "min-h-64 flex-none animate-in gap-3 rounded-lg border px-4 py-10 duration-200 ease-out fade-in slide-in-from-bottom-1 lg:min-h-96",
+        "flex-none animate-in gap-2 rounded-md border border-dashed px-4 py-12 duration-base ease-spring fade-in slide-in-from-bottom-1",
         className,
       )}
     >
-      <EmptyHeader className="items-center gap-3">
+      <EmptyHeader className="items-center gap-2">
         <EmptyMedia
           variant="icon"
-          className="mb-0 size-14 rounded-full text-muted-foreground [&_svg:not([class*='size-'])]:size-7"
+          className={cn(
+            "mb-0 size-12 rounded-full bg-fill text-muted-foreground [&_svg:not([class*='size-'])]:size-6",
+            tone === "error" && "text-destructive",
+          )}
         >
           <Icon aria-hidden />
         </EmptyMedia>
 
-        <Title className="font-heading text-xl text-balance sm:text-2xl">
+        <Title className="font-heading text-base font-bold tracking-tight text-balance">
           {title}
         </Title>
 
-        <EmptyDescription className="max-w-md text-pretty">
+        <EmptyDescription className="max-w-88 text-pretty">
           {description}
         </EmptyDescription>
       </EmptyHeader>
@@ -141,7 +141,10 @@ export function LibraryEmpty(props: LibraryEmptyProps) {
       {action && (
         <Link
           href={action.href}
-          className={buttonVariants({ className: controlStyles.text })}
+          className={buttonVariants({
+            variant: "secondary",
+            className: controlStyles.text,
+          })}
         >
           {action.label}
         </Link>
@@ -154,18 +157,15 @@ export function LibraryEmpty(props: LibraryEmptyProps) {
 
 export function LibraryUnavailable({ what }: { what: string }) {
   return (
-    // Alert is a div component; the persistent state must not be assertive.
-    // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
-    <Alert role="status" className="mx-auto max-w-xl">
-      <TriangleAlert aria-hidden />
-      <AlertTitle>Couldn’t load your {what}</AlertTitle>
-      <AlertDescription>
-        Your saved items are safe. We couldn’t load them from the music service.
-        Try again in a moment.
-      </AlertDescription>
-      <div className="col-start-2 mt-2">
+    <output className="block">
+      <LibraryState
+        icon={TriangleAlert}
+        tone="error"
+        title={`Couldn’t load your ${what}`}
+        description="Your saved items are safe. We couldn’t load them from the music service. Try again in a moment."
+      >
         <RetryButton />
-      </div>
-    </Alert>
+      </LibraryState>
+    </output>
   );
 }

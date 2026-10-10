@@ -52,7 +52,7 @@ export async function LikedCollection<T>(props: LikedCollectionProps<T>) {
   if (!cards.length) return <LibraryUnavailable what={`liked ${plural}`} />;
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       <LibraryHeading
         title={`Liked ${noun.charAt(0).toUpperCase()}${plural.slice(1)}`}
         count={cards.length}
