@@ -1,29 +1,22 @@
 "use client";
 
-import type { ThemeConfig } from "@infinitunes/types";
+import { RADIUS_PRESETS } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
-import { setCookie } from "cookies-next";
 import { CheckIcon } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useRouter } from "next/navigation";
 
 import { themes } from "~/config/themes";
+import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
-const RADIUS = ["default", 0, 0.3, 0.5, 0.75, 1.0] as const;
-
-export function AppearanceSettings({ theme, radius }: ThemeConfig) {
-  const router = useRouter();
+export function AppearanceSettings() {
+  const {
+    config: { accent: theme, radius },
+    update,
+  } = useThemeConfig();
 
   const { resolvedTheme: themeMode, setTheme } = useTheme();
-
-  function themeConfigHandler(config: ThemeConfig) {
-    setCookie("theme-config", JSON.stringify(config), {
-      path: "/",
-    });
-    router.refresh();
-  }
 
   return (
     <div className="space-y-8 px-6">
@@ -81,12 +74,12 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
         </h2>
 
         <div className="flex max-w-5xl flex-wrap gap-2">
-          {themes.map(({ name, label }) => (
+          {themes.map(({ name, label, hex }) => (
             <Button
               key={name}
               variant="outline"
               aria-pressed={name === theme}
-              onClick={() => themeConfigHandler({ theme: name, radius })}
+              onClick={() => update({ accent: name })}
               className={cn(
                 controlStyles.text,
                 "w-28 justify-start",
@@ -94,10 +87,8 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               )}
             >
               <span
-                className={cn(
-                  `theme-${name}`,
-                  "flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground",
-                )}
+                className="flex size-5 shrink-0 items-center justify-center rounded-full text-white"
+                style={{ backgroundColor: hex }}
               >
                 {theme === name && (
                   <CheckIcon aria-hidden className="size-3.5" />
@@ -115,24 +106,17 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
         </h2>
 
         <div className="flex flex-wrap gap-2">
-          {RADIUS.map((value) => (
+          {RADIUS_PRESETS.map((value) => (
             <Button
               variant="outline"
               key={value}
               aria-pressed={radius === value}
-              onClick={() => themeConfigHandler({ theme, radius: value })}
+              onClick={() => update({ radius: value })}
               className={cn(
                 controlStyles.text,
                 "w-24 capitalize",
                 radius === value && "border-primary ring-1 ring-primary",
               )}
-              style={
-                value === "default"
-                  ? {}
-                  : ({
-                      "--radius": `${value}rem`,
-                    } as React.CSSProperties)
-              }
             >
               {value}
             </Button>
