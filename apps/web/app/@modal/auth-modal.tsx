@@ -10,6 +10,8 @@ import {
 } from "@infinitunes/ui/components/dialog";
 import { usePathname, useRouter } from "next/navigation";
 
+import { controlStyles } from "~/lib/control-styles";
+
 type AuthModalProps = React.PropsWithChildren<{
   title: string;
   description: string;
@@ -42,9 +44,8 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
             ? "Don't have an account? "
             : "Already have an account? "}
           <Button
-            size="sm"
             variant="link"
-            className="h-5 px-0"
+            className={controlStyles.text}
             onClick={() => router.replace(isLoginPage ? "/signup" : "/login")}
           >
             {isLoginPage ? "Sign up" : "Login"}
