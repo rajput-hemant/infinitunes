@@ -30,8 +30,9 @@ export function RangeField(props: RangeFieldProps) {
         max={max}
         step={step}
         value={value}
+        aria-valuetext={format(value)}
         onChange={(event) => onValueChange(event.currentTarget.valueAsNumber)}
-        className="h-ctl min-w-0 flex-1 cursor-pointer accent-primary"
+        className="h-ctl-lg min-w-0 flex-1 cursor-pointer accent-primary"
       />
       <output htmlFor={id} className="w-14 text-right tabular-nums">
         {format(value)}

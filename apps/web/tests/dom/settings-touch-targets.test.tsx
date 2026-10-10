@@ -16,7 +16,7 @@ const { AppearanceSettings } =
   await import("../../app/(root)/settings/_components/appearance-settings");
 const { ThemeConfigProvider } = await import("../../lib/theme/provider");
 
-const heightClass = (style: string) => style.split(" ")[0]!;
+const heightClass = (style: string) => style.split(" ")[0] ?? "";
 
 async function mount(node: React.ReactNode) {
   const container = document.createElement("div");

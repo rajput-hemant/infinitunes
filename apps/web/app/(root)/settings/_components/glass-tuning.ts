@@ -1,29 +1,31 @@
-export const GLASS_VARIANTS = ["regular", "clear", "tinted"] as const;
-export type GlassVariant = (typeof GLASS_VARIANTS)[number];
+import type { GlassTuning } from "@infinitunes/types";
 
-/** Fine tuning of the Liquid Glass material, beyond the three levels in `ThemeConfig`. */
-export type GlassTuning = {
-  variant: GlassVariant;
-  /** Alpha of the glass tint, 0.1 to 1. */
-  tint: number;
-  /** Backdrop blur in px. */
-  blur: number;
-  /** Lens displacement in px. */
-  refraction: number;
-  /** Backdrop saturation multiplier. */
-  saturation: number;
-  /** Edge highlight strength. */
-  highlight: number;
-  shadow: number;
-  /** Strength of the artwork colour field behind the glass. */
-  ambientLevel: number;
-  accentTint: boolean;
-};
+import { DEFAULT_GLASS_TUNING } from "~/lib/theme-config";
 
-export type GlassSliderKey = Exclude<
-  keyof GlassTuning,
-  "variant" | "accentTint"
->;
+/** Tint alpha while the config leaves `tint` null: the stylesheet default per scheme (`--glass-tint` in `styles/glass.css`). */
+const DEFAULT_TINT = { light: 0.14, dark: 0.24 } as const;
+
+export type GlassSliderKey =
+  | "tint"
+  | "blur"
+  | "refraction"
+  | "sat"
+  | "spec"
+  | "shadow"
+  | "ambientLevel";
+
+/** The stored tuning with the scheme's default tint filled in, so every slider reads a number. */
+export type ResolvedGlassTuning = Omit<GlassTuning, "tint"> & { tint: number };
+
+export function resolveGlassTuning(
+  tuning: GlassTuning,
+  dark: boolean,
+): ResolvedGlassTuning {
+  return {
+    ...tuning,
+    tint: tuning.tint ?? DEFAULT_TINT[dark ? "dark" : "light"],
+  };
+}
 
 type GlassSlider = {
   key: GlassSliderKey;
@@ -56,7 +58,7 @@ export const GLASS_SLIDERS: readonly GlassSlider[] = [
     unit: "px",
   },
   {
-    key: "saturation",
+    key: "sat",
     label: "Saturation",
     min: 1,
     max: 2.6,
@@ -64,7 +66,7 @@ export const GLASS_SLIDERS: readonly GlassSlider[] = [
     unit: "percent",
   },
   {
-    key: "highlight",
+    key: "spec",
     label: "Edge highlight",
     min: 0,
     max: 1.6,
@@ -91,7 +93,7 @@ export const GLASS_SLIDERS: readonly GlassSlider[] = [
 
 const round = (value: number) => Math.round(value * 100) / 100;
 
-export function sliderValue(slider: GlassSlider, tuning: GlassTuning) {
+export function sliderValue(slider: GlassSlider, tuning: ResolvedGlassTuning) {
   const stored = tuning[slider.key];
   return slider.inverted ? round(1 - stored) : stored;
 }
@@ -105,4 +107,19 @@ export function sliderPatch(
 
 export function formatSliderValue(slider: GlassSlider, shown: number) {
   return slider.unit === "px" ? `${shown}px` : `${Math.round(shown * 100)}%`;
+}
+
+export function isDefaultGlassTuning(tuning: GlassTuning): boolean {
+  const d = DEFAULT_GLASS_TUNING;
+  return (
+    tuning.variant === d.variant &&
+    tuning.tint === d.tint &&
+    tuning.blur === d.blur &&
+    tuning.refraction === d.refraction &&
+    tuning.sat === d.sat &&
+    tuning.spec === d.spec &&
+    tuning.shadow === d.shadow &&
+    tuning.ambientLevel === d.ambientLevel &&
+    tuning.accentTint === d.accentTint
+  );
 }
