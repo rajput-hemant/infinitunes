@@ -2,7 +2,6 @@ import type { Artist, Song } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import {
   artistInput,
@@ -22,7 +21,7 @@ import {
 function artistList(call: string, finalize?: (result: unknown) => void) {
   return publicProcedure
     .input(artistSongsAlbumsInput)
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await api(call, {
         query: {
           artistId: input.id,
@@ -42,7 +41,7 @@ export const artistRouter = router({
   details: publicProcedure
     .input(artistInput)
     .output(z.custom<Artist>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const { id, token, lang } = input;
       if (!id && !token) {
         throw new TRPCError({
@@ -81,7 +80,7 @@ export const artistRouter = router({
   topSongs: publicProcedure
     .input(artistTopSongsInput)
     .output(z.custom<Song[]>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await secondaryList(() =>
         api(endpoints.artist.top_songs, {
           query: {

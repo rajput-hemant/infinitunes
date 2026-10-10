@@ -5,9 +5,10 @@ import { createCaller } from "@infinitunes/trpc";
 import { cache } from "react";
 
 import { getSession } from "~/lib/auth";
+import { cachedApi } from "~/lib/cached-api";
 
 const createTRPCContext = cache(() => {
-  return { db, session: getSession };
+  return { db, session: getSession, catalogApi: cachedApi };
 });
 
 const getContext = () => createTRPCContext();

@@ -14,6 +14,9 @@ import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 
+// TODO: Cache Components adoption. Defer validation until session, sidebar cookies and navigation stream independently.
+export const instant = false;
+
 export default async function Layout({ children }: React.PropsWithChildren) {
   const [user, cookieStore] = await Promise.all([getUser(), cookies()]);
   const sidebarOpen = cookieStore.get("sidebar_state")?.value !== "false";

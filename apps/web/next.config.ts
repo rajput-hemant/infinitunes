@@ -27,6 +27,7 @@ const securityHeaders = [
 ];
 
 const config: NextConfig = {
+  cacheComponents: true,
   reactStrictMode: true,
   reactCompiler: true,
   typedRoutes: true,
