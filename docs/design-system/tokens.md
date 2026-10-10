@@ -147,7 +147,7 @@ Text on the accent is white (`oklch(1 0 0)`) on light surfaces and near-black (`
 | `headingFont`  | `"display" \| "system" \| "rounded" \| "grotesk" \| "serif" \| "mono"`      | `"display"`     | `data-heading-font`                                 |
 | `textSize`     | `15 \| 16 \| 17 \| 18` (px)                                                 | `16`            | `--text-scale` (size / 16)                          |
 | `density`      | `"comfortable" \| "compact"`                                                | `"comfortable"` | `data-density`                                      |
-| `glass`        | `"liquid" \| "subtle" \| "solid"`                                           | `"liquid"`      | `data-glass`                                        |
+| `glass`        | `"liquid" \| "subtle" \| "solid"`                                           | `"liquid"`      | `data-glass-level`                                  |
 | `ambient`      | boolean                                                                     | `true`          | `data-ambient="on" \| "off"`                        |
 | `reduceMotion` | boolean                                                                     | `false`         | `data-motion="reduced" \| "full"`                   |
 
