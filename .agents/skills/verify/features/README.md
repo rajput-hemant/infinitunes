@@ -1,6 +1,6 @@
 # Infinitunes feature map
 
-Files marked `Last live proof: none` have not been driven live; driving steps for those name real routes and labels from source. The driver is the T3 browser tools (see [../SKILL.md](../SKILL.md)); dated runs are in `docs/verification/`. Issues live only in [docs/archive/verification-issues.md](../../../../docs/archive/verification-issues.md).
+Files marked `Last live proof: none` have not been driven live; driving steps for those name real routes and labels from source. The driver is the T3 browser tools (see [../SKILL.md](../SKILL.md)); dated runs are in `docs/verification/`. Issues live only in [docs/archive/verification-history.md](../../../../docs/archive/verification-history.md).
 
 Auth model: Better Auth with email + password, passkey (WebAuthn) and Google/GitHub OAuth. There are no anonymous or guest accounts. A guest is simply a request with no session cookie; it can browse public pages, use the player and change local preferences, but `/me` redirects to `/login` and every user-data tRPC procedure returns `UNAUTHORIZED`.
 
