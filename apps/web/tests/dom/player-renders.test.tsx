@@ -6,7 +6,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
-import { Profiler, act, useEffect, type ReactNode } from "react";
+import {
+  Profiler,
+  act,
+  useEffect,
+  type ComponentProps,
+  type ReactNode,
+} from "react";
 import { createRoot, type Root } from "react-dom/client";
 import superjson from "superjson";
 
@@ -53,9 +59,9 @@ const realQueue = await import("../../components/queue");
 const RealQueue = realQueue.Queue;
 mock.module("../../components/queue", () => ({
   ...realQueue,
-  Queue: () => {
+  Queue: (props: ComponentProps<typeof RealQueue>) => {
     queueRenders++;
-    return <RealQueue />;
+    return <RealQueue {...props} />;
   },
 }));
 
@@ -162,7 +168,7 @@ describe("player re-renders", () => {
     expect(commits).toBeLessThanOrEqual(frames * 2);
     expect(queueRenders).toBeLessThanOrEqual(2);
     // The playhead still moves: the time label follows it.
-    expect(container.textContent).toMatch(/00:0[23] \/ 03:20/);
+    expect(container.textContent).toMatch(/00:0[23].*03:20/);
   });
 });
 
@@ -280,13 +286,33 @@ describe("player a11y", () => {
     expect(valueTexts.some((text) => text?.includes("percent"))).toBe(true);
   });
 
-  it("drops the entrance animation under reduced motion", async () => {
+  it("toggles the queue pane from the bar button and the q shortcut", async () => {
     await mountPlayer();
 
-    const section = document.querySelector('section[aria-label="Player"]');
-    expect(section?.classList.contains("motion-reduce:animate-none")).toBe(
-      true,
-    );
+    const button = () =>
+      document.querySelector<HTMLButtonElement>('button[aria-label="Queue"]');
+    const pane = () => document.querySelector("aside#player-queue");
+    expect(button()?.getAttribute("aria-pressed")).toBe("false");
+    expect(pane()?.hasAttribute("inert")).toBe(true);
+
+    await act(async () => button()?.click());
+    expect(button()?.getAttribute("aria-pressed")).toBe("true");
+    expect(pane()?.hasAttribute("inert")).toBe(false);
+
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: "q" }));
+    });
+    expect(button()?.getAttribute("aria-pressed")).toBe("false");
+    expect(pane()?.hasAttribute("inert")).toBe(true);
+  });
+
+  it("marks shuffle and loop as toggle buttons", async () => {
+    await mountPlayer();
+
+    for (const label of ["Shuffle", "Loop", "Mute"]) {
+      const button = document.querySelector(`button[aria-label="${label}"]`);
+      expect(button?.getAttribute("aria-pressed")).toBe("false");
+    }
   });
 
   it("shows an accessible More button when the queue is empty", async () => {

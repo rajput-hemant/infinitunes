@@ -14,13 +14,14 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Slider } from "@infinitunes/ui/components/slider";
 import {
   Loader2,
+  ChevronDown,
+  ListOrdered,
   Pause,
   Repeat,
   Repeat1,
   Shuffle,
   Volume2,
   VolumeX,
-  X,
 } from "lucide-react";
 import React from "react";
 
@@ -40,10 +41,27 @@ export function setValueText(root: HTMLElement | null, text: string) {
     ?.setAttribute("aria-valuetext", text);
 }
 
+/** Scrubber and volume styling: foreground fill on a neutral track. */
+export const scrubClass =
+  "[&>*]:py-1 [&_[data-slot=slider-range]]:bg-foreground [&_[data-slot=slider-track]]:bg-fill-2";
+
+/** Accent dot under a transport toggle that is switched on. */
+export function ActiveDot({ on }: { on: boolean }) {
+  return on ? (
+    <span
+      aria-hidden
+      className="absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 rounded-full bg-primary"
+    />
+  ) : null;
+}
+
 const buttonClass = cn(
   controlStyles.transport,
-  "flex shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+  "flex shrink-0 items-center justify-center transition-transform duration-fast ease-spring active:scale-[0.96]",
 );
+
+// Distance a drag on the header must travel downward to dismiss the sheet.
+const SWIPE_DOWN_PX = 80;
 
 type ExpandedPlayerProps = {
   open: boolean;
@@ -71,39 +89,45 @@ type ExpandedPlayerProps = {
   onToggleShuffle: () => void;
 };
 
-/**
- * Bottom sheet opened from the player bar below `lg`. Holds the controls the
- * compact bar hides (loop, shuffle, volume, queue); all state and handlers
- * come from the player so the bar and the sheet never diverge.
- */
 export function ExpandedPlayer(props: ExpandedPlayerProps) {
   const { open, onOpenChange, track } = props;
-
-  // Close when the viewport grows to the desktop layout, where this sheet has
-  // no trigger and the bar shows every control itself.
-  React.useEffect(() => {
-    if (!open) return;
-    const query = window.matchMedia("(min-width: 1024px)");
-    const onChange = () => {
-      if (query.matches) onOpenChange(false);
-    };
-    query.addEventListener("change", onChange);
-    return () => query.removeEventListener("change", onChange);
-  }, [open, onOpenChange]);
+  const touchStartY = React.useRef<number | null>(null);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
         showCloseButton={false}
-        className="max-h-[92dvh] overflow-y-auto pb-[env(safe-area-inset-bottom)] motion-reduce:transition-none lg:hidden"
+        className="max-h-dvh overflow-y-auto bg-background pb-[env(safe-area-inset-bottom)] text-foreground duration-slow ease-spring md:inset-0 md:h-dvh md:max-h-none md:justify-center md:border-0"
       >
-        <SheetHeader className="relative pr-16">
+        <SheetHeader
+          className="relative min-h-14 flex-row items-center justify-center px-4 md:absolute md:inset-x-0 md:top-0"
+          onTouchStart={(event) => {
+            touchStartY.current = event.touches[0]?.clientY ?? null;
+          }}
+          onTouchEnd={(event) => {
+            if (
+              touchStartY.current !== null &&
+              (event.changedTouches[0]?.clientY ?? 0) - touchStartY.current >
+                SWIPE_DOWN_PX
+            ) {
+              onOpenChange(false);
+            }
+            touchStartY.current = null;
+          }}
+        >
+          <span
+            aria-hidden
+            className="absolute top-2 left-1/2 h-1 w-9 -translate-x-1/2 rounded-full bg-fill-2 md:hidden"
+          />
           <SheetClose
             aria-label="Close"
-            className={cn(buttonClass, "absolute top-1 right-2")}
+            className={cn(
+              buttonClass,
+              "absolute top-3 left-2 md:top-3 md:left-4",
+            )}
           >
-            <X aria-hidden className="size-5" />
+            <ChevronDown aria-hidden className="size-5" />
           </SheetClose>
           <SheetTitle>Now playing</SheetTitle>
           <SheetDescription className="sr-only">
@@ -152,9 +176,9 @@ function ExpandedSeek({
         }
         onValueCommitted={onSeekCommit}
         onPointerDown={onSeekStart}
-        className="[&>*]:py-4"
+        className={cn(scrubClass, "[&>*]:py-3")}
       />
-      <div className="flex justify-between text-xs text-muted-foreground">
+      <div className="flex justify-between text-xs/4 tabular-nums text-muted-foreground">
         <span>{formatDuration(pos, format)}</span>
         <span>{formatDuration(duration, format)}</span>
       </div>
@@ -178,6 +202,8 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
 
   const volumeLabelId = React.useId();
   const queueHeadingId = React.useId();
+  const queueRegionId = React.useId();
+  const [showQueue, setShowQueue] = React.useState(false);
   const volumeRef = React.useRef<HTMLDivElement>(null);
 
   const volumeText = `${isMuted ? 0 : Math.round(volume * 100)} percent`;
@@ -188,136 +214,170 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
   );
 
   return (
-    <div className="flex flex-col gap-6 px-6 pb-6">
-      <div className="relative mx-auto aspect-square w-full max-w-72 overflow-hidden rounded-lg shadow-md">
-        <ImageWithFallback
-          src={getImageSrc(track.image, "high")}
-          alt=""
-          fill
-          sizes="288px"
-          fallback="/images/placeholder/song.jpg"
-        />
-        <Skeleton className="absolute inset-0 -z-10" />
-      </div>
-
-      <div className="min-w-0 text-center">
-        <p className="font-heading text-lg text-balance break-words text-foreground">
-          {track.name}
-        </p>
-        <p className="truncate text-sm text-muted-foreground">
-          {track.subtitle}
-        </p>
-      </div>
-
-      <ExpandedSeek
-        position={props.position}
-        duration={duration}
-        onSeekStart={props.onSeekStart}
-        onSeekChange={props.onSeekChange}
-        onSeekCommit={props.onSeekCommit}
-      />
-
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          aria-label={isLooping ? "Looping" : "Loop"}
-          aria-pressed={isLooping || loopPlaylist}
-          onClick={props.onLoop}
+    <div className="mx-auto grid w-full max-w-6xl gap-8 px-6 pb-6 md:grid-cols-[minmax(0,1fr)_minmax(18rem,1fr)] md:items-center md:gap-12 md:px-12 md:pt-16">
+      <div className="flex min-w-0 flex-col gap-4">
+        <div
           className={cn(
-            buttonClass,
-            !isLooping && !loopPlaylist && "text-muted-foreground",
+            "relative mx-auto aspect-square w-full max-w-88 overflow-hidden rounded-lg shadow-md transition-transform duration-slow ease-spring md:max-w-120",
+            !isPlaying && "md:scale-[0.88]",
           )}
         >
-          {isLooping ? (
-            <Repeat1 aria-hidden strokeWidth={2} className="size-6" />
-          ) : (
-            <Repeat aria-hidden strokeWidth={2} className="size-6" />
-          )}
-        </button>
-        <button
-          type="button"
-          aria-label="Previous"
-          onClick={props.onPrevious}
-          className={buttonClass}
-        >
-          <Icons.SkipBack aria-hidden className="size-6" />
-        </button>
-        <button
-          type="button"
-          aria-label={isPlaying ? "Pause" : "Play"}
-          onClick={props.onPlayPause}
-          className={cn(buttonClass, controlStyles.transportPlay)}
-        >
-          {isLoading ? (
-            <Loader2 aria-hidden className="size-8 animate-spin" />
-          ) : isPlaying ? (
-            <Pause aria-hidden className="size-8" />
-          ) : (
-            <Icons.Play aria-hidden className="size-8" />
-          )}
-        </button>
-        <button
-          type="button"
-          aria-label="Next"
-          onClick={props.onNext}
-          className={buttonClass}
-        >
-          <Icons.SkipForward aria-hidden className="size-6" />
-        </button>
-        <button
-          type="button"
-          aria-label={isShuffle ? "Shuffling" : "Shuffle"}
-          aria-pressed={isShuffle}
-          onClick={props.onToggleShuffle}
-          className={cn(buttonClass, !isShuffle && "text-muted-foreground")}
-        >
-          <Shuffle aria-hidden strokeWidth={2.35} className="size-6" />
-        </button>
-      </div>
+          <ImageWithFallback
+            src={getImageSrc(track.image, "high")}
+            alt=""
+            fill
+            sizes="(min-width: 768px) 480px, 352px"
+            fallback="/images/placeholder/song.jpg"
+          />
+          <Skeleton className="absolute inset-0 -z-10" />
+        </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          aria-label={isMuted ? "Unmute" : "Mute"}
-          onClick={props.onToggleMute}
-          className={cn(
-            buttonClass,
-            (!isReady || isMuted) && "text-muted-foreground",
-          )}
-        >
-          {isMuted || volume === 0 ? (
-            <VolumeX aria-hidden className="size-6" />
-          ) : (
-            <Volume2 aria-hidden className="size-6" />
-          )}
-        </button>
-        <span id={volumeLabelId} className="sr-only">
-          Volume
-        </span>
-        <Slider
-          ref={volumeRef}
-          aria-labelledby={volumeLabelId}
-          value={[isMuted ? 0 : volume * 100]}
-          min={0}
-          max={100}
-          step={1}
-          onValueChange={(value: number | readonly number[]) =>
-            props.onVolumeChange(
-              typeof value === "number" ? value : (value[0] as number),
-            )
-          }
-          className={cn("[&>*]:py-4", !isReady && "opacity-50")}
+        <div className="mt-2 min-w-0 text-left md:mt-5">
+          <p className="font-heading text-2xl/8 font-bold text-balance break-words text-foreground">
+            {track.name}
+          </p>
+          <p className="truncate text-base/6 text-muted-foreground">
+            {track.subtitle}
+          </p>
+        </div>
+
+        <ExpandedSeek
+          position={props.position}
+          duration={duration}
+          onSeekStart={props.onSeekStart}
+          onSeekChange={props.onSeekChange}
+          onSeekCommit={props.onSeekCommit}
         />
-      </div>
 
-      <section aria-labelledby={queueHeadingId} className="space-y-2">
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            aria-label={isShuffle ? "Shuffling" : "Shuffle"}
+            aria-pressed={isShuffle}
+            onClick={props.onToggleShuffle}
+            className={cn(buttonClass, !isShuffle && "text-muted-foreground")}
+          >
+            <Shuffle aria-hidden strokeWidth={2} className="size-5" />
+            <ActiveDot on={isShuffle} />
+          </button>
+          <button
+            type="button"
+            aria-label="Previous"
+            onClick={props.onPrevious}
+            className={buttonClass}
+          >
+            <Icons.SkipBack aria-hidden className="size-5" />
+          </button>
+          <button
+            type="button"
+            aria-label={isPlaying ? "Pause" : "Play"}
+            onClick={props.onPlayPause}
+            className={cn(
+              buttonClass,
+              controlStyles.transportPlay,
+              "bg-primary text-primary-foreground hover:opacity-85",
+            )}
+          >
+            {isLoading ? (
+              <Loader2 aria-hidden className="size-6 animate-spin" />
+            ) : isPlaying ? (
+              <Pause aria-hidden className="size-6" />
+            ) : (
+              <Icons.Play aria-hidden className="size-6" />
+            )}
+          </button>
+          <button
+            type="button"
+            aria-label="Next"
+            onClick={props.onNext}
+            className={buttonClass}
+          >
+            <Icons.SkipForward aria-hidden className="size-5" />
+          </button>
+          <button
+            type="button"
+            aria-label={isLooping ? "Looping" : "Loop"}
+            aria-pressed={isLooping || loopPlaylist}
+            onClick={props.onLoop}
+            className={cn(
+              buttonClass,
+              !isLooping && !loopPlaylist && "text-muted-foreground",
+            )}
+          >
+            {isLooping ? (
+              <Repeat1 aria-hidden strokeWidth={2} className="size-5" />
+            ) : (
+              <Repeat aria-hidden strokeWidth={2} className="size-5" />
+            )}
+            <ActiveDot on={isLooping || loopPlaylist} />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label={isMuted ? "Unmute" : "Mute"}
+            aria-pressed={isMuted}
+            onClick={props.onToggleMute}
+            className={cn(
+              buttonClass,
+              (!isReady || isMuted) && "text-muted-foreground",
+            )}
+          >
+            {isMuted || volume === 0 ? (
+              <VolumeX aria-hidden className="size-5" />
+            ) : (
+              <Volume2 aria-hidden className="size-5" />
+            )}
+          </button>
+          <span id={volumeLabelId} className="sr-only">
+            Volume
+          </span>
+          <Slider
+            ref={volumeRef}
+            aria-labelledby={volumeLabelId}
+            value={[isMuted ? 0 : volume * 100]}
+            min={0}
+            max={100}
+            step={1}
+            onValueChange={(value: number | readonly number[]) =>
+              props.onVolumeChange(
+                typeof value === "number" ? value : (value[0] as number),
+              )
+            }
+            className={cn(scrubClass, "[&>*]:py-3", !isReady && "opacity-50")}
+          />
+          <button
+            type="button"
+            aria-label="Up next"
+            aria-pressed={showQueue}
+            aria-controls={queueRegionId}
+            onClick={() => setShowQueue(!showQueue)}
+            className={cn(
+              buttonClass,
+              "md:hidden",
+              showQueue ? "text-primary" : "text-muted-foreground",
+            )}
+          >
+            <ListOrdered aria-hidden className="size-5" />
+          </button>
+        </div>
+      </div>
+      <section
+        id={queueRegionId}
+        aria-labelledby={queueHeadingId}
+        className={cn(
+          "max-h-[50dvh] min-h-0 overflow-y-auto rounded-md bg-card p-2 md:block md:h-[min(36rem,70dvh)] md:max-h-none",
+          !showQueue && "hidden",
+        )}
+      >
         <h3
           id={queueHeadingId}
-          className="font-heading text-lg text-foreground"
+          className="px-2 pt-2 pb-1 text-[0.6875rem]/4 font-semibold tracking-[0.06em] text-muted-foreground uppercase"
         >
-          Queue
+          Up next
         </h3>
-        <QueueList />
+        <QueueList upNextOnly />
       </section>
     </div>
   );

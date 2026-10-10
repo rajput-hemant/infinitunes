@@ -17,6 +17,8 @@ import {
 import {
   Loader2,
   MoreVertical,
+  ListOrdered,
+  Maximize2,
   MoveUpRight,
   Pause,
   Radio,
@@ -54,14 +56,46 @@ import type { PositionStore } from "~/lib/position-store";
 import { api } from "~/lib/trpc/client";
 import { cn, getHref } from "~/lib/utils";
 
-import { ExpandedPlayer, setValueText } from "./expanded-player";
+import {
+  ActiveDot,
+  ExpandedPlayer,
+  scrubClass,
+  setValueText,
+} from "./expanded-player";
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
-import { Queue } from "./queue";
+import { Queue, useQueuePane } from "./queue";
 import { TileMoreButton } from "./song-list/more-button";
 
 const controlClass =
-  "rounded-md outline-none transition-transform duration-150 ease-out focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96] motion-reduce:transition-none";
+  "rounded-ctl transition-transform duration-fast ease-spring active:scale-[0.96]";
+
+// Distance a drag on the mini player must travel upward to open the expanded view.
+const SWIPE_UP_PX = 40;
+
+type BarButtonProps = React.ComponentProps<"button"> & { tooltip: string };
+
+function BarButton({ tooltip, className, ...props }: BarButtonProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        delay={0}
+        render={
+          <button
+            type="button"
+            className={cn(
+              controlClass,
+              "inline-flex items-center justify-center",
+              className,
+            )}
+            {...props}
+          />
+        }
+      />
+      <TooltipContent>{tooltip}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 type PlayerProps = {
   user?: User;
@@ -101,7 +135,8 @@ function SeekBar({
   React.useEffect(() => setValueText(ref.current, text), [text]);
 
   return (
-    <>
+    <div className="flex w-full min-w-0 items-center gap-2 text-xs/4 tabular-nums text-muted-foreground">
+      <span aria-hidden>{formatDuration(pos, format)}</span>
       <span id={labelId} className="sr-only">
         Seek
       </span>
@@ -115,25 +150,33 @@ function SeekBar({
         }
         onValueCommitted={onCommit}
         onPointerDown={onStart}
+        className={scrubClass}
       />
-    </>
+      <span aria-hidden>{formatDuration(duration, format)}</span>
+    </div>
   );
 }
 
-function TimeLabel({
+function MiniProgress({
   position,
   duration,
 }: {
   position: PositionStore;
   duration: number;
 }) {
-  const pos = usePosition(position);
+  const progress = usePosition(position);
   return (
-    <p className="shrink-0 text-sm text-muted-foreground">
-      {formatDuration(pos, pos >= 3600 ? "hh:mm:ss" : "mm:ss")}
-      {" / "}
-      {formatDuration(duration, duration >= 3600 ? "hh:mm:ss" : "mm:ss")}
-    </p>
+    <div
+      aria-hidden
+      className="absolute inset-x-4 bottom-0 h-0.5 overflow-hidden rounded-full bg-fill-2 md:hidden"
+    >
+      <div
+        className="h-full bg-primary"
+        style={{
+          width: `${duration > 0 ? Math.min(100, (progress / duration) * 100) : 0}%`,
+        }}
+      />
+    </div>
   );
 }
 
@@ -156,6 +199,8 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const [position] = React.useState(createPositionStore);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
+  const pane = useQueuePane();
+  const touchStartY = React.useRef<number | null>(null);
 
   const utils = api.useUtils();
 
@@ -401,6 +446,9 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
       loopHandler();
     } else if (e.key === "s") {
       setIsShuffle(!isShuffle);
+    } else if (e.key === "q") {
+      e.preventDefault();
+      pane.setOpen(!pane.open);
     }
   });
 
@@ -414,270 +462,259 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   );
 
   return (
-    <section
-      aria-label="Player"
-      className={cn(
-        "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 h-20 bg-background animate-in fade-in slide-in-from-bottom-full [animation-duration:200ms] [animation-timing-function:var(--ease-out)] motion-reduce:animate-none lg:bottom-0",
-        !(isReady || queue.length) && "hidden lg:block",
-      )}
-    >
-      <output aria-live="polite" className="sr-only">
-        {current ? `Now playing ${current.name}, ${current.subtitle}` : ""}
-      </output>
-      <SeekBar
-        position={position}
-        duration={duration}
-        onChange={seekChange}
-        onCommit={seekCommit}
-        onStart={() => setIsDragging(true)}
-      />
-
-      <div
+    <>
+      <section
+        aria-label="Player"
         className={cn(
-          "flex items-center px-4 pt-3 lg:px-4",
-          queue.length === 0 && "text-muted-foreground",
+          "@container fixed right-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 z-40 h-14 rounded-full border border-border bg-card text-card-foreground shadow-lg transition-[right] duration-base ease-spring md:bottom-3 md:left-21 md:h-18 md:rounded-xl lg:left-[calc(var(--side-w)+0.75rem)]",
+          pane.open && "min-[1440px]:right-[calc(var(--queue-w)+0.75rem)]",
+          !(isReady || queue.length) && "hidden md:block",
         )}
       >
-        <div className="relative flex w-full min-w-0 gap-4 lg:w-1/3">
-          {current && (
-            // Below lg the transport row is the only other control, so the
-            // whole info area opens the expanded player.
-            <button
-              type="button"
-              aria-label="Open player"
-              onClick={() => setIsExpanded(true)}
-              className={cn(controlClass, "absolute inset-0 z-10 lg:hidden")}
-            />
+        <output aria-live="polite" className="sr-only">
+          {current ? `Now playing ${current.name}, ${current.subtitle}` : ""}
+        </output>
+        <div
+          className={cn(
+            "grid h-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 md:grid-cols-[minmax(9rem,1fr)_minmax(15rem,36rem)_minmax(9rem,1fr)] md:gap-4 md:px-3",
+            queue.length === 0 && "text-muted-foreground",
           )}
-          {queue.length && queue[currentIndex]?.image ? (
-            <>
-              <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
-                <ImageWithFallback
-                  src={getImageSrc(queue[currentIndex].image, "low")}
-                  alt={queue[currentIndex].name}
-                  fill
-                  sizes="48px"
-                  fallback="/images/placeholder/song.jpg"
-                />
-
-                <Skeleton className="absolute inset-0 -z-10" />
-              </div>
-
-              <div className="flex min-w-0 flex-col justify-center">
-                <Link
-                  href={getHref(
-                    queue[currentIndex].url,
-                    queue[currentIndex].type === "song" ? "song" : "episode",
-                  )}
-                  className="group line-clamp-1 font-heading text-sm text-primary dark:drop-shadow-sm"
-                >
-                  {queue[currentIndex].name}
-                  <MoveUpRight
-                    aria-hidden
-                    className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible"
+        >
+          <div
+            className="relative flex min-w-0 items-center gap-3"
+            onTouchStart={(event) => {
+              touchStartY.current = event.touches[0]?.clientY ?? null;
+            }}
+            onTouchEnd={(event) => {
+              if (
+                touchStartY.current !== null &&
+                touchStartY.current - (event.changedTouches[0]?.clientY ?? 0) >
+                  SWIPE_UP_PX
+              ) {
+                setIsExpanded(true);
+              }
+              touchStartY.current = null;
+            }}
+          >
+            {current && (
+              // Below md the transport row is the only other control, so the
+              // whole info area opens the expanded player.
+              <button
+                type="button"
+                aria-label="Open player"
+                onClick={() => setIsExpanded(true)}
+                className={cn(controlClass, "absolute inset-0 z-10 md:hidden")}
+              />
+            )}
+            {current?.image ? (
+              <>
+                <div className="relative size-10 shrink-0 overflow-hidden rounded-full md:size-12 md:rounded-sm">
+                  <ImageWithFallback
+                    src={getImageSrc(current.image, "low")}
+                    alt={current.name}
+                    fill
+                    sizes="48px"
+                    fallback="/images/placeholder/song.jpg"
                   />
-                </Link>
 
-                <p className="line-clamp-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  {activeRadio && (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                      <Radio aria-hidden className="size-2.5 animate-pulse" />
-                      {activeRadio.name}
-                    </span>
-                  )}
-                  <span className="truncate">
-                    {queue[currentIndex].subtitle}
-                  </span>
-                </p>
+                  <Skeleton className="absolute inset-0 -z-10" />
+                </div>
+
+                <div className="flex min-w-0 flex-col justify-center">
+                  <Link
+                    href={getHref(
+                      current.url,
+                      current.type === "song" ? "song" : "episode",
+                    )}
+                    className="group line-clamp-1 text-sm/5 font-semibold text-foreground hover:text-primary"
+                  >
+                    {current.name}
+                    <MoveUpRight
+                      aria-hidden
+                      className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible"
+                    />
+                  </Link>
+
+                  <p className="line-clamp-1 flex items-center gap-1.5 text-xs/4 text-muted-foreground">
+                    {activeRadio && (
+                      <span className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-primary/10 px-1.5 py-0.5 text-[0.625rem] font-medium text-primary">
+                        <Radio aria-hidden className="size-2.5 animate-pulse" />
+                        {activeRadio.name}
+                      </span>
+                    )}
+                    <span className="truncate">{current.subtitle}</span>
+                  </p>
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Skeleton className="size-12 rounded-md" />
+                <div className="space-y-2">
+                  <Skeleton className="h-3 w-44 lg:w-64" />
+                  <Skeleton className="h-3 w-52 2xl:w-[500px]" />
+                </div>
               </div>
-            </>
-          ) : (
-            <div className="flex items-center space-x-4">
-              <Skeleton className="size-12 rounded-md" />
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-44 lg:w-64" />
-                <Skeleton className="h-3 w-52 2xl:w-[500px]" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex shrink-0 items-center justify-end gap-0.5 lg:w-1/3 lg:justify-evenly lg:gap-0">
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label={isLooping ? "Looping" : "Loop"}
-                  onClick={loopHandler}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "hidden items-center justify-center lg:inline-flex",
-                    !isLooping && !loopPlaylist && "text-muted-foreground",
-                  )}
-                >
-                  {isLooping ? (
-                    <Repeat1 aria-hidden strokeWidth={2} className="size-6" />
-                  ) : (
-                    <Repeat aria-hidden strokeWidth={2} className="size-6" />
-                  )}
-                </button>
-              }
-            />
-            <TooltipContent>
-              {isLooping
-                ? "Playing current song on repeat"
-                : loopPlaylist
-                  ? "Looping playlist"
-                  : "Loop"}
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label="Previous"
-                  onClick={skipToPrev}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "inline-flex items-center justify-center",
-                  )}
-                >
-                  <Icons.SkipBack aria-hidden className="size-6" />
-                </button>
-              }
-            />
-            <TooltipContent>Previous</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label={isPlaying ? "Pause" : "Play"}
-                  onClick={playPauseHandler}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "inline-flex items-center justify-center",
-                  )}
-                >
-                  {isLoading ? (
-                    <Loader2 aria-hidden className="size-8 animate-spin" />
-                  ) : isPlaying ? (
-                    <Pause aria-hidden className="size-8" />
-                  ) : (
-                    <Icons.Play aria-hidden className="size-8" />
-                  )}
-                </button>
-              }
-            />
-            <TooltipContent>{isPlaying ? "Pause" : "Play"}</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label="Next"
-                  onClick={skipToNext}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "inline-flex items-center justify-center",
-                  )}
-                >
-                  <Icons.SkipForward aria-hidden className="size-6" />
-                </button>
-              }
-            />
-            <TooltipContent>Next</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label={isShuffle ? "Shuffling" : "Shuffle"}
-                  onClick={() => setIsShuffle(!isShuffle)}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "hidden items-center justify-center lg:inline-flex",
-                    !isShuffle && "text-muted-foreground",
-                  )}
-                >
-                  <Shuffle className="size-6" aria-hidden strokeWidth={2.35} />
-                </button>
-              }
-            />
-            <TooltipContent>
-              {isShuffle ? "Shuffling" : "Shuffle"}
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <div className="hidden w-1/3 items-center justify-end gap-4 lg:flex">
-          <TimeLabel position={position} duration={duration} />
-
-          <div className="hidden items-center gap-4 xl:flex">
-            <button
-              aria-label={isMuted ? "Unmute" : "Mute"}
-              onClick={toggleMute}
-              className={cn(
-                controlClass,
-                controlStyles.transport,
-                "inline-flex items-center justify-center transition-opacity hover:opacity-100",
-                (!isReady || isMuted) && "text-muted-foreground opacity-50",
-              )}
-            >
-              {isMuted || volume === 0 ? (
-                <VolumeX className="size-6" aria-hidden />
-              ) : volume < 0.33 ? (
-                <Volume className="size-6" aria-hidden />
-              ) : volume < 0.66 ? (
-                <Volume1 className="size-6" aria-hidden />
-              ) : (
-                <Volume2 className="size-6" aria-hidden strokeWidth={2} />
-              )}
-            </button>
-
-            <span id={volumeLabelId} className="sr-only">
-              Volume
-            </span>
-            <Slider
-              ref={volumeRef}
-              aria-labelledby={volumeLabelId}
-              value={[isMuted ? 0 : volume * 100]}
-              defaultValue={[75]}
-              min={0}
-              max={100}
-              step={1}
-              onValueChange={(value: number | readonly number[], _details) =>
-                volumeChange(
-                  typeof value === "number" ? value : (value[0] as number),
-                )
-              }
-              className={cn(
-                "w-44 transition-opacity hover:opacity-100",
-                !isReady && "opacity-50",
-              )}
-            />
-
-            <span className="w-8 text-sm font-medium">
-              {isMuted ? "0" : Math.round(volume * 100)}%
-            </span>
+            )}
           </div>
 
-          <div className="flex">
-            <Queue />
+          <div className="flex shrink-0 flex-col items-center justify-center gap-0.5 md:min-w-0">
+            <div className="flex items-center justify-center gap-1 md:gap-2">
+              <BarButton
+                tooltip={isShuffle ? "Shuffling" : "Shuffle"}
+                aria-label={isShuffle ? "Shuffling" : "Shuffle"}
+                aria-pressed={isShuffle}
+                onClick={() => setIsShuffle(!isShuffle)}
+                className={cn(
+                  controlStyles.transport,
+                  "hidden md:inline-flex",
+                  !isShuffle && "text-muted-foreground",
+                )}
+              >
+                <Shuffle aria-hidden strokeWidth={2} className="size-5" />
+                <ActiveDot on={isShuffle} />
+              </BarButton>
+
+              <BarButton
+                tooltip="Previous"
+                aria-label="Previous"
+                onClick={skipToPrev}
+                className={cn(controlStyles.transport, "hidden md:inline-flex")}
+              >
+                <Icons.SkipBack aria-hidden className="size-5" />
+              </BarButton>
+
+              <BarButton
+                tooltip={isPlaying ? "Pause" : "Play"}
+                aria-label={isPlaying ? "Pause" : "Play"}
+                onClick={playPauseHandler}
+                className={cn(
+                  controlStyles.transportPlayMini,
+                  "bg-foreground text-background hover:opacity-85",
+                )}
+              >
+                {isLoading ? (
+                  <Loader2 aria-hidden className="size-5 animate-spin" />
+                ) : isPlaying ? (
+                  <Pause aria-hidden className="size-5" />
+                ) : (
+                  <Icons.Play aria-hidden className="size-5" />
+                )}
+              </BarButton>
+
+              <BarButton
+                tooltip="Next"
+                aria-label="Next"
+                onClick={skipToNext}
+                className={controlStyles.transport}
+              >
+                <Icons.SkipForward aria-hidden className="size-5" />
+              </BarButton>
+
+              <BarButton
+                tooltip={
+                  isLooping
+                    ? "Playing current song on repeat"
+                    : loopPlaylist
+                      ? "Looping playlist"
+                      : "Loop"
+                }
+                aria-label={isLooping ? "Looping" : "Loop"}
+                aria-pressed={isLooping || loopPlaylist}
+                onClick={loopHandler}
+                className={cn(
+                  controlStyles.transport,
+                  "hidden md:inline-flex",
+                  !isLooping && !loopPlaylist && "text-muted-foreground",
+                )}
+              >
+                {isLooping ? (
+                  <Repeat1 aria-hidden strokeWidth={2} className="size-5" />
+                ) : (
+                  <Repeat aria-hidden strokeWidth={2} className="size-5" />
+                )}
+                <ActiveDot on={isLooping || loopPlaylist} />
+              </BarButton>
+            </div>
+            <div className="hidden w-full min-w-0 md:block">
+              <SeekBar
+                position={position}
+                duration={duration}
+                onChange={seekChange}
+                onCommit={seekCommit}
+                onStart={() => setIsDragging(true)}
+              />
+            </div>
+          </div>
+
+          <div className="hidden min-w-0 items-center justify-end gap-1 md:flex">
+            <div className="hidden items-center gap-1 @min-[860px]:flex">
+              <BarButton
+                tooltip={isMuted ? "Unmute" : "Mute"}
+                aria-label={isMuted ? "Unmute" : "Mute"}
+                aria-pressed={isMuted}
+                onClick={toggleMute}
+                className={cn(
+                  controlStyles.transport,
+                  (!isReady || isMuted) && "text-muted-foreground",
+                )}
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX aria-hidden className="size-5" />
+                ) : volume < 0.33 ? (
+                  <Volume aria-hidden className="size-5" />
+                ) : volume < 0.66 ? (
+                  <Volume1 aria-hidden className="size-5" />
+                ) : (
+                  <Volume2 aria-hidden className="size-5" />
+                )}
+              </BarButton>
+
+              <span id={volumeLabelId} className="sr-only">
+                Volume
+              </span>
+              <Slider
+                ref={volumeRef}
+                aria-labelledby={volumeLabelId}
+                value={[isMuted ? 0 : volume * 100]}
+                defaultValue={[75]}
+                min={0}
+                max={100}
+                step={1}
+                onValueChange={(value: number | readonly number[], _details) =>
+                  volumeChange(
+                    typeof value === "number" ? value : (value[0] as number),
+                  )
+                }
+                className={cn(
+                  scrubClass,
+                  "w-24 min-w-16",
+                  !isReady && "opacity-50",
+                )}
+              />
+            </div>
+
+            <BarButton
+              tooltip="Queue"
+              aria-label="Queue"
+              aria-pressed={pane.open}
+              aria-controls="player-queue"
+              onClick={() => pane.setOpen(!pane.open)}
+              className={cn(
+                controlStyles.headerIcon,
+                pane.open && "text-primary",
+              )}
+            >
+              <ListOrdered aria-hidden className="size-5" />
+            </BarButton>
+
+            <BarButton
+              tooltip="Expand player"
+              aria-label="Expand player"
+              onClick={() => setIsExpanded(true)}
+              className={controlStyles.headerIcon}
+            >
+              <Maximize2 aria-hidden className="size-5" />
+            </BarButton>
 
             {queue.length > 0 ? (
               <TileMoreButton
@@ -704,7 +741,11 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
             )}
           </div>
         </div>
-      </div>
+
+        <MiniProgress position={position} duration={duration} />
+      </section>
+
+      <Queue open={pane.open} onOpenChange={pane.setOpen} />
 
       <ExpandedPlayer
         open={isExpanded}
@@ -731,7 +772,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         onNext={skipToNext}
         onToggleShuffle={() => setIsShuffle(!isShuffle)}
       />
-    </section>
+    </>
   );
 }
 
