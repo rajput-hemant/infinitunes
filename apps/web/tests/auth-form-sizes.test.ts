@@ -14,9 +14,15 @@ describe("auth form control sizes", () => {
     expect(controlStyles.headerIcon).toBeDefined();
   });
 
-  it("uses controlStyles in the shared email and password fields", async () => {
-    expect(await read("email-field.tsx")).toContain("controlStyles.text");
-    expect(await read("password-field.tsx")).toContain("controlStyles.text");
+  it("builds every auth control style from controlStyles", async () => {
+    const styles = await read("field-styles.ts");
+    expect(styles).toContain("controlStyles.textLg");
+    expect(styles).toContain("controlStyles.text,");
+  });
+
+  it("sizes the shared email and password fields with the auth input style", async () => {
+    expect(await read("email-field.tsx")).toContain("authInputStyles");
+    expect(await read("password-field.tsx")).toContain("authInputStyles");
   });
 
   it("sizes the password visibility toggle with the header icon control", async () => {
@@ -25,9 +31,9 @@ describe("auth form control sizes", () => {
     );
   });
 
-  it("uses controlStyles.text full-width actions on login and the OAuth buttons", async () => {
-    const action = 'cn(controlStyles.text, "w-full")';
-    expect(await read("login-form.tsx")).toContain(action);
-    expect(await read("oauth-buttons.tsx")).toContain(action);
+  it("uses the shared full-width action styles on login and the OAuth buttons", async () => {
+    expect(await read("login-form.tsx")).toContain("authPrimaryButtonStyles");
+    expect(await read("login-form.tsx")).toContain("authSquareLgButtonStyles");
+    expect(await read("oauth-buttons.tsx")).toContain("authSquareButtonStyles");
   });
 });

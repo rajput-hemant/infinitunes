@@ -10,11 +10,10 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { controlStyles } from "~/lib/control-styles";
 import { GENERIC_MESSAGE } from "~/lib/user-message";
-import { cn } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
+import { authPrimaryButtonStyles } from "./field-styles";
 
 /** Shown for every valid submission, so the page never reveals which emails have accounts. */
 export const FORGOT_PASSWORD_MESSAGE =
@@ -59,14 +58,14 @@ export function ForgotPasswordForm() {
 
   if (isSent) {
     return (
-      <output className="mt-4 block text-sm text-muted-foreground">
+      <output className="block text-sm text-muted-foreground">
         {FORGOT_PASSWORD_MESSAGE}
       </output>
     );
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
       <Controller
         control={form.control}
         name="email"
@@ -83,7 +82,7 @@ export function ForgotPasswordForm() {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className={cn(controlStyles.textLg, "w-full")}
+        className={authPrimaryButtonStyles}
       >
         {isSubmitting ? (
           <Loader2 className="mr-2 size-4 animate-spin" />

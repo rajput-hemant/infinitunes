@@ -7,8 +7,8 @@ import React from "react";
 import { toast } from "sonner";
 
 import { GitHub, Google } from "~/components/icons";
-import { controlStyles } from "~/lib/control-styles";
-import { cn } from "~/lib/utils";
+
+import { authSquareButtonStyles } from "./field-styles";
 
 type OAuthProvider = "google" | "github";
 
@@ -48,10 +48,10 @@ export function OAuthButtons(props: OAuthButtonProps) {
       <div className="grid grid-cols-2 gap-2">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={() => signInWithProvider("github")}
           disabled={isFormDisabled}
-          className={cn(controlStyles.text, "w-full")}
+          className={authSquareButtonStyles}
         >
           {oauthLoading === "github" ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -63,10 +63,10 @@ export function OAuthButtons(props: OAuthButtonProps) {
 
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={() => signInWithProvider("google")}
           disabled={isFormDisabled}
-          className={cn(controlStyles.text, "w-full")}
+          className={authSquareButtonStyles}
         >
           {oauthLoading === "google" ? (
             <Loader2 className="mr-2 size-4 animate-spin" />

@@ -11,11 +11,11 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
-import { asRoute, cn, safeRedirectPath } from "~/lib/utils";
+import { asRoute, safeRedirectPath } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
+import { authPrimaryButtonStyles } from "./field-styles";
 import { OAuthButtons } from "./oauth-buttons";
 import { PasswordField } from "./password-field";
 
@@ -81,7 +81,7 @@ export function SignUpForm() {
     <div className="flex flex-col gap-4">
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="order-2 flex flex-col gap-3"
+        className="order-2 grid gap-4"
       >
         <Controller
           control={form.control}
@@ -104,6 +104,7 @@ export function SignUpForm() {
               field={field}
               fieldState={fieldState}
               label="Password"
+              description="At least 8 characters with upper and lower case, a number and a symbol."
               autoComplete="new-password"
               disabled={isSubmitting}
             />
@@ -127,7 +128,7 @@ export function SignUpForm() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className={cn(controlStyles.text, "w-full")}
+          className={authPrimaryButtonStyles}
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 size-4 animate-spin" />

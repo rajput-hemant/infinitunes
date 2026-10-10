@@ -12,9 +12,9 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
+import { authPrimaryButtonStyles } from "./field-styles";
 import { PasswordField } from "./password-field";
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
@@ -26,18 +26,14 @@ const defaultValues: ResetPasswordFormData = {
 
 function InvalidLink() {
   return (
-    <div role="alert" className="mt-4 space-y-3 text-sm">
+    <div role="alert" className="space-y-3 text-sm">
       <p className="text-muted-foreground">
         This reset link is invalid or has expired. Links work once and last for
         1 hour.
       </p>
       <Link
         href="/forgot-password"
-        className={cn(
-          buttonVariants(),
-          controlStyles.textLg,
-          "w-full rounded-sm px-3",
-        )}
+        className={cn(buttonVariants(), authPrimaryButtonStyles)}
       >
         Request a new link
       </Link>
@@ -90,7 +86,7 @@ export function ResetPasswordForm() {
   }
 
   return (
-    <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
       <Controller
         control={form.control}
         name="password"
@@ -99,6 +95,7 @@ export function ResetPasswordForm() {
             field={field}
             fieldState={fieldState}
             label="New password"
+            description="At least 8 characters."
             autoComplete="new-password"
             disabled={isSubmitting}
           />
@@ -122,7 +119,7 @@ export function ResetPasswordForm() {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className={cn(controlStyles.textLg, "w-full rounded-sm px-3")}
+        className={authPrimaryButtonStyles}
       >
         {isSubmitting ? (
           <Loader2 className="mr-2 size-4 animate-spin" />

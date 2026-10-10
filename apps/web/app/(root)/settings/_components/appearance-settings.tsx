@@ -45,8 +45,8 @@ export function AppearanceSettings() {
   const theme = hydrated ? storedTheme : undefined;
 
   return (
-    <div className="grid items-start gap-10 min-[90rem]:grid-cols-[minmax(0,1fr)_18rem]">
-      <div className="grid min-w-0 gap-10">
+    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-10 min-[90rem]:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10">
         <SettingsSection
           id="mode"
           title="Theme Mode"
