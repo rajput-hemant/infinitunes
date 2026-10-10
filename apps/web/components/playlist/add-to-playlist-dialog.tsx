@@ -15,6 +15,7 @@ import { List, ListX } from "lucide-react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 
 import { NewPlaylistForm } from "./new-playlist-form";
 
@@ -86,14 +87,18 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
         <DialogFooter>
           <DialogClose
             render={
-              <Button variant="secondary" onClick={() => setDialogOpen(false)}>
-                Close
+              <Button
+                variant="outline"
+                className={controlStyles.text}
+                onClick={() => setDialogOpen(false)}
+              >
+                Cancel
               </Button>
             }
           />
 
           <NewPlaylistForm user={user}>
-            <Button className="shadow-sm">Create New Playlist</Button>
+            <Button className={controlStyles.text}>Create New Playlist</Button>
           </NewPlaylistForm>
         </DialogFooter>
       </DialogContent>

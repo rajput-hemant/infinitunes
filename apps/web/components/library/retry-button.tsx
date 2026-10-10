@@ -5,15 +5,16 @@ import { RotateCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
+import { controlStyles } from "~/lib/control-styles";
+
 export function RetryButton() {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
 
   return (
     <Button
-      size="sm"
       variant="outline"
-      className="h-11 lg:h-7"
+      className={controlStyles.text}
       disabled={isPending}
       onClick={() => startTransition(() => router.refresh())}
     >
