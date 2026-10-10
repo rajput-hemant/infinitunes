@@ -1,21 +1,41 @@
-import { describe, test, expect } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
 
-import { render } from "@testing-library/react";
-import * as React from "react";
+import { act, type ReactElement } from "react";
+import { createRoot, type Root } from "react-dom/client";
 
 import { GlassSurface } from "../../components/glass/glass-surface";
 
+const roots: Root[] = [];
+
+async function renderSurface(ui: ReactElement) {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  roots.push(root);
+  await act(async () => {
+    root.render(ui);
+  });
+  const surface = container.firstElementChild;
+  if (!surface) throw new Error("GlassSurface rendered nothing");
+  return surface;
+}
+
+afterEach(async () => {
+  await act(async () => roots.splice(0).forEach((root) => root.unmount()));
+  document.body.replaceChildren();
+});
+
 describe("GlassSurface", () => {
-  test("renders correctly with default props", () => {
-    const { container } = render(<GlassSurface />);
-    const el = container.firstChild as HTMLElement;
-    expect(el.getAttribute("data-glass")).toBe("regular");
-    expect(el.getAttribute("data-glass-size")).toBe("m");
-    expect(el.getAttribute("data-lens")).toBe("on");
+  it("renders the regular medium lens material by default", async () => {
+    const surface = await renderSurface(<GlassSurface />);
+
+    expect(surface.getAttribute("data-glass")).toBe("regular");
+    expect(surface.getAttribute("data-glass-size")).toBe("m");
+    expect(surface.getAttribute("data-lens")).toBe("on");
   });
 
-  test("accepts props correctly", () => {
-    const { container } = render(
+  it("applies the requested variant, size, lens state and class name", async () => {
+    const surface = await renderSurface(
       <GlassSurface
         variant="tinted"
         size="l"
@@ -23,10 +43,10 @@ describe("GlassSurface", () => {
         className="test-class"
       />,
     );
-    const el = container.firstChild as HTMLElement;
-    expect(el.getAttribute("data-glass")).toBe("tinted");
-    expect(el.getAttribute("data-glass-size")).toBe("l");
-    expect(el.getAttribute("data-lens")).toBe("off");
-    expect(el.classList.contains("test-class")).toBe(true);
+
+    expect(surface.getAttribute("data-glass")).toBe("tinted");
+    expect(surface.getAttribute("data-glass-size")).toBe("l");
+    expect(surface.getAttribute("data-lens")).toBe("off");
+    expect(surface.classList.contains("test-class")).toBe(true);
   });
 });
