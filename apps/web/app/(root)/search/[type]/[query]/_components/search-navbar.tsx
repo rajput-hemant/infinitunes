@@ -1,46 +1,47 @@
-import { buttonVariants } from "@infinitunes/ui/components/button";
 import Link from "next/link";
 
-import { asRoute, cn } from "~/lib/utils";
+import { searchHref } from "~/components/search/search-query";
+import { searchUi } from "~/components/search/search-ui";
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
+
+import type { SearchType } from "./type-map";
 
 type Props = {
-  type: string;
+  type: SearchType;
   query: string;
 };
 
 export const navItems = [
-  { title: "Playlists", type: "playlist" },
+  { title: "All", type: "all" },
   { title: "Songs", type: "song" },
   { title: "Albums", type: "album" },
-  { title: "Podcasts", type: "show" },
+  { title: "Playlists", type: "playlist" },
   { title: "Artists", type: "artist" },
-];
+  { title: "Podcasts", type: "show" },
+] as const;
 
 export function SearchNavbar({ type, query }: Props) {
   return (
-    <nav className="border-b">
-      <div className="hidden h-full items-center gap-2 lg:flex">
+    <nav aria-label="Filter search results">
+      <div className={searchUi.chipsRow}>
         {navItems.map(({ title, type: navType }) => {
           const isActive = type === navType;
 
           return (
-            <div
-              key={title}
+            <Link
+              key={navType}
+              href={searchHref(query, navType)}
               className={cn(
-                "inline-block h-full border-b-2 border-transparent py-2 hover:border-primary",
-                isActive && "border-primary",
+                controlStyles.text,
+                searchUi.chip,
+                "px-3",
+                isActive && searchUi.chipActive,
               )}
+              aria-current={isActive ? "page" : undefined}
             >
-              <Link
-                href={asRoute(`/search/${navType}/${query}`)}
-                className={cn(
-                  buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
-                  isActive && "font-medium",
-                )}
-              >
-                {title}
-              </Link>
-            </div>
+              {title}
+            </Link>
           );
         })}
       </div>

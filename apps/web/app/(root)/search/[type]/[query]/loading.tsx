@@ -1,44 +1,28 @@
-"use client";
-
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import { usePathname } from "next/navigation";
 
-import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
+import { searchUi } from "~/components/search/search-ui";
 
 import { navItems } from "./_components/search-navbar";
 
 export default function Loading() {
-  const [type] = usePathname().split("/").slice(-2);
-
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <Skeleton className="h-8 w-44 sm:h-9 md:h-10 md:w-72" />
-        <Skeleton className="h-4 w-32" />
+    <div className="space-y-6">
+      <Skeleton className="mt-2 h-8 w-full max-w-md md:h-10" />
+
+      <div className={searchUi.chipsRow}>
+        {navItems.map(({ type }) => (
+          <Skeleton key={type} className="h-(--ctl) w-20 rounded-(--r-ctl)" />
+        ))}
       </div>
 
-      <div className="space-y-4 border-t">
-        <div className="border-b">
-          <div className="hidden h-full items-center gap-2 lg:flex">
-            {navItems.map(({ title }) => {
-              return (
-                <div
-                  key={title}
-                  className="inline-block h-full border-b-2 border-transparent py-2 hover:border-primary"
-                >
-                  <Skeleton className="h-11 w-20" />
-                </div>
-              );
-            })}
+      <div className={searchUi.grid}>
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="aspect-square w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
           </div>
-        </div>
-
-        {type === "song" ? (
-          <SongListSkeleton length={20} />
-        ) : (
-          <SliderListSkeleton length={40} />
-        )}
+        ))}
       </div>
     </div>
   );
