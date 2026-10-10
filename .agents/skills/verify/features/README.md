@@ -1,25 +1,25 @@
-# Infinitunes feature map (DRAFT)
+# Infinitunes feature map
 
-Every file here is **DRAFT** with `Last live proof: none`. Nothing has been driven in a browser. Driving steps name real routes and labels from source; the browser harness is pending the user-selected skill (see [../SKILL.md](../SKILL.md)). Issues live only in [docs/archive/verification-issues.md](../../../../docs/archive/verification-issues.md).
+Files marked `Last live proof: none` have not been driven live; driving steps for those name real routes and labels from source. The driver is the T3 browser tools (see [../SKILL.md](../SKILL.md)); dated runs are in `docs/verification/`. Issues live only in [docs/archive/verification-issues.md](../../../../docs/archive/verification-issues.md).
 
 Auth model: Better Auth with email + password, passkey (WebAuthn) and Google/GitHub OAuth. There are no anonymous or guest accounts. A guest is simply a request with no session cookie; it can browse public pages, use the player and change local preferences, but `/me` redirects to `/login` and every user-data tRPC procedure returns `UNAUTHORIZED`.
 
 | Feature                                    | File                                             | Auth needed     | Last live proof |
 | ------------------------------------------ | ------------------------------------------------ | --------------- | --------------- |
-| Email signup, login, logout, session       | [auth-email.md](auth-email.md)                   | guest then user | none            |
+| Email signup, login, logout, session       | [auth-email.md](auth-email.md)                   | guest then user | 2026-10-10      |
 | Passkey enroll and sign-in                 | [auth-passkey.md](auth-passkey.md)               | user            | none            |
 | OAuth entry (Google, GitHub)               | [auth-oauth.md](auth-oauth.md)                   | guest           | none            |
 | Guest vs user access, proxy, tRPC boundary | [access-control.md](access-control.md)           | both            | none            |
 | Account settings, password change, delete  | [account-settings.md](account-settings.md)       | user            | none            |
 | Browse and entity pages                    | [browse-and-entities.md](browse-and-entities.md) | guest           | none            |
 | Search                                     | [search.md](search.md)                           | guest           | none            |
-| Player, queue, download                    | [player-queue.md](player-queue.md)               | guest           | none            |
-| Favorites (likes)                          | [favorites.md](favorites.md)                     | user            | none            |
+| Player, queue, download                    | [player-queue.md](player-queue.md)               | guest           | 2026-10-10      |
+| Favorites (likes)                          | [favorites.md](favorites.md)                     | user            | 2026-10-10      |
 | User playlists                             | [playlists.md](playlists.md)                     | user            | none            |
 | Library (`/me`)                            | [library.md](library.md)                         | user            | none            |
 | Appearance and preferences                 | [preferences.md](preferences.md)                 | guest           | none            |
 | Radio                                      | [radio.md](radio.md)                             | guest           | none            |
-| UI quality and responsive layout           | [ui-quality.md](ui-quality.md)                   | both            | none            |
+| UI quality and responsive layout           | [ui-quality.md](ui-quality.md)                   | both            | 2026-10-10      |
 
 ## Route inventory (from `apps/web/app`)
 
