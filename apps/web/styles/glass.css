@@ -23,7 +23,8 @@
   --glass-bri: 1.06;
   --glass-tint-c: #fff;
   --g-sh-k: 1; /* shadow weight, heavier in dark */
-  --g-rim-k: 1;
+  /* Rim strength. Softer than the mockup's 1 / 0.62: the owner found the rims too contrasty. */
+  --g-rim-k: 0.6;
   --g-art-l: 0.5; /* playing artwork luminance, from useGlassArtwork */
   --g-adapt: calc((1 - var(--g-art-l)) * 0.1);
   --g-blob-1: #f472b6;
@@ -50,7 +51,7 @@
   --glass-tint-c: #1e1e22;
   --glass-bri: 0.9;
   --g-sh-k: 2.2;
-  --g-rim-k: 0.62;
+  --g-rim-k: 0.3;
   --g-adapt: calc(var(--g-art-l) * 0.12);
 }
 /* Subtle level: the mockup preset. User overrides are inline on <html> and still win. */
@@ -389,7 +390,7 @@ html.dark
     --g-con: 1;
     --g-dim: calc(0.16 + 0.44 * var(--g-art-l));
     --g-text: #fff;
-    --g-rim-k: 1;
+    --g-rim-k: 0.6;
     --muted-foreground: rgb(255 255 255 / 0.8);
     text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
   }
@@ -400,7 +401,7 @@ html.dark
     --g-a: calc(0.7 + var(--glass-tint));
     --g-dim: 0;
     --g-text: var(--g-on-accent);
-    --g-rim-k: 1;
+    --g-rim-k: 0.6;
   }
 }
 /* Vibrancy: secondary text on glass is a touch heavier. */

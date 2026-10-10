@@ -12,7 +12,7 @@ import { cn } from "~/lib/utils";
 import { accentPatch, isPresetAccent } from "./appearance-options";
 
 const swatchStyles =
-  "relative size-8 cursor-pointer rounded-full ease-spring transition-transform duration-fast hover:scale-110 active:scale-[0.96] has-checked:ring-2 has-checked:ring-primary has-checked:ring-offset-4 has-checked:ring-offset-background has-focus-visible:outline-2 has-focus-visible:outline-offset-8 has-focus-visible:outline-ring";
+  "relative size-8 cursor-pointer rounded-full ease-spring transition-transform duration-fast hover:scale-110 active:scale-[0.96] has-checked:ring-[1.5px] has-checked:ring-primary has-checked:ring-offset-4 has-checked:ring-offset-background has-focus-visible:outline-2 has-focus-visible:outline-offset-8 has-focus-visible:outline-ring";
 
 export function AccentPicker() {
   const {
@@ -68,7 +68,7 @@ export function AccentPicker() {
           swatchStyles,
           "overflow-hidden bg-[conic-gradient(var(--color-red-500),var(--color-yellow-400),var(--color-lime-400),var(--color-cyan-400),var(--color-blue-500),var(--color-fuchsia-500),var(--color-red-500))]",
           isCustom &&
-            "ring-2 ring-primary ring-offset-4 ring-offset-background",
+            "ring-[1.5px] ring-primary ring-offset-4 ring-offset-background",
         )}
       >
         <input
