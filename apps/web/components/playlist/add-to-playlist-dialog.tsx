@@ -27,7 +27,7 @@ type AddToPlaylistDialogProps = {
 };
 
 export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
-  const { user, isDialogOpen, setDialogOpen, playlists, addToPlaylist } = props;
+  const { isDialogOpen, setDialogOpen, playlists, addToPlaylist } = props;
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>
@@ -89,7 +89,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
             }
           />
 
-          <NewPlaylistForm user={user}>
+          <NewPlaylistForm>
             <Button className={controlStyles.textLg}>
               Create New Playlist
             </Button>

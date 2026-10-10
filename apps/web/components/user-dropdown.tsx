@@ -1,6 +1,5 @@
 "use client";
 
-import { authClient } from "@infinitunes/auth/client";
 import {
   Avatar,
   AvatarFallback,
@@ -23,9 +22,8 @@ import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
+import { useSignOut } from "~/hooks/use-sign-out";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -40,25 +38,7 @@ type UserDropdownProps = {
 
 export function UserDropdown({ user }: UserDropdownProps) {
   const { setTheme } = useTheme();
-  const router = useRouter();
-
-  function signOutHandler() {
-    toast.promise(
-      authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            router.replace("/login");
-            router.refresh();
-          },
-        },
-      }),
-      {
-        loading: "Signing out...",
-        success: "You have been signed out.",
-        error: "Something went wrong.",
-      },
-    );
-  }
+  const signOut = useSignOut();
 
   return (
     <DropdownMenu>
@@ -159,7 +139,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
         {user && (
           <>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={signOutHandler}>
+            <DropdownMenuItem onClick={signOut}>
               <LogOut size={16} className="mr-2" />
               Log Out
             </DropdownMenuItem>

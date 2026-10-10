@@ -19,7 +19,6 @@ import type { z } from "zod";
 
 import { unwrap } from "~/lib/action-result";
 import { createNewPlaylist } from "~/lib/actions";
-import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
@@ -34,8 +33,6 @@ const defaultValues: PlaylistFormData = {
 };
 
 type NewPlaylistFormProps = {
-  /** Accepted from existing callers; the form does not read it. */
-  user?: User;
   /** The single element that opens the dialog. */
   children: React.ReactElement;
 };

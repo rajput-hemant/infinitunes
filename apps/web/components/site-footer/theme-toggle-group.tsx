@@ -6,13 +6,10 @@ import {
 } from "@infinitunes/ui/components/toggle-group";
 import { Monitor, Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
 
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
-
-// Never changes after hydration; only the server/client snapshots differ.
-const subscribeNever = () => () => {};
 
 const segmentClassName = cn(
   controlStyles.headerIcon,
@@ -24,11 +21,7 @@ type ThemeToggleGroupProps = {
 };
 
 export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
-  const isMounted = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
+  const isMounted = useIsHydrated();
 
   const { theme, setTheme } = useTheme();
 
