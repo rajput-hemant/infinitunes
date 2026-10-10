@@ -66,7 +66,6 @@ const playlist = (id: string, name: string): MyPlaylist => ({
 function dialog(playlists: MyPlaylist[] | undefined) {
   return (
     <AddToPlaylistDialog
-      user={user}
       isDialogOpen
       setDialogOpen={() => {}}
       playlists={playlists}
