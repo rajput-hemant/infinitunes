@@ -80,8 +80,9 @@ export function PasskeySettings() {
         await refresh();
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
+      console.error(
+        error instanceof Error ? error.message : "Could not add passkey.",
+      );
       toast.error("Could not add passkey.");
     } finally {
       setIsAdding(false);

@@ -96,11 +96,11 @@ describe("expanded player sheet", () => {
     const region = () =>
       document.getElementById(toggle?.getAttribute("aria-controls") ?? "");
 
-    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle?.getAttribute("aria-expanded")).toBe("false");
     expect(region()?.classList.contains("hidden")).toBe(true);
 
     await act(async () => toggle?.click());
-    expect(toggle?.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle?.getAttribute("aria-expanded")).toBe("true");
     expect(region()?.classList.contains("hidden")).toBe(false);
 
     await act(async () => root.unmount());

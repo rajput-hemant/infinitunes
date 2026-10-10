@@ -84,7 +84,7 @@ export function ForgotPasswordForm() {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className={cn(controlStyles.textLg, "w-full rounded-sm px-3")}
+        className={cn(controlStyles.textLg, "w-full")}
       >
         {isSubmitting ? (
           <Loader2 className="mr-2 size-4 animate-spin" />

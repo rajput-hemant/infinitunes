@@ -305,7 +305,7 @@ function Pane() {
       <button
         type="button"
         aria-label="Toggle queue"
-        aria-pressed={pane.open}
+        aria-expanded={pane.open}
         onClick={() => pane.setOpen(!pane.open)}
       />
       <Queue open={pane.open} onOpenChange={pane.setOpen} />
@@ -351,13 +351,13 @@ describe("queue pane open state", () => {
     localStorage.setItem("current_song_index", "0");
     const root = await mountPane();
 
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("true");
     expect(pane()?.hasAttribute("inert")).toBe(false);
     expect(document.documentElement.getAttribute("data-queue")).toBe("open");
 
     await act(async () => toggle()?.click());
 
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
     expect(pane()?.hasAttribute("inert")).toBe(true);
     expect(localStorage.getItem("queue_open")).toBe("false");
     expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
@@ -373,11 +373,11 @@ describe("queue pane open state", () => {
     localStorage.removeItem("queue_open");
     const root = await mountPane();
 
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
     expect(pane()?.hasAttribute("inert")).toBe(true);
 
     await act(async () => toggle()?.click());
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("true");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("true");
     expect(localStorage.getItem("queue_open")).toBeNull();
     expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
 
@@ -394,7 +394,7 @@ describe("queue pane open state", () => {
         new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
       );
     });
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
 
     await act(async () => toggle()?.click());
     await act(async () => {
@@ -402,7 +402,7 @@ describe("queue pane open state", () => {
         .querySelector<HTMLButtonElement>('[aria-label="Close queue"]')
         ?.click();
     });
-    expect(toggle()?.getAttribute("aria-pressed")).toBe("false");
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
 
     await act(async () => root.unmount());
   });

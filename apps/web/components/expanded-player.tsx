@@ -350,7 +350,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
           <button
             type="button"
             aria-label="Up next"
-            aria-pressed={showQueue}
+            aria-expanded={showQueue}
             aria-controls={queueRegionId}
             onClick={() => setShowQueue(!showQueue)}
             className={cn(

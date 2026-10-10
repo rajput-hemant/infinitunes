@@ -67,8 +67,9 @@ export function LoginForm() {
         router.refresh();
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
+      console.error(
+        error instanceof Error ? error.message : "Something went wrong.",
+      );
       toast.error("Something went wrong.");
     } finally {
       setIsSubmitting(false);
@@ -93,8 +94,9 @@ export function LoginForm() {
         router.refresh();
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
+      console.error(
+        error instanceof Error ? error.message : "Passkey sign-in failed.",
+      );
       toast.error("Passkey sign-in failed.");
     } finally {
       setIsPasskeyLoading(false);
@@ -139,7 +141,10 @@ export function LoginForm() {
         <div className="flex justify-end">
           <Link
             href="/forgot-password"
-            className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className={cn(
+              controlStyles.text,
+              "inline-flex items-center text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+            )}
           >
             Forgot password?
           </Link>

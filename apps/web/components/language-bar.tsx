@@ -26,7 +26,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
           <Link
             title="For You"
             href={asRoute("?")}
-            aria-pressed={!language}
+            aria-current={!language ? "page" : undefined}
             className={chipClass(!language)}
           >
             For&nbsp;you
@@ -41,7 +41,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
               <Link
                 title={lang}
                 href={asRoute(`?lang=${lang.toLowerCase()}`)}
-                aria-pressed={selected}
+                aria-current={selected ? "page" : undefined}
                 className={chipClass(selected)}
               >
                 {lang}
