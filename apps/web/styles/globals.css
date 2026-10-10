@@ -61,6 +61,7 @@
   --color-background: var(--background);
   --color-fill: var(--fill);
   --color-fill-2: var(--fill-2);
+  --color-fill-3: var(--fill-3);
   --color-scrim: var(--scrim);
   --radius-sm: var(--r-sm);
   --radius-md: var(--radius);
@@ -135,6 +136,7 @@
   --line: rgb(0 0 0 / 0.08);
   --fill: rgb(0 0 0 / 0.045);
   --fill-2: rgb(0 0 0 / 0.08);
+  --fill-3: rgb(0 0 0 / 0.12);
   --scrim: rgb(0 0 0 / 0.28);
   --ambient: 0.22;
 
@@ -181,6 +183,7 @@
   --line: rgb(255 255 255 / 0.09);
   --fill: rgb(255 255 255 / 0.07);
   --fill-2: rgb(255 255 255 / 0.12);
+  --fill-3: rgb(255 255 255 / 0.18);
   --scrim: rgb(0 0 0 / 0.5);
   --ambient: 0.32;
 }
