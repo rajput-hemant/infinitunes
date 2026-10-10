@@ -9,9 +9,16 @@ import { AddToPlaylistDialog } from "../../components/playlist/add-to-playlist-d
 describe("add to playlist dialog (UI-53)", () => {
   it("keeps the icon box from shrinking and exposes the full name", async () => {
     const name = "x".repeat(100);
-    const playlists = [
-      { id: "p1", name, songs: [] },
-    ] as unknown as MyPlaylist[];
+    const playlists: MyPlaylist[] = [
+      {
+        id: "p1",
+        name,
+        description: null,
+        userId: "u1",
+        songs: [],
+        createdAt: new Date(0),
+      },
+    ];
 
     const container = document.createElement("div");
     document.body.append(container);

@@ -17,7 +17,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@infinitunes/ui/components/dropdown-menu";
-import { Pencil, Trash2, MoreVertical } from "lucide-react";
+import { MoreVertical, Pencil, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";

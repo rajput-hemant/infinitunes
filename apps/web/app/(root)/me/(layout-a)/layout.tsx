@@ -3,7 +3,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Edit, Mail } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import React from "react";
+import type { ReactNode } from "react";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getUser } from "~/lib/auth";
@@ -13,7 +13,11 @@ import { cn } from "~/lib/utils";
 import { LogoutButton } from "./_components/logout";
 import { Navbar } from "./_components/navbar";
 
-export default async function Layout({ children }: React.PropsWithChildren) {
+type LibraryLayoutProps = {
+  children: ReactNode;
+};
+
+export default async function Layout({ children }: LibraryLayoutProps) {
   const user = await getUser();
 
   // The proxy only checks that a session cookie exists; a stale one lands here.

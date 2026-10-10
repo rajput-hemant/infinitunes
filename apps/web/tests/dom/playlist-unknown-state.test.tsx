@@ -1,7 +1,10 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import {
+  AppRouterContext,
+  type AppRouterInstance,
+} from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -22,6 +25,14 @@ const { AddToPlaylistDialog } =
 
 const user = { id: "u1", name: "U", email: "u@x.dev" } as unknown as User;
 const roots: Root[] = [];
+const router: AppRouterInstance = {
+  back() {},
+  forward() {},
+  refresh() {},
+  push() {},
+  replace() {},
+  prefetch() {},
+};
 
 async function mount(ui: React.ReactNode) {
   const container = document.createElement("div");
@@ -30,7 +41,7 @@ async function mount(ui: React.ReactNode) {
   roots.push(root);
   await act(async () => {
     root.render(
-      <AppRouterContext.Provider value={{} as never}>
+      <AppRouterContext.Provider value={router}>
         {ui}
       </AppRouterContext.Provider>,
     );
@@ -43,8 +54,14 @@ afterEach(async () => {
 });
 
 const text = () => document.body.textContent ?? "";
-const playlist = (id: string, name: string) =>
-  ({ id, name, songs: [] }) as unknown as MyPlaylist;
+const playlist = (id: string, name: string): MyPlaylist => ({
+  id,
+  name,
+  description: null,
+  userId: "u1",
+  songs: [],
+  createdAt: new Date(0),
+});
 
 function dialog(playlists: MyPlaylist[] | undefined) {
   return (

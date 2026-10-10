@@ -1,10 +1,12 @@
 import { describe, expect, it, mock } from "bun:test";
 
-import type { Favorite } from "@infinitunes/db/schema";
 import type { Song } from "@infinitunes/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
-import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import {
+  AppRouterContext,
+  type AppRouterInstance,
+} from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
 import type React from "react";
@@ -56,14 +58,23 @@ const trpcClient = api.createClient({
   links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
 });
 
-const router = {
+const router: AppRouterInstance = {
   push() {},
   replace() {},
   refresh() {},
   back() {},
   forward() {},
   prefetch() {},
-} as unknown as NonNullable<React.ContextType<typeof AppRouterContext>>;
+};
+
+function queryRequired<T extends Element>(
+  container: HTMLElement,
+  selector: string,
+): T {
+  const element = container.querySelector<T>(selector);
+  if (!element) throw new Error(`missing ${selector}`);
+  return element;
+}
 
 function titles(container: HTMLElement): string[] {
   return [...container.querySelectorAll("li h3")].map(
@@ -96,21 +107,23 @@ async function renderList(props: ListProps = {}, list: Song[] = items) {
 }
 
 async function setSort(container: HTMLElement, value: string) {
-  const select = container.querySelector<HTMLSelectElement>(
+  const select = queryRequired<HTMLSelectElement>(
+    container,
     'select[aria-label="Sort songs"]',
   );
   await act(async () => {
-    select!.value = value;
-    select!.dispatchEvent(new Event("change", { bubbles: true }));
+    select.value = value;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
   });
 }
 
 async function setFilter(container: HTMLElement, value: string) {
-  const filter = container.querySelector<HTMLInputElement>(
+  const filter = queryRequired<HTMLInputElement>(
+    container,
     'input[aria-label="Filter songs"]',
   );
   await act(async () => {
-    setInputValue(filter!, value);
+    setInputValue(filter, value);
   });
 }
 
@@ -138,13 +151,14 @@ describe("LibrarySongList", () => {
         "Mango Groove",
       ]);
 
-      const select = container.querySelector<HTMLSelectElement>(
+      const select = queryRequired<HTMLSelectElement>(
+        container,
         'select[aria-label="Sort songs"]',
       );
       expect(select).not.toBeNull();
       await act(async () => {
-        select!.value = "title";
-        select!.dispatchEvent(new Event("change", { bubbles: true }));
+        select.value = "title";
+        select.dispatchEvent(new Event("change", { bubbles: true }));
       });
 
       expect(titles(container)).toEqual([
@@ -161,12 +175,13 @@ describe("LibrarySongList", () => {
   it("sorts by primary artist and filters by text", async () => {
     const { container, root } = await renderList();
     try {
-      const select = container.querySelector<HTMLSelectElement>(
+      const select = queryRequired<HTMLSelectElement>(
+        container,
         'select[aria-label="Sort songs"]',
       );
       await act(async () => {
-        select!.value = "artist";
-        select!.dispatchEvent(new Event("change", { bubbles: true }));
+        select.value = "artist";
+        select.dispatchEvent(new Event("change", { bubbles: true }));
       });
 
       // Apple Pie < Mango Band < Zebra Crew.
@@ -176,12 +191,12 @@ describe("LibrarySongList", () => {
         "Apple Tune",
       ]);
 
-      const filter = container.querySelector<HTMLInputElement>(
+      const filter = queryRequired<HTMLInputElement>(
+        container,
         'input[aria-label="Filter songs"]',
       );
-      expect(filter).not.toBeNull();
       await act(async () => {
-        setInputValue(filter!, "mango");
+        setInputValue(filter, "mango");
       });
 
       // Matches "Mango Groove" (title) and "Zebra Song" (Mango Band artist).
@@ -198,11 +213,12 @@ describe("LibrarySongList", () => {
   it("shows an empty state when nothing matches", async () => {
     const { container, root } = await renderList();
     try {
-      const filter = container.querySelector<HTMLInputElement>(
+      const filter = queryRequired<HTMLInputElement>(
+        container,
         'input[aria-label="Filter songs"]',
       );
       await act(async () => {
-        setInputValue(filter!, "qqq-no-match");
+        setInputValue(filter, "qqq-no-match");
       });
 
       expect(container.querySelectorAll("li").length).toBe(0);
@@ -349,7 +365,7 @@ describe("LibrarySongList", () => {
         expect(like).not.toBeNull();
         expect(like?.getAttribute("aria-disabled")).toBe("false");
       },
-      { userFavorites: undefined as Favorite | undefined },
+      { userFavorites: undefined },
     ));
 
   it("offers Remove From Favourite in the mobile row menu for a liked song", () =>

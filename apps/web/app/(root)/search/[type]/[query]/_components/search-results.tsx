@@ -25,6 +25,8 @@ type SearchResultsProps = {
   initialSearchResults: SearchReturnType;
 };
 
+type SearchEntry = SearchReturnType["results"][number];
+
 type CardResult = Album | ArtistSearch["results"][number];
 
 /** Artist results are named `name`; every other card type uses `title`. */
@@ -34,6 +36,10 @@ function getCardTitle(result: CardResult) {
 
 function getCardSubtitle(result: CardResult) {
   return "subtitle" in result ? result.subtitle : result.role;
+}
+
+function isSongEntry(result: SearchEntry): result is Song {
+  return result.type === "song";
 }
 
 export function SearchResults(props: SearchResultsProps) {
@@ -51,16 +57,14 @@ export function SearchResults(props: SearchResultsProps) {
           page: pageParam,
           n: 50,
         }),
-      initialPageParam: 1 as number,
+      initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) =>
-        allPages.length * 50 < (lastPage as SearchReturnType).total
-          ? allPages.length + 1
-          : undefined,
+        allPages.length * 50 < lastPage.total ? allPages.length + 1 : undefined,
       initialData: { pages: [initialSearchResults], pageParams: [1] },
     });
 
-  const searchResults = (data.pages as SearchReturnType[]).flatMap(
-    (page) => page.results as (Song | CardResult)[],
+  const searchResults = data.pages.flatMap(
+    (page): SearchEntry[] => page.results,
   );
 
   const [ref] = useIntersectionObserver({
@@ -85,7 +89,7 @@ export function SearchResults(props: SearchResultsProps) {
   return (
     <>
       {type === "song" ? (
-        <SongListClient items={searchResults as Song[]} />
+        <SongListClient items={searchResults.filter(isSongEntry)} />
       ) : (
         <div className={searchUi.grid}>
           {(searchResults as CardResult[]).map((result) => (

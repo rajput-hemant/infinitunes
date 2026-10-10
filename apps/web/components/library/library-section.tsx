@@ -10,7 +10,7 @@ import type { LucideIcon } from "lucide-react";
 import { TriangleAlert } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import React from "react";
+import type { ReactNode } from "react";
 
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
@@ -18,14 +18,14 @@ import { cn } from "~/lib/utils";
 import { RetryButton } from "./retry-button";
 
 type LibraryHeadingProps = {
-  title: React.ReactNode;
+  title: ReactNode;
   as?: "h1" | "h2";
   count?: number;
   noun?: string;
   description?: string;
   missing?: number;
   className?: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
 export function LibraryHeading(props: LibraryHeadingProps) {
@@ -82,7 +82,7 @@ type LibraryStateProps = {
   description: string;
   tone?: "default" | "error";
   className?: string;
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
 export function LibraryState(props: LibraryStateProps) {
@@ -130,7 +130,7 @@ export function LibraryState(props: LibraryStateProps) {
 
 type LibraryEmptyProps = Omit<LibraryStateProps, "children"> & {
   action?: { href: Route; label: string };
-  children?: React.ReactNode;
+  children?: ReactNode;
 };
 
 export function LibraryEmpty(props: LibraryEmptyProps) {

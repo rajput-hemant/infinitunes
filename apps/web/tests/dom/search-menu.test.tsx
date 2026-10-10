@@ -62,8 +62,8 @@ it("stays closed when returning to the path where search was opened", async () =
   const input = document.querySelector<HTMLInputElement>(
     'input[aria-label="Search"]',
   );
-  expect(input).not.toBeNull();
-  await act(async () => setInputValue(input!, "old query"));
+  if (!input) throw new Error("search input not rendered");
+  await act(async () => setInputValue(input, "old query"));
   expect(input?.value).toBe("old query");
 
   await navigate("/b");

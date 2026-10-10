@@ -12,7 +12,7 @@ import { cn, destructiveText } from "~/lib/utils";
 export function LogoutButton() {
   const router = useRouter();
 
-  async function signOutHandler() {
+  function signOutHandler() {
     toast.promise(
       authClient.signOut({
         fetchOptions: {

@@ -11,6 +11,7 @@ import {
 import { Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import {
+  type ReactNode,
   useDeferredValue,
   useEffect,
   useState,
@@ -36,7 +37,7 @@ const LISTBOX_ID = "search-palette-listbox";
 
 type SearchMenuProps = {
   className?: string;
-  topSearch: React.ReactNode;
+  topSearch: ReactNode;
 };
 
 export function SearchMenu({ topSearch, className }: SearchMenuProps) {
