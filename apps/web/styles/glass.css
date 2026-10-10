@@ -373,31 +373,35 @@ html.dark
 /* ---------- Variants ----------
    Clear: almost no tint, a dimming layer scaled by what is behind (AA for white text), white glyphs.
    A toolbar over an artwork header opts its regular glass into clear with data-glass-over-art, unless
-   data-glass-titled says the title has scrolled into the bar. The Variant setting only re-skins s and m. */
-html [data-glass="clear"][data-glass-size],
-html[data-glass-variant="clear"]
-  [data-glass="regular"]:is([data-glass-size="s"], [data-glass-size="m"]),
-html
-  [data-glass-over-art]:not([data-glass-titled])
-  [data-glass="regular"][data-glass-size] {
-  --glass-tint-c: #fff;
-  --g-a: 0.06;
-  --g-k: 0.6;
-  --g-con: 1;
-  --g-dim: calc(0.16 + 0.44 * var(--g-art-l));
-  --g-text: #fff;
-  --g-rim-k: 1;
-  --muted-foreground: rgb(255 255 255 / 0.8);
-  text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
-}
-html [data-glass="tinted"][data-glass-size],
-html[data-glass-variant="tinted"]
-  [data-glass="regular"]:is([data-glass-size="s"], [data-glass-size="m"]) {
-  --glass-tint-c: var(--g-accent);
-  --g-a: calc(0.7 + var(--glass-tint));
-  --g-dim: 0;
-  --g-text: var(--g-on-accent);
-  --g-rim-k: 1;
+   data-glass-titled says the title has scrolled into the bar. The Variant setting only re-skins s and m.
+   Variants never apply under the Solid level or prefers-contrast: more: their selectors are more specific than
+   those override blocks, so they are excluded here instead of out-ranked there. */
+@media not (prefers-contrast: more) {
+  html:not([data-glass-level="solid"]) [data-glass="clear"][data-glass-size],
+  html[data-glass-variant="clear"]:not([data-glass-level="solid"])
+    [data-glass="regular"]:is([data-glass-size="s"], [data-glass-size="m"]),
+  html:not([data-glass-level="solid"])
+    [data-glass-over-art]:not([data-glass-titled])
+    [data-glass="regular"][data-glass-size] {
+    --glass-tint-c: #fff;
+    --g-a: 0.06;
+    --g-k: 0.6;
+    --g-con: 1;
+    --g-dim: calc(0.16 + 0.44 * var(--g-art-l));
+    --g-text: #fff;
+    --g-rim-k: 1;
+    --muted-foreground: rgb(255 255 255 / 0.8);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
+  }
+  html:not([data-glass-level="solid"]) [data-glass="tinted"][data-glass-size],
+  html[data-glass-variant="tinted"]:not([data-glass-level="solid"])
+    [data-glass="regular"]:is([data-glass-size="s"], [data-glass-size="m"]) {
+    --glass-tint-c: var(--g-accent);
+    --g-a: calc(0.7 + var(--glass-tint));
+    --g-dim: 0;
+    --g-text: var(--g-on-accent);
+    --g-rim-k: 1;
+  }
 }
 /* Vibrancy: secondary text on glass is a touch heavier. */
 html
@@ -582,6 +586,13 @@ html[data-glass-engine="lens"] [data-glass-indicator][data-lifted] {
     opacity: 0;
     overflow: hidden;
     pointer-events: none;
+    /* Out of the tab order and the accessibility tree once the fade has finished; expanding shows them at once. */
+    visibility: hidden;
+    transition:
+      color 0.2s,
+      opacity 0.25s,
+      flex-grow 0.5s var(--lg-ease),
+      visibility 0s linear 0.5s;
   }
   html[data-tab-min="true"]
     [data-glass-role="tabbar"]
@@ -715,7 +726,12 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     ) {
     --g-a: 0.86;
   }
-  html [data-glass="clear"][data-glass-size] {
+  html:not([data-glass-level="solid"]) [data-glass="clear"][data-glass-size],
+  html[data-glass-variant="clear"]:not([data-glass-level="solid"])
+    [data-glass="regular"]:is([data-glass-size="s"], [data-glass-size="m"]),
+  html:not([data-glass-level="solid"])
+    [data-glass-over-art]:not([data-glass-titled])
+    [data-glass="regular"][data-glass-size] {
     --g-dim: 0.62;
     --g-a: 0.04;
   }

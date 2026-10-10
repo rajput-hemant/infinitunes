@@ -75,4 +75,35 @@ describe("useGlassArtwork", () => {
     expect(getGlassArtwork()).toBeNull();
     expect(html.style.getPropertyValue("--g-art-l")).toBe("");
   });
+
+  it("drops the previous tint when the next artwork cannot be sampled", async () => {
+    const RealImage = globalThis.Image;
+    class FailingImage {
+      crossOrigin = "";
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      set src(_value: string) {
+        queueMicrotask(() => this.onerror?.());
+      }
+    }
+    Object.defineProperty(globalThis, "Image", {
+      configurable: true,
+      writable: true,
+      value: FailingImage,
+    });
+    try {
+      html.style.setProperty("--g-art-l", "0.9");
+      html.style.setProperty("--g-blob-1", "rgb(1 2 3)");
+      await mount(<Player url="https://cdn.test/unreadable.jpg" />);
+      await act(async () => new Promise((resolve) => setTimeout(resolve, 10)));
+      expect(html.style.getPropertyValue("--g-art-l")).toBe("");
+      expect(html.style.getPropertyValue("--g-blob-1")).toBe("");
+    } finally {
+      Object.defineProperty(globalThis, "Image", {
+        configurable: true,
+        writable: true,
+        value: RealImage,
+      });
+    }
+  });
 });

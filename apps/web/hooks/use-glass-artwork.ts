@@ -30,7 +30,10 @@ export function useGlassArtwork(url: string | null | undefined) {
     let current = true;
     setGlassArtwork(url);
     void sampleArtwork(url).then((sample) => {
-      if (current && sample) applyArtworkTint(sample);
+      if (!current) return;
+      // An unreadable image must not leave the previous track's tint behind.
+      if (sample) applyArtworkTint(sample);
+      else clearArtworkTint();
     });
     return () => {
       current = false;

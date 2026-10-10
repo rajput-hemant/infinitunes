@@ -58,6 +58,9 @@ function TabBar({ onNavigate }: { onNavigate?: () => void }) {
       <a href="#home" data-glass-item="" onClick={onNavigate}>
         Home
       </a>
+      <a href="#search" data-glass-item="">
+        Search
+      </a>
     </nav>
   );
 }
@@ -97,6 +100,32 @@ describe("useTabBarMinimize", () => {
       );
     });
     expect(navigated).toBe(1);
+  });
+
+  it("expands when keyboard focus enters the minimized bar, so Enter acts on the item", async () => {
+    let navigated = 0;
+    const container = await mount(<TabBar onNavigate={() => navigated++} />);
+    for (const y of [20, 40, 60, 80]) scrollTo(y);
+    expect(html.getAttribute("data-tab-min")).toBe("true");
+    const link = container.querySelector("a");
+    await act(async () => link?.focus());
+    expect(html.hasAttribute("data-tab-min")).toBe(false);
+    await act(async () => {
+      link?.dispatchEvent(
+        new MouseEvent("click", { bubbles: true, cancelable: true }),
+      );
+    });
+    expect(navigated).toBe(1);
+  });
+
+  it("stays expanded while keyboard focus is inside the bar", async () => {
+    const container = await mount(<TabBar />);
+    await act(async () => container.querySelectorAll("a")[1]?.focus());
+    for (const y of [20, 40, 60, 80, 120]) scrollTo(y);
+    expect(html.hasAttribute("data-tab-min")).toBe(false);
+    await act(async () => container.querySelectorAll("a")[1]?.blur());
+    for (const y of [160, 200, 260]) scrollTo(y);
+    expect(html.getAttribute("data-tab-min")).toBe("true");
   });
 
   it("clears the attribute and stops listening on unmount", async () => {

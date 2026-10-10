@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
+import { DEFAULT_GLASS_TINT } from "~/lib/glass/default-tint";
 import { OVERLAY_TARGETS } from "~/lib/glass/overlays";
 
 const styles = join(import.meta.dir, "../styles");
@@ -33,6 +34,18 @@ describe("glass.css overlay coverage", () => {
     for (const slot of new Set(slots)) {
       expect(rendered).toContain(`data-slot="${slot}"`);
     }
+  });
+});
+
+describe("glass.css default tint", () => {
+  const tintIn = (selector: string) => {
+    const block = new RegExp(`^${selector} \\{([^}]*)\\}`, "m").exec(glassCss);
+    return Number(/--glass-tint:\s*([0-9.]+)/.exec(block?.[1] ?? "")?.[1]);
+  };
+
+  test("the literals equal the shared DEFAULT_GLASS_TINT constant", () => {
+    expect(tintIn(":root")).toBe(DEFAULT_GLASS_TINT.light);
+    expect(tintIn("\\.dark")).toBe(DEFAULT_GLASS_TINT.dark);
   });
 });
 

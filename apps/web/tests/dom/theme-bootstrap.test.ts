@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { DEFAULT_THEME_CONFIG } from "../../lib/theme-config";
 import { THEME_BOOTSTRAP_SCRIPT } from "../../lib/theme-script";
 import { serializeThemeCookie } from "../../lib/theme/cookie";
+import { themeConfigToHtml } from "../../lib/theme/html";
+import { MANAGED_ATTRIBUTES, MANAGED_VARIABLES } from "../../lib/theme/managed";
 
 const run = () => new Function(THEME_BOOTSTRAP_SCRIPT)();
 const setCookie = (raw: string) => {
@@ -72,6 +74,73 @@ describe("theme bootstrap script", () => {
       run();
       expect(appliedByAppearance()).toEqual([]);
     }
+  });
+
+  it("allowlists exactly what themeConfigToHtml can emit", () => {
+    const tuning = DEFAULT_THEME_CONFIG.glassTuning;
+    const everything = themeConfigToHtml({
+      ...DEFAULT_THEME_CONFIG,
+      accent: "blue",
+      radius: 0.5,
+      textSize: 18,
+      glassTuning: {
+        variant: "clear",
+        tint: 0.3,
+        blur: tuning.blur + 1,
+        refraction: tuning.refraction + 1,
+        sat: tuning.sat + 0.1,
+        spec: tuning.spec + 0.1,
+        shadow: tuning.shadow + 0.1,
+        ambientLevel: tuning.ambientLevel + 0.1,
+        accentTint: true,
+      },
+    });
+    expect(Object.keys(everything.attributes).sort()).toEqual(
+      [...MANAGED_ATTRIBUTES].sort(),
+    );
+    expect(Object.keys(everything.style).sort()).toEqual(
+      [...MANAGED_VARIABLES].sort(),
+    );
+
+    // The script embeds the same lists, so every emitted name is applied.
+    setCookie(
+      JSON.stringify({
+        html: { a: everything.attributes, s: everything.style },
+      }),
+    );
+    run();
+    for (const name of MANAGED_ATTRIBUTES) {
+      expect(document.documentElement.hasAttribute(name)).toBe(true);
+    }
+    for (const name of MANAGED_VARIABLES) {
+      expect(document.documentElement.style.getPropertyValue(name)).not.toBe(
+        "",
+      );
+    }
+  });
+
+  it("ignores well-formed names the appearance engine never emits", () => {
+    // Closed queue: only a cookie could still put data-queue on <html>.
+    localStorage.setItem("queue_open", "false");
+    setCookie(
+      JSON.stringify({
+        html: {
+          a: {
+            "data-queue": "open",
+            "data-glass-engine": "lens",
+            "data-density": "compact",
+          },
+          s: { "--toast-offset-bottom": "10px", "--radius": "0.5rem" },
+        },
+      }),
+    );
+    run();
+    const html = document.documentElement;
+    expect(html.getAttribute("data-density")).toBe("compact");
+    expect(html.style.getPropertyValue("--radius")).toBe("0.5rem");
+    expect(html.hasAttribute("data-queue")).toBe(false);
+    expect(html.hasAttribute("data-glass-engine")).toBe(false);
+    expect(html.style.getPropertyValue("--toast-offset-bottom")).toBe("");
   });
 
   it("applies the stored light/dark choice like next-themes", () => {

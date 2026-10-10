@@ -103,4 +103,21 @@ describe("GlassSurface", () => {
     );
     expect(surface.textContent).toBe("own");
   });
+
+  it("keeps one callback ref across re-renders instead of detaching it each time", async () => {
+    const calls: (HTMLElement | null)[] = [];
+    const ref = (node: HTMLElement | null) => {
+      calls.push(node);
+    };
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    roots.push(root);
+    const ui = (label: string) => <GlassSurface ref={ref} aria-label={label} />;
+    await act(async () => root.render(ui("a")));
+    await act(async () => root.render(ui("b")));
+    await act(async () => root.render(ui("c")));
+    expect(calls).toHaveLength(1);
+    expect(calls[0]).toBe(container.firstElementChild);
+  });
 });
