@@ -34,6 +34,18 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 
 ## Build / delivery sharp edges
 
+- Cache Components are enabled. `apps/web/lib/cached-api.ts` owns the catalog
+  `use cache` boundary, injected into both tRPC callers; the shared transport
+  stays Next-independent and needs no `transpilePackages`. Endpoint, normalized
+  query, language, version and timeout form the cache arguments.
+  `REVALIDATE_SECONDS` sets revalidate and hard expiry (600s for media-bearing
+  details, 3600s for menus/footer/same-year); failures are thrown, with upstream
+  classification preserved across the serialized error boundary.
+- Incremental adoption is deferred with `instant = false` in `(root)/layout.tsx`
+  (session/sidebar cookies and navigation) and `(auth)/layout.tsx` (request-time
+  daily artwork, after `connection()`). These route groups still need shell
+  migration; `/chart` also opts out locally for dev navigation validation.
+  The app root itself remains static-capable.
 - Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)

@@ -2,7 +2,6 @@ import type { Playlist } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import { playlistInput, playlistRecommendInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
@@ -17,7 +16,7 @@ export const playlistRouter = router({
   details: publicProcedure
     .input(playlistInput)
     .output(z.custom<Playlist>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const { id, token, lang } = input;
       if (!id && !token) {
         throw new TRPCError({
@@ -26,7 +25,7 @@ export const playlistRouter = router({
         });
       }
       const t = token ?? "";
-      const listid = id ?? (await resolveNumericId(t, "playlist"));
+      const listid = id ?? (await resolveNumericId(t, "playlist", api));
       const result = await api(endpoints.playlist.id, {
         query: {
           listid,
@@ -50,7 +49,7 @@ export const playlistRouter = router({
   recommendations: publicProcedure
     .input(playlistRecommendInput)
     .output(z.custom<Playlist[]>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await secondaryList(() =>
         api<Playlist[]>(endpoints.playlist.recommend, {
           query: {
