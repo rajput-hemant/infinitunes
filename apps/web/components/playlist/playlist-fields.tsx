@@ -17,10 +17,7 @@ import type { newPlaylistSchema } from "~/lib/validations";
 
 type PlaylistFormData = z.infer<typeof newPlaylistSchema>;
 
-const inputStyles = cn(
-  controlStyles.textLg,
-  "border-0 bg-fill px-3 hover:bg-fill-2 dark:bg-fill dark:hover:bg-fill-2",
-);
+const inputStyles = cn(controlStyles.textLg, controlStyles.flatInput);
 
 const labelStyles = "text-sm font-semibold";
 

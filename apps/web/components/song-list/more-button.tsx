@@ -4,6 +4,7 @@ import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Queue, Song } from "@infinitunes/types";
 import { newQueueItemId, toQueue } from "@infinitunes/types";
 import {
+  Download,
   Heart,
   ListMinus,
   ListMusic,
@@ -16,6 +17,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
+import { useDownloadSongs } from "~/components/download-button";
 import { AddToPlaylistDialog } from "~/components/playlist/add-to-playlist-dialog";
 import { getItemName } from "~/components/song-list/item-name";
 import {
@@ -74,6 +76,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
   const { isFavorite, like } = useTileFavorite({ item, user, favorites });
   const playRadio = useTileRadio(item);
+  // Catalog songs only: a queue entry has no `more_info` to read the links from.
+  const downloadable =
+    item.type === "song" && "more_info" in item ? [item] : [];
+  const { download } = useDownloadSongs(downloadable);
 
   function play() {
     const songIndex = initialQueue.findIndex((q) => q.id === item.id);
@@ -171,6 +177,12 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       label: "Play Radio",
       onClick: playRadio,
       icon: Radio,
+    },
+    {
+      label: "Download",
+      onClick: download,
+      hide: downloadable.length === 0,
+      icon: Download,
     },
   ];
 

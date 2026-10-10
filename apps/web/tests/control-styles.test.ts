@@ -48,11 +48,31 @@ const contract = {
   transportPlay: { fine: 56, coarse: 56, tap: 56 },
 } as const;
 
+const surfaces = ["flatInput", "squareButton"] as const;
+
 describe("controlStyles", () => {
-  it("covers exactly the roles of the contract", () => {
+  it("covers exactly the sized roles of the contract and the surface strings", () => {
     expect(Object.keys(controlStyles).toSorted()).toEqual(
-      Object.keys(contract).toSorted(),
+      [...Object.keys(contract), ...surfaces].toSorted(),
     );
+  });
+
+  it("composes the flat input surface with a size role, keeping the size and the surface's padding", () => {
+    const merged = cn(controlStyles.textLg, controlStyles.flatInput).split(" ");
+    expect(merged).toContain("h-(--ctl-lg)");
+    expect(merged).toContain("px-3");
+    expect(merged).not.toContain("px-4.5");
+    expect(merged).toContain("focus-visible:ring-2");
+  });
+
+  it("composes the square button surface with a size role", () => {
+    const merged = cn(controlStyles.text, controlStyles.squareButton).split(
+      " ",
+    );
+    expect(merged).toContain("h-(--ctl)");
+    expect(merged).toContain("font-semibold");
+    expect(merged).toContain("rounded-sm");
+    expect(merged).not.toContain("rounded-(--r-ctl)");
   });
 
   it("keeps the roles other code already imports", () => {
@@ -79,8 +99,10 @@ describe("controlStyles", () => {
   }
 
   it("never leaves a touch target under 40px", () => {
-    for (const classes of Object.values(controlStyles)) {
-      expect(hitSizeOf(classes, "coarse")).toBeGreaterThanOrEqual(40);
+    for (const role of Object.keys(contract) as (keyof typeof contract)[]) {
+      expect(hitSizeOf(controlStyles[role], "coarse")).toBeGreaterThanOrEqual(
+        40,
+      );
     }
   });
 
