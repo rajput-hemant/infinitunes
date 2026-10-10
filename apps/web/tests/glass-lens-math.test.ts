@@ -95,6 +95,7 @@ describe("lensKey", () => {
     expect(lensKey(300, 60, 21, "m", false)).not.toBe(base);
     expect(lensKey(300, 60, 20, "s", false)).not.toBe(base);
     expect(lensKey(300, 60, 20, "m", true)).not.toBe(base);
+    expect(lensKey(300, 60, 20, "m", false, { x: 44, y: 30 })).not.toBe(base);
   });
 });
 

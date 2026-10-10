@@ -93,6 +93,12 @@ the same list (`OVERLAY_TARGETS` in `lib/glass/overlays.ts`; a test keeps the CS
 | Toast (sonner)            | `[data-sonner-toast]`                                | toast  | m    |
 | Tooltip                   | `tooltip-content`                                    | none   | s    |
 
+Chromium resolves a `backdrop-filter` reference filter's user space against the element's ink overflow, so an outer
+`box-shadow` (the l and m drop shadows) shifts the filter region right and down by how far the shadow reaches past the
+left and top edges. Left alone, only part of a popup is filtered and the rest shows crisp page content through it.
+`inkOverflowOrigin` (`lib/glass/shadow-overflow.ts`) reads that reach from the computed shadow and the lens registry
+offsets the filter region and both maps by its negative; the offset is part of the filter cache key.
+
 Tooltips use the s material with the m contrast floor (12px text keeps AA) and never get a lens, so they are styled in
 glass.css but kept out of `OVERLAY_TARGETS`. Not covered: select, hover card, context menu, menubar
 and command palette are not in `packages/ui` today. If one is added, add its slot to `OVERLAY_TARGETS` and to the

@@ -67,16 +67,18 @@ export function canLens({ size, width, height, off }: LensTarget): boolean {
   return width * height <= MAX_LENS_AREA;
 }
 
-/** Cache key: a map is only valid for the exact size, radius, bezel and magnify. */
+/** Cache key: a map is only valid for the exact size, radius, bezel, magnify and filter origin shift. */
 export function lensKey(
   width: number,
   height: number,
   radius: number,
   size: GlassSize,
   magnify: boolean,
+  origin: { x: number; y: number } = { x: 0, y: 0 },
 ): string {
   const bezel = bezelFor(width, height, radius, size);
-  return `${width}x${height}r${radius}b${bezel}${size}${magnify ? "m" : ""}`;
+  const shift = origin.x || origin.y ? `o${origin.x},${origin.y}` : "";
+  return `${width}x${height}r${radius}b${bezel}${size}${magnify ? "m" : ""}${shift}`;
 }
 
 /** Ease-out cubic, the curve the materialize lens ramp follows. */

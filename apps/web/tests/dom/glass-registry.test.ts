@@ -22,14 +22,23 @@ function addDefs() {
   return defs;
 }
 
+const sizes = new WeakMap<HTMLElement, { width: number; height: number }>();
+
+function resize(el: HTMLElement, width: number, height: number) {
+  const size = sizes.get(el);
+  if (size) Object.assign(size, { width, height });
+}
+
 function surface(
   width: number,
   height: number,
   attrs: Record<string, string> = {},
 ) {
   const el = document.createElement("div");
-  Object.defineProperty(el, "offsetWidth", { value: width });
-  Object.defineProperty(el, "offsetHeight", { value: height });
+  const size = { width, height };
+  sizes.set(el, size);
+  Object.defineProperty(el, "offsetWidth", { get: () => size.width });
+  Object.defineProperty(el, "offsetHeight", { get: () => size.height });
   for (const [name, value] of Object.entries(attrs))
     el.setAttribute(name, value);
   document.body.append(el);
@@ -173,6 +182,59 @@ describe("glass lens registry", () => {
     const seen: HTMLElement[] = [];
     forEachGlass((el) => seen.push(el));
     expect(seen).toEqual([kept]);
+  });
+
+  it("builds no lens until the surface has a valid size, then lenses it at its final size", async () => {
+    const defs = addDefs();
+    configureLens({ active: true });
+    const el = surface(0, 0);
+    register(el, "l");
+    await settle();
+    expect(lensUrl(el)).toBe("");
+    expect(encodes).toBe(0);
+
+    resize(el, 224, 133);
+    register(el, "l");
+    await settle();
+    expect(lensUrl(el)).toMatch(/^url\(#lg-\d+\)$/);
+    const id = lensUrl(el).slice(5, -1);
+    expect(defs.querySelector(`#${id}`)?.getAttribute("width")).toBe("224");
+    expect(defs.querySelector(`#${id}`)?.getAttribute("height")).toBe("133");
+  });
+
+  it("drops the lens when the size changes and rebuilds it for the new size", async () => {
+    const defs = addDefs();
+    configureLens({ active: true });
+    const el = surface(200, 100);
+    register(el, "l");
+    await settle();
+    const first = lensUrl(el);
+    expect(first).not.toBe("");
+
+    resize(el, 260, 100);
+    register(el, "l");
+    expect(lensUrl(el)).toBe("");
+    await settle();
+    const second = lensUrl(el);
+    expect(second).not.toBe("");
+    expect(second).not.toBe(first);
+    expect(
+      defs.querySelector(`#${second.slice(5, -1)}`)?.getAttribute("width"),
+    ).toBe("260");
+  });
+
+  it("offsets the filter by how far the outer shadow reaches past the border box", async () => {
+    const defs = addDefs();
+    configureLens({ active: true });
+    const el = surface(224, 133);
+    el.style.boxShadow =
+      "rgba(0, 0, 0, 0.34) 0px 30px 70px -18px, inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5)";
+    register(el, "l");
+    await settle();
+    const filter = defs.querySelector(`#${lensUrl(el).slice(5, -1)}`);
+    expect(filter?.getAttribute("x")).toBe("-87");
+    expect(filter?.getAttribute("y")).toBe("-57");
+    expect(filter?.querySelector("feImage")?.getAttribute("x")).toBe("-87");
   });
 
   it("stops observing when the returned function is called", async () => {
