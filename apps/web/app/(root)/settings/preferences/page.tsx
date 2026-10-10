@@ -1,6 +1,6 @@
-import type { Lang } from "@infinitunes/types";
 import { cookies } from "next/headers";
 
+import { parseLanguageCookie } from "../_components/language-options";
 import { PreferenceSettings } from "../_components/preference-settings";
 
 export const metadata = {
@@ -11,7 +11,7 @@ export const metadata = {
 
 export default async function Page() {
   const cookieStore = await cookies();
-  const languages = cookieStore.get("language")?.value?.split(",") ?? [];
+  const languages = parseLanguageCookie(cookieStore.get("language")?.value);
 
-  return <PreferenceSettings initialLanguages={languages as Lang[]} />;
+  return <PreferenceSettings initialLanguages={languages} />;
 }

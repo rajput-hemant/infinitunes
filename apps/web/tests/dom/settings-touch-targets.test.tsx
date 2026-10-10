@@ -5,6 +5,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 
 import { controlStyles } from "../../lib/control-styles";
+import { createTestRouter } from "./settings-test-utils";
 
 mock.module("../../lib/theme/actions", () => ({
   saveThemeConfig: async () => {},
@@ -30,7 +31,7 @@ async function mount(node: React.ReactNode) {
 describe("settings touch targets", () => {
   it("sizes preference buttons from the shared control styles", async () => {
     const container = await mount(
-      <AppRouterContext.Provider value={{ refresh() {} } as never}>
+      <AppRouterContext.Provider value={createTestRouter()}>
         <PreferenceSettings initialLanguages={[]} />
       </AppRouterContext.Provider>,
     );
