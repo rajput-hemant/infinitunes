@@ -33,7 +33,7 @@ export async function PlaylistTrending({
   trending: Promise<TrendingPlaylists>;
 }) {
   const items = await trending;
-  return (
+  return items.length ? (
     <SliderList
       title={
         playlist.modules?.currentlyTrendingPlaylists?.title ??
@@ -41,5 +41,5 @@ export async function PlaylistTrending({
       }
       items={items.map(toCardItem)}
     />
-  );
+  ) : null;
 }

@@ -191,9 +191,14 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
       <Suspense fallback={<SliderListSkeleton length={1} />}>
         <SongSameArtists token={token} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton length={1} />}>
-        <SongSameActors token={token} />
-      </Suspense>
+      {modules?.songsBysameActors &&
+        song.more_info.artistMap?.artists?.some(
+          (artist) => artist.role === "starring",
+        ) && (
+          <Suspense fallback={<SliderListSkeleton length={1} />}>
+            <SongSameActors token={token} />
+          </Suspense>
+        )}
 
       <SliderList
         title={modules?.artists?.title ?? "Artists"}

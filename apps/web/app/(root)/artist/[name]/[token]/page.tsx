@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
-import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
+import { AlbumGridSkeleton } from "~/components/skeletons/album-grid-skeleton";
 import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
@@ -157,7 +157,7 @@ export default async function ArtistDetailsPage(props: Props) {
 
         <TabsContent value={TABS.Albums}>
           <CategoryFilter category={cat ?? "popularity"} />
-          <Suspense fallback={<SliderListSkeleton length={1} />}>
+          <Suspense fallback={<AlbumGridSkeleton />}>
             <ArtistLibraryTab
               artist={artist}
               category={cat}
