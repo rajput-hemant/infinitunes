@@ -2,70 +2,37 @@
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Queue, Song } from "@infinitunes/types";
-import { getImageSrc, newQueueItemId, toQueue } from "@infinitunes/types";
-import { buttonVariants } from "@infinitunes/ui/components/button";
+import { newQueueItemId, toQueue } from "@infinitunes/types";
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@infinitunes/ui/components/drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@infinitunes/ui/components/dropdown-menu";
-import { Separator } from "@infinitunes/ui/components/separator";
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import {
-  ChevronLeft,
-  ChevronRight,
   Heart,
   ListMinus,
   ListMusic,
   ListOrdered,
-  MoreVertical,
   Play,
   Radio,
-  Share2,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 
-import { ImageWithFallback } from "~/components/image-with-fallback";
-import { getPlaceholderSrc } from "~/components/placeholder-src";
+import { AddToPlaylistDialog } from "~/components/playlist/add-to-playlist-dialog";
 import { getItemName } from "~/components/song-list/item-name";
 import {
-  useActiveRadioSession,
   useCurrentSongIndex,
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
 import type { User } from "~/lib/auth";
-import { controlStyles } from "~/lib/control-styles";
-import {
-  addSongsToPlaylist,
-  addToFavorites,
-  removeFromFavorites,
-  removeSongsFromPlaylist,
-} from "~/lib/db/queries";
-import { api } from "~/lib/trpc/client";
+import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/db/queries";
 import { userMessage } from "~/lib/user-message";
-import { cn } from "~/lib/utils";
 
-import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
-import { ShareOptions } from "../share-options";
-import { ShareSubMenu } from "../share-submenu";
-import { TileMoreLinks } from "./more-links";
+import { TileMoreDesktop } from "./more-button-desktop";
+import { useTileFavorite } from "./more-button-favorite";
+import { getEntryLabel, type TileMoreEntry } from "./more-button-item";
+import { TileMoreMobile } from "./more-button-mobile";
+import { useTileRadio } from "./more-button-radio";
 
 type TileMoreButtonProps = {
   user?: User;
@@ -85,22 +52,6 @@ type MenuItem = {
   icon: LucideIcon;
 };
 
-function getItemUrl(item: Song | Episode | Queue): string {
-  return "perma_url" in item ? item.perma_url : item.url;
-}
-
-function getItemAlbumUrl(item: Song | Episode | Queue): string | undefined {
-  return "more_info" in item && item.type === "song"
-    ? item.more_info.album_url
-    : undefined;
-}
-
-function getItemArtists(item: Song | Episode | Queue) {
-  return "more_info" in item
-    ? (item.more_info.artistMap?.primary_artists ?? [])
-    : item.artists;
-}
-
 export function TileMoreButton(props: TileMoreButtonProps) {
   const {
     user,
@@ -115,57 +66,14 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
   const router = useRouter();
 
-  const [translateX, setTranslateX] = React.useState(0);
   const [isDialogOpen, setDialogOpen] = React.useState(false);
 
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [initialQueue, setQueue] = useQueue();
   const [, setCurrentIndex] = useCurrentSongIndex();
-  const [, setActiveRadio] = useActiveRadioSession();
 
-  const utils = api.useUtils();
-
-  const [isFavorite, setOptimisticFavorite] = React.useOptimistic(
-    favorites?.songs.includes(item.id) ?? false,
-    (_current, update: boolean) => update,
-  );
-
-  function like() {
-    if (!user) {
-      toast.warning("Unable to perform action. Please sign in.", {
-        description: "You need to sign in to like this item.",
-      });
-      return;
-    }
-
-    const name = getItemName(item);
-
-    React.startTransition(async () => {
-      setOptimisticFavorite(!isFavorite);
-      const promise = unwrap(
-        isFavorite
-          ? removeFromFavorites(item.id, "song")
-          : addToFavorites(item.id, "song"),
-      );
-
-      toast.promise(promise, {
-        loading: isFavorite
-          ? "Removing from favorites..."
-          : "Adding Song to favorites...",
-        success: isFavorite
-          ? `Successfully removed "${name}" from favorites!`
-          : `"${name}" song added to favorites!`,
-        error: userMessage,
-      });
-
-      try {
-        await promise;
-        router.refresh();
-      } catch {
-        // Handled by toast.promise; transition failure reverts optimistic state
-      }
-    });
-  }
+  const { isFavorite, like } = useTileFavorite({ item, user, favorites });
+  const playRadio = useTileRadio(item);
 
   function play() {
     const songIndex = initialQueue.findIndex((q) => q.id === item.id);
@@ -229,60 +137,6 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     );
   }
 
-  async function playRadio() {
-    try {
-      toast.loading("Starting radio...", { id: "song-radio" });
-      const artists = getItemArtists(item);
-      const primary = artists?.[0];
-      const artistName = primary?.name;
-      const artistId = primary?.id;
-
-      const stationName = artistName || getItemName(item);
-      const radioType: "artist" | "featured" = artistName
-        ? "artist"
-        : "featured";
-
-      const { stationId } = await utils.client.radio.createStation.mutate({
-        type: radioType,
-        name: stationName,
-        artistId,
-        language:
-          "language" in item && typeof item.language === "string"
-            ? item.language
-            : undefined,
-      });
-
-      const radioSongs = await utils.radio.songs.fetch({
-        stationId,
-        k: 20,
-      });
-
-      if (!radioSongs.length) {
-        toast.error("Could not find songs for this radio", {
-          id: "song-radio",
-        });
-        return;
-      }
-
-      const radioQueue = radioSongs.map(toQueue);
-      setQueue(radioQueue);
-      setActiveRadio({
-        stationId,
-        name: `${stationName} Radio`,
-        type: radioType,
-      });
-      setCurrentIndex(0);
-      setIsPlayerInit(true);
-
-      toast.success(`Playing "${stationName} Radio"`, {
-        id: "song-radio",
-        description: `Added ${radioQueue.length} station tracks to queue`,
-      });
-    } catch {
-      toast.error("Unable to start radio station", { id: "song-radio" });
-    }
-  }
-
   const menuItems: MenuItem[] = [
     {
       label: isFavorite ? "Remove From Favourite" : "Add To Favourite",
@@ -320,164 +174,31 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     },
   ];
 
-  const visibleItems = menuItems.filter(({ hide }) => !hide);
+  const entries: TileMoreEntry[] = menuItems
+    .filter(({ hide }) => !hide)
+    .map(({ label, onClick, icon }) => ({
+      label: getEntryLabel(item, label),
+      onClick,
+      icon,
+    }));
 
   return (
     <>
-      <div className="md:hidden">
-        <Drawer>
-          <DrawerTrigger
-            aria-label="More Options"
-            className={cn(
-              controlStyles.rowIcon,
-              "flex items-center justify-center outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
-              className,
-            )}
-          >
-            <MoreVertical aria-hidden="true" className="size-5" />
-          </DrawerTrigger>
-
-          <DrawerContent className="rounded-t-2xl">
-            <DrawerHeader className="pb-0">
-              <div className="flex items-center gap-2 truncate">
-                <div className="relative aspect-square h-14 rounded-md">
-                  <ImageWithFallback
-                    src={getImageSrc(item.image, "low")}
-                    alt={getItemName(item)}
-                    fill
-                    sizes="56px"
-                    fallback={getPlaceholderSrc("song")}
-                    className="z-10 shrink-0 rounded-md"
-                  />
-
-                  <Skeleton className="absolute inset-0 size-full" />
-                </div>
-
-                <div className="flex flex-col justify-start truncate text-start">
-                  <DrawerTitle className="truncate">
-                    {getItemName(item)}
-                  </DrawerTitle>
-                  <DrawerDescription className="truncate">
-                    {item.subtitle}
-                  </DrawerDescription>
-                </div>
-              </div>
-            </DrawerHeader>
-
-            <Separator className="mb-2 mt-4" />
-
-            <div className="min-h-0 overflow-x-hidden overflow-y-auto">
-              <div
-                className="relative flex flex-col gap-2 px-4 transition-transform duration-300"
-                style={{ transform: `translateX(${translateX}%)` }}
-              >
-                {visibleItems.map(({ icon: Icon, label, onClick }) => (
-                  <button
-                    key={label}
-                    onClick={onClick}
-                    className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
-                  >
-                    <Icon className="mr-2 size-5" />
-                    {item.type === "song"
-                      ? label
-                      : label.replace("Song", "Episode")}
-                  </button>
-                ))}
-
-                <button
-                  onClick={() => setTranslateX(-110)}
-                  className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
-                >
-                  <Share2 className="mr-2 size-5" />
-                  Share
-                  <ChevronRight className="ml-auto size-5" />
-                </button>
-
-                <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
-                  <button
-                    onClick={() => setTranslateX(0)}
-                    className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
-                  >
-                    <ChevronLeft className="mr-2 size-5" />
-                    Back
-                  </button>
-
-                  <Separator className="-my-2 mb-2" />
-
-                  <ShareOptions
-                    className="flex flex-col p-4 [&_a]:flex [&_a]:min-h-(--ctl-lg) [&_a]:items-center [&_button]:flex [&_button]:min-h-(--ctl-lg) [&_button]:items-center"
-                    title={getItemName(item)}
-                  />
-                </div>
-
-                <Separator />
-
-                <TileMoreLinks
-                  type={item.type}
-                  itemUrl={getItemUrl(item)}
-                  albumUrl={getItemAlbumUrl(item)}
-                  showAlbum={item.type === "song" ? showAlbum : false}
-                  primaryArtists={getItemArtists(item)}
-                />
-              </div>
-            </div>
-
-            <Separator className="my-4" />
-
-            <DrawerFooter className="pt-0 sm:justify-center">
-              <DrawerClose
-                className={buttonVariants({ className: controlStyles.text })}
-              >
-                Cancel
-              </DrawerClose>
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
-      </div>
-
-      <div className="hidden md:block">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label="More Options"
-            className={cn(
-              controlStyles.rowIcon,
-              "inline-flex items-center justify-center outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
-              className,
-            )}
-          >
-            <MoreVertical aria-hidden="true" className="size-5" />
-          </DropdownMenuTrigger>
-
-          <DropdownMenuContent
-            side="left"
-            align="start"
-            className="*:cursor-pointer"
-          >
-            {visibleItems.map(({ icon: Icon, label, onClick }) => (
-              <DropdownMenuItem key={label} onClick={onClick}>
-                <Icon className="mr-2 size-5" />
-                {item.type === "song"
-                  ? label
-                  : label.replace("Song", "Episode")}
-              </DropdownMenuItem>
-            ))}
-            <ShareSubMenu title={getItemName(item)} />
-            <DropdownMenuSeparator className="my-2" />
-            <TileMoreLinks
-              type={item.type}
-              itemUrl={getItemUrl(item)}
-              albumUrl={getItemAlbumUrl(item)}
-              showAlbum={showAlbum}
-              isDropdownItem
-              primaryArtists={getItemArtists(item)}
-            />
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      <TileMoreMobile
+        item={item}
+        showAlbum={showAlbum}
+        entries={entries}
+        className={className}
+      />
+      <TileMoreDesktop
+        item={item}
+        showAlbum={showAlbum}
+        entries={entries}
+        className={className}
+      />
 
       {!!user && (
         <AddToPlaylistDialog
-          user={user}
           isDialogOpen={isDialogOpen}
           setDialogOpen={setDialogOpen}
           playlists={playlists}

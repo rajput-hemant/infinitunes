@@ -13,13 +13,11 @@ import {
 import { List, ListX } from "lucide-react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
-import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 
 import { NewPlaylistForm } from "./new-playlist-form";
 
 type AddToPlaylistDialogProps = {
-  user?: User;
   isDialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
   playlists?: MyPlaylist[];
