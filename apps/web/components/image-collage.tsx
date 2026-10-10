@@ -1,7 +1,6 @@
-import { cn } from "~/lib/utils";
+import Image from "next/image";
 
-import { ImageWithFallback } from "../image-with-fallback";
-import { getPlaceholderSrc } from "../placeholder-src";
+import { cn } from "~/lib/utils";
 
 export function ImageCollage({ src }: { src: string[] }) {
   const count = src.length;
@@ -27,12 +26,11 @@ export function ImageCollage({ src }: { src: string[] }) {
             count === 3 && i === 0 && "row-span-2",
           )}
         >
-          <ImageWithFallback
+          <Image
             src={image}
             fill
             sizes="(min-width: 1280px) 256px, (min-width: 768px) 224px, 176px"
             alt="Song cover"
-            fallback={getPlaceholderSrc("song")}
             className={cn(
               "object-cover",
               count === 1 && image.includes("placeholder") && "dark:invert",

@@ -9,6 +9,7 @@ import {
 } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
@@ -17,9 +18,7 @@ import { orFallback } from "~/lib/degrade";
 import { cn, getHref } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
-import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
-import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
 import { ArtistLinks } from "./artist-links";
 import { TileMoreButton } from "./more-button";
@@ -90,12 +89,11 @@ export async function SongList(props: SongListProps) {
               <figure className="flex items-center justify-between gap-4 overflow-hidden lg:w-[86%]">
                 {showAlbum && (
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
-                    <ImageWithFallback
+                    <Image
                       src={getImageSrc(item.image, "low")}
                       alt={decode(item.title)}
                       fill
                       sizes="40px"
-                      fallback={getPlaceholderSrc("song")}
                       className="z-10 object-cover duration-300 group-hover:brightness-50"
                     />
 
