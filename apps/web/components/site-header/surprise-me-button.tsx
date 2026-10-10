@@ -4,7 +4,7 @@ import { toQueue } from "@infinitunes/types";
 import type { Lang, Song } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ComponentProps } from "react";
 import { toast } from "sonner";
 
@@ -39,9 +39,10 @@ export function SurpriseMeButton({
   const [pending, setPending] = useState(false);
 
   // Latest playback state, read after the await to detect a newer choice.
-  const playback = { queue, currentIndex, activeRadio };
-  const latest = useRef(playback);
-  latest.current = playback;
+  const latest = useRef({ queue, currentIndex, activeRadio });
+  useEffect(() => {
+    latest.current = { queue, currentIndex, activeRadio };
+  }, [queue, currentIndex, activeRadio]);
   const inFlight = useRef(false);
 
   const utils = api.useUtils();
@@ -72,13 +73,13 @@ export function SurpriseMeButton({
         return;
       }
 
-      const queue = shuffle(songs).map(toQueue);
+      const nextQueue = shuffle(songs).map(toQueue);
       setActiveRadio(null);
-      setQueue(queue);
+      setQueue(nextQueue);
       setCurrentIndex(0);
       setIsPlayerInit(true);
-      toast.success(`${queue.length} songs added to the queue`, {
-        description: `Playing “${queue[0]?.name}”`,
+      toast.success(`${nextQueue.length} songs added to the queue`, {
+        description: `Playing “${nextQueue[0]?.name}”`,
         position: "bottom-center",
       });
       onQueued?.();
