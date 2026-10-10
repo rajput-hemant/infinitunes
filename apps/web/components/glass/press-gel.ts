@@ -17,6 +17,8 @@ const HOST_SELECTOR = `[data-glass][data-glass-size], ${OVERLAY_SELECTOR}`;
 
 type PressState = { progress: number; stop: (() => void) | null };
 const states = new WeakMap<HTMLElement, PressState>();
+/** Teardown of every press still listening or springing, so uninstalling leaves nothing running. */
+const active = new Set<() => void>();
 
 function press(event: PointerEvent) {
   if (event.button > 0 || !(event.target instanceof Element)) return;
@@ -38,6 +40,7 @@ function press(event: PointerEvent) {
   const animate = (
     to: number,
     { response, damping }: { response: number; damping: number },
+    onDone?: () => void,
   ) => {
     const write = (value: number) => {
       state.progress = value;
@@ -50,6 +53,7 @@ function press(event: PointerEvent) {
     state.stop?.();
     if (prefersReducedMotion()) {
       write(to);
+      onDone?.();
       return;
     }
     state.stop = spring({
@@ -58,15 +62,32 @@ function press(event: PointerEvent) {
       response,
       damping,
       onUpdate: write,
+      onDone,
     });
   };
 
-  animate(1, PRESS_IN);
-  const release = () => {
+  const stopListening = () => {
     window.removeEventListener("pointerup", release);
     window.removeEventListener("pointercancel", release);
-    animate(0, self ? PRESS_OUT_SELF : PRESS_OUT_CHILD);
   };
+  const teardown = () => {
+    stopListening();
+    state.stop?.();
+    state.stop = null;
+    state.progress = 0;
+    host.style.removeProperty("--g-press");
+    if (scales) control.style.scale = "";
+    active.delete(teardown);
+  };
+  function release() {
+    stopListening();
+    animate(0, self ? PRESS_OUT_SELF : PRESS_OUT_CHILD, () =>
+      active.delete(teardown),
+    );
+  }
+
+  active.add(teardown);
+  animate(1, PRESS_IN);
   window.addEventListener("pointerup", release);
   window.addEventListener("pointercancel", release);
 }
@@ -74,5 +95,8 @@ function press(event: PointerEvent) {
 /** Press feedback for glass: glow from the touch point plus a spring gel. Returns the teardown. */
 export function installPressGel(): () => void {
   window.addEventListener("pointerdown", press, { passive: true });
-  return () => window.removeEventListener("pointerdown", press);
+  return () => {
+    window.removeEventListener("pointerdown", press);
+    for (const teardown of [...active]) teardown();
+  };
 }

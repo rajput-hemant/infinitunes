@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { act, useState } from "react";
+import { act, createRef, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { GlassSelector } from "../../components/glass/glass-selector";
@@ -183,5 +183,56 @@ describe("GlassSelector", () => {
     items[2].dispatchEvent(mouse("click", 200));
     expect(clicks).toBe(0);
     await act(async () => wait(1200));
+  });
+
+  it("hands the host to a caller ref as well as using it itself", async () => {
+    const ref = createRef<HTMLElement>();
+    const { host } = await mount(
+      <GlassSelector ref={ref} aria-label="Tabs">
+        <button type="button" data-glass-item="" aria-current="page">
+          One
+        </button>
+      </GlassSelector>,
+    );
+    expect(ref.current).toBe(host);
+  });
+
+  it("clears its pending timers and click guard when unmounted mid-release", async () => {
+    const pending = new Set<number>();
+    const realSet = window.setTimeout;
+    const realClear = window.clearTimeout;
+    window.setTimeout = ((fn: () => void, ms?: number) => {
+      const id = realSet(() => {
+        pending.delete(id);
+        fn();
+      }, ms);
+      pending.add(id);
+      return id;
+    }) as typeof window.setTimeout;
+    window.clearTimeout = ((id?: number) => {
+      if (id !== undefined) pending.delete(id);
+      realClear(id);
+    }) as typeof window.clearTimeout;
+    try {
+      let clicks = 0;
+      const { host, items } = await mount(<Tabs onPick={() => clicks++} />);
+      items[0].dispatchEvent(mouse("pointerdown", 40));
+      host.dispatchEvent(mouse("pointermove", 200));
+      host.dispatchEvent(mouse("pointerup", 200));
+      expect(pending.size).toBeGreaterThan(0);
+      await act(async () => roots.splice(0).forEach((r) => r.unmount()));
+      expect(pending.size).toBe(0);
+      // The click guard is gone too: a click after unmount is not swallowed.
+      const other = document.createElement("button");
+      document.body.append(other);
+      let reached = 0;
+      other.addEventListener("click", () => reached++);
+      other.click();
+      expect(reached).toBe(1);
+      expect(clicks).toBe(0);
+    } finally {
+      window.setTimeout = realSet;
+      window.clearTimeout = realClear;
+    }
   });
 });

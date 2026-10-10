@@ -4,6 +4,7 @@ import { DEFAULT_ACCENT_HEX, themes } from "~/config/themes";
 import { DEFAULT_THEME_CONFIG, DEFAULT_GLASS_TUNING } from "~/lib/theme-config";
 
 import { accentVariables, deriveAccentTokens } from "./accent";
+import { MANAGED_VARIABLES } from "./managed";
 import { normalizeHex } from "./oklch";
 
 /** The hex behind an accent value: a preset's hex, or the custom hex itself. */
@@ -12,6 +13,7 @@ export function resolveAccentHex(accent: string): string {
   return preset?.hex ?? normalizeHex(accent) ?? DEFAULT_ACCENT_HEX;
 }
 
+/** Keys must stay within `MANAGED_ATTRIBUTES` (the pre-paint script only accepts those). */
 type ThemeAttributes = {
   "data-density": ThemeConfig["density"];
   "data-glass-level": ThemeConfig["glass"];
@@ -23,24 +25,6 @@ type ThemeAttributes = {
   "data-glass-accent-tint"?: "true" | "false";
 };
 
-/** Every custom property the engine writes on `<html>`; any other stays with the stylesheet. */
-const MANAGED_VARIABLES = [
-  "--light-primary",
-  "--light-primary-foreground",
-  "--light-accent",
-  "--dark-primary",
-  "--dark-primary-foreground",
-  "--dark-accent",
-  "--radius",
-  "--text-scale",
-  "--glass-tint",
-  "--glass-blur",
-  "--glass-refraction",
-  "--glass-sat",
-  "--glass-spec",
-  "--glass-shadow",
-  "--ambient",
-] as const;
 type ManagedVariable = (typeof MANAGED_VARIABLES)[number];
 
 export type ThemeHtml = {

@@ -1,9 +1,7 @@
 import type { GlassTuning } from "@infinitunes/types";
 
+import { DEFAULT_GLASS_TINT } from "~/lib/glass/default-tint";
 import { DEFAULT_GLASS_TUNING } from "~/lib/theme-config";
-
-/** Tint alpha while the config leaves `tint` null: the stylesheet default per scheme (`--glass-tint` in `styles/glass.css`). */
-const DEFAULT_TINT = { light: 0.14, dark: 0.24 } as const;
 
 type GlassSliderKey =
   | "tint"
@@ -23,7 +21,7 @@ export function resolveGlassTuning(
 ): ResolvedGlassTuning {
   return {
     ...tuning,
-    tint: tuning.tint ?? DEFAULT_TINT[dark ? "dark" : "light"],
+    tint: tuning.tint ?? DEFAULT_GLASS_TINT[dark ? "dark" : "light"],
   };
 }
 

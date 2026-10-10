@@ -50,6 +50,17 @@ export function useGlassSelector(
     let previousX: number | null = null;
     let dragging = false;
     let stop: (() => void) | null = null;
+    // Everything a gesture leaves behind, so unmounting mid-gesture cleans it all up.
+    const timers = new Set<number>();
+    const later = (fn: () => void, ms: number) => {
+      const id = window.setTimeout(() => {
+        timers.delete(id);
+        fn();
+      }, ms);
+      timers.add(id);
+    };
+    let endGesture: (() => void) | null = null;
+    let dropSwallow: (() => void) | null = null;
 
     const items = () => [...host.querySelectorAll<HTMLElement>(ITEM)];
     const place = (nextX: number, nextWidth: number) => {
@@ -133,11 +144,9 @@ export function useGlassSelector(
 
       const up = (ev: PointerEvent) => {
         if (ev.pointerId !== event.pointerId) return;
-        host.removeEventListener("pointermove", move);
-        host.removeEventListener("pointerup", up);
-        host.removeEventListener("pointercancel", up);
+        endGesture?.();
         if (!dragging) {
-          setTimeout(() => lift(false), 180);
+          later(() => lift(false), 180);
           return;
         }
         try {
@@ -173,22 +182,31 @@ export function useGlassSelector(
           click.stopImmediatePropagation();
           click.preventDefault();
         };
+        dropSwallow?.();
         window.addEventListener("click", swallow, {
           capture: true,
           once: true,
         });
-        setTimeout(
-          () => window.removeEventListener("click", swallow, { capture: true }),
-          80,
-        );
+        dropSwallow = () => {
+          window.removeEventListener("click", swallow, { capture: true });
+          dropSwallow = null;
+        };
+        later(() => dropSwallow?.(), 80);
         if (!pick.matches(ACTIVE)) {
-          setTimeout(() => (onPick ? onPick(pick) : pick.click()), 90);
+          later(() => (onPick ? onPick(pick) : pick.click()), 90);
         }
       };
 
+      endGesture?.();
       host.addEventListener("pointermove", move);
       host.addEventListener("pointerup", up);
       host.addEventListener("pointercancel", up);
+      endGesture = () => {
+        host.removeEventListener("pointermove", move);
+        host.removeEventListener("pointerup", up);
+        host.removeEventListener("pointercancel", up);
+        endGesture = null;
+      };
     };
 
     const unregister = registerGlass(indicator, { size: "s", magnify: true });
@@ -212,6 +230,10 @@ export function useGlassSelector(
 
     return () => {
       stop?.();
+      endGesture?.();
+      dropSwallow?.();
+      for (const id of timers) window.clearTimeout(id);
+      timers.clear();
       resize.disconnect();
       mutations.disconnect();
       host.removeEventListener("pointerdown", onPointerDown);

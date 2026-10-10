@@ -127,7 +127,6 @@ that scrolls its own content (a long menu) scrolls the rim with it.
 - `useGlassArtwork(url)` (`~/hooks/use-glass-artwork`): the player calls it once with the current track artwork URL
   (the 500px one; the CDN sends CORS headers) or `null`. The ambient field shows it and an 8x8 sample sets
   `--g-art-l`, `--g-art` and `--g-blob-1..3` (adaptive tint). Pure sampling math: `lib/glass/artwork.ts`.
-- `useGlassLens(ref, opts)`: registers an element that is neither `data-glass` nor a known popup. Rarely needed.
 - `lib/glass/spring.ts`: `spring`, `project`, `rubber` for your own physical motion; honour `prefersReducedMotion()`.
 
 ## Ambient field
@@ -139,15 +138,21 @@ that paint an opaque page background hide it, so shell and page wrappers must be
 
 ## Fallbacks and accessibility
 
-| Condition                                         | Result                                                                                                                        |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Safari, Firefox, `?lens=0`, no SVG host           | frosted: tint, blur, saturate, brightness, rim, shadow, press glow (`data-glass-engine="frost"`)                              |
-| `?lens=1`                                         | skips only the Chromium check                                                                                                 |
-| `data-glass-level="solid"`                        | opaque `--popover`, no backdrop filter, no lens                                                                               |
-| `prefers-reduced-transparency`                    | lens off, tint .86, clear dim .62, ambient halved                                                                             |
-| `prefers-contrast: more`                          | opaque surface, no rim, 1.5px text border, no filter                                                                          |
-| `forced-colors: active`                           | `Canvas` and `CanvasText`, 1px outline, no rim, no ambient                                                                    |
-| `prefers-reduced-motion`, `data-motion="reduced"` | no materialize, no spring (values jump), tab bar and player change position without a transition, no device-orientation light |
+| Condition                                         | Result                                                                                                                                                       |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Safari, Firefox, `?lens=0`, no SVG host           | frosted: tint, blur, saturate, brightness, rim, shadow, press glow (`data-glass-engine="frost"`)                                                             |
+| `?lens=1`                                         | skips only the Chromium check                                                                                                                                |
+| `data-glass-level="solid"`                        | opaque `--popover`, no backdrop filter, no lens                                                                                                              |
+| `prefers-reduced-transparency`                    | lens off, tint .86, clear dim .62, ambient halved                                                                                                            |
+| `prefers-contrast: more`                          | opaque surface, no rim, 1.5px text border, no filter                                                                                                         |
+| Solid level, `prefers-contrast: more`             | always win over the clear and tinted variants (Variant setting, `data-glass-over-art`): the variant rules are excluded under them, a test checks the cascade |
+| `forced-colors: active`                           | `Canvas` and `CanvasText`, 1px outline, no rim, no ambient                                                                                                   |
+| `prefers-reduced-motion`, `data-motion="reduced"` | no materialize, no spring (values jump), tab bar and player change position without a transition, no device-orientation light                                |
+
+The scroll edge (`data-glass-edge`), the lifted selector droplet and the ambient field are deliberately not gated by
+Solid or the contrast modes (the mockup does not either): the edge blurs page content that scrolled under a toolbar, not
+the toolbar's own text, and the droplet's 0.5px blur sits over a surface that is already opaque in those modes. Ambient
+is halved by reduced transparency and hidden by forced colours.
 
 Contrast holds WCAG AA on text-bearing `m` and `l` surfaces over any backdrop (measured values in `glass-spec.md`);
 `s` icon-led surfaces are guaranteed 3:1. Clear glass is AA only near the sampled brightness.

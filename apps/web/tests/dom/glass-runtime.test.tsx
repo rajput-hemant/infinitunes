@@ -177,6 +177,35 @@ describe("GlassRuntime", () => {
     expect(Number(host.style.getPropertyValue("--g-press"))).toBeLessThan(0.05);
   });
 
+  it("press gel leaves no spring or window listener behind when the runtime unmounts mid-press", async () => {
+    await mountRuntime();
+    const host = document.createElement("div");
+    host.setAttribute("data-glass", "regular");
+    host.setAttribute("data-glass-size", "m");
+    host.getBoundingClientRect = () => new DOMRect(0, 0, 200, 60);
+    const button = document.createElement("button");
+    Object.defineProperty(button, "offsetWidth", { value: 40 });
+    host.append(button);
+    document.body.append(host);
+    await flush();
+
+    button.dispatchEvent(
+      new MouseEvent("pointerdown", {
+        bubbles: true,
+        clientX: 10,
+        clientY: 10,
+      }),
+    );
+    await flush();
+    expect(host.style.getPropertyValue("--g-press")).not.toBe("");
+    await act(async () => roots.splice(0).forEach((r) => r.unmount()));
+    expect(host.style.getPropertyValue("--g-press")).toBe("");
+    expect(button.style.scale).toBe("");
+    // The spring is stopped: nothing writes the press again.
+    await flush();
+    expect(host.style.getPropertyValue("--g-press")).toBe("");
+  });
+
   it("reads the level from the theme attribute: Solid turns the lens off", async () => {
     root.setAttribute("data-glass-level", "solid");
     await mountRuntime();

@@ -3,6 +3,7 @@
 import { cn } from "@infinitunes/ui/lib/utils";
 import * as React from "react";
 
+import { useMergedRef } from "~/hooks/use-merged-ref";
 import type { GlassSize } from "~/lib/glass/lens-math";
 import type { GlassRole } from "~/lib/glass/overlays";
 
@@ -28,11 +29,6 @@ export type GlassSurfaceProps = React.HTMLAttributes<HTMLElement> & {
   render?: RenderElement;
 };
 
-function assignRef<T>(ref: React.ForwardedRef<T>, node: T | null) {
-  if (typeof ref === "function") ref(node);
-  else if (ref) ref.current = node;
-}
-
 /**
  * A navigation-layer glass surface. It only sets attributes; `GlassRuntime`
  * (mounted in the root layout) finds it and attaches the lens, pointer light
@@ -53,6 +49,7 @@ export const GlassSurface = React.forwardRef<HTMLElement, GlassSurfaceProps>(
     },
     forwardedRef,
   ) {
+    const ref = useMergedRef<HTMLElement>(forwardedRef, render?.props.ref);
     const merged = {
       ...(render?.props ?? {}),
       ...props,
@@ -62,10 +59,7 @@ export const GlassSurface = React.forwardRef<HTMLElement, GlassSurfaceProps>(
       "data-lens": lens === "off" || size === "xl" ? "off" : "on",
       "data-glass-role": glassRole,
       "data-glass-press": interactive ? "true" : undefined,
-      ref: (node: HTMLElement | null) => {
-        assignRef(forwardedRef, node);
-        if (render) assignRef(render.props.ref ?? null, node);
-      },
+      ref,
     };
 
     if (render) {
