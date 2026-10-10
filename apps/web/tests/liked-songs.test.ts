@@ -31,6 +31,46 @@ describe("fetchSongsChunked", () => {
     err.mockRestore();
   });
 
+  it("recovers the other 24 ids when one id poisons a full chunk", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const ids = Array.from({ length: 25 }, (_, i) => `id-${i}`);
+      const calls: string[] = [];
+      const details = async ({ id }: { id: string }) => {
+        calls.push(id);
+        if (id.split(",").includes("id-12"))
+          throw Object.assign(new Error("Song not found"), {
+            code: "NOT_FOUND",
+          });
+        return { songs: id.split(",").map(song) };
+      };
+      const result = await fetchSongsChunked(ids, details);
+      expect(result?.map((item) => item.id)).toEqual(
+        ids.filter((id) => id !== "id-12"),
+      );
+      expect(calls).toEqual([ids.join(","), ...ids]);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("does not amplify upstream outages into per-id requests", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      for (const code of ["BAD_GATEWAY", "TIMEOUT"]) {
+        const calls: string[] = [];
+        const result = await fetchSongsChunked(["a", "b"], async ({ id }) => {
+          calls.push(id);
+          throw Object.assign(new Error("Unavailable"), { code });
+        });
+        expect(result).toBeUndefined();
+        expect(calls).toEqual(["a,b"]);
+      }
+    } finally {
+      err.mockRestore();
+    }
+  });
+
   it("returns undefined when every chunk fails", async () => {
     const err = spyOn(console, "error").mockImplementation(() => {});
     const songs = await fetchSongsChunked(["a"], async () => {

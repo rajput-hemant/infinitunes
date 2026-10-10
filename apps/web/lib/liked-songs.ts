@@ -1,5 +1,7 @@
 import type { Episode, Song } from "@infinitunes/types";
 
+import { getErrorCode } from "./error-code";
+
 const LIKED_SONGS_CHUNK_SIZE = 25;
 
 export function chunk<T>(items: T[], size: number): T[][] {
@@ -12,7 +14,7 @@ export function chunk<T>(items: T[], size: number): T[][] {
 
 /**
  * Fetch song details in chunks, tolerating partial failure. Returns undefined
- * only when every chunk failed. Upstream `song.getDetails` also resolves
+ * only when every details request failed. Upstream `song.getDetails` also resolves
  * episode ids, so pass `Song | Episode` for mixed lists.
  */
 export async function fetchSongsChunked<T extends Song | Episode = Song>(
@@ -22,7 +24,28 @@ export async function fetchSongsChunked<T extends Song | Episode = Song>(
 ): Promise<T[] | undefined> {
   const chunks = chunk(ids, size);
   const results = await Promise.allSettled(
-    chunks.map((c) => details({ id: c.join(",") })),
+    chunks.map(async (c) => {
+      try {
+        return await details({ id: c.join(",") });
+      } catch (error) {
+        if (c.length === 1 || getErrorCode(error) !== "NOT_FOUND") throw error;
+        console.error("song-details: failed to fetch a chunk", error);
+        // A delisted id can poison the batch; recover its resolvable neighbours.
+        const recovered: T[] = [];
+        let succeeded = false;
+        for (const id of c) {
+          try {
+            const result = await details({ id });
+            recovered.push(...result.songs);
+            succeeded = true;
+          } catch (idError) {
+            console.error("song-details: failed to fetch an id", idError);
+          }
+        }
+        if (!succeeded) throw error;
+        return { songs: recovered };
+      }
+    }),
   );
 
   const songs: T[] = [];
