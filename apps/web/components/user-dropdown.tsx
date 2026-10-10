@@ -26,6 +26,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
+
 type UserDropdownProps = {
   user?: {
     id: string;
@@ -61,7 +64,10 @@ export function UserDropdown({ user }: UserDropdownProps) {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Open user menu"
-        className="flex size-11 items-center justify-center rounded-full ring-offset-background lg:size-auto focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className={cn(
+          controlStyles.headerIcon,
+          "flex items-center justify-center rounded-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        )}
       >
         <Avatar className="border shadow-xs">
           <AvatarImage
