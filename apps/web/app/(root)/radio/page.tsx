@@ -1,5 +1,6 @@
 import type { Lang } from "@infinitunes/types";
 
+import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
 import { LanguageBar } from "~/components/language-bar";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
@@ -34,12 +35,10 @@ export default async function RadioPage(props: Props) {
   });
 
   return (
-    <div className="space-y-4">
+    <div>
       <LanguageBar language={lang} />
 
-      <h1 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-        Radio Stations
-      </h1>
+      <CatalogHeader title="Radio Stations" />
 
       <FeaturedStations
         key={radioStations[0]?.id ?? "stations"}
