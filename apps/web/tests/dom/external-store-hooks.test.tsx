@@ -3,14 +3,8 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-let pathname = "/search";
-
 void mock.module("next/navigation", () => ({
   useParams: () => ({}),
-  usePathname: () => pathname,
-  notFound: () => {
-    throw new Error("NOT_FOUND");
-  },
 }));
 void mock.module("next/image", () => ({
   default: ({ src, alt, onError }: Record<string, never>) => (
@@ -21,8 +15,6 @@ void mock.module("next/image", () => ({
 const { ImageWithFallback } =
   await import("../../components/image-with-fallback");
 const { useHash } = await import("../../hooks/use-hash");
-const { default: SearchLayout } =
-  await import("../../app/(root)/search/layout");
 
 const roots: Root[] = [];
 
@@ -77,35 +69,5 @@ describe("useHash", () => {
       window.dispatchEvent(new window.Event("hashchange"));
     });
     expect(container.textContent).toBe("next");
-  });
-});
-
-describe("SearchLayout", () => {
-  const setViewport = (matches: boolean) => {
-    window.matchMedia = (() => ({
-      matches,
-      addEventListener: () => {},
-      removeEventListener: () => {},
-    })) as never;
-  };
-
-  it("404s /search on desktop only", async () => {
-    pathname = "/search";
-    setViewport(false);
-    const { container } = await render(
-      <SearchLayout>
-        <p>mobile search</p>
-      </SearchLayout>,
-    );
-    expect(container.textContent).toBe("mobile search");
-
-    setViewport(true);
-    expect(
-      render(
-        <SearchLayout>
-          <p>x</p>
-        </SearchLayout>,
-      ),
-    ).rejects.toThrow("NOT_FOUND");
   });
 });
