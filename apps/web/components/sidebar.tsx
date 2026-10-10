@@ -195,7 +195,10 @@ function SidebarPlaylists({ userPlaylists }: SidebarPlaylistsProps) {
           <Button
             variant="ghost"
             aria-label="Create Playlist"
-            className="size-6 rounded-sm p-0"
+            className={cn(
+              controlStyles.headerIcon,
+              "p-0 focus-visible:ring-2 focus-visible:ring-ring",
+            )}
           >
             <Plus aria-hidden className="size-4" />
           </Button>

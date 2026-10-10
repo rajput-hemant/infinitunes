@@ -16,6 +16,7 @@ import { cn } from "~/lib/utils";
 
 import { authPrimaryButtonStyles } from "./field-styles";
 import { PasswordField } from "./password-field";
+import { PASSWORD_HINT } from "./password-hint";
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
@@ -95,7 +96,7 @@ export function ResetPasswordForm() {
             field={field}
             fieldState={fieldState}
             label="New password"
-            description="At least 8 characters."
+            description={PASSWORD_HINT}
             autoComplete="new-password"
             disabled={isSubmitting}
           />

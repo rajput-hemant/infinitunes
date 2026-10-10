@@ -38,7 +38,7 @@ export function PlayerTransport({
     <div className="flex items-center justify-center gap-1 md:gap-2">
       <BarButton
         tooltip={isShuffle ? "Shuffling" : "Shuffle"}
-        aria-label={isShuffle ? "Shuffling" : "Shuffle"}
+        aria-label="Shuffle"
         aria-pressed={isShuffle}
         onClick={onToggleShuffle}
         className={cn(
@@ -95,7 +95,7 @@ export function PlayerTransport({
               ? "Looping playlist"
               : "Loop"
         }
-        aria-label={loopMode === "track" ? "Looping" : "Loop"}
+        aria-label="Loop"
         aria-pressed={loopOn}
         onClick={onToggleLoop}
         className={cn(

@@ -30,14 +30,17 @@ export function ThemeToggleGroup({
 
   const { theme, setTheme } = useTheme();
 
-  function handleThemeChange(value: string) {
-    setTheme(value);
+  // Base UI reports an empty selection when the pressed item is pressed again;
+  // a theme is always selected, so that is not a change.
+  function handleThemeChange(value: string[]) {
+    const [next] = value;
+    if (next) setTheme(next);
   }
 
   return (
     <ToggleGroup
       value={[isMounted ? (theme ?? "system") : "system"]}
-      onValueChange={(v) => handleThemeChange(v[0])}
+      onValueChange={handleThemeChange}
       aria-label="Theme"
       className={cn(
         "gap-0.5 rounded-ctl bg-fill p-0.5",

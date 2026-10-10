@@ -26,7 +26,6 @@ import { cn } from "~/lib/utils";
 
 import { ShareOptions } from "../share-options";
 import {
-  getEntryLabel,
   getItemAlbumUrl,
   getItemArtists,
   getItemUrl,
@@ -44,11 +43,11 @@ type TileMoreMobileProps = {
 export function TileMoreMobile(props: TileMoreMobileProps) {
   const { item, showAlbum, entries, className } = props;
 
-  const [translateX, setTranslateX] = React.useState(0);
+  const [isSharing, setIsSharing] = React.useState(false);
 
   return (
     <div className="md:hidden">
-      <Drawer>
+      <Drawer onOpenChange={(open) => !open && setIsSharing(false)}>
         <DrawerTrigger
           aria-label="More Options"
           className={cn(
@@ -92,31 +91,51 @@ export function TileMoreMobile(props: TileMoreMobileProps) {
           <div className="min-h-0 overflow-x-hidden overflow-y-auto">
             <div
               className="relative flex flex-col gap-2 px-4 transition-transform duration-300"
-              style={{ transform: `translateX(${translateX}%)` }}
+              style={{ transform: `translateX(${isSharing ? -110 : 0}%)` }}
             >
-              {entries.map(({ icon: Icon, label, onClick }) => (
+              <div
+                inert={isSharing}
+                aria-hidden={isSharing}
+                className="flex flex-col gap-2"
+              >
+                {entries.map(({ icon: Icon, label, onClick }) => (
+                  <button
+                    key={label}
+                    onClick={onClick}
+                    className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
+                  >
+                    <Icon className="mr-2 size-5" />
+                    {label}
+                  </button>
+                ))}
+
                 <button
-                  key={label}
-                  onClick={onClick}
+                  onClick={() => setIsSharing(true)}
                   className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
                 >
-                  <Icon className="mr-2 size-5" />
-                  {getEntryLabel(item, label)}
+                  <Share2 className="mr-2 size-5" />
+                  Share
+                  <ChevronRight className="ml-auto size-5" />
                 </button>
-              ))}
 
-              <button
-                onClick={() => setTranslateX(-110)}
-                className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
+                <Separator />
+
+                <TileMoreLinks
+                  type={item.type}
+                  itemUrl={getItemUrl(item)}
+                  albumUrl={getItemAlbumUrl(item)}
+                  showAlbum={item.type === "song" ? showAlbum : false}
+                  primaryArtists={getItemArtists(item)}
+                />
+              </div>
+
+              <div
+                inert={!isSharing}
+                aria-hidden={!isSharing}
+                className="absolute left-[110%] min-w-full space-y-2 bg-background"
               >
-                <Share2 className="mr-2 size-5" />
-                Share
-                <ChevronRight className="ml-auto size-5" />
-              </button>
-
-              <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
-                  onClick={() => setTranslateX(0)}
+                  onClick={() => setIsSharing(false)}
                   className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
                 >
                   <ChevronLeft className="mr-2 size-5" />
@@ -130,16 +149,6 @@ export function TileMoreMobile(props: TileMoreMobileProps) {
                   title={getItemName(item)}
                 />
               </div>
-
-              <Separator />
-
-              <TileMoreLinks
-                type={item.type}
-                itemUrl={getItemUrl(item)}
-                albumUrl={getItemAlbumUrl(item)}
-                showAlbum={item.type === "song" ? showAlbum : false}
-                primaryArtists={getItemArtists(item)}
-              />
             </div>
           </div>
 

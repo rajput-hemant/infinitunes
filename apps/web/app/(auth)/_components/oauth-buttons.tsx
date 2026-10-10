@@ -14,11 +14,13 @@ type OAuthProvider = "google" | "github";
 
 type OAuthButtonProps = {
   isFormDisabled: boolean;
+  /** Already passed through `safeRedirectPath`. */
+  callbackUrl: string;
   setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 export function OAuthButtons(props: OAuthButtonProps) {
-  const { isFormDisabled, setIsSubmitting } = props;
+  const { isFormDisabled, callbackUrl, setIsSubmitting } = props;
 
   const [oauthLoading, setOauthLoading] = React.useState<OAuthProvider>();
 
@@ -27,13 +29,13 @@ export function OAuthButtons(props: OAuthButtonProps) {
     setIsSubmitting(true);
 
     try {
-      const { error } = await authClient.signIn.social({ provider });
+      // On success the browser navigates to the provider, so there is nothing to announce.
+      const { error } = await authClient.signIn.social({
+        provider,
+        callbackURL: callbackUrl,
+      });
 
-      if (error) {
-        toast.error(error.message ?? "Something went wrong.");
-      } else {
-        toast.success("You have been signed in.");
-      }
+      if (error) toast.error(error.message ?? "Something went wrong.");
     } catch (error) {
       console.error(error);
       toast.error("Something went wrong.");

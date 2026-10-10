@@ -14,7 +14,6 @@ import { cn } from "~/lib/utils";
 
 import { ShareSubMenu } from "../share-submenu";
 import {
-  getEntryLabel,
   getItemAlbumUrl,
   getItemArtists,
   getItemUrl,
@@ -54,7 +53,7 @@ export function TileMoreDesktop(props: TileMoreDesktopProps) {
           {entries.map(({ icon: Icon, label, onClick }) => (
             <DropdownMenuItem key={label} onClick={onClick}>
               <Icon className="mr-2 size-5" />
-              {getEntryLabel(item, label)}
+              {label}
             </DropdownMenuItem>
           ))}
           <ShareSubMenu title={getItemName(item)} />

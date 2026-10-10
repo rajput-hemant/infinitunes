@@ -1,6 +1,7 @@
 "use client";
 
 import type { Queue } from "@infinitunes/types";
+import type * as React from "react";
 
 import { cn } from "~/lib/utils";
 
@@ -31,6 +32,20 @@ export function ExpandedPane({
   onTabChange,
   visible,
 }: ExpandedPaneProps) {
+  function handleTabKeyDown(
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    current: PaneTab,
+  ) {
+    const step =
+      event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+    if (step === 0) return;
+    event.preventDefault();
+    const index = TABS.findIndex((t) => t.id === current);
+    const next = TABS[(index + step + TABS.length) % TABS.length];
+    onTabChange(next.id);
+    document.getElementById(`${id}-${next.id}-tab`)?.focus();
+  }
+
   return (
     <section
       id={id}
@@ -52,8 +67,10 @@ export function ExpandedPane({
             role="tab"
             id={`${id}-${tabId}-tab`}
             aria-selected={tab === tabId}
-            aria-controls={`${id}-${tabId}`}
+            aria-controls={tab === tabId ? `${id}-${tabId}` : undefined}
+            tabIndex={tab === tabId ? 0 : -1}
             onClick={() => onTabChange(tabId)}
+            onKeyDown={(event) => handleTabKeyDown(event, tabId)}
             className={cn(
               "inline-flex h-[calc(var(--ctl)-0.25rem)] items-center justify-center rounded-[max(0px,calc(var(--r-ctl)-0.125rem))] px-3 text-[0.8125rem]/5 font-medium whitespace-nowrap text-muted-foreground transition-[color,background-color,box-shadow,scale] duration-fast hover:text-foreground active:scale-[0.96]",
               tab === tabId &&

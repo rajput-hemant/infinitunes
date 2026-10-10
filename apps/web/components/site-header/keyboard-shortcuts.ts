@@ -1,5 +1,5 @@
 export type ShortcutEntry = {
-  /** Each inner array is one key cap; entries are alternatives shown with "or". */
+  /** Key caps shown side by side, in the order pressed. A cap may list alternatives, e.g. "Left / Right". */
   keys: string[];
   action: string;
 };
@@ -17,3 +17,8 @@ export const keyboardShortcuts: ShortcutEntry[] = [
   { keys: ["Ctrl", "K"], action: "Search" },
   { keys: ["Esc"], action: "Close" },
 ];
+
+/** The modifier cap as written on the user's keyboard: Ctrl becomes Cmd on macOS. */
+export function keyCapLabel(key: string, isMac: boolean): string {
+  return isMac && key === "Ctrl" ? "⌘" : key;
+}

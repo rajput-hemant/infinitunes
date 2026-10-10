@@ -10,9 +10,9 @@ const clientSalutation = () => greetingForHour(new Date().getHours());
 const serverSalutation = () => FALLBACK_GREETING;
 
 /**
- * The only per-visitor part of the home page. The page and root layout stay
- * static; the time of day and the signed-in name resolve here on the client,
- * after the fallback has been served and hydrated.
+ * The only per-visitor part of the home page body. The time of day and the
+ * signed-in name resolve here on the client, after the fallback has been served
+ * and hydrated, so the body does not depend on the session.
  */
 export function HomeGreeting() {
   const salutation = useSyncExternalStore(

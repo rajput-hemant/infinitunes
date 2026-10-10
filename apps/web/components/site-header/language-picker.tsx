@@ -43,9 +43,17 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
   const isPhone = useIsPhone();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [appliedLanguages, setAppliedLanguages] = useState(initialLanguages);
   const [selectedLanguages, setSelectedLanguages] = useState(initialLanguages);
 
+  // Closing without saving discards the unsaved selection.
+  function handleOpenChange(open: boolean) {
+    setIsOpen(open);
+    if (!open) setSelectedLanguages(appliedLanguages);
+  }
+
   function updateLanguages() {
+    setAppliedLanguages(selectedLanguages);
     setCookie("language", selectedLanguages.join(","), {
       path: "/",
     });
@@ -71,6 +79,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
       <Languages aria-hidden="true" className="aspect-square size-4" />
       <span className="hidden text-sm md:inline-block">Languages</span>
       <ChevronDown
+        aria-hidden="true"
         className={cn(
           "hidden size-4 duration-base md:inline-block",
           isOpen && "rotate-180",
@@ -89,7 +98,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
 
   if (isPhone) {
     return (
-      <Drawer open={isOpen} onOpenChange={setIsOpen} showSwipeHandle>
+      <Drawer open={isOpen} onOpenChange={handleOpenChange} showSwipeHandle>
         <DrawerTrigger render={trigger}>{triggerContent}</DrawerTrigger>
 
         <DrawerContent className="rounded-t-3xl pb-[calc(1rem+env(safe-area-inset-bottom))]">
@@ -111,7 +120,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
   }
 
   return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
       <PopoverTrigger render={trigger}>{triggerContent}</PopoverTrigger>
 
       <PopoverContent align="end" className="w-80 gap-3 p-4">

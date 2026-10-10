@@ -18,6 +18,7 @@ import { EmailField } from "./email-field";
 import { authPrimaryButtonStyles } from "./field-styles";
 import { OAuthButtons } from "./oauth-buttons";
 import { PasswordField } from "./password-field";
+import { PASSWORD_HINT } from "./password-hint";
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
 
@@ -104,7 +105,7 @@ export function SignUpForm() {
               field={field}
               fieldState={fieldState}
               label="Password"
-              description="At least 8 characters with upper and lower case, a number and a symbol."
+              description={PASSWORD_HINT}
               autoComplete="new-password"
               disabled={isSubmitting}
             />
@@ -142,6 +143,7 @@ export function SignUpForm() {
       <div className="order-1">
         <OAuthButtons
           isFormDisabled={isSubmitting}
+          callbackUrl={callbackUrl}
           setIsSubmitting={setIsSubmitting}
         />
       </div>

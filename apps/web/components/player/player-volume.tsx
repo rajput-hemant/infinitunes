@@ -33,7 +33,7 @@ export function PlayerVolume({
     <div className="hidden items-center gap-1 @min-[860px]:flex">
       <BarButton
         tooltip={isMuted ? "Unmute" : "Mute"}
-        aria-label={isMuted ? "Unmute" : "Mute"}
+        aria-label="Mute"
         aria-pressed={isMuted}
         onClick={onToggleMute}
         className={cn(
@@ -59,7 +59,6 @@ export function PlayerVolume({
         ref={volumeRef}
         aria-labelledby={volumeLabelId}
         value={[isMuted ? 0 : volume * 100]}
-        defaultValue={[75]}
         min={0}
         max={100}
         step={1}

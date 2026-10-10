@@ -1,7 +1,7 @@
 "use client";
 
 import type { Episode, Song } from "@infinitunes/types";
-import { QUALITIES_MAP } from "@infinitunes/types";
+import { QUALITIES_MAP, decode } from "@infinitunes/types";
 import {
   Tooltip,
   TooltipContent,
@@ -19,10 +19,12 @@ type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   songs: (Song | Episode)[];
 };
 
-/** Streams a song's audio into memory; `null` when the response has no body. */
-async function readAudio(link: string): Promise<BlobPart[] | null> {
+/** Streams a song's audio into memory; throws when the download is not served. */
+export async function readAudio(link: string): Promise<BlobPart[]> {
   const response = await fetch(link);
-  if (!response.body) return null;
+  if (!response.ok || !response.body) {
+    throw new Error(`Download failed (${response.status})`);
+  }
 
   const reader = response.body.getReader();
   const chunks: BlobPart[] = [];
@@ -67,11 +69,11 @@ export function useDownloadSongs(songs: (Song | Episode)[]) {
     const link = links[downloadQualityIndex] ?? links[0];
     if (!link) return;
 
+    const title = decode(song.title);
     const chunks = await readAudio(link);
-    if (!chunks) return;
 
-    toast.success(`Downloaded ${song.title}`);
-    saveBlob(new Blob(chunks, { type: "audio/mp4" }), `${song.title}.m4a`);
+    toast.success(`Downloaded ${title}`);
+    saveBlob(new Blob(chunks, { type: "audio/mp4" }), `${title}.m4a`);
   }
 
   async function download() {
@@ -80,6 +82,7 @@ export function useDownloadSongs(songs: (Song | Episode)[]) {
       await Promise.all(songs.map((song) => downloadSong(song)));
     } catch (error) {
       console.error(error);
+      toast.error("Download failed. Please try again.");
     } finally {
       setIsDownloading(false);
     }

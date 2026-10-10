@@ -8,10 +8,11 @@ import {
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
 
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { controlStyles } from "~/lib/control-styles";
-import { cn } from "~/lib/utils";
+import { cn, isMacOs } from "~/lib/utils";
 
-import { keyboardShortcuts } from "./keyboard-shortcuts";
+import { keyCapLabel, keyboardShortcuts } from "./keyboard-shortcuts";
 
 type KeyboardShortcutsDialogProps = {
   open: boolean;
@@ -25,6 +26,8 @@ export function KeyboardShortcutsDialog({
   open,
   onOpenChange,
 }: KeyboardShortcutsDialogProps) {
+  const isMac = useIsHydrated() && isMacOs();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false} className="gap-5 sm:max-w-md">
@@ -38,7 +41,7 @@ export function KeyboardShortcutsDialog({
               <dt className="flex items-center gap-1">
                 {keys.map((key) => (
                   <kbd key={key} className={keyCapClassName}>
-                    {key}
+                    {keyCapLabel(key, isMac)}
                   </kbd>
                 ))}
               </dt>

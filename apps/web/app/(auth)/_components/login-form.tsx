@@ -185,6 +185,7 @@ export function LoginForm() {
 
         <OAuthButtons
           isFormDisabled={isDisabled}
+          callbackUrl={callbackUrl}
           setIsSubmitting={setIsSubmitting}
         />
       </div>

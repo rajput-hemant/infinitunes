@@ -141,7 +141,7 @@ export function ExpandedBody({
         <div className="flex items-center justify-between">
           <button
             type="button"
-            aria-label={isShuffle ? "Shuffling" : "Shuffle"}
+            aria-label="Shuffle"
             aria-pressed={isShuffle}
             onClick={onToggleShuffle}
             className={cn(
@@ -188,7 +188,7 @@ export function ExpandedBody({
           </button>
           <button
             type="button"
-            aria-label={loopMode === "track" ? "Looping" : "Loop"}
+            aria-label="Loop"
             aria-pressed={loopMode !== "off"}
             onClick={onLoop}
             className={cn(
@@ -208,7 +208,7 @@ export function ExpandedBody({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            aria-label={isMuted ? "Unmute" : "Mute"}
+            aria-label="Mute"
             aria-pressed={isMuted}
             onClick={onToggleMute}
             className={cn(
