@@ -380,3 +380,9 @@
     @apply bg-muted-foreground rounded-full;
   }
 }
+
+@media (min-width: 120rem) {
+  :root {
+    --side-w: 16.5rem;
+  }
+}
