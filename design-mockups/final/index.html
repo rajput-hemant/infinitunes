@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#f5f5f7">
 <title>Infinitunes</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="glass.css">
 </head>
 <body>
 <div id="ambient" aria-hidden="true"><img alt=""></div>
@@ -23,9 +24,12 @@
 <nav class="tabbar glass" id="tabbar" aria-label="Primary"></nav>
 <div id="layer"></div>
 <div id="toasts" role="status" aria-live="polite"></div>
+<div class="lg-edge-bottom" aria-hidden="true"></div>
+<svg id="lg-defs" width="0" height="0" style="position:absolute" aria-hidden="true"><defs></defs></svg>
 
 <script src="../shared/data.js"></script>
 <script src="../shared/router.js"></script>
+<script src="glass.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
