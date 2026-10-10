@@ -104,8 +104,11 @@ export function LoginForm() {
   const isDisabled = isSubmitting || isPasskeyLoading;
 
   return (
-    <>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4 space-y-2">
+    <div className="flex flex-col gap-4">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="order-2 flex flex-col gap-3"
+      >
         <Controller
           control={form.control}
           name="email"
@@ -133,6 +136,15 @@ export function LoginForm() {
           )}
         />
 
+        <div className="flex justify-end">
+          <Link
+            href="/forgot-password"
+            className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
         <Button
           type="submit"
           disabled={isDisabled}
@@ -145,7 +157,9 @@ export function LoginForm() {
           )}
           Login with Email
         </Button>
+      </form>
 
+      <div className="order-1 flex flex-col gap-3">
         <Button
           type="button"
           variant="outline"
@@ -158,26 +172,14 @@ export function LoginForm() {
           ) : (
             <Fingerprint className="mr-2 size-4" />
           )}
-          Sign in with Passkey
+          Sign in with passkey
         </Button>
-      </form>
 
-      <p className="mx-auto mt-2 text-xs text-muted-foreground hover:text-foreground">
-        <Link
-          href="/forgot-password"
-          className={cn(
-            controlStyles.text,
-            "inline-flex items-center underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-hidden",
-          )}
-        >
-          Forgot password?
-        </Link>
-      </p>
-
-      <OAuthButtons
-        isFormDisabled={isDisabled}
-        setIsSubmitting={setIsSubmitting}
-      />
-    </>
+        <OAuthButtons
+          isFormDisabled={isDisabled}
+          setIsSubmitting={setIsSubmitting}
+        />
+      </div>
+    </div>
   );
 }
