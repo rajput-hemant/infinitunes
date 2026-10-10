@@ -1,4 +1,4 @@
-/** Shared class strings for search surfaces. The palette shell stays plain so a glass layer can wrap it later. */
+/** Shared class strings for search surfaces. The palette itself is a glass dialog (see SearchMenu). */
 export const searchUi = {
   trigger:
     "flex items-center justify-center gap-2 bg-transparent px-0 text-foreground shadow-none transition-colors duration-fast hover:bg-fill-2 lg:h-(--ctl-lg) lg:w-64 lg:justify-start lg:bg-fill lg:px-3 lg:text-sm lg:text-muted-foreground xl:w-80",
