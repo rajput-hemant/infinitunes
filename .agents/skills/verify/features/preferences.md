@@ -1,6 +1,6 @@
 # Appearance and preferences
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-017, ISSUE-019 in [verification-issues.md](../../../../docs/archive/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-017, ISSUE-019 in [verification-history.md](../../../../docs/archive/verification-history.md).
 
 ## Sub-features
 
