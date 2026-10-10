@@ -23,6 +23,7 @@ import { BadgeCheck } from "lucide-react";
 import Link from "next/link";
 
 import { getUser } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { asRoute, cn, getHref } from "~/lib/utils";
@@ -169,7 +170,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               <span className="sr-only">Explicit</span>
             </Badge>
           )}
-          <span className="break-words text-balance">{title}</span>
+          <span className="min-w-0 break-words text-balance">{title}</span>
 
           {getVerified(item) && (
             // Verified-badge blue is a brand convention; the theme has no blue token.
@@ -336,7 +337,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               }
               className={cn(
                 buttonVariants(),
-                "h-11 rounded-full px-10 text-xl font-bold shadow-xs lg:h-8",
+                controlStyles.hero,
+                "text-base font-semibold",
               )}
             >
               Play
@@ -350,7 +352,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               favourites={favorites}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
-                "size-11 rounded-full shadow-xs lg:size-8",
+                controlStyles.heroIcon,
               )}
             />
 
@@ -358,7 +360,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               songs={songs ?? []}
               className={cn(
                 buttonVariants({ size: "icon", variant: "outline" }),
-                "size-11 rounded-full shadow-xs lg:size-8",
+                controlStyles.heroIcon,
               )}
             />
 

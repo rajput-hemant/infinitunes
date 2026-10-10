@@ -2,6 +2,7 @@ import type { MediaType } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 type DetailsHeaderSkeletonProps = {
@@ -42,47 +43,54 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
         />
       </div>
 
-      <div className="flex flex-col items-center justify-center font-medium lg:items-start lg:gap-2 lg:p-1">
+      <div className="flex min-w-0 w-full flex-col items-center justify-center font-medium lg:items-start lg:gap-2 lg:p-1">
         <div className="space-y-2">
-          <Skeleton className="h-6 w-72 sm:h-7 md:h-8 md:w-96 lg:h-9" />
+          <Skeleton className="h-6 w-72 max-w-full sm:h-7 md:h-8 md:w-96 lg:h-9" />
 
           <div className="space-y-2 text-sm text-muted-foreground">
             {Array.from({ length: subtileSkeletonCount }).map((_, i) => (
               <Skeleton
                 key={i}
-                className="mx-auto h-5 lg:mx-0"
+                className="mx-auto h-5 max-w-full lg:mx-0"
                 style={{ width: `${256 - i * 32}px` }}
               />
             ))}
           </div>
         </div>
 
-        <div className="mt-4 flex gap-2 lg:mt-6">
-          <Button className="rounded-full px-10 text-xl font-bold text-primary shadow-xs">
-            Play
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            className="rounded-full shadow-xs"
-          >
-            <Skeleton className="size-5 rounded-full" />
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            className="rounded-full shadow-xs"
-          >
-            <Skeleton className="size-5 rounded-full" />
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            className="rounded-full shadow-xs"
-          >
-            <Skeleton className="size-5 rounded-full" />
-          </Button>
-        </div>
+        {type !== "label" && (
+          <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
+            <Button
+              className={cn(
+                controlStyles.hero,
+                "text-base font-semibold text-primary",
+              )}
+            >
+              Play
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              className={controlStyles.heroIcon}
+            >
+              <Skeleton className="size-5 rounded-full" />
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              className={controlStyles.heroIcon}
+            >
+              <Skeleton className="size-5 rounded-full" />
+            </Button>
+            <Button
+              size="icon"
+              variant="outline"
+              className={controlStyles.heroIcon}
+            >
+              <Skeleton className="size-5 rounded-full" />
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
