@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infinitunes design directions</title>
+<style>
+  body { margin: 0; font: 14px/1.5 Inter, system-ui, sans-serif; color: #18181b; background: #fafafa; }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 40px 0 12px; }
+  p { margin: 0; color: #71717a; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 230px), 1fr)); gap: 12px; margin-top: 20px; }
+  a.card { display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 1px solid #e4e4e7; border-radius: 10px; background: #fff; color: inherit; text-decoration: none; }
+  a.card:hover { border-color: #e11d48; }
+  .tag { font-size: 12px; font-weight: 600; color: #e11d48; }
+  .card strong { font-size: 15px; }
+  a.card.final { margin-top: 20px; border-color: #e11d48; background: linear-gradient(135deg, #fff, #fff1f2); }
+  a.card.final strong { font-size: 18px; }
+  .card span { color: #52525b; font-size: 13px; }
+  .shots { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr)); gap: 10px; }
+  .shots a { color: #52525b; font-size: 12px; text-decoration: none; }
+  .shots img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top; border: 1px solid #e4e4e7; border-radius: 6px; display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Infinitunes design directions</h1>
+  <p>One final unified prototype, plus the four earlier explorations it was built from. Each covers home, browse, charts, album, artist, playlist, song, podcast, search, library, settings and auth. Resize the window below 768px for the mobile layout.</p>
+
+  <a class="card final" href="final/index.html"><span class="tag">Final direction</span><strong>Unified Liquid Glass</strong><span>Best of A to D in one system: labeled sidebar (A), artwork-lit headers and floating player (B), docked queue and compact table density (C), quick picks, dock and sheets on phones (D). Liquid Glass materials, spring physics, and a full theme customizer in Settings &gt; Appearance. Includes a route map for implementation.</span></a>
+
+  <h2>Earlier explorations</h2>
+  <div class="grid">
+    <a class="card" href="variant-a/index.html"><span class="tag">Variant A</span><strong>Library Sidebar</strong><span>Refined classic: labeled left sidebar, slim top bar, full-width player. Mobile bottom tabs. Auth as a modal.</span></a>
+    <a class="card" href="variant-b/index.html"><span class="tag">Variant B</span><strong>Editorial Top Nav</strong><span>No sidebar: top tabs, hero banner, artwork-tinted headers, floating player. Mobile drawer. Auth as a split page.</span></a>
+    <a class="card" href="variant-c/index.html"><span class="tag">Variant C</span><strong>Compact Desktop App</strong><span>Dense: icon rail, tables, queue pane on the right, 28-32px controls. Mobile top tabs only. Auth as a minimal card.</span></a>
+    <a class="card" href="variant-d/index.html"><span class="tag">Variant D</span><strong>Search-first Dock</strong><span>Mobile-app feel: search hero, quick picks, floating bottom dock and player pill. Auth as a bottom sheet.</span></a>
+  </div>
+
+  <h2>Current app (baseline, 2026-10-10)</h2>
+  <div class="shots">
+    <a href="baseline/home-desktop.png"><img src="baseline/home-desktop.png" alt="">Home</a>
+    <a href="baseline/album-desktop.png"><img src="baseline/album-desktop.png" alt="">Album</a>
+    <a href="baseline/artist-desktop.png"><img src="baseline/artist-desktop.png" alt="">Artist</a>
+    <a href="baseline/playlist-desktop.png"><img src="baseline/playlist-desktop.png" alt="">Playlist</a>
+    <a href="baseline/song-desktop.png"><img src="baseline/song-desktop.png" alt="">Song</a>
+    <a href="baseline/show-desktop.png"><img src="baseline/show-desktop.png" alt="">Podcast</a>
+    <a href="baseline/chart-desktop.png"><img src="baseline/chart-desktop.png" alt="">Charts</a>
+    <a href="baseline/search-desktop.png"><img src="baseline/search-desktop.png" alt="">Search</a>
+    <a href="baseline/library-desktop.png"><img src="baseline/library-desktop.png" alt="">Library</a>
+    <a href="baseline/settings-desktop.png"><img src="baseline/settings-desktop.png" alt="">Settings</a>
+    <a href="baseline/settings-appearance-desktop.png"><img src="baseline/settings-appearance-desktop.png" alt="">Appearance</a>
+    <a href="baseline/signup-desktop.png"><img src="baseline/signup-desktop.png" alt="">Sign up</a>
+    <a href="baseline/home-mobile.png"><img src="baseline/home-mobile.png" alt="">Home (mobile)</a>
+    <a href="baseline/album-mobile.png"><img src="baseline/album-mobile.png" alt="">Album (mobile)</a>
+    <a href="baseline/settings-appearance-mobile.png"><img src="baseline/settings-appearance-mobile.png" alt="">Appearance (mobile)</a>
+  </div>
+</main>
+</body>
+</html>
