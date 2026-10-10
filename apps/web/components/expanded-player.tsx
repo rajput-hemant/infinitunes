@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { controlStyles } from "~/lib/control-styles";
 import { usePosition } from "~/lib/position-store";
 import type { PositionStore } from "~/lib/position-store";
@@ -32,32 +33,20 @@ import { cn } from "~/lib/utils";
 
 import { Icons } from "./icons";
 import { ImageWithFallback } from "./image-with-fallback";
-import { QueueList } from "./queue";
+import { ActiveDot, scrubClass, setValueText } from "./player/controls";
+import { QueueList } from "./player/queue-list";
 
-/** Sets `aria-valuetext` on the range input inside a Base UI slider root. */
-export function setValueText(root: HTMLElement | null, text: string) {
-  root
-    ?.querySelector("input[type=range]")
-    ?.setAttribute("aria-valuetext", text);
-}
-
-/** Scrubber and volume styling: foreground fill on a neutral track. */
-export const scrubClass =
-  "[&>*]:py-1 [&_[data-slot=slider-range]]:bg-foreground [&_[data-slot=slider-track]]:bg-fill-2";
-
-/** Accent dot under a transport toggle that is switched on. */
-export function ActiveDot({ on }: { on: boolean }) {
-  return on ? (
-    <span
-      aria-hidden
-      className="absolute bottom-0.5 left-1/2 size-1 -translate-x-1/2 rounded-full bg-primary"
-    />
-  ) : null;
-}
-
+// Plain controls on the artwork wash. The wash is not glass, so these keep the
+// flat hover fill and press shrink; the two glass controls below do not.
 const buttonClass = cn(
   controlStyles.transport,
-  "flex shrink-0 items-center justify-center transition-transform duration-fast ease-spring active:scale-[0.96]",
+  "flex shrink-0 items-center justify-center transition-[background-color,scale] duration-fast ease-spring hover:bg-fill active:scale-[0.96] active:bg-fill-2",
+);
+
+// Glass controls get their press from the glass runtime (gel), not a class.
+const glassControlClass = cn(
+  controlStyles.transport,
+  "flex shrink-0 items-center justify-center",
 );
 
 // Distance a drag on the header must travel downward to dismiss the sheet.
@@ -98,8 +87,13 @@ export function ExpandedPlayer(props: ExpandedPlayerProps) {
       <SheetContent
         side="bottom"
         showCloseButton={false}
-        className="max-h-dvh overflow-y-auto bg-background pb-[env(safe-area-inset-bottom)] text-foreground duration-slow ease-spring md:inset-0 md:h-dvh md:max-h-none md:justify-center md:border-0"
+        // Not a glass sheet: the layer is the page background lit by the
+        // artwork, and only its two controls are glass. Another slot name
+        // keeps the overlay glass rules (matched by `sheet-content`) off it.
+        data-slot="expanded-player"
+        className="max-h-dvh overflow-y-auto border-0 bg-background pb-[env(safe-area-inset-bottom)] text-foreground duration-slow ease-spring md:inset-0 md:h-dvh md:max-h-none md:justify-center"
       >
+        {track && <ArtworkWash image={track.image} />}
         <SheetHeader
           className="relative min-h-14 flex-row items-center justify-center px-4 md:absolute md:inset-x-0 md:top-0"
           onTouchStart={(event) => {
@@ -121,11 +115,18 @@ export function ExpandedPlayer(props: ExpandedPlayerProps) {
             className="absolute top-2 left-1/2 h-1 w-9 -translate-x-1/2 rounded-full bg-fill-2 md:hidden"
           />
           <SheetClose
-            aria-label="Close"
-            className={cn(
-              buttonClass,
-              "absolute top-3 left-2 md:top-3 md:left-4",
-            )}
+            render={
+              <GlassSurface
+                render={<button type="button" aria-label="Close" />}
+                variant="clear"
+                size="s"
+                interactive
+                className={cn(
+                  glassControlClass,
+                  "absolute top-3 left-2 md:top-3 md:left-4",
+                )}
+              />
+            }
           >
             <ChevronDown aria-hidden className="size-5" />
           </SheetClose>
@@ -139,6 +140,26 @@ export function ExpandedPlayer(props: ExpandedPlayerProps) {
         {track && <ExpandedBody {...props} track={track} />}
       </SheetContent>
     </Sheet>
+  );
+}
+
+/** The artwork, blurred and saturated, lighting the layer behind the content. */
+function ArtworkWash({ image }: { image: Queue["image"] }) {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
+    >
+      <ImageWithFallback
+        src={getImageSrc(image, "high")}
+        alt=""
+        fill
+        sizes="100vw"
+        fallback="/images/placeholder/song.jpg"
+        className="scale-125 rounded-none object-cover opacity-70 blur-2xl saturate-[1.6]"
+      />
+      <div className="absolute inset-0 bg-background/40" />
+    </div>
   );
 }
 
@@ -268,15 +289,15 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
           >
             <Icons.SkipBack aria-hidden className="size-5" />
           </button>
-          <button
-            type="button"
-            aria-label={isPlaying ? "Pause" : "Play"}
+          <GlassSurface
+            render={
+              <button type="button" aria-label={isPlaying ? "Pause" : "Play"} />
+            }
+            variant="tinted"
+            size="s"
+            interactive
             onClick={props.onPlayPause}
-            className={cn(
-              buttonClass,
-              controlStyles.transportPlay,
-              "bg-primary text-primary-foreground hover:opacity-85",
-            )}
+            className={cn(glassControlClass, controlStyles.transportPlay)}
           >
             {isLoading ? (
               <Loader2 aria-hidden className="size-6 animate-spin" />
@@ -285,7 +306,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
             ) : (
               <Icons.Play aria-hidden className="size-6" />
             )}
-          </button>
+          </GlassSurface>
           <button
             type="button"
             aria-label="Next"
@@ -367,7 +388,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
         id={queueRegionId}
         aria-labelledby={queueHeadingId}
         className={cn(
-          "max-h-[50dvh] min-h-0 overflow-y-auto rounded-md bg-card p-2 md:block md:h-[min(36rem,70dvh)] md:max-h-none",
+          "max-h-[50dvh] min-h-0 overflow-y-auto rounded-md p-2 md:block md:h-[min(36rem,70dvh)] md:max-h-none",
           !showQueue && "hidden",
         )}
       >
