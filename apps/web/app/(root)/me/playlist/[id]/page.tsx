@@ -78,19 +78,19 @@ export default async function MyPlaylistsPage(props: Props) {
     .concat(playlistSongs.length === 0 ? ["/images/placeholder/song.jpg"] : []);
 
   return (
-    <div className="space-y-4">
-      <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
-        <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-md border p-1 shadow-md transition-shadow duration-300 hover:shadow-xl md:w-56 xl:w-64">
+    <div className="flex flex-col gap-(--page-gap)">
+      <figure className="flex flex-col items-center gap-5 lg:flex-row lg:gap-10">
+        <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-lg shadow-md md:w-56 xl:w-64">
           <ImageCollage src={imageSrcs} />
 
           <Skeleton className="absolute inset-0 -z-10" />
         </div>
 
-        <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
+        <figcaption className="flex w-full min-w-0 flex-col items-center gap-2 lg:items-start">
           <div className="flex w-full max-w-full items-center justify-center gap-2 lg:justify-start">
             <h1
               title={name}
-              className="flex min-w-0 items-center truncate text-center font-heading text-xl capitalize dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:text-start"
+              className="min-w-0 truncate text-center font-heading text-2xl font-bold tracking-tight text-foreground capitalize sm:text-3xl md:text-4xl lg:text-start"
             >
               {name}
             </h1>
@@ -101,8 +101,8 @@ export default async function MyPlaylistsPage(props: Props) {
             />
           </div>
 
-          <div className="space-y-2 text-sm text-muted-foreground">
-            <p>{description}</p>
+          <div className="flex flex-col gap-1 text-muted-foreground">
+            {description && <p className="max-w-xl">{description}</p>}
             <p>
               <span>{songs.length} Songs</span>
               {playlistSongs.length > 0 && (
@@ -121,7 +121,7 @@ export default async function MyPlaylistsPage(props: Props) {
           </div>
 
           {playlistSongs.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
+            <div className="mt-2 flex flex-wrap gap-2">
               <PlayAllButton
                 items={playlistSongs}
                 className={controlStyles.hero}
@@ -147,11 +147,6 @@ export default async function MyPlaylistsPage(props: Props) {
             playlistId={id}
             playlistSongIndices={playlistSongIndices}
           />
-
-          <h3 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-            <em>Yay! You have seen it all</em>{" "}
-            <span className="text-foreground">🤩</span>
-          </h3>
         </>
       ) : songsDetails === undefined ? (
         <LibraryUnavailable what="playlist songs" />

@@ -1,6 +1,5 @@
 "use client";
 
-import { buttonVariants } from "@infinitunes/ui/components/button";
 import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import type { Route } from "next";
 import Link from "next/link";
@@ -37,32 +36,25 @@ export function Navbar() {
     <ScrollArea>
       <nav
         aria-label="Library"
-        className="flex w-max min-w-full gap-x-2 border-y"
+        className="flex w-max min-w-full gap-6 border-b"
       >
         {navlist.map(({ title, href }) => {
           const isActive = href === pathname;
 
           return (
-            <div
+            <Link
               key={title}
+              ref={isActive ? scrollActiveIntoView : undefined}
+              href={href}
+              aria-current={isActive ? "page" : undefined}
               className={cn(
-                "inline-block h-full shrink-0 border-b-2 border-transparent py-0.5 lg:py-2 hover:border-primary",
-                isActive && "border-primary",
+                "relative inline-flex h-(--ctl-lg) shrink-0 items-center font-semibold whitespace-nowrap text-muted-foreground transition-colors duration-fast -outline-offset-2 hover:text-foreground",
+                isActive &&
+                  "text-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:rounded-full after:bg-primary",
               )}
             >
-              <Link
-                ref={isActive ? scrollActiveIntoView : undefined}
-                href={href}
-                aria-current={isActive ? "page" : undefined}
-                className={cn(
-                  buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
-                  "h-11 font-normal lg:h-8",
-                  isActive && "font-medium",
-                )}
-              >
-                {title}
-              </Link>
-            </div>
+              {title}
+            </Link>
           );
         })}
       </nav>

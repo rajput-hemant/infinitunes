@@ -22,9 +22,9 @@ export default async function Layout({ children }: React.PropsWithChildren) {
   }
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-col items-center justify-center gap-4 sm:flex-row sm:justify-start sm:gap-6 lg:gap-10">
-        <div className="relative aspect-square w-28 shrink-0 overflow-hidden rounded-full border sm:w-32 lg:w-40">
+    <section className="flex flex-col gap-(--page-gap)">
+      <header className="flex flex-col items-center gap-5 sm:flex-row">
+        <div className="relative size-20 shrink-0 overflow-hidden rounded-full border">
           <ImageWithFallback
             src={user.image || "/images/placeholder/user.jpg"}
             fallback="/images/placeholder/user.jpg"
@@ -36,37 +36,35 @@ export default async function Layout({ children }: React.PropsWithChildren) {
           <Skeleton className="absolute inset-1 -z-10 rounded-full" />
         </div>
 
-        <div className="flex flex-col items-center justify-center gap-y-2 font-medium sm:items-start sm:gap-4">
-          <div className="text-center sm:text-start">
-            <h1 className="max-w-5xl truncate font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-              {user.name ?? "User"}
-            </h1>
+        <div className="min-w-0 flex-1 text-center sm:text-start">
+          <h1 className="truncate font-heading text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            {user.name ?? "User"}
+          </h1>
 
-            <small className="text-muted-foreground">
-              <Mail aria-hidden className="mr-1 inline-block size-4" />
-              {user.email ?? "you@example.com"}
-            </small>
-          </div>
-
-          <div className="space-x-4">
-            <Link
-              href="/settings#account"
-              className={buttonVariants({
-                variant: "secondary",
-                className: controlStyles.text,
-              })}
-            >
-              <Edit aria-hidden className="mr-2 size-4" /> Edit
-            </Link>
-
-            <LogoutButton />
-          </div>
+          <p className="truncate text-muted-foreground">
+            <Mail aria-hidden className="mr-1 inline-block size-4" />
+            {user.email ?? "you@example.com"}
+          </p>
         </div>
-      </div>
+
+        <div className="flex gap-2">
+          <Link
+            href="/settings#account"
+            className={buttonVariants({
+              variant: "secondary",
+              className: controlStyles.text,
+            })}
+          >
+            <Edit aria-hidden className="mr-2 size-4" /> Edit
+          </Link>
+
+          <LogoutButton />
+        </div>
+      </header>
 
       <Navbar />
 
-      <div className="mb-4 min-h-120">{children}</div>
+      <div className="min-h-120">{children}</div>
     </section>
   );
 }

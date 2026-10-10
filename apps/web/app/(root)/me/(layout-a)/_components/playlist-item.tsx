@@ -1,7 +1,6 @@
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import type { SongObj } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
-import { Card, CardContent } from "@infinitunes/ui/components/card";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
@@ -32,44 +31,38 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
     : ["/images/placeholder/song.jpg"];
 
   return (
-    <Card
-      key={id}
+    <div
       title={name}
-      className="group w-32 cursor-pointer border-none bg-transparent shadow-none transition-shadow duration-200 hover:bg-accent hover:shadow-md sm:w-36 sm:border-solid md:w-48 lg:w-56"
+      className="group w-32 shrink-0 p-2 sm:w-36 md:w-48 lg:w-56"
     >
-      <CardContent className="size-full p-2">
-        <div className="relative aspect-square w-full overflow-hidden rounded-md">
-          <Link
-            href={asRoute(`/me/playlist/${id}`)}
-            className="absolute inset-0 z-10 rounded-md outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50"
-          >
-            <span className="sr-only">View {name}</span>
-          </Link>
+      <div className="relative aspect-square w-full overflow-hidden rounded-md shadow-sm transition-shadow duration-base group-hover:shadow-md">
+        <Link
+          href={asRoute(`/me/playlist/${id}`)}
+          className="absolute inset-0 z-10 rounded-md outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50"
+        >
+          <span className="sr-only">View {name}</span>
+        </Link>
 
-          <div className="absolute right-1 top-1 z-20 transition-opacity motion-reduce:transition-none pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
-            <PlaylistManageMenu
-              playlist={{ id, name, description }}
-              triggerClassName="rounded-md bg-background/80 backdrop-blur-sm"
-            />
-          </div>
-
-          <ImageCollage src={songs.length > 4 ? imageSrcs : [imageSrcs[0]]} />
-
-          <Skeleton className="absolute inset-0 -z-10 size-full hover:scale-110" />
+        <div className="absolute top-1 right-1 z-20 transition-opacity motion-reduce:transition-none pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
+          <PlaylistManageMenu
+            playlist={{ id, name, description }}
+            triggerClassName="bg-background/80"
+          />
         </div>
 
-        <div className="mt-1 flex w-full flex-col items-center justify-between">
-          <h3 className="w-full font-semibold lg:text-lg">
-            <span className="mx-auto flex max-w-fit items-center">
-              <span className="truncate">{name}</span>
-            </span>
-          </h3>
+        <ImageCollage src={songs.length > 4 ? imageSrcs : [imageSrcs[0]]} />
 
-          <span className="w-full truncate text-center text-xs capitalize text-secondary-foreground">
-            {description}
-          </span>
-        </div>
-      </CardContent>
-    </Card>
+        <Skeleton className="absolute inset-0 -z-10 size-full" />
+      </div>
+
+      <div className="mt-2 min-w-0">
+        <h3 className="truncate font-semibold">{name}</h3>
+
+        <span className="block truncate text-muted-foreground">
+          {description ||
+            `${songs.length} ${songs.length === 1 ? "song" : "songs"}`}
+        </span>
+      </div>
+    </div>
   );
 }
