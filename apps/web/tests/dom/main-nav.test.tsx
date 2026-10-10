@@ -54,7 +54,7 @@ describe("MainNav", () => {
     const link = [...document.querySelectorAll("a")].find((a) =>
       a.textContent?.includes("View all Music"),
     );
-    expect(link?.getAttribute("href")).toBe("/");
+    expect(link?.getAttribute("href")).toBe("/search");
   });
 
   it("decodes HTML entities in item titles", async () => {
