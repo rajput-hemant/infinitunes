@@ -58,15 +58,22 @@ describe("shadcn css variables", () => {
       .map((line) => line.trim());
     const fixtureBlocks = extractShadcnVariableBlocks(fixture);
 
-    // The @theme color/radius mapping is structural and must match shadcn init.
+    // The @theme color mapping is structural and must match shadcn init. The
+    // radius scale is app-owned (one base, derived steps), so only its names count.
+    const globalsNames = tokenNames(extractShadcnVariableBlocks(globals));
     for (const line of fixtureBlocks.split("\n")) {
       const trimmed = line.trim();
-      if (/^--(color|radius)-[\w-]+:/.test(trimmed)) {
+      if (/^--color-[\w-]+:/.test(trimmed)) {
         expect(globalsLines).toContain(trimmed);
+      } else if (/^--radius-[\w-]+:/.test(trimmed)) {
+        expect(globalsNames.has(trimmed.slice(2, trimmed.indexOf(":")))).toBe(
+          true,
+        );
       }
     }
 
-    // Palette values are app-owned; only the token names are contractual.
+    // Palette values are app-owned; only the token names are contractual. Dark
+    // inherits whatever it does not override from :root.
     const fixtureRoot = tokenNames(
       fixture.slice(fixture.indexOf(":root"), fixture.indexOf(".dark")),
     );
@@ -76,7 +83,9 @@ describe("shadcn css variables", () => {
       globals.slice(globals.indexOf(".dark {"), globals.indexOf("@layer base")),
     );
     for (const name of fixtureRoot) expect(root.has(name)).toBe(true);
-    for (const name of fixtureDark) expect(dark.has(name)).toBe(true);
+    for (const name of fixtureDark) {
+      expect(dark.has(name) || root.has(name)).toBe(true);
+    }
   });
 
   it("does not use hsl(var(--token)) shadcn variable wrapping", async () => {

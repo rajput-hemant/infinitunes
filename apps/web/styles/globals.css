@@ -1,5 +1,3 @@
-@import "./themes.css" layer(base);
-
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -8,12 +6,25 @@
 @source '../../../packages/ui/src';
 
 @custom-variant dark (&:is(.dark *));
+@custom-variant reduced-transparency (@media (prefers-reduced-transparency: reduce));
+
+/* Documented in docs/design-system/tokens.md. */
+
+/* Constants, always emitted so plain CSS can read them. */
+@theme static {
+  --ease-spring: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+}
 
 @theme inline {
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
-  --font-heading: var(--font-heading);
+  --font-heading:
+    var(--font-heading), var(--font-sans-devanagari), ui-sans-serif, system-ui,
+    sans-serif;
   --font-sans:
     var(--font-sans), var(--font-sans-devanagari), ui-sans-serif, system-ui,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
@@ -48,36 +59,71 @@
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-fill: var(--fill);
+  --color-fill-2: var(--fill-2);
+  --color-scrim: var(--scrim);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--radius);
+  --radius-lg: var(--r-lg);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 2.5);
+  --radius-3xl: calc(var(--radius) * 3);
+  --radius-4xl: calc(var(--radius) * 4);
+  --radius-ctl: var(--r-ctl);
+  --spacing-ctl: var(--ctl);
+  --spacing-ctl-lg: var(--ctl-lg);
+  --spacing-row: var(--row);
+  --spacing-art: var(--art);
+  --spacing-page: var(--page-pad);
 }
 
+@utility duration-fast {
+  transition-duration: var(--duration-fast);
+}
+
+@utility duration-base {
+  transition-duration: var(--duration-base);
+}
+
+@utility duration-slow {
+  transition-duration: var(--duration-slow);
+}
+
+/*
+ * Light scheme. Surfaces and text are shared by every accent. The accent
+ * variables (--light-*, --dark-*) default to rose here and are overridden
+ * inline on <html> by lib/theme/html.ts when the visitor picks another accent.
+ */
 :root {
-  --background: oklch(0.98 0.006 285);
-  --foreground: oklch(0.20 0.015 285);
-  --card: oklch(1 0 0);
-  --popover: oklch(1 0 0);
-  --primary: oklch(0.50 0.19 295);
-  --primary-foreground: oklch(0.99 0.002 285);
-  --secondary: oklch(0.94 0.012 285);
-  --muted: oklch(0.94 0.012 285);
-  --muted-foreground: oklch(0.48 0.02 285);
-  --accent: oklch(0.92 0.035 295);
-  --accent-foreground: oklch(0.32 0.08 295);
-  --border: oklch(0.86 0.015 285);
-  --input: oklch(0.64 0.02 285);
-  --destructive: oklch(0.50 0.19 25);
-  --destructive-foreground: oklch(0.99 0.002 285);
+  color-scheme: light;
+
+  --light-primary: oklch(0.572 0.222 17.6);
+  --light-primary-foreground: oklch(1 0 0);
+  --light-accent: oklch(0.94 0.03 17.6);
+  --dark-primary: oklch(0.642 0.222 17.6);
+  --dark-primary-foreground: oklch(0.18 0 0);
+  --dark-accent: oklch(0.3 0.04 17.6);
+
+  --background: #f5f5f7;
+  --foreground: #1d1d1f;
+  --card: #ffffff;
   --card-foreground: var(--foreground);
+  --popover: #ffffff;
   --popover-foreground: var(--foreground);
+  --primary: var(--light-primary);
+  --primary-foreground: var(--light-primary-foreground);
+  --secondary: #eaeaec;
   --secondary-foreground: var(--foreground);
+  --muted: #eaeaec;
+  --muted-foreground: #66666b;
+  --accent: var(--light-accent);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.5 0.19 25);
+  --destructive-foreground: oklch(0.99 0.002 285);
+  --border: var(--line);
+  --input: #86868b;
   --ring: var(--primary);
-  --sidebar: var(--muted);
+  --sidebar: var(--background);
   --sidebar-foreground: var(--foreground);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
@@ -85,42 +131,195 @@
   --sidebar-accent-foreground: var(--accent-foreground);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
-  --radius: 0.625rem;
+
+  --line: rgb(0 0 0 / 0.08);
+  --fill: rgb(0 0 0 / 0.045);
+  --fill-2: rgb(0 0 0 / 0.08);
+  --scrim: rgb(0 0 0 / 0.28);
+  --ambient: 0.22;
+
+  /* One base radius; every corner derives from it. */
+  --radius: 0.75rem;
+  --r-sm: calc(var(--radius) * 0.66);
+  --r-lg: calc(var(--radius) * 1.5);
+  --r-ctl: calc(var(--radius) * 1.5);
+
+  --ctl: 2rem;
+  --ctl-lg: 2.25rem;
+  --row: 3.25rem;
+  --art: 2.5rem;
+  --page-pad: clamp(1rem, 2.4vw, 2.5rem);
+  --page-gap: 1.5rem;
+  --side-w: 15rem;
+  --queue-w: 20rem;
+
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-cal-sans);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
 .dark {
-  --background: oklch(0.17 0.012 285);
-  --foreground: oklch(0.96 0.006 285);
-  --card: oklch(0.22 0.014 285);
-  --popover: oklch(0.22 0.014 285);
-  --primary: oklch(0.78 0.13 295);
-  --primary-foreground: oklch(0.20 0.015 285);
-  --secondary: oklch(0.25 0.016 285);
-  --muted: oklch(0.25 0.016 285);
-  --muted-foreground: oklch(0.74 0.02 285);
-  --accent: oklch(0.30 0.045 295);
-  --accent-foreground: oklch(0.92 0.03 295);
-  --border: oklch(0.35 0.02 285);
-  --input: oklch(0.55 0.02 285);
+  color-scheme: dark;
+
+  --background: #0b0b0c;
+  --foreground: #f5f5f7;
+  --card: #1c1c1e;
+  --popover: #1c1c1e;
+  --primary: var(--dark-primary);
+  --primary-foreground: var(--dark-primary-foreground);
+  --secondary: #2c2c2e;
+  --muted: #2c2c2e;
+  --muted-foreground: #98989f;
+  --accent: var(--dark-accent);
   --destructive: oklch(0.73 0.16 25);
-  --destructive-foreground: oklch(0.20 0.015 285);
-  --card-foreground: var(--foreground);
-  --popover-foreground: var(--foreground);
-  --secondary-foreground: var(--foreground);
-  --ring: var(--primary);
-  --sidebar: var(--card);
-  --sidebar-foreground: var(--foreground);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--accent);
-  --sidebar-accent-foreground: var(--accent-foreground);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
+  --destructive-foreground: oklch(0.2 0.015 285);
+  --input: #6c6c70;
+
+  --line: rgb(255 255 255 / 0.09);
+  --fill: rgb(255 255 255 / 0.07);
+  --fill-2: rgb(255 255 255 / 0.12);
+  --scrim: rgb(0 0 0 / 0.5);
+  --ambient: 0.32;
+}
+
+/* Density: the row and artwork sizes the lists and tables use. */
+[data-density="compact"] {
+  --row: 2.5rem;
+  --art: 2rem;
+}
+
+[data-ambient="off"] {
+  --ambient: 0;
+}
+
+/* Touch screens: bigger controls and rows. */
+@media (pointer: coarse) {
+  :root {
+    --ctl: 2.5rem;
+    --ctl-lg: 2.75rem;
+    --row: 3.5rem;
+    --art: 2.75rem;
+  }
+
+  [data-density="compact"] {
+    --row: 3rem;
+    --art: 2.25rem;
+  }
+}
+
+/* Interface font, mapped from <html data-font>. */
+[data-font="rounded"] {
+  --font-sans: var(--font-nunito);
+}
+
+[data-font="grotesk"] {
+  --font-sans: var(--font-hanken-grotesk);
+}
+
+[data-font="serif"] {
+  --font-sans: var(--font-source-serif);
+}
+
+[data-font="mono"] {
+  --font-sans: var(--font-jetbrains-mono);
+}
+
+/* Heading font, mapped from <html data-heading-font>. */
+[data-heading-font="system"] {
+  --font-heading: var(--font-inter);
+}
+
+[data-heading-font="rounded"] {
+  --font-heading: var(--font-nunito);
+}
+
+[data-heading-font="grotesk"] {
+  --font-heading: var(--font-hanken-grotesk);
+}
+
+[data-heading-font="serif"] {
+  --font-heading: var(--font-source-serif);
+}
+
+[data-heading-font="mono"] {
+  --font-heading: var(--font-jetbrains-mono);
+}
+
+/* Accessibility signals flip tokens, so every consumer inherits them. */
+@media (prefers-contrast: more) {
+  :root {
+    --line: rgb(0 0 0 / 0.3);
+    --muted-foreground: #4a4a4f;
+  }
+
+  .dark {
+    --line: rgb(255 255 255 / 0.35);
+    --muted-foreground: #c0c0c6;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  .dark {
+    --ambient: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0.01ms;
+    --duration-base: 0.01ms;
+    --duration-slow: 0.01ms;
+  }
+
+  *,
+  ::after,
+  ::before {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Spinners convey "busy" state, so they keep turning. */
+  .animate-spin {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
+  }
+}
+
+/* The in-app Reduce motion switch behaves like the OS setting. */
+[data-motion="reduced"] {
+  --duration-fast: 0.01ms;
+  --duration-base: 0.01ms;
+  --duration-slow: 0.01ms;
+}
+
+[data-motion="reduced"] *,
+[data-motion="reduced"] ::after,
+[data-motion="reduced"] ::before {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+[data-motion="reduced"] .animate-spin {
+  animation-duration: 1s !important;
+  animation-iteration-count: infinite !important;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+  }
+
+  :focus-visible {
+    outline: var(--focus-ring-width) solid var(--ring);
+    outline-offset: var(--focus-ring-offset);
   }
 
   :root {
@@ -136,16 +335,27 @@
 
   html {
     @apply overflow-x-hidden font-sans;
+    /* Scales rem, so controls and spacing grow with the text size. */
+    font-size: calc(100% * var(--text-scale, 1));
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    html {
+    html:not([data-motion="reduced"]) {
       scroll-behavior: smooth;
     }
   }
 
   body {
     @apply bg-background text-foreground antialiased max-w-full overflow-x-hidden;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    letter-spacing: -0.003em;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-heading;
   }
 
   img,
@@ -168,22 +378,5 @@
 
   ::-webkit-scrollbar-thumb {
     @apply bg-muted-foreground rounded-full;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  ::after,
-  ::before {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-
-  /* Spinners convey "busy" state, so they keep turning. */
-  .animate-spin {
-    animation-duration: 1s !important;
-    animation-iteration-count: infinite !important;
   }
 }
