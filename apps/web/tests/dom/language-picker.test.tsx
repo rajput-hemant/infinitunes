@@ -99,6 +99,27 @@ describe("language picker popover", () => {
     expect(refresh).toHaveBeenCalledTimes(1);
   });
 
+  it("keeps several languages selected and saves them together", async () => {
+    const container = await mount();
+    await act(async () =>
+      (container.querySelector("button") as HTMLButtonElement).click(),
+    );
+    const popup = dialog() as HTMLElement;
+    const english = [
+      ...popup.querySelectorAll<HTMLElement>("[aria-pressed]"),
+    ].find((el) => el.textContent === "English");
+    await act(async () => english?.click());
+
+    const save = [...popup.querySelectorAll("button")].find(
+      (b) => b.textContent === "Save",
+    ) as HTMLButtonElement;
+    await act(async () => save.click());
+
+    const saved = decodeURIComponent(document.cookie);
+    expect(saved).toContain("hindi");
+    expect(saved).toContain("english");
+  });
+
   it("hides the decorative chevron and drops an unsaved selection on close", async () => {
     const container = await mount();
     const trigger = container.querySelector("button") as HTMLButtonElement;
@@ -118,7 +139,7 @@ describe("language picker popover", () => {
 
     const other = chips().find((el) => el.textContent !== "Hindi");
     await act(async () => other?.click());
-    expect(pressed()).toEqual([other?.textContent ?? ""]);
+    expect(pressed()).toEqual(["Hindi", other?.textContent ?? ""]);
 
     await act(async () => trigger.click());
     await act(async () => new Promise((r) => setTimeout(r, 50)));

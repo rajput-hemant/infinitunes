@@ -155,6 +155,7 @@ function LanguageChoices({
   return (
     <>
       <ToggleGroup
+        multiple
         value={selected}
         onValueChange={(v) => onSelectedChange(v.filter(isLang))}
         aria-label="Languages"
