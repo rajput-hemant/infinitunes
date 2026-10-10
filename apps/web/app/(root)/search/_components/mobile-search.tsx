@@ -1,11 +1,11 @@
 "use client";
 
 import type { AllSearch } from "@infinitunes/types";
-import { Input } from "@infinitunes/ui/components/input";
-import { Loader2, Search } from "lucide-react";
 import React from "react";
 
 import { SearchAll } from "~/components/search/search-all";
+import { SearchField } from "~/components/search/search-field";
+import LoadingSpinner from "~/components/loading-spinner";
 import { useIsTyping } from "~/hooks/use-store";
 import { api } from "~/lib/trpc/client";
 
@@ -33,33 +33,28 @@ export function MobileSearch({ topSearch }: MobileSearchProps) {
     <>
       <h1 className="sr-only">Search</h1>
 
-      <div className="relative mx-auto max-w-md">
-        <Search
-          aria-hidden
-          className="absolute left-2 top-3 size-4 text-muted-foreground"
-        />
-
-        <Input
-          aria-label="Search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search"
-          className="pl-8"
-        />
-      </div>
+      <SearchField
+        size="lg"
+        aria-label="Search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="Songs, albums, artists, podcasts"
+        className="mb-6"
+      />
 
       {!deferredQuery.length && topSearch}
 
-      {isLoading && (
-        <output className="block text-center text-xs text-muted-foreground">
-          <Loader2 aria-hidden className="mr-2 inline-block animate-spin" />{" "}
-          Loading Results
-        </output>
-      )}
+      {isLoading ? (
+        <LoadingSpinner size="sm" className="py-10" />
+      ) : null}
 
-      {searchResult && (
-        <SearchAll query={query} data={searchResult as AllSearch} />
-      )}
+      {searchResult ? (
+        <SearchAll
+          query={query}
+          data={searchResult as AllSearch}
+          showSeeAllLink={false}
+        />
+      ) : null}
     </>
   );
 }

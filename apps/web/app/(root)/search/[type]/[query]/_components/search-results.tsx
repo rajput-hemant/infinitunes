@@ -5,6 +5,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, SearchX } from "lucide-react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
+import { searchUi } from "~/components/search/search-ui";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
@@ -59,7 +60,7 @@ export function SearchResults(props: SearchResultsProps) {
       <LibraryEmpty
         icon={SearchX}
         title="No results found"
-        description={`Nothing matched “${query.replaceAll("%20", " ")}”. Check the spelling or try a different search.`}
+        description={`Nothing matched "${query.replaceAll("%20", " ")}". Check the spelling or try a different search.`}
       />
     );
   }
@@ -69,7 +70,7 @@ export function SearchResults(props: SearchResultsProps) {
       {type === "song" ? (
         <SongListClient items={searchResults as Song[]} />
       ) : (
-        <div className="flex w-full flex-wrap justify-between gap-y-4">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-5 md:grid-cols-[repeat(auto-fill,minmax(9.5rem,1fr))] md:gap-x-4 md:gap-y-6">
           {searchResults.map((result) => (
             <SliderCard
               key={result.id}
@@ -78,6 +79,7 @@ export function SearchResults(props: SearchResultsProps) {
               subtitle={result.subtitle}
               type={result.type}
               image={result.image}
+              className="w-full min-w-0 shrink"
             />
           ))}
         </div>
@@ -86,19 +88,19 @@ export function SearchResults(props: SearchResultsProps) {
       {hasNextPage ? (
         <div
           ref={ref}
-          className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
+          className="flex items-center justify-center gap-2 py-4 text-sm font-medium text-muted-foreground"
         >
-          {isFetchingNextPage && (
+          {isFetchingNextPage ? (
             <>
-              <Loader2 className="size-5 animate-spin" /> Loading...
+              <Loader2 className="size-5 animate-spin" aria-hidden />
+              Loading...
             </>
-          )}
+          ) : null}
         </div>
       ) : (
-        <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          You have reached the end of these results.
+        </p>
       )}
     </>
   );

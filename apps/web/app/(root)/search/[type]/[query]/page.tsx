@@ -1,4 +1,4 @@
-import { LibraryHeading } from "~/components/library/library-section";
+import { searchUi } from "~/components/search/search-ui";
 import { api } from "~/lib/trpc/server";
 
 import { SearchNavbar } from "./_components/search-navbar";
@@ -14,6 +14,7 @@ type SearchPageProps = {
 
 export default async function SearchPage({ params }: SearchPageProps) {
   const { query, type } = await params;
+  const label = query.replaceAll("%20", " ");
 
   const searchRes = await api.search.byType({
     q: query,
@@ -23,25 +24,17 @@ export default async function SearchPage({ params }: SearchPageProps) {
   });
 
   return (
-    <div className="mb-4 space-y-4">
-      <LibraryHeading
-        as="h1"
-        title={
-          <>
-            Search Results for{" "}
-            <span className="block md:inline-block">
-              &apos;
-              <em className="font-bold underline underline-offset-4">
-                {query.replaceAll("%20", " ")}
-              </em>
-              &apos;
-            </span>
-          </>
-        }
-        description={`${searchRes.total} Results`}
-      />
+    <div className="mb-4 space-y-6">
+      <header className="space-y-1">
+        <h1 className={searchUi.pageTitle}>
+          Results for &quot;{label}&quot;
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {searchRes.total} results
+        </p>
+      </header>
 
-      <div className="space-y-4 border-t">
+      <div className="space-y-6">
         <SearchNavbar type={type} query={query} />
         <SearchResults
           type={type}

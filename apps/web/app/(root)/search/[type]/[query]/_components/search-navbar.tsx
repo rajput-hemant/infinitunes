@@ -1,6 +1,6 @@
-import { buttonVariants } from "@infinitunes/ui/components/button";
 import Link from "next/link";
 
+import { searchUi } from "~/components/search/search-ui";
 import { asRoute, cn } from "~/lib/utils";
 
 type Props = {
@@ -14,33 +14,24 @@ export const navItems = [
   { title: "Albums", type: "album" },
   { title: "Podcasts", type: "show" },
   { title: "Artists", type: "artist" },
-];
+] as const;
 
 export function SearchNavbar({ type, query }: Props) {
   return (
-    <nav className="border-b">
-      <div className="hidden h-full items-center gap-2 lg:flex">
+    <nav aria-label="Filter search results">
+      <div className={searchUi.chipsRow}>
         {navItems.map(({ title, type: navType }) => {
           const isActive = type === navType;
 
           return (
-            <div
+            <Link
               key={title}
-              className={cn(
-                "inline-block h-full border-b-2 border-transparent py-2 hover:border-primary",
-                isActive && "border-primary",
-              )}
+              href={asRoute(`/search/${navType}/${query}`)}
+              className={cn(searchUi.chip, isActive && searchUi.chipActive)}
+              aria-current={isActive ? "page" : undefined}
             >
-              <Link
-                href={asRoute(`/search/${navType}/${query}`)}
-                className={cn(
-                  buttonVariants({ variant: isActive ? "secondary" : "ghost" }),
-                  isActive && "font-medium",
-                )}
-              >
-                {title}
-              </Link>
-            </div>
+              {title}
+            </Link>
           );
         })}
       </div>
