@@ -7,6 +7,7 @@ import { Fingerprint, Loader2, Plus, Trash2 } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn, destructiveText } from "~/lib/utils";
 
 type Passkey = {
@@ -148,9 +149,8 @@ export function PasskeySettings() {
               </span>
               <Button
                 type="button"
-                size="sm"
                 variant="destructive"
-                className={cn(destructiveText, "min-h-11 lg:min-h-0")}
+                className={cn(controlStyles.text, destructiveText)}
                 disabled={deletingId !== null}
                 onClick={() => deletePasskeyHandler(passkey.id)}
               >
@@ -173,7 +173,7 @@ export function PasskeySettings() {
         type="button"
         disabled={isAdding || isLoading}
         onClick={addPasskeyHandler}
-        className="shadow-xs min-h-11 lg:min-h-0"
+        className={controlStyles.text}
       >
         {isAdding ? (
           <Loader2
