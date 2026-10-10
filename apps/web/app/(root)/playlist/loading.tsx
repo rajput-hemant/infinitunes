@@ -1,6 +1,7 @@
 import { Badge } from "@infinitunes/ui/components/badge";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
 import { languages } from "~/config/languages";
 
@@ -22,11 +23,11 @@ export default function FeaturedPlaylistPageSkeleton() {
 
       <Skeleton className="h-8 w-72 sm:h-9 md:h-10" />
 
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
+      <CatalogGrid>
         {Array.from({ length: 26 }).map((_, i) => (
           <SliderCardSkeleton key={i} />
         ))}
-      </div>
+      </CatalogGrid>
     </div>
   );
 }

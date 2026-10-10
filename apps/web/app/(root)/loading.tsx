@@ -1,7 +1,8 @@
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
+import { Shelf } from "~/components/slider/shelf";
+import { ShelfItem } from "~/components/slider/shelf-item";
 
 export default function HomePageSkeleton() {
   return (
@@ -10,14 +11,13 @@ export default function HomePageSkeleton() {
         <div key={i} className="space-y-3">
           <Skeleton className="h-6 w-40" />
 
-          <ScrollArea>
-            <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 xl:pb-6">
-              {Array.from({ length: 20 }).map((_card, j) => (
-                <SliderCardSkeleton key={j} />
-              ))}
-            </div>
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
+          <Shelf rows={2}>
+            {Array.from({ length: 20 }).map((_card, j) => (
+              <ShelfItem key={j}>
+                <SliderCardSkeleton />
+              </ShelfItem>
+            ))}
+          </Shelf>
         </div>
       ))}
     </div>

@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import {
   LibraryEmpty,
   LibraryHeading,
@@ -60,11 +61,11 @@ export async function LikedCollection<T>(props: LikedCollectionProps<T>) {
         missing={tokens.length - cards.length}
       />
 
-      <div className="flex w-full flex-wrap gap-4">
+      <CatalogGrid>
         {cards.map((card) => (
           <SliderCard key={card.url} {...card} />
         ))}
-      </div>
+      </CatalogGrid>
     </div>
   );
 }

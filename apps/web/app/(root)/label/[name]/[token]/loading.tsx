@@ -3,6 +3,7 @@
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
 import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
 import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
@@ -19,11 +20,11 @@ export default function LabelDetailsLoading() {
       {name.endsWith("-songs") ? (
         <SongListSkeleton length={20} />
       ) : (
-        <div className="flex w-full flex-wrap justify-between gap-y-4">
+        <CatalogGrid>
           {Array.from({ length: 20 }).map((_card, cardIndex) => (
             <SliderCardSkeleton key={cardIndex} />
           ))}
-        </div>
+        </CatalogGrid>
       )}
     </div>
   );

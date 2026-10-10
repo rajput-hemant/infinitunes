@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@infinitunes/ui/components/dropdown-menu";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -15,6 +14,8 @@ import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
+import { Shelf } from "~/components/slider/shelf";
+import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
@@ -150,11 +151,10 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         {modules.seasons.title}
       </h2>
 
-      <ScrollArea>
-        <div className="flex space-x-4 p-1 pb-4">
-          {seasons.toReversed().map((s) => (
+      <Shelf>
+        {seasons.toReversed().map((s) => (
+          <ShelfItem key={s.id}>
             <SliderCard
-              key={s.id}
               name={s.title}
               url={s.perma_url}
               subtitle={s.subtitle}
@@ -167,11 +167,9 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
                 seasons.length > 1
               }
             />
-          ))}
-        </div>
-
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+          </ShelfItem>
+        ))}
+      </Shelf>
 
       <Suspense
         fallback={
