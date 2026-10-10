@@ -39,6 +39,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
   must be listed in `turbo.json` `globalEnv` or `globalPassThroughEnv` to reach `next build`.
 - Turbo `outputs` are package-relative; the web build output is `.next/**`.
+- Keep `@next/env` and `postcss` on exact pins to match Next.js internal tooling and avoid PostCSS AST mismatches with `@tailwindcss/postcss`.
 - Docker is local-dev only (`docker-compose.yml` for Postgres/Redis); there is no
   production image, standalone output or `IS_DOCKER` flag. Production is Vercel.
 - `packages/trpc/src/lib/download.ts`'s `createDownloadLinks` needs `JIOSAAVN_DES_KEY`
