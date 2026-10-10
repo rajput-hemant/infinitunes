@@ -330,7 +330,7 @@
   }
 
   html {
-    @apply overflow-x-hidden font-sans;
+    @apply overflow-x-clip font-sans;
     /* Scales rem, so controls and spacing grow with the text size. */
     font-size: calc(100% * var(--text-scale, 1));
   }
@@ -342,7 +342,7 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased max-w-full overflow-x-hidden;
+    @apply bg-background text-foreground antialiased max-w-full overflow-x-clip;
     font-size: 0.875rem;
     line-height: 1.45;
     letter-spacing: -0.003em;

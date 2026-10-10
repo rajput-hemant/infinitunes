@@ -71,7 +71,7 @@ export function MobileNav({ user }: Props) {
           data-glass-role="tabbar"
         />
       }
-      className="fixed inset-x-2.5 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex h-16 items-stretch gap-1 p-1 md:hidden"
+      className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-40 flex h-16 items-stretch gap-1 p-1 md:hidden"
     >
       {primaryTabs.map((tab) => (
         <TabLink key={tab.label} tab={tab} pathname={pathname} />

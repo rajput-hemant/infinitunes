@@ -880,3 +880,7 @@ html[data-motion="reduced"] [data-glass-role="queue"] {
   transform: none !important;
   filter: none !important;
 }
+/* The packages/ui tooltip arrow is a solid foreground diamond; the mockup's glass tooltip has none. */
+[data-slot="tooltip-content"] > [data-side] {
+  display: none;
+}
