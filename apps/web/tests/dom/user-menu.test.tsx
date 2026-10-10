@@ -5,6 +5,8 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { UserDropdown } from "../../components/user-dropdown";
+import { DEFAULT_THEME_CONFIG } from "../../lib/theme-config";
+import { ThemeConfigContext } from "../../lib/theme/provider";
 
 const roots: Root[] = [];
 const realMatchMedia = window.matchMedia;
@@ -28,7 +30,17 @@ async function mount(props: { user?: typeof user }) {
   await act(async () => {
     root.render(
       <AppRouterContext.Provider value={{} as never}>
-        <UserDropdown {...props} />
+        <ThemeConfigContext.Provider
+          value={{
+            config: DEFAULT_THEME_CONFIG,
+            update: () => {},
+            reset: () => {},
+            isDefault: true,
+            isSaving: false,
+          }}
+        >
+          <UserDropdown {...props} />
+        </ThemeConfigContext.Provider>
       </AppRouterContext.Provider>,
     );
   });
@@ -45,7 +57,7 @@ async function openMenu(container: HTMLElement) {
 function labels() {
   return [
     ...document.querySelectorAll(
-      "[role=menuitem], [role=dialog] a, [role=dialog] button",
+      "[role=menuitem], [role=dialog] a, [role=dialog] button:not([role=radio])",
     ),
   ].map((el) => el.textContent?.trim());
 }
@@ -94,8 +106,17 @@ describe("user menu on desktop", () => {
       "Settings",
       "Appearance",
       "Keyboard shortcuts",
-      "Sign in",
+      "Log in",
     ]);
+  });
+
+  it("offers accent swatches to guests and signed-in users", async () => {
+    setPhone(false);
+    await openMenu(await mount({}));
+
+    const group = document.querySelector("[role=menu] [role=radiogroup]");
+    expect(group?.getAttribute("aria-label")).toBe("Accent color");
+    expect(group?.querySelectorAll("[role=radio]").length).toBeGreaterThan(5);
   });
 
   it("opens a shortcuts dialog listing the implemented shortcuts", async () => {
@@ -139,6 +160,15 @@ describe("user menu below 768px", () => {
       "Log out",
     ]);
     expect(sheet.textContent).toContain("asha@example.com");
+  });
+
+  it("offers accent swatches in the sheet", async () => {
+    setPhone(true);
+    await openMenu(await mount({}));
+
+    expect(
+      document.querySelector("[role=dialog] [role=radiogroup]"),
+    ).not.toBeNull();
   });
 
   it("opens the shortcuts dialog from the sheet", async () => {
