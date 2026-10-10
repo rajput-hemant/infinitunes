@@ -28,9 +28,11 @@ export function ToolbarNavigation() {
       {isHome && (
         <Link
           href="/"
-          className="flex items-center gap-1 pl-2 font-heading lowercase md:hidden"
+          className="flex h-10 items-center gap-2 pl-2 font-heading text-lg/6 font-bold tracking-tight lowercase md:hidden"
         >
-          <Icons.Logo className="size-4" />
+          <span className="grid size-7 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground">
+            <Icons.Logo className="size-4" />
+          </span>
           {siteConfig.name}
         </Link>
       )}

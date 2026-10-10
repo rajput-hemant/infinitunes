@@ -24,12 +24,12 @@ export function LanguageBar({ language }: LanguageBarProps) {
       <ul className="flex gap-2">
         <li>
           <Link
-            title="For You"
+            title="All"
             href={asRoute("?")}
             aria-current={!language ? "page" : undefined}
             className={chipClass(!language)}
           >
-            For&nbsp;you
+            All
           </Link>
         </li>
 

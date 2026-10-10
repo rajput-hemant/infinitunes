@@ -1,7 +1,6 @@
 import type { Lang } from "@infinitunes/types";
 
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
-import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
@@ -30,8 +29,6 @@ export default async function PlaylistsPage({ searchParams }: PageProps) {
 
   return (
     <div>
-      <LanguageBar language={lang} />
-
       <CatalogHeader title={`${lang ? `${lang} Music` : "Top"} Playlists`} />
 
       <FeaturedPlaylists

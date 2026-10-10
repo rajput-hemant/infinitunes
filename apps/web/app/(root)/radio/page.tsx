@@ -1,7 +1,6 @@
 import type { Lang } from "@infinitunes/types";
 
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
-import { LanguageBar } from "~/components/language-bar";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
 
@@ -36,8 +35,6 @@ export default async function RadioPage(props: RadioPageProps) {
 
   return (
     <div>
-      <LanguageBar language={lang} />
-
       <CatalogHeader
         title="Radio"
         subtitle="Endless stations for every mood."
