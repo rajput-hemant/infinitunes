@@ -25,6 +25,11 @@ mock.module("~/components/song-list/more-button", () => ({
 mock.module("~/components/song-list/play-pause-button", () => ({
   TilePlayPauseButton: () => null,
 }));
+mock.module("~/components/song-list/song-row", () => ({
+  SongRow: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+}));
 
 const { SongListClient } =
   await import("../../components/song-list/song-list.client");
@@ -40,15 +45,15 @@ const song = {
 } as unknown as Song;
 
 describe("row Like button on mobile", () => {
-  it("is hidden below lg because the row menu carries the favourite action", () => {
+  it("is hidden below md because the row menu carries the favourite action", () => {
     likeProps.length = 0;
     menuRows = 0;
     renderToStaticMarkup(<SongListClient items={[song]} />);
 
     const classes = (likeProps[0]?.className ?? "").split(" ");
     expect(classes).toContain("hidden");
-    expect(classes).toContain("lg:inline-flex");
-    expect(classes).not.toContain("lg:block");
+    expect(classes).toContain("md:inline-flex");
+    expect(classes).not.toContain("md:block");
     expect(menuRows).toBe(1);
   });
 });
