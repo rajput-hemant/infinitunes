@@ -159,9 +159,9 @@ describe("theme bootstrap script", () => {
   describe("docked queue flag", () => {
     const queueAttr = () => document.documentElement.getAttribute("data-queue");
 
-    it("marks the queue open when nothing is stored (open is the default)", () => {
+    it("leaves the queue closed when nothing is stored (closed is the default)", () => {
       run();
-      expect(queueAttr()).toBe("open");
+      expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
     });
 
     it("marks the queue open when the stored flag is true", () => {
