@@ -1,104 +1,123 @@
 ---
 name: verify
-description: DRAFT verification skill for Infinitunes, the Next.js 16 music web app in apps/web (Bun monorepo). Use it to launch the app against the local Docker Postgres, check readiness, and drive or prove browse, search, player, auth (email, passkey, OAuth entry), settings and playlist flows. Browser recipes are pending the user-selected browser skill; nothing here is live-verified yet.
+description: Launch and drive Infinitunes (the Next.js 16 music web app in apps/web, Bun monorepo) in a real browser to prove behavior. Use it to exercise signup and login, browse and search, the player and queue, favorites, playlists, library, settings and responsive or accessibility checks (390, 1280, 1920, 200% zoom, forced colors). Needs Docker or OrbStack for Postgres and live internet for JioSaavn.
 disable-model-invocation: true
 ---
 
-# Verify Infinitunes (DRAFT)
+# Verify Infinitunes
 
 > [!IMPORTANT]
-> **Manual trigger only.** This skill must NOT be invoked automatically by commit, push, PR creation, poteto-mode, or any other ship gate. Run it only when explicitly instructed.
->
-> **Standalone invocation:**
->
-> - Claude: `/verify` or "read and run `.agents/skills/verify/SKILL.md`"
-> - Codex: `$verify` (when discovered) or "read `.agents/skills/verify/SKILL.md` and run a verification pass"
-> - Otherwise: explicitly instruct the agent to read this file and execute the launch, doctor, drive, evidence and cleanup steps.
->
-> Launch, doctor, drive, evidence and cleanup phases defined below are preserved; only automatic triggering is prohibited.
+> **Manual trigger only.** Never run this from commit, push, PR creation, poteto-mode or any ship gate. Run it only when explicitly asked.
+> `.claude/skills/verify` is a symlink to this directory (`.agents/skills/verify`); there is one copy.
 
-**Status: DRAFT.** Written from source and existing documented commands only. Launch, doctor, drive, evidence and cleanup below have not been executed with a browser skill. Every feature file is marked DRAFT with `Last live proof: none`. Do not report a PASS from this skill until a run has produced evidence under `docs/evidence/`.
+Surface: web UI at `apps/web`. Driver: the **T3 inbuilt browser tools** (`mcp__t3-code__preview_*`). If they are not available in the session, or `preview_*` calls answer "No preview automation host" repeatedly, fall back to `chrome-devtools-axi` (`open`, `snapshot`, `click`, `fill`, `eval`, `resize`, `screenshot`; named session via `CHROME_DEVTOOLS_AXI_SESSION`).
 
-Browser recipes are pending the user-selected browser skill. Until it exists: no browser automation, screenshots, UI driving, Playwright/Cypress runs or `next-dev-loop`. Non-browser checks (below) are allowed.
-
-Issues found while verifying are recorded once, in [docs/archive/verification-issues.md](../../../docs/archive/verification-issues.md). Feature files link to issue IDs there instead of repeating them.
+Issues found are recorded once in [docs/archive/verification-issues.md](../../../docs/archive/verification-issues.md) (older) or the dated record under `docs/verification/` (newer). Feature files link to them instead of repeating them. The feature map is [features/README.md](features/README.md).
 
 ## Prerequisites
 
-- Bun `1.4.2` (`packageManager` in root `package.json`; CI pins the same). Use Bun, never npm. One-off binaries via `bunx`.
-- Docker daemon, only for local Postgres and Redis (the app needs `DATABASE_URL` for any session, favorites or playlist work).
-- Outbound internet to the public JioSaavn API: browse, search, entity pages and playback metadata are fetched live at request time. Without it, public pages return 500 (see `ISSUE-011`).
-- A real browser skill chosen by the user (pending). Chrome was absent in the first migration pass (`docs/archive/migration-acceptance.md` section 8) and present in section 13; re-check.
-- Never use: production database, real OAuth credentials, a shared authenticated browser profile, live payments, outgoing email.
+- Bun `1.4.2`, never npm. Run heavy commands through `heavy` when the repo's rules ask for it.
+- Docker daemon (OrbStack: `orb start`) for Postgres. Do **not** use `bun run db:up` for a verification run: it starts the shared `local-platforms` stack on fixed ports that other checkouts reuse.
+- Outbound internet: browse, search, entity pages and playback are live JioSaavn calls. Without it public pages 500.
+- A `JIOSAAVN_DES_KEY`. The main checkout's `.env.local` has one; copy that file (see Launch). Without it `download_url` is empty and playback breaks.
+- Never use: a production database, real OAuth credentials, outgoing email (leave `RESEND_API_KEY` unset), a shared browser profile.
 
 ## Launch
 
-Follow [docs/local-development.md](../../../docs/local-development.md) (`bun run db:up`, `db:migrate`, `db:seed`, `dev`); it is the only supported way to start the stack, on app origin `http://localhost:3000`. Run serially, one worker. Two additions for a verification run:
+Pick a free app port (not 3000; other workers use their own) and a free Postgres port. Below, `PORT=3102`, `PGPORT=5442`; substitute yours.
 
-- `JIOSAAVN_DES_KEY` is blank in `.env.example`; set it in `.env` or the shell (the env schema requires a non-empty key and playback fails without it).
-- `AUTH_URL` and `NEXT_PUBLIC_APP_URL` must equal the origin the browser uses: the `/api/trpc` origin check in `apps/web/proxy.ts` and Better Auth's `baseURL` and passkey `rpID` derive from it.
+```
+# 1. isolated Postgres, uniquely named so cleanup removes only it
+docker run -d --name verify-$PORT-pg -e POSTGRES_PASSWORD=pw -e POSTGRES_DB=verify \
+  -p 127.0.0.1:$PGPORT:5432 postgres:18.6-alpine
 
-If `lsof -nP -iTCP:3000 -sTCP:LISTEN` shows something you did not start, stop and pick another port. Never double-drive a shared instance, and never kill by process name. For a production-style check: `bun run build` then `cd apps/web && bunx next start` with `SKIP_ENV_VALIDATION` left unset.
+# 2. env: copy the main checkout's .env.local, then override. Next reads apps/web/.env.local;
+#    the db scripts read the repo-root .env.local, so write both.
+cp <main-checkout>/.env.local .env.local
+#    set DATABASE_URL=postgres://postgres:pw@127.0.0.1:$PGPORT/verify
+#        AUTH_URL=http://localhost:$PORT   NEXT_PUBLIC_APP_URL=http://localhost:$PORT
+#        ENABLE_RATE_LIMITING=false; remove RESEND_API_KEY and SKIP_ENV_VALIDATION
+cp .env.local apps/web/.env.local         # both files are gitignored
 
-Ready when the log prints `Ready` and `curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/login` prints `200`.
+# 3. migrate, then start the dev server (Node, legacy OpenSSL for des-ecb)
+bun run db:migrate
+cd apps/web && NODE_OPTIONS=--openssl-legacy-provider nohup bunx next dev -p $PORT \
+  > /tmp/verify-$PORT-dev.log 2>&1 < /dev/null & disown
+```
+
+Ready when `curl -s -o /dev/null -w '%{http_code}' http://localhost:$PORT/login` prints `200` (the first compile takes a few seconds). macOS has no `setsid`; the `& disown` is what keeps the server alive across tool calls. Find its PID with `lsof -nP -iTCP:$PORT -sTCP:LISTEN`.
+
+`AUTH_URL` and `NEXT_PUBLIC_APP_URL` must equal the origin the browser uses: the `/api/trpc` origin check in `apps/web/proxy.ts` and Better Auth derive from them. After a code edit Turbopack can serve a stale route bundle; if behavior contradicts the source, stop the server, `rm -rf apps/web/.next`, restart.
 
 ## Doctor (read-only)
 
-Run first whenever anything looks off. It changes nothing.
-
 ```
-lsof -nP -iTCP:3000 -sTCP:LISTEN                         # we own the port (compare PID to the one you started)
-docker compose ps
-curl -s -o /dev/null -w 'login %{http_code}\n' http://localhost:3000/login        # expect 200
-curl -s -o /dev/null -w 'me %{http_code} -> %{redirect_url}\n' http://localhost:3000/me   # expect 307 to /login as guest
-curl -s -o /dev/null -w 'nope %{http_code}\n' http://localhost:3000/nope-xyz      # expect 404
-curl -s -o /dev/null -w 'home %{http_code}\n' http://localhost:3000/              # 200 needs live JioSaavn API; 500 means upstream/DB problem
+lsof -nP -iTCP:$PORT -sTCP:LISTEN                       # the PID you started
+docker ps --filter name=verify-$PORT-pg --format '{{.Status}}'
+curl -s -o /dev/null -w 'login %{http_code}\n' http://localhost:$PORT/login            # 200
+curl -s -o /dev/null -w 'me %{http_code} %{redirect_url}\n' http://localhost:$PORT/me   # 307 to /login as guest
+curl -s -o /dev/null -w 'home %{http_code}\n' http://localhost:$PORT/                   # 200 needs live upstream
+tail -5 /tmp/verify-$PORT-dev.log
 ```
 
-Worth driving only if login is 200, `/me` redirects as guest, and the database answers. A 500 on `/` with the others healthy is an upstream or network problem, not an app verdict.
+Worth driving only if login is 200 and `/me` redirects as a guest. If the T3 tab shows `chrome-error://` or `Failed to fetch` toasts, the dev server died (another worker's cleanup can kill it): restart it and sign in again, because the browser's cookies may be gone.
 
 ## Drive
 
-Pending the user-selected browser skill. Until then, use the route paths, labels and strings below as the stable handles each feature file relies on. Prefer these over coordinates:
+Load the tools first: `ToolSearch select:mcp__t3-code__preview_open,mcp__t3-code__preview_snapshot,mcp__t3-code__preview_click,mcp__t3-code__preview_type,mcp__t3-code__preview_evaluate,mcp__t3-code__preview_resize,mcp__t3-code__preview_set_appearance,mcp__t3-code__preview_navigate,mcp__t3-code__preview_wait_for,mcp__t3-code__t3_preview_close`. Open your own tab with `preview_open` and `reuseExistingTab=false`; pass the returned `tabId` on every call when other agents share the session.
 
-- Routes: see [features/README.md](features/README.md).
-- ARIA labels in source: `Previous`, `Next`, `Volume`, `Play`, `Like`, `More options` / `More Options`, `Playlist options`, `Toggle Sidebar`, `Toggle Light Mode`, `Toggle System Mode`, `Toggle Dark Mode`, `Show Password` / `Hide Password`.
-- Auth form buttons: `Login with Email`, `Sign in with Passkey`; fields have placeholders `you@domain.com` and a password mask (labels are `sr-only`: `Email`, `Password`, `Confirm Password`).
-- Settings: `Save Changes`, `Delete Account`, confirm field placeholder `Type DELETE MY ACCOUNT to confirm!`, passkey section heading `Passkeys`.
-- Player storage keys (localStorage): `queue`, `current_song_index`, `stream_quality`, `download_quality`, `image_quality`.
-- Toasts (sonner) are the main success and error signal: e.g. `You have been signed in.`, `Account Created Successfully`, `Passkey added.`.
+Recipes that worked on this app:
 
-Non-browser drives that are allowed now:
+- **Read state with `preview_evaluate`, not `preview_snapshot`.** A snapshot returns about 20 KB of network entries and accessibility tree. Use `preview_snapshot` with `save=true` only to produce a screenshot (it returns a path under `~/.t3/userdata/browser-artifacts/`).
+- **Signup and login by form.** `preview_type` with `locator=role=textbox[name='Email']`, `Password`, `Confirm password` (signup only), then `preview_click` on `role=button[name='Sign Up']` or `role=button[name='Login with Email']`. Signup signs in and lands on `/`. The password needs upper, lower, digit and symbol (`Verify5Pass!x` works).
+- **Locators are Playwright selectors**, e.g. `button[aria-label="Like"] >> nth=1`. A `role=button[name='Play']` locator was rejected as "invalid (24 characters)"; use the CSS-with-aria form.
+- **Stable handles:** aria-labels `Play`, `Pause`, `Like`, `Previous`, `Next`, `Volume`, `More options`, `Open queue`, `Open player`, `Toggle Sidebar`; slider parts `[data-slot=slider]` and `[data-slot=slider-thumb]`; the hidden `input[type=range]` holds the value (`value` seconds, `max` duration). Logout is `role=button[name='Logout']` on `/me`. Toasts are `[data-sonner-toast]`.
+- **Viewports:** `preview_resize` with `mode=freeform`. 200% zoom is approximated as a half-size viewport (1280x800 at 200% is 640x400 CSS px); the device pixel ratio does not change. Light and dark: `preview_set_appearance`. These tools do not emulate touch; a 390 width is layout only.
+- **Layout check** (after navigation settles): `({iw:innerWidth, over:document.documentElement.scrollWidth-innerWidth, h1:document.querySelectorAll('h1').length})`. Elements inside the tab strips (`nav.w-max`) overflow on purpose.
+- **Iframes do not work** for multi-page sweeps: the app refuses framing (`contentDocument` is null). Navigate per page.
+- **Seek.** `preview_click` at x,y on the player track (y about 722 at 1280x800, full width) seeks. `preview_drag` timed out on the moving thumb. For a drag, dispatch `pointerdown` on `[data-slot=slider-thumb]`, then `pointermove` on `document`, then `pointerup` from `preview_evaluate`, reading `input[type=range].value` after each step; it tracks the pointer and playback continues. Label that run a synthetic pointer drag.
+- **Forced colors, or any media feature the T3 tools cannot set:** [scripts/cdp-media.mjs](scripts/cdp-media.mjs), e.g.
+  `node .agents/skills/verify/scripts/cdp-media.mjs http://localhost:$PORT /me/liked-songs 390 844 light forced out.png user@example.test 'Password!1'`
+  It starts its own throwaway headless Chrome, signs in over the Better Auth API, emulates the media (`light|dark`, `forced|none`), saves a PNG, prints a JSON probe (`forced`, `iw`, `over`, `h1`, body colors) and deletes its profile. Needs Chrome at `/Applications/Google Chrome.app` or `CHROME_BIN`.
+
+Non-browser drives:
 
 ```
 bun run fmt:check && bun run lint && bun run type-check && bun run test
-bun run test:routers && bun test packages/auth/tests/auth.test.ts && bun run test:mocked   # router and proxy suites mock modules, so each file runs in its own process
-curl -s -i http://localhost:3000/me | head -5            # guest redirect
-curl -s -i -X POST http://localhost:3000/api/trpc/user.getUserPlaylists -H 'origin: http://evil.example'   # expect 403 from the origin check
+curl -s -i -X POST http://localhost:$PORT/api/trpc/user.getUserPlaylists -H 'origin: http://evil.example'   # 403
 ```
 
 ## Evidence
 
-Store proof under `docs/evidence/<run-id>/` (created by the run; not committed unless a reviewer needs it). Per proof capture: the action (command or step), the resulting state, and the side effect.
+Write a dated record `docs/verification/<run-id>.md` plus a folder `docs/verification/<run-id>/` of small screenshots (downscale with `sips -Z 500 in.png --out out.png`; keep each under about 60 KB). Capture the action, the resulting state and the side effect:
 
-- Exercise the real user path, not internal setters or test-only endpoints.
-- Verify side effects alongside what is visible: for auth, query the container (`docker compose exec postgres psql -U postgres -d local_platforms -c 'select id,email from "user"'`); for playlists and favorites, check the `infinitunes_playlist` and `infinitunes_favorite` rows.
-- Mocks only where a production boundary already isolates the external system. JioSaavn is live and unmocked; OAuth stops at the provider redirect without real credentials.
-- Record each result in the feature file's `Last live proof:` line with date, run id and evidence path. Anything not exercised stays `none`.
+- Exercise the real user path (forms, clicks), not setters or test-only endpoints.
+- Check DB side effects: `docker exec verify-$PORT-pg psql -U postgres -d verify -c 'select email from "user"'`; `infinitunes_favorite` has one row per user with `songs` as an array; also `infinitunes_playlist`.
+- JioSaavn is live and unmocked. OAuth stops at the provider redirect without real credentials. Passkeys need a real origin and authenticator and cannot be driven here.
+- Say what was measured (DOM) and what was seen by eye. A check that was not run stays "not covered".
+- Update the `Last live proof:` line of the feature file you exercised, with date and record path.
+
+Evidence lives in the repo under `docs/verification/`; cleanup never touches it.
 
 ## Cleanup
 
-Remove only what this run created; never remove evidence.
+Remove only what this run created, never by process name.
 
-1. Stop the dev server by the PID you started (`kill <pid>`; confirm with `lsof -nP -iTCP:3000 -sTCP:LISTEN`).
-2. Stop any browser bridge or watcher you started.
-3. `bun run db:down` if you started the stack; the named volumes keep the data (see Resetting in `docs/local-development.md`).
-4. Confirm `git status` shows no stray `.env.local`, `.next` is ignored, and `docs/evidence/` still exists.
+```
+kill <pid from lsof>                              # the dev server you started
+docker rm -f verify-$PORT-pg                      # only your container
+rm -f .env.local apps/web/.env.local              # the copies you made; keep the main checkout's
+rm -rf apps/web/.next
+```
+
+Close your tab with `t3_preview_close`. Confirm `lsof -nP -iTCP:$PORT -sTCP:LISTEN` and `docker ps --filter name=verify-$PORT-pg` are empty, `git status` shows no stray env files, and `docs/verification/<run-id>/` still exists.
 
 ## Helpers
 
-None shipped. Doctor and launch are the commands above; no script has to be reverse-engineered.
+- [scripts/cdp-media.mjs](scripts/cdp-media.mjs): CDP capture with forced-colors and color-scheme emulation (usage above).
 
-## Feature map
+## Sharp edges seen while driving
 
-[features/README.md](features/README.md) indexes one file per feature, each marked DRAFT.
+- Row-level `Like` buttons are hidden below the `md` breakpoint (zero size at 640 wide); only the header Like and the row menu remain. Like at 1280 when you need a favorite.
+- The dev build shows a breakpoint badge (`xs`, `sm`, `xl`) bottom right and the Next dev-tools button; ignore them in screenshots.
+- On Node 24, `new Request(nextRequest, ...)` threw `Cannot read private member #state` in `withTrustedClientIp`, 500-ing every `/api/auth/*` call under `next dev`. It now builds the copy from `url`, `method` and `body` (`apps/web/lib/client-ip.ts`). If auth 500s again, read the dev log first.

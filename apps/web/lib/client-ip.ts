@@ -52,5 +52,12 @@ export function withTrustedClientIp(
 ): Request {
   const headers = new Headers(request.headers);
   headers.set(TRUSTED_CLIENT_IP_HEADER, getClientKey(request.headers, mode));
-  return new Request(request, { headers });
+  // Not `new Request(request, ...)`: that throws on a NextRequest under Node 24
+  // ("Cannot read private member #state").
+  return new Request(request.url, {
+    method: request.method,
+    headers,
+    body: request.body,
+    duplex: "half",
+  } as RequestInit);
 }
