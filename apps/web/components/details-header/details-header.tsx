@@ -12,6 +12,7 @@ import { orFallback } from "~/lib/degrade";
 import { cn } from "~/lib/utils";
 
 import { DownloadButton } from "../download-button";
+import { PageArtwork } from "../glass/page-artwork";
 import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
 import { getPlaceholderSrc } from "../placeholder-src";
@@ -75,15 +76,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   return (
     <DetailsHeaderFrame title={title} className={detailBandClassName}>
-      {/* Mockup .bgart: a tiny image blown up 10x so the blur reads as soft color. */}
-      <ImageWithFallback
-        src={getImageSrc(item.image, "low")}
-        alt=""
-        width={50}
-        height={50}
-        fallback={getPlaceholderSrc(kind)}
-        className="absolute -top-[5%] -left-[5%] -z-20 size-[11%] origin-top-left scale-[10] rounded-none object-cover opacity-60 blur-[4px] saturate-[1.6] [mask-image:linear-gradient(to_bottom,black_35%,transparent_95%)]"
-      />
+      {/* The artwork wash lives in the viewport-wide ambient field, behind the sidebar and toolbar too. */}
+      <PageArtwork src={getImageSrc(item.image, "medium")} />
 
       <div
         className={cn(

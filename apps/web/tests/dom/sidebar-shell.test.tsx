@@ -436,3 +436,20 @@ describe("glass sidebar", () => {
     expect(panel?.querySelector("[data-glass]")).toBeNull();
   });
 });
+
+describe("sidebar trigger material", () => {
+  it("sits in a glass capsule and never keeps a solid fill while expanded", async () => {
+    setWidth(1280);
+    const container = await mount(
+      <AppSidebarProvider>
+        <AppSidebarTrigger />
+        <Sidebar collapsible="icon">
+          <SidebarContent>Library contents</SidebarContent>
+        </Sidebar>
+      </AppSidebarProvider>,
+    );
+    const button = container.querySelector("[data-slot=sidebar-trigger]");
+    expect(button?.closest("[data-glass]")).not.toBeNull();
+    expect(button?.className).toContain("aria-expanded:bg-transparent");
+  });
+});
