@@ -846,6 +846,27 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     background: Highlight;
     forced-color-adjust: none;
   }
+  /* Repeated :root outranks the lens, tint and indicator rules above, whatever their specificity. */
+  html:root:root:root
+    :is(
+      [data-glass][data-glass-size],
+      [data-glass-indicator],
+      [data-slot="popover-content"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"],
+      [data-glass-edge]
+    ),
+  html:root:root:root [data-glass-edge]::before,
+  html:root:root:root [data-glass-edge]::after {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 /* Reduced motion (OS setting or the in-app switch): the tab bar and player change position without a transition. */
 @media (prefers-reduced-motion: reduce) {

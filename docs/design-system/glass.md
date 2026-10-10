@@ -97,7 +97,10 @@ Chromium resolves a `backdrop-filter` reference filter's user space against the 
 `box-shadow` (the l and m drop shadows) shifts the filter region right and down by how far the shadow reaches past the
 left and top edges. Left alone, only part of a popup is filtered and the rest shows crisp page content through it.
 `inkOverflowOrigin` (`lib/glass/shadow-overflow.ts`) reads that reach from the computed shadow and the lens registry
-offsets the filter region and both maps by its negative; the offset is part of the filter cache key.
+offsets the filter region and both maps by its negative; the offset is part of the filter cache key. The reach is capped
+by the surface's distance from the viewport's left and top edges (Chromium clips ink overflow to the viewport), so the
+registry passes the border box position and re-reads it when the surface's animation or transition ends. In
+`forced-colors: active` the lens is off (`lensActive`) and no glass surface keeps a backdrop-filter.
 
 Tooltips use the s material with the m contrast floor (12px text keeps AA) and never get a lens, so they are styled in
 glass.css but kept out of `OVERLAY_TARGETS`. Not covered: select, hover card, context menu, menubar

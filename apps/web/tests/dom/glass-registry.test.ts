@@ -223,18 +223,55 @@ describe("glass lens registry", () => {
     ).toBe("260");
   });
 
+  const SHADOW =
+    "rgba(0, 0, 0, 0.34) 0px 30px 70px -18px, inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5)";
+
+  function placeAt(el: HTMLElement, left: number, top: number) {
+    el.getBoundingClientRect = () => new DOMRect(left, top, 224, 133);
+  }
+
   it("offsets the filter by how far the outer shadow reaches past the border box", async () => {
     const defs = addDefs();
     configureLens({ active: true });
     const el = surface(224, 133);
-    el.style.boxShadow =
-      "rgba(0, 0, 0, 0.34) 0px 30px 70px -18px, inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5)";
+    el.style.boxShadow = SHADOW;
+    placeAt(el, 500, 300);
     register(el, "l");
     await settle();
     const filter = defs.querySelector(`#${lensUrl(el).slice(5, -1)}`);
     expect(filter?.getAttribute("x")).toBe("-87");
     expect(filter?.getAttribute("y")).toBe("-57");
     expect(filter?.querySelector("feImage")?.getAttribute("x")).toBe("-87");
+  });
+
+  it("caps the offset by the distance to the viewport edge", async () => {
+    const defs = addDefs();
+    configureLens({ active: true });
+    const el = surface(224, 133);
+    el.style.boxShadow = SHADOW;
+    placeAt(el, 1023, 48);
+    register(el, "l");
+    await settle();
+    const filter = defs.querySelector(`#${lensUrl(el).slice(5, -1)}`);
+    expect(filter?.getAttribute("x")).toBe("-87");
+    expect(filter?.getAttribute("y")).toBe("-48");
+  });
+
+  it("re-reads the offset when the surface's motion ends", async () => {
+    const defs = addDefs();
+    configureLens({ active: true });
+    const el = surface(224, 133);
+    el.style.boxShadow = SHADOW;
+    placeAt(el, 1023, 20);
+    register(el, "l");
+    await settle();
+    const early = defs.querySelector(`#${lensUrl(el).slice(5, -1)}`);
+    expect(early?.getAttribute("y")).toBe("-20");
+    placeAt(el, 1023, 48);
+    el.dispatchEvent(new Event("animationend"));
+    await settle();
+    const late = defs.querySelector(`#${lensUrl(el).slice(5, -1)}`);
+    expect(late?.getAttribute("y")).toBe("-48");
   });
 
   it("stops observing when the returned function is called", async () => {
