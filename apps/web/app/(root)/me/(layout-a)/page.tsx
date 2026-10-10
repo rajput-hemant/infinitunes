@@ -8,6 +8,7 @@ import {
 } from "~/components/library/library-section";
 import { NewPlaylistForm } from "~/components/playlist/new-playlist-form";
 import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
+import { controlStyles } from "~/lib/control-styles";
 import { getUserPlaylists } from "~/lib/db/queries";
 
 import { PlaylistItem } from "./_components/playlist-item";
@@ -29,7 +30,7 @@ export default async function MyPlaylistsPage() {
       >
         {playlists.length > 0 && (
           <NewPlaylistForm>
-            <Button size="sm" className="h-11 lg:h-7">
+            <Button className={controlStyles.text}>
               <Plus className="mr-1 size-4" />
               Create Playlist
             </Button>
@@ -55,7 +56,7 @@ export default async function MyPlaylistsPage() {
           description="Collect songs you love into playlists you can play any time."
         >
           <NewPlaylistForm>
-            <Button size="sm" className="h-11 lg:h-7">
+            <Button className={controlStyles.text}>
               <Plus className="mr-1 size-4" />
               Create Playlist
             </Button>

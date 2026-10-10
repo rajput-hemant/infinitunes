@@ -49,7 +49,7 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
           <div className="absolute right-1 top-1 z-20 transition-opacity motion-reduce:transition-none pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
             <PlaylistManageMenu
               playlist={{ id, name, description }}
-              triggerClassName="rounded-md bg-background/80 p-2.5 shadow-sm backdrop-blur-sm"
+              triggerClassName="rounded-md bg-background/80 backdrop-blur-sm"
             />
           </div>
 

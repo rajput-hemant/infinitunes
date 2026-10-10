@@ -6,6 +6,7 @@ import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn, destructiveText } from "~/lib/utils";
 
 export function LogoutButton() {
@@ -30,10 +31,9 @@ export function LogoutButton() {
   }
   return (
     <Button
-      size="sm"
       variant="destructive"
       onClick={signOutHandler}
-      className={cn("h-11 w-24 lg:h-7", destructiveText)}
+      className={cn(controlStyles.text, destructiveText)}
     >
       <LogOut className="mr-2 size-4" /> Logout
     </Button>

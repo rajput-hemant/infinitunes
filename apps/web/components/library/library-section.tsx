@@ -17,6 +17,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import React from "react";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 import { RetryButton } from "./retry-button";
@@ -140,7 +141,7 @@ export function LibraryEmpty(props: LibraryEmptyProps) {
       {action && (
         <Link
           href={action.href}
-          className={buttonVariants({ size: "sm", className: "h-11 lg:h-7" })}
+          className={buttonVariants({ className: controlStyles.text })}
         >
           {action.label}
         </Link>

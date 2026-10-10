@@ -7,6 +7,7 @@ import React from "react";
 
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getUser } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 import { LogoutButton } from "./_components/logout";
@@ -51,9 +52,8 @@ export default async function Layout({ children }: React.PropsWithChildren) {
             <Link
               href="/settings#account"
               className={buttonVariants({
-                size: "sm",
                 variant: "secondary",
-                className: "h-11 w-24 lg:h-7",
+                className: controlStyles.text,
               })}
             >
               <Edit aria-hidden className="mr-2 size-4" /> Edit
