@@ -42,7 +42,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
   const { setTheme } = useTheme();
   const router = useRouter();
 
-  async function signOutHandler() {
+  function signOutHandler() {
     toast.promise(
       authClient.signOut({
         fetchOptions: {
@@ -95,7 +95,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex flex-col">
             <span title={user?.name ?? undefined} className="truncate">
-              {user ? (user.name ? user.name : "~") : "Guest User"}
+              {user ? user.name || "~" : "Guest User"}
             </span>
             <span
               title={user?.email ?? undefined}

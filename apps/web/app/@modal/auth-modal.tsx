@@ -9,28 +9,31 @@ import {
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
 import { usePathname, useRouter } from "next/navigation";
+import type { ReactNode } from "react";
 
 import { controlStyles } from "~/lib/control-styles";
 
-type AuthModalProps = React.PropsWithChildren<{
+type AuthModalProps = {
   title: string;
   description: string;
-}>;
+  children: ReactNode;
+};
 
 export function AuthModal({ title, description, children }: AuthModalProps) {
   const router = useRouter();
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
 
-  function navigateBack() {
-    router.back();
-  }
-
   return (
-    <Dialog defaultOpen onOpenChange={(open) => !open && navigateBack()}>
-      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-(--r-lg) p-6 sm:max-w-[480px]">
+    <Dialog
+      defaultOpen
+      onOpenChange={(open) => {
+        if (!open) router.back();
+      }}
+    >
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-(--r-lg) p-6 sm:max-w-120">
         <DialogHeader className="gap-1">
-          <DialogTitle className="text-center font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em] text-foreground">
+          <DialogTitle className="text-center font-heading text-[1.75rem]/8 font-bold tracking-tight text-foreground">
             {title}
           </DialogTitle>
           <DialogDescription className="text-center text-sm leading-5 text-muted-foreground">

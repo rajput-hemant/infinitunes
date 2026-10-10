@@ -7,6 +7,7 @@ import {
   FieldLabel,
 } from "@infinitunes/ui/components/field";
 import { Input } from "@infinitunes/ui/components/input";
+import type { ReactNode } from "react";
 import { Controller, type Control } from "react-hook-form";
 import type { z } from "zod";
 
@@ -23,58 +24,72 @@ const inputStyles = cn(
 
 const labelStyles = "text-sm font-semibold";
 
-export function PlaylistFields({
-  control,
-}: {
+type PlaylistFieldProps = {
   control: Control<PlaylistFormData>;
-}) {
+  name: keyof PlaylistFormData;
+  label: ReactNode;
+  placeholder: string;
+  required?: boolean;
+};
+
+function PlaylistField({
+  control,
+  name,
+  label,
+  placeholder,
+  required,
+}: PlaylistFieldProps) {
+  return (
+    <Controller
+      name={name}
+      control={control}
+      render={({ field, fieldState }) => (
+        <Field orientation="vertical">
+          <FieldLabel className={labelStyles}>{label}</FieldLabel>
+          <FieldContent>
+            <Input
+              type="text"
+              required={required}
+              placeholder={placeholder}
+              className={inputStyles}
+              {...field}
+            />
+            {fieldState.error && (
+              <FieldError>{fieldState.error.message}</FieldError>
+            )}
+          </FieldContent>
+        </Field>
+      )}
+    />
+  );
+}
+
+type PlaylistFieldsProps = {
+  control: Control<PlaylistFormData>;
+};
+
+export function PlaylistFields({ control }: PlaylistFieldsProps) {
   return (
     <>
-      <Controller
+      <PlaylistField
+        control={control}
         name="name"
-        control={control}
-        render={({ field, fieldState }) => (
-          <Field orientation="vertical">
-            <FieldLabel className={labelStyles}>
-              Playlist Name{" "}
-              <span aria-hidden className="text-destructive">
-                *
-              </span>
-            </FieldLabel>
-            <FieldContent>
-              <Input
-                type="text"
-                required
-                placeholder="Enter playlist name"
-                className={inputStyles}
-                {...field}
-              />
-              {fieldState.error && (
-                <FieldError>{fieldState.error.message}</FieldError>
-              )}
-            </FieldContent>
-          </Field>
-        )}
+        label={
+          <>
+            Playlist Name{" "}
+            <span aria-hidden className="text-destructive">
+              *
+            </span>
+          </>
+        }
+        placeholder="Enter playlist name"
+        required
       />
-      <Controller
-        name="description"
+      <PlaylistField
         control={control}
-        render={({ field, fieldState }) => (
-          <Field orientation="vertical">
-            <FieldLabel className={labelStyles}>Description</FieldLabel>
-            <FieldContent>
-              <Input
-                type="text"
-                placeholder="Enter playlist description"
-                className={inputStyles}
-                {...field}
-              />
-              {fieldState.error && (
-                <FieldError>{fieldState.error.message}</FieldError>
-              )}
-            </FieldContent>
-          </Field>
-        )}
+        name="description"
+        label="Description"
+        placeholder="Enter playlist description"
       />
     </>
   );

@@ -26,42 +26,40 @@ import { newPlaylistSchema } from "~/lib/validations";
 
 import { PlaylistFields } from "./playlist-fields";
 
-const defaultValues: FormData = {
+type PlaylistFormData = z.infer<typeof newPlaylistSchema>;
+
+const defaultValues: PlaylistFormData = {
   name: "",
   description: "",
 };
 
-type FormData = z.infer<typeof newPlaylistSchema>;
-
 type NewPlaylistFormProps = {
+  /** Accepted from existing callers; the form does not read it. */
   user?: User;
-  children: React.ReactNode;
+  /** The single element that opens the dialog. */
+  children: React.ReactElement;
 };
 
 export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
   const [open, setOpen] = React.useState(false);
 
-  const form = useForm<FormData>({
+  const form = useForm<PlaylistFormData>({
     resolver: zodResolver(newPlaylistSchema),
     defaultValues,
   });
 
-  async function onSubmit({ name, description }: FormData) {
-    try {
-      toast.promise(unwrap(createNewPlaylist({ name, description })), {
-        loading: "Creating playlist...",
-        success: (d) => `Playlist "${d.name}" created successfully!`,
-        error: userMessage,
-        finally: () => setOpen(false),
-      });
-    } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
-    }
+  function onSubmit({ name, description }: PlaylistFormData) {
+    toast.promise(unwrap(createNewPlaylist({ name, description })), {
+      loading: "Creating playlist...",
+      success: (d) => `Playlist "${d.name}" created successfully!`,
+      error: userMessage,
+      finally: () => setOpen(false),
+    });
   }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={children as React.ReactElement} />
+      <DialogTrigger render={children} />
 
       <DialogContent>
         <DialogHeader className="space-y-0">

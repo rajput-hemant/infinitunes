@@ -115,7 +115,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
   const router = useRouter();
 
-  const [traslateX, setTranslateX] = React.useState(0);
+  const [translateX, setTranslateX] = React.useState(0);
   const [isDialogOpen, setDialogOpen] = React.useState(false);
 
   const [, setIsPlayerInit] = useIsPlayerInit();
@@ -320,6 +320,8 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     },
   ];
 
+  const visibleItems = menuItems.filter(({ hide }) => !hide);
+
   return (
     <>
       <div className="md:hidden">
@@ -367,22 +369,20 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             <div className="min-h-0 overflow-x-hidden overflow-y-auto">
               <div
                 className="relative flex flex-col gap-2 px-4 transition-transform duration-300"
-                style={{ transform: `translateX(${traslateX}%)` }}
+                style={{ transform: `translateX(${translateX}%)` }}
               >
-                {menuItems
-                  .filter(({ hide }) => !hide)
-                  .map(({ icon: Icon, label, onClick }, i) => (
-                    <button
-                      key={i}
-                      onClick={onClick}
-                      className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
-                    >
-                      <Icon className="mr-2 size-5" />
-                      {item.type === "song"
-                        ? label
-                        : label.replace("Song", "Episode")}
-                    </button>
-                  ))}
+                {visibleItems.map(({ icon: Icon, label, onClick }) => (
+                  <button
+                    key={label}
+                    onClick={onClick}
+                    className="flex h-(--ctl-lg) shrink-0 items-center font-medium"
+                  >
+                    <Icon className="mr-2 size-5" />
+                    {item.type === "song"
+                      ? label
+                      : label.replace("Song", "Episode")}
+                  </button>
+                ))}
 
                 <button
                   onClick={() => setTranslateX(-110)}
@@ -453,16 +453,14 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             align="start"
             className="*:cursor-pointer"
           >
-            {menuItems
-              .filter(({ hide }) => !hide)
-              .map(({ icon: Icon, label, onClick }, i) => (
-                <DropdownMenuItem key={i} onClick={onClick}>
-                  <Icon className="mr-2 size-5" />
-                  {item.type === "song"
-                    ? label
-                    : label.replace("Song", "Episode")}
-                </DropdownMenuItem>
-              ))}
+            {visibleItems.map(({ icon: Icon, label, onClick }) => (
+              <DropdownMenuItem key={label} onClick={onClick}>
+                <Icon className="mr-2 size-5" />
+                {item.type === "song"
+                  ? label
+                  : label.replace("Song", "Episode")}
+              </DropdownMenuItem>
+            ))}
             <ShareSubMenu title={getItemName(item)} />
             <DropdownMenuSeparator className="my-2" />
             <TileMoreLinks

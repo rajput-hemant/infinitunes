@@ -2,7 +2,7 @@
 
 import { Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useDeferredValue, useEffect, useState } from "react";
+import { type ReactNode, useDeferredValue, useEffect, useState } from "react";
 
 import { SearchAll } from "~/components/search/search-all";
 import { SearchField } from "~/components/search/search-field";
@@ -20,7 +20,7 @@ import { cn } from "~/lib/utils";
 
 type MobileSearchProps = {
   /** Server-rendered discovery list, shown while the field is empty. */
-  topSearches: React.ReactNode;
+  topSearches: ReactNode;
 };
 
 export function MobileSearch({ topSearches }: MobileSearchProps) {

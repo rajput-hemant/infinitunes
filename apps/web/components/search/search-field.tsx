@@ -1,5 +1,3 @@
-"use client";
-
 import { Input } from "@infinitunes/ui/components/input";
 import { Search } from "lucide-react";
 import type { ComponentProps } from "react";

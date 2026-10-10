@@ -21,15 +21,17 @@ export function playAllToastTitle(count: number): string {
   return `${count} ${count === 1 ? "track" : "tracks"} added to the queue`;
 }
 
+type PlayAllButtonProps = {
+  items: (Song | Episode)[];
+  children?: ReactNode;
+  className?: string;
+};
+
 export function PlayAllButton({
   items,
   children,
   className,
-}: {
-  items: (Song | Episode)[];
-  children?: ReactNode;
-  className?: string;
-}) {
+}: PlayAllButtonProps) {
   const [, setQueue] = useQueue();
   const [, setCurrentIndex] = useCurrentSongIndex();
   const [, setIsPlayerInit] = useIsPlayerInit();
