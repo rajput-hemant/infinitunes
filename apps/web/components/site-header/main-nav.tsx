@@ -15,6 +15,7 @@ import { Separator } from "@infinitunes/ui/components/separator";
 import Link from "next/link";
 import React from "react";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn, getHref } from "~/lib/utils";
 
 type MainNavProps = {
@@ -27,7 +28,9 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
     <NavigationMenu className={className}>
       <NavigationMenuList>
         <NavigationMenuItem>
-          <NavigationMenuTrigger>Music</NavigationMenuTrigger>
+          <NavigationMenuTrigger className={controlStyles.text}>
+            Music
+          </NavigationMenuTrigger>
 
           <NavigationMenuContent className="p-6 md:w-[400px] lg:w-[1000px]">
             <NavigationMenuLink
@@ -106,7 +109,7 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
         <NavigationMenuItem>
           <NavigationMenuLink
             href="/show"
-            className={navigationMenuTriggerStyle()}
+            className={cn(navigationMenuTriggerStyle(), controlStyles.text)}
           >
             Podcasts
           </NavigationMenuLink>

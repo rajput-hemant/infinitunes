@@ -7,6 +7,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { asRoute, cn } from "~/lib/utils";
 
 type Props = {
@@ -62,7 +63,7 @@ export function MobileNav({ user }: Props) {
         aria-haspopup="dialog"
         aria-expanded={openMobile}
         onClick={() => setOpenMobile(true)}
-        className={itemClassName}
+        className={cn(itemClassName, controlStyles.headerIcon, "self-center")}
       >
         <Library aria-hidden />
 

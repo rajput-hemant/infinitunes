@@ -28,6 +28,7 @@ import React from "react";
 
 import { browseNav, libraryNav } from "~/config/nav";
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { asRoute, cn } from "~/lib/utils";
 
 import { NewPlaylistForm } from "./playlist/new-playlist-form";
@@ -81,7 +82,7 @@ export function AppSidebarTrigger({
 
   return (
     <SidebarTrigger
-      className={className}
+      className={cn(controlStyles.headerIcon, className)}
       aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
       aria-expanded={open}
       aria-controls="app-sidebar"
@@ -151,6 +152,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                       <SidebarMenuButton
                         isActive={isActive}
                         tooltip={railTooltip(title)}
+                        className="h-11"
                         render={
                           <Link href={href} className="flex items-center">
                             <Icon className="mr-2 size-5 shrink-0 group-data-[collapsible=icon]:mr-0" />
@@ -179,6 +181,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                           <SidebarMenuButton
                             isActive={isActive}
                             tooltip={railTooltip(title)}
+                            className="h-11"
                             render={
                               <Link href={href} className="flex items-center">
                                 <Icon className="mr-2 size-5 shrink-0 group-data-[collapsible=icon]:mr-0" />
@@ -208,8 +211,10 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                         <div>
                           <NewPlaylistForm user={user}>
                             <Button
-                              size="sm"
-                              className="w-full truncate shadow-sm group-data-[collapsible=icon]:size-8 group-data-[collapsible=icon]:px-0"
+                              className={cn(
+                                controlStyles.text,
+                                "w-full truncate shadow-sm group-data-[collapsible=icon]:size-11 group-data-[collapsible=icon]:px-0",
+                              )}
                             >
                               <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
                               <span className="group-data-[collapsible=icon]:sr-only">
@@ -229,6 +234,7 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
                           <SidebarMenuButton
                             isActive={id === segment}
                             tooltip={railTooltip(name)}
+                            className="h-11"
                             render={
                               <Link
                                 href={asRoute(`/me/playlist/${id}`)}
@@ -249,11 +255,14 @@ export function Sidebar({ user, userPlaylists }: SidebarProps) {
           )}
 
           {!user && (
-            <div className="mx-4 mt-2 space-y-2 group-data-[collapsible=icon]:mx-2">
+            <div className="mx-4 mt-2 space-y-2 group-data-[collapsible=icon]:mx-0">
               <CreatePlaylistTooltip>
                 <Link
                   href="/login"
-                  className="flex w-full items-center rounded-md px-2 py-1 text-sm shadow-sm outline-none hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+                  className={cn(
+                    controlStyles.text,
+                    "flex w-full items-center rounded-md text-sm shadow-sm outline-none hover:bg-sidebar-accent focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:size-11 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0",
+                  )}
                 >
                   <Plus className="mr-2 size-4 shrink-0 group-data-[collapsible=icon]:mr-0" />
                   <span className="group-data-[collapsible=icon]:sr-only">

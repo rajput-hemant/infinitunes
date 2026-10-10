@@ -8,6 +8,7 @@ import { Monitor, Moon, SunMedium } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 // Never changes after hydration; only the server/client snapshots differ.
@@ -39,7 +40,7 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
       <ToggleGroupItem
         aria-label="Toggle Light Mode"
         value="light"
-        className="size-11 rounded-full px-2"
+        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
       >
         <SunMedium className="h-4" />
       </ToggleGroupItem>
@@ -47,7 +48,7 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
       <ToggleGroupItem
         aria-label="Toggle System Mode"
         value="system"
-        className="size-11 rounded-full px-2"
+        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
       >
         <Monitor className="h-4" />
       </ToggleGroupItem>
@@ -55,7 +56,7 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
       <ToggleGroupItem
         aria-label="Toggle Dark Mode"
         value="dark"
-        className="size-11 rounded-full px-2"
+        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
       >
         <Moon className="h-4" />
       </ToggleGroupItem>
