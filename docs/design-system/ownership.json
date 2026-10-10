@@ -544,6 +544,31 @@
       "apps/web/tests/sidebar-inset-layout.test.ts",
       "apps/web/tests/player-a11y.test.ts",
       "apps/web/tests/dom/**"
+    ],
+    "ds2-f8": [
+      "apps/web/components/glass/**",
+      "apps/web/lib/glass/**",
+      "apps/web/styles/glass.css",
+      "apps/web/tests/glass*",
+      "apps/web/tests/dom/glass*",
+      "docs/design-system/glass.md",
+      "AGENTS.md"
+    ],
+    "ds2-f9": [
+      "apps/web/components/playlist/**",
+      "apps/web/app/(root)/_components/**",
+      "apps/web/components/site-header/**",
+      "apps/web/app/(root)/album/page.tsx",
+      "apps/web/app/(root)/chart/**",
+      "apps/web/app/(root)/radio/page.tsx",
+      "apps/web/app/(root)/show/page.tsx",
+      "apps/web/app/(root)/playlist/page.tsx",
+      "apps/web/app/(root)/artist/page.tsx",
+      "apps/web/components/language-bar.tsx",
+      "apps/web/tests/dom/new-playlist-form*",
+      "apps/web/tests/dom/home*",
+      "apps/web/tests/dom/main-nav.test.tsx",
+      "apps/web/tests/dom/language*"
     ]
   },
   "$comment_ds2": "ds2-* units are phase 2 work packages. They overlap phase 1 units on purpose; check only your ds2 unit. ds2-wp7 excludes details-header/more-button.tsx by agreement (owned by ds2-wp5)."
