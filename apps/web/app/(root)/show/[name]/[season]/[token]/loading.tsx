@@ -7,7 +7,7 @@ import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function ShowDetailsLoading() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeaderSkeleton type="show" />
 
       <Skeleton className="h-7 w-44 sm:h-8 md:h-9 md:w-72" />

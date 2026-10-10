@@ -46,16 +46,17 @@ export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
   const episodeObj = await getEpisode(token);
 
   return (
-    <div className="mb-4 space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={episodeObj.episodes[0]} />
 
-      <h2 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-        {episodeObj.modules.episode_details.title}
-      </h2>
-
-      <p className="max-w-3xl text-muted-foreground">
-        {episodeObj.episodes[0].more_info.description}
-      </p>
+      <section className="flex max-w-2xl flex-col gap-4 rounded-md bg-card p-6 ring-1 ring-inset ring-border">
+        <h2 className="font-heading text-xl capitalize text-foreground sm:text-2xl md:text-3xl">
+          {episodeObj.modules.episode_details.title}
+        </h2>
+        <p className="text-muted-foreground">
+          {episodeObj.episodes[0].more_info.description}
+        </p>
+      </section>
     </div>
   );
 }

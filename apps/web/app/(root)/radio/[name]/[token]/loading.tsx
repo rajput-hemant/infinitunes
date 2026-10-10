@@ -4,7 +4,7 @@ import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function RadioStationLoading() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <div className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
         <Skeleton className="aspect-square w-44 rounded-full md:w-56 xl:w-64" />
 

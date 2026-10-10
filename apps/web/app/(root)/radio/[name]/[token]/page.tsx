@@ -42,9 +42,9 @@ export default async function RadioStationPage({ params }: Props) {
   const { station, songs } = await getStation(name, token);
 
   return (
-    <div className="space-y-4">
-      <figure className="mb-10 flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
-        <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-full border p-1 shadow-md transition-shadow duration-300 hover:shadow-xl md:w-56 xl:w-64">
+    <div className="flex flex-col gap-(--page-gap)">
+      <figure className="flex flex-col items-center justify-center gap-4 lg:flex-row lg:justify-start lg:gap-10">
+        <div className="relative aspect-square w-44 shrink-0 overflow-hidden rounded-full shadow-md md:w-56 xl:w-64">
           <ImageWithFallback
             src={getImageSrc(station.image, "high")}
             width={200}
@@ -56,7 +56,10 @@ export default async function RadioStationPage({ params }: Props) {
         </div>
 
         <figcaption className="flex w-full flex-col items-center justify-center overflow-hidden font-medium lg:items-start lg:gap-2 lg:p-1">
-          <h1 className="max-w-full truncate text-center font-heading text-xl capitalize dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:text-start">
+          <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+            Radio station
+          </p>
+          <h1 className="max-w-full truncate text-center font-heading text-2xl capitalize text-foreground sm:text-3xl md:text-4xl lg:text-start">
             {station.title}
           </h1>
 
@@ -80,7 +83,12 @@ export default async function RadioStationPage({ params }: Props) {
       </figure>
 
       {songs.length > 0 ? (
-        <SongList items={songs} showAlbum={false} />
+        <section className="flex flex-col gap-4">
+          <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+            Coming up
+          </h2>
+          <SongList items={songs} showAlbum={false} />
+        </section>
       ) : (
         <LibraryEmpty
           icon={Radio}

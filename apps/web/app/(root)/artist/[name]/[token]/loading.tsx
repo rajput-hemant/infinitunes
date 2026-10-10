@@ -14,7 +14,7 @@ export default function ArtistDetailsSkeleton() {
   const name = usePathname().split("/")[2];
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeaderSkeleton type="artist" />
       <Skeleton className="h-10 w-[284px]" />
       <Separator className="my-4" />

@@ -77,7 +77,7 @@ export function EpisodeList(props: EpisodeListProps) {
         userPlaylists={userPlaylists}
       />
 
-      {hasNextPage ? (
+      {hasNextPage && (
         <div
           ref={ref}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
@@ -88,11 +88,6 @@ export function EpisodeList(props: EpisodeListProps) {
             </>
           )}
         </div>
-      ) : (
-        <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
       )}
     </>
   );
