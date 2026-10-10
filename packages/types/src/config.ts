@@ -22,6 +22,21 @@ export type Density = (typeof DENSITIES)[number];
 export const GLASS_LEVELS = ["liquid", "subtle", "solid"] as const;
 export type GlassLevel = (typeof GLASS_LEVELS)[number];
 
+export const GLASS_VARIANTS = ["regular", "clear", "tinted"] as const;
+export type GlassVariant = (typeof GLASS_VARIANTS)[number];
+
+export type GlassTuning = {
+  variant: GlassVariant;
+  tint: number | null;
+  blur: number;
+  refraction: number;
+  sat: number;
+  spec: number;
+  shadow: number;
+  ambientLevel: number;
+  accentTint: boolean;
+};
+
 /** Radius presets in rem; `0.75` is the default. Any value up to `RADIUS_MAX_REM` is valid. */
 export const RADIUS_PRESETS = [0, 0.3, 0.5, 0.75, 1] as const;
 export const RADIUS_MAX_REM = 1.5;
@@ -36,6 +51,7 @@ export type ThemeConfig = {
   textSize: TextSize;
   density: Density;
   glass: GlassLevel;
+  glassTuning: GlassTuning;
   /** Tint the background with the playing song's artwork. */
   ambient: boolean;
   /** Replace springs and slides with simple fades, on top of the OS setting. */
