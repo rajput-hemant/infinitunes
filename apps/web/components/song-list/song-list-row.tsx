@@ -59,8 +59,9 @@ export function SongListRow(props: SongListRowProps) {
 
   const artists = item.more_info.artistMap?.primary_artists ?? [];
   const isEpisode = item.type === "episode";
-  const hoverHidesNumber =
-    !showAlbum && "group-hover/row:invisible group-focus-within/row:invisible";
+  const hoverHidesNumber = showAlbum
+    ? ""
+    : "group-hover/row:invisible group-focus-within/row:invisible";
 
   return (
     <SongRow

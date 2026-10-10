@@ -10,6 +10,7 @@ import { api } from "~/lib/trpc/server";
 import { getHref } from "~/lib/utils";
 
 import { HomeHero } from "./_components/home-hero";
+import { homeItems } from "./_components/home-items";
 import { QuickPicks } from "./_components/quick-picks";
 import type { QuickPickItem } from "./_components/quick-picks";
 
@@ -42,16 +43,6 @@ const SECTION_TYPE: Record<string, MediaType> = {
   radio: "radio_station",
 };
 
-type HomeItem = {
-  id: string;
-  title: string;
-  perma_url: string;
-  subtitle?: string;
-  type: MediaType;
-  image: string;
-  explicit_content?: string | boolean;
-};
-
 const QUICK_PICK_ALBUMS = 4;
 const QUICK_PICK_PLAYLISTS = 4;
 
@@ -82,9 +73,9 @@ export default async function HomePage() {
       )}
 
       {Object.entries(homedata).map(([key, section]) => {
-        if (SKIPPED_SECTIONS.has(key) || !Array.isArray(section)) return null;
+        const items = SKIPPED_SECTIONS.has(key) ? null : homeItems(section);
+        if (!items) return null;
 
-        const items = section as HomeItem[];
         const sectionTitle = homedata.modules?.[key]?.title;
 
         return (

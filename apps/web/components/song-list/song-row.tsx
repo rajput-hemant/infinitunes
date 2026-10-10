@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
@@ -8,7 +9,7 @@ import { isCurrentTrack } from "~/lib/queue-position";
 type SongRowProps = {
   id: string;
   className?: string;
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
 /** Row shell that exposes the playing state to its server-rendered cells as `data-current` and `data-playing`. */

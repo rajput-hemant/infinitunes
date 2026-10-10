@@ -2,14 +2,13 @@ import type { ReactNode } from "react";
 
 import { cn } from "~/lib/utils";
 
-/** One column of a `Shelf`. Its width is the shelf card width for the breakpoint. */
-export function ShelfItem({
-  children,
-  className,
-}: {
+type ShelfItemProps = {
   children: ReactNode;
   className?: string;
-}) {
+};
+
+/** One column of a `Shelf`. Its width is the shelf card width for the breakpoint. */
+export function ShelfItem({ children, className }: ShelfItemProps) {
   return (
     <li
       className={cn(
