@@ -22,6 +22,8 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `apps/web` query and action modules are thin Next.js wrappers for those
   procedures and own cache invalidation or redirects.
 
+Knip is installed for manual dead-code analysis; do not apply its findings automatically.
+
 Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
 (`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
 `bun run fmt:check`, `bun run lint` (Oxlint), `bun run type-check`,
