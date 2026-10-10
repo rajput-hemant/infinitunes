@@ -696,7 +696,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
             <BarButton
               tooltip="Queue"
               aria-label="Queue"
-              aria-pressed={pane.open}
+              aria-expanded={pane.open}
               aria-controls="player-queue"
               onClick={() => pane.setOpen(!pane.open)}
               className={cn(

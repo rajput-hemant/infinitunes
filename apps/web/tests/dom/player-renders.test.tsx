@@ -292,17 +292,17 @@ describe("player a11y", () => {
     const button = () =>
       document.querySelector<HTMLButtonElement>('button[aria-label="Queue"]');
     const pane = () => document.querySelector("aside#player-queue");
-    expect(button()?.getAttribute("aria-pressed")).toBe("false");
+    expect(button()?.getAttribute("aria-expanded")).toBe("false");
     expect(pane()?.hasAttribute("inert")).toBe(true);
 
     await act(async () => button()?.click());
-    expect(button()?.getAttribute("aria-pressed")).toBe("true");
+    expect(button()?.getAttribute("aria-expanded")).toBe("true");
     expect(pane()?.hasAttribute("inert")).toBe(false);
 
     await act(async () => {
       window.dispatchEvent(new KeyboardEvent("keydown", { key: "q" }));
     });
-    expect(button()?.getAttribute("aria-pressed")).toBe("false");
+    expect(button()?.getAttribute("aria-expanded")).toBe("false");
     expect(pane()?.hasAttribute("inert")).toBe(true);
   });
 

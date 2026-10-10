@@ -126,7 +126,7 @@ export function LibrarySongList(props: LibrarySongListProps) {
 
         {query.trim() && visible.length > 0 && (
           <output
-            aria-live="off"
+            aria-live="polite"
             className="text-sm text-muted-foreground tabular-nums"
           >
             {visible.length} of {items.length}
@@ -155,7 +155,7 @@ export function LibrarySongList(props: LibrarySongListProps) {
         />
       ) : (
         <output className="block py-10 text-center text-sm text-muted-foreground">
-          No songs match “{query.trim()}”.
+          No songs match &quot;{query.trim()}&quot;.
         </output>
       )}
     </div>
