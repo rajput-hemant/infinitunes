@@ -3,6 +3,7 @@ import type { Lang } from "@infinitunes/types";
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
+import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
 
 import { FeaturedPlaylists } from "./_components/featured-playlists";
@@ -16,13 +17,15 @@ export const metadata = pageMetadata({
   url: "/playlist",
   alt: "Top Featured Playlists",
 });
-type PageProps = { searchParams: Promise<{ page?: number; lang?: Lang }> };
+type PageProps = {
+  searchParams: Promise<{ page?: string | string[]; lang?: Lang }>;
+};
 
 export default async function PlaylistsPage({ searchParams }: PageProps) {
-  const { page = 1, lang } = await searchParams;
+  const { page, lang } = await searchParams;
 
   const featuredPlaylists = await api.get.featuredPlaylists({
-    page,
+    page: parsePageParam(page),
     n: 50,
     lang,
   });
@@ -32,7 +35,7 @@ export default async function PlaylistsPage({ searchParams }: PageProps) {
       <CatalogHeader title={`${lang ? `${lang} Music` : "Top"} Playlists`} />
 
       <FeaturedPlaylists
-        key={featuredPlaylists.data[0].id}
+        key={featuredPlaylists.data[0]?.id ?? "playlists"}
         initialPlaylists={featuredPlaylists}
         lang={lang}
       />
