@@ -71,7 +71,12 @@ function MenuItem({
   isCopied,
 }: MenuItemProps) {
   return href ? (
-    <a href={href} target="_blank" rel="noopener noreferrer">
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex min-h-11 items-center"
+    >
       <Icon
         className={cn(
           "mr-2 inline-block aspect-square h-5",
@@ -81,14 +86,38 @@ function MenuItem({
       {label}
     </a>
   ) : (
-    <button onClick={copy} className="inline-flex">
+    <button
+      type="button"
+      onClick={copy}
+      className="inline-flex min-h-11 items-center"
+      aria-label={isCopied ? "Link Copied" : "Copy Link"}
+    >
       <Clipboard
         className={cn(
           "mr-2 inline-block aspect-square h-5",
           isDropDownItem && "h-4",
         )}
       />
-      {isCopied ? "Link Copied" : "Copy Link"}
+      <span className="grid" aria-live="polite">
+        <span
+          aria-hidden={isCopied}
+          className={cn(
+            "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
+            isCopied && "opacity-0",
+          )}
+        >
+          Copy Link
+        </span>
+        <span
+          aria-hidden={!isCopied}
+          className={cn(
+            "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
+            !isCopied && "opacity-0",
+          )}
+        >
+          Link Copied
+        </span>
+      </span>
     </button>
   );
 }
@@ -117,7 +146,7 @@ export function ShareOptions({
           : undefined;
 
         return isDropDownItem ? (
-          <DropdownMenuItem key={i}>
+          <DropdownMenuItem key={i} className="h-11 py-0">
             <MenuItem
               label={label}
               href={href}

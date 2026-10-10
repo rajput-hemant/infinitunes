@@ -14,6 +14,7 @@ import Link from "next/link";
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { getUser } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { cn, getHref } from "~/lib/utils";
@@ -63,11 +64,12 @@ export async function SongList(props: SongListProps) {
             className="-m-2 p-2 [contain-intrinsic-size:auto_4.5rem] [content-visibility:auto]"
           >
             <div className="group flex h-14 w-full cursor-pointer items-center justify-between overflow-hidden rounded-md px-2 text-sm transition-shadow duration-150 hover:shadow-md lg:border lg:pl-0 lg:pr-4 lg:shadow-xs">
-              <div className="hidden w-[6%] lg:flex lg:justify-center xl:w-[4%]">
+              <div className="relative hidden min-w-11 shrink-0 items-center lg:flex lg:justify-center">
                 <span
                   className={cn(
                     "truncate font-medium",
-                    !showAlbum && "group-hover:hidden",
+                    !showAlbum &&
+                      "group-hover:invisible group-focus-within:invisible",
                   )}
                 >
                   {i + 1}
@@ -77,17 +79,20 @@ export async function SongList(props: SongListProps) {
                   <PlayButton
                     type={item.type}
                     token={parseToken(item.perma_url)}
-                    className="group/play hidden aspect-square h-8 shrink-0 items-center justify-center rounded-full border border-muted-foreground transition-[transform,color,border-color] duration-150 ease-out hover:scale-110 hover:border-primary hover:text-primary group-hover:flex"
+                    className={cn(
+                      controlStyles.rowIcon,
+                      "group/play absolute flex shrink-0 items-center justify-center rounded-full border border-muted-foreground opacity-0 outline-hidden transition-[transform,color,border-color] duration-150 ease-out hover:scale-110 hover:border-primary hover:text-primary group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                    )}
                   >
                     <Play
                       strokeWidth={9}
-                      className="h-full w-5 p-1 transition-transform duration-150 ease-out group-hover/play:scale-110"
+                      className="size-5 transition-transform duration-150 ease-out group-hover/play:scale-110"
                     />
                   </PlayButton>
                 )}
               </div>
 
-              <figure className="flex items-center justify-between gap-4 overflow-hidden lg:w-[86%]">
+              <figure className="flex items-center justify-between gap-4 min-w-0 flex-1 overflow-hidden">
                 {showAlbum && (
                   <div className="relative aspect-square h-10 min-w-fit overflow-hidden rounded">
                     <ImageWithFallback
@@ -151,11 +156,8 @@ export async function SongList(props: SongListProps) {
                 )}
               </figure>
 
-              <div className="flex shrink-0 items-center justify-end lg:w-[16%] lg:justify-between lg:gap-3 xl:w-[12%] 2xl:w-[10%]">
-                <DownloadButton
-                  songs={[item]}
-                  className="size-11 hover:text-primary lg:size-5"
-                />
+              <div className="flex shrink-0 items-center justify-end lg:justify-between lg:gap-1">
+                <DownloadButton songs={[item]} className="hover:text-primary" />
 
                 {/* Below lg the row menu carries Add/Remove Favourite. */}
                 <LikeButton
