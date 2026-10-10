@@ -44,26 +44,39 @@ function normalizeCss(css: string) {
     .trim();
 }
 
-describe("shadcn neutral css variables", () => {
-  it("matches shadcn init output for @theme mapping and :root/.dark tokens", async () => {
+function tokenNames(block: string) {
+  return new Set([...block.matchAll(/--([\w-]+):/g)].map(([, name]) => name));
+}
+
+describe("shadcn css variables", () => {
+  it("keeps the shadcn @theme mapping and defines every shadcn token in :root and .dark", async () => {
     const globals = await Bun.file(GLOBALS).text();
     const fixture = await Bun.file(FIXTURE).text();
 
-    const fromGlobals = extractShadcnVariableBlocks(globals);
-    const expected = normalizeCss(fixture);
-
-    const globalsLines = fromGlobals
+    const globalsLines = extractShadcnVariableBlocks(globals)
       .split("\n")
-      .map((line) => line.trim())
-      .filter((line) => line && !line.startsWith("--font-"));
-    const fixtureLines = expected
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean);
+      .map((line) => line.trim());
+    const fixtureBlocks = extractShadcnVariableBlocks(fixture);
 
-    for (const line of fixtureLines) {
-      expect(globalsLines).toContain(line);
+    // The @theme color/radius mapping is structural and must match shadcn init.
+    for (const line of fixtureBlocks.split("\n")) {
+      const trimmed = line.trim();
+      if (/^--(color|radius)-[\w-]+:/.test(trimmed)) {
+        expect(globalsLines).toContain(trimmed);
+      }
     }
+
+    // Palette values are app-owned; only the token names are contractual.
+    const fixtureRoot = tokenNames(
+      fixture.slice(fixture.indexOf(":root"), fixture.indexOf(".dark")),
+    );
+    const fixtureDark = tokenNames(fixture.slice(fixture.indexOf(".dark")));
+    const root = tokenNames(globals.slice(globals.indexOf(":root {")));
+    const dark = tokenNames(
+      globals.slice(globals.indexOf(".dark {"), globals.indexOf("@layer base")),
+    );
+    for (const name of fixtureRoot) expect(root.has(name)).toBe(true);
+    for (const name of fixtureDark) expect(dark.has(name)).toBe(true);
   });
 
   it("does not use hsl(var(--token)) shadcn variable wrapping", async () => {

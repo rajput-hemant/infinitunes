@@ -1,5 +1,5 @@
 /** Hex of the default `--background` token (`styles/globals.css`) per scheme. */
 export const THEME_COLOR = {
-  light: "#ffffff",
-  dark: "#0a0a0a",
+  light: "#f8f8fc",
+  dark: "#0f0f15",
 } as const;
