@@ -6,10 +6,10 @@ import { createRoot } from "react-dom/client";
 
 import { setInputValue } from "./set-input-value";
 
-const saved: unknown[] = [];
+const saved: ThemeConfig[] = [];
 
 mock.module("../../lib/theme/actions", () => ({
-  saveThemeConfig: async (input: unknown) => {
+  saveThemeConfig: async (input: ThemeConfig) => {
     saved.push(input);
   },
 }));
@@ -41,7 +41,7 @@ async function settleSave() {
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 350));
   });
-  return saved.at(-1) as ThemeConfig | undefined;
+  return saved.at(-1);
 }
 
 function sliderFor(container: HTMLElement, label: string) {

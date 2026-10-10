@@ -4,17 +4,10 @@ import type { ImageQuality, Lang } from "@infinitunes/types";
 import { QUALITIES_MAP } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@infinitunes/ui/components/dropdown-menu";
-import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@infinitunes/ui/components/toggle-group";
 import { setCookie } from "cookies-next";
-import { ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -29,73 +22,12 @@ import {
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
-import { SettingsRow, SettingsSection, SwitchRow } from "./settings-section";
+import { isLang } from "./language-options";
+import { QualityRow } from "./quality-row";
+import { SwitchRow } from "./settings-row";
+import { SettingsSection } from "./settings-section";
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
-
-type QualityOption<T extends string> = { value: T; detail?: string };
-
-type QualityRowProps<T extends string> = {
-  id: string;
-  label: string;
-  help: string;
-  value: T;
-  detail?: string;
-  options: readonly QualityOption<T>[];
-  onSelect: (value: T) => void;
-};
-
-function QualityRow<T extends string>(props: QualityRowProps<T>) {
-  const { id, label, help, value, detail, options, onSelect } = props;
-
-  return (
-    <SettingsRow id={id} label={label} help={help}>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="outline"
-              aria-label={`${label}: ${value}`}
-              className={cn(
-                controlStyles.text,
-                "group w-48 justify-between capitalize",
-              )}
-            >
-              <span>
-                {value}
-                {detail && (
-                  <span className="ml-2 text-xs font-light">({detail})</span>
-                )}
-              </span>
-              <ChevronDown
-                aria-hidden
-                className="size-4 transition-transform group-data-[state=open]:rotate-180"
-              />
-            </Button>
-          }
-        />
-
-        <DropdownMenuContent className="w-48 *:cursor-pointer *:capitalize">
-          {options.map((option) => (
-            <DropdownMenuItem
-              key={option.value}
-              onClick={() => onSelect(option.value)}
-              className={cn(
-                "justify-between",
-                option.value === value && "bg-fill-2",
-              )}
-            >
-              <span>{option.value}</span>
-              {option.detail && (
-                <span className="text-xs font-medium">{option.detail}</span>
-              )}
-            </DropdownMenuItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </SettingsRow>
-  );
-}
 
 const audioOptions = QUALITIES_MAP.map(({ quality, bitrate }) => ({
   value: quality,
@@ -144,7 +76,9 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
         <ToggleGroup
           aria-label="Languages"
           value={selectedLanguages}
-          onValueChange={(v) => setSelectedLanguages(v as Lang[])}
+          onValueChange={(values) =>
+            setSelectedLanguages(values.filter(isLang))
+          }
           className="flex max-w-5xl flex-wrap justify-normal gap-2"
         >
           {languageList.map((lang) => (

@@ -32,7 +32,7 @@ import { nameSchema } from "~/lib/validations";
 
 import { SettingsSection } from "./settings-section";
 
-type ProfileFormProps = React.ComponentProps<"div"> & {
+type ProfileFormProps = {
   user: {
     id: string;
     name?: string | null;
@@ -54,7 +54,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const [isPassVisible, setIsPassVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  const [_, setIsTyping] = useIsTyping();
+  const [, setIsTyping] = useIsTyping();
   const uid = React.useId();
   const ids = {
     name: `${uid}-name`,
@@ -261,7 +261,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       }
                       type="button"
                       disabled={!field.value}
-                      onClick={() => setIsPassVisible(!isPassVisible)}
+                      onClick={() => setIsPassVisible((visible) => !visible)}
                       className={cn(
                         controlStyles.rowIcon,
                         "absolute inset-y-0 right-0 my-auto flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",

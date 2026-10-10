@@ -2,10 +2,14 @@ import { describe, expect, it, mock } from "bun:test";
 
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
-import type React from "react";
 import { createRoot } from "react-dom/client";
 
 import { setInputValue } from "./set-input-value";
+import {
+  createTestRouter,
+  findButton,
+  requireElement,
+} from "./settings-test-utils";
 
 // `server-only` throws outside the react-server condition; the actions behind
 // the form only need it to import.
@@ -18,14 +22,9 @@ mock.module("../../lib/actions", () => ({
   deleteUser: async () => ({ ok: true, data: { id: "u1" } }),
 }));
 
-const router = {
-  push: (href: string) => calls.push(`push ${href}`),
-  replace: (href: string) => calls.push(`replace ${href}`),
-  refresh: () => calls.push("refresh"),
-  back() {},
-  forward() {},
-  prefetch() {},
-} as unknown as NonNullable<React.ContextType<typeof AppRouterContext>>;
+const router = createTestRouter((call) => {
+  calls.push(call);
+});
 
 const { ProfileForm } =
   await import("../../app/(root)/settings/_components/profile-form");
@@ -53,10 +52,11 @@ describe("profile form accessibility", () => {
   it("associates every visible label with its input", async () => {
     const container = await mount();
 
-    const names = [...container.querySelectorAll("form input")].map((input) => {
-      const el = input as HTMLInputElement;
-      return el.labels?.[0]?.textContent?.trim();
-    });
+    const names = [...container.querySelectorAll("form input")]
+      .filter(
+        (input): input is HTMLInputElement => input instanceof HTMLInputElement,
+      )
+      .map((input) => input.labels?.[0]?.textContent?.trim());
 
     expect(names).toEqual([
       "Name",
@@ -70,25 +70,36 @@ describe("profile form accessibility", () => {
     const container = await mount();
 
     expect(
-      container.querySelector("input[autocomplete=current-password]"),
-    ).not.toBeNull();
+      requireElement(
+        container,
+        "input[autocomplete=current-password]",
+        HTMLInputElement,
+      ),
+    ).toBeDefined();
     expect(
-      container.querySelector("input[autocomplete=new-password]"),
-    ).not.toBeNull();
+      requireElement(
+        container,
+        "input[autocomplete=new-password]",
+        HTMLInputElement,
+      ),
+    ).toBeDefined();
   });
 
   it("keeps the password visibility toggle keyboard reachable", async () => {
     const container = await mount();
 
-    const toggle = container.querySelector(
+    const toggle = requireElement(
+      container,
       'button[aria-label="Show Password"]',
-    ) as HTMLElement;
-    expect(toggle).not.toBeNull();
+      HTMLButtonElement,
+    );
     expect(toggle.getAttribute("tabindex")).toBeNull();
 
-    const input = container.querySelector(
+    const input = requireElement(
+      container,
       "input[autocomplete=new-password]",
-    ) as HTMLInputElement;
+      HTMLInputElement,
+    );
     const setter = Object.getOwnPropertyDescriptor(
       window.HTMLInputElement.prototype,
       "value",
@@ -98,20 +109,26 @@ describe("profile form accessibility", () => {
       input.dispatchEvent(new window.Event("input", { bubbles: true }));
     });
 
-    const enabled = container.querySelector(
+    const enabled = requireElement(
+      container,
       'button[aria-label="Show Password"]',
-    ) as HTMLElement;
+      HTMLButtonElement,
+    );
     await act(async () => {
       enabled.click();
     });
     expect(
-      container.querySelector('button[aria-label="Hide Password"]'),
-    ).not.toBeNull();
+      requireElement(
+        container,
+        'button[aria-label="Hide Password"]',
+        HTMLButtonElement,
+      ),
+    ).toBeDefined();
     expect(
-      (
-        container.querySelector(
-          "input[autocomplete=new-password]",
-        ) as HTMLInputElement
+      requireElement(
+        container,
+        "input[autocomplete=new-password]",
+        HTMLInputElement,
       ).type,
     ).toBe("text");
   });
@@ -120,29 +137,32 @@ describe("profile form accessibility", () => {
     const container = await mount();
     calls.length = 0;
 
-    const open = [...container.querySelectorAll("button")].find(
-      (b) => b.textContent?.trim() === "Delete Account",
-    ) as HTMLButtonElement;
+    const open = findButton(container, "Delete Account");
     await act(async () => {
       open.click();
     });
 
-    const password = document.querySelector(
-      '[role="alertdialog"] input[type="password"]',
-    ) as HTMLInputElement;
-    const confirm = document.querySelector(
-      '[role="alertdialog"] input[type="text"]',
-    ) as HTMLInputElement;
+    const dialog = requireElement(
+      document,
+      '[role="alertdialog"]',
+      HTMLElement,
+    );
+    const password = requireElement(
+      dialog,
+      'input[type="password"]',
+      HTMLInputElement,
+    );
+    const confirm = requireElement(
+      dialog,
+      'input[type="text"]',
+      HTMLInputElement,
+    );
     await act(async () => {
       setInputValue(password, "Secret-1234!");
       setInputValue(confirm, "DELETE MY ACCOUNT");
     });
 
-    const action = [
-      ...document.querySelectorAll('[role="alertdialog"] button'),
-    ].find(
-      (b) => b.textContent?.trim() === "Delete Account",
-    ) as HTMLButtonElement;
+    const action = findButton(dialog, "Delete Account");
     await act(async () => {
       action.click();
     });

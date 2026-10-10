@@ -23,7 +23,7 @@ import {
 } from "./glass-tuning";
 import { OptionGroup } from "./option-group";
 import { RangeField } from "./range-field";
-import { SettingsRow } from "./settings-section";
+import { SettingsRow } from "./settings-row";
 
 const LEVEL_LABELS: Record<GlassLevel, string> = {
   liquid: "Liquid glass",

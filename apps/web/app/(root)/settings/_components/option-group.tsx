@@ -3,7 +3,7 @@ import React from "react";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
-export type OptionGroupItem<T extends string | number> = {
+type OptionGroupItem<T extends string | number> = {
   value: T;
   label: string;
   icon?: React.ReactNode;

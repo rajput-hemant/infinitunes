@@ -5,7 +5,7 @@ import { DEFAULT_GLASS_TUNING } from "~/lib/theme-config";
 /** Tint alpha while the config leaves `tint` null: the stylesheet default per scheme (`--glass-tint` in `styles/glass.css`). */
 const DEFAULT_TINT = { light: 0.14, dark: 0.24 } as const;
 
-export type GlassSliderKey =
+type GlassSliderKey =
   | "tint"
   | "blur"
   | "refraction"
@@ -15,7 +15,7 @@ export type GlassSliderKey =
   | "ambientLevel";
 
 /** The stored tuning with the scheme's default tint filled in, so every slider reads a number. */
-export type ResolvedGlassTuning = Omit<GlassTuning, "tint"> & { tint: number };
+type ResolvedGlassTuning = Omit<GlassTuning, "tint"> & { tint: number };
 
 export function resolveGlassTuning(
   tuning: GlassTuning,

@@ -6,6 +6,11 @@ import { createRoot } from "react-dom/client";
 
 import { PreferenceSettings } from "../../app/(root)/settings/_components/preference-settings";
 import { setInputValue } from "./set-input-value";
+import {
+  createTestRouter,
+  findButton,
+  requireElement,
+} from "./settings-test-utils";
 
 mock.module("../../lib/theme/actions", () => ({
   saveThemeConfig: async () => {},
@@ -37,13 +42,13 @@ describe("keyboard shortcuts setting", () => {
     const root = createRoot(container);
     await act(async () => {
       root.render(
-        <AppRouterContext.Provider value={{ refresh() {} } as never}>
+        <AppRouterContext.Provider value={createTestRouter()}>
           <PreferenceSettings initialLanguages={[]} />
         </AppRouterContext.Provider>,
       );
     });
 
-    const toggle = container.querySelector("[role=switch]") as HTMLElement;
+    const toggle = requireElement(container, "[role=switch]", HTMLElement);
     expect(toggle).not.toBeNull();
     const labelId = toggle.getAttribute("aria-labelledby") ?? "";
     expect(document.getElementById(labelId)?.textContent).toBe(
@@ -78,16 +83,16 @@ describe("appearance settings", () => {
   it("applies a density choice to the page at once and resets it", async () => {
     const container = await mountAppearance(<AppearanceSettings />);
 
-    const compact = container.querySelector(
+    const compact = requireElement(
+      container,
       "[role=radiogroup][aria-label=Density] input[value=compact]",
-    ) as HTMLInputElement;
+      HTMLInputElement,
+    );
     await act(async () => compact.click());
     expect(html.getAttribute("data-density")).toBe("compact");
     expect(compact.checked).toBe(true);
 
-    const reset = [...container.querySelectorAll("button")].find((b) =>
-      b.textContent?.includes("Reset to defaults"),
-    ) as HTMLButtonElement;
+    const reset = findButton(container, "Reset to defaults");
     expect(reset.disabled).toBe(false);
     await act(async () => reset.click());
     expect(html.getAttribute("data-density")).toBe("comfortable");
@@ -96,9 +101,11 @@ describe("appearance settings", () => {
   it("drives the radius from the slider in whole pixels", async () => {
     const container = await mountAppearance(<AppearanceSettings />);
 
-    const slider = container.querySelector(
+    const slider = requireElement(
+      container,
       "input[type=range]",
-    ) as HTMLInputElement;
+      HTMLInputElement,
+    );
     expect(slider.min).toBe("0");
     expect(slider.max).toBe("24");
     await act(async () => setInputValue(slider, "24"));
@@ -109,9 +116,11 @@ describe("appearance settings", () => {
   it("applies a typed accent only while the hex is complete", async () => {
     const container = await mountAppearance(<AppearanceSettings />);
 
-    const hex = container.querySelector(
+    const hex = requireElement(
+      container,
       "input[aria-label='Accent hex color']",
-    ) as HTMLInputElement;
+      HTMLInputElement,
+    );
     await act(async () => setInputValue(hex, "#3a7b"));
     expect(hex.getAttribute("aria-invalid")).toBe("true");
     expect(html.style.getPropertyValue("--light-primary")).toBe("");
