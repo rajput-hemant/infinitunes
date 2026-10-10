@@ -2,9 +2,11 @@ import { getImageSrc, parseToken, toCardItem } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { orFallback } from "~/lib/degrade";
@@ -43,133 +45,152 @@ export async function generateMetadata({
     square: true,
   });
 }
-async function fetcher(token: string) {
-  const { song, modules: songModules } = await getSong(token);
-  const modules = songModules!;
-  const artistsTopSongsParams = modules.songsBysameArtists.source_params;
-  const actorsTopSongsParams = modules.songsBysameActors.source_params;
-  const isActorPresent = song.more_info.artistMap?.artists?.some(
-    (artist) => artist.role === "starring",
+async function SongLyrics({ token }: { token: string }) {
+  const { song } = await getSong(token);
+  if (song.more_info.has_lyrics !== "true") return null;
+  const lyrics = await orFallback(
+    "lyrics",
+    api.get.lyrics({ id: song.id }),
+    undefined,
   );
+  return lyrics ? <Lyrics lyrics={lyrics} /> : null;
+}
 
-  const [
-    lyrics,
-    album,
-    recommendations,
-    trending,
-    songsFromSameArtists,
-    songsFromSameActors,
-  ] = await Promise.all([
-    song.more_info.has_lyrics === "true"
-      ? orFallback("lyrics", api.get.lyrics({ id: song.id }), undefined)
-      : undefined,
-    orFallback(
-      "album songs",
-      api.album.details({ token: parseToken(song.more_info.album_url) }),
-      undefined,
+async function SongAlbumSongs({ token }: { token: string }) {
+  const { song } = await getSong(token);
+  const album = await orFallback(
+    "album songs",
+    api.album.details({ token: parseToken(song.more_info.album_url) }),
+    undefined,
+  );
+  const songs = Array.isArray(album?.list)
+    ? album.list.filter((item) => item.id !== song.id)
+    : [];
+  return songs.length ? (
+    <>
+      <h2 className="pl-2 font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl lg:pl-0">
+        More from {song.more_info.album}
+      </h2>
+      <Separator />
+      <SongList items={songs} />
+    </>
+  ) : null;
+}
+
+async function SongRecommendations({ token }: { token: string }) {
+  const [{ modules }, items] = await Promise.all([
+    getSong(token),
+    getSong(token).then(({ song: currentSong }) =>
+      orFallback(
+        "recommendations",
+        api.song.recommendations({ id: currentSong.id }),
+        [],
+      ),
     ),
-    orFallback(
-      "recommendations",
-      api.song.recommendations({ id: song.id }),
-      [],
-    ),
-    orFallback("trending", api.get.trending({ type: "song" }), []),
-    orFallback(
-      "songs from the same artists",
-      api.artist.topSongs({
-        artist_id: artistsTopSongsParams.artist_ids,
-        song_id: artistsTopSongsParams.song_id,
-        lang: artistsTopSongsParams.language,
-      }),
-      [],
-    ),
-    isActorPresent
-      ? orFallback(
-          "songs from the same actors",
-          api.get.actorTopSongs({
-            actor_id: actorsTopSongsParams.actor_ids,
-            song_id: actorsTopSongsParams.song_id,
-            lang: actorsTopSongsParams.language,
-          }),
-          undefined,
-        )
-      : undefined,
   ]);
+  return items.length ? (
+    <SliderList title={modules!.reco.title} items={items.map(toCardItem)} />
+  ) : null;
+}
 
-  return {
-    song,
-    lyrics,
-    albumSongs: Array.isArray(album?.list)
-      ? album.list.filter((s) => s.id !== song.id)
-      : [],
-    recommendations,
-    trending,
-    songsFromSameArtists,
-    songsFromSameActors,
-    modules,
-  };
+async function SongTrending({ token }: { token: string }) {
+  const [{ modules }, items] = await Promise.all([
+    getSong(token),
+    orFallback("trending", api.get.trending({ type: "song" }), []),
+  ]);
+  return items.length ? (
+    <SliderList
+      title={modules!.currentlyTrending.title}
+      items={items.map(toCardItem)}
+    />
+  ) : null;
+}
+
+async function SongSameArtists({ token }: { token: string }) {
+  const { modules } = await getSong(token);
+  const params = modules!.songsBysameArtists.source_params;
+  const items = await orFallback(
+    "songs from the same artists",
+    api.artist.topSongs({
+      artist_id: params.artist_ids,
+      song_id: params.song_id,
+      lang: params.language,
+    }),
+    [],
+  );
+  return items.length ? (
+    <SliderList
+      title={modules!.songsBysameArtists.title}
+      items={items.map(toCardItem)}
+    />
+  ) : null;
+}
+
+async function SongSameActors({ token }: { token: string }) {
+  const { song, modules } = await getSong(token);
+  if (
+    !song.more_info.artistMap?.artists?.some(
+      (artist) => artist.role === "starring",
+    )
+  )
+    return null;
+  const params = modules!.songsBysameActors.source_params;
+  const items = await orFallback(
+    "songs from the same actors",
+    api.get.actorTopSongs({
+      actor_id: params.actor_ids,
+      song_id: params.song_id,
+      lang: params.language,
+    }),
+    undefined,
+  );
+  return items?.length ? (
+    <SliderList
+      title={modules!.songsBysameActors.title}
+      items={items.map(toCardItem)}
+    />
+  ) : null;
 }
 
 export default async function SongDetailsPage(props: SongDetailsPageProps) {
   const { token } = await props.params;
 
-  const {
-    song,
-    lyrics,
-    albumSongs,
-    modules,
-    recommendations,
-    songsFromSameArtists,
-    songsFromSameActors,
-    trending,
-  } = await fetcher(token);
+  const { song, modules } = await getSong(token);
 
   return (
     <div className="space-y-4">
       <DetailsHeader item={song} />
 
-      {lyrics && <Lyrics lyrics={lyrics} />}
-
-      {albumSongs.length > 0 && (
-        <>
-          <h2 className="pl-2 font-heading text-2xl dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl lg:pl-0">
-            More from {song.more_info.album}
-          </h2>
-          <Separator />
-          <SongList items={albumSongs} />
-        </>
-      )}
-
-      {recommendations.length > 0 && (
-        <SliderList
-          title={modules.reco.title}
-          items={recommendations.map(toCardItem)}
-        />
-      )}
-
-      {trending.length > 0 && (
-        <SliderList
-          title={modules.currentlyTrending.title}
-          items={trending.map(toCardItem)}
-        />
-      )}
-
-      {songsFromSameArtists.length > 0 && (
-        <SliderList
-          title={modules.songsBysameArtists.title}
-          items={songsFromSameArtists.map(toCardItem)}
-        />
-      )}
-
-      {songsFromSameActors && songsFromSameActors.length > 0 && (
-        <SliderList
-          title={modules.songsBysameActors.title}
-          items={songsFromSameActors.map(toCardItem)}
-        />
-      )}
+      <Suspense
+        fallback={
+          <div className="space-y-4">
+            <div className="h-8 w-72 animate-pulse rounded bg-muted" />
+            <SongListSkeleton length={5} />
+          </div>
+        }
+      >
+        <SongAlbumSongs token={token} />
+      </Suspense>
+      <Suspense fallback={<SliderListSkeleton />}>
+        <SongRecommendations token={token} />
+      </Suspense>
+      <Suspense fallback={<SliderListSkeleton />}>
+        <SongTrending token={token} />
+      </Suspense>
+      <Suspense fallback={<SliderListSkeleton />}>
+        <SongSameArtists token={token} />
+      </Suspense>
+      <Suspense fallback={<SliderListSkeleton />}>
+        <SongSameActors token={token} />
+      </Suspense>
+      <Suspense
+        fallback={<div className="h-24 animate-pulse rounded bg-muted" />}
+      >
+        <SongLyrics token={token} />
+      </Suspense>
 
       <SliderList
-        title={modules.artists.title}
+        title={modules!.artists.title}
         items={(song.more_info.artistMap?.artists ?? []).map((artist) => ({
           id: artist.id,
           name: artist.name,

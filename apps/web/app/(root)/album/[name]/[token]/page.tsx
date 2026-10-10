@@ -1,13 +1,20 @@
-import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
+import { decode, getImageSrc } from "@infinitunes/types";
 import type { Metadata } from "next";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
+
+import {
+  AlbumRecommendations,
+  AlbumSameYear,
+  AlbumTrending,
+} from "./_components/secondary-lists";
 
 const getAlbum = cache(async (token: string) =>
   orNotFound(api.album.details({ token })),
@@ -33,32 +40,9 @@ export async function generateMetadata({
   });
 }
 
-async function fetcher(token: string) {
-  const trendingPromise = api.get.trending({ type: "album" });
-  // settled later; keep it from being an unhandled rejection during the await below
-  trendingPromise.catch(() => null);
-
-  const album = await getAlbum(token);
-
-  const [recommendations, trending, sameYear] = await Promise.allSettled([
-    api.album.recommendations({ id: album.id }),
-    trendingPromise,
-    api.album.sameYear({ year: `${album.year}` }),
-  ]);
-
-  return {
-    album,
-    recommendations:
-      recommendations.status === "fulfilled" ? recommendations.value : [],
-    trending: trending.status === "fulfilled" ? trending.value : [],
-    sameYear: sameYear.status === "fulfilled" ? sameYear.value : [],
-  };
-}
-
 export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
   const { token } = await props.params;
-
-  const { album, recommendations, trending, sameYear } = await fetcher(token);
+  const album = await getAlbum(token);
 
   const songs = Array.isArray(album.list) ? album.list : [];
 
@@ -68,29 +52,15 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
 
       <SongList items={songs} showAlbum={false} />
 
-      {recommendations.length > 0 && (
-        <SliderList
-          title={album.modules?.reco?.title ?? "Recommended Albums"}
-          items={recommendations.map(toCardItem)}
-        />
-      )}
-
-      {trending.length > 0 && (
-        <SliderList
-          title={album.modules?.currentlyTrending?.title ?? "Trending"}
-          items={trending.map(toCardItem)}
-        />
-      )}
-
-      {sameYear.length > 0 && (
-        <SliderList
-          title={
-            album.modules?.topAlbumsFromSameYear?.title ??
-            "Albums From Same Year"
-          }
-          items={sameYear.map(toCardItem)}
-        />
-      )}
+      <Suspense fallback={<SliderListSkeleton />}>
+        <AlbumRecommendations album={album} />
+      </Suspense>
+      <Suspense fallback={<SliderListSkeleton />}>
+        <AlbumTrending album={album} />
+      </Suspense>
+      <Suspense fallback={<SliderListSkeleton />}>
+        <AlbumSameYear album={album} />
+      </Suspense>
 
       <SliderList
         title={album.modules?.artists.title ?? "Artists"}

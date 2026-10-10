@@ -1,13 +1,19 @@
-import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
+import { decode, getImageSrc } from "@infinitunes/types";
 import type { Metadata } from "next";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
+
+import {
+  PlaylistRecommendations,
+  PlaylistTrending,
+} from "./_components/secondary-lists";
 
 const getPlaylist = cache(async (token: string) =>
   orNotFound(api.playlist.details({ token })),
@@ -30,26 +36,9 @@ export async function generateMetadata({
     square: true,
   });
 }
-async function fetcher(token: string) {
-  const playlist = await getPlaylist(token);
-
-  const [recommendations, trending] = await Promise.allSettled([
-    api.playlist.recommendations({ id: playlist.id }),
-    api.get.trending({ type: "playlist" }),
-  ]);
-
-  return {
-    playlist,
-    recommendations:
-      recommendations.status === "fulfilled" ? recommendations.value : [],
-    trending: trending.status === "fulfilled" ? trending.value : [],
-  };
-}
-
 export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
   const { token } = await props.params;
-
-  const { playlist, recommendations, trending } = await fetcher(token);
+  const playlist = await getPlaylist(token);
 
   const songs = Array.isArray(playlist.list) ? playlist.list : [];
   const artists = playlist.more_info.artists ?? [];
@@ -60,22 +49,12 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
 
       <SongList items={songs} />
 
-      {recommendations.length > 0 && (
-        <SliderList
-          title={
-            playlist.modules?.relatedPlaylist?.title ?? "Recommended Playlists"
-          }
-          items={recommendations.map(toCardItem)}
-        />
-      )}
-
-      <SliderList
-        title={
-          playlist.modules?.currentlyTrendingPlaylists?.title ??
-          "Trending Playlists"
-        }
-        items={trending.map(toCardItem)}
-      />
+      <Suspense fallback={<SliderListSkeleton />}>
+        <PlaylistRecommendations playlist={playlist} />
+      </Suspense>
+      <Suspense fallback={<SliderListSkeleton />}>
+        <PlaylistTrending playlist={playlist} />
+      </Suspense>
 
       {artists.length > 0 && (
         <SliderList

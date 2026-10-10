@@ -3,9 +3,11 @@ import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
 import { Separator } from "@infinitunes/ui/components/separator";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
-import { cache } from "react";
+import { cache, Suspense, type ComponentProps } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
+import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { getUser } from "~/lib/auth";
@@ -30,6 +32,55 @@ const getArtist = cache(async (token: string) =>
     }),
   ),
 );
+
+async function ArtistSecondaryList(props: ComponentProps<typeof SliderList>) {
+  return <SliderList {...props} />;
+}
+
+const getArtistLibrary = cache(
+  async (userPromise: ReturnType<typeof getUser>) => {
+    const user = await userPromise;
+    const [playlists, favorites] = user
+      ? await Promise.all([
+          orFallback("user playlists", getUserPlaylists(), undefined),
+          orFallback("user favorites", getUserFavorites(), null),
+        ])
+      : [undefined, undefined];
+    return { user, playlists, favorites };
+  },
+);
+
+async function ArtistLibraryTab({
+  artist,
+  category,
+  userPromise,
+  type,
+}: {
+  artist: Awaited<ReturnType<typeof getArtist>>;
+  category?: Category;
+  userPromise: ReturnType<typeof getUser>;
+  type: "songs" | "albums";
+}) {
+  const { user, playlists, favorites } = await getArtistLibrary(userPromise);
+  const topSongs = artist.topSongs ?? [];
+
+  return (
+    <>
+      <CategoryFilter category={category ?? "popularity"} />
+      <ArtistsTopItems
+        key={type === "songs" ? topSongs[0]?.id : artist.topAlbums?.[0]?.id}
+        id={artist.artistId}
+        type={type}
+        category={category}
+        user={user}
+        userFavorites={favorites}
+        userPlaylists={playlists}
+        initialSongs={type === "songs" ? topSongs : undefined}
+        initialAlbums={type === "albums" ? artist.topAlbums : undefined}
+      />
+    </>
+  );
+}
 
 type Props = {
   params: Promise<{ name: string; token: string }>;
@@ -58,15 +109,9 @@ export default async function ArtistDetailsPage(props: Props) {
   const artistPromise = getArtist(token);
   artistPromise.catch(() => undefined);
 
-  const user = await getUser();
-
-  const [artist, playlists, favorites] = await Promise.all([
-    artistPromise,
-    user
-      ? orFallback("user playlists", getUserPlaylists(), undefined)
-      : undefined,
-    user ? orFallback("user favorites", getUserFavorites(), null) : undefined,
-  ]);
+  const userPromise = getUser();
+  userPromise.catch(() => undefined);
+  const artist = await artistPromise;
 
   let selectedTab: TABS;
 
@@ -104,33 +149,25 @@ export default async function ArtistDetailsPage(props: Props) {
         </TabsContent>
 
         <TabsContent value={TABS.Songs}>
-          <CategoryFilter category={cat ?? "popularity"} />
-
-          <ArtistsTopItems
-            key={topSongs[0]?.id}
-            id={artist.artistId}
-            type="songs"
-            category={cat}
-            user={user}
-            userFavorites={favorites}
-            userPlaylists={playlists}
-            initialSongs={topSongs}
-          />
+          <Suspense fallback={<SongListSkeleton length={10} />}>
+            <ArtistLibraryTab
+              artist={artist}
+              category={cat}
+              userPromise={userPromise}
+              type="songs"
+            />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value={TABS.Albums}>
-          <CategoryFilter category={cat ?? "popularity"} />
-
-          <ArtistsTopItems
-            key={artist.topAlbums?.[0]?.id}
-            id={artist.artistId}
-            type="albums"
-            category={cat}
-            user={user}
-            userFavorites={favorites}
-            userPlaylists={playlists}
-            initialAlbums={artist.topAlbums}
-          />
+          <Suspense fallback={<SliderListSkeleton />}>
+            <ArtistLibraryTab
+              artist={artist}
+              category={cat}
+              userPromise={userPromise}
+              type="albums"
+            />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value={TABS.Biography} className="max-w-3xl">
@@ -145,48 +182,64 @@ export default async function ArtistDetailsPage(props: Props) {
         </TabsContent>
       </Tabs>
 
-      <SliderList
-        title={artist.modules?.dedicated_artist_playlist?.title ?? "Playlists"}
-        items={(artist.dedicated_artist_playlist ?? []).map(toCardItem)}
-      />
+      <Suspense fallback={<SliderListSkeleton />}>
+        <ArtistSecondaryList
+          title={
+            artist.modules?.dedicated_artist_playlist?.title ?? "Playlists"
+          }
+          items={(artist.dedicated_artist_playlist ?? []).map(toCardItem)}
+        />
+      </Suspense>
 
-      <SliderList
-        title={artist.modules?.featured_artist_playlist?.title ?? "Playlists"}
-        items={(artist.featured_artist_playlist ?? []).map(toCardItem)}
-      />
+      <Suspense fallback={<SliderListSkeleton />}>
+        <ArtistSecondaryList
+          title={artist.modules?.featured_artist_playlist?.title ?? "Playlists"}
+          items={(artist.featured_artist_playlist ?? []).map(toCardItem)}
+        />
+      </Suspense>
 
-      <SliderList
-        title={artist.modules?.topAlbums?.title ?? "Albums"}
-        items={(artist.topAlbums ?? []).map(toCardItem)}
-      />
+      <Suspense fallback={<SliderListSkeleton />}>
+        <ArtistSecondaryList
+          title={artist.modules?.topAlbums?.title ?? "Albums"}
+          items={(artist.topAlbums ?? []).map(toCardItem)}
+        />
+      </Suspense>
 
-      <SliderList
-        title={artist.modules?.topSongs?.title ?? "Songs"}
-        items={topSongs.map(toCardItem)}
-      />
+      <Suspense fallback={<SliderListSkeleton />}>
+        <ArtistSecondaryList
+          title={artist.modules?.topSongs?.title ?? "Songs"}
+          items={topSongs.map(toCardItem)}
+        />
+      </Suspense>
 
-      <SliderList
-        title={artist.modules?.singles?.title ?? "Singles"}
-        items={(artist.singles ?? []).map(toCardItem)}
-      />
+      <Suspense fallback={<SliderListSkeleton />}>
+        <ArtistSecondaryList
+          title={artist.modules?.singles?.title ?? "Singles"}
+          items={(artist.singles ?? []).map(toCardItem)}
+        />
+      </Suspense>
 
-      <SliderList
-        title={artist.modules?.latest_release?.title ?? "Latest Release"}
-        items={(artist.latest_release ?? []).map(toCardItem)}
-      />
+      <Suspense fallback={<SliderListSkeleton />}>
+        <ArtistSecondaryList
+          title={artist.modules?.latest_release?.title ?? "Latest Release"}
+          items={(artist.latest_release ?? []).map(toCardItem)}
+        />
+      </Suspense>
 
-      <SliderList
-        title={artist.modules?.similarArtists?.title ?? "Similar Artists"}
-        items={
-          artist.similarArtists?.map((s) => ({
-            id: s.id,
-            name: decode(s.name),
-            url: s.perma_url,
-            type: s.type,
-            image: s.image_url,
-          })) ?? []
-        }
-      />
+      <Suspense fallback={<SliderListSkeleton />}>
+        <ArtistSecondaryList
+          title={artist.modules?.similarArtists?.title ?? "Similar Artists"}
+          items={
+            artist.similarArtists?.map((s) => ({
+              id: s.id,
+              name: decode(s.name),
+              url: s.perma_url,
+              type: s.type,
+              image: s.image_url,
+            })) ?? []
+          }
+        />
+      </Suspense>
     </div>
   );
 }
