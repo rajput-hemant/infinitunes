@@ -183,7 +183,7 @@ export function QueueList() {
                   <ArtistLinks
                     artists={item.artists}
                     className="max-w-[400px]"
-                    linkClassName="relative z-10"
+                    linkClassName="relative z-10 inline-flex min-h-6 items-center lg:inline lg:min-h-0"
                   />
                 </figcaption>
 
