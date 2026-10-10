@@ -17,12 +17,14 @@ import {
 import { setCookie } from "cookies-next";
 import { ChevronDown, Languages } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { languages } from "~/config/languages";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
+
+import { isLang } from "./lang-guard";
 
 type LanguagePickerProps = {
   initialLanguages: Lang[];
@@ -31,9 +33,8 @@ type LanguagePickerProps = {
 export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
   const router = useRouter();
 
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [selectedLanguages, setSelectedLanguages] =
-    React.useState(initialLanguages);
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedLanguages, setSelectedLanguages] = useState(initialLanguages);
 
   function updateLanguages() {
     setCookie("language", selectedLanguages.join(","), {
@@ -88,7 +89,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
 
         <ToggleGroup
           value={selectedLanguages}
-          onValueChange={(v) => setSelectedLanguages(v as Lang[])}
+          onValueChange={(v) => setSelectedLanguages(v.filter(isLang))}
           aria-label="Languages"
           className="grid w-full grid-cols-2 border-y p-2"
         >
