@@ -10,8 +10,8 @@ export const metadata = {
 export default function ResetPasswordModal() {
   return (
     <AuthModal
-      title="Reset Password"
-      description="Choose a new password for your account"
+      title="Reset password"
+      description="Choose a new password for your account."
     >
       <ResetPasswordForm />
     </AuthModal>

@@ -10,8 +10,8 @@ export const metadata = {
 export default function LoginModal() {
   return (
     <AuthModal
-      title="Login"
-      description="Enter your credentials below to login"
+      title="Welcome back"
+      description="Log in to sync your library across devices."
     >
       <LoginForm />
     </AuthModal>
