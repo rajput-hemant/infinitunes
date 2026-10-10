@@ -158,7 +158,7 @@ describe("tile more-button mobile menu", () => {
         expect(scroll?.classList.contains("min-h-0")).toBe(true);
         expect(scroll?.classList.contains("overflow-x-hidden")).toBe(true);
 
-        const actions = [...(scroll?.querySelectorAll("button.h-11") ?? [])];
+        const actions = [...(scroll?.querySelectorAll("button.h-\\(--ctl-lg\\)") ?? [])];
         expect(actions).toHaveLength(8);
         expect(
           actions.some(
@@ -177,7 +177,7 @@ describe("tile more-button mobile menu", () => {
         expect(links).toHaveLength(6);
         for (const link of links) {
           expect(link.classList.contains("shrink-0")).toBe(true);
-          expect(link.classList.contains("min-h-11")).toBe(true);
+          expect(link.classList.contains("min-h-(--ctl-lg)")).toBe(true);
         }
       },
       true,
