@@ -102,6 +102,29 @@ describe("theme contrast", () => {
     }
   }
 
+  for (const name of ["default", ...names]) {
+    test(`${name} dark card and popover are lifted above background`, () => {
+      const palette = {
+        ...tokens(globals, ":root"),
+        ...tokens(globals, ".dark"),
+        ...(name !== "default"
+          ? {
+              ...tokens(presets, `.theme-${name}`),
+              ...tokens(presets, `.dark .theme-${name}`),
+            }
+          : {}),
+      };
+      const lightness = (token: string) =>
+        Number(/^oklch\(([\d.]+)/.exec(palette[token]!)![1]);
+      for (const surface of ["card", "popover"]) {
+        expect(
+          lightness(surface) - lightness("background"),
+          `${name} dark ${surface}`,
+        ).toBeGreaterThanOrEqual(0.04);
+      }
+    });
+  }
+
   test("presets declare local sidebar aliases and inherit the shared radius", () => {
     expect(names.length).toBe(12);
     expect(tokens(globals, ":root").radius).toBe("0.625rem");

@@ -24,13 +24,13 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
 
   return (
     <div className="grid min-h-dvh lg:grid-cols-2">
-      <div className="hidden bg-zinc-900 p-10 text-white dark:border-r lg:flex lg:flex-col lg:justify-between">
+      <div className="hidden border-r bg-card p-10 text-card-foreground lg:flex lg:flex-col lg:justify-between">
         <Link
           href="/"
           className={cn(
             buttonVariants(),
             controlStyles.text,
-            "group w-fit border border-zinc-600 duration-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-2 hover:ring-offset-zinc-900",
+            "group w-fit border border-border duration-200 hover:ring-2 hover:ring-ring hover:ring-offset-2 hover:ring-offset-card",
           )}
         >
           <ArrowLeft className="mr-1 size-4 duration-300 group-hover:-translate-x-1" />
