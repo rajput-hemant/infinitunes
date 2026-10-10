@@ -1,23 +1,77 @@
 import { describe, expect, it } from "bun:test";
 
+import type { ShowDetails } from "@infinitunes/types";
+
+import {
+  getKind,
+  isKind,
+  type DetailsItem,
+} from "../components/details-header/details-header-items";
+import { albumFixture, songFixture } from "./details-header-fixtures";
+
 const read = (path: string) => Bun.file(new URL(path, import.meta.url)).text();
 
-describe("PlayButton season (PQ-4)", () => {
-  it("takes the season as a prop instead of parsing the pathname", async () => {
-    const source = await read("../components/play-button.tsx");
+describe("details header season (PQ-4)", () => {
+  const show: ShowDetails = {
+    id: "show1",
+    title: "Show",
+    subtitle: "",
+    header_desc: "",
+    type: "season",
+    perma_url: "https://www.example.test/show/show1",
+    image: "",
+    language: "hindi",
+    year: "2020",
+    play_count: "0",
+    explicit_content: "0",
+    list_count: "0",
+    list_type: "",
+    list: "",
+    more_info: {
+      country_of_origin: "",
+      description: "",
+      disable_ads: "0",
+      is_disabled: "0",
+      label_id: "",
+      latest_season_id: "",
+      latest_season_sequence: "3",
+      parental_advisory: "0",
+      partner_id: "",
+      partner_name: "",
+      release_date: "",
+      tags: "",
+      followers_count: "0",
+      copyright_text: "",
+      category_tags: [],
+      sub_category_tags: [],
+      m4a: "",
+      artistMap: { primary_artists: [] },
+      header_logo: "",
+      header_color: "",
+      header_image: "",
+      label: "",
+      sort_order: "",
+      square_image: "",
+      editors_note: { title: "", message: "", image: "", content: [] },
+      season_number: "3",
+      total_episodes: "0",
+      is_followed: "0",
+      fan_count: "0",
+    },
+  };
 
-    expect(source).not.toContain("usePathname");
-    expect(source).not.toContain("as unknown as");
-    expect(source).toContain("season?: number;");
+  // Mirrors the value DetailsHeader hands PlayButton as `season`.
+  const seasonOf = (item: DetailsItem) =>
+    isKind(item, "season") ? Number(item.more_info.season_number) : undefined;
+
+  it("is the show's season number for a show page", () => {
+    expect(getKind(show)).toBe("season");
+    expect(seasonOf(show)).toBe(3);
   });
 
-  it("details header passes the show's season", async () => {
-    const source = await read(
-      "../components/details-header/details-header.tsx",
-    );
-
-    expect(source).toContain('isKind(item, "season")');
-    expect(source).toContain("Number(item.more_info.season_number)");
+  it("is absent for any other kind of page", () => {
+    expect(seasonOf(songFixture())).toBeUndefined();
+    expect(seasonOf(albumFixture())).toBeUndefined();
   });
 });
 

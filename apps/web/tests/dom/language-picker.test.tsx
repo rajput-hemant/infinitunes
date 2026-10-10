@@ -98,4 +98,32 @@ describe("language picker popover", () => {
     expect(document.cookie).toContain("language=hindi");
     expect(refresh).toHaveBeenCalledTimes(1);
   });
+
+  it("hides the decorative chevron and drops an unsaved selection on close", async () => {
+    const container = await mount();
+    const trigger = container.querySelector("button") as HTMLButtonElement;
+    expect(trigger.querySelector("svg:not([aria-hidden])")).toBeNull();
+
+    const chips = () =>
+      [...document.querySelectorAll<HTMLElement>("[aria-pressed]")].filter(
+        (el) => el.getAttribute("role") !== "dialog",
+      );
+    const pressed = () =>
+      chips()
+        .filter((el) => el.getAttribute("aria-pressed") === "true")
+        .map((el) => el.textContent);
+
+    await act(async () => trigger.click());
+    expect(pressed()).toEqual(["Hindi"]);
+
+    const other = chips().find((el) => el.textContent !== "Hindi");
+    await act(async () => other?.click());
+    expect(pressed()).toEqual([other?.textContent ?? ""]);
+
+    await act(async () => trigger.click());
+    await act(async () => new Promise((r) => setTimeout(r, 50)));
+    await act(async () => trigger.click());
+    expect(pressed()).toEqual(["Hindi"]);
+    expect(refresh).not.toHaveBeenCalled();
+  });
 });

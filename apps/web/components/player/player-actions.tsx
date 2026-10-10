@@ -71,6 +71,7 @@ export function PlayerActions({
           size="icon"
           variant="ghost"
           aria-label="More"
+          disabled
           className={controlStyles.headerIcon}
         >
           <MoreVertical aria-hidden className="size-5" />

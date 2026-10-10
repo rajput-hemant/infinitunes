@@ -343,7 +343,11 @@ describe("player a11y", () => {
   it("shows an accessible More button when the queue is empty", async () => {
     await mountPlayer({ queue: [] });
 
-    expect(document.querySelector('[aria-label="More"]')).not.toBeNull();
+    const more = document.querySelector<HTMLButtonElement>(
+      '[aria-label="More"]',
+    );
+    expect(more).not.toBeNull();
+    expect(more?.disabled).toBe(true);
   });
 });
 

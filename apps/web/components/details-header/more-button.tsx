@@ -95,7 +95,7 @@ export function MoreButton(props: MoreButtonProps) {
 
   const router = useRouter();
 
-  const [translateX, setTranslateX] = useState(0);
+  const [isSharing, setIsSharing] = useState(false);
   const [isDialogOpen, setDialogOpen] = useState(false);
 
   const [, setQueue] = useQueue();
@@ -235,7 +235,7 @@ export function MoreButton(props: MoreButtonProps) {
   return (
     <div>
       <div className="md:hidden">
-        <Drawer>
+        <Drawer onOpenChange={(open) => !open && setIsSharing(false)}>
           <DrawerTrigger
             render={
               <Button
@@ -278,33 +278,43 @@ export function MoreButton(props: MoreButtonProps) {
 
             <div
               className="relative flex min-h-[300px] flex-col gap-4 px-4 transition-transform duration-300"
-              style={{ transform: `translateX(${translateX}%)` }}
+              style={{ transform: `translateX(${isSharing ? -110 : 0}%)` }}
             >
-              {menuItems
-                .filter(({ hide }) => !hide)
-                .map(({ icon: Icon, label, onClick }) => (
-                  <button
-                    key={label}
-                    onClick={onClick}
-                    className="flex h-(--ctl-lg) items-center font-medium"
-                  >
-                    <Icon className="mr-2 size-5" />
-                    {label}
-                  </button>
-                ))}
-
-              <button
-                onClick={() => setTranslateX(-110)}
-                className="flex h-(--ctl-lg) items-center font-medium"
+              <div
+                inert={isSharing}
+                aria-hidden={isSharing}
+                className="flex flex-col gap-4"
               >
-                <Share2 className="mr-2 size-5" />
-                Share
-                <ChevronRight className="ml-auto size-5" />
-              </button>
+                {menuItems
+                  .filter(({ hide }) => !hide)
+                  .map(({ icon: Icon, label, onClick }) => (
+                    <button
+                      key={label}
+                      onClick={onClick}
+                      className="flex h-(--ctl-lg) items-center font-medium"
+                    >
+                      <Icon className="mr-2 size-5" />
+                      {label}
+                    </button>
+                  ))}
 
-              <div className="absolute left-[110%] min-w-full space-y-2 bg-background">
                 <button
-                  onClick={() => setTranslateX(0)}
+                  onClick={() => setIsSharing(true)}
+                  className="flex h-(--ctl-lg) items-center font-medium"
+                >
+                  <Share2 className="mr-2 size-5" />
+                  Share
+                  <ChevronRight className="ml-auto size-5" />
+                </button>
+              </div>
+
+              <div
+                inert={!isSharing}
+                aria-hidden={!isSharing}
+                className="absolute left-[110%] min-w-full space-y-2 bg-background"
+              >
+                <button
+                  onClick={() => setIsSharing(false)}
                   className="flex h-(--ctl-lg) items-center px-4 font-medium"
                 >
                   <ChevronLeft className="mr-2 size-5" />

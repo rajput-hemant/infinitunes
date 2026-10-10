@@ -29,6 +29,7 @@ export function useSearchPaletteKeys(options: SearchPaletteKeysOptions) {
   const { enabled, listboxId, resetKey } = options;
 
   const [index, setIndex] = useState(0);
+  const [rowCount, setRowCount] = useState(0);
 
   const scope = `${enabled}:${resetKey}`;
   const [seenScope, setSeenScope] = useState(scope);
@@ -43,6 +44,7 @@ export function useSearchPaletteKeys(options: SearchPaletteKeysOptions) {
     const sync = () => {
       const rows = getOptions(listboxId);
       const selected = Math.min(index, rows.length - 1);
+      setRowCount(rows.length);
       rows.forEach((row, i) => {
         row.id = `${listboxId}-option-${i}`;
         row.setAttribute("aria-selected", String(i === selected));
@@ -97,5 +99,11 @@ export function useSearchPaletteKeys(options: SearchPaletteKeysOptions) {
     rows[next]?.scrollIntoView?.({ block: "nearest" });
   });
 
-  return { activeOptionId: `${listboxId}-option-${index}` };
+  // Only an option that exists can be the active descendant.
+  const activeOptionId =
+    enabled && rowCount > 0
+      ? `${listboxId}-option-${Math.min(index, rowCount - 1)}`
+      : undefined;
+
+  return { activeOptionId };
 }

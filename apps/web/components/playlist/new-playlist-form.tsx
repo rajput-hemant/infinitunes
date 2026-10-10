@@ -40,20 +40,6 @@ type NewPlaylistFormProps = {
 export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
   const [open, setOpen] = React.useState(false);
 
-  const form = useForm<PlaylistFormData>({
-    resolver: zodResolver(newPlaylistSchema),
-    defaultValues,
-  });
-
-  function onSubmit({ name, description }: PlaylistFormData) {
-    toast.promise(unwrap(createNewPlaylist({ name, description })), {
-      loading: "Creating playlist...",
-      success: (d) => `Playlist "${d.name}" created successfully!`,
-      error: userMessage,
-      finally: () => setOpen(false),
-    });
-  }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={children} />
@@ -68,26 +54,58 @@ export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col gap-4"
-        >
-          <PlaylistFields control={form.control} />
-
-          <DialogFooter>
-            <DialogClose
-              render={
-                <Button variant="secondary" className={controlStyles.textLg}>
-                  Cancel
-                </Button>
-              }
-            />
-            <Button type="submit" className={controlStyles.textLg}>
-              Create Playlist
-            </Button>
-          </DialogFooter>
-        </form>
+        <CreatePlaylistForm onDone={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
+  );
+}
+
+type CreatePlaylistFormProps = {
+  onDone: () => void;
+};
+
+/**
+ * Mounted inside the dialog's content, so it is created fresh each time the
+ * dialog opens and never shows the previous attempt's values.
+ */
+function CreatePlaylistForm({ onDone }: CreatePlaylistFormProps) {
+  const form = useForm<PlaylistFormData>({
+    resolver: zodResolver(newPlaylistSchema),
+    defaultValues,
+  });
+
+  function onSubmit({ name, description }: PlaylistFormData) {
+    toast.promise(unwrap(createNewPlaylist({ name, description })), {
+      loading: "Creating playlist...",
+      success: (d) => `Playlist "${d.name}" created successfully!`,
+      error: userMessage,
+      finally: onDone,
+    });
+  }
+
+  return (
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="flex flex-col gap-4"
+    >
+      <PlaylistFields control={form.control} />
+
+      <DialogFooter>
+        <DialogClose
+          render={
+            <Button
+              variant="secondary"
+              type="button"
+              className={controlStyles.textLg}
+            >
+              Cancel
+            </Button>
+          }
+        />
+        <Button type="submit" className={controlStyles.textLg}>
+          Create Playlist
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }

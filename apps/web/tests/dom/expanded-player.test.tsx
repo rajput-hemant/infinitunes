@@ -148,6 +148,53 @@ describe("expanded player sheet", () => {
     await act(async () => root.unmount());
   });
 
+  it("moves between the pane tabs with the arrow keys", async () => {
+    const root = await mountExpanded();
+    const tabs = () => [
+      ...document.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    ];
+    const press = (key: string) =>
+      act(async () => {
+        document.activeElement?.dispatchEvent(
+          new KeyboardEvent("keydown", { key, bubbles: true }),
+        );
+      });
+
+    // Roving tabindex: only the selected tab is a tab stop, and only it
+    // points at the one panel that is rendered.
+    expect(tabs().map((t) => t.tabIndex)).toEqual([0, -1]);
+    expect(tabs().map((t) => t.hasAttribute("aria-controls"))).toEqual([
+      true,
+      false,
+    ]);
+    expect(
+      document.getElementById(tabs()[0].getAttribute("aria-controls") ?? ""),
+    ).not.toBeNull();
+
+    await act(async () => tabs()[0].focus());
+    await press("ArrowRight");
+    expect(tabs()[1].getAttribute("aria-selected")).toBe("true");
+    expect(document.activeElement).toBe(tabs()[1]);
+    expect(tabs().map((t) => t.tabIndex)).toEqual([-1, 0]);
+
+    await press("ArrowRight");
+    expect(tabs()[0].getAttribute("aria-selected")).toBe("true");
+    await press("ArrowLeft");
+    expect(tabs()[1].getAttribute("aria-selected")).toBe("true");
+
+    await act(async () => root.unmount());
+  });
+
+  it("keeps the toggle names stable while aria-pressed carries the state", async () => {
+    const root = await mountExpanded();
+    for (const label of ["Shuffle", "Loop", "Mute"]) {
+      expect(
+        document.querySelector(`button[aria-label="${label}"][aria-pressed]`),
+      ).not.toBeNull();
+    }
+    await act(async () => root.unmount());
+  });
+
   it("switches the pane to Lyrics and shows the empty state when there are none", async () => {
     const root = await mountExpanded();
     const tab = (label: string) =>

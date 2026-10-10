@@ -128,7 +128,10 @@ export function Queue({ open, onOpenChange }: QueueProps) {
               <button
                 type="button"
                 onClick={clearUpNext}
-                className="rounded-sm text-[0.8125rem]/5 font-semibold tracking-normal text-primary normal-case"
+                className={cn(
+                  controlStyles.textLg,
+                  "px-2 text-[0.8125rem]/5 font-semibold tracking-normal text-primary normal-case outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+                )}
               >
                 Clear
               </button>
