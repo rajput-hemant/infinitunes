@@ -10,6 +10,9 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
+
 import { EmailField } from "./email-field";
 
 type FormData = z.input<typeof forgotPasswordSchema>;
@@ -80,9 +83,8 @@ export function ForgotPasswordForm() {
 
       <Button
         type="submit"
-        size="sm"
         disabled={isSubmitting}
-        className="h-9 w-full font-semibold shadow-md"
+        className={cn(controlStyles.text, "w-full")}
       >
         {isSubmitting ? (
           <Loader2 className="mr-2 size-4 animate-spin" />

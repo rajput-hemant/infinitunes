@@ -15,6 +15,9 @@ import { Eye, EyeOff } from "lucide-react";
 import React from "react";
 import type { ControllerFieldState } from "react-hook-form";
 
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
+
 type PasswordFieldProps = {
   field: Pick<
     React.ComponentProps<"input">,
@@ -46,7 +49,7 @@ export function PasswordField(props: PasswordFieldProps) {
           disabled={disabled}
           aria-invalid={!!fieldState.error}
           placeholder="••••••••••"
-          className="h-10 pr-11 shadow-xs"
+          className="h-11 pr-12 shadow-xs"
           {...field}
         />
         <Tooltip>
@@ -56,7 +59,10 @@ export function PasswordField(props: PasswordFieldProps) {
             type="button"
             disabled={!field.value}
             onClick={() => setIsVisible(!isVisible)}
-            className="absolute inset-y-0 right-0 flex w-10 items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            className={cn(
+              controlStyles.headerIcon,
+              "absolute inset-y-0 right-0 flex items-center justify-center rounded-r-lg text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+            )}
           >
             {isVisible ? (
               <EyeOff aria-hidden className="size-5" />

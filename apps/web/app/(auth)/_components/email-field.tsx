@@ -39,7 +39,7 @@ export function EmailField(props: EmailFieldProps) {
         disabled={disabled}
         aria-invalid={!!fieldState.error}
         placeholder="you@domain.com"
-        className="h-10 shadow-xs"
+        className="h-11 shadow-xs"
         {...field}
       />
       <FieldError errors={[fieldState.error]} />

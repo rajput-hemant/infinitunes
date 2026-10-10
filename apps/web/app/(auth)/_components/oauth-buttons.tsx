@@ -7,6 +7,8 @@ import React from "react";
 import { toast } from "sonner";
 
 import { GitHub, Google } from "~/components/icons";
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
 
 type OAuthButtonProps = {
   isFormDisabled: boolean;
@@ -78,11 +80,11 @@ export function OAuthButtons(props: OAuthButtonProps) {
 
       <div className="mt-6 flex w-full flex-col space-y-2">
         <Button
-          size="sm"
           type="button"
+          variant="outline"
           onClick={googleSignInHandler}
           disabled={isFormDisabled}
-          className="h-9 w-full font-semibold shadow-md"
+          className={cn(controlStyles.text, "w-full")}
         >
           {oauthLoading === "google" ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -93,11 +95,11 @@ export function OAuthButtons(props: OAuthButtonProps) {
         </Button>
 
         <Button
-          size="sm"
           type="button"
+          variant="outline"
           onClick={githubSignInHandler}
           disabled={isFormDisabled}
-          className="h-9 w-full font-semibold shadow-md"
+          className={cn(controlStyles.text, "w-full")}
         >
           {oauthLoading === "github" ? (
             <Loader2 className="mr-2 size-4 animate-spin" />

@@ -4,6 +4,7 @@ import { buttonVariants } from "@infinitunes/ui/components/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 export function AuthModeToggle() {
@@ -13,8 +14,9 @@ export function AuthModeToggle() {
     <Link
       href={isLoginPage ? "/signup" : "/login"}
       className={cn(
-        buttonVariants({ size: "sm", variant: "outline" }),
-        "absolute right-4 top-4 w-20 max-md:h-10 transition-all duration-200 hover:ring-2 hover:ring-border hover:ring-offset-2 hover:ring-offset-background md:right-8 md:top-8",
+        buttonVariants({ variant: "outline" }),
+        controlStyles.text,
+        "absolute right-4 top-4 hover:ring-2 hover:ring-border hover:ring-offset-2 hover:ring-offset-background md:right-8 md:top-8",
       )}
     >
       {isLoginPage ? "Sign Up" : "Login"}
