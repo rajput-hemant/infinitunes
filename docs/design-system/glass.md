@@ -91,8 +91,10 @@ the same list (`OVERLAY_TARGETS` in `lib/glass/overlays.ts`; a test keeps the CS
 | Dialog, alert dialog      | `dialog-content`, `alert-dialog-content`             | dialog | l    |
 | Sheet, drawer             | `sheet-content`, `drawer-popup`                      | sheet  | l    |
 | Toast (sonner)            | `[data-sonner-toast]`                                | toast  | m    |
+| Tooltip                   | `tooltip-content`                                    | none   | s    |
 
-Not covered: tooltips (small inverted labels, they stay solid on purpose); select, hover card, context menu, menubar
+Tooltips use the s material with the m contrast floor (12px text keeps AA) and never get a lens, so they are styled in
+glass.css but kept out of `OVERLAY_TARGETS`. Not covered: select, hover card, context menu, menubar
 and command palette are not in `packages/ui` today. If one is added, add its slot to `OVERLAY_TARGETS` and to the
 `:is()` lists in glass.css (the test fails until both agree); a popup built outside `packages/ui` just uses
 `GlassSurface`. Menus and popovers from 768px, and toasts, materialize (opacity, scale .92, blur 10px to 0, lens ramp

@@ -51,7 +51,7 @@ export type OverlayTarget = {
 /**
  * Popups from `packages/ui` (read-only), identified by their real
  * `data-slot`. `styles/glass.css` styles the same list; a test keeps them in
- * step. Tooltips stay solid on purpose: they are tiny inverted labels.
+ * step. Tooltips are glass via CSS only: too small for a lens, so they are not listed.
  */
 export const OVERLAY_TARGETS: readonly OverlayTarget[] = [
   { selector: '[data-slot="popover-content"]', role: "menu", size: "l" },
