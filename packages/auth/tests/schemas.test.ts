@@ -62,6 +62,19 @@ describe("loginSchema", () => {
   });
 });
 
+describe("loginSchema legacy passwords", () => {
+  it("accepts any non-empty password but still requires one", () => {
+    expect(
+      loginSchema.safeParse({ email: "user@example.com", password: "weak" })
+        .success,
+    ).toBe(true);
+    expect(
+      loginSchema.safeParse({ email: "user@example.com", password: "" })
+        .success,
+    ).toBe(false);
+  });
+});
+
 describe("signUpSchema", () => {
   it("validates matching password and confirmPassword", () => {
     const valid = signUpSchema.safeParse({

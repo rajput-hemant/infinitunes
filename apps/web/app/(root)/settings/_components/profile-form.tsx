@@ -169,7 +169,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     aria-invalid={!!fieldState.error}
                     disabled={isSubmitting}
                     placeholder={user.name ?? "John Doe"}
-                    className="w-full max-w-96 shadow-xs"
+                    className="w-full max-w-96 shadow-xs min-h-11 lg:min-h-0"
                     {...field}
                   />
                 </div>
@@ -194,7 +194,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     aria-invalid={!!fieldState.error}
                     disabled={isSubmitting}
                     placeholder={user.email ?? "you@example.com"}
-                    className="w-full max-w-96 shadow-xs"
+                    className="w-full max-w-96 shadow-xs min-h-11 lg:min-h-0"
                     {...field}
                   />
                 </div>
@@ -221,7 +221,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   aria-invalid={!!fieldState.error}
                   disabled={isSubmitting}
                   placeholder="••••••••••"
-                  className="w-full max-w-96 shadow-xs"
+                  className="w-full max-w-96 shadow-xs min-h-11 lg:min-h-0"
                   {...field}
                 />
                 <FieldDescription>
@@ -285,7 +285,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
           />
 
           <div className="pt-4">
-            <Button type="submit" disabled={isSubmitting} className="shadow-xs">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="shadow-xs min-h-11 lg:min-h-0"
+            >
               Save Changes
             </Button>
           </div>
@@ -314,7 +318,10 @@ export function ProfileForm({ user }: ProfileFormProps) {
             >
               <AlertDialogTrigger
                 render={
-                  <Button variant="destructive" className={destructiveText}>
+                  <Button
+                    variant="destructive"
+                    className={cn(destructiveText, "min-h-11 lg:min-h-0")}
+                  >
                     Delete Account
                   </Button>
                 }
@@ -340,6 +347,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   value={deletePassword}
                   onChange={(e) => setDeletePassword(e.target.value)}
                   placeholder="Enter your password (if you have one)"
+                  className="min-h-11 lg:min-h-0"
                 />
                 <Input
                   type="text"
@@ -348,16 +356,20 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   value={confirmDelete}
                   onChange={(e) => setConfirmDelete(e.target.value)}
                   placeholder="Type DELETE MY ACCOUNT to confirm!"
+                  className="min-h-11 lg:min-h-0"
                 />
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel className="min-h-11 lg:min-h-0">
+                    Cancel
+                  </AlertDialogCancel>
                   <AlertDialogAction
                     onClick={deleteUserHandler}
                     disabled={confirmDelete !== "DELETE MY ACCOUNT"}
                     className={cn(
                       buttonVariants({ variant: "destructive" }),
                       destructiveText,
+                      "min-h-11 lg:min-h-0",
                     )}
                   >
                     Delete Account

@@ -77,14 +77,18 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               key={lang}
               value={lang.toLowerCase()}
               variant="outline"
-              className="w-24"
+              className="w-24 min-h-11 lg:min-h-0"
             >
               {lang}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
 
-        <Button size="sm" onClick={updateLanguages}>
+        <Button
+          size="sm"
+          className="min-h-11 lg:min-h-0"
+          onClick={updateLanguages}
+        >
           Save Preferences
         </Button>
       </section>
@@ -109,7 +113,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               render={
                 <Button
                   variant="outline"
-                  className="group w-48 justify-between font-semibold capitalize"
+                  className="group w-48 justify-between font-semibold capitalize min-h-11 lg:min-h-0"
                 >
                   <span>{streamQuality}</span>
                   <span className="text-xs font-light">
@@ -168,7 +172,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               render={
                 <Button
                   variant="outline"
-                  className="group w-48 justify-between font-semibold capitalize"
+                  className="group w-48 justify-between font-semibold capitalize min-h-11 lg:min-h-0"
                 >
                   <span>{downloadQuality}</span>
                   <span className="text-xs font-light">
@@ -224,7 +228,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               render={
                 <Button
                   variant="outline"
-                  className="group w-48 justify-between font-semibold capitalize"
+                  className="group w-48 justify-between font-semibold capitalize min-h-11 lg:min-h-0"
                 >
                   {imageQuality}
                   <ChevronDown

@@ -487,6 +487,10 @@ Checked items with evidence. "Code-read" means no browser was run for it.
 
 Reviewed, no action required: F5 silent `catch` at `player.tsx:214` is intentional; P4 dependent chains in me/playlist, shows and liked-songs; P8 fonts; D9 `crypto-js` stays (one use, DES-ECB, Node OpenSSL 3 lacks `des-ecb`; the `node:crypto` alternative was considered and rejected), `react-hook-form` is an unused optional peer of `packages/ui`; cookies are lax, httpOnly, secure in production, 30 days; server actions are thin wrappers; no IDOR found.
 
+- [x] **UI-62** `[P2 · fix · done]` Row Like button is intentionally hidden below `lg` (the row menu carries Add/Remove Favourite, 44px at mobile): comment at both row components and `tests/mocked/song-list-like-mobile.test.tsx` assert the contract. Not measured in a browser.
+- [x] **UI-63** `[P2 · fix · done]` Settings controls get `min-h-11 lg:min-h-0` (nav links, accordion trigger, theme and radius chips, language chips, quality selects, form inputs and buttons, passkey buttons, delete dialog): desktop heights unchanged, `packages/ui` untouched. Class assertion in `tests/dom/settings-touch-targets.test.tsx`; sizes at 390 not re-measured in a browser.
+- [x] **AU-20** `[P2 · fix · done]` `loginSchema` checks email plus a non-empty password only, so accounts with older, weaker passwords can sign in; sign-up, change and reset keep `passwordSchema` (`packages/auth/tests/schemas.test.ts`).
+
 ## Needs local environment
 
 Items that cannot be finished in the cloud sandbox (bun 1.3.14, no database, no Docker or Redis, no authenticated browser, upstream returns 403).
