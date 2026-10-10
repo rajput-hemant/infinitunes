@@ -206,9 +206,6 @@ When updating this file, preserve this bar for all agents and keep entries conci
 - **Per-request dedup**: when `generateMetadata` and the page body need the same
   fetch, wrap the fetcher in `cache()` from `"react"` at module scope and call it
   from both, with identical arguments (see the `song`/`album`/`show` detail pages).
-- **Avoid `Date.now()` in layout/page bodies**: a bare `Date.now()` in a Server Component
-  body trips the `react-purity` lint (it's a side effect during render). Use a module-level
-  helper instead (see `dailyArtistImage()` in `apps/web/lib/utils.ts`).
 
 ## Zod 4 API
 

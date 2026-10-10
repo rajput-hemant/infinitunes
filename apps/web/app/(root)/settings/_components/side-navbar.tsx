@@ -122,7 +122,7 @@ export function SideNavbar() {
 
           <Accordion key={section} className="lg:hidden">
             <AccordionItem value={section.toLowerCase()}>
-              <AccordionTrigger>
+              <AccordionTrigger className="min-h-11">
                 <h3 className="font-semibold dark:drop-shadow-xs text-foreground sm:text-lg md:text-xl">
                   {section}
                 </h3>
