@@ -1,20 +1,17 @@
-import { Badge } from "@infinitunes/ui/components/badge";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { languages } from "~/config/languages";
 
 export function LanguageBarSkeleton() {
   return (
-    <div className="border-b py-2">
-      <div className="flex space-x-2 overflow-x-hidden py-1 sm:space-x-6 md:space-x-10 lg:space-x-12">
+    <div className="mb-6 p-0.5">
+      <ul className="flex gap-2">
         {["for_you", ...languages].map((lang) => (
-          <Badge
-            key={lang}
-            className="bg-primary-foreground p-2 text-primary-foreground lg:px-4"
-          >
-            {lang}
-          </Badge>
+          <li key={lang} className="shrink-0">
+            <Skeleton className="h-(--ctl) w-20 rounded-(--r-ctl)" />
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 }
