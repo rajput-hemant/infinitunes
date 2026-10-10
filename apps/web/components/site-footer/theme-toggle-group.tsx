@@ -14,6 +14,11 @@ import { cn } from "~/lib/utils";
 // Never changes after hydration; only the server/client snapshots differ.
 const subscribeNever = () => () => {};
 
+const segmentClassName = cn(
+  controlStyles.headerIcon,
+  "p-0 text-muted-foreground hover:bg-transparent hover:text-foreground aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-sm aria-pressed:hover:bg-card dark:aria-pressed:bg-fill-2 dark:aria-pressed:hover:bg-fill-2",
+);
+
 type ThemeToggleGroupProps = {
   className?: string;
 };
@@ -35,30 +40,30 @@ export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
     <ToggleGroup
       value={[isMounted ? (theme ?? "system") : "system"]}
       onValueChange={(v) => handleThemeChange(v[0])}
-      className={cn("rounded-full border p-1", className)}
+      className={cn("gap-0.5 rounded-ctl bg-fill p-0.5", className)}
     >
       <ToggleGroupItem
         aria-label="Toggle Light Mode"
         value="light"
-        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
+        className={segmentClassName}
       >
-        <SunMedium className="h-4" />
+        <SunMedium aria-hidden className="size-4" />
       </ToggleGroupItem>
 
       <ToggleGroupItem
         aria-label="Toggle System Mode"
         value="system"
-        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
+        className={segmentClassName}
       >
-        <Monitor className="h-4" />
+        <Monitor aria-hidden className="size-4" />
       </ToggleGroupItem>
 
       <ToggleGroupItem
         aria-label="Toggle Dark Mode"
         value="dark"
-        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
+        className={segmentClassName}
       >
-        <Moon className="h-4" />
+        <Moon aria-hidden className="size-4" />
       </ToggleGroupItem>
     </ToggleGroup>
   );

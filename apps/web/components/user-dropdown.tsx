@@ -66,10 +66,10 @@ export function UserDropdown({ user }: UserDropdownProps) {
         aria-label="Open user menu"
         className={cn(
           controlStyles.headerIcon,
-          "flex items-center justify-center rounded-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+          "flex items-center justify-center rounded-full",
         )}
       >
-        <Avatar className="border shadow-xs">
+        <Avatar className="border">
           <AvatarImage
             src={user?.image ?? undefined}
             alt={user?.name ?? "Guest User"}
@@ -90,7 +90,7 @@ export function UserDropdown({ user }: UserDropdownProps) {
       <DropdownMenuContent
         side="bottom"
         align="end"
-        className="max-w-[300px] *:cursor-pointer [&_[data-slot=dropdown-menu-item]]:py-1.5"
+        className="min-w-56 max-w-xs *:cursor-pointer [&_[data-slot=dropdown-menu-item]]:min-h-(--ctl) [&_[data-slot=dropdown-menu-item]]:pointer-coarse:min-h-(--ctl-lg)"
       >
         <DropdownMenuGroup>
           <DropdownMenuLabel className="flex flex-col">

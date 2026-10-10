@@ -2,12 +2,21 @@ import Link from "next/link";
 
 import { languages } from "~/config/languages";
 import { siteConfig } from "~/config/site";
+import { controlStyles } from "~/lib/control-styles";
 import { footerOrEmpty } from "~/lib/shell-data";
 import { api } from "~/lib/trpc/server";
-import { asRoute } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 import { Icons } from "../icons";
 import { ThemeToggleGroup } from "./theme-toggle-group";
+
+const linkClassName =
+  "flex items-center py-1.5 transition-colors duration-fast hover:text-foreground pointer-coarse:min-h-11";
+
+const socialLinkClassName = cn(
+  controlStyles.headerIcon,
+  "flex items-center justify-center transition-colors duration-fast hover:bg-fill hover:text-foreground",
+);
 
 export async function SiteFooter() {
   const { artist, actor, album, playlist } = await footerOrEmpty(
@@ -22,91 +31,78 @@ export async function SiteFooter() {
   ];
 
   return (
-    <footer className="border-t py-6 md:py-10">
-      <div className="mx-auto w-full max-w-none px-5 text-sm sm:max-w-[90%] sm:px-0 2xl:max-w-7xl">
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] items-stretch justify-between gap-y-10 sm:gap-x-6 md:flex md:flex-wrap">
-          <div className="col-span-full flex justify-between md:flex-col md:justify-normal">
-            <Link href="/" className="flex min-h-11 min-w-11 items-start">
-              <Icons.Logo className="mr-1 h-5" />
-              <span className="font-heading tracking-wide dark:drop-shadow-md">
-                {siteConfig.name}
-              </span>
-            </Link>
+    <footer className="mt-16 border-t pt-6 text-xs/4 text-muted-foreground">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
+        {footerLinks.map(({ title, data }) => (
+          <section key={title}>
+            <h2 className="mb-1 text-sm font-semibold text-foreground">
+              {title}
+            </h2>
 
-            <div className="flex justify-center text-muted-foreground md:mt-4 gap-4">
-              <a
-                aria-label="GitHub Repository"
-                href={siteConfig.links.github}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex min-h-11 min-w-11 items-center justify-center p-3 duration-200 hover:text-foreground"
-              >
-                <Icons.GitHub className="size-4" />
-              </a>
-              <a
-                aria-label="X/Twitter Handle"
-                href={siteConfig.links.x}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex min-h-11 min-w-11 items-center justify-center p-3 duration-200 hover:text-foreground"
-              >
-                <Icons.X className="size-4" />
-              </a>
-            </div>
-          </div>
-
-          {footerLinks.map(({ title, data }) => (
-            <section key={title} className="flex flex-col gap-2.5">
-              <h2 className="text-sm font-semibold lg:text-sm">{title}</h2>
-
-              <ul className="w-fit">
-                {data.map(({ id, title: linkTitle, action }) => (
-                  <li
-                    key={id}
-                    className="w-full text-xs text-muted-foreground hover:text-secondary-foreground"
-                  >
-                    <Link
-                      href={asRoute(action.replace("featured", "playlist"))}
-                      className="flex min-h-11 min-w-11 items-center"
-                    >
-                      {linkTitle}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-
-          <section className="flex flex-col gap-2.5">
-            <h2 className="text-sm font-semibold lg:text-sm">Languages</h2>
-
-            <ul className="w-fit">
-              {languages.map((lang) => (
-                <li
-                  key={lang}
-                  className="w-full text-xs text-muted-foreground hover:text-secondary-foreground"
-                >
+            <ul>
+              {data.map(({ id, title: linkTitle, action }) => (
+                <li key={id}>
                   <Link
-                    href={asRoute(`/album?lang=${lang.toLowerCase()}`)}
-                    className="flex min-h-11 min-w-11 items-center"
-                  >{`${lang} Songs`}</Link>
+                    href={asRoute(action.replace("featured", "playlist"))}
+                    className={linkClassName}
+                  >
+                    {linkTitle}
+                  </Link>
                 </li>
               ))}
             </ul>
           </section>
-        </div>
+        ))}
+
+        <section>
+          <h2 className="mb-1 text-sm font-semibold text-foreground">
+            Languages
+          </h2>
+
+          <ul>
+            {languages.map((lang) => (
+              <li key={lang}>
+                <Link
+                  href={asRoute(`/album?lang=${lang.toLowerCase()}`)}
+                  className={linkClassName}
+                >{`${lang} Songs`}</Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
 
-      <div className="mx-auto mt-4 flex max-w-7xl px-5 sm:px-0 flex-col items-center justify-between gap-4 border-t py-6 lg:flex-row">
-        <div className="max-w-4xl text-center text-xs text-muted-foreground lg:text-sm">
-          <Link
-            href="/"
-            className="flex min-h-11 min-w-11 items-center justify-center"
-          >
-            <span className="font-heading text-base tracking-wide text-primary underline dark:drop-shadow-md">
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+        <div className="flex max-w-3xl flex-col gap-2">
+          <div className="flex items-center gap-1">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 font-heading text-sm font-bold text-foreground lowercase"
+            >
+              <Icons.Logo className="size-4" />
               {siteConfig.name}
-            </span>
-          </Link>
+            </Link>
+
+            <a
+              aria-label="GitHub Repository"
+              href={siteConfig.links.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={socialLinkClassName}
+            >
+              <Icons.GitHub className="size-4" />
+            </a>
+            <a
+              aria-label="X/Twitter Handle"
+              href={siteConfig.links.x}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={socialLinkClassName}
+            >
+              <Icons.X className="size-4" />
+            </a>
+          </div>
+
           <p>
             {siteConfig.name} is not affiliated with JioSaavn. All trademarks
             and copyrights belong to their respective owners. All media, images,
@@ -115,7 +111,7 @@ export async function SiteFooter() {
           </p>
         </div>
 
-        <ThemeToggleGroup className="w-fit" />
+        <ThemeToggleGroup />
       </div>
     </footer>
   );

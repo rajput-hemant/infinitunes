@@ -6,9 +6,14 @@ const USER_DROPDOWN = new URL(
 );
 
 describe("user dropdown menu", () => {
-  it("restores master row padding on menu items at the call site", async () => {
+  it("sizes menu items from the control tokens at the call site", async () => {
     const source = await Bun.file(USER_DROPDOWN).text();
 
-    expect(source).toContain("[&_[data-slot=dropdown-menu-item]]:py-1.5");
+    expect(source).toContain(
+      "[&_[data-slot=dropdown-menu-item]]:min-h-(--ctl)",
+    );
+    expect(source).toContain(
+      "[&_[data-slot=dropdown-menu-item]]:pointer-coarse:min-h-(--ctl-lg)",
+    );
   });
 });
