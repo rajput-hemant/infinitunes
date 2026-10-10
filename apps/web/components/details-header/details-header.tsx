@@ -82,7 +82,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
         width={50}
         height={50}
         fallback={getPlaceholderSrc(kind)}
-        className="absolute -top-[5%] -left-[5%] -z-20 size-[11%] origin-top-left scale-10 rounded-none object-cover opacity-60 blur-[4px] saturate-[1.6] [mask-image:linear-gradient(to_bottom,black_35%,transparent_95%)]"
+        className="absolute -top-[5%] -left-[5%] -z-20 size-[11%] origin-top-left scale-[10] rounded-none object-cover opacity-60 blur-[4px] saturate-[1.6] [mask-image:linear-gradient(to_bottom,black_35%,transparent_95%)]"
       />
 
       <div
