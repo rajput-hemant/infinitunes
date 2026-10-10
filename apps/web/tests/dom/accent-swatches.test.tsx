@@ -30,11 +30,16 @@ async function mount(accent: string) {
     );
   });
   const radios = () =>
-    Array.from(container.querySelectorAll<HTMLElement>("[role=radio]"));
+    Array.from(
+      container.querySelectorAll<HTMLInputElement>("input[type=radio]"),
+    );
+  const label = (radio: HTMLInputElement) =>
+    radio.closest("label")?.textContent ?? "";
   return {
     container,
     updates,
     radios,
+    label,
     cleanup: async () => {
       await act(async () => root.unmount());
       container.remove();
@@ -43,49 +48,48 @@ async function mount(accent: string) {
 }
 
 describe("accent swatches", () => {
-  it("is a named radiogroup with one named radio per preset", async () => {
+  it("is a named group with one named radio per preset", async () => {
     const view = await mount("blue");
-    const group = view.container.querySelector("[role=radiogroup]");
-    expect(group?.getAttribute("aria-label")).toBe("Accent color");
-    expect(view.radios().map((r) => r.getAttribute("aria-label"))).toEqual(
+    const legend = view.container.querySelector("fieldset > legend");
+    expect(legend?.textContent).toBe("Accent color");
+    expect(view.radios().map(view.label)).toEqual(
       themes.map((theme) => theme.label),
     );
-    const checked = view
-      .radios()
-      .filter((r) => r.getAttribute("aria-checked") === "true");
-    expect(checked.map((r) => r.getAttribute("aria-label"))).toEqual(["Blue"]);
-    // Roving tab stop: only the selected swatch is tabbable.
-    expect(view.radios().filter((r) => r.tabIndex === 0)).toHaveLength(1);
+    // One shared name, so the browser keeps a single tab stop for the group.
+    expect(new Set(view.radios().map((r) => r.name)).size).toBe(1);
+    const checked = view.radios().filter((r) => r.checked);
+    expect(checked.map(view.label)).toEqual(["Blue"]);
     await view.cleanup();
   });
 
   it("updates the theme config with the picked preset", async () => {
     const view = await mount("zinc");
-    const violet = view.radios().find((r) => r.title === "Violet");
+    const violet = view.radios().find((r) => view.label(r) === "Violet");
     await act(async () => violet?.click());
     expect(view.updates).toEqual([{ accent: "violet" }]);
     await view.cleanup();
   });
 
-  it("moves selection with the arrow keys and wraps", async () => {
+  it("keeps arrow keys from reaching the surrounding menu", async () => {
     const view = await mount("zinc");
+    const reached: string[] = [];
+    // An ancestor, like the menu: React's own root listener sits on the container.
+    const onKey = (e: KeyboardEvent) => void reached.push(e.key);
+    document.body.addEventListener("keydown", onKey);
     const first = view.radios()[0];
-    first?.focus();
-    await act(async () => {
+    for (const key of ["ArrowLeft", "ArrowDown", "Escape"]) {
       first?.dispatchEvent(
-        new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }),
+        new KeyboardEvent("keydown", { key, bubbles: true }),
       );
-    });
-    expect(view.updates).toEqual([{ accent: themes.at(-1)?.name }]);
+    }
+    document.body.removeEventListener("keydown", onKey);
+    expect(reached).toEqual(["Escape"]);
     await view.cleanup();
   });
 
-  it("keeps a tab stop when the accent is custom", async () => {
+  it("leaves every preset unchecked for a custom accent", async () => {
     const view = await mount("#123456");
-    expect(
-      view.radios().every((r) => r.getAttribute("aria-checked") === "false"),
-    ).toBe(true);
-    expect(view.radios().filter((r) => r.tabIndex === 0)).toHaveLength(1);
+    expect(view.radios().some((r) => r.checked)).toBe(false);
     await view.cleanup();
   });
 });

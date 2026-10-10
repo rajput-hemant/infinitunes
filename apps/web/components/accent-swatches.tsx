@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { useRef } from "react";
+import { useId } from "react";
 import type { KeyboardEvent } from "react";
 
 import { themes } from "~/config/themes";
@@ -22,52 +22,37 @@ export function AccentSwatches({ className }: AccentSwatchesProps) {
     config: { accent },
     update,
   } = useThemeConfig();
-  const group = useRef<HTMLDivElement>(null);
-  // Roving tabindex: the selected swatch, or the first when none is selected.
-  const tabbable = themes.some((theme) => theme.name === accent)
-    ? accent
-    : themes[0].name;
+  const name = useId();
 
-  // Menus and sheets handle arrow keys themselves; keep them for the group.
-  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[
-      event.key
-    ];
-    if (!step) return;
-    event.preventDefault();
-    event.stopPropagation();
-    const radios = Array.from(
-      group.current?.querySelectorAll<HTMLButtonElement>("[role=radio]") ?? [],
-    );
-    const index = radios.findIndex((radio) => radio === document.activeElement);
-    const next = radios[(index + step + radios.length) % radios.length];
-    next?.focus();
-    next?.click();
+  // Menus and sheets move focus on arrow keys themselves. Keep those keys for
+  // the native radios, which step and select through the group on their own.
+  function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key.startsWith("Arrow")) event.stopPropagation();
   }
 
   return (
-    <div
-      ref={group}
-      role="radiogroup"
-      aria-label="Accent color"
-      onKeyDown={onKeyDown}
-      className={cn("grid grid-cols-6", className)}
-    >
+    <fieldset className={cn("grid grid-cols-6", className)}>
+      <legend className="sr-only">Accent color</legend>
       {themes.map((theme) => {
         const selected = accent === theme.name;
         return (
-          <button
+          <label
             key={theme.name}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            aria-label={theme.label}
             title={theme.label}
-            tabIndex={theme.name === tabbable ? 0 : -1}
-            onClick={() => update({ accent: theme.name })}
-            className="group/swatch grid h-(--ctl-lg) place-items-center rounded-(--r-ctl) outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group/swatch grid h-(--ctl-lg) cursor-pointer place-items-center rounded-(--r-ctl) has-focus-visible:ring-2 has-focus-visible:ring-ring"
           >
+            <input
+              type="radio"
+              name={name}
+              value={theme.name}
+              checked={selected}
+              onChange={() => update({ accent: theme.name })}
+              onKeyDown={onKeyDown}
+              className="sr-only"
+            />
+            <span className="sr-only">{theme.label}</span>
             <span
+              aria-hidden
               style={{ backgroundColor: theme.hex }}
               className={cn(
                 "grid size-5 place-items-center rounded-full text-white transition-transform duration-fast ease-spring group-hover/swatch:scale-110 group-active/swatch:scale-95",
@@ -77,12 +62,12 @@ export function AccentSwatches({ className }: AccentSwatchesProps) {
               )}
             >
               {selected ? (
-                <Check aria-hidden className="size-3 mix-blend-difference" />
+                <Check className="size-3 mix-blend-difference" />
               ) : null}
             </span>
-          </button>
+          </label>
         );
       })}
-    </div>
+    </fieldset>
   );
 }

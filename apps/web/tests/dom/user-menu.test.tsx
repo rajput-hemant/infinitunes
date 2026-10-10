@@ -114,9 +114,11 @@ describe("user menu on desktop", () => {
     setPhone(false);
     await openMenu(await mount({}));
 
-    const group = document.querySelector("[role=menu] [role=radiogroup]");
-    expect(group?.getAttribute("aria-label")).toBe("Accent color");
-    expect(group?.querySelectorAll("[role=radio]").length).toBeGreaterThan(5);
+    const group = document.querySelector("[role=menu] fieldset");
+    expect(group?.querySelector("legend")?.textContent).toBe("Accent color");
+    expect(group?.querySelectorAll("input[type=radio]").length).toBeGreaterThan(
+      5,
+    );
   });
 
   it("opens a shortcuts dialog listing the implemented shortcuts", async () => {
@@ -167,7 +169,7 @@ describe("user menu below 768px", () => {
     await openMenu(await mount({}));
 
     expect(
-      document.querySelector("[role=dialog] [role=radiogroup]"),
+      document.querySelector("[role=dialog] fieldset input[type=radio]"),
     ).not.toBeNull();
   });
 
