@@ -33,7 +33,8 @@ after the current usage window.
 8. **Focus/overlays.** Expanded player aria-modal + trap, languages popover, user menu focus.
 9. **PWA.** Maskable icons, opaque apple-icon, manifest id/scope/shortcuts/screenshots; offline fallback (judgment).
 10. **Forced colors, touch targets, reflow.** Slider tracks, 44px coarse hit areas, appearance swatch row.
-11. **Lower budget ceilings** in `scripts/check-budget.ts` to the new measured values and flip the shared-chunk guard to `error` (zod is out of the shell now).
+11. **Glass performance** (`glass-perf-audit.md`, measured on ea06da4): backdrop-filter itself is the desktop cost (album draw ms/frame: lens 37, frost 28, solid 22, none 13); the viewport wash is the biggest lever (32 to 18 ms with it off). Do first: drop backdrop-filter on closed/offscreen surfaces (closed phone queue still has a 366x448 lens), make the player rAF loop run only while playing (`components/player.tsx` ~141-150, 60 Hz idle), stop lens rebuilds during the phone tab-bar morph (22-34 per scroll, `lens-registry.ts` `schedule()`). Then judgment: pre-baked cheap wash, device-hint and frame-budget lens to frost downgrade, removing the frost-to-lens swap-in pop 350-700 ms after first paint.
+12. **Lower budget ceilings** in `scripts/check-budget.ts` to the new measured values and flip the shared-chunk guard to `error` (zod is out of the shell now).
 
 ## Notes for the next session
 
