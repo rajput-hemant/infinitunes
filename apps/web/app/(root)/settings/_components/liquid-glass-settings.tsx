@@ -1,24 +1,26 @@
 "use client";
 
-import { GLASS_LEVELS } from "@infinitunes/types";
-import type { GlassLevel } from "@infinitunes/types";
+import { GLASS_LEVELS, GLASS_VARIANTS } from "@infinitunes/types";
+import type { GlassLevel, GlassTuning, GlassVariant } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Switch } from "@infinitunes/ui/components/switch";
 import { Layers, RotateCcw } from "lucide-react";
-import React from "react";
+import { useTheme } from "next-themes";
+import { useId } from "react";
 
 import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
-import { DEFAULT_THEME_CONFIG } from "~/lib/theme-config";
+import { DEFAULT_GLASS_TUNING, DEFAULT_THEME_CONFIG } from "~/lib/theme-config";
 
+import { GlassDemo } from "./glass-demo";
 import {
   GLASS_SLIDERS,
-  GLASS_VARIANTS,
   formatSliderValue,
+  isDefaultGlassTuning,
+  resolveGlassTuning,
   sliderPatch,
   sliderValue,
 } from "./glass-tuning";
-import type { GlassTuning } from "./glass-tuning";
 import { OptionGroup } from "./option-group";
 import { RangeField } from "./range-field";
 import { SettingsRow } from "./settings-section";
@@ -29,34 +31,28 @@ const LEVEL_LABELS: Record<GlassLevel, string> = {
   solid: "Solid",
 };
 
-const VARIANT_LABELS = {
+const VARIANT_LABELS: Record<GlassVariant, string> = {
   regular: "Regular",
   clear: "Clear",
   tinted: "Tinted",
-} as const;
-
-/** Controls for the glass material fields `ThemeConfig` does not store yet. */
-export type GlassTuningControls = {
-  value: GlassTuning;
-  onChange: (patch: Partial<GlassTuning>) => void;
-  onReset: () => void;
 };
 
-type LiquidGlassSettingsProps = {
-  /** Omit until the theme config can persist the fine tuning; the section then shows level and ambient only. */
-  tuning?: GlassTuningControls;
-};
-
-export function LiquidGlassSettings({ tuning }: LiquidGlassSettingsProps) {
-  const {
-    config: { glass, ambient },
-    update,
-  } = useThemeConfig();
-  const ambientLabelId = React.useId();
+/** Glass level, the tuning sliders and the ambient field, all stored in the theme config. */
+export function LiquidGlassSettings() {
+  const { config, update } = useThemeConfig();
+  const { resolvedTheme } = useTheme();
+  const { glass, ambient, glassTuning } = config;
+  const tuning = resolveGlassTuning(glassTuning, resolvedTheme === "dark");
+  const ambientLabelId = useId();
+  const accentTintLabelId = useId();
   const isSolid = glass === "solid";
   const isDefault =
-    glass === DEFAULT_THEME_CONFIG.glass &&
-    ambient === DEFAULT_THEME_CONFIG.ambient;
+    ambient === DEFAULT_THEME_CONFIG.ambient &&
+    isDefaultGlassTuning(glassTuning);
+
+  function tune(patch: Partial<GlassTuning>) {
+    update({ glassTuning: { ...glassTuning, ...patch } });
+  }
 
   return (
     <div className="grid gap-4">
@@ -77,73 +73,53 @@ export function LiquidGlassSettings({ tuning }: LiquidGlassSettingsProps) {
       <div className="grid max-w-2xl gap-4 rounded-md border border-line p-4">
         <h3 className="font-heading text-base font-semibold">Liquid Glass</h3>
 
-        <div
-          aria-hidden
-          className="relative isolate grid h-40 place-items-center overflow-hidden rounded-md bg-card"
-        >
-          <i className="absolute top-3 left-6 -z-10 size-20 rounded-full bg-primary/70 blur-xl" />
-          <i className="absolute right-8 bottom-2 -z-10 size-24 rounded-full bg-primary/40 blur-xl" />
-          <div className="grid gap-0.5 rounded-md border border-line bg-card/60 px-4 py-2 text-center">
-            <b>Now Playing</b>
-            <small className="text-muted-foreground">
-              {LEVEL_LABELS[glass]}
-            </small>
-          </div>
-        </div>
+        <GlassDemo />
 
-        {tuning && (
-          <fieldset
-            disabled={isSolid}
-            className="grid gap-4 disabled:opacity-50"
+        <fieldset disabled={isSolid} className="grid gap-4 disabled:opacity-50">
+          <legend className="sr-only">Liquid Glass tuning</legend>
+
+          <SettingsRow
+            label="Variant"
+            help="Applies to the player, tab bar and toolbar. Menus, dialogs and the sidebar stay Regular for legibility."
+            className="border-b-0 py-0"
           >
-            <legend className="sr-only">Liquid Glass tuning</legend>
+            <OptionGroup
+              label="Glass variant"
+              value={glassTuning.variant}
+              onValueChange={(variant) => tune({ variant })}
+              options={GLASS_VARIANTS.map((variant) => ({
+                value: variant,
+                label: VARIANT_LABELS[variant],
+              }))}
+            />
+          </SettingsRow>
 
-            <SettingsRow
-              label="Variant"
-              help="Applies to the player, tab bar and toolbar. Menus, dialogs and the sidebar stay Regular for legibility."
-              className="border-b-0 py-0"
-            >
-              <OptionGroup
-                label="Glass variant"
-                value={tuning.value.variant}
-                onValueChange={(variant) => tuning.onChange({ variant })}
-                options={GLASS_VARIANTS.map((variant) => ({
-                  value: variant,
-                  label: VARIANT_LABELS[variant],
-                }))}
-              />
-            </SettingsRow>
+          {GLASS_SLIDERS.map((slider) => (
+            <RangeField
+              key={slider.key}
+              label={slider.label}
+              min={slider.min}
+              max={slider.max}
+              step={slider.step}
+              value={sliderValue(slider, tuning)}
+              format={(shown) => formatSliderValue(slider, shown)}
+              onValueChange={(shown) => tune(sliderPatch(slider, shown))}
+            />
+          ))}
 
-            {GLASS_SLIDERS.map((slider) => (
-              <RangeField
-                key={slider.key}
-                label={slider.label}
-                min={slider.min}
-                max={slider.max}
-                step={slider.step}
-                value={sliderValue(slider, tuning.value)}
-                format={(shown) => formatSliderValue(slider, shown)}
-                onValueChange={(shown) =>
-                  tuning.onChange(sliderPatch(slider, shown))
-                }
-              />
-            ))}
-
-            <SettingsRow
-              label="Tint follows accent"
-              help="Mix the accent colour into the glass tint."
-              className="border-b-0 py-0"
-            >
-              <Switch
-                aria-label="Tint follows accent"
-                checked={tuning.value.accentTint}
-                onCheckedChange={(accentTint) =>
-                  tuning.onChange({ accentTint })
-                }
-              />
-            </SettingsRow>
-          </fieldset>
-        )}
+          <SettingsRow
+            label="Tint follows accent"
+            labelId={accentTintLabelId}
+            help="Mix the accent colour into the glass tint."
+            className="border-b-0 py-0"
+          >
+            <Switch
+              aria-labelledby={accentTintLabelId}
+              checked={glassTuning.accentTint}
+              onCheckedChange={(accentTint) => tune({ accentTint })}
+            />
+          </SettingsRow>
+        </fieldset>
 
         <SettingsRow
           label="Ambient background"
@@ -161,14 +137,13 @@ export function LiquidGlassSettings({ tuning }: LiquidGlassSettingsProps) {
         <div>
           <Button
             variant="outline"
-            disabled={isDefault && !tuning}
-            onClick={() => {
+            disabled={isDefault}
+            onClick={() =>
               update({
-                glass: DEFAULT_THEME_CONFIG.glass,
                 ambient: DEFAULT_THEME_CONFIG.ambient,
-              });
-              tuning?.onReset();
-            }}
+                glassTuning: DEFAULT_GLASS_TUNING,
+              })
+            }
             className={controlStyles.text}
           >
             <RotateCcw aria-hidden className="size-4" />

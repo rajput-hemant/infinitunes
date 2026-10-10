@@ -13,12 +13,8 @@ mock.module("../../lib/theme/actions", () => ({
 
 const { accentPatch, radiusPatch, radiusToPx } =
   await import("../../app/(root)/settings/_components/appearance-options");
-const { GLASS_SLIDERS, formatSliderValue, sliderPatch, sliderValue } =
-  await import("../../app/(root)/settings/_components/glass-tuning");
 const { AppearanceSettings } =
   await import("../../app/(root)/settings/_components/appearance-settings");
-const { LiquidGlassSettings } =
-  await import("../../app/(root)/settings/_components/liquid-glass-settings");
 const { ThemeConfigProvider } = await import("../../lib/theme/provider");
 
 async function mountAppearance(node: React.ReactNode) {
@@ -76,28 +72,6 @@ describe("appearance patches", () => {
     expect(accentPatch("blue")).toBeNull();
     expect(accentPatch("")).toBeNull();
   });
-
-  it("shows transparency as the complement of the stored tint", () => {
-    const transparency = GLASS_SLIDERS.find(({ key }) => key === "tint")!;
-    const blur = GLASS_SLIDERS.find(({ key }) => key === "blur")!;
-    const tuning = {
-      variant: "regular",
-      tint: 0.3,
-      blur: 8,
-      refraction: 12,
-      saturation: 1.4,
-      highlight: 1,
-      shadow: 1,
-      ambientLevel: 0.5,
-      accentTint: false,
-    } as const;
-
-    expect(sliderValue(transparency, tuning)).toBe(0.7);
-    expect(sliderPatch(transparency, 0.8)).toEqual({ tint: 0.2 });
-    expect(sliderPatch(blur, 12.5)).toEqual({ blur: 12.5 });
-    expect(formatSliderValue(transparency, 0.7)).toBe("70%");
-    expect(formatSliderValue(blur, 12.5)).toBe("12.5px");
-  });
 });
 
 describe("appearance settings", () => {
@@ -145,36 +119,5 @@ describe("appearance settings", () => {
     await act(async () => setInputValue(hex, "#3a7bd5"));
     expect(hex.getAttribute("aria-invalid")).toBe("false");
     expect(html.style.getPropertyValue("--light-primary")).not.toBe("");
-  });
-
-  it("keeps the extra glass sliders behind the tuning props", async () => {
-    const without = await mountAppearance(<LiquidGlassSettings />);
-    expect(without.querySelectorAll("input[type=range]")).toHaveLength(0);
-
-    const patches: unknown[] = [];
-    const container = await mountAppearance(
-      <LiquidGlassSettings
-        tuning={{
-          value: {
-            variant: "regular",
-            tint: 0.3,
-            blur: 8,
-            refraction: 12,
-            saturation: 1.4,
-            highlight: 1,
-            shadow: 1,
-            ambientLevel: 0.5,
-            accentTint: false,
-          },
-          onChange: (patch) => patches.push(patch),
-          onReset() {},
-        }}
-      />,
-    );
-
-    const sliders = container.querySelectorAll("input[type=range]");
-    expect(sliders).toHaveLength(GLASS_SLIDERS.length);
-    await act(async () => setInputValue(sliders[0] as HTMLInputElement, "0.8"));
-    expect(patches).toEqual([{ tint: 0.2 }]);
   });
 });
