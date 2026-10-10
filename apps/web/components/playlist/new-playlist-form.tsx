@@ -1,13 +1,9 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -20,25 +16,16 @@ import {
   DrawerTrigger,
 } from "@infinitunes/ui/components/drawer";
 import * as React from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import type { z } from "zod";
 
 import { useIsPhone } from "~/components/site-header/use-is-phone";
-import { unwrap } from "~/lib/action-result";
-import { createNewPlaylist } from "~/lib/actions";
-import { controlStyles } from "~/lib/control-styles";
-import { userMessage } from "~/lib/user-message";
-import { newPlaylistSchema } from "~/lib/validations";
 
-import { PlaylistFields } from "./playlist-fields";
-
-type PlaylistFormData = z.infer<typeof newPlaylistSchema>;
-
-const defaultValues: PlaylistFormData = {
-  name: "",
-  description: "",
-};
+// The form (zod, react-hook-form, validation) is fetched when the dialog
+// first opens, not in the shell that every page loads.
+const CreatePlaylistForm = React.lazy(() =>
+  import("./create-playlist-form").then((m) => ({
+    default: m.CreatePlaylistForm,
+  })),
+);
 
 type NewPlaylistFormProps = {
   /** The single element that opens the dialog. */
@@ -66,7 +53,9 @@ export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
             </DrawerDescription>
           </div>
 
-          <CreatePlaylistForm onDone={onDone} />
+          <React.Suspense fallback={null}>
+            <CreatePlaylistForm onDone={onDone} />
+          </React.Suspense>
         </DrawerContent>
       </Drawer>
     );
@@ -86,58 +75,10 @@ export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <CreatePlaylistForm onDone={onDone} />
+        <React.Suspense fallback={null}>
+          <CreatePlaylistForm onDone={onDone} />
+        </React.Suspense>
       </DialogContent>
     </Dialog>
-  );
-}
-
-type CreatePlaylistFormProps = {
-  onDone: () => void;
-};
-
-/**
- * Mounted inside the dialog's content, so it is created fresh each time the
- * dialog opens and never shows the previous attempt's values.
- */
-function CreatePlaylistForm({ onDone }: CreatePlaylistFormProps) {
-  const form = useForm<PlaylistFormData>({
-    resolver: zodResolver(newPlaylistSchema),
-    defaultValues,
-  });
-
-  function onSubmit({ name, description }: PlaylistFormData) {
-    toast.promise(unwrap(createNewPlaylist({ name, description })), {
-      loading: "Creating playlist...",
-      success: (d) => `Playlist "${d.name}" created successfully!`,
-      error: userMessage,
-      finally: onDone,
-    });
-  }
-
-  return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="flex flex-col gap-4"
-    >
-      <PlaylistFields control={form.control} />
-
-      <DialogFooter>
-        <DialogClose
-          render={
-            <Button
-              variant="secondary"
-              type="button"
-              className={controlStyles.textLg}
-            >
-              Cancel
-            </Button>
-          }
-        />
-        <Button type="submit" className={controlStyles.textLg}>
-          Create Playlist
-        </Button>
-      </DialogFooter>
-    </form>
   );
 }

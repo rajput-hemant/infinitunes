@@ -1,14 +1,11 @@
-import { createClientEnv } from "@infinitunes/env/client";
-
-const env = createClientEnv({
-  runtimeEnv: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-  },
-});
+// Kept free of zod and @infinitunes/env on purpose: this module is in every
+// client bundle. The fallback mirrors NEXT_PUBLIC_APP_URL's default in
+// packages/env/src/schema.ts, and lib/env.ts still validates the value at build.
+const DEFAULT_APP_URL = "https://infinitunes.rajputhemant.me";
 
 export const siteConfig = {
   name: "Infinitunes",
-  url: env.NEXT_PUBLIC_APP_URL,
+  url: process.env.NEXT_PUBLIC_APP_URL || DEFAULT_APP_URL,
   description:
     "A Simple Music Player Web App built using Next.js, shadcn/ui, TailwindCSS, DrizzleORM and more...",
 
