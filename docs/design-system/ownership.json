@@ -184,7 +184,14 @@
       "apps/web/tests/glass*",
       "apps/web/tests/dom/glass*",
       "docs/design-system/glass.md",
-      "apps/web/app/layout.tsx"
+      "apps/web/app/layout.tsx",
+      "apps/web/lib/theme/**",
+      "apps/web/tests/dom/theme-*",
+      "apps/web/tests/theme-config.test.ts",
+      "apps/web/styles/globals.css",
+      "apps/web/hooks/use-glass*",
+      "apps/web/hooks/use-scroll-edge*",
+      "apps/web/hooks/use-tab-bar-minimize*"
     ],
     "ds2-wp3": [
       "apps/web/components/sidebar.tsx",
@@ -209,7 +216,9 @@
       "apps/web/tests/dom/expanded-player*",
       "apps/web/tests/dom/queue*",
       "apps/web/tests/dom/track-playback*",
-      "apps/web/tests/dom/radio-refill*"
+      "apps/web/tests/dom/radio-refill*",
+      "apps/web/lib/theme-script.ts",
+      "apps/web/tests/dom/theme-bootstrap.test.ts"
     ],
     "ds2-wp5": [
       "apps/web/components/user-dropdown.tsx",
