@@ -15,13 +15,6 @@ const baselineSql = await Bun.file(
 ).text();
 const baselineHash = createHash("sha256").update(baselineSql).digest("hex");
 
-const legacyTimes = [
-  1698282403085, 1698327852024, 1712002508571, 1712069367580, 1712405722387,
-  1713508723922, 1727934796540, 1728000000000,
-];
-const legacyLastHash =
-  "40ef9ebdbefd70fc8e4e9c68bcf8ec351080476734dc41af846dc1e150eafbbf";
-
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL is required for migrations");
 
@@ -73,87 +66,22 @@ try {
     ? await client`SELECT count(*)::int AS "rowCount" FROM drizzle.__drizzle_migrations`
     : [{ rowCount: 0 }];
 
+  if (rowCount > 0) {
+    const [{ legacy }] = await client`
+      SELECT EXISTS (
+        SELECT 1 FROM drizzle.__drizzle_migrations
+        WHERE created_at < ${baseline.when}
+      ) AS legacy
+    `;
+    if (legacy) {
+      throw new Error(
+        "Legacy migration history detected. Migrate this database with the previous release first before applying the current baseline and migration 0007.",
+      );
+    }
+  }
+
   if (rowCount === 0) {
     await applyBaselineIdempotently();
-  } else {
-    await client.begin(async (tx) => {
-      await tx`LOCK TABLE drizzle.__drizzle_migrations IN EXCLUSIVE MODE`;
-      const rows = await tx`
-        SELECT hash, created_at FROM drizzle.__drizzle_migrations ORDER BY created_at
-      `;
-      const hasBaseline = rows.some(
-        (row) =>
-          Number(row.created_at) === baseline.when && row.hash === baselineHash,
-      );
-
-      if (!hasBaseline) {
-        const isLegacy =
-          rows.length === legacyTimes.length &&
-          rows.every((row, i) => Number(row.created_at) === legacyTimes[i]) &&
-          rows.at(-1)?.hash === legacyLastHash;
-        if (!isLegacy) {
-          throw new Error(
-            "Unrecognized migration history; baseline was not adopted",
-          );
-        }
-
-        const [{ tableCount }] = await tx`
-          SELECT count(*)::int AS "tableCount" FROM pg_class
-          WHERE relnamespace = 'public'::regnamespace AND relkind = 'r'
-            AND relname IN (
-              'account', 'better_auth_account', 'better_auth_session',
-              'better_auth_verification', 'infinitunes_favorite',
-              'infinitunes_playlist', 'user', 'verificationToken'
-            )
-        `;
-        if (tableCount !== 8) {
-          throw new Error(
-            "Legacy tables are incomplete; baseline was not adopted",
-          );
-        }
-
-        const [{ favoriteConstraints }] = await tx`
-          SELECT count(*)::int AS "favoriteConstraints" FROM pg_constraint
-          WHERE conrelid = 'public.infinitunes_favorite'::regclass
-            AND contype = 'u'
-            AND conname IN (
-              'infinitunes_favorite_songs_unique',
-              'infinitunes_favorite_albums_unique',
-              'infinitunes_favorite_playlists_unique',
-              'infinitunes_favorite_artists_unique',
-              'infinitunes_favorite_podcasts_unique'
-            )
-        `;
-        if (favoriteConstraints !== 5) {
-          throw new Error("Legacy favourite constraints do not match baseline");
-        }
-
-        const [{ tokenConstraint, tokenIndex }] = await tx`
-          SELECT
-            EXISTS (
-              SELECT 1 FROM pg_constraint
-              WHERE conrelid = 'public.better_auth_session'::regclass
-                AND conname = 'better_auth_session_token_unique'
-            ) AS "tokenConstraint",
-            to_regclass('public.better_auth_session_token_unique') IS NOT NULL AS "tokenIndex"
-        `;
-        if (!tokenConstraint && !tokenIndex) {
-          throw new Error("Legacy session token uniqueness is missing");
-        }
-        if (!tokenConstraint) {
-          await tx`
-            ALTER TABLE better_auth_session
-            ADD CONSTRAINT better_auth_session_token_unique
-            UNIQUE USING INDEX better_auth_session_token_unique
-          `;
-        }
-
-        await tx`
-          INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
-          VALUES (${baselineHash}, ${baseline.when})
-        `;
-      }
-    });
   }
 
   await migrate(drizzle(client), { migrationsFolder });

@@ -1,5 +1,7 @@
 import { describe, expect, it, beforeAll } from "bun:test";
 
+import { createClient } from "@infinitunes/db/client";
+import { assertLocalDatabase } from "@infinitunes/db/local-guard";
 import {
   betterAuthAccounts,
   betterAuthRateLimits,
@@ -12,6 +14,7 @@ import { compare, hash } from "bcryptjs";
 import type { BetterAuthPlugin } from "better-auth";
 import { getTableName, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
 import { createAuth } from "../src/auth";
@@ -250,20 +253,13 @@ describe("Better Auth configuration", () => {
     expect(typeof auth.options.database).toBe("function");
   });
 
-  it("exposes user hooks that mirror credentials and profile fields", () => {
-    const auth = createAuth(makeFakeDb());
-    expect(auth.options.databaseHooks?.user?.create?.after).toBeTypeOf(
-      "function",
-    );
-    expect(auth.options.databaseHooks?.user?.update?.after).toBeTypeOf(
-      "function",
-    );
-    expect(auth.options.databaseHooks?.account?.create?.after).toBeTypeOf(
-      "function",
-    );
-    expect(auth.options.databaseHooks?.account?.update?.after).toBeTypeOf(
-      "function",
-    );
+  it("keeps name validation without legacy mirror hooks", () => {
+    const hooks = createAuth(makeFakeDb()).options.databaseHooks;
+    expect(hooks?.user?.create?.before).toBeTypeOf("function");
+    expect(hooks?.user?.update?.before).toBeTypeOf("function");
+    expect(hooks?.user?.create?.after).toBeUndefined();
+    expect(hooks?.user?.update?.after).toBeUndefined();
+    expect(hooks?.account).toBeUndefined();
   });
 
   it("truncates an over-long OAuth name on create instead of failing sign-in", async () => {
@@ -300,61 +296,6 @@ describe("Better Auth configuration", () => {
     for (const user of [{ name: undefined }, { image: "x.png" }, {}]) {
       expect(await hooks?.update?.before?.(user as never)).toBeUndefined();
     }
-  });
-
-  it("mirrors the credential password when an OAuth account sorts first", async () => {
-    const userId = "00000000-0000-0000-0000-000000000001";
-    const accounts = [
-      { userId, providerId: "google", password: null },
-      { userId, providerId: "credential", password: "credential-hash" },
-    ];
-    const mirroredPasswords: string[] = [];
-    const query = {
-      users,
-      betterAuthAccounts: {
-        findFirst: async ({
-          where,
-        }: {
-          where: Parameters<PgDialect["sqlToQuery"]>[0];
-        }) => {
-          const { params } = new PgDialect().sqlToQuery(where);
-          const userIdParam = params.indexOf(userId);
-          const providerIdParam = params.indexOf("credential");
-          return accounts.find(
-            (account) =>
-              account.userId === params[userIdParam] &&
-              (providerIdParam === -1 ||
-                account.providerId === params[providerIdParam]),
-          );
-        },
-      },
-      betterAuthSessions,
-      betterAuthVerifications,
-    };
-    const db = {
-      query,
-      update: () => ({
-        set: ({ password }: { password: string }) => ({
-          where: async () => mirroredPasswords.push(password),
-        }),
-      }),
-      _: {
-        fullSchema: {
-          users,
-          betterAuthAccounts,
-          betterAuthSessions,
-          betterAuthVerifications,
-          infinitunesPasskeys,
-        },
-      },
-    } as unknown as Parameters<typeof createAuth>[0];
-    const auth = createAuth(db);
-
-    await auth.options.databaseHooks?.user?.create?.after?.({
-      id: userId,
-    } as never);
-
-    expect(mirroredPasswords).toEqual(["credential-hash"]);
   });
 });
 
@@ -396,15 +337,6 @@ describe("Password hashing and credential verification", () => {
     expect(
       await verifyFn!({ password: "wrong-password", hash: legacyHash }),
     ).toBe(false);
-  });
-
-  it("keeps the Better Auth credential column in sync with the legacy hash", async () => {
-    const password = "another-secret";
-    const hashed = await hash(password, 10);
-
-    await compare(password, hashed);
-
-    expect(hashed).toMatch(/^\$2[aby]\$/);
   });
 });
 
@@ -604,3 +536,51 @@ describe("Password reset configuration", () => {
     }
   });
 });
+
+describe.skipIf(!process.env.TEST_DATABASE_URL)(
+  "signup on migrated Postgres",
+  () => {
+    it("stores the mapped user, credential hash and session without legacy mirrors", async () => {
+      const url = process.env.TEST_DATABASE_URL!;
+      assertLocalDatabase(url);
+      const db = createClient(url);
+      const savedSecret = process.env.BETTER_AUTH_SECRET;
+      const savedUrl = process.env.BETTER_AUTH_URL;
+      process.env.BETTER_AUTH_SECRET = "disposable-postgres-signup-test-secret";
+      process.env.BETTER_AUTH_URL = "http://localhost:3000";
+      const email = `signup-${crypto.randomUUID()}@example.com`;
+      const password = "FreshPassword1!";
+      try {
+        const auth = createAuth(db);
+        const result = await auth.api.signUpEmail({
+          body: { email, password, name: "  Ada  " },
+        });
+        const user = await db.query.users.findFirst({
+          where: eq(users.id, result.user.id),
+        });
+        expect(user?.betterAuthName).toBe("Ada");
+        expect(user?.emailVerifiedBoolean).toBe(false);
+        expect(user).not.toHaveProperty("password");
+        expect(user).not.toHaveProperty("name");
+        const account = await db.query.betterAuthAccounts.findFirst({
+          where: eq(betterAuthAccounts.userId, result.user.id),
+        });
+        expect(account?.providerId).toBe("credential");
+        expect(await compare(password, account!.password!)).toBe(true);
+        const session = await db.query.betterAuthSessions.findFirst({
+          where: eq(betterAuthSessions.userId, result.user.id),
+        });
+        expect(session?.token).toBe(result.token);
+        const login = await auth.api.signInEmail({ body: { email, password } });
+        expect(login.user.id).toBe(result.user.id);
+      } finally {
+        await db.delete(users).where(eq(users.email, email));
+        await db.$client.end();
+        if (savedSecret === undefined) delete process.env.BETTER_AUTH_SECRET;
+        else process.env.BETTER_AUTH_SECRET = savedSecret;
+        if (savedUrl === undefined) delete process.env.BETTER_AUTH_URL;
+        else process.env.BETTER_AUTH_URL = savedUrl;
+      }
+    });
+  },
+);
