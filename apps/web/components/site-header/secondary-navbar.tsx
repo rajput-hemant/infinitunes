@@ -35,7 +35,7 @@ export function SecondaryNavbar() {
   return (
     <nav aria-label="Browse" className="border-b">
       <div className="hidden h-full items-center gap-2 lg:flex">
-        <ScrollArea>
+        <ScrollArea className="min-w-0 flex-1">
           <ul className="flex gap-2">
             {sidebarNav.map(({ title, href }) => {
               const isActive = href === pathname;
