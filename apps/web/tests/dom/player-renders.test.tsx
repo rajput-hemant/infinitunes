@@ -280,6 +280,15 @@ describe("player a11y", () => {
     expect(valueTexts.some((text) => text?.includes("percent"))).toBe(true);
   });
 
+  it("drops the entrance animation under reduced motion", async () => {
+    await mountPlayer();
+
+    const section = document.querySelector('section[aria-label="Player"]');
+    expect(section?.classList.contains("motion-reduce:animate-none")).toBe(
+      true,
+    );
+  });
+
   it("shows an accessible More button when the queue is empty", async () => {
     await mountPlayer({ queue: [] });
 

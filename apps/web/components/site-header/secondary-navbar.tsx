@@ -16,6 +16,7 @@ import { usePathname } from "next/navigation";
 import React from "react";
 
 import { browseNav, sidebarNav } from "~/config/nav";
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 import { SurpriseMeButton } from "./surprise-me-button";
@@ -34,7 +35,7 @@ export function SecondaryNavbar() {
   return (
     <nav aria-label="Browse" className="border-b">
       <div className="hidden h-full items-center gap-2 lg:flex">
-        <ScrollArea>
+        <ScrollArea className="min-w-0 flex-1">
           <ul className="flex gap-2">
             {sidebarNav.map(({ title, href }) => {
               const isActive = href === pathname;
@@ -55,6 +56,7 @@ export function SecondaryNavbar() {
                         size: "sm",
                         variant: isActive ? "secondary" : "ghost",
                       }),
+                      controlStyles.text,
                       isActive && "font-medium",
                     )}
                   >
@@ -68,15 +70,19 @@ export function SecondaryNavbar() {
         </ScrollArea>
 
         <SurpriseMeButton
-          size="sm"
           variant="secondary"
-          className="ml-auto shrink-0 hover:shadow-sm"
+          className={cn(controlStyles.text, "ml-auto shrink-0 hover:shadow-sm")}
         />
       </div>
 
       <div className="lg:hidden">
         <Sheet open={isOpen} onOpenChange={toggleSheet}>
-          <SheetTrigger className="mb-2 flex min-h-11 w-full items-center justify-between">
+          <SheetTrigger
+            className={cn(
+              "mb-2 flex w-full items-center justify-between",
+              controlStyles.text,
+            )}
+          >
             <span className="text-lg font-semibold">Browse</span>
 
             <ChevronDown aria-hidden />
@@ -102,6 +108,7 @@ export function SecondaryNavbar() {
                     onClick={toggleSheet}
                     className={cn(
                       buttonVariants({ size: "sm", variant: "ghost" }),
+                      controlStyles.text,
                       "my-1 flex justify-between text-muted-foreground",
                       isActive &&
                         "bg-secondary font-bold text-secondary-foreground",
@@ -124,10 +131,14 @@ export function SecondaryNavbar() {
               <SurpriseMeButton
                 onQueued={() => setIsOpen(false)}
                 variant="secondary"
-                className="w-full hover:shadow-sm"
+                className={cn(controlStyles.text, "w-full hover:shadow-sm")}
               />
               <Separator />
-              <Button variant="ghost" onClick={toggleSheet} className="w-full">
+              <Button
+                variant="ghost"
+                onClick={toggleSheet}
+                className={cn(controlStyles.text, "w-full")}
+              >
                 Cancel
               </Button>
             </div>

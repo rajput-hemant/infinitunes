@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
+import { controlStyles } from "~/lib/control-styles";
+
 const COMPONENTS = "../app/(auth)/_components/";
 
 async function read(name: string) {
@@ -7,15 +9,26 @@ async function read(name: string) {
 }
 
 describe("auth form control sizes", () => {
-  it("uses h-10 inputs in the shared email and password fields", async () => {
-    expect(await read("email-field.tsx")).toContain('"h-10 shadow-xs"');
+  it("keeps the shared text and icon controls at 44px touch targets", () => {
+    expect(controlStyles.text).toContain("h-11");
+    expect(controlStyles.headerIcon).toBe("size-11");
+  });
+
+  it("uses h-11 inputs in the shared email and password fields", async () => {
+    expect(await read("email-field.tsx")).toContain('"h-11 shadow-xs"');
     expect(await read("password-field.tsx")).toContain(
-      '"h-10 pr-11 shadow-xs"',
+      '"h-11 pr-12 shadow-xs"',
     );
   });
 
-  it("uses h-9 full-width actions on login and the OAuth buttons", async () => {
-    const action = 'className="h-9 w-full font-semibold shadow-md"';
+  it("sizes the password visibility toggle with the header icon control", async () => {
+    expect(await read("password-field.tsx")).toContain(
+      "controlStyles.headerIcon",
+    );
+  });
+
+  it("uses controlStyles.text full-width actions on login and the OAuth buttons", async () => {
+    const action = 'cn(controlStyles.text, "w-full")';
     expect(await read("login-form.tsx")).toContain(action);
     expect(await read("oauth-buttons.tsx")).toContain(action);
   });

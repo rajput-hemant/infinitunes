@@ -20,6 +20,7 @@ import {
 
 import { useKeydown } from "~/hooks/use-keydown";
 import { useIsTyping } from "~/hooks/use-store";
+import { controlStyles } from "~/lib/control-styles";
 import { api } from "~/lib/trpc/client";
 import { cn, isMacOs } from "~/lib/utils";
 
@@ -81,8 +82,9 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
             size="sm"
             variant="outline"
             className={cn(
-              "flex size-11 p-0 shadow-xs lg:h-10 lg:w-60 lg:justify-start lg:px-3 lg:py-2",
+              "flex p-0 text-sm shadow-xs lg:w-60 lg:justify-start lg:px-3",
               className,
+              controlStyles.headerIcon,
             )}
           >
             <Search

@@ -12,6 +12,7 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useDownloadQuality } from "~/hooks/use-store";
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
@@ -94,6 +95,7 @@ export function DownloadButton({
         aria-label={`Download ${songs.length} song${songs.length === 1 ? "" : "s"}`}
         onClick={downloadHandler}
         className={cn(
+          controlStyles.rowIcon,
           "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
           className,
         )}

@@ -12,6 +12,7 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 import { PasswordField } from "./password-field";
@@ -29,10 +30,7 @@ function InvalidLink() {
       </p>
       <Link
         href="/forgot-password"
-        className={cn(
-          buttonVariants({ size: "sm" }),
-          "h-9 w-full font-semibold",
-        )}
+        className={cn(buttonVariants(), controlStyles.text, "w-full")}
       >
         Request a new link
       </Link>
@@ -116,9 +114,8 @@ export function ResetPasswordForm() {
 
       <Button
         type="submit"
-        size="sm"
         disabled={isSubmitting}
-        className="h-9 w-full font-semibold shadow-md"
+        className={cn(controlStyles.text, "w-full")}
       >
         {isSubmitting ? (
           <Loader2 className="mr-2 size-4 animate-spin" />

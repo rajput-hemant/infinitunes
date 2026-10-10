@@ -40,3 +40,18 @@ describe("ShareOptions title", () => {
     expect(hrefOf(c, "Twitter")).toContain("text=Infinitunes");
   });
 });
+
+describe("ShareOptions copy", () => {
+  it("flips the Copy Link button's accessible name after copying", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: () => Promise.resolve() },
+      configurable: true,
+    });
+    const c = await mount(<ShareOptions />);
+    const button = c.querySelector("button") as HTMLButtonElement;
+    expect(button.getAttribute("aria-label")).toBe("Copy Link");
+
+    await act(async () => button.click());
+    expect(button.getAttribute("aria-label")).toBe("Link Copied");
+  });
+});

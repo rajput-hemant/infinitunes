@@ -24,6 +24,7 @@ import { toast } from "sonner";
 
 import { unwrap } from "~/lib/action-result";
 import { deletePlaylist } from "~/lib/actions";
+import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
 import { cn, destructiveText } from "~/lib/utils";
 
@@ -67,11 +68,12 @@ export function PlaylistManageMenu({
         <DropdownMenuTrigger
           aria-label="Playlist options"
           className={cn(
-            "flex size-11 items-center justify-center rounded-md outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50 lg:size-auto",
+            controlStyles.rowIcon,
+            "inline-flex items-center justify-center rounded-md outline-hidden focus-visible:ring-3 focus-visible:ring-ring/50",
             triggerClassName,
           )}
         >
-          <MoreVertical aria-hidden className="size-6 hover:text-primary" />
+          <MoreVertical aria-hidden className="size-5 hover:text-primary" />
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="*:cursor-pointer">
@@ -105,11 +107,13 @@ export function PlaylistManageMenu({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel className={controlStyles.text}>
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
               variant="destructive"
-              className={destructiveText}
+              className={cn(controlStyles.text, destructiveText)}
             >
               Delete
             </AlertDialogAction>

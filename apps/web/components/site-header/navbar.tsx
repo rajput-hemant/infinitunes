@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { siteConfig } from "~/config/site";
 import { getUser } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { megaMenuOrEmpty } from "~/lib/shell-data";
 import { api } from "~/lib/trpc/server";
 import { cn } from "~/lib/utils";
@@ -55,6 +56,7 @@ export async function Navbar() {
               href="/login"
               className={cn(
                 buttonVariants({ size: "sm" }),
+                controlStyles.text,
                 "hidden shadow-xs lg:flex",
               )}
             >

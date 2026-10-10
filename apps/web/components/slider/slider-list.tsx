@@ -11,7 +11,7 @@ type SliderListProps = {
 
 export function SliderList({ title, subtitle, items }: SliderListProps) {
   return (
-    <section className="space-y-2">
+    <section className="my-8 space-y-4">
       <header>
         <h2 className="pl-2 font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:pl-0">
           {title}

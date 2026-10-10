@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import React from "react";
 
+import { controlStyles } from "~/lib/control-styles";
 import { usePosition } from "~/lib/position-store";
 import type { PositionStore } from "~/lib/position-store";
 import { cn } from "~/lib/utils";
@@ -39,9 +40,10 @@ export function setValueText(root: HTMLElement | null, text: string) {
     ?.setAttribute("aria-valuetext", text);
 }
 
-// 44px minimum touch target.
-const buttonClass =
-  "flex size-11 shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50";
+const buttonClass = cn(
+  controlStyles.transport,
+  "flex shrink-0 items-center justify-center rounded-md outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+);
 
 type ExpandedPlayerProps = {
   open: boolean;
@@ -238,20 +240,20 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
           onClick={props.onPrevious}
           className={buttonClass}
         >
-          <Icons.SkipBack aria-hidden className="size-9" />
+          <Icons.SkipBack aria-hidden className="size-6" />
         </button>
         <button
           type="button"
           aria-label={isPlaying ? "Pause" : "Play"}
           onClick={props.onPlayPause}
-          className={cn(buttonClass, "size-14")}
+          className={cn(buttonClass, controlStyles.transportPlay)}
         >
           {isLoading ? (
-            <Loader2 aria-hidden className="size-11 animate-spin" />
+            <Loader2 aria-hidden className="size-8 animate-spin" />
           ) : isPlaying ? (
-            <Pause aria-hidden className="size-11" />
+            <Pause aria-hidden className="size-8" />
           ) : (
-            <Icons.Play aria-hidden className="size-11" />
+            <Icons.Play aria-hidden className="size-8" />
           )}
         </button>
         <button
@@ -260,7 +262,7 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
           onClick={props.onNext}
           className={buttonClass}
         >
-          <Icons.SkipForward aria-hidden className="size-9" />
+          <Icons.SkipForward aria-hidden className="size-6" />
         </button>
         <button
           type="button"
@@ -284,9 +286,9 @@ function ExpandedBody(props: ExpandedPlayerProps & { track: Queue }) {
           )}
         >
           {isMuted || volume === 0 ? (
-            <VolumeX aria-hidden />
+            <VolumeX aria-hidden className="size-6" />
           ) : (
-            <Volume2 aria-hidden />
+            <Volume2 aria-hidden className="size-6" />
           )}
         </button>
         <span id={volumeLabelId} className="sr-only">

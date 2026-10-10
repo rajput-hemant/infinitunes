@@ -6,7 +6,6 @@ import { useAudioPlayerContext } from "react-use-audio-player";
 
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
 import { isCurrentTrack } from "~/lib/queue-position";
-import { cn } from "~/lib/utils";
 
 import { PlayButton } from "../play-button";
 
@@ -42,10 +41,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
       <Icon
         aria-hidden="true"
         strokeWidth={isPlaying ? 2 : 9}
-        className={cn(
-          "m-auto h-full w-6 p-1 transition-transform duration-150 ease-out hover:scale-125 dark:invert",
-          isPlaying && "p-0.5",
-        )}
+        className="m-auto size-5 transition-transform duration-150 ease-out hover:scale-125 dark:invert"
       />
     </button>
   ) : (
@@ -58,7 +54,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
       <Play
         aria-hidden="true"
         strokeWidth={9}
-        className="absolute inset-0 z-20 m-auto hidden h-full w-6 p-1 text-secondary transition-transform duration-150 ease-out hover:scale-125 group-focus-within:block group-hover:block dark:invert"
+        className="absolute inset-0 z-20 m-auto hidden size-5 text-secondary transition-transform duration-150 ease-out hover:scale-125 group-focus-within:block group-hover:block dark:invert"
       />
     </PlayButton>
   );

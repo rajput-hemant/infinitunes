@@ -1,6 +1,6 @@
 # Favorites (likes)
 
-Last live proof: 2026-10-10, [skill-verify record](../../../../docs/verification/skill-verify-2026-10-10.md). Two songs liked from an album, one `infinitunes_favorite` row, `/me/liked-songs` lists both. Issues: ISSUE-003 in [verification-issues.md](../../../../docs/archive/verification-issues.md).
+Last live proof: 2026-10-10, [skill-verify record](../../../../docs/verification/skill-verify-2026-10-10.md). Two songs liked from an album, one `infinitunes_favorite` row, `/me/liked-songs` lists both. Issues: ISSUE-003 in [verification-history.md](../../../../docs/archive/verification-history.md).
 
 ## Sub-features
 

@@ -8,6 +8,7 @@ import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 
 import { themes } from "~/config/themes";
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 const RADIUS = ["default", 0, 0.3, 0.5, 0.75, 1.0] as const;
@@ -43,7 +44,7 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
               <div
                 className={cn(
                   "items-center rounded-md border bg-background p-2 group-hover:bg-accent group-hover:text-foreground",
-                  mode === themeMode && "border-2 border-primary",
+                  mode === themeMode && "border-primary ring-1 ring-primary",
                 )}
               >
                 <div
@@ -80,29 +81,26 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
         </h2>
 
         <div className="flex max-w-5xl flex-wrap gap-2">
-          {themes.map(({ name, activeColor, label }) => (
+          {themes.map(({ name, label }) => (
             <Button
               key={name}
-              size="sm"
               variant="outline"
               aria-pressed={name === theme}
               onClick={() => themeConfigHandler({ theme: name, radius })}
               className={cn(
-                "w-24 justify-start min-h-11 lg:min-h-0",
-                name === theme && "border-2 border-primary",
+                controlStyles.text,
+                "w-28 justify-start",
+                name === theme && "border-primary ring-1 ring-primary",
               )}
-              style={
-                {
-                  "--theme-primary": `hsl(${
-                    activeColor[themeMode === "dark" ? "dark" : "light"]
-                  })`,
-                } as React.CSSProperties
-              }
             >
-              <span className="mr-1 flex size-5 shrink-0 -translate-x-1 items-center justify-center rounded-full bg-(--theme-primary)">
-                {/* The swatch fill is each preset own primary, so no theme token applies. */}
+              <span
+                className={cn(
+                  `theme-${name}`,
+                  "flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground",
+                )}
+              >
                 {theme === name && (
-                  <CheckIcon aria-hidden className="size-4 text-white" />
+                  <CheckIcon aria-hidden className="size-3.5" />
                 )}
               </span>
               {label}
@@ -119,14 +117,14 @@ export function AppearanceSettings({ theme, radius }: ThemeConfig) {
         <div className="flex flex-wrap gap-2">
           {RADIUS.map((value) => (
             <Button
-              size="sm"
               variant="outline"
               key={value}
               aria-pressed={radius === value}
               onClick={() => themeConfigHandler({ theme, radius: value })}
               className={cn(
-                "w-24 capitalize min-h-11 lg:min-h-0",
-                radius === value && "border-2 border-primary",
+                controlStyles.text,
+                "w-24 capitalize",
+                radius === value && "border-primary ring-1 ring-primary",
               )}
               style={
                 value === "default"

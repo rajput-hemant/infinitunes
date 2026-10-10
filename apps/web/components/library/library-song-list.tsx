@@ -126,7 +126,7 @@ export function LibrarySongList(props: LibrarySongListProps) {
         )}
 
         {visible.length > 0 && (
-          <PlayAllButton items={visible} className="h-11 sm:ml-auto lg:h-7">
+          <PlayAllButton items={visible} className="sm:ml-auto">
             {visible.length === items.length
               ? undefined
               : `Play ${visible.length} shown`}

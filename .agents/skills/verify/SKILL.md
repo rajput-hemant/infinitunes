@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 Surface: web UI at `apps/web`. Driver: the **T3 inbuilt browser tools** (`mcp__t3-code__preview_*`). If they are not available in the session, or `preview_*` calls answer "No preview automation host" repeatedly, fall back to `chrome-devtools-axi` (`open`, `snapshot`, `click`, `fill`, `eval`, `resize`, `screenshot`; named session via `CHROME_DEVTOOLS_AXI_SESSION`).
 
-Issues found are recorded once in [docs/archive/verification-issues.md](../../../docs/archive/verification-issues.md) (older) or the dated record under `docs/verification/` (newer). Feature files link to them instead of repeating them. The feature map is [features/README.md](features/README.md).
+Issues found are recorded once in [docs/archive/verification-history.md](../../../docs/archive/verification-history.md) (older) or the dated record under `docs/verification/` (newer). Feature files link to them instead of repeating them. The feature map is [features/README.md](features/README.md).
 
 ## Prerequisites
 

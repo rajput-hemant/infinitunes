@@ -28,6 +28,7 @@ import {
   useKeyboardShortcuts,
   useStreamQuality,
 } from "~/hooks/use-store";
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
@@ -77,18 +78,14 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               key={lang}
               value={lang.toLowerCase()}
               variant="outline"
-              className="w-24 min-h-11 lg:min-h-0"
+              className={cn(controlStyles.text, "w-24")}
             >
               {lang}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
 
-        <Button
-          size="sm"
-          className="min-h-11 lg:min-h-0"
-          onClick={updateLanguages}
-        >
+        <Button className={controlStyles.text} onClick={updateLanguages}>
           Save Preferences
         </Button>
       </section>
@@ -113,7 +110,10 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               render={
                 <Button
                   variant="outline"
-                  className="group w-48 justify-between font-semibold capitalize min-h-11 lg:min-h-0"
+                  className={cn(
+                    controlStyles.text,
+                    "group w-48 justify-between capitalize",
+                  )}
                 >
                   <span>{streamQuality}</span>
                   <span className="text-xs font-light">
@@ -172,7 +172,10 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               render={
                 <Button
                   variant="outline"
-                  className="group w-48 justify-between font-semibold capitalize min-h-11 lg:min-h-0"
+                  className={cn(
+                    controlStyles.text,
+                    "group w-48 justify-between capitalize",
+                  )}
                 >
                   <span>{downloadQuality}</span>
                   <span className="text-xs font-light">
@@ -228,7 +231,10 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
               render={
                 <Button
                   variant="outline"
-                  className="group w-48 justify-between font-semibold capitalize min-h-11 lg:min-h-0"
+                  className={cn(
+                    controlStyles.text,
+                    "group w-48 justify-between capitalize",
+                  )}
                 >
                   {imageQuality}
                   <ChevronDown

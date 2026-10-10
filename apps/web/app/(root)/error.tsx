@@ -4,6 +4,7 @@ import { Button } from "@infinitunes/ui/components/button";
 import React from "react";
 
 import { ErrorIllustration } from "~/components/error-illustration";
+import { controlStyles } from "~/lib/control-styles";
 
 type ErrorProps = {
   error: Error & { digest?: string };
@@ -22,7 +23,11 @@ export default function Error({ error, retry }: ErrorProps) {
       <h1 className="font-heading text-3xl dark:drop-shadow-sm text-foreground sm:text-4xl md:text-5xl">
         Something went wrong!
       </h1>
-      <Button variant="outline" onClick={() => retry()} className="shadow-xs">
+      <Button
+        variant="outline"
+        onClick={() => retry()}
+        className={controlStyles.text}
+      >
         Try again
       </Button>
     </div>

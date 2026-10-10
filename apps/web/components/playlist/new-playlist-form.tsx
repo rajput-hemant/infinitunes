@@ -27,6 +27,7 @@ import type { z } from "zod";
 import { unwrap } from "~/lib/action-result";
 import { createNewPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
 
@@ -126,12 +127,12 @@ export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
           <DialogFooter className="pt-4">
             <DialogClose
               render={
-                <Button size="sm" variant="secondary" className="h-11 lg:h-7">
+                <Button variant="outline" className={controlStyles.text}>
                   Cancel
                 </Button>
               }
             />
-            <Button type="submit" size="sm" className="h-11 lg:h-7">
+            <Button type="submit" className={controlStyles.text}>
               Create Playlist
             </Button>
           </DialogFooter>

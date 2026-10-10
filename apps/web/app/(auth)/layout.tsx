@@ -5,6 +5,7 @@ import Link from "next/link";
 import React from "react";
 
 import { Icons } from "~/components/icons";
+import { controlStyles } from "~/lib/control-styles";
 import { asRoute, cn } from "~/lib/utils";
 
 import { AuthModeToggle } from "./_components/auth-mode-toggle";
@@ -27,7 +28,8 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         <Link
           href="/"
           className={cn(
-            buttonVariants({ size: "sm" }),
+            buttonVariants(),
+            controlStyles.text,
             "group w-fit border border-zinc-600 duration-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-2 hover:ring-offset-zinc-900",
           )}
         >

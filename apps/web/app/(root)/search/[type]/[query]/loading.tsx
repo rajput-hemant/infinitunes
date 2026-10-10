@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
 
@@ -28,9 +27,7 @@ export default function Loading() {
                   key={title}
                   className="inline-block h-full border-b-2 border-transparent py-2 hover:border-primary"
                 >
-                  <Button variant="secondary" className="text-secondary">
-                    {title}
-                  </Button>
+                  <Skeleton className="h-11 w-20" />
                 </div>
               );
             })}

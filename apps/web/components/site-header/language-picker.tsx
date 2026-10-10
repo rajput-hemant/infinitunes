@@ -21,6 +21,7 @@ import React from "react";
 import { toast } from "sonner";
 
 import { languages } from "~/config/languages";
+import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 type LanguagePickerProps = {
@@ -52,12 +53,15 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
       <PopoverTrigger
         render={
           <Button
-            size="sm"
+            aria-label="Choose languages"
             variant="outline"
-            className="size-11 space-x-1 p-0 shadow-xs lg:h-10 lg:w-auto lg:space-x-2 lg:p-2"
+            className={cn(
+              controlStyles.headerIcon,
+              "space-x-1 p-0 shadow-xs lg:w-auto lg:space-x-2 lg:px-3",
+            )}
           >
-            <Languages className="aspect-square h-5 lg:h-4" />
-            <span className="hidden lg:inline-block">Languages</span>
+            <Languages aria-hidden="true" className="aspect-square size-4" />
+            <span className="hidden text-sm lg:inline-block">Languages</span>
             <ChevronDown
               className={cn(
                 "hidden size-4 duration-300 lg:inline-block",
@@ -93,7 +97,7 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
               key={lang}
               value={lang.toLowerCase()}
               variant="outline"
-              className="h-10 min-w-[4.4375rem] px-4"
+              className={cn(controlStyles.text, "min-w-[4.4375rem] text-sm")}
             >
               {lang}
             </ToggleGroupItem>
@@ -101,7 +105,10 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
         </ToggleGroup>
 
         <div className="p-2">
-          <Button onClick={updateLanguages} className="w-full text-lg">
+          <Button
+            onClick={updateLanguages}
+            className={cn(controlStyles.text, "w-full")}
+          >
             Save
           </Button>
         </div>

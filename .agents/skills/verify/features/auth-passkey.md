@@ -1,6 +1,6 @@
 # Passkey enrollment and sign-in
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-014 in [verification-issues.md](../../../../docs/archive/verification-issues.md).
+**DRAFT. Last live proof: none.** Issues: ISSUE-014 in [verification-history.md](../../../../docs/archive/verification-history.md).
 
 ## Sub-features
 

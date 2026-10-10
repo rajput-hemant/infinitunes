@@ -38,6 +38,7 @@ import { z } from "zod";
 import { useIsTyping } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
 import { changePassword, deleteUser, updateUser } from "~/lib/actions";
+import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
 import { cn, destructiveText } from "~/lib/utils";
 import { nameSchema } from "~/lib/validations";
@@ -288,7 +289,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="shadow-xs min-h-11 lg:min-h-0"
+              className={controlStyles.text}
             >
               Save Changes
             </Button>
@@ -320,7 +321,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 render={
                   <Button
                     variant="destructive"
-                    className={cn(destructiveText, "min-h-11 lg:min-h-0")}
+                    className={cn(controlStyles.text, destructiveText)}
                   >
                     Delete Account
                   </Button>
@@ -360,7 +361,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                 />
 
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="min-h-11 lg:min-h-0">
+                  <AlertDialogCancel className={controlStyles.text}>
                     Cancel
                   </AlertDialogCancel>
                   <AlertDialogAction
@@ -368,8 +369,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     disabled={confirmDelete !== "DELETE MY ACCOUNT"}
                     className={cn(
                       buttonVariants({ variant: "destructive" }),
+                      controlStyles.text,
                       destructiveText,
-                      "min-h-11 lg:min-h-0",
                     )}
                   >
                     Delete Account

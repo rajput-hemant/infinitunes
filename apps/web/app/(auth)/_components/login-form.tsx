@@ -12,7 +12,8 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { asRoute, safeRedirectPath } from "~/lib/utils";
+import { controlStyles } from "~/lib/control-styles";
+import { asRoute, cn, safeRedirectPath } from "~/lib/utils";
 
 import { EmailField } from "./email-field";
 import { OAuthButtons } from "./oauth-buttons";
@@ -134,9 +135,8 @@ export function LoginForm() {
 
         <Button
           type="submit"
-          size="sm"
           disabled={isDisabled}
-          className="h-9 w-full font-semibold shadow-md"
+          className={cn(controlStyles.text, "w-full")}
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -148,11 +148,10 @@ export function LoginForm() {
 
         <Button
           type="button"
-          size="sm"
           variant="outline"
           disabled={isDisabled}
           onClick={passkeySignInHandler}
-          className="h-9 w-full font-semibold shadow-md"
+          className={cn(controlStyles.text, "w-full")}
         >
           {isPasskeyLoading ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -166,7 +165,10 @@ export function LoginForm() {
       <p className="mx-auto mt-2 text-xs text-muted-foreground hover:text-foreground">
         <Link
           href="/forgot-password"
-          className="inline-block py-2 underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-hidden"
+          className={cn(
+            controlStyles.text,
+            "inline-flex items-center underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-hidden",
+          )}
         >
           Forgot password?
         </Link>

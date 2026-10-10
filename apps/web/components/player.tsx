@@ -46,6 +46,7 @@ import {
 } from "~/hooks/use-store";
 import { useTrackPlayback } from "~/hooks/use-track-playback";
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
 import { createPositionStore, usePosition } from "~/lib/position-store";
@@ -416,7 +417,7 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
     <section
       aria-label="Player"
       className={cn(
-        "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 h-20 bg-background animate-in slide-in-from-bottom-full [animation-duration:500ms] lg:bottom-0",
+        "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 h-20 bg-background animate-in fade-in slide-in-from-bottom-full [animation-duration:200ms] [animation-timing-function:var(--ease-out)] motion-reduce:animate-none lg:bottom-0",
         !(isReady || queue.length) && "hidden lg:block",
       )}
     >
@@ -511,14 +512,15 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                   onClick={loopHandler}
                   className={cn(
                     controlClass,
-                    "hidden lg:block",
+                    controlStyles.transport,
+                    "hidden items-center justify-center lg:inline-flex",
                     !isLooping && !loopPlaylist && "text-muted-foreground",
                   )}
                 >
                   {isLooping ? (
-                    <Repeat1 aria-hidden strokeWidth={2} className="size-7" />
+                    <Repeat1 aria-hidden strokeWidth={2} className="size-6" />
                   ) : (
-                    <Repeat aria-hidden strokeWidth={2} className="size-7" />
+                    <Repeat aria-hidden strokeWidth={2} className="size-6" />
                   )}
                 </button>
               }
@@ -539,9 +541,13 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label="Previous"
                   onClick={skipToPrev}
-                  className={cn(controlClass, "p-1.5 lg:p-0")}
+                  className={cn(
+                    controlClass,
+                    controlStyles.transport,
+                    "inline-flex items-center justify-center",
+                  )}
                 >
-                  <Icons.SkipBack aria-hidden className="size-8 lg:size-10" />
+                  <Icons.SkipBack aria-hidden className="size-6" />
                 </button>
               }
             />
@@ -555,14 +561,18 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label={isPlaying ? "Pause" : "Play"}
                   onClick={playPauseHandler}
-                  className={cn(controlClass, "p-1 lg:p-0")}
+                  className={cn(
+                    controlClass,
+                    controlStyles.transport,
+                    "inline-flex items-center justify-center",
+                  )}
                 >
                   {isLoading ? (
-                    <Loader2 aria-hidden className="size-10 animate-spin" />
+                    <Loader2 aria-hidden className="size-8 animate-spin" />
                   ) : isPlaying ? (
-                    <Pause aria-hidden className="size-10" />
+                    <Pause aria-hidden className="size-8" />
                   ) : (
-                    <Icons.Play aria-hidden className="size-10" />
+                    <Icons.Play aria-hidden className="size-8" />
                   )}
                 </button>
               }
@@ -577,12 +587,13 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 <button
                   aria-label="Next"
                   onClick={skipToNext}
-                  className={cn(controlClass, "p-1.5 lg:p-0")}
+                  className={cn(
+                    controlClass,
+                    controlStyles.transport,
+                    "inline-flex items-center justify-center",
+                  )}
                 >
-                  <Icons.SkipForward
-                    aria-hidden
-                    className="size-8 lg:size-10"
-                  />
+                  <Icons.SkipForward aria-hidden className="size-6" />
                 </button>
               }
             />
@@ -598,11 +609,12 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                   onClick={() => setIsShuffle(!isShuffle)}
                   className={cn(
                     controlClass,
-                    "hidden lg:block",
+                    controlStyles.transport,
+                    "hidden items-center justify-center lg:inline-flex",
                     !isShuffle && "text-muted-foreground",
                   )}
                 >
-                  <Shuffle aria-hidden strokeWidth={2.35} />
+                  <Shuffle className="size-6" aria-hidden strokeWidth={2.35} />
                 </button>
               }
             />
@@ -621,18 +633,19 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
               onClick={toggleMute}
               className={cn(
                 controlClass,
-                "transition-opacity hover:opacity-100",
+                controlStyles.transport,
+                "inline-flex items-center justify-center transition-opacity hover:opacity-100",
                 (!isReady || isMuted) && "text-muted-foreground opacity-50",
               )}
             >
               {isMuted || volume === 0 ? (
-                <VolumeX aria-hidden />
+                <VolumeX className="size-6" aria-hidden />
               ) : volume < 0.33 ? (
-                <Volume aria-hidden />
+                <Volume className="size-6" aria-hidden />
               ) : volume < 0.66 ? (
-                <Volume1 aria-hidden />
+                <Volume1 className="size-6" aria-hidden />
               ) : (
-                <Volume2 aria-hidden strokeWidth={2} />
+                <Volume2 className="size-6" aria-hidden strokeWidth={2} />
               )}
             </button>
 
@@ -676,11 +689,17 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
                 className={buttonVariants({
                   size: "icon",
                   variant: "ghost",
+                  className: controlStyles.headerIcon,
                 })}
               />
             ) : (
-              <Button size="icon" variant="ghost" aria-label="More">
-                <MoreVertical aria-hidden="true" />
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label="More"
+                className={controlStyles.headerIcon}
+              >
+                <MoreVertical aria-hidden="true" className="size-5" />
               </Button>
             )}
           </div>

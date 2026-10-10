@@ -13,6 +13,8 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
 
 /** Neutral toast title for a played list: episodes are tracks too. */
 export function playAllToastTitle(count: number): string {
@@ -49,7 +51,7 @@ export function PlayAllButton({
   }
 
   return (
-    <Button size="sm" className={className} onClick={playAll}>
+    <Button className={cn(controlStyles.text, className)} onClick={playAll}>
       {children ?? (
         <>
           <Play aria-hidden className="mr-1 size-4 fill-current" />

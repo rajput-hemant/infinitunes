@@ -1,5 +1,4 @@
 import { formatDuration, getImageSrc } from "@infinitunes/types";
-import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListMusic } from "lucide-react";
 import type { Metadata } from "next";
@@ -15,10 +14,10 @@ import { PlayAllButton } from "~/components/library/play-all-button";
 import { RetryButton } from "~/components/library/retry-button";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { SongList } from "~/components/song-list/song-list";
+import { controlStyles } from "~/lib/control-styles";
 import { getPlaylistDetails } from "~/lib/db/queries";
 import { fetchSongsChunked } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
-import { cn } from "~/lib/utils";
 
 type Props = {
   params: Promise<{
@@ -125,10 +124,7 @@ export default async function MyPlaylistsPage(props: Props) {
             <div className="mt-4 flex flex-wrap gap-2 lg:mt-6">
               <PlayAllButton
                 items={playlistSongs}
-                className={cn(
-                  buttonVariants(),
-                  "h-11 rounded-full px-10 text-xl font-bold shadow-xs lg:h-8",
-                )}
+                className={controlStyles.hero}
               >
                 Play
               </PlayAllButton>

@@ -27,6 +27,7 @@ import type { z } from "zod";
 
 import { unwrap } from "~/lib/action-result";
 import { renamePlaylist } from "~/lib/actions";
+import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
 
@@ -141,16 +142,15 @@ export function RenamePlaylistDialog({
             <DialogClose
               render={
                 <Button
-                  size="sm"
-                  variant="secondary"
+                  variant="outline"
                   type="button"
-                  className="h-11 lg:h-7"
+                  className={controlStyles.text}
                 >
                   Cancel
                 </Button>
               }
             />
-            <Button type="submit" size="sm" className="h-11 lg:h-7">
+            <Button type="submit" className={controlStyles.text}>
               Save
             </Button>
           </DialogFooter>

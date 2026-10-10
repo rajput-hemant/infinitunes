@@ -17,12 +17,13 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
-import { asRoute } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
 
@@ -87,7 +88,10 @@ async function ShowEpisodeSection({
         <DropdownMenu>
           <DropdownMenuTrigger
             render={
-              <Button size="sm" variant="outline" className="w-28 md:w-36">
+              <Button
+                variant="outline"
+                className={cn(controlStyles.text, "w-28 md:w-36")}
+              >
                 {sort === "asc" ? "Oldest" : "Newest"}
                 <ChevronDown className="ml-auto size-5" />
               </Button>
