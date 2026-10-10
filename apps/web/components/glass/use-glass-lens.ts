@@ -33,11 +33,9 @@ function bezelFor(w: number, h: number, r: number, size: string) {
 
 function gcFilters() {
   const live = new Set<string>();
-  document
-    .querySelectorAll<HTMLElement>("[data-glass-lens]")
-    .forEach((el) => {
-      if (el.dataset.glassLens) live.add(el.dataset.glassLens);
-    });
+  document.querySelectorAll<HTMLElement>("[data-glass-lens]").forEach((el) => {
+    if (el.dataset.glassLens) live.add(el.dataset.glassLens);
+  });
   for (const [key, filter] of filters) {
     if (!live.has(filter.id)) {
       filter.displacement?.closest("filter")?.remove();
