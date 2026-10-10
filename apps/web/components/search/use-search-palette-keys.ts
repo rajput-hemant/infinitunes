@@ -49,9 +49,22 @@ export function useSearchPaletteKeys(options: SearchPaletteKeysOptions) {
       });
     };
     sync();
-    const observer = new MutationObserver(sync);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+
+    let observer: MutationObserver | undefined;
+    const watch = () => {
+      observer?.disconnect();
+      const listbox = document.getElementById(listboxId);
+      observer = new MutationObserver(() => {
+        sync();
+        if (!listbox && document.getElementById(listboxId)) watch();
+      });
+      observer.observe(listbox ?? document.body, {
+        childList: true,
+        subtree: true,
+      });
+    };
+    watch();
+    return () => observer?.disconnect();
   }, [enabled, listboxId, index]);
 
   useKeydown((event) => {

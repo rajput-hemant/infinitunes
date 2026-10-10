@@ -1,18 +1,24 @@
 "use client";
 
-import { useEffect, useRef, MutableRefObject } from "react";
+import { useEffect, type RefObject } from "react";
 
 import { lensCapable } from "~/lib/glass/capabilities";
 import {
   createDisplacementMap,
   createSpecularMap,
   toDataURL,
-  GlassMapCache,
 } from "~/lib/glass/engine";
 
 const STRENGTH: Record<string, number> = { s: 1, m: 0.75, l: 0.45 };
 let filterSeq = 1;
-const filters = new Map<string, any>();
+
+type LensFilter = {
+  id: string;
+  displacement: SVGFEDisplacementMapElement | null;
+  strength: number;
+};
+
+const filters = new Map<string, LensFilter>();
 const SVGNS = "http://www.w3.org/2000/svg";
 
 function bezelFor(w: number, h: number, r: number, size: string) {
@@ -26,20 +32,22 @@ function bezelFor(w: number, h: number, r: number, size: string) {
 }
 
 function gcFilters() {
-  const live = new Set();
-  document.querySelectorAll("[data-glass-lens]").forEach((el: any) => {
-    if (el.dataset.glassLens) live.add(el.dataset.glassLens);
-  });
-  Array.from(filters.entries()).forEach(([k, f]) => {
-    if (!live.has(f.id)) {
-      f.disp?.closest("filter")?.remove();
-      filters.delete(k);
+  const live = new Set<string>();
+  document
+    .querySelectorAll<HTMLElement>("[data-glass-lens]")
+    .forEach((el) => {
+      if (el.dataset.glassLens) live.add(el.dataset.glassLens);
+    });
+  for (const [key, filter] of filters) {
+    if (!live.has(filter.id)) {
+      filter.displacement?.closest("filter")?.remove();
+      filters.delete(key);
     }
-  });
+  }
 }
 
-function setScale(f: any, k: number) {
-  if (f.disp) f.disp.setAttribute("scale", String(f.strength * k * 18));
+function setScale(filter: LensFilter, k: number) {
+  filter.displacement?.setAttribute("scale", String(filter.strength * k * 18));
 }
 
 function filterFor(
@@ -48,11 +56,11 @@ function filterFor(
   r: number,
   size: string,
   magnify: boolean,
-) {
+): LensFilter | null {
   const bezel = bezelFor(w, h, r, size);
   const key = `${w}x${h}r${r}b${bezel}${size}${magnify ? "m" : ""}`;
-  let f = filters.get(key);
-  if (f) return f;
+  const cached = filters.get(key);
+  if (cached) return cached;
 
   if (filters.size >= 24) gcFilters();
 
@@ -93,15 +101,14 @@ function filterFor(
     <feBlend in="specA" in2="refr" mode="screen"/>`;
 
   defs.appendChild(el);
-  f = {
+  const filter: LensFilter = {
     id,
-    disp: el.querySelector("feDisplacementMap"),
-    specA: el.querySelector("feFuncA"),
-    strength: (STRENGTH[size] || 1) * (magnify ? 0.7 : 1),
+    displacement: el.querySelector("feDisplacementMap"),
+    strength: (STRENGTH[size] ?? 1) * (magnify ? 0.7 : 1),
   };
-  filters.set(key, f);
-  setScale(f, 1);
-  return f;
+  filters.set(key, filter);
+  setScale(filter, 1);
+  return filter;
 }
 
 export type GlassLensOpts = {
@@ -111,13 +118,12 @@ export type GlassLensOpts = {
 };
 
 export function useGlassLens(
-  ref: MutableRefObject<HTMLElement | null>,
+  ref: RefObject<HTMLElement | null>,
   opts: GlassLensOpts,
 ) {
   useEffect(() => {
     if (opts.off) return;
 
-    // Client-side checks
     if (!lensCapable()) return;
     const mediaRT = window.matchMedia("(prefers-reduced-transparency: reduce)");
     if (mediaRT.matches) return;
@@ -166,7 +172,6 @@ export function useGlassLens(
         document.documentElement.classList.contains("lg-capable") &&
         !document.documentElement.classList.contains("reduce-motion")
       ) {
-        // Materialize
         let t0: number | null = null;
         const step = (t: number) => {
           if (!el.isConnected || el.getAttribute("data-glass-lens") !== f.id)

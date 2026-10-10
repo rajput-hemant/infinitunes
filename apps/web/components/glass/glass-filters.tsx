@@ -1,7 +1,3 @@
-"use client";
-
-import * as React from "react";
-
 export function GlassFilters() {
   return (
     <svg
@@ -9,7 +5,7 @@ export function GlassFilters() {
       aria-hidden="true"
       width="0"
       height="0"
-      style={{ position: "absolute" }}
+      className="absolute"
     >
       <defs />
     </svg>

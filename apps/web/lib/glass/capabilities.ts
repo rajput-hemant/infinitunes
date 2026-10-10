@@ -1,20 +1,28 @@
+type NavigatorWithBrands = Navigator & {
+  userAgentData?: { brands: { brand: string }[] };
+};
+
+const CHROMIUM_BRAND = /Chromium|Google Chrome|Microsoft Edge/;
+
+/**
+ * Whether `backdrop-filter: url(#filter)` refraction can run. Only Chromium
+ * resolves SVG filters inside backdrop-filter, so other engines get the frosted
+ * CSS fallback. `?lens=0` forces the fallback and `?lens=1` skips the brand check.
+ */
 export function lensCapable(): boolean {
   if (typeof window === "undefined" || typeof document === "undefined")
     return false;
-  const params = new URLSearchParams(window.location.search);
-  const q = params.get("lens");
-  if (q === "0") return false;
-  const syntax = Boolean(
-    window.CSS && CSS.supports("backdrop-filter", "url(#lg) blur(1px)"),
-  );
-  const prims =
-    "SVGFEDisplacementMapElement" in window && "SVGFEImageElement" in window;
-  if (q === "1") return syntax && prims;
 
-  const nav = window.navigator as any;
-  const brands = (nav.userAgentData && nav.userAgentData.brands) || [];
-  const chromium = brands.some((b: any) =>
-    /Chromium|Google Chrome|Microsoft Edge/.test(b.brand),
-  );
-  return syntax && prims && chromium;
+  const forced = new URLSearchParams(window.location.search).get("lens");
+  if (forced === "0") return false;
+
+  const supportsSyntax = CSS.supports("backdrop-filter", "url(#lg) blur(1px)");
+  const supportsPrimitives =
+    "SVGFEDisplacementMapElement" in window && "SVGFEImageElement" in window;
+  if (forced === "1") return supportsSyntax && supportsPrimitives;
+
+  const brands = (window.navigator as NavigatorWithBrands).userAgentData
+    ?.brands;
+  const isChromium = brands?.some(({ brand }) => CHROMIUM_BRAND.test(brand));
+  return supportsSyntax && supportsPrimitives && Boolean(isChromium);
 }
