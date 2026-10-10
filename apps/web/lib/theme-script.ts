@@ -11,7 +11,7 @@
  *   never has to be duplicated here. Names and values are pattern-checked
  *   before they touch `<html>`; anything malformed is ignored.
  *
- * - `QUEUE_STEP`: the docked queue's open flag. `components/queue.tsx` persists
+ * - `QUEUE_STEP`: the docked queue's open flag. `components/player/use-queue-pane.ts` persists
  *   it in `localStorage` under `queue_open` (JSON, default open) and the shell
  *   reserves the pane's column from `data-queue="open"` at 1440px and up, so the
  *   attribute must exist before first paint or the content jumps once the

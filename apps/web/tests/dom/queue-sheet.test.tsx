@@ -10,7 +10,8 @@ import { AudioPlayerProvider } from "react-use-audio-player";
 import * as sonner from "sonner";
 import superjson from "superjson";
 
-import { Queue, useQueuePane } from "../../components/queue";
+import { useQueuePane } from "../../components/player/use-queue-pane";
+import { Queue } from "../../components/queue";
 import { THEME_BOOTSTRAP_SCRIPT } from "../../lib/theme-script";
 import { api } from "../../lib/trpc/client";
 
