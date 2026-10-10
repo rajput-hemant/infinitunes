@@ -33,6 +33,7 @@ export default function RootLayout({ modal, children }: RootLayoutProps) {
     <html
       lang="en"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={cn(Object.values(fonts).map((font) => font.variable))}
       {...defaultThemeAttributes}
     >

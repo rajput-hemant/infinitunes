@@ -35,6 +35,16 @@ export const RESET_RATE_LIMITS = {
   "/reset-password": { window: 60, max: 5 },
 } as const;
 
+type OAuthCredentials = { clientId: string; clientSecret: string };
+
+/** The credentials, or undefined when either half is not set. */
+function oauthCredentials(
+  clientId: string | undefined,
+  clientSecret: string | undefined,
+): OAuthCredentials | undefined {
+  return clientId && clientSecret ? { clientId, clientSecret } : undefined;
+}
+
 /**
  * Better Auth's own endpoints skip the Zod schemas, so cap the name here too.
  * Returns the trimmed name, or undefined when there is nothing to store.
@@ -109,6 +119,15 @@ export function createAuth(
       nodeEnv: env.NODE_ENV,
     });
 
+  const google = oauthCredentials(
+    env.GOOGLE_CLIENT_ID,
+    env.GOOGLE_CLIENT_SECRET,
+  );
+  const github = oauthCredentials(
+    env.GITHUB_CLIENT_ID,
+    env.GITHUB_CLIENT_SECRET,
+  );
+
   return betterAuth({
     secret: env.BETTER_AUTH_SECRET || env.AUTH_SECRET,
     baseURL,
@@ -168,15 +187,11 @@ export function createAuth(
       },
     },
 
+    // Only configured providers: Better Auth warns on every request about one
+    // without credentials. Production always has both (see `./env`).
     socialProviders: {
-      google: {
-        clientId: env.GOOGLE_CLIENT_ID!,
-        clientSecret: env.GOOGLE_CLIENT_SECRET!,
-      },
-      github: {
-        clientId: env.GITHUB_CLIENT_ID!,
-        clientSecret: env.GITHUB_CLIENT_SECRET!,
-      },
+      ...(google && { google }),
+      ...(github && { github }),
     },
 
     session: {

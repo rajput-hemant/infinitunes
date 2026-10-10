@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 import type { ThemeConfig } from "@infinitunes/types";
+import { ThemeProvider } from "next-themes";
 import { act } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 
 import { setInputValue } from "./set-input-value";
 
@@ -99,6 +101,43 @@ beforeEach(() => {
 });
 
 describe("liquid glass tuning", () => {
+  it("hydrates a saved dark theme without a mismatch, then shows the dark default tint", async () => {
+    localStorage.setItem("theme", "dark");
+    const tree = (
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+        <ThemeConfigProvider>
+          <LiquidGlassSettings />
+        </ThemeConfigProvider>
+      </ThemeProvider>
+    );
+    const container = document.createElement("div");
+    document.body.append(container);
+    // The server cannot know the resolved theme, so it renders the light default.
+    container.innerHTML = renderToString(tree);
+    expect(outputFor(container, "Transparency")?.textContent).toBe("86%");
+
+    const recoverable: unknown[] = [];
+    const errors: unknown[] = [];
+    const original = console.error;
+    console.error = (...args: unknown[]) => errors.push(args);
+    try {
+      await act(async () => {
+        mounted.push(
+          hydrateRoot(container, tree, {
+            onRecoverableError: (error) => recoverable.push(error),
+          }),
+        );
+      });
+    } finally {
+      console.error = original;
+      localStorage.removeItem("theme");
+    }
+
+    expect(recoverable).toEqual([]);
+    expect(errors).toEqual([]);
+    expect(outputFor(container, "Transparency")?.textContent).toBe("76%");
+  });
+
   it("moves the blur slider live and saves the blur key", async () => {
     const container = await mount(<LiquidGlassSettings />);
     const blur = sliderFor(container, "Blur");

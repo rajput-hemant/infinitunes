@@ -8,6 +8,7 @@ import { Layers, RotateCcw } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useId } from "react";
 
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
 import { DEFAULT_GLASS_TUNING, DEFAULT_THEME_CONFIG } from "~/lib/theme-config";
@@ -42,7 +43,10 @@ export function LiquidGlassSettings() {
   const { config, update } = useThemeConfig();
   const { resolvedTheme } = useTheme();
   const { glass, ambient, glassTuning } = config;
-  const tuning = resolveGlassTuning(glassTuning, resolvedTheme === "dark");
+  // `resolvedTheme` is undefined on the server but known on the first client
+  // render, so the saved-dark defaults only apply once hydrated.
+  const isDark = useIsHydrated() && resolvedTheme === "dark";
+  const tuning = resolveGlassTuning(glassTuning, isDark);
   const ambientLabelId = useId();
   const accentTintLabelId = useId();
   const isSolid = glass === "solid";

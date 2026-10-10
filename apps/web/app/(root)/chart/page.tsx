@@ -6,7 +6,7 @@ import {
   CatalogEmpty,
   CatalogEnd,
 } from "~/app/(root)/browse/_components/catalog-states";
-import { SliderCard } from "~/components/slider/slider-card";
+import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
 
@@ -39,16 +39,20 @@ export default async function ChartsPage() {
         <>
           <CatalogGrid>
             {charts.map(
-              ({
-                id,
-                title: chartTitle,
-                perma_url,
-                subtitle,
-                type,
-                image,
-                explicit_content,
-              }) => (
+              (
+                {
+                  id,
+                  title: chartTitle,
+                  perma_url,
+                  subtitle,
+                  type,
+                  image,
+                  explicit_content,
+                },
+                index,
+              ) => (
                 <SliderCard
+                  priority={index < FIRST_ROW_CARDS}
                   key={id}
                   name={chartTitle}
                   url={perma_url}

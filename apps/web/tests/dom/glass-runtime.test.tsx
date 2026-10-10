@@ -1,9 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import { act } from "react";
-import { createRoot, type Root } from "react-dom/client";
+import { createRoot, hydrateRoot, type Root } from "react-dom/client";
+import { renderToString } from "react-dom/server";
 
 import { GlassRuntime } from "../../components/glass/glass-runtime";
+import { GlassSurface } from "../../components/glass/glass-surface";
 import {
   forEachGlass,
   resetGlassRegistry,
@@ -55,7 +57,7 @@ describe("GlassRuntime", () => {
     expect(root.hasAttribute("data-glass-engine")).toBe(false);
   });
 
-  it("registers surfaces already in the page and ones added later", async () => {
+  it("registers surfaces added after it starts, but leaves server HTML to hydrate untouched", async () => {
     const early = document.createElement("div");
     early.setAttribute("data-glass", "regular");
     early.setAttribute("data-glass-size", "m");
@@ -70,7 +72,27 @@ describe("GlassRuntime", () => {
     document.body.append(wrapper);
     await flush();
 
-    expect(registered()).toEqual(expect.arrayContaining([early, late]));
+    // A surface already in the page may belong to a subtree React has not
+    // hydrated yet; writing --g-lens-url onto it would be a hydration mismatch.
+    expect(registered()).toContain(late);
+    expect(registered()).not.toContain(early);
+  });
+
+  it("registers a hydrated GlassSurface from its own effect, whether or not the runtime has started", async () => {
+    const html = renderToString(<GlassSurface size="s" glassRole="toolbar" />);
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    document.body.append(container);
+    const surface = container.firstElementChild;
+    expect(registered()).toEqual([]);
+
+    await act(async () => {
+      roots.push(
+        hydrateRoot(container, <GlassSurface size="s" glassRole="toolbar" />),
+      );
+    });
+
+    expect(registered()).toEqual([surface]);
   });
 
   it("registers packages/ui popups by their data-slot, with no attributes of their own", async () => {
