@@ -79,6 +79,8 @@ mock.module("@infinitunes/db", () => ({
 // Mock next/cache
 mock.module("next/cache", () => ({
   updateTag: () => {},
+  cacheLife: () => {},
+  cacheTag: () => {},
   unstable_cache: (fn: Function) => fn,
 }));
 

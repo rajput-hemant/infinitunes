@@ -7,8 +7,9 @@ import {
   THEME_COOKIE_MAX_AGE,
   isDefaultThemeConfig,
   normalizeThemeConfig,
-  serializeThemeConfig,
 } from "~/lib/theme-config";
+
+import { serializeThemeCookie } from "./cookie";
 
 /**
  * Persists the appearance config. The argument is untrusted, so it is
@@ -23,11 +24,13 @@ export async function saveThemeConfig(input: unknown): Promise<void> {
     return;
   }
 
-  store.set(THEME_COOKIE, serializeThemeConfig(config), {
+  store.set(THEME_COOKIE, serializeThemeCookie(config), {
     path: "/",
     maxAge: THEME_COOKIE_MAX_AGE,
     sameSite: "lax",
-    httpOnly: true,
+    // Not httpOnly: the pre-paint script and the client provider read it.
+    // It holds only appearance preferences.
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
   });
 }

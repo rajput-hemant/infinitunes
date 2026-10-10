@@ -28,16 +28,39 @@
         "id": "b0000000-0000-4000-8000-000000000001",
         "name": "Local Favorites",
         "description": "Deterministic local development playlist",
-        "songs": ["OF0RBBVqWXI", "c911v0kF"]
+        "songs": ["H5z5aZnA", "YiVML4Zo"]
+      },
+      {
+        "id": "b0000000-0000-4000-8000-000000000002",
+        "name": "Bollywood Romance",
+        "description": "Second deterministic playlist for list and detail views",
+        "songs": ["yXCLyL-9", "YiVML4Zo", "1gHtmQ3x"]
       }
     ],
     "favorites": {
       "id": "c0000000-0000-4000-8000-000000000001",
-      "songs": ["OF0RBBVqWXI"],
-      "albums": [],
-      "playlists": ["b0000000-0000-4000-8000-000000000001"],
-      "artists": [],
+      "songs": ["OF0RBBVqWXI", "KQE9fDgEbVw", "CTAofQ18Ggo"],
+      "albums": ["wSM2AOubajk_", "-iNdCmFNV9o_"],
+      "playlists": ["Iz0pi7nkjUE_"],
+      "artists": ["BlBR7WanYqs_", "S87pvBT6eb4_"],
       "podcasts": []
-    }
+    },
+    "recentlyPlayed": [
+      {
+        "id": "H5z5aZnA",
+        "type": "song",
+        "minutesAgo": 5
+      },
+      {
+        "id": "YiVML4Zo",
+        "type": "song",
+        "minutesAgo": 30
+      },
+      {
+        "id": "yXCLyL-9",
+        "type": "song",
+        "minutesAgo": 120
+      }
+    ]
   }
 }

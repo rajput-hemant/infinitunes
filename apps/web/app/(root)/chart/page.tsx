@@ -19,6 +19,9 @@ export const metadata = pageMetadata({
   url: "/chart",
   alt: "Top Music Charts",
 });
+// TODO: Cache Components adoption. Defer navigation validation until the shared session and navigation shell streams independently.
+export const instant = false;
+
 export default async function ChartsPage() {
   const charts = await api.get.charts({ page: 1, n: 50 });
 

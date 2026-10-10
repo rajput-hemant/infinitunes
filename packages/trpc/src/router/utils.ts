@@ -17,9 +17,10 @@ export function hasIdentity(
 export async function resolveNumericId(
   t: string,
   type: "album" | "playlist",
+  request: typeof api = api,
 ): Promise<string> {
   if (/^\d+$/.test(t)) return t;
-  const result = await api(endpoints[type].link, {
+  const result = await request(endpoints[type].link, {
     query: { token: t, type },
   });
   if (!isRecord(result) || result.id == null) return t;

@@ -1,7 +1,6 @@
 // oxlint-disable-next-line import/no-unassigned-import -- global stylesheet is a side-effect import
 import "~/styles/globals.css";
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
 import Script from "next/script";
 import type React from "react";
 
@@ -11,8 +10,9 @@ import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
 import { THEME_COLOR } from "~/lib/theme-color";
+import { DEFAULT_THEME_CONFIG } from "~/lib/theme-config";
+import { THEME_BOOTSTRAP_SCRIPT } from "~/lib/theme-script";
 import { themeConfigToHtml } from "~/lib/theme/html";
-import { getThemeConfig } from "~/lib/theme/server";
 import { absoluteUrl, cn } from "~/lib/utils";
 
 type RootLayoutProps = {
@@ -20,24 +20,22 @@ type RootLayoutProps = {
   children: React.ReactNode;
 };
 
-export default async function RootLayout({ modal, children }: RootLayoutProps) {
-  const themeConfig = await getThemeConfig();
-  const { attributes, style } = themeConfigToHtml(themeConfig);
-  // Per-request CSP nonce set by `proxy.ts`; absent when the proxy did not run.
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+// Static defaults: the saved appearance is applied before first paint by
+// `THEME_BOOTSTRAP_SCRIPT`, so this layout never reads the cookie.
+const { attributes: defaultThemeAttributes } =
+  themeConfigToHtml(DEFAULT_THEME_CONFIG);
 
+export default function RootLayout({ modal, children }: RootLayoutProps) {
   return (
-    // The cookie is read here, so <html> is themed on first paint; the client
-    // provider keeps these attributes in step with live changes.
     <html
       lang="en"
       suppressHydrationWarning
       className={cn(Object.values(fonts).map((font) => font.variable))}
-      style={style as React.CSSProperties}
-      {...attributes}
+      {...defaultThemeAttributes}
     >
       <body className="min-h-screen font-sans antialiased">
-        <Providers nonce={nonce} themeConfig={themeConfig}>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
+        <Providers>
           {children}
           {modal}
         </Providers>
@@ -47,7 +45,6 @@ export default async function RootLayout({ modal, children }: RootLayoutProps) {
 
       <Script
         async
-        nonce={nonce}
         src="https://us.umami.is/script.js"
         data-website-id={env.UMAMI_WEBSITE_ID}
       />

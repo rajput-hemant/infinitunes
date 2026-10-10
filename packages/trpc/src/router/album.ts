@@ -2,7 +2,6 @@ import type { Album } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { api } from "../lib/api";
 import { endpoints } from "../lib/endpoints";
 import {
   albumInput,
@@ -21,7 +20,7 @@ export const albumRouter = router({
   details: publicProcedure
     .input(albumInput)
     .output(z.custom<Album>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const { id, token, lang } = input;
       if (!id && !token) {
         throw new TRPCError({
@@ -30,7 +29,7 @@ export const albumRouter = router({
         });
       }
       const t = token ?? "";
-      const albumid = id ?? (await resolveNumericId(t, "album"));
+      const albumid = id ?? (await resolveNumericId(t, "album", api));
       const result = await api(endpoints.album.id, {
         query: {
           albumid,
@@ -52,7 +51,7 @@ export const albumRouter = router({
   recommendations: publicProcedure
     .input(albumRecommendInput)
     .output(z.custom<Album[]>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await secondaryList(() =>
         api<Album[]>(endpoints.album.recommend, {
           query: {
@@ -68,7 +67,7 @@ export const albumRouter = router({
   sameYear: publicProcedure
     .input(albumSameYearInput)
     .output(z.custom<Album[]>())
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await secondaryList(() =>
         api<Album[]>(endpoints.album.same_year, {
           query: {
