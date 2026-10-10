@@ -49,7 +49,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
 
         <div className="flex gap-2">
           <Link
-            href="/settings#account"
+            href="/settings#profile"
             className={buttonVariants({
               variant: "secondary",
               className: controlStyles.text,
