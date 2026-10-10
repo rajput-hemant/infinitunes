@@ -2,14 +2,16 @@ import { describe, expect, it } from "bun:test";
 
 import {
   buildCsp,
+  scriptHash,
   CSP_ENFORCE,
   cspHeaderName,
   CSP_ENFORCING_HEADER,
   CSP_REPORT_ONLY_HEADER,
 } from "../lib/csp";
+import { THEME_BOOTSTRAP_SCRIPT } from "../lib/theme-script";
 
 describe("buildCsp", () => {
-  const csp = buildCsp({ nonce: "abc123" });
+  const csp = buildCsp();
   const directive = (value: string, name: string) =>
     value
       .split("; ")
@@ -22,12 +24,23 @@ describe("buildCsp", () => {
     expect(directive(csp, "frame-ancestors")).toEqual(["'none'"]);
   });
 
-  it("nonces scripts without unsafe-eval or analytics by default", () => {
-    expect(directive(csp, "script-src")).toEqual(["'self'", "'nonce-abc123'"]);
+  it("allows scripts by hash without nonces, unsafe-eval or analytics by default", () => {
+    expect(directive(csp, "script-src")).toEqual([
+      "'self'",
+      scriptHash(THEME_BOOTSTRAP_SCRIPT),
+    ]);
+    expect(csp).not.toContain("nonce");
+  });
+
+  it("hashes the exact theme bootstrap script text", () => {
+    const digest = new Bun.CryptoHasher("sha256")
+      .update(THEME_BOOTSTRAP_SCRIPT)
+      .digest("base64");
+    expect(directive(csp, "script-src")).toContain(`'sha256-${digest}'`);
   });
 
   it("allows unsafe-eval only in dev", () => {
-    expect(buildCsp({ nonce: "n", isDev: true })).toContain("'unsafe-eval'");
+    expect(buildCsp({ isDev: true })).toContain("'unsafe-eval'");
     expect(csp).not.toContain("unsafe-eval");
   });
 
@@ -52,25 +65,14 @@ describe("buildCsp", () => {
     expect(directive(csp, "form-action")).toEqual(["'self'"]);
   });
 
-  it("embeds exactly the nonce it is given", () => {
-    const a = buildCsp({ nonce: "AAA" });
-    const b = buildCsp({ nonce: "BBB" });
-    expect(a).toContain("'nonce-AAA'");
-    expect(a).not.toContain("BBB");
-    expect(b).toContain("'nonce-BBB'");
-  });
-
-  it("never allows inline or remote scripts beyond the nonce", () => {
-    const scripts = directive(
-      buildCsp({ nonce: "n", umami: true }),
-      "script-src",
-    );
+  it("never allows inline or remote scripts beyond the hashes", () => {
+    const scripts = directive(buildCsp({ umami: true }), "script-src");
     expect(scripts).not.toContain("'unsafe-inline'");
     expect(scripts).not.toContain("*");
   });
 
   it("adds Umami hosts only when configured", () => {
-    const withUmami = buildCsp({ nonce: "n", umami: true });
+    const withUmami = buildCsp({ umami: true });
     expect(directive(withUmami, "script-src")).toContain("https://us.umami.is");
     expect(withUmami).toContain("https://gateway.umami.is");
     expect(csp).not.toContain("umami");
