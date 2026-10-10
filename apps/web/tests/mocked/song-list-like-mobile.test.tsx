@@ -47,7 +47,8 @@ describe("row Like button on mobile", () => {
 
     const classes = (likeProps[0]?.className ?? "").split(" ");
     expect(classes).toContain("hidden");
-    expect(classes).toContain("lg:block");
+    expect(classes).toContain("lg:inline-flex");
+    expect(classes).not.toContain("lg:block");
     expect(menuRows).toBe(1);
   });
 });

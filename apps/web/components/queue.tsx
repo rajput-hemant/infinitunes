@@ -20,7 +20,8 @@ import { toast } from "sonner";
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
-import { getHref } from "~/lib/utils";
+import { controlStyles } from "~/lib/control-styles";
+import { cn, getHref } from "~/lib/utils";
 
 import { ArtistLinks } from "./song-list/artist-links";
 import { TilePlayPauseButton } from "./song-list/play-pause-button";
@@ -196,9 +197,12 @@ export function QueueList() {
                   disabled={leaving.has(item.queueItemId)}
                   tabIndex={leaving.has(item.queueItemId) ? -1 : undefined}
                   onClick={() => removeItem(item.queueItemId)}
-                  className="relative z-10 ml-auto size-11 shrink-0 p-0 lg:size-8 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                  className={cn(
+                    controlStyles.rowIcon,
+                    "relative z-10 ml-auto shrink-0 p-0 text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                  )}
                 >
-                  <X aria-hidden className="size-4" />
+                  <X aria-hidden className="size-5" />
                 </Button>
               </figure>
             </div>
@@ -220,9 +224,9 @@ export function Queue() {
             size="icon"
             variant="ghost"
             aria-label="Open queue"
-            className="shrink-0"
+            className={cn(controlStyles.headerIcon, "shrink-0")}
           >
-            <ListOrdered aria-hidden />
+            <ListOrdered aria-hidden className="size-5" />
           </Button>
         }
       />

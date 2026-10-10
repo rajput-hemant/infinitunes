@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 import { unwrap } from "~/lib/action-result";
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
@@ -157,6 +158,7 @@ export function LikeButton(props: LikeButtonProps) {
         aria-disabled={favourites === null}
         onClick={likeHandler}
         className={cn(
+          controlStyles.rowIcon,
           "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring aria-disabled:opacity-50",
           className,
         )}

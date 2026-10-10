@@ -51,6 +51,7 @@ import {
 } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
 import {
   addSongsToPlaylist,
   addToFavorites,
@@ -325,11 +326,15 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         <Drawer>
           <DrawerTrigger
             aria-label="More Options"
-            className="flex size-11 items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+            className={cn(
+              controlStyles.rowIcon,
+              "flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+              className,
+            )}
           >
             <MoreVertical
               aria-hidden="true"
-              className="size-6 hover:text-primary"
+              className="size-5 hover:text-primary"
             />
           </DrawerTrigger>
 
@@ -423,7 +428,9 @@ export function TileMoreButton(props: TileMoreButtonProps) {
             <Separator className="my-4" />
 
             <DrawerFooter className="pt-0 sm:justify-center">
-              <DrawerClose className={buttonVariants({ className: "h-11" })}>
+              <DrawerClose
+                className={buttonVariants({ className: controlStyles.text })}
+              >
                 Cancel
               </DrawerClose>
             </DrawerFooter>
@@ -436,13 +443,14 @@ export function TileMoreButton(props: TileMoreButtonProps) {
           <DropdownMenuTrigger
             aria-label="More Options"
             className={cn(
-              "rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+              controlStyles.rowIcon,
+              "inline-flex items-center justify-center rounded-full outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
               className,
             )}
           >
             <MoreVertical
               aria-hidden="true"
-              className="size-6 hover:text-primary"
+              className="size-5 hover:text-primary"
             />
           </DropdownMenuTrigger>
 
