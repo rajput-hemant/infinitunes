@@ -197,7 +197,7 @@ When updating this file, preserve this bar for all agents and keep entries conci
 ## React and Next.js Best Practices
 
 - **Server vs Client Components**: Layouts and pages should remain Server Components where possible to fetch data and cookies efficiently. Isolate user interactivity (clicks, menus, forms) into dedicated Client Components with `"use client"`.
-- **Sidebar Layout Hierarchy**: Always nest `<Navbar />` inside `<SidebarInset>` above `<main>` within `<SidebarProvider>` to avoid breaking the horizontal layout.
+- **Sidebar Layout Hierarchy**: Keep `<Navbar />` in the content column above `<main>` (the `SidebarInset`), within `<SidebarProvider>`, so the layout stays horizontal and the page has one `main` landmark.
 - **Component Imports**: Do not create local component files under `apps/web/components/ui`. Always reference the monorepo package `@infinitunes/ui/components/<name>` and exports in `packages/ui/package.json`.
 - **shadcn/ui is read-only**: Do not modify shadcn/ui components (`packages/ui/src/components`). Apply customizations in application components, wrappers, or composition instead.
 - **No barrel files in `apps/web/components`**: import from the source file
