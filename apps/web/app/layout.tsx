@@ -11,7 +11,8 @@ import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
 import { THEME_COLOR } from "~/lib/theme-color";
-import { getThemeConfig } from "~/lib/theme-config";
+import { themeConfigToHtml } from "~/lib/theme/html";
+import { getThemeConfig } from "~/lib/theme/server";
 import { absoluteUrl, cn } from "~/lib/utils";
 
 type RootLayoutProps = {
@@ -20,25 +21,23 @@ type RootLayoutProps = {
 };
 
 export default async function RootLayout({ modal, children }: RootLayoutProps) {
-  const { theme, radius } = await getThemeConfig();
+  const themeConfig = await getThemeConfig();
+  const { attributes, style } = themeConfigToHtml(themeConfig);
   // Per-request CSP nonce set by `proxy.ts`; absent when the proxy did not run.
   const nonce = (await headers()).get("x-nonce") ?? undefined;
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          Object.values(fonts).map((font) => font.variable),
-          "min-h-screen font-sans antialiased",
-          theme !== "default" && `theme-${theme}`,
-        )}
-        style={
-          radius === "default"
-            ? undefined
-            : ({ "--radius": `${radius}rem` } as React.CSSProperties)
-        }
-      >
-        <Providers nonce={nonce}>
+    // The cookie is read here, so <html> is themed on first paint; the client
+    // provider keeps these attributes in step with live changes.
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn(Object.values(fonts).map((font) => font.variable))}
+      style={style as React.CSSProperties}
+      {...attributes}
+    >
+      <body className="min-h-screen font-sans antialiased">
+        <Providers nonce={nonce} themeConfig={themeConfig}>
           {children}
           {modal}
         </Providers>

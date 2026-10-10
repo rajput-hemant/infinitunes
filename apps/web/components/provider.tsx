@@ -1,5 +1,6 @@
 "use client";
 
+import type { ThemeConfig } from "@infinitunes/types";
 import { Toaster } from "@infinitunes/ui/components/sonner";
 import { TooltipProvider } from "@infinitunes/ui/components/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,6 +11,7 @@ import { useState } from "react";
 import { AudioPlayerProvider } from "react-use-audio-player";
 import superjson from "superjson";
 
+import { ThemeConfigProvider } from "~/lib/theme/provider";
 import { api } from "~/lib/trpc/client";
 
 import { ThemeColorSync } from "./theme-color-sync";
@@ -21,6 +23,8 @@ type Props = {
   theme?: ThemeProviderProps;
   /** Per-request CSP nonce for the `next-themes` inline bootstrap script. */
   nonce?: string;
+  /** The appearance config the server rendered `<html>` with. */
+  themeConfig: ThemeConfig;
   children: React.ReactNode;
 };
 
@@ -63,7 +67,12 @@ function TRPCReactProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function Providers({ children, theme, nonce }: Props) {
+export default function Providers({
+  children,
+  theme,
+  nonce,
+  themeConfig,
+}: Props) {
   return (
     <ThemeProvider
       attribute="class"
@@ -72,17 +81,19 @@ export default function Providers({ children, theme, nonce }: Props) {
       nonce={nonce}
       {...theme}
     >
-      <ThemeColorSync />
-      <AudioPlayerProvider>
-        <TRPCReactProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-        </TRPCReactProvider>
+      <ThemeConfigProvider initial={themeConfig}>
+        <ThemeColorSync />
+        <AudioPlayerProvider>
+          <TRPCReactProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </TRPCReactProvider>
 
-        <Toaster
-          offset={{ bottom: TOAST_BOTTOM_OFFSET }}
-          mobileOffset={{ bottom: TOAST_BOTTOM_OFFSET }}
-        />
-      </AudioPlayerProvider>
+          <Toaster
+            offset={{ bottom: TOAST_BOTTOM_OFFSET }}
+            mobileOffset={{ bottom: TOAST_BOTTOM_OFFSET }}
+          />
+        </AudioPlayerProvider>
+      </ThemeConfigProvider>
     </ThemeProvider>
   );
 }
