@@ -77,6 +77,9 @@ jobs:
       - name: Build production
         run: bun run build
 
+      - name: Performance budget
+        run: bun run budget
+
       - name: Verify static asset startup
         run: |
           cleanup() {
