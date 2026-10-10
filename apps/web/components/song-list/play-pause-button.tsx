@@ -54,7 +54,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
       <Play
         aria-hidden="true"
         strokeWidth={9}
-        className="absolute inset-0 z-20 m-auto hidden size-5 text-secondary transition-transform duration-150 ease-out hover:scale-125 group-focus-within:block group-hover:block dark:invert"
+        className="absolute inset-0 z-20 m-auto hidden size-5 text-secondary transition-transform duration-150 ease-out hover:scale-125 group-focus-within/row:block group-hover/row:block dark:invert"
       />
     </PlayButton>
   );
