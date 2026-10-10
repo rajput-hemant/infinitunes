@@ -3,13 +3,29 @@
 import { cn } from "@infinitunes/ui/lib/utils";
 import * as React from "react";
 
-import { useGlassLens } from "./use-glass-lens";
+import type { GlassSize } from "~/lib/glass/lens-math";
+import type { GlassRole } from "~/lib/glass/overlays";
 
-export type GlassSurfaceProps = React.HTMLAttributes<HTMLDivElement> & {
-  variant?: "regular" | "clear" | "tinted";
-  size?: "s" | "m" | "l" | "xl";
+export type GlassVariant = "regular" | "clear" | "tinted";
+
+type RenderElement = React.ReactElement<
+  React.HTMLAttributes<HTMLElement> & React.RefAttributes<HTMLElement>
+>;
+
+export type GlassSurfaceProps = React.HTMLAttributes<HTMLElement> & {
+  variant?: GlassVariant;
+  size?: GlassSize;
+  /** `"off"` opts out of refraction. `size="xl"` never refracts. */
   lens?: "on" | "off";
+  /** The surface is itself a pressable control: it gets the press gel. */
   interactive?: boolean;
+  /** What the surface is (`data-glass-role`); drives materialize and the tab bar / player rules. */
+  glassRole?: GlassRole;
+  /**
+   * Render as another element, Base UI style: `render={<nav />}`. This
+   * component's props win over the element's own; class names are merged.
+   */
+  render?: RenderElement;
 };
 
 function assignRef<T>(ref: React.ForwardedRef<T>, node: T | null) {
@@ -17,7 +33,12 @@ function assignRef<T>(ref: React.ForwardedRef<T>, node: T | null) {
   else if (ref) ref.current = node;
 }
 
-export const GlassSurface = React.forwardRef<HTMLDivElement, GlassSurfaceProps>(
+/**
+ * A navigation-layer glass surface. It only sets attributes; `GlassRuntime`
+ * (mounted in the root layout) finds it and attaches the lens, pointer light
+ * and press gel, and `styles/glass.css` paints it.
+ */
+export const GlassSurface = React.forwardRef<HTMLElement, GlassSurfaceProps>(
   function GlassSurface(
     {
       className,
@@ -25,56 +46,35 @@ export const GlassSurface = React.forwardRef<HTMLDivElement, GlassSurfaceProps>(
       size = "m",
       lens = "on",
       interactive = false,
-      onPointerDown,
+      glassRole,
+      render,
       children,
       ...props
     },
     forwardedRef,
   ) {
-    const surfaceRef = React.useRef<HTMLDivElement | null>(null);
-
-    useGlassLens(surfaceRef, { size, off: lens === "off" });
-
-    const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-      onPointerDown?.(event);
-      if (!interactive) return;
-
-      const surface = event.currentTarget;
-      const rect = surface.getBoundingClientRect();
-      surface.style.setProperty(
-        "--g-px",
-        `${((event.clientX - rect.left) / rect.width) * 100}%`,
-      );
-      surface.style.setProperty(
-        "--g-py",
-        `${((event.clientY - rect.top) / rect.height) * 100}%`,
-      );
-      surface.style.setProperty("--g-press", "1");
-
-      const release = () => {
-        surface.style.setProperty("--g-press", "0");
-        window.removeEventListener("pointerup", release);
-        window.removeEventListener("pointercancel", release);
-      };
-      window.addEventListener("pointerup", release);
-      window.addEventListener("pointercancel", release);
+    const merged = {
+      ...(render?.props ?? {}),
+      ...props,
+      className: cn(render?.props.className, className),
+      "data-glass": variant,
+      "data-glass-size": size,
+      "data-lens": lens === "off" || size === "xl" ? "off" : "on",
+      "data-glass-role": glassRole,
+      "data-glass-press": interactive ? "true" : undefined,
+      ref: (node: HTMLElement | null) => {
+        assignRef(forwardedRef, node);
+        if (render) assignRef(render.props.ref ?? null, node);
+      },
     };
 
-    return (
-      <div
-        {...props}
-        ref={(node) => {
-          surfaceRef.current = node;
-          assignRef(forwardedRef, node);
-        }}
-        data-glass={variant}
-        data-glass-size={size}
-        data-lens={lens}
-        className={cn(className)}
-        onPointerDown={handlePointerDown}
-      >
-        {children}
-      </div>
-    );
+    if (render) {
+      return React.cloneElement(
+        render,
+        merged,
+        children ?? render.props.children,
+      );
+    }
+    return <div {...merged}>{children}</div>;
   },
 );

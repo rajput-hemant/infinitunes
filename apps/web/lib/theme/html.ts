@@ -14,7 +14,7 @@ export function resolveAccentHex(accent: string): string {
 
 type ThemeAttributes = {
   "data-density": ThemeConfig["density"];
-  "data-glass": ThemeConfig["glass"];
+  "data-glass-level": ThemeConfig["glass"];
   "data-ambient": "on" | "off";
   "data-motion": "full" | "reduced";
   "data-font": ThemeConfig["font"];
@@ -87,7 +87,7 @@ export function themeConfigToHtml(config: ThemeConfig): ThemeHtml {
 
   const attributes: ThemeAttributes = {
     "data-density": config.density,
-    "data-glass": config.glass,
+    "data-glass-level": config.glass,
     "data-ambient": config.ambient ? "on" : "off",
     "data-motion": config.reduceMotion ? "reduced" : "full",
     "data-font": config.font,
@@ -120,7 +120,10 @@ export function applyThemeConfig(target: ThemeTarget, config: ThemeConfig) {
 
   // Set required attributes
   target.setAttribute("data-density", attributes["data-density"]);
-  target.setAttribute("data-glass", attributes["data-glass"]);
+  target.setAttribute("data-glass-level", attributes["data-glass-level"]);
+  // Cookies written before the rename carry `data-glass`; on `<html>` it would
+  // read as a glass surface, so drop it.
+  target.removeAttribute("data-glass");
   target.setAttribute("data-ambient", attributes["data-ambient"]);
   target.setAttribute("data-motion", attributes["data-motion"]);
   target.setAttribute("data-font", attributes["data-font"]);

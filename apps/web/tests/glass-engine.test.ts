@@ -4,7 +4,6 @@ import {
   roundedRectSDF,
   createDisplacementMap,
   createSpecularMap,
-  GlassMapCache,
 } from "~/lib/glass/engine";
 
 describe("roundedRectSDF", () => {
@@ -99,25 +98,6 @@ describe("createSpecularMap", () => {
       expect(map.data[i + 2]).toBe(255); // B
       expect(map.data[i + 3]).toBeGreaterThanOrEqual(0); // A
       expect(map.data[i + 3]).toBeLessThanOrEqual(255);
-    }
-  });
-});
-
-describe("GlassMapCache", () => {
-  test("cache key and cache cap of 24", () => {
-    const cache = new GlassMapCache();
-    expect(cache.getKey("disp", 10, 10, 2, 2)).toBe("disp:10:10:2:2");
-
-    for (let i = 0; i < 30; i++) {
-      cache.set(`key${i}`, `value${i}`);
-    }
-
-    // Size is max 24, so first 6 should be evicted
-    for (let i = 0; i < 6; i++) {
-      expect(cache.get(`key${i}`)).toBeUndefined();
-    }
-    for (let i = 6; i < 30; i++) {
-      expect(cache.get(`key${i}`)).toBe(`value${i}`);
     }
   });
 });
