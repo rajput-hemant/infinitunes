@@ -104,7 +104,7 @@ export function AppSidebarTrigger({
             <SidebarTrigger
               className={cn(
                 controlStyles.headerIcon,
-                "rounded-full aria-expanded:bg-transparent aria-expanded:hover:bg-muted",
+                "aria-expanded:bg-transparent aria-expanded:hover:bg-muted",
               )}
               aria-label={label}
               aria-expanded={expanded}
