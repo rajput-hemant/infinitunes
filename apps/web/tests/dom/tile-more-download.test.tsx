@@ -10,6 +10,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
 
 mock.module("server-only", () => ({}));
 
@@ -64,7 +65,13 @@ const router = {
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
 
 /** Renders the more button, opens the desktop dropdown or the phone drawer, and runs `inspect`. */

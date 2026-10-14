@@ -11,6 +11,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
 
 // `server-only` throws outside the react-server condition; the action module
 // behind the button only needs it to import, nothing here calls an action.
@@ -32,7 +33,13 @@ const item: QueueItem = {
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
 
 const router = {

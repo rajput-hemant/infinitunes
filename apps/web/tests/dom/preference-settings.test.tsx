@@ -1,8 +1,8 @@
-import { describe, expect, it, mock } from "bun:test";
+import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 
 import { PreferenceSettings } from "../../app/(root)/settings/_components/preference-settings";
 import { setInputValue } from "./set-input-value";
@@ -25,21 +25,36 @@ const { ThemeConfigProvider } = await import("../../lib/theme/provider");
 async function mountAppearance(node: React.ReactNode) {
   const container = document.createElement("div");
   document.body.append(container);
+  const root = createRoot(container);
+  mounted.push(root);
   await act(async () => {
-    createRoot(container).render(
-      <ThemeConfigProvider>{node}</ThemeConfigProvider>,
-    );
+    root.render(<ThemeConfigProvider>{node}</ThemeConfigProvider>);
   });
   return container;
 }
 
 const html = document.documentElement;
 
+// Every mounted provider re-applies its own config to <html> whenever it
+// renders (its debounced save flips `isSaving`). A provider left mounted by an
+// earlier test would do that mid-way through a later one and clobber its
+// values, so each test unmounts what it mounted.
+const mounted: Root[] = [];
+afterEach(async () => {
+  await act(async () => {
+    for (const root of mounted.splice(0)) root.unmount();
+  });
+  document.body.innerHTML = "";
+  html.removeAttribute("style");
+  html.removeAttribute("data-density");
+});
+
 describe("keyboard shortcuts setting", () => {
   it("is a labelled switch that toggles the stored preference", async () => {
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
+    mounted.push(root);
     await act(async () => {
       root.render(
         <AppRouterContext.Provider value={createTestRouter()}>
