@@ -7,3 +7,7 @@
  */
 export const detailBandClassName =
   "relative isolate -mx-page -mt-[calc(3.5rem+env(safe-area-inset-top)+0.5rem)] grid items-end justify-items-center gap-4 px-page pt-[calc(3.5rem+env(safe-area-inset-top)+1rem)] pb-6 text-center md:-mt-16 md:grid-cols-[auto_minmax(0,1fr)] md:justify-items-stretch md:gap-8 md:pt-20 md:text-start";
+
+/** The description card under a show or episode header; its skeleton shares it. */
+export const detailPanelClassName =
+  "flex max-w-2xl flex-col gap-4 rounded-md bg-card p-6 ring-1 ring-inset ring-border";
