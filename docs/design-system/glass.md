@@ -153,8 +153,8 @@ that scrolls its own content (a long menu) scrolls the rim with it.
   player slides into the row.
 - `useScrollEdge<T>(opts?)` (`~/hooks/use-scroll-edge`): returns a ref; put it on the toolbar wrapper carrying
   `data-glass-edge="top"` (a wrapper, not a glass surface). It toggles `data-scrolled` past 4px (or a `scroller`). Remove
-  the toolbar's own background and divider. `<GlassEdge />` is the bottom edge (soft on wide, hard on phones); set
-  `--g-edge-l` and `--g-edge-r` to clear the sidebar and docked queue, and keep it under the player.
+  the toolbar's own background and divider. `<GlassEdge />` is the bottom edge, phones only: it is hidden from 768px and while the tab bar is minimized, because a
+  glass surface floating over it (the player) would read as two tints, one per half. Keep it under the player.
 - `GlassSelector` (`components/glass/glass-selector`): tab bar and segmented controls. Children are `data-glass-item`,
   the active one `aria-current`, `aria-selected` or `aria-pressed`. It slides a spring indicator, lifts into a magnifying
   droplet while pressed, and supports drag with rubber band and fling projection. A drag release clicks the picked item

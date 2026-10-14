@@ -597,6 +597,17 @@ html[data-glass-engine="lens"] [data-glass-indicator][data-lifted] {
   }
 }
 
+/* The edge is a second backdrop layer: whatever floats over it (the desktop player is always over its
+   bottom band, the phone player once the tab bar is minimized) would read as two tints, so it steps aside there. */
+@media (min-width: 768px) {
+  [data-glass-edge="bottom"] {
+    display: none;
+  }
+}
+html[data-tab-min="true"] [data-glass-edge="bottom"] {
+  display: none;
+}
+
 /* ---------- Fallbacks and accessibility ---------- */
 /* Solid level: opaque surface, no backdrop filter, no lens. Rim and shadow stay. */
 html[data-glass-level="solid"]

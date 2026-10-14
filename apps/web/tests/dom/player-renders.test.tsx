@@ -29,7 +29,7 @@ const audio = {
   },
   isPlaying: true,
   togglePlayPause() {},
-  getPosition: () => (advancing ? (position += 0.05) : position),
+  getPosition: () => (advancing ? (position += 1) : position),
   isLoading: false,
   duration: 200,
   isLooping: false,
@@ -96,26 +96,9 @@ const router = {
 
 const roots: Root[] = [];
 
-// happy-dom does not pace animation frames, so frames are stepped by hand.
-let frameCallbacks = new Map<number, FrameRequestCallback>();
-let nextFrameId = 1;
-globalThis.requestAnimationFrame = (cb) => {
-  frameCallbacks.set(nextFrameId, cb);
-  return nextFrameId++;
-};
-globalThis.cancelAnimationFrame = (id) => void frameCallbacks.delete(id);
-window.requestAnimationFrame = globalThis.requestAnimationFrame;
-window.cancelAnimationFrame = globalThis.cancelAnimationFrame;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function stepFrames(count: number) {
-  for (let i = 0; i < count; i++) {
-    const due = [...frameCallbacks.values()];
-    frameCallbacks = new Map();
-    await act(async () => due.forEach((cb) => cb(performance.now())));
-  }
-}
-
-async function commitsOver(frames: number, isAdvancing: boolean) {
+async function commitsOver(ms: number, isAdvancing: boolean) {
   localStorage.setItem("queue", JSON.stringify(queue));
   localStorage.setItem("current_song_index", "0");
   advancing = false;
@@ -143,7 +126,7 @@ async function commitsOver(frames: number, isAdvancing: boolean) {
   const settled = commits;
   queueRenders = 0;
   advancing = isAdvancing;
-  await stepFrames(frames);
+  await act(async () => sleep(ms));
   advancing = false;
   return { commits: commits - settled, container };
 }
@@ -154,21 +137,25 @@ afterEach(async () => {
 
 describe("player re-renders", () => {
   it("does not commit while the playhead is paused", async () => {
-    const { commits } = await commitsOver(60, false);
+    const { commits } = await commitsOver(700, false);
 
     expect(commits).toBe(0);
   });
 
-  // PF-8: the frame loop writes to a position store, so only the seek bar and
-  // time label subscribe. Before, `Queue` re-rendered on every frame.
-  it("keeps the rest of the bar still while the playhead advances", async () => {
-    const frames = 60;
-    const { commits, container } = await commitsOver(frames, true);
+  // PF-8: the playhead writes to a position store, so only the seek bar and
+  // time label subscribe. It is sampled a few times a second, not per frame:
+  // every commit inside the glass player makes the compositor redraw the
+  // backdrops behind and over it.
+  it("keeps the rest of the bar still, and commits only at the tick rate, while the playhead advances", async () => {
+    const seconds = 1.5;
+    const { commits, container } = await commitsOver(seconds * 1000, true);
 
-    expect(commits).toBeLessThanOrEqual(frames * 2);
+    // 4 ticks a second; allow a seek bar and a mini progress commit per tick.
+    expect(commits).toBeGreaterThan(0);
+    expect(commits).toBeLessThanOrEqual(seconds * 4 * 2 + 4);
     expect(queueRenders).toBeLessThanOrEqual(2);
     // The playhead still moves: the time label follows it.
-    expect(container.textContent).toMatch(/00:0[23].*03:20/);
+    expect(container.textContent).toMatch(/00:0[2-9].*03:20/);
   });
 });
 
