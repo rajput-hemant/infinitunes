@@ -1,19 +1,21 @@
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import { detailPanelClassName } from "~/components/details-header/details-header-band";
+import { DetailsHeaderSkeleton } from "~/components/details-header/details-header-skeleton";
+import {
+  PageSectionTitleSkeleton,
+  TextLinesSkeleton,
+} from "~/components/page-section-skeleton";
 
-import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
-
+/** Mirrors the episode page: header, then the description card. */
 export default function EpisodeDetailsLoading() {
   return (
-    <div className="flex flex-col gap-(--page-gap)">
+    <div className="flex flex-col gap-(--page-gap)" aria-busy="true">
       <DetailsHeaderSkeleton type="episode" />
 
-      <Skeleton className="h-8 w-44 sm:h-9 md:h-10 md:w-72" />
+      <section className={detailPanelClassName}>
+        <PageSectionTitleSkeleton className="ml-0" />
 
-      <div className="flex w-full max-w-3xl flex-col gap-1">
-        <Skeleton className="h-5 w-full" />
-        <Skeleton className="h-5 w-full" />
-        <Skeleton className="h-5 w-72" />
-      </div>
+        <TextLinesSkeleton lines={5} />
+      </section>
     </div>
   );
 }

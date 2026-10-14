@@ -8,6 +8,8 @@ import { GlassSurface } from "~/components/glass/glass-surface";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
+import { shelfListClassName } from "./shelf-layout";
+
 type ShelfProps = {
   children: ReactNode;
   rows?: 1 | 2;
@@ -47,13 +49,7 @@ export function Shelf({ children, rows = 1, className }: ShelfProps) {
 
   return (
     <div className={cn("relative", className)}>
-      <ol
-        ref={scroller}
-        className={cn(
-          "grid auto-cols-max grid-flow-col gap-3 overflow-x-auto p-1 scroll-smooth snap-x snap-mandatory md:gap-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-          rows === 2 && "grid-rows-2",
-        )}
-      >
+      <ol ref={scroller} className={shelfListClassName(rows)}>
         {children}
       </ol>
 

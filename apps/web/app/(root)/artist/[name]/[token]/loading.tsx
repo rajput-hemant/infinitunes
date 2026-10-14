@@ -1,41 +1,29 @@
 "use client";
 
-import { Badge } from "@infinitunes/ui/components/badge";
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { usePathname } from "next/navigation";
-import React from "react";
 
-import { AlbumGridSkeleton } from "~/components/skeletons/album-grid-skeleton";
-import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
+import { DetailsHeaderSkeleton } from "~/components/details-header/details-header-skeleton";
 
-export default function ArtistDetailsSkeleton() {
-  const name = usePathname().split("/")[2];
+import { ArtistBodySkeleton } from "./_components/artist-skeleton";
+
+/**
+ * Mirrors the artist page: header, tab row, the tab the URL slug selects
+ * (`-songs`, `-albums`, else Overview), then the shelves. Client-side only to
+ * read that slug.
+ */
+export default function ArtistDetailsLoading() {
+  const name = usePathname().split("/")[2] ?? "";
+  const tab = name.endsWith("-songs")
+    ? "songs"
+    : name.endsWith("-albums")
+      ? "albums"
+      : "overview";
 
   return (
-    <div className="flex flex-col gap-(--page-gap)">
+    <div className="flex flex-col gap-(--page-gap)" aria-busy="true">
       <DetailsHeaderSkeleton type="artist" />
-      <div className="flex flex-col gap-2">
-        <Skeleton className="mb-4 h-10 w-full max-w-71 pointer-coarse:h-11" />
-        {/-(songs|albums)$/.test(name) ? (
-          <div className="my-6 flex space-x-2">
-            <Badge className="p-2 px-4 text-primary">Popular</Badge>
-            <Badge variant="secondary" className="p-2 px-4 text-secondary">
-              Date
-            </Badge>
-            <Badge variant="secondary" className="p-2 px-4 text-secondary">
-              Name
-            </Badge>
-          </div>
-        ) : (
-          <Skeleton className="h-10 w-[138px]" />
-        )}
-        {/-albums$/.test(name) ? (
-          <AlbumGridSkeleton />
-        ) : (
-          <SongListSkeleton length={10} />
-        )}
-      </div>
+
+      <ArtistBodySkeleton tab={tab} />
     </div>
   );
 }

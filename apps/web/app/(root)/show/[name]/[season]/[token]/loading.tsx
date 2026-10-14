@@ -1,32 +1,29 @@
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import { DetailsHeaderSkeleton } from "~/components/details-header/details-header-skeleton";
+import {
+  PageSectionTitleSkeleton,
+  TextLinesSkeleton,
+} from "~/components/page-section-skeleton";
+import { ShelfSkeleton } from "~/components/slider/shelf-skeleton";
 
-import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
-import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
-import { Shelf } from "~/components/slider/shelf";
-import { ShelfItem } from "~/components/slider/shelf-item";
+import { EpisodesSkeleton } from "./_components/episodes-skeleton";
 
+/** Mirrors the show page: header, about, season shelf, then the episode list. */
 export default function ShowDetailsLoading() {
   return (
-    <div className="flex flex-col gap-(--page-gap)">
+    <div className="flex flex-col gap-(--page-gap)" aria-busy="true">
       <DetailsHeaderSkeleton type="show" />
 
-      <Skeleton className="h-7 w-44 sm:h-8 md:h-9 md:w-72" />
+      <section className="flex flex-col gap-4">
+        <PageSectionTitleSkeleton />
 
-      <Shelf>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <ShelfItem key={i}>
-            <SliderCardSkeleton aspect="video" hideSubtitle />
-          </ShelfItem>
-        ))}
-      </Shelf>
+        <TextLinesSkeleton lines={6} className="max-w-2xl" />
+      </section>
 
-      <div className="flex items-center justify-between">
-        <Skeleton className="h-7 w-44 sm:h-8 md:h-9 md:w-72" />
-        <Skeleton className="h-9 w-28 md:w-36" />
-      </div>
+      <PageSectionTitleSkeleton />
 
-      <SongListSkeleton length={10} />
+      <ShelfSkeleton aspect="video" hideSubtitle={false} count={5} />
+
+      <EpisodesSkeleton />
     </div>
   );
 }

@@ -9,7 +9,7 @@ import {
 } from "~/components/library/library-section";
 import { NewPlaylistCard } from "~/components/playlist/new-playlist-card";
 import { NewPlaylistForm } from "~/components/playlist/new-playlist-form";
-import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
+import { SliderCardSkeleton } from "~/components/slider/slider-card-skeleton";
 import { controlStyles } from "~/lib/control-styles";
 import { getUserPlaylists } from "~/lib/db/queries";
 

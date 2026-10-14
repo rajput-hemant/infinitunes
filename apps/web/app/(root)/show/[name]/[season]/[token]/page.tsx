@@ -13,7 +13,6 @@ import Link from "next/link";
 import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { Shelf } from "~/components/slider/shelf";
 import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
@@ -27,6 +26,7 @@ import { api } from "~/lib/trpc/server";
 import { asRoute, cn } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
+import { EpisodesSkeleton } from "./_components/episodes-skeleton";
 
 const DEFAULT_SORT: Sort = "desc";
 
@@ -173,14 +173,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         ))}
       </Shelf>
 
-      <Suspense
-        fallback={
-          <>
-            <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
-            <SongListSkeleton length={10} />
-          </>
-        }
-      >
+      <Suspense fallback={<EpisodesSkeleton />}>
         <ShowEpisodeSection show={show} sort={sort} userPromise={userPromise} />
       </Suspense>
     </div>

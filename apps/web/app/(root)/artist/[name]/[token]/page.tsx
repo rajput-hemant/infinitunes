@@ -9,11 +9,11 @@ import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
 import { cache, Suspense } from "react";
 
+import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
 import { DetailsHeader } from "~/components/details-header/details-header";
-import { AlbumGridSkeleton } from "~/components/skeletons/album-grid-skeleton";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
@@ -150,7 +150,7 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
 
         <TabsContent value={TABS.Albums}>
           <CategoryFilter category={cat ?? "popularity"} />
-          <Suspense fallback={<AlbumGridSkeleton />}>
+          <Suspense fallback={<CatalogGridSkeleton count={20} />}>
             <ArtistLibraryTab
               artist={artist}
               category={cat}

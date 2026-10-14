@@ -1,33 +1,18 @@
-import { Badge } from "@infinitunes/ui/components/badge";
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import {
+  CatalogGridSkeleton,
+  CatalogHeaderSkeleton,
+} from "~/app/(root)/browse/_components/catalog-skeleton";
+import { LanguageBarSkeleton } from "~/components/language-bar-skeleton";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
-import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
-import { languages } from "~/config/languages";
-
-export default function TopAlbumsPageSkeleton() {
+/** Mirrors Top Albums: language chips, header, then the album grid. */
+export default function TopAlbumsLoading() {
   return (
-    <div className="space-y-4">
-      <div className="border-b py-2">
-        <div className="flex space-x-2 overflow-x-hidden py-1 sm:space-x-6 md:space-x-10 lg:space-x-12">
-          {["for_you", ...languages].map((lang) => (
-            <Badge
-              key={lang}
-              className="bg-primary-foreground p-2 text-primary-foreground lg:px-4"
-            >
-              {lang}
-            </Badge>
-          ))}
-        </div>
-      </div>
+    <div aria-busy="true">
+      <LanguageBarSkeleton />
 
-      <Skeleton className="h-8 w-44 sm:h-9 md:h-10 md:w-72" />
+      <CatalogHeaderSkeleton />
 
-      <CatalogGrid>
-        {Array.from({ length: 26 }).map((_, i) => (
-          <SliderCardSkeleton key={i} />
-        ))}
-      </CatalogGrid>
+      <CatalogGridSkeleton />
     </div>
   );
 }
