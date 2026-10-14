@@ -67,6 +67,7 @@ export function SliderCard(props: SliderCardProps) {
 
   return (
     <div
+      data-morph={type}
       className={cn(
         "group flex min-w-0 flex-col gap-2",
         isCurrentSeason &&
@@ -75,8 +76,9 @@ export function SliderCard(props: SliderCardProps) {
       )}
     >
       <div
+        data-morph-art=""
         className={cn(
-          "relative overflow-hidden bg-fill shadow-sm transition-[transform,box-shadow] duration-base ease-spring group-hover:shadow-md group-active:scale-98",
+          "relative overflow-hidden bg-fill shadow-sm transition-[transform,box-shadow] duration-base ease-spring group-hover:-translate-y-0.5 group-hover:shadow-md group-active:translate-y-0 group-active:scale-98",
           aspect === "square" ? "aspect-square" : "aspect-video",
           round ? "rounded-full" : "rounded-md",
         )}
@@ -101,7 +103,7 @@ export function SliderCard(props: SliderCardProps) {
           loading={priority ? "eager" : undefined}
           fetchPriority={priority ? "high" : undefined}
           className={cn(
-            "size-full object-cover",
+            "size-full object-cover transition-transform duration-slow ease-out group-hover:scale-105",
             !imageSrc && "dark:invert",
             imageSrc.includes("default") && "dark:invert",
           )}

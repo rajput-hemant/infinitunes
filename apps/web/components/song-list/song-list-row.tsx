@@ -40,6 +40,9 @@ type SongListRowProps = {
   playlistSongIndex?: number;
 };
 
+const STAGGER_ROWS = 10;
+const STAGGER_STEP_MS = 24;
+
 const mutedCell = "min-w-0 text-[0.8125rem] text-muted-foreground";
 
 export function SongListRow(props: SongListRowProps) {
@@ -60,8 +63,16 @@ export function SongListRow(props: SongListRowProps) {
   return (
     <SongRow
       id={item.id}
+      style={
+        index < STAGGER_ROWS
+          ? { animationDelay: `${index * STAGGER_STEP_MS}ms` }
+          : undefined
+      }
       className={cn(
         songRowGrid,
+        // The first rows rise in one after another; later rows (and pages loaded on demand) just appear.
+        index < STAGGER_ROWS &&
+          "animate-in fade-in-0 slide-in-from-bottom-1 fill-mode-backwards ease-out [--tw-animation-duration:var(--duration-base)]",
         "group/row relative h-row rounded-sm px-1 text-sm transition-colors duration-fast hover:bg-fill focus-within:bg-fill active:bg-fill-2 md:px-2",
       )}
     >

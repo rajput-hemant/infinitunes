@@ -30,6 +30,7 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
   return (
     <div className={cn("pointer-events-none", detailBandClassName)}>
       <Skeleton
+        data-morph-target=""
         className={cn(
           "aspect-square w-[min(60vw,14rem)] rounded-md md:w-36 lg:w-44 min-[90rem]:w-56",
           (type === "artist" || type === "label") && "rounded-full",
