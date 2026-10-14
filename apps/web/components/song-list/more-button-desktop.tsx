@@ -45,15 +45,20 @@ export function TileMoreDesktop(props: TileMoreDesktopProps) {
           <MoreVertical aria-hidden="true" className="size-5" />
         </DropdownMenuTrigger>
 
+        {/* The primitive pins the popup to the trigger's width (`--anchor-width`,
+            40px here) with an 8rem floor, so the labels wrap. Size it to the
+            content instead, within 14rem to 20rem and the viewport. */}
         <DropdownMenuContent
           side="left"
           align="start"
-          className="*:cursor-pointer"
+          className="w-auto min-w-56 max-w-[min(20rem,calc(100vw-1rem))] *:cursor-pointer"
         >
           {entries.map(({ icon: Icon, label, onClick }) => (
             <DropdownMenuItem key={label} onClick={onClick}>
               <Icon className="mr-2 size-5" />
-              {label}
+              <span className="min-w-0 truncate" title={label}>
+                {label}
+              </span>
             </DropdownMenuItem>
           ))}
           <ShareSubMenu title={getItemName(item)} />
