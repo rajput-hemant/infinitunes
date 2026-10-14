@@ -13,6 +13,7 @@ import { PlayerVolume } from "../../components/player/player-volume";
 import { SeekBar } from "../../components/player/seek-bar";
 import { createPositionStore } from "../../lib/position-store";
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
 
 /** The name a screen reader announces: the aria-labelledby text, else aria-label. */
 function accessibleName(input: HTMLInputElement) {
@@ -104,7 +105,13 @@ describe("expanded player sliders", () => {
     } as never;
     const queryClient = new QueryClient();
     const trpcClient = api.createClient({
-      links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+      links: [
+        httpBatchLink({
+          url: "/api/trpc",
+          transformer: superjson,
+          fetch: offlineFetch,
+        }),
+      ],
     });
 
     const mounted = await mount(

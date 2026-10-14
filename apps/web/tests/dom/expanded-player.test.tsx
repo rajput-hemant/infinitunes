@@ -13,6 +13,8 @@ import superjson from "superjson";
 import { ExpandedPlayer } from "../../components/expanded-player";
 import { createPositionStore } from "../../lib/position-store";
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
+import { waitFor } from "./wait-for";
 
 const track: QueueItem = {
   id: "a",
@@ -28,7 +30,13 @@ const track: QueueItem = {
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
 
 const noop = () => {};
@@ -212,8 +220,12 @@ describe("expanded player sheet", () => {
         .querySelector('[role="tabpanel"]')
         ?.getAttribute("aria-labelledby"),
     ).toBe(tab("Lyrics")?.id);
-    // No lyrics endpoint in the test environment: the query fails.
-    await act(async () => new Promise((resolve) => setTimeout(resolve, 50)));
+    // The stubbed endpoint is offline, so the query fails once it settles.
+    await waitFor(
+      () =>
+        document.querySelector('[role="tabpanel"]')?.textContent !==
+        "Loading lyrics...",
+    );
     expect(document.querySelector('[role="tabpanel"]')?.textContent).toContain(
       "No lyrics available",
     );

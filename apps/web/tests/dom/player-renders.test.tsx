@@ -17,6 +17,7 @@ import { createRoot, type Root } from "react-dom/client";
 import superjson from "superjson";
 
 import { useIsPlayerInit } from "../../hooks/use-store";
+import { offlineFetch } from "./offline-fetch";
 
 let position = 0;
 let advancing = false;
@@ -83,7 +84,13 @@ const queue = ["a", "b", "c"].map((id, i) => ({
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
 const router = {
   push() {},

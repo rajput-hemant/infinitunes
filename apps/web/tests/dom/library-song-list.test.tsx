@@ -15,6 +15,7 @@ import { AudioPlayerProvider } from "react-use-audio-player";
 import superjson from "superjson";
 
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
 import { setInputValue } from "./set-input-value";
 
 // `server-only` throws outside the react-server condition; the db action
@@ -55,7 +56,13 @@ const items = [
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
 
 const router: AppRouterInstance = {
