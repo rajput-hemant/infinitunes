@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
@@ -9,9 +11,11 @@ import type { Viewer } from "~/lib/viewer-types";
  * (un-awaited) promise to `ViewerProvider` and the small client islands that
  * need it (sidebar library, tab bar, user menu, player) resolve it behind their
  * own `<Suspense>`. Nothing in a layout body awaits it, which is what lets the
- * layout chrome prerender.
+ * layout chrome prerender. It is memoized per request, so the layout, the
+ * detail headers and the song lists share one session lookup and one library
+ * read.
  */
-export async function getViewer(): Promise<Viewer> {
+export const getViewer = cache(async (): Promise<Viewer> => {
   const user = await getUser();
   if (!user)
     return { user: undefined, playlists: undefined, favorites: undefined };
@@ -22,4 +26,4 @@ export async function getViewer(): Promise<Viewer> {
   ]);
 
   return { user, playlists, favorites };
-}
+});

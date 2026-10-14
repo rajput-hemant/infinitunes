@@ -25,7 +25,16 @@ describe("getHref", () => {
         "https://staging.jiosaavn.com/artist/arijit-singh-songs/LlRWpHzy3Hk_",
         "artist",
       ),
-    ).toBe("/artist/arijit-singh-songs/LlRWpHzy3Hk_");
+    ).toBe("/artist/arijit-singh/LlRWpHzy3Hk_/songs");
+  });
+
+  it("links a plain artist name to the Overview route", () => {
+    expect(
+      getHref(
+        "https://www.jiosaavn.com/artist/arijit-singh/LlRWpHzy3Hk_",
+        "artist",
+      ),
+    ).toBe("/artist/arijit-singh/LlRWpHzy3Hk_");
   });
 
   it("normalizes legacy saavn.com radio station URL with /s/ prefix", () => {
@@ -110,6 +119,9 @@ describe("route-arity invariant", () => {
   const ROUTES = [
     "/album/[name]/[token]",
     "/artist/[name]/[token]",
+    "/artist/[name]/[token]/songs",
+    "/artist/[name]/[token]/albums",
+    "/artist/[name]/[token]/bio",
     "/playlist/[name]/[token]",
     "/song/[name]/[token]",
     "/show/[name]/[season]/[token]",

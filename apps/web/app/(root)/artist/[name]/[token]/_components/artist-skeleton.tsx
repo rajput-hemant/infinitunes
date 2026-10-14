@@ -1,13 +1,14 @@
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
-import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
-import { PageSectionTitleSkeleton } from "~/components/page-section-skeleton";
-import { SliderListSkeleton } from "~/components/slider/shelf-skeleton";
+import {
+  PageSectionTitleSkeleton,
+  TextLinesSkeleton,
+} from "~/components/page-section-skeleton";
 import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
 
 const TAB_WIDTHS = ["w-20", "w-12", "w-14", "w-20"] as const;
 
-/** Mirrors `ArtistsTabList`: a line tab row, 40px tall (44px coarse), with a hairline below. */
+/** Mirrors `ArtistTabNav`: a line tab row, 40px tall (44px coarse), with a hairline below. */
 export function ArtistTabsSkeleton() {
   return (
     <div className="mb-4 box-content flex h-10 items-center gap-6 border-b border-border pointer-coarse:h-11">
@@ -29,40 +30,28 @@ export function CategoryFilterSkeleton() {
   );
 }
 
-type ArtistBodySkeletonProps = {
-  tab: "overview" | "songs" | "albums";
-};
-
-/** The tab row and the selected tab's body, then the shelves below the tabs. */
-export function ArtistBodySkeleton({ tab }: ArtistBodySkeletonProps) {
+/** The Overview panel: a section title over the top ten songs. */
+export function ArtistOverviewSkeleton() {
   return (
-    <>
-      <div className="flex flex-col gap-2">
-        <ArtistTabsSkeleton />
+    <div className="flex flex-col gap-(--page-gap)">
+      <PageSectionTitleSkeleton />
+      <SongListSkeleton length={10} />
+    </div>
+  );
+}
 
-        {tab === "overview" && (
-          <div className="flex flex-col gap-(--page-gap)">
-            <PageSectionTitleSkeleton />
-            <SongListSkeleton length={10} />
-          </div>
-        )}
-
-        {tab === "songs" && (
-          <div>
-            <CategoryFilterSkeleton />
-            <SongListSkeleton length={10} />
-          </div>
-        )}
-
-        {tab === "albums" && (
-          <div>
-            <CategoryFilterSkeleton />
-            <CatalogGridSkeleton count={20} />
-          </div>
-        )}
+/** The Biography panel: a card of text sections. */
+export function ArtistBioSkeleton() {
+  return (
+    <div className="flex max-w-3xl flex-col gap-8 rounded-md bg-card p-6 ring-1 ring-inset ring-border">
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-6 w-40" />
+        <TextLinesSkeleton lines={4} />
       </div>
-
-      <SliderListSkeleton sections={3} />
-    </>
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-6 w-32" />
+        <TextLinesSkeleton lines={3} />
+      </div>
+    </div>
   );
 }

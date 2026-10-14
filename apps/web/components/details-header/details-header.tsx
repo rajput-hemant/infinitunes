@@ -1,16 +1,13 @@
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import { getImageSrc, parseToken } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { BadgeCheck, Play, Shuffle } from "lucide-react";
 
-import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { orFallback } from "~/lib/degrade";
 import { cn } from "~/lib/utils";
 import { MORPH_CLASS, morphName } from "~/lib/view-transition";
+import { getViewer } from "~/lib/viewer";
 
 import { DownloadButton } from "../download-button";
 import { GlassSurface } from "../glass/glass-surface";
@@ -55,17 +52,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
   const title = getTitle(item);
   const songs = getSongs(item);
 
-  const user = await getUser();
-
-  let playlists: MyPlaylist[] | undefined,
-    favorites: Favorite | null | undefined;
-
-  if (user) {
-    [playlists, favorites] = await Promise.all([
-      orFallback("user playlists", getUserPlaylists(), undefined),
-      orFallback("user favorites", getUserFavorites(), null),
-    ]);
-  }
+  const { user, playlists, favorites } = await getViewer();
 
   const playType = kind === "season" ? "show" : kind;
   const playSeason = isKind(item, "season")

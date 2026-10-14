@@ -92,40 +92,42 @@ export function ArtistsTopItems(props: ArtistsTopItemsProps) {
   const songs = songResults.data.pages.flatMap((page) => page.items);
   const albums = albumsResults.data.pages.flatMap((page) => page.items);
 
-  const hasNextPage = songResults.hasNextPage || albumsResults.hasNextPage;
-  const isFetchingMore =
-    songResults.isFetchingNextPage || albumsResults.isFetchingNextPage;
+  // Both lists live in the query cache for the whole session, so a tab only
+  // shows (and pages) its own list; the other one may hold an earlier visit.
+  const active = type === "songs" ? songResults : albumsResults;
+  const hasNextPage = active.hasNextPage;
+  const isFetchingMore = active.isFetchingNextPage;
 
   const clickHandler = () => {
-    if (type === "songs") {
-      songResults.fetchNextPage();
-    } else if (type === "albums") {
-      albumsResults.fetchNextPage();
-    }
+    void active.fetchNextPage();
   };
 
   return (
     <>
-      <SongListClient
-        items={songs}
-        user={user}
-        userFavorites={userFavorites}
-        userPlaylists={userPlaylists}
-      />
+      {type === "songs" && (
+        <SongListClient
+          items={songs}
+          user={user}
+          userFavorites={userFavorites}
+          userPlaylists={userPlaylists}
+        />
+      )}
 
-      <CatalogGrid>
-        {albums.map((album) => (
-          <SliderCard
-            key={album.id}
-            name={album.title}
-            url={album.perma_url}
-            subtitle={album.subtitle}
-            type={album.type}
-            image={album.image}
-            explicit={album.explicit_content}
-          />
-        ))}
-      </CatalogGrid>
+      {type === "albums" && (
+        <CatalogGrid>
+          {albums.map((album) => (
+            <SliderCard
+              key={album.id}
+              name={album.title}
+              url={album.perma_url}
+              subtitle={album.subtitle}
+              type={album.type}
+              image={album.image}
+              explicit={album.explicit_content}
+            />
+          ))}
+        </CatalogGrid>
+      )}
 
       {hasNextPage && (
         <Button

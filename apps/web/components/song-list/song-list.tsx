@@ -1,10 +1,7 @@
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
 
-import { getUser } from "~/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { orFallback } from "~/lib/degrade";
 import { cn } from "~/lib/utils";
+import { getViewer } from "~/lib/viewer";
 
 import { SongListHead } from "./song-list-head";
 import { SongListRow } from "./song-list-row";
@@ -26,17 +23,7 @@ export async function SongList(props: SongListProps) {
     playlistSongIndices,
   } = props;
 
-  const user = await getUser();
-
-  let playlists: MyPlaylist[] | undefined,
-    favorites: Favorite | null | undefined;
-
-  if (user) {
-    [playlists, favorites] = await Promise.all([
-      orFallback("user playlists", getUserPlaylists(), undefined),
-      orFallback("user favorites", getUserFavorites(), null),
-    ]);
-  }
+  const { user, playlists, favorites } = await getViewer();
 
   return (
     <section className={cn("@container", className)}>
