@@ -34,7 +34,7 @@ DOM behind every lens and repaints on scroll, which a scrolling app cannot affor
   (`--g-lens-tint`), and the layer is what Safari and Firefox show. The layer only renders while `tint` is above 0
   (`html[data-glass-tint="on"]`). The outer shadow is soft and subtle. Nothing here carries a hue.
 - **Tuning** (`GlassTuning`, `lib/glass/tuning.ts`): depth 0 to 120 (60), splay 2 to 40 (2), feather 0 to 40 (24),
-  curvature .3 to 3 (2), blur 0 to 5 (0), chromatic 0 to .25 (0), glint 0 to 150 (25), tint 0 to 1 (0), tint colour
+  curvature .3 to 3 (2), blur 0 to 5 (2, a lightly frosted default), chromatic 0 to .25 (0), glint 0 to 150 (25), tint 0 to 1 (0), tint colour
   (`#ffffff`). Presets: Simple, Thick, Frosted, Cut, Orange plexiglass (`GLASS_PRESETS`, the pen's values).
 - **The accent is the tint.** While `tint` is above 0 the primary token derives from `tintColor`
   (`lib/theme/accent.ts`); at 0 it is neutral.
@@ -70,7 +70,7 @@ makes it `relative` (layered, so any utility wins).
 | `xl`   | full-height sidebar and wide queue pane         | 3.5         | none   |
 
 The blur factor multiplies a 2px base and adds the Blur setting. The size classes also add to a light fill
-(`--g-base` .14 light, .24 dark) so text stays legible: `m` .2 (.26 dark), `l` .32, `xl` .26.
+(`--g-base` .18 light, .28 dark) so text stays legible: `m` .2 (.26 dark), `l` .32, `xl` .26.
 
 Variants: `regular` adapts to the backdrop; `clear` has almost no tint, a dim layer and white text, only over
 artwork or media (the home hero caption and the shelf arrows); `tinted` is the accent, only for a primary action.
@@ -120,6 +120,7 @@ the same list (`OVERLAY_TARGETS` in `lib/glass/overlays.ts`; a test keeps the CS
 | Popup                     | Selector                                             | Role   | Size |
 | ------------------------- | ---------------------------------------------------- | ------ | ---- |
 | Popover                   | `popover-content`                                    | menu   | l    |
+| Navigation menu popup     | `navigation-menu-popup` (the Music mega menu)        | menu   | l    |
 | Dropdown menu and submenu | `dropdown-menu-content`, `dropdown-menu-sub-content` | menu   | l    |
 | Dialog, alert dialog      | `dialog-content`, `alert-dialog-content`             | dialog | l    |
 | Sheet, drawer             | `sheet-content`, `drawer-popup`                      | sheet  | l    |
@@ -142,6 +143,17 @@ and command palette are not in `packages/ui` today. If one is added, add its slo
 `GlassSurface`. Menus and popovers from 768px, and toasts, materialize (opacity, scale .92, blur 10px to 0, lens ramp
 0 to 1 over 320 ms); dialogs keep their own enter animation, sheets and drawers keep their spring. Known limit: a popup
 that scrolls its own content (a long menu) scrolls the rim with it.
+
+**Press gel.** A press is a quiet confirmation: a control inside glass scales by at most 3px of its width (a surface that
+is itself pressed gels 1.03 by 1.02), over a 0.2s critically damped spring with a barely visible settle on release, and a
+soft white glow (14 percent, a 2.25rem radius) at the touch point. The glow is the host surface's own `::after`, inset 0
+with its radius, so it cannot cross the border. `Button` in `packages/ui` only nudges 1px down on `:active` (cancelled
+inside glass) and adds no ring or scale. Constants live in `lib/glass/press.ts`.
+
+**Where glass goes on pages.** Floating or navigation layers over content or artwork: the toolbar capsules, the artwork
+header's icon action row (`DetailsHeader`), chips over artwork (the library playlist card's menu button, `clear`, no
+lens), the error and 404 cards (`size="l" lens="off"`: large, so frost), and every overlay above. Rows, cards and
+prose stay plain.
 
 ## Hooks and components
 
