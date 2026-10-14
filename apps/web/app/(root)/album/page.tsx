@@ -1,12 +1,15 @@
 import type { Lang } from "@infinitunes/types";
 
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
+import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
 import { LanguageBar } from "~/components/language-bar";
+import { KeyedByParams } from "~/components/search-params-boundary";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
 import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
 
+import { AlbumsSubtitle } from "./_components/albums-subtitle";
 import { TopAlbums } from "./_components/top-albums";
 
 const title = `Listen to New Hindi Songs Online Only on ${siteConfig.name}.`;
@@ -23,7 +26,7 @@ type AlbumsPageProps = {
   searchParams: Promise<{ page?: string | string[]; lang?: Lang }>;
 };
 
-export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
+async function AlbumsGrid({ searchParams }: AlbumsPageProps) {
   const { page, lang } = await searchParams;
 
   const topAlbums = await api.get.topAlbums({
@@ -33,23 +36,32 @@ export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
   });
 
   return (
+    <TopAlbums
+      key={topAlbums.data[0]?.id ?? "albums"}
+      initialAlbums={topAlbums}
+      lang={lang}
+    />
+  );
+}
+
+/**
+ * The language chips and the heading prerender with the page; only the grid
+ * waits on the query string and the catalog, and shows its skeleton again when
+ * a different language is picked.
+ */
+export default function AlbumsPage({ searchParams }: AlbumsPageProps) {
+  return (
     <div>
-      <LanguageBar language={lang} />
+      <LanguageBar />
 
-      <CatalogHeader
-        title="Top Albums"
-        subtitle={
-          lang
-            ? `${lang[0].toUpperCase()}${lang.slice(1)} albums trending this week`
-            : "Trending across your languages"
-        }
-      />
+      <CatalogHeader title="Top Albums" subtitle={<AlbumsSubtitle />} />
 
-      <TopAlbums
-        key={topAlbums.data[0]?.id ?? "albums"}
-        initialAlbums={topAlbums}
-        lang={lang}
-      />
+      <KeyedByParams
+        params={["lang", "page"]}
+        fallback={<CatalogGridSkeleton />}
+      >
+        <AlbumsGrid searchParams={searchParams} />
+      </KeyedByParams>
     </div>
   );
 }

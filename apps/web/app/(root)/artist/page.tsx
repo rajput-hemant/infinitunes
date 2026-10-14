@@ -1,8 +1,10 @@
 import { formatCount } from "@infinitunes/types";
 import { Users } from "lucide-react";
+import { Suspense } from "react";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
+import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
 import {
   CatalogEmpty,
   CatalogEnd,
@@ -22,41 +24,47 @@ export const metadata = pageMetadata({
   alt: "Top Indian Music Artists",
 });
 
-export default async function TopArtistsPage() {
+async function TopArtists() {
   const topArtists = await api.get.topArtists({ page: 1, n: 50 });
   const artists = topArtists?.top_artists ?? [];
 
+  return artists.length === 0 ? (
+    <CatalogEmpty
+      icon={Users}
+      title="No artists yet"
+      description="Check back later for the top artists."
+    />
+  ) : (
+    <>
+      <CatalogGrid>
+        {artists.map(
+          ({ artistid, name, perma_url, follower_count, image }, index) => (
+            <SliderCard
+              priority={index < FIRST_ROW_CARDS}
+              key={artistid}
+              name={name}
+              url={perma_url}
+              subtitle={`${formatCount(follower_count)} Fans`}
+              type="artist"
+              image={image}
+            />
+          ),
+        )}
+      </CatalogGrid>
+
+      <CatalogEnd />
+    </>
+  );
+}
+
+export default function TopArtistsPage() {
   return (
     <div>
       <CatalogHeader title="Top Artists" />
 
-      {artists.length === 0 ? (
-        <CatalogEmpty
-          icon={Users}
-          title="No artists yet"
-          description="Check back later for the top artists."
-        />
-      ) : (
-        <>
-          <CatalogGrid>
-            {artists.map(
-              ({ artistid, name, perma_url, follower_count, image }, index) => (
-                <SliderCard
-                  priority={index < FIRST_ROW_CARDS}
-                  key={artistid}
-                  name={name}
-                  url={perma_url}
-                  subtitle={`${formatCount(follower_count)} Fans`}
-                  type="artist"
-                  image={image}
-                />
-              ),
-            )}
-          </CatalogGrid>
-
-          <CatalogEnd />
-        </>
-      )}
+      <Suspense fallback={<CatalogGridSkeleton rounded />}>
+        <TopArtists />
+      </Suspense>
     </div>
   );
 }
