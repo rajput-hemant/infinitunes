@@ -12,16 +12,23 @@ const setCookie = (raw: string) => {
 };
 
 // The color-scheme step always sets a class and `color-scheme`, and the queue
-// step sets `data-queue`; these are the parts only the appearance step can add.
+// step sets `data-queue`, the sidebar step `data-sidebar`; these are the parts only the appearance step can add.
 const appliedByAppearance = () => [
   ...document.documentElement
     .getAttributeNames()
-    .filter((n) => n !== "class" && n !== "style" && n !== "data-queue"),
+    .filter(
+      (n) =>
+        n !== "class" &&
+        n !== "style" &&
+        n !== "data-queue" &&
+        n !== "data-sidebar",
+    ),
   ...(document.documentElement.style.cssText.match(/--[a-z-]+(?=:)/g) ?? []),
 ];
 
 afterEach(() => {
   document.cookie = "theme-config=; path=/; max-age=0";
+  document.cookie = "sidebar_state=; path=/; max-age=0";
   localStorage.clear();
   const html = document.documentElement;
   for (const name of [...html.getAttributeNames()]) html.removeAttribute(name);
@@ -157,6 +164,32 @@ describe("theme bootstrap script", () => {
     localStorage.setItem("theme", "<script>");
     run();
     expect(document.documentElement.className).toBe("");
+  });
+
+  describe("collapsed sidebar flag", () => {
+    const sidebarAttr = () =>
+      document.documentElement.getAttribute("data-sidebar");
+
+    it("flags a sidebar the visitor collapsed (the shadcn provider writes sidebar_state=false)", () => {
+      document.cookie = "sidebar_state=false; path=/";
+      run();
+      expect(sidebarAttr()).toBe("collapsed");
+    });
+
+    it("leaves an open or unset sidebar alone", () => {
+      run();
+      expect(sidebarAttr()).toBeNull();
+      document.cookie = "sidebar_state=true; path=/";
+      run();
+      expect(sidebarAttr()).toBeNull();
+    });
+
+    it("does not match a cookie that only ends in the name", () => {
+      document.cookie = "other_sidebar_state=false; path=/";
+      run();
+      expect(sidebarAttr()).toBeNull();
+      document.cookie = "other_sidebar_state=; path=/; max-age=0";
+    });
   });
 
   describe("docked queue flag", () => {

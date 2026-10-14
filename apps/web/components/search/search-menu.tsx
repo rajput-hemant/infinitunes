@@ -10,7 +10,14 @@ import {
 } from "@infinitunes/ui/components/dialog";
 import { Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { type ReactNode, useDeferredValue, useEffect, useState } from "react";
+import {
+  type ReactNode,
+  Suspense,
+  useDeferredValue,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useKeydown } from "~/hooks/use-keydown";
@@ -33,19 +40,34 @@ type SearchMenuProps = {
   topSearch: ReactNode;
 };
 
-export function SearchMenu({ topSearch, className }: SearchMenuProps) {
+/**
+ * Closes the palette when the route changes. The pathname is read here, behind
+ * its own `<Suspense>`, so the toolbar does not wait on it while a route with
+ * request-time params prerenders.
+ */
+function CloseOnNavigate({ onNavigate }: { onNavigate: () => void }) {
   const pathname = usePathname();
+  const last = useRef(pathname);
 
+  useEffect(() => {
+    if (last.current === pathname) return;
+    last.current = pathname;
+    onNavigate();
+  }, [pathname, onNavigate]);
+
+  return null;
+}
+
+export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   const [query, setQuery] = useState("");
-  const [openPath, setOpenPath] = useState<string | null>(null);
-  const isOpen = openPath === pathname;
-  if (openPath !== null && !isOpen) setOpenPath(null);
+  const [isOpen, setOpen] = useState(false);
   const mounted = useIsHydrated();
 
   const setIsOpen = (open: boolean) => {
     if (open) setQuery("");
-    setOpenPath(open ? pathname : null);
+    setOpen(open);
   };
+  const close = () => setOpen(false);
 
   const deferredQuery = useDeferredValue(query.trim());
 
@@ -77,6 +99,10 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Suspense fallback={null}>
+        <CloseOnNavigate onNavigate={close} />
+      </Suspense>
+
       <DialogTrigger
         render={
           <Button

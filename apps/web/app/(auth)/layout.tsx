@@ -22,11 +22,9 @@ const ART_IMAGES = [
 
 type AuthLayoutProps = React.PropsWithChildren;
 
-// Signed-in redirects live in each page (`redirectIfSignedIn`), because
-// `/reset-password?token=...` must stay reachable for a signed-in user. They
-// read the session at request time, so the auth pages opt out of validation.
-// TODO: Cache Components adoption. Move the session read behind Suspense.
-export const instant = false;
+// Signed-in redirects live in each page (`SignedInRedirect`, behind its own
+// `<Suspense>`), because `/reset-password?token=...` must stay reachable for a
+// signed-in user. The layout and the forms prerender; the redirect streams in.
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (

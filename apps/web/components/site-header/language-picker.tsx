@@ -20,7 +20,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@infinitunes/ui/components/toggle-group";
-import { setCookie } from "cookies-next";
+import { getCookie, setCookie } from "cookies-next";
 import { ChevronDown, Languages } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -35,10 +35,20 @@ import { isLang } from "./lang-guard";
 import { useIsPhone } from "./use-is-phone";
 
 type LanguagePickerProps = {
-  initialLanguages: Lang[];
+  /** Seeds the selection when no `language` cookie is set. */
+  initialLanguages?: Lang[];
 };
 
-export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
+/** The saved choice, read in the browser so the server render never needs the cookie. */
+function savedLanguages(): Lang[] | undefined {
+  const saved = getCookie("language");
+
+  return typeof saved === "string"
+    ? saved.split(",").filter(isLang)
+    : undefined;
+}
+
+export function LanguagePicker({ initialLanguages = [] }: LanguagePickerProps) {
   const router = useRouter();
   const isPhone = useIsPhone();
 
@@ -49,7 +59,17 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
   // Closing without saving discards the unsaved selection.
   function handleOpenChange(open: boolean) {
     setIsOpen(open);
-    if (!open) setSelectedLanguages(appliedLanguages);
+    if (!open) {
+      setSelectedLanguages(appliedLanguages);
+      return;
+    }
+
+    // Opening picks up the cookie, which the layout no longer reads on the server.
+    const saved = savedLanguages();
+    if (saved) {
+      setAppliedLanguages(saved);
+      setSelectedLanguages(saved);
+    }
   }
 
   function updateLanguages() {

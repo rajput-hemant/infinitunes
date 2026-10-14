@@ -395,3 +395,27 @@ html[data-theme-switching] *::after {
     --queue-w: 22rem;
   }
 }
+
+/*
+ * A visitor who collapsed the sidebar: the layout is prerendered with it open,
+ * so `lib/theme-script.ts` flags `<html data-sidebar="collapsed">` from the
+ * `sidebar_state` cookie before first paint. Until `AppSidebarProvider` applies
+ * the saved state at hydration, hold the collapsed gutter open and keep the
+ * expanded panel out of sight, so nothing slides or jumps when it settles.
+ */
+html[data-sidebar="collapsed"]:not([data-sidebar-ready])
+  [data-slot="sidebar"][data-state="expanded"]
+  [data-slot="sidebar-gap"] {
+  width: var(--sidebar-width-icon);
+}
+
+html[data-sidebar="collapsed"]:not([data-sidebar-ready])
+  [data-slot="sidebar"][data-state="expanded"]
+  [data-slot="sidebar-container"] {
+  visibility: hidden;
+}
+
+html[data-sidebar="collapsed"]:not([data-sidebar-ready])
+  [data-slot="sidebar-wrapper"] {
+  --g-edge-l: var(--sidebar-width-icon);
+}

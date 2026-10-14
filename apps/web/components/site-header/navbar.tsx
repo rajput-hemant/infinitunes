@@ -1,19 +1,16 @@
-import { cookies } from "next/headers";
 import Link from "next/link";
+import { Suspense } from "react";
 
 import { GlassSurface } from "~/components/glass/glass-surface";
-import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { megaMenuOrEmpty } from "~/lib/shell-data";
+import { EMPTY_MEGA_MENU, megaMenuOrEmpty } from "~/lib/shell-data";
 import { api } from "~/lib/trpc/server";
 import { cn } from "~/lib/utils";
 
-import { SignedOut } from "../auth-control";
 import { SearchMenu } from "../search/search-menu";
 import { TopSearch } from "../search/top-search";
 import { AppSidebarTrigger } from "../sidebar";
-import { UserDropdown } from "../user-dropdown";
-import { isLang } from "./lang-guard";
+import { ViewerSignedOut, ViewerUserMenu } from "../viewer";
 import { LanguagePicker } from "./language-picker";
 import { MainNav } from "./main-nav";
 import { Toolbar } from "./toolbar";
@@ -21,17 +18,22 @@ import { ToolbarNavigation } from "./toolbar-navigation";
 
 const capsuleClassName = "flex items-center rounded-full p-0.5";
 
-export async function Navbar() {
-  const cookiesStore = await cookies();
-  const languages = (
-    cookiesStore.get("language")?.value?.split(",") ?? []
-  ).filter(isLang);
+const mainNavClassName =
+  "hidden lg:block min-[1440px]:in-data-[queue=open]:hidden!";
 
-  const [user, megaMenu] = await Promise.all([
-    getUser(),
-    megaMenuOrEmpty(api.get.megaMenu({})),
-  ]);
+/** The catalog menu is cached (an hour), so it normally lands in the static shell. */
+async function CatalogMenu() {
+  const megaMenu = await megaMenuOrEmpty(api.get.megaMenu({}));
 
+  return <MainNav megaMenu={megaMenu} className={mainNavClassName} />;
+}
+
+/**
+ * Nothing here reads the request: the user menu and the Log in button resolve
+ * the session in client islands (`ViewerProvider`) and the language picker
+ * reads its cookie when it opens, so the toolbar prerenders with the layout.
+ */
+export function Navbar() {
   return (
     <Toolbar>
       <AppSidebarTrigger className="hidden md:inline-flex" />
@@ -39,10 +41,13 @@ export async function Navbar() {
       <ToolbarNavigation />
 
       {/* A docked queue (1440 and up) takes the column the mega menu needs; the mockup toolbar has no such links. */}
-      <MainNav
-        megaMenu={megaMenu}
-        className="hidden lg:block min-[1440px]:in-data-[queue=open]:hidden!"
-      />
+      <Suspense
+        fallback={
+          <MainNav megaMenu={EMPTY_MEGA_MENU} className={mainNavClassName} />
+        }
+      >
+        <CatalogMenu />
+      </Suspense>
 
       <div data-toolbar-title className="min-w-0 flex-1" />
 
@@ -52,11 +57,11 @@ export async function Navbar() {
         </GlassSurface>
 
         <GlassSurface size="s" glassRole="toolbar" className={capsuleClassName}>
-          <LanguagePicker initialLanguages={languages} />
-          <UserDropdown user={user} />
+          <LanguagePicker />
+          <ViewerUserMenu />
         </GlassSurface>
 
-        <SignedOut>
+        <ViewerSignedOut>
           <GlassSurface
             variant="tinted"
             size="s"
@@ -73,7 +78,7 @@ export async function Navbar() {
           >
             Log in
           </GlassSurface>
-        </SignedOut>
+        </ViewerSignedOut>
       </div>
     </Toolbar>
   );
