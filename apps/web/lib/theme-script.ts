@@ -28,7 +28,7 @@ import { MANAGED_ATTRIBUTES, MANAGED_VARIABLES } from "./theme/managed";
  */
 const COLOR_SCHEME_STEP = `try{var t=localStorage.getItem("theme")||"system";if(t==="system")t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="light"||t==="dark"){d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t}}catch(e){}`;
 
-const APPEARANCE_STEP = `try{var A=${JSON.stringify(MANAGED_ATTRIBUTES)},V=${JSON.stringify(MANAGED_VARIABLES)},m=document.cookie.match(/(?:^|; )theme-config=([^;]*)/),c=m&&JSON.parse(decodeURIComponent(m[1])),h=c&&c.html;if(h&&typeof h==="object"){var a=h.a,s=h.s,k;if(a&&typeof a==="object")for(k in a)if(A.indexOf(k)>-1&&/^[a-z0-9-]+$/.test(a[k]))d.setAttribute(k,a[k]);if(s&&typeof s==="object")for(k in s)if(V.indexOf(k)>-1&&/^(oklch\\([0-9 .%e-]+\\)|[0-9.e-]+(px|rem)?)$/.test(s[k]))d.style.setProperty(k,s[k])}}catch(e){}`;
+const APPEARANCE_STEP = `try{var A=${JSON.stringify(MANAGED_ATTRIBUTES)},V=${JSON.stringify(MANAGED_VARIABLES)},m=document.cookie.match(/(?:^|; )theme-config=([^;]*)/),c=m&&JSON.parse(decodeURIComponent(m[1])),h=c&&c.html;if(h&&typeof h==="object"){var a=h.a,s=h.s,k;if(a&&typeof a==="object")for(k in a)if(A.indexOf(k)>-1&&/^[a-z0-9-]+$/.test(a[k]))d.setAttribute(k,a[k]);if(s&&typeof s==="object")for(k in s)if(V.indexOf(k)>-1&&/^(oklch\\([0-9 .%e-]+\\)|#[0-9a-f]{6}|[0-9.e-]+(px|rem)?)$/.test(s[k]))d.style.setProperty(k,s[k])}}catch(e){}`;
 
 const QUEUE_STEP = `try{if(localStorage.getItem("queue_open")==="true")d.setAttribute("data-queue","open")}catch(e){}`;
 

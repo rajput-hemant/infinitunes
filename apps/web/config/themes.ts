@@ -1,6 +1,7 @@
 /**
- * Accent presets. They differ only by hex: `lib/theme/accent.ts` derives the
- * full light and dark token set from it, the same way as for a custom colour.
+ * Brand-neutral and spot colours. No longer user-selectable accents (the glass
+ * tint colour drives the primary token, see `lib/theme/html.ts`); the browse
+ * tiles still colour themselves from these.
  */
 export const themes = [
   { name: "zinc", label: "Zinc", hex: "#18181b" },
@@ -19,5 +20,5 @@ export const themes = [
 
 export type ThemePreset = (typeof themes)[number];
 
-export const DEFAULT_ACCENT = "rose";
-export const DEFAULT_ACCENT_HEX = "#e11d48";
+/** The neutral base of the stylesheet's default primary tokens (`styles/globals.css`). */
+export const DEFAULT_ACCENT_HEX = "#171717";

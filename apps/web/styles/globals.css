@@ -92,18 +92,19 @@
 
 /*
  * Light scheme. Surfaces and text are shared by every accent. The accent
- * variables (--light-*, --dark-*) default to rose here and are overridden
- * inline on <html> by lib/theme/html.ts when the visitor picks another accent.
+ * variables (--light-*, --dark-*) default to a neutral, foreground-based set
+ * here and are overridden inline on <html> by lib/theme/html.ts when the glass
+ * tint is on (the primary colour is then derived from the tint colour).
  */
 :root {
   color-scheme: light;
 
-  --light-primary: oklch(0.572 0.222 17.6);
+  --light-primary: oklch(0.205 0 89.9);
   --light-primary-foreground: oklch(1 0 0);
-  --light-accent: oklch(0.94 0.03 17.6);
-  --dark-primary: oklch(0.642 0.222 17.6);
+  --light-accent: oklch(0.94 0 89.9);
+  --dark-primary: oklch(0.967 0.001 286.4);
   --dark-primary-foreground: oklch(0.18 0 0);
-  --dark-accent: oklch(0.3 0.04 17.6);
+  --dark-accent: oklch(0.3 0 286.4);
 
   --background: #f5f5f7;
   --foreground: #1d1d1f;
@@ -138,9 +139,6 @@
   --fill-2: rgb(0 0 0 / 0.08);
   --fill-3: rgb(0 0 0 / 0.12);
   --scrim: rgb(0 0 0 / 0.28);
-  /* The mockup default: glass needs a colour field to refract; see docs/design-system/glass.md. */
-  --ambient: 0.62;
-
   /* One base radius; every corner derives from it. */
   --radius: 0.75rem;
   --r-sm: calc(var(--radius) * 0.66);
@@ -192,10 +190,6 @@
 [data-density="compact"] {
   --row: 2.5rem;
   --art: 2rem;
-}
-
-[data-ambient="off"] {
-  --ambient: 0;
 }
 
 /* Touch screens: bigger controls and rows. */

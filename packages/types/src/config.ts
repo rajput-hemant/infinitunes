@@ -22,19 +22,29 @@ export type Density = (typeof DENSITIES)[number];
 export const GLASS_LEVELS = ["liquid", "subtle", "solid"] as const;
 export type GlassLevel = (typeof GLASS_LEVELS)[number];
 
-export const GLASS_VARIANTS = ["regular", "clear", "tinted"] as const;
-export type GlassVariant = (typeof GLASS_VARIANTS)[number];
-
+/**
+ * Liquid glass tuning, the knobs of the SVG displacement-map lens. Ranges and
+ * defaults live in `apps/web/lib/glass/tuning.ts`.
+ */
 export type GlassTuning = {
-  variant: GlassVariant;
-  tint: number | null;
+  /** Peak displacement of the lens, px at the thickest surface class. */
+  depth: number;
+  /** Width of the refracting rim, px. */
+  splay: number;
+  /** Extra softness on the inner side of the rim, px. */
+  feather: number;
+  /** Exponent shaping the rim profile; below 1 is a wide bevel, above 1 a sharp one. */
+  curve: number;
+  /** Extra backdrop blur, px. */
   blur: number;
-  refraction: number;
-  sat: number;
-  spec: number;
-  shadow: number;
-  ambientLevel: number;
-  accentTint: boolean;
+  /** Red/cyan fringing, 0 for none. */
+  chroma: number;
+  /** Strength of the edge highlight, percent. */
+  glint: number;
+  /** Opacity of the colour layer multiplied over the glass, 0 to 1. */
+  tint: number;
+  /** `#rrggbb` colour of that layer; also the app's primary colour while `tint` is above 0. */
+  tintColor: string;
 };
 
 /** Radius presets in rem; `0.75` is the default. Any value up to `RADIUS_MAX_REM` is valid. */
@@ -42,8 +52,6 @@ export const RADIUS_PRESETS = [0, 0.3, 0.5, 0.75, 1] as const;
 export const RADIUS_MAX_REM = 1.5;
 
 export type ThemeConfig = {
-  /** A preset name from `config/themes.ts` or a custom `#rrggbb` hex. */
-  accent: string;
   /** Base corner radius in rem, 0 to `RADIUS_MAX_REM` (0 to 24px). */
   radius: number;
   font: FontId;
@@ -52,8 +60,6 @@ export type ThemeConfig = {
   density: Density;
   glass: GlassLevel;
   glassTuning: GlassTuning;
-  /** Tint the background with the playing song's artwork. */
-  ambient: boolean;
   /** Replace springs and slides with simple fades, on top of the OS setting. */
   reduceMotion: boolean;
 };

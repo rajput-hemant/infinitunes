@@ -1,28 +1,19 @@
 import type { ThemeConfig } from "@infinitunes/types";
 
-import { DEFAULT_ACCENT_HEX, themes } from "~/config/themes";
 import { DEFAULT_THEME_CONFIG, DEFAULT_GLASS_TUNING } from "~/lib/theme-config";
 
 import { accentVariables, deriveAccentTokens } from "./accent";
 import { MANAGED_VARIABLES } from "./managed";
-import { normalizeHex } from "./oklch";
-
-/** The hex behind an accent value: a preset's hex, or the custom hex itself. */
-export function resolveAccentHex(accent: string): string {
-  const preset = themes.find((theme) => theme.name === accent);
-  return preset?.hex ?? normalizeHex(accent) ?? DEFAULT_ACCENT_HEX;
-}
 
 /** Keys must stay within `MANAGED_ATTRIBUTES` (the pre-paint script only accepts those). */
 type ThemeAttributes = {
   "data-density": ThemeConfig["density"];
   "data-glass-level": ThemeConfig["glass"];
-  "data-ambient": "on" | "off";
   "data-motion": "full" | "reduced";
   "data-font": ThemeConfig["font"];
   "data-heading-font": ThemeConfig["headingFont"];
-  "data-glass-variant"?: ThemeConfig["glassTuning"]["variant"];
-  "data-glass-accent-tint"?: "true" | "false";
+  /** Present while the glass tint layer is on, so it costs nothing when it is not. */
+  "data-glass-tint"?: "on";
 };
 
 type ManagedVariable = (typeof MANAGED_VARIABLES)[number];
@@ -41,12 +32,6 @@ export type ThemeHtml = {
 export function themeConfigToHtml(config: ThemeConfig): ThemeHtml {
   const style: ThemeHtml["style"] = {};
 
-  if (config.accent !== DEFAULT_THEME_CONFIG.accent) {
-    Object.assign(
-      style,
-      accentVariables(deriveAccentTokens(resolveAccentHex(config.accent))),
-    );
-  }
   if (config.radius !== DEFAULT_THEME_CONFIG.radius) {
     style["--radius"] = `${config.radius}rem`;
   }
@@ -55,35 +40,29 @@ export function themeConfigToHtml(config: ThemeConfig): ThemeHtml {
   }
 
   const g = config.glassTuning;
-  if (g.tint !== DEFAULT_GLASS_TUNING.tint)
-    style["--glass-tint"] = String(g.tint);
-  if (g.blur !== DEFAULT_GLASS_TUNING.blur)
-    style["--glass-blur"] = `${g.blur}px`;
-  if (g.refraction !== DEFAULT_GLASS_TUNING.refraction)
-    style["--glass-refraction"] = String(g.refraction);
-  if (g.sat !== DEFAULT_GLASS_TUNING.sat) style["--glass-sat"] = String(g.sat);
-  if (g.spec !== DEFAULT_GLASS_TUNING.spec)
-    style["--glass-spec"] = String(g.spec);
-  if (g.shadow !== DEFAULT_GLASS_TUNING.shadow)
-    style["--glass-shadow"] = String(g.shadow);
-  if (g.ambientLevel !== DEFAULT_GLASS_TUNING.ambientLevel)
-    style["--ambient"] = String(g.ambientLevel);
+  const d = DEFAULT_GLASS_TUNING;
+  if (g.depth !== d.depth) style["--glass-depth"] = String(g.depth);
+  if (g.splay !== d.splay) style["--glass-splay"] = String(g.splay);
+  if (g.feather !== d.feather) style["--glass-feather"] = String(g.feather);
+  if (g.curve !== d.curve) style["--glass-curve"] = String(g.curve);
+  if (g.blur !== d.blur) style["--glass-blur"] = `${g.blur}px`;
+  if (g.chroma !== d.chroma) style["--glass-chroma"] = String(g.chroma);
+  if (g.glint !== d.glint) style["--glass-glint"] = String(g.glint / 100);
+  if (g.tint !== d.tint) style["--glass-tint"] = String(g.tint);
+  if (g.tintColor !== d.tintColor) style["--glass-tint-c"] = g.tintColor;
+  // The accent is the tint: with the layer on, primary derives from its colour.
+  if (g.tint > 0) {
+    Object.assign(style, accentVariables(deriveAccentTokens(g.tintColor)));
+  }
 
   const attributes: ThemeAttributes = {
     "data-density": config.density,
     "data-glass-level": config.glass,
-    "data-ambient": config.ambient ? "on" : "off",
     "data-motion": config.reduceMotion ? "reduced" : "full",
     "data-font": config.font,
     "data-heading-font": config.headingFont,
   };
-
-  if (g.variant !== DEFAULT_GLASS_TUNING.variant) {
-    attributes["data-glass-variant"] = g.variant;
-  }
-  if (g.accentTint !== DEFAULT_GLASS_TUNING.accentTint) {
-    attributes["data-glass-accent-tint"] = g.accentTint ? "true" : "false";
-  }
+  if (g.tint > 0) attributes["data-glass-tint"] = "on";
 
   return { attributes, style };
 }
@@ -108,25 +87,14 @@ export function applyThemeConfig(target: ThemeTarget, config: ThemeConfig) {
   // Cookies written before the rename carry `data-glass`; on `<html>` it would
   // read as a glass surface, so drop it.
   target.removeAttribute("data-glass");
-  target.setAttribute("data-ambient", attributes["data-ambient"]);
   target.setAttribute("data-motion", attributes["data-motion"]);
   target.setAttribute("data-font", attributes["data-font"]);
   target.setAttribute("data-heading-font", attributes["data-heading-font"]);
 
-  // Set optional attributes
-  if (attributes["data-glass-variant"]) {
-    target.setAttribute("data-glass-variant", attributes["data-glass-variant"]);
+  if (attributes["data-glass-tint"]) {
+    target.setAttribute("data-glass-tint", attributes["data-glass-tint"]);
   } else {
-    target.removeAttribute("data-glass-variant");
-  }
-
-  if (attributes["data-glass-accent-tint"]) {
-    target.setAttribute(
-      "data-glass-accent-tint",
-      attributes["data-glass-accent-tint"],
-    );
-  } else {
-    target.removeAttribute("data-glass-accent-tint");
+    target.removeAttribute("data-glass-tint");
   }
 
   for (const name of MANAGED_VARIABLES) {
