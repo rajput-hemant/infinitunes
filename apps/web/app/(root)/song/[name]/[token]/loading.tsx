@@ -12,7 +12,7 @@ export default function SongDetailsLoading() {
       <section className="flex flex-col gap-4">
         <PageSectionTitleSkeleton />
 
-        <SongListSkeleton length={5} />
+        <SongListSkeleton length={7} />
       </section>
 
       <SliderListSkeleton sections={3} />

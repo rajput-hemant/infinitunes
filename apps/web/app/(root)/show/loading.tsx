@@ -14,11 +14,11 @@ export default function TopPodcastsLoading() {
 
       <Skeleton className="mb-3 h-7 w-52" />
 
-      <ShelfSkeleton rows={2} count={8} />
+      <ShelfSkeleton rows={2} count={8} hideSubtitle />
 
       <Skeleton className="mt-8 mb-3 h-7 w-40" />
 
-      <CatalogGridSkeleton />
+      <CatalogGridSkeleton hideSubtitle />
     </div>
   );
 }

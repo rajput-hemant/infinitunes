@@ -8,7 +8,7 @@ export default function AlbumDetailsLoading() {
     <div className="flex flex-col gap-(--page-gap)" aria-busy="true">
       <DetailsHeaderSkeleton type="album" />
 
-      <SongListSkeleton showAlbum={false} length={10} />
+      <SongListSkeleton showAlbum={false} length={8} />
 
       <SliderListSkeleton sections={3} />
 

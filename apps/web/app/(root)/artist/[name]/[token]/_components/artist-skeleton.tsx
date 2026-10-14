@@ -48,17 +48,17 @@ export function ArtistBodySkeleton({ tab }: ArtistBodySkeletonProps) {
         )}
 
         {tab === "songs" && (
-          <>
+          <div>
             <CategoryFilterSkeleton />
             <SongListSkeleton length={10} />
-          </>
+          </div>
         )}
 
         {tab === "albums" && (
-          <>
+          <div>
             <CategoryFilterSkeleton />
             <CatalogGridSkeleton count={20} />
-          </>
+          </div>
         )}
       </div>
 

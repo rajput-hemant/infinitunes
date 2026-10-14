@@ -5,11 +5,9 @@ import {
 
 /**
  * The boundary above every page under the layout. A page's own `loading.tsx`
- * replaces it, but only once the router knows it (a prefetched link). Without
- * that (`next dev`, a programmatic navigation, a link that was not prefetched)
- * this stands in for any page, and the router gives no way to tell which. So it
- * is the shape most pages share, a header over a grid, rather than the shape of
- * one of them. The home page never reaches it: it is prerendered.
+ * replaces it, so it only shows for a page without one. The home page is
+ * prerendered and never loads, so it does not get one; this is the shape most
+ * pages share, a header over a grid.
  */
 export default function RootLoading() {
   return (
