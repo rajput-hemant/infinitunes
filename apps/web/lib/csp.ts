@@ -40,7 +40,7 @@ const INLINE_SCRIPT_HASHES = [scriptHash(THEME_BOOTSTRAP_SCRIPT)];
  * `<Script>` is external and allowed by host. Next's RSC payload scripts are
  * inline with per-page text, so a hash policy cannot cover them: resolve that
  * (for example `strict-dynamic` with SRI) before flipping `CSP_ENFORCE`. The two
- * `dangerouslySetInnerHTML` blocks (lyrics, artist bio) render
+ * `dangerouslySetInnerHTML` block (lyrics) renders
  * `sanitizeRichText` output as markup, not script, so `script-src` does not
  * apply to them. `style-src` keeps `'unsafe-inline'` on purpose: Sonner/Next
  * inject `<style>` tags and the theme script sets `--radius` inline, and style

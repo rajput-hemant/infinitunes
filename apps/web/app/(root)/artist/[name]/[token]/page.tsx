@@ -1,5 +1,10 @@
 import type { Category } from "@infinitunes/types";
-import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
+import {
+  decode,
+  getImageSrc,
+  parseArtistBio,
+  toCardItem,
+} from "@infinitunes/types";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
 import { cache, Suspense } from "react";
@@ -14,9 +19,9 @@ import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
-import { sanitizeRichText } from "~/lib/sanitize-rich-text";
 import { api } from "~/lib/trpc/server";
 
+import { ArtistBio } from "./_components/artist-bio";
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
 import { CategoryFilter } from "./_components/category-filter";
@@ -112,13 +117,14 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
   const selectedTab = tabForSlug(name.split("-").pop());
 
   const topSongs = artist.topSongs ?? [];
+  const bio = parseArtistBio(artist.bio);
 
   return (
     <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={artist} />
 
       <Tabs defaultValue={selectedTab}>
-        <ArtistsTabList showBio={Boolean(artist.bio)} />
+        <ArtistsTabList showBio={bio.length > 0} />
 
         <TabsContent
           value={TABS.Overview}
@@ -155,14 +161,7 @@ export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
         </TabsContent>
 
         <TabsContent value={TABS.Biography} className="max-w-3xl">
-          {artist.bio && (
-            <div
-              className="rounded-md bg-card p-6 text-sm leading-6 text-muted-foreground ring-1 ring-inset ring-border"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeRichText(decode(artist.bio)),
-              }}
-            />
-          )}
+          {bio.length > 0 && <ArtistBio sections={bio} />}
         </TabsContent>
       </Tabs>
 

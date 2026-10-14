@@ -8,7 +8,7 @@ function escapeAngles(text: string): string {
 }
 
 /**
- * Reduces third-party markup (lyrics, artist bios) to `<br>`, `<p>`, `<b>` and
+ * Reduces third-party markup (lyrics) to `<br>`, `<p>`, `<b>` and
  * `<i>` so it is safe for `dangerouslySetInnerHTML`.
  *
  * Allowed tags are re-emitted without attributes; every other tag is dropped
