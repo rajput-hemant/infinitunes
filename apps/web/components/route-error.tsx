@@ -5,6 +5,7 @@ import { RefreshCw } from "lucide-react";
 import React from "react";
 
 import { ErrorIllustration } from "~/components/error-illustration";
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -34,7 +35,11 @@ export function RouteError(props: RouteErrorProps) {
         heightClassName[height],
       )}
     >
-      <div className="flex w-full max-w-88 flex-col items-center gap-3 rounded-(--radius) border border-dashed border-border p-8 text-center">
+      <GlassSurface
+        size="l"
+        lens="off"
+        className="flex w-full max-w-88 flex-col items-center gap-3 rounded-(--radius) p-8 text-center"
+      >
         <ErrorIllustration />
 
         <h1 className="font-heading text-xl font-bold leading-7 text-foreground">
@@ -53,7 +58,7 @@ export function RouteError(props: RouteErrorProps) {
           <RefreshCw className="mr-2 size-4" />
           Try again
         </Button>
-      </div>
+      </GlassSurface>
     </div>
   );
 }

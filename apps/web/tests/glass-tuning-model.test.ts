@@ -11,13 +11,13 @@ import {
 } from "~/lib/glass/tuning";
 
 describe("glass tuning ranges and defaults", () => {
-  test("defaults are the pen's, and sit inside their ranges", () => {
+  test("defaults are the pen's rim with a lightly frosted blur, and sit inside their ranges", () => {
     expect(DEFAULT_GLASS_TUNING).toEqual({
       depth: 60,
       splay: 2,
       feather: 24,
       curve: 2,
-      blur: 0,
+      blur: 2,
       chroma: 0,
       glint: 25,
       tint: 0,

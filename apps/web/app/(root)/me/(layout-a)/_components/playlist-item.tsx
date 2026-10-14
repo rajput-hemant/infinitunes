@@ -4,6 +4,7 @@ import { getImageSrc } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { ImageCollage } from "~/components/image-collage";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { api } from "~/lib/trpc/server";
@@ -43,12 +44,15 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
           <span className="sr-only">View {name}</span>
         </Link>
 
-        <div className="absolute top-1 right-1 z-20 transition-opacity motion-reduce:transition-none pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100">
-          <PlaylistManageMenu
-            playlist={{ id, name, description }}
-            triggerClassName="bg-background/80"
-          />
-        </div>
+        {/* A chip over artwork: frosted glass, no lens (one per card, and a small target). */}
+        <GlassSurface
+          size="s"
+          lens="off"
+          variant="clear"
+          className="absolute top-1 right-1 z-20 rounded-full transition-opacity motion-reduce:transition-none pointer-fine:opacity-0 pointer-fine:group-focus-within:opacity-100 pointer-fine:group-hover:opacity-100"
+        >
+          <PlaylistManageMenu playlist={{ id, name, description }} />
+        </GlassSurface>
 
         <ImageCollage src={songs.length > 4 ? imageSrcs : [imageSrcs[0]]} />
 

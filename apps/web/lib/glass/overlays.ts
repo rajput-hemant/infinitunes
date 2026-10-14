@@ -55,6 +55,11 @@ export type OverlayTarget = {
  */
 export const OVERLAY_TARGETS: readonly OverlayTarget[] = [
   { selector: '[data-slot="popover-content"]', role: "menu", size: "l" },
+  {
+    selector: '[data-slot="navigation-menu-popup"]',
+    role: "menu",
+    size: "l",
+  },
   { selector: '[data-slot="dropdown-menu-content"]', role: "menu", size: "l" },
   {
     selector: '[data-slot="dropdown-menu-sub-content"]',

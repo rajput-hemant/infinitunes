@@ -11,7 +11,7 @@
    user turns the tint on, and then it is the tint colour.
 
    Popups styled by slot (keep in step with OVERLAY_TARGETS in lib/glass/overlays.ts, a test checks it):
-   popover-content, dropdown-menu-content, dropdown-menu-sub-content, dialog-content, alert-dialog-content,
+   popover-content, navigation-menu-popup, dropdown-menu-content, dropdown-menu-sub-content, dialog-content, alert-dialog-content,
    sheet-content, drawer-popup and the sonner toast. Tooltips (tooltip-content) take the small s material and no
    lens, so they are not in OVERLAY_TARGETS: the engine attaches no lens to them. */
 
@@ -24,12 +24,12 @@
   --glass-curve: 2;
   --glass-chroma: 0;
   /* Painted by CSS. */
-  --glass-blur: 0px; /* extra backdrop blur on top of the size class */
+  --glass-blur: 2px; /* extra backdrop blur on top of the size class */
   --glass-glint: 0.25; /* edge highlight strength, 1 is the CodePen's full highlight */
   --glass-tint: 0; /* opacity of the multiply colour layer */
   --glass-tint-c: #ffffff;
   /* The body of the glass: a light fill that keeps text legible. Size classes add to it. */
-  --g-base: 0.14;
+  --g-base: 0.18;
   --g-fill-c: #fff;
   --g-blur0: 2px; /* base blur, multiplied per size class */
   --g-sh-k: 1; /* shadow weight, heavier in dark */
@@ -51,7 +51,7 @@
   --g-on-accent: var(--primary-foreground);
 }
 .dark {
-  --g-base: 0.24;
+  --g-base: 0.28;
   --g-fill-c: #1e1e22;
   --g-sh-k: 2;
 }
@@ -70,6 +70,7 @@ html[data-glass-level="subtle"] {
   :where(
     [data-glass][data-glass-size],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -93,6 +94,7 @@ html
   :is(
     [data-glass][data-glass-size],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -141,6 +143,7 @@ html[data-glass-engine="lens"]:not([data-glass-level="solid"])
   :is(
     [data-glass][data-glass-size]:not([data-glass-size="xl"]),
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -162,6 +165,7 @@ html
   :is(
     [data-glass][data-glass-size],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -188,6 +192,7 @@ html
     :is(
       [data-glass][data-glass-size],
       [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
       [data-slot="dropdown-menu-content"],
       [data-slot="dropdown-menu-sub-content"],
       [data-slot="dialog-content"],
@@ -202,11 +207,13 @@ html
     display: block;
   }
 }
-/* Illumination: glow brightens from the touch point while pressed. */
+/* Illumination: a small, soft glow at the touch point while pressed. It is the surface's own layer (inset 0, the
+   surface's radius), so it never reaches past the border; kept low in radius and opacity as a quiet confirmation. */
 html
   :is(
     [data-glass][data-glass-size],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -223,9 +230,9 @@ html
   border-radius: inherit;
   pointer-events: none;
   background: radial-gradient(
-    circle 8rem at var(--g-px, 50%) var(--g-py, 0%),
-    rgb(255 255 255 / calc(0.34 * var(--g-press, 0))),
-    transparent 72%
+    circle 2.25rem at var(--g-px, 50%) var(--g-py, 0%),
+    rgb(255 255 255 / calc(0.14 * var(--g-press, 0))),
+    transparent 100%
   );
 }
 
@@ -244,6 +251,7 @@ html
   :is(
     [data-glass-size="l"],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -280,6 +288,7 @@ html.dark
   :is(
     [data-glass][data-glass-size],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -324,6 +333,7 @@ html
   :is(
     [data-glass][data-glass-size],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -342,6 +352,7 @@ html
   :is(
     [data-glass][data-glass-size],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -360,6 +371,7 @@ html a[data-glass]:active {
 html
   :is(
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"]
   )
@@ -614,6 +626,7 @@ html[data-glass-level="solid"]
   :is(
     [data-glass][data-glass-size],
     [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
     [data-slot="dropdown-menu-content"],
     [data-slot="dropdown-menu-sub-content"],
     [data-slot="dialog-content"],
@@ -641,6 +654,7 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     :is(
       [data-glass][data-glass-size],
       [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
       [data-slot="dropdown-menu-content"],
       [data-slot="dropdown-menu-sub-content"],
       [data-slot="dialog-content"],
@@ -665,6 +679,7 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     :is(
       [data-glass][data-glass-size],
       [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
       [data-slot="dropdown-menu-content"],
       [data-slot="dropdown-menu-sub-content"],
       [data-slot="dialog-content"],
@@ -690,6 +705,7 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     :is(
       [data-glass][data-glass-size],
       [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
       [data-slot="dropdown-menu-content"],
       [data-slot="dropdown-menu-sub-content"],
       [data-slot="dialog-content"],
@@ -712,6 +728,7 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     :is(
       [data-glass][data-glass-size],
       [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
       [data-slot="dropdown-menu-content"],
       [data-slot="dropdown-menu-sub-content"],
       [data-slot="dialog-content"],
@@ -735,6 +752,7 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     :is(
       [data-glass][data-glass-size],
       [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
       [data-slot="dropdown-menu-content"],
       [data-slot="dropdown-menu-sub-content"],
       [data-slot="dialog-content"],
@@ -748,6 +766,7 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     :is(
       [data-glass][data-glass-size],
       [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
       [data-slot="dropdown-menu-content"],
       [data-slot="dropdown-menu-sub-content"],
       [data-slot="dialog-content"],
@@ -772,6 +791,7 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
       [data-glass][data-glass-size],
       [data-glass-indicator],
       [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
       [data-slot="dropdown-menu-content"],
       [data-slot="dropdown-menu-sub-content"],
       [data-slot="dialog-content"],
