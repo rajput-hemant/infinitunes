@@ -1,19 +1,11 @@
-import { createDisplacementMap, createSpecularMap } from "~/lib/glass/engine";
-import type { MapResult } from "~/lib/glass/engine";
+import { createDisplacementMap } from "~/lib/glass/engine";
+import type { DisplacementMapOpts, MapResult } from "~/lib/glass/engine";
 
-export type LensMaps = { displacement: string; specular: string };
+/** What one lens map depends on: size, corner radius, rim shape and magnification. */
+export type LensMapRequest = Required<DisplacementMapOpts>;
 
-export type LensMapRequest = {
-  width: number;
-  height: number;
-  radius: number;
-  bezel: number;
-  /** 0 for a plain surface, `DROPLET_MAGNIFY` for a lifted selection droplet. */
-  magnify: number;
-};
-
-/** Renders the displacement and specular maps for one size as PNG data URLs. */
-export type LensMapEncoder = (request: LensMapRequest) => LensMaps | null;
+/** Renders the displacement map for one shape as a PNG data URL. */
+export type LensMapEncoder = (request: LensMapRequest) => string | null;
 
 let canvas: HTMLCanvasElement | null = null;
 
@@ -31,19 +23,6 @@ function toDataURL(map: MapResult): string | null {
   return canvas.toDataURL("image/png");
 }
 
-/** Default encoder: pure map generators, then a canvas PNG encode. Runs once per size. */
-export const encodeLensMaps: LensMapEncoder = ({
-  width,
-  height,
-  radius,
-  bezel,
-  magnify,
-}) => {
-  const displacement = toDataURL(
-    createDisplacementMap({ width, height, radius, bezel, magnify }),
-  );
-  const specular = toDataURL(
-    createSpecularMap({ width, height, radius, bezel }),
-  );
-  return displacement && specular ? { displacement, specular } : null;
-};
+/** Default encoder: the pure map generator, then a canvas PNG encode. Runs once per shape. */
+export const encodeLensMap: LensMapEncoder = (request) =>
+  toDataURL(createDisplacementMap(request));

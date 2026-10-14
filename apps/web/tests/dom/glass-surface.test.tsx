@@ -57,6 +57,33 @@ describe("GlassSurface", () => {
     expect(surface.getAttribute("data-lens")).toBe("off");
   });
 
+  it("tunes a surface on its own with a preset, as attributes and inline paint variables", async () => {
+    const surface = await renderSurface(
+      <GlassSurface preset="plexi" style={{ color: "red" }} />,
+    );
+    expect(surface.getAttribute("data-glass-preset")).toBe("plexi");
+    expect(surface.getAttribute("data-glass-tint")).toBe("on");
+    const style = (surface as HTMLElement).style;
+    expect(style.getPropertyValue("--glass-tint-c")).toBe("#ff6600");
+    expect(style.getPropertyValue("--glass-blur")).toBe("2.5px");
+    expect(style.color).toBe("red");
+  });
+
+  it("writes nothing for a surface without a preset", async () => {
+    const surface = await renderSurface(<GlassSurface />);
+    expect(surface.hasAttribute("data-glass-preset")).toBe(false);
+    expect(surface.hasAttribute("data-glass-tint")).toBe(false);
+    expect(surface.hasAttribute("style")).toBe(false);
+  });
+
+  it("leaves the tint layer off for a preset without a tint", async () => {
+    const surface = await renderSurface(<GlassSurface preset="frosted" />);
+    expect(surface.hasAttribute("data-glass-tint")).toBe(false);
+    expect(
+      (surface as HTMLElement).style.getPropertyValue("--glass-blur"),
+    ).toBe("5px");
+  });
+
   it("exposes its role and marks a pressable surface for the press gel", async () => {
     const surface = await renderSurface(
       <GlassSurface glassRole="player" interactive />,
