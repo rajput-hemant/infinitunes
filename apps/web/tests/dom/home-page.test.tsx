@@ -33,6 +33,7 @@ const modules = {
     playlist("e"),
     playlist("f"),
   ],
+  charts: [playlist("x"), playlist("y")],
   modules: { top_playlists: { title: "Top playlists" } },
 };
 
@@ -99,6 +100,18 @@ describe("Home page", () => {
       "/playlist/playlist-c/c",
       "/playlist/playlist-d/d",
       "/playlist/playlist-e/e",
+    ]);
+  });
+
+  it("fills the bento hero with charts first, then spare playlists", async () => {
+    const container = await render();
+
+    const hero = container.querySelector("h2 a")?.closest(".grid-cols-2");
+    const tiles = [...(hero?.querySelectorAll(":scope > a") ?? [])];
+    expect(tiles.map((a) => a.getAttribute("href"))).toEqual([
+      "/playlist/playlist-x/x",
+      "/playlist/playlist-y/y",
+      "/playlist/playlist-f/f",
     ]);
   });
 
