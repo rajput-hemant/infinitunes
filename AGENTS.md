@@ -286,6 +286,15 @@ Read `docs/README.md` inside that installed package first, then read the relevan
 This block is written and re-added by `turbo` before repository-scoped commands when an AI agent is detected. In the Turborepo source repository, its template is defined in `crates/turborepo-cli/src/cli/agent_guidance.rs`. Removing the managed block while updates are enabled means a later qualifying invocation will add it again. Set `"agentGuidance": false` in the root `turbo.json` or `turbo.jsonc` to opt out; this does not remove an existing block. Keep the block committed with your work to avoid an uncommitted change on the next agent invocation.
 <!-- END:turborepo-agent-rules -->
 
+## Colour-mode switches (`lib/theme/mode.ts`)
+
+Switch the mode through `useThemeMode().setMode`, never next-themes' `setTheme` directly. `setTheme`
+applies the `dark` class in an effect after render, and every colour transition then eases through the
+old colours. `switchThemeMode` sets the class inside the click and holds transitions off for two
+frames with `data-theme-switching` (rule in `styles/globals.css`). Don't add `disableTransitionOnChange`
+to `ThemeProvider`: its cleanup reads `getComputedStyle` inside the click's microtask, which stalls the
+handler.
+
 ## Liquid Glass lens sharp edge
 
 Chromium resolves a `backdrop-filter: url(#...)` filter's user space against the element's ink overflow (outer
