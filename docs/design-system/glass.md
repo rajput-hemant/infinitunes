@@ -69,6 +69,13 @@ makes it `relative` (layered, so any utility wins).
 | `l`    | menus, dialogs, palette, sheets, floating queue | 2           | weak   |
 | `xl`   | full-height sidebar and wide queue pane         | 3.5         | none   |
 
+**Overlay material.** Every large floating pane (the `l` row above plus the mega menu, menus, popovers, dialogs, palette,
+sheets) uses a thicker material than the navigation chrome: `--ov-blur` (20px total, replacing the size blur) and
+`--ov-alpha` (.76 light, .66 dark neutral fill), declared on `:root` and `.dark` in glass.css and applied by one rule
+(`html:root :is(...)`). The lens stays on the rim at the weak `l` strength. Toolbar, player and hero keep the lighter `s`
+and `m` materials. Measured worst-case text contrast over the busiest page area: 7.7:1 light, 5.6:1 dark (mega menu);
+8.3:1 light, 6.2:1 dark (search palette).
+
 The blur factor multiplies a 2px base and adds the Blur setting. The size classes also add to a light fill
 (`--g-base` .18 light, .28 dark) so text stays legible: `m` .2 (.26 dark), `l` .32, `xl` .26.
 
