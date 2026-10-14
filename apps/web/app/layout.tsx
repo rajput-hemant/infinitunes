@@ -4,7 +4,6 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import type React from "react";
 
-import { GlassAmbient } from "~/components/glass/glass-ambient";
 import { GlassFilters } from "~/components/glass/glass-filters";
 import { GlassRuntime } from "~/components/glass/glass-runtime";
 import Providers from "~/components/provider";
@@ -40,7 +39,6 @@ export default function RootLayout({ modal, children }: RootLayoutProps) {
       <body className="min-h-screen font-sans antialiased">
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
         <GlassFilters />
-        <GlassAmbient />
         <GlassRuntime />
         <Providers>
           {children}

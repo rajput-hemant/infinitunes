@@ -6,7 +6,6 @@ import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
 import { GlassSurface } from "~/components/glass/glass-surface";
-import { useGlassArtwork } from "~/hooks/use-glass-artwork";
 import { useKeydown } from "~/hooks/use-keydown";
 import { useRadioRefill } from "~/hooks/use-radio-refill";
 import {
@@ -32,7 +31,6 @@ import { PlayerTrackInfo } from "./player/player-track-info";
 import { PlayerTransport } from "./player/player-transport";
 import { PlayerVolume } from "./player/player-volume";
 import { MiniProgress, SeekBar } from "./player/seek-bar";
-import { trackArtworkUrl } from "./player/track-artwork";
 import {
   loopModeOf,
   nextTrackIndex,
@@ -135,7 +133,6 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   });
 
   const current = queue[currentIndex];
-  useGlassArtwork(trackArtworkUrl(current));
 
   React.useEffect(() => {
     if (isDragging) {

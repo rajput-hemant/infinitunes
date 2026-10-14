@@ -2,8 +2,8 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
-import { DEFAULT_GLASS_TINT } from "~/lib/glass/default-tint";
 import { OVERLAY_TARGETS } from "~/lib/glass/overlays";
+import { DEFAULT_GLASS_TUNING } from "~/lib/glass/tuning";
 
 const styles = join(import.meta.dir, "../styles");
 const uiComponents = join(
@@ -37,15 +37,26 @@ describe("glass.css overlay coverage", () => {
   });
 });
 
-describe("glass.css default tint", () => {
-  const tintIn = (selector: string) => {
-    const block = new RegExp(`^${selector} \\{([^}]*)\\}`, "m").exec(glassCss);
-    return Number(/--glass-tint:\s*([0-9.]+)/.exec(block?.[1] ?? "")?.[1]);
-  };
+describe("glass.css tuning defaults", () => {
+  const rootBlock = /^:root \{([^}]*)\}/m.exec(glassCss)?.[1] ?? "";
 
-  test("the literals equal the shared DEFAULT_GLASS_TINT constant", () => {
-    expect(tintIn(":root")).toBe(DEFAULT_GLASS_TINT.light);
-    expect(tintIn("\\.dark")).toBe(DEFAULT_GLASS_TINT.dark);
+  test("the stylesheet literals equal the shared defaults", () => {
+    const declared = (name: string) =>
+      new RegExp(`--glass-${name}:\\s*([^;\\s]+)`).exec(rootBlock)?.[1];
+    expect(Number(declared("depth"))).toBe(DEFAULT_GLASS_TUNING.depth);
+    expect(Number(declared("splay"))).toBe(DEFAULT_GLASS_TUNING.splay);
+    expect(Number(declared("feather"))).toBe(DEFAULT_GLASS_TUNING.feather);
+    expect(Number(declared("curve"))).toBe(DEFAULT_GLASS_TUNING.curve);
+    expect(Number(declared("chroma"))).toBe(DEFAULT_GLASS_TUNING.chroma);
+    expect(declared("blur")).toBe(`${DEFAULT_GLASS_TUNING.blur}px`);
+    expect(Number(declared("glint"))).toBe(DEFAULT_GLASS_TUNING.glint / 100);
+    expect(Number(declared("tint"))).toBe(DEFAULT_GLASS_TUNING.tint);
+    expect(declared("tint-c")).toBe(DEFAULT_GLASS_TUNING.tintColor);
+  });
+
+  test("is neutral: the pink, indigo and sky blobs are gone", () => {
+    expect(glassCss).not.toMatch(/#(?:f472b6|818cf8|38bdf8)/i);
+    expect(glassCss).not.toContain("--g-blob");
   });
 });
 
@@ -55,11 +66,8 @@ describe("glass.css transport", () => {
       'data-glass-level="solid"',
       'data-glass-level="subtle"',
       'data-glass-engine="lens"',
-      'data-glass-variant="clear"',
-      'data-glass-variant="tinted"',
-      'data-glass-accent-tint="true"',
+      'data-glass-tint="on"',
       'data-motion="reduced"',
-      'data-ambient="off"',
     ]) {
       expect(glassCss).toContain(hook);
     }
@@ -79,6 +87,7 @@ describe("glass.css transport", () => {
       /glass-off/,
       /\breduce-motion\b/,
       /#ambient/,
+      /data-glass-ambient/,
     ]) {
       expect(glassCss).not.toMatch(dead);
     }
@@ -94,7 +103,7 @@ describe("glass.css transport", () => {
     // Written per element or per page at runtime, or by Tailwind and Base UI.
     const runtime = new Set([
       "--g-lens-url",
-      "--g-light",
+      "--g-lens-tint",
       "--g-px",
       "--g-py",
       "--g-press",
@@ -111,13 +120,5 @@ describe("glass.css transport", () => {
       (name) => !defined.has(name) && !runtime.has(name),
     );
     expect(undefinedVars).toEqual([]);
-  });
-});
-
-describe("ambient default", () => {
-  test("is the mockup's 0.62, in light and dark", () => {
-    const globals = read(join(styles, "globals.css"));
-    expect(globals).toMatch(/--ambient:\s*0\.62;/);
-    expect(globals).not.toMatch(/--ambient:\s*0\.(22|32);/);
   });
 });

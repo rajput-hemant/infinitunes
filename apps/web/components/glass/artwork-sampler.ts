@@ -1,4 +1,4 @@
-import { SAMPLE_GRID, rgbCss, summarizePixels } from "~/lib/glass/artwork";
+import { SAMPLE_GRID, summarizePixels } from "~/lib/glass/artwork";
 import type { ArtworkSample } from "~/lib/glass/artwork";
 
 const samples = new Map<string, Promise<ArtworkSample | null>>();
@@ -21,8 +21,7 @@ function draw(img: HTMLImageElement): ArtworkSample | null {
 }
 
 /**
- * Samples an artwork into an 8x8 grid: mean colour, mean luminance and three
- * vivid seeds. Cached by URL; `null` when the image fails to load or the
+ * Samples an artwork into an 8x8 grid and returns its mean luminance. Cached by URL; `null` when the image fails to load or the
  * canvas is tainted. The image CDN must send `Access-Control-Allow-Origin`.
  */
 export function sampleArtwork(url: string): Promise<ArtworkSample | null> {
@@ -37,30 +36,6 @@ export function sampleArtwork(url: string): Promise<ArtworkSample | null> {
   });
   samples.set(url, result);
   return result;
-}
-
-/** Writes the sample onto `<html>`: luminance, mean colour and the three ambient blobs. */
-export function applyArtworkTint(sample: ArtworkSample) {
-  const style = document.documentElement.style;
-  style.setProperty("--g-art-l", sample.luminance.toFixed(3));
-  style.setProperty("--g-art", rgbCss(sample.avg));
-  sample.blobs.forEach((blob, i) => {
-    style.setProperty(`--g-blob-${i + 1}`, rgbCss(blob));
-  });
-}
-
-/** Back to the stylesheet defaults when nothing is playing. */
-export function clearArtworkTint() {
-  const style = document.documentElement.style;
-  for (const name of [
-    "--g-art-l",
-    "--g-art",
-    "--g-blob-1",
-    "--g-blob-2",
-    "--g-blob-3",
-  ]) {
-    style.removeProperty(name);
-  }
 }
 
 /** A clear surface adapts to the image directly behind it (`parent > img`), not the playing artwork. */
