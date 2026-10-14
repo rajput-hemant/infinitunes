@@ -1,30 +1,31 @@
 "use client";
 
-import { GLASS_LEVELS, GLASS_VARIANTS } from "@infinitunes/types";
-import type { GlassLevel, GlassTuning, GlassVariant } from "@infinitunes/types";
+import { GLASS_LEVELS } from "@infinitunes/types";
+import type { GlassLevel, GlassTuning } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
-import { Switch } from "@infinitunes/ui/components/switch";
 import { Layers, RotateCcw } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useId } from "react";
 
-import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
-import { DEFAULT_GLASS_TUNING, DEFAULT_THEME_CONFIG } from "~/lib/theme-config";
+import {
+  GLASS_PRESETS,
+  GLASS_PRESET_IDS,
+  matchingPreset,
+} from "~/lib/glass/tuning";
+import type { GlassPresetId } from "~/lib/glass/tuning";
+import { DEFAULT_GLASS_TUNING } from "~/lib/theme-config";
 
 import { GlassDemo } from "./glass-demo";
 import {
   GLASS_SLIDERS,
   formatSliderValue,
   isDefaultGlassTuning,
-  resolveGlassTuning,
   sliderPatch,
   sliderValue,
 } from "./glass-tuning";
 import { OptionGroup } from "./option-group";
 import { RangeField } from "./range-field";
-import { SettingsRow } from "./settings-row";
 
 const LEVEL_LABELS: Record<GlassLevel, string> = {
   liquid: "Liquid glass",
@@ -32,27 +33,12 @@ const LEVEL_LABELS: Record<GlassLevel, string> = {
   solid: "Solid",
 };
 
-const VARIANT_LABELS: Record<GlassVariant, string> = {
-  regular: "Regular",
-  clear: "Clear",
-  tinted: "Tinted",
-};
-
-/** Glass level, the tuning sliders and the ambient field, all stored in the theme config. */
+/** Glass level, the lens controls and the presets, all stored in the theme config. */
 export function LiquidGlassSettings() {
   const { config, update } = useThemeConfig();
-  const { resolvedTheme } = useTheme();
-  const { glass, ambient, glassTuning } = config;
-  // `resolvedTheme` is undefined on the server but known on the first client
-  // render, so the saved-dark defaults only apply once hydrated.
-  const isDark = useIsHydrated() && resolvedTheme === "dark";
-  const tuning = resolveGlassTuning(glassTuning, isDark);
-  const ambientLabelId = useId();
-  const accentTintLabelId = useId();
+  const { glass, glassTuning } = config;
+  const tintColorId = useId();
   const isSolid = glass === "solid";
-  const isDefault =
-    ambient === DEFAULT_THEME_CONFIG.ambient &&
-    isDefaultGlassTuning(glassTuning);
 
   function tune(patch: Partial<GlassTuning>) {
     update({ glassTuning: { ...glassTuning, ...patch } });
@@ -82,21 +68,17 @@ export function LiquidGlassSettings() {
         <fieldset disabled={isSolid} className="grid gap-4 disabled:opacity-50">
           <legend className="sr-only">Liquid Glass tuning</legend>
 
-          <SettingsRow
-            label="Variant"
-            help="Applies to the player, tab bar and toolbar. Menus, dialogs and the sidebar stay Regular for legibility."
-            className="border-b-0 py-0"
-          >
-            <OptionGroup
-              label="Glass variant"
-              value={glassTuning.variant}
-              onValueChange={(variant) => tune({ variant })}
-              options={GLASS_VARIANTS.map((variant) => ({
-                value: variant,
-                label: VARIANT_LABELS[variant],
-              }))}
-            />
-          </SettingsRow>
+          <OptionGroup<GlassPresetId>
+            label="Glass preset"
+            value={matchingPreset(glassTuning) ?? undefined}
+            onValueChange={(id) =>
+              update({ glassTuning: { ...GLASS_PRESETS[id].tuning } })
+            }
+            options={GLASS_PRESET_IDS.map((id) => ({
+              value: id,
+              label: GLASS_PRESETS[id].label,
+            }))}
+          />
 
           {GLASS_SLIDERS.map((slider) => (
             <RangeField
@@ -105,49 +87,39 @@ export function LiquidGlassSettings() {
               min={slider.min}
               max={slider.max}
               step={slider.step}
-              value={sliderValue(slider, tuning)}
+              value={sliderValue(slider, glassTuning)}
               format={(shown) => formatSliderValue(slider, shown)}
               onValueChange={(shown) => tune(sliderPatch(slider, shown))}
             />
           ))}
 
-          <SettingsRow
-            label="Tint follows accent"
-            labelId={accentTintLabelId}
-            help="Mix the accent colour into the glass tint."
-            className="border-b-0 py-0"
-          >
-            <Switch
-              aria-labelledby={accentTintLabelId}
-              checked={glassTuning.accentTint}
-              onCheckedChange={(accentTint) => tune({ accentTint })}
+          <div className="flex max-w-2xl items-center gap-4">
+            <label
+              htmlFor={tintColorId}
+              className="w-40 shrink-0 text-muted-foreground"
+            >
+              Tint color
+            </label>
+            <input
+              id={tintColorId}
+              type="color"
+              value={glassTuning.tintColor}
+              onChange={(event) =>
+                tune({ tintColor: event.currentTarget.value })
+              }
+              className="h-ctl-lg w-full min-w-0 flex-1 cursor-pointer rounded-sm border border-line bg-transparent p-0.5"
             />
-          </SettingsRow>
+            <span className="w-14 text-right tabular-nums">
+              {glassTuning.tintColor}
+            </span>
+          </div>
         </fieldset>
-
-        <SettingsRow
-          label="Ambient background"
-          labelId={ambientLabelId}
-          help="A colour field from the playing artwork that the glass refracts."
-          className="border-b-0 py-0"
-        >
-          <Switch
-            aria-labelledby={ambientLabelId}
-            checked={ambient}
-            onCheckedChange={(next) => update({ ambient: next })}
-          />
-        </SettingsRow>
 
         <div>
           <Button
             variant="outline"
-            disabled={isDefault}
-            onClick={() =>
-              update({
-                ambient: DEFAULT_THEME_CONFIG.ambient,
-                glassTuning: DEFAULT_GLASS_TUNING,
-              })
-            }
+            disabled={isDefaultGlassTuning(glassTuning)}
+            onClick={() => update({ glassTuning: DEFAULT_GLASS_TUNING })}
             className={controlStyles.text}
           >
             <RotateCcw aria-hidden className="size-4" />

@@ -16,7 +16,7 @@ mock.module("../../lib/theme/actions", () => ({
   saveThemeConfig: async () => {},
 }));
 
-const { accentPatch, radiusPatch, radiusToPx } =
+const { radiusPatch, radiusToPx } =
   await import("../../app/(root)/settings/_components/appearance-options");
 const { AppearanceSettings } =
   await import("../../app/(root)/settings/_components/appearance-settings");
@@ -69,14 +69,6 @@ describe("appearance patches", () => {
     expect(radiusPatch(7.6)).toEqual({ radius: 0.5 });
     expect(radiusToPx(0.3)).toBe(5);
   });
-
-  it("accepts a complete hex with or without the hash and rejects the rest", () => {
-    expect(accentPatch("#3A7BD5")).toEqual({ accent: "#3a7bd5" });
-    expect(accentPatch("fff")).toEqual({ accent: "#ffffff" });
-    expect(accentPatch("#12")).toBeNull();
-    expect(accentPatch("blue")).toBeNull();
-    expect(accentPatch("")).toBeNull();
-  });
 });
 
 describe("appearance settings", () => {
@@ -111,22 +103,5 @@ describe("appearance settings", () => {
     await act(async () => setInputValue(slider, "24"));
     expect(html.style.getPropertyValue("--radius")).toBe("1.5rem");
     expect(container.querySelector("output")?.textContent).toBe("24px");
-  });
-
-  it("applies a typed accent only while the hex is complete", async () => {
-    const container = await mountAppearance(<AppearanceSettings />);
-
-    const hex = requireElement(
-      container,
-      "input[aria-label='Accent hex color']",
-      HTMLInputElement,
-    );
-    await act(async () => setInputValue(hex, "#3a7b"));
-    expect(hex.getAttribute("aria-invalid")).toBe("true");
-    expect(html.style.getPropertyValue("--light-primary")).toBe("");
-
-    await act(async () => setInputValue(hex, "#3a7bd5"));
-    expect(hex.getAttribute("aria-invalid")).toBe("false");
-    expect(html.style.getPropertyValue("--light-primary")).not.toBe("");
   });
 });

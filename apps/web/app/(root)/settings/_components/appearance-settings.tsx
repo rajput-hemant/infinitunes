@@ -9,7 +9,6 @@ import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useThemeConfig } from "~/hooks/use-theme-config";
 import { controlStyles } from "~/lib/control-styles";
 
-import { AccentPicker } from "./accent-picker";
 import { LiquidGlassSettings } from "./liquid-glass-settings";
 import { OptionGroup } from "./option-group";
 import { RadiusSettings } from "./radius-settings";
@@ -58,14 +57,6 @@ export function AppearanceSettings() {
             onValueChange={setTheme}
             options={MODES}
           />
-        </SettingsSection>
-
-        <SettingsSection
-          id="accent"
-          title="Accent Color"
-          description="Used for buttons, active states, progress and highlights."
-        >
-          <AccentPicker />
         </SettingsSection>
 
         <RadiusSettings />

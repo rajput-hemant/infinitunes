@@ -57,16 +57,10 @@ function sliderFor(container: HTMLElement, label: string) {
   return slider;
 }
 
-/** The switch whose visible label is `label`, found through its `aria-labelledby`. */
-function switchFor(container: HTMLElement, label: string) {
-  const text = [...container.querySelectorAll("p")].find(
-    (element) => element.textContent === label,
-  );
-  const toggle = container.querySelector(
-    `[role=switch][aria-labelledby='${text?.id ?? ""}']`,
-  );
-  if (!(toggle instanceof HTMLElement)) throw new Error(`No switch ${label}`);
-  return toggle;
+function sliderForColor(container: HTMLElement) {
+  const input = container.querySelector("input[type=color]");
+  if (!(input instanceof HTMLInputElement)) throw new Error("No tint colour");
+  return input;
 }
 
 function outputFor(container: HTMLElement, label: string) {
@@ -101,7 +95,7 @@ beforeEach(() => {
 });
 
 describe("liquid glass tuning", () => {
-  it("hydrates a saved dark theme without a mismatch, then shows the dark default tint", async () => {
+  it("hydrates a saved dark theme without a mismatch", async () => {
     localStorage.setItem("theme", "dark");
     const tree = (
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
@@ -112,9 +106,8 @@ describe("liquid glass tuning", () => {
     );
     const container = document.createElement("div");
     document.body.append(container);
-    // The server cannot know the resolved theme, so it renders the light default.
     container.innerHTML = renderToString(tree);
-    expect(outputFor(container, "Transparency")?.textContent).toBe("86%");
+    expect(outputFor(container, "Depth")?.textContent).toBe("60");
 
     const recoverable: unknown[] = [];
     const errors: unknown[] = [];
@@ -135,67 +128,110 @@ describe("liquid glass tuning", () => {
 
     expect(recoverable).toEqual([]);
     expect(errors).toEqual([]);
-    expect(outputFor(container, "Transparency")?.textContent).toBe("76%");
   });
 
-  it("moves the blur slider live and saves the blur key", async () => {
+  it("shows the pen's controls with its ranges and defaults", async () => {
     const container = await mount(<LiquidGlassSettings />);
-    const blur = sliderFor(container, "Blur");
+    const expected: [string, string, string, string, string][] = [
+      ["Depth", "0", "120", "1", "60"],
+      ["Splay", "2", "40", "1", "2"],
+      ["Feather", "0", "40", "1", "24"],
+      ["Curvature", "0.3", "3", "0.1", "2.0"],
+      ["Blur", "0", "5", "0.01", "0.00"],
+      ["Chromatic", "0", "0.25", "0.01", "0.00"],
+      ["Glint", "0", "150", "5", "25"],
+      ["Tint", "0", "1", "0.01", "0.00"],
+    ];
+    for (const [label, min, max, step, shown] of expected) {
+      const slider = sliderFor(container, label);
+      expect([slider.min, slider.max, slider.step]).toEqual([min, max, step]);
+      expect(outputFor(container, label)?.textContent).toBe(shown);
+    }
+    const color = sliderForColor(container);
+    expect(color.value).toBe("#ffffff");
+  });
 
-    await act(async () => setInputValue(blur, "8"));
+  it("moves the depth slider live and saves only that key", async () => {
+    const container = await mount(<LiquidGlassSettings />);
 
-    expect(html.style.getPropertyValue("--glass-blur")).toBe("8px");
-    expect(sliderFor(container, "Blur").value).toBe("8");
-    expect(outputFor(container, "Blur")?.textContent).toBe("8px");
+    await act(async () => setInputValue(sliderFor(container, "Depth"), "90"));
+
+    expect(html.style.getPropertyValue("--glass-depth")).toBe("90");
+    expect(sliderFor(container, "Depth").value).toBe("90");
+    expect(outputFor(container, "Depth")?.textContent).toBe("90");
     const config = await settleSave();
-    expect(config?.glassTuning.blur).toBe(8);
-    expect(config?.glassTuning.sat).toBe(DEFAULT_THEME_CONFIG.glassTuning.sat);
-  });
-
-  it("stores transparency as the complement of the shown value", async () => {
-    const container = await mount(<LiquidGlassSettings />);
-    const transparency = sliderFor(container, "Transparency");
-    expect(transparency.value).toBe("0.86");
-
-    await act(async () => setInputValue(transparency, "0.8"));
-
-    expect(html.style.getPropertyValue("--glass-tint")).toBe("0.2");
-    const config = await settleSave();
-    expect(config?.glassTuning.tint).toBe(0.2);
-  });
-
-  it("maps the saturation and edge highlight sliders to their config keys", async () => {
-    const container = await mount(<LiquidGlassSettings />);
-
-    await act(async () =>
-      setInputValue(sliderFor(container, "Saturation"), "2"),
+    expect(config?.glassTuning.depth).toBe(90);
+    expect(config?.glassTuning.splay).toBe(
+      DEFAULT_THEME_CONFIG.glassTuning.splay,
     );
-    await act(async () =>
-      setInputValue(sliderFor(container, "Edge highlight"), "0.5"),
-    );
-
-    expect(html.style.getPropertyValue("--glass-sat")).toBe("2");
-    expect(html.style.getPropertyValue("--glass-spec")).toBe("0.5");
-    const config = await settleSave();
-    expect(config?.glassTuning.sat).toBe(2);
-    expect(config?.glassTuning.spec).toBe(0.5);
   });
 
-  it("changes the variant and the accent tint through the config", async () => {
+  it("writes blur in px, glint as a share of 1 and the rim shape as plain numbers", async () => {
     const container = await mount(<LiquidGlassSettings />);
 
-    await act(async () => radio(container, "Glass variant", "clear").click());
-    expect(html.getAttribute("data-glass-variant")).toBe("clear");
-    expect(radio(container, "Glass variant", "clear").checked).toBe(true);
+    await act(async () => setInputValue(sliderFor(container, "Blur"), "2.5"));
+    await act(async () => setInputValue(sliderFor(container, "Glint"), "80"));
+    await act(async () => setInputValue(sliderFor(container, "Splay"), "12"));
+    await act(async () =>
+      setInputValue(sliderFor(container, "Chromatic"), "0.1"),
+    );
 
-    const accentTint = switchFor(container, "Tint follows accent");
-    await act(async () => accentTint.click());
-    expect(html.getAttribute("data-glass-accent-tint")).toBe("true");
-    expect(accentTint.getAttribute("aria-checked")).toBe("true");
+    expect(html.style.getPropertyValue("--glass-blur")).toBe("2.5px");
+    expect(html.style.getPropertyValue("--glass-glint")).toBe("0.8");
+    expect(html.style.getPropertyValue("--glass-splay")).toBe("12");
+    expect(html.style.getPropertyValue("--glass-chroma")).toBe("0.1");
+  });
 
+  it("applies a preset in one step and marks it selected", async () => {
+    const container = await mount(<LiquidGlassSettings />);
+    expect(radio(container, "Glass preset", "simple").checked).toBe(true);
+
+    await act(async () => radio(container, "Glass preset", "frosted").click());
+
+    expect(radio(container, "Glass preset", "frosted").checked).toBe(true);
+    expect(html.style.getPropertyValue("--glass-depth")).toBe("120");
+    expect(html.style.getPropertyValue("--glass-blur")).toBe("5px");
+    expect(sliderFor(container, "Splay").value).toBe("16");
     const config = await settleSave();
-    expect(config?.glassTuning.variant).toBe("clear");
-    expect(config?.glassTuning.accentTint).toBe(true);
+    expect(config?.glassTuning).toMatchObject({
+      depth: 120,
+      splay: 16,
+      feather: 26,
+      curve: 2.6,
+      blur: 5,
+      glint: 20,
+    });
+  });
+
+  it("the orange plexiglass preset turns the tint on and the primary follows it", async () => {
+    const container = await mount(<LiquidGlassSettings />);
+    expect(html.hasAttribute("data-glass-tint")).toBe(false);
+
+    await act(async () => radio(container, "Glass preset", "plexi").click());
+
+    expect(html.getAttribute("data-glass-tint")).toBe("on");
+    expect(html.style.getPropertyValue("--glass-tint-c")).toBe("#ff6600");
+    expect(html.style.getPropertyValue("--light-primary")).toMatch(/^oklch/);
+    expect(sliderForColor(container).value).toBe("#ff6600");
+  });
+
+  it("deselects the presets once a slider moves off one", async () => {
+    const container = await mount(<LiquidGlassSettings />);
+    await act(async () => radio(container, "Glass preset", "thick").click());
+    await act(async () => setInputValue(sliderFor(container, "Depth"), "100"));
+    for (const id of ["simple", "thick", "frosted", "cut", "plexi"]) {
+      expect(radio(container, "Glass preset", id).checked).toBe(false);
+    }
+  });
+
+  it("takes the tint colour from the colour input", async () => {
+    const container = await mount(<LiquidGlassSettings />);
+    await act(async () => setInputValue(sliderFor(container, "Tint"), "0.5"));
+    await act(async () => setInputValue(sliderForColor(container), "#2563eb"));
+    expect(html.style.getPropertyValue("--glass-tint-c")).toBe("#2563eb");
+    const config = await settleSave();
+    expect(config?.glassTuning.tintColor).toBe("#2563eb");
+    expect(config?.glassTuning.tint).toBe(0.5);
   });
 
   it("dims the tuning controls while the glass level is solid", async () => {
@@ -208,41 +244,35 @@ describe("liquid glass tuning", () => {
     expect(container.querySelector("fieldset")?.disabled).toBe(true);
   });
 
-  it("reset glass restores the tuning and ambient defaults", async () => {
+  it("reset glass restores the tuning defaults", async () => {
     const container = await mount(<LiquidGlassSettings />);
-    await act(async () => setInputValue(sliderFor(container, "Blur"), "12"));
-    await act(async () => radio(container, "Glass variant", "tinted").click());
+    expect(buttonNamed(container, "Reset glass").disabled).toBe(true);
+    await act(async () => radio(container, "Glass preset", "plexi").click());
     expect(buttonNamed(container, "Reset glass").disabled).toBe(false);
 
     await act(async () => buttonNamed(container, "Reset glass").click());
 
     expect(html.style.getPropertyValue("--glass-blur")).toBe("");
-    expect(html.getAttribute("data-glass-variant")).toBeNull();
-    expect(sliderFor(container, "Blur").value).toBe("3");
-    expect(radio(container, "Glass variant", "regular").checked).toBe(true);
+    expect(html.hasAttribute("data-glass-tint")).toBe(false);
+    expect(sliderFor(container, "Depth").value).toBe("60");
+    expect(radio(container, "Glass preset", "simple").checked).toBe(true);
     expect(buttonNamed(container, "Reset glass").disabled).toBe(true);
   });
 
-  it("toggles the ambient background", async () => {
-    const container = await mount(<LiquidGlassSettings />);
-    const ambient = switchFor(container, "Ambient background");
-    expect(ambient.getAttribute("aria-checked")).toBe("true");
-
-    await act(async () => ambient.click());
-
-    expect(html.getAttribute("data-ambient")).toBe("off");
+  it("no longer offers an accent colour or an ambient switch", async () => {
+    const container = await mount(<AppearanceSettings />);
+    expect(container.textContent).not.toContain("Accent");
+    expect(container.textContent).not.toContain("Ambient");
   });
 
   it("page reset restores the glass tuning with everything else", async () => {
     const container = await mount(<AppearanceSettings />);
-    await act(async () =>
-      setInputValue(sliderFor(container, "Refraction"), "40"),
-    );
-    expect(html.style.getPropertyValue("--glass-refraction")).toBe("40");
+    await act(async () => setInputValue(sliderFor(container, "Depth"), "100"));
+    expect(html.style.getPropertyValue("--glass-depth")).toBe("100");
 
     await act(async () => buttonNamed(container, "Reset to defaults").click());
 
-    expect(html.style.getPropertyValue("--glass-refraction")).toBe("");
-    expect(sliderFor(container, "Refraction").value).toBe("30");
+    expect(html.style.getPropertyValue("--glass-depth")).toBe("");
+    expect(sliderFor(container, "Depth").value).toBe("60");
   });
 });
