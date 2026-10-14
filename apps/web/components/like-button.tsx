@@ -96,6 +96,7 @@ export function LikeButton(props: LikeButtonProps) {
     favourites?.artists.includes(token) ||
     favourites?.podcasts.includes(token);
 
+  const [popping, setPopping] = React.useState(false);
   const [optimisticLike, setOptimisticLike] = React.useOptimistic(
     isFavorite ?? false,
     (isLiked) => !isLiked,
@@ -116,6 +117,8 @@ export function LikeButton(props: LikeButtonProps) {
 
       return;
     }
+
+    if (!optimisticLike) setPopping(true);
 
     React.startTransition(async () => {
       setOptimisticLike(true);
@@ -169,7 +172,9 @@ export function LikeButton(props: LikeButtonProps) {
           className={cn(
             "size-4.5 transition-transform duration-fast ease-out active:scale-96",
             optimisticLike && "fill-primary text-primary",
+            popping && optimisticLike && "motion-pop",
           )}
+          onAnimationEnd={() => setPopping(false)}
         />
       </TooltipTrigger>
 

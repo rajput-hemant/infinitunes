@@ -10,6 +10,7 @@ import { controlStyles } from "~/lib/control-styles";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { cn } from "~/lib/utils";
+import { MORPH_CLASS, morphName } from "~/lib/view-transition";
 
 import { DownloadButton } from "../download-button";
 import { GlassSurface } from "../glass/glass-surface";
@@ -77,6 +78,10 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
   return (
     <DetailsHeaderFrame title={title} className={detailBandClassName}>
       <div
+        style={{
+          viewTransitionName: morphName(kind, playToken),
+          viewTransitionClass: MORPH_CLASS,
+        }}
         className={cn(
           "relative aspect-square w-[min(60vw,14rem)] shrink-0 overflow-hidden rounded-md shadow-md md:w-36 lg:w-44 min-[90rem]:w-56",
           isRound && "rounded-full",
