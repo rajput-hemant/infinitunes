@@ -31,6 +31,9 @@
   /* The body of the glass: a light fill that keeps text legible. Size classes add to it. */
   --g-base: 0.18;
   --g-fill-c: #fff;
+  /* Overlay material tokens: every large floating pane (mega menu, menus, popovers, dialogs, palette, sheets, l surfaces). */
+  --ov-blur: 20px; /* total backdrop blur, in the same backdrop-filter list as the rim lens */
+  --ov-alpha: 0.76; /* neutral fill alpha */
   --g-blur0: 2px; /* base blur, multiplied per size class */
   --g-sh-k: 1; /* shadow weight, heavier in dark */
   --g-art-l: 0.5; /* luminance of the artwork behind a clear surface, set by sampleBehind */
@@ -51,6 +54,7 @@
   --g-on-accent: var(--primary-foreground);
 }
 .dark {
+  --ov-alpha: 0.66;
   --g-base: 0.28;
   --g-fill-c: #1e1e22;
   --g-sh-k: 2;
@@ -262,6 +266,24 @@ html
   --g-k: 2;
   --g-a-add: 0.32;
   --g-drop: 0 24px 56px -16px rgb(0 0 0 / calc(0.26 * var(--g-sh-k)));
+}
+/* Overlay material: a thicker pane than the navigation chrome (toolbar, player, hero stay on the lighter m and s
+   materials), so the page behind reads as diffused colour. One token set (--ov-blur, --ov-alpha, top of file);
+   the extra :root keeps this ahead of the base surface rule's specificity. */
+html:root
+  :is(
+    [data-glass-size="l"],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"]
+  ) {
+  --g-a: var(--ov-alpha);
+  --g-blur: var(--ov-blur);
 }
 html [data-glass-size="xl"] {
   --g-k: 3.5;

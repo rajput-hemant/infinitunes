@@ -54,6 +54,20 @@ describe("glass.css tuning defaults", () => {
     expect(declared("tint-c")).toBe(DEFAULT_GLASS_TUNING.tintColor);
   });
 
+  test("overlays share one thicker material: strong blur, dense neutral fill", () => {
+    const blur = Number(/--ov-blur:\s*(\d+)px/.exec(rootBlock)?.[1]);
+    const alpha = Number(/--ov-alpha:\s*([\d.]+)/.exec(rootBlock)?.[1]);
+    const darkAlpha = Number(
+      /\.dark \{[^}]*--ov-alpha:\s*([\d.]+)/.exec(glassCss)?.[1],
+    );
+    expect(blur).toBeGreaterThanOrEqual(16);
+    expect(blur).toBeLessThanOrEqual(24);
+    expect(alpha).toBeGreaterThanOrEqual(0.72);
+    expect(alpha).toBeLessThanOrEqual(0.8);
+    expect(darkAlpha).toBeGreaterThanOrEqual(0.6);
+    expect(darkAlpha).toBeLessThanOrEqual(0.7);
+  });
+
   test("is neutral: the pink, indigo and sky blobs are gone", () => {
     expect(glassCss).not.toMatch(/#(?:f472b6|818cf8|38bdf8)/i);
     expect(glassCss).not.toContain("--g-blob");
