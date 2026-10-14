@@ -65,7 +65,10 @@ mock.module("next/server", () => ({
       status: init?.status ?? 200,
       headers: new Headers(init?.headers),
     }),
-    redirect: (url: URL) => ({ status: 307, headers: { location: url.href } }),
+    redirect: (url: URL, status = 307) => ({
+      status,
+      headers: { location: url.href },
+    }),
   },
 }));
 
@@ -211,6 +214,58 @@ describe("proxy detail route normalization", () => {
   it("leaves /playlist/<name>/<token> alone", async () => {
     const res = await proxy(
       createNextRequest("http://localhost:3000/playlist/foo/bar"),
+    );
+
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("proxy legacy artist tab URLs", () => {
+  let proxy: typeof import("../../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../../proxy"));
+  });
+
+  const location = (res: unknown) =>
+    (res as { headers: { location: string } }).headers.location;
+
+  it("moves a name-suffix URL permanently onto its tab route", async () => {
+    const res = await proxy(
+      createNextRequest(
+        "http://localhost:3000/artist/himesh-reshammiya-bio/tok_",
+      ),
+    );
+
+    expect(res.status).toBe(308);
+    expect(location(res)).toBe(
+      "http://localhost:3000/artist/himesh-reshammiya/tok_/bio",
+    );
+  });
+
+  it("keeps the query string", async () => {
+    const res = await proxy(
+      createNextRequest("http://localhost:3000/artist/x-songs/tok_?cat=latest"),
+    );
+
+    expect(location(res)).toBe(
+      "http://localhost:3000/artist/x/tok_/songs?cat=latest",
+    );
+  });
+
+  it("serves the current URLs without a redirect", async () => {
+    for (const path of ["/artist/x/tok_", "/artist/x/tok_/albums"]) {
+      const res = await proxy(
+        createNextRequest(`http://localhost:3000${path}`),
+      );
+      expect(res.status).toBe(200);
+    }
+  });
+
+  it("does not redirect a non-GET request", async () => {
+    const res = await proxy(
+      createNextRequest("http://localhost:3000/artist/x-songs/tok_", "POST"),
     );
 
     expect(res.status).toBe(200);

@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+
 import { languages } from "~/config/languages";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
@@ -6,7 +8,11 @@ import { asRoute, getHref } from "~/lib/utils";
 
 import { BrowseTile } from "./_components/browse-tile";
 import { CatalogHeader } from "./_components/catalog-header";
+import { CategoryTilesSkeleton } from "./_components/catalog-skeleton";
 import { tileColor, tileGradient } from "./_components/tile-palette";
+
+const tileGridClassName =
+  "grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))]";
 
 const title = `Browse Albums, Charts, Playlists and Podcasts on ${siteConfig.name}`;
 const description = `Explore top albums, charts, playlists, podcasts, artists and radio stations by language on ${siteConfig.name}.`;
@@ -18,7 +24,8 @@ export const metadata = pageMetadata({
   alt: "Browse",
 });
 
-export default async function BrowsePage() {
+/** The category tiles show artwork from seven catalog lists, all cached. */
+async function CategoryTiles() {
   const [home, topAlbums, charts, playlists, shows, artists, stations] =
     await Promise.all([
       api.home.home({}),
@@ -68,30 +75,38 @@ export default async function BrowsePage() {
   ];
 
   return (
+    <div className={tileGridClassName}>
+      {categories.map((category, k) => (
+        <BrowseTile
+          key={category.label}
+          href={category.href}
+          title={category.label}
+          image={category.image}
+          background={tileColor(k)}
+        />
+      ))}
+    </div>
+  );
+}
+
+export default function BrowsePage() {
+  return (
     <div>
       <CatalogHeader
         title="Browse"
         subtitle="Explore by category, language or mood."
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))]">
-        {categories.map((category, k) => (
-          <BrowseTile
-            key={category.label}
-            href={category.href}
-            title={category.label}
-            image={category.image}
-            background={tileColor(k)}
-          />
-        ))}
-      </div>
+      <Suspense fallback={<CategoryTilesSkeleton />}>
+        <CategoryTiles />
+      </Suspense>
 
       <section className="mt-8 space-y-3">
         <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
           Languages
         </h2>
 
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))]">
+        <div className={tileGridClassName}>
           {languages.map((language, k) => (
             <BrowseTile
               key={language}

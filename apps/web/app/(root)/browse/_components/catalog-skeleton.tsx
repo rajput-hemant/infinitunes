@@ -43,3 +43,16 @@ export function CatalogGridSkeleton(props: CatalogGridSkeletonProps) {
     </CatalogGrid>
   );
 }
+
+const CATEGORY_TILE_COUNT = 8;
+
+/** The Browse category tiles (`h-24`), same grid as the real ones. */
+export function CategoryTilesSkeleton() {
+  return (
+    <div className="grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(10rem,1fr))]">
+      {Array.from({ length: CATEGORY_TILE_COUNT }).map((_, i) => (
+        <Skeleton key={i} className="h-24 rounded-md" />
+      ))}
+    </div>
+  );
+}

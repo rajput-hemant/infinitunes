@@ -33,7 +33,7 @@ mock.module("../../components/song-list/song-list.client", () => ({
 }));
 
 const { SearchResults } =
-  await import("../../app/(root)/search/[type]/[query]/_components/search-results");
+  await import("../../app/(root)/search/(results)/[type]/[query]/_components/search-results");
 
 const roots: Root[] = [];
 

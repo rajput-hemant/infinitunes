@@ -11,16 +11,8 @@ mock.module("next/navigation", () => ({
     throw new Error("NEXT_REDIRECT");
   },
 }));
-mock.module("../../app/(auth)/_components/login-form", () => ({
-  LoginForm: () => null,
-}));
-mock.module("../../app/(auth)/_components/reset-password-form", () => ({
-  ResetPasswordForm: () => null,
-}));
-
-const { default: LoginPage } = await import("../../app/(auth)/login/page");
-const { default: ResetPasswordPage } =
-  await import("../../app/(auth)/reset-password/page");
+const { SignedInRedirect } =
+  await import("../../app/(auth)/_components/signed-in-redirect");
 
 beforeEach(() => {
   user = undefined;
@@ -28,29 +20,29 @@ beforeEach(() => {
 });
 
 describe("signed-in users on auth pages", () => {
-  it("are redirected home from the login page", async () => {
+  it("are redirected home from a page without search params (login, signup)", async () => {
     user = { id: "u1" };
-    await expect(LoginPage()).rejects.toThrow("NEXT_REDIRECT");
+    await expect(SignedInRedirect({})).rejects.toThrow("NEXT_REDIRECT");
     expect(redirected).toEqual(["/"]);
   });
 
   it("may open an emailed reset link", async () => {
     user = { id: "u1" };
-    await ResetPasswordPage({ searchParams: Promise.resolve({ token: "t" }) });
+    await SignedInRedirect({ searchParams: Promise.resolve({ token: "t" }) });
     expect(redirected).toEqual([]);
   });
 
   it("are redirected from /reset-password without a token", async () => {
     user = { id: "u1" };
     await expect(
-      ResetPasswordPage({ searchParams: Promise.resolve({}) }),
+      SignedInRedirect({ searchParams: Promise.resolve({}) }),
     ).rejects.toThrow("NEXT_REDIRECT");
     expect(redirected).toEqual(["/"]);
   });
 
   it("signed-out visitors are never redirected", async () => {
-    await LoginPage();
-    await ResetPasswordPage({ searchParams: Promise.resolve({}) });
+    await SignedInRedirect({});
+    await SignedInRedirect({ searchParams: Promise.resolve({}) });
     expect(redirected).toEqual([]);
   });
 });

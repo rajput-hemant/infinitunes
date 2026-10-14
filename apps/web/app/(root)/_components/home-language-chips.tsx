@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { chipClass } from "~/components/language-bar";
+import { chipClass } from "~/components/language-chip";
 import { languages } from "~/config/languages";
 import { asRoute } from "~/lib/utils";
 

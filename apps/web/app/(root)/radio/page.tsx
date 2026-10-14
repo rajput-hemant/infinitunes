@@ -1,6 +1,8 @@
 import type { Lang } from "@infinitunes/types";
 
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
+import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
+import { KeyedByParams } from "~/components/search-params-boundary";
 import { pageMetadata } from "~/lib/metadata";
 import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
@@ -25,8 +27,8 @@ type RadioPageProps = {
   }>;
 };
 
-export default async function RadioPage(props: RadioPageProps) {
-  const { page, lang } = await props.searchParams;
+async function StationsGrid({ searchParams }: RadioPageProps) {
+  const { page, lang } = await searchParams;
 
   const radioStations = await api.get.featuredStations({
     page: parsePageParam(page),
@@ -35,17 +37,28 @@ export default async function RadioPage(props: RadioPageProps) {
   });
 
   return (
+    <FeaturedStations
+      key={radioStations[0]?.id ?? "stations"}
+      initialStations={radioStations}
+      lang={lang}
+    />
+  );
+}
+
+export default function RadioPage({ searchParams }: RadioPageProps) {
+  return (
     <div>
       <CatalogHeader
         title="Radio"
         subtitle="Endless stations for every mood."
       />
 
-      <FeaturedStations
-        key={radioStations[0]?.id ?? "stations"}
-        initialStations={radioStations}
-        lang={lang}
-      />
+      <KeyedByParams
+        params={["lang", "page"]}
+        fallback={<CatalogGridSkeleton rounded />}
+      >
+        <StationsGrid searchParams={searchParams} />
+      </KeyedByParams>
     </div>
   );
 }

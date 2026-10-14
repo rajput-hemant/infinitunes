@@ -6,7 +6,7 @@
 
 - Home (`/`) with language bar and sliders; language picker in the header (`components/site-header/language-picker.tsx`).
 - Index pages: `/album`, `/artist`, `/chart`, `/playlist`, `/show`, `/radio` (sidebar titles: Top Albums, Top Charts, Top Playlists, Podcasts, Top Artists, Radio).
-- Entity pages: album, artist (tabs and category filter), playlist, mix, label, song, episode, show season, radio station.
+- Entity pages: album, artist (tabs are child routes: `/artist/<name>/<token>`, `/songs`, `/albums`, `/bio`; switching keeps the header and tab row mounted and only the panel shows a skeleton; old `<name>-songs` URLs 308-redirect; category filter is `?cat=`), playlist, mix, label, song, episode, show season, radio station.
 - Loading skeletons per route (`loading.tsx`), `error.tsx` and `not-found.tsx`.
 - Data comes from the live JioSaavn API through tRPC routers in `packages/trpc/src/router`.
 

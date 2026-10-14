@@ -9,7 +9,7 @@ describe("root shell layout", () => {
     const layout = await Bun.file(ROOT_LAYOUT).text();
     const order = [
       "<AppSidebarProvider",
-      "<Sidebar user=",
+      "<ViewerSidebar",
       "<Navbar />",
       "<SidebarInset",
     ].map((marker) => layout.indexOf(marker));
@@ -23,18 +23,22 @@ describe("root shell layout", () => {
     const layout = await Bun.file(ROOT_LAYOUT).text();
 
     expect(layout.indexOf("<AppSidebarProvider")).toBeLessThan(
-      layout.indexOf("<MobileNav"),
+      layout.indexOf("<ViewerMobileNav"),
     );
-    expect(layout.indexOf("<MobileNav")).toBeLessThan(
+    expect(layout.indexOf("<ViewerMobileNav")).toBeLessThan(
       layout.indexOf("</AppSidebarProvider>"),
     );
   });
 
-  it("restores the persisted sidebar state on the server", async () => {
+  it("reads no request data in its body, so the chrome prerenders", async () => {
     const layout = await Bun.file(ROOT_LAYOUT).text();
 
-    expect(layout).toContain('cookieStore.get("sidebar_state")');
-    expect(layout).toContain("<AppSidebarProvider defaultOpen={sidebarOpen}>");
+    expect(layout).not.toContain("cookies(");
+    expect(layout).not.toContain("headers(");
+    expect(layout).not.toMatch(/\bawait\b/);
+    expect(layout).not.toContain("instant");
+    // The visitor is a promise handed to islands, never awaited here.
+    expect(layout).toContain("<ViewerProvider viewer={getViewer()}>");
   });
 
   it("sizes the sidebar from the token and the collapsed rail from one value", async () => {

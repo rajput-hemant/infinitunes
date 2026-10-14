@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { useParams } from "next/navigation";
+import { Suspense } from "react";
 
 import {
   SearchRowSkeleton,
@@ -16,7 +17,7 @@ import { SliderCardSkeleton } from "~/components/slider/slider-card-skeleton";
 import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
 import { cn } from "~/lib/utils";
 
-import { navItems } from "./_components/search-navbar";
+import { navItems } from "./search-navbar";
 
 const GRID_CARD_COUNT = 24;
 
@@ -43,12 +44,44 @@ function AllResultsSkeleton() {
   );
 }
 
-/** Mirrors the results page: title, filter chips, then the tab's own results layout. */
-export default function SearchResultsLoading() {
-  const { type } = useParams<{ type?: string }>();
+function ResultsOfType({ type }: { type?: string }) {
+  if (type === "all") return <AllResultsSkeleton />;
+  if (type === "song") return <SongListSkeleton length={12} />;
 
   return (
-    <div className="mb-4 space-y-6" aria-busy="true">
+    <div className={searchUi.grid}>
+      {Array.from({ length: GRID_CARD_COUNT }).map((_, i) => (
+        <SliderCardSkeleton key={i} rounded={type === "artist"} />
+      ))}
+    </div>
+  );
+}
+
+function ResultsOfRouteType() {
+  const { type } = useParams<{ type?: string }>();
+
+  return <ResultsOfType type={type} />;
+}
+
+/**
+ * The results area for the route's tab. `useParams` is request data while the
+ * route prerenders, so the tab-specific shape sits in its own boundary with the
+ * grid shape (the most common) as the shell.
+ */
+export function SearchResultsSkeleton() {
+  return (
+    <div aria-busy="true">
+      <Suspense fallback={<ResultsOfType />}>
+        <ResultsOfRouteType />
+      </Suspense>
+    </div>
+  );
+}
+
+/** Title line and filter chips, which the layout shows until the route's params are known. */
+export function SearchResultsHeaderSkeleton() {
+  return (
+    <>
       <header className="pt-2">
         <Skeleton className="h-8 w-64 max-w-full md:h-10" />
       </header>
@@ -66,18 +99,6 @@ export default function SearchResultsLoading() {
           ))}
         </div>
       </nav>
-
-      {type === "all" ? (
-        <AllResultsSkeleton />
-      ) : type === "song" ? (
-        <SongListSkeleton length={12} />
-      ) : (
-        <div className={searchUi.grid}>
-          {Array.from({ length: GRID_CARD_COUNT }).map((_, i) => (
-            <SliderCardSkeleton key={i} rounded={type === "artist"} />
-          ))}
-        </div>
-      )}
-    </div>
+    </>
   );
 }

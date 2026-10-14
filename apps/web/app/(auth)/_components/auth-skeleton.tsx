@@ -7,7 +7,7 @@ import {
   authPrimaryButtonStyles,
   authSquareButtonStyles,
   authSquareLgButtonStyles,
-} from "./_components/field-styles";
+} from "./field-styles";
 
 /** The control classes carry a `--fill` surface, so the placeholder tone overrides it in both themes. */
 const tone = "bg-muted dark:bg-muted";
@@ -23,24 +23,31 @@ function FieldSkeleton() {
   );
 }
 
-/**
- * Form column only (the layout's artist panel and logo stay on screen): the
- * login layout, the most visited. The intro, passkey and provider buttons, the
- * divider, two fields, the submit button and the footer link.
- */
-export default function AuthLoading() {
-  return (
-    <div className="grid gap-4" aria-busy="true">
-      <div>
-        <Skeleton className="h-8 w-48" />
-        <div className="mt-1 flex h-5 items-center">
-          <Skeleton className="h-3.5 w-64 max-w-full" />
-        </div>
-      </div>
+type AuthFormSkeletonProps = {
+  /** Input fields above the submit button. */
+  fields: number;
+  /** The passkey button above the provider buttons (login only). */
+  passkey?: boolean;
+  /** The provider buttons and the divider under them. */
+  social?: boolean;
+};
 
-      <div className="flex flex-col gap-4">
+/**
+ * Stands in for a form that reads the query string (`useSearchParams`) until
+ * the request is known. The intro and footer links around it are static copy.
+ */
+export function AuthFormSkeleton({
+  fields,
+  passkey = false,
+  social = true,
+}: AuthFormSkeletonProps) {
+  return (
+    <div className="flex flex-col gap-4" aria-busy="true">
+      {social && (
         <div className="order-1 grid gap-4">
-          <Skeleton className={cn(authSquareLgButtonStyles, tone)} />
+          {passkey && (
+            <Skeleton className={cn(authSquareLgButtonStyles, tone)} />
+          )}
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-2">
@@ -53,17 +60,14 @@ export default function AuthLoading() {
             </div>
           </div>
         </div>
+      )}
 
-        <div className="order-2 grid gap-4">
-          <FieldSkeleton />
-          <FieldSkeleton />
+      <div className="order-2 grid gap-4">
+        {Array.from({ length: fields }, (_, i) => (
+          <FieldSkeleton key={i} />
+        ))}
 
-          <Skeleton className={cn(authPrimaryButtonStyles, tone)} />
-        </div>
-      </div>
-
-      <div className="flex h-4 items-center justify-center">
-        <Skeleton className="h-2.5 w-44" />
+        <Skeleton className={cn(authPrimaryButtonStyles, tone)} />
       </div>
     </div>
   );
