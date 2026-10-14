@@ -103,7 +103,7 @@ function ShelfArrow(props: ShelfArrowProps) {
       }
       className={cn(
         controlStyles.headerIcon,
-        "absolute top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full text-foreground pointer-fine:flex disabled:invisible [&_svg]:size-4",
+        "absolute top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center text-foreground pointer-fine:flex disabled:invisible",
         className,
       )}
     >

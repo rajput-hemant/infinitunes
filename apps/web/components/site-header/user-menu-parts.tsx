@@ -49,7 +49,7 @@ export function linksFor(user: UserMenuUser | undefined) {
 
 export const userMenuTriggerClassName = cn(
   controlStyles.headerIcon,
-  "flex items-center justify-center rounded-full",
+  "flex items-center justify-center",
 );
 
 export function UserMenuTriggerAvatar({ user }: { user?: UserMenuUser }) {

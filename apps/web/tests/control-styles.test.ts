@@ -22,6 +22,10 @@ function variable(name: string, scope: "fine" | "coarse") {
 
 /** Visual size in px of a control's classes on the given pointer, from the shipped stylesheet. */
 function sizeOf(classes: string, scope: "fine" | "coarse") {
+  const coarse =
+    scope === "coarse" &&
+    /(?:^|\s)pointer-coarse:size-\(--([\w-]+)\)(?=\s|$)/.exec(classes);
+  if (coarse) return variable(coarse[1], scope);
   const size = /(?:^|\s)(?:size|h)-(?:\(--([\w-]+)\)|(\d+))(?=\s|$)/.exec(
     classes,
   );
@@ -43,6 +47,7 @@ const contract = {
   rowIcon: { fine: 32, coarse: 40, tap: 44 },
   hero: { fine: 36, coarse: 44, tap: 44 },
   heroIcon: { fine: 36, coarse: 44, tap: 44 },
+  cardPlay: { fine: 36, coarse: 40, tap: 44 },
   transport: { fine: 32, coarse: 40, tap: 44 },
   transportPlayMini: { fine: 40, coarse: 40, tap: 44 },
   transportPlay: { fine: 56, coarse: 56, tap: 56 },
@@ -112,6 +117,7 @@ describe("controlStyles", () => {
       "rowIcon",
       "transport",
       "transportPlayMini",
+      "cardPlay",
     ] as const) {
       expect(
         hitSizeOf(controlStyles[role], "coarse"),
