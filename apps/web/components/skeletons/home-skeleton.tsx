@@ -9,6 +9,7 @@ import { SliderCardSkeleton } from "./slider-card-skeleton";
 
 const CHIP_COUNT = 11;
 const QUICK_PICK_COUNT = 8;
+const HERO_TILE_COUNT = 4;
 const SHELF_COUNT = 3;
 const SHELF_CARD_COUNT = 20;
 
@@ -37,7 +38,16 @@ export function HomeSkeleton() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-        <Skeleton className="min-h-60 rounded-lg md:min-h-64 xl:min-h-72" />
+        <div className="grid grid-cols-2 content-start gap-2 md:grid-cols-4 md:gap-3">
+          <Skeleton className="col-span-2 aspect-square rounded-lg md:row-span-2 md:aspect-auto" />
+
+          {Array.from({ length: HERO_TILE_COUNT }).map((_, i) => (
+            <Skeleton
+              key={i}
+              className="aspect-square rounded-md max-md:nth-[n+4]:hidden"
+            />
+          ))}
+        </div>
 
         <div>
           <Skeleton className="mb-3 h-7 w-28" />

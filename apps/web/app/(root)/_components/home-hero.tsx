@@ -64,47 +64,41 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
           className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-black/45 via-transparent to-transparent"
         />
 
-        {/* The caption is glass over the artwork: its rim bends the cover behind it, the text stays crisp. */}
+        {/* Compact glass strip anchored to the bottom: the faces above it stay visible. */}
         <GlassSurface
           variant="clear"
           size="m"
           preset="thick"
-          className="absolute inset-x-2 bottom-2 grid gap-1.5 rounded-md px-3 py-3 md:inset-x-3 md:bottom-3 md:px-4"
+          className="absolute inset-x-3 bottom-3 flex items-center gap-3 rounded-md py-2 pr-2 pl-3"
         >
-          <p className="text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] uppercase opacity-80">
-            Featured playlist
-          </p>
-
-          <h2 className="line-clamp-2 font-heading text-lg leading-6 font-bold tracking-[-0.02em] md:text-xl md:leading-7">
-            <Link
-              href={href}
-              className="outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              {title}
-            </Link>
-          </h2>
-
-          {playlist.subtitle && (
-            <p className="line-clamp-1 hidden text-sm leading-5 opacity-80 xl:block">
-              {decode(playlist.subtitle)}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[0.625rem] leading-3.5 font-semibold tracking-[0.06em] uppercase opacity-80">
+              Featured playlist
             </p>
-          )}
 
-          <div className="mt-0.5 flex flex-wrap items-center gap-2">
-            <PlayButton
-              aria-label={`Play ${title}`}
-              type="playlist"
-              token={parseToken(playlist.perma_url)}
-              className={cn(
-                buttonVariants(),
-                controlStyles.hero,
-                "text-sm font-semibold",
-              )}
-            >
-              <Play aria-hidden="true" className="size-4 fill-current" />
-              Play
-            </PlayButton>
+            <h2 className="truncate font-heading text-base leading-6 font-bold tracking-[-0.02em]">
+              <Link
+                href={href}
+                className="outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                {title}
+              </Link>
+            </h2>
           </div>
+
+          <PlayButton
+            aria-label={`Play ${title}`}
+            type="playlist"
+            token={parseToken(playlist.perma_url)}
+            className={cn(
+              buttonVariants(),
+              controlStyles.hero,
+              "shrink-0 text-sm font-semibold",
+            )}
+          >
+            <Play aria-hidden="true" className="size-4 fill-current" />
+            Play
+          </PlayButton>
         </GlassSurface>
       </div>
 
@@ -114,6 +108,8 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
           <Link
             key={key}
             href={tileHref}
+            aria-label={tileTitle}
+            title={tileTitle}
             className="group/tile relative isolate block aspect-square overflow-hidden rounded-md shadow-sm outline-none transition-transform duration-fast hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ring max-md:nth-[n+4]:hidden motion-reduce:transition-none"
           >
             <ImageWithFallback
@@ -125,15 +121,6 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
               alt=""
               className="-z-20 rounded-none object-cover"
             />
-
-            <GlassSurface
-              variant="clear"
-              size="s"
-              preset="thick"
-              className="absolute inset-x-1.5 bottom-1.5 rounded-sm px-2 py-1 text-xs leading-4 font-semibold"
-            >
-              <span className="block truncate">{tileTitle}</span>
-            </GlassSurface>
           </Link>
         ))}
     </div>
