@@ -6,10 +6,38 @@ tested), `apps/web/components/glass/` (DOM) and `apps/web/hooks/`; the styleshee
 
 ## What is mounted for you
 
-`app/layout.tsx` (static, reads no request data) renders once: `GlassFilters` (the hidden SVG filter host),
-`GlassAmbient` (the colour field behind everything) and `GlassRuntime` (client island that runs the engine). You only
-place surfaces. `GlassRuntime` finds every `data-glass` surface and every `packages/ui` popup, attaches the lens, the
-pointer light and the press gel, and tracks capability, level and accessibility settings live.
+`app/layout.tsx` (static, reads no request data) renders once: `GlassFilters` (the hidden SVG filter host) and
+`GlassRuntime` (client island that runs the engine). There is no colour field behind the page: glass refracts the real
+content behind it (artwork, text). You only place surfaces. `GlassRuntime` finds every `data-glass` surface and every
+`packages/ui` popup, attaches the lens and the press gel, and tracks capability, level and accessibility settings live.
+
+## The model
+
+The look is the CodePen "SVG Liquid Glass (feDisplacementMap)" model, delivered as `backdrop-filter: url(#lg-N)` on
+Chromium and as frost (blur, glint, tint) on Safari and Firefox. The CodePen's clone-the-scene trick needs a cloned
+DOM behind every lens and repaints on scroll, which a scrolling app cannot afford.
+
+- **Map** (`lib/glass/engine.ts`): a rounded-rect signed-distance ring. `span = s < 0 ? splay + feather : splay`,
+  `amt = pow(smootherstep(max(0, 1 - |s| / span)), curve)`, `R = 127.5 - nx * amt * 127 * 0.8` (G likewise with ny),
+  B 128, A 255. One quadrant is computed and mirrored with the offsets negated (4-fold symmetry). It is generated only
+  when a shape changes (size, radius, splay, feather, curve, magnify), never on move, and cached with its filter by
+  that key. Every map gets a fresh filter id (`lg-N`), because Safari caches filter output by id.
+- **Filter** (`components/glass/lens-registry.ts`): `feImage` (the map) then `feDisplacementMap` with `scale = depth`,
+  scaled by surface class (`s` 1, `m` .75, `l` .45, `xl` none). With chroma above 0 it becomes the pen's two passes
+  (red at `depth * (1 + chroma)`, green and blue at `depth * (1 - chroma)`); at 0 there are no extra primitives. With
+  the tint on it adds `feFlood`, a multiply `feBlend` and a mix, so the refracted backdrop itself is multiplied by the
+  tint colour. Depth, chroma and the tint values are rewritten in place; a shape change rebuilds the lens.
+- **Paint** (`styles/glass.css`): blur is `blur()` in the same `backdrop-filter` list as the lens. Glint is the pen's
+  inset highlight (`inset 1.5px 1.5px 4px white / .7` and `inset -2px -2px 5px black / .28`) scaled by `glint / 100`
+  (capped at 1). Tint is a `::before` layer in `tintColor` at `tint` opacity with `mix-blend-mode: multiply`; a layer
+  inside the element cannot multiply its own backdrop, so under the lens the filter does that and the layer fades out
+  (`--g-lens-tint`), and the layer is what Safari and Firefox show. The layer only renders while `tint` is above 0
+  (`html[data-glass-tint="on"]`). The outer shadow is soft and subtle. Nothing here carries a hue.
+- **Tuning** (`GlassTuning`, `lib/glass/tuning.ts`): depth 0 to 120 (60), splay 2 to 40 (2), feather 0 to 40 (24),
+  curvature .3 to 3 (2), blur 0 to 5 (0), chromatic 0 to .25 (0), glint 0 to 150 (25), tint 0 to 1 (0), tint colour
+  (`#ffffff`). Presets: Simple, Thick, Frosted, Cut, Orange plexiglass (`GLASS_PRESETS`, the pen's values).
+- **The accent is the tint.** While `tint` is above 0 the primary token derives from `tintColor`
+  (`lib/theme/accent.ts`); at 0 it is neutral.
 
 ## Surfaces
 
@@ -27,21 +55,26 @@ Two ways to make a surface, equivalent:
 ```
 
 `GlassSurface` props: `variant` (`regular|clear|tinted`, default regular), `size` (`s|m|l|xl`, default m), `lens`
-(`on|off`; `xl` is always off), `interactive` (the surface is itself pressable: press gel), `glassRole`, `render`
+(`on|off`; `xl` is always off), `preset` (a `GlassPresetId`: this surface follows that preset's lens, blur, glint and
+tint instead of the page's settings, as `data-glass-preset` plus inline `--glass-*` paint variables), `interactive`
+(the surface is itself pressable: press gel), `glassRole`, `render`
 (an element, Base UI style; this component's props win, class names merge). It forwards `ref` (`HTMLElement`) and any
 native attribute. It never sets `position`, so give it `fixed`, `sticky` or `absolute` yourself; otherwise glass.css
 makes it `relative` (layered, so any utility wins).
 
 | `size` | Use                                             | Blur factor | Lens   |
 | ------ | ----------------------------------------------- | ----------- | ------ |
-| `s`    | tab bar, toolbar groups, search, round buttons  | 1           | strong |
-| `m`    | player, toasts, hero caption                    | 1.75        | medium |
-| `l`    | menus, dialogs, palette, sheets, floating queue | 3           | weak   |
+| `s`    | tab bar, toolbar groups, search, round buttons  | .5          | strong |
+| `m`    | player, toasts, hero caption                    | 1           | medium |
+| `l`    | menus, dialogs, palette, sheets, floating queue | 2           | weak   |
 | `xl`   | full-height sidebar and wide queue pane         | 3.5         | none   |
 
+The blur factor multiplies a 2px base and adds the Blur setting. The size classes also add to a light fill
+(`--g-base` .14 light, .24 dark) so text stays legible: `m` .2 (.26 dark), `l` .32, `xl` .26.
+
 Variants: `regular` adapts to the backdrop; `clear` has almost no tint, a dim layer and white text, only over
-artwork or media; `tinted` is the accent, only for a primary action. Never mix them in one view. The Variant setting
-re-skins `s` and `m` regular surfaces only (`html[data-glass-variant]`). A toolbar over an artwork header puts
+artwork or media (the home hero caption and the shelf arrows); `tinted` is the accent, only for a primary action.
+Never mix them in one view. A toolbar over an artwork header puts
 `data-glass-over-art` on its wrapper (and `data-glass-titled` once the title has scrolled into the bar) and its regular
 glass renders clear.
 
@@ -56,22 +89,22 @@ rules (see Hooks). The rest are metadata for stylesheets and tests.
 
 On `<html>` (written by the theme and the runtime; never write them yourself):
 
-| Attribute                     | Values                                | Meaning                                                                                                                                           |
-| ----------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `data-glass-level`            | `liquid` (default), `subtle`, `solid` | the Glass level setting; `solid` is opaque with no filter                                                                                         |
-| `data-glass-variant`          | `clear`, `tinted` (absent = regular)  | the Variant setting                                                                                                                               |
-| `data-glass-accent-tint`      | `true`, `false`                       | tint follows the accent                                                                                                                           |
-| `data-glass-engine`           | `lens`, `frost`                       | set by `GlassRuntime`: `lens` only when the browser can refract, the level is not solid, and neither reduced transparency nor more contrast is on |
-| `data-motion`, `data-ambient` | `reduced`/`full`, `on`/`off`          | in-app reduce motion, ambient field                                                                                                               |
-| `data-tab-min`                | `true`                                | phone tab bar minimized (set by `useTabBarMinimize`)                                                                                              |
+| Attribute           | Values                                | Meaning                                                                                                                                           |
+| ------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `data-glass-level`  | `liquid` (default), `subtle`, `solid` | the Glass level setting; `solid` is opaque with no filter                                                                                         |
+| `data-glass-tint`   | `on` (absent = tint 0)                | the glass tint layer is on                                                                                                                        |
+| `data-glass-engine` | `lens`, `frost`                       | set by `GlassRuntime`: `lens` only when the browser can refract, the level is not solid, and neither reduced transparency nor more contrast is on |
+| `data-motion`       | `reduced`, `full`                     | in-app reduce motion                                                                                                                              |
+| `data-tab-min`      | `true`                                | phone tab bar minimized (set by `useTabBarMinimize`)                                                                                              |
 
 `data-glass` is only meaningful together with `data-glass-size`. The old html `data-glass` was renamed
 `data-glass-level` (decision D6) because it matched the document as a surface.
 
-Tuning variables (inline on `<html>` when the user changes them): `--glass-tint`, `--glass-blur`, `--glass-refraction`,
-`--glass-sat`, `--glass-spec`, `--glass-shadow`, `--ambient`. The Subtle level presets them to the mockup values
-(tint .62, blur 8, refraction 8, sat 1.4, spec .6, shadow .8, ambient .4); user overrides still win. Set per element
-by the engine: `--g-lens-url`, `--g-light`, `--g-press`, `--g-px`, `--g-py`, `--g-art-l`.
+Tuning variables (inline on `<html>` when the user changes them): `--glass-depth`, `--glass-splay`, `--glass-feather`,
+`--glass-curve`, `--glass-chroma` (read by `GlassRuntime`, not by CSS), `--glass-blur`, `--glass-glint` (glint / 100),
+`--glass-tint`, `--glass-tint-c`. The Subtle level denses the fill (.62) and sets depth 20, blur 6px and glint .15; user
+overrides still win. Set per element by the engine: `--g-lens-url`, `--g-lens-tint`, `--g-press`, `--g-px`, `--g-py`,
+`--g-art-l` (the artwork under a clear surface).
 
 Inside any glass surface the app tokens are remapped for the subtree: `--foreground` follows the surface text,
 `--muted-foreground` is the heavier 88 percent (94 dark) secondary text, and `--muted` and `--accent` become a
@@ -127,42 +160,31 @@ that scrolls its own content (a long menu) scrolls the rim with it.
   droplet while pressed, and supports drag with rubber band and fling projection. A drag release clicks the picked item
   (or calls `onPick`). Put `data-glass` on the host for the tab bar; leave it plain for a segmented control (it gets a
   raised thumb).
-- `useGlassArtwork(url)` (`~/hooks/use-glass-artwork`): the player calls it once with the current track artwork URL
-  (the 500px one; the CDN sends CORS headers) or `null`. The ambient field shows it and an 8x8 sample sets
-  `--g-art-l`, `--g-art` and `--g-blob-1..3` (adaptive tint). Pure sampling math: `lib/glass/artwork.ts`.
 - `lib/glass/spring.ts`: `spring`, `project`, `rubber` for your own physical motion; honour `prefersReducedMotion()`.
-
-## Ambient field
-
-`GlassAmbient` paints the blurred artwork and three gradient blobs behind everything; glass is invisible over a flat
-page without it. Default `--ambient` is the mockup's 0.62 in both schemes (it was 0.22 and 0.32 in `globals.css`):
-legibility does not depend on it because text surfaces carry their own tint floor and backdrop contrast (below). Layouts
-that paint an opaque page background hide it, so shell and page wrappers must be transparent over `body`.
 
 ## Fallbacks and accessibility
 
-| Condition                                         | Result                                                                                                                                                       |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Safari, Firefox, `?lens=0`, no SVG host           | frosted: tint, blur, saturate, brightness, rim, shadow, press glow (`data-glass-engine="frost"`)                                                             |
-| `?lens=1`                                         | skips only the Chromium check                                                                                                                                |
-| `data-glass-level="solid"`                        | opaque `--popover`, no backdrop filter, no lens                                                                                                              |
-| `prefers-reduced-transparency`                    | lens off, tint .86, clear dim .62, ambient halved                                                                                                            |
-| `prefers-contrast: more`                          | opaque surface, no rim, 1.5px text border, no filter                                                                                                         |
-| Solid level, `prefers-contrast: more`             | always win over the clear and tinted variants (Variant setting, `data-glass-over-art`): the variant rules are excluded under them, a test checks the cascade |
-| `forced-colors: active`                           | `Canvas` and `CanvasText`, 1px outline, no rim, no ambient                                                                                                   |
-| `prefers-reduced-motion`, `data-motion="reduced"` | no materialize, no spring (values jump), tab bar and player change position without a transition, no device-orientation light                                |
+| Condition                                         | Result                                                                                                                                      |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Safari, Firefox, `?lens=0`, no SVG host           | frosted: fill, blur, glint, tint layer, shadow, press glow (`data-glass-engine="frost"`)                                                    |
+| `?lens=1`                                         | skips only the Chromium check                                                                                                               |
+| `data-glass-level="solid"`                        | opaque `--popover`, no backdrop filter, no lens                                                                                             |
+| `prefers-reduced-transparency`                    | lens off, fill .86, clear dim .62                                                                                                           |
+| `prefers-contrast: more`                          | opaque surface, no tint layer, 1.5px text border, no filter                                                                                 |
+| Solid level, `prefers-contrast: more`             | always win over the clear and tinted variants (`data-glass-over-art`): the variant rules are excluded under them, a test checks the cascade |
+| `forced-colors: active`                           | `Canvas` and `CanvasText`, 1px outline, no tint layer                                                                                       |
+| `prefers-reduced-motion`, `data-motion="reduced"` | no materialize, no spring (values jump), tab bar and player change position without a transition, no device-orientation light               |
 
-The scroll edge (`data-glass-edge`), the lifted selector droplet and the ambient field are deliberately not gated by
-Solid or the contrast modes (the mockup does not either): the edge blurs page content that scrolled under a toolbar, not
-the toolbar's own text, and the droplet's 0.5px blur sits over a surface that is already opaque in those modes. Ambient
-is halved by reduced transparency and hidden by forced colours.
+The scroll edge (`data-glass-edge`) and the lifted selector droplet are deliberately not gated by Solid or the
+contrast modes (the mockup does not either): the edge blurs page content that scrolled under a toolbar, not the
+toolbar's own text, and the droplet's 0.5px blur sits over a surface that is already opaque in those modes.
 
 Contrast holds WCAG AA on text-bearing `m` and `l` surfaces over any backdrop (measured values in `glass-spec.md`);
 `s` icon-led surfaces are guaranteed 3:1. Clear glass is AA only near the sampled brightness.
 
 ## How to verify
 
-1. `bun run test` (pure engine math, capability and override parsing, the lens registry, press, light, selector,
+1. `bun run test` (pure engine math, capability and override parsing, the lens registry, press, selector,
    hooks, CSS coverage), then `bun run type-check`, `lint`, `fmt:check`.
 2. In Chromium: surfaces refract (`<html data-glass-engine="lens">`, `--g-lens-url` on each surface). `?lens=0` must
    look the same minus refraction; `?lens=1` forces it elsewhere.

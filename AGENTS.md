@@ -297,3 +297,11 @@ origin y 48, not 57; ignoring the cap left a crisp strip at its bottom). The ori
 filter or a high-contrast stripe layer behind the popup, using full-page screenshots (`clip:` screenshots drop
 backdrop filters). Under `forced-colors: active` the runtime picks `frost` and CSS drops every glass backdrop-filter.
 See `docs/design-system/glass.md`.
+
+## Liquid glass model and the accent
+
+Glass is the CodePen displacement-map model (`docs/design-system/glass.md`, "The model"); `GlassTuning` and its
+ranges, defaults and presets live in `apps/web/lib/glass/tuning.ts`. There is no accent picker and no ambient colour
+field: the primary token is neutral, and while `glassTuning.tint` is above 0 it derives from `tintColor` (so the accent
+is the tint). A `::before` layer cannot multiply its own `backdrop-filter` result, so under the lens the SVG filter
+multiplies the refracted backdrop and the CSS layer fades out via `--g-lens-tint`; the layer is only the frost fallback.

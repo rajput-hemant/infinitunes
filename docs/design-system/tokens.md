@@ -105,7 +105,7 @@ Reduced motion: under `prefers-reduced-motion: reduce` or `data-motion="reduced"
 
 ## 5. Accent engine
 
-Accent = a preset name (`config/themes.ts`: zinc, slate, stone, gray, neutral, red, rose, orange, green, blue, yellow, violet) or a custom `#rrggbb`. Default is `rose` (`#e11d48`). `lib/theme/accent.ts` `deriveAccentTokens(hex)` turns any hex into, per scheme:
+There is no accent picker. The default accent is neutral (the `#171717` derivation: near-black in light, near-white in dark), written as literals in `globals.css`. While the glass tint is on (`glassTuning.tint` above 0), the primary token derives from `glassTuning.tintColor`, so the accent is the tint; at 0 it is neutral whatever the colour. `config/themes.ts` keeps its hex list only for the browse tiles. `lib/theme/accent.ts` `deriveAccentTokens(hex)` turns any hex into, per scheme:
 
 - `--primary`: the accent moved only along lightness (hue and chroma kept, chroma shrunk only to stay in sRGB) until it clears 4.5:1 on both `--background` and `--card` of that scheme and for its own text colour.
 - `--primary-foreground`: white (`oklch(1 0 0)`) or near-black (`oklch(0.18 0 0)`), whichever contrasts more, always at least 4.5:1 on `--primary`.
@@ -114,7 +114,7 @@ Accent = a preset name (`config/themes.ts`: zinc, slate, stone, gray, neutral, r
 
 Derivation keeps a 0.05 contrast headroom so 8-bit rounding in browsers cannot dip below AA. Consequence: a light accent such as yellow or orange becomes a darker, deeper tone on light surfaces (yellow turns olive). That is the cost of guaranteed 4.5:1 for accent text.
 
-Delivery without flash: the server writes six custom properties on `<html style>` (`--light-primary`, `--light-primary-foreground`, `--light-accent`, `--dark-primary`, `--dark-primary-foreground`, `--dark-accent`). `:root` maps `--primary` to `--light-*` and `.dark` to `--dark-*`, so light, dark and system modes all work, and the stylesheet defaults are the derived rose. Presets and custom hex take the identical path.
+Delivery without flash: the server writes six custom properties on `<html style>` (`--light-primary`, `--light-primary-foreground`, `--light-accent`, `--dark-primary`, `--dark-primary-foreground`, `--dark-accent`). `:root` maps `--primary` to `--light-*` and `.dark` to `--dark-*`, so light, dark and system modes all work, and the stylesheet defaults are the derived neutral. A tint colour takes the same path.
 
 Contrast of every preset (from the function; ratios are WCAG 2):
 
@@ -139,25 +139,24 @@ Text on the accent is white (`oklch(1 0 0)`) on light surfaces and near-black (`
 
 `ThemeConfig` (`@infinitunes/types`):
 
-| Field          | Values                                                                      | Default         | Becomes                                             |
-| -------------- | --------------------------------------------------------------------------- | --------------- | --------------------------------------------------- |
-| `accent`       | preset name or `#rrggbb`                                                    | `"rose"`        | the six accent custom properties (omitted for rose) |
-| `radius`       | 0 to 1.5 (rem, continuous). Presets `RADIUS_PRESETS` = 0, 0.3, 0.5, 0.75, 1 | `0.75`          | `--radius`                                          |
-| `font`         | `"system" \| "rounded" \| "grotesk" \| "serif" \| "mono"`                   | `"system"`      | `data-font`                                         |
-| `headingFont`  | `"display" \| "system" \| "rounded" \| "grotesk" \| "serif" \| "mono"`      | `"display"`     | `data-heading-font`                                 |
-| `textSize`     | `15 \| 16 \| 17 \| 18` (px)                                                 | `16`            | `--text-scale` (size / 16)                          |
-| `density`      | `"comfortable" \| "compact"`                                                | `"comfortable"` | `data-density`                                      |
-| `glass`        | `"liquid" \| "subtle" \| "solid"`                                           | `"liquid"`      | `data-glass-level`                                  |
-| `ambient`      | boolean                                                                     | `true`          | `data-ambient="on" \| "off"`                        |
-| `reduceMotion` | boolean                                                                     | `false`         | `data-motion="reduced" \| "full"`                   |
+| Field          | Values                                                                                                                                | Default            | Becomes                                                                                                        |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `radius`       | 0 to 1.5 (rem, continuous). Presets `RADIUS_PRESETS` = 0, 0.3, 0.5, 0.75, 1                                                           | `0.75`             | `--radius`                                                                                                     |
+| `font`         | `"system" \| "rounded" \| "grotesk" \| "serif" \| "mono"`                                                                             | `"system"`         | `data-font`                                                                                                    |
+| `headingFont`  | `"display" \| "system" \| "rounded" \| "grotesk" \| "serif" \| "mono"`                                                                | `"display"`        | `data-heading-font`                                                                                            |
+| `textSize`     | `15 \| 16 \| 17 \| 18` (px)                                                                                                           | `16`               | `--text-scale` (size / 16)                                                                                     |
+| `density`      | `"comfortable" \| "compact"`                                                                                                          | `"comfortable"`    | `data-density`                                                                                                 |
+| `glass`        | `"liquid" \| "subtle" \| "solid"`                                                                                                     | `"liquid"`         | `data-glass-level`                                                                                             |
+| `glassTuning`  | `GlassTuning`: `depth`, `splay`, `feather`, `curve`, `blur`, `chroma`, `glint`, `tint`, `tintColor` (ranges in `lib/glass/tuning.ts`) | the pen's defaults | `--glass-*` (only those that differ), `data-glass-tint`, and the six accent properties while `tint` is above 0 |
+| `reduceMotion` | boolean                                                                                                                               | `false`            | `data-motion="reduced" \| "full"`                                                                              |
 
 Light, dark and system mode stay with `next-themes` (`useTheme()`), which toggles the `dark` class on `<html>`.
 
-`<html>` always carries `data-density`, `data-glass-level`, `data-ambient`, `data-motion`, `data-font`, `data-heading-font`. Style against them with attribute selectors in CSS (`[data-density="compact"]`), or read the matching tokens (`--row`, `--art`) instead of branching. Glass units read `data-glass-level` and `data-ambient`; the engine defines no glass tokens.
+`<html>` always carries `data-density`, `data-glass-level`, `data-motion`, `data-font`, `data-heading-font`, plus `data-glass-tint="on"` while the tint is on. Style against them with attribute selectors in CSS (`[data-density="compact"]`), or read the matching tokens (`--row`, `--art`) instead of branching. Glass units read `data-glass-level` and the `--glass-*` variables (`docs/design-system/glass.md`).
 
-Mockup class to attribute: `html.glass-subtle` is `[data-glass-level="subtle"]`, `html.glass-off` is `[data-glass-level="solid"]` (the config calls it Solid), `html.no-ambient` is `[data-ambient="off"]`, `html.compact` is `[data-density="compact"]`, `html.reduce-motion` is `[data-motion="reduced"]`. `glass.css` should key off those attributes. It must not redefine tokens this file owns: `--ambient`, `--line`, `--fill`, `--fill-2`, `--scrim`, `--radius`, `--r-*`, `--ctl*`, `--row`, `--art`.
+Mockup class to attribute: `html.glass-subtle` is `[data-glass-level="subtle"]`, `html.glass-off` is `[data-glass-level="solid"]` (the config calls it Solid), `html.compact` is `[data-density="compact"]`, `html.reduce-motion` is `[data-motion="reduced"]`. `glass.css` should key off those attributes. It must not redefine tokens this file owns: `--line`, `--fill`, `--fill-2`, `--scrim`, `--radius`, `--r-*`, `--ctl*`, `--row`, `--art`.
 
-Cookie: `theme-config`, JSON with only the non-default fields (`{}` is never stored), one year, `sameSite=lax`, readable by script (not `httpOnly`; it holds only appearance preferences), plus a derived `html` field (`{a: attributes, s: variables}` from `themeConfigToHtml`, written by `lib/theme/cookie.ts`) that the pre-paint script applies; `parseThemeConfig` ignores it. It is user controlled: `normalizeThemeConfig` validates every field independently, falls back to the default per field, never throws, and rejects prototype keys. Cookies written by the old appearance page (`{"theme":"violet","radius":0.5}`) still migrate to `accent: "violet"`. Every value that reaches `<html>` comes from the validated config; nothing from the cookie is interpolated.
+Cookie: `theme-config`, JSON with only the non-default fields (`{}` is never stored), one year, `sameSite=lax`, readable by script (not `httpOnly`; it holds only appearance preferences), plus a derived `html` field (`{a: attributes, s: variables}` from `themeConfigToHtml`, written by `lib/theme/cookie.ts`) that the pre-paint script applies; `parseThemeConfig` ignores it. It is user controlled: `normalizeThemeConfig` validates every field independently, falls back to the default per field, never throws, and rejects prototype keys. Keys the model no longer has (`accent`, `ambient`, `theme`, and the old glass fields `variant`, `refraction`, `sat`, `spec`, `shadow`, `ambientLevel`, `accentTint`) are ignored, and a field that still exists keeps its value if it is valid. Every value that reaches `<html>` comes from the validated config; nothing from the cookie is interpolated.
 
 Rendering and caching: the root layout is static and never reads the cookie. It renders the default attributes on `<html>`; `THEME_BOOTSTRAP_SCRIPT` (`lib/theme-script.ts`, allowed by hash in `lib/csp.ts`) applies the cookie's `html` field before first paint, and `ThemeConfigProvider` reads the same cookie in the browser (`lib/theme/stored.ts`) for the settings UI. A cookie saved before the `html` field existed is applied by the provider after hydration (one-time flash until the next save). To run more state before paint, add a step to `STEPS` in `lib/theme-script.ts`.
 
@@ -200,7 +199,7 @@ Icon-only keys grow an invisible `::after` hit area to 44px on coarse pointers (
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | `prefers-reduced-motion: reduce`, or `reduceMotion` | `--duration-*` become 0.01ms, animations and transitions collapse, no smooth scroll                                                  |
 | `prefers-contrast: more`                            | `--line` and `--border` stronger, `--muted-foreground` darker (light `#4a4a4f`, dark `#c0c0c6`), all text pairs still at least 4.5:1 |
-| `prefers-reduced-transparency: reduce`              | `--ambient` is halved. Glass tokens are flipped by `glass.css`. Tailwind variant `reduced-transparency:` is available                |
+| `prefers-reduced-transparency: reduce`              | Glass tokens are flipped by `glass.css`. Tailwind variant `reduced-transparency:` is available                                       |
 | `pointer: coarse`                                   | `--ctl`, `--ctl-lg`, `--row`, `--art` grow (section 3). Tailwind variant `pointer-coarse:`                                           |
 
 Use Tailwind's `motion-reduce:`, `contrast-more:` and the added `reduced-transparency:` variants for one-off cases; prefer tokens.
@@ -213,9 +212,9 @@ Client hook (`~/hooks/use-theme-config`, client components only):
 
 ```ts
 const { config, update, reset, isDefault, isSaving } = useThemeConfig();
-update({ accent: "blue" }); // page changes immediately, saved ~300ms after the last change
+update({ density: "compact" }); // page changes immediately, saved ~300ms after the last change
 update({ radius: 12 / 16 }); // slider: call on every tick; saves are debounced
-update({ accent: "#3a7bd5", density: "compact" });
+update({ glassTuning: { ...config.glassTuning, depth: 90 } });
 reset(); // all defaults, clears the cookie
 ```
 
@@ -227,15 +226,15 @@ Server and shared modules:
 | ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `saveThemeConfig(input: unknown): Promise<void>`                                                                                   | `~/lib/theme/actions` (server action) | validates, writes or clears the cookie. The hook calls it; call it directly only from server code |
 | `DEFAULT_THEME_CONFIG`, `normalizeThemeConfig`, `parseThemeConfig`, `serializeThemeConfig`, `isDefaultThemeConfig`, `THEME_COOKIE` | `~/lib/theme-config`                  | pure, safe in client code                                                                         |
-| `themeConfigToHtml(config)`, `applyThemeConfig(element, config)`, `resolveAccentHex(accent)`                                       | `~/lib/theme/html`                    | the `<html>` mapping used by the cookie writer and the provider                                   |
+| `themeConfigToHtml(config)`, `applyThemeConfig(element, config)`                                                                   | `~/lib/theme/html`                    | the `<html>` mapping used by the cookie writer and the provider                                   |
 | `deriveAccentTokens(hex)`, `accentVariables(tokens)`, `AA_CONTRAST`, `SURFACES`                                                    | `~/lib/theme/accent`                  | accent derivation                                                                                 |
 | `normalizeHex`, `contrastRatio`, `colorLuminance`, `hexToOklch`                                                                    | `~/lib/theme/oklch`                   | colour math                                                                                       |
-| `themes` (`{ name, label, hex }[]`), `DEFAULT_ACCENT`                                                                              | `~/config/themes`                     | accent presets for swatches                                                                       |
+| `themes` (`{ name, label, hex }[]`), `DEFAULT_ACCENT_HEX`                                                                          | `~/config/themes`                     | spot colours for the browse tiles; the neutral base of the default primary                        |
 | `FONT_FACES`                                                                                                                       | `~/lib/theme/fonts`                   | label and `font-family` per font id, for previews                                                 |
 | `THEME_COLOR`                                                                                                                      | `~/lib/theme-color`                   | background hex per scheme (status bar colour)                                                     |
 | `controlStyles`                                                                                                                    | `~/lib/control-styles`                | control sizes                                                                                     |
 
-Building the Appearance page: swatches from `themes` plus a colour input (`update({ accent: value })`), radius presets from `RADIUS_PRESETS` plus a 0 to 24 slider (`px / 16`), font pickers from `FONT_IDS` and `HEADING_FONT_IDS` previewed with `FONT_FACES[id].family`, `TEXT_SIZES`, `DENSITIES`, `GLASS_LEVELS`, two switches, and a reset button wired to `reset()` and disabled when `isDefault`. Light, dark and system stay with `useTheme()`.
+Building the Appearance page: radius presets from `RADIUS_PRESETS` plus a 0 to 24 slider (`px / 16`), font pickers from `FONT_IDS` and `HEADING_FONT_IDS` previewed with `FONT_FACES[id].family`, `TEXT_SIZES`, `DENSITIES`, `GLASS_LEVELS`, the glass controls (`GLASS_RANGES`, `GLASS_PRESETS` from `lib/glass/tuning.ts`), a switch, and a reset button wired to `reset()` and disabled when `isDefault`. Light, dark and system stay with `useTheme()`.
 
 Status bar colour: `<meta name="theme-color">` is `THEME_COLOR` per scheme (`#f5f5f7`, `#0b0b0c`) and `ThemeColorSync` keeps it equal to the rendered `--background` when the in-app mode differs from the OS.
 
