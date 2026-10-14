@@ -11,6 +11,7 @@ import { getHref } from "~/lib/utils";
 
 import { HomeHeader } from "./_components/home-header";
 import { HomeHero } from "./_components/home-hero";
+import type { HeroTile } from "./_components/home-hero";
 import { homeItems } from "./_components/home-items";
 import { QuickPicks } from "./_components/quick-picks";
 import type { QuickPickItem } from "./_components/quick-picks";
@@ -46,6 +47,7 @@ const SECTION_TYPE: Record<string, MediaType> = {
 
 const QUICK_PICK_ALBUMS = 4;
 const QUICK_PICK_PLAYLISTS = 4;
+const HERO_TILES = 4;
 
 export default async function HomePage() {
   const homedata = await api.home.home({});
@@ -61,13 +63,25 @@ export default async function HomePage() {
     image: getImageSrc(item.image, "high"),
   }));
 
+  const heroTiles: HeroTile[] = [
+    ...(homedata.charts ?? []),
+    ...homedata.top_playlists.slice(1 + QUICK_PICK_PLAYLISTS),
+  ]
+    .slice(0, HERO_TILES)
+    .map((item) => ({
+      key: `${item.type}-${item.id}`,
+      href: getHref(item.perma_url, item.type),
+      title: decode(item.title),
+      image: item.image,
+    }));
+
   return (
     <div className="flex flex-col gap-(--page-gap)">
       <HomeHeader />
 
       {(featured || quickPicks.length > 0) && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-          {featured && <HomeHero playlist={featured} />}
+          {featured && <HomeHero playlist={featured} tiles={heroTiles} />}
 
           {quickPicks.length > 0 && <QuickPicks items={quickPicks} />}
         </div>
