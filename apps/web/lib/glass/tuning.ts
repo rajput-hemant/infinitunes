@@ -27,7 +27,7 @@ export const DEFAULT_GLASS_TUNING: Readonly<GlassTuning> = Object.freeze({
   splay: 2,
   feather: 24,
   curve: 2,
-  blur: 0,
+  blur: 2,
   chroma: 0,
   glint: 25,
   tint: 0,
