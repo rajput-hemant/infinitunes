@@ -5,6 +5,15 @@
 
 @source '../../../packages/ui/src';
 
+/* A skeleton is a loading placeholder: once the image beside or over it has
+   loaded (ImageWithFallback sets data-loaded) its pulse stops. Left running it
+   is an endless animation behind opaque artwork that makes the compositor redraw
+   every glass backdrop on the page, every frame. Unlayered, so it beats the
+   `animate-pulse` utility. */
+div:has(img[data-loaded]) > [data-slot="skeleton"] {
+  animation: none;
+}
+
 @custom-variant dark (&:is(.dark *));
 @custom-variant reduced-transparency (@media (prefers-reduced-transparency: reduce));
 

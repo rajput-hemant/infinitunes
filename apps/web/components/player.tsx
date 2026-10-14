@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { GlassSurface } from "~/components/glass/glass-surface";
 import { useKeydown } from "~/hooks/use-keydown";
+import { usePlayhead } from "~/hooks/use-playhead";
 import { useRadioRefill } from "~/hooks/use-radio-refill";
 import {
   useActiveRadioSession,
@@ -54,8 +55,6 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
   const [isTyping] = useIsTyping();
   const [shortcutsEnabled] = useKeyboardShortcuts();
-  // refs
-  const frameRef = React.useRef<number>(0);
   // states
   const [isShuffle, setIsShuffle] = React.useState(false);
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);
@@ -134,24 +133,12 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
 
   const current = queue[currentIndex];
 
-  React.useEffect(() => {
-    if (isDragging) {
-      return;
-    }
-
-    const animate = () => {
-      position.set(getPosition());
-      frameRef.current = requestAnimationFrame(animate);
-    };
-
-    frameRef.current = window.requestAnimationFrame(animate);
-
-    return () => {
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
-    };
-  }, [getPosition, isDragging, position]);
+  usePlayhead({
+    store: position,
+    getPosition,
+    playing: isPlaying,
+    frozen: isDragging,
+  });
 
   const fetchRadioSongs = React.useCallback(
     (stationId: string) =>

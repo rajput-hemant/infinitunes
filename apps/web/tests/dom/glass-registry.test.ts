@@ -75,6 +75,36 @@ function register(el: HTMLElement, size: GlassSize = "m") {
 }
 
 describe("glass lens registry", () => {
+  it("keeps the same filter, and never drops it, while a surface's content changes but its shape does not", async () => {
+    const defs = addDefs();
+    configureLens({ active: true });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    const before = lensUrl(el);
+    const built = encodes;
+    const filters = defs.querySelectorAll("filter").length;
+    const urlWrites: string[] = [];
+    new MutationObserver(() => urlWrites.push(lensUrl(el))).observe(el, {
+      attributes: true,
+      attributeFilter: ["style"],
+    });
+
+    // What playback does to the player: text and bar change, the box does not.
+    for (let i = 0; i < 20; i++) {
+      el.textContent = `00:${String(i).padStart(2, "0")}`;
+      register(el);
+      el.dispatchEvent(new Event("transitionend"));
+      await settle(20);
+    }
+    await settle();
+
+    expect(lensUrl(el)).toBe(before);
+    expect(urlWrites.every((url) => url === before)).toBe(true);
+    expect(encodes).toBe(built);
+    expect(defs.querySelectorAll("filter").length).toBe(filters);
+  });
+
   it("builds a lens at the depth scaled for the size once the engine is active", async () => {
     const defs = addDefs();
     configureLens({ active: true, depth: 60 });
