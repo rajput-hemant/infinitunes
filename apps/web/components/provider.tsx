@@ -10,6 +10,7 @@ import { useState } from "react";
 import { AudioPlayerProvider } from "react-use-audio-player";
 import superjson from "superjson";
 
+import { ThemeConfigProvider } from "~/lib/theme/provider";
 import { api } from "~/lib/trpc/client";
 
 import { ThemeColorSync } from "./theme-color-sync";
@@ -72,17 +73,19 @@ export default function Providers({ children, theme }: Props) {
       scriptProps={{ type: "application/json" }}
       {...theme}
     >
-      <ThemeColorSync />
-      <AudioPlayerProvider>
-        <TRPCReactProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-        </TRPCReactProvider>
+      <ThemeConfigProvider>
+        <ThemeColorSync />
+        <AudioPlayerProvider>
+          <TRPCReactProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </TRPCReactProvider>
 
-        <Toaster
-          offset={{ bottom: TOAST_BOTTOM_OFFSET }}
-          mobileOffset={{ bottom: TOAST_BOTTOM_OFFSET }}
-        />
-      </AudioPlayerProvider>
+          <Toaster
+            offset={{ bottom: TOAST_BOTTOM_OFFSET }}
+            mobileOffset={{ bottom: TOAST_BOTTOM_OFFSET }}
+          />
+        </AudioPlayerProvider>
+      </ThemeConfigProvider>
     </ThemeProvider>
   );
 }

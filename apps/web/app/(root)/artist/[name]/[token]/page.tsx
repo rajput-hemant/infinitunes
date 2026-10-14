@@ -1,6 +1,10 @@
 import type { Category } from "@infinitunes/types";
-import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
-import { Separator } from "@infinitunes/ui/components/separator";
+import {
+  decode,
+  getImageSrc,
+  parseArtistBio,
+  toCardItem,
+} from "@infinitunes/types";
 import { Tabs, TabsContent } from "@infinitunes/ui/components/tabs";
 import type { Metadata } from "next";
 import { cache, Suspense } from "react";
@@ -15,13 +19,13 @@ import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
-import { sanitizeRichText } from "~/lib/sanitize-rich-text";
 import { api } from "~/lib/trpc/server";
 
+import { ArtistBio } from "./_components/artist-bio";
 import { ArtistsTabList } from "./_components/artists-tab-list";
 import { ArtistsTopItems } from "./_components/artists-top-items";
 import { CategoryFilter } from "./_components/category-filter";
-import { TABS } from "./_components/tabs";
+import { tabForSlug, TABS } from "./_components/tabs";
 
 const getArtist = cache(async (token: string) =>
   orNotFound(
@@ -46,43 +50,45 @@ const getArtistLibrary = cache(
   },
 );
 
+type ArtistLibraryTabProps = {
+  artist: Awaited<ReturnType<typeof getArtist>>;
+  category?: Category;
+  userPromise: ReturnType<typeof getUser>;
+  type: "songs" | "albums";
+};
+
 async function ArtistLibraryTab({
   artist,
   category,
   userPromise,
   type,
-}: {
-  artist: Awaited<ReturnType<typeof getArtist>>;
-  category?: Category;
-  userPromise: ReturnType<typeof getUser>;
-  type: "songs" | "albums";
-}) {
+}: ArtistLibraryTabProps) {
   const { user, playlists, favorites } = await getArtistLibrary(userPromise);
   const topSongs = artist.topSongs ?? [];
 
   return (
-    <>
-      <ArtistsTopItems
-        key={type === "songs" ? topSongs[0]?.id : artist.topAlbums?.[0]?.id}
-        id={artist.artistId}
-        type={type}
-        category={category}
-        user={user}
-        userFavorites={favorites}
-        userPlaylists={playlists}
-        initialSongs={type === "songs" ? topSongs : undefined}
-        initialAlbums={type === "albums" ? artist.topAlbums : undefined}
-      />
-    </>
+    <ArtistsTopItems
+      key={type === "songs" ? topSongs[0]?.id : artist.topAlbums?.[0]?.id}
+      id={artist.artistId}
+      type={type}
+      category={category}
+      user={user}
+      userFavorites={favorites}
+      userPlaylists={playlists}
+      initialSongs={type === "songs" ? topSongs : undefined}
+      initialAlbums={type === "albums" ? artist.topAlbums : undefined}
+    />
   );
 }
 
-type Props = {
+type ArtistDetailsPageProps = {
   params: Promise<{ name: string; token: string }>;
   searchParams: Promise<{ cat?: Category }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: ArtistDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
   const artist = await getArtist(token);
@@ -96,7 +102,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function ArtistDetailsPage(props: Props) {
+export default async function ArtistDetailsPage(props: ArtistDetailsPageProps) {
   const { name, token } = await props.params;
   const { cat } = await props.searchParams;
 
@@ -108,36 +114,23 @@ export default async function ArtistDetailsPage(props: Props) {
   userPromise.catch(() => undefined);
   const artist = await artistPromise;
 
-  let selectedTab: TABS;
-
-  switch (name.split("-").pop()) {
-    case "songs":
-      selectedTab = TABS.Songs;
-      break;
-    case "albums":
-      selectedTab = TABS.Albums;
-      break;
-    case "bio":
-      selectedTab = TABS.Biography;
-      break;
-    default:
-      selectedTab = TABS.Overview;
-      break;
-  }
+  const selectedTab = tabForSlug(name.split("-").pop());
 
   const topSongs = artist.topSongs ?? [];
+  const bio = parseArtistBio(artist.bio);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={artist} />
 
       <Tabs defaultValue={selectedTab}>
-        <ArtistsTabList showBio={Boolean(artist.bio)} />
+        <ArtistsTabList showBio={bio.length > 0} />
 
-        <Separator className="my-4" />
-
-        <TabsContent value={TABS.Overview} className="space-y-4">
-          <h2 className="pl-2 font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+        <TabsContent
+          value={TABS.Overview}
+          className="flex flex-col gap-(--page-gap)"
+        >
+          <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
             {artist.modules?.topSongs?.title}
           </h2>
           <SongList items={topSongs.slice(0, 10)} />
@@ -168,14 +161,7 @@ export default async function ArtistDetailsPage(props: Props) {
         </TabsContent>
 
         <TabsContent value={TABS.Biography} className="max-w-3xl">
-          {artist.bio && (
-            <small
-              className="leading-2"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeRichText(decode(artist.bio)),
-              }}
-            />
-          )}
+          {bio.length > 0 && <ArtistBio sections={bio} />}
         </TabsContent>
       </Tabs>
 

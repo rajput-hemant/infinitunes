@@ -2,11 +2,10 @@
 
 import type { Lang, TopAlbum } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import React from "react";
 
-import { SliderCard } from "~/components/slider/slider-card";
-import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { CatalogLoadMore } from "~/components/catalog-load-more";
+import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
 import { api } from "~/lib/trpc/client";
 
 type TopAlbumsProps = {
@@ -22,37 +21,24 @@ export function TopAlbums({ initialAlbums, lang }: TopAlbumsProps) {
       queryKey: ["top-albums", lang],
       queryFn: ({ pageParam }) =>
         utils.get.topAlbums.fetch({ page: pageParam, n: 50, lang }),
-      initialPageParam: 1 as number,
+      initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) =>
-        (lastPage as TopAlbum).last_page ? null : allPages.length + 1,
+        lastPage.last_page ? null : allPages.length + 1,
       initialData: { pages: [initialAlbums], pageParams: [1] },
     });
 
-  const topAlbums = (data.pages as TopAlbum[]).flatMap((page) => page.data);
-
-  const [ref] = useIntersectionObserver({
-    threshold: 0.5,
-    onChange(isIntersecting) {
-      if (isIntersecting) {
-        fetchNextPage();
-      }
-    },
-  });
+  const topAlbums = data.pages.flatMap((page) => page.data);
 
   return (
-    <div className="py-6">
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
+    <div>
+      <CatalogGrid>
         {topAlbums.map(
-          ({
-            id,
-            title,
-            perma_url,
-            subtitle,
-            type,
-            image,
-            explicit_content,
-          }) => (
+          (
+            { id, title, perma_url, subtitle, type, image, explicit_content },
+            index,
+          ) => (
             <SliderCard
+              priority={index < FIRST_ROW_CARDS}
               key={id}
               name={title}
               url={perma_url}
@@ -63,25 +49,13 @@ export function TopAlbums({ initialAlbums, lang }: TopAlbumsProps) {
             />
           ),
         )}
-      </div>
+      </CatalogGrid>
 
-      {hasNextPage ? (
-        <div
-          ref={ref}
-          className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
-        >
-          {isFetchingNextPage && (
-            <>
-              <Loader2 className="size-5 animate-spin" /> Loading...
-            </>
-          )}
-        </div>
-      ) : (
-        <h2 className="text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
-      )}
+      <CatalogLoadMore
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={fetchNextPage}
+      />
     </div>
   );
 }

@@ -1,7 +1,9 @@
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
+import { Shelf } from "~/components/slider/shelf";
+import { ShelfItem } from "~/components/slider/shelf-item";
 
 export default function TopPodcastsLoading() {
   return (
@@ -11,25 +13,21 @@ export default function TopPodcastsLoading() {
         <Skeleton className="h-6 w-32 sm:h-6 md:h-6 md:w-56" />
       </div>
 
-      <ScrollArea>
-        <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 pb-6">
-          {Array.from({ length: 26 }).map((_, i) => (
-            <SliderCardSkeleton key={i} hideSubtitle />
-          ))}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      <Shelf rows={2}>
+        {Array.from({ length: 26 }).map((_, i) => (
+          <ShelfItem key={i}>
+            <SliderCardSkeleton hideSubtitle />
+          </ShelfItem>
+        ))}
+      </Shelf>
 
       <Skeleton className="h-8 w-44 sm:h-9 md:h-10 md:w-72" />
 
-      <ScrollArea>
-        <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 pb-6">
-          {Array.from({ length: 26 }).map((_, i) => (
-            <SliderCardSkeleton key={i} hideSubtitle />
-          ))}
-        </div>
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+      <CatalogGrid>
+        {Array.from({ length: 26 }).map((_, i) => (
+          <SliderCardSkeleton key={i} hideSubtitle />
+        ))}
+      </CatalogGrid>
     </div>
   );
 }

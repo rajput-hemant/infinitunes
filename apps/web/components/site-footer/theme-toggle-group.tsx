@@ -5,60 +5,71 @@ import {
   ToggleGroupItem,
 } from "@infinitunes/ui/components/toggle-group";
 import { Monitor, Moon, SunMedium } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
 
+import { useIsHydrated } from "~/hooks/use-is-hydrated";
+import { useThemeMode } from "~/hooks/use-theme-mode";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
-// Never changes after hydration; only the server/client snapshots differ.
-const subscribeNever = () => () => {};
+const segmentClassName = cn(
+  controlStyles.headerIcon,
+  "p-0 text-muted-foreground hover:bg-transparent hover:text-foreground aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-sm aria-pressed:hover:bg-card dark:aria-pressed:bg-fill-2 dark:aria-pressed:hover:bg-fill-2",
+);
 
 type ThemeToggleGroupProps = {
   className?: string;
+  /** Segments share the row evenly, for use inside a menu or sheet. */
+  stretch?: boolean;
 };
 
-export function ThemeToggleGroup({ className }: ThemeToggleGroupProps) {
-  const isMounted = useSyncExternalStore(
-    subscribeNever,
-    () => true,
-    () => false,
-  );
+export function ThemeToggleGroup({
+  className,
+  stretch = false,
+}: ThemeToggleGroupProps) {
+  const isMounted = useIsHydrated();
 
-  const { theme, setTheme } = useTheme();
+  const { theme, setMode } = useThemeMode();
 
-  function handleThemeChange(value: string) {
-    setTheme(value);
+  // Base UI reports an empty selection when the pressed item is pressed again;
+  // a theme is always selected, so that is not a change.
+  function handleThemeChange(value: string[]) {
+    const [next] = value;
+    if (next) setMode(next);
   }
 
   return (
     <ToggleGroup
       value={[isMounted ? (theme ?? "system") : "system"]}
-      onValueChange={(v) => handleThemeChange(v[0])}
-      className={cn("rounded-full border p-1", className)}
+      onValueChange={handleThemeChange}
+      aria-label="Theme"
+      className={cn(
+        "gap-0.5 rounded-ctl bg-fill p-0.5",
+        stretch && "flex w-full",
+        className,
+      )}
     >
       <ToggleGroupItem
         aria-label="Toggle Light Mode"
         value="light"
-        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
+        className={cn(segmentClassName, stretch && "w-auto flex-1")}
       >
-        <SunMedium className="h-4" />
-      </ToggleGroupItem>
-
-      <ToggleGroupItem
-        aria-label="Toggle System Mode"
-        value="system"
-        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
-      >
-        <Monitor className="h-4" />
+        <SunMedium aria-hidden className="size-4" />
       </ToggleGroupItem>
 
       <ToggleGroupItem
         aria-label="Toggle Dark Mode"
         value="dark"
-        className={cn(controlStyles.headerIcon, "rounded-full px-2")}
+        className={cn(segmentClassName, stretch && "w-auto flex-1")}
       >
-        <Moon className="h-4" />
+        <Moon aria-hidden className="size-4" />
+      </ToggleGroupItem>
+
+      <ToggleGroupItem
+        aria-label="Toggle System Mode"
+        value="system"
+        className={cn(segmentClassName, stretch && "w-auto flex-1")}
+      >
+        <Monitor aria-hidden className="size-4" />
       </ToggleGroupItem>
     </ToggleGroup>
   );

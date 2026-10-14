@@ -1,13 +1,14 @@
-import React from "react";
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 
 import { SliderCardSkeleton } from "./slider-card-skeleton";
 
+/** Same grid as the catalog grid, so the skeleton lands on the same cells. */
 export function AlbumGridSkeleton() {
   return (
-    <div className="flex w-full flex-wrap justify-between gap-y-4">
+    <CatalogGrid>
       {Array.from({ length: 20 }).map((_, i) => (
         <SliderCardSkeleton key={i} />
       ))}
-    </div>
+    </CatalogGrid>
   );
 }

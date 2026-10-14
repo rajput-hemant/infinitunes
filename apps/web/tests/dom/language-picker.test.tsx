@@ -6,6 +6,17 @@ import { createRoot, type Root } from "react-dom/client";
 
 import { LanguagePicker } from "../../components/site-header/language-picker";
 
+const realMatchMedia = window.matchMedia;
+
+function setPhone(isPhone: boolean) {
+  window.matchMedia = ((query: string) => ({
+    matches: isPhone,
+    media: query,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  })) as unknown as typeof window.matchMedia;
+}
+
 const refresh = mock(() => {});
 const router = { refresh } as never;
 
@@ -32,6 +43,7 @@ describe("language picker popover", () => {
   afterEach(async () => {
     await act(async () => roots.splice(0).forEach((r) => r.unmount()));
     refresh.mockClear();
+    window.matchMedia = realMatchMedia;
     document.cookie = "language=; path=/; max-age=0";
   });
 
@@ -48,7 +60,7 @@ describe("language picker popover", () => {
     expect(trigger.getAttribute("aria-expanded")).toBe("true");
     const labelledBy = popup.getAttribute("aria-labelledby");
     expect(document.getElementById(labelledBy ?? "")?.textContent).toBe(
-      "What music do you like?",
+      "Languages",
     );
   });
 
@@ -65,5 +77,74 @@ describe("language picker popover", () => {
 
     expect(document.cookie).toContain("language=hindi");
     expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("opens a bottom sheet with the same chips and Save below 768px", async () => {
+    setPhone(true);
+    const container = await mount();
+    await act(async () =>
+      (container.querySelector("button") as HTMLButtonElement).click(),
+    );
+
+    const sheet = document.querySelector("[data-slot=drawer-popup]");
+    expect(sheet).not.toBeNull();
+    expect(sheet?.querySelectorAll("[aria-pressed]").length).toBeGreaterThan(3);
+
+    const save = [...(sheet as HTMLElement).querySelectorAll("button")].find(
+      (b) => b.textContent === "Save",
+    ) as HTMLButtonElement;
+    await act(async () => save.click());
+
+    expect(document.cookie).toContain("language=hindi");
+    expect(refresh).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps several languages selected and saves them together", async () => {
+    const container = await mount();
+    await act(async () =>
+      (container.querySelector("button") as HTMLButtonElement).click(),
+    );
+    const popup = dialog() as HTMLElement;
+    const english = [
+      ...popup.querySelectorAll<HTMLElement>("[aria-pressed]"),
+    ].find((el) => el.textContent === "English");
+    await act(async () => english?.click());
+
+    const save = [...popup.querySelectorAll("button")].find(
+      (b) => b.textContent === "Save",
+    ) as HTMLButtonElement;
+    await act(async () => save.click());
+
+    const saved = decodeURIComponent(document.cookie);
+    expect(saved).toContain("hindi");
+    expect(saved).toContain("english");
+  });
+
+  it("hides the decorative chevron and drops an unsaved selection on close", async () => {
+    const container = await mount();
+    const trigger = container.querySelector("button") as HTMLButtonElement;
+    expect(trigger.querySelector("svg:not([aria-hidden])")).toBeNull();
+
+    const chips = () =>
+      [...document.querySelectorAll<HTMLElement>("[aria-pressed]")].filter(
+        (el) => el.getAttribute("role") !== "dialog",
+      );
+    const pressed = () =>
+      chips()
+        .filter((el) => el.getAttribute("aria-pressed") === "true")
+        .map((el) => el.textContent);
+
+    await act(async () => trigger.click());
+    expect(pressed()).toEqual(["Hindi"]);
+
+    const other = chips().find((el) => el.textContent !== "Hindi");
+    await act(async () => other?.click());
+    expect(pressed()).toEqual(["Hindi", other?.textContent ?? ""]);
+
+    await act(async () => trigger.click());
+    await act(async () => new Promise((r) => setTimeout(r, 50)));
+    await act(async () => trigger.click());
+    expect(pressed()).toEqual(["Hindi"]);
+    expect(refresh).not.toHaveBeenCalled();
   });
 });

@@ -6,7 +6,7 @@ import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 
 export default function SongDetailsLoading() {
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeaderSkeleton type="song" />
 
       <div className="space-y-2 border-b py-4">

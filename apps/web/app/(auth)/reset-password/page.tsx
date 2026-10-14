@@ -1,5 +1,9 @@
+import Link from "next/link";
+
 import { redirectIfSignedIn } from "~/lib/auth-guard";
 
+import { AuthIntro } from "../_components/auth-intro";
+import { authLinkStyles } from "../_components/field-styles";
 import { ResetPasswordForm } from "../_components/reset-password-form";
 
 export const metadata = {
@@ -14,21 +18,22 @@ type ResetPasswordPageProps = {
 export default async function ResetPasswordPage({
   searchParams,
 }: ResetPasswordPageProps) {
-  // The emailed token proves intent, so a signed-in user may use the link;
-  // without one this page is only for signed-out visitors.
   if (!(await searchParams).token) await redirectIfSignedIn();
 
   return (
-    <div className="flex flex-col space-y-2 text-center">
-      <h1 className="font-heading text-3xl dark:drop-shadow-xl text-foreground sm:text-4xl">
-        Reset Password
-      </h1>
-
-      <p className="text-sm text-muted-foreground">
-        Choose a new password for your account.
-      </p>
+    <div className="grid gap-4">
+      <AuthIntro
+        title="Reset password"
+        description="Choose a new password for your account."
+      />
 
       <ResetPasswordForm />
+
+      <p className="text-center text-xs text-muted-foreground">
+        <Link href="/login" className={authLinkStyles}>
+          Back to log in
+        </Link>
+      </p>
     </div>
   );
 }

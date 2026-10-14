@@ -2,18 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { emailSchema, passwordSchema } from "@infinitunes/auth/schemas";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@infinitunes/ui/components/alert-dialog";
-import { Button, buttonVariants } from "@infinitunes/ui/components/button";
+import { Button } from "@infinitunes/ui/components/button";
 import {
   Field,
   FieldDescription,
@@ -21,7 +10,6 @@ import {
   FieldLabel,
 } from "@infinitunes/ui/components/field";
 import { Input } from "@infinitunes/ui/components/input";
-import { Separator } from "@infinitunes/ui/components/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -29,7 +17,6 @@ import {
 } from "@infinitunes/ui/components/tooltip";
 import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -37,13 +24,15 @@ import { z } from "zod";
 
 import { useIsTyping } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
-import { changePassword, deleteUser, updateUser } from "~/lib/actions";
+import { changePassword, updateUser } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
-import { cn, destructiveText } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 import { nameSchema } from "~/lib/validations";
 
-type ProfileFormProps = React.ComponentProps<"div"> & {
+import { SettingsSection } from "./settings-section";
+
+type ProfileFormProps = {
   user: {
     id: string;
     name?: string | null;
@@ -51,6 +40,14 @@ type ProfileFormProps = React.ComponentProps<"div"> & {
     image?: string | null;
   };
 };
+
+const inputClass = cn(controlStyles.textLg, controlStyles.flatInput);
+const labelClass = "text-[0.8125rem] leading-5 font-semibold";
+const squareButtonClass = cn(controlStyles.text, controlStyles.squareButton);
+const primaryButtonClass = cn(
+  controlStyles.text,
+  "rounded-sm px-3 font-semibold",
+);
 
 const profileSchema = z.object({
   name: nameSchema,
@@ -62,13 +59,10 @@ const profileSchema = z.object({
 type FormData = z.infer<typeof profileSchema>;
 
 export function ProfileForm({ user }: ProfileFormProps) {
-  const router = useRouter();
   const [isPassVisible, setIsPassVisible] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [confirmDelete, setConfirmDelete] = React.useState("");
-  const [deletePassword, setDeletePassword] = React.useState("");
 
-  const [_, setIsTyping] = useIsTyping();
+  const [, setIsTyping] = useIsTyping();
   const uid = React.useId();
   const ids = {
     name: `${uid}-name`,
@@ -137,82 +131,124 @@ export function ProfileForm({ user }: ProfileFormProps) {
     });
   }
 
-  async function deleteUserHandler() {
-    const deletion = unwrap(deleteUser(deletePassword || undefined)).then(
-      () => {
-        // The session row is gone with the user; leave the stale signed-in page.
-        router.replace("/");
-        router.refresh();
-      },
-    );
-
-    toast.promise(deletion, {
-      loading: "Deleting Account...",
-      success: "Account Deleted! Logging out...",
-      error: userMessage,
-    });
-  }
+  const initial = (user.name || user.email || "?")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
   return (
-    <div className="flex w-full max-w-5xl flex-col-reverse gap-6 px-6 py-2 md:flex-row md:justify-between md:gap-4">
-      <div className="min-w-0 flex-1 space-y-6">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <Controller
-            control={form.control}
-            name="name"
-            render={({ field, fieldState }) => (
-              <Field id="edit-profile" data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor={ids.name}>Name</FieldLabel>
-                <div className="relative">
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10"
+    >
+      <SettingsSection
+        id="profile"
+        title="Account Settings"
+        description="This is how others will see you on the site."
+      >
+        <div className="grid items-start gap-8 md:grid-cols-[minmax(0,28rem)_auto]">
+          <div className="grid gap-5">
+            <Controller
+              control={form.control}
+              name="name"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor={ids.name} className={labelClass}>
+                    Name
+                  </FieldLabel>
                   <Input
                     id={ids.name}
                     type="text"
                     aria-invalid={!!fieldState.error}
                     disabled={isSubmitting}
                     placeholder={user.name ?? "John Doe"}
-                    className="w-full max-w-96 shadow-xs min-h-11 lg:min-h-0"
+                    className={inputClass}
                     {...field}
                   />
-                </div>
-                <FieldDescription>
-                  Your name will be displayed on the site.
-                </FieldDescription>
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
+                  <FieldDescription>
+                    Your name will be displayed on the site.
+                  </FieldDescription>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
 
-          <Controller
-            control={form.control}
-            name="email"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor={ids.email}>Email</FieldLabel>
-                <div className="relative flex gap-4">
+            <Controller
+              control={form.control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor={ids.email} className={labelClass}>
+                    Email
+                  </FieldLabel>
                   <Input
                     id={ids.email}
                     type="email"
                     aria-invalid={!!fieldState.error}
                     disabled={isSubmitting}
                     placeholder={user.email ?? "you@example.com"}
-                    className="w-full max-w-96 shadow-xs min-h-11 lg:min-h-0"
+                    className={inputClass}
                     {...field}
                   />
-                </div>
-                <FieldDescription>
-                  Your email will be used for account notifications.
-                </FieldDescription>
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
+                  <FieldDescription>
+                    Your email will be used for account notifications.
+                  </FieldDescription>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
 
+            <div>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className={primaryButtonClass}
+              >
+                Save Changes
+              </Button>
+            </div>
+          </div>
+
+          <div className="order-first grid justify-items-center gap-3 md:order-none">
+            <div
+              aria-hidden
+              className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-linear-to-br from-primary to-[color-mix(in_srgb,var(--primary)_40%,black)] text-[1.75rem] leading-none font-bold text-primary-foreground shadow-lg md:size-28 md:text-[2.5rem]"
+            >
+              {user.image ? (
+                <Image src={user.image} alt="" fill className="object-cover" />
+              ) : (
+                initial
+              )}
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() =>
+                toast.info("Avatar uploads are not available yet.")
+              }
+              className={squareButtonClass}
+            >
+              Change avatar
+            </Button>
+          </div>
+        </div>
+      </SettingsSection>
+
+      <SettingsSection
+        id="password"
+        title="Change Password"
+        description="Update the password you use to sign in."
+      >
+        <div className="grid max-w-md gap-5">
           <Controller
             control={form.control}
             name="currentPassword"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor={ids.currentPassword}>
+                <FieldLabel
+                  htmlFor={ids.currentPassword}
+                  className={labelClass}
+                >
                   Current Password
                 </FieldLabel>
                 <Input
@@ -222,7 +258,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   aria-invalid={!!fieldState.error}
                   disabled={isSubmitting}
                   placeholder="••••••••••"
-                  className="w-full max-w-96 shadow-xs min-h-11 lg:min-h-0"
+                  className={inputClass}
                   {...field}
                 />
                 <FieldDescription>
@@ -239,9 +275,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
             control={form.control}
             name="password"
             render={({ field, fieldState }) => (
-              <Field id="change-password" data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor={ids.password}>New Password</FieldLabel>
-                <div className="relative w-full max-w-96">
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor={ids.password} className={labelClass}>
+                  New Password
+                </FieldLabel>
+                <div className="relative w-full">
                   <Input
                     id={ids.password}
                     type={isPassVisible ? "text" : "password"}
@@ -249,7 +287,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
                     disabled={isSubmitting}
                     autoComplete="new-password"
                     placeholder="••••••••••"
-                    className="min-h-11 pr-14 shadow-xs"
+                    className={cn(inputClass, "pr-12")}
                     {...field}
                   />
                   <Tooltip>
@@ -260,13 +298,16 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       }
                       type="button"
                       disabled={!field.value}
-                      onClick={() => setIsPassVisible(!isPassVisible)}
-                      className="absolute inset-y-0 right-2 my-auto flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                      onClick={() => setIsPassVisible((visible) => !visible)}
+                      className={cn(
+                        controlStyles.rowIcon,
+                        "absolute inset-y-0 right-0 my-auto flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+                      )}
                     >
                       {isPassVisible ? (
-                        <EyeOff aria-hidden className="size-5" />
+                        <EyeOff aria-hidden className="size-4" />
                       ) : (
-                        <Eye aria-hidden className="size-5" />
+                        <Eye aria-hidden className="size-4" />
                       )}
                     </TooltipTrigger>
 
@@ -285,111 +326,17 @@ export function ProfileForm({ user }: ProfileFormProps) {
             )}
           />
 
-          <div className="pt-4">
+          <div>
             <Button
               type="submit"
               disabled={isSubmitting}
-              className={controlStyles.text}
+              className={primaryButtonClass}
             >
-              Save Changes
+              Update Password
             </Button>
           </div>
-        </form>
-
-        <div id="delete-account" className="space-y-4">
-          <h2 className="font-heading text-lg text-destructive dark:drop-shadow-md sm:text-xl md:text-2xl">
-            Danger Zone
-          </h2>
-          <Separator />
-
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="font-medium">Delete your account</p>
-              <small>Delete your account and all its associated data.</small>
-            </div>
-
-            <AlertDialog
-              onOpenChange={(open) => {
-                // Do not keep the typed password around after the dialog closes.
-                if (!open) {
-                  setDeletePassword("");
-                  setConfirmDelete("");
-                }
-              }}
-            >
-              <AlertDialogTrigger
-                render={
-                  <Button
-                    variant="destructive"
-                    className={cn(controlStyles.text, destructiveText)}
-                  >
-                    Delete Account
-                  </Button>
-                }
-              />
-
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Are you sure you want to delete your account?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Once you delete your account, there is no going back. Please
-                    be certain. Accounts without a password (passkey or OAuth)
-                    can leave the password blank if they signed in within the
-                    last 10 minutes; otherwise sign in again first.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <Input
-                  type="password"
-                  autoComplete="current-password"
-                  aria-label="Your password"
-                  value={deletePassword}
-                  onChange={(e) => setDeletePassword(e.target.value)}
-                  placeholder="Enter your password (if you have one)"
-                  className="min-h-11 lg:min-h-0"
-                />
-                <Input
-                  type="text"
-                  autoComplete="off"
-                  aria-label="Type DELETE MY ACCOUNT to confirm"
-                  value={confirmDelete}
-                  onChange={(e) => setConfirmDelete(e.target.value)}
-                  placeholder="Type DELETE MY ACCOUNT to confirm!"
-                  className="min-h-11 lg:min-h-0"
-                />
-
-                <AlertDialogFooter>
-                  <AlertDialogCancel className={controlStyles.text}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={deleteUserHandler}
-                    disabled={confirmDelete !== "DELETE MY ACCOUNT"}
-                    className={cn(
-                      buttonVariants({ variant: "destructive" }),
-                      controlStyles.text,
-                      destructiveText,
-                    )}
-                  >
-                    Delete Account
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
         </div>
-      </div>
-
-      <div className="relative size-40 shrink-0 self-center overflow-hidden md:size-52 md:self-start">
-        <Image
-          src={user.image ?? "/images/placeholder/user.jpg"}
-          alt={user.name ?? "Profile Photo"}
-          fill
-          className="rounded-full border p-1 shadow-xs"
-        />
-      </div>
-    </div>
+      </SettingsSection>
+    </form>
   );
 }

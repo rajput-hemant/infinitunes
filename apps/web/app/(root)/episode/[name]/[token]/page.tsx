@@ -1,5 +1,6 @@
 import { getImageSrc } from "@infinitunes/types";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
@@ -7,17 +8,21 @@ import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 
-const getEpisode = cache(async (token: string) =>
-  orNotFound(
+// An episode token that resolves to no episode renders the 404 UI.
+const getEpisode = cache(async (token: string) => {
+  const detail = await orNotFound(
     api.show.episodeDetails({
       token,
       season: 1,
       sort: "desc",
     }),
-  ),
-);
+  );
+  const episode = detail.episodes[0];
+  if (!episode) notFound();
+  return { episode, modules: detail.modules };
+});
 
-type EpisodeDetailsProps = {
+type EpisodeDetailsPageProps = {
   params: Promise<{
     name: string;
     token: string;
@@ -26,11 +31,10 @@ type EpisodeDetailsProps = {
 
 export async function generateMetadata({
   params,
-}: EpisodeDetailsProps): Promise<Metadata> {
+}: EpisodeDetailsPageProps): Promise<Metadata> {
   const { name, token } = await params;
 
-  const episodeObj = await getEpisode(token);
-  const episode = episodeObj.episodes[0];
+  const { episode } = await getEpisode(token);
 
   return pageMetadata({
     title: episode.title,
@@ -40,22 +44,23 @@ export async function generateMetadata({
     square: true,
   });
 }
-export default async function EpisodeDetailsPage(props: EpisodeDetailsProps) {
+export default async function EpisodeDetailsPage(
+  props: EpisodeDetailsPageProps,
+) {
   const { token } = await props.params;
 
-  const episodeObj = await getEpisode(token);
+  const { episode, modules } = await getEpisode(token);
 
   return (
-    <div className="mb-4 space-y-4">
-      <DetailsHeader item={episodeObj.episodes[0]} />
+    <div className="flex flex-col gap-(--page-gap)">
+      <DetailsHeader item={episode} />
 
-      <h2 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-        {episodeObj.modules.episode_details.title}
-      </h2>
-
-      <p className="max-w-3xl text-muted-foreground">
-        {episodeObj.episodes[0].more_info.description}
-      </p>
+      <section className="flex max-w-2xl flex-col gap-4 rounded-md bg-card p-6 ring-1 ring-inset ring-border">
+        <h2 className="font-heading text-xl capitalize text-foreground sm:text-2xl md:text-3xl">
+          {modules.episode_details.title}
+        </h2>
+        <p className="text-muted-foreground">{episode.more_info.description}</p>
+      </section>
     </div>
   );
 }

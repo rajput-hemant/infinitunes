@@ -1,22 +1,50 @@
 "use client";
 
-import type { Album, SearchReturnType, Song } from "@infinitunes/types";
+import type { SearchReturnType, Song } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, SearchX } from "lucide-react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
+import { searchUi } from "~/components/search/search-ui";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
 
+import type { ListSearchType } from "./type-map";
 import { SEARCH_TYPE_MAP } from "./type-map";
 
 type SearchResultsProps = {
   query: string;
-  type: "song" | "album" | "playlist" | "artist" | "show";
+  type: ListSearchType;
   initialSearchResults: SearchReturnType;
 };
+
+type SearchEntry = SearchReturnType["results"][number];
+
+type CardEntry = Exclude<SearchEntry, Song>;
+
+/** Artist results are named `name`; every other card type uses `title`. */
+function getCardTitle(result: CardEntry) {
+  return "name" in result ? result.name : result.title;
+}
+
+function getCardSubtitle(result: CardEntry) {
+  return "subtitle" in result ? result.subtitle : result.role;
+}
+
+/** Podcast (show) results carry artwork as `image_file_url`; they have no `image`. */
+function getCardImage(result: CardEntry) {
+  return result.type === "show" ? result.image_file_url : result.image;
+}
+
+function isSongEntry(result: SearchEntry): result is Song {
+  return result.type === "song";
+}
+
+function isCardEntry(result: SearchEntry): result is CardEntry {
+  return !isSongEntry(result);
+}
 
 export function SearchResults(props: SearchResultsProps) {
   const { query, type, initialSearchResults } = props;
@@ -33,16 +61,14 @@ export function SearchResults(props: SearchResultsProps) {
           page: pageParam,
           n: 50,
         }),
-      initialPageParam: 1 as number,
+      initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) =>
-        allPages.length * 50 < (lastPage as SearchReturnType).total
-          ? allPages.length + 1
-          : undefined,
+        allPages.length * 50 < lastPage.total ? allPages.length + 1 : undefined,
       initialData: { pages: [initialSearchResults], pageParams: [1] },
     });
 
-  const searchResults = (data.pages as SearchReturnType[]).flatMap(
-    (page) => page.results as (Album | Song)[],
+  const searchResults = data.pages.flatMap(
+    (page): SearchEntry[] => page.results,
   );
 
   const [ref] = useIntersectionObserver({
@@ -59,7 +85,7 @@ export function SearchResults(props: SearchResultsProps) {
       <LibraryEmpty
         icon={SearchX}
         title="No results found"
-        description={`Nothing matched “${query.replaceAll("%20", " ")}”. Check the spelling or try a different search.`}
+        description={`Nothing matched "${query}". Check the spelling or try a different search.`}
       />
     );
   }
@@ -67,17 +93,18 @@ export function SearchResults(props: SearchResultsProps) {
   return (
     <>
       {type === "song" ? (
-        <SongListClient items={searchResults as Song[]} />
+        <SongListClient items={searchResults.filter(isSongEntry)} />
       ) : (
-        <div className="flex w-full flex-wrap justify-between gap-y-4">
-          {searchResults.map((result) => (
+        <div className={searchUi.grid}>
+          {searchResults.filter(isCardEntry).map((result) => (
             <SliderCard
               key={result.id}
-              name={result.title}
+              name={getCardTitle(result)}
               url={result.perma_url}
-              subtitle={result.subtitle}
+              subtitle={getCardSubtitle(result)}
               type={result.type}
-              image={result.image}
+              image={getCardImage(result)}
+              className={searchUi.gridCard}
             />
           ))}
         </div>
@@ -86,19 +113,19 @@ export function SearchResults(props: SearchResultsProps) {
       {hasNextPage ? (
         <div
           ref={ref}
-          className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
+          className="flex items-center justify-center gap-2 py-4 text-sm font-medium text-muted-foreground"
         >
-          {isFetchingNextPage && (
+          {isFetchingNextPage ? (
             <>
-              <Loader2 className="size-5 animate-spin" /> Loading...
+              <Loader2 className="size-5 animate-spin" aria-hidden />
+              Loading...
             </>
-          )}
+          ) : null}
         </div>
       ) : (
-        <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
+        <p className="py-6 text-center text-sm text-muted-foreground">
+          You have reached the end of these results.
+        </p>
       )}
     </>
   );

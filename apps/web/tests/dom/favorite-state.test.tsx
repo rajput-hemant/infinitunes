@@ -11,6 +11,7 @@ import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
 
 // `server-only` throws outside the react-server condition; the action module
 // behind the button only needs it to import, nothing here calls an action.
@@ -32,7 +33,13 @@ const item: QueueItem = {
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
 
 const router = {
@@ -158,8 +165,11 @@ describe("tile more-button mobile menu", () => {
         expect(scroll?.classList.contains("min-h-0")).toBe(true);
         expect(scroll?.classList.contains("overflow-x-hidden")).toBe(true);
 
-        const actions = [...(scroll?.querySelectorAll("button.h-11") ?? [])];
-        expect(actions).toHaveLength(8);
+        const actions = [
+          ...(scroll?.querySelectorAll("button.shrink-0") ?? []),
+        ];
+        // Song menu actions: favourite, play, queue, playlist, remove, radio, download, share.
+        expect(actions).toHaveLength(9);
         expect(
           actions.some(
             (action) => action.textContent === "Remove from Playlist",
@@ -177,7 +187,7 @@ describe("tile more-button mobile menu", () => {
         expect(links).toHaveLength(6);
         for (const link of links) {
           expect(link.classList.contains("shrink-0")).toBe(true);
-          expect(link.classList.contains("min-h-11")).toBe(true);
+          expect(link.classList.contains("min-h-(--ctl-lg)")).toBe(true);
         }
       },
       true,

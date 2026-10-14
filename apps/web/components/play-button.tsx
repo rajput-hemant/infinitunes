@@ -3,7 +3,7 @@
 import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
 import { toQueue } from "@infinitunes/types";
 import { useSearchParams } from "next/navigation";
-import React from "react";
+import type { HTMLAttributes } from "react";
 import { toast } from "sonner";
 
 import {
@@ -15,17 +15,39 @@ import {
 import { findQueueIndex } from "~/lib/queue-position";
 import { api } from "~/lib/trpc/client";
 
-type PlayButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
+type PlayButtonProps = HTMLAttributes<HTMLButtonElement> & {
   type: MediaType;
   token: string;
   /** Season to queue when `type` is "show"; the first season when omitted. */
   season?: number;
   /** Set when the button sits on a queue row: jump to that exact entry. */
   queueItemId?: string;
+  /** Queue the source in a random order and start from its first entry. */
+  shuffle?: boolean;
 };
 
+function parseSort(value: string | null): Sort {
+  return value === "asc" ? "asc" : "desc";
+}
+
+/** Every item once, in random order (sorting by a random key per item). */
+function shuffled<T>(items: T[]): T[] {
+  return items
+    .map((item) => ({ item, key: Math.random() }))
+    .sort((a, b) => a.key - b.key)
+    .map(({ item }) => item);
+}
+
 export function PlayButton(props: PlayButtonProps) {
-  const { type, token, season, queueItemId, children, ...restProps } = props;
+  const {
+    type,
+    token,
+    season,
+    queueItemId,
+    shuffle = false,
+    children,
+    ...restProps
+  } = props;
 
   const searchParams = useSearchParams();
 
@@ -36,10 +58,12 @@ export function PlayButton(props: PlayButtonProps) {
 
   const utils = api.useUtils();
 
-  const sort = (searchParams.get("sort") as Sort) ?? "desc";
+  const sort = parseSort(searchParams.get("sort"));
 
   async function playHandler() {
-    const songIndex = findQueueIndex(initialQueue, { token, queueItemId });
+    const songIndex = shuffle
+      ? -1
+      : findQueueIndex(initialQueue, { token, queueItemId });
 
     if (songIndex !== -1) {
       setCurrentIndex(songIndex);
@@ -123,7 +147,8 @@ export function PlayButton(props: PlayButtonProps) {
         setActiveRadio(null);
       }
 
-      const queueItems = queue.map((item) => toQueue(item));
+      const ordered = shuffle ? shuffled(queue) : queue;
+      const queueItems = ordered.map((item) => toQueue(item));
       const first = queueItems[0];
       if (!first) return;
 
@@ -145,7 +170,7 @@ export function PlayButton(props: PlayButtonProps) {
   return (
     <button
       type="button"
-      aria-label="Play"
+      aria-label={shuffle ? "Shuffle" : "Play"}
       onClick={playHandler}
       {...restProps}
     >

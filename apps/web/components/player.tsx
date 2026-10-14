@@ -1,39 +1,13 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import {
-  formatDuration,
-  getImageSrc,
-  pickShuffleIndex,
-} from "@infinitunes/types";
-import { Button, buttonVariants } from "@infinitunes/ui/components/button";
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import { Slider } from "@infinitunes/ui/components/slider";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@infinitunes/ui/components/tooltip";
-import {
-  Loader2,
-  MoreVertical,
-  MoveUpRight,
-  Pause,
-  Radio,
-  Repeat,
-  Repeat1,
-  Shuffle,
-  Volume,
-  Volume1,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
-import Link from "next/link";
-import React from "react";
+import * as React from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { useKeydown } from "~/hooks/use-keydown";
+import { usePlayhead } from "~/hooks/use-playhead";
 import { useRadioRefill } from "~/hooks/use-radio-refill";
 import {
   useActiveRadioSession,
@@ -46,22 +20,25 @@ import {
 } from "~/hooks/use-store";
 import { useTrackPlayback } from "~/hooks/use-track-playback";
 import type { User } from "~/lib/auth";
-import { controlStyles } from "~/lib/control-styles";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
-import { createPositionStore, usePosition } from "~/lib/position-store";
-import type { PositionStore } from "~/lib/position-store";
+import { createPositionStore } from "~/lib/position-store";
 import { api } from "~/lib/trpc/client";
-import { cn, getHref } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 
-import { ExpandedPlayer, setValueText } from "./expanded-player";
-import { Icons } from "./icons";
-import { ImageWithFallback } from "./image-with-fallback";
+import { ExpandedPlayer } from "./expanded-player";
+import { PlayerActions } from "./player/player-actions";
+import { PlayerTrackInfo } from "./player/player-track-info";
+import { PlayerTransport } from "./player/player-transport";
+import { PlayerVolume } from "./player/player-volume";
+import { MiniProgress, SeekBar } from "./player/seek-bar";
+import {
+  loopModeOf,
+  nextTrackIndex,
+  prevTrackIndex,
+} from "./player/track-index";
+import { useQueuePane } from "./player/use-queue-pane";
 import { Queue } from "./queue";
-import { TileMoreButton } from "./song-list/more-button";
-
-const controlClass =
-  "rounded-md outline-none transition-transform duration-150 ease-out focus-visible:ring-3 focus-visible:ring-ring/50 active:scale-[0.96] motion-reduce:transition-none";
 
 type PlayerProps = {
   user?: User;
@@ -70,76 +47,6 @@ type PlayerProps = {
 };
 
 export function Player({ user, playlists, favorites }: PlayerProps) {
-  return (
-    <PlayerInner user={user} playlists={playlists} favorites={favorites} />
-  );
-}
-
-// The only parts that follow the playhead every frame (PF-8); the rest of the
-// bar re-renders on real state changes only.
-function SeekBar({
-  position,
-  duration,
-  onChange,
-  onCommit,
-  onStart,
-}: {
-  position: PositionStore;
-  duration: number;
-  onChange: (value: number) => void;
-  onCommit: () => void;
-  onStart: () => void;
-}) {
-  const pos = usePosition(position);
-  const labelId = React.useId();
-  const ref = React.useRef<HTMLDivElement>(null);
-  const format = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
-  const text = `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`;
-
-  // The Slider wrapper does not forward per-thumb props, so the readable value
-  // is set on the thumb's range input directly (see `setValueText`).
-  React.useEffect(() => setValueText(ref.current, text), [text]);
-
-  return (
-    <>
-      <span id={labelId} className="sr-only">
-        Seek
-      </span>
-      <Slider
-        ref={ref}
-        aria-labelledby={labelId}
-        value={[pos]}
-        max={duration || 1}
-        onValueChange={(value: number | readonly number[], _details) =>
-          onChange(typeof value === "number" ? value : (value[0] as number))
-        }
-        onValueCommitted={onCommit}
-        onPointerDown={onStart}
-      />
-    </>
-  );
-}
-
-function TimeLabel({
-  position,
-  duration,
-}: {
-  position: PositionStore;
-  duration: number;
-}) {
-  const pos = usePosition(position);
-  return (
-    <p className="shrink-0 text-sm text-muted-foreground">
-      {formatDuration(pos, pos >= 3600 ? "hh:mm:ss" : "mm:ss")}
-      {" / "}
-      {formatDuration(duration, duration >= 3600 ? "hh:mm:ss" : "mm:ss")}
-    </p>
-  );
-}
-
-function PlayerInner({ user, playlists, favorites }: PlayerProps) {
-  const volumeRef = React.useRef<HTMLDivElement>(null);
-  const volumeLabelId = React.useId();
   // stores
   const [queue, setQueue] = useQueue();
   const [activeRadio] = useActiveRadioSession();
@@ -148,14 +55,13 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
   const [isTyping] = useIsTyping();
   const [shortcutsEnabled] = useKeyboardShortcuts();
-  // refs
-  const frameRef = React.useRef<number>(0);
   // states
   const [isShuffle, setIsShuffle] = React.useState(false);
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);
   const [position] = React.useState(createPositionStore);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
+  const pane = useQueuePane();
 
   const utils = api.useUtils();
 
@@ -202,24 +108,17 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
 
   const onEndHandler = React.useCallback(() => {
     const latest = playbackStateRef.current;
-
-    let index = latest.currentIndex;
-
-    if (latest.isShuffle) {
-      if (!latest.isLooping) {
-        index = pickShuffleIndex(latest.queue.length, latest.currentIndex);
-      }
-    } else {
-      if (latest.currentIndex < latest.queue.length - 1) {
-        if (!latest.isLooping) index = latest.currentIndex + 1;
-      } else {
-        if (latest.loopPlaylist) {
-          index = 0;
-        }
-      }
-    }
-
-    setCurrentIndex(index);
+    setCurrentIndex(
+      nextTrackIndex(
+        {
+          length: latest.queue.length,
+          currentIndex: latest.currentIndex,
+          shuffle: latest.isShuffle,
+          loopPlaylist: latest.loopPlaylist,
+        },
+        { reason: "ended", repeatOne: latest.isLooping },
+      ),
+    );
   }, [setCurrentIndex]);
 
   useTrackPlayback({
@@ -234,24 +133,12 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
 
   const current = queue[currentIndex];
 
-  React.useEffect(() => {
-    if (isDragging) {
-      return;
-    }
-
-    const animate = () => {
-      position.set(getPosition());
-      frameRef.current = requestAnimationFrame(animate);
-    };
-
-    frameRef.current = window.requestAnimationFrame(animate);
-
-    return () => {
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
-    };
-  }, [getPosition, isDragging, position]);
+  usePlayhead({
+    store: position,
+    getPosition,
+    playing: isPlaying,
+    frozen: isDragging,
+  });
 
   const fetchRadioSongs = React.useCallback(
     (stationId: string) =>
@@ -298,42 +185,30 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
   function skipToNext() {
     if (!isPlayerInit) setIsPlayerInit(true);
 
-    let index = currentIndex;
-
-    if (isShuffle) {
-      index = pickShuffleIndex(queue.length, currentIndex);
-    } else {
-      if (currentIndex < queue.length - 1) {
-        index = currentIndex + 1;
-      } else {
-        if (loopPlaylist) {
-          index = 0;
-        }
-      }
-    }
-    setCurrentIndex(index);
+    setCurrentIndex(
+      nextTrackIndex(
+        {
+          length: queue.length,
+          currentIndex,
+          shuffle: isShuffle,
+          loopPlaylist,
+        },
+        { reason: "skip" },
+      ),
+    );
   }
 
   function skipToPrev() {
     if (!isPlayerInit) setIsPlayerInit(true);
 
-    let index;
-
-    if (isShuffle) {
-      index = pickShuffleIndex(queue.length, currentIndex);
-    } else {
-      if (currentIndex > 0) {
-        index = currentIndex - 1;
-      } else {
-        if (loopPlaylist) {
-          index = queue.length - 1;
-        } else {
-          index = currentIndex;
-        }
-      }
-    }
-
-    setCurrentIndex(index);
+    setCurrentIndex(
+      prevTrackIndex({
+        length: queue.length,
+        currentIndex,
+        shuffle: isShuffle,
+        loopPlaylist,
+      }),
+    );
   }
 
   function playPauseHandler() {
@@ -401,315 +276,97 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
       loopHandler();
     } else if (e.key === "s") {
       setIsShuffle(!isShuffle);
+    } else if (e.key === "q") {
+      e.preventDefault();
+      pane.setOpen(!pane.open);
     }
   });
 
-  const volumeText = `${isMuted ? 0 : Math.round(volume * 100)} percent`;
-
-  // The Slider wrapper does not forward per-thumb props, so the readable value
-  // is set on the thumb's range input directly (see `setValueText`).
-  React.useEffect(
-    () => setValueText(volumeRef.current, volumeText),
-    [volumeText],
-  );
-
   return (
-    <section
-      aria-label="Player"
-      className={cn(
-        "fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 h-20 bg-background animate-in fade-in slide-in-from-bottom-full [animation-duration:200ms] [animation-timing-function:var(--ease-out)] motion-reduce:animate-none lg:bottom-0",
-        !(isReady || queue.length) && "hidden lg:block",
-      )}
-    >
-      <output aria-live="polite" className="sr-only">
-        {current ? `Now playing ${current.name}, ${current.subtitle}` : ""}
-      </output>
-      <SeekBar
-        position={position}
-        duration={duration}
-        onChange={seekChange}
-        onCommit={seekCommit}
-        onStart={() => setIsDragging(true)}
-      />
-
-      <div
+    <>
+      <GlassSurface
+        render={<section aria-label="Player" />}
+        size="m"
+        glassRole="player"
         className={cn(
-          "flex items-center px-4 pt-3 lg:px-4",
-          queue.length === 0 && "text-muted-foreground",
+          // `--pl-r` is the concentric radius the artwork derives from: the
+          // bar is r-lg + 4px, the phone pill is fully round.
+          "@container fixed right-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 z-40 h-14 [--pl-r:999px] rounded-(--pl-r) transition-[left,right] duration-base ease-spring md:bottom-3 md:left-21 md:h-18 md:[--pl-r:calc(var(--radius-lg)+0.25rem)] lg:left-[calc(var(--side-w)+0.75rem)]",
+          "min-[1440px]:in-data-[queue=open]:right-[calc(var(--queue-w)+0.75rem)]",
+          !(isReady || queue.length) && "hidden md:block",
         )}
       >
-        <div className="relative flex w-full min-w-0 gap-4 lg:w-1/3">
-          {current && (
-            // Below lg the transport row is the only other control, so the
-            // whole info area opens the expanded player.
-            <button
-              type="button"
-              aria-label="Open player"
-              onClick={() => setIsExpanded(true)}
-              className={cn(controlClass, "absolute inset-0 z-10 lg:hidden")}
-            />
+        <output aria-live="polite" className="sr-only">
+          {current ? `Now playing ${current.name}, ${current.subtitle}` : ""}
+        </output>
+        <div
+          className={cn(
+            "grid h-full grid-cols-[minmax(0,1fr)_auto] items-center gap-2 px-2 md:grid-cols-[minmax(9rem,1fr)_minmax(15rem,36rem)_minmax(9rem,1fr)] md:gap-4 md:px-3",
+            queue.length === 0 && "text-muted-foreground",
           )}
-          {queue.length && queue[currentIndex]?.image ? (
-            <>
-              <div className="relative aspect-square h-12 shrink-0 overflow-hidden rounded-md shadow-sm">
-                <ImageWithFallback
-                  src={getImageSrc(queue[currentIndex].image, "low")}
-                  alt={queue[currentIndex].name}
-                  fill
-                  sizes="48px"
-                  fallback="/images/placeholder/song.jpg"
-                />
+        >
+          <PlayerTrackInfo
+            track={current}
+            radio={activeRadio}
+            onExpand={() => setIsExpanded(true)}
+          />
 
-                <Skeleton className="absolute inset-0 -z-10" />
-              </div>
-
-              <div className="flex min-w-0 flex-col justify-center">
-                <Link
-                  href={getHref(
-                    queue[currentIndex].url,
-                    queue[currentIndex].type === "song" ? "song" : "episode",
-                  )}
-                  className="group line-clamp-1 font-heading text-sm text-primary dark:drop-shadow-sm"
-                >
-                  {queue[currentIndex].name}
-                  <MoveUpRight
-                    aria-hidden
-                    className="invisible mb-1 ml-1 inline-flex size-3 group-hover:visible"
-                  />
-                </Link>
-
-                <p className="line-clamp-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                  {activeRadio && (
-                    <span className="inline-flex shrink-0 items-center gap-1 rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-                      <Radio aria-hidden className="size-2.5 animate-pulse" />
-                      {activeRadio.name}
-                    </span>
-                  )}
-                  <span className="truncate">
-                    {queue[currentIndex].subtitle}
-                  </span>
-                </p>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center space-x-4">
-              <Skeleton className="size-12 rounded-md" />
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-44 lg:w-64" />
-                <Skeleton className="h-3 w-52 2xl:w-[500px]" />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="flex shrink-0 items-center justify-end gap-0.5 lg:w-1/3 lg:justify-evenly lg:gap-0">
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label={isLooping ? "Looping" : "Loop"}
-                  onClick={loopHandler}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "hidden items-center justify-center lg:inline-flex",
-                    !isLooping && !loopPlaylist && "text-muted-foreground",
-                  )}
-                >
-                  {isLooping ? (
-                    <Repeat1 aria-hidden strokeWidth={2} className="size-6" />
-                  ) : (
-                    <Repeat aria-hidden strokeWidth={2} className="size-6" />
-                  )}
-                </button>
-              }
+          <div className="flex shrink-0 flex-col items-center justify-center gap-0.5 md:min-w-0">
+            <PlayerTransport
+              isShuffle={isShuffle}
+              loopMode={loopModeOf(isLooping, loopPlaylist)}
+              isPlaying={isPlaying}
+              isLoading={isLoading}
+              onToggleShuffle={() => setIsShuffle(!isShuffle)}
+              onPrevious={skipToPrev}
+              onPlayPause={playPauseHandler}
+              onNext={skipToNext}
+              onToggleLoop={loopHandler}
             />
-            <TooltipContent>
-              {isLooping
-                ? "Playing current song on repeat"
-                : loopPlaylist
-                  ? "Looping playlist"
-                  : "Loop"}
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label="Previous"
-                  onClick={skipToPrev}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "inline-flex items-center justify-center",
-                  )}
-                >
-                  <Icons.SkipBack aria-hidden className="size-6" />
-                </button>
-              }
-            />
-            <TooltipContent>Previous</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label={isPlaying ? "Pause" : "Play"}
-                  onClick={playPauseHandler}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "inline-flex items-center justify-center",
-                  )}
-                >
-                  {isLoading ? (
-                    <Loader2 aria-hidden className="size-8 animate-spin" />
-                  ) : isPlaying ? (
-                    <Pause aria-hidden className="size-8" />
-                  ) : (
-                    <Icons.Play aria-hidden className="size-8" />
-                  )}
-                </button>
-              }
-            />
-            <TooltipContent>{isPlaying ? "Pause" : "Play"}</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label="Next"
-                  onClick={skipToNext}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "inline-flex items-center justify-center",
-                  )}
-                >
-                  <Icons.SkipForward aria-hidden className="size-6" />
-                </button>
-              }
-            />
-            <TooltipContent>Next</TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger
-              delay={0}
-              render={
-                <button
-                  aria-label={isShuffle ? "Shuffling" : "Shuffle"}
-                  onClick={() => setIsShuffle(!isShuffle)}
-                  className={cn(
-                    controlClass,
-                    controlStyles.transport,
-                    "hidden items-center justify-center lg:inline-flex",
-                    !isShuffle && "text-muted-foreground",
-                  )}
-                >
-                  <Shuffle className="size-6" aria-hidden strokeWidth={2.35} />
-                </button>
-              }
-            />
-            <TooltipContent>
-              {isShuffle ? "Shuffling" : "Shuffle"}
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        <div className="hidden w-1/3 items-center justify-end gap-4 lg:flex">
-          <TimeLabel position={position} duration={duration} />
-
-          <div className="hidden items-center gap-4 xl:flex">
-            <button
-              aria-label={isMuted ? "Unmute" : "Mute"}
-              onClick={toggleMute}
-              className={cn(
-                controlClass,
-                controlStyles.transport,
-                "inline-flex items-center justify-center transition-opacity hover:opacity-100",
-                (!isReady || isMuted) && "text-muted-foreground opacity-50",
-              )}
-            >
-              {isMuted || volume === 0 ? (
-                <VolumeX className="size-6" aria-hidden />
-              ) : volume < 0.33 ? (
-                <Volume className="size-6" aria-hidden />
-              ) : volume < 0.66 ? (
-                <Volume1 className="size-6" aria-hidden />
-              ) : (
-                <Volume2 className="size-6" aria-hidden strokeWidth={2} />
-              )}
-            </button>
-
-            <span id={volumeLabelId} className="sr-only">
-              Volume
-            </span>
-            <Slider
-              ref={volumeRef}
-              aria-labelledby={volumeLabelId}
-              value={[isMuted ? 0 : volume * 100]}
-              defaultValue={[75]}
-              min={0}
-              max={100}
-              step={1}
-              onValueChange={(value: number | readonly number[], _details) =>
-                volumeChange(
-                  typeof value === "number" ? value : (value[0] as number),
-                )
-              }
-              className={cn(
-                "w-44 transition-opacity hover:opacity-100",
-                !isReady && "opacity-50",
-              )}
-            />
-
-            <span className="w-8 text-sm font-medium">
-              {isMuted ? "0" : Math.round(volume * 100)}%
-            </span>
-          </div>
-
-          <div className="flex">
-            <Queue />
-
-            {queue.length > 0 ? (
-              <TileMoreButton
-                item={queue[currentIndex]}
-                showAlbum
-                user={user}
-                playlists={playlists}
-                favorites={favorites}
-                className={buttonVariants({
-                  size: "icon",
-                  variant: "ghost",
-                  className: controlStyles.headerIcon,
-                })}
+            <div className="hidden w-full min-w-0 md:block">
+              <SeekBar
+                position={position}
+                duration={duration}
+                onChange={seekChange}
+                onCommit={seekCommit}
+                onStart={() => setIsDragging(true)}
               />
-            ) : (
-              <Button
-                size="icon"
-                variant="ghost"
-                aria-label="More"
-                className={controlStyles.headerIcon}
-              >
-                <MoreVertical aria-hidden="true" className="size-5" />
-              </Button>
-            )}
+            </div>
+          </div>
+
+          <div className="hidden min-w-0 items-center justify-end gap-1 md:flex">
+            <PlayerVolume
+              isMuted={isMuted}
+              isReady={isReady}
+              volume={volume}
+              onToggleMute={toggleMute}
+              onVolumeChange={volumeChange}
+            />
+            <PlayerActions
+              track={current}
+              queueOpen={pane.open}
+              onToggleQueue={() => pane.setOpen(!pane.open)}
+              onExpand={() => setIsExpanded(true)}
+              user={user}
+              playlists={playlists}
+              favorites={favorites}
+            />
           </div>
         </div>
-      </div>
+
+        <MiniProgress position={position} duration={duration} />
+      </GlassSurface>
+
+      <Queue open={pane.open} onOpenChange={pane.setOpen} />
 
       <ExpandedPlayer
         open={isExpanded}
         onOpenChange={setIsExpanded}
         track={current}
+        radio={activeRadio}
+        user={user}
+        playlists={playlists}
+        favorites={favorites}
         position={position}
         duration={duration}
         isPlaying={isPlaying}
@@ -731,8 +388,6 @@ function PlayerInner({ user, playlists, favorites }: PlayerProps) {
         onNext={skipToNext}
         onToggleShuffle={() => setIsShuffle(!isShuffle)}
       />
-    </section>
+    </>
   );
 }
-
-export default PlayerInner;

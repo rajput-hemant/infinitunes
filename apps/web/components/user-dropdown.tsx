@@ -1,169 +1,121 @@
 "use client";
 
-import { authClient } from "@infinitunes/auth/client";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@infinitunes/ui/components/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@infinitunes/ui/components/dropdown-menu";
-import { Cog, LogOut, Monitor, Moon, Sun, SunMoon, User2 } from "lucide-react";
-import { useTheme } from "next-themes";
-import Image from "next/image";
+import { Keyboard, LogIn, LogOut } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useState } from "react";
 
-import { controlStyles } from "~/lib/control-styles";
-import { cn } from "~/lib/utils";
+import { ThemeToggleGroup } from "~/components/site-footer/theme-toggle-group";
+import { KeyboardShortcutsDialog } from "~/components/site-header/keyboard-shortcuts-dialog";
+import { useIsPhone } from "~/components/site-header/use-is-phone";
+import {
+  linksFor,
+  UserMenuIdentity,
+  type UserMenuUser,
+  UserMenuTriggerAvatar,
+  userMenuTriggerClassName,
+} from "~/components/site-header/user-menu-parts";
+import { UserMenuSheet } from "~/components/site-header/user-menu-sheet";
+import { useSignOut } from "~/hooks/use-sign-out";
 
 type UserDropdownProps = {
-  user?: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
+  user?: UserMenuUser;
 };
 
+/** Anchored dropdown from 768px, bottom sheet below it (`UserMenuSheet`). */
 export function UserDropdown({ user }: UserDropdownProps) {
-  const { setTheme } = useTheme();
-  const router = useRouter();
+  const isPhone = useIsPhone();
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
-  async function signOutHandler() {
-    toast.promise(
-      authClient.signOut({
-        fetchOptions: {
-          onSuccess: () => {
-            router.replace("/login");
-            router.refresh();
-          },
-        },
-      }),
-      {
-        loading: "Signing out...",
-        success: "You have been signed out.",
-        error: "Something went wrong.",
-      },
-    );
-  }
+  return (
+    <>
+      {isPhone ? (
+        <UserMenuSheet
+          user={user}
+          onShowShortcuts={() => setShortcutsOpen(true)}
+        />
+      ) : (
+        <DesktopUserMenu
+          user={user}
+          onShowShortcuts={() => setShortcutsOpen(true)}
+        />
+      )}
+
+      <KeyboardShortcutsDialog
+        open={shortcutsOpen}
+        onOpenChange={setShortcutsOpen}
+      />
+    </>
+  );
+}
+
+type UserMenuProps = UserDropdownProps & {
+  onShowShortcuts: () => void;
+};
+
+function DesktopUserMenu({ user, onShowShortcuts }: UserMenuProps) {
+  const signOut = useSignOut();
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Open user menu"
-        className={cn(
-          controlStyles.headerIcon,
-          "flex items-center justify-center rounded-full ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-        )}
+        className={userMenuTriggerClassName}
       >
-        <Avatar className="border shadow-xs">
-          <AvatarImage
-            src={user?.image ?? undefined}
-            alt={user?.name ?? "Guest User"}
-          />
-          <AvatarFallback
-            render={
-              <Image
-                src="/images/placeholder/user.jpg"
-                alt={user?.name ?? "Guest User"}
-                fill
-                className="dark:invert"
-              />
-            }
-          />
-        </Avatar>
+        <UserMenuTriggerAvatar user={user} />
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         side="bottom"
         align="end"
-        className="max-w-[300px] *:cursor-pointer [&_[data-slot=dropdown-menu-item]]:py-1.5"
+        className="min-w-56 max-w-xs pointer-coarse:min-w-72 *:cursor-pointer [&_[data-slot=dropdown-menu-item]]:min-h-(--ctl) [&_[data-slot=dropdown-menu-item]]:pointer-coarse:min-h-(--ctl-lg)"
       >
         <DropdownMenuGroup>
-          <DropdownMenuLabel className="flex flex-col">
-            <span title={user?.name ?? undefined} className="truncate">
-              {user ? (user.name ? user.name : "~") : "Guest User"}
-            </span>
-            <span
-              title={user?.email ?? undefined}
-              className="truncate text-sm font-normal text-muted-foreground"
-            >
-              {user?.email}
-            </span>
+          <DropdownMenuLabel>
+            <UserMenuIdentity user={user} />
           </DropdownMenuLabel>
         </DropdownMenuGroup>
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem
-          disabled={user === undefined}
-          render={<Link href="/me" />}
-        >
-          <User2 size={16} className="mr-2" />
-          My Profile
+        {linksFor(user).map(({ href, label, icon: Icon }) => (
+          <DropdownMenuItem key={href} render={<Link href={href} />}>
+            <Icon aria-hidden size={16} className="mr-2" />
+            {label}
+          </DropdownMenuItem>
+        ))}
+
+        <DropdownMenuSeparator />
+
+        <div className="px-1.5 py-1">
+          <ThemeToggleGroup stretch />
+        </div>
+
+        <DropdownMenuItem onClick={onShowShortcuts}>
+          <Keyboard aria-hidden size={16} className="mr-2" />
+          Keyboard shortcuts
         </DropdownMenuItem>
 
-        <DropdownMenuItem render={<Link href="/settings" />}>
-          <Cog size={16} className="mr-2" />
-          Settings
-        </DropdownMenuItem>
+        <DropdownMenuSeparator />
 
-        <DropdownMenuSub>
-          <DropdownMenuSubTrigger>
-            <SunMoon size={16} className="mr-2" />
-            Theme
-          </DropdownMenuSubTrigger>
-
-          <DropdownMenuPortal>
-            <DropdownMenuSubContent>
-              <DropdownMenuItem
-                onClick={() => setTheme("light")}
-                className="cursor-pointer"
-              >
-                <Sun size={16} className="mr-2" />
-                Light
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={() => setTheme("dark")}
-                className="cursor-pointer"
-              >
-                <Moon size={16} className="mr-2" />
-                Dark
-              </DropdownMenuItem>
-
-              <DropdownMenuItem
-                onClick={() => setTheme("system")}
-                className="cursor-pointer"
-              >
-                <Monitor size={16} className="mr-2" />
-                System
-              </DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuPortal>
-        </DropdownMenuSub>
-
-        {user && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={signOutHandler}>
-              <LogOut size={16} className="mr-2" />
-              Log Out
-            </DropdownMenuItem>
-          </>
+        {user ? (
+          <DropdownMenuItem onClick={signOut}>
+            <LogOut aria-hidden size={16} className="mr-2" />
+            Log out
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem render={<Link href="/login" />}>
+            <LogIn aria-hidden size={16} className="mr-2" />
+            Log in
+          </DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>

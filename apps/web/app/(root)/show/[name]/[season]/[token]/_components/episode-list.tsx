@@ -4,7 +4,6 @@ import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Sort } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import React from "react";
 
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
@@ -46,7 +45,7 @@ export function EpisodeList(props: EpisodeListProps) {
           page: pageParam,
           sort,
         }),
-      initialPageParam: 1 as number,
+      initialPageParam: 1,
       getNextPageParam: (_, allPages) => {
         const allPagesLength = allPages
           .map((page) => page.length)
@@ -77,7 +76,7 @@ export function EpisodeList(props: EpisodeListProps) {
         userPlaylists={userPlaylists}
       />
 
-      {hasNextPage ? (
+      {hasNextPage && (
         <div
           ref={ref}
           className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
@@ -88,11 +87,6 @@ export function EpisodeList(props: EpisodeListProps) {
             </>
           )}
         </div>
-      ) : (
-        <h2 className="py-6 text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
       )}
     </>
   );

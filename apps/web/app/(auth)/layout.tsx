@@ -1,90 +1,76 @@
-import { buttonVariants } from "@infinitunes/ui/components/button";
-import { ArrowLeft } from "lucide-react";
-import Image from "next/image";
+import { X } from "lucide-react";
 import Link from "next/link";
-import { connection } from "next/server";
 import React from "react";
 
+import { ArtistSpotlight } from "~/components/artist-spotlight";
 import { Icons } from "~/components/icons";
 import { controlStyles } from "~/lib/control-styles";
-import { asRoute, cn } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 
-import { AuthModeToggle } from "./_components/auth-mode-toggle";
-
-/** One artist image (0-9) per UTC day. */
-function dailyArtistImage() {
-  return `/images/artists/${Math.floor(Date.now() / 864e5) % 10}.png`;
-}
+const ART_IMAGES = [
+  "/images/artists/0.png",
+  "/images/artists/1.png",
+  "/images/artists/2.png",
+  "/images/artists/3.png",
+  "/images/artists/4.png",
+  "/images/artists/5.png",
+  "/images/artists/6.png",
+  "/images/artists/7.png",
+  "/images/artists/8.png",
+  "/images/artists/9.png",
+];
 
 type AuthLayoutProps = React.PropsWithChildren;
 
 // Signed-in redirects live in each page (`redirectIfSignedIn`), because
-// `/reset-password?token=...` must stay reachable for a signed-in user.
-// TODO: Cache Components adoption. Keep daily artwork at request time until the auth shell is migrated.
+// `/reset-password?token=...` must stay reachable for a signed-in user. They
+// read the session at request time, so the auth pages opt out of validation.
+// TODO: Cache Components adoption. Move the session read behind Suspense.
 export const instant = false;
 
-export default async function AuthLayout({ children }: AuthLayoutProps) {
-  await connection();
-  const imageUrl = dailyArtistImage();
-
+export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div className="grid min-h-dvh lg:grid-cols-2">
-      <div className="hidden bg-zinc-900 p-10 text-white dark:border-r lg:flex lg:flex-col lg:justify-between">
-        <Link
-          href="/"
-          className={cn(
-            buttonVariants(),
-            controlStyles.text,
-            "group w-fit border border-zinc-600 duration-200 hover:ring-2 hover:ring-zinc-600 hover:ring-offset-2 hover:ring-offset-zinc-900",
-          )}
-        >
-          <ArrowLeft className="mr-1 size-4 duration-300 group-hover:-translate-x-1" />
-          Back
-        </Link>
-
-        <Image
-          src={imageUrl}
-          width={1280}
-          height={640}
-          alt=""
-          className="mx-auto max-w-md object-cover duration-1000 animate-in zoom-in-50 motion-reduce:animate-none"
-        />
-
-        <div className="mb-20 text-center 2xl:mb-32">
-          <p className="font-heading text-5xl">All Your Music.</p>
-          <em className="text-2xl text-muted-foreground">Anytime, anywhere.</em>
+    <div className="grid min-h-dvh md:grid-cols-[1.1fr_1fr]">
+      <div className="sticky top-0 hidden h-dvh overflow-hidden bg-black md:block">
+        <ArtistSpotlight images={ART_IMAGES} />
+        <div className="absolute inset-x-6 bottom-6 rounded-(--r-lg) bg-black/45 p-6 text-white inset-shadow-2xs inset-shadow-white/20">
+          <h2 className="font-heading text-[1.75rem] font-bold leading-8 tracking-[-0.025em]">
+            Millions of songs.
+            <br />
+            Zero cost.
+          </h2>
+          <p className="mt-2 text-sm text-white/75">
+            Stream Hindi, English, Punjabi and more, in up to 320kbps.
+          </p>
         </div>
       </div>
 
-      <AuthModeToggle />
-
-      <main className="m-auto flex w-full flex-col justify-center space-y-6 p-8 sm:w-[350px] sm:p-0">
+      <div className="relative grid min-h-dvh w-full place-items-center px-6 py-8">
         <Link
           href="/"
-          aria-label="Infinitunes home"
-          className="mx-auto rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          aria-label="Close"
+          className={cn(
+            controlStyles.headerIcon,
+            "absolute left-4 top-4 flex items-center justify-center text-muted-foreground outline-none hover:text-foreground",
+          )}
         >
-          <Icons.Logo className="size-14 drop-shadow-sm" />
+          <X className="size-4" />
         </Link>
-        {children}
-        <p className="mx-auto px-10 text-center text-sm text-muted-foreground">
-          By clicking continue, you agree to our{" "}
+
+        <div className="grid w-full max-w-88 gap-4">
           <Link
-            href={asRoute("/terms")}
-            className="underline underline-offset-4 outline-none hover:text-foreground hover:underline"
+            href="/"
+            aria-label="Infinitunes home"
+            className="mb-2 flex items-center gap-2 justify-self-start rounded-sm font-heading text-lg/6 font-bold tracking-tight lowercase"
           >
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link
-            href={asRoute("/privacy")}
-            className="underline underline-offset-4 outline-none hover:text-foreground hover:underline"
-          >
-            Privacy Policy
+            <span className="grid size-7 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground">
+              <Icons.Logo className="size-4" />
+            </span>
+            infinitunes
           </Link>
-          .
-        </p>
-      </main>
+          {children}
+        </div>
+      </div>
     </div>
   );
 }

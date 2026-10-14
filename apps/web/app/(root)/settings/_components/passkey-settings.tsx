@@ -2,69 +2,64 @@
 
 import { authClient } from "@infinitunes/auth/client";
 import { Button } from "@infinitunes/ui/components/button";
-import { Separator } from "@infinitunes/ui/components/separator";
-import { Fingerprint, Loader2, Plus, Trash2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 
 import { controlStyles } from "~/lib/control-styles";
-import { cn, destructiveText } from "~/lib/utils";
 
-type Passkey = {
-  id: string;
-  name?: string | null;
-  createdAt?: string | Date | null;
-};
+import { PasskeyList } from "./passkey-list";
+import type { PasskeyRow } from "./passkey-list";
+import { SettingsSection } from "./settings-section";
+
+const LOAD_ERROR = "Could not load passkeys.";
+
+function messageOf(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+/** Resolves to null on failure, so the caller keeps the list it already shows. */
+async function listPasskeys(): Promise<PasskeyRow[] | null> {
+  try {
+    const { data, error } = await authClient.passkey.listUserPasskeys();
+    if (error) {
+      toast.error(error.message ?? LOAD_ERROR);
+      return null;
+    }
+    return data ?? [];
+  } catch (error) {
+    console.error(messageOf(error, LOAD_ERROR));
+    toast.error(LOAD_ERROR);
+    return null;
+  }
+}
 
 export function PasskeySettings() {
-  const [passkeys, setPasskeys] = React.useState<Passkey[]>([]);
+  const [passkeys, setPasskeys] = React.useState<PasskeyRow[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isAdding, setIsAdding] = React.useState(false);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
-  const refresh = React.useCallback(async () => {
+  async function refresh() {
     setIsLoading(true);
-    try {
-      const { data, error } = await authClient.passkey.listUserPasskeys();
-      if (error) {
-        toast.error(error.message ?? "Could not load passkeys.");
-      } else {
-        setPasskeys((data ?? []) as Passkey[]);
-      }
-    } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
-      toast.error("Could not load passkeys.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const next = await listPasskeys();
+    if (next) setPasskeys(next);
+    setIsLoading(false);
+  }
 
   React.useEffect(() => {
     let cancelled = false;
-    authClient.passkey
-      .listUserPasskeys()
-      .then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          toast.error(error.message ?? "Could not load passkeys.");
-        } else {
-          setPasskeys((data ?? []) as Passkey[]);
-        }
-        setIsLoading(false);
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        console.error((error as Error).message);
-        toast.error("Could not load passkeys.");
-        setIsLoading(false);
-      });
+    listPasskeys().then((next) => {
+      if (cancelled) return;
+      if (next) setPasskeys(next);
+      setIsLoading(false);
+    });
     return () => {
       cancelled = true;
     };
   }, []);
 
-  async function addPasskeyHandler() {
+  async function addPasskey() {
     setIsAdding(true);
     try {
       const { error } = await authClient.passkey.addPasskey();
@@ -79,15 +74,14 @@ export function PasskeySettings() {
         await refresh();
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
+      console.error(messageOf(error, "Could not add passkey."));
       toast.error("Could not add passkey.");
     } finally {
       setIsAdding(false);
     }
   }
 
-  async function deletePasskeyHandler(id: string) {
+  async function removePasskey(id: string) {
     setDeletingId(id);
     try {
       const { error } = await authClient.passkey.deletePasskey({ id });
@@ -98,8 +92,7 @@ export function PasskeySettings() {
         setPasskeys((current) => current.filter((key) => key.id !== id));
       }
     } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
+      console.error(messageOf(error, "Could not remove passkey."));
       toast.error("Could not remove passkey.");
     } finally {
       setDeletingId(null);
@@ -107,18 +100,11 @@ export function PasskeySettings() {
   }
 
   return (
-    <div className="w-full max-w-5xl space-y-4 px-6 py-2">
-      <div>
-        <h2 className="font-heading text-lg dark:drop-shadow-md text-foreground sm:text-xl md:text-2xl">
-          Passkeys
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Sign in without a password using your device. Adding a passkey
-          requires you to be signed in.
-        </p>
-      </div>
-      <Separator />
-
+    <SettingsSection
+      id="passkeys"
+      title="Passkeys"
+      description="Sign in without a password using your device. Adding a passkey requires you to be signed in."
+    >
       {isLoading ? (
         <output className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2
@@ -132,59 +118,32 @@ export function PasskeySettings() {
           No passkeys yet. Add one to enable passwordless sign-in.
         </p>
       ) : (
-        <ul className="space-y-2">
-          {passkeys.map((passkey) => (
-            <li
-              key={passkey.id}
-              className="flex items-center justify-between gap-4 rounded-md border px-4 py-2"
-            >
-              <span className="flex min-w-0 items-center gap-2">
-                <Fingerprint
-                  aria-hidden
-                  className="size-4 shrink-0 text-muted-foreground"
-                />
-                <span className="truncate text-sm font-medium">
-                  {passkey.name || "Passkey"}
-                </span>
-              </span>
-              <Button
-                type="button"
-                variant="destructive"
-                className={cn(controlStyles.text, destructiveText)}
-                disabled={deletingId !== null}
-                onClick={() => deletePasskeyHandler(passkey.id)}
-              >
-                {deletingId === passkey.id ? (
-                  <Loader2
-                    aria-hidden
-                    className="size-4 animate-spin motion-reduce:animate-none"
-                  />
-                ) : (
-                  <Trash2 aria-hidden className="size-4" />
-                )}
-                Remove
-              </Button>
-            </li>
-          ))}
-        </ul>
+        <PasskeyList
+          passkeys={passkeys}
+          deletingId={deletingId}
+          onRemove={removePasskey}
+        />
       )}
 
-      <Button
-        type="button"
-        disabled={isAdding || isLoading}
-        onClick={addPasskeyHandler}
-        className={controlStyles.text}
-      >
-        {isAdding ? (
-          <Loader2
-            aria-hidden
-            className="mr-2 size-4 animate-spin motion-reduce:animate-none"
-          />
-        ) : (
-          <Plus aria-hidden className="mr-2 size-4" />
-        )}
-        Add Passkey
-      </Button>
-    </div>
+      <div>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={isAdding || isLoading}
+          onClick={addPasskey}
+          className={controlStyles.textLg}
+        >
+          {isAdding ? (
+            <Loader2
+              aria-hidden
+              className="mr-2 size-4 animate-spin motion-reduce:animate-none"
+            />
+          ) : (
+            <Plus aria-hidden className="mr-2 size-4" />
+          )}
+          Add Passkey
+        </Button>
+      </div>
+    </SettingsSection>
   );
 }

@@ -1,4 +1,12 @@
-import { afterEach, describe, expect, it, spyOn } from "bun:test";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+  spyOn,
+} from "bun:test";
 
 import type { Queue as QueueItem } from "@infinitunes/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -10,8 +18,11 @@ import { AudioPlayerProvider } from "react-use-audio-player";
 import * as sonner from "sonner";
 import superjson from "superjson";
 
+import { useQueuePane } from "../../components/player/use-queue-pane";
 import { Queue } from "../../components/queue";
+import { THEME_BOOTSTRAP_SCRIPT } from "../../lib/theme-script";
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
 
 function song(id: string): QueueItem {
   return {
@@ -29,8 +40,29 @@ function song(id: string): QueueItem {
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
+
+const noop = () => {};
+
+// Row removal commits from a 200ms exit timer. Fake timers make that boundary
+// exact: a wall-clock sleep races the timer when the machine is loaded.
+const advance = (ms: number) =>
+  act(async () => {
+    jest.advanceTimersByTime(ms);
+  });
+
+// The pane lists upcoming tracks only, so every queue starts with the playing "p".
+const storedIds = () =>
+  JSON.parse(localStorage.getItem("queue") ?? "[]")
+    .map((item: QueueItem) => item.id)
+    .filter((id: string) => id !== "p");
 
 async function mount() {
   const container = document.createElement("div");
@@ -42,7 +74,7 @@ async function mount() {
         <api.Provider client={trpcClient} queryClient={queryClient}>
           <QueryClientProvider client={queryClient}>
             <AudioPlayerProvider>
-              <Queue />
+              <Queue open onOpenChange={noop} />
             </AudioPlayerProvider>
           </QueryClientProvider>
         </api.Provider>
@@ -52,28 +84,21 @@ async function mount() {
   return root;
 }
 
-describe("queue sheet", () => {
+describe("queue pane", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("removes the last track and hands focus to the list", async () => {
-    localStorage.setItem("queue", JSON.stringify([song("a")]));
+    localStorage.setItem("queue", JSON.stringify([song("p"), song("a")]));
     localStorage.setItem("current_song_index", "0");
 
     const root = await mount();
 
-    const trigger = document.querySelector<HTMLButtonElement>(
-      '[aria-label="Open queue"]',
-    );
-    expect(trigger).not.toBeNull();
-    await act(async () => {
-      trigger?.click();
-    });
-
-    // Overrides the stock sheet `sm:max-w-sm` for master parity.
-    expect(
-      document.querySelector('[data-slot="sheet-content"]')?.className,
-    ).toContain("sm:max-w-xl!");
-
-    expect(document.body.textContent).toContain("1 Track");
-    expect(document.body.textContent).not.toContain("1 Tracks");
+    expect(document.body.textContent).toContain("2 Tracks");
 
     const remove = document.querySelector<HTMLButtonElement>(
       "[data-queue-remove]",
@@ -83,13 +108,12 @@ describe("queue sheet", () => {
     await act(async () => {
       remove?.click();
     });
-    await act(async () => {
-      // Removal commits once the 200ms exit transition has finished.
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-    });
+    // Removal commits once the 200ms exit transition has finished.
+    await advance(250);
 
-    expect(JSON.parse(localStorage.getItem("queue") ?? "null")).toEqual([]);
+    expect(storedIds()).toEqual([]);
+    expect(document.body.textContent).toContain("1 Track");
+    expect(document.body.textContent).not.toContain("1 Tracks");
     expect(document.querySelector("[data-queue-remove]")).toBeNull();
     expect(document.activeElement).toBe(
       document.querySelector('ol[aria-label="Queue"]'),
@@ -109,16 +133,11 @@ describe("queue sheet", () => {
     };
     localStorage.setItem(
       "queue",
-      JSON.stringify([{ ...song("a"), artists: [artist] }]),
+      JSON.stringify([song("p"), { ...song("a"), artists: [artist] }]),
     );
     localStorage.setItem("current_song_index", "0");
 
     const root = await mount();
-    await act(async () => {
-      document
-        .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
-        ?.click();
-    });
 
     const link = document.querySelector<HTMLAnchorElement>(
       'ol[aria-label="Queue"] a[href*="/artist/"]',
@@ -134,17 +153,12 @@ describe("queue sheet", () => {
   it("hands focus to the row that took the removed row's place", async () => {
     localStorage.setItem(
       "queue",
-      JSON.stringify([song("a"), song("b"), song("c")]),
+      JSON.stringify([song("p"), song("a"), song("b"), song("c")]),
     );
     localStorage.setItem("current_song_index", "0");
 
     const root = await mount();
-    await act(async () => {
-      document
-        .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
-        ?.click();
-    });
-    expect(document.body.textContent).toContain("3 Tracks");
+    expect(document.body.textContent).toContain("4 Tracks");
 
     await act(async () => {
       document
@@ -153,16 +167,10 @@ describe("queue sheet", () => {
         )
         ?.click();
     });
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-    });
+    await advance(250);
 
-    const ids = JSON.parse(localStorage.getItem("queue") ?? "[]").map(
-      (item: QueueItem) => item.id,
-    );
-    expect(ids).toEqual(["a", "c"]);
-    expect(document.body.textContent).toContain("2 Tracks");
+    expect(storedIds()).toEqual(["a", "c"]);
+    expect(document.body.textContent).toContain("3 Tracks");
     expect(document.activeElement?.getAttribute("aria-label")).toBe(
       "Remove Song c from queue",
     );
@@ -171,29 +179,15 @@ describe("queue sheet", () => {
   });
 
   describe("exit transition", () => {
-    const sleep = (ms: number) =>
-      act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, ms));
-      });
+    const sleep = advance;
     const removeButton = (id: string) =>
       document.querySelector<HTMLButtonElement>(
         `[aria-label="Remove Song ${id} from queue"]`,
       );
-    const storedIds = () =>
-      JSON.parse(localStorage.getItem("queue") ?? "[]").map(
-        (item: QueueItem) => item.id,
-      );
-
     async function open(ids: string[]) {
-      localStorage.setItem("queue", JSON.stringify(ids.map(song)));
+      localStorage.setItem("queue", JSON.stringify(["p", ...ids].map(song)));
       localStorage.setItem("current_song_index", "0");
-      const root = await mount();
-      await act(async () => {
-        document
-          .querySelector<HTMLButtonElement>('[aria-label="Open queue"]')
-          ?.click();
-      });
-      return root;
+      return mount();
     }
 
     const realMatchMedia = window.matchMedia;
@@ -292,7 +286,7 @@ describe("queue sheet", () => {
       await act(async () => root.unmount());
     });
 
-    it("still removes the row when the sheet unmounts mid-transition", async () => {
+    it("still removes the row when the pane unmounts mid-transition", async () => {
       const errors = spyOn(console, "error");
       const root = await open(["a", "b"]);
 
@@ -310,5 +304,209 @@ describe("queue sheet", () => {
       expect(errors).not.toHaveBeenCalled();
       errors.mockRestore();
     });
+  });
+});
+
+function setViewport(wide: boolean) {
+  window.matchMedia = ((query: string) => ({
+    matches: wide && query === "(min-width: 1440px)",
+    media: query,
+    addEventListener() {},
+    removeEventListener() {},
+    addListener() {},
+    removeListener() {},
+    onchange: null,
+    dispatchEvent: () => false,
+  })) as unknown as typeof window.matchMedia;
+}
+
+function Pane() {
+  const pane = useQueuePane();
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Toggle queue"
+        aria-expanded={pane.open}
+        onClick={() => pane.setOpen(!pane.open)}
+      />
+      <Queue open={pane.open} onOpenChange={pane.setOpen} />
+    </>
+  );
+}
+
+async function mountPane() {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  await act(async () => {
+    root.render(
+      <SearchParamsContext.Provider value={new URLSearchParams()}>
+        <api.Provider client={trpcClient} queryClient={queryClient}>
+          <QueryClientProvider client={queryClient}>
+            <AudioPlayerProvider>
+              <Pane />
+            </AudioPlayerProvider>
+          </QueryClientProvider>
+        </api.Provider>
+      </SearchParamsContext.Provider>,
+    );
+  });
+  return root;
+}
+
+const toggle = () =>
+  document.querySelector<HTMLButtonElement>('[aria-label="Toggle queue"]');
+const pane = () => document.querySelector("aside#player-queue");
+
+describe("queue pane open state", () => {
+  const realMatchMedia = window.matchMedia;
+  afterEach(() => {
+    window.matchMedia = realMatchMedia;
+    document.body.innerHTML = "";
+    document.documentElement.removeAttribute("data-queue");
+    document.documentElement.removeAttribute("class");
+    document.documentElement.removeAttribute("style");
+  });
+
+  it("docks at 1440px, persists the choice and tells the shell", async () => {
+    setViewport(true);
+    localStorage.setItem("queue_open", "true");
+    localStorage.setItem("queue", JSON.stringify([song("a"), song("b")]));
+    localStorage.setItem("current_song_index", "0");
+    const root = await mountPane();
+
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("true");
+    expect(pane()?.hasAttribute("inert")).toBe(false);
+    expect(document.documentElement.getAttribute("data-queue")).toBe("open");
+
+    await act(async () => toggle()?.click());
+
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
+    expect(pane()?.hasAttribute("inert")).toBe(true);
+    expect(localStorage.getItem("queue_open")).toBe("false");
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => toggle()?.click());
+    expect(localStorage.getItem("queue_open")).toBe("true");
+
+    await act(async () => root.unmount());
+  });
+
+  // The shell reserves the column from the attribute before the client-only
+  // player mounts, so mounting must keep it rather than flip it.
+  it("keeps the attribute the bootstrap script set before first paint", async () => {
+    setViewport(true);
+    localStorage.setItem("queue", JSON.stringify([song("a")]));
+    localStorage.setItem("queue_open", "true");
+    new Function(THEME_BOOTSTRAP_SCRIPT)();
+    expect(document.documentElement.getAttribute("data-queue")).toBe("open");
+
+    const root = await mountPane();
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("true");
+    expect(document.documentElement.getAttribute("data-queue")).toBe("open");
+
+    await act(async () => root.unmount());
+  });
+
+  it("agrees with the bootstrap script when the user closed the docked pane", async () => {
+    setViewport(true);
+    localStorage.setItem("queue_open", "false");
+    new Function(THEME_BOOTSTRAP_SCRIPT)();
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    const root = await mountPane();
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
+  it("starts closed on a first visit at 1440px, without the shell column", async () => {
+    setViewport(true);
+    localStorage.removeItem("queue_open");
+    new Function(THEME_BOOTSTRAP_SCRIPT)();
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    const root = await mountPane();
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
+    expect(pane()?.hasAttribute("inert")).toBe(true);
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
+  it("drops the bootstrap attribute on a narrow viewport", async () => {
+    setViewport(false);
+    localStorage.setItem("queue_open", "true");
+    new Function(THEME_BOOTSTRAP_SCRIPT)();
+    expect(document.documentElement.getAttribute("data-queue")).toBe("open");
+
+    const root = await mountPane();
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
+  it("floats below 1440px, starts closed and does not persist", async () => {
+    setViewport(false);
+    localStorage.removeItem("queue_open");
+    const root = await mountPane();
+
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
+    expect(pane()?.hasAttribute("inert")).toBe(true);
+
+    await act(async () => toggle()?.click());
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("true");
+    expect(localStorage.getItem("queue_open")).toBeNull();
+    expect(document.documentElement.hasAttribute("data-queue")).toBe(false);
+
+    await act(async () => root.unmount());
+  });
+
+  it("closes on Escape and from the close button", async () => {
+    setViewport(false);
+    const root = await mountPane();
+
+    await act(async () => toggle()?.click());
+    await act(async () => {
+      pane()?.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+      );
+    });
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
+
+    await act(async () => toggle()?.click());
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>('[aria-label="Close queue"]')
+        ?.click();
+    });
+    expect(toggle()?.getAttribute("aria-expanded")).toBe("false");
+
+    await act(async () => root.unmount());
+  });
+
+  it("clears only the upcoming tracks", async () => {
+    setViewport(false);
+    localStorage.setItem(
+      "queue",
+      JSON.stringify([song("a"), song("b"), song("c")]),
+    );
+    localStorage.setItem("current_song_index", "1");
+    const root = await mountPane();
+    await act(async () => toggle()?.click());
+
+    await act(async () => {
+      [...document.querySelectorAll<HTMLButtonElement>("aside button")]
+        .find((button) => button.textContent === "Clear")
+        ?.click();
+    });
+
+    expect(storedIds()).toEqual(["a", "b"]);
+    expect(localStorage.getItem("current_song_index")).toBe("1");
+    expect(document.body.textContent).toContain("Nothing queued");
+
+    await act(async () => root.unmount());
   });
 });

@@ -1,8 +1,10 @@
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
-
+import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
+import { Shelf } from "~/components/slider/shelf";
+import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
+import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
 
 import { TopPodcasts } from "./_components/top-podcasts";
@@ -17,62 +19,57 @@ export const metadata = pageMetadata({
   alt: "Original Podcasts",
 });
 
-type TopPodcastsPageProps = { searchParams: Promise<{ page?: number }> };
+type TopPodcastsPageProps = {
+  searchParams: Promise<{ page?: string | string[] }>;
+};
 
 export default async function TopPodcastsPage(props: TopPodcastsPageProps) {
-  const { page = 1 } = await props.searchParams;
+  const { page } = await props.searchParams;
 
-  const topShows = await api.get.topShows({ page, n: 50 });
+  const topShows = await api.get.topShows({
+    page: parsePageParam(page),
+    n: 50,
+  });
 
   const trendingGroup = topShows.trendingPodcasts?.[0];
   const trendingPodcasts = trendingGroup?.items ?? [];
   const trendingTitle = trendingGroup?.module.title ?? "Trending Podcasts";
-  const trendingSubtitle = trendingGroup?.module.subtitle ?? "";
 
   return (
-    <div className="space-y-4">
-      <header className="mt-4">
-        <h1 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-          {trendingTitle}
-        </h1>
+    <div>
+      <CatalogHeader title="Podcasts" subtitle="Top shows across languages." />
 
-        <p className="pl-1 font-medium text-muted-foreground">
-          {trendingSubtitle}
-        </p>
-      </header>
+      <h2 className="mb-3 text-xl leading-7 font-bold tracking-[-0.015em]">
+        {trendingTitle}
+      </h2>
 
-      <ScrollArea>
-        <div className="grid grid-flow-col grid-rows-2 place-content-start gap-4 pb-6">
-          {trendingPodcasts.map(
-            ({
-              id,
-              title: podcastTitle,
-              perma_url,
-              subtitle,
-              type,
-              image,
-              explicit_content,
-            }) => {
-              return (
-                <SliderCard
-                  key={id}
-                  name={podcastTitle}
-                  url={perma_url}
-                  subtitle={subtitle}
-                  type={type}
-                  image={image}
-                  explicit={explicit_content}
-                  hidePlayButton
-                />
-              );
-            },
-          )}
-        </div>
+      <Shelf rows={2}>
+        {trendingPodcasts.map(
+          ({
+            id,
+            title: podcastTitle,
+            perma_url,
+            subtitle,
+            type,
+            image,
+            explicit_content,
+          }) => (
+            <ShelfItem key={id}>
+              <SliderCard
+                name={podcastTitle}
+                url={perma_url}
+                subtitle={subtitle}
+                type={type}
+                image={image}
+                explicit={explicit_content}
+                hidePlayButton
+              />
+            </ShelfItem>
+          ),
+        )}
+      </Shelf>
 
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
-
-      <h2 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
+      <h2 className="mt-8 mb-3 text-xl leading-7 font-bold tracking-[-0.015em]">
         All Podcasts
       </h2>
 

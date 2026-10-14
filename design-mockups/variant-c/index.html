@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>infinitunes - Compact Desktop App (variant C)</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app" id="app">
+  <nav class="rail" id="rail"></nav>
+  <main class="main">
+    <header class="tb">
+      <button class="ib" id="bk" data-back aria-label="Back"></button>
+      <button class="ib fw" data-act="fwd" aria-label="Forward"></button>
+      <nav class="crumb" id="crumb"></nav>
+      <span class="sp"></span>
+      <div class="sb"><span id="sbi"></span><input id="sq" data-search placeholder="Search songs, albums, artists" aria-label="Search"></div>
+      <button class="ib mo-only" data-go="search" aria-label="Search" id="msi"></button>
+      <button class="av mo-only" data-act="menu" aria-label="Account">H</button>
+    </header>
+    <div class="mtabs" id="mtabs"></div>
+    <div class="page" id="page"></div>
+  </main>
+  <aside class="rp" id="rp"></aside>
+  <footer class="player" id="player"></footer>
+</div>
+<div id="auth" class="authwrap"></div>
+<div class="npf" id="npf"></div>
+<div class="menu" id="menu"></div>
+<div class="toast" id="toast"></div>
+<a class="allv" href="../index.html">All variants</a>
+<script src="../shared/data.js"></script>
+<script src="../shared/router.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -4,14 +4,21 @@ import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
 import { decode } from "@infinitunes/types";
 import { Input } from "@infinitunes/ui/components/input";
-import React from "react";
+import { useMemo, useState } from "react";
 
 import type { User } from "~/lib/auth";
+import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
 
 import { SongListClient } from "../song-list/song-list.client";
 import { PlayAllButton } from "./play-all-button";
 
-type SortKey = "recent" | "title" | "artist";
+const SORT_KEYS = ["recent", "title", "artist"] as const;
+type SortKey = (typeof SORT_KEYS)[number];
+
+function isSortKey(value: string): value is SortKey {
+  return SORT_KEYS.some((key) => key === value);
+}
 
 /** Lowercase and strip diacritics so "beyonce" finds "Beyoncé". */
 function fold(text: string): string {
@@ -42,11 +49,10 @@ function compareTitle(a: Song | Episode, b: Song | Episode): number {
 }
 
 function compareArtist(a: Song | Episode, b: Song | Episode): number {
-  const byArtist =
+  return (
     (primaryArtists(a)[0] ?? "").localeCompare(primaryArtists(b)[0] ?? "") ||
-    compareTitle(a, b);
-
-  return byArtist;
+    compareTitle(a, b)
+  );
 }
 
 type LibrarySongListProps = {
@@ -64,8 +70,6 @@ type LibrarySongListProps = {
  * Client-side sort and text filter over an already-loaded song list.
  * `recent` keeps the server order, which callers pass newest-first.
  * Play All plays the visible (sorted and filtered) order.
- * Row-level unlike on mobile lives in each row's more-options menu
- * (`TileMoreButton` renders the favourite toggle in the mobile drawer).
  */
 export function LibrarySongList(props: LibrarySongListProps) {
   const {
@@ -78,10 +82,10 @@ export function LibrarySongList(props: LibrarySongListProps) {
     recentLabel = "Recently added",
   } = props;
 
-  const [query, setQuery] = React.useState("");
-  const [sort, setSort] = React.useState<SortKey>("recent");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortKey>("recent");
 
-  const visible = React.useMemo(() => {
+  const visible = useMemo(() => {
     const q = fold(query.trim());
     const filtered = q ? items.filter((item) => matchesQuery(item, q)) : items;
 
@@ -99,7 +103,10 @@ export function LibrarySongList(props: LibrarySongListProps) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Filter by title or artist"
-          className="h-11 w-full sm:max-w-xs lg:h-9"
+          className={cn(
+            controlStyles.textLg,
+            "w-full border-0 bg-fill hover:bg-fill-2 sm:max-w-xs dark:bg-fill dark:hover:bg-fill-2",
+          )}
         />
 
         <label className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -107,8 +114,13 @@ export function LibrarySongList(props: LibrarySongListProps) {
           <select
             aria-label="Sort songs"
             value={sort}
-            onChange={(e) => setSort(e.target.value as SortKey)}
-            className="h-11 rounded-lg border border-input bg-transparent px-2 text-sm text-foreground outline-none focus-visible:border-ring lg:h-9"
+            onChange={(e) => {
+              if (isSortKey(e.target.value)) setSort(e.target.value);
+            }}
+            className={cn(
+              controlStyles.textLg,
+              "bg-fill text-sm text-foreground hover:bg-fill-2",
+            )}
           >
             <option value="recent">{recentLabel}</option>
             <option value="title">Title A-Z</option>
@@ -118,7 +130,7 @@ export function LibrarySongList(props: LibrarySongListProps) {
 
         {query.trim() && visible.length > 0 && (
           <output
-            aria-live="off"
+            aria-live="polite"
             className="text-sm text-muted-foreground tabular-nums"
           >
             {visible.length} of {items.length}
@@ -126,7 +138,10 @@ export function LibrarySongList(props: LibrarySongListProps) {
         )}
 
         {visible.length > 0 && (
-          <PlayAllButton items={visible} className="sm:ml-auto">
+          <PlayAllButton
+            items={visible}
+            className={cn(controlStyles.textLg, "sm:ml-auto")}
+          >
             {visible.length === items.length
               ? undefined
               : `Play ${visible.length} shown`}
@@ -144,7 +159,7 @@ export function LibrarySongList(props: LibrarySongListProps) {
         />
       ) : (
         <output className="block py-10 text-center text-sm text-muted-foreground">
-          No songs match “{query.trim()}”.
+          No songs match &quot;{query.trim()}&quot;.
         </output>
       )}
     </div>

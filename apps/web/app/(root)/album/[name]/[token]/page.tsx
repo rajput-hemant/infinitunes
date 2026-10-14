@@ -55,7 +55,7 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
   const songs = Array.isArray(album.list) ? album.list : [];
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={album} />
 
       <SongList items={songs} showAlbum={false} />

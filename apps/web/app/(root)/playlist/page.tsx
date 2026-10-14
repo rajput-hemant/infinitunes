@@ -1,13 +1,14 @@
 import type { Lang } from "@infinitunes/types";
 
-import { LanguageBar } from "~/components/language-bar";
+import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
+import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
 
 import { FeaturedPlaylists } from "./_components/featured-playlists";
 
-const title = ` Best Songs ${new Date().getFullYear()} - Online Downloads and Playlists @${siteConfig.name}`;
+const title = `Best Songs ${new Date().getFullYear()} - Online Downloads and Playlists @${siteConfig.name}`;
 const description = `The music buffs at Saavn have created music playlists which include a huge variety of songs from various genres such as festivals, devotional, film, wedding, dance & more.`;
 
 export const metadata = pageMetadata({
@@ -16,27 +17,25 @@ export const metadata = pageMetadata({
   url: "/playlist",
   alt: "Top Featured Playlists",
 });
-type PageProps = { searchParams: Promise<{ page?: number; lang?: Lang }> };
+type PageProps = {
+  searchParams: Promise<{ page?: string | string[]; lang?: Lang }>;
+};
 
 export default async function PlaylistsPage({ searchParams }: PageProps) {
-  const { page = 1, lang } = await searchParams;
+  const { page, lang } = await searchParams;
 
   const featuredPlaylists = await api.get.featuredPlaylists({
-    page,
+    page: parsePageParam(page),
     n: 50,
     lang,
   });
 
   return (
-    <div className="space-y-4">
-      <LanguageBar language={lang} />
-
-      <h1 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-        {lang ? `${lang} Music` : "Top"} Playlists
-      </h1>
+    <div>
+      <CatalogHeader title={`${lang ? `${lang} Music` : "Top"} Playlists`} />
 
       <FeaturedPlaylists
-        key={featuredPlaylists.data[0].id}
+        key={featuredPlaylists.data[0]?.id ?? "playlists"}
         initialPlaylists={featuredPlaylists}
         lang={lang}
       />

@@ -77,6 +77,13 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   no-secret-configured `BetterAuthError` (and only outside a validated
   production env), so a checkout with no `AUTH_SECRET` renders logged-out
   instead of 500-ing every route. Don't widen that catch.
+- The root layout (`apps/web/app/layout.tsx`) must stay static: no `cookies()`,
+  `headers()` or CSP nonce (a nonce forces dynamic rendering and defeats Cache
+  Components). CSP is hash-based (`lib/csp.ts`). Anything that must apply before
+  first paint (light/dark, the saved appearance from the `theme-config` cookie's
+  derived `html` field, later the docked-queue flag) goes in a step of
+  `THEME_BOOTSTRAP_SCRIPT` (`lib/theme-script.ts`), whose hash follows
+  automatically. `ThemeConfigProvider` reads the cookie in the browser.
 - Tailwind v4's automatic content scanning only covers `apps/web`. Utility
   classes/theme vars used exclusively inside `packages/ui/src` (e.g.
   `bg-sidebar`, `bg-popover`, `bg-card`) get tree-shaken out of the compiled
@@ -219,7 +226,7 @@ When updating this file, preserve this bar for all agents and keep entries conci
 ## React and Next.js Best Practices
 
 - **Server vs Client Components**: Layouts and pages should remain Server Components where possible to fetch data and cookies efficiently. Isolate user interactivity (clicks, menus, forms) into dedicated Client Components with `"use client"`.
-- **Sidebar Layout Hierarchy**: Always nest `<Navbar />` inside `<SidebarInset>` above `<main>` within `<SidebarProvider>` to avoid breaking the horizontal layout.
+- **Sidebar Layout Hierarchy**: Keep `<Navbar />` in the content column above `<main>` (the `SidebarInset`), within `<SidebarProvider>`, so the layout stays horizontal and the page has one `main` landmark.
 - **Component Imports**: Do not create local component files under `apps/web/components/ui`. Always reference the monorepo package `@infinitunes/ui/components/<name>` and exports in `packages/ui/package.json`.
 - **shadcn/ui is read-only**: Do not modify shadcn/ui components (`packages/ui/src/components`). Apply customizations in application components, wrappers, or composition instead.
 - **No barrel files in `apps/web/components`**: import from the source file
@@ -278,3 +285,32 @@ Read `docs/README.md` inside that installed package first, then read the relevan
 
 This block is written and re-added by `turbo` before repository-scoped commands when an AI agent is detected. In the Turborepo source repository, its template is defined in `crates/turborepo-cli/src/cli/agent_guidance.rs`. Removing the managed block while updates are enabled means a later qualifying invocation will add it again. Set `"agentGuidance": false` in the root `turbo.json` or `turbo.jsonc` to opt out; this does not remove an existing block. Keep the block committed with your work to avoid an uncommitted change on the next agent invocation.
 <!-- END:turborepo-agent-rules -->
+
+## Colour-mode switches (`lib/theme/mode.ts`)
+
+Switch the mode through `useThemeMode().setMode`, never next-themes' `setTheme` directly. `setTheme`
+applies the `dark` class in an effect after render, and every colour transition then eases through the
+old colours. `switchThemeMode` sets the class inside the click and holds transitions off for two
+frames with `data-theme-switching` (rule in `styles/globals.css`). Don't add `disableTransitionOnChange`
+to `ThemeProvider`: its cleanup reads `getComputedStyle` inside the click's microtask, which stalls the
+handler.
+
+## Liquid Glass lens sharp edge
+
+Chromium resolves a `backdrop-filter: url(#...)` filter's user space against the element's ink overflow (outer
+`box-shadow` reach), not its border box, and clips that overflow to the viewport. `apps/web/components/glass/lens-registry.ts`
+offsets the filter by `inkOverflowOrigin(boxShadow, {x: rect.left, y: rect.top})` (`apps/web/lib/glass/shadow-overflow.ts`):
+the shadow reach, capped by the surface's distance from the viewport's left/top edge (a menu 48px from the top has
+origin y 48, not 57; ignoring the cap left a crisp strip at its bottom). The origin is re-read on `animationend`,
+`transitionend` and window resize because anchored popups settle after they register. Verify with an feFlood
+filter or a high-contrast stripe layer behind the popup, using full-page screenshots (`clip:` screenshots drop
+backdrop filters). Under `forced-colors: active` the runtime picks `frost` and CSS drops every glass backdrop-filter.
+See `docs/design-system/glass.md`.
+
+## Liquid glass model and the accent
+
+Glass is the CodePen displacement-map model (`docs/design-system/glass.md`, "The model"); `GlassTuning` and its
+ranges, defaults and presets live in `apps/web/lib/glass/tuning.ts`. There is no accent picker and no ambient colour
+field: the primary token is neutral, and while `glassTuning.tint` is above 0 it derives from `tintColor` (so the accent
+is the tint). A `::before` layer cannot multiply its own `backdrop-filter` result, so under the lens the SVG filter
+multiplies the refracted backdrop and the CSS layer fades out via `--g-lens-tint`; the layer is only the frost fallback.

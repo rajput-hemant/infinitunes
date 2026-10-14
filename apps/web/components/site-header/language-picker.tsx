@@ -3,10 +3,16 @@
 import type { Lang } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@infinitunes/ui/components/drawer";
+import {
   Popover,
   PopoverContent,
   PopoverDescription,
-  PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
 } from "@infinitunes/ui/components/popover";
@@ -17,12 +23,16 @@ import {
 import { setCookie } from "cookies-next";
 import { ChevronDown, Languages } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
+import { searchUi } from "~/components/search/search-ui";
 import { languages } from "~/config/languages";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
+
+import { isLang } from "./lang-guard";
+import { useIsPhone } from "./use-is-phone";
 
 type LanguagePickerProps = {
   initialLanguages: Lang[];
@@ -30,12 +40,20 @@ type LanguagePickerProps = {
 
 export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
   const router = useRouter();
+  const isPhone = useIsPhone();
 
-  const [isOpen, setIsOpen] = React.useState(false);
-  const [selectedLanguages, setSelectedLanguages] =
-    React.useState(initialLanguages);
+  const [isOpen, setIsOpen] = useState(false);
+  const [appliedLanguages, setAppliedLanguages] = useState(initialLanguages);
+  const [selectedLanguages, setSelectedLanguages] = useState(initialLanguages);
+
+  // Closing without saving discards the unsaved selection.
+  function handleOpenChange(open: boolean) {
+    setIsOpen(open);
+    if (!open) setSelectedLanguages(appliedLanguages);
+  }
 
   function updateLanguages() {
+    setAppliedLanguages(selectedLanguages);
     setCookie("language", selectedLanguages.join(","), {
       path: "/",
     });
@@ -48,71 +66,119 @@ export function LanguagePicker({ initialLanguages }: LanguagePickerProps) {
     router.refresh();
   }
 
-  return (
-    <Popover open={isOpen} onOpenChange={setIsOpen}>
-      <PopoverTrigger
-        render={
-          <Button
-            aria-label="Choose languages"
-            variant="outline"
-            className={cn(
-              controlStyles.headerIcon,
-              "space-x-1 p-0 shadow-xs lg:w-auto lg:space-x-2 lg:px-3",
-            )}
-          >
-            <Languages aria-hidden="true" className="aspect-square size-4" />
-            <span className="hidden text-sm lg:inline-block">Languages</span>
-            <ChevronDown
-              className={cn(
-                "hidden size-4 duration-300 lg:inline-block",
-                isOpen && "rotate-180",
-              )}
-            />
-          </Button>
-        }
+  const trigger = (
+    <Button
+      aria-label="Choose languages"
+      variant="ghost"
+      className={cn(controlStyles.headerIcon, "gap-2 p-0 md:w-auto md:px-3")}
+    />
+  );
+
+  const triggerContent = (
+    <>
+      <Languages aria-hidden="true" className="aspect-square size-4" />
+      <span className="hidden text-sm md:inline-block">Languages</span>
+      <ChevronDown
+        aria-hidden="true"
+        className={cn(
+          "hidden size-4 duration-base md:inline-block",
+          isOpen && "rotate-180",
+        )}
       />
+    </>
+  );
 
-      <PopoverContent
-        align="end"
-        className="w-auto min-w-[18.5625rem] gap-0 p-0"
-      >
-        <PopoverHeader className="p-4">
-          <PopoverTitle className="font-heading text-lg text-foreground sm:text-xl md:text-2xl">
-            What music do you like?
+  const choices = (
+    <LanguageChoices
+      selected={selectedLanguages}
+      onSelectedChange={setSelectedLanguages}
+      onSave={updateLanguages}
+    />
+  );
+
+  if (isPhone) {
+    return (
+      <Drawer open={isOpen} onOpenChange={handleOpenChange} showSwipeHandle>
+        <DrawerTrigger render={trigger}>{triggerContent}</DrawerTrigger>
+
+        <DrawerContent className="rounded-t-3xl pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <div className="flex flex-col gap-3 p-4">
+            <div>
+              <DrawerTitle className="text-base font-bold">
+                Languages
+              </DrawerTitle>
+              <DrawerDescription className="text-xs">
+                {LANGUAGES_HINT}
+              </DrawerDescription>
+            </div>
+
+            {choices}
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
+
+  return (
+    <Popover open={isOpen} onOpenChange={handleOpenChange}>
+      <PopoverTrigger render={trigger}>{triggerContent}</PopoverTrigger>
+
+      <PopoverContent align="end" className="w-80 gap-3 p-4">
+        <div>
+          <PopoverTitle className="text-base font-bold text-foreground">
+            Languages
           </PopoverTitle>
-
           <PopoverDescription className="text-xs">
-            Pick all the languages you want to listen to.
+            {LANGUAGES_HINT}
           </PopoverDescription>
-        </PopoverHeader>
-
-        <ToggleGroup
-          value={selectedLanguages}
-          onValueChange={(v) => setSelectedLanguages(v as Lang[])}
-          aria-label="Languages"
-          className="grid w-full grid-cols-2 border-y p-2"
-        >
-          {languages.map((lang) => (
-            <ToggleGroupItem
-              key={lang}
-              value={lang.toLowerCase()}
-              variant="outline"
-              className={cn(controlStyles.text, "min-w-[4.4375rem] text-sm")}
-            >
-              {lang}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
-
-        <div className="p-2">
-          <Button
-            onClick={updateLanguages}
-            className={cn(controlStyles.text, "w-full")}
-          >
-            Save
-          </Button>
         </div>
+
+        {choices}
       </PopoverContent>
     </Popover>
+  );
+}
+
+const LANGUAGES_HINT = "Shapes Home, Charts and New releases.";
+
+type LanguageChoicesProps = {
+  selected: Lang[];
+  onSelectedChange: (languages: Lang[]) => void;
+  onSave: () => void;
+};
+
+function LanguageChoices({
+  selected,
+  onSelectedChange,
+  onSave,
+}: LanguageChoicesProps) {
+  return (
+    <>
+      <ToggleGroup
+        multiple
+        value={selected}
+        onValueChange={(v) => onSelectedChange(v.filter(isLang))}
+        aria-label="Languages"
+        className="flex w-full flex-wrap justify-start gap-2"
+      >
+        {languages.map((lang) => (
+          <ToggleGroupItem
+            key={lang}
+            value={lang.toLowerCase()}
+            className={cn(
+              controlStyles.text,
+              searchUi.chip,
+              "aria-pressed:bg-foreground aria-pressed:text-background",
+            )}
+          >
+            {lang}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+
+      <Button onClick={onSave} className={cn(controlStyles.text, "w-full")}>
+        Save
+      </Button>
+    </>
   );
 }

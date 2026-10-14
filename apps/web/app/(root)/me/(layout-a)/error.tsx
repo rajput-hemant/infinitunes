@@ -21,11 +21,12 @@ export default function LibraryError({ error, retry }: ErrorProps) {
     <div role="alert">
       <LibraryState
         icon={TriangleAlert}
+        tone="error"
         title="Couldn’t load this section"
         description="Something went wrong while loading your library. Your saved items are safe, so try again."
       >
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => retry()}
           className={controlStyles.text}
         >

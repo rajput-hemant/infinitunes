@@ -41,7 +41,7 @@ export default async function LikedSongsPage() {
     if (!songs) return <LibraryUnavailable what="liked songs" />;
 
     return (
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         <LibraryHeading
           title="Liked Songs"
           count={songs.length}

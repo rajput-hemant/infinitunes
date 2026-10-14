@@ -12,16 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
-import {
-  Field,
-  FieldContent,
-  FieldError,
-  FieldLabel,
-} from "@infinitunes/ui/components/field";
-import { Input } from "@infinitunes/ui/components/input";
 import { useRouter } from "next/navigation";
-import * as React from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
@@ -31,7 +23,9 @@ import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
 
-type FormData = z.infer<typeof newPlaylistSchema>;
+import { PlaylistFields } from "./playlist-fields";
+
+type PlaylistFormData = z.infer<typeof newPlaylistSchema>;
 
 type RenamePlaylistDialogProps = {
   playlist: Pick<MyPlaylist, "id" | "name" | "description">;
@@ -44,9 +38,40 @@ export function RenamePlaylistDialog({
   open,
   onOpenChange,
 }: RenamePlaylistDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader className="space-y-0">
+          <DialogTitle className="font-heading text-xl font-bold tracking-tight">
+            Rename Playlist
+          </DialogTitle>
+          <DialogDescription>
+            Update your playlist name and description.
+          </DialogDescription>
+        </DialogHeader>
+
+        <RenamePlaylistForm
+          playlist={playlist}
+          onDone={() => onOpenChange(false)}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+type RenamePlaylistFormProps = {
+  playlist: Pick<MyPlaylist, "id" | "name" | "description">;
+  onDone: () => void;
+};
+
+/**
+ * Mounted inside the dialog's content, so it is created fresh each time the
+ * dialog opens and starts from the playlist's current values.
+ */
+function RenamePlaylistForm({ playlist, onDone }: RenamePlaylistFormProps) {
   const router = useRouter();
 
-  const form = useForm<FormData>({
+  const form = useForm<PlaylistFormData>({
     resolver: zodResolver(newPlaylistSchema),
     defaultValues: {
       name: playlist.name,
@@ -54,16 +79,7 @@ export function RenamePlaylistDialog({
     },
   });
 
-  React.useEffect(() => {
-    if (open) {
-      form.reset({
-        name: playlist.name,
-        description: playlist.description ?? "",
-      });
-    }
-  }, [open, playlist.name, playlist.description, form]);
-
-  async function onSubmit({ name, description }: FormData) {
+  async function onSubmit({ name, description }: PlaylistFormData) {
     try {
       await toast.promise(
         unwrap(renamePlaylist(playlist.id, { name, description })),
@@ -73,7 +89,7 @@ export function RenamePlaylistDialog({
           error: userMessage,
         },
       );
-      onOpenChange(false);
+      onDone();
       router.refresh();
     } catch (error) {
       console.error(error instanceof Error ? error.message : error);
@@ -81,81 +97,28 @@ export function RenamePlaylistDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader className="space-y-0">
-          <DialogTitle className="font-heading text-2xl tracking-wide dark:drop-shadow-md">
-            Rename Playlist
-          </DialogTitle>
-          <DialogDescription>
-            Update your playlist name and description.
-          </DialogDescription>
-        </DialogHeader>
+    <form
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="flex flex-col gap-4"
+    >
+      <PlaylistFields control={form.control} />
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-          <Controller
-            name="name"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field orientation="vertical">
-                <FieldLabel className="text-xs">
-                  Playlist Name{" "}
-                  <span aria-hidden className="text-destructive">
-                    *
-                  </span>
-                </FieldLabel>
-                <FieldContent>
-                  <Input
-                    type="text"
-                    required
-                    placeholder="Enter playlist name"
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError>{fieldState.error.message}</FieldError>
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          />
-          <Controller
-            name="description"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field orientation="vertical">
-                <FieldLabel className="text-xs">Description</FieldLabel>
-                <FieldContent>
-                  <Input
-                    type="text"
-                    placeholder="Enter playlist description"
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError>{fieldState.error.message}</FieldError>
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          />
-
-          <DialogFooter className="pt-4">
-            <DialogClose
-              render={
-                <Button
-                  variant="outline"
-                  type="button"
-                  className={controlStyles.text}
-                >
-                  Cancel
-                </Button>
-              }
-            />
-            <Button type="submit" className={controlStyles.text}>
-              Save
+      <DialogFooter>
+        <DialogClose
+          render={
+            <Button
+              variant="secondary"
+              type="button"
+              className={controlStyles.textLg}
+            >
+              Cancel
             </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+          }
+        />
+        <Button type="submit" className={controlStyles.textLg}>
+          Save
+        </Button>
+      </DialogFooter>
+    </form>
   );
 }

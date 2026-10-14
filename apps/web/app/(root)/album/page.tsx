@@ -1,8 +1,10 @@
 import type { Lang } from "@infinitunes/types";
 
+import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
 import { LanguageBar } from "~/components/language-bar";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
+import { parsePageParam } from "~/lib/page-param";
 import { api } from "~/lib/trpc/server";
 
 import { TopAlbums } from "./_components/top-albums";
@@ -18,24 +20,33 @@ export const metadata = pageMetadata({
 });
 
 type AlbumsPageProps = {
-  searchParams: Promise<{ page?: number; lang?: Lang }>;
+  searchParams: Promise<{ page?: string | string[]; lang?: Lang }>;
 };
 
 export default async function AlbumsPage({ searchParams }: AlbumsPageProps) {
-  const { page = 1, lang } = await searchParams;
+  const { page, lang } = await searchParams;
 
-  const topAlbums = await api.get.topAlbums({ page, n: 50, lang });
+  const topAlbums = await api.get.topAlbums({
+    page: parsePageParam(page),
+    n: 50,
+    lang,
+  });
 
   return (
-    <div className="space-y-4">
+    <div>
       <LanguageBar language={lang} />
 
-      <h1 className="font-heading text-2xl capitalize dark:drop-shadow-md text-foreground sm:text-3xl md:text-4xl">
-        {`New ${lang ?? ""} Songs`}
-      </h1>
+      <CatalogHeader
+        title="Top Albums"
+        subtitle={
+          lang
+            ? `${lang[0].toUpperCase()}${lang.slice(1)} albums trending this week`
+            : "Trending across your languages"
+        }
+      />
 
       <TopAlbums
-        key={topAlbums.data[0].id}
+        key={topAlbums.data[0]?.id ?? "albums"}
         initialAlbums={topAlbums}
         lang={lang}
       />

@@ -12,7 +12,7 @@ export function ShareSubMenu({ title }: { title?: string }) {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
-        <Share2 className="mr-2 size-4" />
+        <Share2 className="mr-3 size-4" />
         Share
       </DropdownMenuSubTrigger>
 

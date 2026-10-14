@@ -2,6 +2,8 @@ import { describe, expect, it, mock } from "bun:test";
 
 import { renderToStaticMarkup } from "react-dom/server";
 
+import { controlStyles } from "../../lib/control-styles";
+
 void mock.module("next/navigation", () => ({
   useRouter: () => ({ refresh: () => {} }),
 }));
@@ -13,12 +15,12 @@ describe("LibraryUnavailable", () => {
   it("is a polite status, not an assertive alert", () => {
     const html = renderToStaticMarkup(<LibraryUnavailable what="songs" />);
 
-    expect(html).toContain('role="status"');
+    expect(html).toMatch(/^<output/);
     expect(html).not.toContain('role="alert"');
     expect(html).toContain("Couldn’t load your songs");
   });
 
-  it("keeps retry and empty-state actions at the 44px touch height on mobile", () => {
+  it("sizes retry and empty-state actions from the shared text control", () => {
     const retry = renderToStaticMarkup(<LibraryUnavailable what="songs" />);
     const empty = renderToStaticMarkup(
       <LibraryEmpty
@@ -29,7 +31,9 @@ describe("LibraryUnavailable", () => {
       />,
     );
 
-    expect(retry).toContain("h-11");
-    expect(empty).toContain("h-11");
+    for (const token of controlStyles.text.split(" ")) {
+      expect(retry).toContain(token);
+      expect(empty).toContain(token);
+    }
   });
 });

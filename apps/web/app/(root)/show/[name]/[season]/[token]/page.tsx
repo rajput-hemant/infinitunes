@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@infinitunes/ui/components/dropdown-menu";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
 import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -15,6 +14,8 @@ import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
 import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
+import { Shelf } from "~/components/slider/shelf";
+import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
 import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
@@ -30,11 +31,11 @@ import { EpisodeList } from "./_components/episode-list";
 const DEFAULT_SORT: Sort = "desc";
 
 // callers must pass a normalized sort so generateMetadata and the page share one cache entry
-const getShow = cache(async (token: string, season: number, sort: Sort) =>
+const getShow = cache(async (token: string, season: string, sort: Sort) =>
   orNotFound(
     api.show.details({
       token,
-      season: `${season}`,
+      season,
       sort,
     }),
   ),
@@ -42,7 +43,7 @@ const getShow = cache(async (token: string, season: number, sort: Sort) =>
 
 type ShowDetailsPageProps = {
   searchParams: Promise<{ sort?: Sort }>;
-  params: Promise<{ name: string; season: number; token: string }>;
+  params: Promise<{ name: string; season: string; token: string }>;
 };
 
 export async function generateMetadata({
@@ -61,15 +62,17 @@ export async function generateMetadata({
   });
 }
 
+type ShowEpisodeSectionProps = {
+  show: Awaited<ReturnType<typeof getShow>>;
+  sort: Sort;
+  userPromise: ReturnType<typeof getUser>;
+};
+
 async function ShowEpisodeSection({
   show,
   sort,
   userPromise,
-}: {
-  show: Awaited<ReturnType<typeof getShow>>;
-  sort: Sort;
-  userPromise: ReturnType<typeof getUser>;
-}) {
+}: ShowEpisodeSectionProps) {
   const user = await userPromise;
   const [favorites, playlists] = user
     ? await Promise.all([
@@ -81,7 +84,7 @@ async function ShowEpisodeSection({
   return (
     <>
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+        <h2 className="font-heading text-xl text-foreground sm:text-2xl md:text-3xl">
           {show.modules.episodes.title}
         </h2>
 
@@ -134,18 +137,26 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
   const { modules, seasons, show_details } = show;
 
   return (
-    <div className="mb-4 space-y-4">
+    <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={show_details} />
 
-      <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
+      <section className="flex flex-col gap-4">
+        <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+          {modules.show_details.title}
+        </h2>
+        <p className="max-w-2xl text-muted-foreground">
+          {show_details.more_info.description}
+        </p>
+      </section>
+
+      <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
         {modules.seasons.title}
       </h2>
 
-      <ScrollArea>
-        <div className="flex space-x-4 p-1 pb-4">
-          {seasons.toReversed().map((s) => (
+      <Shelf>
+        {seasons.toReversed().map((s) => (
+          <ShelfItem key={s.id}>
             <SliderCard
-              key={s.id}
               name={s.title}
               url={s.perma_url}
               subtitle={s.subtitle}
@@ -158,30 +169,20 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
                 seasons.length > 1
               }
             />
-          ))}
-        </div>
-
-        <ScrollBar orientation="horizontal" />
-      </ScrollArea>
+          </ShelfItem>
+        ))}
+      </Shelf>
 
       <Suspense
         fallback={
           <>
-            <div className="h-9 w-full animate-pulse rounded bg-muted" />
+            <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
             <SongListSkeleton length={10} />
           </>
         }
       >
         <ShowEpisodeSection show={show} sort={sort} userPromise={userPromise} />
       </Suspense>
-
-      <h2 className="font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-        {modules.show_details.title}
-      </h2>
-
-      <blockquote className="max-w-4xl italic text-muted-foreground">
-        {show_details.more_info.description}
-      </blockquote>
     </div>
   );
 }

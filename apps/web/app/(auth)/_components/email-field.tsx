@@ -9,6 +9,8 @@ import { Input } from "@infinitunes/ui/components/input";
 import React from "react";
 import type { ControllerFieldState } from "react-hook-form";
 
+import { authInputStyles, authLabelStyles } from "./field-styles";
+
 type EmailFieldProps = {
   field: Pick<
     React.ComponentProps<"input">,
@@ -26,7 +28,7 @@ export function EmailField(props: EmailFieldProps) {
 
   return (
     <Field data-invalid={!!fieldState.error}>
-      <FieldLabel htmlFor={id} className="sr-only">
+      <FieldLabel htmlFor={id} className={authLabelStyles}>
         Email
       </FieldLabel>
       <Input
@@ -38,8 +40,8 @@ export function EmailField(props: EmailFieldProps) {
         spellCheck={false}
         disabled={disabled}
         aria-invalid={!!fieldState.error}
-        placeholder="you@domain.com"
-        className="h-11 shadow-xs"
+        placeholder="name@example.com"
+        className={authInputStyles}
         {...field}
       />
       <FieldError errors={[fieldState.error]} />

@@ -10,8 +10,8 @@ export const metadata = {
 export default function SignUpModal() {
   return (
     <AuthModal
-      title="Create Account"
-      description="Enter your details below to create an account"
+      title="Create your account"
+      description="Free forever. No credit card needed."
     >
       <SignUpForm />
     </AuthModal>

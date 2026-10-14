@@ -2,19 +2,21 @@
 
 import type { FeaturedPlaylists, Lang } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import React from "react";
 
-import { SliderCard } from "~/components/slider/slider-card";
-import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
+import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { CatalogLoadMore } from "~/components/catalog-load-more";
+import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
 import { api } from "~/lib/trpc/client";
 
-type Props = {
+type FeaturedPlaylistsProps = {
   initialPlaylists: FeaturedPlaylists;
   lang?: Lang;
 };
 
-export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
+export function FeaturedPlaylists({
+  initialPlaylists,
+  lang,
+}: FeaturedPlaylistsProps) {
   const utils = api.useUtils();
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
@@ -22,39 +24,24 @@ export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
       queryKey: ["featured-playlists", lang],
       queryFn: ({ pageParam }) =>
         utils.get.featuredPlaylists.fetch({ page: pageParam, n: 50, lang }),
-      initialPageParam: 1 as number,
+      initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) =>
-        (lastPage as FeaturedPlaylists).last_page ? null : allPages.length + 1,
+        lastPage.last_page ? null : allPages.length + 1,
       initialData: { pages: [initialPlaylists], pageParams: [1] },
     });
 
-  const featuredPlaylists = (data.pages as FeaturedPlaylists[]).flatMap(
-    (page) => page.data,
-  );
-
-  const [ref] = useIntersectionObserver({
-    threshold: 0.5,
-    onChange(isIntersecting) {
-      if (isIntersecting) {
-        fetchNextPage();
-      }
-    },
-  });
+  const featuredPlaylists = data.pages.flatMap((page) => page.data);
 
   return (
-    <div className="py-6">
-      <div className="flex w-full flex-wrap justify-between gap-y-4">
+    <div>
+      <CatalogGrid>
         {featuredPlaylists.map(
-          ({
-            id,
-            title,
-            perma_url,
-            subtitle,
-            type,
-            image,
-            explicit_content,
-          }) => (
+          (
+            { id, title, perma_url, subtitle, type, image, explicit_content },
+            index,
+          ) => (
             <SliderCard
+              priority={index < FIRST_ROW_CARDS}
               key={id}
               name={title}
               url={perma_url}
@@ -65,25 +52,13 @@ export function FeaturedPlaylists({ initialPlaylists, lang }: Props) {
             />
           ),
         )}
-      </div>
+      </CatalogGrid>
 
-      {hasNextPage ? (
-        <div
-          ref={ref}
-          className="flex items-center justify-center gap-2 font-bold text-muted-foreground"
-        >
-          {isFetchingNextPage && (
-            <>
-              <Loader2 className="size-5 animate-spin" /> Loading...
-            </>
-          )}
-        </div>
-      ) : (
-        <h2 className="text-center font-heading text-xl dark:drop-shadow-md text-foreground sm:text-2xl md:text-3xl">
-          <em>Yay! You have seen it all</em>{" "}
-          <span className="text-foreground">🤩</span>
-        </h2>
-      )}
+      <CatalogLoadMore
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        onLoadMore={fetchNextPage}
+      />
     </div>
   );
 }

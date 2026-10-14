@@ -1,76 +1,73 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@infinitunes/ui/components/dialog";
 import {
-  Field,
-  FieldLabel,
-  FieldContent,
-  FieldError,
-} from "@infinitunes/ui/components/field";
-import { Input } from "@infinitunes/ui/components/input";
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@infinitunes/ui/components/drawer";
 import * as React from "react";
-import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
-import type { z } from "zod";
 
-import { unwrap } from "~/lib/action-result";
-import { createNewPlaylist } from "~/lib/actions";
-import type { User } from "~/lib/auth";
-import { controlStyles } from "~/lib/control-styles";
-import { userMessage } from "~/lib/user-message";
-import { newPlaylistSchema } from "~/lib/validations";
+import { useIsPhone } from "~/components/site-header/use-is-phone";
 
-const defaultValues: FormData = {
-  name: "",
-  description: "",
-};
-
-type FormData = z.infer<typeof newPlaylistSchema>;
+// The form (zod, react-hook-form, validation) is fetched when the dialog
+// first opens, not in the shell that every page loads.
+const CreatePlaylistForm = React.lazy(() =>
+  import("./create-playlist-form").then((m) => ({
+    default: m.CreatePlaylistForm,
+  })),
+);
 
 type NewPlaylistFormProps = {
-  user?: User;
-  children: React.ReactNode;
+  /** The single element that opens the dialog. */
+  children: React.ReactElement;
 };
 
 export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
   const [open, setOpen] = React.useState(false);
+  const isPhone = useIsPhone();
+  const onDone = () => setOpen(false);
 
-  const form = useForm<FormData>({
-    resolver: zodResolver(newPlaylistSchema),
-    defaultValues,
-  });
+  // Below 768px the mockup presents dialogs as bottom sheets.
+  if (isPhone) {
+    return (
+      <Drawer open={open} onOpenChange={setOpen} showSwipeHandle>
+        <DrawerTrigger render={children} />
 
-  async function onSubmit({ name, description }: FormData) {
-    try {
-      toast.promise(unwrap(createNewPlaylist({ name, description })), {
-        loading: "Creating playlist...",
-        success: (d) => `Playlist "${d.name}" created successfully!`,
-        error: userMessage,
-        finally: () => setOpen(false),
-      });
-    } catch (error) {
-      const err = error as Error;
-      console.error(err.message);
-    }
+        <DrawerContent className="gap-4 rounded-t-3xl p-6 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+          <div className="flex flex-col gap-1">
+            <DrawerTitle className="font-heading text-xl font-bold tracking-tight">
+              Create Playlist
+            </DrawerTitle>
+            <DrawerDescription>
+              Create a new playlist to add your favorite songs.
+            </DrawerDescription>
+          </div>
+
+          <React.Suspense fallback={null}>
+            <CreatePlaylistForm onDone={onDone} />
+          </React.Suspense>
+        </DrawerContent>
+      </Drawer>
+    );
   }
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={children as React.ReactElement} />
+      <DialogTrigger render={children} />
 
       <DialogContent>
         <DialogHeader className="space-y-0">
-          <DialogTitle className="font-heading text-2xl tracking-wide dark:drop-shadow-md">
+          <DialogTitle className="font-heading text-xl font-bold tracking-tight">
             Create Playlist
           </DialogTitle>
           <DialogDescription>
@@ -78,65 +75,9 @@ export function NewPlaylistForm({ children }: NewPlaylistFormProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-          <Controller
-            name="name"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field orientation="vertical">
-                <FieldLabel className="text-xs">
-                  Playlist Name{" "}
-                  <span aria-hidden className="text-destructive">
-                    *
-                  </span>
-                </FieldLabel>
-                <FieldContent>
-                  <Input
-                    type="text"
-                    required
-                    placeholder="Enter playlist name"
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError>{fieldState.error.message}</FieldError>
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          />
-          <Controller
-            name="description"
-            control={form.control}
-            render={({ field, fieldState }) => (
-              <Field orientation="vertical">
-                <FieldLabel className="text-xs">Description</FieldLabel>
-                <FieldContent>
-                  <Input
-                    type="text"
-                    placeholder="Enter playlist description"
-                    {...field}
-                  />
-                  {fieldState.error && (
-                    <FieldError>{fieldState.error.message}</FieldError>
-                  )}
-                </FieldContent>
-              </Field>
-            )}
-          />
-
-          <DialogFooter className="pt-4">
-            <DialogClose
-              render={
-                <Button variant="outline" className={controlStyles.text}>
-                  Cancel
-                </Button>
-              }
-            />
-            <Button type="submit" className={controlStyles.text}>
-              Create Playlist
-            </Button>
-          </DialogFooter>
-        </form>
+        <React.Suspense fallback={null}>
+          <CreatePlaylistForm onDone={onDone} />
+        </React.Suspense>
       </DialogContent>
     </Dialog>
   );

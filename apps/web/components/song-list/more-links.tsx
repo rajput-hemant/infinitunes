@@ -2,7 +2,7 @@ import type { ArtistMini } from "@infinitunes/types";
 import { DropdownMenuItem } from "@infinitunes/ui/components/dropdown-menu";
 import { Disc, Mic2, Music } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import type { ReactElement } from "react";
 
 import { getHref } from "~/lib/utils";
 
@@ -19,15 +19,28 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
   const { type, itemUrl, albumUrl, showAlbum, isDropdownItem, primaryArtists } =
     props;
 
+  // In the desktop dropdown the item is a flex row, so the label span can
+  // truncate; the phone drawer keeps the plain inline text.
+  const label = (text: string) =>
+    isDropdownItem ? (
+      <span className="min-w-0 truncate" title={text}>
+        {text}
+      </span>
+    ) : (
+      text
+    );
+
   return (
     <>
       <Wrapper isDropdownItem={isDropdownItem}>
         <Link
           href={getHref(itemUrl, type)}
-          className="min-h-11 shrink-0 cursor-pointer py-3 lg:min-h-0 lg:py-1"
+          className="min-h-(--ctl-lg) shrink-0 cursor-pointer py-3 md:min-h-0 md:py-1"
         >
           <Music className="mr-2 inline-block size-5" />
-          {type === "song" ? "Song Details & Lyrics" : "View Episode Details"}
+          {label(
+            type === "song" ? "Song Details & Lyrics" : "View Episode Details",
+          )}
         </Link>
       </Wrapper>
 
@@ -35,10 +48,10 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
         <Wrapper isDropdownItem={isDropdownItem}>
           <Link
             href={getHref(albumUrl, "album")}
-            className="min-h-11 shrink-0 cursor-pointer py-3 lg:min-h-0 lg:py-1"
+            className="min-h-(--ctl-lg) shrink-0 cursor-pointer py-3 md:min-h-0 md:py-1"
           >
             <Disc className="mr-2 inline-block size-5" />
-            More from Album
+            {label("More from Album")}
           </Link>
         </Wrapper>
       )}
@@ -46,12 +59,11 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
       {primaryArtists?.map(({ id, perma_url, name }) => (
         <Wrapper key={id} isDropdownItem={isDropdownItem}>
           <Link
-            key={id}
             href={getHref(perma_url, "artist")}
-            className="min-h-11 shrink-0 cursor-pointer py-3 lg:min-h-0 lg:py-1"
+            className="min-h-(--ctl-lg) shrink-0 cursor-pointer py-3 md:min-h-0 md:py-1"
           >
             <Mic2 className="mr-2 inline-block size-5" />
-            More From {name}
+            {label(`More From ${name}`)}
           </Link>
         </Wrapper>
       ))}
@@ -61,13 +73,9 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
 
 type WrapperProps = {
   isDropdownItem?: boolean;
-  children: React.ReactNode;
+  children: ReactElement;
 };
 
 function Wrapper({ isDropdownItem, children }: WrapperProps) {
-  return isDropdownItem ? (
-    <DropdownMenuItem render={children as React.ReactElement} />
-  ) : (
-    children
-  );
+  return isDropdownItem ? <DropdownMenuItem render={children} /> : children;
 }

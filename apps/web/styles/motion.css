@@ -1,0 +1,177 @@
+/*
+ * Motion: page view transitions and small UI animations. Everything here is
+ * transform and opacity (compositor only), 120-260ms, ease-out. Reduced motion
+ * (the OS setting or the in-app switch) turns it all off at the end of the file.
+ */
+
+/* ---------- Page view transitions ---------- */
+/* Clicks fall through to the live page while a transition runs. */
+::view-transition {
+  pointer-events: none;
+}
+
+/* The page content: the old page fades out quickly, the new one rises in. */
+::view-transition-old(.vt-page-out) {
+  animation: 140ms var(--ease-out) both vt-fade-out;
+}
+::view-transition-new(.vt-page-in) {
+  animation: 240ms var(--ease-out) both vt-rise-in;
+}
+
+/* Whatever is not named below is identical before and after, so the root snapshot needs no cross-fade. */
+::view-transition-group(root) {
+  animation: none;
+}
+::view-transition-old(root) {
+  display: none;
+}
+::view-transition-new(root) {
+  animation: none;
+}
+
+/* A card's artwork flying into the header artwork of the page it opens. */
+::view-transition-group(.vt-morph) {
+  animation-duration: 340ms;
+  animation-timing-function: var(--ease-drawer);
+}
+::view-transition-image-pair(.vt-morph) {
+  isolation: auto;
+}
+::view-transition-old(.vt-morph),
+::view-transition-new(.vt-morph) {
+  height: 100%;
+  object-fit: cover;
+  mix-blend-mode: normal;
+}
+
+/*
+ * The shell holds still. While a transition runs its pieces get a name, so
+ * they leave the root snapshot, paint above the page group and are neither
+ * faded nor moved. Named only during a transition: a permanent name would
+ * make each of them a backdrop root for the whole session.
+ */
+:root:active-view-transition [data-slot="sidebar-container"] {
+  view-transition-name: vt-sidebar;
+}
+:root:active-view-transition [data-glass-edge="top"] {
+  view-transition-name: vt-toolbar;
+}
+:root:active-view-transition [data-glass-edge="bottom"] {
+  view-transition-name: vt-edge;
+}
+:root:active-view-transition [data-glass-role="player"] {
+  view-transition-name: vt-player;
+}
+:root:active-view-transition [data-glass-role="tabbar"] {
+  view-transition-name: vt-tabbar;
+}
+::view-transition-group(vt-sidebar),
+::view-transition-group(vt-toolbar),
+::view-transition-group(vt-edge),
+::view-transition-group(vt-player),
+::view-transition-group(vt-tabbar) {
+  animation: none;
+  z-index: 10;
+}
+::view-transition-old(vt-sidebar),
+::view-transition-old(vt-toolbar),
+::view-transition-old(vt-edge),
+::view-transition-old(vt-player),
+::view-transition-old(vt-tabbar) {
+  display: none;
+}
+::view-transition-new(vt-sidebar),
+::view-transition-new(vt-toolbar),
+::view-transition-new(vt-edge),
+::view-transition-new(vt-player),
+::view-transition-new(vt-tabbar) {
+  animation: none;
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* ---------- Menus, popovers and dialogs ---------- */
+/* The scale and fade come from tw-animate (zoom/fade/slide from the anchor side); this sets the pace. */
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"]
+):is([data-open], [data-starting-style]) {
+  animation-duration: 180ms;
+  animation-timing-function: var(--ease-out);
+}
+:is(
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  [data-slot="dialog-overlay"],
+  [data-slot="alert-dialog-overlay"]
+)[data-closed] {
+  animation-duration: 120ms;
+  animation-timing-function: ease-in;
+}
+
+/* ---------- Sidebar collapse ---------- */
+/* The width already animates (the content column follows it); only the curve changes. */
+:is([data-slot="sidebar-gap"], [data-slot="sidebar-container"]) {
+  transition-duration: 260ms;
+  transition-timing-function: var(--ease-drawer);
+}
+
+/* ---------- Cards ---------- */
+@keyframes vt-pop {
+  0% {
+    scale: 1;
+  }
+  35% {
+    scale: 1.3;
+  }
+  70% {
+    scale: 0.94;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes vt-swap-in {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+}
+@utility motion-pop {
+  animation: vt-pop 320ms var(--ease-out);
+}
+
+/* The play/pause icon is a different glyph per state, so the new one lands with a short pop. */
+:is(button[aria-label="Pause"], button[aria-label="Play"]) svg {
+  animation: vt-swap-in var(--duration-fast) var(--ease-out);
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+:root[data-motion="reduced"]::view-transition-group(*),
+:root[data-motion="reduced"]::view-transition-old(*),
+:root[data-motion="reduced"]::view-transition-new(*) {
+  animation: none !important;
+}

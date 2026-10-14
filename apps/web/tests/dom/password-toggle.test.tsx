@@ -20,7 +20,13 @@ describe("auth password field (UI-22)", () => {
             onBlur: () => {},
             ref: () => {},
           }}
-          fieldState={{} as never}
+          fieldState={{
+            invalid: false,
+            isDirty: false,
+            isTouched: false,
+            isValidating: false,
+            error: undefined,
+          }}
           label="Password"
           autoComplete="current-password"
           disabled={false}
@@ -28,10 +34,10 @@ describe("auth password field (UI-22)", () => {
       );
     });
 
-    const toggle = container.querySelector(
+    const toggle = container.querySelector<HTMLElement>(
       'button[aria-label="Show password"]',
-    ) as HTMLElement;
-    expect(toggle).not.toBeNull();
+    );
+    if (!toggle) throw new Error("visibility toggle not rendered");
     expect(toggle.getAttribute("tabindex")).toBeNull();
 
     await act(async () => {
@@ -41,11 +47,9 @@ describe("auth password field (UI-22)", () => {
       container.querySelector('button[aria-label="Hide password"]'),
     ).not.toBeNull();
     expect(
-      (
-        container.querySelector(
-          "input[autocomplete=current-password]",
-        ) as HTMLInputElement
-      ).type,
+      container.querySelector<HTMLInputElement>(
+        "input[autocomplete=current-password]",
+      )?.type,
     ).toBe("text");
     root.unmount();
     container.remove();

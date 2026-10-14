@@ -1,21 +1,34 @@
+import Link from "next/link";
+
 import { redirectIfSignedIn } from "~/lib/auth-guard";
 
+import { AuthIntro } from "../_components/auth-intro";
+import { authLinkStyles } from "../_components/field-styles";
 import { LoginForm } from "../_components/login-form";
+
+export const metadata = {
+  title: "Login",
+  description: "Login to your account",
+};
 
 export default async function LoginPage() {
   await redirectIfSignedIn();
 
   return (
-    <div className="flex flex-col space-y-2 text-center">
-      <h1 className="font-heading text-3xl dark:drop-shadow-md text-foreground sm:text-4xl md:text-5xl">
-        Login
-      </h1>
-
-      <p className="text-sm text-muted-foreground">
-        Enter your credentials below to login
-      </p>
+    <div className="grid gap-4">
+      <AuthIntro
+        title="Welcome back"
+        description="Log in to sync your library across devices."
+      />
 
       <LoginForm />
+
+      <p className="text-center text-xs text-muted-foreground">
+        Don&apos;t have an account?{" "}
+        <Link href="/signup" className={authLinkStyles}>
+          Sign up
+        </Link>
+      </p>
     </div>
   );
 }

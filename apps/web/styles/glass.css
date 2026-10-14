@@ -1,0 +1,885 @@
+/* Liquid Glass. Spec: docs/design-system/glass.md.
+
+   Surfaces opt in with data-glass="regular|clear|tinted" plus data-glass-size="s|m|l|xl" (GlassSurface sets both),
+   or are packages/ui popups matched by data-slot (read-only, so they cannot carry attributes). The theme writes
+   html[data-glass-level], [data-glass-tint] and [data-motion]; GlassRuntime writes html[data-glass-engine="lens"|"frost"].
+   The lens is an SVG displacement filter GlassRuntime sizes per surface into --g-lens-url; it only applies under
+   data-glass-engine="lens". Everything else (blur, glint, tint, shadow) is the frosted path every browser gets.
+
+   The look is the CodePen "SVG Liquid Glass" model: a refracting rim (depth, splay, feather, curvature), a CSS blur,
+   an inset glint highlight and an optional multiply tint layer. It is neutral: nothing here carries a hue until the
+   user turns the tint on, and then it is the tint colour.
+
+   Popups styled by slot (keep in step with OVERLAY_TARGETS in lib/glass/overlays.ts, a test checks it):
+   popover-content, navigation-menu-popup, dropdown-menu-content, dropdown-menu-sub-content, dialog-content, alert-dialog-content,
+   sheet-content, drawer-popup and the sonner toast. Tooltips (tooltip-content) take the small s material and no
+   lens, so they are not in OVERLAY_TARGETS: the engine attaches no lens to them. */
+
+/* ---------- Tuning variables (the theme writes the --glass-* ones inline when the user changes them) ---------- */
+:root {
+  /* Read by GlassRuntime, not by CSS: the lens depth (px of displacement) and the rim shape. */
+  --glass-depth: 60;
+  --glass-splay: 2;
+  --glass-feather: 24;
+  --glass-curve: 2;
+  --glass-chroma: 0;
+  /* Painted by CSS. */
+  --glass-blur: 2px; /* extra backdrop blur on top of the size class */
+  --glass-glint: 0.25; /* edge highlight strength, 1 is the CodePen's full highlight */
+  --glass-tint: 0; /* opacity of the multiply colour layer */
+  --glass-tint-c: #ffffff;
+  /* The body of the glass: a light fill that keeps text legible. Size classes add to it. */
+  --g-base: 0.18;
+  --g-fill-c: #fff;
+  /* Overlay material tokens: every large floating pane (mega menu, menus, popovers, dialogs, palette, sheets, l surfaces). */
+  --ov-blur: 20px; /* total backdrop blur, in the same backdrop-filter list as the rim lens */
+  --ov-alpha: 0.76; /* neutral fill alpha */
+  --g-blur0: 2px; /* base blur, multiplied per size class */
+  --g-sh-k: 1; /* shadow weight, heavier in dark */
+  --g-art-l: 0.5; /* luminance of the artwork behind a clear surface, set by sampleBehind */
+  --lg-ease: cubic-bezier(
+    0.32,
+    1.18,
+    0.5,
+    1
+  ); /* spring-like, slight overshoot, for CSS-only morphs */
+  --lg-ease-crit: cubic-bezier(0.2, 0.9, 0.25, 1);
+  --g-shadow-sm: 0 4px 16px -6px rgb(0 0 0 / 0.18);
+  /* App tokens captured at the root, so a glass surface can remap the originals for its subtree without a cycle. */
+  --g-fg: var(--foreground);
+  --g-muted-fg: var(--muted-foreground);
+  --g-bg: var(--background);
+  --g-surface: var(--popover);
+  --g-accent: var(--primary);
+  --g-on-accent: var(--primary-foreground);
+}
+.dark {
+  --ov-alpha: 0.66;
+  --g-base: 0.28;
+  --g-fill-c: #1e1e22;
+  --g-sh-k: 2;
+}
+/* Subtle level: a denser, flatter material. User overrides are inline on <html> and still win. */
+html[data-glass-level="subtle"] {
+  --g-base: 0.62;
+  --glass-depth: 20;
+  --glass-blur: 6px;
+  --glass-glint: 0.15;
+}
+
+/* ---------- Positioning hosts ----------
+   Layered, so a utility such as fixed, absolute or sticky on the element always wins. The tint and glow
+   pseudo-elements anchor to the surface; the selector indicator and the top scroll edge anchor to their host. */
+@layer components {
+  :where(
+    [data-glass][data-glass-size],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast],
+    [data-slot="tooltip-content"],
+    [data-glass-selector],
+    [data-glass-edge="top"]
+  ) {
+    position: relative;
+  }
+  :where([data-glass-edge="top"]) {
+    isolation: isolate;
+  }
+}
+
+/* ---------- The material ---------- */
+html
+  :is(
+    [data-glass][data-glass-size],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
+  ) {
+  --g-dim: 0;
+  --g-a: calc(var(--g-base) + var(--g-a-add, 0));
+  --g-text: var(--g-fg);
+  /* Descendants read the app tokens, so remapping them here makes shadcn text and hover fills fit the glass. */
+  --foreground: var(--g-text);
+  --muted-foreground: color-mix(
+    in srgb,
+    var(--g-text) var(--g-muted-k, 88%),
+    transparent
+  );
+  --muted: rgb(127 127 127 / 0.14);
+  --accent: rgb(127 127 127 / 0.16);
+  --accent-foreground: var(--g-text);
+  /* The CodePen's glint: a light edge top-left and a shade bottom-right, scaled by the Glint setting (capped at 1). */
+  --g-glint: min(1, var(--glass-glint));
+  color: var(--g-text);
+  background:
+    linear-gradient(rgb(0 0 0 / var(--g-dim)) 0 0),
+    color-mix(
+      in srgb,
+      var(--g-fill-c) calc(min(var(--g-a), 0.97) * 100%),
+      transparent
+    );
+  -webkit-backdrop-filter: blur(var(--g-blur)) contrast(var(--g-con, 1));
+  backdrop-filter: blur(var(--g-blur)) contrast(var(--g-con, 1));
+  box-shadow: var(--g-inner), var(--g-drop);
+  isolation: isolate;
+  -webkit-font-smoothing: antialiased;
+  letter-spacing: 0.004em;
+  --g-blur: calc(var(--g-blur0) * var(--g-k, 1) + var(--glass-blur));
+  --g-inner:
+    inset 1.5px 1.5px 4px rgb(255 255 255 / calc(0.7 * var(--g-glint))),
+    inset -2px -2px 5px rgb(0 0 0 / calc(0.28 * var(--g-glint)));
+}
+/* Refraction: the displacement lens first, then the blur that frosts it. xl never refracts. */
+html[data-glass-engine="lens"]:not([data-glass-level="solid"])
+  :is(
+    [data-glass][data-glass-size]:not([data-glass-size="xl"]),
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast]
+  ) {
+  -webkit-backdrop-filter: var(--g-lens-url,) blur(var(--g-blur))
+    contrast(var(--g-con, 1));
+  backdrop-filter: var(--g-lens-url,) blur(var(--g-blur))
+    contrast(var(--g-con, 1));
+}
+/* Tint: a colour layer multiplied over the glass. Only rendered while the Tint setting is above 0
+   (html[data-glass-tint] or a surface's own preset), so the default costs nothing. This is the frosted path
+   (Safari, Firefox): a layer in the element cannot multiply its own backdrop, so under the lens the SVG filter
+   multiplies the refracted backdrop instead and this layer is faded out. */
+html
+  :is(
+    [data-glass][data-glass-size],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
+  )::before {
+  content: "";
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--glass-tint-c);
+  /* In the lens engine the filter does the multiply on the refracted backdrop (--g-lens-tint is 1 then). */
+  opacity: calc(var(--glass-tint) * (1 - var(--g-lens-tint, 0)));
+  mix-blend-mode: multiply;
+}
+@media not ((prefers-contrast: more) or (forced-colors: active)) {
+  html[data-glass-tint="on"]:not([data-glass-level="solid"])
+    :is(
+      [data-glass][data-glass-size],
+      [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
+    )::before,
+  html:not([data-glass-level="solid"])
+    [data-glass][data-glass-size][data-glass-tint="on"]::before {
+    display: block;
+  }
+}
+/* Illumination: a small, soft glow at the touch point while pressed. It is the surface's own layer (inset 0, the
+   surface's radius), so it never reaches past the border; kept low in radius and opacity as a quiet confirmation. */
+html
+  :is(
+    [data-glass][data-glass-size],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
+  )::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 2.25rem at var(--g-px, 50%) var(--g-py, 0%),
+    rgb(255 255 255 / calc(0.14 * var(--g-press, 0))),
+    transparent 100%
+  );
+}
+
+/* Size classes: bigger reads thicker (more diffusion, more fill, a deeper but still soft shadow, weaker lens). */
+html :is([data-glass-size="s"], [data-slot="tooltip-content"]) {
+  --g-k: 0.5;
+  --g-drop: 0 4px 14px -5px rgb(0 0 0 / calc(0.16 * var(--g-sh-k)));
+}
+html :is([data-glass-size="m"], [data-sonner-toast]) {
+  --g-k: 1;
+  --g-a-add: 0.2;
+  --g-con: 0.8;
+  --g-drop: 0 10px 28px -10px rgb(0 0 0 / calc(0.2 * var(--g-sh-k)));
+}
+html
+  :is(
+    [data-glass-size="l"],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"]
+  ) {
+  --g-k: 2;
+  --g-a-add: 0.32;
+  --g-drop: 0 24px 56px -16px rgb(0 0 0 / calc(0.26 * var(--g-sh-k)));
+}
+/* Overlay material: a thicker pane than the navigation chrome (toolbar, player, hero stay on the lighter m and s
+   materials), so the page behind reads as diffused colour. One token set (--ov-blur, --ov-alpha, top of file);
+   the extra :root keeps this ahead of the base surface rule's specificity. */
+html:root
+  :is(
+    [data-glass-size="l"],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"]
+  ) {
+  --g-a: var(--ov-alpha);
+  --g-blur: var(--ov-blur);
+}
+html [data-glass-size="xl"] {
+  --g-k: 3.5;
+  --g-a-add: 0.26;
+  --g-drop: 0 10px 40px -20px rgb(0 0 0 / calc(0.2 * var(--g-sh-k)));
+}
+
+/* Text-bearing m surfaces (player, toasts) hold AA at the extremes: backdrop contrast pulls toward mid grey,
+   fill floor 0.34 light / 0.50 dark. */
+html.dark :is([data-glass-size="m"], [data-sonner-toast]) {
+  --g-a-add: 0.26;
+  --g-con: 0.75;
+}
+/* Tooltips are text-bearing but 12px, so they take the m contrast floor (same values) to hold AA on any backdrop. */
+html [data-slot="tooltip-content"] {
+  --g-a-add: 0.26;
+  --g-con: 0.6;
+}
+html.dark [data-slot="tooltip-content"] {
+  --g-a-add: 0.3;
+  --g-con: 0.5;
+}
+html.dark
+  :is(
+    [data-glass][data-glass-size],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
+  ) {
+  --g-muted-k: 94%;
+}
+
+/* ---------- Variants ----------
+   Clear: almost no tint, a dimming layer scaled by what is behind (AA for white text), white glyphs.
+   A toolbar over an artwork header opts its regular glass into clear with data-glass-over-art, unless
+   data-glass-titled says the title has scrolled into the bar.
+   Variants never apply under the Solid level or prefers-contrast: more: their selectors are more specific than
+   those override blocks, so they are excluded here instead of out-ranked there. */
+@media not (prefers-contrast: more) {
+  html:not([data-glass-level="solid"]) [data-glass="clear"][data-glass-size],
+  html:not([data-glass-level="solid"])
+    [data-glass-over-art]:not([data-glass-titled])
+    [data-glass="regular"][data-glass-size] {
+    --g-fill-c: #fff;
+    --g-a: 0.06;
+    --g-k: 0.6;
+    --g-con: 1;
+    --g-dim: calc(0.1 + 0.34 * var(--g-art-l));
+    --g-text: #fff;
+    --muted-foreground: rgb(255 255 255 / 0.8);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 0.28);
+  }
+  html:not([data-glass-level="solid"]) [data-glass="tinted"][data-glass-size] {
+    --g-fill-c: var(--g-accent);
+    --g-a: calc(0.7 + var(--g-base));
+    --g-dim: 0;
+    --g-text: var(--g-on-accent);
+  }
+}
+/* Vibrancy: secondary text on glass is a touch heavier. */
+html
+  :is(
+    [data-glass][data-glass-size],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
+  )
+  :is(small, .text-muted-foreground) {
+  font-weight: 500;
+}
+
+/* Controls inside glass: the press feedback is the JS spring (scale and glow), not a flat :active shrink. */
+html
+  :is(
+    [data-glass][data-glass-size],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
+  )
+  :is(button, a, [role="button"]):active,
+html button[data-glass]:active,
+html a[data-glass]:active {
+  transform: none;
+  translate: none;
+}
+html
+  :is(
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"]
+  )
+  [role="separator"] {
+  background: rgb(127 127 127 / 0.18);
+}
+
+/* ---------- Layers: materialize (opacity, scale, blur together; GlassRuntime ramps the lens) ----------
+   Menus and popovers from 768px, and toasts. Dialogs keep their own enter animation; sheets and drawers keep
+   their spring. Base UI marks an open popup data-open. */
+@keyframes lg-materialize {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+    filter: blur(10px);
+  }
+  60% {
+    filter: blur(0);
+  }
+}
+/* Sonner positions toasts with transform, so a toast only gets the blur. */
+@keyframes lg-materialize-blur {
+  from {
+    filter: blur(10px);
+  }
+  60% {
+    filter: blur(0);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @media (min-width: 768px) {
+    html:not([data-motion="reduced"])
+      :is(
+        [data-slot="popover-content"],
+        [data-slot="dropdown-menu-content"],
+        [data-slot="dropdown-menu-sub-content"]
+      )[data-open] {
+      animation: lg-materialize 0.34s var(--lg-ease);
+    }
+  }
+  html:not([data-motion="reduced"]) [data-sonner-toast] {
+    animation: lg-materialize-blur 0.34s var(--lg-ease);
+  }
+}
+
+/* ---------- Selection lens: tab bar and segmented controls ---------- */
+[data-glass-selector] {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+[data-glass-selector] > [data-glass-item] {
+  position: relative;
+  z-index: 1;
+}
+[data-glass-indicator] {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  background: var(--fill-2);
+  transform-origin: center;
+  will-change: transform;
+  transition:
+    opacity 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
+}
+/* A segmented control (a plain fill, not itself glass): a raised thumb. */
+[data-glass-selector]:not([data-glass]) > [data-glass-indicator] {
+  border-radius: max(0px, calc(var(--r-ctl) - 2px));
+  background: var(--g-surface);
+  box-shadow: var(--g-shadow-sm);
+}
+.dark [data-glass-selector]:not([data-glass]) > [data-glass-indicator] {
+  background: var(--fill-2);
+  box-shadow: none;
+}
+/* Lifted while pressed or dragged: the indicator becomes a clear, magnifying droplet above the items. */
+[data-glass-indicator][data-lifted] {
+  z-index: 2;
+  background: rgb(255 255 255 / 0.06);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.7),
+    inset 0 0 0 0.5px rgb(255 255 255 / 0.5),
+    inset 0 0 10px rgb(255 255 255 / 0.25),
+    0 6px 16px -4px rgb(0 0 0 / 0.22);
+  -webkit-backdrop-filter: blur(0.5px);
+  backdrop-filter: blur(0.5px);
+}
+html[data-glass-engine="lens"] [data-glass-indicator][data-lifted] {
+  -webkit-backdrop-filter: var(--g-lens-url,) blur(0.5px);
+  backdrop-filter: var(--g-lens-url,) blur(0.5px);
+}
+/* No glass on glass: a selector inside another glass surface keeps a plain lifted thumb. */
+[data-glass]
+  [data-glass-selector]:not([data-glass])
+  > [data-glass-indicator][data-lifted] {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+/* ---------- Roles: tab bar minimize on phones ----------
+   Contract: the tab bar (role tabbar) is fixed with a 0.625rem inset each side, its items are direct
+   data-glass-item children with a span label, and the player (role player) is fixed above it. */
+@media (max-width: 767px) {
+  [data-glass-role="tabbar"] {
+    border-radius: 999px;
+    transition:
+      right 0.5s var(--lg-ease),
+      height 0.5s var(--lg-ease);
+  }
+  [data-glass-role="tabbar"] > [data-glass-item] {
+    border-radius: 999px;
+    transition:
+      color 0.2s,
+      opacity 0.25s,
+      flex-grow 0.5s var(--lg-ease);
+  }
+  [data-glass-role="player"] {
+    transition:
+      left 0.3s var(--ease-spring),
+      right 0.3s var(--ease-spring),
+      bottom 0.45s var(--lg-ease),
+      height 0.45s var(--lg-ease);
+  }
+  /* Minimized on scroll down: the tab bar collapses to the current tab and the player slides into its row. */
+  html[data-tab-min="true"] [data-glass-role="tabbar"] {
+    right: calc(100% - 0.625rem - 3.25rem);
+    height: 3.25rem;
+    padding: 0.25rem;
+  }
+  html[data-tab-min="true"]
+    [data-glass-role="tabbar"]
+    > [data-glass-item]:not([aria-current]:not([aria-current="false"])) {
+    flex: 0 0 0;
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* Out of the tab order and the accessibility tree once the fade has finished; expanding shows them at once. */
+    visibility: hidden;
+    transition:
+      color 0.2s,
+      opacity 0.25s,
+      flex-grow 0.5s var(--lg-ease),
+      visibility 0s linear 0.5s;
+  }
+  html[data-tab-min="true"]
+    [data-glass-role="tabbar"]
+    > [data-glass-item]
+    > span,
+  html[data-tab-min="true"]
+    [data-glass-role="tabbar"]
+    > [data-glass-indicator] {
+    opacity: 0;
+  }
+  html[data-tab-min="true"] [data-glass-role="player"] {
+    bottom: calc(0.625rem + env(safe-area-inset-bottom));
+    left: calc(0.625rem + 3.25rem + 0.5rem);
+    height: 3.25rem;
+  }
+}
+
+/* ---------- Scroll edge effect: replaces the bar background and divider ---------- */
+/* Top: put data-glass-edge="top" on the toolbar wrapper (not a glass surface); useScrollEdge sets data-scrolled. */
+[data-glass-edge="top"]::before,
+[data-glass-edge="top"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+[data-glass-edge="top"]::before {
+  height: calc(100% + 1.75rem);
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--g-bg) 62%, transparent),
+    color-mix(in srgb, var(--g-bg) 30%, transparent) 55%,
+    transparent
+  );
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent);
+  mask-image: linear-gradient(to bottom, #000 40%, transparent);
+}
+[data-glass-edge="top"]::after {
+  height: calc(100% + 0.5rem);
+  -webkit-backdrop-filter: blur(8px) saturate(1.3);
+  backdrop-filter: blur(8px) saturate(1.3);
+  -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent);
+  mask-image: linear-gradient(to bottom, #000 30%, transparent);
+}
+[data-glass-edge="top"][data-scrolled="true"]::before,
+[data-glass-edge="top"][data-scrolled="true"]::after {
+  opacity: 1;
+}
+/* Bottom (GlassEdge): soft on wide screens, hard on phones. The shell sets --g-edge-l and --g-edge-r. */
+[data-glass-edge="bottom"] {
+  position: fixed;
+  z-index: 35;
+  left: var(--g-edge-l, var(--side-w));
+  right: var(--g-edge-r, 0px);
+  bottom: 0;
+  height: 3.5rem;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--g-bg) 30%, transparent),
+    transparent
+  );
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  -webkit-mask-image: linear-gradient(to top, #000 25%, transparent);
+  mask-image: linear-gradient(to top, #000 25%, transparent);
+}
+@media (max-width: 767px) {
+  [data-glass-edge="bottom"] {
+    left: 0;
+    right: 0;
+    height: calc(5rem + env(safe-area-inset-bottom));
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--g-bg) 55%, transparent) 30%,
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(to top, #000 60%, transparent);
+    mask-image: linear-gradient(to top, #000 60%, transparent);
+  }
+}
+
+/* The edge is a second backdrop layer: whatever floats over it (the desktop player is always over its
+   bottom band, the phone player once the tab bar is minimized) would read as two tints, so it steps aside there. */
+@media (min-width: 768px) {
+  [data-glass-edge="bottom"] {
+    display: none;
+  }
+}
+html[data-tab-min="true"] [data-glass-edge="bottom"] {
+  display: none;
+}
+
+/* ---------- Fallbacks and accessibility ---------- */
+/* Solid level: opaque surface, no backdrop filter, no lens. Rim and shadow stay. */
+html[data-glass-level="solid"]
+  :is(
+    [data-glass][data-glass-size],
+    [data-slot="popover-content"],
+    [data-slot="navigation-menu-popup"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="sheet-content"],
+    [data-slot="drawer-popup"],
+    [data-sonner-toast],
+    [data-slot="tooltip-content"]
+  ) {
+  --g-a: 1;
+  --g-fill-c: var(--g-surface);
+  --g-dim: 0;
+  --g-text: var(--g-fg);
+  --muted-foreground: var(--g-muted-fg);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  text-shadow: none;
+}
+html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
+  --g-fill-c: var(--g-accent);
+  --g-text: var(--g-on-accent);
+}
+@media (prefers-reduced-transparency: reduce) {
+  html
+    :is(
+      [data-glass][data-glass-size],
+      [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
+    ) {
+    --g-a: 0.86;
+  }
+  html:not([data-glass-level="solid"]) [data-glass="clear"][data-glass-size],
+  html:not([data-glass-level="solid"])
+    [data-glass-over-art]:not([data-glass-titled])
+    [data-glass="regular"][data-glass-size] {
+    --g-dim: 0.62;
+    --g-a: 0.04;
+  }
+}
+@media (prefers-contrast: more) {
+  html
+    :is(
+      [data-glass][data-glass-size],
+      [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
+    ) {
+    --g-fill-c: var(--g-surface);
+    --g-a: 0.97;
+    --g-dim: 0;
+    --g-text: var(--g-fg);
+    --muted-foreground: var(--g-fg);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    text-shadow: none;
+    box-shadow:
+      inset 0 0 0 1.5px color-mix(in srgb, var(--g-fg) 60%, transparent),
+      var(--g-drop);
+  }
+  html
+    :is(
+      [data-glass][data-glass-size],
+      [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
+    )::before {
+    display: none;
+  }
+  html [data-glass="tinted"][data-glass-size] {
+    --g-fill-c: var(--g-accent);
+    --g-text: var(--g-on-accent);
+  }
+}
+/* Forced colours: system colours only, an outline in place of the rim, no field behind. */
+@media (forced-colors: active) {
+  html
+    :is(
+      [data-glass][data-glass-size],
+      [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
+    ) {
+    forced-color-adjust: auto;
+    background: Canvas;
+    color: CanvasText;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none;
+    text-shadow: none;
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+  html
+    :is(
+      [data-glass][data-glass-size],
+      [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
+    )::before,
+  html
+    :is(
+      [data-glass][data-glass-size],
+      [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"]
+    )::after,
+  [data-glass-edge]::before,
+  [data-glass-edge]::after,
+  [data-glass-edge="bottom"] {
+    display: none;
+  }
+  [data-glass-indicator] {
+    background: Highlight;
+    forced-color-adjust: none;
+  }
+  /* Repeated :root outranks the lens, tint and indicator rules above, whatever their specificity. */
+  html:root:root:root
+    :is(
+      [data-glass][data-glass-size],
+      [data-glass-indicator],
+      [data-slot="popover-content"],
+      [data-slot="navigation-menu-popup"],
+      [data-slot="dropdown-menu-content"],
+      [data-slot="dropdown-menu-sub-content"],
+      [data-slot="dialog-content"],
+      [data-slot="alert-dialog-content"],
+      [data-slot="sheet-content"],
+      [data-slot="drawer-popup"],
+      [data-sonner-toast],
+      [data-slot="tooltip-content"],
+      [data-glass-edge]
+    ),
+  html:root:root:root [data-glass-edge]::before,
+  html:root:root:root [data-glass-edge]::after {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+/* Reduced motion (OS setting or the in-app switch): the tab bar and player change position without a transition. */
+@media (prefers-reduced-motion: reduce) {
+  [data-glass-role="tabbar"],
+  [data-glass-role="player"] {
+    transition-property: opacity !important;
+  }
+}
+html[data-motion="reduced"]
+  :is([data-glass-role="tabbar"], [data-glass-role="player"]) {
+  transition-property: opacity !important;
+}
+/* Below 1440 the queue morphs out of the player: clip, lift and materialize together. */
+@media (max-width: 1439px) {
+  [data-glass-role="queue"] {
+    transform-origin: calc(100% - 8rem) 100%;
+    clip-path: inset(calc(100% - 3rem) 5rem 0 calc(100% - 13rem) round 999px);
+    transform: translateY(4.75rem);
+    filter: blur(6px);
+    transition:
+      clip-path 0.46s var(--lg-ease-crit),
+      transform 0.46s var(--lg-ease),
+      opacity 0.22s,
+      filter 0.3s,
+      visibility 0.46s;
+  }
+  [data-glass-role="queue"][data-state="open"] {
+    clip-path: inset(-4rem round calc(var(--r-lg) + 4rem));
+    transform: none;
+    filter: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-glass-role="queue"] {
+    transition:
+      opacity 0.2s,
+      visibility 0.2s !important;
+    clip-path: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}
+html[data-motion="reduced"] [data-glass-role="queue"] {
+  transition:
+    opacity 0.2s,
+    visibility 0.2s !important;
+  clip-path: none !important;
+  transform: none !important;
+  filter: none !important;
+}
+/* The packages/ui tooltip arrow is a solid foreground diamond; the mockup's glass tooltip has none. */
+[data-slot="tooltip-content"] > [data-side] {
+  display: none;
+}

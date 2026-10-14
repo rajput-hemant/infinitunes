@@ -1,5 +1,9 @@
+import Link from "next/link";
+
 import { redirectIfSignedIn } from "~/lib/auth-guard";
 
+import { AuthIntro } from "../_components/auth-intro";
+import { authLinkStyles } from "../_components/field-styles";
 import { ForgotPasswordForm } from "../_components/forgot-password-form";
 
 export const metadata = {
@@ -11,16 +15,19 @@ export default async function ForgotPasswordPage() {
   await redirectIfSignedIn();
 
   return (
-    <div className="flex flex-col space-y-2 text-center">
-      <h1 className="font-heading text-3xl dark:drop-shadow-md text-foreground sm:text-4xl md:text-5xl">
-        Forgot Password
-      </h1>
-
-      <p className="text-sm text-muted-foreground">
-        Enter your email and we will send you a link to reset your password.
-      </p>
+    <div className="grid gap-4">
+      <AuthIntro
+        title="Forgot password"
+        description="We will email you a link to reset it."
+      />
 
       <ForgotPasswordForm />
+
+      <p className="text-center text-xs text-muted-foreground">
+        <Link href="/login" className={authLinkStyles}>
+          Back to log in
+        </Link>
+      </p>
     </div>
   );
 }

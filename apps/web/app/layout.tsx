@@ -4,13 +4,17 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import type React from "react";
 
+import { GlassFilters } from "~/components/glass/glass-filters";
+import { GlassRuntime } from "~/components/glass/glass-runtime";
 import Providers from "~/components/provider";
 import { TailwindIndicator } from "~/components/tailwind-indicator";
 import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
 import { THEME_COLOR } from "~/lib/theme-color";
+import { DEFAULT_THEME_CONFIG } from "~/lib/theme-config";
 import { THEME_BOOTSTRAP_SCRIPT } from "~/lib/theme-script";
+import { themeConfigToHtml } from "~/lib/theme/html";
 import { absoluteUrl, cn } from "~/lib/utils";
 
 type RootLayoutProps = {
@@ -18,18 +22,24 @@ type RootLayoutProps = {
   children: React.ReactNode;
 };
 
+// Static defaults: the saved appearance is applied before first paint by
+// `THEME_BOOTSTRAP_SCRIPT`, so this layout never reads the cookie.
+const { attributes: defaultThemeAttributes } =
+  themeConfigToHtml(DEFAULT_THEME_CONFIG);
+
 export default function RootLayout({ modal, children }: RootLayoutProps) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          Object.values(fonts).map((font) => font.variable),
-          "min-h-screen font-sans antialiased",
-        )}
-        // The bootstrap script adds the theme preset class and `--radius`.
-        suppressHydrationWarning
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+      className={cn(Object.values(fonts).map((font) => font.variable))}
+      {...defaultThemeAttributes}
+    >
+      <body className="min-h-screen font-sans antialiased">
         <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
+        <GlassFilters />
+        <GlassRuntime />
         <Providers>
           {children}
           {modal}

@@ -2,22 +2,21 @@ import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
 import { cn } from "~/lib/utils";
 
-export function ImageCollage({ src }: { src: string[] }) {
+type ImageCollageProps = {
+  src: string[];
+};
+
+function gridClassFor(count: number): string {
+  if (count <= 1) return "grid grid-cols-1 grid-rows-1";
+  if (count <= 4) return "grid grid-cols-2 grid-rows-2";
+  return "grid grid-cols-3 grid-rows-3";
+}
+
+export function ImageCollage({ src }: ImageCollageProps) {
   const count = src.length;
 
-  const gridClass =
-    count <= 1
-      ? "grid grid-cols-1 grid-rows-1"
-      : count === 2
-        ? "grid grid-cols-2 grid-rows-2"
-        : count === 3
-          ? "grid grid-cols-2 grid-rows-2"
-          : count === 4
-            ? "grid grid-cols-2 grid-rows-2"
-            : "grid grid-cols-3 grid-rows-3";
-
   return (
-    <div className={cn("h-full", gridClass, "gap-0.5")}>
+    <div className={cn("h-full", gridClassFor(count), "gap-0.5")}>
       {src.map((image, i) => (
         <div
           key={i}

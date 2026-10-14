@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import type { ImageProps } from "next/image";
-import React from "react";
+import { useState } from "react";
 
 import { cn } from "~/lib/utils";
 
@@ -11,14 +11,12 @@ type ImageWithFallbackProps = ImageProps & {
 };
 
 export function ImageWithFallback(props: ImageWithFallbackProps) {
-  const { fallback, alt, src, className, ...restProps } = props;
+  const { fallback, alt, src, className, onLoad, ...restProps } = props;
 
   const effectiveSrc = src ? src : fallback;
 
   // Remember which `src` failed so a new `src` starts without an error.
-  const [failedSrc, setFailedSrc] = React.useState<typeof effectiveSrc | null>(
-    null,
-  );
+  const [failedSrc, setFailedSrc] = useState<typeof effectiveSrc | null>(null);
   const error = failedSrc === effectiveSrc;
   if (failedSrc !== null && !error) setFailedSrc(null);
 
@@ -27,7 +25,14 @@ export function ImageWithFallback(props: ImageWithFallbackProps) {
       src={error ? fallback : effectiveSrc}
       alt={alt}
       onError={() => setFailedSrc(effectiveSrc)}
-      className={cn(className, error && "dark:invert")}
+      // `data-loaded` lets the placeholder skeleton behind the image stop
+      // pulsing (see globals.css): a pulse that never ends keeps the
+      // compositor, and every glass backdrop over it, redrawing every frame.
+      onLoad={(event) => {
+        event.currentTarget.dataset.loaded = "true";
+        onLoad?.(event);
+      }}
+      className={cn("rounded-md", className, error && "dark:invert")}
       {...restProps}
     />
   );

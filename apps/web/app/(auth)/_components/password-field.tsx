@@ -2,6 +2,7 @@
 
 import {
   Field,
+  FieldDescription,
   FieldError,
   FieldLabel,
 } from "@infinitunes/ui/components/field";
@@ -18,6 +19,8 @@ import type { ControllerFieldState } from "react-hook-form";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
+import { authInputStyles, authLabelStyles } from "./field-styles";
+
 type PasswordFieldProps = {
   field: Pick<
     React.ComponentProps<"input">,
@@ -25,12 +28,23 @@ type PasswordFieldProps = {
   >;
   fieldState: ControllerFieldState;
   label: string;
+  /** Sits at the end of the label row, e.g. the login "Forgot password?" link. */
+  labelAction?: React.ReactNode;
+  description?: string;
   autoComplete: string;
   disabled: boolean;
 };
 
 export function PasswordField(props: PasswordFieldProps) {
-  const { field, fieldState, label, autoComplete, disabled } = props;
+  const {
+    field,
+    fieldState,
+    label,
+    labelAction,
+    description,
+    autoComplete,
+    disabled,
+  } = props;
 
   const id = React.useId();
   const [isVisible, setIsVisible] = React.useState(false);
@@ -38,9 +52,12 @@ export function PasswordField(props: PasswordFieldProps) {
 
   return (
     <Field data-invalid={!!fieldState.error}>
-      <FieldLabel htmlFor={id} className="sr-only">
-        {label}
-      </FieldLabel>
+      <div className="flex items-center justify-between gap-2">
+        <FieldLabel htmlFor={id} className={authLabelStyles}>
+          {label}
+        </FieldLabel>
+        {labelAction}
+      </div>
       <div className="relative">
         <Input
           id={id}
@@ -49,7 +66,7 @@ export function PasswordField(props: PasswordFieldProps) {
           disabled={disabled}
           aria-invalid={!!fieldState.error}
           placeholder="••••••••••"
-          className="h-11 pr-12 shadow-xs"
+          className={cn(authInputStyles, "pr-10")}
           {...field}
         />
         <Tooltip>
@@ -65,9 +82,9 @@ export function PasswordField(props: PasswordFieldProps) {
             )}
           >
             {isVisible ? (
-              <EyeOff aria-hidden className="size-5" />
+              <EyeOff aria-hidden className="size-4" />
             ) : (
-              <Eye aria-hidden className="size-5" />
+              <Eye aria-hidden className="size-4" />
             )}
           </TooltipTrigger>
 
@@ -76,6 +93,9 @@ export function PasswordField(props: PasswordFieldProps) {
           </TooltipContent>
         </Tooltip>
       </div>
+      {description && (
+        <FieldDescription className="text-xs">{description}</FieldDescription>
+      )}
       <FieldError errors={[fieldState.error]} />
     </Field>
   );

@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>infinitunes - A Library Sidebar</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<aside class="side" id="side">
+  <a class="logo" data-go="home" href="#/home"><span class="logo-mark"></span>infinitunes</a>
+  <nav class="nav" id="nav-main"></nav>
+  <div class="grp">Library</div>
+  <nav class="nav" id="nav-lib"></nav>
+  <div class="grp row-between"><span>Your Playlists</span></div>
+  <div class="pls" id="pls"></div>
+  <button class="newpl" id="newpl"></button>
+</aside>
+
+<div class="main">
+  <header class="top">
+    <button class="ib" data-back aria-label="Back" id="b-back"></button>
+    <button class="ib fwd" id="b-fwd" aria-label="Forward"></button>
+    <label class="sfield"><span id="s-ico"></span><input id="gsearch" placeholder="Search songs, albums, artists" autocomplete="off"></label>
+    <div class="menuwrap">
+      <button class="avatar" data-menu aria-label="Account">H</button>
+      <div class="menu" id="menu">
+        <a data-go="me">Library</a><a data-go="settings">Settings</a><a data-go="login">Logout</a>
+      </div>
+    </div>
+  </header>
+  <main id="view"></main>
+</div>
+
+<a class="allv" href="../index.html">All variants</a>
+
+<div id="player">
+  <div class="pl-line fillbar"><i></i></div>
+  <div class="pl-info" data-np-open><img id="pl-img" alt=""><div class="pl-txt"><b id="pl-t"></b><span id="pl-a"></span></div></div>
+  <div class="pl-mid">
+    <div class="pl-ctl"><button class="ib" data-skip aria-label="Previous" id="p-prev"></button><button class="ib big" data-pp aria-label="Play or pause"></button><button class="ib" data-skip aria-label="Next" id="p-next"></button></div>
+    <div class="pl-prog"><span class="cur">0:00</span><div class="bar fillbar"><i></i></div><span class="durt">0:00</span></div>
+  </div>
+  <div class="pl-right"><span id="p-vol"></span><input type="range" min="0" max="100" value="70" aria-label="Volume"></div>
+  <button class="ib mpp" data-pp aria-label="Play or pause"></button>
+</div>
+
+<nav class="tabbar" id="tabbar"></nav>
+
+<div id="sheet">
+  <div class="sh-top"><button class="ib" data-np-close aria-label="Close" id="sh-close"></button><span>Now Playing</span></div>
+  <img id="sh-img" alt="">
+  <div class="sh-t"><b id="sh-t"></b><span id="sh-a"></span></div>
+  <div class="pl-prog"><span class="cur">0:00</span><div class="bar fillbar"><i></i></div><span class="durt">0:00</span></div>
+  <div class="sh-ctl"><button class="ib" data-skip id="sh-prev" aria-label="Previous"></button><button class="ib big" data-pp aria-label="Play or pause"></button><button class="ib" data-skip id="sh-next" aria-label="Next"></button></div>
+</div>
+
+<script src="../shared/data.js"></script>
+<script src="../shared/router.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

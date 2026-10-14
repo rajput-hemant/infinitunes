@@ -1,11 +1,20 @@
 import type { MediaType } from "@infinitunes/types";
-import { ScrollArea, ScrollBar } from "@infinitunes/ui/components/scroll-area";
+import { decode, getImageSrc } from "@infinitunes/types";
 
+import { Shelf } from "~/components/slider/shelf";
+import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
-import { cn } from "~/lib/utils";
+import { getHref } from "~/lib/utils";
+
+import { HomeHeader } from "./_components/home-header";
+import { HomeHero } from "./_components/home-hero";
+import type { HeroTile } from "./_components/home-hero";
+import { homeItems } from "./_components/home-items";
+import { QuickPicks } from "./_components/quick-picks";
+import type { QuickPickItem } from "./_components/quick-picks";
 
 const title = `Online Songs on ${siteConfig.name}: Download & Play Latest Music for Free`;
 
@@ -36,55 +45,79 @@ const SECTION_TYPE: Record<string, MediaType> = {
   radio: "radio_station",
 };
 
-type HomeItem = {
-  id: string;
-  title: string;
-  perma_url: string;
-  subtitle?: string;
-  type: MediaType;
-  image: string;
-  explicit_content?: string | boolean;
-};
+const QUICK_PICK_ALBUMS = 4;
+const QUICK_PICK_PLAYLISTS = 4;
+const HERO_TILES = 4;
 
 export default async function HomePage() {
   const homedata = await api.home.home({});
 
+  const featured = homedata.top_playlists[0];
+  const quickPicks: QuickPickItem[] = [
+    ...homedata.new_albums.slice(0, QUICK_PICK_ALBUMS),
+    ...homedata.top_playlists.slice(1, 1 + QUICK_PICK_PLAYLISTS),
+  ].map((item) => ({
+    key: `${item.type}-${item.id}`,
+    href: getHref(item.perma_url, item.type),
+    title: decode(item.title),
+    image: getImageSrc(item.image, "high"),
+  }));
+
+  const heroTiles: HeroTile[] = [
+    ...(homedata.charts ?? []),
+    ...homedata.top_playlists.slice(1 + QUICK_PICK_PLAYLISTS),
+  ]
+    .slice(0, HERO_TILES)
+    .map((item) => ({
+      key: `${item.type}-${item.id}`,
+      href: getHref(item.perma_url, item.type),
+      title: decode(item.title),
+      image: item.image,
+    }));
+
   return (
-    <>
-      <h1 className="sr-only">{siteConfig.name} Homepage</h1>
+    <div className="flex flex-col gap-(--page-gap)">
+      <HomeHeader />
+
+      {(featured || quickPicks.length > 0) && (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+          {featured && <HomeHero playlist={featured} tiles={heroTiles} />}
+
+          {quickPicks.length > 0 && <QuickPicks items={quickPicks} />}
+        </div>
+      )}
 
       {Object.entries(homedata).map(([key, section]) => {
-        if (SKIPPED_SECTIONS.has(key) || !Array.isArray(section)) return null;
+        const items = SKIPPED_SECTIONS.has(key) ? null : homeItems(section);
+        if (!items) return null;
 
-        const items = section as HomeItem[];
+        const sectionTitle = homedata.modules?.[key]?.title;
 
         return (
-          <section key={key} className="mb-4 space-y-4">
-            <div className="border-b pb-2" aria-hidden="true" />
+          <section key={key} className="space-y-3">
+            {sectionTitle && (
+              <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
+                {decode(sectionTitle)}
+              </h2>
+            )}
 
-            <ScrollArea>
-              <div
-                className={cn("flex sm:gap-2 xl:pb-6", {
-                  "grid grid-flow-col grid-rows-2 place-content-start":
-                    GRID_SECTIONS.has(key),
-                })}
-              >
-                {items.map(
-                  ({
-                    id,
-                    title: itemTitle,
-                    perma_url,
-                    subtitle,
-                    type: itemType,
-                    image,
-                    explicit_content,
-                  }) => {
-                    const effectiveType =
-                      itemType || SECTION_TYPE[key] || "playlist";
+            <Shelf rows={GRID_SECTIONS.has(key) ? 2 : 1}>
+              {items.map(
+                ({
+                  id,
+                  title: itemTitle,
+                  perma_url,
+                  subtitle,
+                  type: itemType,
+                  image,
+                  explicit_content,
+                }) => {
+                  const effectiveType =
+                    itemType || SECTION_TYPE[key] || "playlist";
 
-                    return (
+                  return (
+                    <ShelfItem key={id || itemTitle}>
                       <SliderCard
-                        key={id || itemTitle}
                         name={itemTitle}
                         url={perma_url}
                         subtitle={subtitle}
@@ -92,16 +125,14 @@ export default async function HomePage() {
                         image={image}
                         explicit={explicit_content}
                       />
-                    );
-                  },
-                )}
-              </div>
-
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+                    </ShelfItem>
+                  );
+                },
+              )}
+            </Shelf>
           </section>
         );
       })}
-    </>
+    </div>
   );
 }
