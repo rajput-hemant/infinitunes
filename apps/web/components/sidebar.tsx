@@ -103,7 +103,13 @@ export function AppSidebarProvider({
   return (
     <SidebarProvider
       open={chosen ?? saved}
-      onOpenChange={setChosen}
+      onOpenChange={(open) => {
+        // Keep the flag in step with the choice: a provider that remounts (after
+        // a trip through the auth layout) reads it again as its saved state.
+        if (open) delete document.documentElement.dataset.sidebar;
+        else document.documentElement.dataset.sidebar = "collapsed";
+        setChosen(open);
+      }}
       className={cn(edgeClassName, className)}
       style={{ ...providerStyle, ...style }}
       {...props}
