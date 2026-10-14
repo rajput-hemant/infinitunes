@@ -131,43 +131,6 @@ describe("GlassRuntime", () => {
     expect(registered()).not.toContain(el);
   });
 
-  it("tilts a surface's rim light toward a nearby mouse", async () => {
-    await mountRuntime();
-    const el = document.createElement("div");
-    el.setAttribute("data-glass", "regular");
-    el.setAttribute("data-glass-size", "m");
-    el.getBoundingClientRect = () => new DOMRect(100, 100, 200, 60);
-    document.body.append(el);
-    await flush();
-
-    const move = new MouseEvent("pointermove", { clientX: 200, clientY: 60 });
-    Object.defineProperty(move, "pointerType", { value: "mouse" });
-    window.dispatchEvent(move);
-    await flush();
-    expect(el.style.getPropertyValue("--g-light")).toMatch(/^\d+(\.\d+)?deg$/);
-
-    const far = new MouseEvent("pointermove", { clientX: 2000, clientY: 2000 });
-    Object.defineProperty(far, "pointerType", { value: "mouse" });
-    window.dispatchEvent(far);
-    await flush();
-    expect(el.style.getPropertyValue("--g-light")).toBe("");
-  });
-
-  it("ignores touch pointers for the rim light", async () => {
-    await mountRuntime();
-    const el = document.createElement("div");
-    el.setAttribute("data-glass", "regular");
-    el.setAttribute("data-glass-size", "m");
-    el.getBoundingClientRect = () => new DOMRect(100, 100, 200, 60);
-    document.body.append(el);
-    await flush();
-    const touch = new MouseEvent("pointermove", { clientX: 200, clientY: 60 });
-    Object.defineProperty(touch, "pointerType", { value: "touch" });
-    window.dispatchEvent(touch);
-    await flush();
-    expect(el.style.getPropertyValue("--g-light")).toBe("");
-  });
-
   it("press gel writes the glow origin in pixels and springs the press in", async () => {
     await mountRuntime();
     const host = document.createElement("div");

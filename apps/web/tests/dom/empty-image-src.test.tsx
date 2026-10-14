@@ -80,3 +80,33 @@ describe("ImageWithFallback empty src guard", () => {
     await act(async () => root.unmount());
   });
 });
+
+describe("ImageWithFallback load marker", () => {
+  it("marks the image loaded so its placeholder skeleton can stop pulsing", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    let seen = 0;
+
+    await act(async () => {
+      root.render(
+        <ImageWithFallback
+          src="/a.jpg"
+          alt="a"
+          fallback="/images/placeholder/song.jpg"
+          fill
+          sizes="100px"
+          onLoad={() => seen++}
+        />,
+      );
+    });
+    const img = container.querySelector("img");
+    await act(async () => {
+      img?.dispatchEvent(new Event("load"));
+    });
+
+    expect(img?.dataset.loaded).toBe("true");
+    expect(seen).toBeGreaterThan(0);
+    await act(async () => root.unmount());
+  });
+});

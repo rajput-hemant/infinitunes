@@ -5,9 +5,9 @@ import {
   ToggleGroupItem,
 } from "@infinitunes/ui/components/toggle-group";
 import { Monitor, Moon, SunMedium } from "lucide-react";
-import { useTheme } from "next-themes";
 
 import { useIsHydrated } from "~/hooks/use-is-hydrated";
+import { useThemeMode } from "~/hooks/use-theme-mode";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -28,13 +28,13 @@ export function ThemeToggleGroup({
 }: ThemeToggleGroupProps) {
   const isMounted = useIsHydrated();
 
-  const { theme, setTheme } = useTheme();
+  const { theme, setMode } = useThemeMode();
 
   // Base UI reports an empty selection when the pressed item is pressed again;
   // a theme is always selected, so that is not a change.
   function handleThemeChange(value: string[]) {
     const [next] = value;
-    if (next) setTheme(next);
+    if (next) setMode(next);
   }
 
   return (

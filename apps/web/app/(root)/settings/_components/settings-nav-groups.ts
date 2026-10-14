@@ -7,7 +7,6 @@ import {
   Keyboard,
   Languages,
   Layers,
-  Palette,
   Radius,
   Rows3,
   SunMoon,
@@ -40,7 +39,6 @@ export const settingsNavGroups: readonly SettingsNavGroup[] = [
     href: "/settings/appearance",
     items: [
       { hash: "mode", title: "Mode", icon: SunMoon },
-      { hash: "accent", title: "Accent color", icon: Palette },
       { hash: "radius", title: "Radius", icon: Radius },
       { hash: "type", title: "Typography", icon: Type },
       { hash: "density", title: "Density", icon: Rows3 },

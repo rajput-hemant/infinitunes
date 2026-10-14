@@ -3,10 +3,10 @@ import { describe, expect, test } from "bun:test";
 import { childScale, gelScale, pressGrow } from "~/lib/glass/press";
 
 describe("press gel", () => {
-  test("growth is capped at 6px of width", () => {
-    expect(pressGrow(75)).toBeCloseTo(0.08);
-    expect(pressGrow(600)).toBeCloseTo(0.01);
-    expect(pressGrow(0)).toBeLessThanOrEqual(0.08);
+  test("growth is capped at 3px of width", () => {
+    expect(pressGrow(75)).toBeCloseTo(0.04);
+    expect(pressGrow(600)).toBeCloseTo(0.005);
+    expect(pressGrow(0)).toBeLessThanOrEqual(0.04);
   });
 
   test("a child control grows by the cap at full press", () => {
@@ -15,7 +15,7 @@ describe("press gel", () => {
   });
 
   test("a gel surface grows wider than tall, each capped", () => {
-    expect(gelScale(0.08, 1)).toBe("1.06 1.04");
+    expect(gelScale(0.08, 1)).toBe("1.03 1.02");
     expect(gelScale(0.02, 1)).toBe("1.02 1.02");
   });
 });

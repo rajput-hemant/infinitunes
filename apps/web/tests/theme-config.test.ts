@@ -20,25 +20,23 @@ import { applyThemeConfig, themeConfigToHtml } from "~/lib/theme/html";
 import type { ThemeTarget } from "~/lib/theme/html";
 
 const everyField: ThemeConfig = {
-  accent: "#3a7bd5",
   radius: 1.25,
   font: "serif",
   headingFont: "mono",
   textSize: 18,
   density: "compact",
   glass: "solid",
-  ambient: false,
   reduceMotion: true,
   glassTuning: {
-    variant: "tinted",
+    depth: 90,
+    splay: 12,
+    feather: 30,
+    curve: 1.4,
+    blur: 2.5,
+    chroma: 0.1,
+    glint: 80,
     tint: 0.5,
-    blur: 10,
-    refraction: 20,
-    sat: 2.0,
-    spec: 0.5,
-    shadow: 0.5,
-    ambientLevel: 0.5,
-    accentTint: true,
+    tintColor: "#3a7bd5",
   },
 };
 
@@ -50,30 +48,28 @@ describe("parseThemeConfig", () => {
 
   test("defaults are the approved design", () => {
     expect(DEFAULT_THEME_CONFIG).toEqual({
-      accent: "rose",
       radius: 0.75,
       font: "system",
       headingFont: "display",
       textSize: 16,
       density: "comfortable",
       glass: "liquid",
-      ambient: true,
       reduceMotion: false,
       glassTuning: {
-        variant: "regular",
-        tint: null,
-        blur: 3,
-        refraction: 30,
-        sat: 1.8,
-        spec: 1,
-        shadow: 1,
-        ambientLevel: 0.62,
-        accentTint: false,
+        depth: 60,
+        splay: 2,
+        feather: 24,
+        curve: 2,
+        blur: 2,
+        chroma: 0,
+        glint: 25,
+        tint: 0,
+        tintColor: "#ffffff",
       },
     });
   });
 
-  test("keeps a fully transparent glass tint", () => {
+  test("keeps a fully clear glass tint", () => {
     const raw = JSON.stringify({
       glassTuning: { ...DEFAULT_THEME_CONFIG.glassTuning, tint: 0 },
     });
@@ -95,49 +91,39 @@ describe("parseThemeConfig", () => {
   test("falls back per field and keeps the valid ones", () => {
     expect(
       parseThemeConfig(
-        '{"accent":"blue","radius":"huge","font":"comic","textSize":99,"density":1}',
+        '{"density":"compact","radius":"huge","font":"comic","textSize":99}',
       ),
-    ).toEqual({ ...DEFAULT_THEME_CONFIG, accent: "blue" });
+    ).toEqual({ ...DEFAULT_THEME_CONFIG, density: "compact" });
   });
 
-  test("migrates the cookie the old appearance page wrote", () => {
-    expect(parseThemeConfig('{"theme":"violet","radius":0.5}')).toEqual({
-      ...DEFAULT_THEME_CONFIG,
-      accent: "violet",
-      radius: 0.5,
+  test("ignores keys the model no longer has", () => {
+    expect(
+      parseThemeConfig(
+        '{"theme":"violet","accent":"blue","ambient":false,"radius":0.5}',
+      ),
+    ).toEqual({ ...DEFAULT_THEME_CONFIG, radius: 0.5 });
+  });
+
+  test("migrates a cookie written with the old glass tuning", () => {
+    const old = {
+      glassTuning: {
+        variant: "clear",
+        tint: null,
+        blur: 12,
+        refraction: 30,
+        sat: 1.8,
+        spec: 1,
+        shadow: 1,
+        ambientLevel: 0.62,
+        accentTint: true,
+      },
+    };
+    const { glassTuning } = normalizeThemeConfig(old);
+    // Unknown fields vanish, a field that still exists is clamped into its new range, and `tint: null` is the default.
+    expect(glassTuning).toEqual({
+      ...DEFAULT_THEME_CONFIG.glassTuning,
+      blur: 5,
     });
-    expect(parseThemeConfig('{"theme":"default","radius":"default"}')).toEqual(
-      DEFAULT_THEME_CONFIG,
-    );
-  });
-
-  test("prefers accent over the legacy theme key", () => {
-    expect(parseThemeConfig('{"accent":"green","theme":"blue"}').accent).toBe(
-      "green",
-    );
-  });
-
-  test("normalizes custom accent hex and rejects anything else", () => {
-    expect(normalizeThemeConfig({ accent: "#ABC" }).accent).toBe("#aabbcc");
-    expect(normalizeThemeConfig({ accent: " #1A2B3C " }).accent).toBe(
-      "#1a2b3c",
-    );
-    expect(normalizeThemeConfig({ accent: " Rose " }).accent).toBe("rose");
-    for (const accent of [
-      "#12345",
-      "#1234567",
-      "#gggggg",
-      "crimson",
-      "rgb(0,0,0)",
-      "url(javascript:alert(1))",
-      "#fff; --radius: 0",
-      "}</style><script>",
-      7,
-      null,
-      {},
-    ]) {
-      expect(normalizeThemeConfig({ accent }).accent).toBe("rose");
-    }
   });
 
   test("accepts any radius from 0 to 24px and nothing outside it", () => {
@@ -179,20 +165,17 @@ describe("parseThemeConfig", () => {
     expect(normalizeThemeConfig({ font: "display" }).font).toBe("system");
     expect(normalizeThemeConfig({ textSize: "17" }).textSize).toBe(16);
     expect(normalizeThemeConfig({ glass: "off" }).glass).toBe("liquid");
-    expect(normalizeThemeConfig({ ambient: "no" }).ambient).toBe(true);
     expect(normalizeThemeConfig({ reduceMotion: 1 }).reduceMotion).toBe(false);
   });
 
   test("ignores inherited and prototype keys", () => {
-    const polluted = JSON.parse(
-      '{"__proto__":{"accent":"blue"},"font":"mono"}',
-    );
+    const polluted = JSON.parse('{"__proto__":{"radius":1},"font":"mono"}');
     expect(normalizeThemeConfig(polluted)).toEqual({
       ...DEFAULT_THEME_CONFIG,
       font: "mono",
     });
-    expect(Object.hasOwn(Object.prototype, "accent")).toBe(false);
-    expect(normalizeThemeConfig(Object.create({ accent: "blue" }))).toEqual(
+    expect(Object.hasOwn(Object.prototype, "radius")).toBe(false);
+    expect(normalizeThemeConfig(Object.create({ radius: 1 }))).toEqual(
       DEFAULT_THEME_CONFIG,
     );
   });
@@ -237,8 +220,6 @@ describe("serializeThemeConfig", () => {
 
   test("round trips each single change from the defaults", () => {
     const changes: Partial<ThemeConfig>[] = [
-      { accent: "orange" },
-      { accent: "#010203" },
       { radius: 0 },
       { radius: 1.5 },
       { font: "rounded" },
@@ -246,8 +227,16 @@ describe("serializeThemeConfig", () => {
       { textSize: 15 },
       { density: "compact" },
       { glass: "subtle" },
-      { ambient: false },
       { reduceMotion: true },
+      { glassTuning: { ...DEFAULT_THEME_CONFIG.glassTuning, depth: 0 } },
+      { glassTuning: { ...DEFAULT_THEME_CONFIG.glassTuning, chroma: 0.25 } },
+      {
+        glassTuning: {
+          ...DEFAULT_THEME_CONFIG.glassTuning,
+          tint: 1,
+          tintColor: "#ff6600",
+        },
+      },
     ];
     for (const change of changes) {
       const config = { ...DEFAULT_THEME_CONFIG, ...change };
@@ -263,7 +252,6 @@ describe("themeConfigToHtml", () => {
     expect(attributes).toEqual({
       "data-density": "comfortable",
       "data-glass-level": "liquid",
-      "data-ambient": "on",
       "data-motion": "full",
       "data-font": "system",
       "data-heading-font": "display",
@@ -274,12 +262,10 @@ describe("themeConfigToHtml", () => {
     expect(themeConfigToHtml(everyField).attributes).toEqual({
       "data-density": "compact",
       "data-glass-level": "solid",
-      "data-ambient": "off",
       "data-motion": "reduced",
       "data-font": "serif",
       "data-heading-font": "mono",
-      "data-glass-variant": "tinted",
-      "data-glass-accent-tint": "true",
+      "data-glass-tint": "on",
     });
   });
 
@@ -292,27 +278,62 @@ describe("themeConfigToHtml", () => {
     ).toEqual({ "--text-scale": "0.9375" });
   });
 
-  test("emits both schemes of a custom accent, and none for the default", () => {
+  test("writes the lens and paint tuning that differs from the defaults", () => {
     const { style } = themeConfigToHtml({
       ...DEFAULT_THEME_CONFIG,
-      accent: "blue",
+      glassTuning: {
+        ...DEFAULT_THEME_CONFIG.glassTuning,
+        depth: 90,
+        blur: 2.5,
+        glint: 80,
+      },
     });
+    expect(style).toEqual({
+      "--glass-depth": "90",
+      "--glass-blur": "2.5px",
+      "--glass-glint": "0.8",
+    });
+  });
+
+  test("keeps the neutral primary while the tint is off, whatever the colour", () => {
+    const { style, attributes } = themeConfigToHtml({
+      ...DEFAULT_THEME_CONFIG,
+      glassTuning: {
+        ...DEFAULT_THEME_CONFIG.glassTuning,
+        tintColor: "#ff6600",
+      },
+    });
+    expect(style).toEqual({ "--glass-tint-c": "#ff6600" });
+    expect("data-glass-tint" in attributes).toBe(false);
+  });
+
+  test("derives both schemes of the primary from the tint colour once the tint is on", () => {
+    const { style, attributes } = themeConfigToHtml({
+      ...DEFAULT_THEME_CONFIG,
+      glassTuning: {
+        ...DEFAULT_THEME_CONFIG.glassTuning,
+        tint: 0.6,
+        tintColor: "#2563eb",
+      },
+    });
+    expect(attributes["data-glass-tint"]).toBe("on");
+    expect(style["--glass-tint"]).toBe("0.6");
     expect(Object.keys(style).toSorted()).toEqual([
       "--dark-accent",
       "--dark-primary",
       "--dark-primary-foreground",
+      "--glass-tint",
+      "--glass-tint-c",
       "--light-accent",
       "--light-primary",
       "--light-primary-foreground",
     ]);
-    for (const value of Object.values(style)) {
-      expect(value).toMatch(/^oklch\([\d.]+ [\d.]+ [\d.]+\)$/);
-    }
+    expect(style["--light-primary"]).toMatch(/^oklch\([\d.]+ [\d.]+ [\d.]+\)$/);
   });
 
   test("only ever emits values drawn from validated config", () => {
     const hostile = normalizeThemeConfig({
-      accent: "#fff; background: url(//evil)",
+      glassTuning: { tintColor: "#fff; background: url(//evil)", depth: "9" },
       font: '"><script>',
       radius: "1rem; color: red",
     });

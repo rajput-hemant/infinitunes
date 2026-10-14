@@ -21,35 +21,21 @@ export function lensStrength(size: GlassSize, magnify: boolean): number {
   return LENS_STRENGTH[size] * (magnify ? MAGNIFY_STRENGTH : 1);
 }
 
-/** feDisplacementMap `scale`: twice the peak offset, so the offset is +-refraction px at strength 1. */
+/** feDisplacementMap `scale` in px: the displacement the rim reaches (about 40% of it), scaled per class. */
 export function lensScale(
-  refraction: number,
+  depth: number,
   strength: number,
   progress = 1,
 ): number {
-  return 2 * refraction * strength * progress;
+  return depth * strength * progress;
 }
 
-/** Slope of the baked specular alpha, capped so the highlight never clips to a flat white. */
-export function specularSlope(spec: number): number {
-  return Math.min(1.5, spec * 0.8);
-}
-
-/** Bezel width in px: the part of the surface the lens bends. Never exceeds the corner radius. */
-export function bezelFor(
-  width: number,
-  height: number,
-  radius: number,
-  size: GlassSize,
-): number {
-  const share = size === "s" ? 0.32 : 0.22;
-  return Math.round(
-    Math.min(
-      radius,
-      Math.max(8, Math.min(width, height) * share),
-      size === "l" ? 22 : 18,
-    ),
-  );
+/** Red takes the larger displacement and green with blue the smaller one, like the pen's two-pass fringe. */
+export function chromaScales(
+  scale: number,
+  chroma: number,
+): { red: number; rest: number } {
+  return { red: scale * (1 + chroma), rest: scale * (1 - chroma) };
 }
 
 export type LensTarget = {
@@ -67,18 +53,41 @@ export function canLens({ size, width, height, off }: LensTarget): boolean {
   return width * height <= MAX_LENS_AREA;
 }
 
-/** Cache key: a map is only valid for the exact size, radius, bezel, magnify and filter origin shift. */
+/** The part of the tuning that changes the map itself (depth only rescales the filter). */
+export type LensShape = {
+  splay: number;
+  feather: number;
+  curve: number;
+  /** Whether the filter needs the two-pass red / green-blue split. */
+  chromatic: boolean;
+  /** Whether the filter multiplies the refracted backdrop by the tint colour. */
+  tinted: boolean;
+  /** A surface's own preset: its depth, chroma and tint are baked in rather than following the global tuning. */
+  fixed: {
+    depth: number;
+    chroma: number;
+    tint: number;
+    tintColor: string;
+  } | null;
+};
+
+/** Cache key: a filter is only valid for the exact size, radius, rim shape, class, magnify and origin shift. */
 export function lensKey(
   width: number,
   height: number,
   radius: number,
   size: GlassSize,
   magnify: boolean,
+  shape: LensShape,
   origin: { x: number; y: number } = { x: 0, y: 0 },
 ): string {
-  const bezel = bezelFor(width, height, radius, size);
+  const rim = `s${shape.splay}f${shape.feather}c${shape.curve}`;
   const shift = origin.x || origin.y ? `o${origin.x},${origin.y}` : "";
-  return `${width}x${height}r${radius}b${bezel}${size}${magnify ? "m" : ""}${shift}`;
+  const { fixed } = shape;
+  const own = fixed
+    ? `d${fixed.depth}x${fixed.chroma}t${fixed.tint}${fixed.tintColor}`
+    : "";
+  return `${width}x${height}r${radius}${rim}${size}${magnify ? "m" : ""}${shape.chromatic ? "x" : ""}${shape.tinted ? "t" : ""}${own}${shift}`;
 }
 
 /** Ease-out cubic, the curve the materialize lens ramp follows. */

@@ -1,8 +1,8 @@
-import { describe, expect, it, mock } from "bun:test";
+import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 
 import { PreferenceSettings } from "../../app/(root)/settings/_components/preference-settings";
 import { setInputValue } from "./set-input-value";
@@ -16,7 +16,7 @@ mock.module("../../lib/theme/actions", () => ({
   saveThemeConfig: async () => {},
 }));
 
-const { accentPatch, radiusPatch, radiusToPx } =
+const { radiusPatch, radiusToPx } =
   await import("../../app/(root)/settings/_components/appearance-options");
 const { AppearanceSettings } =
   await import("../../app/(root)/settings/_components/appearance-settings");
@@ -25,21 +25,36 @@ const { ThemeConfigProvider } = await import("../../lib/theme/provider");
 async function mountAppearance(node: React.ReactNode) {
   const container = document.createElement("div");
   document.body.append(container);
+  const root = createRoot(container);
+  mounted.push(root);
   await act(async () => {
-    createRoot(container).render(
-      <ThemeConfigProvider>{node}</ThemeConfigProvider>,
-    );
+    root.render(<ThemeConfigProvider>{node}</ThemeConfigProvider>);
   });
   return container;
 }
 
 const html = document.documentElement;
 
+// Every mounted provider re-applies its own config to <html> whenever it
+// renders (its debounced save flips `isSaving`). A provider left mounted by an
+// earlier test would do that mid-way through a later one and clobber its
+// values, so each test unmounts what it mounted.
+const mounted: Root[] = [];
+afterEach(async () => {
+  await act(async () => {
+    for (const root of mounted.splice(0)) root.unmount();
+  });
+  document.body.innerHTML = "";
+  html.removeAttribute("style");
+  html.removeAttribute("data-density");
+});
+
 describe("keyboard shortcuts setting", () => {
   it("is a labelled switch that toggles the stored preference", async () => {
     const container = document.createElement("div");
     document.body.append(container);
     const root = createRoot(container);
+    mounted.push(root);
     await act(async () => {
       root.render(
         <AppRouterContext.Provider value={createTestRouter()}>
@@ -68,14 +83,6 @@ describe("appearance patches", () => {
     expect(radiusPatch(99)).toEqual({ radius: 1.5 });
     expect(radiusPatch(7.6)).toEqual({ radius: 0.5 });
     expect(radiusToPx(0.3)).toBe(5);
-  });
-
-  it("accepts a complete hex with or without the hash and rejects the rest", () => {
-    expect(accentPatch("#3A7BD5")).toEqual({ accent: "#3a7bd5" });
-    expect(accentPatch("fff")).toEqual({ accent: "#ffffff" });
-    expect(accentPatch("#12")).toBeNull();
-    expect(accentPatch("blue")).toBeNull();
-    expect(accentPatch("")).toBeNull();
   });
 });
 
@@ -111,22 +118,5 @@ describe("appearance settings", () => {
     await act(async () => setInputValue(slider, "24"));
     expect(html.style.getPropertyValue("--radius")).toBe("1.5rem");
     expect(container.querySelector("output")?.textContent).toBe("24px");
-  });
-
-  it("applies a typed accent only while the hex is complete", async () => {
-    const container = await mountAppearance(<AppearanceSettings />);
-
-    const hex = requireElement(
-      container,
-      "input[aria-label='Accent hex color']",
-      HTMLInputElement,
-    );
-    await act(async () => setInputValue(hex, "#3a7b"));
-    expect(hex.getAttribute("aria-invalid")).toBe("true");
-    expect(html.style.getPropertyValue("--light-primary")).toBe("");
-
-    await act(async () => setInputValue(hex, "#3a7bd5"));
-    expect(hex.getAttribute("aria-invalid")).toBe("false");
-    expect(html.style.getPropertyValue("--light-primary")).not.toBe("");
   });
 });

@@ -1,10 +1,10 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/components/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -57,32 +57,57 @@ export function Shelf({ children, rows = 1, className }: ShelfProps) {
         {children}
       </ol>
 
-      <Button
-        type="button"
-        variant="secondary"
-        aria-label="Scroll left"
+      <ShelfArrow
+        label="Scroll left"
         disabled={edges.atStart}
         onClick={() => page(-1)}
-        className={cn(
-          controlStyles.headerIcon,
-          "absolute top-1/2 left-1 z-20 hidden -translate-y-1/2 bg-card text-foreground shadow-md pointer-fine:flex disabled:invisible",
-        )}
+        className="left-1"
       >
         <ChevronLeft />
-      </Button>
-      <Button
-        type="button"
-        variant="secondary"
-        aria-label="Scroll right"
+      </ShelfArrow>
+      <ShelfArrow
+        label="Scroll right"
         disabled={edges.atEnd}
         onClick={() => page(1)}
-        className={cn(
-          controlStyles.headerIcon,
-          "absolute top-1/2 right-1 z-20 hidden -translate-y-1/2 bg-card text-foreground shadow-md pointer-fine:flex disabled:invisible",
-        )}
+        className="right-1"
       >
         <ChevronRight />
-      </Button>
+      </ShelfArrow>
     </div>
+  );
+}
+
+type ShelfArrowProps = {
+  label: string;
+  disabled: boolean;
+  onClick: () => void;
+  className: string;
+  children: ReactNode;
+};
+
+/** A scroll arrow floating over the shelf's artwork: glass, so the covers bend at its rim. */
+function ShelfArrow(props: ShelfArrowProps) {
+  const { label, disabled, onClick, className, children } = props;
+  return (
+    <GlassSurface
+      variant="clear"
+      size="s"
+      interactive
+      render={
+        <button
+          type="button"
+          aria-label={label}
+          disabled={disabled}
+          onClick={onClick}
+        />
+      }
+      className={cn(
+        controlStyles.headerIcon,
+        "absolute top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center text-foreground pointer-fine:flex disabled:invisible",
+        className,
+      )}
+    >
+      {children}
+    </GlassSurface>
   );
 }

@@ -32,23 +32,28 @@ describe("theme bootstrap script", () => {
     setCookie(
       serializeThemeCookie({
         ...DEFAULT_THEME_CONFIG,
-        accent: "blue",
         radius: 0.5,
         density: "compact",
         textSize: 18,
-        ambient: false,
         reduceMotion: true,
-        glassTuning: { ...DEFAULT_THEME_CONFIG.glassTuning, blur: 8 },
+        glassTuning: {
+          ...DEFAULT_THEME_CONFIG.glassTuning,
+          blur: 4,
+          tint: 0.5,
+          tintColor: "#ff6600",
+        },
       }),
     );
     run();
     const html = document.documentElement;
     expect(html.getAttribute("data-density")).toBe("compact");
-    expect(html.getAttribute("data-ambient")).toBe("off");
+    expect(html.getAttribute("data-glass-tint")).toBe("on");
     expect(html.getAttribute("data-motion")).toBe("reduced");
     expect(html.style.getPropertyValue("--radius")).toBe("0.5rem");
     expect(html.style.getPropertyValue("--text-scale")).toBe("1.125");
-    expect(html.style.getPropertyValue("--glass-blur")).toBe("8px");
+    expect(html.style.getPropertyValue("--glass-blur")).toBe("4px");
+    // A hex colour passes the value check, and the primary follows it.
+    expect(html.style.getPropertyValue("--glass-tint-c")).toBe("#ff6600");
     expect(html.style.getPropertyValue("--light-primary")).toMatch(/^oklch/);
   });
 
@@ -77,22 +82,20 @@ describe("theme bootstrap script", () => {
   });
 
   it("allowlists exactly what themeConfigToHtml can emit", () => {
-    const tuning = DEFAULT_THEME_CONFIG.glassTuning;
     const everything = themeConfigToHtml({
       ...DEFAULT_THEME_CONFIG,
-      accent: "blue",
       radius: 0.5,
       textSize: 18,
       glassTuning: {
-        variant: "clear",
+        depth: 61,
+        splay: 3,
+        feather: 25,
+        curve: 2.1,
+        blur: 1,
+        chroma: 0.05,
+        glint: 30,
         tint: 0.3,
-        blur: tuning.blur + 1,
-        refraction: tuning.refraction + 1,
-        sat: tuning.sat + 0.1,
-        spec: tuning.spec + 0.1,
-        shadow: tuning.shadow + 0.1,
-        ambientLevel: tuning.ambientLevel + 0.1,
-        accentTint: true,
+        tintColor: "#3a7bd5",
       },
     });
     expect(Object.keys(everything.attributes).sort()).toEqual(

@@ -1,9 +1,5 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { describe, expect, it } from "bun:test";
 
-import {
-  applyArtworkTint,
-  clearArtworkTint,
-} from "../../components/glass/artwork-sampler";
 import { targetFor } from "../../components/glass/start-glass-runtime";
 import {
   OVERLAY_TARGETS,
@@ -12,17 +8,11 @@ import {
   overlayTargetFor,
 } from "../../lib/glass/overlays";
 
-const html = document.documentElement;
-
 function popup(attr: string, value = "") {
   const el = document.createElement("div");
   el.setAttribute(attr, value);
   return el;
 }
-
-afterEach(() => {
-  html.removeAttribute("style");
-});
 
 describe("overlay targets", () => {
   it("resolves every popup slot to a role and size", () => {
@@ -90,26 +80,5 @@ describe("targetFor", () => {
     el.setAttribute("data-glass-size", "m");
     el.setAttribute("data-glass-role", "card");
     expect(targetFor(el)).toEqual({ size: "m", role: undefined });
-  });
-});
-
-describe("artwork tint", () => {
-  it("writes luminance, mean colour and the three ambient blobs on <html>", () => {
-    applyArtworkTint({
-      avg: [10, 20, 30],
-      luminance: 0.4,
-      blobs: [
-        [255, 0, 0],
-        [0, 255, 0],
-        [0, 0, 255],
-      ],
-    });
-    expect(html.style.getPropertyValue("--g-art-l")).toBe("0.400");
-    expect(html.style.getPropertyValue("--g-art")).toBe("rgb(10 20 30)");
-    expect(html.style.getPropertyValue("--g-blob-1")).toBe("rgb(255 0 0)");
-    expect(html.style.getPropertyValue("--g-blob-3")).toBe("rgb(0 0 255)");
-    clearArtworkTint();
-    expect(html.style.getPropertyValue("--g-art-l")).toBe("");
-    expect(html.style.getPropertyValue("--g-blob-2")).toBe("");
   });
 });

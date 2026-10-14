@@ -7,6 +7,8 @@ import { useGlassRegistration } from "~/hooks/use-glass-registration";
 import { useMergedRef } from "~/hooks/use-merged-ref";
 import type { GlassSize } from "~/lib/glass/lens-math";
 import type { GlassRole } from "~/lib/glass/overlays";
+import { GLASS_PRESETS, glassPaintVars } from "~/lib/glass/tuning";
+import type { GlassPresetId } from "~/lib/glass/tuning";
 
 export type GlassVariant = "regular" | "clear" | "tinted";
 
@@ -19,6 +21,11 @@ export type GlassSurfaceProps = React.HTMLAttributes<HTMLElement> & {
   size?: GlassSize;
   /** `"off"` opts out of refraction. `size="xl"` never refracts. */
   lens?: "on" | "off";
+  /**
+   * Tune this surface on its own with one of the lens presets, instead of the
+   * page's glass settings (`data-glass-preset`).
+   */
+  preset?: GlassPresetId;
   /** The surface is itself a pressable control: it gets the press gel. */
   interactive?: boolean;
   /** What the surface is (`data-glass-role`); drives materialize and the tab bar / player rules. */
@@ -42,6 +49,7 @@ export const GlassSurface = React.forwardRef<HTMLElement, GlassSurfaceProps>(
       variant = "regular",
       size = "m",
       lens = "on",
+      preset,
       interactive = false,
       glassRole,
       render,
@@ -56,11 +64,21 @@ export const GlassSurface = React.forwardRef<HTMLElement, GlassSurfaceProps>(
       render?.props.ref,
       hostRef,
     );
-    useGlassRegistration(hostRef, variant, size, lens, glassRole);
+    useGlassRegistration(hostRef, variant, size, lens, glassRole, preset);
+    const own = preset ? GLASS_PRESETS[preset].tuning : null;
     const merged = {
       ...(render?.props ?? {}),
       ...props,
       className: cn(render?.props.className, className),
+      style: own
+        ? {
+            ...render?.props.style,
+            ...props.style,
+            ...glassPaintVars(own),
+          }
+        : (props.style ?? render?.props.style),
+      "data-glass-preset": preset,
+      "data-glass-tint": own && own.tint > 0 ? "on" : undefined,
       "data-glass": variant,
       "data-glass-size": size,
       "data-lens": lens === "off" || size === "xl" ? "off" : "on",

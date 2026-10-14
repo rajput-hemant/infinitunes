@@ -10,7 +10,6 @@ import {
 import { Keyboard, LogIn, LogOut } from "lucide-react";
 import Link from "next/link";
 
-import { AccentSwatches } from "~/components/accent-swatches";
 import { ThemeToggleGroup } from "~/components/site-footer/theme-toggle-group";
 import { useSignOut } from "~/hooks/use-sign-out";
 import { cn, destructiveText } from "~/lib/utils";
@@ -65,8 +64,6 @@ export function UserMenuSheet({ user, onShowShortcuts }: UserMenuSheetProps) {
           <div className="px-3 py-2">
             <ThemeToggleGroup stretch />
           </div>
-
-          <AccentSwatches className="px-3 pb-2" />
 
           <DrawerClose onClick={onShowShortcuts} className={rowClassName}>
             <Keyboard aria-hidden className="text-muted-foreground" />

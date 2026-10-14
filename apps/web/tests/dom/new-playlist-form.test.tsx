@@ -4,6 +4,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 
 import { setInputValue } from "./set-input-value";
+import { waitFor } from "./wait-for";
 
 const createNewPlaylist = mock(async (input: { name: string }) => ({
   ok: true,
@@ -50,7 +51,7 @@ describe("new playlist dialog", () => {
     );
     expect(cancel?.type).toBe("button");
     await act(async () => cancel?.click());
-    await act(async () => new Promise((r) => setTimeout(r, 50)));
+    await waitFor(() => nameInput() === null);
     expect(nameInput()).toBeNull();
 
     await act(async () => container.querySelector("button")?.click());

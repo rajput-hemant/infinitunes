@@ -205,7 +205,7 @@ describe("shipped tokens", () => {
     }
   });
 
-  test("the stylesheet defaults are the derived default accent", () => {
+  test("the stylesheet defaults are the derived neutral primary", () => {
     const derived = accentVariables(deriveAccentTokens(DEFAULT_ACCENT_HEX));
     const defaults = tokens(":root");
     for (const [name, value] of Object.entries(derived)) {

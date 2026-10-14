@@ -6,8 +6,8 @@ import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
 import { GlassSurface } from "~/components/glass/glass-surface";
-import { useGlassArtwork } from "~/hooks/use-glass-artwork";
 import { useKeydown } from "~/hooks/use-keydown";
+import { usePlayhead } from "~/hooks/use-playhead";
 import { useRadioRefill } from "~/hooks/use-radio-refill";
 import {
   useActiveRadioSession,
@@ -32,7 +32,6 @@ import { PlayerTrackInfo } from "./player/player-track-info";
 import { PlayerTransport } from "./player/player-transport";
 import { PlayerVolume } from "./player/player-volume";
 import { MiniProgress, SeekBar } from "./player/seek-bar";
-import { trackArtworkUrl } from "./player/track-artwork";
 import {
   loopModeOf,
   nextTrackIndex,
@@ -56,8 +55,6 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
   const [isTyping] = useIsTyping();
   const [shortcutsEnabled] = useKeyboardShortcuts();
-  // refs
-  const frameRef = React.useRef<number>(0);
   // states
   const [isShuffle, setIsShuffle] = React.useState(false);
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);
@@ -135,26 +132,13 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   });
 
   const current = queue[currentIndex];
-  useGlassArtwork(trackArtworkUrl(current));
 
-  React.useEffect(() => {
-    if (isDragging) {
-      return;
-    }
-
-    const animate = () => {
-      position.set(getPosition());
-      frameRef.current = requestAnimationFrame(animate);
-    };
-
-    frameRef.current = window.requestAnimationFrame(animate);
-
-    return () => {
-      if (frameRef.current) {
-        cancelAnimationFrame(frameRef.current);
-      }
-    };
-  }, [getPosition, isDragging, position]);
+  usePlayhead({
+    store: position,
+    getPosition,
+    playing: isPlaying,
+    frozen: isDragging,
+  });
 
   const fetchRadioSongs = React.useCallback(
     (stationId: string) =>

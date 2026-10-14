@@ -4,6 +4,7 @@ import type { Metadata, Route } from "next";
 import Link from "next/link";
 import React from "react";
 
+import { GlassSurface } from "~/components/glass/glass-surface";
 import { controlStyles } from "~/lib/control-styles";
 import { asRoute, cn } from "~/lib/utils";
 
@@ -34,7 +35,11 @@ const LINKS: { title: string; href: Route }[] = [
 export default function NotFound() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center p-4">
-      <div className="flex w-full max-w-lg flex-col items-center rounded-(--radius) border border-dashed border-border px-4 py-16 text-center">
+      <GlassSurface
+        size="l"
+        lens="off"
+        className="flex w-full max-w-lg flex-col items-center rounded-(--radius) px-4 py-16 text-center"
+      >
         <div className="font-heading text-7xl font-extrabold leading-none tracking-[-0.05em] text-transparent bg-gradient-to-br from-primary to-foreground bg-clip-text">
           404
         </div>
@@ -84,7 +89,7 @@ export default function NotFound() {
             ))}
           </div>
         </div>
-      </div>
+      </GlassSurface>
     </div>
   );
 }

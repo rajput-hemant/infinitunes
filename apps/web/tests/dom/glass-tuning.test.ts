@@ -4,7 +4,6 @@ import {
   GLASS_SLIDERS,
   formatSliderValue,
   isDefaultGlassTuning,
-  resolveGlassTuning,
   sliderPatch,
   sliderValue,
 } from "../../app/(root)/settings/_components/glass-tuning";
@@ -17,57 +16,52 @@ function sliderNamed(label: string) {
 }
 
 describe("glass tuning sliders", () => {
-  it("shows transparency as the complement of the stored tint", () => {
-    const transparency = sliderNamed("Transparency");
-    const tuning = resolveGlassTuning(
-      { ...DEFAULT_GLASS_TUNING, tint: 0.3 },
-      false,
-    );
-
-    expect(sliderValue(transparency, tuning)).toBe(0.7);
-    expect(sliderPatch(transparency, 0.8)).toEqual({ tint: 0.2 });
-    expect(formatSliderValue(transparency, 0.7)).toBe("70%");
+  it("lists the pen's controls in order", () => {
+    expect(GLASS_SLIDERS.map((slider) => slider.label)).toEqual([
+      "Depth",
+      "Splay",
+      "Feather",
+      "Curvature",
+      "Blur",
+      "Chromatic",
+      "Glint",
+      "Tint",
+    ]);
   });
 
-  it("writes each slider to its config key", () => {
-    expect(sliderPatch(sliderNamed("Blur"), 12.5)).toEqual({ blur: 12.5 });
-    expect(sliderPatch(sliderNamed("Saturation"), 2)).toEqual({ sat: 2 });
-    expect(sliderPatch(sliderNamed("Edge highlight"), 0.5)).toEqual({
-      spec: 0.5,
-    });
-    expect(sliderPatch(sliderNamed("Ambient intensity"), 0.4)).toEqual({
-      ambientLevel: 0.4,
-    });
+  it("writes each slider to its config key, unchanged", () => {
+    expect(sliderPatch(sliderNamed("Depth"), 90)).toEqual({ depth: 90 });
+    expect(sliderPatch(sliderNamed("Curvature"), 1.4)).toEqual({ curve: 1.4 });
+    expect(sliderPatch(sliderNamed("Chromatic"), 0.1)).toEqual({ chroma: 0.1 });
+    expect(sliderPatch(sliderNamed("Glint"), 80)).toEqual({ glint: 80 });
+    expect(sliderPatch(sliderNamed("Tint"), 0.5)).toEqual({ tint: 0.5 });
   });
 
-  it("formats pixel and percent values", () => {
-    expect(formatSliderValue(sliderNamed("Blur"), 12.5)).toBe("12.5px");
-    expect(formatSliderValue(sliderNamed("Saturation"), 1.8)).toBe("180%");
+  it("reads each slider from the stored tuning", () => {
+    const tuning = { ...DEFAULT_GLASS_TUNING, feather: 30, blur: 2.5 };
+    expect(sliderValue(sliderNamed("Feather"), tuning)).toBe(30);
+    expect(sliderValue(sliderNamed("Blur"), tuning)).toBe(2.5);
+  });
+
+  it("shows each value with the digits its step needs", () => {
+    expect(formatSliderValue(sliderNamed("Depth"), 60)).toBe("60");
+    expect(formatSliderValue(sliderNamed("Curvature"), 2)).toBe("2.0");
+    expect(formatSliderValue(sliderNamed("Blur"), 0.05)).toBe("0.05");
+    expect(formatSliderValue(sliderNamed("Chromatic"), 0.1)).toBe("0.10");
   });
 });
 
-describe("resolved glass tuning", () => {
-  it("fills a null tint with the scheme default", () => {
-    const light = resolveGlassTuning(DEFAULT_GLASS_TUNING, false);
-    const dark = resolveGlassTuning(DEFAULT_GLASS_TUNING, true);
-
-    expect(light.tint).toBe(0.14);
-    expect(dark.tint).toBe(0.24);
-    expect(sliderValue(sliderNamed("Transparency"), dark)).toBe(0.76);
-  });
-
-  it("keeps an explicit tint in either scheme", () => {
-    const tuning = { ...DEFAULT_GLASS_TUNING, tint: 0.5 };
-    expect(resolveGlassTuning(tuning, true).tint).toBe(0.5);
-  });
-
-  it("recognises the default tuning and nothing else", () => {
+describe("default glass tuning", () => {
+  it("is recognised, and nothing else is", () => {
     expect(isDefaultGlassTuning(DEFAULT_GLASS_TUNING)).toBe(true);
-    expect(
-      isDefaultGlassTuning({ ...DEFAULT_GLASS_TUNING, accentTint: true }),
-    ).toBe(false);
-    expect(isDefaultGlassTuning({ ...DEFAULT_GLASS_TUNING, spec: 0.9 })).toBe(
-      false,
-    );
+    for (const patch of [
+      { depth: 61 },
+      { tintColor: "#ff6600" },
+      { tint: 0.01 },
+    ]) {
+      expect(isDefaultGlassTuning({ ...DEFAULT_GLASS_TUNING, ...patch })).toBe(
+        false,
+      );
+    }
   });
 });

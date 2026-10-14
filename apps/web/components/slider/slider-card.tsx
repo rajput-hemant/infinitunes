@@ -5,6 +5,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Play } from "lucide-react";
 import Link from "next/link";
 
+import { controlStyles } from "~/lib/control-styles";
 import { cn, getHref } from "~/lib/utils";
 
 import { ImageWithFallback } from "../image-with-fallback";
@@ -67,6 +68,7 @@ export function SliderCard(props: SliderCardProps) {
 
   return (
     <div
+      data-morph={type}
       className={cn(
         "group flex min-w-0 flex-col gap-2",
         isCurrentSeason &&
@@ -75,8 +77,9 @@ export function SliderCard(props: SliderCardProps) {
       )}
     >
       <div
+        data-morph-art=""
         className={cn(
-          "relative overflow-hidden bg-fill shadow-sm transition-[transform,box-shadow] duration-base ease-spring group-hover:shadow-md group-active:scale-98",
+          "relative overflow-hidden bg-fill shadow-sm transition-[transform,box-shadow] duration-base ease-spring group-hover:-translate-y-0.5 group-hover:shadow-md group-active:translate-y-0 group-active:scale-98",
           aspect === "square" ? "aspect-square" : "aspect-video",
           round ? "rounded-full" : "rounded-md",
         )}
@@ -101,7 +104,7 @@ export function SliderCard(props: SliderCardProps) {
           loading={priority ? "eager" : undefined}
           fetchPriority={priority ? "high" : undefined}
           className={cn(
-            "size-full object-cover",
+            "size-full object-cover transition-transform duration-slow ease-out group-hover:scale-105",
             !imageSrc && "dark:invert",
             imageSrc.includes("default") && "dark:invert",
           )}
@@ -114,7 +117,10 @@ export function SliderCard(props: SliderCardProps) {
             aria-label={`Play ${name}`}
             type={type}
             token={parseToken(url)}
-            className="absolute right-2 bottom-2 z-20 flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md transition duration-base ease-spring pointer-fine:translate-y-1.5 pointer-fine:scale-90 pointer-fine:opacity-0 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-none pointer-coarse:after:absolute pointer-coarse:after:-inset-1"
+            className={cn(
+              controlStyles.cardPlay,
+              "absolute right-2 bottom-2 z-20 flex items-center justify-center bg-primary text-primary-foreground shadow-md transition duration-base ease-spring pointer-fine:translate-y-1.5 pointer-fine:scale-90 pointer-fine:opacity-0 group-focus-within:translate-y-0 group-focus-within:scale-100 group-focus-within:opacity-100 group-hover:translate-y-0 group-hover:scale-100 group-hover:opacity-100 motion-reduce:transition-none",
+            )}
           >
             <Play className="size-4 fill-current" />
           </PlayButton>

@@ -9,17 +9,15 @@ import {
   isGlassRole,
   overlayTargetFor,
 } from "~/lib/glass/overlays";
+import { DEFAULT_GLASS_TUNING, GLASS_PRESET_IDS } from "~/lib/glass/tuning";
 
 import { sampleBehind } from "./artwork-sampler";
 import type { GlassTarget } from "./lens-registry";
 import { configureLens, pruneGlass, registerGlass } from "./lens-registry";
-import { installPointerLight } from "./pointer-light";
 import { installPressGel } from "./press-gel";
 
 const SURFACE_SELECTOR = "[data-glass][data-glass-size]";
 const GLASS_SELECTOR = `${SURFACE_SELECTOR}, ${OVERLAY_SELECTOR}`;
-const DEFAULT_REFRACTION = 30;
-const DEFAULT_SPEC = 1;
 
 function isSize(value: string | undefined): value is GlassSize {
   return value === "s" || value === "m" || value === "l" || value === "xl";
@@ -35,6 +33,11 @@ function numberVar(style: CSSStyleDeclaration, name: string, fallback: number) {
   return Number.isFinite(value) ? value : fallback;
 }
 
+function colorVar(style: CSSStyleDeclaration, name: string, fallback: string) {
+  const value = style.getPropertyValue(name).trim();
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+}
+
 /** The registry target for an element: its own attributes, else the overlay slot it is. */
 export function targetFor(el: HTMLElement): GlassTarget | null {
   const overlay = overlayTargetFor(el);
@@ -45,7 +48,8 @@ export function targetFor(el: HTMLElement): GlassTarget | null {
   const role = isGlassRole(el.dataset.glassRole)
     ? el.dataset.glassRole
     : overlay?.role;
-  return { size, role };
+  const preset = GLASS_PRESET_IDS.find((id) => id === el.dataset.glassPreset);
+  return { size, role, preset };
 }
 
 /**
@@ -71,7 +75,7 @@ function registerWithin(node: Node) {
 /**
  * Starts the glass engine for the document: capability detection (sets
  * `html[data-glass-engine]`), surface discovery for every `data-glass` surface
- * and `packages/ui` popup, the lens lifecycle, pointer light and press gel.
+ * and `packages/ui` popup, the lens lifecycle and press gel.
  * One instance per page; returns the teardown.
  */
 export function startGlassRuntime(): () => void {
@@ -98,8 +102,21 @@ export function startGlassRuntime(): () => void {
     }
     configureLens({
       active,
-      refraction: numberVar(style, "--glass-refraction", DEFAULT_REFRACTION),
-      spec: numberVar(style, "--glass-spec", DEFAULT_SPEC),
+      depth: numberVar(style, "--glass-depth", DEFAULT_GLASS_TUNING.depth),
+      splay: numberVar(style, "--glass-splay", DEFAULT_GLASS_TUNING.splay),
+      feather: numberVar(
+        style,
+        "--glass-feather",
+        DEFAULT_GLASS_TUNING.feather,
+      ),
+      curve: numberVar(style, "--glass-curve", DEFAULT_GLASS_TUNING.curve),
+      chroma: numberVar(style, "--glass-chroma", DEFAULT_GLASS_TUNING.chroma),
+      tint: numberVar(style, "--glass-tint", DEFAULT_GLASS_TUNING.tint),
+      tintColor: colorVar(
+        style,
+        "--glass-tint-c",
+        DEFAULT_GLASS_TUNING.tintColor,
+      ),
     });
   };
 
@@ -121,12 +138,7 @@ export function startGlassRuntime(): () => void {
   const rootObserver = new MutationObserver(queueEvaluate);
   rootObserver.observe(root, {
     attributes: true,
-    attributeFilter: [
-      "style",
-      "data-glass-level",
-      "data-glass-variant",
-      "data-motion",
-    ],
+    attributeFilter: ["style", "data-glass-level", "data-motion"],
   });
 
   const bodyObserver = new MutationObserver((records) => {
@@ -152,6 +164,7 @@ export function startGlassRuntime(): () => void {
       "data-glass",
       "data-glass-size",
       "data-glass-role",
+      "data-glass-preset",
       "data-lens",
     ],
   });
@@ -159,11 +172,9 @@ export function startGlassRuntime(): () => void {
   transparency.addEventListener("change", evaluate);
   contrast.addEventListener("change", evaluate);
   forced.addEventListener("change", evaluate);
-  const stopLight = installPointerLight();
   const stopPress = installPressGel();
 
   return () => {
-    stopLight();
     stopPress();
     transparency.removeEventListener("change", evaluate);
     contrast.removeEventListener("change", evaluate);

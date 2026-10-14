@@ -1,29 +1,12 @@
 import type { GlassTuning } from "@infinitunes/types";
 
-import { DEFAULT_GLASS_TINT } from "~/lib/glass/default-tint";
-import { DEFAULT_GLASS_TUNING } from "~/lib/theme-config";
+import {
+  DEFAULT_GLASS_TUNING,
+  GLASS_RANGES,
+  sameTuning,
+} from "~/lib/glass/tuning";
 
-type GlassSliderKey =
-  | "tint"
-  | "blur"
-  | "refraction"
-  | "sat"
-  | "spec"
-  | "shadow"
-  | "ambientLevel";
-
-/** The stored tuning with the scheme's default tint filled in, so every slider reads a number. */
-type ResolvedGlassTuning = Omit<GlassTuning, "tint"> & { tint: number };
-
-export function resolveGlassTuning(
-  tuning: GlassTuning,
-  dark: boolean,
-): ResolvedGlassTuning {
-  return {
-    ...tuning,
-    tint: tuning.tint ?? DEFAULT_GLASS_TINT[dark ? "dark" : "light"],
-  };
-}
+type GlassSliderKey = Exclude<keyof GlassTuning, "tintColor">;
 
 type GlassSlider = {
   key: GlassSliderKey;
@@ -31,93 +14,80 @@ type GlassSlider = {
   min: number;
   max: number;
   step: number;
-  unit: "px" | "percent";
-  /** The slider shows the complement of the stored value (tint alpha becomes transparency). */
-  inverted?: boolean;
+  /** Digits after the point when the value is shown. */
+  decimals: number;
+  help: string;
 };
 
-export const GLASS_SLIDERS: readonly GlassSlider[] = [
+const SLIDERS: readonly Pick<
+  GlassSlider,
+  "key" | "label" | "decimals" | "help"
+>[] = [
+  {
+    key: "depth",
+    label: "Depth",
+    decimals: 0,
+    help: "How far the rim bends what is behind it.",
+  },
+  {
+    key: "splay",
+    label: "Splay",
+    decimals: 0,
+    help: "Width of the bending rim.",
+  },
+  {
+    key: "feather",
+    label: "Feather",
+    decimals: 0,
+    help: "How softly the rim fades inward.",
+  },
+  {
+    key: "curve",
+    label: "Curvature",
+    decimals: 1,
+    help: "Wide bevel below 1, sharp edge above.",
+  },
+  { key: "blur", label: "Blur", decimals: 2, help: "Frost the glass." },
+  {
+    key: "chroma",
+    label: "Chromatic",
+    decimals: 2,
+    help: "Red and cyan fringing on the rim.",
+  },
+  {
+    key: "glint",
+    label: "Glint",
+    decimals: 0,
+    help: "Edge highlight strength.",
+  },
   {
     key: "tint",
-    label: "Transparency",
-    min: 0.1,
-    max: 1,
-    step: 0.01,
-    unit: "percent",
-    inverted: true,
-  },
-  { key: "blur", label: "Blur", min: 0, max: 20, step: 0.5, unit: "px" },
-  {
-    key: "refraction",
-    label: "Refraction",
-    min: 0,
-    max: 48,
-    step: 1,
-    unit: "px",
-  },
-  {
-    key: "sat",
-    label: "Saturation",
-    min: 1,
-    max: 2.6,
-    step: 0.05,
-    unit: "percent",
-  },
-  {
-    key: "spec",
-    label: "Edge highlight",
-    min: 0,
-    max: 1.6,
-    step: 0.05,
-    unit: "percent",
-  },
-  {
-    key: "shadow",
-    label: "Shadow",
-    min: 0,
-    max: 1.6,
-    step: 0.05,
-    unit: "percent",
-  },
-  {
-    key: "ambientLevel",
-    label: "Ambient intensity",
-    min: 0,
-    max: 1,
-    step: 0.01,
-    unit: "percent",
+    label: "Tint",
+    decimals: 2,
+    help: "Colour layer over the glass; it also becomes the app's primary colour.",
   },
 ];
 
-const round = (value: number) => Math.round(value * 100) / 100;
+export const GLASS_SLIDERS: readonly GlassSlider[] = SLIDERS.map((slider) => ({
+  ...slider,
+  ...GLASS_RANGES[slider.key],
+}));
 
-export function sliderValue(slider: GlassSlider, tuning: ResolvedGlassTuning) {
-  const stored = tuning[slider.key];
-  return slider.inverted ? round(1 - stored) : stored;
+export function sliderValue(slider: GlassSlider, tuning: GlassTuning): number {
+  return tuning[slider.key];
 }
 
 export function sliderPatch(
   slider: GlassSlider,
   shown: number,
 ): Partial<GlassTuning> {
-  return { [slider.key]: slider.inverted ? round(1 - shown) : shown };
+  return { [slider.key]: shown };
 }
 
-export function formatSliderValue(slider: GlassSlider, shown: number) {
-  return slider.unit === "px" ? `${shown}px` : `${Math.round(shown * 100)}%`;
+export function formatSliderValue(slider: GlassSlider, shown: number): string {
+  return shown.toFixed(slider.decimals);
 }
 
 export function isDefaultGlassTuning(tuning: GlassTuning): boolean {
-  const d = DEFAULT_GLASS_TUNING;
-  return (
-    tuning.variant === d.variant &&
-    tuning.tint === d.tint &&
-    tuning.blur === d.blur &&
-    tuning.refraction === d.refraction &&
-    tuning.sat === d.sat &&
-    tuning.spec === d.spec &&
-    tuning.shadow === d.shadow &&
-    tuning.ambientLevel === d.ambientLevel &&
-    tuning.accentTint === d.accentTint
-  );
+  return sameTuning(tuning, DEFAULT_GLASS_TUNING);
 }

@@ -19,6 +19,17 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
   const { type, itemUrl, albumUrl, showAlbum, isDropdownItem, primaryArtists } =
     props;
 
+  // In the desktop dropdown the item is a flex row, so the label span can
+  // truncate; the phone drawer keeps the plain inline text.
+  const label = (text: string) =>
+    isDropdownItem ? (
+      <span className="min-w-0 truncate" title={text}>
+        {text}
+      </span>
+    ) : (
+      text
+    );
+
   return (
     <>
       <Wrapper isDropdownItem={isDropdownItem}>
@@ -27,7 +38,9 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
           className="min-h-(--ctl-lg) shrink-0 cursor-pointer py-3 md:min-h-0 md:py-1"
         >
           <Music className="mr-2 inline-block size-5" />
-          {type === "song" ? "Song Details & Lyrics" : "View Episode Details"}
+          {label(
+            type === "song" ? "Song Details & Lyrics" : "View Episode Details",
+          )}
         </Link>
       </Wrapper>
 
@@ -38,7 +51,7 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
             className="min-h-(--ctl-lg) shrink-0 cursor-pointer py-3 md:min-h-0 md:py-1"
           >
             <Disc className="mr-2 inline-block size-5" />
-            More from Album
+            {label("More from Album")}
           </Link>
         </Wrapper>
       )}
@@ -50,7 +63,7 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
             className="min-h-(--ctl-lg) shrink-0 cursor-pointer py-3 md:min-h-0 md:py-1"
           >
             <Mic2 className="mr-2 inline-block size-5" />
-            More From {name}
+            {label(`More From ${name}`)}
           </Link>
         </Wrapper>
       ))}

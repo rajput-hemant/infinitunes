@@ -8,12 +8,10 @@
 export const MANAGED_ATTRIBUTES = [
   "data-density",
   "data-glass-level",
-  "data-ambient",
   "data-motion",
   "data-font",
   "data-heading-font",
-  "data-glass-variant",
-  "data-glass-accent-tint",
+  "data-glass-tint",
 ] as const;
 
 /** Every custom property the engine writes on `<html>`; any other stays with the stylesheet. */
@@ -26,11 +24,13 @@ export const MANAGED_VARIABLES = [
   "--dark-accent",
   "--radius",
   "--text-scale",
-  "--glass-tint",
+  "--glass-depth",
+  "--glass-splay",
+  "--glass-feather",
+  "--glass-curve",
   "--glass-blur",
-  "--glass-refraction",
-  "--glass-sat",
-  "--glass-spec",
-  "--glass-shadow",
-  "--ambient",
+  "--glass-chroma",
+  "--glass-glint",
+  "--glass-tint",
+  "--glass-tint-c",
 ] as const;

@@ -12,7 +12,7 @@ export function GlassDemo() {
       className="relative isolate grid h-60 overflow-hidden rounded-lg"
     >
       <GlassBackdrop />
-      <span className="absolute top-9 left-5 -z-10 font-heading text-5xl/none font-extrabold tracking-tight text-primary-foreground">
+      <span className="absolute top-9 left-5 -z-10 font-heading text-5xl/none font-extrabold tracking-tight text-foreground">
         Liquid
         <br />
         Glass

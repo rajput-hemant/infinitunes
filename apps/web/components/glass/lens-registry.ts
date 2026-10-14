@@ -2,22 +2,23 @@ import { FilterCache } from "~/lib/glass/filter-cache";
 import {
   DROPLET_MAGNIFY,
   MATERIALIZE_MS,
-  bezelFor,
   canLens,
+  chromaScales,
   easeOutCubic,
   lensKey,
   lensScale,
   lensStrength,
-  specularSlope,
 } from "~/lib/glass/lens-math";
-import type { GlassSize } from "~/lib/glass/lens-math";
+import type { GlassSize, LensShape } from "~/lib/glass/lens-math";
 import { prefersReducedMotion } from "~/lib/glass/motion";
 import { materializes } from "~/lib/glass/overlays";
 import type { GlassRole } from "~/lib/glass/overlays";
 import { inkOverflowOrigin } from "~/lib/glass/shadow-overflow";
 import type { Origin } from "~/lib/glass/shadow-overflow";
+import { DEFAULT_GLASS_TUNING, GLASS_PRESETS } from "~/lib/glass/tuning";
+import type { GlassPresetId } from "~/lib/glass/tuning";
 
-import { encodeLensMaps } from "./lens-maps";
+import { encodeLensMap } from "./lens-maps";
 import type { LensMapEncoder } from "./lens-maps";
 
 const SVG_NS = "http://www.w3.org/2000/svg";
@@ -26,13 +27,20 @@ const RESIZE_SETTLE_MS = 140;
 
 type LensFilter = {
   element: SVGFilterElement;
-  displacement: SVGFEDisplacementMapElement;
-  specularAlpha: SVGFEFuncAElement;
+  /** The red pass (or the only pass), and the green/blue pass when the filter is chromatic. */
+  red: SVGFEDisplacementMapElement;
+  rest: SVGFEDisplacementMapElement | null;
+  /** The colour flood and the mix of tinted and plain refraction, present while the tint is on. */
+  tint: { flood: SVGFEFloodElement; mix: SVGFECompositeElement } | null;
   strength: number;
+  /** Tuning of a surface-level preset; `null` follows the global tuning. */
+  fixed: LensShape["fixed"];
 };
 
 export type GlassTarget = {
   size: GlassSize;
+  /** `data-glass-preset`: this surface's own tuning in place of the global one. */
+  preset?: GlassPresetId;
   role?: GlassRole;
   /** The lifted selection droplet magnifies; a plain surface does not. */
   magnify?: boolean;
@@ -48,14 +56,51 @@ type Entry = {
 
 export type LensConfig = {
   active: boolean;
-  /** `--glass-refraction`, px. */
-  refraction: number;
-  /** `--glass-spec`. */
-  spec: number;
+  /** `--glass-depth`: the displacement scale at strength 1, px. */
+  depth: number;
+  /** `--glass-splay`, `--glass-feather`, `--glass-curve`: the rim shape the map is built from. */
+  splay: number;
+  feather: number;
+  curve: number;
+  /** `--glass-chroma`: 0 keeps the filter single-pass. */
+  chroma: number;
+  /** `--glass-tint` and `--glass-tint-c`: while above 0 the lens multiplies the backdrop by the colour. */
+  tint: number;
+  tintColor: string;
 };
 
-const config: LensConfig = { active: false, refraction: 30, spec: 1 };
-let encoder: LensMapEncoder = encodeLensMaps;
+const DEFAULTS: LensConfig = {
+  active: false,
+  depth: DEFAULT_GLASS_TUNING.depth,
+  splay: DEFAULT_GLASS_TUNING.splay,
+  feather: DEFAULT_GLASS_TUNING.feather,
+  curve: DEFAULT_GLASS_TUNING.curve,
+  chroma: DEFAULT_GLASS_TUNING.chroma,
+  tint: DEFAULT_GLASS_TUNING.tint,
+  tintColor: DEFAULT_GLASS_TUNING.tintColor,
+};
+const config: LensConfig = { ...DEFAULTS };
+let encoder: LensMapEncoder = encodeLensMap;
+
+function shapeFor(target: GlassTarget): LensShape {
+  const own = target.preset ? GLASS_PRESETS[target.preset].tuning : null;
+  const source = own ?? config;
+  return {
+    splay: source.splay,
+    feather: source.feather,
+    curve: source.curve,
+    chromatic: source.chroma > 0,
+    tinted: source.tint > 0,
+    fixed: own
+      ? {
+          depth: own.depth,
+          chroma: own.chroma,
+          tint: own.tint,
+          tintColor: own.tintColor,
+        }
+      : null,
+  };
+}
 
 const entries = new Map<HTMLElement, Entry>();
 
@@ -103,15 +148,25 @@ function settled(event: Event) {
   }
 }
 
+/** Writes the tint colour and its share into a tinted filter. */
+function setTint(filter: LensFilter) {
+  if (!filter.tint) return;
+  const { tint, tintColor } = filter.fixed ?? config;
+  filter.tint.flood.setAttribute("flood-color", tintColor);
+  filter.tint.mix.setAttribute("k2", tint.toFixed(3));
+  filter.tint.mix.setAttribute("k3", (1 - tint).toFixed(3));
+}
+
 function setScale(filter: LensFilter, progress: number) {
-  filter.displacement.setAttribute(
-    "scale",
-    lensScale(config.refraction, filter.strength, progress).toFixed(1),
-  );
-  filter.specularAlpha.setAttribute(
-    "slope",
-    specularSlope(config.spec).toFixed(2),
-  );
+  const { depth, chroma } = filter.fixed ?? config;
+  const scale = lensScale(depth, filter.strength, progress);
+  if (filter.rest) {
+    const { red, rest } = chromaScales(scale, chroma);
+    filter.red.setAttribute("scale", red.toFixed(1));
+    filter.rest.setAttribute("scale", rest.toFixed(1));
+  } else {
+    filter.red.setAttribute("scale", scale.toFixed(1));
+  }
 }
 
 function svg<K extends keyof SVGElementTagNameMap>(
@@ -125,6 +180,20 @@ function svg<K extends keyof SVGElementTagNameMap>(
   return node;
 }
 
+const CHANNEL_R = "1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0";
+const CHANNEL_GB = "0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0";
+
+function displace(result: string): SVGFEDisplacementMapElement {
+  return svg("feDisplacementMap", {
+    in: "SourceGraphic",
+    in2: "map",
+    scale: 0,
+    xChannelSelector: "R",
+    yChannelSelector: "G",
+    result,
+  });
+}
+
 function createFilter(
   id: string,
   width: number,
@@ -132,27 +201,23 @@ function createFilter(
   radius: number,
   origin: Origin,
   target: GlassTarget,
+  shape: LensShape,
 ): LensFilter | null {
   const defs = document.querySelector("#lg-defs defs");
   if (!defs) return null;
   const magnify = Boolean(target.magnify);
-  const maps = encoder({
+  const map = encoder({
     width,
     height,
     radius,
-    bezel: bezelFor(width, height, radius, target.size),
+    splay: shape.splay,
+    feather: shape.feather,
+    curve: shape.curve,
     magnify: magnify ? DROPLET_MAGNIFY : 0,
   });
-  if (!maps) return null;
+  if (!map) return null;
 
-  // Offset every primitive by -origin so the maps sit on the border box (see inkOverflowOrigin).
-  const box = {
-    x: -origin.x,
-    y: -origin.y,
-    width,
-    height,
-    preserveAspectRatio: "none",
-  };
+  // Offset every primitive by -origin so the map sits on the border box (see inkOverflowOrigin).
   const element = svg("filter", {
     id,
     x: -origin.x,
@@ -163,43 +228,101 @@ function createFilter(
     primitiveUnits: "userSpaceOnUse",
     "color-interpolation-filters": "sRGB",
   });
-  const displacement = svg("feDisplacementMap", {
-    in: "SourceGraphic",
-    in2: "map",
-    scale: 0,
-    xChannelSelector: "R",
-    yChannelSelector: "G",
-    result: "refr",
-  });
-  const specularAlpha = svg("feFuncA", { type: "linear", slope: 1 });
-  const transfer = svg("feComponentTransfer", { in: "spec", result: "specA" });
-  transfer.append(specularAlpha);
-
   const mapImage = svg("feImage", {
-    ...box,
-    href: maps.displacement,
+    x: -origin.x,
+    y: -origin.y,
+    width,
+    height,
+    preserveAspectRatio: "none",
+    href: map,
     result: "map",
   });
-  const specImage = svg("feImage", {
-    ...box,
-    href: maps.specular,
-    result: "spec",
-  });
-  const blend = svg("feBlend", { in: "specA", in2: "refr", mode: "screen" });
-  element.append(mapImage, displacement, specImage, transfer, blend);
-  defs.append(element);
+  const primitives: SVGElement[] = [mapImage];
+  let red: SVGFEDisplacementMapElement;
+  let rest: SVGFEDisplacementMapElement | null = null;
+  if (!shape.chromatic) {
+    // One pass, nothing else: a plain lens costs one displacement.
+    red = displace("refr");
+    primitives.push(red);
+  } else {
+    // Red takes the larger displacement, green and blue the smaller; alpha stays on both so the add survives.
+    red = displace("dR");
+    rest = displace("dGB");
+    primitives.push(
+      red,
+      rest,
+      svg("feColorMatrix", {
+        in: "dR",
+        type: "matrix",
+        values: CHANNEL_R,
+        result: "cR",
+      }),
+      svg("feColorMatrix", {
+        in: "dGB",
+        type: "matrix",
+        values: CHANNEL_GB,
+        result: "cGB",
+      }),
+      svg("feComposite", {
+        in: "cR",
+        in2: "cGB",
+        operator: "arithmetic",
+        k1: 0,
+        k2: 1,
+        k3: 1,
+        k4: 0,
+        result: "refr",
+      }),
+    );
+  }
 
+  let tint: LensFilter["tint"] = null;
+  if (shape.tinted) {
+    // The CodePen's tint: the refracted backdrop multiplied by the colour, mixed back with the plain one.
+    const flood = svg("feFlood", {
+      "flood-color": "#fff",
+      "flood-opacity": 1,
+      result: "tintColor",
+    });
+    const mix = svg("feComposite", {
+      in: "multiplied",
+      in2: "refr",
+      operator: "arithmetic",
+      k1: 0,
+      k2: 0,
+      k3: 1,
+      k4: 0,
+    });
+    primitives.push(
+      flood,
+      svg("feBlend", {
+        in: "refr",
+        in2: "tintColor",
+        mode: "multiply",
+        result: "multiplied",
+      }),
+      mix,
+    );
+    tint = { flood, mix };
+  }
+
+  element.append(...primitives);
+  defs.append(element);
   const filter = {
     element,
-    displacement,
-    specularAlpha,
+    red,
+    rest,
+    tint,
     strength: lensStrength(target.size, magnify),
+    fixed: shape.fixed,
   };
+  setTint(filter);
   return filter;
 }
 
 function clearLens(el: HTMLElement, entry: Entry) {
   el.style.removeProperty("--g-lens-url");
+  el.style.removeProperty("--g-lens-tint");
   entry.applied = null;
 }
 
@@ -236,16 +359,18 @@ function applyLens(el: HTMLElement) {
     x: rect.left,
     y: rect.top,
   });
+  const shape = shapeFor(entry.target);
   const key = lensKey(
     width,
     height,
     radius,
     entry.target.size,
     Boolean(entry.target.magnify),
+    shape,
     origin,
   );
   const hit = cache.getOrCreate(key, (id) =>
-    createFilter(id, width, height, radius, origin, entry.target),
+    createFilter(id, width, height, radius, origin, entry.target, shape),
   );
   if (!hit) {
     // No defs host or no canvas: leave the frosted path in place.
@@ -255,6 +380,8 @@ function applyLens(el: HTMLElement) {
   setScale(hit.value, 1);
   entry.applied = { id: hit.id, width, height };
   el.style.setProperty("--g-lens-url", `url(#${hit.id})`);
+  // A tinted lens multiplies the backdrop itself, so the stylesheet's tint layer steps aside.
+  el.style.setProperty("--g-lens-tint", hit.value.tint ? "1" : "0");
   if (entry.ramp) {
     entry.ramp = false;
     if (!prefersReducedMotion()) ramp(el, hit.value);
@@ -327,6 +454,7 @@ export function unregisterGlass(el: HTMLElement) {
   el.removeEventListener("animationend", settled);
   el.removeEventListener("transitionend", settled);
   el.style.removeProperty("--g-lens-url");
+  el.style.removeProperty("--g-lens-tint");
   entries.delete(el);
 }
 
@@ -346,14 +474,25 @@ export function forEachGlass(
 }
 
 /**
- * Applies a new engine state: toggles every lens on or off, and rescales the
- * cached filters when the refraction or highlight tuning changed.
+ * Applies a new engine state: toggles every lens on or off, rebuilds the
+ * lenses when the rim shape (or whether the filter is chromatic or tinted)
+ * changed, and otherwise just rewrites the cached filters (depth, chroma
+ * strength, tint colour and share).
  */
 export function configureLens(next: Partial<LensConfig>) {
-  const wasActive = config.active;
+  const before = { ...config };
   Object.assign(config, next);
-  cache.forEach(({ value }) => setScale(value, 1));
-  if (config.active !== wasActive) {
+  const reshaped =
+    config.splay !== before.splay ||
+    config.feather !== before.feather ||
+    config.curve !== before.curve ||
+    config.chroma > 0 !== before.chroma > 0 ||
+    config.tint > 0 !== before.tint > 0;
+  cache.forEach(({ value }) => {
+    setScale(value, 1);
+    setTint(value);
+  });
+  if (config.active !== before.active || (config.active && reshaped)) {
     entries.forEach((_, el) => schedule(el));
   }
 }
@@ -366,8 +505,6 @@ export function setLensMapEncoder(next: LensMapEncoder) {
 export function resetGlassRegistry() {
   for (const el of [...entries.keys()]) unregisterGlass(el);
   cache.collect();
-  config.active = false;
-  config.refraction = 30;
-  config.spec = 1;
-  encoder = encodeLensMaps;
+  Object.assign(config, DEFAULTS);
+  encoder = encodeLensMap;
 }

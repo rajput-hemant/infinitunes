@@ -3,13 +3,12 @@
 import { DENSITIES } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Layout, Monitor, Moon, RotateCcw, Rows3, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 
 import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useThemeConfig } from "~/hooks/use-theme-config";
+import { useThemeMode } from "~/hooks/use-theme-mode";
 import { controlStyles } from "~/lib/control-styles";
 
-import { AccentPicker } from "./accent-picker";
 import { LiquidGlassSettings } from "./liquid-glass-settings";
 import { OptionGroup } from "./option-group";
 import { RadiusSettings } from "./radius-settings";
@@ -38,7 +37,7 @@ const MODES = [
 
 export function AppearanceSettings() {
   const { config, update, reset, isDefault } = useThemeConfig();
-  const { theme: storedTheme, setTheme } = useTheme();
+  const { theme: storedTheme, setMode } = useThemeMode();
   // next-themes only knows the stored mode on the client; wait for hydration so
   // server and first client render agree.
   const hydrated = useIsHydrated();
@@ -55,17 +54,9 @@ export function AppearanceSettings() {
           <OptionGroup
             label="Theme mode"
             value={theme}
-            onValueChange={setTheme}
+            onValueChange={setMode}
             options={MODES}
           />
-        </SettingsSection>
-
-        <SettingsSection
-          id="accent"
-          title="Accent Color"
-          description="Used for buttons, active states, progress and highlights."
-        >
-          <AccentPicker />
         </SettingsSection>
 
         <RadiusSettings />
@@ -116,7 +107,7 @@ export function AppearanceSettings() {
             disabled={isDefault && theme === "system"}
             onClick={() => {
               reset();
-              setTheme("system");
+              setMode("system");
             }}
             className={controlStyles.textLg}
           >

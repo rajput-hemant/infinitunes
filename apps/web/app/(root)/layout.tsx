@@ -11,6 +11,7 @@ import {
 import { SiteFooter } from "~/components/site-footer/footer";
 import { MobileNav } from "~/components/site-header/mobile-nav";
 import { Navbar } from "~/components/site-header/navbar";
+import { MorphSource } from "~/components/view-transition/morph-source";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
@@ -37,6 +38,7 @@ export default async function Layout({ children }: PropsWithChildren) {
       >
         Skip to content
       </a>
+      <MorphSource />
       <AppSidebarProvider defaultOpen={sidebarOpen}>
         <Sidebar user={user} userPlaylists={userPlaylists} />
         {/* Reserves the docked queue column, so toolbar and main both shrink. */}

@@ -35,15 +35,7 @@ const regular = { "data-glass": "regular", "data-glass-size": "s" };
 // Every way a surface can be turned into the clear or tinted variant.
 const variantScenarios: Record<string, Scenario> = {
   "explicit clear": { surface: { ...regular, "data-glass": "clear" } },
-  "variant setting clear": {
-    htmlAttrs: { "data-glass-variant": "clear" },
-    surface: regular,
-  },
   "toolbar over artwork": { overArt: true, surface: regular },
-  "variant setting tinted": {
-    htmlAttrs: { "data-glass-variant": "tinted" },
-    surface: regular,
-  },
   "explicit tinted": { surface: { ...regular, "data-glass": "tinted" } },
 };
 
@@ -107,11 +99,7 @@ describe("glass.css precedence", () => {
   }
 
   it("prefers-reduced-transparency dims every clear route the same way", () => {
-    for (const name of [
-      "explicit clear",
-      "variant setting clear",
-      "toolbar over artwork",
-    ]) {
+    for (const name of ["explicit clear", "toolbar over artwork"]) {
       const el = build(variantScenarios[name] as Scenario);
       const style = resolveStyle(el, ["prefers-reduced-transparency: reduce"]);
       expect(style.get("--g-dim")).toBe("0.62");

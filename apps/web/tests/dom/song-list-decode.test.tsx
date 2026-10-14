@@ -10,6 +10,7 @@ import { AudioPlayerProvider } from "react-use-audio-player";
 import superjson from "superjson";
 
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
 
 // SongList is an async server component; signed out, it skips every db read.
 const queries = await import("~/lib/db/queries");
@@ -22,7 +23,13 @@ mock.module("~/lib/db/queries", () => ({
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
 
 const { SongList } = await import("../../components/song-list/song-list");

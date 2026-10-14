@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
+import type { LensMapRequest } from "../../components/glass/lens-maps";
 import {
   configureLens,
   forEachGlass,
@@ -46,15 +47,15 @@ function surface(
 }
 
 let encodes = 0;
+const requests: LensMapRequest[] = [];
 
 beforeEach(() => {
   encodes = 0;
-  setLensMapEncoder(() => {
+  requests.length = 0;
+  setLensMapEncoder((request) => {
     encodes++;
-    return {
-      displacement: "data:image/png;base64,AA",
-      specular: "data:image/png;base64,AA",
-    };
+    requests.push(request);
+    return "data:image/png;base64,AA";
   });
 });
 
@@ -64,19 +65,49 @@ afterEach(() => {
 });
 
 const lensUrl = (el: HTMLElement) => el.style.getPropertyValue("--g-lens-url");
-const scaleOf = (defs: Element, el: HTMLElement) => {
-  const id = lensUrl(el).slice(5, -1);
-  return defs.querySelector(`#${id} feDisplacementMap`)?.getAttribute("scale");
-};
+const filterOf = (defs: Element, el: HTMLElement) =>
+  defs.querySelector(`#${lensUrl(el).slice(5, -1)}`);
+const scaleOf = (defs: Element, el: HTMLElement) =>
+  filterOf(defs, el)?.querySelector("feDisplacementMap")?.getAttribute("scale");
 
 function register(el: HTMLElement, size: GlassSize = "m") {
   return registerGlass(el, { size });
 }
 
 describe("glass lens registry", () => {
-  it("builds a lens at the mockup scale for the size once the engine is active", async () => {
+  it("keeps the same filter, and never drops it, while a surface's content changes but its shape does not", async () => {
     const defs = addDefs();
-    configureLens({ active: true, refraction: 30, spec: 1 });
+    configureLens({ active: true });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    const before = lensUrl(el);
+    const built = encodes;
+    const filters = defs.querySelectorAll("filter").length;
+    const urlWrites: string[] = [];
+    new MutationObserver(() => urlWrites.push(lensUrl(el))).observe(el, {
+      attributes: true,
+      attributeFilter: ["style"],
+    });
+
+    // What playback does to the player: text and bar change, the box does not.
+    for (let i = 0; i < 20; i++) {
+      el.textContent = `00:${String(i).padStart(2, "0")}`;
+      register(el);
+      el.dispatchEvent(new Event("transitionend"));
+      await settle(20);
+    }
+    await settle();
+
+    expect(lensUrl(el)).toBe(before);
+    expect(urlWrites.every((url) => url === before)).toBe(true);
+    expect(encodes).toBe(built);
+    expect(defs.querySelectorAll("filter").length).toBe(filters);
+  });
+
+  it("builds a lens at the depth scaled for the size once the engine is active", async () => {
+    const defs = addDefs();
+    configureLens({ active: true, depth: 60 });
     const small = surface(200, 40);
     const medium = surface(300, 60);
     const large = surface(300, 200);
@@ -88,7 +119,105 @@ describe("glass lens registry", () => {
     expect(scaleOf(defs, small)).toBe("60.0");
     expect(scaleOf(defs, medium)).toBe("45.0");
     expect(scaleOf(defs, large)).toBe("27.0");
-    expect(defs.querySelector("feFuncA")?.getAttribute("slope")).toBe("0.80");
+  });
+
+  it("builds a plain lens as one image and one displacement, nothing else", async () => {
+    const defs = addDefs();
+    configureLens({ active: true });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    const filter = filterOf(defs, el);
+    expect([...(filter?.children ?? [])].map((child) => child.tagName)).toEqual(
+      ["feImage", "feDisplacementMap"],
+    );
+  });
+
+  it("splits red from green and blue in two passes once chroma is above 0", async () => {
+    const defs = addDefs();
+    configureLens({ active: true, depth: 60, chroma: 0.1 });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    const filter = filterOf(defs, el);
+    const passes = [...(filter?.querySelectorAll("feDisplacementMap") ?? [])];
+    expect(passes.map((pass) => pass.getAttribute("scale"))).toEqual([
+      "49.5",
+      "40.5",
+    ]);
+    expect(filter?.querySelector("feComposite")?.getAttribute("operator")).toBe(
+      "arithmetic",
+    );
+  });
+
+  it("adds no tint primitives while the tint is 0", async () => {
+    const defs = addDefs();
+    configureLens({ active: true, tint: 0, tintColor: "#ff6600" });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    expect(filterOf(defs, el)?.querySelector("feFlood")).toBeNull();
+    expect(el.style.getPropertyValue("--g-lens-tint")).toBe("0");
+  });
+
+  it("multiplies the refracted backdrop by the tint colour once the tint is on", async () => {
+    const defs = addDefs();
+    configureLens({ active: true, tint: 0.94, tintColor: "#ff6600" });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    const filter = filterOf(defs, el);
+    expect([...(filter?.children ?? [])].map((child) => child.tagName)).toEqual(
+      ["feImage", "feDisplacementMap", "feFlood", "feBlend", "feComposite"],
+    );
+    expect(filter?.querySelector("feFlood")?.getAttribute("flood-color")).toBe(
+      "#ff6600",
+    );
+    expect(filter?.querySelector("feBlend")?.getAttribute("mode")).toBe(
+      "multiply",
+    );
+    const mix = filter?.querySelector("feComposite");
+    expect(mix?.getAttribute("k2")).toBe("0.940");
+    expect(mix?.getAttribute("k3")).toBe("0.060");
+    // The stylesheet's own tint layer steps aside for this surface.
+    expect(el.style.getPropertyValue("--g-lens-tint")).toBe("1");
+  });
+
+  it("rewrites the tint in place while it stays on, and rebuilds when it turns on or off", async () => {
+    const defs = addDefs();
+    configureLens({ active: true, tint: 0.5, tintColor: "#ff6600" });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    const tinted = lensUrl(el);
+    configureLens({ tint: 0.2, tintColor: "#2563eb" });
+    expect(lensUrl(el)).toBe(tinted);
+    expect(
+      filterOf(defs, el)?.querySelector("feFlood")?.getAttribute("flood-color"),
+    ).toBe("#2563eb");
+    expect(
+      filterOf(defs, el)?.querySelector("feComposite")?.getAttribute("k2"),
+    ).toBe("0.200");
+    configureLens({ tint: 0 });
+    await settle();
+    expect(lensUrl(el)).not.toBe(tinted);
+    expect(filterOf(defs, el)?.querySelector("feFlood")).toBeNull();
+  });
+
+  it("builds the map from the rim shape settings", async () => {
+    addDefs();
+    configureLens({ active: true, splay: 12, feather: 30, curve: 1.4 });
+    register(surface(300, 60));
+    await settle();
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({
+      width: 300,
+      height: 60,
+      splay: 12,
+      feather: 30,
+      curve: 1.4,
+      magnify: 0,
+    });
   });
 
   it("never lenses xl, tiny, huge or opted-out surfaces", async () => {
@@ -125,16 +254,61 @@ describe("glass lens registry", () => {
     expect(lensUrl(el)).toBe("");
   });
 
-  it("rescales cached filters when the refraction or highlight tuning changes", async () => {
+  it("rescales cached filters in place when only the depth changes", async () => {
     const defs = addDefs();
-    configureLens({ active: true, refraction: 30 });
+    configureLens({ active: true, depth: 60 });
     const el = surface(300, 60);
     register(el);
     await settle();
+    const before = lensUrl(el);
     expect(scaleOf(defs, el)).toBe("45.0");
-    configureLens({ refraction: 8, spec: 0.6 });
+    configureLens({ depth: 16 });
     expect(scaleOf(defs, el)).toBe("12.0");
-    expect(defs.querySelector("feFuncA")?.getAttribute("slope")).toBe("0.48");
+    await settle();
+    expect(lensUrl(el)).toBe(before);
+    expect(encodes).toBe(1);
+  });
+
+  it("rebuilds the lens under a fresh filter id when the rim shape changes", async () => {
+    const defs = addDefs();
+    configureLens({ active: true });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    const first = lensUrl(el);
+    configureLens({ feather: 10 });
+    await settle();
+    expect(lensUrl(el)).not.toBe(first);
+    expect(encodes).toBe(2);
+    expect(requests[1]?.feather).toBe(10);
+    expect(filterOf(defs, el)).not.toBeNull();
+  });
+
+  it("rebuilds the filter when chroma turns on, and keeps it when it only moves", async () => {
+    addDefs();
+    configureLens({ active: true });
+    const el = surface(300, 60);
+    register(el);
+    await settle();
+    const plain = lensUrl(el);
+    configureLens({ chroma: 0.05 });
+    await settle();
+    const chromatic = lensUrl(el);
+    expect(chromatic).not.toBe(plain);
+    configureLens({ chroma: 0.2 });
+    await settle();
+    expect(lensUrl(el)).toBe(chromatic);
+  });
+
+  it("gives a surface with its own preset that preset's depth, whatever the page says", async () => {
+    const defs = addDefs();
+    configureLens({ active: true, depth: 60 });
+    const el = surface(200, 40);
+    registerGlass(el, { size: "s", preset: "thick" });
+    await settle();
+    expect(scaleOf(defs, el)).toBe("120.0");
+    configureLens({ depth: 10 });
+    expect(scaleOf(defs, el)).toBe("120.0");
   });
 
   it("shares one filter, and one map render, between surfaces of the same size", async () => {

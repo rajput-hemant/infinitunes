@@ -111,22 +111,22 @@ export function ExpandedBody({
           <Skeleton className="absolute inset-0 -z-10" />
         </div>
 
-        <div className="mt-2 flex items-center justify-between gap-4 text-left md:mt-5">
-          <div className="min-w-0">
-            <p className="font-heading text-2xl/8 font-bold text-balance break-words text-foreground">
-              {track.name}
-            </p>
-            <p className="truncate text-base/6 text-muted-foreground">
-              {track.subtitle}
-            </p>
-          </div>
+        {/* The title is centred over the artwork; the like button is pinned to
+            the end so it does not pull the text off-centre. */}
+        <div className="relative mt-2 px-12 text-center md:mt-5">
+          <p className="font-heading text-2xl/8 font-bold text-balance break-words text-foreground">
+            {track.name}
+          </p>
+          <p className="truncate text-base/6 text-muted-foreground">
+            {track.subtitle}
+          </p>
           <LikeButton
             user={user}
             type={track.type}
             token={track.id}
             name={track.name}
             favourites={favorites}
-            className="shrink-0"
+            className="absolute top-1/2 right-0 -translate-y-1/2"
           />
         </div>
 

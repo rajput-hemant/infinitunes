@@ -110,17 +110,6 @@ describe("user menu on desktop", () => {
     ]);
   });
 
-  it("offers accent swatches to guests and signed-in users", async () => {
-    setPhone(false);
-    await openMenu(await mount({}));
-
-    const group = document.querySelector("[role=menu] fieldset");
-    expect(group?.querySelector("legend")?.textContent).toBe("Accent color");
-    expect(group?.querySelectorAll("input[type=radio]").length).toBeGreaterThan(
-      5,
-    );
-  });
-
   it("opens a shortcuts dialog listing the implemented shortcuts", async () => {
     setPhone(false);
     await openMenu(await mount({ user }));
@@ -162,15 +151,6 @@ describe("user menu below 768px", () => {
       "Log out",
     ]);
     expect(sheet.textContent).toContain("asha@example.com");
-  });
-
-  it("offers accent swatches in the sheet", async () => {
-    setPhone(true);
-    await openMenu(await mount({}));
-
-    expect(
-      document.querySelector("[role=dialog] fieldset input[type=radio]"),
-    ).not.toBeNull();
   });
 
   it("opens the shortcuts dialog from the sheet", async () => {

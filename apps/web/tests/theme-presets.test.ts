@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { FONT_IDS, HEADING_FONT_IDS } from "@infinitunes/types";
 
-import { DEFAULT_ACCENT, DEFAULT_ACCENT_HEX, themes } from "~/config/themes";
+import { DEFAULT_ACCENT_HEX, themes } from "~/config/themes";
 import { deriveAccentTokens } from "~/lib/theme/accent";
 import { FONT_FACES } from "~/lib/theme/fonts";
 import { normalizeHex } from "~/lib/theme/oklch";
@@ -29,7 +29,7 @@ const MOCKUP_PRESETS = {
   violet: "#7c3aed",
 };
 
-describe("accent presets", () => {
+describe("spot colour presets", () => {
   it("are the mockup's twelve, with its hex values", () => {
     expect(
       Object.fromEntries(themes.map(({ name, hex }) => [name, hex])),
@@ -44,10 +44,12 @@ describe("accent presets", () => {
     }
   });
 
-  it("make rose the default", () => {
-    expect(DEFAULT_ACCENT).toBe("rose");
-    expect(themes.find((theme) => theme.name === DEFAULT_ACCENT)?.hex).toBe(
-      DEFAULT_ACCENT_HEX,
+  it("keep a neutral as the stylesheet default, not a colour", () => {
+    expect(themes.find((theme) => theme.hex === DEFAULT_ACCENT_HEX)?.name).toBe(
+      "neutral",
+    );
+    expect(deriveAccentTokens(DEFAULT_ACCENT_HEX).light.primary).toMatch(
+      /^oklch\([\d.]+ 0 /,
     );
   });
 

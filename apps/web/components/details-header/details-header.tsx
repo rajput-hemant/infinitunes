@@ -10,9 +10,10 @@ import { controlStyles } from "~/lib/control-styles";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { cn } from "~/lib/utils";
+import { MORPH_CLASS, morphName } from "~/lib/view-transition";
 
 import { DownloadButton } from "../download-button";
-import { PageArtwork } from "../glass/page-artwork";
+import { GlassSurface } from "../glass/glass-surface";
 import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
 import { getPlaceholderSrc } from "../placeholder-src";
@@ -76,10 +77,11 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   return (
     <DetailsHeaderFrame title={title} className={detailBandClassName}>
-      {/* The artwork wash lives in the viewport-wide ambient field, behind the sidebar and toolbar too. */}
-      <PageArtwork src={getImageSrc(item.image, "medium")} />
-
       <div
+        style={{
+          viewTransitionName: morphName(kind, playToken),
+          viewTransitionClass: MORPH_CLASS,
+        }}
         className={cn(
           "relative aspect-square w-[min(60vw,14rem)] shrink-0 overflow-hidden rounded-md shadow-md md:w-36 lg:w-44 min-[90rem]:w-56",
           isRound && "rounded-full",
@@ -157,44 +159,51 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
               Shuffle
             </PlayButton>
 
-            <LikeButton
-              user={user}
-              type={playType}
-              token={getId(item)}
-              name={title}
-              favourites={favorites}
-              className={cn(
-                buttonVariants({ size: "icon", variant: "ghost" }),
-                controlStyles.headerIcon,
-              )}
-            />
+            {/* The icon actions share one glass capsule over the artwork band; the buttons inside get fills, not their own glass. */}
+            <GlassSurface
+              size="s"
+              glassRole="toolbar"
+              className="inline-flex items-center gap-0.5 rounded-full p-0.5"
+            >
+              <LikeButton
+                user={user}
+                type={playType}
+                token={getId(item)}
+                name={title}
+                favourites={favorites}
+                className={cn(
+                  buttonVariants({ size: "icon", variant: "ghost" }),
+                  controlStyles.headerIcon,
+                )}
+              />
 
-            <DownloadButton
-              songs={songs}
-              className={cn(
-                buttonVariants({ size: "icon", variant: "ghost" }),
-                controlStyles.headerIcon,
-                "max-md:hidden",
-              )}
-            />
+              <DownloadButton
+                songs={songs}
+                className={cn(
+                  buttonVariants({ size: "icon", variant: "ghost" }),
+                  controlStyles.headerIcon,
+                  "max-md:hidden",
+                )}
+              />
 
-            <ShareButton title={title} />
+              <ShareButton title={title} />
 
-            <MoreButton
-              user={user}
-              name={title}
-              subtitle={getSubtitle(item)}
-              type={playType}
-              image={item.image}
-              songs={songs}
-              playlists={playlists}
-              artistId={isKind(item, "artist") ? item.artistId : undefined}
-              language={
-                isKind(item, "artist")
-                  ? item.dominantLanguage
-                  : songs[0]?.language
-              }
-            />
+              <MoreButton
+                user={user}
+                name={title}
+                subtitle={getSubtitle(item)}
+                type={playType}
+                image={item.image}
+                songs={songs}
+                playlists={playlists}
+                artistId={isKind(item, "artist") ? item.artistId : undefined}
+                language={
+                  isKind(item, "artist")
+                    ? item.dominantLanguage
+                    : songs[0]?.language
+                }
+              />
+            </GlassSurface>
           </div>
         )}
       </figcaption>

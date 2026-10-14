@@ -1,4 +1,12 @@
-import { afterEach, describe, expect, it, spyOn } from "bun:test";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+  spyOn,
+} from "bun:test";
 
 import type { Queue as QueueItem } from "@infinitunes/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -14,6 +22,7 @@ import { useQueuePane } from "../../components/player/use-queue-pane";
 import { Queue } from "../../components/queue";
 import { THEME_BOOTSTRAP_SCRIPT } from "../../lib/theme-script";
 import { api } from "../../lib/trpc/client";
+import { offlineFetch } from "./offline-fetch";
 
 function song(id: string): QueueItem {
   return {
@@ -31,10 +40,23 @@ function song(id: string): QueueItem {
 
 const queryClient = new QueryClient();
 const trpcClient = api.createClient({
-  links: [httpBatchLink({ url: "/api/trpc", transformer: superjson })],
+  links: [
+    httpBatchLink({
+      url: "/api/trpc",
+      transformer: superjson,
+      fetch: offlineFetch,
+    }),
+  ],
 });
 
 const noop = () => {};
+
+// Row removal commits from a 200ms exit timer. Fake timers make that boundary
+// exact: a wall-clock sleep races the timer when the machine is loaded.
+const advance = (ms: number) =>
+  act(async () => {
+    jest.advanceTimersByTime(ms);
+  });
 
 // The pane lists upcoming tracks only, so every queue starts with the playing "p".
 const storedIds = () =>
@@ -63,6 +85,13 @@ async function mount() {
 }
 
 describe("queue pane", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   it("removes the last track and hands focus to the list", async () => {
     localStorage.setItem("queue", JSON.stringify([song("p"), song("a")]));
     localStorage.setItem("current_song_index", "0");
@@ -79,11 +108,8 @@ describe("queue pane", () => {
     await act(async () => {
       remove?.click();
     });
-    await act(async () => {
-      // Removal commits once the 200ms exit transition has finished.
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-    });
+    // Removal commits once the 200ms exit transition has finished.
+    await advance(250);
 
     expect(storedIds()).toEqual([]);
     expect(document.body.textContent).toContain("1 Track");
@@ -141,10 +167,7 @@ describe("queue pane", () => {
         )
         ?.click();
     });
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-    });
+    await advance(250);
 
     expect(storedIds()).toEqual(["a", "c"]);
     expect(document.body.textContent).toContain("3 Tracks");
@@ -156,10 +179,7 @@ describe("queue pane", () => {
   });
 
   describe("exit transition", () => {
-    const sleep = (ms: number) =>
-      act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, ms));
-      });
+    const sleep = advance;
     const removeButton = (id: string) =>
       document.querySelector<HTMLButtonElement>(
         `[aria-label="Remove Song ${id} from queue"]`,

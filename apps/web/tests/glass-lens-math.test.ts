@@ -2,24 +2,24 @@ import { describe, expect, test } from "bun:test";
 
 import {
   MAX_LENS_AREA,
-  bezelFor,
   canLens,
+  chromaScales,
   easeOutCubic,
   lensKey,
   lensScale,
   lensStrength,
-  specularSlope,
 } from "~/lib/glass/lens-math";
+import type { LensShape } from "~/lib/glass/lens-math";
 
 describe("lens scale", () => {
-  test("is twice the refraction at strength 1, the mockup's 60 for size s", () => {
-    expect(lensScale(30, lensStrength("s", false))).toBe(60);
+  test("is the depth at strength 1, the pen's 60 by default for size s", () => {
+    expect(lensScale(60, lensStrength("s", false))).toBe(60);
   });
 
   test("thicker surfaces refract less, and xl not at all", () => {
-    expect(lensScale(30, lensStrength("m", false))).toBe(45);
-    expect(lensScale(30, lensStrength("l", false))).toBeCloseTo(27);
-    expect(lensScale(30, lensStrength("xl", false))).toBe(0);
+    expect(lensScale(60, lensStrength("m", false))).toBe(45);
+    expect(lensScale(60, lensStrength("l", false))).toBeCloseTo(27);
+    expect(lensScale(60, lensStrength("xl", false))).toBe(0);
   });
 
   test("the droplet is weaker than a plain surface", () => {
@@ -27,39 +27,25 @@ describe("lens scale", () => {
   });
 
   test("materialize progress scales it from zero", () => {
-    expect(lensScale(30, 1, 0)).toBe(0);
-    expect(lensScale(30, 1, 0.5)).toBe(30);
+    expect(lensScale(60, 1, 0)).toBe(0);
+    expect(lensScale(60, 1, 0.5)).toBe(30);
   });
 
-  test("follows the refraction setting", () => {
+  test("follows the depth setting across the pen's range", () => {
     expect(lensScale(0, 1)).toBe(0);
-    expect(lensScale(48, 1)).toBe(96);
+    expect(lensScale(120, 1)).toBe(120);
   });
 });
 
-describe("specular slope", () => {
-  test("scales with the highlight setting and caps at 1.5", () => {
-    expect(specularSlope(1)).toBeCloseTo(0.8);
-    expect(specularSlope(0)).toBe(0);
-    expect(specularSlope(1.6)).toBeCloseTo(1.28);
-    expect(specularSlope(3)).toBe(1.5);
-  });
-});
-
-describe("bezelFor", () => {
-  test("never exceeds the corner radius", () => {
-    expect(bezelFor(200, 60, 6, "s")).toBe(6);
+describe("chromaScales", () => {
+  test("red takes the larger displacement, green and blue the smaller", () => {
+    const { red, rest } = chromaScales(60, 0.1);
+    expect(red).toBeCloseTo(66);
+    expect(rest).toBeCloseTo(54);
   });
 
-  test("thin surfaces use the bezel share of their short side", () => {
-    expect(bezelFor(400, 40, 30, "s")).toBe(13);
-    expect(bezelFor(400, 60, 30, "m")).toBe(13);
-  });
-
-  test("is capped per size", () => {
-    expect(bezelFor(400, 60, 30, "s")).toBe(18);
-    expect(bezelFor(900, 600, 80, "m")).toBe(18);
-    expect(bezelFor(900, 600, 80, "l")).toBe(22);
+  test("no chroma leaves both passes equal", () => {
+    expect(chromaScales(60, 0)).toEqual({ red: 60, rest: 60 });
   });
 });
 
@@ -88,14 +74,42 @@ describe("canLens", () => {
 });
 
 describe("lensKey", () => {
-  test("distinguishes every input that changes the map", () => {
-    const base = lensKey(300, 60, 20, "m", false);
-    expect(lensKey(300, 60, 20, "m", false)).toBe(base);
-    expect(lensKey(301, 60, 20, "m", false)).not.toBe(base);
-    expect(lensKey(300, 60, 21, "m", false)).not.toBe(base);
-    expect(lensKey(300, 60, 20, "s", false)).not.toBe(base);
-    expect(lensKey(300, 60, 20, "m", true)).not.toBe(base);
-    expect(lensKey(300, 60, 20, "m", false, { x: 44, y: 30 })).not.toBe(base);
+  const shape: LensShape = {
+    splay: 2,
+    feather: 24,
+    curve: 2,
+    chromatic: false,
+    tinted: false,
+    fixed: null,
+  };
+
+  test("distinguishes every input that changes the map or the filter", () => {
+    const base = lensKey(300, 60, 20, "m", false, shape);
+    expect(lensKey(300, 60, 20, "m", false, shape)).toBe(base);
+    expect(lensKey(301, 60, 20, "m", false, shape)).not.toBe(base);
+    expect(lensKey(300, 60, 21, "m", false, shape)).not.toBe(base);
+    expect(lensKey(300, 60, 20, "s", false, shape)).not.toBe(base);
+    expect(lensKey(300, 60, 20, "m", true, shape)).not.toBe(base);
+    expect(lensKey(300, 60, 20, "m", false, shape, { x: 44, y: 30 })).not.toBe(
+      base,
+    );
+    for (const changed of [
+      { ...shape, splay: 3 },
+      { ...shape, feather: 25 },
+      { ...shape, curve: 2.1 },
+      { ...shape, chromatic: true },
+      { ...shape, tinted: true },
+      {
+        ...shape,
+        fixed: { depth: 90, chroma: 0, tint: 0, tintColor: "#ffffff" },
+      },
+      {
+        ...shape,
+        fixed: { depth: 90, chroma: 0, tint: 0.5, tintColor: "#ffffff" },
+      },
+    ]) {
+      expect(lensKey(300, 60, 20, "m", false, changed)).not.toBe(base);
+    }
   });
 });
 
