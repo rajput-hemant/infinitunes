@@ -1,18 +1,15 @@
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import {
+  CatalogGridSkeleton,
+  CatalogHeaderSkeleton,
+} from "~/app/(root)/browse/_components/catalog-skeleton";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
-import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
-
-export default function FeaturedPlaylistPageSkeleton() {
+/** Mirrors Top Playlists: header without a subtitle, then the playlist grid. */
+export default function FeaturedPlaylistsLoading() {
   return (
-    <div className="space-y-4">
-      <Skeleton className="h-8 w-72 sm:h-9 md:h-10" />
+    <div aria-busy="true">
+      <CatalogHeaderSkeleton subtitle={false} />
 
-      <CatalogGrid>
-        {Array.from({ length: 26 }).map((_, i) => (
-          <SliderCardSkeleton key={i} />
-        ))}
-      </CatalogGrid>
+      <CatalogGridSkeleton />
     </div>
   );
 }

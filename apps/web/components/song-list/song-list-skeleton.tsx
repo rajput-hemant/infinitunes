@@ -14,7 +14,7 @@ type SongListSkeletonProps = {
 };
 
 export function SongListSkeleton(props: SongListSkeletonProps) {
-  const { length = 1, showAlbum = true } = props;
+  const { length = 10, showAlbum = true } = props;
   return (
     <div className="pointer-events-none @container">
       <SongListHead showAlbum={showAlbum} />

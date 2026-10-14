@@ -15,7 +15,7 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
       album: 1,
       artist: 1,
       channel: 1,
-      episode: 2,
+      episode: 1,
       label: 0,
       mix: 1,
       playlist: 1,
@@ -45,7 +45,11 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
           {Array.from({ length: subtileSkeletonCount }).map((_, i) => (
             <Skeleton
               key={i}
-              className="h-5 max-w-full"
+              className={cn(
+                "h-5 max-w-full",
+                // The song's copyright line is `hidden md:block`.
+                type === "song" && i === 2 && "max-md:hidden",
+              )}
               style={{ width: `${256 - i * 32}px` }}
             />
           ))}

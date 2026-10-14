@@ -1,20 +1,15 @@
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import {
+  CatalogGridSkeleton,
+  CatalogHeaderSkeleton,
+} from "~/app/(root)/browse/_components/catalog-skeleton";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
-import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
-
+/** Mirrors Top Charts: header, then 16:9 chart cards. */
 export default function TopChartsLoading() {
   return (
-    <div>
-      <header className="space-y-1 pt-2 pb-6">
-        <Skeleton className="h-8 w-72 md:h-10" />
-      </header>
+    <div aria-busy="true">
+      <CatalogHeaderSkeleton />
 
-      <CatalogGrid>
-        {Array.from({ length: 26 }).map((_, i) => (
-          <SliderCardSkeleton key={i} aspect="video" />
-        ))}
-      </CatalogGrid>
+      <CatalogGridSkeleton aspect="video" />
     </div>
   );
 }

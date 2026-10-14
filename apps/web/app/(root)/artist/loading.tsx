@@ -1,18 +1,15 @@
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import {
+  CatalogGridSkeleton,
+  CatalogHeaderSkeleton,
+} from "~/app/(root)/browse/_components/catalog-skeleton";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
-import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
-
-export default function TopArtistsPageSkeleton() {
+/** Mirrors Top Artists: header without a subtitle, then round artist cards. */
+export default function TopArtistsLoading() {
   return (
-    <div className="space-y-4">
-      <Skeleton className="mt-4 h-8 w-72 sm:h-9 md:h-10" />
+    <div aria-busy="true">
+      <CatalogHeaderSkeleton subtitle={false} />
 
-      <CatalogGrid>
-        {Array.from({ length: 26 }).map((_, i) => (
-          <SliderCardSkeleton key={i} rounded />
-        ))}
-      </CatalogGrid>
+      <CatalogGridSkeleton rounded />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { detailPanelClassName } from "~/components/details-header/details-header-band";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
@@ -55,7 +56,7 @@ export default async function EpisodeDetailsPage(
     <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={episode} />
 
-      <section className="flex max-w-2xl flex-col gap-4 rounded-md bg-card p-6 ring-1 ring-inset ring-border">
+      <section className={detailPanelClassName}>
         <h2 className="font-heading text-xl capitalize text-foreground sm:text-2xl md:text-3xl">
           {modules.episode_details.title}
         </h2>
