@@ -3,10 +3,10 @@
 import { DENSITIES } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Layout, Monitor, Moon, RotateCcw, Rows3, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
 
 import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useThemeConfig } from "~/hooks/use-theme-config";
+import { useThemeMode } from "~/hooks/use-theme-mode";
 import { controlStyles } from "~/lib/control-styles";
 
 import { LiquidGlassSettings } from "./liquid-glass-settings";
@@ -37,7 +37,7 @@ const MODES = [
 
 export function AppearanceSettings() {
   const { config, update, reset, isDefault } = useThemeConfig();
-  const { theme: storedTheme, setTheme } = useTheme();
+  const { theme: storedTheme, setMode } = useThemeMode();
   // next-themes only knows the stored mode on the client; wait for hydration so
   // server and first client render agree.
   const hydrated = useIsHydrated();
@@ -54,7 +54,7 @@ export function AppearanceSettings() {
           <OptionGroup
             label="Theme mode"
             value={theme}
-            onValueChange={setTheme}
+            onValueChange={setMode}
             options={MODES}
           />
         </SettingsSection>
@@ -107,7 +107,7 @@ export function AppearanceSettings() {
             disabled={isDefault && theme === "system"}
             onClick={() => {
               reset();
-              setTheme("system");
+              setMode("system");
             }}
             className={controlStyles.textLg}
           >

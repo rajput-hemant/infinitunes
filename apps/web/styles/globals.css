@@ -312,6 +312,14 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   animation-iteration-count: infinite !important;
 }
 
+/* A colour-mode switch (lib/theme/mode.ts) repaints in one frame: nothing eases through the old colours. */
+html[data-theme-switching],
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after {
+  transition: none !important;
+}
+
 @layer base {
   * {
     @apply border-border;
