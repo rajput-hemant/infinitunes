@@ -18,6 +18,11 @@ import { ToolbarNavigation } from "./toolbar-navigation";
 
 const capsuleClassName = "flex items-center rounded-full p-0.5";
 
+const logInClassName = cn(
+  controlStyles.text,
+  "hidden items-center rounded-full font-medium md:flex",
+);
+
 const mainNavClassName =
   "hidden lg:block min-[1440px]:in-data-[queue=open]:hidden!";
 
@@ -61,20 +66,26 @@ export function Navbar() {
           <ViewerUserMenu />
         </GlassSurface>
 
-        <ViewerSignedOut>
+        {/* The ghost reserves the button's width, so the capsules beside it do not slide when the session resolves. */}
+        <ViewerSignedOut
+          fallback={
+            <GlassSurface
+              variant="tinted"
+              size="s"
+              glassRole="toolbar"
+              aria-hidden
+              className="invisible"
+              render={<span className={logInClassName} />}
+            >
+              Log in
+            </GlassSurface>
+          }
+        >
           <GlassSurface
             variant="tinted"
             size="s"
             glassRole="toolbar"
-            render={
-              <Link
-                href="/login"
-                className={cn(
-                  controlStyles.text,
-                  "hidden items-center rounded-full font-medium md:flex",
-                )}
-              />
-            }
+            render={<Link href="/login" className={logInClassName} />}
           >
             Log in
           </GlassSurface>

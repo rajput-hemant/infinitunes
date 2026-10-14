@@ -85,10 +85,19 @@ function SignedOutIsland({ children }: { children: ReactNode }) {
   return user ? null : <>{children}</>;
 }
 
-/** Renders its children for a signed-out visitor, and nothing while unknown. */
-export function ViewerSignedOut({ children }: { children: ReactNode }) {
+type ViewerSignedOutProps = {
+  children: ReactNode;
+  /** What holds the place until the session is known (default: nothing). */
+  fallback?: ReactNode;
+};
+
+/** Renders its children for a signed-out visitor, and `fallback` while unknown. */
+export function ViewerSignedOut({
+  children,
+  fallback = null,
+}: ViewerSignedOutProps) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={fallback}>
       <SignedOutIsland>{children}</SignedOutIsland>
     </Suspense>
   );
