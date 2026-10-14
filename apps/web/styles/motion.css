@@ -103,24 +103,24 @@
 /* ---------- Menus, popovers and dialogs ---------- */
 /* The scale and fade come from tw-animate (zoom/fade/slide from the anchor side); this sets the pace. */
 :is(
-    [data-slot="popover-content"],
-    [data-slot="dropdown-menu-content"],
-    [data-slot="dropdown-menu-sub-content"],
-    [data-slot="dialog-content"],
-    [data-slot="alert-dialog-content"]
-  ):is([data-open], [data-starting-style]) {
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"]
+):is([data-open], [data-starting-style]) {
   animation-duration: 180ms;
   animation-timing-function: var(--ease-out);
 }
 :is(
-    [data-slot="popover-content"],
-    [data-slot="dropdown-menu-content"],
-    [data-slot="dropdown-menu-sub-content"],
-    [data-slot="dialog-content"],
-    [data-slot="alert-dialog-content"],
-    [data-slot="dialog-overlay"],
-    [data-slot="alert-dialog-overlay"]
-  )[data-closed] {
+  [data-slot="popover-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="dropdown-menu-sub-content"],
+  [data-slot="dialog-content"],
+  [data-slot="alert-dialog-content"],
+  [data-slot="dialog-overlay"],
+  [data-slot="alert-dialog-overlay"]
+)[data-closed] {
   animation-duration: 120ms;
   animation-timing-function: ease-in;
 }
