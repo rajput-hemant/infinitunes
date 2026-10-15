@@ -280,6 +280,24 @@ beside the open panels it is centred in the viewport and neither the sidebar nor
 anchored player bar); when it does not fit the clamp collapses to the classic push. Never reintroduce a
 margin or width on the column for a panel, and keep the sidebar gap in flow (its live width is what `Cf` reads).
 
+## Optimistic writes
+
+A click must change the UI in the same frame; the server write follows and a failure rolls back with a toast.
+Never hang UI state on the action's round trip, and never let only the clicked control change.
+
+- Shared client overlays own the state, layered over server props: likes in `lib/optimistic-favorite.ts`
+  (`useFavoriteToggle` in `lib/use-favorite-toggle.ts`; hearts, tile menu and player share one key), playlists in
+  `lib/optimistic-playlists.ts` (`usePlaylists` for the sidebar and add dialog, `PlaylistTitle`, `PlaylistGate`,
+  `PlaylistRow`, `PendingPlaylistCards`), `?lang=` chips in `lib/pending-params.ts`. Use these for new write paths
+  instead of a per-component `useOptimistic`, which cannot update other components.
+- One write per key in flight, always the latest intent (rapid clicks never double toggle); songs of one playlist
+  are written one at a time and removal indexes are adjusted for earlier removals.
+- An overlay record is dropped when refreshed server props agree, on failure, or after a timeout. Do not clear it
+  on action success: `refresh()` props arrive a moment later and the control would flicker back.
+- Creating a playlist cannot be fully optimistic (the id is minted by the database): it shows a dimmed `pending`
+  row with no link and takes the real id on return. Sign out, profile and password saves, and radio/queue
+  fetches stay pending-style (toast) because the server or upstream decides the outcome.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

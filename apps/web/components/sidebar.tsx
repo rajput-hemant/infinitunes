@@ -1,6 +1,5 @@
 "use client";
 
-import type { MyPlaylist } from "@infinitunes/db/schema";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Sidebar as SidebarPrimitive,
@@ -33,6 +32,7 @@ import { siteConfig } from "~/config/site";
 import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
+import type { PlaylistView } from "~/lib/optimistic-playlists";
 import { asRoute, cn, isMacOs } from "~/lib/utils";
 
 import { Icons } from "./icons";
@@ -40,7 +40,7 @@ import { NewPlaylistForm } from "./playlist/new-playlist-form";
 
 type SidebarProps = {
   user?: User;
-  userPlaylists?: MyPlaylist[];
+  userPlaylists?: PlaylistView[];
   /** The session has not resolved yet: the library part shows placeholders. */
   pending?: boolean;
 };
@@ -265,7 +265,7 @@ function SidebarNavList({ items, pathname, collapsed }: SidebarNavListProps) {
 const sectionLabelClassName = `h-auto px-3 pb-1 text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] text-muted-foreground uppercase ${railHide}`;
 
 type SidebarPlaylistsProps = {
-  userPlaylists: MyPlaylist[];
+  userPlaylists: PlaylistView[];
   pathname: string | null;
 };
 
@@ -293,7 +293,25 @@ function SidebarPlaylists({ userPlaylists, pathname }: SidebarPlaylistsProps) {
 
       <SidebarGroupContent>
         <SidebarMenu className="gap-0.5">
-          {userPlaylists.map(({ id, name }) => {
+          {userPlaylists.map(({ id, name, pending }) => {
+            // Created a moment ago: no id to link to until the write returns.
+            if (pending) {
+              return (
+                <SidebarMenuItem key={id}>
+                  <div
+                    aria-busy
+                    title={`${name} (creating)`}
+                    className="flex h-(--ctl) w-full cursor-progress items-center gap-3 px-3 text-sm font-medium text-foreground opacity-60"
+                  >
+                    <ListMusic
+                      aria-hidden
+                      className="size-4.5 shrink-0 text-muted-foreground"
+                    />
+                    <span className={railLabel}>{name}</span>
+                  </div>
+                </SidebarMenuItem>
+              );
+            }
             const href = asRoute(`/me/playlist/${id}`);
 
             return (

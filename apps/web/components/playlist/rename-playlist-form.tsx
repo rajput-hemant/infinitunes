@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import { Button } from "@infinitunes/ui/components/button";
 import { DialogClose, DialogFooter } from "@infinitunes/ui/components/dialog";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -12,6 +11,7 @@ import type { z } from "zod";
 import { unwrap } from "~/lib/action-result";
 import { renamePlaylist } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
+import { renamePlaylistOptimistic } from "~/lib/optimistic-playlists";
 import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
 
@@ -32,8 +32,6 @@ export function RenamePlaylistForm({
   playlist,
   onDone,
 }: RenamePlaylistFormProps) {
-  const router = useRouter();
-
   const form = useForm<PlaylistFormData>({
     resolver: zodResolver(newPlaylistSchema),
     defaultValues: {
@@ -42,21 +40,19 @@ export function RenamePlaylistForm({
     },
   });
 
-  async function onSubmit({ name, description }: PlaylistFormData) {
-    try {
-      await toast.promise(
+  function onSubmit({ name, description }: PlaylistFormData) {
+    // Shown renamed everywhere at once; a failure restores the old name.
+    onDone();
+    toast.promise(
+      renamePlaylistOptimistic(playlist.id, { name, description }, () =>
         unwrap(renamePlaylist(playlist.id, { name, description })),
-        {
-          loading: "Renaming playlist...",
-          success: (updated) => `Playlist renamed to "${updated.name}"`,
-          error: userMessage,
-        },
-      );
-      onDone();
-      router.refresh();
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : error);
-    }
+      ),
+      {
+        loading: "Renaming playlist...",
+        success: () => `Playlist renamed to "${name}"`,
+        error: userMessage,
+      },
+    );
   }
 
   return (

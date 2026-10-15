@@ -1,5 +1,6 @@
 import type { Episode, Song } from "@infinitunes/types";
 
+import { PlaylistRow } from "~/components/playlist/playlist-overlay";
 import { cn } from "~/lib/utils";
 import { getViewer } from "~/lib/viewer";
 
@@ -30,11 +31,11 @@ export async function SongList(props: SongListProps) {
       <SongListHead showAlbum={showAlbum} />
 
       <ol className="flex flex-col text-muted-foreground">
-        {items.map((item, i) => (
-          <li
-            key={`${item.id}-${i}`}
-            className="[contain-intrinsic-size:auto_var(--row)] [content-visibility:auto]"
-          >
+        {items.map((item, i) => {
+          const rowClass =
+            "[contain-intrinsic-size:auto_var(--row)] [content-visibility:auto]";
+          const dbIndex = playlistSongIndices?.[i];
+          const row = (
             <SongListRow
               item={item}
               index={i}
@@ -43,10 +44,26 @@ export async function SongList(props: SongListProps) {
               favorites={favorites}
               playlists={playlists}
               playlistId={playlistId}
-              playlistSongIndex={playlistSongIndices?.[i]}
+              playlistSongIndex={dbIndex}
             />
-          </li>
-        ))}
+          );
+
+          // Rows of a playlist page close up the moment a song is removed.
+          return playlistId && dbIndex !== undefined ? (
+            <PlaylistRow
+              key={`${item.id}-${i}`}
+              playlistId={playlistId}
+              dbIndex={dbIndex}
+              className={rowClass}
+            >
+              {row}
+            </PlaylistRow>
+          ) : (
+            <li key={`${item.id}-${i}`} className={rowClass}>
+              {row}
+            </li>
+          );
+        })}
       </ol>
     </section>
   );

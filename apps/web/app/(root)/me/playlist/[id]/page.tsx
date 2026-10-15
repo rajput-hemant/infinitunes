@@ -14,6 +14,10 @@ import {
 import { PlayAllButton } from "~/components/library/play-all-button";
 import { RetryButton } from "~/components/library/retry-button";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
+import {
+  PlaylistDescription,
+  PlaylistTitle,
+} from "~/components/playlist/playlist-overlay";
 import { SongList } from "~/components/song-list/song-list";
 import { controlStyles } from "~/lib/control-styles";
 import { getPlaylistDetails } from "~/lib/db/queries";
@@ -93,12 +97,12 @@ export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
 
         <figcaption className="flex w-full min-w-0 flex-col items-center gap-2 lg:items-start">
           <div className="flex w-full max-w-full items-center justify-center gap-2 lg:justify-start">
-            <h1
-              title={name}
+            <PlaylistTitle
+              id={id}
+              name={name}
+              description={description}
               className="min-w-0 truncate text-center font-heading text-2xl font-bold tracking-tight text-foreground capitalize sm:text-3xl md:text-4xl lg:text-start"
-            >
-              {name}
-            </h1>
+            />
             <PlaylistManageMenu
               playlist={{ id, name, description }}
               redirectOnDelete
@@ -107,7 +111,11 @@ export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
           </div>
 
           <div className="flex flex-col gap-1 text-muted-foreground">
-            {description && <p className="max-w-xl">{description}</p>}
+            <PlaylistDescription
+              id={id}
+              name={name}
+              description={description}
+            />
             <p>
               <span>{songs.length} Songs</span>
               {playlistSongs.length > 0 && (
