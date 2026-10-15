@@ -53,6 +53,26 @@ function saveBlob(blob: Blob, filename: string) {
   anchor.click();
 }
 
+/**
+ * Runs every download and reports a failure as a toast. `setBusy` brackets the
+ * run. Kept outside the hook: the React Compiler bails out on try/finally.
+ */
+async function downloadAll(
+  songs: (Song | Episode)[],
+  downloadSong: (song: Song | Episode) => Promise<void>,
+  setBusy: (busy: boolean) => void,
+) {
+  setBusy(true);
+  try {
+    await Promise.all(songs.map((song) => downloadSong(song)));
+  } catch (error) {
+    console.error(error);
+    toast.error("Download failed. Please try again.");
+  } finally {
+    setBusy(false);
+  }
+}
+
 /** Downloads every song at the chosen quality; `isDownloading` disables the trigger meanwhile. */
 export function useDownloadSongs(songs: (Song | Episode)[]) {
   const [downloadQuality] = useDownloadQuality();
@@ -77,15 +97,7 @@ export function useDownloadSongs(songs: (Song | Episode)[]) {
   }
 
   async function download() {
-    setIsDownloading(true);
-    try {
-      await Promise.all(songs.map((song) => downloadSong(song)));
-    } catch (error) {
-      console.error(error);
-      toast.error("Download failed. Please try again.");
-    } finally {
-      setIsDownloading(false);
-    }
+    await downloadAll(songs, downloadSong, setIsDownloading);
   }
 
   return { isDownloading, download };
