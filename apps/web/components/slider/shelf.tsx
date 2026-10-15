@@ -4,7 +4,6 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useRef, useState } from "react";
 
-import { GlassSurface } from "~/components/glass/glass-surface";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -12,12 +11,17 @@ import { shelfListClassName } from "./shelf-layout";
 
 type ShelfProps = {
   children: ReactNode;
+  /** The section title (and subtitle); the scroll arrows sit at the right of this row. */
+  heading?: ReactNode;
   rows?: 1 | 2;
   className?: string;
 };
 
-/** Horizontal snap scroller of `ShelfItem`s with prev and next arrows on fine pointers. */
-export function Shelf({ children, rows = 1, className }: ShelfProps) {
+/** The list has 4px of padding, which the first snap point scrolls past: still the start. */
+const START_SLACK = 6;
+
+/** Horizontal snap scroller of `ShelfItem`s with prev and next arrows in its header row on fine pointers. */
+export function Shelf({ children, heading, rows = 1, className }: ShelfProps) {
   const scroller = useRef<HTMLOListElement>(null);
   const [edges, setEdges] = useState({ atStart: true, atEnd: true });
 
@@ -26,7 +30,7 @@ export function Shelf({ children, rows = 1, className }: ShelfProps) {
     if (!el) return;
 
     const apply = () => {
-      const atStart = el.scrollLeft <= 0;
+      const atStart = el.scrollLeft <= START_SLACK;
       const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
       // Same edges as before: keep the state object so React skips the render.
       setEdges((prev) =>
@@ -64,27 +68,32 @@ export function Shelf({ children, rows = 1, className }: ShelfProps) {
   }
 
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn("flex flex-col gap-3", className)}>
+      <div className="flex items-end justify-between gap-3">
+        <div className="min-w-0">{heading}</div>
+
+        {/* Outside the track, in the header row, on the page surface: always legible. */}
+        <div className="-my-0.5 ml-auto hidden shrink-0 gap-1 pointer-fine:flex">
+          <ShelfArrow
+            label="Scroll left"
+            disabled={edges.atStart}
+            onClick={() => page(-1)}
+          >
+            <ChevronLeft />
+          </ShelfArrow>
+          <ShelfArrow
+            label="Scroll right"
+            disabled={edges.atEnd}
+            onClick={() => page(1)}
+          >
+            <ChevronRight />
+          </ShelfArrow>
+        </div>
+      </div>
+
       <ol ref={scroller} className={shelfListClassName(rows)}>
         {children}
       </ol>
-
-      <ShelfArrow
-        label="Scroll left"
-        disabled={edges.atStart}
-        onClick={() => page(-1)}
-        className="left-1"
-      >
-        <ChevronLeft />
-      </ShelfArrow>
-      <ShelfArrow
-        label="Scroll right"
-        disabled={edges.atEnd}
-        onClick={() => page(1)}
-        className="right-1"
-      >
-        <ChevronRight />
-      </ShelfArrow>
     </div>
   );
 }
@@ -93,33 +102,24 @@ type ShelfArrowProps = {
   label: string;
   disabled: boolean;
   onClick: () => void;
-  className: string;
   children: ReactNode;
 };
 
-/** A scroll arrow floating over the shelf's artwork: glass, so the covers bend at its rim. */
+/** Square icon control, the header icon size; dimmed (not hidden) at either end. */
 function ShelfArrow(props: ShelfArrowProps) {
-  const { label, disabled, onClick, className, children } = props;
+  const { label, disabled, onClick, children } = props;
   return (
-    <GlassSurface
-      variant="clear"
-      size="s"
-      interactive
-      render={
-        <button
-          type="button"
-          aria-label={label}
-          disabled={disabled}
-          onClick={onClick}
-        />
-      }
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={onClick}
       className={cn(
         controlStyles.headerIcon,
-        "absolute top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center text-foreground pointer-fine:flex disabled:invisible",
-        className,
+        "flex items-center justify-center bg-fill text-foreground transition-colors duration-fast outline-none hover:bg-fill-2 focus-visible:ring-2 focus-visible:ring-ring active:bg-fill-3 disabled:opacity-35 disabled:hover:bg-fill motion-reduce:transition-none",
       )}
     >
       {children}
-    </GlassSurface>
+    </button>
   );
 }

@@ -57,11 +57,14 @@ async function Podcasts({ searchParams }: TopPodcastsPageProps) {
 
   return (
     <>
-      <h2 className="mb-3 text-xl leading-7 font-bold tracking-[-0.015em]">
-        {trendingTitle}
-      </h2>
-
-      <Shelf rows={2}>
+      <Shelf
+        rows={2}
+        heading={
+          <h2 className="text-xl leading-7 font-bold tracking-[-0.015em]">
+            {trendingTitle}
+          </h2>
+        }
+      >
         {uniqueBy(trendingPodcasts, (show) => show.id).map(
           ({
             id,

@@ -5,6 +5,7 @@ import { Play } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { CardPlay } from "~/components/card-play";
 import { GlassSurface } from "~/components/glass/glass-surface";
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
@@ -18,6 +19,7 @@ export type HeroTile = {
   href: Route;
   title: string;
   image: Quality;
+  token: string;
 };
 
 type HomeHeroProps = {
@@ -67,15 +69,16 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
           {/* Image scrim: stays dark over arbitrary artwork in both themes, so it is not a theme token. */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/45 via-transparent to-transparent"
+            className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/80 via-black/30 via-45% to-transparent"
           />
         </div>
 
-        {/* Compact glass strip anchored to the bottom: the faces above it stay visible. */}
+        {/* Compact glass strip anchored to the bottom: the faces above it stay visible. The lens is off:
+            refraction pulled the cover's own lettering through the strip as a doubled ghost under the title. */}
         <GlassSurface
           variant="clear"
           size="m"
-          preset="thick"
+          lens="off"
           className="absolute inset-x-3 bottom-3 flex items-center gap-3 rounded-md py-2 pr-2 pl-3"
         >
           <div className="min-w-0 flex-1">
@@ -111,27 +114,35 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
 
       {tiles
         .slice(0, MAX_TILES)
-        .map(({ key, type, href: tileHref, title: tileTitle, image }) => (
-          <Link
-            key={key}
-            data-morph={type}
-            data-morph-art=""
-            href={tileHref}
-            aria-label={tileTitle}
-            title={tileTitle}
-            className="group/tile relative isolate block aspect-square overflow-hidden rounded-md shadow-sm outline-none transition-transform duration-fast hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ring max-md:nth-[n+4]:hidden motion-reduce:transition-none"
-          >
-            <ImageWithFallback
-              src={getImageSrc(image, "high")}
-              fallback={getPlaceholderSrc("playlist")}
-              fill
-              sizes="(min-width: 1024px) 14vw, (min-width: 768px) 25vw, 50vw"
-              loading="lazy"
-              alt=""
-              className="-z-20 rounded-none object-cover"
-            />
-          </Link>
-        ))}
+        .map(
+          ({ key, href: tileHref, title: tileTitle, image, type, token }) => (
+            <div
+              key={key}
+              data-morph={type}
+              className="group relative isolate aspect-square overflow-hidden rounded-md shadow-sm transition-transform duration-fast hover:-translate-y-0.5 max-md:nth-[n+4]:hidden motion-reduce:transition-none"
+            >
+              <Link
+                href={tileHref}
+                data-morph-art=""
+                aria-label={tileTitle}
+                title={tileTitle}
+                className="absolute inset-0 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ImageWithFallback
+                  src={getImageSrc(image, "high")}
+                  fallback={getPlaceholderSrc("playlist")}
+                  fill
+                  sizes="(min-width: 1024px) 14vw, (min-width: 768px) 25vw, 50vw"
+                  loading="lazy"
+                  alt=""
+                  className="-z-20 rounded-none object-cover"
+                />
+              </Link>
+
+              <CardPlay name={tileTitle} type={type} token={token} />
+            </div>
+          ),
+        )}
     </div>
   );
 }
