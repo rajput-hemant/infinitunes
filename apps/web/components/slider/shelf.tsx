@@ -25,17 +25,33 @@ export function Shelf({ children, rows = 1, className }: ShelfProps) {
     const el = scroller.current;
     if (!el) return;
 
-    const update = () =>
-      setEdges({
-        atStart: el.scrollLeft <= 0,
-        atEnd: el.scrollLeft + el.clientWidth >= el.scrollWidth - 1,
-      });
+    const apply = () => {
+      const atStart = el.scrollLeft <= 0;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+      // Same edges as before: keep the state object so React skips the render.
+      setEdges((prev) =>
+        prev.atStart === atStart && prev.atEnd === atEnd
+          ? prev
+          : { atStart, atEnd },
+      );
+    };
 
-    update();
+    // Scroll fires faster than frames; read layout at most once per frame.
+    let frame = 0;
+    const update = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        apply();
+      });
+    };
+
+    apply();
     el.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
 
     return () => {
+      cancelAnimationFrame(frame);
       el.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };

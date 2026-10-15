@@ -43,14 +43,12 @@ mock.module("~/lib/trpc/server", () => ({
 mock.module("~/lib/trpc/client", () => ({
   api: { useUtils: () => ({}) },
 }));
-mock.module("@infinitunes/auth/client", () => ({
-  useSession: () => ({ data: null }),
-}));
 mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
 const { default: HomePage } = await import("../../app/(root)/page");
+const { ViewerProvider } = await import("../../components/viewer-context");
 
 const roots: Root[] = [];
 
@@ -60,7 +58,17 @@ async function render() {
   const root = createRoot(container);
   roots.push(root);
   await act(async () => {
-    root.render(await HomePage());
+    root.render(
+      <ViewerProvider
+        viewer={Promise.resolve({
+          user: undefined,
+          playlists: undefined,
+          favorites: undefined,
+        })}
+      >
+        {await HomePage()}
+      </ViewerProvider>,
+    );
   });
   return container;
 }

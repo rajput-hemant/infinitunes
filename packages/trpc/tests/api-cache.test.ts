@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import { db } from "@infinitunes/db";
 
-import { api, revalidateSeconds } from "../src/lib/api";
+import { api, expireSeconds, revalidateSeconds } from "../src/lib/api";
 import { endpoints } from "../src/lib/endpoints";
 import { appRouter } from "../src/root";
 import { createCallerFactory } from "../src/trpc";
@@ -46,5 +46,32 @@ describe("raw API transport", () => {
     expect(revalidateSeconds(endpoints.get.mega_menu)).toBe(3600);
     expect(revalidateSeconds(endpoints.get.footer_details)).toBe(3600);
     expect(revalidateSeconds(endpoints.album.same_year)).toBe(3600);
+  });
+
+  it("lets media-free payloads outlive revalidation, but not media-bearing ones", () => {
+    for (const call of [
+      endpoints.get.mega_menu,
+      endpoints.get.footer_details,
+      endpoints.album.same_year,
+      endpoints.search.all,
+      endpoints.search.top_search,
+      endpoints.get.charts,
+    ]) {
+      expect(expireSeconds(call)).toBeGreaterThan(revalidateSeconds(call) ?? 0);
+    }
+    for (const call of [
+      endpoints.song.id,
+      endpoints.song.link,
+      endpoints.song.recommend,
+      endpoints.album.id,
+      endpoints.playlist.id,
+      endpoints.search.songs,
+      endpoints.modules.launch_data,
+      endpoints.get.trending,
+    ]) {
+      expect(expireSeconds(call)).toBe(revalidateSeconds(call));
+    }
+    expect(expireSeconds(endpoints.radio.get_song)).toBeUndefined();
+    expect(expireSeconds(endpoints.get.charts, false)).toBeUndefined();
   });
 });

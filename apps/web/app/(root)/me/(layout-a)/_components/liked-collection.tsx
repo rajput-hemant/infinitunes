@@ -11,6 +11,7 @@ import {
   SliderCard,
   type SliderCardProps,
 } from "~/components/slider/slider-card";
+import { LIBRARY_FETCH_CONCURRENCY, settleWithLimit } from "~/lib/liked-songs";
 
 type LikedCollectionProps<T> = {
   /** Saved tokens/ids from the user's favorites; duplicates are ignored. */
@@ -46,7 +47,11 @@ export async function LikedCollection<T>(props: LikedCollectionProps<T>) {
     );
   }
 
-  const settled = await Promise.allSettled(tokens.map(fetchItem));
+  const settled = await settleWithLimit(
+    tokens,
+    LIBRARY_FETCH_CONCURRENCY,
+    fetchItem,
+  );
   const cards = settled.flatMap((result) =>
     result.status === "fulfilled" && result.value ? [toCard(result.value)] : [],
   );

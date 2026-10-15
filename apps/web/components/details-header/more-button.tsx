@@ -49,9 +49,9 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
+import { addSongsToPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { addSongsToPlaylist } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";

@@ -78,7 +78,7 @@ mock.module("@infinitunes/db", () => ({
 
 // Mock next/cache
 mock.module("next/cache", () => ({
-  updateTag: () => {},
+  refresh: () => {},
   cacheLife: () => {},
   cacheTag: () => {},
   unstable_cache: (fn: Function) => fn,
@@ -91,18 +91,16 @@ mock.module("next/navigation", () => ({
 
 const { unwrap } = await import("../../lib/action-result");
 const {
+  addSongsToPlaylist,
+  addToFavorites,
   createNewPlaylist,
   deletePlaylist,
   deleteUser,
+  removeFromFavorites,
+  removeSongsFromPlaylist,
   renamePlaylist,
   updateUser,
 } = await import("../../lib/actions");
-const {
-  addSongsToPlaylist,
-  addToFavorites,
-  removeFromFavorites,
-  removeSongsFromPlaylist,
-} = await import("../../lib/db/queries");
 
 describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {

@@ -5,8 +5,8 @@ import { toast } from "sonner";
 
 import { getItemName } from "~/components/song-list/item-name";
 import { unwrap } from "~/lib/action-result";
+import { addToFavorites, removeFromFavorites } from "~/lib/actions";
 import type { User } from "~/lib/auth";
-import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
 import { userMessage } from "~/lib/user-message";
 
 import type { TileMoreItem } from "./more-button-item";
