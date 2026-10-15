@@ -1,39 +1,14 @@
 "use client";
 
-import { createContext, Suspense, use } from "react";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 
 import { PlayerWrapper } from "~/components/player-wrapper";
 import { Sidebar } from "~/components/sidebar";
 import { MobileNav } from "~/components/site-header/mobile-nav";
 import { UserDropdown } from "~/components/user-dropdown";
-import type { Viewer } from "~/lib/viewer-types";
+import { useViewer } from "~/components/viewer-context";
 
-const ViewerContext = createContext<Promise<Viewer> | null>(null);
-
-type ViewerProviderProps = {
-  /** Started, not awaited, by the layout; resolved behind `<Suspense>` below. */
-  viewer: Promise<Viewer>;
-  children: ReactNode;
-};
-
-/**
- * Carries the visitor (session, playlists, favorites) to the layout's client
- * islands as a promise. The layout never awaits it, so the chrome around the
- * islands prerenders and each island streams in behind its own fallback.
- */
-export function ViewerProvider({ viewer, children }: ViewerProviderProps) {
-  return <ViewerContext value={viewer}>{children}</ViewerContext>;
-}
-
-/** Suspends until the viewer resolves; call it under a `<Suspense>` boundary. */
-export function useViewer(): Viewer {
-  const viewer = use(ViewerContext);
-  if (!viewer)
-    throw new Error("useViewer must be used within a ViewerProvider");
-
-  return use(viewer);
-}
+export { useViewer, ViewerProvider } from "~/components/viewer-context";
 
 function SidebarIsland() {
   const { user, playlists } = useViewer();
