@@ -72,6 +72,38 @@ describe("queue pane", () => {
     jest.useRealTimers();
   });
 
+  it("scrolls only the Up next list; the header and now playing stay put", async () => {
+    localStorage.setItem(
+      "queue",
+      JSON.stringify([song("p"), song("a"), song("b")]),
+    );
+    localStorage.setItem("current_song_index", "0");
+
+    const root = await mount();
+    const aside = document.querySelector("aside#player-queue");
+    const scroller = aside?.querySelector("[data-queue-scroll]");
+    expect(scroller).not.toBeNull();
+
+    // The list lives in the scroll container; nothing above it does.
+    expect(scroller?.querySelector('ol[aria-label="Queue"]')).not.toBeNull();
+    const text = scroller?.textContent ?? "";
+    expect(text).not.toContain("Now playing");
+    expect(text).not.toContain("Up next");
+    expect(text).not.toContain("Song p");
+
+    // No ancestor of the fixed section scrolls, and the pane itself clips.
+    const fixed = aside?.querySelector("[data-queue-fixed]");
+    expect(fixed?.textContent).toContain("Now playing");
+    expect(fixed?.textContent).toContain("Up next");
+    expect(scroller?.contains(fixed ?? null)).toBe(false);
+    const scrollers = [...(aside?.querySelectorAll("*") ?? [])].filter((el) =>
+      /(^|\s)overflow-y-auto(\s|$)/.test(el.getAttribute("class") ?? ""),
+    );
+    expect(scrollers).toEqual([scroller as Element]);
+
+    await act(async () => root.unmount());
+  });
+
   it("removes the last track and hands focus to the list", async () => {
     localStorage.setItem("queue", JSON.stringify([song("p"), song("a")]));
     localStorage.setItem("current_song_index", "0");
