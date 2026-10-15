@@ -8,7 +8,7 @@
     "build": "bun run with-env next build",
     "start": "bun run with-env next start",
     "lint": "oxlint --deny-warnings --nextjs-plugin",
-    "type-check": "tsc --noEmit",
+    "type-check": "next typegen && tsc --noEmit",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
     "with-env": "bun --env-file=../../.env --env-file=../../.env.local"
