@@ -1,4 +1,4 @@
-import type { ArtistMini } from "@infinitunes/types";
+import type { ArtistCredit } from "@infinitunes/types";
 import { DropdownMenuItem } from "@infinitunes/ui/components/dropdown-menu";
 import { Disc, Mic2, Music } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +12,7 @@ type TileMoreLinksProps = {
   albumUrl?: string;
   showAlbum: boolean;
   isDropdownItem?: boolean;
-  primaryArtists?: ArtistMini[];
+  primaryArtists?: ArtistCredit[];
 };
 
 export function TileMoreLinks(props: TileMoreLinksProps) {

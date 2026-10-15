@@ -94,7 +94,7 @@ export function ensureQueueItemIds(queue: Queue[]): Queue[] {
 }
 
 /** The upstream lists one entry per role (music, lyricist), so one artist repeats. */
-function uniqueArtists<T extends { id: string }>(artists: T[]): T[] {
+export function uniqueArtists<T extends { id: string }>(artists: T[]): T[] {
   return [...new Map(artists.map((a) => [a.id, a])).values()];
 }
 
@@ -107,7 +107,9 @@ export function toQueue(item: Song | Episode): Queue {
     url: item.perma_url,
     type: item.type,
     image: getImageSrc(item.image),
-    artists: uniqueArtists(item.more_info.artistMap?.artists ?? []),
+    artists: uniqueArtists(item.more_info.artistMap?.artists ?? []).map(
+      ({ id, name, perma_url }) => ({ id, name, perma_url }),
+    ),
     download_url: item.download_url ?? item.more_info.download_url ?? "",
     duration: Number(item.more_info.duration) || 0,
     maxQuality: maxQualityOf(item.more_info),

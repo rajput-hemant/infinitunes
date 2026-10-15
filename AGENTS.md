@@ -145,6 +145,16 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   listing the `.d.ts` file directly in the consumer's own `tsconfig.json`
   `include`/`files`, not a barrel re-export.
 
+## Song rows take the slim model, never the raw song
+
+Client components (rows, row menus, `SongListClient`, `LibrarySongList`, `PlayAllButton`, details header buttons,
+infinite lists) get `SongRowItem` from `toSongRow` (`packages/types/src/row.ts`), built where the raw song is
+fetched (server component, or the `queryFn` of a client list). Never pass a `Song`/`Episode` as a client prop: a raw
+song is about 4 KB of flight. It keeps `download_url` and `maxQuality` (the `320kbps` cap), so playback and download
+fallback work; add a field there only when a client really reads it. `toSongRow` is memoized per raw object so the
+header and the rows of one page share one serialized copy (Flight dedupes by reference); build rows from the same
+raw array, not a re-fetched one. `toQueueEntry` turns a row or a queue entry into a fresh `Queue`.
+
 ## packages/trpc raw-passthrough shape (resolved)
 
 Catalog procedures in `packages/trpc/src/router/` (everything except `user.ts`)

@@ -1,6 +1,5 @@
 "use client";
 
-import type { SearchReturnType, Song } from "@infinitunes/types";
 import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, SearchX } from "lucide-react";
@@ -12,18 +11,16 @@ import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import { api } from "~/lib/trpc/client";
 
+import type { CardEntry, SearchPage } from "./search-page";
+import { toSearchPage } from "./search-page";
 import type { ListSearchType } from "./type-map";
 import { SEARCH_TYPE_MAP } from "./type-map";
 
 type SearchResultsProps = {
   query: string;
   type: ListSearchType;
-  initialSearchResults: SearchReturnType;
+  initialPage: SearchPage;
 };
-
-type SearchEntry = SearchReturnType["results"][number];
-
-type CardEntry = Exclude<SearchEntry, Song>;
 
 /** Artist results are named `name`; every other card type uses `title`. */
 function getCardTitle(result: CardEntry) {
@@ -39,39 +36,38 @@ function getCardImage(result: CardEntry) {
   return result.type === "show" ? result.image_file_url : result.image;
 }
 
-function isSongEntry(result: SearchEntry): result is Song {
-  return result.type === "song";
-}
-
-function isCardEntry(result: SearchEntry): result is CardEntry {
-  return !isSongEntry(result);
-}
-
 export function SearchResults(props: SearchResultsProps) {
-  const { query, type, initialSearchResults } = props;
+  const { query, type, initialPage } = props;
 
   const utils = api.useUtils();
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["search-results", type, query],
-      queryFn: ({ pageParam }) =>
-        utils.search.byType.fetch({
-          q: query,
-          type: SEARCH_TYPE_MAP[type],
-          page: pageParam,
-          n: 50,
-        }),
+      queryFn: async ({ pageParam }) =>
+        toSearchPage(
+          await utils.search.byType.fetch({
+            q: query,
+            type: SEARCH_TYPE_MAP[type],
+            page: pageParam,
+            n: 50,
+          }),
+        ),
       initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) =>
         allPages.length * 50 < lastPage.total ? allPages.length + 1 : undefined,
-      initialData: { pages: [initialSearchResults], pageParams: [1] },
+      initialData: { pages: [initialPage], pageParams: [1] },
     });
 
-  const searchResults = uniqueBy(
-    data.pages.flatMap((page): SearchEntry[] => page.results),
-    (entry) => entry.id,
+  const songRows = uniqueBy(
+    data.pages.flatMap((page) => page.rows),
+    (row) => row.id,
   );
+  const cards = uniqueBy(
+    data.pages.flatMap((page) => page.cards),
+    (card) => card.id,
+  );
+  const hasResults = songRows.length > 0 || cards.length > 0;
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,
@@ -82,7 +78,7 @@ export function SearchResults(props: SearchResultsProps) {
     },
   });
 
-  if (!searchResults.length) {
+  if (!hasResults) {
     return (
       <LibraryEmpty
         icon={SearchX}
@@ -95,10 +91,10 @@ export function SearchResults(props: SearchResultsProps) {
   return (
     <>
       {type === "song" ? (
-        <SongListClient items={searchResults.filter(isSongEntry)} />
+        <SongListClient items={songRows} />
       ) : (
         <div className={searchUi.grid}>
-          {searchResults.filter(isCardEntry).map((result) => (
+          {cards.map((result) => (
             <SliderCard
               key={result.id}
               name={getCardTitle(result)}

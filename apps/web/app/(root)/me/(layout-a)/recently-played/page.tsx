@@ -1,3 +1,4 @@
+import { toSongRow } from "@infinitunes/types";
 import { History } from "lucide-react";
 
 import {
@@ -54,7 +55,7 @@ export default async function RecentlyPlayedPage() {
 
       <LibrarySongList
         user={user}
-        items={items}
+        items={items.map(toSongRow)}
         userFavorites={favorites}
         userPlaylists={playlists}
         recentLabel="Recently played"

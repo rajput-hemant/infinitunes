@@ -1,4 +1,3 @@
-import type { Episode, Queue, Song } from "@infinitunes/types";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,11 +18,12 @@ import {
   getItemSharePath,
   getItemUrl,
   type TileMoreEntry,
+  type TileMoreItem,
 } from "./more-button-item";
 import { TileMoreLinks } from "./more-links";
 
 type TileMoreDesktopProps = {
-  item: Song | Episode | Queue;
+  item: TileMoreItem;
   showAlbum: boolean;
   entries: TileMoreEntry[];
   className?: string;

@@ -54,11 +54,7 @@ it("renders podcast results with their artwork and show link", async () => {
         <SearchResults
           query="cricket"
           type="show"
-          initialSearchResults={{
-            total: 1,
-            start: 1,
-            results: [podcastShow],
-          }}
+          initialPage={{ total: 1, rows: [], cards: [podcastShow] }}
         />
       </QueryClientProvider>,
     );
