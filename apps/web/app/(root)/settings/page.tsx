@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 
+import { noindexMetadata } from "~/lib/metadata";
+
 import {
   AccountCards,
   PlaybackCards,
@@ -24,6 +26,7 @@ import {
 } from "./_components/settings-skeletons";
 
 export const metadata = {
+  ...noindexMetadata,
   title: "Settings",
   description:
     "Manage your account, appearance, playback preferences and security.",

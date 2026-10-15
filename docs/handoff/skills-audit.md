@@ -57,3 +57,9 @@ Read-only audit of the monorepo against these skills:
 - React Compiler on.
 - `cache()` metadata dedupe.
 - Server actions delegate auth to `protectedProcedure`.
+
+## Status
+
+- **WP11 done** (branch `audit/wp11`). `app/robots.ts` (AI-crawler block kept from the old `public/robots.txt`, `Disallow: /api/`, sitemap line) replaces the static file. `app/sitemap.ts` lists 10 static and catalog listing pages, no entity pages, no DB or upstream calls. `siteUrl()` gives one origin for canonical, `og:url` and `metadataBase`. `pageMetadata` sets `alternates.canonical`. `noindex` on `/me` (new `me/layout.tsx`), `/settings`, the four auth pages and their modal intercepts. Search results and `/search` have titles and canonicals, and each artist tab (songs, albums, bio) has its own title and canonical.
+- **Measured on a production build** (`next start`, `NEXT_PUBLIC_APP_URL` unset). Before: no canonical on any route, `og:url` `http://localhost:3910` on every page, artist tabs titled with the artist name and listener count, search results with the root title, no robots meta, `/robots.txt` without a sitemap line, no sitemap. After: canonical and `og:url` `https://infinitunes.rajputhemant.me/...` on home, album, artist overview and tabs, search, `/search`; `noindex` on `/settings`, `/login`, `/signup` (and `/me` through its redirect); `/robots.txt` and `/sitemap.xml` 200 and prerendered. Route table unchanged apart from the two static files; `bun run budget` moves by at most 0.6 KB gz per route, framework share unchanged at 271.5 KB.
+- **Not verified live:** `/me` as a signed-in user (no local Postgres in this worktree, so sign-up returns 500). The `noindex` there comes from `me/layout.tsx`, covered by a unit test.

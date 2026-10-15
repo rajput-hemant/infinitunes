@@ -3,7 +3,6 @@ import type { MediaType } from "@infinitunes/types";
 import { cn } from "@infinitunes/ui/lib/utils";
 import type { Route } from "next";
 
-import { siteConfig } from "~/config/site";
 import { artistPath, splitArtistSlug } from "~/lib/artist-route";
 
 export { cn };
@@ -30,29 +29,6 @@ export function safeRedirectPath(raw: string | null | undefined): string {
     return "/";
   }
   return raw;
-}
-
-/**
- * Returns the absolute url for the given path based on the current environment
- * @param path The path to get the absolute url for
- * @returns The absolute url for the given path
- */
-export function absoluteUrl(path: string) {
-  if (process.env.VERCEL) {
-    switch (process.env.NEXT_PUBLIC_VERCEL_ENV) {
-      case "production":
-        return `${siteConfig.url}${path}`;
-
-      case "preview":
-        return `https://${process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL}${path}`;
-
-      default:
-        // development
-        return `http://localhost:${process.env.PORT ?? 3000}${path}`;
-    }
-  } else {
-    return `${siteConfig.url}${path}`;
-  }
 }
 
 /**
