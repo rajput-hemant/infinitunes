@@ -1,3 +1,5 @@
+"use client";
+
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { cn } from "~/lib/utils";
