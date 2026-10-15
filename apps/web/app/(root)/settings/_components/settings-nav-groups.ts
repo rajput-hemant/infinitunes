@@ -1,59 +1,28 @@
-import {
-  Download,
-  Fingerprint,
-  Headphones,
-  ImageDown,
-  KeyRound,
-  Keyboard,
-  Languages,
-  Layers,
-  Radius,
-  Rows3,
-  SunMoon,
-  Trash2,
-  Type,
-  UserCog2,
-} from "lucide-react";
+import { Headphones, Lock, Palette, UserCog2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import type { Route } from "next";
 
-export type SettingsNavGroup = {
+export type SettingsNavItem = {
+  /** The section's element id, and the hash its rail link points at. */
+  id: string;
   title: string;
-  href: Route;
-  items: readonly { hash: string; title: string; icon: LucideIcon }[];
+  /** The small group label over the item in the side rail. */
+  group: string;
+  icon: LucideIcon;
 };
 
-export const settingsNavGroups: readonly SettingsNavGroup[] = [
+export const settingsNavItems: readonly SettingsNavItem[] = [
+  { id: "account", title: "Account", group: "Account", icon: UserCog2 },
   {
-    title: "Account",
-    href: "/settings",
-    items: [
-      { hash: "profile", title: "Edit Profile", icon: UserCog2 },
-      { hash: "password", title: "Change Password", icon: KeyRound },
-      { hash: "passkeys", title: "Passkeys", icon: Fingerprint },
-      { hash: "delete", title: "Delete Account", icon: Trash2 },
-    ],
-  },
-  {
+    id: "appearance",
     title: "Appearance",
-    href: "/settings/appearance",
-    items: [
-      { hash: "mode", title: "Mode", icon: SunMoon },
-      { hash: "radius", title: "Radius", icon: Radius },
-      { hash: "type", title: "Typography", icon: Type },
-      { hash: "density", title: "Density", icon: Rows3 },
-      { hash: "material", title: "Glass and motion", icon: Layers },
-    ],
+    group: "Look and feel",
+    icon: Palette,
   },
+  { id: "playback", title: "Playback", group: "Your music", icon: Headphones },
   {
-    title: "Preferences",
-    href: "/settings/preferences",
-    items: [
-      { hash: "language", title: "Language", icon: Languages },
-      { hash: "stream-quality", title: "Stream Quality", icon: Headphones },
-      { hash: "download-quality", title: "Download Quality", icon: Download },
-      { hash: "image-quality", title: "Image Quality", icon: ImageDown },
-      { hash: "keyboard-shortcuts", title: "Keyboard", icon: Keyboard },
-    ],
+    id: "security",
+    title: "Security and danger",
+    group: "Privacy",
+    icon: Lock,
   },
 ];

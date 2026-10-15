@@ -24,7 +24,7 @@ Non-browser parts can run now against a launched app:
 3. `curl -si -X POST 'http://localhost:3000/api/trpc/user.getUserPlaylists' -H 'origin: http://evil.example'`: expect `403`.
 4. `curl -s 'http://localhost:3000/api/trpc/user.getUserPlaylists?input=%7B%7D'` with matching origin and no cookie: expect an `UNAUTHORIZED` tRPC error body.
 
-Browser parts: log in, then open `/login` (expect redirect to `/`); log out, open `/me/liked-songs` (expect `/login`); confirm the guest settings page shows `Please sign in to view this page.` with a `Sign in` link, and the sidebar renders its guest branch instead of the playlist section (`components/sidebar.tsx`).
+Browser parts: log in, then open `/login` (expect redirect to `/`); log out, open `/me/liked-songs` (expect `/login`); confirm the guest settings page shows `Sign in to continue` rows with a `Sign in` link in the Account and Security sections, and the sidebar renders its guest branch instead of the playlist section (`components/sidebar.tsx`).
 
 Observable end state: guest cannot read or mutate user data by page or API; signed-in user cannot reach auth pages.
 

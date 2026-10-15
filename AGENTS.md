@@ -68,8 +68,17 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     live in a `search/(results)` group whose layout keeps the title and type chips.
     Old `<name>-songs` artist URLs (and JioSaavn's own links) are 308-redirected in
     `proxy.ts`; `getHref` already links the tab routes.
+  - `/settings` is one page (sections Account, Appearance, Playback, Security; the old
+    `/settings/appearance` and `/settings/preferences` 308 to `#appearance` / `#playback`
+    from `next.config.ts`, list in `lib/legacy-redirects.ts`). Its shell, rail, search and
+    appearance cards prerender; account, playback and security stream in behind skeletons
+    (`settings-skeletons.tsx`), so it has no `loading.tsx`. The search works through
+    `SettingsRow`/`SettingsBlock` (`data-settings-row`, hidden by `useSettingsMatch`) and
+    CSS `:has()` on cards and sections; give every new control a `SettingsRow` with keywords.
+    The profile form and passkey UI are `next/dynamic` (`account-lazy.tsx`) to stay out of
+    first-load JS.
   - Entity pages (album, playlist, song, show, label, episode, mix, radio detail,
-    `/me/*` pages, settings) are whole-page data: they keep a route `loading.tsx`
+    `/me/*` pages) are whole-page data: they keep a route `loading.tsx`
     with a skeleton that mirrors the page, and Suspense only for secondary lists.
     Catalog list pages put the heading in the shell and the fetched grid in
     `Suspense`; they have no `loading.tsx`.
