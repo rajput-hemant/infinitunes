@@ -42,14 +42,21 @@ describe("catalog cache boundary", () => {
     expect(urls[0]).toBe(urls[1]);
     expect(urls[2]).not.toBe(urls[0]);
     expect(urls[3]).not.toBe(urls[0]);
-    expect(lives[0]).toEqual({ stale: 600, revalidate: 600, expire: 600 });
+    // Charts carry no media URLs, so the entry may be served stale for a day.
+    expect(lives[0]).toEqual({ stale: 600, revalidate: 600, expire: 86_400 });
     expect(tags[0]).toEqual(["catalog", "catalog:content.getCharts"]);
   });
 
-  it("uses a one-hour hard expiry for menus", async () => {
+  it("keeps menus for a day beyond their hourly revalidation", async () => {
     globalThis.fetch = async () => Response.json({});
     await cachedApi("webapi.getBrowseHoverDetails");
-    expect(lives).toEqual([{ stale: 3600, revalidate: 3600, expire: 3600 }]);
+    expect(lives).toEqual([{ stale: 3600, revalidate: 3600, expire: 86_400 }]);
+  });
+
+  it("expires media-bearing details with their revalidate window", async () => {
+    globalThis.fetch = async () => Response.json({});
+    await cachedApi("song.getDetails");
+    expect(lives).toEqual([{ stale: 600, revalidate: 600, expire: 600 }]);
   });
 
   it("bypasses the cache for radio, explicit opt-outs and caller signals", async () => {
