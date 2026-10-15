@@ -11,6 +11,7 @@ import { api } from "~/lib/trpc/server";
 
 import { AllResults } from "./_components/all-results";
 import { SearchResultsSkeleton } from "./_components/results-skeleton";
+import { toSearchPage } from "./_components/search-page";
 import { SearchResults } from "./_components/search-results";
 import {
   isSearchType,
@@ -61,12 +62,14 @@ async function Results({ params }: Pick<SearchPageProps, "params">) {
     <SearchResults
       type={type}
       query={query}
-      initialSearchResults={await api.search.byType({
-        q: query,
-        type: SEARCH_TYPE_MAP[type],
-        page: 1,
-        n: 50,
-      })}
+      initialPage={toSearchPage(
+        await api.search.byType({
+          q: query,
+          type: SEARCH_TYPE_MAP[type],
+          page: 1,
+          n: 50,
+        }),
+      )}
     />
   );
 }

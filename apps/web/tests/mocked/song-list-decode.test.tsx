@@ -1,6 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 
 import type { Queue, Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 import type { ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 
@@ -56,7 +57,9 @@ const song = {
 
 describe("D2: song rows decode HTML entities", () => {
   it("never renders a literal &amp; for title, artist or album", () => {
-    const html = renderToStaticMarkup(<SongListClient items={[song]} />);
+    const html = renderToStaticMarkup(
+      <SongListClient items={[toSongRow(song)]} />,
+    );
     expect(html).not.toContain("&amp;amp;");
     expect(html).toContain("Rock &amp; Roll");
     expect(html).toContain("Simon &amp; Garfunkel");
@@ -64,19 +67,21 @@ describe("D2: song rows decode HTML entities", () => {
   });
 
   it("decodes the album cell link text exactly once", () => {
-    const html = renderToStaticMarkup(<SongListClient items={[song]} />);
+    const html = renderToStaticMarkup(
+      <SongListClient items={[toSongRow(song)]} />,
+    );
     expect(html).toMatch(/>Black &amp; White<\/a>/);
     expect(html).not.toContain("Black &amp;amp; White");
   });
 
   it("passes the decoded title to the like button", () => {
     likeProps.length = 0;
-    renderToStaticMarkup(<SongListClient items={[song]} />);
+    renderToStaticMarkup(<SongListClient items={[toSongRow(song)]} />);
     expect(likeProps.map((p) => p.name)).toContain("Rock & Roll");
   });
 
   it("getItemName decodes song titles and keeps queue names as-is", () => {
-    expect(getItemName(song)).toBe("Rock & Roll");
+    expect(getItemName(toSongRow(song))).toBe("Rock & Roll");
     const queueEntry: Queue = {
       queueItemId: "q1",
       id: "s1",

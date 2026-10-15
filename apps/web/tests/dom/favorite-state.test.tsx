@@ -2,6 +2,7 @@ import { describe, expect, it, mock } from "bun:test";
 
 import type { Favorite } from "@infinitunes/db/schema";
 import type { Queue as QueueItem, Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -191,7 +192,7 @@ describe("tile more-button mobile menu", () => {
         }
       },
       true,
-      { item: song, playlistId: "playlist-1", playlistSongIndex: 0 },
+      { item: toSongRow(song), playlistId: "playlist-1", playlistSongIndex: 0 },
     );
   });
 });

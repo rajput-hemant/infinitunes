@@ -83,6 +83,9 @@ export type ArtistMap = {
   artists?: ArtistMini[];
 };
 
+/** The fields a credit link needs; what queue entries and song rows carry instead of the whole artist. */
+export type ArtistCredit = Pick<ArtistMini, "id" | "name" | "perma_url">;
+
 export type ArtistMini = {
   id: string;
   image: string;

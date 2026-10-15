@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-import type { Episode, Queue, Song } from "@infinitunes/types";
+import type { Episode, Queue, Song, SongRowItem } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
@@ -14,10 +15,10 @@ import { offlineFetch } from "./offline-fetch";
 
 mock.module("server-only", () => ({}));
 
-const hookCalls: (Song | Episode)[][] = [];
+const hookCalls: SongRowItem[][] = [];
 let downloads = 0;
 mock.module("~/components/download-button", () => ({
-  useDownloadSongs: (songs: (Song | Episode)[]) => {
+  useDownloadSongs: (songs: SongRowItem[]) => {
     hookCalls.push(songs);
     return {
       isDownloading: false,
@@ -76,7 +77,7 @@ const trpcClient = api.createClient({
 
 /** Renders the more button, opens the desktop dropdown or the phone drawer, and runs `inspect`. */
 async function withOpenMenu(
-  item: Song | Episode | Queue,
+  item: SongRowItem | Queue,
   mobile: boolean,
   inspect: () => Promise<void> | void,
 ) {
@@ -124,7 +125,7 @@ describe("tile more-button download entry", () => {
   });
 
   it("offers Download for a song in the desktop dropdown and runs the download hook on it", async () => {
-    await withOpenMenu(song, false, async () => {
+    await withOpenMenu(toSongRow(song), false, async () => {
       const entry = findEntry("Download");
       expect(entry).toBeDefined();
       await act(async () => entry?.click());
@@ -135,7 +136,7 @@ describe("tile more-button download entry", () => {
   });
 
   it("offers Download for a song in the phone drawer", async () => {
-    await withOpenMenu(song, true, async () => {
+    await withOpenMenu(toSongRow(song), true, async () => {
       const entry = findEntry("Download");
       expect(entry).toBeDefined();
       await act(async () => entry?.click());
@@ -145,7 +146,10 @@ describe("tile more-button download entry", () => {
   });
 
   it("does not offer Download for an episode", async () => {
-    const episode = { ...song, type: "episode" } as unknown as Episode;
+    const episode = toSongRow({
+      ...song,
+      type: "episode",
+    } as unknown as Episode);
     await withOpenMenu(episode, false, () => {
       expect(findEntry("Download")).toBeUndefined();
     });

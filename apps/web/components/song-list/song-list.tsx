@@ -1,4 +1,5 @@
 import type { Episode, Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 
 import { PlaylistRow } from "~/components/playlist/playlist-overlay";
 import { cn } from "~/lib/utils";
@@ -25,13 +26,15 @@ export async function SongList(props: SongListProps) {
   } = props;
 
   const { user, playlists, favorites } = await getViewer();
+  // Only the slim row model crosses into the client row and its menu.
+  const rows = items.map(toSongRow);
 
   return (
     <section className={cn("@container", className)}>
       <SongListHead showAlbum={showAlbum} />
 
       <ol className="flex flex-col text-muted-foreground">
-        {items.map((item, i) => {
+        {rows.map((item, i) => {
           const rowClass =
             "[contain-intrinsic-size:auto_var(--row)] [content-visibility:auto]";
           const dbIndex = playlistSongIndices?.[i];

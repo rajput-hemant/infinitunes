@@ -1,7 +1,7 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import type { Episode, Song } from "@infinitunes/types";
+import type { SongRowItem } from "@infinitunes/types";
 import { decode } from "@infinitunes/types";
 import { Input } from "@infinitunes/ui/components/input";
 import { useMemo, useState } from "react";
@@ -25,30 +25,24 @@ function fold(text: string): string {
   return text.normalize("NFD").replace(/\p{M}/gu, "").toLocaleLowerCase();
 }
 
-/** Artist names and subtitles arrive HTML-encoded (`Rock &amp; Roll`). */
-function primaryArtists(item: Song | Episode): string[] {
-  return (
-    item.more_info.artistMap?.primary_artists?.map((artist) =>
-      decode(artist.name),
-    ) ?? []
-  );
+/** Row texts are already decoded on the server. */
+function primaryArtists(item: SongRowItem): string[] {
+  return item.primaryArtists.map((artist) => decode(artist.name));
 }
 
-function matchesQuery(item: Song | Episode, query: string): boolean {
-  const haystack = [
-    decode(item.title),
-    decode(item.subtitle),
-    ...primaryArtists(item),
-  ].join(" ");
+function matchesQuery(item: SongRowItem, query: string): boolean {
+  const haystack = [item.name, item.subtitle, ...primaryArtists(item)].join(
+    " ",
+  );
 
   return fold(haystack).includes(query);
 }
 
-function compareTitle(a: Song | Episode, b: Song | Episode): number {
-  return decode(a.title).localeCompare(decode(b.title));
+function compareTitle(a: SongRowItem, b: SongRowItem): number {
+  return a.name.localeCompare(b.name);
 }
 
-function compareArtist(a: Song | Episode, b: Song | Episode): number {
+function compareArtist(a: SongRowItem, b: SongRowItem): number {
   return (
     (primaryArtists(a)[0] ?? "").localeCompare(primaryArtists(b)[0] ?? "") ||
     compareTitle(a, b)
@@ -57,7 +51,7 @@ function compareArtist(a: Song | Episode, b: Song | Episode): number {
 
 type LibrarySongListProps = {
   user?: User;
-  items: (Song | Episode)[];
+  items: SongRowItem[];
   userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
   showAlbum?: boolean;

@@ -1,4 +1,4 @@
-import { getImageSrc, parseToken } from "@infinitunes/types";
+import { getImageSrc, parseToken, toSongRow } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -52,7 +52,8 @@ type DetailsHeaderProps = {
 export async function DetailsHeader({ item }: DetailsHeaderProps) {
   const kind = getKind(item);
   const title = getTitle(item);
-  const songs = getSongs(item);
+  // Only the slim row model reaches the header buttons (download, queue, radio).
+  const songs = getSongs(item).map(toSongRow);
 
   const { user, playlists, favorites } = await getViewer();
 

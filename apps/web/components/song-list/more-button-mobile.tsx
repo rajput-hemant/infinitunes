@@ -1,6 +1,5 @@
 "use client";
 
-import type { Episode, Queue, Song } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
@@ -31,11 +30,12 @@ import {
   getItemSharePath,
   getItemUrl,
   type TileMoreEntry,
+  type TileMoreItem,
 } from "./more-button-item";
 import { TileMoreLinks } from "./more-links";
 
 type TileMoreMobileProps = {
-  item: Song | Episode | Queue;
+  item: TileMoreItem;
   showAlbum: boolean;
   entries: TileMoreEntry[];
   className?: string;

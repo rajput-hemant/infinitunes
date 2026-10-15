@@ -1,6 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 
 import type { Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import {
@@ -102,7 +103,7 @@ async function renderList(props: ListProps = {}, list: Song[] = items) {
           <api.Provider client={trpcClient} queryClient={queryClient}>
             <QueryClientProvider client={queryClient}>
               <AudioPlayerProvider>
-                <LibrarySongList items={list} {...props} />
+                <LibrarySongList items={list.map(toSongRow)} {...props} />
               </AudioPlayerProvider>
             </QueryClientProvider>
           </api.Provider>

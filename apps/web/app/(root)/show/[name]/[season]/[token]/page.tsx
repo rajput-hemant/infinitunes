@@ -1,5 +1,5 @@
 import type { Sort } from "@infinitunes/types";
-import { getImageSrc, uniqueBy } from "@infinitunes/types";
+import { getImageSrc, toSongRow, uniqueBy } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -119,7 +119,7 @@ async function ShowEpisodeSection({
         season={Number(show.show_details.more_info.season_number)}
         sort={sort}
         totalEpisodes={Number(show.show_details.more_info.total_episodes)}
-        initialEpisodes={show.episodes}
+        initialEpisodes={show.episodes.map(toSongRow)}
         userFavorites={favorites}
         userPlaylists={playlists}
       />

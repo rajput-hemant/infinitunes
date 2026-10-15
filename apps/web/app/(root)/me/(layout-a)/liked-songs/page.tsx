@@ -1,3 +1,4 @@
+import { toSongRow } from "@infinitunes/types";
 import { Heart } from "lucide-react";
 
 import {
@@ -51,7 +52,7 @@ export default async function LikedSongsPage() {
 
         <LibrarySongList
           user={user}
-          items={songs}
+          items={songs.map(toSongRow)}
           userFavorites={favoriteSongs}
           userPlaylists={playlists}
         />

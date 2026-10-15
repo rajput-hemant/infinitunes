@@ -1,8 +1,13 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import type { Quality, Queue, Song, MediaType } from "@infinitunes/types";
-import { getImageSrc, toQueue } from "@infinitunes/types";
+import type {
+  MediaType,
+  Quality,
+  Queue,
+  SongRowItem,
+} from "@infinitunes/types";
+import { getImageSrc, toQueue, toQueueEntry } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -67,7 +72,7 @@ type MoreButtonProps = {
   image: Quality;
   name: string;
   subtitle: string;
-  songs: Song[];
+  songs: SongRowItem[];
   playlists?: MyPlaylist[];
   artistId?: string;
   language?: string;
@@ -86,7 +91,7 @@ type RadioSeed = {
   type: MediaType;
   name: string;
   artistId?: string;
-  songs: Song[];
+  songs: SongRowItem[];
   language?: string;
 };
 
@@ -109,7 +114,7 @@ async function startSeedRadio(seed: RadioSeed, radio: RadioStart) {
     if (type === "artist") {
       radioType = "artist";
     } else {
-      const primary = songs[0]?.more_info.artistMap?.primary_artists?.[0];
+      const primary = songs[0]?.primaryArtists[0];
       if (primary) {
         stationName = primary.name;
         artistId = primary.id;
@@ -185,7 +190,7 @@ export function MoreButton(props: MoreButtonProps) {
   const { isDownloading, download } = useDownloadSongs(songs);
 
   function addToQueue() {
-    const songsPayload: Queue[] = songs.map((song) => toQueue(song));
+    const songsPayload: Queue[] = songs.map(toQueueEntry);
 
     setQueue((prev) => [...prev, ...songsPayload]);
 
