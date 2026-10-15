@@ -143,7 +143,7 @@ describe("optimistic playlists", () => {
     const rerender = await mount([playlist("a", "A", ["s1"])]);
     const write = deferred();
     await act(async () => {
-      void addSongsOptimistic("a", ["s2"], 1, () => write.promise);
+      void addSongsOptimistic("a", ["s2"], () => write.promise);
     });
     expect(view()?.[0]?.songs).toEqual(["s1", "s2"]);
 
@@ -152,32 +152,67 @@ describe("optimistic playlists", () => {
     expect(view()?.[0]?.songs).toEqual(["s1", "s2"]);
   });
 
-  it("removes songs one write at a time with indexes that account for earlier removals", async () => {
-    await mount([playlist("a", "A", ["s1", "s2", "s3"])]);
+  it("removes by song, resolving each index against what the server holds, across refreshes", async () => {
+    const ids = ["s1", "s2", "s3", "s4", "s5", "s6", "s7"];
+    const rerender = await mount([playlist("a", "A", ids)]);
     const sent: number[] = [];
-    const first = deferred();
+    let held = [...ids];
+    const server = (songId: string) => async (index: number) => {
+      sent.push(index);
+      expect(held[index]).toBe(songId);
+      held = held.filter((_, i) => i !== index);
+      return { songs: held };
+    };
+    const gate = deferred();
     await act(async () => {
-      void removeSongOptimistic(
-        "a",
-        0,
-        "s1",
-        3,
-        (i) => (sent.push(i), first.promise),
-      );
-      void removeSongOptimistic(
-        "a",
-        2,
-        "s3",
-        3,
-        async (i) => void sent.push(i),
-      );
+      void removeSongOptimistic("a", "s2", ids, async (i) => {
+        await gate.promise;
+        return server("s2")(i);
+      });
+      void removeSongOptimistic("a", "s5", ids, server("s5"));
+      void removeSongOptimistic("a", "s7", ids, server("s7"));
     });
-    expect(view()?.[0]?.songs).toEqual(["s2"]);
-    expect(sent).toEqual([0]);
+    expect(view()?.[0]?.songs).toEqual(["s1", "s3", "s4", "s6"]);
 
-    await act(async () => first.resolve(undefined));
-    await waitFor(() => sent.length === 2);
-    expect(sent).toEqual([0, 1]);
+    await act(async () => gate.resolve(undefined));
+    // The first write's refresh lands while the others are still queued.
+    await rerender([playlist("a", "A", ["s1", "s3", "s4", "s5", "s6", "s7"])]);
+    await waitFor(() => sent.length === 3);
+
+    expect(sent).toEqual([1, 3, 4]);
+    expect(held).toEqual(["s1", "s3", "s4", "s6"]);
+    expect(view()?.[0]?.songs).toEqual(["s1", "s3", "s4", "s6"]);
+  });
+
+  it("rejects a removal whose song is no longer there instead of removing another", async () => {
+    await mount([playlist("a", "A", ["s1"])]);
+    let called = false;
+    const outcome = await act(async () =>
+      removeSongOptimistic("a", "gone", ["s1"], async () => {
+        called = true;
+      }).catch((e: Error) => e.message),
+    );
+
+    expect(called).toBe(false);
+    expect(outcome).toMatch(/no longer/);
+  });
+
+  it("settles a mixed add and remove on one playlist by song, not by length", async () => {
+    const rerender = await mount([playlist("a", "A", ["s1", "s2"])]);
+    const rm = deferred();
+    const add = deferred();
+    await act(async () => {
+      void removeSongOptimistic("a", "s1", ["s1", "s2"], () => rm.promise);
+      void addSongsOptimistic("a", ["s3"], () => add.promise);
+    });
+    expect(view()?.[0]?.songs).toEqual(["s2", "s3"]);
+
+    await act(async () => rm.resolve({ songs: ["s2"] }));
+    await act(async () => add.resolve({ songs: ["s2", "s3"] }));
+    // Same length as before the writes, different songs.
+    await rerender([playlist("a", "A", ["s2", "s3"])]);
+
+    expect(view()?.[0]?.songs).toEqual(["s2", "s3"]);
   });
 
   it("leaves an unknown library unknown", async () => {

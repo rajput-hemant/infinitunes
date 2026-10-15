@@ -34,14 +34,10 @@ type Renamed = {
   settled: boolean;
   prev?: Renamed;
 };
-type Added = { songId: string; baseLen?: number; settled: boolean };
-type Removed = {
-  index: number;
-  songId: string;
-  baseLen?: number;
-  settled: boolean;
-  ok: boolean;
-};
+// Songs are matched by id, never by position: the server stores a song once per
+// playlist (adds dedupe), and a position goes stale as soon as any earlier write lands.
+type Added = { songId: string; settled: boolean };
+type Removed = { songId: string; settled: boolean };
 
 const EXPIRY_MS = 10000;
 
@@ -199,27 +195,69 @@ export async function deletePlaylistOptimistic(
   }
 }
 
+/** What the server holds for a playlist after our latest confirmed write, while writes are queued. */
+const confirmedSongs = new Map<string, readonly string[]>();
+const queued = new Map<string, number>();
+
+function songsOf(result: unknown): readonly string[] | undefined {
+  if (typeof result !== "object" || result === null || !("songs" in result))
+    return undefined;
+  const { songs } = result;
+  return Array.isArray(songs) && songs.every((s) => typeof s === "string")
+    ? songs
+    : undefined;
+}
+
+/**
+ * One queued write for a playlist; tracks the songs the server holds in
+ * between. The count goes up when the write is queued (see `queueWrite`), so
+ * the tracked songs survive the gap between two queued writes.
+ */
+async function runWrite<T>(
+  playlistId: string,
+  run: () => Promise<T>,
+): Promise<T> {
+  try {
+    const result = await run();
+    const songs = songsOf(result);
+    if (songs) confirmedSongs.set(playlistId, songs);
+    else confirmedSongs.delete(playlistId);
+    return result;
+  } finally {
+    const left = (queued.get(playlistId) ?? 1) - 1;
+    if (left > 0) queued.set(playlistId, left);
+    else {
+      queued.delete(playlistId);
+      confirmedSongs.delete(playlistId);
+    }
+  }
+}
+
+function queueWrite<T>(playlistId: string, run: () => Promise<T>): Promise<T> {
+  queued.set(playlistId, (queued.get(playlistId) ?? 0) + 1);
+  return enqueue(playlistId, () => runWrite(playlistId, run));
+}
+
 export function addSongsOptimistic(
   playlistId: string,
   songIds: readonly string[],
-  serverLen: number | undefined,
   send: () => Promise<unknown>,
 ) {
   const records: Added[] = songIds.map((songId) => ({
     songId,
-    baseLen: serverLen,
     settled: false,
   }));
   for (const record of records) pushTo(added, playlistId, record);
   bump();
-  return enqueue(playlistId, async () => {
+  return queueWrite(playlistId, async () => {
     try {
-      await send();
+      const result = await send();
       for (const record of records) record.settled = true;
       bump();
       expire(() => {
         for (const record of records) dropFrom(added, playlistId, record);
       });
+      return result;
     } catch (error) {
       for (const record of records) dropFrom(added, playlistId, record);
       bump();
@@ -228,33 +266,34 @@ export function addSongsOptimistic(
   });
 }
 
-/** `send` gets the index to use: earlier removals already applied shift it down. */
+/**
+ * Hides the song now. `send` gets the index of the song in what the server
+ * holds at that moment (earlier queued writes included), and the server
+ * re-checks the id at that index, so a stale position can never remove a
+ * different song. `serverSongs` is the list the click was made against.
+ */
 export function removeSongOptimistic(
   playlistId: string,
-  dbIndex: number,
   songId: string,
-  serverLen: number | undefined,
+  serverSongs: readonly string[] | undefined,
   send: (index: number) => Promise<unknown>,
 ) {
-  const record: Removed = {
-    index: dbIndex,
-    songId,
-    baseLen: serverLen,
-    settled: false,
-    ok: false,
-  };
+  const record: Removed = { songId, settled: false };
   pushTo(removed, playlistId, record);
   bump();
-  return enqueue(playlistId, async () => {
-    const earlier = (removed.get(playlistId) ?? []).filter(
-      (r) => r !== record && r.ok && r.index < dbIndex,
-    ).length;
+  return queueWrite(playlistId, async () => {
     try {
-      await send(dbIndex - earlier);
-      record.ok = true;
+      const index = (
+        confirmedSongs.get(playlistId) ??
+        serverSongs ??
+        []
+      ).indexOf(songId);
+      if (index === -1) throw new Error("Song is no longer in this playlist");
+      const result = await send(index);
       record.settled = true;
       bump();
       expire(() => dropFrom(removed, playlistId, record));
+      return result;
     } catch (error) {
       dropFrom(removed, playlistId, record);
       bump();
@@ -295,10 +334,7 @@ function reconcile(server: readonly MyPlaylist[], at: OverlayState) {
   for (const [id, records] of at.added) {
     const p = byId.get(id);
     for (const r of records) {
-      if (
-        r.settled &&
-        (!p || (r.baseLen !== undefined && p.songs.length > r.baseLen))
-      ) {
+      if (r.settled && (!p || p.songs.includes(r.songId))) {
         dropFrom(added, id, r);
         changed = true;
       }
@@ -307,10 +343,7 @@ function reconcile(server: readonly MyPlaylist[], at: OverlayState) {
   for (const [id, records] of at.removed) {
     const p = byId.get(id);
     for (const r of records) {
-      if (
-        r.settled &&
-        (!p || (r.baseLen !== undefined && p.songs.length < r.baseLen))
-      ) {
+      if (r.settled && (!p || !p.songs.includes(r.songId))) {
         dropFrom(removed, id, r);
         changed = true;
       }
@@ -327,10 +360,12 @@ function overlay(
   for (const p of server) {
     if (at.deleted.has(p.id)) continue;
     const meta = at.renamed.get(p.id);
-    const gone = new Set((at.removed.get(p.id) ?? []).map((r) => r.index));
+    const gone = new Set((at.removed.get(p.id) ?? []).map((r) => r.songId));
     const songs = [
-      ...p.songs.filter((_, index) => !gone.has(index)),
-      ...(at.added.get(p.id) ?? []).map((r) => r.songId),
+      ...p.songs.filter((id) => !gone.has(id)),
+      ...(at.added.get(p.id) ?? [])
+        .map((r) => r.songId)
+        .filter((id) => !p.songs.includes(id)),
     ];
     list.push({
       ...p,
@@ -400,10 +435,10 @@ export function usePlaylistGone(id: string) {
   return useOverlayState().deleted.has(id);
 }
 
-/** Whether the row at `dbIndex` of the playlist page was just removed. */
-export function usePlaylistRowRemoved(playlistId: string, dbIndex: number) {
+/** Whether this song's row on the playlist page was just removed. */
+export function usePlaylistRowRemoved(playlistId: string, songId: string) {
   return (useOverlayState().removed.get(playlistId) ?? []).some(
-    (r) => r.index === dbIndex,
+    (r) => r.songId === songId,
   );
 }
 
@@ -423,5 +458,7 @@ export function resetPlaylistOverlay() {
   added.clear();
   removed.clear();
   queues.clear();
+  queued.clear();
+  confirmedSongs.clear();
   bump();
 }

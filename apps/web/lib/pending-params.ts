@@ -1,5 +1,6 @@
 "use client";
 
+import type { MouseEvent } from "react";
 import { useSyncExternalStore } from "react";
 
 /**
@@ -52,4 +53,24 @@ export function usePendingParams() {
     () => snapshot,
     () => none,
   );
+}
+
+/**
+ * `onClick` for a chip `Link` that sets `name`: only a plain primary click
+ * navigates, so a new-tab, download or prevented click must not claim a value
+ * the URL will never reach.
+ */
+export function pendingOnClick(name: string, value: string) {
+  return (event: MouseEvent) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
+    setPendingParam(name, value);
+  };
 }

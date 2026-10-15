@@ -44,6 +44,15 @@ function KeyedContent({ params, fallback, children }: KeyedByParamsProps) {
     (name) => pending.get(name) !== (search.get(name) ?? ""),
   );
 
+  // Leaving the page drops anything still pending for it.
+  const names = params.join("|");
+  useEffect(
+    () => () => {
+      for (const name of names.split("|")) clearPendingParam(name);
+    },
+    [names],
+  );
+
   useEffect(() => {
     for (const name of requested) {
       if (pending.get(name) === (search.get(name) ?? ""))

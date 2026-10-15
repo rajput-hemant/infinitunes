@@ -14,7 +14,12 @@ import { useEffect, useSyncExternalStore } from "react";
  * refreshed server props agree with it (`useFavorite` clears it), so the heart
  * never flickers back to the stale prop between the action and the refresh.
  */
-type Entry = { want: boolean; confirmed: boolean; busy: boolean };
+type Entry = {
+  want: boolean;
+  confirmed: boolean;
+  busy: boolean;
+  expiry?: ReturnType<typeof setTimeout>;
+};
 
 const entries = new Map<string, Entry>();
 const listeners = new Set<() => void>();
@@ -39,6 +44,8 @@ export function favoriteKey(type: string, token: string) {
 
 async function drain(key: string, entry: Entry, send: Send) {
   entry.busy = true;
+  // A new write supersedes the safety timer of the previous one.
+  clearTimeout(entry.expiry);
   while (entry.want !== entry.confirmed) {
     const target = entry.want;
     try {
@@ -52,7 +59,7 @@ async function drain(key: string, entry: Entry, send: Send) {
   }
   entry.busy = false;
   emit();
-  setTimeout(() => {
+  entry.expiry = setTimeout(() => {
     if (entries.get(key) === entry && !entry.busy) {
       entries.delete(key);
       emit();
@@ -107,6 +114,7 @@ export function useFavorite(key: string, serverLiked: boolean) {
 
 /** Test hook: forget every pending entry. */
 export function resetFavoriteOverlay() {
+  for (const entry of entries.values()) clearTimeout(entry.expiry);
   entries.clear();
   emit();
 }
