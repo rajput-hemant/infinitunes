@@ -75,16 +75,16 @@ export function PlaylistCaption({
  */
 export function PlaylistRow({
   playlistId,
-  dbIndex,
+  songId,
   className,
   children,
 }: {
   playlistId: string;
-  dbIndex: number;
+  songId: string;
   className?: string;
   children: ReactNode;
 }) {
-  const removed = usePlaylistRowRemoved(playlistId, dbIndex);
+  const removed = usePlaylistRowRemoved(playlistId, songId);
 
   return (
     <li hidden={removed} className={className}>

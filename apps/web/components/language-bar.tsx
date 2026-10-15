@@ -4,7 +4,7 @@ import type { Lang } from "@infinitunes/types";
 import Link from "next/link";
 
 import { languages } from "~/config/languages";
-import { setPendingParam, usePendingParams } from "~/lib/pending-params";
+import { pendingOnClick, usePendingParams } from "~/lib/pending-params";
 import { asRoute } from "~/lib/utils";
 
 import { chipClass } from "./language-chip";
@@ -30,7 +30,7 @@ function LanguageChips({ language: current }: { language?: Lang }) {
             href={asRoute("?")}
             aria-current={!language ? "page" : undefined}
             className={chipClass(!language)}
-            onClick={() => setPendingParam("lang", "")}
+            onClick={pendingOnClick("lang", "")}
           >
             All
           </Link>
@@ -46,7 +46,7 @@ function LanguageChips({ language: current }: { language?: Lang }) {
                 href={asRoute(`?lang=${lang.toLowerCase()}`)}
                 aria-current={selected ? "page" : undefined}
                 className={chipClass(selected)}
-                onClick={() => setPendingParam("lang", lang.toLowerCase())}
+                onClick={pendingOnClick("lang", lang.toLowerCase())}
               >
                 {lang}
               </Link>

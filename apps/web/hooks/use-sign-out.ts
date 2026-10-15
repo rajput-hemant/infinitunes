@@ -3,6 +3,8 @@
 import { useCallback } from "react";
 import { toast } from "sonner";
 
+import { resetOptimisticState } from "~/lib/optimistic-owner";
+
 /**
  * The auth client (with the passkey plugin) is imported on click, so it stays
  * out of every page's first load. It lives outside the hook: the React Compiler
@@ -19,6 +21,7 @@ function loadAuthClient() {
  */
 export function useSignOut() {
   return useCallback(() => {
+    resetOptimisticState();
     toast.promise(
       loadAuthClient()
         .then(({ authClient }) =>

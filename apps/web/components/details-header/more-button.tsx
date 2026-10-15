@@ -211,11 +211,8 @@ export function MoreButton(props: MoreButtonProps) {
     const songIds = songs.map((song) => song.id);
     setDialogOpen(false);
     toast.promise(
-      addSongsOptimistic(
-        playlistId,
-        songIds,
-        playlists?.find((p) => p.id === playlistId)?.songs.length,
-        () => unwrap(addSongsToPlaylist(playlistId, songIds)),
+      addSongsOptimistic(playlistId, songIds, () =>
+        unwrap(addSongsToPlaylist(playlistId, songIds)),
       ),
       {
         loading: "Adding songs to playlist...",

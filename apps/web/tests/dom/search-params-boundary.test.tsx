@@ -178,4 +178,45 @@ describe("a clicked language chip", () => {
     expect(container.textContent).toContain("list");
     expect(container.textContent).not.toContain("skeleton");
   });
+
+  it("ignores modified and non-primary clicks, which do not navigate", async () => {
+    query = new URLSearchParams("lang=hindi");
+    const { container } = await mount(<LanguageBar />);
+    const tamil = chip(container, "Tamil");
+
+    for (const init of [
+      { ctrlKey: true },
+      { metaKey: true },
+      { shiftKey: true },
+      { altKey: true },
+      { button: 1 },
+    ]) {
+      await act(async () =>
+        tamil?.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, cancelable: true, ...init }),
+        ),
+      );
+    }
+
+    expect(selected(container)).toEqual(["Hindi"]);
+  });
+
+  it("drops a pending chip when the page is left", async () => {
+    query = new URLSearchParams("lang=hindi");
+    const ui = (
+      <>
+        <LanguageBar />
+        <KeyedByParams params={["lang"]} fallback={<p>skeleton</p>}>
+          <p>list</p>
+        </KeyedByParams>
+      </>
+    );
+    const first = await mount(ui);
+    await act(async () => chip(first.container, "Tamil")?.click());
+    await act(async () => first.root.unmount());
+
+    const second = await mount(ui);
+    expect(selected(second.container)).toEqual(["Hindi"]);
+    expect(second.container.textContent).toContain("list");
+  });
 });

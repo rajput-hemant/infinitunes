@@ -53,7 +53,7 @@ export async function SongList(props: SongListProps) {
             <PlaylistRow
               key={`${item.id}-${i}`}
               playlistId={playlistId}
-              dbIndex={dbIndex}
+              songId={item.id}
               className={rowClass}
             >
               {row}

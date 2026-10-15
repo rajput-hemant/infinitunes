@@ -5,6 +5,7 @@ import { Badge } from "@infinitunes/ui/components/badge";
 import Link from "next/link";
 
 import { SearchParamsBoundary } from "~/components/search-params-boundary";
+import { pendingOnClick, usePendingParams } from "~/lib/pending-params";
 import { asRoute, cn } from "~/lib/utils";
 
 const CategoryMap: Record<Category, string> = {
@@ -19,7 +20,11 @@ function isCategory(value: string | null | undefined): value is Category {
   );
 }
 
-function CategoryChips({ category }: { category: Category }) {
+function CategoryChips({ category: current }: { category: Category }) {
+  // The clicked chip is selected now; the URL catches up when the route commits.
+  const requested = usePendingParams().get("cat");
+  const category = isCategory(requested) ? requested : current;
+
   return (
     <div className="my-6 flex space-x-2">
       {Object.entries(CategoryMap).map(([key, value]) => (
@@ -28,6 +33,7 @@ function CategoryChips({ category }: { category: Category }) {
           title={value}
           href={asRoute(`?cat=${key}`)}
           aria-current={category === key ? "true" : undefined}
+          onClick={pendingOnClick("cat", key)}
         >
           <Badge
             className={cn(

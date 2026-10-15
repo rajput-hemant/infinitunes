@@ -126,11 +126,8 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     // The dialog closes and the song count rises now; a failure rolls both back.
     setDialogOpen(false);
     toast.promise(
-      addSongsOptimistic(
-        id,
-        [item.id],
-        playlists?.find((p) => p.id === id)?.songs.length,
-        () => unwrap(addSongsToPlaylist(id, [item.id])),
+      addSongsOptimistic(id, [item.id], () =>
+        unwrap(addSongsToPlaylist(id, [item.id])),
       ),
       {
         loading: "Adding songs to playlist...",
@@ -150,9 +147,8 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     toast.promise(
       removeSongOptimistic(
         playlistId,
-        playlistSongIndex,
         item.id,
-        playlists?.find((p) => p.id === playlistId)?.songs.length,
+        playlists?.find((p) => p.id === playlistId)?.songs,
         (index) => unwrap(removeSongsFromPlaylist(playlistId, index, item.id)),
       ),
       {
