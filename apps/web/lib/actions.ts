@@ -1,12 +1,17 @@
 "use server";
 
 import type { changePasswordSchema } from "@infinitunes/auth/schemas";
-import { updateTag } from "next/cache";
+import { refresh } from "next/cache";
 import type { z } from "zod";
 
 import { toResult } from "./action-result";
 import { api } from "./trpc/server";
 import type { newPlaylistSchema } from "./validations";
+
+// The library is read per request (session cookie, no `"use cache"`), so a
+// write has no cache entry to expire. `refresh()` re-renders the current route
+// with fresh dynamic data in the action response, which is what keeps liked
+// state and playlist lists current after a write.
 
 /** Signed-in change; other sessions are revoked server-side. */
 export async function changePassword(
@@ -20,7 +25,7 @@ export async function createNewPlaylist(
 ) {
   return toResult(async () => {
     const playlist = await api.user.createNewPlaylist(data);
-    updateTag("user_playlists");
+    refresh();
     return playlist;
   });
 }
@@ -31,7 +36,7 @@ export async function renamePlaylist(
 ) {
   return toResult(async () => {
     const playlist = await api.user.renamePlaylist({ playlistId, ...data });
-    updateTag("user_playlists");
+    refresh();
     return playlist;
   });
 }
@@ -39,7 +44,7 @@ export async function renamePlaylist(
 export async function deletePlaylist(playlistId: string) {
   return toResult(async () => {
     const playlist = await api.user.deletePlaylist({ playlistId });
-    updateTag("user_playlists");
+    refresh();
     return playlist;
   });
 }
@@ -55,4 +60,46 @@ export async function updateUser(data: {
 /** `password` is omitted by accounts that have none (fresh-session check). */
 export async function deleteUser(password?: string) {
   return toResult(() => api.user.deleteUser({ password }));
+}
+
+export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
+  return toResult(async () => {
+    const playlist = await api.user.addSongsToPlaylist({ playlistId, songs });
+    refresh();
+    return playlist;
+  });
+}
+
+export async function removeSongsFromPlaylist(
+  playlistId: string,
+  index: number,
+  songId: string,
+) {
+  return toResult(async () => {
+    const playlist = await api.user.removeSongsFromPlaylist({
+      playlistId,
+      index,
+      songId,
+    });
+    refresh();
+    return playlist;
+  });
+}
+
+type FavoriteType = "song" | "album" | "playlist" | "artist" | "show";
+
+export async function addToFavorites(token: string, type: FavoriteType) {
+  return toResult(async () => {
+    const favorites = await api.user.addToFavorites({ token, type });
+    refresh();
+    return favorites;
+  });
+}
+
+export async function removeFromFavorites(token: string, type: FavoriteType) {
+  return toResult(async () => {
+    const favorites = await api.user.removeFromFavorites({ token, type });
+    refresh();
+    return favorites;
+  });
 }

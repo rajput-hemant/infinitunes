@@ -26,8 +26,8 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
+import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
-import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/db/queries";
 import { userMessage } from "~/lib/user-message";
 
 import { TileMoreDesktop } from "./more-button-desktop";

@@ -12,9 +12,9 @@ import React from "react";
 import { toast } from "sonner";
 
 import { unwrap } from "~/lib/action-result";
+import { addToFavorites, removeFromFavorites } from "~/lib/actions";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { addToFavorites, removeFromFavorites } from "~/lib/db/queries";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
