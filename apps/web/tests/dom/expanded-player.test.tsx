@@ -147,7 +147,7 @@ describe("expanded player sheet", () => {
     expect(dialog?.textContent).toContain("Playing from");
     expect(dialog?.textContent).toContain("Queue");
     expect(
-      dialog?.querySelector('button[aria-label="More Options"]'),
+      dialog?.querySelector('button[aria-label="More options"]'),
     ).not.toBeNull();
     expect(
       dialog?.querySelector('button[aria-label="Like"][aria-pressed="false"]'),

@@ -4,6 +4,7 @@ import Image from "next/image";
 import type { ImageProps } from "next/image";
 import { useState } from "react";
 
+import { isUpstreamPlaceholder } from "~/components/placeholder-src";
 import { cn } from "~/lib/utils";
 
 type ImageWithFallbackProps = ImageProps & {
@@ -13,7 +14,7 @@ type ImageWithFallbackProps = ImageProps & {
 export function ImageWithFallback(props: ImageWithFallbackProps) {
   const { fallback, alt, src, className, onLoad, ...restProps } = props;
 
-  const effectiveSrc = src ? src : fallback;
+  const effectiveSrc = src && !isUpstreamPlaceholder(src) ? src : fallback;
 
   // Remember which `src` failed so a new `src` starts without an error.
   const [failedSrc, setFailedSrc] = useState<typeof effectiveSrc | null>(null);

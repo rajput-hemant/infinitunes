@@ -80,7 +80,7 @@ async function withOpenDesktopMenu(inspect: () => void) {
 
   // The last trigger is the desktop dropdown; the first is the phone drawer.
   const triggers = document.querySelectorAll<HTMLButtonElement>(
-    '[aria-label="More Options"]',
+    '[aria-label="More options"]',
   );
   await act(async () => {
     triggers[triggers.length - 1]?.click();

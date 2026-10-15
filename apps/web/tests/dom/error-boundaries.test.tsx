@@ -56,7 +56,9 @@ describe.each(boundaries)("%s", (_name, Boundary, heading) => {
     await act(async () => button?.click());
 
     expect(retries).toBe(1);
-    expect(logged).toHaveBeenCalledWith(error);
+    expect(logged).toHaveBeenCalledWith(
+      "Route failed on the server (digest 1652480273)",
+    );
     logged.mockRestore();
   });
 });

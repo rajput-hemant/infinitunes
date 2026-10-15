@@ -348,7 +348,7 @@ describe("LibrarySongList", () => {
         expect(like?.getAttribute("aria-disabled")).toBe("true");
 
         const triggers = document.querySelectorAll<HTMLButtonElement>(
-          '[aria-label="More Options"]',
+          '[aria-label="More options"]',
         );
         await act(async () => {
           triggers[triggers.length - 1]?.click();
@@ -380,7 +380,7 @@ describe("LibrarySongList", () => {
       async (container) => {
         expect(container.querySelectorAll("li").length).toBeGreaterThan(0);
         const triggers = document.querySelectorAll<HTMLButtonElement>(
-          '[aria-label="More Options"]',
+          '[aria-label="More options"]',
         );
         // The mobile drawer trigger renders before the desktop dropdown.
         await act(async () => {
