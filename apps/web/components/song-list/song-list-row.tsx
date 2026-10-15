@@ -1,3 +1,5 @@
+"use client";
+
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { SongRowItem } from "@infinitunes/types";
 import {

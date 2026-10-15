@@ -1,3 +1,5 @@
+"use client";
+
 import type { MediaType } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 

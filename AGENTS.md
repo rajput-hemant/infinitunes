@@ -154,6 +154,9 @@ song is about 4 KB of flight. It keeps `download_url` and `maxQuality` (the `320
 fallback work; add a field there only when a client really reads it. `toSongRow` is memoized per raw object so the
 header and the rows of one page share one serialized copy (Flight dedupes by reference); build rows from the same
 raw array, not a re-fetched one. `toQueueEntry` turns a row or a queue entry into a fresh `Queue`.
+`SongListRow` and the list/shelf/details skeletons (`song-list-skeleton`, `shelf-skeleton`, `details-header-skeleton`) are
+`"use client"` on purpose: server-rendered, their class strings were serialized into the flight per row (4 KB each);
+as client components the flight carries only props. Keep repeated markup (rows, skeleton cards) in client modules.
 
 ## packages/trpc raw-passthrough shape (resolved)
 
