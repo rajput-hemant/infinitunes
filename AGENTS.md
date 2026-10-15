@@ -267,6 +267,16 @@ Verify these against live data, not fixtures: a decrypted link should answer
   `MorphArt` (real header art) claim that name inside the transition's commit (`morph-state.ts`).
   Do not name destination artwork statically or via an observer: that raced the commit.
 
+## Panels slide into the gutter, content stays put
+
+The content column spans from the sidebar gap to the viewport edge and has no queue margin. `page-container`
+and the toolbar's `page-gutter` (`styles/globals.css`) place the page box with
+`margin-left: clamp(0, Cf - (100vw + w) / 2, Cf - R - w)`, where `R` is the registered, animated
+`--queue-reserve` (the docked queue's column, from `html[data-queue=open]` at 1440px and up). When the box fits
+beside the open panels it is centred in the viewport and neither the sidebar nor the queue moves it (or the
+anchored player bar); when it does not fit the clamp collapses to the classic push. Never reintroduce a
+margin or width on the column for a panel, and keep the sidebar gap in flow (its live width is what `Cf` reads).
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
