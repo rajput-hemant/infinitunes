@@ -362,6 +362,11 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
 - `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
   (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
   by both `apps/web` and `packages/trpc`; don't hand-roll another copy).
+- SEO origin: canonical, `og:url`, `metadataBase`, robots and sitemap URLs all come from
+  `siteUrl()` (`apps/web/lib/site-url.ts`, `NEXT_PUBLIC_APP_URL` with the production default).
+  Route metadata goes through `pageMetadata` (`lib/metadata.ts`, which sets the canonical); user,
+  settings and auth routes export `noindexMetadata`. `app/robots.ts` owns robots.txt: never add
+  `public/robots.txt`, a static file is served instead of the route.
 - Test layout: `apps/web/tests/` (plain), `apps/web/tests/mocked/` (process-isolated
   `mock.module` suites), `apps/web/tests/dom/` (happy-dom behavior tests).
   Skill/feature docs in `.agents/skills/verify/` and `.agents/skills/verify/features/` cite these.
