@@ -9,6 +9,10 @@ import {
 } from "~/components/library/library-section";
 import { NewPlaylistCard } from "~/components/playlist/new-playlist-card";
 import { NewPlaylistForm } from "~/components/playlist/new-playlist-form";
+import {
+  PendingPlaylistCards,
+  PlaylistGate,
+} from "~/components/playlist/playlist-overlay";
 import { SliderCardSkeleton } from "~/components/slider/slider-card-skeleton";
 import { controlStyles } from "~/lib/control-styles";
 import { getUserPlaylists } from "~/lib/db/queries";
@@ -35,13 +39,14 @@ export default async function MyPlaylistsPage() {
         <CatalogGrid>
           <NewPlaylistCard />
 
+          <PendingPlaylistCards serverIds={playlists.map(({ id }) => id)} />
+
           {playlists.map((playlist) => (
-            <React.Suspense
-              key={playlist.id}
-              fallback={<SliderCardSkeleton hideSubtitle />}
-            >
-              <PlaylistItem playlist={playlist} />
-            </React.Suspense>
+            <PlaylistGate key={playlist.id} id={playlist.id}>
+              <React.Suspense fallback={<SliderCardSkeleton hideSubtitle />}>
+                <PlaylistItem playlist={playlist} />
+              </React.Suspense>
+            </PlaylistGate>
           ))}
         </CatalogGrid>
       ) : (

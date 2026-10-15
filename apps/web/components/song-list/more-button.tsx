@@ -28,6 +28,10 @@ import {
 import { unwrap } from "~/lib/action-result";
 import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
+import {
+  addSongsOptimistic,
+  removeSongOptimistic,
+} from "~/lib/optimistic-playlists";
 import { userMessage } from "~/lib/user-message";
 
 import { TileMoreDesktop } from "./more-button-desktop";
@@ -119,12 +123,21 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function addToPlaylist(id: string, name: string) {
-    toast.promise(unwrap(addSongsToPlaylist(id, [item.id])), {
-      loading: "Adding songs to playlist...",
-      success: `"${getItemName(item)}" added to "${name}" playlist`,
-      error: userMessage,
-      finally: () => setDialogOpen(false),
-    });
+    // The dialog closes and the song count rises now; a failure rolls both back.
+    setDialogOpen(false);
+    toast.promise(
+      addSongsOptimistic(
+        id,
+        [item.id],
+        playlists?.find((p) => p.id === id)?.songs.length,
+        () => unwrap(addSongsToPlaylist(id, [item.id])),
+      ),
+      {
+        loading: "Adding songs to playlist...",
+        success: `"${getItemName(item)}" added to "${name}" playlist`,
+        error: userMessage,
+      },
+    );
   }
 
   function removeFromPlaylist() {
@@ -132,13 +145,20 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       return;
     }
 
+    // The row hides now; the write uses the index the server will see after
+    // any earlier removals, and a failure shows the row again with a toast.
     toast.promise(
-      unwrap(removeSongsFromPlaylist(playlistId, playlistSongIndex, item.id)),
+      removeSongOptimistic(
+        playlistId,
+        playlistSongIndex,
+        item.id,
+        playlists?.find((p) => p.id === playlistId)?.songs.length,
+        (index) => unwrap(removeSongsFromPlaylist(playlistId, index, item.id)),
+      ),
       {
         loading: "Removing from playlist...",
         success: `"${getItemName(item)}" removed from playlist`,
         error: userMessage,
-        finally: () => router.refresh(),
       },
     );
   }

@@ -127,3 +127,55 @@ describe("LanguageBar", () => {
     expect(selected(container)).toEqual(["All"]);
   });
 });
+
+describe("a clicked language chip", () => {
+  const selected = (container: HTMLElement) =>
+    [...container.querySelectorAll("a[aria-current=page]")].map(
+      (a) => a.textContent,
+    );
+  const chip = (container: HTMLElement, title: string) =>
+    container.querySelector<HTMLElement>(`a[title="${title}"]`);
+
+  it("is selected and swaps the list for its skeleton before the URL follows", async () => {
+    query = new URLSearchParams("lang=hindi");
+    const { container } = await mount(
+      <>
+        <LanguageBar />
+        <KeyedByParams params={["lang"]} fallback={<p>skeleton</p>}>
+          <p>list</p>
+        </KeyedByParams>
+      </>,
+    );
+    expect(selected(container)).toEqual(["Hindi"]);
+    expect(container.textContent).toContain("list");
+
+    // Click without letting the router commit (a plain click on the Link is
+    // not followed in happy-dom): the URL still says hindi.
+    await act(async () => chip(container, "Tamil")?.click());
+
+    expect(selected(container)).toEqual(["Tamil"]);
+    expect(container.textContent).toContain("skeleton");
+    expect(container.textContent).not.toContain("list");
+  });
+
+  it("hands over to the real list once the URL matches", async () => {
+    query = new URLSearchParams("lang=hindi");
+    const ui = () => (
+      <>
+        <LanguageBar />
+        <KeyedByParams params={["lang"]} fallback={<p>skeleton</p>}>
+          <p>list</p>
+        </KeyedByParams>
+      </>
+    );
+    const { container, root } = await mount(ui());
+    await act(async () => chip(container, "Tamil")?.click());
+
+    query = new URLSearchParams("lang=tamil");
+    await act(async () => root.render(ui()));
+
+    expect(selected(container)).toEqual(["Tamil"]);
+    expect(container.textContent).toContain("list");
+    expect(container.textContent).not.toContain("skeleton");
+  });
+});

@@ -7,13 +7,16 @@ import { Sidebar } from "~/components/sidebar";
 import { MobileNav } from "~/components/site-header/mobile-nav";
 import { UserDropdown } from "~/components/user-dropdown";
 import { useViewer } from "~/components/viewer-context";
+import { usePlaylists } from "~/lib/optimistic-playlists";
 
 export { useViewer, ViewerProvider } from "~/components/viewer-context";
 
 function SidebarIsland() {
   const { user, playlists } = useViewer();
+  // Playlists created, renamed or deleted in this tab show before the server confirms.
+  const userPlaylists = usePlaylists(playlists);
 
-  return <Sidebar user={user} userPlaylists={playlists} />;
+  return <Sidebar user={user} userPlaylists={userPlaylists} />;
 }
 
 /** The sidebar frame renders at once; the library part waits for the viewer. */
