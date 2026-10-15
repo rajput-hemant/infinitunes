@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { buildShareUrl } from "./share";
+import { buildShareUrl } from "~/lib/share";
 
 const target = { url: "https://x.test/song/a?b=1&c=2", title: "Hi & bye" };
 const u = "https%3A%2F%2Fx.test%2Fsong%2Fa%3Fb%3D1%26c%3D2";
