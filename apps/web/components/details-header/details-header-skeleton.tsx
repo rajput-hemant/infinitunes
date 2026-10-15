@@ -2,6 +2,7 @@ import type { MediaType } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { detailBandClassName } from "~/components/details-header/details-header-band";
+import { MorphSkeleton } from "~/components/view-transition/morph-target";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -29,8 +30,7 @@ export function DetailsHeaderSkeleton({ type }: DetailsHeaderSkeletonProps) {
 
   return (
     <div className={cn("pointer-events-none", detailBandClassName)}>
-      <Skeleton
-        data-morph-target=""
+      <MorphSkeleton
         className={cn(
           "aspect-square w-[min(60vw,14rem)] rounded-md md:w-36 lg:w-44 min-[90rem]:w-56",
           (type === "artist" || type === "label") && "rounded-full",

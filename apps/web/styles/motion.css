@@ -10,23 +10,20 @@
   pointer-events: none;
 }
 
-/* The page content: the old page fades out quickly, the new one rises in. */
-::view-transition-old(.vt-page-out) {
-  animation: 140ms var(--ease-out) both vt-fade-out;
+/*
+ * A navigation, a tab or search type switch and a skeleton becoming its page
+ * all crossfade the root snapshot. The page template's boundary only tells
+ * React a transition is due; it must not name the page (see
+ * `app/(root)/template.tsx`), so the shell, which looks the same before and
+ * after, crossfades into itself and holds still. Old and new fade with the same
+ * curve, so unchanged pixels stay exactly as they were.
+ */
+[data-vt-page] {
+  view-transition-name: none !important;
 }
-::view-transition-new(.vt-page-in) {
-  animation: 240ms var(--ease-out) both vt-rise-in;
-}
-
-/* Whatever is not named below is identical before and after, so the root snapshot needs no cross-fade. */
 ::view-transition-group(root) {
-  animation: none;
-}
-::view-transition-old(root) {
-  display: none;
-}
-::view-transition-new(root) {
-  animation: none;
+  animation-duration: 200ms;
+  animation-timing-function: var(--ease-out);
 }
 
 /* A card's artwork flying into the header artwork of the page it opens. */
@@ -42,62 +39,6 @@
   height: 100%;
   object-fit: cover;
   mix-blend-mode: normal;
-}
-
-/*
- * The shell holds still. While a transition runs its pieces get a name, so
- * they leave the root snapshot, paint above the page group and are neither
- * faded nor moved. Named only during a transition: a permanent name would
- * make each of them a backdrop root for the whole session.
- */
-:root:active-view-transition [data-slot="sidebar-container"] {
-  view-transition-name: vt-sidebar;
-}
-:root:active-view-transition [data-glass-edge="top"] {
-  view-transition-name: vt-toolbar;
-}
-:root:active-view-transition [data-glass-edge="bottom"] {
-  view-transition-name: vt-edge;
-}
-:root:active-view-transition [data-glass-role="player"] {
-  view-transition-name: vt-player;
-}
-:root:active-view-transition [data-glass-role="tabbar"] {
-  view-transition-name: vt-tabbar;
-}
-::view-transition-group(vt-sidebar),
-::view-transition-group(vt-toolbar),
-::view-transition-group(vt-edge),
-::view-transition-group(vt-player),
-::view-transition-group(vt-tabbar) {
-  animation: none;
-  z-index: 10;
-}
-::view-transition-old(vt-sidebar),
-::view-transition-old(vt-toolbar),
-::view-transition-old(vt-edge),
-::view-transition-old(vt-player),
-::view-transition-old(vt-tabbar) {
-  display: none;
-}
-::view-transition-new(vt-sidebar),
-::view-transition-new(vt-toolbar),
-::view-transition-new(vt-edge),
-::view-transition-new(vt-player),
-::view-transition-new(vt-tabbar) {
-  animation: none;
-}
-
-@keyframes vt-fade-out {
-  to {
-    opacity: 0;
-  }
-}
-@keyframes vt-rise-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
 }
 
 /* ---------- Menus, popovers and dialogs ---------- */
