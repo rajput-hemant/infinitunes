@@ -7,7 +7,7 @@
     "dev": "bun run with-env next dev",
     "build": "bun run with-env next build",
     "start": "bun run with-env next start",
-    "lint": "oxlint",
+    "lint": "oxlint --deny-warnings --nextjs-plugin",
     "type-check": "tsc --noEmit",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
