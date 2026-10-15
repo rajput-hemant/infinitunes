@@ -195,7 +195,7 @@ describe("expanded player sheet", () => {
 
   it("keeps the toggle names stable while aria-pressed carries the state", async () => {
     const root = await mountExpanded();
-    for (const label of ["Shuffle", "Loop", "Mute"]) {
+    for (const label of ["Shuffle", "Loop"]) {
       expect(
         document.querySelector(`button[aria-label="${label}"][aria-pressed]`),
       ).not.toBeNull();

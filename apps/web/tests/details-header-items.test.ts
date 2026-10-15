@@ -7,6 +7,7 @@ import {
   getTitle,
   getVerified,
   isKind,
+  isShowDetails,
 } from "../components/details-header/details-header-items";
 import { isTitleUnderToolbar } from "../components/details-header/use-toolbar-art";
 import {
@@ -21,6 +22,18 @@ describe("details header items", () => {
     expect(getKind(songFixture())).toBe("song");
     expect(getKind(artistFixture())).toBe("artist");
     expect(getKind(labelFixture)).toBe("label");
+  });
+
+  it("treats a show page's header as a season whether upstream says season or show", () => {
+    // The types say "season"; live upstream answers "show" for show details.
+    for (const type of ["season", "show"]) {
+      const item = Object.assign(albumFixture({ id: "63565" }), { type });
+      expect(isShowDetails(item)).toBe(true);
+      expect(getKind(item)).toBe("season");
+      expect(getId(item)).toBe("63565");
+    }
+    expect(isShowDetails(albumFixture())).toBe(false);
+    expect(isShowDetails(labelFixture)).toBe(false);
   });
 
   it("finds the id each shape keeps it under", () => {

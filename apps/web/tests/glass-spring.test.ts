@@ -32,6 +32,25 @@ describe("springStep", () => {
     expect(run(0.55).peak).toBeGreaterThan(101);
   });
 
+  test("stays bounded when a slow frame hits the 32ms cap, at every press response", () => {
+    // PRESS_IN (0.2s, critical) used to diverge here: c * dt came to 2.01.
+    for (const [response, damping] of [
+      [0.2, 1],
+      [0.22, 0.8],
+      [0.22, 0.9],
+      [0.15, 1],
+    ] as const) {
+      let state = { x: 0, v: 0 };
+      let peak = 0;
+      for (let i = 0; i < 200; i++) {
+        state = springStep(state, 1, response, damping, 0.032);
+        peak = Math.max(peak, Math.abs(state.x));
+      }
+      expect(peak).toBeLessThan(1.5);
+      expect(state.x).toBeCloseTo(1, 3);
+    }
+  });
+
   test("a stationary spring on its target stays put", () => {
     expect(springStep({ x: 5, v: 0 }, 5, 0.3, 1, 1 / 60)).toEqual({
       x: 5,
