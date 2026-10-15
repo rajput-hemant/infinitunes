@@ -307,6 +307,15 @@ Never hang UI state on the action's round trip, and never let only the clicked c
   row with no link and takes the real id on return. Sign out, profile and password saves, and radio/queue
   fetches stay pending-style (toast) because the server or upstream decides the outcome.
 
+## Proxy limiter scope
+
+`proxy.ts` matches pages, `/api/trpc`, `/api/auth` and `/api/og` only (`PROXY_MATCHER` in
+`lib/rate-limit-scope.ts`; the literal in `config.matcher` must equal it, a test checks). `limiterKinds`
+charges documents, server actions and `/api` requests; RSC navigations/prefetches (`rsc` header) and
+subresources (`sec-fetch-dest` other than document/iframe) are never counted, so browsing cannot 429.
+`/api/og` has its own 20/min bucket on top of the global one. Do not add CSP enforcement or a limiter
+for static files here.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

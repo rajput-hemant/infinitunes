@@ -10,39 +10,28 @@ import { legacyArtistPath } from "./lib/artist-route";
 import { getClientKey, resolveTrustedProxy } from "./lib/client-ip";
 import { buildCsp, cspHeaderName } from "./lib/csp";
 import { env } from "./lib/env";
+import { LIMITS, OG_PATH, limiterKinds } from "./lib/rate-limit-scope";
+import type { LimiterKind } from "./lib/rate-limit-scope";
 import { searchRouteAction } from "./lib/search-route";
 import { sessionCookiePrefix } from "./lib/session-cookie";
 
-/**
- * Credential endpoints get a stricter per-client bucket on top of the global
- * one. Better Auth's own limiter (burst of 3 per 10s on sign-in/up, plus the
- * reset-password rules in `RESET_RATE_LIMITS`) stays authoritative for those
- * paths; this adds a sustained cap with a trusted client key. The reset
- * endpoints are left to Better Auth alone so they are not limited twice.
- */
-const AUTH_CREDENTIAL_PATHS = new Set([
-  "/api/auth/sign-in/email",
-  "/api/auth/sign-up/email",
-]);
-const AUTH_LIMIT = { requests: 10, window: "1 m" } as const;
-
 let redis: Redis | undefined;
-const limiters = new Map<"global" | "auth", Ratelimit>();
+const limiters = new Map<LimiterKind, Ratelimit>();
 
-function getRatelimit(kind: "global" | "auth") {
+function getRatelimit(kind: LimiterKind) {
   let limiter = limiters.get(kind);
   if (!limiter) {
     redis ??= Redis.fromEnv();
     limiter = new Ratelimit({
       redis,
-      prefix: kind === "auth" ? "@upstash/ratelimit/auth" : undefined,
+      prefix: kind === "global" ? undefined : `@upstash/ratelimit/${kind}`,
       limiter:
-        kind === "auth"
-          ? Ratelimit.slidingWindow(AUTH_LIMIT.requests, AUTH_LIMIT.window)
-          : Ratelimit.slidingWindow(
+        kind === "global"
+          ? Ratelimit.slidingWindow(
               env.RATE_LIMITING_REQUESTS_PER_SECOND,
               "1 s",
-            ),
+            )
+          : Ratelimit.slidingWindow(LIMITS[kind].requests, LIMITS[kind].window),
     });
     limiters.set(kind, limiter);
   }
@@ -69,10 +58,11 @@ export async function proxy(req: NextRequest) {
       req.headers,
       resolveTrustedProxy(env.TRUSTED_PROXY, process.env.VERCEL),
     );
-    const kinds: ("global" | "auth")[] =
-      isAuthApi && req.method === "POST" && AUTH_CREDENTIAL_PATHS.has(pathname)
-        ? ["global", "auth"]
-        : ["global"];
+    const kinds = limiterKinds({
+      pathname,
+      method: req.method,
+      headers: req.headers,
+    });
     for (const kind of kinds) {
       let result: Awaited<ReturnType<Ratelimit["limit"]>>;
       try {
@@ -120,7 +110,7 @@ export async function proxy(req: NextRequest) {
   }
 
   // Better Auth owns origin checks, sessions and responses for its routes.
-  if (isAuthApi) return NextResponse.next();
+  if (isAuthApi || pathname === OG_PATH) return NextResponse.next();
 
   const sessionToken = getSessionCookie(req, {
     cookiePrefix: sessionCookiePrefix(),
@@ -217,15 +207,10 @@ function isSameOriginRequest(req: NextRequest): boolean {
 }
 
 export const config = {
+  // Static assets and non-limited API routes skip the proxy, see PROXY_MATCHER.
+  // Next requires a literal here, so the pattern is mirrored (and asserted
+  // equal) in tests/mocked/proxy.test.ts.
   matcher: [
-    /*
-     * Match all request paths except for:
-     * - api routes EXCEPT /api/trpc and /api/auth (matched for rate limiting;
-     *   trpc also for the origin check)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!api/(?!trpc|auth)|_next/static|_next/image|favicon.ico).*)",
+    "/((?!api/(?!trpc|auth|og)|_next/|favicon\\.ico|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|css|js|map|txt|xml|json|webmanifest|mp3|mp4)$).*)",
   ],
 };
