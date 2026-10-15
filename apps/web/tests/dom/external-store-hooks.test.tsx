@@ -8,6 +8,7 @@ void mock.module("next/navigation", () => ({
 }));
 void mock.module("next/image", () => ({
   default: ({ src, alt, onError }: Record<string, never>) => (
+    // oxlint-disable-next-line next/no-img-element -- this test double stands in for next/image
     <img src={src} alt={alt} onError={onError} />
   ),
 }));

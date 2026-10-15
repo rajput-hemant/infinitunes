@@ -118,7 +118,14 @@ function MenuItem({
     return isDropDownItem ? (
       <DropdownMenuItem
         className={dropdownItemStyles}
-        render={<a href={href} target="_blank" rel="noopener noreferrer" />}
+        render={
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={label}
+          />
+        }
       >
         {content}
       </DropdownMenuItem>

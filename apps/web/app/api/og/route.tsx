@@ -120,6 +120,7 @@ export async function GET(request: Request) {
         </div>
 
         <div tw="relative flex h-full w-1/2 overflow-hidden">
+          {/* oxlint-disable-next-line next/no-img-element -- ImageResponse renders through Satori, which only supports a plain img */}
           <img
             alt=""
             src={image}

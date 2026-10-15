@@ -50,6 +50,7 @@ export function ArtistSpotlight({ images, className }: ArtistSpotlightProps) {
     <div className={cn("absolute inset-0", className)}>
       {images.map((src, i) =>
         i === index || i === previous ? (
+          // oxlint-disable-next-line next/no-img-element -- two plain images cross-fade; next/image's wrapper would change their sizing
           <img
             key={src}
             src={src}

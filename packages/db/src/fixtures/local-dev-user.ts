@@ -98,6 +98,7 @@ export function getLocalDevFixture(
   } catch (err) {
     throw new Error(
       `[local-dev] LOCAL_DEV_CONFIG is not valid JSON: ${configPath} (${(err as Error).message})`,
+      { cause: err },
     );
   }
   return parseLocalDevFixture(parsed);

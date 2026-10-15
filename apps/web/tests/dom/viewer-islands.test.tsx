@@ -125,7 +125,7 @@ describe("viewer islands", () => {
     await mount(
       <ViewerProvider viewer={viewer.promise}>
         <ViewerSignedOut>
-          <a href="/login">Log in</a>
+          <button type="button">Log in</button>
         </ViewerSignedOut>
       </ViewerProvider>,
     );
@@ -143,7 +143,7 @@ describe("viewer islands", () => {
         })}
       >
         <ViewerSignedOut>
-          <a href="/login">Log in</a>
+          <button type="button">Log in</button>
         </ViewerSignedOut>
       </ViewerProvider>,
     );
