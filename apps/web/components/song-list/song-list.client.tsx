@@ -33,7 +33,7 @@ export function SongListClient(props: SongListProps) {
       <ol className="flex flex-col text-muted-foreground">
         {items.map((item, i) => (
           <li
-            key={item.id}
+            key={`${item.id}-${i}`}
             className="[contain-intrinsic-size:auto_var(--row)] [content-visibility:auto]"
           >
             <SongListRow

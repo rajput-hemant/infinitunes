@@ -1,3 +1,4 @@
+import { uniqueBy } from "@infinitunes/types";
 import type { ComponentProps } from "react";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
@@ -62,7 +63,7 @@ export async function LikedCollection<T>(props: LikedCollectionProps<T>) {
       />
 
       <CatalogGrid>
-        {cards.map((card) => (
+        {uniqueBy(cards, (card) => card.url).map((card) => (
           <SliderCard key={card.url} {...card} />
         ))}
       </CatalogGrid>

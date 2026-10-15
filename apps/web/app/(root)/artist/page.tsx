@@ -1,4 +1,4 @@
-import { formatCount } from "@infinitunes/types";
+import { formatCount, uniqueBy } from "@infinitunes/types";
 import { Users } from "lucide-react";
 import { Suspense } from "react";
 
@@ -37,7 +37,7 @@ async function TopArtists() {
   ) : (
     <>
       <CatalogGrid>
-        {artists.map(
+        {uniqueBy(artists, (artist) => artist.artistid).map(
           ({ artistid, name, perma_url, follower_count, image }, index) => (
             <SliderCard
               priority={index < FIRST_ROW_CARDS}

@@ -1,3 +1,5 @@
+import { uniqueBy } from "@infinitunes/types";
+
 import { Shelf } from "./shelf";
 import { ShelfItem } from "./shelf-item";
 import type { SliderCardProps } from "./slider-card";
@@ -25,7 +27,7 @@ export function SliderList({ title, subtitle, items }: SliderListProps) {
       </header>
 
       <Shelf>
-        {items.map(({ id, ...props }) => (
+        {uniqueBy(items, (item) => item.id).map(({ id, ...props }) => (
           <ShelfItem key={id}>
             <SliderCard {...props} />
           </ShelfItem>

@@ -1,3 +1,4 @@
+import { uniqueBy } from "@infinitunes/types";
 import { Music } from "lucide-react";
 import { Suspense } from "react";
 
@@ -33,7 +34,7 @@ async function Charts() {
   ) : (
     <>
       <CatalogGrid>
-        {charts.map(
+        {uniqueBy(charts, (chart) => chart.id).map(
           (
             {
               id,

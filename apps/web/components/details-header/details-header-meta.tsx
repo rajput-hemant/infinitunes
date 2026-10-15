@@ -39,7 +39,7 @@ function SongMeta({ song }: { song: Song }) {
         {" by "}
         {artistMap?.primary_artists?.map(({ id, name, perma_url }, i, arr) => (
           <Link
-            key={id}
+            key={`${id}-${i}`}
             href={getHref(perma_url, "artist")}
             className={metaLink}
           >
@@ -97,7 +97,7 @@ function AlbumMeta({ album }: { album: Album }) {
       by{" "}
       {artists?.map(({ id, name, perma_url }, i, arr) => (
         <Link
-          key={id}
+          key={`${id}-${i}`}
           href={getHref(perma_url, "artist")}
           title={decode(name)}
           className={metaLink}

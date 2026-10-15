@@ -1,3 +1,4 @@
+import { uniqueBy } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
@@ -61,7 +62,7 @@ async function Podcasts({ searchParams }: TopPodcastsPageProps) {
       </h2>
 
       <Shelf rows={2}>
-        {trendingPodcasts.map(
+        {uniqueBy(trendingPodcasts, (show) => show.id).map(
           ({
             id,
             title: podcastTitle,

@@ -1,6 +1,7 @@
 "use client";
 
 import type { SearchReturnType, Song } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, SearchX } from "lucide-react";
 
@@ -67,8 +68,9 @@ export function SearchResults(props: SearchResultsProps) {
       initialData: { pages: [initialSearchResults], pageParams: [1] },
     });
 
-  const searchResults = data.pages.flatMap(
-    (page): SearchEntry[] => page.results,
+  const searchResults = uniqueBy(
+    data.pages.flatMap((page): SearchEntry[] => page.results),
+    (entry) => entry.id,
   );
 
   const [ref] = useIntersectionObserver({

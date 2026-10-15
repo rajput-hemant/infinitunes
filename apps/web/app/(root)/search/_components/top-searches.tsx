@@ -1,3 +1,5 @@
+import { uniqueBy } from "@infinitunes/types";
+
 import { SearchRow } from "~/components/search/search-row";
 import { searchUi } from "~/components/search/search-ui";
 import { api } from "~/lib/trpc/server";
@@ -13,7 +15,7 @@ export async function TopSearches() {
         Top searches
       </h2>
 
-      {topSearches.map((item) => (
+      {uniqueBy(topSearches, (item) => item.id).map((item) => (
         <SearchRow
           key={item.id}
           href={getHref(item.perma_url, item.type)}
