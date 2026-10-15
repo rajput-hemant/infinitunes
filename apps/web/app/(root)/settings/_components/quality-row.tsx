@@ -31,7 +31,12 @@ export function QualityRow<T extends string>(props: QualityRowProps<T>) {
   const { id, label, help, value, detail, options, onSelect } = props;
 
   return (
-    <SettingsRow id={id} label={label} help={help}>
+    <SettingsRow
+      id={id}
+      label={label}
+      help={help}
+      keywords="bitrate low medium high"
+    >
       <DropdownMenu>
         <DropdownMenuTrigger
           render={
@@ -40,7 +45,7 @@ export function QualityRow<T extends string>(props: QualityRowProps<T>) {
               aria-label={`${label}: ${value}`}
               className={cn(
                 controlStyles.text,
-                "group w-48 justify-between capitalize",
+                "group w-48 justify-between capitalize max-sm:w-full",
               )}
             >
               <span>

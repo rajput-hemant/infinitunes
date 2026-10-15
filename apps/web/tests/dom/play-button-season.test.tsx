@@ -9,18 +9,16 @@ mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 mock.module("sonner", () => ({ toast: { success() {}, error() {} } }));
-mock.module("~/lib/trpc/client", () => ({
-  api: {
-    useUtils: () => ({
-      show: {
-        episodes: {
-          fetch: async (input: { id: string; season?: number }) => {
-            fetched.push(input);
-            return [];
-          },
+mock.module("~/lib/trpc/vanilla", () => ({
+  trpc: {
+    show: {
+      episodes: {
+        query: async (input: { id: string; season?: number }) => {
+          fetched.push(input);
+          return [];
         },
       },
-    }),
+    },
   },
 }));
 

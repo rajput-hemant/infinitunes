@@ -1,5 +1,5 @@
 import type { Sort } from "@infinitunes/types";
-import { getImageSrc } from "@infinitunes/types";
+import { getImageSrc, toSongRow, uniqueBy } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -13,7 +13,6 @@ import Link from "next/link";
 import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
 import { Shelf } from "~/components/slider/shelf";
 import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
@@ -27,6 +26,7 @@ import { api } from "~/lib/trpc/server";
 import { asRoute, cn } from "~/lib/utils";
 
 import { EpisodeList } from "./_components/episode-list";
+import { EpisodesSkeleton } from "./_components/episodes-skeleton";
 
 const DEFAULT_SORT: Sort = "desc";
 
@@ -119,7 +119,7 @@ async function ShowEpisodeSection({
         season={Number(show.show_details.more_info.season_number)}
         sort={sort}
         totalEpisodes={Number(show.show_details.more_info.total_episodes)}
-        initialEpisodes={show.episodes}
+        initialEpisodes={show.episodes.map(toSongRow)}
         userFavorites={favorites}
         userPlaylists={playlists}
       />
@@ -149,12 +149,14 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         </p>
       </section>
 
-      <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
-        {modules.seasons.title}
-      </h2>
-
-      <Shelf>
-        {seasons.toReversed().map((s) => (
+      <Shelf
+        heading={
+          <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+            {modules.seasons.title}
+          </h2>
+        }
+      >
+        {uniqueBy(seasons.toReversed(), (entry) => entry.id).map((s) => (
           <ShelfItem key={s.id}>
             <SliderCard
               name={s.title}
@@ -173,14 +175,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         ))}
       </Shelf>
 
-      <Suspense
-        fallback={
-          <>
-            <div className="h-9 w-full animate-pulse rounded-md bg-muted" />
-            <SongListSkeleton length={10} />
-          </>
-        }
-      >
+      <Suspense fallback={<EpisodesSkeleton />}>
         <ShowEpisodeSection show={show} sort={sort} userPromise={userPromise} />
       </Suspense>
     </div>

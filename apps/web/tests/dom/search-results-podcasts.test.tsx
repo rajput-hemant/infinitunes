@@ -22,9 +22,6 @@ const podcastShow = {
   perma_url: "https://www.jiosaavn.com/shows/cricket/1/AgwxNRhhXMw_",
 };
 
-mock.module("../../lib/trpc/client", () => ({
-  api: { useUtils: () => ({ search: { byType: { fetch: () => {} } } }) },
-}));
 mock.module("../../components/play-button", () => ({
   PlayButton: () => null,
 }));
@@ -33,7 +30,7 @@ mock.module("../../components/song-list/song-list.client", () => ({
 }));
 
 const { SearchResults } =
-  await import("../../app/(root)/search/[type]/[query]/_components/search-results");
+  await import("../../app/(root)/search/(results)/[type]/[query]/_components/search-results");
 
 const roots: Root[] = [];
 
@@ -54,11 +51,7 @@ it("renders podcast results with their artwork and show link", async () => {
         <SearchResults
           query="cricket"
           type="show"
-          initialSearchResults={{
-            total: 1,
-            start: 1,
-            results: [podcastShow],
-          }}
+          initialPage={{ total: 1, rows: [], cards: [podcastShow] }}
         />
       </QueryClientProvider>,
     );

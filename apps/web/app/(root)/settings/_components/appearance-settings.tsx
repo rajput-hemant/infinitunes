@@ -12,8 +12,8 @@ import { controlStyles } from "~/lib/control-styles";
 import { LiquidGlassSettings } from "./liquid-glass-settings";
 import { OptionGroup } from "./option-group";
 import { RadiusSettings } from "./radius-settings";
-import { SwitchRow } from "./settings-row";
-import { SettingsSection } from "./settings-section";
+import { SettingsCard } from "./settings-card";
+import { SettingsRow, SwitchRow } from "./settings-row";
 import { ThemePreview } from "./theme-preview";
 import { TypographySettings } from "./typography-settings";
 
@@ -35,8 +35,9 @@ const MODES = [
   },
 ] as const;
 
+/** Every appearance control as cards, with the live preview beside them on wide containers. */
 export function AppearanceSettings() {
-  const { config, update, reset, isDefault } = useThemeConfig();
+  const { config, update } = useThemeConfig();
   const { theme: storedTheme, setMode } = useThemeMode();
   // next-themes only knows the stored mode on the client; wait for hydration so
   // server and first client render agree.
@@ -44,80 +45,92 @@ export function AppearanceSettings() {
   const theme = hydrated ? storedTheme : undefined;
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-10 min-[90rem]:grid-cols-[minmax(0,1fr)_18rem]">
-      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10">
-        <SettingsSection
-          id="mode"
-          title="Theme Mode"
-          description="Choose how Infinitunes looks to you."
-        >
-          <OptionGroup
-            label="Theme mode"
-            value={theme}
-            onValueChange={setMode}
-            options={MODES}
-          />
-        </SettingsSection>
+    <div className="@container/appearance">
+      <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-4 @min-[60rem]/appearance:grid-cols-[minmax(0,1fr)_18rem] @min-[60rem]/appearance:gap-6">
+        <ThemePreview />
 
-        <RadiusSettings />
+        <div className="grid min-w-0 gap-4 @min-[60rem]/appearance:col-start-1 @min-[60rem]/appearance:row-start-1">
+          <SettingsCard title="Theme">
+            <SettingsRow
+              id="mode"
+              label="Theme mode"
+              help="Choose how Infinitunes looks to you."
+              keywords="light dark system appearance"
+            >
+              <OptionGroup
+                nowrap
+                label="Theme mode"
+                value={theme}
+                onValueChange={setMode}
+                className="max-sm:w-full"
+                options={MODES}
+              />
+            </SettingsRow>
 
-        <TypographySettings />
+            <RadiusSettings />
 
-        <SettingsSection
-          id="density"
-          title="Density"
-          description="Comfortable rows with artwork, or a compact table with an album column."
-        >
-          <OptionGroup
-            label="Density"
-            value={config.density}
-            onValueChange={(density) => update({ density })}
-            options={DENSITIES.map((density) => ({
-              value: density,
-              label: density === "compact" ? "Compact" : "Comfortable",
-              icon:
-                density === "compact" ? (
-                  <Layout aria-hidden className="size-4" />
-                ) : (
-                  <Rows3 aria-hidden className="size-4" />
-                ),
-            }))}
-          />
-        </SettingsSection>
+            <SettingsRow
+              id="density"
+              label="Density"
+              help="Comfortable rows with artwork, or a compact table with an album column."
+              keywords="compact comfortable rows"
+            >
+              <OptionGroup
+                nowrap
+                label="Density"
+                value={config.density}
+                onValueChange={(density) => update({ density })}
+                className="max-sm:w-full"
+                options={DENSITIES.map((density) => ({
+                  value: density,
+                  label: density === "compact" ? "Compact" : "Comfortable",
+                  icon:
+                    density === "compact" ? (
+                      <Layout aria-hidden className="size-4" />
+                    ) : (
+                      <Rows3 aria-hidden className="size-4" />
+                    ),
+                }))}
+              />
+            </SettingsRow>
 
-        <SettingsSection
-          id="material"
-          title="Glass and motion"
-          description="Liquid Glass lets artwork glow through toolbars, the player and sheets."
-        >
-          <LiquidGlassSettings />
-          <div className="max-w-2xl">
             <SwitchRow
               label="Reduce motion"
               help="Replace springs and slides with simple fades. Follows your system setting automatically."
+              keywords="animation transitions"
               checked={config.reduceMotion}
               onCheckedChange={(reduceMotion) => update({ reduceMotion })}
             />
-          </div>
-        </SettingsSection>
+          </SettingsCard>
 
-        <div>
-          <Button
-            variant="outline"
-            disabled={isDefault && theme === "system"}
-            onClick={() => {
-              reset();
-              setMode("system");
-            }}
-            className={controlStyles.textLg}
-          >
-            <RotateCcw aria-hidden className="size-4" />
-            Reset to defaults
-          </Button>
+          <TypographySettings />
+
+          <LiquidGlassSettings />
         </div>
       </div>
-
-      <ThemePreview />
     </div>
+  );
+}
+
+/** Restores every appearance setting, the theme mode included. */
+export function ResetAppearanceButton() {
+  const { reset, isDefault } = useThemeConfig();
+  const { theme: storedTheme, setMode } = useThemeMode();
+  const hydrated = useIsHydrated();
+  const theme = hydrated ? storedTheme : undefined;
+
+  return (
+    <Button
+      variant="outline"
+      disabled={isDefault && theme === "system"}
+      onClick={() => {
+        reset();
+        setMode("system");
+      }}
+      className={controlStyles.text}
+    >
+      <RotateCcw aria-hidden className="size-4" />
+      Reset to defaults
+    </Button>
   );
 }

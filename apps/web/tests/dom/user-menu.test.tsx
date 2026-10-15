@@ -7,6 +7,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { UserDropdown } from "../../components/user-dropdown";
 import { DEFAULT_THEME_CONFIG } from "../../lib/theme-config";
 import { ThemeConfigContext } from "../../lib/theme/provider";
+import { waitFor } from "./wait-for";
 
 const roots: Root[] = [];
 const realMatchMedia = window.matchMedia;
@@ -51,7 +52,12 @@ async function openMenu(container: HTMLElement) {
   const trigger = container.querySelector(
     "button[aria-label='Open user menu']",
   ) as HTMLButtonElement;
+  // The menu is its own chunk: the click starts the import and opens it on arrival.
   await act(async () => trigger.click());
+  await waitFor(
+    () =>
+      document.querySelector("[role=menu], [data-slot=drawer-popup]") !== null,
+  );
 }
 
 function labels() {
@@ -94,7 +100,7 @@ describe("user menu on desktop", () => {
       "/me",
       "/me/liked-songs",
       "/settings",
-      "/settings/appearance",
+      "/settings#appearance",
     ]);
   });
 

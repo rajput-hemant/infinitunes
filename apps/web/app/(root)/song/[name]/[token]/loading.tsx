@@ -1,24 +1,23 @@
-import { Separator } from "@infinitunes/ui/components/separator";
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import { DetailsHeaderSkeleton } from "~/components/details-header/details-header-skeleton";
+import { PageSectionTitleSkeleton } from "~/components/page-section-skeleton";
+import { SliderListSkeleton } from "~/components/slider/shelf-skeleton";
+import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
 
-import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
-
+/** Mirrors the song page: header, more from the album, recommendation shelves, artists. */
 export default function SongDetailsLoading() {
   return (
-    <div className="flex flex-col gap-(--page-gap)">
+    <div className="flex flex-col gap-(--page-gap)" aria-busy="true">
       <DetailsHeaderSkeleton type="song" />
 
-      <div className="space-y-2 border-b py-4">
-        <Skeleton className="h-9 w-72" />
-        <Skeleton className="h-5 w-96" />
-        <Skeleton className="h-5 w-80" />
-      </div>
+      <section className="flex flex-col gap-4">
+        <PageSectionTitleSkeleton />
 
-      <Skeleton className="h-10 w-72" />
-      <Separator />
+        <SongListSkeleton length={7} />
+      </section>
 
-      <SongListSkeleton length={10} />
+      <SliderListSkeleton sections={3} />
+
+      <SliderListSkeleton rounded hideSubtitle />
     </div>
   );
 }

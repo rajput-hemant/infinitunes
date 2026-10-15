@@ -11,6 +11,7 @@ import type { z } from "zod";
 import { unwrap } from "~/lib/action-result";
 import { createNewPlaylist } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
+import { createPlaylistOptimistic } from "~/lib/optimistic-playlists";
 import { userMessage } from "~/lib/user-message";
 import { newPlaylistSchema } from "~/lib/validations";
 
@@ -50,12 +51,19 @@ export function CreatePlaylistForm({ onDone }: CreatePlaylistFormProps) {
   }, []);
 
   function onSubmit({ name, description }: PlaylistFormData) {
-    toast.promise(unwrap(createNewPlaylist({ name, description })), {
-      loading: "Creating playlist...",
-      success: (d) => `Playlist "${d.name}" created successfully!`,
-      error: userMessage,
-      finally: onDone,
-    });
+    // The id comes from the database, so the row is added as pending and the
+    // dialog closes now instead of after the round trip.
+    onDone();
+    toast.promise(
+      createPlaylistOptimistic({ name, description }, () =>
+        unwrap(createNewPlaylist({ name, description })),
+      ),
+      {
+        loading: "Creating playlist...",
+        success: (d) => `Playlist "${d.name}" created successfully!`,
+        error: userMessage,
+      },
+    );
   }
 
   return (

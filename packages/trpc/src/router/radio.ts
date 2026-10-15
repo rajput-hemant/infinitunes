@@ -1,5 +1,5 @@
 import type { Radio, Song, StationDetailsResponse } from "@infinitunes/types";
-import { parseToken } from "@infinitunes/types";
+import { LANGUAGES, parseToken } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -28,6 +28,21 @@ function extractSongsFromRadioResponse(data: unknown): Song[] {
   }
 
   return songs;
+}
+
+/** Every browsable station lives under `<language>-featured-station`. */
+const FEATURED_STATION_NAME = new RegExp(
+  `^(?:${LANGUAGES.join("|")})-featured-station$`,
+  "i",
+);
+
+/** `Chill-Karo` -> `Chill Karo`: the title a station token stands for. */
+function titleFromToken(token: string): string {
+  return token
+    .split(/[-\s]+/)
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
 export const radioRouter = router({
@@ -111,12 +126,9 @@ export const radioRouter = router({
 
       const stations = Array.isArray(page1) ? [...page1] : [];
       const cleanToken = input.token.trim();
-      const tokenNameMatch = (input.name || cleanToken)
-        .replace(/-/g, " ")
-        .toLowerCase();
+      const tokenNameMatch = cleanToken.replace(/-/g, " ").toLowerCase();
 
       const matches = (s: Radio) =>
-        s.perma_url.endsWith(cleanToken) ||
         parseToken(s.perma_url) === cleanToken ||
         s.id === cleanToken ||
         s.title.toLowerCase() === tokenNameMatch;
@@ -133,10 +145,25 @@ export const radioRouter = router({
         }
       }
 
-      const displayName =
-        matchedStation?.title ?? (input.name || cleanToken).replace(/-/g, " ");
+      // The list upstream returns is a rotating sample, so a real station can be
+      // missing from it; only a name no station can have is a missing page.
+      if (
+        !matchedStation &&
+        !FEATURED_STATION_NAME.test(input.name?.trim() ?? "")
+      ) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Radio station not found",
+        });
+      }
+
+      const displayName = matchedStation?.title ?? titleFromToken(cleanToken);
+      const nameLang = input.name?.trim().split("-")[0]?.toLowerCase();
       const stationLang =
-        matchedStation?.more_info?.language || input.lang || "hindi";
+        matchedStation?.more_info?.language ||
+        nameLang ||
+        input.lang ||
+        "hindi";
 
       const station: Radio = matchedStation ?? {
         id: cleanToken,
@@ -145,7 +172,7 @@ export const radioRouter = router({
         type: "radio_station",
         image:
           "https://staticfe.saavn.com/web6/jioindw/dist/1696482270/_i/default_images/default-radio-500x500.jpg",
-        perma_url: `https://www.saavn.com/s/radio/${input.name || cleanToken}/${cleanToken}`,
+        perma_url: `https://www.saavn.com/s/radio/${input.name}/${cleanToken}`,
         explicit_content: "0",
         more_info: {
           featured_station_type: "featured",

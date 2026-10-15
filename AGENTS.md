@@ -41,11 +41,74 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `REVALIDATE_SECONDS` sets revalidate and hard expiry (600s for media-bearing
   details, 3600s for menus/footer/same-year); failures are thrown, with upstream
   classification preserved across the serialized error boundary.
-- Incremental adoption is deferred with `instant = false` in `(root)/layout.tsx`
-  (session/sidebar cookies and navigation) and `(auth)/layout.tsx` (request-time
-  daily artwork, after `connection()`). These route groups still need shell
-  migration; `/chart` also opts out locally for dev navigation validation.
-  The app root itself remains static-capable.
+- Shell structure (no `instant = false` anywhere): every `(root)`/`(auth)` route
+  prerenders a non-empty static shell (layout chrome, headings, skeletons). Rules
+  that keep it that way:
+  - `(root)/layout.tsx` is synchronous and reads no request data. The session and
+    the user's library are `getViewer()` (`lib/viewer.ts`, memoized per request),
+    passed un-awaited to `ViewerProvider`; client islands in `components/viewer.tsx`
+    (`ViewerSidebar`, `ViewerMobileNav`, `ViewerUserMenu`, `ViewerSignedOut`,
+    `ViewerPlayer`) resolve it with `use()` behind their own `<Suspense>`. Server
+    components that need the user (`SongList`, `DetailsHeader`) call `getViewer()`.
+    Never `await` it, `cookies()` or `headers()` in a layout body.
+  - `usePathname`, `useParams`, `useSearchParams` and `useSelectedLayoutSegment`
+    suspend while a route with request-time params (or any query string) is
+    prerendered. Wrap query/path-aware UI in `PathnameBoundary` /
+    `SearchParamsBoundary` (`components/*-boundary.tsx`): the shell gets the same
+    UI with `null`, the real value streams in. Content fetched for a query string
+    goes in `KeyedByParams`, so a new `?lang=` shows its skeleton at once instead of
+    holding the old list (and the old URL) until the data lands.
+  - The sidebar's saved open/closed state is applied before first paint: the
+    `SIDEBAR_STEP` in `lib/theme-script.ts` sets `<html data-sidebar="collapsed">`
+    from the `sidebar_state` cookie, `styles/globals.css` holds the collapsed gutter
+    until `AppSidebarProvider` hydrates (it then sets `data-sidebar-ready`).
+  - Tabs are child routes, not state in a slug: artist tabs are
+    `artist/[name]/[token]/{page,songs,albums,bio}` under a layout that keeps the
+    header, tab row and shelves mounted (`lib/artist-route.ts`); search results
+    live in a `search/(results)` group whose layout keeps the title and type chips.
+    Old `<name>-songs` artist URLs (and JioSaavn's own links) are 308-redirected in
+    `proxy.ts`; `getHref` already links the tab routes.
+  - `/settings` is one page (sections Account, Appearance, Playback, Security; the old
+    `/settings/appearance` and `/settings/preferences` 308 to `#appearance` / `#playback`
+    from `next.config.ts`, list in `lib/legacy-redirects.ts`). Its shell, rail, search and
+    appearance cards prerender; account, playback and security stream in behind skeletons
+    (`settings-skeletons.tsx`), so it has no `loading.tsx`. The search works through
+    `SettingsRow`/`SettingsBlock` (`data-settings-row`, hidden by `useSettingsMatch`) and
+    CSS `:has()` on cards and sections; give every new control a `SettingsRow` with keywords.
+    The profile form and passkey UI are `next/dynamic` (`account-lazy.tsx`) to stay out of
+    first-load JS.
+  - Entity pages (album, playlist, song, show, label, episode, mix, radio detail,
+    `/me/*` pages) are whole-page data: they keep a route `loading.tsx`
+    with a skeleton that mirrors the page, and Suspense only for secondary lists.
+    Catalog list pages put the heading in the shell and the fetched grid in
+    `Suspense`; they have no `loading.tsx`.
+  - Do not use `<Link prefetch>` (true) or `partialPrefetching`: on 16.3.6 with the
+    `@modal/[...catchAll]` slot, `prefetch={true}` made the client re-request the
+    modal catch-all segment of every visible link endlessly (hundreds of requests a
+    second), and `partialPrefetching: true` looped `/_tree` requests. Default
+    `<Link>` prefetch already puts each tab's skeleton in the client.
+  - Dev only: with `(root)/template.tsx` and a fully static page, React logs
+    `Each child in a list should have a unique "key" prop ... OuterLayoutRouter`
+    (Next's devtools segment wrapper around the template is created unvalidated).
+    It does not exist in production builds; it hid before only because the layout
+    blocked the whole route.
+- First-load JS rules (budget in `scripts/check-budget.ts`, run `bun run budget`):
+  - No TanStack Query or tRPC React provider at the root. Imperative calls (play, radio, surprise,
+    player refill) use the vanilla client `trpc` from `~/lib/trpc/vanilla`; only infinite lists,
+    search and lyrics wrap themselves in `QueryScope` (`components/query-scope.tsx`) and pass
+    `trpc.x.y.query` as `queryFn`. Never import `@tanstack/react-query` from a component the shell
+    or a list-less route renders.
+  - Toolbar popups (search palette, language picker, user menu, Music mega menu, create-playlist
+    dialog, the per-row "more" menu and drawer) are a closed shell trigger plus a lazy chunk (`hooks/use-deferred.ts`): hover, focus,
+    pointer down, Ctrl/Cmd+K or an arrow key start the import; click before it lands opens it on
+    arrival (`defaultOpen`). The shell trigger must render the same classes and ARIA as the real
+    one (share the class/props module, see `language-trigger.tsx`; `tests/dom/deferred-popups.test.tsx`
+    pins nav). Do not import `Dialog`/`Drawer`/`Popover`/`DropdownMenu`/`NavigationMenu` statically
+    from anything the layout renders.
+  - The glass engine (`start-glass-runtime`, lens registry) is its own chunk, started on idle by
+    `GlassRuntime` (or by the first popup intent). Register surfaces through `whenGlassRuns` /
+    `registerWhenReady` in `components/glass/glass-loader.ts`; never import `lens-registry` or
+    `start-glass-runtime` statically from shell code. Surfaces show the frosted fallback until then.
 - Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
@@ -81,7 +144,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `headers()` or CSP nonce (a nonce forces dynamic rendering and defeats Cache
   Components). CSP is hash-based (`lib/csp.ts`). Anything that must apply before
   first paint (light/dark, the saved appearance from the `theme-config` cookie's
-  derived `html` field, later the docked-queue flag) goes in a step of
+  derived `html` field, the docked-queue and collapsed-sidebar flags) goes in a step of
   `THEME_BOOTSTRAP_SCRIPT` (`lib/theme-script.ts`), whose hash follows
   automatically. `ThemeConfigProvider` reads the cookie in the browser.
 - Tailwind v4's automatic content scanning only covers `apps/web`. Utility
@@ -98,6 +161,19 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   export). If a package needs ambient globals visible to consumers, prefer
   listing the `.d.ts` file directly in the consumer's own `tsconfig.json`
   `include`/`files`, not a barrel re-export.
+
+## Song rows take the slim model, never the raw song
+
+Client components (rows, row menus, `SongListClient`, `LibrarySongList`, `PlayAllButton`, details header buttons,
+infinite lists) get `SongRowItem` from `toSongRow` (`packages/types/src/row.ts`), built where the raw song is
+fetched (server component, or the `queryFn` of a client list). Never pass a `Song`/`Episode` as a client prop: a raw
+song is about 4 KB of flight. It keeps `download_url` and `maxQuality` (the `320kbps` cap), so playback and download
+fallback work; add a field there only when a client really reads it. `toSongRow` is memoized per raw object so the
+header and the rows of one page share one serialized copy (Flight dedupes by reference); build rows from the same
+raw array, not a re-fetched one. `toQueueEntry` turns a row or a queue entry into a fresh `Queue`.
+`SongListRow` and the list/shelf/details skeletons (`song-list-skeleton`, `shelf-skeleton`, `details-header-skeleton`) are
+`"use client"` on purpose: server-rendered, their class strings were serialized into the flight per row (4 KB each);
+as client components the flight carries only props. Keep repeated markup (rows, skeleton cards) in client modules.
 
 ## packages/trpc raw-passthrough shape (resolved)
 
@@ -123,11 +199,10 @@ that are easy to get wrong again:
 - Entities embedded in an `artistMap`/`similarArtists` list (`ArtistMini`,
   `SimilarArtist`) use `name`, not `title`, like `Artist`/`Label` themselves -
   only song/album/playlist/show/episode top-level objects use `title`.
-- `ShowDetails.type` is the literal `"season"`, not `"show"` - the show detail
-  page's own UI/routing concept of "this is a show" has to be derived
-  separately (see `apps/web/components/details-header/details-header.tsx`'s
-  `getKind`/`getId` handling of `Label` and `Artist`, which also lack a plain
-  `id`/`type` field and use `labelId`/`artistId` instead).
+- `ShowDetails.type` is `"show"` (verified live), not `"season"`; its episodes are keyed
+  by the numeric `id` plus `more_info.season_number`, never the perma token
+  (`isShowDetails` in `apps/web/components/details-header/details-header-items.ts`).
+  Artist and Label also lack a plain `id`/`type` (`artistId`/`labelId`), see `getKind`/`getId`.
 - `Quality` (image/download URLs) is a plain templated string, never the
   `{quality,link}[]` array shape some earlier normalized types assumed.
 - `TopShows.trendingPodcasts` is an array of `{items, module}` groups, not a
@@ -205,6 +280,10 @@ bug is appending to them instead of substituting:
   src (leaving `_sounds` undefined) and react-use-audio-player's `getSnapshotFromHowl`
   then throws `Cannot read properties of undefined (reading 'length')` inside the
   play effect. Guard on a falsy `audioSrc` and `toast` instead of calling `load()`.
+- The CDN 404s a `_320` link for songs flagged `more_info["320kbps"] === "false"`.
+  `getDownloadCandidates`/`maxQualityOf` (`packages/types/src/media.ts`) cap the
+  request, and `use-track-playback.ts` steps down a bitrate on each Howl load error
+  (then toasts once and skips). Never pick a link by raw index.
 - Images embed a resolution token with _either_ separator: `-500x500.jpg` for
   song/album/playlist artwork, `_150x150.jpg` for artist and some CDN paths.
   Resizing regexes must accept both (`getImageSrc`/`withSize` in
@@ -215,6 +294,69 @@ bug is appending to them instead of substituting:
 
 Verify these against live data, not fixtures: a decrypted link should answer
 `206 audio/mp4` to `curl -o /dev/null -w '%{http_code} %{content_type}' -r 0-1`.
+
+## View transitions (`app/(root)/template.tsx`, `styles/motion.css`)
+
+- One `<ViewTransition default="vt-page">` in the (root) template triggers a transition for every
+  navigation, tab/search-type switch and skeleton reveal. It must stay a trigger only: motion.css sets
+  `view-transition-name: none !important` on `[data-vt-page]`, so the root snapshot (viewport sized)
+  crossfades. Naming the page snapshots the whole document height and lifts it out of the root, and
+  naming shell pieces (sidebar, toolbar, player) makes the glass lose its backdrop (measured: toolbar
+  diff mean 44 vs about 2). Never add `view-transition-name` to the shell or the page wrapper.
+- Browser back/forward never starts a view transition: React skips popstate commits. Directional
+  slides are not possible without naming the page, so there are none.
+- The artwork morph: `MorphSource` names the clicked card's art; `MorphSkeleton` (loading skeleton) and
+  `MorphArt` (real header art) claim that name inside the transition's commit (`morph-state.ts`).
+  Do not name destination artwork statically or via an observer: that raced the commit.
+
+## Motion is never zero
+
+Reduced motion (OS or `data-motion="reduced"`) removes movement, not feedback: `globals.css` keeps opacity/colour/
+visibility transitions at 120-200ms and `motion.css` keeps the root crossfade (the artwork flight becomes a fade).
+Never set `animation-duration`/`transition-duration` to 0 for a class of elements or `animation: none` on view-transition
+pseudos: that made the view transition, sidebar and queue vanish for anyone with the OS setting on. `reduced-motion.test.ts`
+pins it. Panels and the morph use `--ease-panel`/`--duration-panel` (340ms); `--ease-drawer`/`--ease-spring` are 80% done
+in the first quarter and read as an instant jump, so do not use them for slides. Any card that opens a detail page needs
+`data-morph={type}` plus `data-morph-art` (see `slider-card`, `home-hero`, `quick-picks`); the loading placeholder shows the
+card's picture so the flight lands on artwork. The queue pane scrolls only `[data-queue-scroll]`; the header, now playing
+and "Up next" label sit outside it.
+
+## Panels slide into the gutter, content stays put
+
+The content column spans from the sidebar gap to the viewport edge and has no queue margin. `page-container`
+and the toolbar's `page-gutter` (`styles/globals.css`) place the page box with
+`margin-left: clamp(0, Cf - (100vw + w) / 2, Cf - R - w)`, where `R` is the registered, animated
+`--queue-reserve` (the docked queue's column, from `html[data-queue=open]` at 1440px and up). When the box fits
+beside the open panels it is centred in the viewport and neither the sidebar nor the queue moves it (or the
+anchored player bar); when it does not fit the clamp collapses to the classic push. Never reintroduce a
+margin or width on the column for a panel, and keep the sidebar gap in flow (its live width is what `Cf` reads).
+
+## Optimistic writes
+
+A click must change the UI in the same frame; the server write follows and a failure rolls back with a toast.
+Never hang UI state on the action's round trip, and never let only the clicked control change.
+
+- Shared client overlays own the state, layered over server props: likes in `lib/optimistic-favorite.ts`
+  (`useFavoriteToggle` in `lib/use-favorite-toggle.ts`; hearts, tile menu and player share one key), playlists in
+  `lib/optimistic-playlists.ts` (`usePlaylists` for the sidebar and add dialog, `PlaylistTitle`, `PlaylistGate`,
+  `PlaylistRow`, `PendingPlaylistCards`), `?lang=` chips in `lib/pending-params.ts`. Use these for new write paths
+  instead of a per-component `useOptimistic`, which cannot update other components.
+- One write per key in flight, always the latest intent (rapid clicks never double toggle); songs of one playlist
+  are written one at a time and removal indexes are adjusted for earlier removals.
+- An overlay record is dropped when refreshed server props agree, on failure, or after a timeout. Do not clear it
+  on action success: `refresh()` props arrive a moment later and the control would flicker back.
+- Creating a playlist cannot be fully optimistic (the id is minted by the database): it shows a dimmed `pending`
+  row with no link and takes the real id on return. Sign out, profile and password saves, and radio/queue
+  fetches stay pending-style (toast) because the server or upstream decides the outcome.
+
+## Proxy limiter scope
+
+`proxy.ts` matches pages, `/api/trpc`, `/api/auth` and `/api/og` only (`PROXY_MATCHER` in
+`lib/rate-limit-scope.ts`; the literal in `config.matcher` must equal it, a test checks). `limiterKinds`
+charges documents, server actions and `/api` requests; RSC navigations/prefetches (`rsc` header) and
+subresources (`sec-fetch-dest` other than document/iframe) are never counted, so browsing cannot 429.
+`/api/og` has its own 20/min bucket on top of the global one. Do not add CSP enforcement or a limiter
+for static files here.
 
 ## Maintaining this file
 
@@ -271,6 +413,11 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
 - `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
   (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
   by both `apps/web` and `packages/trpc`; don't hand-roll another copy).
+- SEO origin: canonical, `og:url`, `metadataBase`, robots and sitemap URLs all come from
+  `siteUrl()` (`apps/web/lib/site-url.ts`, `NEXT_PUBLIC_APP_URL` with the production default).
+  Route metadata goes through `pageMetadata` (`lib/metadata.ts`, which sets the canonical); user,
+  settings and auth routes export `noindexMetadata`. `app/robots.ts` owns robots.txt: never add
+  `public/robots.txt`, a static file is served instead of the route.
 - Test layout: `apps/web/tests/` (plain), `apps/web/tests/mocked/` (process-isolated
   `mock.module` suites), `apps/web/tests/dom/` (happy-dom behavior tests).
   Skill/feature docs in `.agents/skills/verify/` and `.agents/skills/verify/features/` cite these.

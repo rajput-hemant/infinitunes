@@ -94,7 +94,7 @@ export function ensureQueueItemIds(queue: Queue[]): Queue[] {
 }
 
 /** The upstream lists one entry per role (music, lyricist), so one artist repeats. */
-function uniqueArtists<T extends { id: string }>(artists: T[]): T[] {
+export function uniqueArtists<T extends { id: string }>(artists: T[]): T[] {
   return [...new Map(artists.map((a) => [a.id, a])).values()];
 }
 
@@ -107,9 +107,12 @@ export function toQueue(item: Song | Episode): Queue {
     url: item.perma_url,
     type: item.type,
     image: getImageSrc(item.image),
-    artists: uniqueArtists(item.more_info.artistMap?.artists ?? []),
+    artists: uniqueArtists(item.more_info.artistMap?.artists ?? []).map(
+      ({ id, name, perma_url }) => ({ id, name, perma_url }),
+    ),
     download_url: item.download_url ?? item.more_info.download_url ?? "",
     duration: Number(item.more_info.duration) || 0,
+    maxQuality: maxQualityOf(item.more_info),
   };
 }
 
@@ -224,17 +227,49 @@ export function getImageSrc(
 }
 
 /**
- * `withDownloadUrl` attaches every decrypted bitrate as one comma-separated
- * string, ordered to match `QUALITIES_MAP`. Pick the requested bitrate out of
- * it, falling back to the highest available bitrate.
+ * The best stream quality a song really has. Upstream flags songs without a
+ * 320kbps encode with `more_info["320kbps"] === "false"`; asking the CDN for
+ * the `_320` link of such a song 404s. Everything else is uncapped.
  */
-export function getDownloadLink(url: Quality, quality?: StreamQuality) {
-  if (typeof url !== "string") return "";
+export function maxQualityOf(moreInfo: object): StreamQuality | undefined {
+  return "320kbps" in moreInfo && moreInfo["320kbps"] === "false"
+    ? "high"
+    : undefined;
+}
+
+/**
+ * `withDownloadUrl` attaches every decrypted bitrate as one comma-separated
+ * string, ordered to match `QUALITIES_MAP`. Returns the links to try, best
+ * first: the requested bitrate (capped at `max`, falling back to the highest
+ * available when the request is unknown), then each lower one down to the
+ * lowest.
+ */
+export function getDownloadCandidates(
+  url: Quality,
+  quality?: StreamQuality,
+  max?: StreamQuality,
+): string[] {
+  if (typeof url !== "string") return [];
   const links = url
     .split(",")
     .map((link) => link.trim().replace(/^http:\/\//, "https://"))
     .filter(Boolean);
-  if (links.length === 0) return "";
-  const index = QUALITIES_MAP.findIndex((q) => q.quality === quality);
-  return links[index] ?? links.at(-1) ?? "";
+  if (links.length === 0) return [];
+  const requested = QUALITIES_MAP.findIndex((q) => q.quality === quality);
+  const ceiling = QUALITIES_MAP.findIndex((q) => q.quality === max);
+  const start = Math.min(
+    requested === -1 ? links.length - 1 : requested,
+    ceiling === -1 ? links.length - 1 : ceiling,
+    links.length - 1,
+  );
+  return [...new Set(links.slice(0, start + 1).reverse())];
+}
+
+/** The single best link for `quality`, capped at what the song has. */
+export function getDownloadLink(
+  url: Quality,
+  quality?: StreamQuality,
+  max?: StreamQuality,
+) {
+  return getDownloadCandidates(url, quality, max)[0] ?? "";
 }

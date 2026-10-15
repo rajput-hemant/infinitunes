@@ -10,7 +10,8 @@ import { controlStyles } from "~/lib/control-styles";
 
 import { PasskeyList } from "./passkey-list";
 import type { PasskeyRow } from "./passkey-list";
-import { SettingsSection } from "./settings-section";
+import { SettingsCard } from "./settings-card";
+import { SettingsBlock, SettingsRow } from "./settings-row";
 
 const LOAD_ERROR = "Could not load passkeys.";
 
@@ -31,6 +32,54 @@ async function listPasskeys(): Promise<PasskeyRow[] | null> {
     console.error(messageOf(error, LOAD_ERROR));
     toast.error(LOAD_ERROR);
     return null;
+  }
+}
+
+/** Enrols a passkey, then refreshes the list. Outside the component: the React Compiler bails out on try/finally. */
+async function enrollPasskey(
+  setIsAdding: React.Dispatch<React.SetStateAction<boolean>>,
+  refresh: () => Promise<void>,
+) {
+  setIsAdding(true);
+  try {
+    const { error } = await authClient.passkey.addPasskey();
+    if (error) {
+      if (error.message?.toLowerCase().includes("cancel")) {
+        toast.info("Passkey enrollment was cancelled.");
+      } else {
+        toast.error(error.message ?? "Could not add passkey.");
+      }
+    } else {
+      toast.success("Passkey added.");
+      await refresh();
+    }
+  } catch (error) {
+    console.error(messageOf(error, "Could not add passkey."));
+    toast.error("Could not add passkey.");
+  } finally {
+    setIsAdding(false);
+  }
+}
+
+async function deletePasskey(
+  id: string,
+  setDeletingId: React.Dispatch<React.SetStateAction<string | null>>,
+  setPasskeys: React.Dispatch<React.SetStateAction<PasskeyRow[]>>,
+) {
+  setDeletingId(id);
+  try {
+    const { error } = await authClient.passkey.deletePasskey({ id });
+    if (error) {
+      toast.error(error.message ?? "Could not remove passkey.");
+    } else {
+      toast.success("Passkey removed.");
+      setPasskeys((current) => current.filter((key) => key.id !== id));
+    }
+  } catch (error) {
+    console.error(messageOf(error, "Could not remove passkey."));
+    toast.error("Could not remove passkey.");
+  } finally {
+    setDeletingId(null);
   }
 }
 
@@ -60,78 +109,27 @@ export function PasskeySettings() {
   }, []);
 
   async function addPasskey() {
-    setIsAdding(true);
-    try {
-      const { error } = await authClient.passkey.addPasskey();
-      if (error) {
-        if (error.message?.toLowerCase().includes("cancel")) {
-          toast.info("Passkey enrollment was cancelled.");
-        } else {
-          toast.error(error.message ?? "Could not add passkey.");
-        }
-      } else {
-        toast.success("Passkey added.");
-        await refresh();
-      }
-    } catch (error) {
-      console.error(messageOf(error, "Could not add passkey."));
-      toast.error("Could not add passkey.");
-    } finally {
-      setIsAdding(false);
-    }
+    await enrollPasskey(setIsAdding, refresh);
   }
 
   async function removePasskey(id: string) {
-    setDeletingId(id);
-    try {
-      const { error } = await authClient.passkey.deletePasskey({ id });
-      if (error) {
-        toast.error(error.message ?? "Could not remove passkey.");
-      } else {
-        toast.success("Passkey removed.");
-        setPasskeys((current) => current.filter((key) => key.id !== id));
-      }
-    } catch (error) {
-      console.error(messageOf(error, "Could not remove passkey."));
-      toast.error("Could not remove passkey.");
-    } finally {
-      setDeletingId(null);
-    }
+    await deletePasskey(id, setDeletingId, setPasskeys);
   }
 
   return (
-    <SettingsSection
-      id="passkeys"
-      title="Passkeys"
-      description="Sign in without a password using your device. Adding a passkey requires you to be signed in."
-    >
-      {isLoading ? (
-        <output className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2
-            aria-hidden
-            className="size-4 animate-spin motion-reduce:animate-none"
-          />{" "}
-          Loading passkeys...
-        </output>
-      ) : passkeys.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No passkeys yet. Add one to enable passwordless sign-in.
-        </p>
-      ) : (
-        <PasskeyList
-          passkeys={passkeys}
-          deletingId={deletingId}
-          onRemove={removePasskey}
-        />
-      )}
-
-      <div>
+    <SettingsCard title="Passkeys">
+      <SettingsRow
+        id="passkeys"
+        label="Sign in without a password"
+        help="Use your device. Adding a passkey requires you to be signed in."
+        keywords="passkeys passkey fingerprint biometric security"
+      >
         <Button
           type="button"
           variant="outline"
           disabled={isAdding || isLoading}
           onClick={addPasskey}
-          className={controlStyles.textLg}
+          className={controlStyles.text}
         >
           {isAdding ? (
             <Loader2
@@ -141,9 +139,31 @@ export function PasskeySettings() {
           ) : (
             <Plus aria-hidden className="mr-2 size-4" />
           )}
-          Add Passkey
+          Add passkey
         </Button>
-      </div>
-    </SettingsSection>
+      </SettingsRow>
+
+      <SettingsBlock keywords="passkeys passkey list">
+        {isLoading ? (
+          <output className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2
+              aria-hidden
+              className="size-4 animate-spin motion-reduce:animate-none"
+            />{" "}
+            Loading passkeys...
+          </output>
+        ) : passkeys.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No passkeys yet. Add one to enable passwordless sign-in.
+          </p>
+        ) : (
+          <PasskeyList
+            passkeys={passkeys}
+            deletingId={deletingId}
+            onRemove={removePasskey}
+          />
+        )}
+      </SettingsBlock>
+    </SettingsCard>
   );
 }

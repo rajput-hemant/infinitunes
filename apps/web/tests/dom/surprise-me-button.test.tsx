@@ -11,18 +11,16 @@ let fetchResult: () => Promise<unknown[]> = async () => trending;
 
 mock.module("next/navigation", () => ({ useSearchParams: () => params }));
 mock.module("sonner", () => ({ toast: { success() {}, error() {} } }));
-mock.module("~/lib/trpc/client", () => ({
-  api: {
-    useUtils: () => ({
-      get: {
-        trending: {
-          fetch: async (input: unknown) => {
-            fetched.push(input);
-            return fetchResult();
-          },
+mock.module("~/lib/trpc/vanilla", () => ({
+  trpc: {
+    get: {
+      trending: {
+        query: async (input: unknown) => {
+          fetched.push(input);
+          return fetchResult();
         },
       },
-    }),
+    },
   },
 }));
 

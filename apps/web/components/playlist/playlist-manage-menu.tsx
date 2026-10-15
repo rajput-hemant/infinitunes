@@ -25,6 +25,10 @@ import { toast } from "sonner";
 import { unwrap } from "~/lib/action-result";
 import { deletePlaylist } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
+import {
+  deletePlaylistOptimistic,
+  usePlaylistMeta,
+} from "~/lib/optimistic-playlists";
 import { userMessage } from "~/lib/user-message";
 import { cn, destructiveText } from "~/lib/utils";
 
@@ -37,29 +41,30 @@ type PlaylistManageMenuProps = {
 };
 
 export function PlaylistManageMenu({
-  playlist,
+  playlist: serverPlaylist,
   redirectOnDelete = false,
   triggerClassName,
 }: PlaylistManageMenuProps) {
   const router = useRouter();
+  // The dialogs start from, and the copy names, the name in force right now.
+  const playlist = { ...serverPlaylist, ...usePlaylistMeta(serverPlaylist) };
   const [renameOpen, setRenameOpen] = React.useState(false);
   const [deleteOpen, setDeleteOpen] = React.useState(false);
 
-  async function handleDelete() {
-    try {
-      await toast.promise(unwrap(deletePlaylist(playlist.id)), {
+  function handleDelete() {
+    // Gone from every list at once; a failure brings it back with a toast.
+    setDeleteOpen(false);
+    if (redirectOnDelete) router.push("/me");
+    toast.promise(
+      deletePlaylistOptimistic(playlist.id, () =>
+        unwrap(deletePlaylist(playlist.id)),
+      ),
+      {
         loading: "Deleting playlist...",
         success: `Playlist "${playlist.name}" deleted`,
         error: userMessage,
-      });
-      setDeleteOpen(false);
-      if (redirectOnDelete) {
-        router.push("/me");
-      }
-      router.refresh();
-    } catch (error) {
-      console.error(error instanceof Error ? error.message : error);
-    }
+      },
+    );
   }
 
   return (

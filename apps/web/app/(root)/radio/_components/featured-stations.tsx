@@ -1,38 +1,39 @@
 "use client";
 
 import type { Lang, Radio } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Radio as RadioIcon } from "lucide-react";
+import type { ComponentProps } from "react";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { CatalogEmpty } from "~/app/(root)/browse/_components/catalog-states";
 import { CatalogLoadMore } from "~/components/catalog-load-more";
+import { QueryScope } from "~/components/query-scope";
 import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 type FeaturedStationsProps = {
   initialStations: Radio[];
   lang?: Lang;
 };
 
-export function FeaturedStations({
+function FeaturedStationsContent({
   initialStations,
   lang,
 }: FeaturedStationsProps) {
-  const utils = api.useUtils();
-
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["featured-stations", lang],
       queryFn: ({ pageParam }) =>
-        utils.get.featuredStations.fetch({ page: pageParam, n: 50, lang }),
+        trpc.get.featuredStations.query({ page: pageParam, n: 50, lang }),
       initialPageParam: 1,
       getNextPageParam: (stations, allPages) =>
         stations.length < 50 ? null : allPages.length + 1,
       initialData: { pages: [initialStations], pageParams: [1] },
     });
 
-  const stations = data.pages.flat();
+  const stations = uniqueBy(data.pages.flat(), (station) => station.id);
 
   if (stations.length === 0) {
     return (
@@ -72,5 +73,15 @@ export function FeaturedStations({
         onLoadMore={fetchNextPage}
       />
     </div>
+  );
+}
+
+export function FeaturedStations(
+  props: ComponentProps<typeof FeaturedStationsContent>,
+) {
+  return (
+    <QueryScope>
+      <FeaturedStationsContent {...props} />
+    </QueryScope>
   );
 }

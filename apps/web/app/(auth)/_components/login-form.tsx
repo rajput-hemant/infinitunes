@@ -30,6 +30,78 @@ const defaultValues: LoginFormData = {
   password: "",
 };
 
+type AppRouter = ReturnType<typeof useRouter>;
+
+type SignInTarget = {
+  router: AppRouter;
+  callbackUrl: string;
+  setBusy: (busy: boolean) => void;
+};
+
+/**
+ * Signs in with email and password. The helpers sit outside the component: the
+ * React Compiler bails out on try/finally.
+ */
+async function signInWithEmail(
+  formData: LoginFormData,
+  { router, callbackUrl, setBusy }: SignInTarget,
+) {
+  setBusy(true);
+
+  try {
+    const { error } = await authClient.signIn.email({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (error) {
+      toast.error(error.message ?? "Something went wrong.");
+    } else {
+      toast.success("You have been signed in.");
+      router.push(asRoute(callbackUrl));
+      router.refresh();
+    }
+  } catch (error) {
+    console.error(
+      error instanceof Error ? error.message : "Something went wrong.",
+    );
+    toast.error("Something went wrong.");
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function signInWithPasskey({
+  router,
+  callbackUrl,
+  setBusy,
+}: SignInTarget) {
+  setBusy(true);
+
+  try {
+    const { error } = await authClient.signIn.passkey();
+
+    if (error) {
+      if (error.message?.toLowerCase().includes("cancel")) {
+        toast.info("Passkey sign-in was cancelled.");
+      } else {
+        toast.error(error.message ?? "Passkey sign-in failed.");
+      }
+    } else {
+      toast.success("You have been signed in.");
+      router.push(asRoute(callbackUrl));
+      router.refresh();
+    }
+  } catch (error) {
+    console.error(
+      error instanceof Error ? error.message : "Passkey sign-in failed.",
+    );
+    toast.error("Passkey sign-in failed.");
+  } finally {
+    setBusy(false);
+  }
+}
+
 export function LoginForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -55,56 +127,19 @@ export function LoginForm() {
   });
 
   async function onSubmit(formData: LoginFormData) {
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await authClient.signIn.email({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) {
-        toast.error(error.message ?? "Something went wrong.");
-      } else {
-        toast.success("You have been signed in.");
-        router.push(asRoute(callbackUrl));
-        router.refresh();
-      }
-    } catch (error) {
-      console.error(
-        error instanceof Error ? error.message : "Something went wrong.",
-      );
-      toast.error("Something went wrong.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    await signInWithEmail(formData, {
+      router,
+      callbackUrl,
+      setBusy: setIsSubmitting,
+    });
   }
 
   async function passkeySignInHandler() {
-    setIsPasskeyLoading(true);
-
-    try {
-      const { error } = await authClient.signIn.passkey();
-
-      if (error) {
-        if (error.message?.toLowerCase().includes("cancel")) {
-          toast.info("Passkey sign-in was cancelled.");
-        } else {
-          toast.error(error.message ?? "Passkey sign-in failed.");
-        }
-      } else {
-        toast.success("You have been signed in.");
-        router.push(asRoute(callbackUrl));
-        router.refresh();
-      }
-    } catch (error) {
-      console.error(
-        error instanceof Error ? error.message : "Passkey sign-in failed.",
-      );
-      toast.error("Passkey sign-in failed.");
-    } finally {
-      setIsPasskeyLoading(false);
-    }
+    await signInWithPasskey({
+      router,
+      callbackUrl,
+      setBusy: setIsPasskeyLoading,
+    });
   }
 
   const isDisabled = isSubmitting || isPasskeyLoading;

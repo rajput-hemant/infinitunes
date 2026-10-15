@@ -81,9 +81,8 @@ The blur factor multiplies a 2px base and adds the Blur setting. The size classe
 
 Variants: `regular` adapts to the backdrop; `clear` has almost no tint, a dim layer and white text, only over
 artwork or media (the home hero caption and the shelf arrows); `tinted` is the accent, only for a primary action.
-Never mix them in one view. A toolbar over an artwork header puts
-`data-glass-over-art` on its wrapper (and `data-glass-titled` once the title has scrolled into the bar) and its regular
-glass renders clear.
+Never mix them in one view. The toolbar capsules stay `regular` at every scroll position, including over an
+artwork header (`data-glass-titled` only fades the page title into the bar).
 
 ## Attributes
 
@@ -183,16 +182,16 @@ prose stay plain.
 
 ## Fallbacks and accessibility
 
-| Condition                                         | Result                                                                                                                                      |
-| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Safari, Firefox, `?lens=0`, no SVG host           | frosted: fill, blur, glint, tint layer, shadow, press glow (`data-glass-engine="frost"`)                                                    |
-| `?lens=1`                                         | skips only the Chromium check                                                                                                               |
-| `data-glass-level="solid"`                        | opaque `--popover`, no backdrop filter, no lens                                                                                             |
-| `prefers-reduced-transparency`                    | lens off, fill .86, clear dim .62                                                                                                           |
-| `prefers-contrast: more`                          | opaque surface, no tint layer, 1.5px text border, no filter                                                                                 |
-| Solid level, `prefers-contrast: more`             | always win over the clear and tinted variants (`data-glass-over-art`): the variant rules are excluded under them, a test checks the cascade |
-| `forced-colors: active`                           | `Canvas` and `CanvasText`, 1px outline, no tint layer                                                                                       |
-| `prefers-reduced-motion`, `data-motion="reduced"` | no materialize, no spring (values jump), tab bar and player change position without a transition, no device-orientation light               |
+| Condition                                         | Result                                                                                                                                  |
+| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Safari, Firefox, `?lens=0`, no SVG host           | frosted: fill, blur, glint, tint layer, shadow, press glow (`data-glass-engine="frost"`)                                                |
+| `?lens=1`                                         | skips only the Chromium check                                                                                                           |
+| `data-glass-level="solid"`                        | opaque `--popover`, no backdrop filter, no lens                                                                                         |
+| `prefers-reduced-transparency`                    | lens off, fill .86, clear dim .62                                                                                                       |
+| `prefers-contrast: more`                          | opaque surface, no tint layer, 1.5px text border, no filter                                                                             |
+| Solid level, `prefers-contrast: more`             | always win over the clear and tinted variants (`clear`, `tinted`): the variant rules are excluded under them, a test checks the cascade |
+| `forced-colors: active`                           | `Canvas` and `CanvasText`, 1px outline, no tint layer                                                                                   |
+| `prefers-reduced-motion`, `data-motion="reduced"` | no materialize, no spring (values jump), tab bar and player change position without a transition, no device-orientation light           |
 
 The scroll edge (`data-glass-edge`) and the lifted selector droplet are deliberately not gated by Solid or the
 contrast modes (the mockup does not either): the edge blurs page content that scrolled under a toolbar, not the

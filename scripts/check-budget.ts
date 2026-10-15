@@ -16,9 +16,9 @@
  * Ceilings were set in the phase 3 perf audit at af9cea8, which measured
  * 522-557KB gzipped initial JS across routes. Ceilings only ratchet down: a
  * config may lower them but never raise one past the hard caps below, which
- * equal these values. Targets the team is working toward, to lower the
- * ceilings to as fixes land: catalog 390, detail 410, auth 330, not-found 270,
- * fonts 2 preloads / 100KB.
+ * equal these values. Ratcheted after the skills audit (WP3-5) to about 5% above
+ * the measured maxima: catalog 345, detail 405, search 360, account 362,
+ * auth 343, modal 344, not-found 241 KB gzipped; fonts 2 preloads / 93KB.
  *
  * Routes whose class is not recognised are reported as UNCHECKED, not failed.
  *
@@ -58,32 +58,32 @@ export type BudgetConfig = {
 /** Ratchet values: measured today rounded up, with headroom. */
 export const defaultConfig: BudgetConfig = {
   ceilingsKB: {
-    catalog: 540,
-    detail: 570,
-    search: 560,
-    account: 565,
-    auth: 425,
-    modal: 435,
-    "not-found": 370,
+    catalog: 365,
+    detail: 425,
+    search: 380,
+    account: 380,
+    auth: 360,
+    modal: 365,
+    "not-found": 255,
   },
-  maxFontPreloads: 4,
-  maxFontPreloadKB: 250,
+  maxFontPreloads: 2,
+  maxFontPreloadKB: 100,
   forbiddenStrings: ["ZodError", "navigator.credentials"],
   forbiddenMode: "warn",
 };
 
 /** Hard caps: a config can never exceed these, whatever is measured. */
 const HARD_CAPS_KB: Record<RouteClass, number> = {
-  catalog: 540,
-  detail: 570,
-  search: 560,
-  account: 565,
-  auth: 425,
-  modal: 435,
-  "not-found": 370,
+  catalog: 365,
+  detail: 425,
+  search: 380,
+  account: 380,
+  auth: 360,
+  modal: 365,
+  "not-found": 255,
 };
-const HARD_MAX_FONT_PRELOADS = 4;
-const HARD_MAX_FONT_PRELOAD_KB = 250;
+const HARD_MAX_FONT_PRELOADS = 2;
+const HARD_MAX_FONT_PRELOAD_KB = 100;
 
 const CATALOG_ROUTES = new Set([
   "/",

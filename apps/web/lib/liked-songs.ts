@@ -5,6 +5,37 @@ import { getErrorCode } from "./error-code";
 const LIKED_SONGS_CHUNK_SIZE = 25;
 const RECOVERY_CONCURRENCY = 3;
 
+/** Parallel detail lookups for one library page; keeps a large library from flooding upstream. */
+export const LIBRARY_FETCH_CONCURRENCY = 6;
+
+/**
+ * `Promise.allSettled(items.map(run))` with at most `limit` runs in flight.
+ * Results keep the order of `items`.
+ */
+export async function settleWithLimit<T, R>(
+  items: readonly T[],
+  limit: number,
+  run: (item: T) => Promise<R>,
+): Promise<PromiseSettledResult<R>[]> {
+  const results: PromiseSettledResult<R>[] = new Array(items.length);
+  const tasks = items.map((item) => () => run(item));
+  let next = 0;
+  const worker = async () => {
+    for (let task = tasks[next]; task; task = tasks[next]) {
+      const i = next++;
+      try {
+        results[i] = { status: "fulfilled", value: await task() };
+      } catch (reason) {
+        results[i] = { status: "rejected", reason };
+      }
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(Math.max(limit, 1), items.length) }, worker),
+  );
+  return results;
+}
+
 export function chunk<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += size) {

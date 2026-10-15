@@ -1,5 +1,5 @@
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import type { Episode, Song } from "@infinitunes/types";
+import type { SongRowItem } from "@infinitunes/types";
 
 import type { User } from "~/lib/auth";
 import { cn } from "~/lib/utils";
@@ -9,7 +9,7 @@ import { SongListRow } from "./song-list-row";
 
 type SongListProps = {
   user?: User;
-  items: (Song | Episode)[];
+  items: SongRowItem[];
   showAlbum?: boolean;
   userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
@@ -33,7 +33,7 @@ export function SongListClient(props: SongListProps) {
       <ol className="flex flex-col text-muted-foreground">
         {items.map((item, i) => (
           <li
-            key={item.id}
+            key={`${item.id}-${i}`}
             className="[contain-intrinsic-size:auto_var(--row)] [content-visibility:auto]"
           >
             <SongListRow

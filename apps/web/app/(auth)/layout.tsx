@@ -5,6 +5,7 @@ import React from "react";
 import { ArtistSpotlight } from "~/components/artist-spotlight";
 import { Icons } from "~/components/icons";
 import { controlStyles } from "~/lib/control-styles";
+import { noindexMetadata } from "~/lib/metadata";
 import { cn } from "~/lib/utils";
 
 const ART_IMAGES = [
@@ -22,11 +23,11 @@ const ART_IMAGES = [
 
 type AuthLayoutProps = React.PropsWithChildren;
 
-// Signed-in redirects live in each page (`redirectIfSignedIn`), because
-// `/reset-password?token=...` must stay reachable for a signed-in user. They
-// read the session at request time, so the auth pages opt out of validation.
-// TODO: Cache Components adoption. Move the session read behind Suspense.
-export const instant = false;
+export const metadata = noindexMetadata;
+
+// Signed-in redirects live in each page (`SignedInRedirect`, behind its own
+// `<Suspense>`), because `/reset-password?token=...` must stay reachable for a
+// signed-in user. The layout and the forms prerender; the redirect streams in.
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
@@ -51,7 +52,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           aria-label="Close"
           className={cn(
             controlStyles.headerIcon,
-            "absolute left-4 top-4 flex items-center justify-center text-muted-foreground outline-none hover:text-foreground",
+            "absolute left-4 top-4 flex items-center justify-center text-muted-foreground outline-hidden hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
           )}
         >
           <X className="size-4" />

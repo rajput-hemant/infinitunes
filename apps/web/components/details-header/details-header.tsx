@@ -1,16 +1,13 @@
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import { getImageSrc, parseToken } from "@infinitunes/types";
+import { getImageSrc, parseToken, toSongRow } from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { BadgeCheck, Play, Shuffle } from "lucide-react";
 
-import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { orFallback } from "~/lib/degrade";
 import { cn } from "~/lib/utils";
-import { MORPH_CLASS, morphName } from "~/lib/view-transition";
+import { morphName } from "~/lib/view-transition";
+import { getViewer } from "~/lib/viewer";
 
 import { DownloadButton } from "../download-button";
 import { GlassSurface } from "../glass/glass-surface";
@@ -18,6 +15,7 @@ import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
 import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
+import { MorphArt } from "../view-transition/morph-target";
 import { detailBandClassName } from "./details-header-band";
 import { DetailsHeaderFrame } from "./details-header-frame";
 import type { DetailsItem, DetailsKind } from "./details-header-items";
@@ -30,18 +28,19 @@ import {
   getTitle,
   getVerified,
   isKind,
+  isShowDetails,
 } from "./details-header-items";
 import { DetailsMeta } from "./details-header-meta";
 import { MoreButton } from "./more-button";
 import { ShareButton } from "./share-button";
 
 const KIND_LABELS: Partial<Record<DetailsKind, string>> = {
-  season: "Podcast",
+  show: "Podcast",
   label: "Record label",
 };
 
 function getPlayToken(item: DetailsItem): string {
-  if (isKind(item, "season")) return getId(item);
+  if (isShowDetails(item)) return getId(item);
   if (isKind(item, "artist")) return parseToken(item.urls.songs);
   return parseToken("perma_url" in item ? item.perma_url : "");
 }
@@ -53,22 +52,13 @@ type DetailsHeaderProps = {
 export async function DetailsHeader({ item }: DetailsHeaderProps) {
   const kind = getKind(item);
   const title = getTitle(item);
-  const songs = getSongs(item);
+  // Only the slim row model reaches the header buttons (download, queue, radio).
+  const songs = getSongs(item).map(toSongRow);
 
-  const user = await getUser();
+  const { user, playlists, favorites } = await getViewer();
 
-  let playlists: MyPlaylist[] | undefined,
-    favorites: Favorite | null | undefined;
-
-  if (user) {
-    [playlists, favorites] = await Promise.all([
-      orFallback("user playlists", getUserPlaylists(), undefined),
-      orFallback("user favorites", getUserFavorites(), null),
-    ]);
-  }
-
-  const playType = kind === "season" ? "show" : kind;
-  const playSeason = isKind(item, "season")
+  const playType = isShowDetails(item) ? "show" : kind;
+  const playSeason = isShowDetails(item)
     ? Number(item.more_info.season_number)
     : undefined;
   const playToken = getPlayToken(item);
@@ -77,11 +67,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   return (
     <DetailsHeaderFrame title={title} className={detailBandClassName}>
-      <div
-        style={{
-          viewTransitionName: morphName(kind, playToken),
-          viewTransitionClass: MORPH_CLASS,
-        }}
+      <MorphArt
+        name={morphName(kind, playToken)}
         className={cn(
           "relative aspect-square w-[min(60vw,14rem)] shrink-0 overflow-hidden rounded-md shadow-md md:w-36 lg:w-44 min-[90rem]:w-56",
           isRound && "rounded-full",
@@ -99,7 +86,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
         />
 
         <Skeleton className="absolute inset-0 -z-10 rounded-none" />
-      </div>
+      </MorphArt>
 
       <figcaption className="flex min-w-0 w-full flex-col items-center overflow-hidden md:items-start">
         <div className="flex items-center gap-2 text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] text-muted-foreground uppercase">
@@ -113,18 +100,21 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           )}
         </div>
 
-        <h1
-          title={title}
-          className="mt-1 mb-2 flex min-w-0 items-center justify-center font-heading text-[1.75rem] leading-8 font-extrabold tracking-[-0.03em] text-foreground md:justify-start md:text-4xl md:leading-10 lg:text-[2.75rem] lg:leading-12"
-        >
+        {/* The badge sits beside the heading, not in it, so the h1's name is just the title. */}
+        <div className="mt-1 mb-2 flex min-w-0 items-center justify-center md:justify-start">
           {getExplicit(item) && (
             <Badge className="mr-2 shrink-0 rounded px-1 py-0 font-bold">
               <span aria-hidden="true">E</span>
               <span className="sr-only">Explicit</span>
             </Badge>
           )}
-          <span className="min-w-0 break-words text-balance">{title}</span>
-        </h1>
+          <h1
+            title={title}
+            className="min-w-0 font-heading text-[1.75rem] leading-8 font-extrabold tracking-[-0.03em] text-foreground break-words text-balance md:text-4xl md:leading-10 lg:text-[2.75rem] lg:leading-12"
+          >
+            {title}
+          </h1>
+        </div>
 
         <DetailsMeta item={item} />
 

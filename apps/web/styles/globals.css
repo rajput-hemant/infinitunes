@@ -23,9 +23,13 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 /* Constants, always emitted so plain CSS can read them. */
 @theme static {
   --ease-spring: cubic-bezier(0.2, 0.9, 0.25, 1);
+  /* Panels (sidebar, queue) and the page morph. Eases in a little before it settles, so the middle of the
+     move is visible; --ease-drawer and --ease-spring are 80% done in the first quarter and read as a jump. */
+  --ease-panel: cubic-bezier(0.35, 0.05, 0.2, 1);
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 400ms;
+  --duration-panel: 340ms;
 }
 
 @theme inline {
@@ -88,6 +92,53 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   --spacing-page: var(--page-pad);
 }
 
+/* The docked queue's reserved column. It is 0 unless the queue is docked open (1440px and up); registered so
+   it animates with the pane instead of stepping. */
+@property --queue-reserve {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* The page content box: capped at --page-max, padded by --page-pad. It is the anchor the desktop player bar
+   spans (see "Player span" in glass.css), so both share one geometry.
+
+   The column it sits in starts after the sidebar gap and ends at the viewport edge, so the panels never move
+   it by themselves (percentages below resolve against that column, `Cf`). The box is as wide as fits left of
+   the docked queue, then centred in the VIEWPORT as if no panel were open, and only pushed as far as needed
+   to clear the sidebar (left) and the queue (right): `margin-left = clamp(0, Cf - (100vw + w) / 2, Cf - R - w)`.
+   When it does not fit (narrow screens) the clamp collapses to 0 and the box fills the free column, which is
+   the classic push layout. `--page-ml` and `--page-w` are shared with the toolbar (`page-gutter`). */
+@utility page-container {
+  --page-w: min(var(--page-max), calc(100% - var(--queue-reserve)));
+  --page-ml: clamp(
+    0px,
+    calc(100% - (100vw + var(--page-w)) / 2),
+    calc(100% - var(--queue-reserve) - var(--page-w))
+  );
+  width: var(--page-w);
+  max-width: var(--page-max);
+  margin-left: var(--page-ml);
+  margin-right: 0;
+  padding-inline: var(--page-pad);
+  anchor-name: --page-container;
+}
+
+/* The toolbar's inline padding, aligned to the same page box (md and up). */
+@utility page-gutter {
+  --page-w: min(var(--page-max), calc(100% - var(--queue-reserve)));
+  --page-ml: clamp(
+    0px,
+    calc(100% - (100vw + var(--page-w)) / 2),
+    calc(100% - var(--queue-reserve) - var(--page-w))
+  );
+  padding-left: max(var(--page-pad), var(--page-ml));
+  padding-right: max(
+    calc(var(--queue-reserve) + var(--page-pad)),
+    calc(100% - var(--page-ml) - var(--page-w))
+  );
+}
+
 @utility duration-fast {
   transition-duration: var(--duration-fast);
 }
@@ -98,6 +149,10 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 
 @utility duration-slow {
   transition-duration: var(--duration-slow);
+}
+
+@utility duration-panel {
+  transition-duration: var(--duration-panel);
 }
 
 /*
@@ -160,6 +215,7 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   --row: 3.25rem;
   --art: 2.5rem;
   --page-pad: clamp(1rem, 2.4vw, 2.5rem);
+  --page-max: 100rem;
   --page-gap: 1.5rem;
   --side-w: 15rem;
   --queue-w: 20rem;
@@ -268,11 +324,18 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   }
 }
 
+/*
+ * Reduced motion (the OS setting or the in-app switch) removes movement, not feedback. Anything that moves or
+ * scales (transforms, widths, keyframes) is instant; opacity, colour and visibility still ease over a short
+ * fade, so a page change, a panel or a menu is still announced gently (WCAG 2.3.3). Never set a duration to
+ * zero for a whole class of elements: that is what made every panel and view transition vanish.
+ */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --duration-fast: 0.01ms;
-    --duration-base: 0.01ms;
-    --duration-slow: 0.01ms;
+    --duration-fast: 120ms;
+    --duration-base: 160ms;
+    --duration-slow: 200ms;
+    --duration-panel: 200ms;
   }
 
   *,
@@ -280,8 +343,31 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   ::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-property:
+      opacity, color, background-color, border-color, outline-color,
+      text-decoration-color, fill, stroke, box-shadow, visibility !important;
+    transition-duration: var(--duration-base) !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Menus, dialogs and popovers fade in place (tw-animate's zoom and slide offsets are zeroed). */
+  :is(
+    [data-slot="popover-content"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="dialog-overlay"],
+    [data-slot="alert-dialog-overlay"],
+    [data-slot="tooltip-content"]
+  ):is([data-open], [data-closed]) {
+    --tw-enter-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-scale: 1;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+    animation-duration: var(--duration-base) !important;
   }
 
   /* Spinners convey "busy" state, so they keep turning. */
@@ -293,9 +379,10 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 
 /* The in-app Reduce motion switch behaves like the OS setting. */
 [data-motion="reduced"] {
-  --duration-fast: 0.01ms;
-  --duration-base: 0.01ms;
-  --duration-slow: 0.01ms;
+  --duration-fast: 120ms;
+  --duration-base: 160ms;
+  --duration-slow: 200ms;
+  --duration-panel: 200ms;
 }
 
 [data-motion="reduced"] *,
@@ -303,8 +390,31 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 [data-motion="reduced"] ::before {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
+  transition-property:
+    opacity, color, background-color, border-color, outline-color,
+    text-decoration-color, fill, stroke, box-shadow, visibility !important;
+  transition-duration: var(--duration-base) !important;
   scroll-behavior: auto !important;
+}
+
+[data-motion="reduced"]
+  :is(
+    [data-slot="popover-content"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="dialog-overlay"],
+    [data-slot="alert-dialog-overlay"],
+    [data-slot="tooltip-content"]
+  ):is([data-open], [data-closed]) {
+  --tw-enter-scale: 1;
+  --tw-enter-translate-x: 0;
+  --tw-enter-translate-y: 0;
+  --tw-exit-scale: 1;
+  --tw-exit-translate-x: 0;
+  --tw-exit-translate-y: 0;
+  animation-duration: var(--duration-base) !important;
 }
 
 [data-motion="reduced"] .animate-spin {
@@ -343,6 +453,13 @@ html[data-theme-switching] *::after {
 
   html {
     @apply overflow-x-clip font-sans;
+    /*
+     * The page scrolls on the viewport. Reserve the scrollbar's lane so the
+     * layout is the same width whether or not the page is tall enough to scroll:
+     * a skeleton shorter than the viewport, or a scroll lock from a menu, no
+     * longer moves the page sideways.
+     */
+    scrollbar-gutter: stable;
     /* Scales rem, so controls and spacing grow with the text size. */
     font-size: calc(100% * var(--text-scale, 1));
   }
@@ -389,9 +506,87 @@ html[data-theme-switching] *::after {
   }
 }
 
+/* A docked queue reserves its column; the page box moves only if it no longer fits beside it. */
+html {
+  transition: --queue-reserve var(--duration-panel) var(--ease-panel);
+}
+@media (min-width: 1440px) {
+  html[data-queue="open"] {
+    --queue-reserve: var(--queue-w);
+  }
+}
+
 @media (min-width: 120rem) {
   :root {
     --side-w: 16.5rem;
     --queue-w: 22rem;
   }
+}
+
+/*
+ * A visitor who collapsed the sidebar: the layout is prerendered with it open,
+ * so `lib/theme-script.ts` flags `<html data-sidebar="collapsed">` from the
+ * `sidebar_state` cookie before first paint. Until `AppSidebarProvider` applies
+ * the saved state at hydration, hold the collapsed gutter open and keep the
+ * expanded panel out of sight, so nothing slides or jumps when it settles.
+ */
+html[data-sidebar="collapsed"]:not([data-sidebar-ready])
+  [data-slot="sidebar"][data-state="expanded"]
+  [data-slot="sidebar-gap"] {
+  width: var(--sidebar-width-icon);
+}
+
+html[data-sidebar="collapsed"]:not([data-sidebar-ready])
+  [data-slot="sidebar"][data-state="expanded"]
+  [data-slot="sidebar-container"] {
+  visibility: hidden;
+}
+
+html[data-sidebar="collapsed"]:not([data-sidebar-ready])
+  [data-slot="sidebar-wrapper"] {
+  --g-edge-l: var(--sidebar-width-icon);
+}
+
+/*
+ * Sidebar groups the icon rail does not show (Library label, playlists, the
+ * create prompt): they fade as the panel narrows and leave the layout when it
+ * has settled, and fade back in when it widens. `display` is discrete, so the
+ * transition holds the old value for its whole duration.
+ */
+.sidebar-rail-hide {
+  opacity: 1;
+  transition:
+    opacity var(--duration-panel) var(--ease-panel),
+    display var(--duration-panel) allow-discrete;
+}
+/* Only after hydration: groups in the prerendered markup must not fade in on first paint. */
+html[data-sidebar-ready] .sidebar-rail-hide {
+  @starting-style {
+    opacity: 0;
+  }
+}
+.group[data-collapsible="icon"] .sidebar-rail-hide {
+  opacity: 0;
+}
+
+/*
+ * The mobile and tablet sidebar is a left sheet. The packages/ui sheet only
+ * nudges 2.5rem and fades; this slides the whole panel in and out (opening
+ * eases over the panel duration, closing leaves faster). Reduced motion swaps the
+ * slide for a fade (`styles/motion.css`).
+ */
+[data-slot="sidebar"][data-mobile="true"] {
+  transition-property: translate, opacity;
+  transition-duration: var(--duration-panel);
+  transition-timing-function: var(--ease-panel);
+}
+[data-slot="sidebar"][data-mobile="true"]:is(
+    [data-starting-style],
+    [data-ending-style]
+  ) {
+  translate: -100% 0;
+  opacity: 1;
+}
+[data-slot="sidebar"][data-mobile="true"][data-ending-style] {
+  transition-duration: 220ms;
 }

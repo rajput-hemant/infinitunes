@@ -2,8 +2,6 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import type { Favorite } from "@infinitunes/db/schema";
 import { getDownloadLink } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import {
@@ -14,19 +12,27 @@ import {
   type ReactNode,
 } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import superjson from "superjson";
 
 import { useIsPlayerInit } from "../../hooks/use-store";
-import { offlineFetch } from "./offline-fetch";
+import { waitFor } from "./wait-for";
 
 let position = 0;
 let advancing = false;
 const loads: string[] = [];
 const recorded: string[] = [];
 
+const loopCalls: string[] = [];
+const volumeCalls: number[] = [];
+
 const audio = {
   load(src: string) {
     loads.push(src);
+  },
+  loopOn() {
+    loopCalls.push("on");
+  },
+  loopOff() {
+    loopCalls.push("off");
   },
   isPlaying: true,
   togglePlayPause() {},
@@ -38,10 +44,11 @@ const audio = {
   unmute() {},
   isMuted: false,
   volume: 0.75,
-  setVolume() {},
+  setVolume(value: number) {
+    volumeCalls.push(value);
+  },
   seek() {},
   isReady: true,
-  player: null,
 };
 
 mock.module("react-use-audio-player", () => ({
@@ -67,7 +74,6 @@ mock.module("../../components/queue", () => ({
 }));
 
 const { Player } = await import("../../components/player");
-const { api } = await import("../../lib/trpc/client");
 
 const queue = ["a", "b", "c"].map((id, i) => ({
   queueItemId: `q${i}`,
@@ -81,17 +87,6 @@ const queue = ["a", "b", "c"].map((id, i) => ({
   download_url: "",
   duration: 200,
 }));
-
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
 const router = {
   push() {},
   replace() {},
@@ -119,13 +114,9 @@ async function commitsOver(ms: number, isAdvancing: boolean) {
     root.render(
       <AppRouterContext.Provider value={router}>
         <SearchParamsContext.Provider value={new URLSearchParams()}>
-          <api.Provider client={trpcClient} queryClient={queryClient}>
-            <QueryClientProvider client={queryClient}>
-              <Profiler id="player" onRender={() => void commits++}>
-                <Player />
-              </Profiler>
-            </QueryClientProvider>
-          </api.Provider>
+          <Profiler id="player" onRender={() => void commits++}>
+            <Player />
+          </Profiler>
         </SearchParamsContext.Provider>
       </AppRouterContext.Provider>,
     );
@@ -213,12 +204,8 @@ async function mountPlayer(options?: {
     root.render(
       <AppRouterContext.Provider value={router}>
         <SearchParamsContext.Provider value={new URLSearchParams()}>
-          <api.Provider client={trpcClient} queryClient={queryClient}>
-            <QueryClientProvider client={queryClient}>
-              <PrimePlayer />
-              <Player favorites={options?.favorites} />
-            </QueryClientProvider>
-          </api.Provider>
+          <PrimePlayer />
+          <Player favorites={options?.favorites} />
         </SearchParamsContext.Provider>
       </AppRouterContext.Provider>,
     );
@@ -228,11 +215,17 @@ async function mountPlayer(options?: {
 
 async function menuLabels() {
   const triggers = document.querySelectorAll<HTMLButtonElement>(
-    '[aria-label="More Options"]',
+    '[aria-label="More options"]',
   );
   await act(async () => {
     triggers[triggers.length - 1]?.click();
   });
+  // The menu is its own chunk: the click starts the import and opens it on arrival.
+  await waitFor(
+    () =>
+      document.querySelector('[role="menuitem"], [data-slot=drawer-popup]') !==
+      null,
+  );
   return [...document.querySelectorAll('[role="menuitem"]')].map(
     (el) => el.textContent,
   );
@@ -317,7 +310,7 @@ describe("player a11y", () => {
   it("marks shuffle and loop as toggle buttons", async () => {
     await mountPlayer();
 
-    for (const label of ["Shuffle", "Loop", "Mute"]) {
+    for (const label of ["Shuffle", "Loop"]) {
       const button = document.querySelector(`button[aria-label="${label}"]`);
       expect(button?.getAttribute("aria-pressed")).toBe("false");
     }
@@ -349,5 +342,83 @@ describe("player favorite plumbing", () => {
     const labels = await menuLabels();
     expect(labels).toContain("Add To Favourite");
     expect(labels).not.toContain("Remove From Favourite");
+  });
+});
+
+const threeSongs = ["a", "b", "c"].map((id, i) => ({
+  ...playableQueue[0],
+  queueItemId: `l${i}`,
+  id,
+  name: `Song ${id}`,
+}));
+
+const press = (key: string, init: KeyboardEventInit = {}) =>
+  act(async () => {
+    window.dispatchEvent(new KeyboardEvent("keydown", { key, ...init }));
+  });
+
+describe("player repeat and volume controls", () => {
+  afterEach(() => {
+    audio.isLooping = false;
+    audio.isMuted = false;
+    audio.volume = 0.75;
+    loopCalls.length = 0;
+    volumeCalls.length = 0;
+  });
+
+  it("cycles repeat off, whole queue, current song, off without touching a missing Howl", async () => {
+    await mountPlayer({ queue: threeSongs });
+    const loopButton = () =>
+      document.querySelector<HTMLButtonElement>('button[aria-label="Loop"]');
+
+    await press("l");
+    expect(loopCalls).toEqual([]);
+    expect(loopButton()?.getAttribute("aria-pressed")).toBe("true");
+
+    await press("l");
+    expect(loopCalls).toEqual(["on"]);
+
+    // The audio reports the loop; the next press turns it off.
+    audio.isLooping = true;
+    await press("s");
+    await press("l");
+    expect(loopCalls).toEqual(["on", "off"]);
+  });
+
+  it("toggles the loop of a single-song queue", async () => {
+    await mountPlayer();
+
+    await press("l");
+    expect(loopCalls).toEqual(["on"]);
+  });
+
+  it("steps the volume from the value the last shortcut set, not a stale render", async () => {
+    audio.volume = 1;
+    await mountPlayer({ queue: threeSongs });
+
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", shiftKey: true }),
+      );
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", shiftKey: true }),
+      );
+    });
+
+    expect(volumeCalls).toHaveLength(2);
+    expect(volumeCalls[0]).toBeCloseTo(0.95);
+    expect(volumeCalls[1]).toBeCloseTo(0.9);
+  });
+
+  it("names the mute button for what it will do", async () => {
+    await mountPlayer();
+    expect(document.querySelector('button[aria-label="Mute"]')).not.toBeNull();
+    expect(document.querySelector('button[aria-label="Unmute"]')).toBeNull();
+
+    audio.isMuted = true;
+    await mountPlayer();
+    expect(
+      document.querySelector('button[aria-label="Unmute"]'),
+    ).not.toBeNull();
   });
 });

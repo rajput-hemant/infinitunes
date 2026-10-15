@@ -17,6 +17,8 @@ import { Icons } from "./icons";
 type ShareOptionsProps = React.ComponentProps<"div"> & {
   isDropDownItem?: boolean;
   title?: string;
+  /** Site path of the thing being shared; defaults to the current page. */
+  path?: string;
 };
 
 type ShareIconProps = { className: string };
@@ -63,52 +65,81 @@ type MenuItemProps = Omit<ShareOption, "platform"> & {
   href?: string;
   copy: () => void;
   isCopied: boolean;
+  /** Render as the dropdown menu item itself, so each option is one control. */
+  isDropDownItem?: boolean;
 };
 
 const itemStyles = cn(
   controlStyles.textLg,
-  "flex items-center gap-3 rounded-sm px-3 transition-colors duration-fast hover:bg-fill-2 active:bg-fill-3",
+  "flex w-full items-center justify-start gap-3 rounded-sm px-3 text-left transition-colors duration-fast hover:bg-fill-2 active:bg-fill-3",
 );
 
-function MenuItem({ label, href, icon: Icon, copy, isCopied }: MenuItemProps) {
-  return href ? (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={itemStyles}
-    >
-      <Icon className="size-4" />
-      {label}
-    </a>
-  ) : (
-    <button
-      type="button"
-      onClick={copy}
-      className={itemStyles}
-      aria-label={isCopied ? "Link Copied" : "Copy Link"}
-    >
+// A dropdown item already carries the menu's own focus and hover styles.
+const dropdownItemStyles = "w-full justify-start gap-3 text-left";
+
+/**
+ * Only the current state is in the DOM, so the control's accessible name and
+ * text are just "Copy Link" or "Link Copied". The pseudo-element holds the
+ * wider label's width, so the menu does not resize when the text swaps.
+ */
+function CopyLabel({ isCopied }: { isCopied: boolean }) {
+  return (
+    <span className="flex flex-col after:invisible after:block after:h-0 after:overflow-hidden after:content-['Link_Copied']">
+      {isCopied ? "Link Copied" : "Copy Link"}
+    </span>
+  );
+}
+
+function MenuItem({
+  label,
+  href,
+  icon: Icon,
+  copy,
+  isCopied,
+  isDropDownItem,
+}: MenuItemProps) {
+  if (href) {
+    const content = (
+      <>
+        <Icon className="size-4" />
+        {label}
+      </>
+    );
+    return isDropDownItem ? (
+      <DropdownMenuItem
+        className={dropdownItemStyles}
+        render={
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={label}
+          />
+        }
+      >
+        {content}
+      </DropdownMenuItem>
+    ) : (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={itemStyles}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return isDropDownItem ? (
+    <DropdownMenuItem className={dropdownItemStyles} onClick={copy}>
       <Clipboard className="size-4" />
-      <span className="grid">
-        <span
-          aria-hidden={isCopied}
-          className={cn(
-            "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
-            isCopied && "opacity-0",
-          )}
-        >
-          Copy Link
-        </span>
-        <span
-          aria-hidden={!isCopied}
-          className={cn(
-            "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
-            !isCopied && "opacity-0",
-          )}
-        >
-          Link Copied
-        </span>
-      </span>
+      <CopyLabel isCopied={isCopied} />
+    </DropdownMenuItem>
+  ) : (
+    <button type="button" onClick={copy} className={itemStyles}>
+      <Clipboard className="size-4" />
+      <CopyLabel isCopied={isCopied} />
     </button>
   );
 }
@@ -116,13 +147,15 @@ function MenuItem({ label, href, icon: Icon, copy, isCopied }: MenuItemProps) {
 export function ShareOptions({
   isDropDownItem,
   title = siteConfig.name,
+  path,
   ...props
 }: ShareOptionsProps) {
   const pathname = usePathname();
 
   const [isCopied, setIsCopied] = React.useState(false);
 
-  const url = `${siteConfig.url}${pathname}`;
+  // An unresolvable item link is "#": share the page rather than a dead anchor.
+  const url = `${siteConfig.url}${path?.startsWith("/") ? path : pathname}`;
 
   function copy() {
     navigator.clipboard.writeText(url);
@@ -137,17 +170,7 @@ export function ShareOptions({
           ? buildShareUrl(platform, { url, title })
           : undefined;
 
-        return isDropDownItem ? (
-          <DropdownMenuItem key={label} className="p-0">
-            <MenuItem
-              label={label}
-              href={href}
-              icon={icon}
-              copy={copy}
-              isCopied={isCopied}
-            />
-          </DropdownMenuItem>
-        ) : (
+        return (
           <MenuItem
             key={label}
             label={label}
@@ -155,6 +178,7 @@ export function ShareOptions({
             icon={icon}
             copy={copy}
             isCopied={isCopied}
+            isDropDownItem={isDropDownItem}
           />
         );
       })}

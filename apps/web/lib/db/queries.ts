@@ -1,64 +1,25 @@
-"use server";
+// oxlint-disable-next-line import/no-unassigned-import -- server-only guard is a side-effect import
+import "server-only";
+import { cache } from "react";
 
-import { updateTag } from "next/cache";
-
-import { toResult } from "~/lib/action-result";
 import { api } from "~/lib/trpc/server";
 
-export async function getUserPlaylists() {
+/**
+ * The signed-in visitor's library reads. Plain server functions, not server
+ * actions: a `"use server"` export is a public POST endpoint and runs once per
+ * call, while these are memoized per request (with `getViewer()`, which reads
+ * the same data) and only ever called from server components. They read the
+ * session cookie, so they are request-time and never inside a `"use cache"`
+ * scope. Mutations live in `~/lib/actions`.
+ */
+export const getUserPlaylists = cache(async () => {
   return await api.user.getUserPlaylists();
-}
+});
 
-export async function getPlaylistDetails(playlistId: string) {
+export const getPlaylistDetails = cache(async (playlistId: string) => {
   return await api.user.getPlaylistDetails({ playlistId });
-}
+});
 
-export async function addSongsToPlaylist(playlistId: string, songs: string[]) {
-  return toResult(async () => {
-    const playlist = await api.user.addSongsToPlaylist({ playlistId, songs });
-    updateTag("user_playlists");
-    return playlist;
-  });
-}
-
-export async function removeSongsFromPlaylist(
-  playlistId: string,
-  index: number,
-  songId: string,
-) {
-  return toResult(async () => {
-    const playlist = await api.user.removeSongsFromPlaylist({
-      playlistId,
-      index,
-      songId,
-    });
-    updateTag("user_playlists");
-    return playlist;
-  });
-}
-
-export async function getUserFavorites() {
+export const getUserFavorites = cache(async () => {
   return await api.user.getUserFavorites();
-}
-
-export async function addToFavorites(
-  token: string,
-  type: "song" | "album" | "playlist" | "artist" | "show",
-) {
-  return toResult(async () => {
-    const favorites = await api.user.addToFavorites({ token, type });
-    updateTag("user_favorites");
-    return favorites;
-  });
-}
-
-export async function removeFromFavorites(
-  token: string,
-  type: "song" | "album" | "playlist" | "artist" | "show",
-) {
-  return toResult(async () => {
-    const favorites = await api.user.removeFromFavorites({ token, type });
-    updateTag("user_favorites");
-    return favorites;
-  });
-}
+});

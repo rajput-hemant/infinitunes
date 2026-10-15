@@ -39,7 +39,7 @@ function SongMeta({ song }: { song: Song }) {
         {" by "}
         {artistMap?.primary_artists?.map(({ id, name, perma_url }, i, arr) => (
           <Link
-            key={id}
+            key={`${id}-${i}`}
             href={getHref(perma_url, "artist")}
             className={metaLink}
           >
@@ -97,7 +97,7 @@ function AlbumMeta({ album }: { album: Album }) {
       by{" "}
       {artists?.map(({ id, name, perma_url }, i, arr) => (
         <Link
-          key={id}
+          key={`${id}-${i}`}
           href={getHref(perma_url, "artist")}
           title={decode(name)}
           className={metaLink}
@@ -153,7 +153,7 @@ function metaLines(item: DetailsItem): ReactNode {
       return <AlbumMeta album={item} />;
     case "playlist":
       return <PlaylistMeta playlist={item} />;
-    case "season":
+    case "show":
       return <p>{countLabel(item.more_info.fan_count, "Fans")}</p>;
     case "artist":
       return <p>{countLabel(item.fan_count, "Listeners")}</p>;

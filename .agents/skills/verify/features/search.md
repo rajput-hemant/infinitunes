@@ -17,7 +17,7 @@ Search field in the header, Cmd/Ctrl+K, or `/search` on mobile.
 
 1. Open `/`, press Ctrl+K (Cmd+K on macOS); expect the dialog, type `arijit`, expect grouped suggestions.
 2. Press Enter or pick a result; expect navigation to `/search/<type>/<query>` and results.
-3. Switch type tabs; expect the URL type segment and list to change.
+3. Switch type tabs; expect the URL type segment and list to change while the title and chips stay mounted (they live in `search/(results)/layout.tsx`) and only the results area shows its skeleton.
 4. Search for a nonsense string; expect a clear empty state, no crash.
 5. At 390px width open `/search`; expect the mobile input and results with no overflow.
 

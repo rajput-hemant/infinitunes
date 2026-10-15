@@ -1,17 +1,13 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, describe, expect, it } from "bun:test";
 
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 
-let sessionName: string | null = "Ada";
+import type { User } from "../../lib/auth";
+import type { Viewer } from "../../lib/viewer-types";
 
-mock.module("@infinitunes/auth/client", () => ({
-  useSession: () => ({
-    data: sessionName ? { user: { name: sessionName } } : null,
-  }),
-}));
-
+const { ViewerProvider } = await import("../../components/viewer-context");
 const { HomeGreeting } =
   await import("../../app/(root)/_components/home-greeting");
 
@@ -20,49 +16,57 @@ const roots: Root[] = [];
 afterEach(async () => {
   await act(async () => roots.splice(0).forEach((r) => r.unmount()));
   document.body.innerHTML = "";
-  sessionName = "Ada";
 });
 
+const viewerFor = (name: string | null): Promise<Viewer> =>
+  Promise.resolve({
+    user: name ? ({ name } as User) : undefined,
+    playlists: undefined,
+    favorites: undefined,
+  });
+
+async function mount(viewer: Promise<Viewer>) {
+  const container = document.createElement("div");
+  document.body.append(container);
+  const root = createRoot(container);
+  roots.push(root);
+  await act(async () =>
+    root.render(
+      <ViewerProvider viewer={viewer}>
+        <HomeGreeting />
+      </ViewerProvider>,
+    ),
+  );
+  return container;
+}
+
 describe("HomeGreeting", () => {
-  it("serves a stable fallback that does not depend on the clock", () => {
-    expect(renderToString(<HomeGreeting />)).toContain("Welcome, Ada");
-    sessionName = null;
-    const html = renderToString(<HomeGreeting />);
+  it("serves the nameless fallback while the viewer is pending", () => {
+    const html = renderToString(
+      <ViewerProvider viewer={new Promise<Viewer>(() => {})}>
+        <HomeGreeting />
+      </ViewerProvider>,
+    );
     expect(html).toContain(">Welcome<");
+    expect(html).not.toContain("Ada");
   });
 
   it("greets by the client hour and the signed-in name", async () => {
-    const container = document.createElement("div");
-    document.body.append(container);
-    const root = createRoot(container);
-    roots.push(root);
-    await act(async () => root.render(<HomeGreeting />));
-
-    const text = container.querySelector("h1")?.textContent ?? "";
-    expect(text).toMatch(/^Good (morning|afternoon|evening), Ada$/);
+    const container = await mount(viewerFor("Ada"));
+    expect(container.querySelector("h1")?.textContent).toMatch(
+      /^Good (morning|afternoon|evening), Ada$/,
+    );
   });
 
   it("greets by the first name of a full name", async () => {
-    sessionName = "Local Developer";
-    const container = document.createElement("div");
-    document.body.append(container);
-    const root = createRoot(container);
-    roots.push(root);
-    await act(async () => root.render(<HomeGreeting />));
-
+    const container = await mount(viewerFor("Local Developer"));
     expect(container.querySelector("h1")?.textContent).toMatch(
       /^Good (morning|afternoon|evening), Local$/,
     );
   });
 
   it("omits the name when signed out", async () => {
-    sessionName = null;
-    const container = document.createElement("div");
-    document.body.append(container);
-    const root = createRoot(container);
-    roots.push(root);
-    await act(async () => root.render(<HomeGreeting />));
-
+    const container = await mount(viewerFor(null));
     expect(container.querySelector("h1")?.textContent).toMatch(
       /^Good (morning|afternoon|evening)$/,
     );

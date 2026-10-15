@@ -1,18 +1,22 @@
 import { describe, expect, it } from "bun:test";
 
 const ROOT_LAYOUT = new URL("../app/(root)/layout.tsx", import.meta.url);
+const VIEWER = new URL("../components/viewer.tsx", import.meta.url);
 const PLAYER_WRAPPER = new URL(
   "../components/player-wrapper.tsx",
   import.meta.url,
 );
 
 describe("playerbar favorite-state and Add-label plumbing regression", () => {
-  it("root layout fetches getUserFavorites and passes favorites to PlayerWrapper", async () => {
-    const source = await Bun.file(ROOT_LAYOUT).text();
+  it("the viewer carries favorites to PlayerWrapper", async () => {
+    const viewer = await Bun.file(VIEWER).text();
+    const layout = await Bun.file(ROOT_LAYOUT).text();
 
-    expect(source).toContain("getUserFavorites");
-    expect(source).toContain("getUserFavorites()");
-    expect(source).toContain("favorites={userFavorites}");
+    expect(layout).toContain("<ViewerPlayer />");
+    expect(viewer).toContain(
+      "const { user, playlists, favorites } = useViewer()",
+    );
+    expect(viewer).toContain("favorites={favorites}");
   });
 
   it("player-wrapper accepts favorites prop and passes it to Player", async () => {

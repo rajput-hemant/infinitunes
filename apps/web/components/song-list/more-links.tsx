@@ -1,4 +1,4 @@
-import type { ArtistMini } from "@infinitunes/types";
+import type { ArtistCredit } from "@infinitunes/types";
 import { DropdownMenuItem } from "@infinitunes/ui/components/dropdown-menu";
 import { Disc, Mic2, Music } from "lucide-react";
 import Link from "next/link";
@@ -12,7 +12,7 @@ type TileMoreLinksProps = {
   albumUrl?: string;
   showAlbum: boolean;
   isDropdownItem?: boolean;
-  primaryArtists?: ArtistMini[];
+  primaryArtists?: ArtistCredit[];
 };
 
 export function TileMoreLinks(props: TileMoreLinksProps) {
@@ -56,8 +56,8 @@ export function TileMoreLinks(props: TileMoreLinksProps) {
         </Wrapper>
       )}
 
-      {primaryArtists?.map(({ id, perma_url, name }) => (
-        <Wrapper key={id} isDropdownItem={isDropdownItem}>
+      {primaryArtists?.map(({ id, perma_url, name }, index) => (
+        <Wrapper key={`${id}-${index}`} isDropdownItem={isDropdownItem}>
           <Link
             href={getHref(perma_url, "artist")}
             className="min-h-(--ctl-lg) shrink-0 cursor-pointer py-3 md:min-h-0 md:py-1"

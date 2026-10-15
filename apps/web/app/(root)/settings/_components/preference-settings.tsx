@@ -24,8 +24,8 @@ import { cn } from "~/lib/utils";
 
 import { isLang } from "./language-options";
 import { QualityRow } from "./quality-row";
-import { SwitchRow } from "./settings-row";
-import { SettingsSection } from "./settings-section";
+import { SettingsCard } from "./settings-card";
+import { SettingsRow, SwitchRow } from "./settings-row";
 
 const IMAGE_QUALITIES: ImageQuality[] = ["low", "medium", "high"];
 
@@ -68,90 +68,93 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
 
   return (
     <>
-      <SettingsSection
-        id="language"
-        title="Languages"
-        description="Pick the languages you want on Home, Charts and New releases."
-      >
-        <ToggleGroup
-          aria-label="Languages"
-          value={selectedLanguages}
-          onValueChange={(values) =>
-            setSelectedLanguages(values.filter(isLang))
-          }
-          className="flex max-w-5xl flex-wrap justify-normal gap-2"
+      <SettingsCard title="Languages">
+        <SettingsRow
+          id="language"
+          layout="stack"
+          label="Languages"
+          help="Pick the languages you want on Home, Charts and New releases."
+          keywords="hindi english punjabi tamil telugu marathi bengali gujarati"
         >
-          {languageList.map((lang) => (
-            <ToggleGroupItem
-              key={lang}
-              value={lang.toLowerCase()}
-              className={cn(
-                controlStyles.text,
-                "min-w-20 rounded-sm bg-fill text-sm font-medium hover:bg-fill-2 aria-pressed:bg-primary/10 aria-pressed:inset-ring-1 aria-pressed:inset-ring-primary",
-              )}
-            >
-              {lang}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+          <ToggleGroup
+            aria-label="Languages"
+            value={selectedLanguages}
+            onValueChange={(values) =>
+              setSelectedLanguages(values.filter(isLang))
+            }
+            className="flex flex-wrap justify-normal gap-2"
+          >
+            {languageList.map((lang) => (
+              <ToggleGroupItem
+                key={lang}
+                value={lang.toLowerCase()}
+                className={cn(
+                  controlStyles.text,
+                  "min-w-20 rounded-sm bg-fill text-sm font-medium hover:bg-fill-2 aria-pressed:bg-primary/10 aria-pressed:inset-ring-1 aria-pressed:inset-ring-primary",
+                )}
+              >
+                {lang}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
 
-        <div>
-          <Button className={controlStyles.textLg} onClick={updateLanguages}>
-            Save Preferences
-          </Button>
-        </div>
-      </SettingsSection>
+          <div>
+            <Button className={controlStyles.textLg} onClick={updateLanguages}>
+              Save Preferences
+            </Button>
+          </div>
+        </SettingsRow>
+      </SettingsCard>
 
-      <SettingsSection id="quality" title="Quality Settings">
-        <div>
-          <QualityRow
-            id="stream-quality"
-            label="Stream Quality"
-            help="Higher quality uses more data."
-            value={streamQuality}
-            detail={bitrateOf(streamQuality)}
-            options={audioOptions}
-            onSelect={(quality) => {
-              setStreamQuality(quality);
-              toast.success("Stream Quality updated!", {
-                description: `Stream quality set to "${quality}".`,
-              });
-            }}
-          />
-          <QualityRow
-            id="download-quality"
-            label="Download Quality"
-            help="Used for every download."
-            value={downloadQuality}
-            detail={bitrateOf(downloadQuality)}
-            options={audioOptions}
-            onSelect={(quality) => {
-              setDownloadQuality(quality);
-              toast.success("Download Quality updated!", {
-                description: `Download quality has been set to "${quality}".`,
-              });
-            }}
-          />
-          <QualityRow
-            id="image-quality"
-            label="Image Quality"
-            help="Artwork resolution across the app."
-            value={imageQuality}
-            options={imageOptions}
-            onSelect={(quality) => {
-              setImageQuality(quality);
-              toast.success("Image Quality updated!", {
-                description: `Image quality has been set to "${quality}".`,
-              });
-            }}
-          />
-        </div>
-      </SettingsSection>
+      <SettingsCard title="Quality">
+        <QualityRow
+          id="stream-quality"
+          label="Stream Quality"
+          help="Higher quality uses more data."
+          value={streamQuality}
+          detail={bitrateOf(streamQuality)}
+          options={audioOptions}
+          onSelect={(quality) => {
+            setStreamQuality(quality);
+            toast.success("Stream Quality updated!", {
+              description: `Stream quality set to "${quality}".`,
+            });
+          }}
+        />
+        <QualityRow
+          id="download-quality"
+          label="Download Quality"
+          help="Used for every download."
+          value={downloadQuality}
+          detail={bitrateOf(downloadQuality)}
+          options={audioOptions}
+          onSelect={(quality) => {
+            setDownloadQuality(quality);
+            toast.success("Download Quality updated!", {
+              description: `Download quality has been set to "${quality}".`,
+            });
+          }}
+        />
+        <QualityRow
+          id="image-quality"
+          label="Image Quality"
+          help="Artwork resolution across the app."
+          value={imageQuality}
+          options={imageOptions}
+          onSelect={(quality) => {
+            setImageQuality(quality);
+            toast.success("Image Quality updated!", {
+              description: `Image quality has been set to "${quality}".`,
+            });
+          }}
+        />
+      </SettingsCard>
 
-      <SettingsSection id="keyboard-shortcuts" title="Keyboard">
+      <SettingsCard title="Keyboard">
         <SwitchRow
           label="Keyboard shortcuts"
           help="Space, N, P, L and S control the player; Shift with the arrow keys skips tracks and changes volume."
+          keywords="keys hotkeys"
           checked={shortcutsEnabled}
           onCheckedChange={(checked) => {
             setShortcutsEnabled(checked);
@@ -162,7 +165,7 @@ export function PreferenceSettings(props: PreferenceSettingsProps) {
             );
           }}
         />
-      </SettingsSection>
+      </SettingsCard>
     </>
   );
 }

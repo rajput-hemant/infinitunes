@@ -4,7 +4,7 @@
 
 ## Sub-features
 
-- Profile form (`settings/_components/profile-form.tsx`): Name, Email, New Password, `Save Changes` calls `updateUser` through a server action.
+- Profile and password card (`settings/_components/profile-form.tsx`): two separate forms in one card. `Save profile` (Name, Email) calls `updateUser`; `Update password` (Current, New) calls `changePassword`.
 - The former `Verify Email` and avatar `Edit` stub buttons (which showed an "in development" toast) are no longer in `profile-form.tsx` (source grep; not re-run in a browser).
 - Danger zone: `Delete Account` opens a confirm dialog that enables the action only after typing `DELETE MY ACCOUNT`; calls `deleteUser`.
 - Password reset: `/forgot-password` (`forgot-password-form.tsx`) requests an emailed link; `/reset-password?token=...` (`reset-password-form.tsx`) takes new password and confirm, calls `authClient.resetPassword`, then redirects to `/login`. A missing, expired or used token shows `Request a new link`.
@@ -20,7 +20,7 @@
 2. Change the password via the New Password field; log out and log in with the new password. Check `better_auth_account.password` changed.
 3. Open `/reset-password` with no token or a bad token; expect the invalid-link message. Reset with a real emailed link is only testable with a configured mail sender.
 4. Delete account: type the phrase, confirm; expect the user row and dependent playlist and favorite rows gone and a logged-out state.
-5. Guest opens `/settings`: expect `Please sign in to view this page.`, no form.
+5. Guest opens `/settings`: expect a `Sign in` prompt where the forms would be.
 
 Observable end state: DB rows match each UI action; old password stops working after change; deleted user cannot log in.
 

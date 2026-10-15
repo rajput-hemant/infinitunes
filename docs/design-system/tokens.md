@@ -90,18 +90,19 @@ Body text defaults to `0.875rem` (14px) with `line-height: 1.45`, so `text-base`
 
 ## 4. Motion and focus
 
-| Token                                          | Utility                                  | Value                             | Use                                       |
-| ---------------------------------------------- | ---------------------------------------- | --------------------------------- | ----------------------------------------- |
-| `--ease-spring`                                | `ease-spring`                            | `cubic-bezier(0.2, 0.9, 0.25, 1)` | enter, press, toggles (the mockup spring) |
-| `--ease-out`, `--ease-in-out`, `--ease-drawer` | `ease-out`, `ease-in-out`, `ease-drawer` | unchanged                         | existing app curves                       |
-| `--duration-fast`                              | `duration-fast`                          | 150ms                             | hovers, colour changes                    |
-| `--duration-base`                              | `duration-base`                          | 250ms                             | menus, toggles, tabs                      |
-| `--duration-slow`                              | `duration-slow`                          | 400ms                             | page and sheet transitions                |
-| `--focus-ring-width`, `--focus-ring-offset`    | plain CSS                                | 2px, 2px                          | the global `:focus-visible` outline       |
+| Token                                          | Utility                                  | Value                                     | Use                                                                  |
+| ---------------------------------------------- | ---------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------- |
+| `--ease-spring`                                | `ease-spring`                            | `cubic-bezier(0.2, 0.9, 0.25, 1)`         | enter, press, toggles (the mockup spring)                            |
+| `--ease-out`, `--ease-in-out`, `--ease-drawer` | `ease-out`, `ease-in-out`, `ease-drawer` | unchanged                                 | existing app curves                                                  |
+| `--duration-fast`                              | `duration-fast`                          | 150ms                                     | hovers, colour changes                                               |
+| `--duration-base`                              | `duration-base`                          | 250ms                                     | menus, toggles, tabs                                                 |
+| `--duration-slow`                              | `duration-slow`                          | 400ms                                     | page and sheet transitions                                           |
+| `--ease-panel`, `--duration-panel`             | `ease-panel`, `duration-panel`           | `cubic-bezier(0.35, 0.05, 0.2, 1)`, 340ms | sidebar, docked queue, player span, artwork morph (not front-loaded) |
+| `--focus-ring-width`, `--focus-ring-offset`    | plain CSS                                | 2px, 2px                                  | the global `:focus-visible` outline                                  |
 
 `:focus-visible` gets `outline: var(--focus-ring-width) solid var(--ring)` globally. Do not remove outlines; only components with their own ring (`focus-visible:ring-*`) opt out with `outline-hidden`.
 
-Reduced motion: under `prefers-reduced-motion: reduce` or `data-motion="reduced"` the three `--duration-*` tokens become `0.01ms`, and all animations and transitions collapse (spinners keep turning). Smooth scrolling stops.
+Reduced motion: under `prefers-reduced-motion: reduce` or `data-motion="reduced"` movement is removed but fades stay: the `--duration-*` tokens shorten (120, 160, 200, panel 200ms, never zero), transitions are limited to opacity, colour, shadow and visibility, keyframe animations collapse (menus and dialogs fade in place), the page view transition still crossfades and the artwork morph fades instead of flying. Spinners keep turning. Smooth scrolling stops.
 
 ## 5. Accent engine
 
@@ -197,7 +198,7 @@ Icon-only keys grow an invisible `::after` hit area to 44px on coarse pointers (
 
 | Signal                                              | Effect                                                                                                                               |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `prefers-reduced-motion: reduce`, or `reduceMotion` | `--duration-*` become 0.01ms, animations and transitions collapse, no smooth scroll                                                  |
+| `prefers-reduced-motion: reduce`, or `reduceMotion` | movement collapses, opacity and colour still fade over 120 to 200ms, no smooth scroll                                                |
 | `prefers-contrast: more`                            | `--line` and `--border` stronger, `--muted-foreground` darker (light `#4a4a4f`, dark `#c0c0c6`), all text pairs still at least 4.5:1 |
 | `prefers-reduced-transparency: reduce`              | Glass tokens are flipped by `glass.css`. Tailwind variant `reduced-transparency:` is available                                       |
 | `pointer: coarse`                                   | `--ctl`, `--ctl-lg`, `--row`, `--art` grow (section 3). Tailwind variant `pointer-coarse:`                                           |

@@ -325,15 +325,11 @@ html.dark
 
 /* ---------- Variants ----------
    Clear: almost no tint, a dimming layer scaled by what is behind (AA for white text), white glyphs.
-   A toolbar over an artwork header opts its regular glass into clear with data-glass-over-art, unless
-   data-glass-titled says the title has scrolled into the bar.
+   The toolbar capsules never switch variant over an artwork header: they stay regular at every scroll position.
    Variants never apply under the Solid level or prefers-contrast: more: their selectors are more specific than
    those override blocks, so they are excluded here instead of out-ranked there. */
 @media not (prefers-contrast: more) {
-  html:not([data-glass-level="solid"]) [data-glass="clear"][data-glass-size],
-  html:not([data-glass-level="solid"])
-    [data-glass-over-art]:not([data-glass-titled])
-    [data-glass="regular"][data-glass-size] {
+  html:not([data-glass-level="solid"]) [data-glass="clear"][data-glass-size] {
     --g-fill-c: #fff;
     --g-a: 0.06;
     --g-k: 0.6;
@@ -688,10 +684,7 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
     ) {
     --g-a: 0.86;
   }
-  html:not([data-glass-level="solid"]) [data-glass="clear"][data-glass-size],
-  html:not([data-glass-level="solid"])
-    [data-glass-over-art]:not([data-glass-titled])
-    [data-glass="regular"][data-glass-size] {
+  html:not([data-glass-level="solid"]) [data-glass="clear"][data-glass-size] {
     --g-dim: 0.62;
     --g-a: 0.04;
   }
@@ -840,6 +833,20 @@ html[data-glass-level="solid"] [data-glass="tinted"][data-glass-size] {
 html[data-motion="reduced"]
   :is([data-glass-role="tabbar"], [data-glass-role="player"]) {
   transition-property: opacity !important;
+}
+/* Player span: from md up the bar is exactly the page content box (the anchor-name on .page-container), so its
+   edges and its centred transport follow the content at every width, sidebar state and docked-queue state, and
+   through the sidebar's own width transition, with no JS and no duplicated numbers. Browsers without anchor
+   positioning keep the utility-class inset (the whole content column). */
+@media (min-width: 768px) {
+  @supports (left: anchor(left)) {
+    [data-glass-role="player"] {
+      position-anchor: --page-container;
+      left: anchor(left, 0.75rem);
+      right: anchor(right, 0.75rem);
+      transition-property: none;
+    }
+  }
 }
 /* Below 1440 the queue morphs out of the player: clip, lift and materialize together. */
 @media (max-width: 1439px) {

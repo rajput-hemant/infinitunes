@@ -5,8 +5,8 @@
 ## Sub-features
 
 - Theme toggle in footer (`Toggle Light Mode`, `Toggle System Mode`, `Toggle Dark Mode`) and `next-themes`.
-- `/settings/appearance`: theme presets (`config/themes.ts`).
-- `/settings/preferences`: language toggle group and stream, download, image quality dropdowns writing localStorage.
+- `/settings#appearance`: theme mode, radius, fonts, density, glass (the old `/settings/appearance` redirects here).
+- `/settings#playback`: language toggle group and stream, download, image quality dropdowns writing localStorage.
 - Settings stays accessible to guests.
 
 ## How to get to it (user POV)

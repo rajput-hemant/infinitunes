@@ -35,7 +35,6 @@ const regular = { "data-glass": "regular", "data-glass-size": "s" };
 // Every way a surface can be turned into the clear or tinted variant.
 const variantScenarios: Record<string, Scenario> = {
   "explicit clear": { surface: { ...regular, "data-glass": "clear" } },
-  "toolbar over artwork": { overArt: true, surface: regular },
   "explicit tinted": { surface: { ...regular, "data-glass": "tinted" } },
 };
 
@@ -50,19 +49,8 @@ describe("specificity helper", () => {
 });
 
 describe("glass.css precedence", () => {
-  it("keeps the mockup look by default: over-art toolbars read as clear", () => {
-    const el = build(variantScenarios["toolbar over artwork"] as Scenario);
-    const style = resolveStyle(el);
-    expect(style.get("--g-text")).toBe("#fff");
-    expect(style.get("--g-a")).toBe("0.06");
-  });
-
-  it("drops the clear look once the title has scrolled into the bar", () => {
-    const el = build({
-      overArt: true,
-      surface: { ...regular },
-    });
-    el.parentElement?.setAttribute("data-glass-titled", "");
+  it("keeps toolbar capsules regular even if a host carries the retired over-art flag", () => {
+    const el = build({ overArt: true, surface: regular });
     expect(resolveStyle(el).get("--g-text")).not.toBe("#fff");
   });
 
@@ -98,17 +86,11 @@ describe("glass.css precedence", () => {
     });
   }
 
-  it("prefers-reduced-transparency dims every clear route the same way", () => {
-    for (const name of ["explicit clear", "toolbar over artwork"]) {
-      const el = build(variantScenarios[name] as Scenario);
-      const style = resolveStyle(el, ["prefers-reduced-transparency: reduce"]);
-      expect(style.get("--g-dim")).toBe("0.62");
-      expect(style.get("--g-a")).toBe("0.04");
-      document.body.replaceChildren();
-      for (const attr of [...html.getAttributeNames()]) {
-        html.removeAttribute(attr);
-      }
-    }
+  it("prefers-reduced-transparency dims the clear variant", () => {
+    const el = build(variantScenarios["explicit clear"] as Scenario);
+    const style = resolveStyle(el, ["prefers-reduced-transparency: reduce"]);
+    expect(style.get("--g-dim")).toBe("0.62");
+    expect(style.get("--g-a")).toBe("0.04");
   });
 });
 

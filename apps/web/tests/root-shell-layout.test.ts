@@ -2,6 +2,8 @@ import { describe, expect, it } from "bun:test";
 
 const ROOT_LAYOUT = new URL("../app/(root)/layout.tsx", import.meta.url);
 const SIDEBAR = new URL("../components/sidebar.tsx", import.meta.url);
+const GLASS_CSS = new URL("../styles/glass.css", import.meta.url);
+const GLOBALS_CSS = new URL("../styles/globals.css", import.meta.url);
 const NAVBAR = new URL("../components/site-header/navbar.tsx", import.meta.url);
 
 describe("root shell layout", () => {
@@ -9,7 +11,7 @@ describe("root shell layout", () => {
     const layout = await Bun.file(ROOT_LAYOUT).text();
     const order = [
       "<AppSidebarProvider",
-      "<Sidebar user=",
+      "<ViewerSidebar",
       "<Navbar />",
       "<SidebarInset",
     ].map((marker) => layout.indexOf(marker));
@@ -23,18 +25,22 @@ describe("root shell layout", () => {
     const layout = await Bun.file(ROOT_LAYOUT).text();
 
     expect(layout.indexOf("<AppSidebarProvider")).toBeLessThan(
-      layout.indexOf("<MobileNav"),
+      layout.indexOf("<ViewerMobileNav"),
     );
-    expect(layout.indexOf("<MobileNav")).toBeLessThan(
+    expect(layout.indexOf("<ViewerMobileNav")).toBeLessThan(
       layout.indexOf("</AppSidebarProvider>"),
     );
   });
 
-  it("restores the persisted sidebar state on the server", async () => {
+  it("reads no request data in its body, so the chrome prerenders", async () => {
     const layout = await Bun.file(ROOT_LAYOUT).text();
 
-    expect(layout).toContain('cookieStore.get("sidebar_state")');
-    expect(layout).toContain("<AppSidebarProvider defaultOpen={sidebarOpen}>");
+    expect(layout).not.toContain("cookies(");
+    expect(layout).not.toContain("headers(");
+    expect(layout).not.toMatch(/\bawait\b/);
+    expect(layout).not.toContain("instant");
+    // The visitor is a promise handed to islands, never awaited here.
+    expect(layout).toContain("<ViewerProvider viewer={getViewer()}>");
   });
 
   it("sizes the sidebar from the token and the collapsed rail from one value", async () => {
@@ -63,5 +69,21 @@ describe("root shell layout", () => {
 
     expect(navbar).toMatch(/<AppSidebarTrigger[^>]*md:inline-flex/);
     expect(navbar).not.toContain("<MobileNav");
+  });
+
+  it("spans the desktop player over the page container through one shared anchor", async () => {
+    const layout = await Bun.file(ROOT_LAYOUT).text();
+    const globals = await Bun.file(GLOBALS_CSS).text();
+    const glass = await Bun.file(GLASS_CSS).text();
+    const anchor = globals.match(/anchor-name:\s*(--[\w-]+)/)?.[1];
+
+    expect(layout).toContain("page-container");
+    expect(anchor).toBeDefined();
+    expect(globals).toMatch(
+      /@utility page-container[^}]*max-width: var\(--page-max\)/,
+    );
+    expect(glass).toContain(`position-anchor: ${anchor}`);
+    expect(glass).toMatch(/left: anchor\(left/);
+    expect(glass).toMatch(/right: anchor\(right/);
   });
 });

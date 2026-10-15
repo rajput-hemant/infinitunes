@@ -1,10 +1,9 @@
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 
-import { getUser } from "~/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { orFallback } from "~/lib/degrade";
+import { PlaylistRow } from "~/components/playlist/playlist-overlay";
 import { cn } from "~/lib/utils";
+import { getViewer } from "~/lib/viewer";
 
 import { SongListHead } from "./song-list-head";
 import { SongListRow } from "./song-list-row";
@@ -26,28 +25,20 @@ export async function SongList(props: SongListProps) {
     playlistSongIndices,
   } = props;
 
-  const user = await getUser();
-
-  let playlists: MyPlaylist[] | undefined,
-    favorites: Favorite | null | undefined;
-
-  if (user) {
-    [playlists, favorites] = await Promise.all([
-      orFallback("user playlists", getUserPlaylists(), undefined),
-      orFallback("user favorites", getUserFavorites(), null),
-    ]);
-  }
+  const { user, playlists, favorites } = await getViewer();
+  // Only the slim row model crosses into the client row and its menu.
+  const rows = items.map(toSongRow);
 
   return (
     <section className={cn("@container", className)}>
       <SongListHead showAlbum={showAlbum} />
 
       <ol className="flex flex-col text-muted-foreground">
-        {items.map((item, i) => (
-          <li
-            key={`${item.id}-${i}`}
-            className="[contain-intrinsic-size:auto_var(--row)] [content-visibility:auto]"
-          >
+        {rows.map((item, i) => {
+          const rowClass =
+            "[contain-intrinsic-size:auto_var(--row)] [content-visibility:auto]";
+          const dbIndex = playlistSongIndices?.[i];
+          const row = (
             <SongListRow
               item={item}
               index={i}
@@ -56,10 +47,26 @@ export async function SongList(props: SongListProps) {
               favorites={favorites}
               playlists={playlists}
               playlistId={playlistId}
-              playlistSongIndex={playlistSongIndices?.[i]}
+              playlistSongIndex={dbIndex}
             />
-          </li>
-        ))}
+          );
+
+          // Rows of a playlist page close up the moment a song is removed.
+          return playlistId && dbIndex !== undefined ? (
+            <PlaylistRow
+              key={`${item.id}-${i}`}
+              playlistId={playlistId}
+              songId={item.id}
+              className={rowClass}
+            >
+              {row}
+            </PlaylistRow>
+          ) : (
+            <li key={`${item.id}-${i}`} className={rowClass}>
+              {row}
+            </li>
+          );
+        })}
       </ol>
     </section>
   );

@@ -5,7 +5,7 @@ import { Play } from "lucide-react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 
-import { TileMoreMobile } from "../../components/song-list/more-button-mobile";
+import { TileMoreMobilePopup as TileMoreMobile } from "../../components/song-list/more-button-mobile-popup";
 
 const item: Queue = {
   queueItemId: "q1",
@@ -45,7 +45,7 @@ describe("phone more-menu share panel", () => {
     });
     await act(async () =>
       container
-        .querySelector<HTMLButtonElement>('[aria-label="More Options"]')
+        .querySelector<HTMLButtonElement>('[aria-label="More options"]')
         ?.click(),
     );
 
@@ -63,12 +63,40 @@ describe("phone more-menu share panel", () => {
     await act(async () => new Promise((r) => setTimeout(r, 100)));
     await act(async () =>
       container
-        .querySelector<HTMLButtonElement>('[aria-label="More Options"]')
+        .querySelector<HTMLButtonElement>('[aria-label="More options"]')
         ?.click(),
     );
 
     expect(sharePanel()?.hasAttribute("inert")).toBe(true);
     expect(mainPanel()?.hasAttribute("inert")).toBe(false);
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+});
+
+describe("row share target", () => {
+  it("shares the song's own page, not the page the row sits on", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <TileMoreMobile item={item} showAlbum={false} entries={[]} />,
+      );
+    });
+    await act(async () =>
+      container
+        .querySelector<HTMLButtonElement>('[aria-label="More options"]')
+        ?.click(),
+    );
+
+    const facebook = [...document.querySelectorAll("a")].find((a) =>
+      a.textContent?.includes("Facebook"),
+    );
+    expect(facebook?.getAttribute("href")).toContain(
+      encodeURIComponent("/song/song-1/abc"),
+    );
 
     await act(async () => root.unmount());
     container.remove();

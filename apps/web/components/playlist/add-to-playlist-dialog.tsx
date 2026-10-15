@@ -14,6 +14,7 @@ import { List, ListX } from "lucide-react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
 import { controlStyles } from "~/lib/control-styles";
+import { usePlaylists } from "~/lib/optimistic-playlists";
 
 import { NewPlaylistForm } from "./new-playlist-form";
 
@@ -25,7 +26,10 @@ type AddToPlaylistDialogProps = {
 };
 
 export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
-  const { isDialogOpen, setDialogOpen, playlists, addToPlaylist } = props;
+  const { isDialogOpen, setDialogOpen, addToPlaylist } = props;
+  // Counts and new or deleted playlists show as soon as they are changed; a
+  // playlist still being created has no id to save to yet, so it is not listed.
+  const playlists = usePlaylists(props.playlists)?.filter((p) => !p.pending);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setDialogOpen}>

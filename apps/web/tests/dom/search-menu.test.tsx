@@ -1,13 +1,24 @@
-import { afterEach, expect, it, mock } from "bun:test";
+import { afterEach, expect, it, jest, mock } from "bun:test";
 
 import { PathnameContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { setInputValue } from "./set-input-value";
+import { waitFor } from "./wait-for";
 
-mock.module("../../lib/trpc/client", () => ({
-  api: { search: { all: { useQuery: () => ({}) } } },
+const searchInputs: { q: string }[] = [];
+mock.module("../../lib/trpc/vanilla", () => ({
+  trpc: {
+    search: {
+      all: {
+        query: (input: { q: string }) => {
+          searchInputs.push(input);
+          return new Promise(() => {});
+        },
+      },
+    },
+  },
 }));
 mock.module("../../components/search/search-all", () => ({
   SearchAll: () => null,
@@ -15,7 +26,13 @@ mock.module("../../components/search/search-all", () => ({
 
 const { SearchMenu } = await import("../../components/search/search-menu");
 const roots: Root[] = [];
-const GO_TO_HREFS = ["/chart", "/me", "/settings/appearance"];
+
+/** The palette is its own chunk: the click starts the import and opens it on arrival. */
+async function openSearch(container: HTMLElement) {
+  await act(async () => container.querySelector("button")?.click());
+  await waitFor(() => document.querySelector("[data-search-palette]") !== null);
+}
+const GO_TO_HREFS = ["/chart", "/me", "/settings#appearance"];
 
 const optionsIn = () => [
   ...document.querySelectorAll<HTMLElement>("[data-search-option]"),
@@ -58,6 +75,7 @@ it("stays closed when returning to the path where search was opened", async () =
   const trigger = () => container.querySelector("button");
 
   await act(async () => trigger()?.click());
+  await waitFor(() => document.querySelector("[data-search-palette]") !== null);
   expect(trigger()?.getAttribute("aria-expanded")).toBe("true");
   const input = document.querySelector<HTMLInputElement>(
     'input[aria-label="Search"]',
@@ -94,7 +112,7 @@ it("drives option selection from the combobox with arrows and Enter", async () =
     </div>,
   );
 
-  await act(async () => container.querySelector("button")?.click());
+  await openSearch(container);
   const input = document.querySelector<HTMLInputElement>('[role="combobox"]');
   const options = optionsIn;
   const selectedStates = () =>
@@ -133,7 +151,7 @@ it("drives option selection from the combobox with arrows and Enter", async () =
 
 it("lists the Go to pages as options, outside the tab order", async () => {
   const { container } = await renderMenu(<p>Top searches</p>);
-  await act(async () => container.querySelector("button")?.click());
+  await openSearch(container);
 
   const goTo = document.getElementById(`search-palette-listbox-go-to`);
   expect(goTo?.textContent).toBe("Go to");
@@ -144,7 +162,7 @@ it("lists the Go to pages as options, outside the tab order", async () => {
 
 it("moves the active option through Go to with arrows, wrapping at both ends", async () => {
   const { container } = await renderMenu(<p>Top searches</p>);
-  await act(async () => container.querySelector("button")?.click());
+  await openSearch(container);
   const input = document.querySelector<HTMLInputElement>('[role="combobox"]');
   const activeHref = () => {
     const id = input?.getAttribute("aria-activedescendant");
@@ -155,17 +173,17 @@ it("moves the active option through Go to with arrows, wrapping at both ends", a
 
   expect(activeHref()).toBe("/chart");
   await pressKey(input, "ArrowUp");
-  expect(activeHref()).toBe("/settings/appearance");
+  expect(activeHref()).toBe("/settings#appearance");
   await pressKey(input, "ArrowDown");
   expect(activeHref()).toBe("/chart");
   await pressKey(input, "ArrowDown");
   await pressKey(input, "ArrowDown");
-  expect(activeHref()).toBe("/settings/appearance");
+  expect(activeHref()).toBe("/settings#appearance");
 });
 
 it("renders the phone palette as the glass palette role with its key hints", async () => {
   const { container } = await renderMenu(<p>Top searches</p>);
-  await act(async () => container.querySelector("button")?.click());
+  await openSearch(container);
 
   const palette = document.querySelector<HTMLElement>("[data-search-palette]");
   expect(palette?.dataset.glassRole).toBe("palette");
@@ -176,4 +194,35 @@ it("renders the phone palette as the glass palette role with its key hints", asy
     "↵",
     "esc",
   ]);
+});
+
+it("sends one search for a typed word, after the typing pause", async () => {
+  jest.useFakeTimers();
+  try {
+    const { container } = await renderMenu(<p>Top searches</p>);
+    await openSearch(container);
+    const input = document.querySelector<HTMLInputElement>(
+      'input[aria-label="Search"]',
+    );
+    if (!input) throw new Error("search input not rendered");
+    searchInputs.length = 0;
+
+    for (const typed of ["a", "ar", "ari", "arij"]) {
+      await act(async () => setInputValue(input, typed));
+      await act(async () => {
+        jest.advanceTimersByTime(80);
+      });
+    }
+    // The field itself is never held back.
+    expect(input.value).toBe("arij");
+    // Nothing is asked while the word is still being typed.
+    expect(searchInputs).toEqual([]);
+
+    await act(async () => {
+      jest.advanceTimersByTime(300);
+    });
+    expect(searchInputs.map((i) => i.q)).toEqual(["arij"]);
+  } finally {
+    jest.useRealTimers();
+  }
 });

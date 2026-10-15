@@ -7,6 +7,7 @@ import {
   fetchLikedSongsNewestFirst,
   fetchSongsChunked,
   orderByIds,
+  settleWithLimit,
 } from "../lib/liked-songs";
 
 const song = (id: string) => ({ id }) as Song;
@@ -196,5 +197,34 @@ describe("fetchLikedSongsNewestFirst", () => {
     });
     expect(songs).toBeUndefined();
     err.mockRestore();
+  });
+});
+
+describe("settleWithLimit", () => {
+  it("never runs more than the limit at once and keeps input order", async () => {
+    let active = 0;
+    let peak = 0;
+    const results = await settleWithLimit(
+      Array.from({ length: 20 }, (_, i) => i),
+      6,
+      async (n) => {
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 2));
+        active -= 1;
+        if (n === 3) throw new Error("nope");
+        return n * 2;
+      },
+    );
+
+    expect(peak).toBe(6);
+    expect(results).toHaveLength(20);
+    expect(results[2]).toEqual({ status: "fulfilled", value: 4 });
+    expect(results[3]?.status).toBe("rejected");
+    expect(results[19]).toEqual({ status: "fulfilled", value: 38 });
+  });
+
+  it("handles an empty list", async () => {
+    expect(await settleWithLimit([], 6, async () => 1)).toEqual([]);
   });
 });

@@ -9,20 +9,15 @@ import {
 } from "bun:test";
 
 import type { Queue as QueueItem } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { AudioPlayerProvider } from "react-use-audio-player";
 import * as sonner from "sonner";
-import superjson from "superjson";
 
 import { useQueuePane } from "../../components/player/use-queue-pane";
 import { Queue } from "../../components/queue";
 import { THEME_BOOTSTRAP_SCRIPT } from "../../lib/theme-script";
-import { api } from "../../lib/trpc/client";
-import { offlineFetch } from "./offline-fetch";
 
 function song(id: string): QueueItem {
   return {
@@ -37,17 +32,6 @@ function song(id: string): QueueItem {
     duration: 100,
   };
 }
-
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
 
 const noop = () => {};
 
@@ -71,13 +55,9 @@ async function mount() {
   await act(async () => {
     root.render(
       <SearchParamsContext.Provider value={new URLSearchParams()}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <AudioPlayerProvider>
-              <Queue open onOpenChange={noop} />
-            </AudioPlayerProvider>
-          </QueryClientProvider>
-        </api.Provider>
+        <AudioPlayerProvider>
+          <Queue open onOpenChange={noop} />
+        </AudioPlayerProvider>
       </SearchParamsContext.Provider>,
     );
   });
@@ -90,6 +70,38 @@ describe("queue pane", () => {
   });
   afterEach(() => {
     jest.useRealTimers();
+  });
+
+  it("scrolls only the Up next list; the header and now playing stay put", async () => {
+    localStorage.setItem(
+      "queue",
+      JSON.stringify([song("p"), song("a"), song("b")]),
+    );
+    localStorage.setItem("current_song_index", "0");
+
+    const root = await mount();
+    const aside = document.querySelector("aside#player-queue");
+    const scroller = aside?.querySelector("[data-queue-scroll]");
+    expect(scroller).not.toBeNull();
+
+    // The list lives in the scroll container; nothing above it does.
+    expect(scroller?.querySelector('ol[aria-label="Queue"]')).not.toBeNull();
+    const text = scroller?.textContent ?? "";
+    expect(text).not.toContain("Now playing");
+    expect(text).not.toContain("Up next");
+    expect(text).not.toContain("Song p");
+
+    // No ancestor of the fixed section scrolls, and the pane itself clips.
+    const fixed = aside?.querySelector("[data-queue-fixed]");
+    expect(fixed?.textContent).toContain("Now playing");
+    expect(fixed?.textContent).toContain("Up next");
+    expect(scroller?.contains(fixed ?? null)).toBe(false);
+    const scrollers = [...(aside?.querySelectorAll("*") ?? [])].filter((el) =>
+      /(^|\s)overflow-y-auto(\s|$)/.test(el.getAttribute("class") ?? ""),
+    );
+    expect(scrollers).toEqual([scroller as Element]);
+
+    await act(async () => root.unmount());
   });
 
   it("removes the last track and hands focus to the list", async () => {
@@ -342,13 +354,9 @@ async function mountPane() {
   await act(async () => {
     root.render(
       <SearchParamsContext.Provider value={new URLSearchParams()}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <AudioPlayerProvider>
-              <Pane />
-            </AudioPlayerProvider>
-          </QueryClientProvider>
-        </api.Provider>
+        <AudioPlayerProvider>
+          <Pane />
+        </AudioPlayerProvider>
       </SearchParamsContext.Provider>,
     );
   });

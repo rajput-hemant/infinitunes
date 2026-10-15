@@ -1,5 +1,5 @@
 import type { MediaType } from "@infinitunes/types";
-import { decode, getImageSrc } from "@infinitunes/types";
+import { decode, getImageSrc, parseToken, uniqueBy } from "@infinitunes/types";
 
 import { Shelf } from "~/components/slider/shelf";
 import { ShelfItem } from "~/components/slider/shelf-item";
@@ -61,6 +61,8 @@ export default async function HomePage() {
     href: getHref(item.perma_url, item.type),
     title: decode(item.title),
     image: getImageSrc(item.image, "high"),
+    type: item.type,
+    token: parseToken(item.perma_url),
   }));
 
   const heroTiles: HeroTile[] = [
@@ -73,6 +75,8 @@ export default async function HomePage() {
       href: getHref(item.perma_url, item.type),
       title: decode(item.title),
       image: item.image,
+      type: item.type,
+      token: parseToken(item.perma_url),
     }));
 
   return (
@@ -80,7 +84,7 @@ export default async function HomePage() {
       <HomeHeader />
 
       {(featured || quickPicks.length > 0) && (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           {featured && <HomeHero playlist={featured} tiles={heroTiles} />}
 
           {quickPicks.length > 0 && <QuickPicks items={quickPicks} />}
@@ -89,20 +93,23 @@ export default async function HomePage() {
 
       {Object.entries(homedata).map(([key, section]) => {
         const items = SKIPPED_SECTIONS.has(key) ? null : homeItems(section);
-        if (!items) return null;
+        if (!items?.length) return null;
 
         const sectionTitle = homedata.modules?.[key]?.title;
 
         return (
-          <section key={key} className="space-y-3">
-            {sectionTitle && (
-              <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
-                {decode(sectionTitle)}
-              </h2>
-            )}
-
-            <Shelf rows={GRID_SECTIONS.has(key) ? 2 : 1}>
-              {items.map(
+          <section key={key}>
+            <Shelf
+              rows={GRID_SECTIONS.has(key) ? 2 : 1}
+              heading={
+                sectionTitle && (
+                  <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
+                    {decode(sectionTitle)}
+                  </h2>
+                )
+              }
+            >
+              {uniqueBy(items, (item) => item.id || item.title).map(
                 ({
                   id,
                   title: itemTitle,

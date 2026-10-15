@@ -21,6 +21,8 @@ export const searchUi = {
   link: "text-[0.8125rem] leading-5 font-semibold text-primary hover:underline active:opacity-70",
   groupLabel:
     "px-2.5 pt-3 pb-1 text-[0.6875rem] leading-4 font-semibold tracking-wider text-muted-foreground uppercase",
+  /** The row's box, shared by its skeleton. */
+  rowLayout: "flex min-h-12 w-full items-center gap-3 rounded-sm px-3 py-1",
   row: "flex min-h-12 w-full items-center gap-3 rounded-sm px-3 py-1 text-left transition-colors duration-fast outline-hidden hover:bg-fill-2 focus-visible:ring-2 focus-visible:ring-ring aria-selected:bg-fill-2",
   art: "relative grid size-10 shrink-0 place-items-center overflow-hidden rounded-[calc(var(--r-sm)*0.75)] bg-fill",
   artRound: "rounded-full",

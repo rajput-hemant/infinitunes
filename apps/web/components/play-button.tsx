@@ -13,7 +13,7 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { findQueueIndex } from "~/lib/queue-position";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 type PlayButtonProps = HTMLAttributes<HTMLButtonElement> & {
   type: MediaType;
@@ -56,8 +56,6 @@ export function PlayButton(props: PlayButtonProps) {
   const [, setCurrentIndex] = useCurrentSongIndex();
   const [, setActiveRadio] = useActiveRadioSession();
 
-  const utils = api.useUtils();
-
   const sort = parseSort(searchParams.get("sort"));
 
   async function playHandler() {
@@ -72,75 +70,80 @@ export function PlayButton(props: PlayButtonProps) {
       let queue: (Song | Episode)[] = [];
       let isRadio = false;
 
-      switch (type) {
-        case "song": {
-          const songObj = await utils.song.details.fetch({ token });
-          queue = songObj.songs;
-          break;
-        }
-        case "album": {
-          const album = await utils.album.details.fetch({ token });
-          queue = Array.isArray(album.list) ? album.list : [];
-          break;
-        }
-        case "playlist": {
-          const playlist = await utils.playlist.details.fetch({ token });
-          queue = Array.isArray(playlist.list) ? playlist.list : [];
-          break;
-        }
-        case "mix": {
-          const mix = await utils.get.mix.fetch({ token });
-          queue = Array.isArray(mix.list) ? mix.list : [];
-          break;
-        }
-        case "artist": {
-          const artist = await utils.artist.details.fetch({ token });
-          queue = artist.topSongs ?? [];
-          break;
-        }
-        case "label": {
-          const label = await utils.get.label.fetch({ token });
-          queue = label.topSongs.songs;
-          break;
-        }
-        case "show": {
-          queue = await utils.show.episodes.fetch({
-            id: token,
-            season,
-            page: 1,
-            sort,
-          });
-          break;
-        }
-        case "episode": {
-          const data = await utils.show.episodeDetails.fetch({
-            token,
-            sort,
-          });
-          queue = data.episodes;
-          break;
-        }
-        case "radio_station": {
-          isRadio = true;
-          try {
-            const details = await utils.radio.stationDetails.fetch({ token });
-            if (!details.songs.length) {
-              toast.error("No songs found for this radio station");
+      try {
+        switch (type) {
+          case "song": {
+            const songObj = await trpc.song.details.query({ token });
+            queue = songObj.songs;
+            break;
+          }
+          case "album": {
+            const album = await trpc.album.details.query({ token });
+            queue = Array.isArray(album.list) ? album.list : [];
+            break;
+          }
+          case "playlist": {
+            const playlist = await trpc.playlist.details.query({ token });
+            queue = Array.isArray(playlist.list) ? playlist.list : [];
+            break;
+          }
+          case "mix": {
+            const mix = await trpc.get.mix.query({ token });
+            queue = Array.isArray(mix.list) ? mix.list : [];
+            break;
+          }
+          case "artist": {
+            const artist = await trpc.artist.details.query({ token });
+            queue = artist.topSongs ?? [];
+            break;
+          }
+          case "label": {
+            const label = await trpc.get.label.query({ token });
+            queue = label.topSongs.songs;
+            break;
+          }
+          case "show": {
+            queue = await trpc.show.episodes.query({
+              id: token,
+              season,
+              page: 1,
+              sort,
+            });
+            break;
+          }
+          case "episode": {
+            const data = await trpc.show.episodeDetails.query({
+              token,
+              sort,
+            });
+            queue = data.episodes;
+            break;
+          }
+          case "radio_station": {
+            isRadio = true;
+            try {
+              const details = await trpc.radio.stationDetails.query({ token });
+              if (!details.songs.length) {
+                toast.error("No songs found for this radio station");
+                return;
+              }
+              queue = details.songs;
+              setActiveRadio({
+                stationId: details.stationId,
+                name: details.station.title,
+                type: "featured",
+                language: details.station.more_info.language,
+              });
+            } catch {
+              toast.error("Failed to load radio station");
               return;
             }
-            queue = details.songs;
-            setActiveRadio({
-              stationId: details.stationId,
-              name: details.station.title,
-              type: "featured",
-              language: details.station.more_info.language,
-            });
-          } catch {
-            toast.error("Failed to load radio station");
-            return;
+            break;
           }
-          break;
         }
+      } catch {
+        toast.error("Couldn't load songs");
+        return;
       }
 
       if (!isRadio) {
@@ -150,7 +153,10 @@ export function PlayButton(props: PlayButtonProps) {
       const ordered = shuffle ? shuffled(queue) : queue;
       const queueItems = ordered.map((item) => toQueue(item));
       const first = queueItems[0];
-      if (!first) return;
+      if (!first) {
+        toast.error("Nothing to play here yet.");
+        return;
+      }
 
       setQueue(queueItems);
 

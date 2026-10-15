@@ -1,6 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 
 import type { Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 import { renderToStaticMarkup } from "react-dom/server";
 
 mock.module("server-only", () => ({}));
@@ -48,7 +49,7 @@ describe("row Like button on mobile", () => {
   it("is hidden below md because the row menu carries the favourite action", () => {
     likeProps.length = 0;
     menuRows = 0;
-    renderToStaticMarkup(<SongListClient items={[song]} />);
+    renderToStaticMarkup(<SongListClient items={[toSongRow(song)]} />);
 
     const classes = (likeProps[0]?.className ?? "").split(" ");
     expect(classes).toContain("hidden");

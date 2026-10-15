@@ -1,18 +1,13 @@
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
+import { LibraryHeadingSkeleton } from "~/components/library/library-heading-skeleton";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
-import { SliderCardSkeleton } from "~/components/skeletons/slider-card-skeleton";
-
-export default function Loading() {
+/** Mirrors the library collection: heading with a count, then the card grid. */
+export default function MyPlaylistsLoading() {
   return (
-    <div className="flex flex-col gap-4">
-      <Skeleton className="h-8 w-72 sm:h-9" />
+    <div className="flex flex-col gap-4" aria-busy="true">
+      <LibraryHeadingSkeleton />
 
-      <CatalogGrid>
-        {Array.from({ length: 20 }).map((_, i) => (
-          <SliderCardSkeleton key={i} hideSubtitle />
-        ))}
-      </CatalogGrid>
+      <CatalogGridSkeleton count={12} />
     </div>
   );
 }

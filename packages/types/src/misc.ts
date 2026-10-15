@@ -1,4 +1,4 @@
-import type { ArtistMini } from "./artist";
+import type { ArtistCredit } from "./artist";
 
 export type MediaType =
   | "artist"
@@ -69,9 +69,11 @@ export type Queue = {
   url: string;
   type: "song" | "episode";
   image: Quality;
-  artists: ArtistMini[];
+  artists: ArtistCredit[];
   download_url: Quality;
   duration: number;
+  /** Highest stream quality the song has; absent when uncapped or unknown. */
+  maxQuality?: StreamQuality;
 };
 
 type QualitiesMap = {
@@ -86,3 +88,23 @@ export const QUALITIES_MAP: QualitiesMap[] = [
   { quality: "high", bitrate: "160kbps" },
   { quality: "excellent", bitrate: "320kbps" },
 ];
+
+/**
+ * Keeps the first item for each key. Upstream lists repeat ids within a page
+ * and across pages, and a repeated React key breaks reconciliation, so every
+ * list keyed by an upstream id goes through this before it renders.
+ */
+export function uniqueBy<T>(
+  items: readonly T[],
+  getKey: (item: T) => string | number | null | undefined,
+): T[] {
+  const seen = new Set<string | number>();
+  return items.filter((item) => {
+    const key = getKey(item);
+    // An item without a key cannot collide, so it is always kept.
+    if (key === null || key === undefined || key === "") return true;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}

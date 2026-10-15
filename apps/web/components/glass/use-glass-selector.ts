@@ -13,7 +13,7 @@ import {
 import type { ItemSpan } from "~/lib/glass/selector";
 import { project, rubber, spring } from "~/lib/glass/spring";
 
-import { registerGlass } from "./lens-registry";
+import { whenGlassRuns } from "./glass-loader";
 
 const ITEM = ":scope > [data-glass-item]";
 const INDICATOR = ":scope > [data-glass-indicator]";
@@ -209,7 +209,9 @@ export function useGlassSelector(
       };
     };
 
-    const unregister = registerGlass(indicator, { size: "s", magnify: true });
+    const unregister = whenGlassRuns((glass) =>
+      glass.registerGlass(indicator, { size: "s", magnify: true }),
+    );
     layout();
     const resize = new ResizeObserver(layout);
     resize.observe(host);

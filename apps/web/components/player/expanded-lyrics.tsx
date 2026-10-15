@@ -1,9 +1,11 @@
 "use client";
 
 import type { Queue } from "@infinitunes/types";
+import { useQuery } from "@tanstack/react-query";
 
+import { QueryScope } from "~/components/query-scope";
 import { sanitizeRichText } from "~/lib/sanitize-rich-text";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 import { cn } from "~/lib/utils";
 
 type ExpandedLyricsProps = { track: Queue };
@@ -12,13 +14,24 @@ const emptyClass = "px-2 text-sm text-muted-foreground";
 
 /** Lyrics of the playing song, fetched only while the Lyrics tab is open. */
 export function ExpandedLyrics({ track }: ExpandedLyricsProps) {
-  const isSong = track.type === "song";
-  const lyrics = api.get.lyrics.useQuery(
-    { id: track.id },
-    { enabled: isSong, retry: false, staleTime: Infinity },
+  return (
+    <QueryScope>
+      <Lyrics track={track} />
+    </QueryScope>
   );
+}
 
-  if (!isSong || lyrics.isError) {
+function Lyrics({ track }: ExpandedLyricsProps) {
+  const isSong = track.type === "song";
+  const lyrics = useQuery({
+    queryKey: ["lyrics", track.id],
+    queryFn: () => trpc.get.lyrics.query({ id: track.id }),
+    enabled: isSong,
+    retry: false,
+    staleTime: Infinity,
+  });
+
+  if (!isSong || lyrics.isError || lyrics.data === null) {
     return <p className={emptyClass}>No lyrics available for this track.</p>;
   }
   if (!lyrics.data) {

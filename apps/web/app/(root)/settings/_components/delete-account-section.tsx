@@ -24,7 +24,8 @@ import { controlStyles } from "~/lib/control-styles";
 import { userMessage } from "~/lib/user-message";
 import { cn, destructiveText } from "~/lib/utils";
 
-import { SettingsSection } from "./settings-section";
+import { SettingsCard } from "./settings-card";
+import { SettingsRow } from "./settings-row";
 
 export function DeleteAccountSection() {
   const router = useRouter();
@@ -48,12 +49,13 @@ export function DeleteAccountSection() {
   }
 
   return (
-    <SettingsSection
-      id="delete"
-      title="Delete Account"
-      description="Permanently delete your account and all its associated data. This cannot be undone."
-    >
-      <div>
+    <SettingsCard title="Danger zone" tone="danger">
+      <SettingsRow
+        id="delete"
+        label="Delete account"
+        help="Permanently delete your account and all its associated data. This cannot be undone."
+        keywords="danger zone remove erase"
+      >
         <AlertDialog
           onOpenChange={(open) => {
             // Do not keep the typed password around after the dialog closes.
@@ -125,7 +127,7 @@ export function DeleteAccountSection() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-      </div>
-    </SettingsSection>
+      </SettingsRow>
+    </SettingsCard>
   );
 }

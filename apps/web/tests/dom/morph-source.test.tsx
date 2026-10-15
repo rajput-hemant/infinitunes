@@ -4,6 +4,10 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { MorphSource } from "../../components/view-transition/morph-source";
+import {
+  MorphArt,
+  MorphSkeleton,
+} from "../../components/view-transition/morph-target";
 import { morphName } from "../../lib/view-transition";
 
 const roots: Root[] = [];
@@ -76,6 +80,185 @@ describe("MorphSource", () => {
       host.querySelector<HTMLElement>("[data-morph-art]")?.style
         .viewTransitionName,
     ).toBe("");
+  });
+});
+
+describe("MorphSkeleton", () => {
+  it("takes the name of the card that was opened, and the card lets go of it", async () => {
+    const host = await mount(card("album", "/album/some-name/tok123"));
+    const art = host.querySelector<HTMLElement>("[data-morph-art]");
+
+    await act(async () => {
+      host
+        .querySelector("#album-link")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+    expect(art?.style.viewTransitionName).toBe(morphName("album", "tok123"));
+
+    const slot = document.createElement("div");
+    document.body.append(slot);
+    containers.push(slot);
+    const root = createRoot(slot);
+    roots.push(root);
+    await act(async () =>
+      root.render(<MorphSkeleton className="placeholder" />),
+    );
+
+    const placeholder = slot.querySelector<HTMLElement>(".placeholder");
+    expect(placeholder?.style.viewTransitionName).toBe(
+      morphName("album", "tok123"),
+    );
+    expect(art?.style.viewTransitionName).toBe("");
+  });
+
+  it("shows the card's picture in the placeholder it flies into", async () => {
+    const host = await mount(
+      `<div data-morph="album">
+        <div data-morph-art><a href="/album/some-name/tok123" id="album-link"><img src="/art.jpg" alt="" /></a></div>
+      </div>`,
+    );
+    await act(async () => {
+      host
+        .querySelector("#album-link")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+
+    const slot = document.createElement("div");
+    document.body.append(slot);
+    containers.push(slot);
+    const root = createRoot(slot);
+    roots.push(root);
+    await act(async () =>
+      root.render(<MorphSkeleton className="placeholder" />),
+    );
+
+    const picture = slot.querySelector<HTMLImageElement>(".placeholder img");
+    expect(picture?.getAttribute("src")).toContain("/art.jpg");
+  });
+
+  it("names a tile that is itself the artwork (a one-link card)", async () => {
+    const host = await mount(
+      `<a href="/playlist/tile/tok9" id="tile" data-morph="playlist" data-morph-art><img src="/t.jpg" alt="" /></a>`,
+    );
+    await act(async () => {
+      host
+        .querySelector("#tile")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+    expect(
+      host.querySelector<HTMLElement>("#tile")?.style.viewTransitionName,
+    ).toBe(morphName("playlist", "tok9"));
+  });
+
+  it("stays unnamed when nothing was opened from a card", async () => {
+    const slot = document.createElement("div");
+    document.body.append(slot);
+    containers.push(slot);
+    const root = createRoot(slot);
+    roots.push(root);
+    await act(async () =>
+      root.render(<MorphSkeleton className="placeholder" />),
+    );
+
+    expect(
+      slot.querySelector<HTMLElement>(".placeholder")?.style.viewTransitionName,
+    ).toBe("");
+  });
+
+  it("is not named by a later placeholder once the offer was claimed", async () => {
+    const host = await mount(card("album", "/album/some-name/tok123"));
+    await act(async () => {
+      host
+        .querySelector("#album-link")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+    const slots = [
+      document.createElement("div"),
+      document.createElement("div"),
+    ];
+    for (const slot of slots) {
+      document.body.append(slot);
+      containers.push(slot);
+      const root = createRoot(slot);
+      roots.push(root);
+      await act(async () =>
+        root.render(<MorphSkeleton className="placeholder" />),
+      );
+    }
+    expect(
+      slots[0]?.querySelector<HTMLElement>(".placeholder")?.style
+        .viewTransitionName,
+    ).toBe(morphName("album", "tok123"));
+    expect(
+      slots[1]?.querySelector<HTMLElement>(".placeholder")?.style
+        .viewTransitionName,
+    ).toBe("");
+  });
+});
+
+describe("MorphArt", () => {
+  const click = (host: HTMLElement) =>
+    act(async () => {
+      host
+        .querySelector("#album-link")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+  const render = async (node: React.ReactNode) => {
+    const slot = document.createElement("div");
+    document.body.append(slot);
+    containers.push(slot);
+    const root = createRoot(slot);
+    roots.push(root);
+    await act(async () => root.render(node));
+    return slot;
+  };
+
+  it("takes the name when the page was cached and there is no skeleton", async () => {
+    const host = await mount(card("album", "/album/some-name/tok123"));
+    await click(host);
+    const slot = await render(
+      <MorphArt name={morphName("album", "tok123")} className="art">
+        x
+      </MorphArt>,
+    );
+    expect(
+      slot.querySelector<HTMLElement>(".art")?.style.viewTransitionName,
+    ).toBe(morphName("album", "tok123"));
+    expect(
+      host.querySelector<HTMLElement>("[data-morph-art]")?.style
+        .viewTransitionName,
+    ).toBe("");
+  });
+
+  it("ignores an offer made for a different page", async () => {
+    const host = await mount(card("album", "/album/some-name/tok123"));
+    await click(host);
+    const slot = await render(
+      <MorphArt name={morphName("album", "other")} className="art">
+        x
+      </MorphArt>,
+    );
+    expect(
+      slot.querySelector<HTMLElement>(".art")?.style.viewTransitionName,
+    ).toBe("");
+  });
+
+  it("picks the name up from the skeleton it replaces", async () => {
+    const host = await mount(card("album", "/album/some-name/tok123"));
+    await click(host);
+    const skeleton = await render(<MorphSkeleton className="placeholder" />);
+    expect(
+      skeleton.querySelector<HTMLElement>(".placeholder")?.style
+        .viewTransitionName,
+    ).toBe(morphName("album", "tok123"));
+    const slot = await render(
+      <MorphArt name={morphName("album", "tok123")} className="art">
+        x
+      </MorphArt>,
+    );
+    expect(
+      slot.querySelector<HTMLElement>(".art")?.style.viewTransitionName,
+    ).toBe(morphName("album", "tok123"));
   });
 });
 

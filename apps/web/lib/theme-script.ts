@@ -21,6 +21,11 @@ import { MANAGED_ATTRIBUTES, MANAGED_VARIABLES } from "./theme/managed";
  *   attribute must exist before first paint or the content jumps once the
  *   client-only player mounts. The pane clears it again if the viewport is narrow.
  *
+ * - `SIDEBAR_STEP`: the sidebar's collapsed flag from the `sidebar_state` cookie
+ *   (written by the shadcn `SidebarProvider`). The layout renders the sidebar
+ *   open so it can prerender; `styles/globals.css` holds the collapsed gutter
+ *   until `AppSidebarProvider` applies the saved state (it then sets `data-sidebar-ready`).
+ *
  * To run more state before paint, add another self-contained `try{...}catch(e){}`
  * step to `STEPS`. `lib/csp.ts` hashes the joined string, so the `script-src`
  * hash follows automatically. Steps must be plain ES5, share the `d` (`<html>`)
@@ -32,6 +37,8 @@ const APPEARANCE_STEP = `try{var A=${JSON.stringify(MANAGED_ATTRIBUTES)},V=${JSO
 
 const QUEUE_STEP = `try{if(localStorage.getItem("queue_open")==="true")d.setAttribute("data-queue","open")}catch(e){}`;
 
-const STEPS = [COLOR_SCHEME_STEP, APPEARANCE_STEP, QUEUE_STEP];
+const SIDEBAR_STEP = `try{if(/(?:^|; )sidebar_state=false(?:;|$)/.test(document.cookie))d.setAttribute("data-sidebar","collapsed")}catch(e){}`;
+
+const STEPS = [COLOR_SCHEME_STEP, APPEARANCE_STEP, QUEUE_STEP, SIDEBAR_STEP];
 
 export const THEME_BOOTSTRAP_SCRIPT = `(function(){var d=document.documentElement;${STEPS.join("")}})()`;

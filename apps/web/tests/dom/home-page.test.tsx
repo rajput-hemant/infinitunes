@@ -40,17 +40,12 @@ const modules = {
 mock.module("~/lib/trpc/server", () => ({
   api: { home: { home: async () => modules } },
 }));
-mock.module("~/lib/trpc/client", () => ({
-  api: { useUtils: () => ({}) },
-}));
-mock.module("@infinitunes/auth/client", () => ({
-  useSession: () => ({ data: null }),
-}));
 mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
 const { default: HomePage } = await import("../../app/(root)/page");
+const { ViewerProvider } = await import("../../components/viewer-context");
 
 const roots: Root[] = [];
 
@@ -60,7 +55,17 @@ async function render() {
   const root = createRoot(container);
   roots.push(root);
   await act(async () => {
-    root.render(await HomePage());
+    root.render(
+      <ViewerProvider
+        viewer={Promise.resolve({
+          user: undefined,
+          playlists: undefined,
+          favorites: undefined,
+        })}
+      >
+        {await HomePage()}
+      </ViewerProvider>,
+    );
   });
   return container;
 }
@@ -107,12 +112,32 @@ describe("Home page", () => {
     const container = await render();
 
     const hero = container.querySelector("h2 a")?.closest(".grid-cols-2");
-    const tiles = [...(hero?.querySelectorAll(":scope > a") ?? [])];
+    const tiles = [
+      ...(hero?.querySelectorAll(":scope > div > a[aria-label]") ?? []),
+    ];
     expect(tiles.map((a) => a.getAttribute("href"))).toEqual([
       "/playlist/playlist-x/x",
       "/playlist/playlist-y/y",
       "/playlist/playlist-f/f",
     ]);
+  });
+
+  it("puts a play control beside the link on hero tiles and quick picks", async () => {
+    const container = await render();
+
+    const tile = container.querySelector('a[href="/playlist/playlist-x/x"]');
+    const tilePlay = tile?.parentElement?.querySelector(
+      'button[aria-label="Play Playlist x"]',
+    );
+    expect(tilePlay).not.toBeNull();
+    expect(tilePlay?.closest("a")).toBeNull();
+
+    const pick = container.querySelector('a[href="/album/album-1/1"]');
+    const pickPlay = pick?.parentElement?.querySelector(
+      'button[aria-label="Play Album 1"]',
+    );
+    expect(pickPlay).not.toBeNull();
+    expect(pickPlay?.closest("a")).toBeNull();
   });
 
   it("keeps the existing shelves", async () => {

@@ -1,20 +1,25 @@
-import { describe, expect, it } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
 import type { Queue as QueueItem } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { AudioPlayerProvider } from "react-use-audio-player";
-import superjson from "superjson";
 
 import { ExpandedPlayer } from "../../components/expanded-player";
 import { createPositionStore } from "../../lib/position-store";
-import { api } from "../../lib/trpc/client";
 import { offlineFetch } from "./offline-fetch";
 import { waitFor } from "./wait-for";
+
+// The lyrics pane queries over the network; answer it offline instead of opening a socket.
+const realFetch = globalThis.fetch;
+beforeAll(() => {
+  globalThis.fetch = offlineFetch;
+});
+afterAll(() => {
+  globalThis.fetch = realFetch;
+});
 
 const track: QueueItem = {
   id: "a",
@@ -27,17 +32,6 @@ const track: QueueItem = {
   download_url: "",
   duration: 100,
 };
-
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
 
 const noop = () => {};
 
@@ -59,37 +53,33 @@ async function mountExpanded() {
     root.render(
       <AppRouterContext.Provider value={router}>
         <SearchParamsContext.Provider value={new URLSearchParams()}>
-          <api.Provider client={trpcClient} queryClient={queryClient}>
-            <QueryClientProvider client={queryClient}>
-              <AudioPlayerProvider>
-                <ExpandedPlayer
-                  open
-                  onOpenChange={noop}
-                  track={track}
-                  position={createPositionStore(0)}
-                  duration={100}
-                  isPlaying={false}
-                  isLoading={false}
-                  isLooping={false}
-                  loopPlaylist={false}
-                  isShuffle={false}
-                  isMuted={false}
-                  isReady
-                  volume={1}
-                  onSeekStart={noop}
-                  onSeekChange={noop}
-                  onSeekCommit={noop}
-                  onVolumeChange={noop}
-                  onToggleMute={noop}
-                  onLoop={noop}
-                  onPrevious={noop}
-                  onPlayPause={noop}
-                  onNext={noop}
-                  onToggleShuffle={noop}
-                />
-              </AudioPlayerProvider>
-            </QueryClientProvider>
-          </api.Provider>
+          <AudioPlayerProvider>
+            <ExpandedPlayer
+              open
+              onOpenChange={noop}
+              track={track}
+              position={createPositionStore(0)}
+              duration={100}
+              isPlaying={false}
+              isLoading={false}
+              isLooping={false}
+              loopPlaylist={false}
+              isShuffle={false}
+              isMuted={false}
+              isReady
+              volume={1}
+              onSeekStart={noop}
+              onSeekChange={noop}
+              onSeekCommit={noop}
+              onVolumeChange={noop}
+              onToggleMute={noop}
+              onLoop={noop}
+              onPrevious={noop}
+              onPlayPause={noop}
+              onNext={noop}
+              onToggleShuffle={noop}
+            />
+          </AudioPlayerProvider>
         </SearchParamsContext.Provider>
       </AppRouterContext.Provider>,
     );
@@ -147,7 +137,7 @@ describe("expanded player sheet", () => {
     expect(dialog?.textContent).toContain("Playing from");
     expect(dialog?.textContent).toContain("Queue");
     expect(
-      dialog?.querySelector('button[aria-label="More Options"]'),
+      dialog?.querySelector('button[aria-label="More options"]'),
     ).not.toBeNull();
     expect(
       dialog?.querySelector('button[aria-label="Like"][aria-pressed="false"]'),
@@ -195,7 +185,7 @@ describe("expanded player sheet", () => {
 
   it("keeps the toggle names stable while aria-pressed carries the state", async () => {
     const root = await mountExpanded();
-    for (const label of ["Shuffle", "Loop", "Mute"]) {
+    for (const label of ["Shuffle", "Loop"]) {
       expect(
         document.querySelector(`button[aria-label="${label}"][aria-pressed]`),
       ).not.toBeNull();

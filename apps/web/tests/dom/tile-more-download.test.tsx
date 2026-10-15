@@ -1,23 +1,20 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-import type { Episode, Queue, Song } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
+import type { Episode, Queue, Song, SongRowItem } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
-import superjson from "superjson";
 
-import { api } from "../../lib/trpc/client";
-import { offlineFetch } from "./offline-fetch";
+import { waitFor } from "./wait-for";
 
 mock.module("server-only", () => ({}));
 
-const hookCalls: (Song | Episode)[][] = [];
+const hookCalls: SongRowItem[][] = [];
 let downloads = 0;
 mock.module("~/components/download-button", () => ({
-  useDownloadSongs: (songs: (Song | Episode)[]) => {
+  useDownloadSongs: (songs: SongRowItem[]) => {
     hookCalls.push(songs);
     return {
       isDownloading: false,
@@ -63,20 +60,9 @@ const router = {
   prefetch() {},
 } as unknown as NonNullable<React.ContextType<typeof AppRouterContext>>;
 
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
-
 /** Renders the more button, opens the desktop dropdown or the phone drawer, and runs `inspect`. */
 async function withOpenMenu(
-  item: Song | Episode | Queue,
+  item: SongRowItem | Queue,
   mobile: boolean,
   inspect: () => Promise<void> | void,
 ) {
@@ -86,22 +72,24 @@ async function withOpenMenu(
   await act(async () => {
     root.render(
       <AppRouterContext.Provider value={router}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <TileMoreButton item={item} favorites={null} showAlbum={false} />
-          </QueryClientProvider>
-        </api.Provider>
+        <TileMoreButton item={item} favorites={null} showAlbum={false} />
       </AppRouterContext.Provider>,
     );
   });
 
-  // The first "More Options" trigger opens the phone drawer, the last the dropdown.
+  // The first "More options" trigger opens the phone drawer, the last the dropdown.
   const triggers = document.querySelectorAll<HTMLButtonElement>(
-    '[aria-label="More Options"]',
+    '[aria-label="More options"]',
   );
   await act(async () => {
     triggers[mobile ? 0 : triggers.length - 1]?.click();
   });
+  // The menu is its own chunk: the click starts the import and opens it on arrival.
+  await waitFor(
+    () =>
+      document.querySelector('[role="menuitem"], [data-slot=drawer-popup]') !==
+      null,
+  );
 
   try {
     await inspect();
@@ -124,7 +112,7 @@ describe("tile more-button download entry", () => {
   });
 
   it("offers Download for a song in the desktop dropdown and runs the download hook on it", async () => {
-    await withOpenMenu(song, false, async () => {
+    await withOpenMenu(toSongRow(song), false, async () => {
       const entry = findEntry("Download");
       expect(entry).toBeDefined();
       await act(async () => entry?.click());
@@ -135,7 +123,7 @@ describe("tile more-button download entry", () => {
   });
 
   it("offers Download for a song in the phone drawer", async () => {
-    await withOpenMenu(song, true, async () => {
+    await withOpenMenu(toSongRow(song), true, async () => {
       const entry = findEntry("Download");
       expect(entry).toBeDefined();
       await act(async () => entry?.click());
@@ -145,7 +133,10 @@ describe("tile more-button download entry", () => {
   });
 
   it("does not offer Download for an episode", async () => {
-    const episode = { ...song, type: "episode" } as unknown as Episode;
+    const episode = toSongRow({
+      ...song,
+      type: "episode",
+    } as unknown as Episode);
     await withOpenMenu(episode, false, () => {
       expect(findEntry("Download")).toBeUndefined();
     });

@@ -7,9 +7,9 @@ import { createRoot } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const writes: string[] = [];
-const queries = await import("~/lib/db/queries");
-mock.module("~/lib/db/queries", () => ({
-  ...queries,
+const actions = await import("~/lib/actions");
+mock.module("~/lib/actions", () => ({
+  ...actions,
   addToFavorites: async () => void writes.push("add"),
   removeFromFavorites: async () => void writes.push("remove"),
 }));

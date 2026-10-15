@@ -1,9 +1,11 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useDeferredValue, useEffect, useState } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
+import { QueryScope } from "~/components/query-scope";
 import { SearchAll } from "~/components/search/search-all";
 import { SearchField } from "~/components/search/search-field";
 import { searchHref } from "~/components/search/search-query";
@@ -13,9 +15,13 @@ import {
 } from "~/components/search/search-status";
 import { searchUi } from "~/components/search/search-ui";
 import { useRecentSearches } from "~/components/search/use-recent-searches";
+import {
+  SEARCH_DEBOUNCE_MS,
+  useDebouncedValue,
+} from "~/hooks/use-debounced-value";
 import { useIsTyping } from "~/hooks/use-store";
 import { controlStyles } from "~/lib/control-styles";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 import { cn } from "~/lib/utils";
 
 type MobileSearchProps = {
@@ -23,19 +29,23 @@ type MobileSearchProps = {
   topSearches: ReactNode;
 };
 
-export function MobileSearch({ topSearches }: MobileSearchProps) {
+function MobileSearchContent({ topSearches }: MobileSearchProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const deferredQuery = useDeferredValue(query.trim());
-  const isIdle = deferredQuery.length === 0;
+  const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS, {
+    immediate: "",
+  });
+  const isIdle = debouncedQuery.length === 0;
 
   const [, setIsTyping] = useIsTyping();
   const { recent, add, clear } = useRecentSearches();
 
-  const { data, error } = api.search.all.useQuery(
-    { q: deferredQuery },
-    { enabled: !isIdle, retry: false },
-  );
+  const { data, error } = useQuery({
+    queryKey: ["search-all", debouncedQuery],
+    queryFn: () => trpc.search.all.query({ q: debouncedQuery }),
+    enabled: !isIdle,
+    retry: false,
+  });
 
   const results = resolveSearchState(data, error);
 
@@ -97,13 +107,21 @@ export function MobileSearch({ topSearches }: MobileSearchProps) {
         </>
       ) : results.status === "ready" ? (
         <SearchAll
-          query={deferredQuery}
+          query={debouncedQuery}
           data={results.data}
-          onSelect={() => add(deferredQuery)}
+          onSelect={() => add(debouncedQuery)}
         />
       ) : (
-        <SearchStatus query={deferredQuery} state={results} />
+        <SearchStatus query={debouncedQuery} state={results} />
       )}
     </div>
+  );
+}
+
+export function MobileSearch(props: MobileSearchProps) {
+  return (
+    <QueryScope>
+      <MobileSearchContent {...props} />
+    </QueryScope>
   );
 }

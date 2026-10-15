@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "lint": "oxlint --deny-warnings",
     "lint": "oxlint",
     "type-check": "tsc --noEmit"
   },

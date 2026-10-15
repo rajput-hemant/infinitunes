@@ -16,7 +16,7 @@ const GO_TO_LINKS: readonly GoToLink[] = [
   { href: "/chart", title: "Top Charts", subtitle: "Page", icon: Disc3 },
   { href: "/me", title: "Library", subtitle: "Page", icon: Library },
   {
-    href: "/settings/appearance",
+    href: "/settings#appearance",
     title: "Appearance",
     subtitle: "Settings",
     icon: Palette,

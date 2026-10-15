@@ -1,24 +1,26 @@
+"use client";
+
 import type { Lang } from "@infinitunes/types";
 import Link from "next/link";
 
 import { languages } from "~/config/languages";
-import { controlStyles } from "~/lib/control-styles";
-import { asRoute, cn } from "~/lib/utils";
+import { pendingOnClick, usePendingParams } from "~/lib/pending-params";
+import { asRoute } from "~/lib/utils";
 
-type LanguageBarProps = { language?: Lang };
+import { chipClass } from "./language-chip";
+import { SearchParamsBoundary } from "./search-params-boundary";
+import { isLang } from "./site-header/lang-guard";
 
-const chipBase = cn(
-  controlStyles.text,
-  "inline-flex shrink-0 items-center gap-2 px-3 text-[0.8125rem] leading-5 font-medium transition-[background-color,transform] duration-fast active:scale-96",
-);
+function LanguageChips({ language: current }: { language?: Lang }) {
+  // The clicked chip is selected now; the URL catches up when the route commits.
+  const requested = usePendingParams().get("lang");
+  const language =
+    requested === undefined
+      ? current
+      : isLang(requested)
+        ? requested
+        : undefined;
 
-export function chipClass(selected: boolean) {
-  return selected
-    ? cn(chipBase, "bg-foreground text-background")
-    : cn(chipBase, "bg-fill hover:bg-fill-2");
-}
-
-export function LanguageBar({ language }: LanguageBarProps) {
   return (
     <div className="mb-6 overflow-x-auto p-0.5 scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <ul className="flex gap-2">
@@ -28,6 +30,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
             href={asRoute("?")}
             aria-current={!language ? "page" : undefined}
             className={chipClass(!language)}
+            onClick={pendingOnClick("lang", "")}
           >
             All
           </Link>
@@ -43,6 +46,7 @@ export function LanguageBar({ language }: LanguageBarProps) {
                 href={asRoute(`?lang=${lang.toLowerCase()}`)}
                 aria-current={selected ? "page" : undefined}
                 className={chipClass(selected)}
+                onClick={pendingOnClick("lang", lang.toLowerCase())}
               >
                 {lang}
               </Link>
@@ -51,5 +55,21 @@ export function LanguageBar({ language }: LanguageBarProps) {
         })}
       </ul>
     </div>
+  );
+}
+
+/**
+ * The language chips for a list page. The chips are the same on every request,
+ * so they prerender with the page; which one is selected comes from `?lang=` and
+ * is filled in as soon as the query string is known.
+ */
+export function LanguageBar() {
+  return (
+    <SearchParamsBoundary
+      render={(params) => {
+        const lang = params?.get("lang") ?? "";
+        return <LanguageChips language={isLang(lang) ? lang : undefined} />;
+      }}
+    />
   );
 }

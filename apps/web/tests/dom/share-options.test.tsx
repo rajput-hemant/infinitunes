@@ -41,17 +41,69 @@ describe("ShareOptions title", () => {
   });
 });
 
+describe("ShareOptions path", () => {
+  it("shares the page URL by default", async () => {
+    const c = await mount(<ShareOptions title="Tum Hi Ho" />);
+    expect(hrefOf(c, "Facebook")).toContain(encodeURIComponent("/song/x/abc"));
+  });
+
+  it("shares the given item path instead of the page it sits on", async () => {
+    const c = await mount(
+      <ShareOptions title="Tum Hi Ho" path="/song/tum-hi-ho/xyz" />,
+    );
+    const href = hrefOf(c, "Facebook") ?? "";
+    expect(href).toContain(encodeURIComponent("/song/tum-hi-ho/xyz"));
+    expect(href).not.toContain(encodeURIComponent("/song/x/abc"));
+  });
+
+  it("falls back to the page when the item has no link", async () => {
+    const c = await mount(<ShareOptions path="#" />);
+    expect(hrefOf(c, "Facebook")).toContain(encodeURIComponent("/song/x/abc"));
+  });
+});
+
 describe("ShareOptions copy", () => {
-  it("flips the Copy Link button's accessible name after copying", async () => {
+  it("names the Copy Link button after its current state only", async () => {
     Object.defineProperty(navigator, "clipboard", {
       value: { writeText: () => Promise.resolve() },
       configurable: true,
     });
     const c = await mount(<ShareOptions />);
     const button = c.querySelector("button") as HTMLButtonElement;
-    expect(button.getAttribute("aria-label")).toBe("Copy Link");
+    expect(button.textContent).toBe("Copy Link");
 
     await act(async () => button.click());
-    expect(button.getAttribute("aria-label")).toBe("Link Copied");
+    expect(button.textContent).toBe("Link Copied");
+  });
+});
+
+describe("ShareOptions in a dropdown", () => {
+  it("renders each option as one menu item, with no control nested inside", async () => {
+    const { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } =
+      await import("@infinitunes/ui/components/dropdown-menu");
+    await mount(
+      <DropdownMenu defaultOpen>
+        <DropdownMenuTrigger>Share</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <ShareOptions isDropDownItem title="Tum Hi Ho" />
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    const items = [...document.querySelectorAll('[role="menuitem"]')];
+    expect(items.map((i) => i.textContent)).toEqual([
+      "Copy Link",
+      "WhatsApp",
+      "Telegram",
+      "Twitter",
+      "Facebook",
+      "Email",
+    ]);
+    for (const item of items) {
+      expect(item.querySelector("a, button")).toBeNull();
+    }
+    const twitter = items.find((i) => i.textContent === "Twitter");
+    expect(twitter?.tagName).toBe("A");
+    expect(twitter?.getAttribute("href")).toContain("text=Tum%20Hi%20Ho");
   });
 });

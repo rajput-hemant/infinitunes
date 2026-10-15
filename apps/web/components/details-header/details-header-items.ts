@@ -37,6 +37,13 @@ export function isKind<K extends TypedDetailsItem["type"]>(
   return "type" in item && item.type === kind;
 }
 
+/** A show page's header item (live upstream types it `"show"`; older fixtures said `"season"`). */
+export function isShowDetails(item: DetailsItem): item is ShowDetails {
+  return (
+    !isLabel(item) && (item.type === "show" || String(item.type) === "season")
+  );
+}
+
 export function getKind(item: DetailsItem): DetailsKind {
   return isLabel(item) ? "label" : item.type;
 }
