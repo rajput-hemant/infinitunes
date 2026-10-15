@@ -10,6 +10,7 @@ import { legacyArtistPath } from "./lib/artist-route";
 import { getClientKey, resolveTrustedProxy } from "./lib/client-ip";
 import { buildCsp, cspHeaderName } from "./lib/csp";
 import { env } from "./lib/env";
+import { searchRouteAction } from "./lib/search-route";
 import { sessionCookiePrefix } from "./lib/session-cookie";
 
 /**
@@ -155,8 +156,26 @@ export async function proxy(req: NextRequest) {
     }
   }
 
+  let response = NextResponse.next();
+  if (req.method === "GET" || req.method === "HEAD") {
+    const search = searchRouteAction(pathname);
+    if (search?.kind === "redirect") {
+      const target = new URL(search.pathname, nextUrl);
+      target.search = nextUrl.search;
+      return NextResponse.redirect(target, 308);
+    }
+    if (search?.kind === "rewrite") {
+      const target = new URL(search.pathname, nextUrl);
+      target.search = nextUrl.search;
+      response = NextResponse.rewrite(target);
+    }
+    // A path no route owns: Next renders `not-found.tsx` with a real 404.
+    if (search?.kind === "notFound") {
+      response = NextResponse.rewrite(new URL("/_search-not-found", nextUrl));
+    }
+  }
+
   // `CSP_ENFORCE` chooses enforcing vs report-only.
-  const response = NextResponse.next();
   response.headers.set(
     cspHeaderName(),
     buildCsp({
