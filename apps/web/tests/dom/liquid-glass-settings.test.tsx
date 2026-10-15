@@ -16,7 +16,7 @@ mock.module("../../lib/theme/actions", () => ({
   },
 }));
 
-const { AppearanceSettings } =
+const { AppearanceSettings, ResetAppearanceButton } =
   await import("../../app/(root)/settings/_components/appearance-settings");
 const { LiquidGlassSettings } =
   await import("../../app/(root)/settings/_components/liquid-glass-settings");
@@ -44,6 +44,16 @@ async function settleSave() {
     await new Promise((resolve) => setTimeout(resolve, 350));
   });
   return saved.at(-1);
+}
+
+/** Expands the collapsed "Fine-tune the lens" group, which holds the rim sliders. */
+async function openFineTune(container: HTMLElement) {
+  const toggle = container.querySelector(
+    "button[aria-label='Fine-tune the lens']",
+  );
+  if (!(toggle instanceof HTMLButtonElement)) throw new Error("No lens toggle");
+  if (toggle.getAttribute("aria-expanded") === "true") return;
+  await act(async () => toggle.click());
 }
 
 function sliderFor(container: HTMLElement, label: string) {
@@ -107,7 +117,7 @@ describe("liquid glass tuning", () => {
     const container = document.createElement("div");
     document.body.append(container);
     container.innerHTML = renderToString(tree);
-    expect(outputFor(container, "Depth")?.textContent).toBe("60");
+    expect(outputFor(container, "Blur")?.textContent).toBe("2.00");
 
     const recoverable: unknown[] = [];
     const errors: unknown[] = [];
@@ -132,6 +142,7 @@ describe("liquid glass tuning", () => {
 
   it("shows the pen's controls with its ranges and defaults", async () => {
     const container = await mount(<LiquidGlassSettings />);
+    await openFineTune(container);
     const expected: [string, string, string, string, string][] = [
       ["Depth", "0", "120", "1", "60"],
       ["Splay", "2", "40", "1", "2"],
@@ -151,8 +162,26 @@ describe("liquid glass tuning", () => {
     expect(color.value).toBe("#ffffff");
   });
 
+  it("starts with the lens fine-tune collapsed and opens it on demand", async () => {
+    const container = await mount(<LiquidGlassSettings />);
+    const toggle = container.querySelector(
+      "button[aria-label='Fine-tune the lens']",
+    );
+    expect(toggle?.getAttribute("aria-expanded")).toBe("false");
+    expect(container.querySelector("input[type=range]")).not.toBeNull();
+    expect(() => sliderFor(container, "Depth")).toThrow();
+    // Tint and Blur stay in view; only the rim sliders are folded away.
+    expect(sliderFor(container, "Tint")).toBeDefined();
+
+    await openFineTune(container);
+
+    expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+    expect(sliderFor(container, "Depth").value).toBe("60");
+  });
+
   it("moves the depth slider live and saves only that key", async () => {
     const container = await mount(<LiquidGlassSettings />);
+    await openFineTune(container);
 
     await act(async () => setInputValue(sliderFor(container, "Depth"), "90"));
 
@@ -168,6 +197,7 @@ describe("liquid glass tuning", () => {
 
   it("writes blur in px, glint as a share of 1 and the rim shape as plain numbers", async () => {
     const container = await mount(<LiquidGlassSettings />);
+    await openFineTune(container);
 
     await act(async () => setInputValue(sliderFor(container, "Blur"), "2.5"));
     await act(async () => setInputValue(sliderFor(container, "Glint"), "80"));
@@ -184,6 +214,7 @@ describe("liquid glass tuning", () => {
 
   it("applies a preset in one step and marks it selected", async () => {
     const container = await mount(<LiquidGlassSettings />);
+    await openFineTune(container);
     expect(radio(container, "Glass preset", "simple").checked).toBe(true);
 
     await act(async () => radio(container, "Glass preset", "frosted").click());
@@ -217,6 +248,7 @@ describe("liquid glass tuning", () => {
 
   it("deselects the presets once a slider moves off one", async () => {
     const container = await mount(<LiquidGlassSettings />);
+    await openFineTune(container);
     await act(async () => radio(container, "Glass preset", "thick").click());
     await act(async () => setInputValue(sliderFor(container, "Depth"), "100"));
     for (const id of ["simple", "thick", "frosted", "cut", "plexi"]) {
@@ -246,6 +278,7 @@ describe("liquid glass tuning", () => {
 
   it("reset glass restores the tuning defaults", async () => {
     const container = await mount(<LiquidGlassSettings />);
+    await openFineTune(container);
     expect(buttonNamed(container, "Reset glass").disabled).toBe(true);
     await act(async () => radio(container, "Glass preset", "plexi").click());
     expect(buttonNamed(container, "Reset glass").disabled).toBe(false);
@@ -266,7 +299,13 @@ describe("liquid glass tuning", () => {
   });
 
   it("page reset restores the glass tuning with everything else", async () => {
-    const container = await mount(<AppearanceSettings />);
+    const container = await mount(
+      <>
+        <AppearanceSettings />
+        <ResetAppearanceButton />
+      </>,
+    );
+    await openFineTune(container);
     await act(async () => setInputValue(sliderFor(container, "Depth"), "100"));
     expect(html.style.getPropertyValue("--glass-depth")).toBe("100");
 

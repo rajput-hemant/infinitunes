@@ -18,7 +18,7 @@ mock.module("../../lib/theme/actions", () => ({
 
 const { radiusPatch, radiusToPx } =
   await import("../../app/(root)/settings/_components/appearance-options");
-const { AppearanceSettings } =
+const { AppearanceSettings, ResetAppearanceButton } =
   await import("../../app/(root)/settings/_components/appearance-settings");
 const { ThemeConfigProvider } = await import("../../lib/theme/provider");
 
@@ -88,7 +88,12 @@ describe("appearance patches", () => {
 
 describe("appearance settings", () => {
   it("applies a density choice to the page at once and resets it", async () => {
-    const container = await mountAppearance(<AppearanceSettings />);
+    const container = await mountAppearance(
+      <>
+        <AppearanceSettings />
+        <ResetAppearanceButton />
+      </>,
+    );
 
     const compact = requireElement(
       container,

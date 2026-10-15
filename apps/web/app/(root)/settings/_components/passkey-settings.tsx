@@ -10,7 +10,8 @@ import { controlStyles } from "~/lib/control-styles";
 
 import { PasskeyList } from "./passkey-list";
 import type { PasskeyRow } from "./passkey-list";
-import { SettingsSection } from "./settings-section";
+import { SettingsCard } from "./settings-card";
+import { SettingsBlock, SettingsRow } from "./settings-row";
 
 const LOAD_ERROR = "Could not load passkeys.";
 
@@ -116,38 +117,19 @@ export function PasskeySettings() {
   }
 
   return (
-    <SettingsSection
-      id="passkeys"
-      title="Passkeys"
-      description="Sign in without a password using your device. Adding a passkey requires you to be signed in."
-    >
-      {isLoading ? (
-        <output className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2
-            aria-hidden
-            className="size-4 animate-spin motion-reduce:animate-none"
-          />{" "}
-          Loading passkeys...
-        </output>
-      ) : passkeys.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No passkeys yet. Add one to enable passwordless sign-in.
-        </p>
-      ) : (
-        <PasskeyList
-          passkeys={passkeys}
-          deletingId={deletingId}
-          onRemove={removePasskey}
-        />
-      )}
-
-      <div>
+    <SettingsCard title="Passkeys">
+      <SettingsRow
+        id="passkeys"
+        label="Sign in without a password"
+        help="Use your device. Adding a passkey requires you to be signed in."
+        keywords="passkeys passkey fingerprint biometric security"
+      >
         <Button
           type="button"
           variant="outline"
           disabled={isAdding || isLoading}
           onClick={addPasskey}
-          className={controlStyles.textLg}
+          className={controlStyles.text}
         >
           {isAdding ? (
             <Loader2
@@ -157,9 +139,31 @@ export function PasskeySettings() {
           ) : (
             <Plus aria-hidden className="mr-2 size-4" />
           )}
-          Add Passkey
+          Add passkey
         </Button>
-      </div>
-    </SettingsSection>
+      </SettingsRow>
+
+      <SettingsBlock keywords="passkeys passkey list">
+        {isLoading ? (
+          <output className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2
+              aria-hidden
+              className="size-4 animate-spin motion-reduce:animate-none"
+            />{" "}
+            Loading passkeys...
+          </output>
+        ) : passkeys.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            No passkeys yet. Add one to enable passwordless sign-in.
+          </p>
+        ) : (
+          <PasskeyList
+            passkeys={passkeys}
+            deletingId={deletingId}
+            onRemove={removePasskey}
+          />
+        )}
+      </SettingsBlock>
+    </SettingsCard>
   );
 }

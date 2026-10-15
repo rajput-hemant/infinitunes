@@ -43,7 +43,7 @@ async function ProfileHeader() {
 
       <div className="flex gap-2">
         <Link
-          href="/settings#profile"
+          href="/settings#account"
           className={buttonVariants({
             variant: "secondary",
             className: controlStyles.text,
