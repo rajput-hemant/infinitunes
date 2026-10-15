@@ -41,7 +41,7 @@ export default function Layout({ children }: PropsWithChildren) {
             tabIndex={-1}
             className="min-w-0 bg-transparent outline-none"
           >
-            <div className="mx-auto w-full max-w-400 px-page pt-2 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-36">
+            <div className="page-container pt-2 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-36">
               {children}
               <SiteFooter />
             </div>

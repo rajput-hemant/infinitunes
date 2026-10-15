@@ -841,6 +841,20 @@ html[data-motion="reduced"]
   :is([data-glass-role="tabbar"], [data-glass-role="player"]) {
   transition-property: opacity !important;
 }
+/* Player span: from md up the bar is exactly the page content box (the anchor-name on .page-container), so its
+   edges and its centred transport follow the content at every width, sidebar state and docked-queue state, and
+   through the sidebar's own width transition, with no JS and no duplicated numbers. Browsers without anchor
+   positioning keep the utility-class inset (the whole content column). */
+@media (min-width: 768px) {
+  @supports (left: anchor(left)) {
+    [data-glass-role="player"] {
+      position-anchor: --page-container;
+      left: anchor(left, 0.75rem);
+      right: anchor(right, 0.75rem);
+      transition-property: none;
+    }
+  }
+}
 /* Below 1440 the queue morphs out of the player: clip, lift and materialize together. */
 @media (max-width: 1439px) {
   [data-glass-role="queue"] {

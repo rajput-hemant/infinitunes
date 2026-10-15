@@ -2,6 +2,8 @@ import { describe, expect, it } from "bun:test";
 
 const ROOT_LAYOUT = new URL("../app/(root)/layout.tsx", import.meta.url);
 const SIDEBAR = new URL("../components/sidebar.tsx", import.meta.url);
+const GLASS_CSS = new URL("../styles/glass.css", import.meta.url);
+const GLOBALS_CSS = new URL("../styles/globals.css", import.meta.url);
 const NAVBAR = new URL("../components/site-header/navbar.tsx", import.meta.url);
 
 describe("root shell layout", () => {
@@ -67,5 +69,21 @@ describe("root shell layout", () => {
 
     expect(navbar).toMatch(/<AppSidebarTrigger[^>]*md:inline-flex/);
     expect(navbar).not.toContain("<MobileNav");
+  });
+
+  it("spans the desktop player over the page container through one shared anchor", async () => {
+    const layout = await Bun.file(ROOT_LAYOUT).text();
+    const globals = await Bun.file(GLOBALS_CSS).text();
+    const glass = await Bun.file(GLASS_CSS).text();
+    const anchor = globals.match(/anchor-name:\s*(--[\w-]+)/)?.[1];
+
+    expect(layout).toContain("page-container");
+    expect(anchor).toBeDefined();
+    expect(globals).toMatch(
+      /@utility page-container[^}]*max-width: var\(--page-max\)/,
+    );
+    expect(glass).toContain(`position-anchor: ${anchor}`);
+    expect(glass).toMatch(/left: anchor\(left/);
+    expect(glass).toMatch(/right: anchor\(right/);
   });
 });
