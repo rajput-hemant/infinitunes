@@ -25,7 +25,7 @@ mock.module("../../components/search/search-all", () => ({
 
 const { SearchMenu } = await import("../../components/search/search-menu");
 const roots: Root[] = [];
-const GO_TO_HREFS = ["/chart", "/me", "/settings/appearance"];
+const GO_TO_HREFS = ["/chart", "/me", "/settings#appearance"];
 
 const optionsIn = () => [
   ...document.querySelectorAll<HTMLElement>("[data-search-option]"),
@@ -165,12 +165,12 @@ it("moves the active option through Go to with arrows, wrapping at both ends", a
 
   expect(activeHref()).toBe("/chart");
   await pressKey(input, "ArrowUp");
-  expect(activeHref()).toBe("/settings/appearance");
+  expect(activeHref()).toBe("/settings#appearance");
   await pressKey(input, "ArrowDown");
   expect(activeHref()).toBe("/chart");
   await pressKey(input, "ArrowDown");
   await pressKey(input, "ArrowDown");
-  expect(activeHref()).toBe("/settings/appearance");
+  expect(activeHref()).toBe("/settings#appearance");
 });
 
 it("renders the phone palette as the glass palette role with its key hints", async () => {

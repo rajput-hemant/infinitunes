@@ -36,7 +36,7 @@ export const userMenuLinks: UserMenuLink[] = [
   },
   { href: "/settings", label: "Settings", icon: Settings, needsUser: false },
   {
-    href: "/settings/appearance",
+    href: "/settings#appearance",
     label: "Appearance",
     icon: Palette,
     needsUser: false,

@@ -94,7 +94,7 @@ describe("user menu on desktop", () => {
       "/me",
       "/me/liked-songs",
       "/settings",
-      "/settings/appearance",
+      "/settings#appearance",
     ]);
   });
 
