@@ -343,6 +343,13 @@ html[data-theme-switching] *::after {
 
   html {
     @apply overflow-x-clip font-sans;
+    /*
+     * The page scrolls on the viewport. Reserve the scrollbar's lane so the
+     * layout is the same width whether or not the page is tall enough to scroll:
+     * a skeleton shorter than the viewport, or a scroll lock from a menu, no
+     * longer moves the page sideways.
+     */
+    scrollbar-gutter: stable;
     /* Scales rem, so controls and spacing grow with the text size. */
     font-size: calc(100% * var(--text-scale, 1));
   }
