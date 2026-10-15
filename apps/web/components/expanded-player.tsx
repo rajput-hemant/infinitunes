@@ -81,7 +81,7 @@ export function ExpandedPlayer({
         // artwork, and only its two controls are glass. Another slot name
         // keeps the overlay glass rules (matched by `sheet-content`) off it.
         data-slot="expanded-player"
-        className="max-h-dvh overflow-y-auto border-0 bg-background pb-[env(safe-area-inset-bottom)] text-foreground duration-slow ease-spring md:inset-0 md:h-dvh md:max-h-none md:justify-center"
+        className="max-h-dvh overflow-y-auto border-0 bg-background pb-[env(safe-area-inset-bottom)] text-foreground duration-slow ease-drawer data-[side=bottom]:data-ending-style:translate-y-full data-[side=bottom]:data-starting-style:translate-y-full md:inset-0 md:h-dvh md:max-h-none md:justify-center"
       >
         {track && <ArtworkWash image={track.image} />}
         <SheetHeader

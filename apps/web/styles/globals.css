@@ -430,3 +430,47 @@ html[data-sidebar="collapsed"]:not([data-sidebar-ready])
   [data-slot="sidebar-wrapper"] {
   --g-edge-l: var(--sidebar-width-icon);
 }
+
+/*
+ * Sidebar groups the icon rail does not show (Library label, playlists, the
+ * create prompt): they fade as the panel narrows and leave the layout when it
+ * has settled, and fade back in when it widens. `display` is discrete, so the
+ * transition holds the old value for its whole duration.
+ */
+.sidebar-rail-hide {
+  opacity: 1;
+  transition:
+    opacity var(--duration-base) var(--ease-drawer),
+    display var(--duration-base) allow-discrete;
+}
+/* Only after hydration: groups in the prerendered markup must not fade in on first paint. */
+html[data-sidebar-ready] .sidebar-rail-hide {
+  @starting-style {
+    opacity: 0;
+  }
+}
+.group[data-collapsible="icon"] .sidebar-rail-hide {
+  opacity: 0;
+}
+
+/*
+ * The mobile and tablet sidebar is a left sheet. The packages/ui sheet only
+ * nudges 2.5rem and fades; this slides the whole panel in and out (opening
+ * eases out over 300ms, closing leaves faster). Reduced motion zeroes the
+ * durations through the global rules above.
+ */
+[data-slot="sidebar"][data-mobile="true"] {
+  transition-property: translate, opacity;
+  transition-duration: 300ms;
+  transition-timing-function: var(--ease-drawer);
+}
+[data-slot="sidebar"][data-mobile="true"]:is(
+    [data-starting-style],
+    [data-ending-style]
+  ) {
+  translate: -100% 0;
+  opacity: 1;
+}
+[data-slot="sidebar"][data-mobile="true"][data-ending-style] {
+  transition-duration: 220ms;
+}
