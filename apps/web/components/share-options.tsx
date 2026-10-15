@@ -63,52 +63,96 @@ type MenuItemProps = Omit<ShareOption, "platform"> & {
   href?: string;
   copy: () => void;
   isCopied: boolean;
+  /** Render as the dropdown menu item itself, so each option is one control. */
+  isDropDownItem?: boolean;
 };
 
 const itemStyles = cn(
   controlStyles.textLg,
-  "flex items-center gap-3 rounded-sm px-3 transition-colors duration-fast hover:bg-fill-2 active:bg-fill-3",
+  "flex w-full items-center justify-start gap-3 rounded-sm px-3 text-left transition-colors duration-fast hover:bg-fill-2 active:bg-fill-3",
 );
 
-function MenuItem({ label, href, icon: Icon, copy, isCopied }: MenuItemProps) {
-  return href ? (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={itemStyles}
+// A dropdown item already carries the menu's own focus and hover styles.
+const dropdownItemStyles = "w-full justify-start gap-3 text-left";
+
+function CopyLabel({ isCopied }: { isCopied: boolean }) {
+  return (
+    <span className="grid">
+      <span
+        aria-hidden={isCopied}
+        className={cn(
+          "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
+          isCopied && "opacity-0",
+        )}
+      >
+        Copy Link
+      </span>
+      <span
+        aria-hidden={!isCopied}
+        className={cn(
+          "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
+          !isCopied && "opacity-0",
+        )}
+      >
+        Link Copied
+      </span>
+    </span>
+  );
+}
+
+function MenuItem({
+  label,
+  href,
+  icon: Icon,
+  copy,
+  isCopied,
+  isDropDownItem,
+}: MenuItemProps) {
+  if (href) {
+    const content = (
+      <>
+        <Icon className="size-4" />
+        {label}
+      </>
+    );
+    return isDropDownItem ? (
+      <DropdownMenuItem
+        className={dropdownItemStyles}
+        render={<a href={href} target="_blank" rel="noopener noreferrer" />}
+      >
+        {content}
+      </DropdownMenuItem>
+    ) : (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={itemStyles}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  const copyLabel = isCopied ? "Link Copied" : "Copy Link";
+  return isDropDownItem ? (
+    <DropdownMenuItem
+      className={dropdownItemStyles}
+      onClick={copy}
+      aria-label={copyLabel}
     >
-      <Icon className="size-4" />
-      {label}
-    </a>
+      <Clipboard className="size-4" />
+      <CopyLabel isCopied={isCopied} />
+    </DropdownMenuItem>
   ) : (
     <button
       type="button"
       onClick={copy}
       className={itemStyles}
-      aria-label={isCopied ? "Link Copied" : "Copy Link"}
+      aria-label={copyLabel}
     >
       <Clipboard className="size-4" />
-      <span className="grid">
-        <span
-          aria-hidden={isCopied}
-          className={cn(
-            "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
-            isCopied && "opacity-0",
-          )}
-        >
-          Copy Link
-        </span>
-        <span
-          aria-hidden={!isCopied}
-          className={cn(
-            "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
-            !isCopied && "opacity-0",
-          )}
-        >
-          Link Copied
-        </span>
-      </span>
+      <CopyLabel isCopied={isCopied} />
     </button>
   );
 }
@@ -137,17 +181,7 @@ export function ShareOptions({
           ? buildShareUrl(platform, { url, title })
           : undefined;
 
-        return isDropDownItem ? (
-          <DropdownMenuItem key={label} className="p-0">
-            <MenuItem
-              label={label}
-              href={href}
-              icon={icon}
-              copy={copy}
-              isCopied={isCopied}
-            />
-          </DropdownMenuItem>
-        ) : (
+        return (
           <MenuItem
             key={label}
             label={label}
@@ -155,6 +189,7 @@ export function ShareOptions({
             icon={icon}
             copy={copy}
             isCopied={isCopied}
+            isDropDownItem={isDropDownItem}
           />
         );
       })}

@@ -17,7 +17,7 @@ export function ShareSubMenu({ title }: { title?: string }) {
       </DropdownMenuSubTrigger>
 
       <DropdownMenuPortal>
-        <DropdownMenuSubContent>
+        <DropdownMenuSubContent className="w-auto min-w-48">
           <ShareOptions isDropDownItem title={title} />
         </DropdownMenuSubContent>
       </DropdownMenuPortal>
