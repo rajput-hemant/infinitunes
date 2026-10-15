@@ -564,11 +564,136 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
     }
   });
 
-  it("matches /api/auth in the proxy matcher but not other api routes", async () => {
+  it("matches pages, trpc, auth and og but not static assets or other api routes", async () => {
     const { config } = await import("../../proxy");
+    const { PROXY_MATCHER } = await import("../../lib/rate-limit-scope");
+    expect(config.matcher).toEqual([PROXY_MATCHER]);
     const re = new RegExp(`^${config.matcher[0]}$`);
-    expect(re.test("/api/auth/sign-in/email")).toBe(true);
-    expect(re.test("/api/trpc/song.details")).toBe(true);
-    expect(re.test("/api/og")).toBe(false);
+    for (const path of [
+      "/",
+      "/album/x/tok_",
+      "/artist/a.b/tok_",
+      "/api/auth/sign-in/email",
+      "/api/trpc/song.details",
+      "/api/og",
+    ]) {
+      expect(re.test(path)).toBe(true);
+    }
+    for (const path of [
+      "/_next/static/chunks/a.js",
+      "/_next/image",
+      "/favicon.ico",
+      "/icon-512.png",
+      "/fonts/CalSans-SemiBold.woff",
+      "/robots.txt",
+      "/api/other",
+    ]) {
+      expect(re.test(path)).toBe(false);
+    }
+  });
+});
+
+describe("proxy limiter scope", () => {
+  let proxy: typeof import("../../proxy").proxy;
+  const status = async (
+    path: string,
+    headers: Record<string, string> = {},
+    method: "GET" | "POST" = "GET",
+  ) => {
+    seenKeys.length = 0;
+    limitSuccess = false;
+    try {
+      const res = (await proxy(
+        createNextRequest(`http://localhost:3000${path}`, method, {
+          host: "localhost:3000",
+          origin: "http://localhost:3000",
+          ...headers,
+        }),
+      )) as { status: number };
+      return { status: res.status, charged: seenKeys.length };
+    } finally {
+      limitSuccess = true;
+    }
+  };
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../../proxy"));
+  });
+
+  it("limits document requests and requests without fetch metadata", async () => {
+    expect((await status("/", { "sec-fetch-dest": "document" })).status).toBe(
+      429,
+    );
+    expect((await status("/")).status).toBe(429);
+  });
+
+  it("never limits RSC navigations, prefetches or subresources", async () => {
+    for (const headers of [
+      { rsc: "1", "sec-fetch-dest": "empty" },
+      { rsc: "1", "next-router-prefetch": "1" },
+      { "sec-fetch-dest": "image" },
+      { "sec-fetch-dest": "script" },
+    ]) {
+      expect(await status("/album/x/tok_", headers)).toEqual({
+        status: 200,
+        charged: 0,
+      });
+    }
+  });
+
+  it("limits server actions and api requests regardless of fetch metadata", async () => {
+    expect(
+      (
+        await status(
+          "/me",
+          { "next-action": "abc", "sec-fetch-dest": "empty" },
+          "POST",
+        )
+      ).charged,
+    ).toBe(1);
+    expect(
+      (await status("/api/trpc/song.details", { "sec-fetch-dest": "empty" }))
+        .status,
+    ).toBe(429);
+  });
+});
+
+describe("proxy /api/og rate limiting", () => {
+  let proxy: typeof import("../../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../../proxy"));
+  });
+
+  it("charges the global and og buckets, with the trusted client key", async () => {
+    seenKeys.length = 0;
+    const res = (await proxy(
+      createNextRequest("http://localhost:3000/api/og?title=x", "GET", {
+        "x-real-ip": "203.0.113.7",
+        "sec-fetch-dest": "image",
+      }),
+    )) as { status: number; headers: Headers };
+    expect(seenKeys).toEqual(["203.0.113.7", "203.0.113.7"]);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-security-policy-report-only")).toBeNull();
+    const og = constructed.find((c) => c.prefix === "@upstash/ratelimit/og");
+    expect(og?.limiter).toEqual({ window: [20, "1 m"] });
+  });
+
+  it("answers 429 with Retry-After when the og bucket is empty", async () => {
+    limitSuccess = false;
+    resetOffsetMs = 4000;
+    try {
+      const res = (await proxy(
+        createNextRequest("http://localhost:3000/api/og"),
+      )) as { status: number; headers: Headers };
+      expect(res.status).toBe(429);
+      expect(res.headers.get("retry-after")).toBe("4");
+    } finally {
+      limitSuccess = true;
+      resetOffsetMs = 0;
+    }
   });
 });
