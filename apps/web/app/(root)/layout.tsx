@@ -32,8 +32,8 @@ export default function Layout({ children }: PropsWithChildren) {
       <MorphSource />
       <AppSidebarProvider>
         <ViewerSidebar />
-        {/* Reserves the docked queue column, so toolbar and main both shrink. */}
-        <div className="flex min-w-0 flex-1 flex-col transition-[margin] duration-base ease-spring min-[1440px]:in-data-[queue=open]:mr-(--queue-w)">
+        {/* Spans to the viewport edge; `page-container` / `page-gutter` keep clear of the docked queue. */}
+        <div className="flex min-w-0 flex-1 flex-col">
           <Navbar />
           {/* SidebarInset renders the only main landmark. */}
           <SidebarInset

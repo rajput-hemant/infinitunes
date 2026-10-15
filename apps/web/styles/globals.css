@@ -88,14 +88,51 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   --spacing-page: var(--page-pad);
 }
 
-/* The page content box: capped at --page-max, centred in the content column, padded by --page-pad. It is
-   the anchor the desktop player bar spans (see "Player span" in glass.css), so both share one geometry. */
+/* The docked queue's reserved column. It is 0 unless the queue is docked open (1440px and up); registered so
+   it animates with the pane instead of stepping. */
+@property --queue-reserve {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* The page content box: capped at --page-max, padded by --page-pad. It is the anchor the desktop player bar
+   spans (see "Player span" in glass.css), so both share one geometry.
+
+   The column it sits in starts after the sidebar gap and ends at the viewport edge, so the panels never move
+   it by themselves (percentages below resolve against that column, `Cf`). The box is as wide as fits left of
+   the docked queue, then centred in the VIEWPORT as if no panel were open, and only pushed as far as needed
+   to clear the sidebar (left) and the queue (right): `margin-left = clamp(0, Cf - (100vw + w) / 2, Cf - R - w)`.
+   When it does not fit (narrow screens) the clamp collapses to 0 and the box fills the free column, which is
+   the classic push layout. `--page-ml` and `--page-w` are shared with the toolbar (`page-gutter`). */
 @utility page-container {
-  width: 100%;
+  --page-w: min(var(--page-max), calc(100% - var(--queue-reserve)));
+  --page-ml: clamp(
+    0px,
+    calc(100% - (100vw + var(--page-w)) / 2),
+    calc(100% - var(--queue-reserve) - var(--page-w))
+  );
+  width: var(--page-w);
   max-width: var(--page-max);
-  margin-inline: auto;
+  margin-left: var(--page-ml);
+  margin-right: 0;
   padding-inline: var(--page-pad);
   anchor-name: --page-container;
+}
+
+/* The toolbar's inline padding, aligned to the same page box (md and up). */
+@utility page-gutter {
+  --page-w: min(var(--page-max), calc(100% - var(--queue-reserve)));
+  --page-ml: clamp(
+    0px,
+    calc(100% - (100vw + var(--page-w)) / 2),
+    calc(100% - var(--queue-reserve) - var(--page-w))
+  );
+  padding-left: max(var(--page-pad), var(--page-ml));
+  padding-right: max(
+    calc(var(--queue-reserve) + var(--page-pad)),
+    calc(100% - var(--page-ml) - var(--page-w))
+  );
 }
 
 @utility duration-fast {
@@ -404,6 +441,16 @@ html[data-theme-switching] *::after {
 
   ::-webkit-scrollbar-thumb {
     @apply bg-muted-foreground rounded-full;
+  }
+}
+
+/* A docked queue reserves its column; the page box moves only if it no longer fits beside it. */
+html {
+  transition: --queue-reserve var(--duration-base) var(--ease-spring);
+}
+@media (min-width: 1440px) {
+  html[data-queue="open"] {
+    --queue-reserve: var(--queue-w);
   }
 }
 
