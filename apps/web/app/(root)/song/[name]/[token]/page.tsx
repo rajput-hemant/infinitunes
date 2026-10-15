@@ -1,13 +1,15 @@
 import { getImageSrc, parseToken, toCardItem } from "@infinitunes/types";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
-import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
+import { PageSectionTitleSkeleton } from "~/components/page-section-skeleton";
+import { SliderListSkeleton } from "~/components/slider/shelf-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
+import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
 import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
@@ -169,34 +171,32 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
       <DetailsHeader item={song} />
 
       {song.more_info.has_lyrics === "true" && (
-        <Suspense
-          fallback={<div className="h-24 animate-pulse rounded-md bg-muted" />}
-        >
+        <Suspense fallback={<Skeleton className="h-24" />}>
           <SongLyrics id={song.id} />
         </Suspense>
       )}
 
       <Suspense
         fallback={
-          <div className="flex flex-col gap-(--page-gap)">
-            <div className="h-8 w-72 animate-pulse rounded-md bg-muted" />
-            <SongListSkeleton length={5} />
-          </div>
+          <section className="flex flex-col gap-4">
+            <PageSectionTitleSkeleton />
+            <SongListSkeleton length={7} />
+          </section>
         }
       >
         <SongAlbumSongs token={token} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton length={1} />}>
+      <Suspense fallback={<SliderListSkeleton />}>
         <SongRecommendations token={token} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton length={1} />}>
+      <Suspense fallback={<SliderListSkeleton />}>
         <SongTrending token={token} trending={trending} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton length={1} />}>
+      <Suspense fallback={<SliderListSkeleton />}>
         <SongSameArtists token={token} />
       </Suspense>
       {modules?.songsBysameActors && hasStarringArtist(song) && (
-        <Suspense fallback={<SliderListSkeleton length={1} />}>
+        <Suspense fallback={<SliderListSkeleton />}>
           <SongSameActors token={token} />
         </Suspense>
       )}

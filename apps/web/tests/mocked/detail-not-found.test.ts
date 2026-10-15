@@ -6,6 +6,8 @@ const calls: { procedure: string; input: unknown }[] = [];
 let showAnswer: () => Promise<unknown> = async () => ({});
 let episodeAnswer: () => Promise<unknown> = async () => ({});
 
+// The library reads in `lib/db/queries` are server-only.
+mock.module("server-only", () => ({}));
 mock.module("~/lib/trpc/server", () => ({
   api: {
     show: {

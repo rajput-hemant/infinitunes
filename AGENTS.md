@@ -41,11 +41,48 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `REVALIDATE_SECONDS` sets revalidate and hard expiry (600s for media-bearing
   details, 3600s for menus/footer/same-year); failures are thrown, with upstream
   classification preserved across the serialized error boundary.
-- Incremental adoption is deferred with `instant = false` in `(root)/layout.tsx`
-  (session/sidebar cookies and navigation) and `(auth)/layout.tsx` (request-time
-  daily artwork, after `connection()`). These route groups still need shell
-  migration; `/chart` also opts out locally for dev navigation validation.
-  The app root itself remains static-capable.
+- Shell structure (no `instant = false` anywhere): every `(root)`/`(auth)` route
+  prerenders a non-empty static shell (layout chrome, headings, skeletons). Rules
+  that keep it that way:
+  - `(root)/layout.tsx` is synchronous and reads no request data. The session and
+    the user's library are `getViewer()` (`lib/viewer.ts`, memoized per request),
+    passed un-awaited to `ViewerProvider`; client islands in `components/viewer.tsx`
+    (`ViewerSidebar`, `ViewerMobileNav`, `ViewerUserMenu`, `ViewerSignedOut`,
+    `ViewerPlayer`) resolve it with `use()` behind their own `<Suspense>`. Server
+    components that need the user (`SongList`, `DetailsHeader`) call `getViewer()`.
+    Never `await` it, `cookies()` or `headers()` in a layout body.
+  - `usePathname`, `useParams`, `useSearchParams` and `useSelectedLayoutSegment`
+    suspend while a route with request-time params (or any query string) is
+    prerendered. Wrap query/path-aware UI in `PathnameBoundary` /
+    `SearchParamsBoundary` (`components/*-boundary.tsx`): the shell gets the same
+    UI with `null`, the real value streams in. Content fetched for a query string
+    goes in `KeyedByParams`, so a new `?lang=` shows its skeleton at once instead of
+    holding the old list (and the old URL) until the data lands.
+  - The sidebar's saved open/closed state is applied before first paint: the
+    `SIDEBAR_STEP` in `lib/theme-script.ts` sets `<html data-sidebar="collapsed">`
+    from the `sidebar_state` cookie, `styles/globals.css` holds the collapsed gutter
+    until `AppSidebarProvider` hydrates (it then sets `data-sidebar-ready`).
+  - Tabs are child routes, not state in a slug: artist tabs are
+    `artist/[name]/[token]/{page,songs,albums,bio}` under a layout that keeps the
+    header, tab row and shelves mounted (`lib/artist-route.ts`); search results
+    live in a `search/(results)` group whose layout keeps the title and type chips.
+    Old `<name>-songs` artist URLs (and JioSaavn's own links) are 308-redirected in
+    `proxy.ts`; `getHref` already links the tab routes.
+  - Entity pages (album, playlist, song, show, label, episode, mix, radio detail,
+    `/me/*` pages, settings) are whole-page data: they keep a route `loading.tsx`
+    with a skeleton that mirrors the page, and Suspense only for secondary lists.
+    Catalog list pages put the heading in the shell and the fetched grid in
+    `Suspense`; they have no `loading.tsx`.
+  - Do not use `<Link prefetch>` (true) or `partialPrefetching`: on 16.3.6 with the
+    `@modal/[...catchAll]` slot, `prefetch={true}` made the client re-request the
+    modal catch-all segment of every visible link endlessly (hundreds of requests a
+    second), and `partialPrefetching: true` looped `/_tree` requests. Default
+    `<Link>` prefetch already puts each tab's skeleton in the client.
+  - Dev only: with `(root)/template.tsx` and a fully static page, React logs
+    `Each child in a list should have a unique "key" prop ... OuterLayoutRouter`
+    (Next's devtools segment wrapper around the template is created unvalidated).
+    It does not exist in production builds; it hid before only because the layout
+    blocked the whole route.
 - Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
@@ -81,7 +118,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `headers()` or CSP nonce (a nonce forces dynamic rendering and defeats Cache
   Components). CSP is hash-based (`lib/csp.ts`). Anything that must apply before
   first paint (light/dark, the saved appearance from the `theme-config` cookie's
-  derived `html` field, later the docked-queue flag) goes in a step of
+  derived `html` field, the docked-queue and collapsed-sidebar flags) goes in a step of
   `THEME_BOOTSTRAP_SCRIPT` (`lib/theme-script.ts`), whose hash follows
   automatically. `ThemeConfigProvider` reads the cookie in the browser.
 - Tailwind v4's automatic content scanning only covers `apps/web`. Utility
@@ -215,6 +252,30 @@ bug is appending to them instead of substituting:
 
 Verify these against live data, not fixtures: a decrypted link should answer
 `206 audio/mp4` to `curl -o /dev/null -w '%{http_code} %{content_type}' -r 0-1`.
+
+## View transitions (`app/(root)/template.tsx`, `styles/motion.css`)
+
+- One `<ViewTransition default="vt-page">` in the (root) template triggers a transition for every
+  navigation, tab/search-type switch and skeleton reveal. It must stay a trigger only: motion.css sets
+  `view-transition-name: none !important` on `[data-vt-page]`, so the root snapshot (viewport sized)
+  crossfades. Naming the page snapshots the whole document height and lifts it out of the root, and
+  naming shell pieces (sidebar, toolbar, player) makes the glass lose its backdrop (measured: toolbar
+  diff mean 44 vs about 2). Never add `view-transition-name` to the shell or the page wrapper.
+- Browser back/forward never starts a view transition: React skips popstate commits. Directional
+  slides are not possible without naming the page, so there are none.
+- The artwork morph: `MorphSource` names the clicked card's art; `MorphSkeleton` (loading skeleton) and
+  `MorphArt` (real header art) claim that name inside the transition's commit (`morph-state.ts`).
+  Do not name destination artwork statically or via an observer: that raced the commit.
+
+## Panels slide into the gutter, content stays put
+
+The content column spans from the sidebar gap to the viewport edge and has no queue margin. `page-container`
+and the toolbar's `page-gutter` (`styles/globals.css`) place the page box with
+`margin-left: clamp(0, Cf - (100vw + w) / 2, Cf - R - w)`, where `R` is the registered, animated
+`--queue-reserve` (the docked queue's column, from `html[data-queue=open]` at 1440px and up). When the box fits
+beside the open panels it is centred in the viewport and neither the sidebar nor the queue moves it (or the
+anchored player bar); when it does not fit the clamp collapses to the classic push. Never reintroduce a
+margin or width on the column for a panel, and keep the sidebar gap in flow (its live width is what `Cf` reads).
 
 ## Maintaining this file
 

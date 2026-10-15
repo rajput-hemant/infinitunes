@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { appRoutes, userRoutes } from "./config/routes";
+import { legacyArtistPath } from "./lib/artist-route";
 import { getClientKey, resolveTrustedProxy } from "./lib/client-ip";
 import { buildCsp, cspHeaderName } from "./lib/csp";
 import { env } from "./lib/env";
@@ -142,6 +143,17 @@ export async function proxy(req: NextRequest) {
   }
 
   if (isTrpc) return NextResponse.next();
+
+  // Artist tabs used to live in the name slug (`<name>-songs`); they are child
+  // routes now, so old links and bookmarks move permanently to the tab route.
+  if (req.method === "GET" || req.method === "HEAD") {
+    const tabPath = legacyArtistPath(pathname);
+    if (tabPath) {
+      const target = new URL(tabPath, nextUrl);
+      target.search = nextUrl.search;
+      return NextResponse.redirect(target, 308);
+    }
+  }
 
   // `CSP_ENFORCE` chooses enforcing vs report-only.
   const response = NextResponse.next();

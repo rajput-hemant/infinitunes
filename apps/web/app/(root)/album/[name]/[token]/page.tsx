@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { cache, Suspense } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
-import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
+import { SliderListSkeleton } from "~/components/slider/shelf-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
 import { SongList } from "~/components/song-list/song-list";
 import { orFallback } from "~/lib/degrade";
@@ -60,13 +60,13 @@ export default async function AlbumDetailsPage(props: AlbumDetailsPageProps) {
 
       <SongList items={songs} showAlbum={false} />
 
-      <Suspense fallback={<SliderListSkeleton length={1} />}>
+      <Suspense fallback={<SliderListSkeleton />}>
         <AlbumRecommendations album={album} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton length={1} />}>
+      <Suspense fallback={<SliderListSkeleton />}>
         <AlbumTrending album={album} trending={trending} />
       </Suspense>
-      <Suspense fallback={<SliderListSkeleton length={1} />}>
+      <Suspense fallback={<SliderListSkeleton />}>
         <AlbumSameYear album={album} />
       </Suspense>
 

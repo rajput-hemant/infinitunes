@@ -1,4 +1,4 @@
-import { afterEach, expect, it, mock } from "bun:test";
+import { afterEach, expect, it, jest, mock } from "bun:test";
 
 import { PathnameContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
@@ -6,8 +6,18 @@ import { createRoot, type Root } from "react-dom/client";
 
 import { setInputValue } from "./set-input-value";
 
+const searchInputs: { q: string }[] = [];
 mock.module("../../lib/trpc/client", () => ({
-  api: { search: { all: { useQuery: () => ({}) } } },
+  api: {
+    search: {
+      all: {
+        useQuery: (input: { q: string }) => {
+          searchInputs.push(input);
+          return {};
+        },
+      },
+    },
+  },
 }));
 mock.module("../../components/search/search-all", () => ({
   SearchAll: () => null,
@@ -176,4 +186,37 @@ it("renders the phone palette as the glass palette role with its key hints", asy
     "↵",
     "esc",
   ]);
+});
+
+it("sends one search for a typed word, after the typing pause", async () => {
+  jest.useFakeTimers();
+  try {
+    const { container } = await renderMenu(<p>Top searches</p>);
+    await act(async () => container.querySelector("button")?.click());
+    const input = document.querySelector<HTMLInputElement>(
+      'input[aria-label="Search"]',
+    );
+    if (!input) throw new Error("search input not rendered");
+    searchInputs.length = 0;
+
+    for (const typed of ["a", "ar", "ari", "arij"]) {
+      await act(async () => setInputValue(input, typed));
+      await act(async () => {
+        jest.advanceTimersByTime(80);
+      });
+    }
+    // The field itself is never held back.
+    expect(input.value).toBe("arij");
+    expect(searchInputs.map((i) => i.q)).not.toContain("ari");
+    expect(new Set(searchInputs.map((i) => i.q))).toEqual(new Set([""]));
+
+    await act(async () => {
+      jest.advanceTimersByTime(300);
+    });
+    expect(searchInputs.at(-1)?.q).toBe("arij");
+    // Renders repeat the input; what matters is which queries were ever asked.
+    expect([...new Set(searchInputs.map((i) => i.q))]).toEqual(["", "arij"]);
+  } finally {
+    jest.useRealTimers();
+  }
 });

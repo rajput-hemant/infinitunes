@@ -1,6 +1,7 @@
 "use client";
 
 import type { Lang, TopAlbum } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
@@ -27,7 +28,10 @@ export function TopAlbums({ initialAlbums, lang }: TopAlbumsProps) {
       initialData: { pages: [initialAlbums], pageParams: [1] },
     });
 
-  const topAlbums = data.pages.flatMap((page) => page.data);
+  const topAlbums = uniqueBy(
+    data.pages.flatMap((page) => page.data),
+    (album) => album.id,
+  );
 
   return (
     <div>

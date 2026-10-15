@@ -37,3 +37,17 @@ export function nextArtistPage(
 ) {
   return page.last_page ? null : lastPageParam + 1;
 }
+
+/**
+ * `cat` values other than the default popularity order are fetched from page 0:
+ * the artist payload's own `topSongs`/`topAlbums` are always in popularity
+ * order, so they cannot seed a re-sorted list.
+ */
+export function isDefaultCategory(cat: string | undefined) {
+  return cat === undefined || cat === "popularity";
+}
+
+/** The `sort_order` upstream expects for a category: newest first, otherwise ascending. */
+export function categorySort(cat: string | undefined) {
+  return cat === "latest" ? "desc" : "asc";
+}

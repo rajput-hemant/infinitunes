@@ -1,15 +1,18 @@
-import { DetailsHeaderSkeleton } from "~/components/skeletons/details-header-skeleton";
-import { SliderListSkeleton } from "~/components/skeletons/slider-list-skeleton";
-import { SongListSkeleton } from "~/components/skeletons/song-list-skeleton";
+import { DetailsHeaderSkeleton } from "~/components/details-header/details-header-skeleton";
+import { SliderListSkeleton } from "~/components/slider/shelf-skeleton";
+import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
 
-export default function AlbumDetailsSkeleton() {
+/** Mirrors the album page: header, tracks, three recommendation shelves, artists. */
+export default function AlbumDetailsLoading() {
   return (
-    <div className="flex flex-col gap-(--page-gap)">
+    <div className="flex flex-col gap-(--page-gap)" aria-busy="true">
       <DetailsHeaderSkeleton type="album" />
 
-      <SongListSkeleton showAlbum={false} />
+      <SongListSkeleton showAlbum={false} length={8} />
 
-      <SliderListSkeleton />
+      <SliderListSkeleton sections={3} />
+
+      <SliderListSkeleton rounded hideSubtitle />
     </div>
   );
 }

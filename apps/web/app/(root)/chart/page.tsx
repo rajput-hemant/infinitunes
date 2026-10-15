@@ -1,7 +1,10 @@
+import { uniqueBy } from "@infinitunes/types";
 import { Music } from "lucide-react";
+import { Suspense } from "react";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
+import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
 import {
   CatalogEmpty,
   CatalogEnd,
@@ -19,56 +22,59 @@ export const metadata = pageMetadata({
   url: "/chart",
   alt: "Top Music Charts",
 });
-// TODO: Cache Components adoption. Defer navigation validation until the shared session and navigation shell streams independently.
-export const instant = false;
-
-export default async function ChartsPage() {
+async function Charts() {
   const charts = await api.get.charts({ page: 1, n: 50 });
 
+  return charts.length === 0 ? (
+    <CatalogEmpty
+      icon={Music}
+      title="No charts yet"
+      description="Charts are updated regularly. Check back soon."
+    />
+  ) : (
+    <>
+      <CatalogGrid>
+        {uniqueBy(charts, (chart) => chart.id).map(
+          (
+            {
+              id,
+              title: chartTitle,
+              perma_url,
+              subtitle,
+              type,
+              image,
+              explicit_content,
+            },
+            index,
+          ) => (
+            <SliderCard
+              priority={index < FIRST_ROW_CARDS}
+              key={id}
+              name={chartTitle}
+              url={perma_url}
+              subtitle={subtitle}
+              type={type}
+              image={image}
+              explicit={explicit_content}
+              aspect="video"
+            />
+          ),
+        )}
+      </CatalogGrid>
+
+      <CatalogEnd />
+    </>
+  );
+}
+
+export default function ChartsPage() {
   return (
     <div>
       <CatalogHeader title="Top Charts" subtitle="Updated every Friday." />
 
-      {charts.length === 0 ? (
-        <CatalogEmpty
-          icon={Music}
-          title="No charts yet"
-          description="Charts are updated regularly. Check back soon."
-        />
-      ) : (
-        <>
-          <CatalogGrid>
-            {charts.map(
-              (
-                {
-                  id,
-                  title: chartTitle,
-                  perma_url,
-                  subtitle,
-                  type,
-                  image,
-                  explicit_content,
-                },
-                index,
-              ) => (
-                <SliderCard
-                  priority={index < FIRST_ROW_CARDS}
-                  key={id}
-                  name={chartTitle}
-                  url={perma_url}
-                  subtitle={subtitle}
-                  type={type}
-                  image={image}
-                  explicit={explicit_content}
-                  aspect="video"
-                />
-              ),
-            )}
-          </CatalogGrid>
-
-          <CatalogEnd />
-        </>
-      )}
+      <Suspense fallback={<CatalogGridSkeleton aspect="video" />}>
+        <Charts />
+      </Suspense>
     </div>
   );
 }

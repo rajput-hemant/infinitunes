@@ -1,37 +1,28 @@
-import { cookies } from "next/headers";
 import type { PropsWithChildren } from "react";
 
 import { GlassEdge } from "~/components/glass/glass-edge";
-import { PlayerWrapper } from "~/components/player-wrapper";
-import {
-  AppSidebarProvider,
-  Sidebar,
-  SidebarInset,
-} from "~/components/sidebar";
+import { AppSidebarProvider, SidebarInset } from "~/components/sidebar";
 import { SiteFooter } from "~/components/site-footer/footer";
-import { MobileNav } from "~/components/site-header/mobile-nav";
 import { Navbar } from "~/components/site-header/navbar";
 import { MorphSource } from "~/components/view-transition/morph-source";
-import { getUser } from "~/lib/auth";
-import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { orFallback } from "~/lib/degrade";
+import {
+  ViewerMobileNav,
+  ViewerPlayer,
+  ViewerProvider,
+  ViewerSidebar,
+} from "~/components/viewer";
+import { getViewer } from "~/lib/viewer";
 
-// TODO: Cache Components adoption. Defer validation until session, sidebar cookies and navigation stream independently.
-export const instant = false;
-
-export default async function Layout({ children }: PropsWithChildren) {
-  const [user, cookieStore] = await Promise.all([getUser(), cookies()]);
-  const sidebarOpen = cookieStore.get("sidebar_state")?.value !== "false";
-
-  const [userPlaylists, userFavorites] = await Promise.all([
-    user
-      ? orFallback("user playlists", getUserPlaylists(), undefined)
-      : undefined,
-    user ? orFallback("user favorites", getUserFavorites(), null) : undefined,
-  ]);
-
+/**
+ * Nothing in this body awaits request data, so the chrome prerenders. The
+ * visitor is a promise handed to the islands that need it (sidebar library,
+ * tab bar, user menu, player), each behind its own `<Suspense>`; the sidebar's
+ * saved open/closed state is applied before first paint by
+ * `lib/theme-script.ts` and picked up by `AppSidebarProvider`.
+ */
+export default function Layout({ children }: PropsWithChildren) {
   return (
-    <>
+    <ViewerProvider viewer={getViewer()}>
       <a
         href="#main-content"
         className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:left-2 focus-visible:top-2 focus-visible:z-90 focus-visible:rounded-ctl focus-visible:bg-card focus-visible:px-4 focus-visible:py-2 focus-visible:text-sm focus-visible:text-foreground focus-visible:shadow-md"
@@ -39,10 +30,10 @@ export default async function Layout({ children }: PropsWithChildren) {
         Skip to content
       </a>
       <MorphSource />
-      <AppSidebarProvider defaultOpen={sidebarOpen}>
-        <Sidebar user={user} userPlaylists={userPlaylists} />
-        {/* Reserves the docked queue column, so toolbar and main both shrink. */}
-        <div className="flex min-w-0 flex-1 flex-col transition-[margin] duration-base ease-spring min-[1440px]:in-data-[queue=open]:mr-(--queue-w)">
+      <AppSidebarProvider>
+        <ViewerSidebar />
+        {/* Spans to the viewport edge; `page-container` / `page-gutter` keep clear of the docked queue. */}
+        <div className="flex min-w-0 flex-1 flex-col">
           <Navbar />
           {/* SidebarInset renders the only main landmark. */}
           <SidebarInset
@@ -50,20 +41,16 @@ export default async function Layout({ children }: PropsWithChildren) {
             tabIndex={-1}
             className="min-w-0 bg-transparent outline-none"
           >
-            <div className="mx-auto w-full max-w-400 px-page pt-2 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-36">
+            <div className="page-container pt-2 pb-[calc(10rem+env(safe-area-inset-bottom))] md:pb-36">
               {children}
               <SiteFooter />
             </div>
           </SidebarInset>
         </div>
         <GlassEdge />
-        <MobileNav user={user} />
+        <ViewerMobileNav />
       </AppSidebarProvider>
-      <PlayerWrapper
-        user={user}
-        playlists={userPlaylists}
-        favorites={userFavorites}
-      />
-    </>
+      <ViewerPlayer />
+    </ViewerProvider>
   );
 }

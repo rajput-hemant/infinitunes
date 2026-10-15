@@ -208,8 +208,8 @@ export function ExpandedBody({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            aria-label="Mute"
-            aria-pressed={isMuted}
+            aria-label={isMuted ? "Unmute" : "Mute"}
+            title={isMuted ? "Unmute" : "Mute"}
             onClick={onToggleMute}
             className={cn(
               washButtonClass,

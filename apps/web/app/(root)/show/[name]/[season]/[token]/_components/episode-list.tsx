@@ -2,6 +2,7 @@
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Episode, Sort } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
@@ -56,7 +57,7 @@ export function EpisodeList(props: EpisodeListProps) {
       initialData: { pages: [initialEpisodes], pageParams: [1] },
     });
 
-  const episodes = data.pages.flat();
+  const episodes = uniqueBy(data.pages.flat(), (episode) => episode.id);
 
   const [ref] = useIntersectionObserver({
     threshold: 0.5,

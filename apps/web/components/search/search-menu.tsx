@@ -10,8 +10,12 @@ import {
 } from "@infinitunes/ui/components/dialog";
 import { Search, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { type ReactNode, useDeferredValue, useEffect, useState } from "react";
+import { type ReactNode, Suspense, useEffect, useRef, useState } from "react";
 
+import {
+  SEARCH_DEBOUNCE_MS,
+  useDebouncedValue,
+} from "~/hooks/use-debounced-value";
 import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import { useKeydown } from "~/hooks/use-keydown";
 import { useIsTyping } from "~/hooks/use-store";
@@ -33,28 +37,45 @@ type SearchMenuProps = {
   topSearch: ReactNode;
 };
 
-export function SearchMenu({ topSearch, className }: SearchMenuProps) {
+/**
+ * Closes the palette when the route changes. The pathname is read here, behind
+ * its own `<Suspense>`, so the toolbar does not wait on it while a route with
+ * request-time params prerenders.
+ */
+function CloseOnNavigate({ onNavigate }: { onNavigate: () => void }) {
   const pathname = usePathname();
+  const last = useRef(pathname);
 
+  useEffect(() => {
+    if (last.current === pathname) return;
+    last.current = pathname;
+    onNavigate();
+  }, [pathname, onNavigate]);
+
+  return null;
+}
+
+export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   const [query, setQuery] = useState("");
-  const [openPath, setOpenPath] = useState<string | null>(null);
-  const isOpen = openPath === pathname;
-  if (openPath !== null && !isOpen) setOpenPath(null);
+  const [isOpen, setOpen] = useState(false);
   const mounted = useIsHydrated();
 
   const setIsOpen = (open: boolean) => {
     if (open) setQuery("");
-    setOpenPath(open ? pathname : null);
+    setOpen(open);
   };
+  const close = () => setOpen(false);
 
-  const deferredQuery = useDeferredValue(query.trim());
+  const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS, {
+    immediate: "",
+  });
 
   const [, setIsTyping] = useIsTyping();
   const { recent, add } = useRecentSearches();
   const { activeOptionId } = useSearchPaletteKeys({
     enabled: isOpen,
     listboxId: LISTBOX_ID,
-    resetKey: deferredQuery,
+    resetKey: debouncedQuery,
   });
 
   useKeydown((e: KeyboardEvent) => {
@@ -69,14 +90,18 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
   }, [isOpen, setIsTyping]);
 
   const { data, error } = api.search.all.useQuery(
-    { q: deferredQuery },
-    { enabled: deferredQuery.length > 0, retry: false },
+    { q: debouncedQuery },
+    { enabled: debouncedQuery.length > 0, retry: false },
   );
 
   const results = resolveSearchState(data, error);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Suspense fallback={null}>
+        <CloseOnNavigate onNavigate={close} />
+      </Suspense>
+
       <DialogTrigger
         render={
           <Button
@@ -143,12 +168,12 @@ export function SearchMenu({ topSearch, className }: SearchMenuProps) {
 
         <div className="min-h-0 flex-1 overflow-y-auto md:max-h-[min(60vh,32rem)]">
           <SearchPaletteBody
-            query={deferredQuery}
+            query={debouncedQuery}
             listboxId={LISTBOX_ID}
             results={results}
             recent={recent}
             topSearch={topSearch}
-            onSelect={() => add(deferredQuery)}
+            onSelect={() => add(debouncedQuery)}
           />
         </div>
 

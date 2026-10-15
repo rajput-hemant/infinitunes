@@ -73,6 +73,46 @@ export function revalidateSeconds(
   return useCache ? REVALIDATE_SECONDS[call] : undefined;
 }
 
+/** How long a revalidating entry may keep serving stale content while upstream is down. */
+const STALE_ON_ERROR_SECONDS = 24 * 60 * 60;
+
+/**
+ * Calls whose payloads carry no encrypted media URLs (checked against live
+ * responses): menus, footer, charts, playlist/show/artist lists, same-year
+ * albums, top searches and search autocomplete. Their cache entry may outlive
+ * its revalidate window, so an upstream outage serves the last good copy.
+ * Everything else can embed `encrypted_media_url`, which ages, so it expires
+ * with its revalidate window.
+ */
+const MEDIA_FREE_CALLS: ReadonlySet<string> = new Set([
+  endpoints.get.mega_menu,
+  endpoints.get.footer_details,
+  endpoints.get.charts,
+  endpoints.get.featured_playlists,
+  endpoints.get.top_shows,
+  endpoints.get.top_artists,
+  endpoints.get.featured_stations,
+  endpoints.get.lyrics,
+  endpoints.album.same_year,
+  endpoints.search.top_search,
+  endpoints.search.all,
+  endpoints.search.albums,
+  endpoints.search.artists,
+  endpoints.search.playlists,
+]);
+
+/** Hard expiry for a cached call; longer than its revalidate window only for media-free payloads. */
+export function expireSeconds(
+  call: string,
+  useCache = true,
+): number | undefined {
+  const revalidate = revalidateSeconds(call, useCache);
+  if (revalidate === undefined) return undefined;
+  return MEDIA_FREE_CALLS.has(call)
+    ? Math.max(revalidate + 1, STALE_ON_ERROR_SECONDS)
+    : revalidate;
+}
+
 const MAX_ATTEMPTS = 2;
 const RETRY_DELAY_MS = 200;
 

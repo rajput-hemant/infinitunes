@@ -311,6 +311,26 @@ describe("sidebar collapse", () => {
     expect(collapsible()).toBe("");
   });
 
+  it("keeps the user's choice when the provider remounts", async () => {
+    document.documentElement.dataset.sidebar = "collapsed";
+    const first = await mount(<Shell />);
+    expect(collapsible()).toBe("icon");
+
+    const trigger = first.querySelector(
+      "[data-slot=sidebar-trigger]",
+    ) as HTMLButtonElement;
+    await act(async () => trigger.click());
+    expect(collapsible()).toBe("");
+
+    // A trip through the auth layout unmounts the provider and mounts a new one.
+    await act(async () => roots.splice(0).forEach((r) => r.unmount()));
+    document.body.replaceChildren();
+    await mount(<Shell />);
+    expect(collapsible()).toBe("");
+
+    delete document.documentElement.dataset.sidebar;
+  });
+
   it("starts collapsed when the persisted state says so", async () => {
     await mount(<Shell defaultOpen={false} />);
 

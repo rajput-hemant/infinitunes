@@ -74,6 +74,8 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     isLoading,
     duration,
     isLooping,
+    loopOn,
+    loopOff,
     mute,
     unmute,
     isMuted,
@@ -81,7 +83,6 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     setVolume,
     seek,
     isReady,
-    player,
   } = useAudioPlayerContext();
 
   // Howler captures `onend` when the song is loaded, so the handler has to stay
@@ -159,26 +160,30 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     setQueue,
   });
 
+  // Off, then the whole queue, then the current song, then off again. Only
+  // "the current song" is a loop of the audio itself; "the whole queue" is the
+  // ended handler wrapping past the last entry.
   function loopHandler() {
     if (!isReady) return;
 
     if (queue.length === 1) {
       if (isLooping) {
-        player?.loopOff();
+        loopOff();
         toast("Looping disabled");
       } else {
-        player?.loopOn();
+        loopOn();
         toast("Playing current song on repeat");
       }
     } else if (!isLooping && !loopPlaylist) {
       setLoopPlaylist(true);
-      player?.loopOn();
       toast("Looping playlist");
-    } else if (!isLooping && loopPlaylist) {
+    } else if (!isLooping) {
       setLoopPlaylist(false);
-      player?.loopOff();
-    } else if (isLooping) {
-      player?.loopOff();
+      loopOn();
+      toast("Playing current song on repeat");
+    } else {
+      loopOff();
+      toast("Looping disabled");
     }
   }
 
@@ -229,10 +234,22 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     setIsDragging(false);
   }
 
+  // Rapid shortcut presses land before the context re-renders with the volume
+  // the previous press set, so the step starts from this ref, not the prop.
+  const volumeRef = React.useRef(volume);
+  React.useEffect(() => {
+    volumeRef.current = volume;
+  }, [volume]);
+
+  function applyVolume(next: number) {
+    volumeRef.current = next;
+    setVolume(next);
+  }
+
   function volumeChange(percent: number) {
     if (!isReady) return;
     const newVolume = percent / 100;
-    setVolume(newVolume);
+    applyVolume(newVolume);
     if (newVolume > 0 && isMuted) {
       unmute();
     }
@@ -269,9 +286,9 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     } else if (e.key === "p" || (e.shiftKey && e.key === "ArrowLeft")) {
       skipToPrev();
     } else if (e.shiftKey && e.key === "ArrowUp") {
-      setVolume(Math.min(1, volume + 0.05));
+      applyVolume(Math.min(1, volumeRef.current + 0.05));
     } else if (e.shiftKey && e.key === "ArrowDown") {
-      setVolume(Math.max(0, volume - 0.05));
+      applyVolume(Math.max(0, volumeRef.current - 0.05));
     } else if (e.key === "l") {
       loopHandler();
     } else if (e.key === "s") {

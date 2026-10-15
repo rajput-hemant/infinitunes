@@ -46,13 +46,15 @@ export default function RootLayout({ modal, children }: RootLayoutProps) {
         </Providers>
 
         <TailwindIndicator />
-      </body>
 
-      <Script
-        async
-        src="https://us.umami.is/script.js"
-        data-website-id={env.UMAMI_WEBSITE_ID}
-      />
+        {env.UMAMI_WEBSITE_ID ? (
+          <Script
+            async
+            src="https://us.umami.is/script.js"
+            data-website-id={env.UMAMI_WEBSITE_ID}
+          />
+        ) : null}
+      </body>
     </html>
   );
 }

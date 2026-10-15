@@ -32,7 +32,7 @@ export function ShareButton({ title }: ShareButtonProps) {
         }
       />
 
-      <DropdownMenuContent align="start">
+      <DropdownMenuContent align="start" className="w-auto min-w-48">
         <ShareOptions isDropDownItem title={title} />
       </DropdownMenuContent>
     </DropdownMenu>

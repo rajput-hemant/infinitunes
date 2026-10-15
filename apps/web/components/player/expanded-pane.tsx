@@ -51,8 +51,12 @@ export function ExpandedPane({
       id={id}
       aria-label="Up next and lyrics"
       className={cn(
-        "min-h-0 flex-col md:flex md:h-[min(36rem,70dvh)]",
-        visible ? "flex h-[50dvh]" : "hidden",
+        "min-h-0 flex-col transition-[opacity,translate,display] transition-discrete duration-base ease-drawer md:flex md:h-[min(36rem,70dvh)]",
+        // Phones: the pane rises in and sinks out; `display` is discrete, so it
+        // stays until the fade ends. md and up always shows it.
+        visible
+          ? "flex h-[50dvh] max-md:starting:translate-y-4 max-md:starting:opacity-0"
+          : "hidden max-md:translate-y-4 max-md:opacity-0",
       )}
     >
       <div

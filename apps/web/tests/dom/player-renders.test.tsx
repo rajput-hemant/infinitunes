@@ -24,9 +24,18 @@ let advancing = false;
 const loads: string[] = [];
 const recorded: string[] = [];
 
+const loopCalls: string[] = [];
+const volumeCalls: number[] = [];
+
 const audio = {
   load(src: string) {
     loads.push(src);
+  },
+  loopOn() {
+    loopCalls.push("on");
+  },
+  loopOff() {
+    loopCalls.push("off");
   },
   isPlaying: true,
   togglePlayPause() {},
@@ -38,10 +47,11 @@ const audio = {
   unmute() {},
   isMuted: false,
   volume: 0.75,
-  setVolume() {},
+  setVolume(value: number) {
+    volumeCalls.push(value);
+  },
   seek() {},
   isReady: true,
-  player: null,
 };
 
 mock.module("react-use-audio-player", () => ({
@@ -317,7 +327,7 @@ describe("player a11y", () => {
   it("marks shuffle and loop as toggle buttons", async () => {
     await mountPlayer();
 
-    for (const label of ["Shuffle", "Loop", "Mute"]) {
+    for (const label of ["Shuffle", "Loop"]) {
       const button = document.querySelector(`button[aria-label="${label}"]`);
       expect(button?.getAttribute("aria-pressed")).toBe("false");
     }
@@ -349,5 +359,83 @@ describe("player favorite plumbing", () => {
     const labels = await menuLabels();
     expect(labels).toContain("Add To Favourite");
     expect(labels).not.toContain("Remove From Favourite");
+  });
+});
+
+const threeSongs = ["a", "b", "c"].map((id, i) => ({
+  ...playableQueue[0],
+  queueItemId: `l${i}`,
+  id,
+  name: `Song ${id}`,
+}));
+
+const press = (key: string, init: KeyboardEventInit = {}) =>
+  act(async () => {
+    window.dispatchEvent(new KeyboardEvent("keydown", { key, ...init }));
+  });
+
+describe("player repeat and volume controls", () => {
+  afterEach(() => {
+    audio.isLooping = false;
+    audio.isMuted = false;
+    audio.volume = 0.75;
+    loopCalls.length = 0;
+    volumeCalls.length = 0;
+  });
+
+  it("cycles repeat off, whole queue, current song, off without touching a missing Howl", async () => {
+    await mountPlayer({ queue: threeSongs });
+    const loopButton = () =>
+      document.querySelector<HTMLButtonElement>('button[aria-label="Loop"]');
+
+    await press("l");
+    expect(loopCalls).toEqual([]);
+    expect(loopButton()?.getAttribute("aria-pressed")).toBe("true");
+
+    await press("l");
+    expect(loopCalls).toEqual(["on"]);
+
+    // The audio reports the loop; the next press turns it off.
+    audio.isLooping = true;
+    await press("s");
+    await press("l");
+    expect(loopCalls).toEqual(["on", "off"]);
+  });
+
+  it("toggles the loop of a single-song queue", async () => {
+    await mountPlayer();
+
+    await press("l");
+    expect(loopCalls).toEqual(["on"]);
+  });
+
+  it("steps the volume from the value the last shortcut set, not a stale render", async () => {
+    audio.volume = 1;
+    await mountPlayer({ queue: threeSongs });
+
+    await act(async () => {
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", shiftKey: true }),
+      );
+      window.dispatchEvent(
+        new KeyboardEvent("keydown", { key: "ArrowDown", shiftKey: true }),
+      );
+    });
+
+    expect(volumeCalls).toHaveLength(2);
+    expect(volumeCalls[0]).toBeCloseTo(0.95);
+    expect(volumeCalls[1]).toBeCloseTo(0.9);
+  });
+
+  it("names the mute button for what it will do", async () => {
+    await mountPlayer();
+    expect(document.querySelector('button[aria-label="Mute"]')).not.toBeNull();
+    expect(document.querySelector('button[aria-label="Unmute"]')).toBeNull();
+
+    audio.isMuted = true;
+    await mountPlayer();
+    expect(
+      document.querySelector('button[aria-label="Unmute"]'),
+    ).not.toBeNull();
   });
 });

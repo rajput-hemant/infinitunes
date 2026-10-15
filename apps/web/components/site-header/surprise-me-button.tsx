@@ -27,6 +27,80 @@ function shuffle<T>(items: T[]): T[] {
   return out;
 }
 
+type PlaybackSnapshot = {
+  queue: ReturnType<typeof useQueue>[0];
+  currentIndex: ReturnType<typeof useCurrentSongIndex>[0];
+  activeRadio: ReturnType<typeof useActiveRadioSession>[0];
+};
+
+type SurpriseState = {
+  latest: React.RefObject<PlaybackSnapshot>;
+  inFlight: React.RefObject<boolean>;
+  setPending: (pending: boolean) => void;
+  setQueue: ReturnType<typeof useQueue>[1];
+  setCurrentIndex: ReturnType<typeof useCurrentSongIndex>[1];
+  setIsPlayerInit: ReturnType<typeof useIsPlayerInit>[1];
+  setActiveRadio: ReturnType<typeof useActiveRadioSession>[1];
+  onQueued?: () => void;
+};
+
+/**
+ * Queues a shuffled batch from `loadSongs` and plays it, unless playback changed
+ * while loading. Kept outside the component: the React Compiler bails out on
+ * try/finally.
+ */
+async function queueSurprise(
+  loadSongs: () => Promise<Song[]>,
+  state: SurpriseState,
+) {
+  const {
+    latest,
+    inFlight,
+    setPending,
+    setQueue,
+    setCurrentIndex,
+    setIsPlayerInit,
+    setActiveRadio,
+    onQueued,
+  } = state;
+
+  if (inFlight.current) return;
+  inFlight.current = true;
+  setPending(true);
+  const start = latest.current;
+  try {
+    const songs = await loadSongs();
+    const now = latest.current;
+    if (
+      now.queue !== start.queue ||
+      now.currentIndex !== start.currentIndex ||
+      now.activeRadio !== start.activeRadio
+    ) {
+      return;
+    }
+    if (!songs.length) {
+      toast.error("No songs found right now");
+      return;
+    }
+
+    const nextQueue = shuffle(songs).map(toQueue);
+    setActiveRadio(null);
+    setQueue(nextQueue);
+    setCurrentIndex(0);
+    setIsPlayerInit(true);
+    toast.success(`${nextQueue.length} songs added to the queue`, {
+      description: `Playing “${nextQueue[0]?.name}”`,
+      position: "bottom-center",
+    });
+    onQueued?.();
+  } catch {
+    toast.error("Failed to load songs");
+  } finally {
+    inFlight.current = false;
+    setPending(false);
+  }
+}
+
 /** Like jiosaavn.com: replaces the queue with a shuffled batch of trending songs and plays it. */
 export function SurpriseMeButton({
   onQueued,
@@ -42,7 +116,7 @@ export function SurpriseMeButton({
   const [pending, setPending] = useState(false);
 
   // Latest playback state, read after the await to detect a newer choice.
-  const latest = useRef({ queue, currentIndex, activeRadio });
+  const latest = useRef<PlaybackSnapshot>({ queue, currentIndex, activeRadio });
   useEffect(() => {
     latest.current = { queue, currentIndex, activeRadio };
   }, [queue, currentIndex, activeRadio]);
@@ -51,47 +125,25 @@ export function SurpriseMeButton({
   const utils = api.useUtils();
 
   async function surprise() {
-    if (inFlight.current) return;
-    inFlight.current = true;
-    setPending(true);
-    const start = latest.current;
-    try {
-      const trending = await utils.get.trending.fetch({
-        type: "song",
-        lang: lang ?? undefined,
-      });
-      const songs = trending.filter(
-        (item): item is Song => item.type === "song",
-      );
-      const now = latest.current;
-      if (
-        now.queue !== start.queue ||
-        now.currentIndex !== start.currentIndex ||
-        now.activeRadio !== start.activeRadio
-      ) {
-        return;
-      }
-      if (!songs.length) {
-        toast.error("No songs found right now");
-        return;
-      }
-
-      const nextQueue = shuffle(songs).map(toQueue);
-      setActiveRadio(null);
-      setQueue(nextQueue);
-      setCurrentIndex(0);
-      setIsPlayerInit(true);
-      toast.success(`${nextQueue.length} songs added to the queue`, {
-        description: `Playing “${nextQueue[0]?.name}”`,
-        position: "bottom-center",
-      });
-      onQueued?.();
-    } catch {
-      toast.error("Failed to load songs");
-    } finally {
-      inFlight.current = false;
-      setPending(false);
-    }
+    await queueSurprise(
+      async () => {
+        const trending = await utils.get.trending.fetch({
+          type: "song",
+          lang: lang ?? undefined,
+        });
+        return trending.filter((item): item is Song => item.type === "song");
+      },
+      {
+        latest,
+        inFlight,
+        setPending,
+        setQueue,
+        setCurrentIndex,
+        setIsPlayerInit,
+        setActiveRadio,
+        onQueued,
+      },
+    );
   }
 
   return (

@@ -1,5 +1,7 @@
 # Perf audit summary (Sonnet audit at af9cea8; full text in orchestrator transcript)
 
+Status: G9 (PPR restructure) was done in `fix/ppr`; the "Reality" paragraph below describes the state at the audit. See `README.md`, "PPR restructure".
+
 Reality: every (root)/(auth) .html shell is 0 bytes; whole document postponed (`hasHtml:false`), Cache-Control private no-store. Cause: (root)/layout awaits getUser/cookies(sidebar_state)/getUserPlaylists/getUserFavorites before Suspense; Navbar awaits cookies(language)+getUser; auth pages redirectIfSignedIn at top.
 Initial JS gz (modern, excl. 38KB noModule polyfill): / 522, /browse 523, album 537, /search 525, /login 405, settings 536, me/liked 552, modals 414-422, not-found 358.
 Lab 4x CPU: home TBT 1.2-1.6s, LCP 2.0-2.7s on / and album (hero/cover lazy, no priority). 201 lazy imgs on home; 500x500 for 56px thumbs; images.unoptimized.

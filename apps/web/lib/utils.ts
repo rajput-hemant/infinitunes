@@ -4,6 +4,7 @@ import { cn } from "@infinitunes/ui/lib/utils";
 import type { Route } from "next";
 
 import { siteConfig } from "~/config/site";
+import { artistPath, splitArtistSlug } from "~/lib/artist-route";
 
 export { cn };
 
@@ -95,6 +96,14 @@ export function getHref(
   if (segments.length < count) return asRoute("#");
 
   const trailing = segments.slice(-count);
+
+  if (type === "artist") {
+    // Upstream names carry the tab (`<name>-songs`): link to the tab route directly.
+    const [slug = "", token = ""] = trailing;
+    const { name, tab } = splitArtistSlug(slug);
+    return asRoute(artistPath(name, token, tab));
+  }
+
   return asRoute(`/${type}/${trailing.join("/")}`);
 }
 

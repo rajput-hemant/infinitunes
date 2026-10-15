@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import { useDownloadSongs } from "~/components/download-button";
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
+import type { RadioStart } from "~/components/song-list/more-button-radio";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -48,9 +49,9 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
+import { addSongsToPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { addSongsToPlaylist } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/client";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
@@ -79,6 +80,82 @@ type MenuItem = {
   phoneOnly?: boolean;
   icon: LucideIcon;
 };
+
+type RadioSeed = {
+  type: MediaType;
+  name: string;
+  artistId?: string;
+  songs: Song[];
+  language?: string;
+};
+
+/**
+ * Creates a station for the album, playlist or artist and starts it. Kept
+ * outside the component: the React Compiler bails out on try/catch around
+ * value blocks.
+ */
+async function startSeedRadio(seed: RadioSeed, radio: RadioStart) {
+  const { type, name, artistId: initialArtistId, songs, language } = seed;
+  const { utils, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
+    radio;
+
+  try {
+    toast.loading("Starting radio...", { id: "play-radio" });
+    let stationName = name;
+    let artistId: string | undefined = initialArtistId;
+    let radioType: "artist" | "featured" = "featured";
+
+    if (type === "artist") {
+      radioType = "artist";
+    } else {
+      const primary = songs[0]?.more_info.artistMap?.primary_artists?.[0];
+      if (primary) {
+        stationName = primary.name;
+        artistId = primary.id;
+        radioType = "artist";
+      }
+    }
+
+    const stationLanguage = language || songs[0]?.language;
+
+    const { stationId } = await utils.client.radio.createStation.mutate({
+      type: radioType,
+      name: stationName,
+      artistId,
+      language: stationLanguage,
+    });
+
+    const radioSongs = await utils.radio.songs.fetch({
+      stationId,
+      k: 20,
+    });
+
+    if (!radioSongs.length) {
+      toast.error("Could not find songs for this radio", {
+        id: "play-radio",
+      });
+      return;
+    }
+
+    const radioQueue = radioSongs.map(toQueue);
+    setQueue(radioQueue);
+    setActiveRadio({
+      stationId,
+      name: `${stationName} Radio`,
+      type: radioType,
+      language: stationLanguage,
+    });
+    setCurrentIndex(0);
+    setIsPlayerInit(true);
+
+    toast.success(`Playing "${stationName} Radio"`, {
+      id: "play-radio",
+      description: `Added ${radioQueue.length} station tracks to queue`,
+    });
+  } catch {
+    toast.error("Unable to start radio station", { id: "play-radio" });
+  }
+}
 
 export function MoreButton(props: MoreButtonProps) {
   const {
@@ -146,62 +223,22 @@ export function MoreButton(props: MoreButtonProps) {
   }
 
   async function playRadio() {
-    try {
-      toast.loading("Starting radio...", { id: "play-radio" });
-      let stationName = name;
-      let artistId: string | undefined = initialArtistId;
-      let radioType: "artist" | "featured" = "featured";
-
-      if (type === "artist") {
-        radioType = "artist";
-      } else {
-        const primary = songs[0]?.more_info.artistMap?.primary_artists?.[0];
-        if (primary) {
-          stationName = primary.name;
-          artistId = primary.id;
-          radioType = "artist";
-        }
-      }
-
-      const stationLanguage = language || songs[0]?.language;
-
-      const { stationId } = await utils.client.radio.createStation.mutate({
-        type: radioType,
-        name: stationName,
-        artistId,
-        language: stationLanguage,
-      });
-
-      const radioSongs = await utils.radio.songs.fetch({
-        stationId,
-        k: 20,
-      });
-
-      if (!radioSongs.length) {
-        toast.error("Could not find songs for this radio", {
-          id: "play-radio",
-        });
-        return;
-      }
-
-      const radioQueue = radioSongs.map(toQueue);
-      setQueue(radioQueue);
-      setActiveRadio({
-        stationId,
-        name: `${stationName} Radio`,
-        type: radioType,
-        language: stationLanguage,
-      });
-      setCurrentIndex(0);
-      setIsPlayerInit(true);
-
-      toast.success(`Playing "${stationName} Radio"`, {
-        id: "play-radio",
-        description: `Added ${radioQueue.length} station tracks to queue`,
-      });
-    } catch {
-      toast.error("Unable to start radio station", { id: "play-radio" });
-    }
+    await startSeedRadio(
+      {
+        type,
+        name,
+        artistId: initialArtistId,
+        songs,
+        language,
+      },
+      {
+        utils,
+        setQueue,
+        setCurrentIndex,
+        setIsPlayerInit,
+        setActiveRadio,
+      },
+    );
   }
 
   const menuItems: MenuItem[] = [

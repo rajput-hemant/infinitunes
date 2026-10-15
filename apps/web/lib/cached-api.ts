@@ -1,6 +1,7 @@
 import {
   api,
   type ApiOptions,
+  expireSeconds,
   isTransientUpstreamError,
   revalidateSeconds,
   upstreamError,
@@ -20,9 +21,10 @@ async function catalogRequest(
   call: string,
   options: CatalogOptions,
   seconds: number,
+  expire: number,
 ) {
   "use cache";
-  cacheLife({ stale: seconds, revalidate: seconds, expire: seconds });
+  cacheLife({ stale: seconds, revalidate: seconds, expire });
   cacheTag("catalog", `catalog:${call}`);
   try {
     return await api(call, options);
@@ -49,7 +51,13 @@ export const cachedApi: typeof api = async <T = unknown>(
   fetchFn?: typeof fetch,
 ): Promise<T> => {
   const seconds = revalidateSeconds(call, options.cache);
-  if (seconds === undefined || options.signal || fetchFn) {
+  const expire = expireSeconds(call, options.cache);
+  if (
+    seconds === undefined ||
+    expire === undefined ||
+    options.signal ||
+    fetchFn
+  ) {
     return api<T>(call, options, fetchFn);
   }
   const normalized: CatalogOptions = {
@@ -64,7 +72,7 @@ export const cachedApi: typeof api = async <T = unknown>(
     ),
   };
   try {
-    return (await catalogRequest(call, normalized, seconds)) as T;
+    return (await catalogRequest(call, normalized, seconds, expire)) as T;
   } catch (error) {
     if (
       error instanceof Error &&

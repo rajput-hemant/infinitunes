@@ -397,6 +397,30 @@ describe("glass lens registry", () => {
     ).toBe("260");
   });
 
+  it("rebuilds the lens once for a resize that lasts several frames, not once per frame", async () => {
+    addDefs();
+    configureLens({ active: true });
+    const el = surface(240, 100);
+    register(el, "l");
+    await settle();
+    const before = encodes;
+
+    // A sidebar-style width transition: the size changes on every frame, with
+    // no quiet period long enough to rebuild in between.
+    for (const width of [220, 190, 150, 110, 80]) {
+      resize(el, width, 100);
+      register(el, "l");
+      expect(lensUrl(el)).toBe("");
+      await settle(40);
+      expect(lensUrl(el)).toBe("");
+    }
+    expect(encodes).toBe(before);
+
+    await settle();
+    expect(lensUrl(el)).not.toBe("");
+    expect(encodes).toBe(before + 1);
+  });
+
   const SHADOW =
     "rgba(0, 0, 0, 0.34) 0px 30px 70px -18px, inset 0px 1px 1px 0px rgba(255, 255, 255, 0.5)";
 

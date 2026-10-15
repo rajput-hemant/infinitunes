@@ -1,20 +1,23 @@
 "use client";
 
 import { useSidebar } from "@infinitunes/ui/components/sidebar";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { Cog, Compass, Home, Library, Search, User2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 import { GlassSelector } from "~/components/glass/glass-selector";
+import { PathnameBoundary } from "~/components/pathname-boundary";
 import { isNavActive } from "~/config/nav";
 import { useTabBarMinimize } from "~/hooks/use-tab-bar-minimize";
 import type { User } from "~/lib/auth";
-import { asRoute } from "~/lib/utils";
+import { asRoute, cn } from "~/lib/utils";
 
 type Props = {
   user?: User;
+  /** The session has not resolved yet: the last tab is a placeholder. */
+  pending?: boolean;
 };
 
 type Tab = { label: string; icon: LucideIcon; href: Route };
@@ -56,8 +59,19 @@ function TabLink({ tab: { label, icon: Icon, href }, pathname }: TabLinkProps) {
  * marked up directly (not a GlassSurface) so the selector and the glass share
  * one element.
  */
-export function MobileNav({ user }: Props) {
-  const pathname = usePathname();
+export function MobileNav(props: Props) {
+  return (
+    <PathnameBoundary
+      render={(pathname) => <MobileNavBar {...props} pathname={pathname} />}
+    />
+  );
+}
+
+function MobileNavBar({
+  user,
+  pending,
+  pathname,
+}: Props & { pathname: string | null }) {
   const { openMobile, setOpenMobile } = useSidebar();
   useTabBarMinimize();
 
@@ -89,7 +103,14 @@ export function MobileNav({ user }: Props) {
         <span>Library</span>
       </button>
 
-      <TabLink tab={user ? settingsTab : loginTab} pathname={pathname} />
+      {pending ? (
+        <div aria-hidden className={cn(itemClassName, "pointer-events-none")}>
+          <Skeleton className="size-6 rounded-full" />
+          <Skeleton className="h-2.5 w-9" />
+        </div>
+      ) : (
+        <TabLink tab={user ? settingsTab : loginTab} pathname={pathname} />
+      )}
     </GlassSelector>
   );
 }

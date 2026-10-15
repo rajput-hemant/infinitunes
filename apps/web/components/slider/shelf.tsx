@@ -8,6 +8,8 @@ import { GlassSurface } from "~/components/glass/glass-surface";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
+import { shelfListClassName } from "./shelf-layout";
+
 type ShelfProps = {
   children: ReactNode;
   rows?: 1 | 2;
@@ -23,17 +25,33 @@ export function Shelf({ children, rows = 1, className }: ShelfProps) {
     const el = scroller.current;
     if (!el) return;
 
-    const update = () =>
-      setEdges({
-        atStart: el.scrollLeft <= 0,
-        atEnd: el.scrollLeft + el.clientWidth >= el.scrollWidth - 1,
-      });
+    const apply = () => {
+      const atStart = el.scrollLeft <= 0;
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 1;
+      // Same edges as before: keep the state object so React skips the render.
+      setEdges((prev) =>
+        prev.atStart === atStart && prev.atEnd === atEnd
+          ? prev
+          : { atStart, atEnd },
+      );
+    };
 
-    update();
+    // Scroll fires faster than frames; read layout at most once per frame.
+    let frame = 0;
+    const update = () => {
+      if (frame) return;
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        apply();
+      });
+    };
+
+    apply();
     el.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
 
     return () => {
+      cancelAnimationFrame(frame);
       el.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
@@ -47,13 +65,7 @@ export function Shelf({ children, rows = 1, className }: ShelfProps) {
 
   return (
     <div className={cn("relative", className)}>
-      <ol
-        ref={scroller}
-        className={cn(
-          "grid auto-cols-max grid-flow-col gap-3 overflow-x-auto p-1 scroll-smooth snap-x snap-mandatory md:gap-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
-          rows === 2 && "grid-rows-2",
-        )}
-      >
+      <ol ref={scroller} className={shelfListClassName(rows)}>
         {children}
       </ol>
 

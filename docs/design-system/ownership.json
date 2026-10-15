@@ -41,7 +41,6 @@
       "apps/web/components/site-header/**",
       "apps/web/components/site-footer/**",
       "apps/web/components/user-dropdown.tsx",
-      "apps/web/components/auth-control.tsx",
       "apps/web/config/nav.ts",
       "apps/web/tests/user-dropdown-menu.test.ts",
       "apps/web/tests/root-shell-layout.test.ts",
@@ -397,7 +396,6 @@
       "apps/web/components/site-header/**",
       "apps/web/components/site-footer/**",
       "apps/web/components/user-dropdown.tsx",
-      "apps/web/components/auth-control.tsx",
       "apps/web/config/nav.ts",
       "apps/web/tests/user-dropdown-menu.test.ts",
       "apps/web/tests/root-shell-layout.test.ts",
@@ -439,7 +437,6 @@
     ],
     "ds2-f4": [
       "apps/web/components/user-dropdown.tsx",
-      "apps/web/components/auth-control.tsx",
       "apps/web/components/site-header/**",
       "apps/web/components/site-footer/**",
       "apps/web/components/search/search-menu.tsx",

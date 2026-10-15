@@ -1,6 +1,7 @@
 "use client";
 
 import type { Lang, Radio } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Radio as RadioIcon } from "lucide-react";
 
@@ -32,7 +33,7 @@ export function FeaturedStations({
       initialData: { pages: [initialStations], pageParams: [1] },
     });
 
-  const stations = data.pages.flat();
+  const stations = uniqueBy(data.pages.flat(), (station) => station.id);
 
   if (stations.length === 0) {
     return (

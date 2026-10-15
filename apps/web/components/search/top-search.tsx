@@ -1,3 +1,5 @@
+import { uniqueBy } from "@infinitunes/types";
+
 import { api } from "~/lib/trpc/server";
 import { getHref } from "~/lib/utils";
 
@@ -18,7 +20,7 @@ export async function TopSearch() {
         Trending
       </div>
 
-      {topSearches.map((item) => (
+      {uniqueBy(topSearches, (item) => item.id).map((item) => (
         <SearchRow
           key={item.id}
           option

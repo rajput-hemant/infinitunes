@@ -119,10 +119,13 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
   );
 }
 
-const ListItem = React.forwardRef<
-  React.ElementRef<typeof Link>,
-  React.ComponentProps<typeof Link>
->(({ className, children, title, ...props }, ref) => {
+function ListItem({
+  className,
+  children,
+  title,
+  ref,
+  ...props
+}: React.ComponentProps<typeof Link>) {
   return (
     <NavigationMenuLink
       render={
@@ -142,6 +145,4 @@ const ListItem = React.forwardRef<
       }
     />
   );
-});
-
-ListItem.displayName = "ListItem";
+}

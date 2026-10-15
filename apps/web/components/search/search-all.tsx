@@ -1,4 +1,5 @@
 import type { AllSearch } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import Link from "next/link";
 
 import { cn } from "~/lib/utils";
@@ -79,7 +80,7 @@ export function SearchAll(props: SearchAllProps) {
                 ) : null}
               </div>
 
-              {items.map((item) => (
+              {uniqueBy(items, (item) => item.id).map((item) => (
                 <SearchRow
                   key={item.id}
                   href={getSearchItemHref(item)}

@@ -55,3 +55,29 @@ describe("ShareOptions copy", () => {
     expect(button.getAttribute("aria-label")).toBe("Link Copied");
   });
 });
+
+describe("ShareOptions in a dropdown", () => {
+  it("renders each option as one menu item, with no control nested inside", async () => {
+    const { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } =
+      await import("@infinitunes/ui/components/dropdown-menu");
+    await mount(
+      <DropdownMenu defaultOpen>
+        <DropdownMenuTrigger>Share</DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <ShareOptions isDropDownItem title="Tum Hi Ho" />
+        </DropdownMenuContent>
+      </DropdownMenu>,
+    );
+
+    const items = [...document.querySelectorAll('[role="menuitem"]')];
+    expect(items.map((i) => i.textContent?.replace("Link Copied", ""))).toEqual(
+      ["Copy Link", "WhatsApp", "Telegram", "Twitter", "Facebook", "Email"],
+    );
+    for (const item of items) {
+      expect(item.querySelector("a, button")).toBeNull();
+    }
+    const twitter = items.find((i) => i.textContent === "Twitter");
+    expect(twitter?.tagName).toBe("A");
+    expect(twitter?.getAttribute("href")).toContain("text=Tum%20Hi%20Ho");
+  });
+});

@@ -25,9 +25,9 @@ export function ArtistLinks(props: ArtistLinksProps) {
   const shown = artists.slice(0, MAX_CREDITS);
   const rest = artists.slice(MAX_CREDITS);
 
-  const renderLink = (artist: Credit, last: boolean) => (
+  const renderLink = (artist: Credit, last: boolean, index: number) => (
     <Link
-      key={artist.id}
+      key={`${artist.id}-${index}`}
       href={getHref(artist.perma_url, "artist")}
       className={cn("hover:text-foreground", linkClassName)}
     >
@@ -47,7 +47,7 @@ export function ArtistLinks(props: ArtistLinksProps) {
     >
       <span className="line-clamp-1 min-w-0">
         {shown.map((artist, index) =>
-          renderLink(artist, index === shown.length - 1),
+          renderLink(artist, index === shown.length - 1, index),
         )}
       </span>
       {rest.length > 0 && (
@@ -55,7 +55,7 @@ export function ArtistLinks(props: ArtistLinksProps) {
           <span className="shrink-0 whitespace-pre"> +{rest.length} more</span>
           <span className="sr-only focus-within:not-sr-only focus-within:shrink-0 focus-within:pl-1">
             {rest.map((artist, index) =>
-              renderLink(artist, index === rest.length - 1),
+              renderLink(artist, index === rest.length - 1, index),
             )}
           </span>
         </>
