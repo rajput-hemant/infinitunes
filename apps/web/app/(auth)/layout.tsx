@@ -49,7 +49,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           aria-label="Close"
           className={cn(
             controlStyles.headerIcon,
-            "absolute left-4 top-4 flex items-center justify-center text-muted-foreground outline-none hover:text-foreground",
+            "absolute left-4 top-4 flex items-center justify-center text-muted-foreground outline-hidden hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
           )}
         >
           <X className="size-4" />
