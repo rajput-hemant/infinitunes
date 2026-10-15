@@ -1,8 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import { toast } from "sonner";
+
+import { resetOptimisticState } from "~/lib/optimistic-owner";
 
 /**
  * The auth client (with the passkey plugin) is imported on click, so it stays
@@ -14,22 +15,23 @@ function loadAuthClient() {
 }
 
 /**
- * Signs the current user out, then sends them to /login with fresh server data.
+ * Signs the current user out, then loads home afresh (a soft /login would open the login modal over the page).
  * Better Auth resolves `{ error }` instead of rejecting, so a failed request is
  * turned into a rejection for the toast (and never redirects).
  */
 export function useSignOut() {
-  const router = useRouter();
-
   return useCallback(() => {
+    resetOptimisticState();
     toast.promise(
       loadAuthClient()
         .then(({ authClient }) =>
           authClient.signOut({
             fetchOptions: {
               onSuccess: () => {
-                router.replace("/login");
-                router.refresh();
+                // A full load: soft-refreshing from the signed-in tree left the
+                // login link prefetching a stale intercepted route (404s), and it
+                // drops every per-user client cache.
+                window.location.assign("/");
               },
             },
           }),
@@ -43,5 +45,5 @@ export function useSignOut() {
         error: "Something went wrong.",
       },
     );
-  }, [router]);
+  }, []);
 }

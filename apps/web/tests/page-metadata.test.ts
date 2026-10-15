@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
-import { pageMetadata } from "~/lib/metadata";
+import { siteConfig } from "~/config/site";
+import { noindexMetadata, pageMetadata } from "~/lib/metadata";
 import { ogImageUrl } from "~/lib/utils";
 
 function ogImage(meta: ReturnType<typeof pageMetadata>) {
@@ -20,12 +21,15 @@ describe("pageMetadata", () => {
         square: true,
       }),
     ).toEqual({
-      title: "Tom &amp; Jerry",
+      title: "Tom & Jerry",
       description: "Soundtrack",
+      alternates: {
+        canonical: `${new URL(siteConfig.url).origin}/album/tom/abc`,
+      },
       openGraph: {
-        title: "Tom &amp; Jerry",
+        title: "Tom & Jerry",
         description: "Soundtrack",
-        url: "/album/tom/abc",
+        url: `${new URL(siteConfig.url).origin}/album/tom/abc`,
         images: {
           url: ogImageUrl({
             title: "Tom &amp; Jerry",
@@ -33,10 +37,22 @@ describe("pageMetadata", () => {
             image,
             square: true,
           }),
-          alt: "Tom &amp; Jerry",
+          alt: "Tom & Jerry",
         },
       },
     });
+  });
+
+  test("sets an absolute canonical that matches og:url", () => {
+    const meta = pageMetadata({
+      title: "Song",
+      description: "d",
+      url: "/song/a/b",
+    });
+    const canonical = meta.alternates?.canonical;
+
+    expect(canonical).toBe(`${new URL(siteConfig.url).origin}/song/a/b`);
+    expect(meta.openGraph?.url).toBe(canonical);
   });
 
   test("percent-encodes ampersands so the image param is not truncated", () => {
@@ -65,5 +81,11 @@ describe("pageMetadata", () => {
       alt: "Homepage",
     });
     expect(ogImage(meta).alt).toBe("Homepage");
+  });
+});
+
+describe("noindexMetadata", () => {
+  test("asks crawlers not to index the page", () => {
+    expect(noindexMetadata.robots).toEqual({ index: false });
   });
 });

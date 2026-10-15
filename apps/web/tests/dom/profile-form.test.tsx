@@ -16,9 +16,16 @@ import {
 mock.module("server-only", () => ({}));
 
 const calls: string[] = [];
+const actionCalls: string[] = [];
 mock.module("../../lib/actions", () => ({
-  updateUser: async () => ({ ok: true, data: {} }),
-  changePassword: async () => ({ ok: true, data: {} }),
+  updateUser: async (input: { name: string }) => {
+    actionCalls.push(`updateUser ${input.name}`);
+    return { ok: true, data: {} };
+  },
+  changePassword: async (input: { password: string; newPassword: string }) => {
+    actionCalls.push(`changePassword ${input.password} ${input.newPassword}`);
+    return { ok: true, data: {} };
+  },
   deleteUser: async () => ({ ok: true, data: { id: "u1" } }),
 }));
 
@@ -138,6 +145,80 @@ describe("profile form accessibility", () => {
         HTMLInputElement,
       ).type,
     ).toBe("text");
+  });
+
+  it("saves the profile on its own, leaving the password form untouched", async () => {
+    const container = await mount();
+    actionCalls.length = 0;
+
+    const name = requireElement(
+      container,
+      "input[type=text]",
+      HTMLInputElement,
+    );
+    await act(async () => setInputValue(name, "Ada L"));
+    await act(async () => findButton(container, "Save profile").click());
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 20));
+    });
+
+    expect(actionCalls).toEqual(["updateUser Ada L"]);
+  });
+
+  it("blocks the profile save on an invalid name without a password error", async () => {
+    const container = await mount();
+    actionCalls.length = 0;
+
+    const name = requireElement(
+      container,
+      "input[type=text]",
+      HTMLInputElement,
+    );
+    await act(async () => setInputValue(name, ""));
+    await act(async () => findButton(container, "Save profile").click());
+
+    expect(actionCalls).toEqual([]);
+    expect(container.querySelectorAll("[data-invalid=true]").length).toBe(1);
+  });
+
+  it("asks for the new password before changing it", async () => {
+    const container = await mount();
+    actionCalls.length = 0;
+
+    await act(async () => findButton(container, "Update password").click());
+
+    expect(container.textContent).toContain("Enter a new password");
+    expect(actionCalls).toEqual([]);
+  });
+
+  it("asks for the current password, then changes the password only", async () => {
+    const container = await mount();
+    actionCalls.length = 0;
+    const fresh = requireElement(
+      container,
+      "input[autocomplete=new-password]",
+      HTMLInputElement,
+    );
+    const current = requireElement(
+      container,
+      "input[autocomplete=current-password]",
+      HTMLInputElement,
+    );
+
+    await act(async () => setInputValue(fresh, "Brand-new-pass1!"));
+    await act(async () => findButton(container, "Update password").click());
+    expect(container.textContent).toContain("Enter your current password");
+    expect(actionCalls).toEqual([]);
+
+    await act(async () => setInputValue(current, "Old-pass-123!"));
+    await act(async () => findButton(container, "Update password").click());
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 20));
+    });
+
+    expect(actionCalls).toEqual([
+      "changePassword Old-pass-123! Brand-new-pass1!",
+    ]);
   });
 
   it("leaves the signed-in page once the account is deleted", async () => {

@@ -30,7 +30,8 @@ import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 import { nameSchema } from "~/lib/validations";
 
-import { SettingsSection } from "./settings-section";
+import { SettingsCard } from "./settings-card";
+import { SettingsBlock } from "./settings-row";
 
 type ProfileFormProps = {
   user: {
@@ -71,10 +72,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
     password: `${uid}-new-password`,
   };
 
-  React.useEffect(() => {
-    setIsTyping(true);
-    return () => setIsTyping(false);
-  }, [setIsTyping]);
+  // The player's keyboard shortcuts pause while a field has focus, not for the whole page.
+  const typingProps = {
+    onFocus: () => setIsTyping(true),
+    onBlur: () => setIsTyping(false),
+  };
 
   const defaultValues: FormData = {
     name: user.name ?? "",
@@ -88,16 +90,8 @@ export function ProfileForm({ user }: ProfileFormProps) {
     defaultValues,
   });
 
-  async function onSubmit(formData: FormData) {
+  async function onSubmitProfile(formData: FormData) {
     const emailChanged = formData.email !== user.email;
-    const newPassword = formData.password;
-
-    if (newPassword && !formData.currentPassword) {
-      form.setError("currentPassword", {
-        message: "Enter your current password to change your password",
-      });
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -111,16 +105,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
           }),
         }),
       );
-      if (newPassword && formData.currentPassword) {
-        await unwrap(
-          changePassword({
-            password: formData.currentPassword,
-            newPassword,
-          }),
-        );
-      }
-      form.setValue("currentPassword", "");
-      form.setValue("password", "");
     }
 
     toast.promise(save(), {
@@ -131,212 +115,287 @@ export function ProfileForm({ user }: ProfileFormProps) {
     });
   }
 
+  async function onSubmitPassword(formData: FormData) {
+    if (!formData.password) {
+      form.setError("password", { message: "Enter a new password" });
+      return;
+    }
+    if (!formData.currentPassword) {
+      form.setError("currentPassword", {
+        message: "Enter your current password to change your password",
+      });
+      return;
+    }
+    const { currentPassword, password: newPassword } = formData;
+
+    setIsSubmitting(true);
+
+    async function save() {
+      await unwrap(changePassword({ password: currentPassword, newPassword }));
+      form.setValue("currentPassword", "");
+      form.setValue("password", "");
+    }
+
+    toast.promise(save(), {
+      loading: "Updating Password...",
+      success: "Password Updated!",
+      error: userMessage,
+      finally: () => setIsSubmitting(false),
+    });
+  }
+
+  // Two forms, one set of fields: each submit checks only its own inputs.
+  async function submitProfile(event: React.FormEvent) {
+    event.preventDefault();
+    if (await form.trigger(["name", "email"])) {
+      await onSubmitProfile(form.getValues());
+    }
+  }
+
+  async function submitPassword(event: React.FormEvent) {
+    event.preventDefault();
+    if (await form.trigger(["currentPassword", "password"])) {
+      await onSubmitPassword(form.getValues());
+    }
+  }
+
   const initial = (user.name || user.email || "?")
     .trim()
     .charAt(0)
     .toUpperCase();
 
   return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-10"
-    >
-      <SettingsSection
-        id="profile"
-        title="Account Settings"
-        description="This is how others will see you on the site."
-      >
-        <div className="grid items-start gap-8 md:grid-cols-[minmax(0,28rem)_auto]">
-          <div className="grid gap-5">
-            <Controller
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor={ids.name} className={labelClass}>
-                    Name
-                  </FieldLabel>
-                  <Input
-                    id={ids.name}
-                    type="text"
-                    aria-invalid={!!fieldState.error}
-                    disabled={isSubmitting}
-                    placeholder={user.name ?? "John Doe"}
-                    className={inputClass}
-                    {...field}
-                  />
-                  <FieldDescription>
-                    Your name will be displayed on the site.
-                  </FieldDescription>
-                  <FieldError errors={[fieldState.error]} />
-                </Field>
-              )}
-            />
+    <SettingsCard title="Profile and password">
+      <SettingsBlock keywords="edit profile name email avatar account">
+        <form
+          id="profile"
+          onSubmit={submitProfile}
+          aria-labelledby={`${uid}-profile-title`}
+          className="grid scroll-mt-36 gap-4 lg:scroll-mt-20"
+          {...typingProps}
+        >
+          <div className="space-y-0.5">
+            <h4 id={`${uid}-profile-title`} className="text-sm/5 font-semibold">
+              Profile
+            </h4>
+            <p className="text-xs/4 text-muted-foreground">
+              This is how others will see you on the site.
+            </p>
+          </div>
 
-            <Controller
-              control={form.control}
-              name="email"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor={ids.email} className={labelClass}>
-                    Email
-                  </FieldLabel>
-                  <Input
-                    id={ids.email}
-                    type="email"
-                    aria-invalid={!!fieldState.error}
-                    disabled={isSubmitting}
-                    placeholder={user.email ?? "you@example.com"}
-                    className={inputClass}
-                    {...field}
-                  />
-                  <FieldDescription>
-                    Your email will be used for account notifications.
-                  </FieldDescription>
-                  <FieldError errors={[fieldState.error]} />
-                </Field>
-              )}
-            />
-
-            <div>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className={primaryButtonClass}
+          <div className="grid items-start gap-5 md:grid-cols-[auto_minmax(0,1fr)] md:gap-8">
+            <div className="grid justify-items-center gap-3 md:w-32">
+              <div
+                aria-hidden
+                className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-linear-to-br from-primary to-[color-mix(in_srgb,var(--primary)_40%,black)] text-[1.75rem] leading-none font-bold text-primary-foreground shadow-lg md:size-28 md:text-[2.5rem]"
               >
-                Save Changes
+                {user.image ? (
+                  <Image
+                    src={user.image}
+                    alt=""
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  initial
+                )}
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() =>
+                  toast.info("Avatar uploads are not available yet.")
+                }
+                className={squareButtonClass}
+              >
+                Change avatar
               </Button>
             </div>
-          </div>
 
-          <div className="order-first grid justify-items-center gap-3 md:order-none">
-            <div
-              aria-hidden
-              className="relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-full bg-linear-to-br from-primary to-[color-mix(in_srgb,var(--primary)_40%,black)] text-[1.75rem] leading-none font-bold text-primary-foreground shadow-lg md:size-28 md:text-[2.5rem]"
-            >
-              {user.image ? (
-                <Image src={user.image} alt="" fill className="object-cover" />
-              ) : (
-                initial
-              )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Controller
+                control={form.control}
+                name="name"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor={ids.name} className={labelClass}>
+                      Name
+                    </FieldLabel>
+                    <Input
+                      id={ids.name}
+                      type="text"
+                      aria-invalid={!!fieldState.error}
+                      disabled={isSubmitting}
+                      placeholder={user.name ?? "John Doe"}
+                      className={inputClass}
+                      {...field}
+                    />
+                    <FieldDescription>
+                      Your name will be displayed on the site.
+                    </FieldDescription>
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
+                )}
+              />
+
+              <Controller
+                control={form.control}
+                name="email"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor={ids.email} className={labelClass}>
+                      Email
+                    </FieldLabel>
+                    <Input
+                      id={ids.email}
+                      type="email"
+                      aria-invalid={!!fieldState.error}
+                      disabled={isSubmitting}
+                      placeholder={user.email ?? "you@example.com"}
+                      className={inputClass}
+                      {...field}
+                    />
+                    <FieldDescription>
+                      Your email will be used for account notifications.
+                    </FieldDescription>
+                    <FieldError errors={[fieldState.error]} />
+                  </Field>
+                )}
+              />
             </div>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() =>
-                toast.info("Avatar uploads are not available yet.")
-              }
-              className={squareButtonClass}
-            >
-              Change avatar
-            </Button>
           </div>
-        </div>
-      </SettingsSection>
 
-      <SettingsSection
-        id="password"
-        title="Change Password"
-        description="Update the password you use to sign in."
-      >
-        <div className="grid max-w-md gap-5">
-          <Controller
-            control={form.control}
-            name="currentPassword"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error}>
-                <FieldLabel
-                  htmlFor={ids.currentPassword}
-                  className={labelClass}
-                >
-                  Current Password
-                </FieldLabel>
-                <Input
-                  id={ids.currentPassword}
-                  type="password"
-                  autoComplete="current-password"
-                  aria-invalid={!!fieldState.error}
-                  disabled={isSubmitting}
-                  placeholder="••••••••••"
-                  className={inputClass}
-                  {...field}
-                />
-                <FieldDescription>
-                  Required to change your password, and your email if you have a
-                  password. Passkey or OAuth only accounts can leave it blank if
-                  they signed in within the last 10 minutes.
-                </FieldDescription>
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
-
-          <Controller
-            control={form.control}
-            name="password"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor={ids.password} className={labelClass}>
-                  New Password
-                </FieldLabel>
-                <div className="relative w-full">
-                  <Input
-                    id={ids.password}
-                    type={isPassVisible ? "text" : "password"}
-                    aria-invalid={!!fieldState.error}
-                    disabled={isSubmitting}
-                    autoComplete="new-password"
-                    placeholder="••••••••••"
-                    className={cn(inputClass, "pr-12")}
-                    {...field}
-                  />
-                  <Tooltip>
-                    <TooltipTrigger
-                      delay={150}
-                      aria-label={
-                        isPassVisible ? "Hide Password" : "Show Password"
-                      }
-                      type="button"
-                      disabled={!field.value}
-                      onClick={() => setIsPassVisible((visible) => !visible)}
-                      className={cn(
-                        controlStyles.rowIcon,
-                        "absolute inset-y-0 right-0 my-auto flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-                      )}
-                    >
-                      {isPassVisible ? (
-                        <EyeOff aria-hidden className="size-4" />
-                      ) : (
-                        <Eye aria-hidden className="size-4" />
-                      )}
-                    </TooltipTrigger>
-
-                    <TooltipContent>
-                      <p className="text-xs">
-                        {isPassVisible ? "Hide Password" : "Show Password"}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
-                <FieldDescription>
-                  Enter your new password to change your password.
-                </FieldDescription>
-                <FieldError errors={[fieldState.error]} />
-              </Field>
-            )}
-          />
-
-          <div>
+          <div className="flex justify-end">
             <Button
               type="submit"
               disabled={isSubmitting}
               className={primaryButtonClass}
             >
-              Update Password
+              Save profile
             </Button>
           </div>
-        </div>
-      </SettingsSection>
-    </form>
+        </form>
+      </SettingsBlock>
+
+      <SettingsBlock keywords="change password current new sign in security">
+        <form
+          id="password"
+          onSubmit={submitPassword}
+          aria-labelledby={`${uid}-password-title`}
+          className="grid scroll-mt-36 gap-4 lg:scroll-mt-20"
+          {...typingProps}
+        >
+          <div className="space-y-0.5">
+            <h4
+              id={`${uid}-password-title`}
+              className="text-sm/5 font-semibold"
+            >
+              Password
+            </h4>
+            <p className="text-xs/4 text-muted-foreground">
+              Update the password you use to sign in.
+            </p>
+          </div>
+
+          <div className="grid items-start gap-4 sm:grid-cols-2">
+            <Controller
+              control={form.control}
+              name="currentPassword"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel
+                    htmlFor={ids.currentPassword}
+                    className={labelClass}
+                  >
+                    Current Password
+                  </FieldLabel>
+                  <Input
+                    id={ids.currentPassword}
+                    type="password"
+                    autoComplete="current-password"
+                    aria-invalid={!!fieldState.error}
+                    disabled={isSubmitting}
+                    placeholder="••••••••••"
+                    className={inputClass}
+                    {...field}
+                  />
+                  <FieldDescription>
+                    Required to change your password, and your email if you have
+                    a password. Passkey or OAuth only accounts can leave it
+                    blank if they signed in within the last 10 minutes.
+                  </FieldDescription>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="password"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor={ids.password} className={labelClass}>
+                    New Password
+                  </FieldLabel>
+                  <div className="relative w-full">
+                    <Input
+                      id={ids.password}
+                      type={isPassVisible ? "text" : "password"}
+                      aria-invalid={!!fieldState.error}
+                      disabled={isSubmitting}
+                      autoComplete="new-password"
+                      placeholder="••••••••••"
+                      className={cn(inputClass, "pr-12")}
+                      {...field}
+                    />
+                    <Tooltip>
+                      <TooltipTrigger
+                        delay={150}
+                        aria-label={
+                          isPassVisible ? "Hide Password" : "Show Password"
+                        }
+                        type="button"
+                        disabled={!field.value}
+                        onClick={() => setIsPassVisible((visible) => !visible)}
+                        className={cn(
+                          controlStyles.rowIcon,
+                          "absolute inset-y-0 right-0 my-auto flex items-center justify-center text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+                        )}
+                      >
+                        {isPassVisible ? (
+                          <EyeOff aria-hidden className="size-4" />
+                        ) : (
+                          <Eye aria-hidden className="size-4" />
+                        )}
+                      </TooltipTrigger>
+
+                      <TooltipContent>
+                        <p className="text-xs">
+                          {isPassVisible ? "Hide Password" : "Show Password"}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <FieldDescription>
+                    Enter your new password to change your password.
+                  </FieldDescription>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className={primaryButtonClass}
+            >
+              Update password
+            </Button>
+          </div>
+        </form>
+      </SettingsBlock>
+    </SettingsCard>
   );
 }

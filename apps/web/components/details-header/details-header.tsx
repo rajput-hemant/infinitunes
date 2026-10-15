@@ -35,7 +35,7 @@ import { MoreButton } from "./more-button";
 import { ShareButton } from "./share-button";
 
 const KIND_LABELS: Partial<Record<DetailsKind, string>> = {
-  season: "Podcast",
+  show: "Podcast",
   label: "Record label",
 };
 
@@ -99,18 +99,21 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
           )}
         </div>
 
-        <h1
-          title={title}
-          className="mt-1 mb-2 flex min-w-0 items-center justify-center font-heading text-[1.75rem] leading-8 font-extrabold tracking-[-0.03em] text-foreground md:justify-start md:text-4xl md:leading-10 lg:text-[2.75rem] lg:leading-12"
-        >
+        {/* The badge sits beside the heading, not in it, so the h1's name is just the title. */}
+        <div className="mt-1 mb-2 flex min-w-0 items-center justify-center md:justify-start">
           {getExplicit(item) && (
             <Badge className="mr-2 shrink-0 rounded px-1 py-0 font-bold">
               <span aria-hidden="true">E</span>
               <span className="sr-only">Explicit</span>
             </Badge>
           )}
-          <span className="min-w-0 break-words text-balance">{title}</span>
-        </h1>
+          <h1
+            title={title}
+            className="min-w-0 font-heading text-[1.75rem] leading-8 font-extrabold tracking-[-0.03em] text-foreground break-words text-balance md:text-4xl md:leading-10 lg:text-[2.75rem] lg:leading-12"
+          >
+            {title}
+          </h1>
+        </div>
 
         <DetailsMeta item={item} />
 

@@ -83,6 +83,7 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     setVolume,
     seek,
     isReady,
+    error: loadError,
   } = useAudioPlayerContext();
 
   // Howler captures `onend` when the song is loaded, so the handler has to stay
@@ -122,6 +123,24 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     );
   }, [setCurrentIndex]);
 
+  // Every bitrate of the entry failed: move on, unless it is the only one
+  // (skipping would land on the same entry and try again).
+  const onUnplayable = React.useCallback(() => {
+    const latest = playbackStateRef.current;
+    if (latest.queue.length < 2) return;
+    setCurrentIndex(
+      nextTrackIndex(
+        {
+          length: latest.queue.length,
+          currentIndex: latest.currentIndex,
+          shuffle: latest.isShuffle,
+          loopPlaylist: latest.loopPlaylist,
+        },
+        { reason: "skip" },
+      ),
+    );
+  }, [setCurrentIndex]);
+
   useTrackPlayback({
     queue,
     currentIndex,
@@ -130,6 +149,10 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     load,
     onEnd: onEndHandler,
     record: recordPlay,
+    loadError,
+    isLooping,
+    isReady,
+    onUnplayable,
   });
 
   const current = queue[currentIndex];

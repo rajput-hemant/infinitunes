@@ -17,6 +17,8 @@ import { Icons } from "./icons";
 type ShareOptionsProps = React.ComponentProps<"div"> & {
   isDropDownItem?: boolean;
   title?: string;
+  /** Site path of the thing being shared; defaults to the current page. */
+  path?: string;
 };
 
 type ShareIconProps = { className: string };
@@ -75,27 +77,15 @@ const itemStyles = cn(
 // A dropdown item already carries the menu's own focus and hover styles.
 const dropdownItemStyles = "w-full justify-start gap-3 text-left";
 
+/**
+ * Only the current state is in the DOM, so the control's accessible name and
+ * text are just "Copy Link" or "Link Copied". The pseudo-element holds the
+ * wider label's width, so the menu does not resize when the text swaps.
+ */
 function CopyLabel({ isCopied }: { isCopied: boolean }) {
   return (
-    <span className="grid">
-      <span
-        aria-hidden={isCopied}
-        className={cn(
-          "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
-          isCopied && "opacity-0",
-        )}
-      >
-        Copy Link
-      </span>
-      <span
-        aria-hidden={!isCopied}
-        className={cn(
-          "col-start-1 row-start-1 transition-opacity duration-120 motion-reduce:transition-none",
-          !isCopied && "opacity-0",
-        )}
-      >
-        Link Copied
-      </span>
+    <span className="flex flex-col after:invisible after:block after:h-0 after:overflow-hidden after:content-['Link_Copied']">
+      {isCopied ? "Link Copied" : "Copy Link"}
     </span>
   );
 }
@@ -141,23 +131,13 @@ function MenuItem({
     );
   }
 
-  const copyLabel = isCopied ? "Link Copied" : "Copy Link";
   return isDropDownItem ? (
-    <DropdownMenuItem
-      className={dropdownItemStyles}
-      onClick={copy}
-      aria-label={copyLabel}
-    >
+    <DropdownMenuItem className={dropdownItemStyles} onClick={copy}>
       <Clipboard className="size-4" />
       <CopyLabel isCopied={isCopied} />
     </DropdownMenuItem>
   ) : (
-    <button
-      type="button"
-      onClick={copy}
-      className={itemStyles}
-      aria-label={copyLabel}
-    >
+    <button type="button" onClick={copy} className={itemStyles}>
       <Clipboard className="size-4" />
       <CopyLabel isCopied={isCopied} />
     </button>
@@ -167,13 +147,15 @@ function MenuItem({
 export function ShareOptions({
   isDropDownItem,
   title = siteConfig.name,
+  path,
   ...props
 }: ShareOptionsProps) {
   const pathname = usePathname();
 
   const [isCopied, setIsCopied] = React.useState(false);
 
-  const url = `${siteConfig.url}${pathname}`;
+  // An unresolvable item link is "#": share the page rather than a dead anchor.
+  const url = `${siteConfig.url}${path?.startsWith("/") ? path : pathname}`;
 
   function copy() {
     navigator.clipboard.writeText(url);

@@ -21,11 +21,24 @@ const heightClassName: Record<RouteErrorProps["height"], string> = {
   content: "min-h-[calc(100dvh-14rem)]",
 };
 
+/**
+ * A server render failure reaches the browser with its message stripped (React
+ * production error #441); the real error is in the server log under the same
+ * digest, so log that instead of the redacted placeholder.
+ */
+export function logRouteError(error: Error & { digest?: string }) {
+  if (error.digest) {
+    console.error(`Route failed on the server (digest ${error.digest})`);
+  } else {
+    console.error(error);
+  }
+}
+
 export function RouteError(props: RouteErrorProps) {
   const { error, retry, height } = props;
 
   React.useEffect(() => {
-    console.error(error);
+    logRouteError(error);
   }, [error]);
 
   return (

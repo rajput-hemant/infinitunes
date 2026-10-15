@@ -153,7 +153,7 @@ function metaLines(item: DetailsItem): ReactNode {
       return <AlbumMeta album={item} />;
     case "playlist":
       return <PlaylistMeta playlist={item} />;
-    case "season":
+    case "show":
       return <p>{countLabel(item.more_info.fan_count, "Fans")}</p>;
     case "artist":
       return <p>{countLabel(item.fan_count, "Listeners")}</p>;

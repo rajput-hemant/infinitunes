@@ -5,6 +5,7 @@ import { TriangleAlert } from "lucide-react";
 import React from "react";
 
 import { LibraryState } from "~/components/library/library-section";
+import { logRouteError } from "~/components/route-error";
 import { controlStyles } from "~/lib/control-styles";
 
 type ErrorProps = {
@@ -14,7 +15,7 @@ type ErrorProps = {
 
 export default function LibraryError({ error, retry }: ErrorProps) {
   React.useEffect(() => {
-    console.error(error);
+    logRouteError(error);
   }, [error]);
 
   return (

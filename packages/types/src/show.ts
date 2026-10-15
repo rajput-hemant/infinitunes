@@ -19,7 +19,7 @@ export type ShowDetails = {
   title: string;
   subtitle: string;
   header_desc: string;
-  type: "season";
+  type: "show";
   perma_url: string;
   image: string;
   language: string;

@@ -78,6 +78,18 @@ describe("secondary lists return [] instead of throwing NOT_FOUND", () => {
   });
 });
 
+describe("no lyrics and no search match answer null instead of NOT_FOUND", () => {
+  it("get.lyrics", async () => {
+    responses = { "lyrics.getLyrics": {} };
+    expect(await caller.get.lyrics({ id: uniq() })).toBeNull();
+  });
+
+  it("search.all", async () => {
+    responses = { "autocomplete.get": {} };
+    expect(await caller.search.all({ q: uniq() })).toBeNull();
+  });
+});
+
 describe("missing primary entities still throw NOT_FOUND", () => {
   it("album.details", async () => {
     responses = { "webapi.get": {}, "content.getAlbumDetails": {} };

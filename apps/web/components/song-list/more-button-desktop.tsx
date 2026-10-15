@@ -16,6 +16,7 @@ import { ShareSubMenu } from "../share-submenu";
 import {
   getItemAlbumUrl,
   getItemArtists,
+  getItemSharePath,
   getItemUrl,
   type TileMoreEntry,
 } from "./more-button-item";
@@ -35,7 +36,7 @@ export function TileMoreDesktop(props: TileMoreDesktopProps) {
     <div className="hidden md:block">
       <DropdownMenu>
         <DropdownMenuTrigger
-          aria-label="More Options"
+          aria-label="More options"
           className={cn(
             controlStyles.rowIcon,
             "inline-flex items-center justify-center outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
@@ -61,7 +62,10 @@ export function TileMoreDesktop(props: TileMoreDesktopProps) {
               </span>
             </DropdownMenuItem>
           ))}
-          <ShareSubMenu title={getItemName(item)} />
+          <ShareSubMenu
+            title={getItemName(item)}
+            path={getItemSharePath(item)}
+          />
           <DropdownMenuSeparator className="my-2" />
           <TileMoreLinks
             type={item.type}

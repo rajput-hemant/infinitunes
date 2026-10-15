@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { SearchX } from "lucide-react";
 import Link from "next/link";
 
@@ -20,15 +19,6 @@ type AllResultsProps = {
   query: string;
 };
 
-async function fetchAllSearch(query: string) {
-  try {
-    return await api.search.all({ q: query });
-  } catch (error) {
-    if (error instanceof TRPCError && error.code === "NOT_FOUND") return null;
-    throw error;
-  }
-}
-
 const SHELVES = [
   { key: "albums", title: "Albums" },
   { key: "artists", title: "Artists" },
@@ -49,7 +39,7 @@ function toShelfItem(item: SearchItem) {
 }
 
 export async function AllResults({ query }: AllResultsProps) {
-  const data = await fetchAllSearch(query);
+  const data = await api.search.all({ q: query });
   const songs = data ? getSearchItems(data.songs) : [];
   const top =
     data &&

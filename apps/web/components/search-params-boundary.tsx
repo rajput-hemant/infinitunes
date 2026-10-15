@@ -1,8 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import type { ReactNode } from "react";
+
+import { clearPendingParam, usePendingParams } from "~/lib/pending-params";
 
 type RenderWithParams = (params: URLSearchParams | null) => ReactNode;
 
@@ -35,6 +37,30 @@ type KeyedByParamsProps = {
 function KeyedContent({ params, fallback, children }: KeyedByParamsProps) {
   const search = useSearchParams();
   const key = params.map((name) => search.get(name) ?? "").join("|");
+  const pending = usePendingParams();
+  const requested = params.filter((name) => pending.has(name));
+  // A chip was clicked and the URL has not followed yet: show the skeleton now.
+  const waiting = requested.some(
+    (name) => pending.get(name) !== (search.get(name) ?? ""),
+  );
+
+  // Leaving the page drops anything still pending for it.
+  const names = params.join("|");
+  useEffect(
+    () => () => {
+      for (const name of names.split("|")) clearPendingParam(name);
+    },
+    [names],
+  );
+
+  useEffect(() => {
+    for (const name of requested) {
+      if (pending.get(name) === (search.get(name) ?? ""))
+        clearPendingParam(name);
+    }
+  }, [requested, pending, search]);
+
+  if (waiting) return fallback;
 
   // A new key is a new boundary, so React shows `fallback` at once instead of
   // holding the previous list on screen (and the old URL) until the data lands.

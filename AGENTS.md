@@ -68,8 +68,17 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     live in a `search/(results)` group whose layout keeps the title and type chips.
     Old `<name>-songs` artist URLs (and JioSaavn's own links) are 308-redirected in
     `proxy.ts`; `getHref` already links the tab routes.
+  - `/settings` is one page (sections Account, Appearance, Playback, Security; the old
+    `/settings/appearance` and `/settings/preferences` 308 to `#appearance` / `#playback`
+    from `next.config.ts`, list in `lib/legacy-redirects.ts`). Its shell, rail, search and
+    appearance cards prerender; account, playback and security stream in behind skeletons
+    (`settings-skeletons.tsx`), so it has no `loading.tsx`. The search works through
+    `SettingsRow`/`SettingsBlock` (`data-settings-row`, hidden by `useSettingsMatch`) and
+    CSS `:has()` on cards and sections; give every new control a `SettingsRow` with keywords.
+    The profile form and passkey UI are `next/dynamic` (`account-lazy.tsx`) to stay out of
+    first-load JS.
   - Entity pages (album, playlist, song, show, label, episode, mix, radio detail,
-    `/me/*` pages, settings) are whole-page data: they keep a route `loading.tsx`
+    `/me/*` pages) are whole-page data: they keep a route `loading.tsx`
     with a skeleton that mirrors the page, and Suspense only for secondary lists.
     Catalog list pages put the heading in the shell and the fetched grid in
     `Suspense`; they have no `loading.tsx`.
@@ -160,11 +169,10 @@ that are easy to get wrong again:
 - Entities embedded in an `artistMap`/`similarArtists` list (`ArtistMini`,
   `SimilarArtist`) use `name`, not `title`, like `Artist`/`Label` themselves -
   only song/album/playlist/show/episode top-level objects use `title`.
-- `ShowDetails.type` is the literal `"season"`, not `"show"` - the show detail
-  page's own UI/routing concept of "this is a show" has to be derived
-  separately (see `apps/web/components/details-header/details-header.tsx`'s
-  `getKind`/`getId` handling of `Label` and `Artist`, which also lack a plain
-  `id`/`type` field and use `labelId`/`artistId` instead).
+- `ShowDetails.type` is `"show"` (verified live), not `"season"`; its episodes are keyed
+  by the numeric `id` plus `more_info.season_number`, never the perma token
+  (`isShowDetails` in `apps/web/components/details-header/details-header-items.ts`).
+  Artist and Label also lack a plain `id`/`type` (`artistId`/`labelId`), see `getKind`/`getId`.
 - `Quality` (image/download URLs) is a plain templated string, never the
   `{quality,link}[]` array shape some earlier normalized types assumed.
 - `TopShows.trendingPodcasts` is an array of `{items, module}` groups, not a
@@ -242,6 +250,10 @@ bug is appending to them instead of substituting:
   src (leaving `_sounds` undefined) and react-use-audio-player's `getSnapshotFromHowl`
   then throws `Cannot read properties of undefined (reading 'length')` inside the
   play effect. Guard on a falsy `audioSrc` and `toast` instead of calling `load()`.
+- The CDN 404s a `_320` link for songs flagged `more_info["320kbps"] === "false"`.
+  `getDownloadCandidates`/`maxQualityOf` (`packages/types/src/media.ts`) cap the
+  request, and `use-track-playback.ts` steps down a bitrate on each Howl load error
+  (then toasts once and skips). Never pick a link by raw index.
 - Images embed a resolution token with _either_ separator: `-500x500.jpg` for
   song/album/playlist artwork, `_150x150.jpg` for artist and some CDN paths.
   Resizing regexes must accept both (`getImageSrc`/`withSize` in
@@ -276,6 +288,33 @@ and the toolbar's `page-gutter` (`styles/globals.css`) place the page box with
 beside the open panels it is centred in the viewport and neither the sidebar nor the queue moves it (or the
 anchored player bar); when it does not fit the clamp collapses to the classic push. Never reintroduce a
 margin or width on the column for a panel, and keep the sidebar gap in flow (its live width is what `Cf` reads).
+
+## Optimistic writes
+
+A click must change the UI in the same frame; the server write follows and a failure rolls back with a toast.
+Never hang UI state on the action's round trip, and never let only the clicked control change.
+
+- Shared client overlays own the state, layered over server props: likes in `lib/optimistic-favorite.ts`
+  (`useFavoriteToggle` in `lib/use-favorite-toggle.ts`; hearts, tile menu and player share one key), playlists in
+  `lib/optimistic-playlists.ts` (`usePlaylists` for the sidebar and add dialog, `PlaylistTitle`, `PlaylistGate`,
+  `PlaylistRow`, `PendingPlaylistCards`), `?lang=` chips in `lib/pending-params.ts`. Use these for new write paths
+  instead of a per-component `useOptimistic`, which cannot update other components.
+- One write per key in flight, always the latest intent (rapid clicks never double toggle); songs of one playlist
+  are written one at a time and removal indexes are adjusted for earlier removals.
+- An overlay record is dropped when refreshed server props agree, on failure, or after a timeout. Do not clear it
+  on action success: `refresh()` props arrive a moment later and the control would flicker back.
+- Creating a playlist cannot be fully optimistic (the id is minted by the database): it shows a dimmed `pending`
+  row with no link and takes the real id on return. Sign out, profile and password saves, and radio/queue
+  fetches stay pending-style (toast) because the server or upstream decides the outcome.
+
+## Proxy limiter scope
+
+`proxy.ts` matches pages, `/api/trpc`, `/api/auth` and `/api/og` only (`PROXY_MATCHER` in
+`lib/rate-limit-scope.ts`; the literal in `config.matcher` must equal it, a test checks). `limiterKinds`
+charges documents, server actions and `/api` requests; RSC navigations/prefetches (`rsc` header) and
+subresources (`sec-fetch-dest` other than document/iframe) are never counted, so browsing cannot 429.
+`/api/og` has its own 20/min bucket on top of the global one. Do not add CSP enforcement or a limiter
+for static files here.
 
 ## Maintaining this file
 
@@ -332,6 +371,11 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
 - `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
   (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
   by both `apps/web` and `packages/trpc`; don't hand-roll another copy).
+- SEO origin: canonical, `og:url`, `metadataBase`, robots and sitemap URLs all come from
+  `siteUrl()` (`apps/web/lib/site-url.ts`, `NEXT_PUBLIC_APP_URL` with the production default).
+  Route metadata goes through `pageMetadata` (`lib/metadata.ts`, which sets the canonical); user,
+  settings and auth routes export `noindexMetadata`. `app/robots.ts` owns robots.txt: never add
+  `public/robots.txt`, a static file is served instead of the route.
 - Test layout: `apps/web/tests/` (plain), `apps/web/tests/mocked/` (process-isolated
   `mock.module` suites), `apps/web/tests/dom/` (happy-dom behavior tests).
   Skill/feature docs in `.agents/skills/verify/` and `.agents/skills/verify/features/` cite these.

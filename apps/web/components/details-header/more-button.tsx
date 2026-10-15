@@ -52,6 +52,7 @@ import { unwrap } from "~/lib/action-result";
 import { addSongsToPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
+import { addSongsOptimistic } from "~/lib/optimistic-playlists";
 import { api } from "~/lib/trpc/client";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
@@ -206,18 +207,17 @@ export function MoreButton(props: MoreButtonProps) {
   }
 
   function addToPlaylist(playlistId: string, playlistName: string) {
+    // The dialog closes and the playlist's count rises now; a failure rolls both back.
+    const songIds = songs.map((song) => song.id);
+    setDialogOpen(false);
     toast.promise(
-      unwrap(
-        addSongsToPlaylist(
-          playlistId,
-          songs.map((song) => song.id),
-        ),
+      addSongsOptimistic(playlistId, songIds, () =>
+        unwrap(addSongsToPlaylist(playlistId, songIds)),
       ),
       {
         loading: "Adding songs to playlist...",
         success: `${songs.length} song${songs.length === 1 ? "" : "s"} added to "${playlistName}" playlist`,
         error: userMessage,
-        finally: () => setDialogOpen(false),
       },
     );
   }

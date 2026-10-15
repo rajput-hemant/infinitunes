@@ -1,6 +1,13 @@
-import { parseArtistBio } from "@infinitunes/types";
+import { getImageSrc, parseArtistBio } from "@infinitunes/types";
+import type { Metadata } from "next";
 import { cache } from "react";
 
+import {
+  artistPath,
+  splitArtistSlug,
+  type ArtistTab,
+} from "~/lib/artist-route";
+import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";
 
@@ -17,4 +24,34 @@ export type ArtistDetails = Awaited<ReturnType<typeof getArtist>>;
 
 export function artistBio(artist: ArtistDetails) {
   return parseArtistBio(artist.bio);
+}
+
+type SubTab = Exclude<ArtistTab, "overview">;
+
+const TAB_TITLES = { songs: "Songs", albums: "Albums" } as const;
+
+/**
+ * Metadata for a tab route. Each tab is its own canonical page (it overrides
+ * the layout's Overview canonical) and gets its own title, so the tabs no
+ * longer share the artist's name and listener count.
+ */
+export function artistTabMetadata(
+  artist: ArtistDetails,
+  name: string,
+  token: string,
+  tab: SubTab,
+): Metadata {
+  const artistName = artist.name;
+  const title =
+    tab === "bio"
+      ? `Biography of ${artistName}`
+      : `${TAB_TITLES[tab]} by ${artistName}`;
+
+  return pageMetadata({
+    title,
+    description: `${title} on Infinitunes.`,
+    url: artistPath(splitArtistSlug(name).name, token, tab),
+    image: getImageSrc(artist.image, "high"),
+    square: true,
+  });
 }

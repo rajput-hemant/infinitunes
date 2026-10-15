@@ -7,6 +7,7 @@ import Link from "next/link";
 import { GlassSurface } from "~/components/glass/glass-surface";
 import { ImageCollage } from "~/components/image-collage";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
+import { PlaylistCaption } from "~/components/playlist/playlist-overlay";
 import { api } from "~/lib/trpc/server";
 import { asRoute } from "~/lib/utils";
 
@@ -59,14 +60,12 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
         <Skeleton className="absolute inset-0 -z-10 size-full" />
       </div>
 
-      <div className="mt-2 min-w-0">
-        <h3 className="truncate font-semibold">{name}</h3>
-
-        <span className="block truncate text-muted-foreground">
-          {description ||
-            `${songs.length} ${songs.length === 1 ? "song" : "songs"}`}
-        </span>
-      </div>
+      <PlaylistCaption
+        id={id}
+        name={name}
+        description={description}
+        songCount={songs.length}
+      />
     </div>
   );
 }

@@ -19,3 +19,14 @@ const PLACEHOLDERS = {
 export function getPlaceholderSrc(type: MediaType) {
   return `/images/placeholder/${PLACEHOLDERS[type]}.jpg`;
 }
+
+/**
+ * JioSaavn's own "no artwork" images (`/_i/3.0/artist-default-film.png`). The
+ * CDN answers them with a document the browser's ORB blocks, so they never
+ * render; the app's own placeholder stands in without requesting them.
+ */
+export function isUpstreamPlaceholder(src: unknown): boolean {
+  return (
+    typeof src === "string" && /\/_i\/3\.0\/[\w-]*default[\w-]*\.png/i.test(src)
+  );
+}

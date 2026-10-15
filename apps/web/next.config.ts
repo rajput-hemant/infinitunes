@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 // This is validation for the environment variables early in the build process.
 import "./lib/env";
 import { IMAGE_CDN_HOSTS } from "./lib/image-hosts";
+import { legacySettingsRedirects } from "./lib/legacy-redirects";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -56,6 +57,9 @@ const config: NextConfig = {
         hostname,
       })),
     ],
+  },
+  async redirects() {
+    return legacySettingsRedirects;
   },
   async headers() {
     return [

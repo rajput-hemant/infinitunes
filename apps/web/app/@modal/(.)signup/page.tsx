@@ -1,8 +1,10 @@
 import { SignUpForm } from "~/app/(auth)/_components/signup-form";
+import { noindexMetadata } from "~/lib/metadata";
 
 import { AuthModal } from "../auth-modal";
 
 export const metadata = {
+  ...noindexMetadata,
   title: "Sign Up",
   description: "Create a new account",
 };
