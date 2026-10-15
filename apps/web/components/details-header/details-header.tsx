@@ -27,6 +27,7 @@ import {
   getTitle,
   getVerified,
   isKind,
+  isShowDetails,
 } from "./details-header-items";
 import { DetailsMeta } from "./details-header-meta";
 import { MoreButton } from "./more-button";
@@ -38,7 +39,7 @@ const KIND_LABELS: Partial<Record<DetailsKind, string>> = {
 };
 
 function getPlayToken(item: DetailsItem): string {
-  if (isKind(item, "season")) return getId(item);
+  if (isShowDetails(item)) return getId(item);
   if (isKind(item, "artist")) return parseToken(item.urls.songs);
   return parseToken("perma_url" in item ? item.perma_url : "");
 }
@@ -54,8 +55,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   const { user, playlists, favorites } = await getViewer();
 
-  const playType = kind === "season" ? "show" : kind;
-  const playSeason = isKind(item, "season")
+  const playType = isShowDetails(item) ? "show" : kind;
+  const playSeason = isShowDetails(item)
     ? Number(item.more_info.season_number)
     : undefined;
   const playToken = getPlayToken(item);

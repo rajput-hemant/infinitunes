@@ -20,6 +20,13 @@ export type SpringOptions = {
 /** Longest step integrated at once, so a stalled tab does not explode the spring. */
 const MAX_STEP_S = 0.032;
 
+/**
+ * Longest sub-step the integrator takes. Semi-implicit Euler diverges once
+ * `damping coefficient * dt` passes 2 (a 0.2s response at the 32ms frame cap is
+ * already 2.01), so a slow frame is split instead of integrated in one go.
+ */
+const MAX_SUBSTEP_S = 1 / 240;
+
 export function springStep(
   state: SpringState,
   target: number,
@@ -29,8 +36,14 @@ export function springStep(
 ): SpringState {
   const k = ((2 * Math.PI) / response) ** 2;
   const c = (4 * Math.PI * damping) / response;
-  const v = state.v + (-k * (state.x - target) - c * state.v) * dt;
-  return { x: state.x + v * dt, v };
+  const steps = Math.max(1, Math.ceil(dt / MAX_SUBSTEP_S));
+  const h = Math.max(0, dt) / steps;
+  let { x, v } = state;
+  for (let i = 0; i < steps; i++) {
+    v += (-k * (x - target) - c * v) * h;
+    x += v * h;
+  }
+  return { x, v };
 }
 
 export function springSettled(state: SpringState, target: number): boolean {
