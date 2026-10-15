@@ -116,11 +116,11 @@ describe("details header toolbar signal", () => {
     );
   });
 
-  it("marks the toolbar over-art while the band is mounted and clears it on unmount", async () => {
+  it("never marks the toolbar over-art, so its capsules stay regular, and cleans up on unmount", async () => {
     const toolbar = addToolbar(false);
     const { root } = await mount("Tum Hi Ho");
 
-    expect(toolbar.hasAttribute("data-glass-over-art")).toBe(true);
+    expect(toolbar.hasAttribute("data-glass-over-art")).toBe(false);
 
     await act(async () => root.unmount());
     roots.splice(roots.indexOf(root), 1);

@@ -23,7 +23,7 @@ import type { User } from "~/lib/auth";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
 import { createPositionStore } from "~/lib/position-store";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 import { cn } from "~/lib/utils";
 
 import { ExpandedPlayer } from "./expanded-player";
@@ -62,8 +62,6 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
   const pane = useQueuePane();
-
-  const utils = api.useUtils();
 
   // third party hooks
   const {
@@ -164,15 +162,11 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     frozen: isDragging,
   });
 
+  // Uncached on purpose: every refill must hit upstream for fresh songs.
   const fetchRadioSongs = React.useCallback(
     (stationId: string) =>
-      utils.radio.songs.fetch(
-        { stationId, k: 10, next: 1 },
-        // The app-wide staleTime is Infinity, which would hand back the first
-        // batch forever; every refill must hit upstream for fresh songs.
-        { staleTime: 0 },
-      ),
-    [utils],
+      trpc.radio.songs.query({ stationId, k: 10, next: 1 }),
+    [],
   );
 
   useRadioRefill({
@@ -331,7 +325,7 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
         className={cn(
           // `--pl-r` is the concentric radius the artwork derives from: the
           // bar is r-lg + 4px, the phone pill is fully round.
-          "@container fixed right-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 z-40 h-14 [--pl-r:999px] rounded-(--pl-r) transition-[left,right] duration-base ease-spring md:bottom-3 md:left-21 md:h-18 md:[--pl-r:calc(var(--radius-lg)+0.25rem)] lg:left-[calc(var(--side-w)+0.75rem)]",
+          "@container fixed right-3 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] left-3 z-40 h-14 [--pl-r:999px] rounded-(--pl-r) transition-[left,right] duration-panel ease-panel md:bottom-3 md:left-21 md:h-18 md:[--pl-r:calc(var(--radius-lg)+0.25rem)] lg:left-[calc(var(--side-w)+0.75rem)]",
           "min-[1440px]:in-data-[queue=open]:right-[calc(var(--queue-w)+0.75rem)]",
           !(isReady || queue.length) && "hidden md:block",
         )}

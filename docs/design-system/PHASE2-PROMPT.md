@@ -44,19 +44,19 @@ The note must state: the three layers (lens, highlight, shadow/illumination), Re
 
 Claude Code Desktop only offers Claude models. Use the cheapest model that can do the job. Haiku does mechanical, well specified restyling and cleanup. Sonnet does design-sensitive and cross-file work. Opus is only an advisor, never an executor, unless a Sonnet agent fails twice. Give every executor an advisor through the native Advisor tool, and tell it to call the advisor before committing to an approach on consequential choices and before declaring done. Pairs: Haiku executor with Sonnet advisor; Sonnet executor with Opus advisor. Never use Haiku for a review.
 
-| WP | Scope | Executor | Advisor | Depends on |
-|----|-------|----------|---------|------------|
-| 0 | Research note and glass gap table | Sonnet | Opus | none |
-| 1 | Merge `origin/migration/bun-monorepo` into `task/ui-mockups`, resolve the layout conflict | Sonnet | Opus | none |
-| 2 | Glass engine parity with the mockup, mount `GlassFilters`, ambient layer | Sonnet | Opus | 0, 1 |
-| 3 | Apply glass to the shell: sidebar, rail, toolbar, phone tab bar | Haiku | Sonnet | 2 |
-| 4 | Apply glass to the player: bar, pill, expanded view, docked and floating queue | Sonnet | Opus | 2 |
-| 5 | Apply glass to overlays: every menu, popover, dropdown, dialog, sheet, select, tooltip, toast, command palette | Haiku | Sonnet | 2 |
-| 6 | Settings: wire `LiquidGlassSettings` tuning and the live preview to the real `GlassSurface` | Haiku | Sonnet | 2 |
-| 7 | Deferred mockup gaps (section 1, item 5) | Haiku | Sonnet | 3, 4 |
-| 8a-8f | Code quality sweeps, one per area (section 5) | Haiku | Sonnet | after the area's glass work |
-| 9 | Visual QA against the mockup and fix list | Sonnet | Opus | all above |
-| 10 | Independent review of the final diff, three parts | Sonnet (fresh session per part) | none | 9 |
+| WP    | Scope                                                                                                          | Executor                        | Advisor | Depends on                  |
+| ----- | -------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------- | --------------------------- |
+| 0     | Research note and glass gap table                                                                              | Sonnet                          | Opus    | none                        |
+| 1     | Merge `origin/migration/bun-monorepo` into `task/ui-mockups`, resolve the layout conflict                      | Sonnet                          | Opus    | none                        |
+| 2     | Glass engine parity with the mockup, mount `GlassFilters`, ambient layer                                       | Sonnet                          | Opus    | 0, 1                        |
+| 3     | Apply glass to the shell: sidebar, rail, toolbar, phone tab bar                                                | Haiku                           | Sonnet  | 2                           |
+| 4     | Apply glass to the player: bar, pill, expanded view, docked and floating queue                                 | Sonnet                          | Opus    | 2                           |
+| 5     | Apply glass to overlays: every menu, popover, dropdown, dialog, sheet, select, tooltip, toast, command palette | Haiku                           | Sonnet  | 2                           |
+| 6     | Settings: wire `LiquidGlassSettings` tuning and the live preview to the real `GlassSurface`                    | Haiku                           | Sonnet  | 2                           |
+| 7     | Deferred mockup gaps (section 1, item 5)                                                                       | Haiku                           | Sonnet  | 3, 4                        |
+| 8a-8f | Code quality sweeps, one per area (section 5)                                                                  | Haiku                           | Sonnet  | after the area's glass work |
+| 9     | Visual QA against the mockup and fix list                                                                      | Sonnet                          | Opus    | all above                   |
+| 10    | Independent review of the final diff, three parts                                                              | Sonnet (fresh session per part) | none    | 9                           |
 
 Run WP0 and WP1 in parallel. Run WP3 to WP6 in parallel after WP2 merges. Create one git worktree per subagent from the current head of `task/ui-mockups`, named `ds2-<wp>` on branch `task/ds2-<wp>`. Merge sequentially with `git merge --no-ff`, run the gates after each merge, then delete the merged branch and worktree immediately. Never force push. Do not push anything except `task/ui-mockups` unless told to.
 

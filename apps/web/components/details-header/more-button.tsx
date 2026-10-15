@@ -1,8 +1,13 @@
 "use client";
 
 import type { MyPlaylist } from "@infinitunes/db/schema";
-import type { Quality, Queue, Song, MediaType } from "@infinitunes/types";
-import { getImageSrc, toQueue } from "@infinitunes/types";
+import type {
+  MediaType,
+  Quality,
+  Queue,
+  SongRowItem,
+} from "@infinitunes/types";
+import { getImageSrc, toQueue, toQueueEntry } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -53,7 +58,7 @@ import { addSongsToPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 import { addSongsOptimistic } from "~/lib/optimistic-playlists";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
@@ -67,7 +72,7 @@ type MoreButtonProps = {
   image: Quality;
   name: string;
   subtitle: string;
-  songs: Song[];
+  songs: SongRowItem[];
   playlists?: MyPlaylist[];
   artistId?: string;
   language?: string;
@@ -86,7 +91,7 @@ type RadioSeed = {
   type: MediaType;
   name: string;
   artistId?: string;
-  songs: Song[];
+  songs: SongRowItem[];
   language?: string;
 };
 
@@ -97,7 +102,7 @@ type RadioSeed = {
  */
 async function startSeedRadio(seed: RadioSeed, radio: RadioStart) {
   const { type, name, artistId: initialArtistId, songs, language } = seed;
-  const { utils, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
+  const { client, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
     radio;
 
   try {
@@ -109,7 +114,7 @@ async function startSeedRadio(seed: RadioSeed, radio: RadioStart) {
     if (type === "artist") {
       radioType = "artist";
     } else {
-      const primary = songs[0]?.more_info.artistMap?.primary_artists?.[0];
+      const primary = songs[0]?.primaryArtists[0];
       if (primary) {
         stationName = primary.name;
         artistId = primary.id;
@@ -119,14 +124,14 @@ async function startSeedRadio(seed: RadioSeed, radio: RadioStart) {
 
     const stationLanguage = language || songs[0]?.language;
 
-    const { stationId } = await utils.client.radio.createStation.mutate({
+    const { stationId } = await client.radio.createStation.mutate({
       type: radioType,
       name: stationName,
       artistId,
       language: stationLanguage,
     });
 
-    const radioSongs = await utils.radio.songs.fetch({
+    const radioSongs = await client.radio.songs.query({
       stationId,
       k: 20,
     });
@@ -181,11 +186,10 @@ export function MoreButton(props: MoreButtonProps) {
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [, setActiveRadio] = useActiveRadioSession();
 
-  const utils = api.useUtils();
   const { isDownloading, download } = useDownloadSongs(songs);
 
   function addToQueue() {
-    const songsPayload: Queue[] = songs.map((song) => toQueue(song));
+    const songsPayload: Queue[] = songs.map(toQueueEntry);
 
     setQueue((prev) => [...prev, ...songsPayload]);
 
@@ -232,7 +236,7 @@ export function MoreButton(props: MoreButtonProps) {
         language,
       },
       {
-        utils,
+        client: trpc,
         setQueue,
         setCurrentIndex,
         setIsPlayerInit,

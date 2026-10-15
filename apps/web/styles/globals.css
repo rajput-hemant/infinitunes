@@ -23,9 +23,13 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 /* Constants, always emitted so plain CSS can read them. */
 @theme static {
   --ease-spring: cubic-bezier(0.2, 0.9, 0.25, 1);
+  /* Panels (sidebar, queue) and the page morph. Eases in a little before it settles, so the middle of the
+     move is visible; --ease-drawer and --ease-spring are 80% done in the first quarter and read as a jump. */
+  --ease-panel: cubic-bezier(0.35, 0.05, 0.2, 1);
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 400ms;
+  --duration-panel: 340ms;
 }
 
 @theme inline {
@@ -145,6 +149,10 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 
 @utility duration-slow {
   transition-duration: var(--duration-slow);
+}
+
+@utility duration-panel {
+  transition-duration: var(--duration-panel);
 }
 
 /*
@@ -316,11 +324,18 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   }
 }
 
+/*
+ * Reduced motion (the OS setting or the in-app switch) removes movement, not feedback. Anything that moves or
+ * scales (transforms, widths, keyframes) is instant; opacity, colour and visibility still ease over a short
+ * fade, so a page change, a panel or a menu is still announced gently (WCAG 2.3.3). Never set a duration to
+ * zero for a whole class of elements: that is what made every panel and view transition vanish.
+ */
 @media (prefers-reduced-motion: reduce) {
   :root {
-    --duration-fast: 0.01ms;
-    --duration-base: 0.01ms;
-    --duration-slow: 0.01ms;
+    --duration-fast: 120ms;
+    --duration-base: 160ms;
+    --duration-slow: 200ms;
+    --duration-panel: 200ms;
   }
 
   *,
@@ -328,8 +343,31 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
   ::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-property:
+      opacity, color, background-color, border-color, outline-color,
+      text-decoration-color, fill, stroke, box-shadow, visibility !important;
+    transition-duration: var(--duration-base) !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Menus, dialogs and popovers fade in place (tw-animate's zoom and slide offsets are zeroed). */
+  :is(
+    [data-slot="popover-content"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="dialog-overlay"],
+    [data-slot="alert-dialog-overlay"],
+    [data-slot="tooltip-content"]
+  ):is([data-open], [data-closed]) {
+    --tw-enter-scale: 1;
+    --tw-enter-translate-x: 0;
+    --tw-enter-translate-y: 0;
+    --tw-exit-scale: 1;
+    --tw-exit-translate-x: 0;
+    --tw-exit-translate-y: 0;
+    animation-duration: var(--duration-base) !important;
   }
 
   /* Spinners convey "busy" state, so they keep turning. */
@@ -341,9 +379,10 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 
 /* The in-app Reduce motion switch behaves like the OS setting. */
 [data-motion="reduced"] {
-  --duration-fast: 0.01ms;
-  --duration-base: 0.01ms;
-  --duration-slow: 0.01ms;
+  --duration-fast: 120ms;
+  --duration-base: 160ms;
+  --duration-slow: 200ms;
+  --duration-panel: 200ms;
 }
 
 [data-motion="reduced"] *,
@@ -351,8 +390,31 @@ div:has(img[data-loaded]) > [data-slot="skeleton"] {
 [data-motion="reduced"] ::before {
   animation-duration: 0.01ms !important;
   animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
+  transition-property:
+    opacity, color, background-color, border-color, outline-color,
+    text-decoration-color, fill, stroke, box-shadow, visibility !important;
+  transition-duration: var(--duration-base) !important;
   scroll-behavior: auto !important;
+}
+
+[data-motion="reduced"]
+  :is(
+    [data-slot="popover-content"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="dialog-overlay"],
+    [data-slot="alert-dialog-overlay"],
+    [data-slot="tooltip-content"]
+  ):is([data-open], [data-closed]) {
+  --tw-enter-scale: 1;
+  --tw-enter-translate-x: 0;
+  --tw-enter-translate-y: 0;
+  --tw-exit-scale: 1;
+  --tw-exit-translate-x: 0;
+  --tw-exit-translate-y: 0;
+  animation-duration: var(--duration-base) !important;
 }
 
 [data-motion="reduced"] .animate-spin {
@@ -446,7 +508,7 @@ html[data-theme-switching] *::after {
 
 /* A docked queue reserves its column; the page box moves only if it no longer fits beside it. */
 html {
-  transition: --queue-reserve var(--duration-base) var(--ease-spring);
+  transition: --queue-reserve var(--duration-panel) var(--ease-panel);
 }
 @media (min-width: 1440px) {
   html[data-queue="open"] {
@@ -494,8 +556,8 @@ html[data-sidebar="collapsed"]:not([data-sidebar-ready])
 .sidebar-rail-hide {
   opacity: 1;
   transition:
-    opacity var(--duration-base) var(--ease-drawer),
-    display var(--duration-base) allow-discrete;
+    opacity var(--duration-panel) var(--ease-panel),
+    display var(--duration-panel) allow-discrete;
 }
 /* Only after hydration: groups in the prerendered markup must not fade in on first paint. */
 html[data-sidebar-ready] .sidebar-rail-hide {
@@ -510,13 +572,13 @@ html[data-sidebar-ready] .sidebar-rail-hide {
 /*
  * The mobile and tablet sidebar is a left sheet. The packages/ui sheet only
  * nudges 2.5rem and fades; this slides the whole panel in and out (opening
- * eases out over 300ms, closing leaves faster). Reduced motion zeroes the
- * durations through the global rules above.
+ * eases over the panel duration, closing leaves faster). Reduced motion swaps the
+ * slide for a fade (`styles/motion.css`).
  */
 [data-slot="sidebar"][data-mobile="true"] {
   transition-property: translate, opacity;
-  transition-duration: 300ms;
-  transition-timing-function: var(--ease-drawer);
+  transition-duration: var(--duration-panel);
+  transition-timing-function: var(--ease-panel);
 }
 [data-slot="sidebar"][data-mobile="true"]:is(
     [data-starting-style],

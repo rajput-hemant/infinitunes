@@ -33,7 +33,9 @@ const matchers = Object.fromEntries(
 );
 
 const owners = (file) =>
-  Object.keys(matchers).filter((id) => matchers[id].some((re) => re.test(file)));
+  Object.keys(matchers).filter((id) =>
+    matchers[id].some((re) => re.test(file)),
+  );
 
 const git = (...args) =>
   execFileSync("git", args, { cwd: root, encoding: "utf8" })
@@ -53,24 +55,29 @@ if (command === "overlap") {
   const clashes = files
     .map((file) => [file, owners(file)])
     .filter(([, ids]) => ids.length > 1);
-  for (const [file, ids] of clashes) console.error(`${file}: ${ids.join(", ")}`);
+  for (const [file, ids] of clashes)
+    console.error(`${file}: ${ids.join(", ")}`);
   if (clashes.length > 0) process.exit(1);
-  console.log(`ok: no file is owned by two units (${files.length} tracked files)`);
+  console.log(
+    `ok: no file is owned by two units (${files.length} tracked files)`,
+  );
 } else if (command === "check") {
   const [unit, base = "HEAD"] = rest;
   if (!matchers[unit]) {
-    console.error(`unknown unit "${unit}". units: ${Object.keys(matchers).join(", ")}`);
+    console.error(
+      `unknown unit "${unit}". units: ${Object.keys(matchers).join(", ")}`,
+    );
     process.exit(2);
   }
-  const offenders = changedFiles(base).filter((file) => !owners(file).includes(unit));
+  const offenders = changedFiles(base).filter(
+    (file) => !owners(file).includes(unit),
+  );
   for (const file of offenders) {
     console.error(`outside unit "${unit}": ${file}`);
   }
   if (offenders.length > 0) process.exit(1);
   console.log(`ok: every change since ${base} is inside unit "${unit}"`);
 } else {
-  console.error(
-    "usage: check-ownership.mjs overlap | check <unit> [base-ref]",
-  );
+  console.error("usage: check-ownership.mjs overlap | check <unit> [base-ref]");
   process.exit(2);
 }

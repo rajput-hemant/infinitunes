@@ -1,4 +1,4 @@
-import { formatDuration, getImageSrc } from "@infinitunes/types";
+import { formatDuration, getImageSrc, toSongRow } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListMusic } from "lucide-react";
 import type { Metadata } from "next";
@@ -136,7 +136,7 @@ export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
           {playlistSongs.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-2">
               <PlayAllButton
-                items={playlistSongs}
+                items={playlistSongs.map(toSongRow)}
                 className={controlStyles.hero}
               >
                 Play

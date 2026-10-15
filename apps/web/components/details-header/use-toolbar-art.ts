@@ -17,10 +17,10 @@ export function isTitleUnderToolbar(reading: TitleReading, inset: number) {
 }
 
 /**
- * Writes the artwork signal onto the toolbar, which lives in the layout and so
- * outside this subtree: `data-glass-over-art` while the band is mounted, and
- * `data-glass-titled` while the heading is under the bar. Both are removed on
- * unmount, so navigating away returns the toolbar to plain glass.
+ * Writes the title signal onto the toolbar, which lives in the layout and so
+ * outside this subtree: `data-glass-titled` while the heading is under the bar
+ * (it fades the page title into the toolbar). It is removed on unmount. The
+ * capsules themselves never change look over the artwork: they stay regular.
  */
 export function useToolbarArt(frame: RefObject<HTMLElement | null>) {
   useEffect(() => {
@@ -29,8 +29,6 @@ export function useToolbarArt(frame: RefObject<HTMLElement | null>) {
 
     const heading = frame.current?.querySelector("h1");
     const inset = toolbar.offsetHeight;
-
-    toolbar.setAttribute("data-glass-over-art", "");
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -47,7 +45,6 @@ export function useToolbarArt(frame: RefObject<HTMLElement | null>) {
 
     return () => {
       observer.disconnect();
-      toolbar.removeAttribute("data-glass-over-art");
       toolbar.removeAttribute("data-glass-titled");
     };
   }, [frame]);

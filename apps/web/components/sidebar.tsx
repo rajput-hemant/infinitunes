@@ -72,9 +72,9 @@ const floatingPanelClassName =
 // flexed to whatever width is left (zero in the rail) and stays readable to
 // assistive tech. The panel itself eases in `styles/motion.css`.
 const railMotion =
-  "transition-[width,height,padding,gap,background-color,color] duration-base ease-drawer";
+  "transition-[width,height,padding,gap,background-color,color] duration-panel ease-panel";
 const railLabel =
-  "min-w-0 flex-1 truncate opacity-100 transition-opacity duration-base ease-drawer group-data-[collapsible=icon]:opacity-0";
+  "min-w-0 flex-1 truncate opacity-100 transition-opacity duration-panel ease-panel group-data-[collapsible=icon]:opacity-0";
 // Groups the rail does not show fade out, then leave the layout at the end of
 // the transition (`.sidebar-rail-hide` in `styles/globals.css`).
 const railHide = "sidebar-rail-hide group-data-[collapsible=icon]:hidden";
@@ -222,7 +222,7 @@ function SidebarNavLink({
     >
       <Icon
         aria-hidden
-        className="size-4.5 shrink-0 text-muted-foreground transition-[width,height] duration-base ease-drawer group-data-[collapsible=icon]:size-5"
+        className="size-4.5 shrink-0 text-muted-foreground transition-[width,height] duration-panel ease-panel group-data-[collapsible=icon]:size-5"
       />
       <span className={railLabel}>{title}</span>
     </Link>

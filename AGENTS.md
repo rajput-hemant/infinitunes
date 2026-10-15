@@ -92,6 +92,23 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     (Next's devtools segment wrapper around the template is created unvalidated).
     It does not exist in production builds; it hid before only because the layout
     blocked the whole route.
+- First-load JS rules (budget in `scripts/check-budget.ts`, run `bun run budget`):
+  - No TanStack Query or tRPC React provider at the root. Imperative calls (play, radio, surprise,
+    player refill) use the vanilla client `trpc` from `~/lib/trpc/vanilla`; only infinite lists,
+    search and lyrics wrap themselves in `QueryScope` (`components/query-scope.tsx`) and pass
+    `trpc.x.y.query` as `queryFn`. Never import `@tanstack/react-query` from a component the shell
+    or a list-less route renders.
+  - Toolbar popups (search palette, language picker, user menu, Music mega menu, create-playlist
+    dialog, the per-row "more" menu and drawer) are a closed shell trigger plus a lazy chunk (`hooks/use-deferred.ts`): hover, focus,
+    pointer down, Ctrl/Cmd+K or an arrow key start the import; click before it lands opens it on
+    arrival (`defaultOpen`). The shell trigger must render the same classes and ARIA as the real
+    one (share the class/props module, see `language-trigger.tsx`; `tests/dom/deferred-popups.test.tsx`
+    pins nav). Do not import `Dialog`/`Drawer`/`Popover`/`DropdownMenu`/`NavigationMenu` statically
+    from anything the layout renders.
+  - The glass engine (`start-glass-runtime`, lens registry) is its own chunk, started on idle by
+    `GlassRuntime` (or by the first popup intent). Register surfaces through `whenGlassRuns` /
+    `registerWhenReady` in `components/glass/glass-loader.ts`; never import `lens-registry` or
+    `start-glass-runtime` statically from shell code. Surfaces show the frosted fallback until then.
 - Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
@@ -144,6 +161,19 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   export). If a package needs ambient globals visible to consumers, prefer
   listing the `.d.ts` file directly in the consumer's own `tsconfig.json`
   `include`/`files`, not a barrel re-export.
+
+## Song rows take the slim model, never the raw song
+
+Client components (rows, row menus, `SongListClient`, `LibrarySongList`, `PlayAllButton`, details header buttons,
+infinite lists) get `SongRowItem` from `toSongRow` (`packages/types/src/row.ts`), built where the raw song is
+fetched (server component, or the `queryFn` of a client list). Never pass a `Song`/`Episode` as a client prop: a raw
+song is about 4 KB of flight. It keeps `download_url` and `maxQuality` (the `320kbps` cap), so playback and download
+fallback work; add a field there only when a client really reads it. `toSongRow` is memoized per raw object so the
+header and the rows of one page share one serialized copy (Flight dedupes by reference); build rows from the same
+raw array, not a re-fetched one. `toQueueEntry` turns a row or a queue entry into a fresh `Queue`.
+`SongListRow` and the list/shelf/details skeletons (`song-list-skeleton`, `shelf-skeleton`, `details-header-skeleton`) are
+`"use client"` on purpose: server-rendered, their class strings were serialized into the flight per row (4 KB each);
+as client components the flight carries only props. Keep repeated markup (rows, skeleton cards) in client modules.
 
 ## packages/trpc raw-passthrough shape (resolved)
 
@@ -278,6 +308,18 @@ Verify these against live data, not fixtures: a decrypted link should answer
 - The artwork morph: `MorphSource` names the clicked card's art; `MorphSkeleton` (loading skeleton) and
   `MorphArt` (real header art) claim that name inside the transition's commit (`morph-state.ts`).
   Do not name destination artwork statically or via an observer: that raced the commit.
+
+## Motion is never zero
+
+Reduced motion (OS or `data-motion="reduced"`) removes movement, not feedback: `globals.css` keeps opacity/colour/
+visibility transitions at 120-200ms and `motion.css` keeps the root crossfade (the artwork flight becomes a fade).
+Never set `animation-duration`/`transition-duration` to 0 for a class of elements or `animation: none` on view-transition
+pseudos: that made the view transition, sidebar and queue vanish for anyone with the OS setting on. `reduced-motion.test.ts`
+pins it. Panels and the morph use `--ease-panel`/`--duration-panel` (340ms); `--ease-drawer`/`--ease-spring` are 80% done
+in the first quarter and read as an instant jump, so do not use them for slides. Any card that opens a detail page needs
+`data-morph={type}` plus `data-morph-art` (see `slider-card`, `home-hero`, `quick-picks`); the loading placeholder shows the
+card's picture so the flight lands on artwork. The queue pane scrolls only `[data-queue-scroll]`; the header, now playing
+and "Up next" label sit outside it.
 
 ## Panels slide into the gutter, content stays put
 

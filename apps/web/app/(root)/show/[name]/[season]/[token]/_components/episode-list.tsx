@@ -1,15 +1,17 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import type { Episode, Sort } from "@infinitunes/types";
-import { uniqueBy } from "@infinitunes/types";
+import type { Sort, SongRowItem } from "@infinitunes/types";
+import { toSongRow, uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import type { ComponentProps } from "react";
 
+import { QueryScope } from "~/components/query-scope";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import type { User } from "~/lib/auth";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 type EpisodeListProps = {
   user?: User;
@@ -17,12 +19,12 @@ type EpisodeListProps = {
   season: number;
   sort: Sort;
   totalEpisodes: number;
-  initialEpisodes: Episode[];
+  initialEpisodes: SongRowItem[];
   userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
 };
 
-export function EpisodeList(props: EpisodeListProps) {
+function EpisodeListContent(props: EpisodeListProps) {
   const {
     user,
     showId,
@@ -34,18 +36,18 @@ export function EpisodeList(props: EpisodeListProps) {
     userPlaylists,
   } = props;
 
-  const utils = api.useUtils();
-
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["episodes", season, showId],
-      queryFn: ({ pageParam }) =>
-        utils.show.episodes.fetch({
-          id: showId,
-          season,
-          page: pageParam,
-          sort,
-        }),
+      queryFn: async ({ pageParam }) =>
+        (
+          await trpc.show.episodes.query({
+            id: showId,
+            season,
+            page: pageParam,
+            sort,
+          })
+        ).map(toSongRow),
       initialPageParam: 1,
       getNextPageParam: (_, allPages) => {
         const allPagesLength = allPages
@@ -90,5 +92,13 @@ export function EpisodeList(props: EpisodeListProps) {
         </div>
       )}
     </>
+  );
+}
+
+export function EpisodeList(props: ComponentProps<typeof EpisodeListContent>) {
+  return (
+    <QueryScope>
+      <EpisodeListContent {...props} />
+    </QueryScope>
   );
 }

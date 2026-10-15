@@ -4,6 +4,7 @@ import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import type { ReactNode } from "react";
 import { useCallback } from "react";
 
+import { cn } from "~/lib/utils";
 import { MORPH_CLASS } from "~/lib/view-transition";
 
 import { claimMorph } from "./morph-state";
@@ -21,9 +22,17 @@ function useMorphRef(expected: string | undefined, hold: boolean) {
   return useCallback(
     (node: HTMLElement | null) => {
       if (!node) return;
-      const name = claimMorph(expected);
-      if (!name) return;
+      const claim = claimMorph(expected);
+      if (!claim) return;
+      const { name, image } = claim;
       node.style.viewTransitionName = name;
+      if (image && node.childElementCount === 0) {
+        const picture = document.createElement("img");
+        picture.src = image;
+        picture.alt = "";
+        picture.className = "absolute inset-0 size-full object-cover";
+        node.append(picture);
+      }
       node.style.viewTransitionClass = MORPH_CLASS;
       if (!hold) return;
       window.setTimeout(() => {
@@ -38,11 +47,17 @@ function useMorphRef(expected: string | undefined, hold: boolean) {
 /**
  * The artwork placeholder of a detail page's loading skeleton. When the page
  * was opened from a card it takes the card's name, so the card flies into the
- * placeholder while the page loads, and the real artwork then takes the name
- * over in place.
+ * placeholder while the page loads (showing the card's own picture, so the
+ * flight ends on the artwork rather than a grey box), and the real artwork then
+ * takes the name over in place.
  */
 export function MorphSkeleton({ className }: { className?: string }) {
-  return <Skeleton ref={useMorphRef(undefined, false)} className={className} />;
+  return (
+    <Skeleton
+      ref={useMorphRef(undefined, false)}
+      className={cn("relative overflow-hidden", className)}
+    />
+  );
 }
 
 /** The real artwork of a detail page; `name` is the morph name it answers to. */

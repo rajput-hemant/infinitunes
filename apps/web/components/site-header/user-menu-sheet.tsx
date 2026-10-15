@@ -28,15 +28,21 @@ const rowClassName =
 type UserMenuSheetProps = {
   user?: UserMenuUser;
   onShowShortcuts: () => void;
+  defaultOpen?: boolean;
 };
 
-export function UserMenuSheet({ user, onShowShortcuts }: UserMenuSheetProps) {
+export function UserMenuSheet({
+  user,
+  onShowShortcuts,
+  defaultOpen,
+}: UserMenuSheetProps) {
   const signOut = useSignOut();
 
   return (
-    <Drawer showSwipeHandle>
+    <Drawer showSwipeHandle defaultOpen={defaultOpen}>
       <DrawerTrigger
         aria-label="Open user menu"
+        data-deferred="user-menu"
         className={userMenuTriggerClassName}
       >
         <UserMenuTriggerAvatar user={user} />

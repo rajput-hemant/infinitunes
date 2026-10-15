@@ -21,8 +21,8 @@ const config: BudgetConfig = {
     modal: 80,
     "not-found": 70,
   },
-  maxFontPreloads: 4,
-  maxFontPreloadKB: 250,
+  maxFontPreloads: 2,
+  maxFontPreloadKB: 100,
   forbiddenStrings: ["ZodError"],
   forbiddenMode: "warn",
 };
@@ -119,7 +119,7 @@ describe("evaluateBudget", () => {
 
   it("fails a route with too many font preloads", () => {
     const fonts = Array.from(
-      { length: 5 },
+      { length: 3 },
       (_, i) => `/_next/static/media/${i}.woff2`,
     );
     const fs = fakeFileSystem({
@@ -132,19 +132,19 @@ describe("evaluateBudget", () => {
 
     const report = evaluateBudget(fs, config);
     expect(report.ok).toBe(false);
-    expect(report.rows[0]?.reasons[0]).toContain("5 font preloads");
+    expect(report.rows[0]?.reasons[0]).toContain("3 font preloads");
   });
 
   it("fails a route whose preloaded fonts are too heavy", () => {
     const fs = fakeFileSystem({
       routes: { "/": [] },
-      sizesKB: { "static/media/a.woff2": 260 },
+      sizesKB: { "static/media/a.woff2": 120 },
       fonts: { "/": ["/_next/static/media/a.woff2"] },
     });
 
     const report = evaluateBudget(fs, config);
     expect(report.ok).toBe(false);
-    expect(report.rows[0]?.fontKB).toBeCloseTo(260);
+    expect(report.rows[0]?.fontKB).toBeCloseTo(120);
     expect(report.rows[0]?.reasons[0]).toContain("of preloaded fonts");
   });
 
@@ -209,9 +209,9 @@ describe("evaluateBudget", () => {
     expect(() =>
       evaluateBudget(fs, {
         ...config,
-        ceilingsKB: { ...config.ceilingsKB, catalog: 541 },
+        ceilingsKB: { ...config.ceilingsKB, catalog: 366 },
       }),
-    ).toThrow("catalog ceiling 541KB exceeds the 540KB cap");
+    ).toThrow("catalog ceiling 366KB exceeds the 365KB cap");
   });
 });
 

@@ -1,4 +1,4 @@
-import type { ArtistMini } from "./artist";
+import type { ArtistCredit } from "./artist";
 
 export type MediaType =
   | "artist"
@@ -69,7 +69,7 @@ export type Queue = {
   url: string;
   type: "song" | "episode";
   image: Quality;
-  artists: ArtistMini[];
+  artists: ArtistCredit[];
   download_url: Quality;
   duration: number;
   /** Highest stream quality the song has; absent when uncapped or unknown. */

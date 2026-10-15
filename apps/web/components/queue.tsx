@@ -63,7 +63,7 @@ export function Queue({ open, onOpenChange }: QueueProps) {
       data-state={open ? "open" : "closed"}
       inert={!open}
       className={cn(
-        "fixed z-45 flex flex-col overflow-hidden rounded-lg transition-[opacity,translate,visibility] duration-base ease-spring",
+        "fixed z-45 flex flex-col overflow-hidden rounded-lg transition-[opacity,translate,visibility] duration-panel ease-panel",
         "right-3 bottom-[calc(9.75rem+env(safe-area-inset-bottom))] left-3 h-[min(28rem,calc(100dvh-12rem))]",
         // Scoped below 1440 so the docked column rules are not outranked.
         "md:max-[1439px]:bottom-23 md:max-[1439px]:left-auto md:max-[1439px]:h-[min(34rem,calc(100dvh-7.5rem))] md:max-[1439px]:w-[min(22rem,calc(100vw-1.5rem))]",
@@ -93,56 +93,64 @@ export function Queue({ open, onOpenChange }: QueueProps) {
         </Button>
       </div>
       {hasOpened && (
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-4 min-[1440px]:pb-28">
-          {current && (
-            <div className="hidden px-2 pb-4 min-[1440px]:block">
-              <div className="relative aspect-square overflow-hidden rounded-md">
-                <ImageWithFallback
-                  src={getImageSrc(current.image, "high")}
-                  alt=""
-                  fill
-                  sizes="320px"
-                  fallback={getPlaceholderSrc("song")}
-                  className="object-cover"
-                />
-                <Skeleton className="absolute inset-0 -z-10" />
+        <div className="flex min-h-0 flex-1 flex-col px-3">
+          {/* Fixed: what is playing. Only the Up next list below it scrolls. */}
+          <div data-queue-fixed="" className="shrink-0">
+            {current && (
+              <div className="hidden px-2 pb-4 min-[1440px]:block">
+                <div className="relative mx-auto aspect-square w-[min(100%,32dvh)] overflow-hidden rounded-md">
+                  <ImageWithFallback
+                    src={getImageSrc(current.image, "high")}
+                    alt=""
+                    fill
+                    sizes="320px"
+                    fallback={getPlaceholderSrc("song")}
+                    className="object-cover"
+                  />
+                  <Skeleton className="absolute inset-0 -z-10" />
+                </div>
               </div>
-            </div>
-          )}
-          {current && (
-            <>
-              <h3 className={sectionLabel}>Now playing</h3>
-              <div className="px-2 py-1">
-                <p className="truncate text-[0.8125rem]/5 font-medium text-foreground">
-                  {current.name}
-                </p>
-                <p className="truncate text-xs/4 text-muted-foreground">
-                  {current.subtitle}
-                </p>
-              </div>
-            </>
-          )}
-          <h3 className={sectionLabel}>
-            Up next
-            {upNext > 0 && (
-              <button
-                type="button"
-                onClick={clearUpNext}
-                className={cn(
-                  controlStyles.textLg,
-                  "px-2 text-[0.8125rem]/5 font-semibold tracking-normal text-primary normal-case outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
-                )}
-              >
-                Clear
-              </button>
             )}
-          </h3>
-          <QueueList upNextOnly />
-          {upNext === 0 && (
-            <p className="px-2 text-sm text-muted-foreground">
-              Nothing queued. Autoplay continues with similar songs.
-            </p>
-          )}
+            {current && (
+              <>
+                <h3 className={sectionLabel}>Now playing</h3>
+                <div className="px-2 py-1">
+                  <p className="truncate text-[0.8125rem]/5 font-medium text-foreground">
+                    {current.name}
+                  </p>
+                  <p className="truncate text-xs/4 text-muted-foreground">
+                    {current.subtitle}
+                  </p>
+                </div>
+              </>
+            )}
+            <h3 className={sectionLabel}>
+              Up next
+              {upNext > 0 && (
+                <button
+                  type="button"
+                  onClick={clearUpNext}
+                  className={cn(
+                    controlStyles.textLg,
+                    "px-2 text-[0.8125rem]/5 font-semibold tracking-normal text-primary normal-case outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
+                  )}
+                >
+                  Clear
+                </button>
+              )}
+            </h3>
+          </div>
+          <div
+            data-queue-scroll=""
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-4 min-[1440px]:pb-28"
+          >
+            <QueueList upNextOnly />
+            {upNext === 0 && (
+              <p className="px-2 text-sm text-muted-foreground">
+                Nothing queued. Autoplay continues with similar songs.
+              </p>
+            )}
+          </div>
         </div>
       )}
     </GlassSurface>

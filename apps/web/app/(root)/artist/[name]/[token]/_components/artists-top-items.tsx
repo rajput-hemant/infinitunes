@@ -1,12 +1,14 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import type { Album, Category, Song } from "@infinitunes/types";
-import { uniqueBy } from "@infinitunes/types";
+import type { Album, Category, Song, SongRowItem } from "@infinitunes/types";
+import { toSongRow, uniqueBy } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { ComponentProps } from "react";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { QueryScope } from "~/components/query-scope";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import {
@@ -17,7 +19,7 @@ import {
 } from "~/lib/artist-pagination";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 import { cn } from "~/lib/utils";
 
 type LoadMoreProps = {
@@ -43,7 +45,7 @@ function LoadMore({ hasNextPage, isFetching, onClick }: LoadMoreProps) {
 type ArtistsTopItemsProps = {
   id: string;
   type: "songs" | "albums";
-  initialSongs?: Song[];
+  initialSongs?: SongRowItem[];
   initialAlbums?: Album[];
   category?: Category;
   /** The upstream page `initialSongs`/`initialAlbums` came from; the next fetch is the one after it. */
@@ -61,7 +63,7 @@ type TopSongsProps = Pick<
   | "user"
   | "userFavorites"
   | "userPlaylists"
-> & { initialSongs: Song[] };
+> & { initialSongs: SongRowItem[] };
 
 function ArtistTopSongs(props: TopSongsProps) {
   const {
@@ -74,14 +76,12 @@ function ArtistTopSongs(props: TopSongsProps) {
     userPlaylists,
   } = props;
 
-  const utils = api.useUtils();
-
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: [id, "artists-top-songs", category ?? "popularity"],
-      queryFn: async ({ pageParam }) =>
-        toArtistPage<Song>(
-          await utils.artist.songs.fetch({
+      queryFn: async ({ pageParam }) => {
+        const page = toArtistPage<Song>(
+          await trpc.artist.songs.query({
             id,
             page: pageParam,
             cat: category,
@@ -89,7 +89,9 @@ function ArtistTopSongs(props: TopSongsProps) {
           }),
           "topSongs",
           "songs",
-        ),
+        );
+        return { ...page, items: page.items.map(toSongRow) };
+      },
       initialPageParam: lastInitialPage + 1,
       getNextPageParam: (lastPage, _allPages, lastPageParam) =>
         nextArtistPage(lastPage, lastPageParam),
@@ -133,14 +135,12 @@ function ArtistTopAlbums({
   category,
   lastInitialPage = ARTIST_LAST_INITIAL_PAGE,
 }: TopAlbumsProps) {
-  const utils = api.useUtils();
-
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: [id, "artists-top-albums", category ?? "popularity"],
       queryFn: async ({ pageParam }) =>
         toArtistPage<Album>(
-          await utils.artist.albums.fetch({
+          await trpc.artist.albums.query({
             id,
             page: pageParam,
             cat: category,
@@ -192,7 +192,7 @@ function ArtistTopAlbums({
  * must only create its own query: a query a tab created for the other one
  * would be cached with empty initial data and show an empty list later.
  */
-export function ArtistsTopItems(props: ArtistsTopItemsProps) {
+function ArtistsTopItemsContent(props: ArtistsTopItemsProps) {
   const { type, initialSongs, initialAlbums, ...rest } = props;
 
   return type === "songs" ? (
@@ -204,5 +204,15 @@ export function ArtistsTopItems(props: ArtistsTopItemsProps) {
       lastInitialPage={rest.lastInitialPage}
       initialAlbums={initialAlbums ?? []}
     />
+  );
+}
+
+export function ArtistsTopItems(
+  props: ComponentProps<typeof ArtistsTopItemsContent>,
+) {
+  return (
+    <QueryScope>
+      <ArtistsTopItemsContent {...props} />
+    </QueryScope>
   );
 }

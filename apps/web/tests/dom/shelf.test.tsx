@@ -62,3 +62,44 @@ it("reads layout once per frame and only re-renders when an edge flips", async (
   await frame();
   expect(arrows()).toEqual([true, false]);
 });
+
+it("puts the arrows in the header row, outside the scroll track", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  const current = root;
+  await act(async () =>
+    current.render(
+      <Shelf heading={<h2>Trending</h2>}>{[<li key="a">a</li>]}</Shelf>,
+    ),
+  );
+
+  const list = container.querySelector("ol");
+  const buttons = [...container.querySelectorAll("button")];
+  expect(buttons.map((b) => b.getAttribute("aria-label"))).toEqual([
+    "Scroll left",
+    "Scroll right",
+  ]);
+  for (const button of buttons) expect(list?.contains(button)).toBe(false);
+  const header = container.querySelector("h2")?.parentElement?.parentElement;
+  for (const button of buttons) expect(header?.contains(button)).toBe(true);
+});
+
+it("treats the first snap point (4px of list padding) as the start", async () => {
+  const container = document.createElement("div");
+  document.body.append(container);
+  root = createRoot(container);
+  const current = root;
+  await act(async () => current.render(<Shelf>{[<li key="a">a</li>]}</Shelf>));
+
+  const list = container.querySelector("ol");
+  if (!list) throw new Error("shelf list not rendered");
+  Object.defineProperty(list, "scrollLeft", { value: 4 });
+  Object.defineProperty(list, "clientWidth", { value: 100 });
+  Object.defineProperty(list, "scrollWidth", { value: 1000 });
+  await act(async () => list.dispatchEvent(new Event("scroll")));
+  await frame();
+  expect(
+    [...container.querySelectorAll("button")].map((b) => b.disabled),
+  ).toEqual([true, false]);
+});

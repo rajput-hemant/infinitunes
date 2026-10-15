@@ -13,7 +13,7 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { findQueueIndex } from "~/lib/queue-position";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 type PlayButtonProps = HTMLAttributes<HTMLButtonElement> & {
   type: MediaType;
@@ -56,8 +56,6 @@ export function PlayButton(props: PlayButtonProps) {
   const [, setCurrentIndex] = useCurrentSongIndex();
   const [, setActiveRadio] = useActiveRadioSession();
 
-  const utils = api.useUtils();
-
   const sort = parseSort(searchParams.get("sort"));
 
   async function playHandler() {
@@ -75,37 +73,37 @@ export function PlayButton(props: PlayButtonProps) {
       try {
         switch (type) {
           case "song": {
-            const songObj = await utils.song.details.fetch({ token });
+            const songObj = await trpc.song.details.query({ token });
             queue = songObj.songs;
             break;
           }
           case "album": {
-            const album = await utils.album.details.fetch({ token });
+            const album = await trpc.album.details.query({ token });
             queue = Array.isArray(album.list) ? album.list : [];
             break;
           }
           case "playlist": {
-            const playlist = await utils.playlist.details.fetch({ token });
+            const playlist = await trpc.playlist.details.query({ token });
             queue = Array.isArray(playlist.list) ? playlist.list : [];
             break;
           }
           case "mix": {
-            const mix = await utils.get.mix.fetch({ token });
+            const mix = await trpc.get.mix.query({ token });
             queue = Array.isArray(mix.list) ? mix.list : [];
             break;
           }
           case "artist": {
-            const artist = await utils.artist.details.fetch({ token });
+            const artist = await trpc.artist.details.query({ token });
             queue = artist.topSongs ?? [];
             break;
           }
           case "label": {
-            const label = await utils.get.label.fetch({ token });
+            const label = await trpc.get.label.query({ token });
             queue = label.topSongs.songs;
             break;
           }
           case "show": {
-            queue = await utils.show.episodes.fetch({
+            queue = await trpc.show.episodes.query({
               id: token,
               season,
               page: 1,
@@ -114,7 +112,7 @@ export function PlayButton(props: PlayButtonProps) {
             break;
           }
           case "episode": {
-            const data = await utils.show.episodeDetails.fetch({
+            const data = await trpc.show.episodeDetails.query({
               token,
               sort,
             });
@@ -124,7 +122,7 @@ export function PlayButton(props: PlayButtonProps) {
           case "radio_station": {
             isRadio = true;
             try {
-              const details = await utils.radio.stationDetails.fetch({ token });
+              const details = await trpc.radio.stationDetails.query({ token });
               if (!details.songs.length) {
                 toast.error("No songs found for this radio station");
                 return;

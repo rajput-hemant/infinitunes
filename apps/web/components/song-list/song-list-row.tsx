@@ -1,7 +1,8 @@
+"use client";
+
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import type { Episode, Song } from "@infinitunes/types";
+import type { SongRowItem } from "@infinitunes/types";
 import {
-  decode,
   formatDuration,
   formatReleaseDate,
   getImageSrc,
@@ -30,7 +31,7 @@ import {
 import { SongRow } from "./song-row";
 
 type SongListRowProps = {
-  item: Song | Episode;
+  item: SongRowItem;
   index: number;
   showAlbum: boolean;
   user?: User;
@@ -57,7 +58,7 @@ export function SongListRow(props: SongListRowProps) {
     playlistSongIndex,
   } = props;
 
-  const artists = item.more_info.artistMap?.primary_artists ?? [];
+  const artists = item.primaryArtists;
   const isEpisode = item.type === "episode";
 
   return (
@@ -96,7 +97,7 @@ export function SongListRow(props: SongListRowProps) {
         <div className="relative size-art shrink-0 overflow-hidden rounded-[calc(var(--r-sm)*0.75)]">
           <ImageWithFallback
             src={getImageSrc(item.image, "low")}
-            alt={decode(item.title)}
+            alt={item.name}
             fill
             sizes="3rem"
             fallback={getPlaceholderSrc("song")}
@@ -108,18 +109,18 @@ export function SongListRow(props: SongListRowProps) {
           <TilePlayPauseButton
             id={item.id}
             type={item.type}
-            token={parseToken(item.perma_url)}
+            token={parseToken(item.url)}
           />
         </div>
 
         <div className="grid min-w-0">
           <h3 className="truncate font-medium text-foreground">
             <Link
-              href={getHref(item.perma_url, isEpisode ? "episode" : "song")}
-              title={decode(item.title)}
+              href={getHref(item.url, isEpisode ? "episode" : "song")}
+              title={item.name}
               className="group-data-current/row:text-primary hover:underline"
             >
-              {decode(item.title)}
+              {item.name}
             </Link>
           </h3>
 
@@ -130,7 +131,7 @@ export function SongListRow(props: SongListRowProps) {
                 subtitleVisibility,
               )}
             >
-              {formatReleaseDate(item.more_info.release_date)}
+              {formatReleaseDate(item.releaseDate)}
             </p>
           ) : (
             <ArtistLinks
@@ -150,19 +151,19 @@ export function SongListRow(props: SongListRowProps) {
 
       <div className={cn(mutedCell, albumCellVisibility, "truncate")}>
         {isEpisode ? (
-          formatReleaseDate(item.more_info.release_date)
+          formatReleaseDate(item.releaseDate)
         ) : showAlbum ? (
           <Link
-            href={getHref(item.more_info.album_url, "album")}
+            href={getHref(item.albumUrl, "album")}
             className="hover:text-foreground hover:underline"
           >
-            {decode(item.more_info.album)}
+            {item.album}
           </Link>
         ) : null}
       </div>
 
       <span className={cn(mutedCell, "hidden text-end tabular-nums md:block")}>
-        {formatDuration(item.more_info.duration, "mm:ss")}
+        {formatDuration(item.duration, "mm:ss")}
       </span>
 
       <div className="flex shrink-0 items-center justify-end gap-1 text-muted-foreground">
@@ -171,7 +172,7 @@ export function SongListRow(props: SongListRowProps) {
           user={user}
           type={item.type}
           token={item.id}
-          name={decode(item.title)}
+          name={item.name}
           favourites={favorites}
           className={cn(
             "hidden hover:text-foreground aria-pressed:opacity-100 md:inline-flex",

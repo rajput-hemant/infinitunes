@@ -1,82 +1,63 @@
-import type { Episode, Queue, Song } from "@infinitunes/types";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@infinitunes/ui/components/dropdown-menu";
+"use client";
+
 import { MoreVertical } from "lucide-react";
+import { useId, useState } from "react";
 
-import { getItemName } from "~/components/song-list/item-name";
-import { controlStyles } from "~/lib/control-styles";
-import { cn } from "~/lib/utils";
+import { useDeferred } from "~/hooks/use-deferred";
 
-import { ShareSubMenu } from "../share-submenu";
-import {
-  getItemAlbumUrl,
-  getItemArtists,
-  getItemSharePath,
-  getItemUrl,
-  type TileMoreEntry,
-} from "./more-button-item";
-import { TileMoreLinks } from "./more-links";
+import type { TileMoreEntry, TileMoreItem } from "./more-button-item";
+import { moreTriggerClassName } from "./more-button-trigger";
 
 type TileMoreDesktopProps = {
-  item: Song | Episode | Queue;
+  item: TileMoreItem;
   showAlbum: boolean;
   entries: TileMoreEntry[];
   className?: string;
 };
 
+const loadPopup = () => import("./more-button-desktop-popup");
+
+/**
+ * The row's "more" dropdown from 768px. The menu (Base UI Menu, share submenu,
+ * links) is a separate chunk: hover, focus, pointer down or an arrow key loads
+ * it and swaps this identical closed trigger for the real one.
+ */
 export function TileMoreDesktop(props: TileMoreDesktopProps) {
-  const { item, showAlbum, entries, className } = props;
+  const name = `more-${useId()}`;
+  const { mod, preload, intent } = useDeferred(name, loadPopup);
+  const [clicked, setClicked] = useState(false);
+
+  if (mod) {
+    return (
+      <mod.TileMoreDesktopPopup {...props} name={name} defaultOpen={clicked} />
+    );
+  }
 
   return (
     <div className="hidden md:block">
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          aria-label="More options"
-          className={cn(
-            controlStyles.rowIcon,
-            "inline-flex items-center justify-center outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
-            className,
-          )}
-        >
-          <MoreVertical aria-hidden="true" className="size-5" />
-        </DropdownMenuTrigger>
-
-        {/* The primitive pins the popup to the trigger's width (`--anchor-width`,
-            40px here) with an 8rem floor, so the labels wrap. Size it to the
-            content instead, within 14rem to 20rem and the viewport. */}
-        <DropdownMenuContent
-          side="left"
-          align="start"
-          className="w-auto min-w-56 max-w-[min(20rem,calc(100vw-1rem))] *:cursor-pointer"
-        >
-          {entries.map(({ icon: Icon, label, onClick }) => (
-            <DropdownMenuItem key={label} onClick={onClick}>
-              <Icon className="mr-2 size-5" />
-              <span className="min-w-0 truncate" title={label}>
-                {label}
-              </span>
-            </DropdownMenuItem>
-          ))}
-          <ShareSubMenu
-            title={getItemName(item)}
-            path={getItemSharePath(item)}
-          />
-          <DropdownMenuSeparator className="my-2" />
-          <TileMoreLinks
-            type={item.type}
-            itemUrl={getItemUrl(item)}
-            albumUrl={getItemAlbumUrl(item)}
-            showAlbum={showAlbum}
-            isDropdownItem
-            primaryArtists={getItemArtists(item)}
-          />
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <button
+        type="button"
+        aria-label="More options"
+        aria-haspopup="menu"
+        aria-expanded={false}
+        data-slot="dropdown-menu-trigger"
+        data-deferred={name}
+        className={moreTriggerClassName("inline-flex", props.className)}
+        {...intent}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            preload();
+            setClicked(true);
+          }
+        }}
+        onClick={() => {
+          preload();
+          setClicked(true);
+        }}
+      >
+        <MoreVertical aria-hidden="true" className="size-5" />
+      </button>
     </div>
   );
 }

@@ -1,6 +1,4 @@
-import type { Episode, Queue, Song } from "@infinitunes/types";
-import { decode } from "@infinitunes/types";
-
-export function getItemName(item: Song | Episode | Queue): string {
-  return "title" in item ? decode(item.title) : item.name;
+/** Rows and queue entries both carry an already decoded `name`. */
+export function getItemName(item: { name: string }): string {
+  return item.name;
 }

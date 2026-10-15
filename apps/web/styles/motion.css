@@ -1,7 +1,7 @@
 /*
- * Motion: page view transitions and small UI animations. Everything here is
- * transform and opacity (compositor only), 120-260ms, ease-out. Reduced motion
- * (the OS setting or the in-app switch) turns it all off at the end of the file.
+ * Motion: page view transitions, panels and small UI animations. Reduced motion
+ * (the OS setting or the in-app switch) keeps the fades and drops the movement:
+ * see the end of this file and the reduced-motion block in globals.css.
  */
 
 /* ---------- Page view transitions ---------- */
@@ -22,14 +22,14 @@
   view-transition-name: none !important;
 }
 ::view-transition-group(root) {
-  animation-duration: 200ms;
-  animation-timing-function: var(--ease-out);
+  animation-duration: 280ms;
+  animation-timing-function: ease-in-out;
 }
 
 /* A card's artwork flying into the header artwork of the page it opens. */
 ::view-transition-group(.vt-morph) {
-  animation-duration: 340ms;
-  animation-timing-function: var(--ease-drawer);
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-panel);
 }
 ::view-transition-image-pair(.vt-morph) {
   isolation: auto;
@@ -67,10 +67,10 @@
 }
 
 /* ---------- Sidebar collapse ---------- */
-/* The width already animates (the content column follows it); only the curve changes. */
+/* The width animates (the page box and the player follow it); this sets the pace for opening and closing. */
 :is([data-slot="sidebar-gap"], [data-slot="sidebar-container"]) {
-  transition-duration: 260ms;
-  transition-timing-function: var(--ease-drawer);
+  transition-duration: var(--duration-panel);
+  transition-timing-function: var(--ease-panel);
 }
 
 /* ---------- Cards ---------- */
@@ -104,15 +104,41 @@
 }
 
 /* ---------- Reduced motion ---------- */
+/*
+ * The page still crossfades (opacity only, the duration above); the artwork stops flying and its old and new
+ * images fade in place instead. `.vt-morph` is the group's class (see `lib/view-transition.ts`).
+ */
 @media (prefers-reduced-motion: reduce) {
-  ::view-transition-group(*),
-  ::view-transition-old(*),
-  ::view-transition-new(*) {
-    animation: none !important;
+  ::view-transition-group(.vt-morph) {
+    animation-duration: 0.01ms;
+  }
+  ::view-transition-old(.vt-morph),
+  ::view-transition-new(.vt-morph) {
+    animation-duration: 220ms;
   }
 }
-:root[data-motion="reduced"]::view-transition-group(*),
-:root[data-motion="reduced"]::view-transition-old(*),
-:root[data-motion="reduced"]::view-transition-new(*) {
-  animation: none !important;
+:root[data-motion="reduced"]::view-transition-group(.vt-morph) {
+  animation-duration: 0.01ms;
+}
+:root[data-motion="reduced"]::view-transition-old(.vt-morph),
+:root[data-motion="reduced"]::view-transition-new(.vt-morph) {
+  animation-duration: 220ms;
+}
+
+/* The phone sidebar sheet fades in place instead of sliding. */
+@media (prefers-reduced-motion: reduce) {
+  html
+    [data-slot="sidebar"][data-mobile="true"]:is(
+      [data-starting-style],
+      [data-ending-style]
+    ) {
+    opacity: 0;
+  }
+}
+[data-motion="reduced"]
+  [data-slot="sidebar"][data-mobile="true"]:is(
+    [data-starting-style],
+    [data-ending-style]
+  ) {
+  opacity: 0;
 }

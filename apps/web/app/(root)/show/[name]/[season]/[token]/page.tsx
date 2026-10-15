@@ -1,5 +1,5 @@
 import type { Sort } from "@infinitunes/types";
-import { getImageSrc, uniqueBy } from "@infinitunes/types";
+import { getImageSrc, toSongRow, uniqueBy } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -119,7 +119,7 @@ async function ShowEpisodeSection({
         season={Number(show.show_details.more_info.season_number)}
         sort={sort}
         totalEpisodes={Number(show.show_details.more_info.total_episodes)}
-        initialEpisodes={show.episodes}
+        initialEpisodes={show.episodes.map(toSongRow)}
         userFavorites={favorites}
         userPlaylists={playlists}
       />
@@ -149,11 +149,13 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         </p>
       </section>
 
-      <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
-        {modules.seasons.title}
-      </h2>
-
-      <Shelf>
+      <Shelf
+        heading={
+          <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+            {modules.seasons.title}
+          </h2>
+        }
+      >
         {uniqueBy(seasons.toReversed(), (entry) => entry.id).map((s) => (
           <ShelfItem key={s.id}>
             <SliderCard
