@@ -1,16 +1,10 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 import type { Episode, Queue, Song } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
-import superjson from "superjson";
-
-import { api } from "../../lib/trpc/client";
-import { offlineFetch } from "./offline-fetch";
 
 mock.module("server-only", () => ({}));
 
@@ -63,17 +57,6 @@ const router = {
   prefetch() {},
 } as unknown as NonNullable<React.ContextType<typeof AppRouterContext>>;
 
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
-
 /** Renders the more button, opens the desktop dropdown or the phone drawer, and runs `inspect`. */
 async function withOpenMenu(
   item: Song | Episode | Queue,
@@ -86,11 +69,7 @@ async function withOpenMenu(
   await act(async () => {
     root.render(
       <AppRouterContext.Provider value={router}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <TileMoreButton item={item} favorites={null} showAlbum={false} />
-          </QueryClientProvider>
-        </api.Provider>
+        <TileMoreButton item={item} favorites={null} showAlbum={false} />
       </AppRouterContext.Provider>,
     );
   });

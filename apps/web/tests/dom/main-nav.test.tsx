@@ -6,6 +6,7 @@ import { createRoot } from "react-dom/client";
 import type { Root } from "react-dom/client";
 
 import { MainNav } from "../../components/site-header/main-nav";
+import { waitFor } from "./wait-for";
 
 const roots: Root[] = [];
 
@@ -49,7 +50,9 @@ describe("MainNav", () => {
     const trigger = findTrigger(container);
     expect(trigger).toBeDefined();
 
+    // The menu is its own chunk: the click starts the import and opens it on arrival.
     await act(async () => trigger?.click());
+    await waitFor(() => document.querySelector("a[href='/search']") !== null);
 
     const link = [...document.querySelectorAll("a")].find((a) =>
       a.textContent?.includes("View all Music"),
@@ -71,6 +74,9 @@ describe("MainNav", () => {
     } as MegaMenu);
 
     await act(async () => findTrigger(container)?.click());
+    await waitFor(
+      () => document.querySelector("a[href*=Qy1TVzp4XmQ]") !== null,
+    );
 
     const link = [...document.querySelectorAll("a")].find((a) =>
       a.getAttribute("href")?.includes("Qy1TVzp4XmQ"),

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import type { RefObject } from "react";
 
-import { register } from "~/components/glass/start-glass-runtime";
+import { registerWhenReady } from "~/components/glass/glass-loader";
 
 /**
  * Registers a glass host with the lens registry once it has hydrated. The
@@ -17,7 +17,8 @@ export function useGlassRegistration(
 ) {
   useEffect(() => {
     const el = hostRef.current;
-    if (el?.hasAttribute("data-glass")) register(el);
+    if (!el?.hasAttribute("data-glass")) return;
+    return registerWhenReady(el);
     // oxlint-disable-next-line react-hooks/exhaustive-deps -- deps are the surface attributes the caller lists
   }, [hostRef, ...deps]);
 }

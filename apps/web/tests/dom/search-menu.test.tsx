@@ -5,15 +5,16 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { setInputValue } from "./set-input-value";
+import { waitFor } from "./wait-for";
 
 const searchInputs: { q: string }[] = [];
-mock.module("../../lib/trpc/client", () => ({
-  api: {
+mock.module("../../lib/trpc/vanilla", () => ({
+  trpc: {
     search: {
       all: {
-        useQuery: (input: { q: string }) => {
+        query: (input: { q: string }) => {
           searchInputs.push(input);
-          return {};
+          return new Promise(() => {});
         },
       },
     },
@@ -25,6 +26,12 @@ mock.module("../../components/search/search-all", () => ({
 
 const { SearchMenu } = await import("../../components/search/search-menu");
 const roots: Root[] = [];
+
+/** The palette is its own chunk: the click starts the import and opens it on arrival. */
+async function openSearch(container: HTMLElement) {
+  await act(async () => container.querySelector("button")?.click());
+  await waitFor(() => document.querySelector("[data-search-palette]") !== null);
+}
 const GO_TO_HREFS = ["/chart", "/me", "/settings#appearance"];
 
 const optionsIn = () => [
@@ -68,6 +75,7 @@ it("stays closed when returning to the path where search was opened", async () =
   const trigger = () => container.querySelector("button");
 
   await act(async () => trigger()?.click());
+  await waitFor(() => document.querySelector("[data-search-palette]") !== null);
   expect(trigger()?.getAttribute("aria-expanded")).toBe("true");
   const input = document.querySelector<HTMLInputElement>(
     'input[aria-label="Search"]',
@@ -104,7 +112,7 @@ it("drives option selection from the combobox with arrows and Enter", async () =
     </div>,
   );
 
-  await act(async () => container.querySelector("button")?.click());
+  await openSearch(container);
   const input = document.querySelector<HTMLInputElement>('[role="combobox"]');
   const options = optionsIn;
   const selectedStates = () =>
@@ -143,7 +151,7 @@ it("drives option selection from the combobox with arrows and Enter", async () =
 
 it("lists the Go to pages as options, outside the tab order", async () => {
   const { container } = await renderMenu(<p>Top searches</p>);
-  await act(async () => container.querySelector("button")?.click());
+  await openSearch(container);
 
   const goTo = document.getElementById(`search-palette-listbox-go-to`);
   expect(goTo?.textContent).toBe("Go to");
@@ -154,7 +162,7 @@ it("lists the Go to pages as options, outside the tab order", async () => {
 
 it("moves the active option through Go to with arrows, wrapping at both ends", async () => {
   const { container } = await renderMenu(<p>Top searches</p>);
-  await act(async () => container.querySelector("button")?.click());
+  await openSearch(container);
   const input = document.querySelector<HTMLInputElement>('[role="combobox"]');
   const activeHref = () => {
     const id = input?.getAttribute("aria-activedescendant");
@@ -175,7 +183,7 @@ it("moves the active option through Go to with arrows, wrapping at both ends", a
 
 it("renders the phone palette as the glass palette role with its key hints", async () => {
   const { container } = await renderMenu(<p>Top searches</p>);
-  await act(async () => container.querySelector("button")?.click());
+  await openSearch(container);
 
   const palette = document.querySelector<HTMLElement>("[data-search-palette]");
   expect(palette?.dataset.glassRole).toBe("palette");
@@ -192,7 +200,7 @@ it("sends one search for a typed word, after the typing pause", async () => {
   jest.useFakeTimers();
   try {
     const { container } = await renderMenu(<p>Top searches</p>);
-    await act(async () => container.querySelector("button")?.click());
+    await openSearch(container);
     const input = document.querySelector<HTMLInputElement>(
       'input[aria-label="Search"]',
     );
@@ -207,15 +215,13 @@ it("sends one search for a typed word, after the typing pause", async () => {
     }
     // The field itself is never held back.
     expect(input.value).toBe("arij");
-    expect(searchInputs.map((i) => i.q)).not.toContain("ari");
-    expect(new Set(searchInputs.map((i) => i.q))).toEqual(new Set([""]));
+    // Nothing is asked while the word is still being typed.
+    expect(searchInputs).toEqual([]);
 
     await act(async () => {
       jest.advanceTimersByTime(300);
     });
-    expect(searchInputs.at(-1)?.q).toBe("arij");
-    // Renders repeat the input; what matters is which queries were ever asked.
-    expect([...new Set(searchInputs.map((i) => i.q))]).toEqual(["", "arij"]);
+    expect(searchInputs.map((i) => i.q)).toEqual(["arij"]);
   } finally {
     jest.useRealTimers();
   }

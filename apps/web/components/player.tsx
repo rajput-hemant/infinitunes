@@ -23,7 +23,7 @@ import type { User } from "~/lib/auth";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
 import { createPositionStore } from "~/lib/position-store";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 import { cn } from "~/lib/utils";
 
 import { ExpandedPlayer } from "./expanded-player";
@@ -62,8 +62,6 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
   const pane = useQueuePane();
-
-  const utils = api.useUtils();
 
   // third party hooks
   const {
@@ -164,15 +162,11 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     frozen: isDragging,
   });
 
+  // Uncached on purpose: every refill must hit upstream for fresh songs.
   const fetchRadioSongs = React.useCallback(
     (stationId: string) =>
-      utils.radio.songs.fetch(
-        { stationId, k: 10, next: 1 },
-        // The app-wide staleTime is Infinity, which would hand back the first
-        // batch forever; every refill must hit upstream for fresh songs.
-        { staleTime: 0 },
-      ),
-    [utils],
+      trpc.radio.songs.query({ stationId, k: 10, next: 1 }),
+    [],
   );
 
   useRadioRefill({

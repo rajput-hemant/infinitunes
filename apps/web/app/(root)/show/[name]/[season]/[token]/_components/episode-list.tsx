@@ -5,11 +5,13 @@ import type { Episode, Sort } from "@infinitunes/types";
 import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import type { ComponentProps } from "react";
 
+import { QueryScope } from "~/components/query-scope";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 import type { User } from "~/lib/auth";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 type EpisodeListProps = {
   user?: User;
@@ -22,7 +24,7 @@ type EpisodeListProps = {
   userPlaylists?: MyPlaylist[];
 };
 
-export function EpisodeList(props: EpisodeListProps) {
+function EpisodeListContent(props: EpisodeListProps) {
   const {
     user,
     showId,
@@ -34,13 +36,11 @@ export function EpisodeList(props: EpisodeListProps) {
     userPlaylists,
   } = props;
 
-  const utils = api.useUtils();
-
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["episodes", season, showId],
       queryFn: ({ pageParam }) =>
-        utils.show.episodes.fetch({
+        trpc.show.episodes.query({
           id: showId,
           season,
           page: pageParam,
@@ -90,5 +90,13 @@ export function EpisodeList(props: EpisodeListProps) {
         </div>
       )}
     </>
+  );
+}
+
+export function EpisodeList(props: ComponentProps<typeof EpisodeListContent>) {
+  return (
+    <QueryScope>
+      <EpisodeListContent {...props} />
+    </QueryScope>
   );
 }

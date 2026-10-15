@@ -11,18 +11,16 @@ mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 mock.module("sonner", () => ({ toast: { success() {}, error() {} } }));
-mock.module("~/lib/trpc/client", () => ({
-  api: {
-    useUtils: () => ({
-      album: {
-        details: {
-          fetch: async (input: unknown) => {
-            fetched.push(input);
-            return { list: albumList };
-          },
+mock.module("~/lib/trpc/vanilla", () => ({
+  trpc: {
+    album: {
+      details: {
+        query: async (input: unknown) => {
+          fetched.push(input);
+          return { list: albumList };
         },
       },
-    }),
+    },
   },
 }));
 

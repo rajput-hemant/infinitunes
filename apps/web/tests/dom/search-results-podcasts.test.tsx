@@ -22,9 +22,6 @@ const podcastShow = {
   perma_url: "https://www.jiosaavn.com/shows/cricket/1/AgwxNRhhXMw_",
 };
 
-mock.module("../../lib/trpc/client", () => ({
-  api: { useUtils: () => ({ search: { byType: { fetch: () => {} } } }) },
-}));
 mock.module("../../components/play-button", () => ({
   PlayButton: () => null,
 }));

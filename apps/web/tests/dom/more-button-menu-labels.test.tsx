@@ -1,16 +1,10 @@
 import { describe, expect, it, mock } from "bun:test";
 
 import type { Queue } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
-import superjson from "superjson";
-
-import { api } from "../../lib/trpc/client";
-import { offlineFetch } from "./offline-fetch";
 
 mock.module("server-only", () => ({}));
 
@@ -50,17 +44,6 @@ const router = {
   prefetch() {},
 } as unknown as NonNullable<React.ContextType<typeof AppRouterContext>>;
 
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
-
 /** Renders the player-style menu, opens the desktop dropdown and runs `inspect`. */
 async function withOpenDesktopMenu(inspect: () => void) {
   const container = document.createElement("div");
@@ -69,11 +52,7 @@ async function withOpenDesktopMenu(inspect: () => void) {
   await act(async () => {
     root.render(
       <AppRouterContext.Provider value={router}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <TileMoreButton item={track} favorites={null} showAlbum />
-          </QueryClientProvider>
-        </api.Provider>
+        <TileMoreButton item={track} favorites={null} showAlbum />
       </AppRouterContext.Provider>,
     );
   });

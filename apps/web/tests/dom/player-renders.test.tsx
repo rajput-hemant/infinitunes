@@ -2,8 +2,6 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import type { Favorite } from "@infinitunes/db/schema";
 import { getDownloadLink } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import {
@@ -14,10 +12,8 @@ import {
   type ReactNode,
 } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import superjson from "superjson";
 
 import { useIsPlayerInit } from "../../hooks/use-store";
-import { offlineFetch } from "./offline-fetch";
 
 let position = 0;
 let advancing = false;
@@ -77,7 +73,6 @@ mock.module("../../components/queue", () => ({
 }));
 
 const { Player } = await import("../../components/player");
-const { api } = await import("../../lib/trpc/client");
 
 const queue = ["a", "b", "c"].map((id, i) => ({
   queueItemId: `q${i}`,
@@ -91,17 +86,6 @@ const queue = ["a", "b", "c"].map((id, i) => ({
   download_url: "",
   duration: 200,
 }));
-
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
 const router = {
   push() {},
   replace() {},
@@ -129,13 +113,9 @@ async function commitsOver(ms: number, isAdvancing: boolean) {
     root.render(
       <AppRouterContext.Provider value={router}>
         <SearchParamsContext.Provider value={new URLSearchParams()}>
-          <api.Provider client={trpcClient} queryClient={queryClient}>
-            <QueryClientProvider client={queryClient}>
-              <Profiler id="player" onRender={() => void commits++}>
-                <Player />
-              </Profiler>
-            </QueryClientProvider>
-          </api.Provider>
+          <Profiler id="player" onRender={() => void commits++}>
+            <Player />
+          </Profiler>
         </SearchParamsContext.Provider>
       </AppRouterContext.Provider>,
     );
@@ -223,12 +203,8 @@ async function mountPlayer(options?: {
     root.render(
       <AppRouterContext.Provider value={router}>
         <SearchParamsContext.Provider value={new URLSearchParams()}>
-          <api.Provider client={trpcClient} queryClient={queryClient}>
-            <QueryClientProvider client={queryClient}>
-              <PrimePlayer />
-              <Player favorites={options?.favorites} />
-            </QueryClientProvider>
-          </api.Provider>
+          <PrimePlayer />
+          <Player favorites={options?.favorites} />
         </SearchParamsContext.Provider>
       </AppRouterContext.Provider>,
     );

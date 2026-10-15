@@ -8,12 +8,12 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 import { getItemArtists, type TileMoreItem } from "./more-button-item";
 
 export type RadioStart = {
-  utils: ReturnType<typeof api.useUtils>;
+  client: typeof trpc;
   setQueue: ReturnType<typeof useQueue>[1];
   setCurrentIndex: ReturnType<typeof useCurrentSongIndex>[1];
   setIsPlayerInit: ReturnType<typeof useIsPlayerInit>[1];
@@ -25,7 +25,7 @@ export type RadioStart = {
  * React Compiler bails out on try/catch around ternaries and optional chains.
  */
 export async function startTileRadio(item: TileMoreItem, radio: RadioStart) {
-  const { utils, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
+  const { client, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
     radio;
 
   try {
@@ -38,7 +38,7 @@ export async function startTileRadio(item: TileMoreItem, radio: RadioStart) {
     const stationName = artistName || getItemName(item);
     const radioType: "artist" | "featured" = artistName ? "artist" : "featured";
 
-    const { stationId } = await utils.client.radio.createStation.mutate({
+    const { stationId } = await client.radio.createStation.mutate({
       type: radioType,
       name: stationName,
       artistId,
@@ -48,7 +48,7 @@ export async function startTileRadio(item: TileMoreItem, radio: RadioStart) {
           : undefined,
     });
 
-    const radioSongs = await utils.radio.songs.fetch({
+    const radioSongs = await client.radio.songs.query({
       stationId,
       k: 20,
     });
@@ -85,11 +85,9 @@ export function useTileRadio(item: TileMoreItem) {
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [, setActiveRadio] = useActiveRadioSession();
 
-  const utils = api.useUtils();
-
   async function playRadio() {
     await startTileRadio(item, {
-      utils,
+      client: trpc,
       setQueue,
       setCurrentIndex,
       setIsPlayerInit,

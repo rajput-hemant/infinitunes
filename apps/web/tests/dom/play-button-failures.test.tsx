@@ -15,10 +15,8 @@ mock.module("sonner", () => ({
     error: (message: string) => errors.push(message),
   },
 }));
-mock.module("~/lib/trpc/client", () => ({
-  api: {
-    useUtils: () => ({ album: { details: { fetch: () => albumResult() } } }),
-  },
+mock.module("~/lib/trpc/vanilla", () => ({
+  trpc: { album: { details: { query: () => albumResult() } } },
 }));
 
 const { PlayButton } = await import("../../components/play-button");

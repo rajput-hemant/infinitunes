@@ -3,28 +3,28 @@
 import type { FeaturedPlaylists, Lang } from "@infinitunes/types";
 import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { ComponentProps } from "react";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { CatalogLoadMore } from "~/components/catalog-load-more";
+import { QueryScope } from "~/components/query-scope";
 import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 type FeaturedPlaylistsProps = {
   initialPlaylists: FeaturedPlaylists;
   lang?: Lang;
 };
 
-export function FeaturedPlaylists({
+function FeaturedPlaylistsContent({
   initialPlaylists,
   lang,
 }: FeaturedPlaylistsProps) {
-  const utils = api.useUtils();
-
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["featured-playlists", lang],
       queryFn: ({ pageParam }) =>
-        utils.get.featuredPlaylists.fetch({ page: pageParam, n: 50, lang }),
+        trpc.get.featuredPlaylists.query({ page: pageParam, n: 50, lang }),
       initialPageParam: 1,
       getNextPageParam: (lastPage, allPages) =>
         lastPage.last_page ? null : allPages.length + 1,
@@ -64,5 +64,15 @@ export function FeaturedPlaylists({
         onLoadMore={fetchNextPage}
       />
     </div>
+  );
+}
+
+export function FeaturedPlaylists(
+  props: ComponentProps<typeof FeaturedPlaylistsContent>,
+) {
+  return (
+    <QueryScope>
+      <FeaturedPlaylistsContent {...props} />
+    </QueryScope>
   );
 }

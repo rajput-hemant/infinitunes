@@ -72,6 +72,15 @@ function registerWithin(node: Node) {
   node.querySelectorAll<HTMLElement>(GLASS_SELECTOR).forEach(register);
 }
 
+export { registerGlass };
+
+let running = false;
+
+/** True between `startGlassRuntime` and its teardown. */
+export function isRunning() {
+  return running;
+}
+
 /**
  * Starts the glass engine for the document: capability detection (sets
  * `html[data-glass-engine]`), surface discovery for every `data-glass` surface
@@ -79,6 +88,7 @@ function registerWithin(node: Node) {
  * One instance per page; returns the teardown.
  */
 export function startGlassRuntime(): () => void {
+  running = true;
   const root = document.documentElement;
   const capable = lensCapable();
   const transparency = window.matchMedia(
@@ -169,12 +179,17 @@ export function startGlassRuntime(): () => void {
     ],
   });
 
+  // The engine starts on idle, so a popup may already be open. Popups are
+  // portaled after hydration, which makes them safe to register right away.
+  document.querySelectorAll<HTMLElement>(OVERLAY_SELECTOR).forEach(register);
+
   transparency.addEventListener("change", evaluate);
   contrast.addEventListener("change", evaluate);
   forced.addEventListener("change", evaluate);
   const stopPress = installPressGel();
 
   return () => {
+    running = false;
     stopPress();
     transparency.removeEventListener("change", evaluate);
     contrast.removeEventListener("change", evaluate);

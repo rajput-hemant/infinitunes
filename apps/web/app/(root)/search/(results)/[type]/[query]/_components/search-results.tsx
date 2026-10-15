@@ -4,13 +4,15 @@ import type { SearchReturnType, Song } from "@infinitunes/types";
 import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, SearchX } from "lucide-react";
+import type { ComponentProps } from "react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
+import { QueryScope } from "~/components/query-scope";
 import { searchUi } from "~/components/search/search-ui";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 import type { ListSearchType } from "./type-map";
 import { SEARCH_TYPE_MAP } from "./type-map";
@@ -47,16 +49,14 @@ function isCardEntry(result: SearchEntry): result is CardEntry {
   return !isSongEntry(result);
 }
 
-export function SearchResults(props: SearchResultsProps) {
+function SearchResultsContent(props: SearchResultsProps) {
   const { query, type, initialSearchResults } = props;
-
-  const utils = api.useUtils();
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["search-results", type, query],
       queryFn: ({ pageParam }) =>
-        utils.search.byType.fetch({
+        trpc.search.byType.query({
           q: query,
           type: SEARCH_TYPE_MAP[type],
           page: pageParam,
@@ -130,5 +130,15 @@ export function SearchResults(props: SearchResultsProps) {
         </p>
       )}
     </>
+  );
+}
+
+export function SearchResults(
+  props: ComponentProps<typeof SearchResultsContent>,
+) {
+  return (
+    <QueryScope>
+      <SearchResultsContent {...props} />
+    </QueryScope>
   );
 }

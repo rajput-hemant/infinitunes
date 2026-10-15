@@ -1,123 +1,58 @@
 "use client";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@infinitunes/ui/components/dropdown-menu";
-import { Keyboard, LogIn, LogOut } from "lucide-react";
-import Link from "next/link";
 import { useState } from "react";
 
-import { ThemeToggleGroup } from "~/components/site-footer/theme-toggle-group";
-import { KeyboardShortcutsDialog } from "~/components/site-header/keyboard-shortcuts-dialog";
 import { useIsPhone } from "~/components/site-header/use-is-phone";
 import {
-  linksFor,
-  UserMenuIdentity,
   type UserMenuUser,
   UserMenuTriggerAvatar,
   userMenuTriggerClassName,
 } from "~/components/site-header/user-menu-parts";
-import { UserMenuSheet } from "~/components/site-header/user-menu-sheet";
-import { useSignOut } from "~/hooks/use-sign-out";
+import { useDeferred } from "~/hooks/use-deferred";
 
 type UserDropdownProps = {
   user?: UserMenuUser;
 };
 
-/** Anchored dropdown from 768px, bottom sheet below it (`UserMenuSheet`). */
+const loadPopup = () => import("./user-dropdown-popup");
+
+/**
+ * The toolbar's avatar button. The menu behind it (dropdown from 768px, bottom
+ * sheet below) and the shortcuts dialog are a separate chunk: the first hover,
+ * focus, pointer down or arrow key loads it and swaps this identical closed
+ * trigger for the real one. A click before that opens the menu once it lands.
+ */
 export function UserDropdown({ user }: UserDropdownProps) {
   const isPhone = useIsPhone();
-  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const { mod, preload, intent } = useDeferred("user-menu", loadPopup);
+  const [clicked, setClicked] = useState(false);
+
+  if (mod) return <mod.UserDropdownPopup user={user} defaultOpen={clicked} />;
 
   return (
-    <>
-      {isPhone ? (
-        <UserMenuSheet
-          user={user}
-          onShowShortcuts={() => setShortcutsOpen(true)}
-        />
-      ) : (
-        <DesktopUserMenu
-          user={user}
-          onShowShortcuts={() => setShortcutsOpen(true)}
-        />
-      )}
-
-      <KeyboardShortcutsDialog
-        open={shortcutsOpen}
-        onOpenChange={setShortcutsOpen}
-      />
-    </>
-  );
-}
-
-type UserMenuProps = UserDropdownProps & {
-  onShowShortcuts: () => void;
-};
-
-function DesktopUserMenu({ user, onShowShortcuts }: UserMenuProps) {
-  const signOut = useSignOut();
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label="Open user menu"
-        className={userMenuTriggerClassName}
-      >
-        <UserMenuTriggerAvatar user={user} />
-      </DropdownMenuTrigger>
-
-      <DropdownMenuContent
-        side="bottom"
-        align="end"
-        className="min-w-56 max-w-xs pointer-coarse:min-w-72 *:cursor-pointer [&_[data-slot=dropdown-menu-item]]:min-h-(--ctl) [&_[data-slot=dropdown-menu-item]]:pointer-coarse:min-h-(--ctl-lg)"
-      >
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>
-            <UserMenuIdentity user={user} />
-          </DropdownMenuLabel>
-        </DropdownMenuGroup>
-
-        <DropdownMenuSeparator />
-
-        {linksFor(user).map(({ href, label, icon: Icon }) => (
-          <DropdownMenuItem key={href} render={<Link href={href} />}>
-            <Icon aria-hidden size={16} className="mr-2" />
-            {label}
-          </DropdownMenuItem>
-        ))}
-
-        <DropdownMenuSeparator />
-
-        <div className="px-1.5 py-1">
-          <ThemeToggleGroup stretch />
-        </div>
-
-        <DropdownMenuItem onClick={onShowShortcuts}>
-          <Keyboard aria-hidden size={16} className="mr-2" />
-          Keyboard shortcuts
-        </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-
-        {user ? (
-          <DropdownMenuItem onClick={signOut}>
-            <LogOut aria-hidden size={16} className="mr-2" />
-            Log out
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem render={<Link href="/login" />}>
-            <LogIn aria-hidden size={16} className="mr-2" />
-            Log in
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <button
+      type="button"
+      aria-haspopup={isPhone ? "dialog" : "menu"}
+      aria-expanded={false}
+      aria-label="Open user menu"
+      data-slot={isPhone ? "drawer-trigger" : "dropdown-menu-trigger"}
+      data-deferred="user-menu"
+      className={userMenuTriggerClassName}
+      {...intent}
+      onKeyDown={(event) => {
+        // A menu button also opens on the arrow keys.
+        if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+          event.preventDefault();
+          preload();
+          setClicked(true);
+        }
+      }}
+      onClick={() => {
+        preload();
+        setClicked(true);
+      }}
+    >
+      <UserMenuTriggerAvatar user={user} />
+    </button>
   );
 }

@@ -92,6 +92,23 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     (Next's devtools segment wrapper around the template is created unvalidated).
     It does not exist in production builds; it hid before only because the layout
     blocked the whole route.
+- First-load JS rules (budget in `scripts/check-budget.ts`, run `bun run budget`):
+  - No TanStack Query or tRPC React provider at the root. Imperative calls (play, radio, surprise,
+    player refill) use the vanilla client `trpc` from `~/lib/trpc/vanilla`; only infinite lists,
+    search and lyrics wrap themselves in `QueryScope` (`components/query-scope.tsx`) and pass
+    `trpc.x.y.query` as `queryFn`. Never import `@tanstack/react-query` from a component the shell
+    or a list-less route renders.
+  - Toolbar popups (search palette, language picker, user menu, Music mega menu, create-playlist
+    dialog) are a closed shell trigger plus a lazy chunk (`hooks/use-deferred.ts`): hover, focus,
+    pointer down, Ctrl/Cmd+K or an arrow key start the import; click before it lands opens it on
+    arrival (`defaultOpen`). The shell trigger must render the same classes and ARIA as the real
+    one (share the class/props module, see `language-trigger.tsx`; `tests/dom/deferred-popups.test.tsx`
+    pins nav). Do not import `Dialog`/`Drawer`/`Popover`/`DropdownMenu`/`NavigationMenu` statically
+    from anything the layout renders.
+  - The glass engine (`start-glass-runtime`, lens registry) is its own chunk, started on idle by
+    `GlassRuntime` (or by the first popup intent). Register surfaces through `whenGlassRuns` /
+    `registerWhenReady` in `components/glass/glass-loader.ts`; never import `lens-registry` or
+    `start-glass-runtime` statically from shell code. Surfaces show the frosted fallback until then.
 - Env validation (`apps/web/lib/env.ts`) runs at build time and fails
   without real vars. Use `SKIP_ENV_VALIDATION=true` for source-compilation only.
 - Turbo filters env vars: any build/runtime var (incl. `SKIP_ENV_VALIDATION`)
