@@ -31,22 +31,22 @@ async function fetchImage(url: URL) {
   return `data:${type};base64,${Buffer.from(buffer).toString("base64")}`;
 }
 
-// Read from disk rather than `fetch()`: on the Node runtime undici refuses
-// `file:` URLs, and the bundler rewrites this URL to the emitted asset.
-async function readFont() {
-  return readFile(
-    new URL("../../../public/fonts/CalSans-SemiBold.woff", import.meta.url),
-  );
-}
+// Read once per process rather than on every request. Read from disk rather
+// than `fetch()`: on the Node runtime undici refuses `file:` URLs, and the
+// bundler rewrites this URL to the emitted asset. Each read has a handler, so a
+// failed read is not an unhandled rejection; a request that awaits it still
+// gets the error and answers 500.
+const fontPromise = readFile(
+  new URL("../../../public/fonts/CalSans-SemiBold.woff", import.meta.url),
+);
+fontPromise.catch(() => {});
 
 // Local default artwork (served from `public/`), so a missing `image` param
 // never triggers a third-party fetch. It is square, so it uses the square layout.
-async function readDefaultImage() {
-  const buffer = await readFile(
-    new URL("../../../public/icon-512.png", import.meta.url),
-  );
-  return `data:image/png;base64,${buffer.toString("base64")}`;
-}
+const defaultImagePromise = readFile(
+  new URL("../../../public/icon-512.png", import.meta.url),
+).then((buffer) => `data:image/png;base64,${buffer.toString("base64")}`);
+defaultImagePromise.catch(() => {});
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -67,8 +67,8 @@ export async function GET(request: Request) {
   try {
     const image = imageUrl
       ? await fetchImage(imageUrl)
-      : await readDefaultImage();
-    const font = await readFont();
+      : await defaultImagePromise;
+    const font = await fontPromise;
 
     return new ImageResponse(
       <div tw="relative flex h-full bg-black text-white">
@@ -120,6 +120,7 @@ export async function GET(request: Request) {
         </div>
 
         <div tw="relative flex h-full w-1/2 overflow-hidden">
+          {/* oxlint-disable-next-line next/no-img-element -- ImageResponse renders through Satori, which only supports a plain img */}
           <img
             alt=""
             src={image}

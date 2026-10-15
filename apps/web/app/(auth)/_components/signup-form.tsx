@@ -28,6 +28,47 @@ const defaultValues: SignUpFormData = {
   confirmPassword: "",
 };
 
+type AppRouter = ReturnType<typeof useRouter>;
+
+/** Creates the account. Outside the component: the React Compiler bails out on try/finally. */
+async function signUp(
+  formData: SignUpFormData,
+  {
+    router,
+    callbackUrl,
+    setBusy,
+  }: {
+    router: AppRouter;
+    callbackUrl: string;
+    setBusy: (busy: boolean) => void;
+  },
+) {
+  setBusy(true);
+
+  try {
+    const { error } = await authClient.signUp.email({
+      email: formData.email,
+      password: formData.password,
+      name: formData.email.split("@")[0],
+    });
+
+    if (error) {
+      toast.error(
+        error.status < 500 ? userMessage(error.message) : userMessage(null),
+      );
+    } else {
+      toast.success("Account Created Successfully");
+      router.push(asRoute(callbackUrl));
+      router.refresh();
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error(userMessage(error));
+  } finally {
+    setBusy(false);
+  }
+}
+
 export function SignUpForm() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -52,30 +93,11 @@ export function SignUpForm() {
   });
 
   async function onSubmit(formData: SignUpFormData) {
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await authClient.signUp.email({
-        email: formData.email,
-        password: formData.password,
-        name: formData.email.split("@")[0],
-      });
-
-      if (error) {
-        toast.error(
-          error.status < 500 ? userMessage(error.message) : userMessage(null),
-        );
-      } else {
-        toast.success("Account Created Successfully");
-        router.push(asRoute(callbackUrl));
-        router.refresh();
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error(userMessage(error));
-    } finally {
-      setIsSubmitting(false);
-    }
+    await signUp(formData, {
+      router,
+      callbackUrl,
+      setBusy: setIsSubmitting,
+    });
   }
 
   return (

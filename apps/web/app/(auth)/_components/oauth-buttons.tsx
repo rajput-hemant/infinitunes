@@ -19,30 +19,47 @@ type OAuthButtonProps = {
   setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+/** Starts a provider sign-in. Outside the component: the React Compiler bails out on try/finally. */
+async function signInWithProvider(
+  provider: OAuthProvider,
+  callbackUrl: string,
+  setOauthLoading: React.Dispatch<
+    React.SetStateAction<OAuthProvider | undefined>
+  >,
+  setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>,
+) {
+  setOauthLoading(provider);
+  setIsSubmitting(true);
+
+  try {
+    // On success the browser navigates to the provider, so there is nothing to announce.
+    const { error } = await authClient.signIn.social({
+      provider,
+      callbackURL: callbackUrl,
+    });
+
+    if (error) toast.error(error.message ?? "Something went wrong.");
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong.");
+  } finally {
+    setIsSubmitting(false);
+    setOauthLoading(undefined);
+  }
+}
+
 export function OAuthButtons(props: OAuthButtonProps) {
   const { isFormDisabled, callbackUrl, setIsSubmitting } = props;
 
   const [oauthLoading, setOauthLoading] = React.useState<OAuthProvider>();
 
-  async function signInWithProvider(provider: OAuthProvider) {
-    setOauthLoading(provider);
-    setIsSubmitting(true);
-
-    try {
-      // On success the browser navigates to the provider, so there is nothing to announce.
-      const { error } = await authClient.signIn.social({
-        provider,
-        callbackURL: callbackUrl,
-      });
-
-      if (error) toast.error(error.message ?? "Something went wrong.");
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong.");
-    } finally {
-      setIsSubmitting(false);
-      setOauthLoading(undefined);
-    }
+  async function startProviderSignIn(provider: OAuthProvider) {
+    await signInWithProvider(
+      provider,
+      callbackUrl,
+      setOauthLoading,
+      setIsSubmitting,
+    );
   }
 
   return (
@@ -51,7 +68,7 @@ export function OAuthButtons(props: OAuthButtonProps) {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => signInWithProvider("github")}
+          onClick={() => startProviderSignIn("github")}
           disabled={isFormDisabled}
           className={authSquareButtonStyles}
         >
@@ -66,7 +83,7 @@ export function OAuthButtons(props: OAuthButtonProps) {
         <Button
           type="button"
           variant="secondary"
-          onClick={() => signInWithProvider("google")}
+          onClick={() => startProviderSignIn("google")}
           disabled={isFormDisabled}
           className={authSquareButtonStyles}
         >

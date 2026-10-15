@@ -181,8 +181,8 @@ export function createAuth(
         hash: async (password) => {
           return hash(password, 10);
         },
-        verify: async ({ password, hash }) => {
-          return compare(password, hash);
+        verify: async ({ password, hash: storedHash }) => {
+          return compare(password, storedHash);
         },
       },
     },

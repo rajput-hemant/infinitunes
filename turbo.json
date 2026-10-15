@@ -26,8 +26,7 @@
       "cache": false
     },
     "lint": {},
-    "type-check": {},
-    "test": {}
+    "type-check": {}
   },
   "globalEnv": [
     "AUTH_SECRET",

@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "lint": "oxlint --deny-warnings",
     "type-check": "tsc --noEmit",
     "test": "bun test",
     "db:generate": "drizzle-kit generate --config=./src/drizzle.config.ts",

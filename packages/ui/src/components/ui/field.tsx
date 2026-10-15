@@ -75,6 +75,7 @@ function Field({
 }: React.ComponentProps<"div"> & VariantProps<typeof fieldVariants>) {
   return (
     <div
+      // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- a div keeps fieldset's min-content sizing out of flex and grid layouts
       role="group"
       data-slot="field"
       data-orientation={orientation}
