@@ -6,7 +6,7 @@ import { BadgeCheck, Play, Shuffle } from "lucide-react";
 
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
-import { MORPH_CLASS, morphName } from "~/lib/view-transition";
+import { morphName } from "~/lib/view-transition";
 import { getViewer } from "~/lib/viewer";
 
 import { DownloadButton } from "../download-button";
@@ -15,6 +15,7 @@ import { ImageWithFallback } from "../image-with-fallback";
 import { LikeButton } from "../like-button";
 import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
+import { MorphArt } from "../view-transition/morph-target";
 import { detailBandClassName } from "./details-header-band";
 import { DetailsHeaderFrame } from "./details-header-frame";
 import type { DetailsItem, DetailsKind } from "./details-header-items";
@@ -64,11 +65,8 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
 
   return (
     <DetailsHeaderFrame title={title} className={detailBandClassName}>
-      <div
-        style={{
-          viewTransitionName: morphName(kind, playToken),
-          viewTransitionClass: MORPH_CLASS,
-        }}
+      <MorphArt
+        name={morphName(kind, playToken)}
         className={cn(
           "relative aspect-square w-[min(60vw,14rem)] shrink-0 overflow-hidden rounded-md shadow-md md:w-36 lg:w-44 min-[90rem]:w-56",
           isRound && "rounded-full",
@@ -86,7 +84,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
         />
 
         <Skeleton className="absolute inset-0 -z-10 rounded-none" />
-      </div>
+      </MorphArt>
 
       <figcaption className="flex min-w-0 w-full flex-col items-center overflow-hidden md:items-start">
         <div className="flex items-center gap-2 text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] text-muted-foreground uppercase">

@@ -253,6 +253,20 @@ bug is appending to them instead of substituting:
 Verify these against live data, not fixtures: a decrypted link should answer
 `206 audio/mp4` to `curl -o /dev/null -w '%{http_code} %{content_type}' -r 0-1`.
 
+## View transitions (`app/(root)/template.tsx`, `styles/motion.css`)
+
+- One `<ViewTransition default="vt-page">` in the (root) template triggers a transition for every
+  navigation, tab/search-type switch and skeleton reveal. It must stay a trigger only: motion.css sets
+  `view-transition-name: none !important` on `[data-vt-page]`, so the root snapshot (viewport sized)
+  crossfades. Naming the page snapshots the whole document height and lifts it out of the root, and
+  naming shell pieces (sidebar, toolbar, player) makes the glass lose its backdrop (measured: toolbar
+  diff mean 44 vs about 2). Never add `view-transition-name` to the shell or the page wrapper.
+- Browser back/forward never starts a view transition: React skips popstate commits. Directional
+  slides are not possible without naming the page, so there are none.
+- The artwork morph: `MorphSource` names the clicked card's art; `MorphSkeleton` (loading skeleton) and
+  `MorphArt` (real header art) claim that name inside the transition's commit (`morph-state.ts`).
+  Do not name destination artwork statically or via an observer: that raced the commit.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
