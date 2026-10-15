@@ -42,10 +42,7 @@ export async function startTileRadio(item: TileMoreItem, radio: RadioStart) {
       type: radioType,
       name: stationName,
       artistId,
-      language:
-        "language" in item && typeof item.language === "string"
-          ? item.language
-          : undefined,
+      language: item.language,
     });
 
     const radioSongs = await client.radio.songs.query({

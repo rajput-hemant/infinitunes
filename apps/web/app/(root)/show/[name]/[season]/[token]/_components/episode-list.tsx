@@ -1,8 +1,8 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import type { Episode, Sort } from "@infinitunes/types";
-import { uniqueBy } from "@infinitunes/types";
+import type { Sort, SongRowItem } from "@infinitunes/types";
+import { toSongRow, uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import type { ComponentProps } from "react";
@@ -19,7 +19,7 @@ type EpisodeListProps = {
   season: number;
   sort: Sort;
   totalEpisodes: number;
-  initialEpisodes: Episode[];
+  initialEpisodes: SongRowItem[];
   userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
 };
@@ -39,13 +39,15 @@ function EpisodeListContent(props: EpisodeListProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["episodes", season, showId],
-      queryFn: ({ pageParam }) =>
-        trpc.show.episodes.query({
-          id: showId,
-          season,
-          page: pageParam,
-          sort,
-        }),
+      queryFn: async ({ pageParam }) =>
+        (
+          await trpc.show.episodes.query({
+            id: showId,
+            season,
+            page: pageParam,
+            sort,
+          })
+        ).map(toSongRow),
       initialPageParam: 1,
       getNextPageParam: (_, allPages) => {
         const allPagesLength = allPages

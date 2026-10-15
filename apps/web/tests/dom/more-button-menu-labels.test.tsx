@@ -6,6 +6,8 @@ import { act } from "react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
 
+import { waitFor } from "./wait-for";
+
 mock.module("server-only", () => ({}));
 
 const { TileMoreButton } =
@@ -64,6 +66,12 @@ async function withOpenDesktopMenu(inspect: () => void) {
   await act(async () => {
     triggers[triggers.length - 1]?.click();
   });
+  // The menu is its own chunk: the click starts the import and opens it on arrival.
+  await waitFor(
+    () =>
+      document.querySelector('[role="menuitem"], [data-slot=drawer-popup]') !==
+      null,
+  );
 
   try {
     inspect();

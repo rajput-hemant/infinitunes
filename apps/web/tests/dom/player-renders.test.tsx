@@ -14,6 +14,7 @@ import {
 import { createRoot, type Root } from "react-dom/client";
 
 import { useIsPlayerInit } from "../../hooks/use-store";
+import { waitFor } from "./wait-for";
 
 let position = 0;
 let advancing = false;
@@ -219,6 +220,12 @@ async function menuLabels() {
   await act(async () => {
     triggers[triggers.length - 1]?.click();
   });
+  // The menu is its own chunk: the click starts the import and opens it on arrival.
+  await waitFor(
+    () =>
+      document.querySelector('[role="menuitem"], [data-slot=drawer-popup]') !==
+      null,
+  );
   return [...document.querySelectorAll('[role="menuitem"]')].map(
     (el) => el.textContent,
   );

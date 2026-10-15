@@ -5,6 +5,7 @@ import React from "react";
 import { ArtistSpotlight } from "~/components/artist-spotlight";
 import { Icons } from "~/components/icons";
 import { controlStyles } from "~/lib/control-styles";
+import { noindexMetadata } from "~/lib/metadata";
 import { cn } from "~/lib/utils";
 
 const ART_IMAGES = [
@@ -21,6 +22,8 @@ const ART_IMAGES = [
 ];
 
 type AuthLayoutProps = React.PropsWithChildren;
+
+export const metadata = noindexMetadata;
 
 // Signed-in redirects live in each page (`SignedInRedirect`, behind its own
 // `<Suspense>`), because `/reset-password?token=...` must stay reachable for a

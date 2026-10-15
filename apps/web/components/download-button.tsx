@@ -1,6 +1,6 @@
 "use client";
 
-import type { Episode, Song } from "@infinitunes/types";
+import type { Episode, Song, SongRowItem } from "@infinitunes/types";
 import { decode, getDownloadLink, maxQualityOf } from "@infinitunes/types";
 import {
   Tooltip,
@@ -15,9 +15,16 @@ import { useDownloadQuality } from "~/hooks/use-store";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
+/** A raw catalog song or episode, or a slim row (already decoded, with its quality cap). */
+type Downloadable = Song | Episode | SongRowItem;
+
 type DownloadButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
-  songs: (Song | Episode)[];
+  songs: Downloadable[];
 };
+
+function downloadTitle(song: Downloadable): string {
+  return "more_info" in song ? decode(song.title) : song.name;
+}
 
 /** Streams a song's audio into memory; throws when the download is not served. */
 export async function readAudio(link: string): Promise<BlobPart[]> {
@@ -58,8 +65,8 @@ function saveBlob(blob: Blob, filename: string) {
  * run. Kept outside the hook: the React Compiler bails out on try/finally.
  */
 async function downloadAll(
-  songs: (Song | Episode)[],
-  downloadSong: (song: Song | Episode) => Promise<void>,
+  songs: Downloadable[],
+  downloadSong: (song: Downloadable) => Promise<void>,
   setBusy: (busy: boolean) => void,
 ) {
   setBusy(true);
@@ -74,19 +81,22 @@ async function downloadAll(
 }
 
 /** Downloads every song at the chosen quality; `isDownloading` disables the trigger meanwhile. */
-export function useDownloadSongs(songs: (Song | Episode)[]) {
+export function useDownloadSongs(songs: Downloadable[]) {
   const [downloadQuality] = useDownloadQuality();
   const [isDownloading, setIsDownloading] = React.useState(false);
 
-  async function downloadSong(song: Song | Episode) {
+  async function downloadSong(song: Downloadable) {
+    const raw = "more_info" in song;
     const link = getDownloadLink(
-      song.download_url ?? song.more_info.download_url ?? "",
+      raw
+        ? (song.download_url ?? song.more_info.download_url ?? "")
+        : song.download_url,
       downloadQuality,
-      maxQualityOf(song.more_info),
+      raw ? maxQualityOf(song.more_info) : song.maxQuality,
     );
     if (!link) return;
 
-    const title = decode(song.title);
+    const title = downloadTitle(song);
     const chunks = await readAudio(link);
 
     toast.success(`Downloaded ${title}`);
@@ -144,7 +154,7 @@ export function DownloadButton({
 
       <TooltipContent>
         {songs.length === 1
-          ? `Download \`${songs[0]?.title ?? ""}\``
+          ? `Download \`${songs[0] ? downloadTitle(songs[0]) : ""}\``
           : `Download ${songs.length} songs`}
       </TooltipContent>
     </Tooltip>

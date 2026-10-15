@@ -1,7 +1,7 @@
 "use client";
 
-import type { Episode, Song } from "@infinitunes/types";
-import { toQueue } from "@infinitunes/types";
+import type { SongRowItem } from "@infinitunes/types";
+import { toQueueEntry } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Play } from "lucide-react";
 import type { ReactNode } from "react";
@@ -22,7 +22,7 @@ export function playAllToastTitle(count: number): string {
 }
 
 type PlayAllButtonProps = {
-  items: (Song | Episode)[];
+  items: SongRowItem[];
   children?: ReactNode;
   className?: string;
 };
@@ -38,7 +38,7 @@ export function PlayAllButton({
   const [, setActiveRadio] = useActiveRadioSession();
 
   function playAll() {
-    const queue = items.map(toQueue);
+    const queue = items.map(toQueueEntry);
     if (!queue.length) return;
 
     setActiveRadio(null);

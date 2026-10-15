@@ -1,5 +1,7 @@
+import { decode } from "@infinitunes/types";
 import type { Metadata } from "next";
 
+import { siteUrl } from "~/lib/site-url";
 import { ogImageUrl } from "~/lib/utils";
 
 type PageMetadataInput = {
@@ -9,31 +11,45 @@ type PageMetadataInput = {
   url: string;
   /** Artwork for the OG card (absolute URL or path); omitted uses the local default. */
   image?: string;
-  /** Alt text for the OG image; defaults to `title`. */
+  /** Alt text for the OG image; defaults to the title. */
   alt?: string;
   /** Crop the OG artwork to a square (entity artwork). */
   square?: boolean;
 };
 
 /**
- * Page title, description and OpenGraph card in one place. The OG image URL is
- * always built with `ogImageUrl`, so titles and descriptions are decoded and
- * percent-encoded rather than interpolated into the query string.
+ * Page title, description, canonical link and OpenGraph card in one place.
+ * Upstream titles arrive HTML-encoded, so the text fields are decoded here; the
+ * OG image URL gets the raw values because `ogImageUrl` decodes them itself.
  */
 export function pageMetadata(input: PageMetadataInput): Metadata {
-  const { title, description, url, image, alt = title, square } = input;
+  const { url, image, square } = input;
+  const title = decode(input.title);
+  const description = decode(input.description);
+  const canonical = siteUrl(url);
 
   return {
     title,
     description,
+    alternates: { canonical },
     openGraph: {
       title,
       description,
-      url,
+      url: canonical,
       images: {
-        url: ogImageUrl({ title, description, image, square }),
-        alt,
+        url: ogImageUrl({
+          title: input.title,
+          description: input.description,
+          image,
+          square,
+        }),
+        alt: input.alt ?? title,
       },
     },
   };
 }
+
+/** Keeps a route out of search results: user pages, settings and sign-in. */
+export const noindexMetadata = {
+  robots: { index: false },
+} satisfies Metadata;

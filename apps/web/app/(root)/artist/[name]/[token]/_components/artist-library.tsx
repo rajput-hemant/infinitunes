@@ -1,4 +1,5 @@
 import type { Album, Category, Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 
 import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
 import { KeyedByParams } from "~/components/search-params-boundary";
@@ -71,7 +72,9 @@ async function Library({
       userFavorites={favorites}
       userPlaylists={playlists}
       initialSongs={
-        type === "songs" ? (sortedSongs ?? artist.topSongs ?? []) : undefined
+        type === "songs"
+          ? (sortedSongs ?? artist.topSongs ?? []).map(toSongRow)
+          : undefined
       }
       initialAlbums={
         type === "albums" ? (sortedAlbums ?? artist.topAlbums) : undefined

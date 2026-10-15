@@ -1,8 +1,8 @@
 "use client";
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import type { Album, Category, Song } from "@infinitunes/types";
-import { uniqueBy } from "@infinitunes/types";
+import type { Album, Category, Song, SongRowItem } from "@infinitunes/types";
+import { toSongRow, uniqueBy } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { ComponentProps } from "react";
@@ -45,7 +45,7 @@ function LoadMore({ hasNextPage, isFetching, onClick }: LoadMoreProps) {
 type ArtistsTopItemsProps = {
   id: string;
   type: "songs" | "albums";
-  initialSongs?: Song[];
+  initialSongs?: SongRowItem[];
   initialAlbums?: Album[];
   category?: Category;
   /** The upstream page `initialSongs`/`initialAlbums` came from; the next fetch is the one after it. */
@@ -63,7 +63,7 @@ type TopSongsProps = Pick<
   | "user"
   | "userFavorites"
   | "userPlaylists"
-> & { initialSongs: Song[] };
+> & { initialSongs: SongRowItem[] };
 
 function ArtistTopSongs(props: TopSongsProps) {
   const {
@@ -79,8 +79,8 @@ function ArtistTopSongs(props: TopSongsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: [id, "artists-top-songs", category ?? "popularity"],
-      queryFn: async ({ pageParam }) =>
-        toArtistPage<Song>(
+      queryFn: async ({ pageParam }) => {
+        const page = toArtistPage<Song>(
           await trpc.artist.songs.query({
             id,
             page: pageParam,
@@ -89,7 +89,9 @@ function ArtistTopSongs(props: TopSongsProps) {
           }),
           "topSongs",
           "songs",
-        ),
+        );
+        return { ...page, items: page.items.map(toSongRow) };
+      },
       initialPageParam: lastInitialPage + 1,
       getNextPageParam: (lastPage, _allPages, lastPageParam) =>
         nextArtistPage(lastPage, lastPageParam),

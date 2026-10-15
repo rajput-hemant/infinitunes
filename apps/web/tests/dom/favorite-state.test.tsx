@@ -2,10 +2,13 @@ import { describe, expect, it, mock } from "bun:test";
 
 import type { Favorite } from "@infinitunes/db/schema";
 import type { Queue as QueueItem, Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
+
+import { waitFor } from "./wait-for";
 
 // `server-only` throws outside the react-server condition; the action module
 // behind the button only needs it to import, nothing here calls an action.
@@ -64,6 +67,12 @@ async function withMenu(
   await act(async () => {
     triggers[mobile ? 0 : triggers.length - 1]?.click();
   });
+  // The menu is its own chunk: the click starts the import and opens it on arrival.
+  await waitFor(
+    () =>
+      document.querySelector('[role="menuitem"], [data-slot=drawer-popup]') !==
+      null,
+  );
 
   try {
     inspect();
@@ -170,7 +179,7 @@ describe("tile more-button mobile menu", () => {
         }
       },
       true,
-      { item: song, playlistId: "playlist-1", playlistSongIndex: 0 },
+      { item: toSongRow(song), playlistId: "playlist-1", playlistSongIndex: 0 },
     );
   });
 });

@@ -1,6 +1,7 @@
 import { describe, expect, it, mock } from "bun:test";
 
 import type { Song } from "@infinitunes/types";
+import { toSongRow } from "@infinitunes/types";
 import {
   AppRouterContext,
   type AppRouterInstance,
@@ -12,6 +13,7 @@ import { createRoot } from "react-dom/client";
 import { AudioPlayerProvider } from "react-use-audio-player";
 
 import { setInputValue } from "./set-input-value";
+import { waitFor } from "./wait-for";
 
 // `server-only` throws outside the react-server condition; the db action
 // module behind the rows only needs it to import, nothing here calls one.
@@ -84,7 +86,7 @@ async function renderList(props: ListProps = {}, list: Song[] = items) {
       <AppRouterContext.Provider value={router}>
         <SearchParamsContext.Provider value={new URLSearchParams()}>
           <AudioPlayerProvider>
-            <LibrarySongList items={list} {...props} />
+            <LibrarySongList items={list.map(toSongRow)} {...props} />
           </AudioPlayerProvider>
         </SearchParamsContext.Provider>
       </AppRouterContext.Provider>,
@@ -333,6 +335,13 @@ describe("LibrarySongList", () => {
         await act(async () => {
           triggers[triggers.length - 1]?.click();
         });
+        // The menu is its own chunk: the click starts the import and opens it on arrival.
+        await waitFor(
+          () =>
+            document.querySelector(
+              '[role="menuitem"], [data-slot=drawer-popup]',
+            ) !== null,
+        );
         const labels = [...document.querySelectorAll('[role="menuitem"]')].map(
           (el) => el.textContent,
         );
@@ -366,6 +375,13 @@ describe("LibrarySongList", () => {
         await act(async () => {
           triggers[0]?.click();
         });
+        // The menu is its own chunk: the click starts the import and opens it on arrival.
+        await waitFor(
+          () =>
+            document.querySelector(
+              '[role="menuitem"], [data-slot=drawer-popup]',
+            ) !== null,
+        );
         const labels = [...document.querySelectorAll("button")].map(
           (el) => el.textContent,
         );

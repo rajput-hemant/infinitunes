@@ -99,7 +99,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     `trpc.x.y.query` as `queryFn`. Never import `@tanstack/react-query` from a component the shell
     or a list-less route renders.
   - Toolbar popups (search palette, language picker, user menu, Music mega menu, create-playlist
-    dialog) are a closed shell trigger plus a lazy chunk (`hooks/use-deferred.ts`): hover, focus,
+    dialog, the per-row "more" menu and drawer) are a closed shell trigger plus a lazy chunk (`hooks/use-deferred.ts`): hover, focus,
     pointer down, Ctrl/Cmd+K or an arrow key start the import; click before it lands opens it on
     arrival (`defaultOpen`). The shell trigger must render the same classes and ARIA as the real
     one (share the class/props module, see `language-trigger.tsx`; `tests/dom/deferred-popups.test.tsx`
@@ -161,6 +161,19 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   export). If a package needs ambient globals visible to consumers, prefer
   listing the `.d.ts` file directly in the consumer's own `tsconfig.json`
   `include`/`files`, not a barrel re-export.
+
+## Song rows take the slim model, never the raw song
+
+Client components (rows, row menus, `SongListClient`, `LibrarySongList`, `PlayAllButton`, details header buttons,
+infinite lists) get `SongRowItem` from `toSongRow` (`packages/types/src/row.ts`), built where the raw song is
+fetched (server component, or the `queryFn` of a client list). Never pass a `Song`/`Episode` as a client prop: a raw
+song is about 4 KB of flight. It keeps `download_url` and `maxQuality` (the `320kbps` cap), so playback and download
+fallback work; add a field there only when a client really reads it. `toSongRow` is memoized per raw object so the
+header and the rows of one page share one serialized copy (Flight dedupes by reference); build rows from the same
+raw array, not a re-fetched one. `toQueueEntry` turns a row or a queue entry into a fresh `Queue`.
+`SongListRow` and the list/shelf/details skeletons (`song-list-skeleton`, `shelf-skeleton`, `details-header-skeleton`) are
+`"use client"` on purpose: server-rendered, their class strings were serialized into the flight per row (4 KB each);
+as client components the flight carries only props. Keep repeated markup (rows, skeleton cards) in client modules.
 
 ## packages/trpc raw-passthrough shape (resolved)
 
@@ -324,6 +337,15 @@ Never hang UI state on the action's round trip, and never let only the clicked c
   row with no link and takes the real id on return. Sign out, profile and password saves, and radio/queue
   fetches stay pending-style (toast) because the server or upstream decides the outcome.
 
+## Proxy limiter scope
+
+`proxy.ts` matches pages, `/api/trpc`, `/api/auth` and `/api/og` only (`PROXY_MATCHER` in
+`lib/rate-limit-scope.ts`; the literal in `config.matcher` must equal it, a test checks). `limiterKinds`
+charges documents, server actions and `/api` requests; RSC navigations/prefetches (`rsc` header) and
+subresources (`sec-fetch-dest` other than document/iframe) are never counted, so browsing cannot 429.
+`/api/og` has its own 20/min bucket on top of the global one. Do not add CSP enforcement or a limiter
+for static files here.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.
@@ -379,6 +401,11 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
 - `@infinitunes/types` is the single source of truth for shared value lists: `LANGUAGES`
   (derive `Lang` from it), `QUALITIES_MAP`, and `parseToken` (the perma-url token extractor used
   by both `apps/web` and `packages/trpc`; don't hand-roll another copy).
+- SEO origin: canonical, `og:url`, `metadataBase`, robots and sitemap URLs all come from
+  `siteUrl()` (`apps/web/lib/site-url.ts`, `NEXT_PUBLIC_APP_URL` with the production default).
+  Route metadata goes through `pageMetadata` (`lib/metadata.ts`, which sets the canonical); user,
+  settings and auth routes export `noindexMetadata`. `app/robots.ts` owns robots.txt: never add
+  `public/robots.txt`, a static file is served instead of the route.
 - Test layout: `apps/web/tests/` (plain), `apps/web/tests/mocked/` (process-isolated
   `mock.module` suites), `apps/web/tests/dom/` (happy-dom behavior tests).
   Skill/feature docs in `.agents/skills/verify/` and `.agents/skills/verify/features/` cite these.

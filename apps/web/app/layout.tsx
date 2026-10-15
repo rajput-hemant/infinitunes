@@ -11,11 +11,12 @@ import { TailwindIndicator } from "~/components/tailwind-indicator";
 import { siteConfig } from "~/config/site";
 import { env } from "~/lib/env";
 import * as fonts from "~/lib/fonts";
+import { siteUrl } from "~/lib/site-url";
 import { THEME_COLOR } from "~/lib/theme-color";
 import { DEFAULT_THEME_CONFIG } from "~/lib/theme-config";
 import { THEME_BOOTSTRAP_SCRIPT } from "~/lib/theme-script";
 import { themeConfigToHtml } from "~/lib/theme/html";
-import { absoluteUrl, cn } from "~/lib/utils";
+import { cn } from "~/lib/utils";
 
 type RootLayoutProps = {
   modal: React.ReactNode;
@@ -99,5 +100,5 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-icon.png", type: "image/png" }],
   },
-  metadataBase: new URL(absoluteUrl("/")),
+  metadataBase: new URL(siteUrl()),
 };
