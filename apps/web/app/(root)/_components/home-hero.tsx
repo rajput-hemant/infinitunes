@@ -61,14 +61,15 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
         {/* Image scrim: stays dark over arbitrary artwork in both themes, so it is not a theme token. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-black/45 via-transparent to-transparent"
+          className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-black/80 via-black/30 via-45% to-transparent"
         />
 
-        {/* Compact glass strip anchored to the bottom: the faces above it stay visible. */}
+        {/* Compact glass strip anchored to the bottom: the faces above it stay visible. The lens is off:
+            refraction pulled the cover's own lettering through the strip as a doubled ghost under the title. */}
         <GlassSurface
           variant="clear"
           size="m"
-          preset="thick"
+          lens="off"
           className="absolute inset-x-3 bottom-3 flex items-center gap-3 rounded-md py-2 pr-2 pl-3"
         >
           <div className="min-w-0 flex-1">

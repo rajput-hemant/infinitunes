@@ -80,7 +80,7 @@ export default async function HomePage() {
       <HomeHeader />
 
       {(featured || quickPicks.length > 0) && (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
           {featured && <HomeHero playlist={featured} tiles={heroTiles} />}
 
           {quickPicks.length > 0 && <QuickPicks items={quickPicks} />}
