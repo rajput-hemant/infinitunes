@@ -238,7 +238,7 @@ async function mountPlayer(options?: {
 
 async function menuLabels() {
   const triggers = document.querySelectorAll<HTMLButtonElement>(
-    '[aria-label="More Options"]',
+    '[aria-label="More options"]',
   );
   await act(async () => {
     triggers[triggers.length - 1]?.click();

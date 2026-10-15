@@ -9,12 +9,13 @@ export type SearchState =
 
 type SearchQueryError = { data?: { code: string } | null };
 
-/** `search.all` answers NOT_FOUND when nothing matched, which is an empty result, not a failure. */
+/** `search.all` answers `null` when nothing matched, which is an empty result, not a failure. */
 export function resolveSearchState(
-  data: AllSearch | undefined,
+  data: AllSearch | null | undefined,
   error: SearchQueryError | null | undefined,
 ): SearchState {
   if (data) return { status: "ready", data };
+  if (data === null) return { status: "empty" };
   if (!error) return { status: "loading" };
   return { status: error.data?.code === "NOT_FOUND" ? "empty" : "error" };
 }

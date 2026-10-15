@@ -110,6 +110,9 @@ export function DownloadButton({
 }: DownloadButtonProps) {
   const { isDownloading, download } = useDownloadSongs(songs);
 
+  // "Download 0 songs" is a dead control.
+  if (songs.length === 0) return null;
+
   return (
     <Tooltip>
       <TooltipTrigger

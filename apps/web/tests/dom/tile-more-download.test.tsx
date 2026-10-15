@@ -95,9 +95,9 @@ async function withOpenMenu(
     );
   });
 
-  // The first "More Options" trigger opens the phone drawer, the last the dropdown.
+  // The first "More options" trigger opens the phone drawer, the last the dropdown.
   const triggers = document.querySelectorAll<HTMLButtonElement>(
-    '[aria-label="More Options"]',
+    '[aria-label="More options"]',
   );
   await act(async () => {
     triggers[mobile ? 0 : triggers.length - 1]?.click();

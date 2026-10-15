@@ -18,7 +18,7 @@ export function ExpandedLyrics({ track }: ExpandedLyricsProps) {
     { enabled: isSong, retry: false, staleTime: Infinity },
   );
 
-  if (!isSong || lyrics.isError) {
+  if (!isSong || lyrics.isError || lyrics.data === null) {
     return <p className={emptyClass}>No lyrics available for this track.</p>;
   }
   if (!lyrics.data) {

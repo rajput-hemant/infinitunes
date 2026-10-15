@@ -151,18 +151,13 @@ export const getRouter = router({
 
   lyrics: publicProcedure
     .input(getLyricsInput)
-    .output(z.custom<Lyrics>())
+    .output(z.custom<Lyrics | null>())
     .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await api<Lyrics>(endpoints.get.lyrics, {
         query: { lyrics_id: input.id },
       });
-      if (!hasIdentity(result, "lyrics")) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Invalid ID or Lyrics not available for the song",
-        });
-      }
-      return result as Lyrics;
+      // Most songs have none: that is an empty answer, not a missing page.
+      return hasIdentity(result, "lyrics") ? (result as Lyrics) : null;
     }),
 
   footer: publicProcedure

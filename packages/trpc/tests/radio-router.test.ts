@@ -253,7 +253,7 @@ describe("radioRouter", () => {
       expect(details.songs[0].title).toBe("Retro Song 1");
     });
 
-    it("creates synthetic station when token is not in featured stations list", async () => {
+    it("creates a synthetic station for a featured-station link missing from the sampled list", async () => {
       responses["webradio.getFeaturedStations"] = [];
       responses["webradio.createFeaturedStation"] = {
         stationid: "synthetic-session-id",
@@ -265,12 +265,31 @@ describe("radioRouter", () => {
 
       const details = await caller.radio.stationDetails({
         token: "Custom-Mood-Station",
+        name: "tamil-featured-station",
         lang: uniq(),
       });
 
       expect(details.station.title).toBe("Custom Mood Station");
+      expect(details.station.more_info.language).toBe("tamil");
       expect(details.stationId).toBe("synthetic-session-id");
       expect(details.songs.length).toBe(1);
+    });
+
+    it("throws NOT_FOUND for a station no listing could have", async () => {
+      responses["webradio.getFeaturedStations"] = [];
+      responses["webradio.createFeaturedStation"] = {
+        stationid: "would-be-session",
+      };
+
+      for (const name of ["zzz", undefined]) {
+        await expect(
+          caller.radio.stationDetails({
+            token: "OFFTOKEN6",
+            name,
+            lang: uniq(),
+          }),
+        ).rejects.toMatchObject({ code: "NOT_FOUND" });
+      }
     });
   });
 });

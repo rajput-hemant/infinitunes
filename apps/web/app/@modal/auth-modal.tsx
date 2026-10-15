@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { controlStyles } from "~/lib/control-styles";
@@ -23,12 +24,20 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
   const router = useRouter();
   const pathname = usePathname();
   const isLoginPage = pathname === "/login";
+  const [isClosed, setIsClosed] = useState(false);
+
+  // Next keeps the slot's last page mounted (hidden) after `router.back()`, so
+  // a closed dialog would linger as a `[role=dialog]` node. Render nothing once
+  // it closes; the unmount lands before the navigation does.
+  if (isClosed) return null;
 
   return (
     <Dialog
       defaultOpen
       onOpenChange={(open) => {
-        if (!open) router.back();
+        if (open) return;
+        setIsClosed(true);
+        router.back();
       }}
     >
       <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-y-auto rounded-(--r-lg) p-6 sm:max-w-120">

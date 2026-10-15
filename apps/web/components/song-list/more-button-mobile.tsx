@@ -28,6 +28,7 @@ import { ShareOptions } from "../share-options";
 import {
   getItemAlbumUrl,
   getItemArtists,
+  getItemSharePath,
   getItemUrl,
   type TileMoreEntry,
 } from "./more-button-item";
@@ -49,7 +50,7 @@ export function TileMoreMobile(props: TileMoreMobileProps) {
     <div className="md:hidden">
       <Drawer onOpenChange={(open) => !open && setIsSharing(false)}>
         <DrawerTrigger
-          aria-label="More Options"
+          aria-label="More options"
           className={cn(
             controlStyles.rowIcon,
             "flex items-center justify-center outline-hidden focus-visible:ring-2 focus-visible:ring-ring",
@@ -147,6 +148,7 @@ export function TileMoreMobile(props: TileMoreMobileProps) {
                 <ShareOptions
                   className="flex flex-col p-4 [&_a]:flex [&_a]:min-h-(--ctl-lg) [&_a]:items-center [&_button]:flex [&_button]:min-h-(--ctl-lg) [&_button]:items-center"
                   title={getItemName(item)}
+                  path={getItemSharePath(item)}
                 />
               </div>
             </div>

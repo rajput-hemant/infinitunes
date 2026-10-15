@@ -5,11 +5,13 @@ import {
   TabsList,
   TabsTrigger,
 } from "@infinitunes/ui/components/tabs";
+import { Disc3 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { cache } from "react";
 
 import { DetailsHeader } from "~/components/details-header/details-header";
+import { LibraryEmpty } from "~/components/library/library-section";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongList } from "~/components/song-list/song-list";
 import { pageMetadata } from "~/lib/metadata";
@@ -77,10 +79,27 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
         </TabsList>
 
         <TabsContent value="Songs">
-          <SongList items={label.topSongs.songs} />
+          {label.topSongs.songs.length > 0 ? (
+            <SongList items={label.topSongs.songs} />
+          ) : (
+            <LibraryEmpty
+              icon={Disc3}
+              title="No songs yet"
+              titleAs="p"
+              description="This label has no songs to show right now."
+            />
+          )}
         </TabsContent>
 
         <TabsContent value="Albums">
+          {label.topAlbums.albums.length === 0 && (
+            <LibraryEmpty
+              icon={Disc3}
+              title="No albums yet"
+              titleAs="p"
+              description="This label has no albums to show right now."
+            />
+          )}
           <div className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-6 max-sm:gap-4">
             {uniqueBy(label.topAlbums.albums, (album) => album.id).map(
               ({ id, title, perma_url, subtitle, type, image }) => (
