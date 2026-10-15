@@ -25,6 +25,7 @@ type Props = {
   quality?: StreamQuality;
   loadError?: string;
   isLooping?: boolean;
+  isReady?: boolean;
 };
 
 const roots: Root[] = [];
@@ -52,6 +53,7 @@ async function setup(initial: Props) {
       record,
       loadError: props.loadError,
       isLooping: props.isLooping,
+      isReady: props.isReady,
       onUnplayable: () => void unplayable.push("skip"),
     });
     return null;
@@ -216,5 +218,57 @@ describe("track playback load failures", () => {
     await render({ queue: [a, b], currentIndex: 1, isLooping: true });
 
     expect(loadOptions.map((o) => o.loop)).toEqual([true, true]);
+  });
+
+  it("stops after two tracks in a row fail, with one network toast, and starts over after a user action", async () => {
+    toasts.length = 0;
+    const two = "https://cdn/x_96,https://cdn/x_160";
+    const q = ["a", "b", "c"].map((id, i) => entry(id, `q${i}`, two));
+    const { render, unplayable } = await setup({ queue: q, currentIndex: 0 });
+    const failTrack = async (currentIndex: number) => {
+      for (const loadError of ["e1", undefined, "e2"]) {
+        await render({ queue: q, currentIndex, loadError });
+      }
+    };
+
+    await failTrack(0);
+    expect(toasts).toEqual(["Couldn't play this song"]);
+    expect(unplayable).toHaveLength(1);
+
+    // The player skipped to the next entry, which fails too.
+    await render({ queue: q, currentIndex: 1 });
+    await failTrack(1);
+    expect(toasts).toEqual([
+      "Couldn't play this song",
+      "Can't reach the music server. Check your connection and try again.",
+    ]);
+    expect(unplayable).toHaveLength(1);
+
+    // The listener picks another track: the count starts over.
+    await render({ queue: q, currentIndex: 2 });
+    await failTrack(2);
+    expect(toasts.at(-1)).toBe("Couldn't play this song");
+    expect(unplayable).toHaveLength(2);
+  });
+
+  it("forgets earlier failures once a track loads", async () => {
+    toasts.length = 0;
+    const two = "https://cdn/x_96,https://cdn/x_160";
+    const q = ["a", "b"].map((id, i) => entry(id, `q${i}`, two));
+    const { render, unplayable } = await setup({ queue: q, currentIndex: 0 });
+    for (const loadError of ["e1", undefined, "e2"]) {
+      await render({ queue: q, currentIndex: 0, loadError });
+    }
+    await render({ queue: q, currentIndex: 1, isReady: true });
+    await render({ queue: q, currentIndex: 1, isReady: false });
+    for (const loadError of ["e1", undefined, "e2"]) {
+      await render({ queue: q, currentIndex: 1, loadError });
+    }
+
+    expect(toasts).toEqual([
+      "Couldn't play this song",
+      "Couldn't play this song",
+    ]);
+    expect(unplayable).toHaveLength(2);
   });
 });

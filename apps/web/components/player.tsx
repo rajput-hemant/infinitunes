@@ -151,6 +151,7 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     record: recordPlay,
     loadError,
     isLooping,
+    isReady,
     onUnplayable,
   });
 

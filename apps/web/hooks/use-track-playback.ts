@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { type PlayedItem } from "~/lib/history-actions";
 import { playToRecord } from "~/lib/queue-position";
 
+/** Tracks in a row that may fail to load before playback stops. */
+const MAX_CONSECUTIVE_FAILURES = 2;
+
 type LoadOptions = {
   html5: boolean;
   loop: boolean;
@@ -29,6 +32,8 @@ type TrackPlaybackOptions = {
   loadError?: string;
   /** Whether repeat-one is on, so it survives the switch to the next track. */
   isLooping?: boolean;
+  /** True once the current source has loaded; ends a run of failures. */
+  isReady?: boolean;
   /** Every bitrate of the current entry failed to load. */
   onUnplayable?: () => void;
 };
@@ -53,12 +58,17 @@ export function useTrackPlayback({
   record,
   loadError,
   isLooping = false,
+  isReady = false,
   onUnplayable,
 }: TrackPlaybackOptions) {
   const lastRecordedRef = useRef<string | null>(null);
   const notifiedRef = useRef<string | null>(null);
   const loopRef = useRef(isLooping);
   const unplayableRef = useRef(onUnplayable);
+  // Consecutive entries that failed on every bitrate, and whether the next
+  // entry change is our own skip (anything else is the listener acting).
+  const failuresRef = useRef(0);
+  const expectSkipRef = useRef(false);
   useEffect(() => {
     loopRef.current = isLooping;
     unplayableRef.current = onUnplayable;
@@ -103,13 +113,33 @@ export function useTrackPlayback({
   }, [loadError]);
 
   useEffect(() => {
+    if (!queueItemId) return;
+    if (expectSkipRef.current) expectSkipRef.current = false;
+    else failuresRef.current = 0;
+  }, [queueItemId]);
+
+  useEffect(() => {
+    if (isReady) failuresRef.current = 0;
+  }, [isReady]);
+
+  useEffect(() => {
     if (!exhausted || !queueItemId) {
       notifiedRef.current = null;
       return;
     }
     if (notifiedRef.current === queueItemId) return;
     notifiedRef.current = queueItemId;
+    failuresRef.current += 1;
+    if (failuresRef.current >= MAX_CONSECUTIVE_FAILURES) {
+      // Offline or the CDN is down: stop on this track instead of working
+      // through the whole queue.
+      toast.error(
+        "Can't reach the music server. Check your connection and try again.",
+      );
+      return;
+    }
     toast.error("Couldn't play this song");
+    expectSkipRef.current = true;
     unplayableRef.current?.();
   }, [exhausted, queueItemId]);
 
