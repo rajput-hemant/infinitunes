@@ -9,7 +9,12 @@ import { MORPH_CLASS } from "~/lib/view-transition";
  * are claimed inside the commit of a view transition, never by an observer
  * running after it. Module state: the halves are client islands in one bundle.
  */
-type Offer = { name: string; source: HTMLElement; expires: number };
+type Offer = {
+  name: string;
+  source: HTMLElement;
+  image: string | null;
+  expires: number;
+};
 type Handoff = { name: string; expires: number };
 
 const OFFER_MS = 10_000;
@@ -26,7 +31,11 @@ function nameElement(el: HTMLElement, name: string) {
 export function offerMorph(name: string, source: HTMLElement) {
   dropMorph();
   nameElement(source, name);
-  offer = { name, source, expires: Date.now() + OFFER_MS };
+  // The picture already on screen: the placeholder it flies into shows it too,
+  // so the flight ends on the same artwork instead of fading to a grey box.
+  const picture = source.querySelector("img");
+  const image = picture?.currentSrc || picture?.getAttribute("src") || null;
+  offer = { name, source, image, expires: Date.now() + OFFER_MS };
 }
 
 /** Forgets the offer and unnames its source (the click went nowhere). */
@@ -43,10 +52,12 @@ export function dropMorph() {
  * transition: the browser captured the old state before it ran. What the
  * skeleton took stays claimable by the real artwork that replaces it.
  */
-export function claimMorph(expected?: string): string | null {
+export function claimMorph(
+  expected?: string,
+): { name: string; image: string | null } | null {
   const now = Date.now();
   if (offer) {
-    const { name, source, expires } = offer;
+    const { name, source, image, expires } = offer;
     if (now > expires || (expected !== undefined && expected !== name)) {
       return null;
     }
@@ -54,11 +65,11 @@ export function claimMorph(expected?: string): string | null {
     nameElement(source, "");
     handoff =
       expected === undefined ? { name, expires: now + HANDOFF_MS } : null;
-    return name;
+    return { name, image };
   }
   if (handoff && now <= handoff.expires && handoff.name === expected) {
     handoff = null;
-    return expected;
+    return { name: expected, image: null };
   }
   return null;
 }

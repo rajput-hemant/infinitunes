@@ -309,6 +309,18 @@ Verify these against live data, not fixtures: a decrypted link should answer
   `MorphArt` (real header art) claim that name inside the transition's commit (`morph-state.ts`).
   Do not name destination artwork statically or via an observer: that raced the commit.
 
+## Motion is never zero
+
+Reduced motion (OS or `data-motion="reduced"`) removes movement, not feedback: `globals.css` keeps opacity/colour/
+visibility transitions at 120-200ms and `motion.css` keeps the root crossfade (the artwork flight becomes a fade).
+Never set `animation-duration`/`transition-duration` to 0 for a class of elements or `animation: none` on view-transition
+pseudos: that made the view transition, sidebar and queue vanish for anyone with the OS setting on. `reduced-motion.test.ts`
+pins it. Panels and the morph use `--ease-panel`/`--duration-panel` (340ms); `--ease-drawer`/`--ease-spring` are 80% done
+in the first quarter and read as an instant jump, so do not use them for slides. Any card that opens a detail page needs
+`data-morph={type}` plus `data-morph-art` (see `slider-card`, `home-hero`, `quick-picks`); the loading placeholder shows the
+card's picture so the flight lands on artwork. The queue pane scrolls only `[data-queue-scroll]`; the header, now playing
+and "Up next" label sit outside it.
+
 ## Panels slide into the gutter, content stays put
 
 The content column spans from the sidebar gap to the viewport edge and has no queue margin. `page-container`

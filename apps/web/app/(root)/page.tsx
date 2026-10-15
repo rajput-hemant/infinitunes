@@ -58,6 +58,7 @@ export default async function HomePage() {
     ...homedata.top_playlists.slice(1, 1 + QUICK_PICK_PLAYLISTS),
   ].map((item) => ({
     key: `${item.type}-${item.id}`,
+    type: item.type,
     href: getHref(item.perma_url, item.type),
     title: decode(item.title),
     image: getImageSrc(item.image, "high"),
@@ -70,6 +71,7 @@ export default async function HomePage() {
     .slice(0, HERO_TILES)
     .map((item) => ({
       key: `${item.type}-${item.id}`,
+      type: item.type,
       href: getHref(item.perma_url, item.type),
       title: decode(item.title),
       image: item.image,

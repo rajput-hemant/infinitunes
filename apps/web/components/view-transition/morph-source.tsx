@@ -29,7 +29,10 @@ export function MorphSource() {
         return;
       }
       const card = event.target.closest<HTMLElement>("[data-morph]");
-      const art = card?.querySelector<HTMLElement>("[data-morph-art]");
+      // The card itself may be the artwork (a tile that is one link).
+      const art = card?.matches("[data-morph-art]")
+        ? card
+        : card?.querySelector<HTMLElement>("[data-morph-art]");
       const anchor = event.target.closest("a[href]");
       if (!card || !art || !anchor) return;
 

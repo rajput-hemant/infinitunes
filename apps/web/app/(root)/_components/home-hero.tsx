@@ -1,4 +1,4 @@
-import type { Playlist, Quality } from "@infinitunes/types";
+import type { MediaType, Playlist, Quality } from "@infinitunes/types";
 import { decode, getImageSrc, parseToken } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Play } from "lucide-react";
@@ -14,6 +14,7 @@ import { cn, getHref } from "~/lib/utils";
 
 export type HeroTile = {
   key: string;
+  type: MediaType;
   href: Route;
   title: string;
   image: Quality;
@@ -39,7 +40,10 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
 
   return (
     <div className="grid grid-cols-2 content-start gap-2 md:grid-cols-4 md:gap-3">
-      <div className="group/tile relative isolate col-span-2 aspect-square overflow-hidden rounded-lg shadow-md transition-transform duration-fast hover:-translate-y-0.5 motion-reduce:transition-none md:row-span-2 md:aspect-auto">
+      <div
+        data-morph="playlist"
+        className="group/tile relative isolate col-span-2 aspect-square overflow-hidden rounded-lg shadow-md transition-transform duration-fast hover:-translate-y-0.5 motion-reduce:transition-none md:row-span-2 md:aspect-auto"
+      >
         <Link
           href={href}
           tabIndex={-1}
@@ -47,22 +51,25 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
           className="absolute inset-0"
         />
 
-        <ImageWithFallback
-          src={getImageSrc(playlist.image, "high")}
-          fallback={getPlaceholderSrc("playlist")}
-          fill
-          sizes="(min-width: 1024px) 28vw, (min-width: 768px) 50vw, 100vw"
-          alt=""
-          loading="eager"
-          fetchPriority="high"
-          className="-z-20 rounded-none object-cover"
-        />
+        {/* The artwork a click flies into the playlist page; the glass strip below stays out of it. */}
+        <div data-morph-art="" className="absolute inset-0 -z-20">
+          <ImageWithFallback
+            src={getImageSrc(playlist.image, "high")}
+            fallback={getPlaceholderSrc("playlist")}
+            fill
+            sizes="(min-width: 1024px) 28vw, (min-width: 768px) 50vw, 100vw"
+            alt=""
+            loading="eager"
+            fetchPriority="high"
+            className="rounded-none object-cover"
+          />
 
-        {/* Image scrim: stays dark over arbitrary artwork in both themes, so it is not a theme token. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-t from-black/45 via-transparent to-transparent"
-        />
+          {/* Image scrim: stays dark over arbitrary artwork in both themes, so it is not a theme token. */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/45 via-transparent to-transparent"
+          />
+        </div>
 
         {/* Compact glass strip anchored to the bottom: the faces above it stay visible. */}
         <GlassSurface
@@ -104,9 +111,11 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
 
       {tiles
         .slice(0, MAX_TILES)
-        .map(({ key, href: tileHref, title: tileTitle, image }) => (
+        .map(({ key, type, href: tileHref, title: tileTitle, image }) => (
           <Link
             key={key}
+            data-morph={type}
+            data-morph-art=""
             href={tileHref}
             aria-label={tileTitle}
             title={tileTitle}

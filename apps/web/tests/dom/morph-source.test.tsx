@@ -111,6 +111,45 @@ describe("MorphSkeleton", () => {
     expect(art?.style.viewTransitionName).toBe("");
   });
 
+  it("shows the card's picture in the placeholder it flies into", async () => {
+    const host = await mount(
+      `<div data-morph="album">
+        <div data-morph-art><a href="/album/some-name/tok123" id="album-link"><img src="/art.jpg" alt="" /></a></div>
+      </div>`,
+    );
+    await act(async () => {
+      host
+        .querySelector("#album-link")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+
+    const slot = document.createElement("div");
+    document.body.append(slot);
+    containers.push(slot);
+    const root = createRoot(slot);
+    roots.push(root);
+    await act(async () =>
+      root.render(<MorphSkeleton className="placeholder" />),
+    );
+
+    const picture = slot.querySelector<HTMLImageElement>(".placeholder img");
+    expect(picture?.getAttribute("src")).toContain("/art.jpg");
+  });
+
+  it("names a tile that is itself the artwork (a one-link card)", async () => {
+    const host = await mount(
+      `<a href="/playlist/tile/tok9" id="tile" data-morph="playlist" data-morph-art><img src="/t.jpg" alt="" /></a>`,
+    );
+    await act(async () => {
+      host
+        .querySelector("#tile")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true, button: 0 }));
+    });
+    expect(
+      host.querySelector<HTMLElement>("#tile")?.style.viewTransitionName,
+    ).toBe(morphName("playlist", "tok9"));
+  });
+
   it("stays unnamed when nothing was opened from a card", async () => {
     const slot = document.createElement("div");
     document.body.append(slot);
