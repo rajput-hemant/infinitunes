@@ -1,23 +1,23 @@
 import type { AllSearch } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
+import { getErrorCode } from "~/lib/error-code";
+
 export type SearchState =
   | { status: "loading" }
   | { status: "ready"; data: AllSearch }
   | { status: "empty" }
   | { status: "error" };
 
-type SearchQueryError = { data?: { code: string } | null };
-
 /** `search.all` answers `null` when nothing matched, which is an empty result, not a failure. */
 export function resolveSearchState(
   data: AllSearch | null | undefined,
-  error: SearchQueryError | null | undefined,
+  error: unknown,
 ): SearchState {
   if (data) return { status: "ready", data };
   if (data === null) return { status: "empty" };
   if (!error) return { status: "loading" };
-  return { status: error.data?.code === "NOT_FOUND" ? "empty" : "error" };
+  return { status: getErrorCode(error) === "NOT_FOUND" ? "empty" : "error" };
 }
 
 function SearchSkeleton() {

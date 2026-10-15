@@ -5,7 +5,7 @@ import { Play } from "lucide-react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 
-import { TileMoreMobile } from "../../components/song-list/more-button-mobile";
+import { TileMoreMobilePopup as TileMoreMobile } from "../../components/song-list/more-button-mobile-popup";
 
 const item: Queue = {
   queueItemId: "q1",

@@ -14,7 +14,7 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 
 import { isLang } from "./lang-guard";
 
@@ -122,12 +122,10 @@ export function SurpriseMeButton({
   }, [queue, currentIndex, activeRadio]);
   const inFlight = useRef(false);
 
-  const utils = api.useUtils();
-
   async function surprise() {
     await queueSurprise(
       async () => {
-        const trending = await utils.get.trending.fetch({
+        const trending = await trpc.get.trending.query({
           type: "song",
           lang: lang ?? undefined,
         });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
 const USER_DROPDOWN = new URL(
-  "../components/user-dropdown.tsx",
+  "../components/user-dropdown-popup.tsx",
   import.meta.url,
 );
 

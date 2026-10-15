@@ -3,16 +3,12 @@ import { describe, expect, it, mock } from "bun:test";
 import type { Favorite } from "@infinitunes/db/schema";
 import type { Queue as QueueItem, Song } from "@infinitunes/types";
 import { toSongRow } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import type React from "react";
 import { createRoot } from "react-dom/client";
-import superjson from "superjson";
 
-import { api } from "../../lib/trpc/client";
-import { offlineFetch } from "./offline-fetch";
+import { waitFor } from "./wait-for";
 
 // `server-only` throws outside the react-server condition; the action module
 // behind the button only needs it to import, nothing here calls an action.
@@ -31,17 +27,6 @@ const item: QueueItem = {
   download_url: "",
   duration: 100,
 };
-
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
 
 const router = {
   push() {},
@@ -64,16 +49,12 @@ async function withMenu(
   await act(async () => {
     root.render(
       <AppRouterContext.Provider value={router}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <TileMoreButton
-              item={item}
-              favorites={favorites}
-              showAlbum
-              {...props}
-            />
-          </QueryClientProvider>
-        </api.Provider>
+        <TileMoreButton
+          item={item}
+          favorites={favorites}
+          showAlbum
+          {...props}
+        />
       </AppRouterContext.Provider>,
     );
   });
@@ -86,6 +67,12 @@ async function withMenu(
   await act(async () => {
     triggers[mobile ? 0 : triggers.length - 1]?.click();
   });
+  // The menu is its own chunk: the click starts the import and opens it on arrival.
+  await waitFor(
+    () =>
+      document.querySelector('[role="menuitem"], [data-slot=drawer-popup]') !==
+      null,
+  );
 
   try {
     inspect();

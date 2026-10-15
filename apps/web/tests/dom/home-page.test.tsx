@@ -40,9 +40,6 @@ const modules = {
 mock.module("~/lib/trpc/server", () => ({
   api: { home: { home: async () => modules } },
 }));
-mock.module("~/lib/trpc/client", () => ({
-  api: { useUtils: () => ({}) },
-}));
 mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));

@@ -17,7 +17,6 @@ import React from "react";
 import { toast } from "sonner";
 
 import { useDownloadSongs } from "~/components/download-button";
-import { AddToPlaylistDialog } from "~/components/playlist/add-to-playlist-dialog";
 import { getItemName } from "~/components/song-list/item-name";
 import {
   useCurrentSongIndex,
@@ -43,6 +42,13 @@ import {
 } from "./more-button-item";
 import { TileMoreMobile } from "./more-button-mobile";
 import { useTileRadio } from "./more-button-radio";
+
+// The dialog (Base UI Dialog, playlist list) loads the first time it is opened.
+const AddToPlaylistDialog = React.lazy(() =>
+  import("~/components/playlist/add-to-playlist-dialog").then((m) => ({
+    default: m.AddToPlaylistDialog,
+  })),
+);
 
 type TileMoreButtonProps = {
   user?: User;
@@ -77,6 +83,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   const router = useRouter();
 
   const [isDialogOpen, setDialogOpen] = React.useState(false);
+  const [dialogUsed, setDialogUsed] = React.useState(false);
 
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [initialQueue, setQueue] = useQueue();
@@ -111,6 +118,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
 
   function togglePlaylistDialog() {
     if (user) {
+      setDialogUsed(true);
       setDialogOpen(true);
     } else {
       router.push("/login");
@@ -224,13 +232,15 @@ export function TileMoreButton(props: TileMoreButtonProps) {
         className={className}
       />
 
-      {!!user && (
-        <AddToPlaylistDialog
-          isDialogOpen={isDialogOpen}
-          setDialogOpen={setDialogOpen}
-          playlists={playlists}
-          addToPlaylist={addToPlaylist}
-        />
+      {!!user && dialogUsed && (
+        <React.Suspense fallback={null}>
+          <AddToPlaylistDialog
+            isDialogOpen={isDialogOpen}
+            setDialogOpen={setDialogOpen}
+            playlists={playlists}
+            addToPlaylist={addToPlaylist}
+          />
+        </React.Suspense>
       )}
     </>
   );

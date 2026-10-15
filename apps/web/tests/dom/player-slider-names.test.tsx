@@ -1,19 +1,14 @@
 import { describe, expect, it } from "bun:test";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { AudioPlayerProvider } from "react-use-audio-player";
-import superjson from "superjson";
 
 import { ExpandedPlayer } from "../../components/expanded-player";
 import { PlayerVolume } from "../../components/player/player-volume";
 import { SeekBar } from "../../components/player/seek-bar";
 import { createPositionStore } from "../../lib/position-store";
-import { api } from "../../lib/trpc/client";
-import { offlineFetch } from "./offline-fetch";
 
 /** The name a screen reader announces: the aria-labelledby text, else aria-label. */
 function accessibleName(input: HTMLInputElement) {
@@ -103,61 +98,47 @@ describe("expanded player sliders", () => {
       prefetch: noop,
       hmrRefresh: noop,
     } as never;
-    const queryClient = new QueryClient();
-    const trpcClient = api.createClient({
-      links: [
-        httpBatchLink({
-          url: "/api/trpc",
-          transformer: superjson,
-          fetch: offlineFetch,
-        }),
-      ],
-    });
 
     const mounted = await mount(
       <AppRouterContext.Provider value={router}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <AudioPlayerProvider>
-              <ExpandedPlayer
-                open
-                onOpenChange={noop}
-                track={{
-                  id: "a",
-                  queueItemId: "q",
-                  name: "Song a",
-                  subtitle: "",
-                  url: "https://www.jiosaavn.com/song/song-a/a",
-                  type: "song",
-                  image: "https://c.saavncdn.com/x-150x150.jpg",
-                  artists: [],
-                  download_url: "",
-                  duration: 100,
-                }}
-                position={createPositionStore(0)}
-                duration={100}
-                isPlaying={false}
-                isLoading={false}
-                isLooping={false}
-                loopPlaylist={false}
-                isShuffle={false}
-                isMuted={false}
-                isReady
-                volume={1}
-                onSeekStart={noop}
-                onSeekChange={noop}
-                onSeekCommit={noop}
-                onVolumeChange={noop}
-                onToggleMute={noop}
-                onLoop={noop}
-                onPrevious={noop}
-                onPlayPause={noop}
-                onNext={noop}
-                onToggleShuffle={noop}
-              />
-            </AudioPlayerProvider>
-          </QueryClientProvider>
-        </api.Provider>
+        <AudioPlayerProvider>
+          <ExpandedPlayer
+            open
+            onOpenChange={noop}
+            track={{
+              id: "a",
+              queueItemId: "q",
+              name: "Song a",
+              subtitle: "",
+              url: "https://www.jiosaavn.com/song/song-a/a",
+              type: "song",
+              image: "https://c.saavncdn.com/x-150x150.jpg",
+              artists: [],
+              download_url: "",
+              duration: 100,
+            }}
+            position={createPositionStore(0)}
+            duration={100}
+            isPlaying={false}
+            isLoading={false}
+            isLooping={false}
+            loopPlaylist={false}
+            isShuffle={false}
+            isMuted={false}
+            isReady
+            volume={1}
+            onSeekStart={noop}
+            onSeekChange={noop}
+            onSeekCommit={noop}
+            onVolumeChange={noop}
+            onToggleMute={noop}
+            onLoop={noop}
+            onPrevious={noop}
+            onPlayPause={noop}
+            onNext={noop}
+            onToggleShuffle={noop}
+          />
+        </AudioPlayerProvider>
       </AppRouterContext.Provider>,
     );
 

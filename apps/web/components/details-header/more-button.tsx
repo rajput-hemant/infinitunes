@@ -58,7 +58,7 @@ import { addSongsToPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 import { addSongsOptimistic } from "~/lib/optimistic-playlists";
-import { api } from "~/lib/trpc/client";
+import { trpc } from "~/lib/trpc/vanilla";
 import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
@@ -102,7 +102,7 @@ type RadioSeed = {
  */
 async function startSeedRadio(seed: RadioSeed, radio: RadioStart) {
   const { type, name, artistId: initialArtistId, songs, language } = seed;
-  const { utils, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
+  const { client, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
     radio;
 
   try {
@@ -124,14 +124,14 @@ async function startSeedRadio(seed: RadioSeed, radio: RadioStart) {
 
     const stationLanguage = language || songs[0]?.language;
 
-    const { stationId } = await utils.client.radio.createStation.mutate({
+    const { stationId } = await client.radio.createStation.mutate({
       type: radioType,
       name: stationName,
       artistId,
       language: stationLanguage,
     });
 
-    const radioSongs = await utils.radio.songs.fetch({
+    const radioSongs = await client.radio.songs.query({
       stationId,
       k: 20,
     });
@@ -186,7 +186,6 @@ export function MoreButton(props: MoreButtonProps) {
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [, setActiveRadio] = useActiveRadioSession();
 
-  const utils = api.useUtils();
   const { isDownloading, download } = useDownloadSongs(songs);
 
   function addToQueue() {
@@ -237,7 +236,7 @@ export function MoreButton(props: MoreButtonProps) {
         language,
       },
       {
-        utils,
+        client: trpc,
         setQueue,
         setCurrentIndex,
         setIsPlayerInit,

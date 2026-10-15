@@ -5,13 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-mock.module("../../lib/trpc/client", () => ({
-  api: {
-    useUtils: () => ({
-      artist: { songs: { fetch: () => {} }, albums: { fetch: () => {} } },
-    }),
-  },
-}));
 mock.module("../../components/play-button", () => ({
   PlayButton: () => null,
 }));

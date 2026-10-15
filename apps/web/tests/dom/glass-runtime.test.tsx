@@ -10,6 +10,7 @@ import {
   forEachGlass,
   resetGlassRegistry,
 } from "../../components/glass/lens-registry";
+import { waitFor } from "./wait-for";
 
 const roots: Root[] = [];
 const root = document.documentElement;
@@ -22,6 +23,8 @@ async function mountRuntime() {
   await act(async () => {
     reactRoot.render(<GlassRuntime />);
   });
+  // The engine is its own chunk and starts on idle.
+  await waitFor(() => root.hasAttribute("data-glass-engine"));
 }
 
 const registered = () => {
@@ -78,7 +81,7 @@ describe("GlassRuntime", () => {
     expect(registered()).not.toContain(early);
   });
 
-  it("registers a hydrated GlassSurface from its own effect, whether or not the runtime has started", async () => {
+  it("registers a hydrated GlassSurface from its own effect, once the runtime has started", async () => {
     const html = renderToString(<GlassSurface size="s" glassRole="toolbar" />);
     const container = document.createElement("div");
     container.innerHTML = html;
@@ -92,7 +95,20 @@ describe("GlassRuntime", () => {
       );
     });
 
+    // The engine has not started yet: the surface waits, frosted.
+    expect(registered()).toEqual([]);
+
+    await mountRuntime();
     expect(registered()).toEqual([surface]);
+  });
+
+  it("registers a popup that was already open when the runtime starts", async () => {
+    const menu = document.createElement("div");
+    menu.setAttribute("data-slot", "dropdown-menu-content");
+    document.body.append(menu);
+
+    await mountRuntime();
+    expect(registered()).toContain(menu);
   });
 
   it("registers packages/ui popups by their data-slot, with no attributes of their own", async () => {

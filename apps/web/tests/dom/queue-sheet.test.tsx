@@ -9,20 +9,15 @@ import {
 } from "bun:test";
 
 import type { Queue as QueueItem } from "@infinitunes/types";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { AudioPlayerProvider } from "react-use-audio-player";
 import * as sonner from "sonner";
-import superjson from "superjson";
 
 import { useQueuePane } from "../../components/player/use-queue-pane";
 import { Queue } from "../../components/queue";
 import { THEME_BOOTSTRAP_SCRIPT } from "../../lib/theme-script";
-import { api } from "../../lib/trpc/client";
-import { offlineFetch } from "./offline-fetch";
 
 function song(id: string): QueueItem {
   return {
@@ -37,17 +32,6 @@ function song(id: string): QueueItem {
     duration: 100,
   };
 }
-
-const queryClient = new QueryClient();
-const trpcClient = api.createClient({
-  links: [
-    httpBatchLink({
-      url: "/api/trpc",
-      transformer: superjson,
-      fetch: offlineFetch,
-    }),
-  ],
-});
 
 const noop = () => {};
 
@@ -71,13 +55,9 @@ async function mount() {
   await act(async () => {
     root.render(
       <SearchParamsContext.Provider value={new URLSearchParams()}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <AudioPlayerProvider>
-              <Queue open onOpenChange={noop} />
-            </AudioPlayerProvider>
-          </QueryClientProvider>
-        </api.Provider>
+        <AudioPlayerProvider>
+          <Queue open onOpenChange={noop} />
+        </AudioPlayerProvider>
       </SearchParamsContext.Provider>,
     );
   });
@@ -342,13 +322,9 @@ async function mountPane() {
   await act(async () => {
     root.render(
       <SearchParamsContext.Provider value={new URLSearchParams()}>
-        <api.Provider client={trpcClient} queryClient={queryClient}>
-          <QueryClientProvider client={queryClient}>
-            <AudioPlayerProvider>
-              <Pane />
-            </AudioPlayerProvider>
-          </QueryClientProvider>
-        </api.Provider>
+        <AudioPlayerProvider>
+          <Pane />
+        </AudioPlayerProvider>
       </SearchParamsContext.Provider>,
     );
   });
