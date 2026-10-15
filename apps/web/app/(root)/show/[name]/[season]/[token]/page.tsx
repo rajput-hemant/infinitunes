@@ -149,11 +149,13 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
         </p>
       </section>
 
-      <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
-        {modules.seasons.title}
-      </h2>
-
-      <Shelf>
+      <Shelf
+        heading={
+          <h2 className="pl-2 font-heading text-xl text-foreground sm:text-2xl md:text-3xl lg:pl-0">
+            {modules.seasons.title}
+          </h2>
+        }
+      >
         {uniqueBy(seasons.toReversed(), (entry) => entry.id).map((s) => (
           <ShelfItem key={s.id}>
             <SliderCard
