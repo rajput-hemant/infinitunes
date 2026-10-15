@@ -30,6 +30,8 @@ export type GlassSurfaceProps = React.HTMLAttributes<HTMLElement> & {
   interactive?: boolean;
   /** What the surface is (`data-glass-role`); drives materialize and the tab bar / player rules. */
   glassRole?: GlassRole;
+  /** The host element, forwarded to the rendered element. */
+  ref?: React.Ref<HTMLElement>;
   /**
    * Render as another element, Base UI style: `render={<nav />}`. This
    * component's props win over the element's own; class names are merged.
@@ -42,58 +44,54 @@ export type GlassSurfaceProps = React.HTMLAttributes<HTMLElement> & {
  * (mounted in the root layout) finds it and attaches the lens, pointer light
  * and press gel, and `styles/glass.css` paints it.
  */
-export const GlassSurface = React.forwardRef<HTMLElement, GlassSurfaceProps>(
-  function GlassSurface(
-    {
-      className,
-      variant = "regular",
-      size = "m",
-      lens = "on",
-      preset,
-      interactive = false,
-      glassRole,
-      render,
-      children,
-      ...props
-    },
+export function GlassSurface({
+  className,
+  variant = "regular",
+  size = "m",
+  lens = "on",
+  preset,
+  interactive = false,
+  glassRole,
+  render,
+  children,
+  ref: forwardedRef,
+  ...props
+}: GlassSurfaceProps) {
+  const hostRef = React.useRef<HTMLElement | null>(null);
+  const ref = useMergedRef<HTMLElement>(
     forwardedRef,
-  ) {
-    const hostRef = React.useRef<HTMLElement | null>(null);
-    const ref = useMergedRef<HTMLElement>(
-      forwardedRef,
-      render?.props.ref,
-      hostRef,
-    );
-    useGlassRegistration(hostRef, variant, size, lens, glassRole, preset);
-    const own = preset ? GLASS_PRESETS[preset].tuning : null;
-    const merged = {
-      ...(render?.props ?? {}),
-      ...props,
-      className: cn(render?.props.className, className),
-      style: own
-        ? {
-            ...render?.props.style,
-            ...props.style,
-            ...glassPaintVars(own),
-          }
-        : (props.style ?? render?.props.style),
-      "data-glass-preset": preset,
-      "data-glass-tint": own && own.tint > 0 ? "on" : undefined,
-      "data-glass": variant,
-      "data-glass-size": size,
-      "data-lens": lens === "off" || size === "xl" ? "off" : "on",
-      "data-glass-role": glassRole,
-      "data-glass-press": interactive ? "true" : undefined,
-      ref,
-    };
+    render?.props.ref,
+    hostRef,
+  );
+  useGlassRegistration(hostRef, variant, size, lens, glassRole, preset);
+  const own = preset ? GLASS_PRESETS[preset].tuning : null;
+  const merged = {
+    ...(render?.props ?? {}),
+    ...props,
+    className: cn(render?.props.className, className),
+    style: own
+      ? {
+          ...render?.props.style,
+          ...props.style,
+          ...glassPaintVars(own),
+        }
+      : (props.style ?? render?.props.style),
+    "data-glass-preset": preset,
+    "data-glass-tint": own && own.tint > 0 ? "on" : undefined,
+    "data-glass": variant,
+    "data-glass-size": size,
+    "data-lens": lens === "off" || size === "xl" ? "off" : "on",
+    "data-glass-role": glassRole,
+    "data-glass-press": interactive ? "true" : undefined,
+    ref,
+  };
 
-    if (render) {
-      return React.cloneElement(
-        render,
-        merged,
-        children ?? render.props.children,
-      );
-    }
-    return <div {...merged}>{children}</div>;
-  },
-);
+  if (render) {
+    return React.cloneElement(
+      render,
+      merged,
+      children ?? render.props.children,
+    );
+  }
+  return <div {...merged}>{children}</div>;
+}
