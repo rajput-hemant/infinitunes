@@ -19,6 +19,42 @@ import { authPrimaryButtonStyles } from "./field-styles";
 export const FORGOT_PASSWORD_MESSAGE =
   "If an account exists for that email, we sent a link to reset your password. The link expires in 1 hour.";
 
+type ForgotPasswordData = z.output<typeof forgotPasswordSchema>;
+
+/** Requests the reset email. Outside the component: the React Compiler bails out on try/finally. */
+async function requestReset(
+  formData: ForgotPasswordData,
+  {
+    setBusy,
+    setIsSent,
+  }: {
+    setBusy: (busy: boolean) => void;
+    setIsSent: (sent: boolean) => void;
+  },
+) {
+  setBusy(true);
+
+  try {
+    const { error } = await authClient.requestPasswordReset({
+      email: formData.email,
+      redirectTo: "/reset-password",
+    });
+
+    if (error?.status === 429) {
+      toast.error("Too many requests. Please wait a minute and try again.");
+    } else if (error) {
+      toast.error(GENERIC_MESSAGE);
+    } else {
+      setIsSent(true);
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error(GENERIC_MESSAGE);
+  } finally {
+    setBusy(false);
+  }
+}
+
 export function ForgotPasswordForm() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSent, setIsSent] = React.useState(false);
@@ -32,28 +68,11 @@ export function ForgotPasswordForm() {
     defaultValues: { email: "" },
   });
 
-  async function onSubmit(formData: z.output<typeof forgotPasswordSchema>) {
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await authClient.requestPasswordReset({
-        email: formData.email,
-        redirectTo: "/reset-password",
-      });
-
-      if (error?.status === 429) {
-        toast.error("Too many requests. Please wait a minute and try again.");
-      } else if (error) {
-        toast.error(GENERIC_MESSAGE);
-      } else {
-        setIsSent(true);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error(GENERIC_MESSAGE);
-    } finally {
-      setIsSubmitting(false);
-    }
+  async function onSubmit(formData: ForgotPasswordData) {
+    await requestReset(formData, {
+      setBusy: setIsSubmitting,
+      setIsSent,
+    });
   }
 
   if (isSent) {

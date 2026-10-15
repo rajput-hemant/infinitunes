@@ -34,6 +34,54 @@ async function listPasskeys(): Promise<PasskeyRow[] | null> {
   }
 }
 
+/** Enrols a passkey, then refreshes the list. Outside the component: the React Compiler bails out on try/finally. */
+async function enrollPasskey(
+  setIsAdding: React.Dispatch<React.SetStateAction<boolean>>,
+  refresh: () => Promise<void>,
+) {
+  setIsAdding(true);
+  try {
+    const { error } = await authClient.passkey.addPasskey();
+    if (error) {
+      if (error.message?.toLowerCase().includes("cancel")) {
+        toast.info("Passkey enrollment was cancelled.");
+      } else {
+        toast.error(error.message ?? "Could not add passkey.");
+      }
+    } else {
+      toast.success("Passkey added.");
+      await refresh();
+    }
+  } catch (error) {
+    console.error(messageOf(error, "Could not add passkey."));
+    toast.error("Could not add passkey.");
+  } finally {
+    setIsAdding(false);
+  }
+}
+
+async function deletePasskey(
+  id: string,
+  setDeletingId: React.Dispatch<React.SetStateAction<string | null>>,
+  setPasskeys: React.Dispatch<React.SetStateAction<PasskeyRow[]>>,
+) {
+  setDeletingId(id);
+  try {
+    const { error } = await authClient.passkey.deletePasskey({ id });
+    if (error) {
+      toast.error(error.message ?? "Could not remove passkey.");
+    } else {
+      toast.success("Passkey removed.");
+      setPasskeys((current) => current.filter((key) => key.id !== id));
+    }
+  } catch (error) {
+    console.error(messageOf(error, "Could not remove passkey."));
+    toast.error("Could not remove passkey.");
+  } finally {
+    setDeletingId(null);
+  }
+}
+
 export function PasskeySettings() {
   const [passkeys, setPasskeys] = React.useState<PasskeyRow[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -60,43 +108,11 @@ export function PasskeySettings() {
   }, []);
 
   async function addPasskey() {
-    setIsAdding(true);
-    try {
-      const { error } = await authClient.passkey.addPasskey();
-      if (error) {
-        if (error.message?.toLowerCase().includes("cancel")) {
-          toast.info("Passkey enrollment was cancelled.");
-        } else {
-          toast.error(error.message ?? "Could not add passkey.");
-        }
-      } else {
-        toast.success("Passkey added.");
-        await refresh();
-      }
-    } catch (error) {
-      console.error(messageOf(error, "Could not add passkey."));
-      toast.error("Could not add passkey.");
-    } finally {
-      setIsAdding(false);
-    }
+    await enrollPasskey(setIsAdding, refresh);
   }
 
   async function removePasskey(id: string) {
-    setDeletingId(id);
-    try {
-      const { error } = await authClient.passkey.deletePasskey({ id });
-      if (error) {
-        toast.error(error.message ?? "Could not remove passkey.");
-      } else {
-        toast.success("Passkey removed.");
-        setPasskeys((current) => current.filter((key) => key.id !== id));
-      }
-    } catch (error) {
-      console.error(messageOf(error, "Could not remove passkey."));
-      toast.error("Could not remove passkey.");
-    } finally {
-      setDeletingId(null);
-    }
+    await deletePasskey(id, setDeletingId, setPasskeys);
   }
 
   return (

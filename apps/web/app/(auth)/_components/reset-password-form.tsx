@@ -42,6 +42,46 @@ function InvalidLink() {
   );
 }
 
+/** Sets the new password. Outside the component: the React Compiler bails out on try/finally. */
+async function resetPassword(
+  formData: ResetPasswordFormData,
+  token: string,
+  {
+    router,
+    setBusy,
+    setIsTokenRejected,
+  }: {
+    router: ReturnType<typeof useRouter>;
+    setBusy: (busy: boolean) => void;
+    setIsTokenRejected: (rejected: boolean) => void;
+  },
+) {
+  setBusy(true);
+
+  try {
+    const { error } = await authClient.resetPassword({
+      newPassword: formData.password,
+      token,
+    });
+
+    if (error?.status === 429) {
+      toast.error("Too many attempts. Please wait a minute and try again.");
+    } else if (error?.code === "INVALID_TOKEN") {
+      setIsTokenRejected(true);
+    } else if (error) {
+      toast.error(error.message ?? "Something went wrong.");
+    } else {
+      toast.success("Password reset. Please sign in with your new password.");
+      router.push("/login");
+    }
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong.");
+  } finally {
+    setBusy(false);
+  }
+}
+
 export function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -60,30 +100,11 @@ export function ResetPasswordForm() {
 
   async function onSubmit(formData: ResetPasswordFormData) {
     if (!token) return;
-    setIsSubmitting(true);
-
-    try {
-      const { error } = await authClient.resetPassword({
-        newPassword: formData.password,
-        token,
-      });
-
-      if (error?.status === 429) {
-        toast.error("Too many attempts. Please wait a minute and try again.");
-      } else if (error?.code === "INVALID_TOKEN") {
-        setIsTokenRejected(true);
-      } else if (error) {
-        toast.error(error.message ?? "Something went wrong.");
-      } else {
-        toast.success("Password reset. Please sign in with your new password.");
-        router.push("/login");
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong.");
-    } finally {
-      setIsSubmitting(false);
-    }
+    await resetPassword(formData, token, {
+      router,
+      setBusy: setIsSubmitting,
+      setIsTokenRejected,
+    });
   }
 
   return (
