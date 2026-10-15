@@ -1,6 +1,12 @@
 {
+  "ignore": ["design-mockups/**", ".agents/**"],
   "workspaces": {
-    "apps/web": {},
+    "apps/web": {
+      "ignore": ["tests/dom/preload.ts", "tests/fixtures/cached-api-fetch.mjs"]
+    },
+    "packages/db": {
+      "ignore": ["src/drizzle.config.ts"]
+    },
     "packages/*": {}
   }
 }
