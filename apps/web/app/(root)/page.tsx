@@ -1,5 +1,5 @@
 import type { MediaType } from "@infinitunes/types";
-import { decode, getImageSrc } from "@infinitunes/types";
+import { decode, getImageSrc, uniqueBy } from "@infinitunes/types";
 
 import { Shelf } from "~/components/slider/shelf";
 import { ShelfItem } from "~/components/slider/shelf-item";
@@ -102,7 +102,7 @@ export default async function HomePage() {
             )}
 
             <Shelf rows={GRID_SECTIONS.has(key) ? 2 : 1}>
-              {items.map(
+              {uniqueBy(items, (item) => item.id || item.title).map(
                 ({
                   id,
                   title: itemTitle,

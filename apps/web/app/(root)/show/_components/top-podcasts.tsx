@@ -1,6 +1,7 @@
 "use client";
 
 import type { TopShows } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
@@ -26,7 +27,10 @@ export function TopPodcasts({ initialTopShows }: TopPodcastsProps) {
       initialData: { pages: [initialTopShows], pageParams: [1] },
     });
 
-  const podcasts = data.pages.flatMap((page) => page.data);
+  const podcasts = uniqueBy(
+    data.pages.flatMap((page) => page.data),
+    (show) => show.id,
+  );
 
   return (
     <>

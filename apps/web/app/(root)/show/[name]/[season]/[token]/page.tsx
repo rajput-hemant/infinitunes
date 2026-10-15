@@ -1,5 +1,5 @@
 import type { Sort } from "@infinitunes/types";
-import { getImageSrc } from "@infinitunes/types";
+import { getImageSrc, uniqueBy } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
@@ -154,7 +154,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       </h2>
 
       <Shelf>
-        {seasons.toReversed().map((s) => (
+        {uniqueBy(seasons.toReversed(), (entry) => entry.id).map((s) => (
           <ShelfItem key={s.id}>
             <SliderCard
               name={s.title}

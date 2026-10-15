@@ -1,6 +1,7 @@
 "use client";
 
 import type { FeaturedPlaylists, Lang } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
@@ -30,7 +31,10 @@ export function FeaturedPlaylists({
       initialData: { pages: [initialPlaylists], pageParams: [1] },
     });
 
-  const featuredPlaylists = data.pages.flatMap((page) => page.data);
+  const featuredPlaylists = uniqueBy(
+    data.pages.flatMap((page) => page.data),
+    (playlist) => playlist.id,
+  );
 
   return (
     <div>

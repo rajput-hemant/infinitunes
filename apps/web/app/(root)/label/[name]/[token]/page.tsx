@@ -1,4 +1,4 @@
-import { getImageSrc } from "@infinitunes/types";
+import { getImageSrc, uniqueBy } from "@infinitunes/types";
 import {
   Tabs,
   TabsContent,
@@ -82,7 +82,7 @@ export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
 
         <TabsContent value="Albums">
           <div className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-6 max-sm:gap-4">
-            {label.topAlbums.albums.map(
+            {uniqueBy(label.topAlbums.albums, (album) => album.id).map(
               ({ id, title, perma_url, subtitle, type, image }) => (
                 <SliderCard
                   key={id}

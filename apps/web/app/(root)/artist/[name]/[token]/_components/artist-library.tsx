@@ -1,12 +1,18 @@
-import type { Category } from "@infinitunes/types";
-import { Suspense } from "react";
+import type { Album, Category, Song } from "@infinitunes/types";
 
 import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
+import { KeyedByParams } from "~/components/search-params-boundary";
 import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
+import {
+  ARTIST_LAST_INITIAL_PAGE,
+  categorySort,
+  isDefaultCategory,
+  toArtistPage,
+} from "~/lib/artist-pagination";
+import { api } from "~/lib/trpc/server";
 import { getViewer } from "~/lib/viewer";
 
 import { getArtist } from "./artist-data";
-import { CategoryFilterSkeleton } from "./artist-skeleton";
 import { ArtistsTopItems } from "./artists-top-items";
 import { CategoryFilter } from "./category-filter";
 
@@ -17,12 +23,6 @@ type ArtistLibraryPanelProps = {
   searchParams: SearchParams;
   type: "songs" | "albums";
 };
-
-async function Filter({ searchParams }: { searchParams: SearchParams }) {
-  const { cat } = await searchParams;
-
-  return <CategoryFilter category={cat ?? "popularity"} />;
-}
 
 async function Library({
   params,
@@ -36,19 +36,46 @@ async function Library({
     getViewer(),
   ]);
 
+  // The artist payload is in popularity order. Any other category starts from
+  // its own first page, so the list shown is the list that was asked for.
+  const sorted = !isDefaultCategory(cat);
+  const request = {
+    id: artist.artistId,
+    page: 0,
+    cat,
+    sort: categorySort(cat),
+  };
+  const sortedSongs =
+    sorted && type === "songs"
+      ? toArtistPage<Song>(await api.artist.songs(request), "topSongs", "songs")
+          .items
+      : undefined;
+  const sortedAlbums =
+    sorted && type === "albums"
+      ? toArtistPage<Album>(
+          await api.artist.albums(request),
+          "topAlbums",
+          "albums",
+        ).items
+      : undefined;
+
   return (
     <ArtistsTopItems
-      key={
-        type === "songs" ? artist.topSongs?.[0]?.id : artist.topAlbums?.[0]?.id
-      }
+      // A new category is a new list: fresh query, pagination back at the start.
+      key={`${type}-${cat ?? "popularity"}`}
       id={artist.artistId}
       type={type}
       category={cat}
+      lastInitialPage={sorted ? 0 : ARTIST_LAST_INITIAL_PAGE}
       user={user}
       userFavorites={favorites}
       userPlaylists={playlists}
-      initialSongs={type === "songs" ? (artist.topSongs ?? []) : undefined}
-      initialAlbums={type === "albums" ? artist.topAlbums : undefined}
+      initialSongs={
+        type === "songs" ? (sortedSongs ?? artist.topSongs ?? []) : undefined
+      }
+      initialAlbums={
+        type === "albums" ? (sortedAlbums ?? artist.topAlbums) : undefined
+      }
     />
   );
 }
@@ -60,21 +87,24 @@ async function Library({
 export function ArtistLibraryPanel(props: ArtistLibraryPanelProps) {
   return (
     <>
-      <Suspense fallback={<CategoryFilterSkeleton />}>
-        <Filter searchParams={props.searchParams} />
-      </Suspense>
+      <CategoryFilter />
 
-      <Suspense
+      <KeyedByParams
+        params={["cat"]}
         fallback={
           props.type === "songs" ? (
-            <SongListSkeleton length={10} />
+            <div className="min-h-svh">
+              <SongListSkeleton length={10} />
+            </div>
           ) : (
-            <CatalogGridSkeleton count={20} />
+            <div className="min-h-svh">
+              <CatalogGridSkeleton count={20} />
+            </div>
           )
         }
       >
         <Library {...props} />
-      </Suspense>
+      </KeyedByParams>
     </>
   );
 }
