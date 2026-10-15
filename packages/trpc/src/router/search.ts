@@ -24,19 +24,14 @@ export const searchRouter = router({
 
   all: publicProcedure
     .input(searchAllInput)
-    .output(z.custom<AllSearch>())
+    .output(z.custom<AllSearch | null>())
     .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await api<AllSearch>(endpoints.search.all, {
         query: { query: input.q },
         isVersion4: false,
       });
-      if (!hasIdentity(result, "albums")) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "No search results found",
-        });
-      }
-      return result as AllSearch;
+      // No match is an empty result (`null`), not an error the client logs.
+      return hasIdentity(result, "albums") ? (result as AllSearch) : null;
     }),
 
   byType: publicProcedure
