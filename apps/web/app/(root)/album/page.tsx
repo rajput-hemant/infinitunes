@@ -37,7 +37,7 @@ async function AlbumsGrid({ searchParams }: AlbumsPageProps) {
 
   return (
     <TopAlbums
-      key={topAlbums.data[0]?.id ?? "albums"}
+      key={`${lang ?? "all"}-${topAlbums.data[0]?.id ?? "albums"}`}
       initialAlbums={topAlbums}
       lang={lang}
     />
@@ -58,7 +58,11 @@ export default function AlbumsPage({ searchParams }: AlbumsPageProps) {
 
       <KeyedByParams
         params={["lang", "page"]}
-        fallback={<CatalogGridSkeleton />}
+        fallback={
+          <div className="min-h-svh">
+            <CatalogGridSkeleton />
+          </div>
+        }
       >
         <AlbumsGrid searchParams={searchParams} />
       </KeyedByParams>

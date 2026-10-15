@@ -35,7 +35,7 @@ async function PlaylistsGrid({ searchParams }: PageProps) {
 
   return (
     <FeaturedPlaylists
-      key={featuredPlaylists.data[0]?.id ?? "playlists"}
+      key={`${lang ?? "all"}-${featuredPlaylists.data[0]?.id ?? "playlists"}`}
       initialPlaylists={featuredPlaylists}
       lang={lang}
     />
@@ -49,7 +49,11 @@ export default function PlaylistsPage({ searchParams }: PageProps) {
 
       <KeyedByParams
         params={["lang", "page"]}
-        fallback={<CatalogGridSkeleton />}
+        fallback={
+          <div className="min-h-svh">
+            <CatalogGridSkeleton />
+          </div>
+        }
       >
         <PlaylistsGrid searchParams={searchParams} />
       </KeyedByParams>

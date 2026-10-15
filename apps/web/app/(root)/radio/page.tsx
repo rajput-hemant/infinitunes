@@ -38,7 +38,7 @@ async function StationsGrid({ searchParams }: RadioPageProps) {
 
   return (
     <FeaturedStations
-      key={radioStations[0]?.id ?? "stations"}
+      key={`${lang ?? "all"}-${radioStations[0]?.id ?? "stations"}`}
       initialStations={radioStations}
       lang={lang}
     />
@@ -55,7 +55,11 @@ export default function RadioPage({ searchParams }: RadioPageProps) {
 
       <KeyedByParams
         params={["lang", "page"]}
-        fallback={<CatalogGridSkeleton rounded />}
+        fallback={
+          <div className="min-h-svh">
+            <CatalogGridSkeleton rounded />
+          </div>
+        }
       >
         <StationsGrid searchParams={searchParams} />
       </KeyedByParams>

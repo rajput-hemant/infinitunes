@@ -2,6 +2,8 @@
 // (evidence: PQ-1 batch4); no network needed.
 import {
   ARTIST_LAST_INITIAL_PAGE,
+  categorySort,
+  isDefaultCategory,
   nextArtistPage,
   toArtistPage,
 } from "~/lib/artist-pagination";
@@ -52,5 +54,20 @@ describe("artist pagination (live-shaped fixtures)", () => {
       items: [],
       last_page: true,
     });
+  });
+});
+
+describe("artist category ordering", () => {
+  it("seeds only the default order from the artist payload", () => {
+    expect(isDefaultCategory(undefined)).toBe(true);
+    expect(isDefaultCategory("popularity")).toBe(true);
+    expect(isDefaultCategory("latest")).toBe(false);
+    expect(isDefaultCategory("alphabetical")).toBe(false);
+  });
+
+  it("asks for newest first only for the latest category", () => {
+    expect(categorySort("latest")).toBe("desc");
+    expect(categorySort("alphabetical")).toBe("asc");
+    expect(categorySort(undefined)).toBe("asc");
   });
 });

@@ -2,6 +2,7 @@
 
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Album, Category, Song } from "@infinitunes/types";
+import { uniqueBy } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
@@ -10,6 +11,7 @@ import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
 import {
   ARTIST_LAST_INITIAL_PAGE,
+  categorySort,
   nextArtistPage,
   toArtistPage,
 } from "~/lib/artist-pagination";
@@ -44,6 +46,8 @@ type ArtistsTopItemsProps = {
   initialSongs?: Song[];
   initialAlbums?: Album[];
   category?: Category;
+  /** The upstream page `initialSongs`/`initialAlbums` came from; the next fetch is the one after it. */
+  lastInitialPage?: number;
   user?: User;
   userFavorites?: Favorite | null;
   userPlaylists?: MyPlaylist[];
@@ -51,42 +55,57 @@ type ArtistsTopItemsProps = {
 
 type TopSongsProps = Pick<
   ArtistsTopItemsProps,
-  "id" | "category" | "user" | "userFavorites" | "userPlaylists"
+  | "id"
+  | "category"
+  | "lastInitialPage"
+  | "user"
+  | "userFavorites"
+  | "userPlaylists"
 > & { initialSongs: Song[] };
 
 function ArtistTopSongs(props: TopSongsProps) {
-  const { id, initialSongs, category, user, userFavorites, userPlaylists } =
-    props;
+  const {
+    id,
+    initialSongs,
+    category,
+    lastInitialPage = ARTIST_LAST_INITIAL_PAGE,
+    user,
+    userFavorites,
+    userPlaylists,
+  } = props;
 
   const utils = api.useUtils();
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: [id, "artists-top-songs"],
+      queryKey: [id, "artists-top-songs", category ?? "popularity"],
       queryFn: async ({ pageParam }) =>
         toArtistPage<Song>(
           await utils.artist.songs.fetch({
             id,
             page: pageParam,
             cat: category,
-            sort: category === "latest" ? "desc" : "asc",
+            sort: categorySort(category),
           }),
           "topSongs",
           "songs",
         ),
-      initialPageParam: ARTIST_LAST_INITIAL_PAGE + 1,
+      initialPageParam: lastInitialPage + 1,
       getNextPageParam: (lastPage, _allPages, lastPageParam) =>
         nextArtistPage(lastPage, lastPageParam),
       initialData: {
         pages: [{ items: initialSongs, last_page: false }],
-        pageParams: [ARTIST_LAST_INITIAL_PAGE],
+        pageParams: [lastInitialPage],
       },
     });
 
   return (
     <>
       <SongListClient
-        items={data.pages.flatMap((page) => page.items)}
+        items={uniqueBy(
+          data.pages.flatMap((page) => page.items),
+          (song) => song.id,
+        )}
         user={user}
         userFavorites={userFavorites}
         userPlaylists={userPlaylists}
@@ -101,52 +120,61 @@ function ArtistTopSongs(props: TopSongsProps) {
   );
 }
 
-type TopAlbumsProps = Pick<ArtistsTopItemsProps, "id" | "category"> & {
+type TopAlbumsProps = Pick<
+  ArtistsTopItemsProps,
+  "id" | "category" | "lastInitialPage"
+> & {
   initialAlbums: Album[];
 };
 
-function ArtistTopAlbums({ id, initialAlbums, category }: TopAlbumsProps) {
+function ArtistTopAlbums({
+  id,
+  initialAlbums,
+  category,
+  lastInitialPage = ARTIST_LAST_INITIAL_PAGE,
+}: TopAlbumsProps) {
   const utils = api.useUtils();
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: [id, "artists-top-albums"],
+      queryKey: [id, "artists-top-albums", category ?? "popularity"],
       queryFn: async ({ pageParam }) =>
         toArtistPage<Album>(
           await utils.artist.albums.fetch({
             id,
             page: pageParam,
             cat: category,
-            sort: category === "latest" ? "desc" : "asc",
+            sort: categorySort(category),
           }),
           "topAlbums",
           "albums",
         ),
-      initialPageParam: ARTIST_LAST_INITIAL_PAGE + 1,
+      initialPageParam: lastInitialPage + 1,
       getNextPageParam: (lastPage, _allPages, lastPageParam) =>
         nextArtistPage(lastPage, lastPageParam),
       initialData: {
         pages: [{ items: initialAlbums, last_page: false }],
-        pageParams: [ARTIST_LAST_INITIAL_PAGE],
+        pageParams: [lastInitialPage],
       },
     });
 
   return (
     <>
       <CatalogGrid>
-        {data.pages
-          .flatMap((page) => page.items)
-          .map((album) => (
-            <SliderCard
-              key={album.id}
-              name={album.title}
-              url={album.perma_url}
-              subtitle={album.subtitle}
-              type={album.type}
-              image={album.image}
-              explicit={album.explicit_content}
-            />
-          ))}
+        {uniqueBy(
+          data.pages.flatMap((page) => page.items),
+          (album) => album.id,
+        ).map((album) => (
+          <SliderCard
+            key={album.id}
+            name={album.title}
+            url={album.perma_url}
+            subtitle={album.subtitle}
+            type={album.type}
+            image={album.image}
+            explicit={album.explicit_content}
+          />
+        ))}
       </CatalogGrid>
 
       <LoadMore
@@ -173,6 +201,7 @@ export function ArtistsTopItems(props: ArtistsTopItemsProps) {
     <ArtistTopAlbums
       id={rest.id}
       category={rest.category}
+      lastInitialPage={rest.lastInitialPage}
       initialAlbums={initialAlbums ?? []}
     />
   );
