@@ -67,6 +67,18 @@ const edgeClassName =
 const floatingPanelClassName =
   "inset-y-2 left-2 h-auto w-[calc(var(--sidebar-width)-0.5rem)] group-data-[side=left]:border-r-0 data-[side=left]:left-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)-0.5rem)] [&>[data-slot=sidebar-inner]]:bg-transparent";
 
+// Rail and full sidebar share one item layout: the icon sits at the same x in
+// both, so a collapse only narrows the item and fades the label, which is
+// flexed to whatever width is left (zero in the rail) and stays readable to
+// assistive tech. The panel itself eases in `styles/motion.css`.
+const railMotion =
+  "transition-[width,height,padding,gap,background-color,color] duration-base ease-drawer";
+const railLabel =
+  "min-w-0 flex-1 truncate opacity-100 transition-opacity duration-base ease-drawer group-data-[collapsible=icon]:opacity-0";
+// Groups the rail does not show fade out, then leave the layout at the end of
+// the transition (`.sidebar-rail-hide` in `styles/globals.css`).
+const railHide = "sidebar-rail-hide group-data-[collapsible=icon]:hidden";
+
 const glassPanelRadiusClassName = "rounded-[calc(var(--r-lg)+6px)]";
 
 const subscribeNever = () => () => {};
@@ -164,21 +176,20 @@ function SidebarLogo({ collapsed }: { collapsed: boolean }) {
   const link = (
     <Link
       href="/"
-      className="flex h-10 items-center gap-2 rounded-sm px-3 font-heading text-lg/6 font-bold tracking-tight lowercase group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
+      className={cn(
+        "flex h-10 items-center gap-2 rounded-sm px-3 font-heading text-lg/6 font-bold tracking-tight lowercase group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-2.5",
+        railMotion,
+      )}
     >
       <span className="grid size-7 shrink-0 place-items-center rounded-sm bg-primary text-primary-foreground">
         <Icons.Logo className="size-4" />
       </span>
-      <span className="group-data-[collapsible=icon]:sr-only">
-        {siteConfig.name}
-      </span>
+      <span className={railLabel}>{siteConfig.name}</span>
     </Link>
   );
 
-  if (!collapsed) return link;
-
   return (
-    <Tooltip>
+    <Tooltip disabled={!collapsed}>
       <TooltipTrigger render={link} />
       <TooltipContent side="right" align="center">
         {siteConfig.name}
@@ -204,22 +215,23 @@ function SidebarNavLink({
     <Link
       href={href}
       aria-current={isActive ? "page" : undefined}
-      className="flex h-(--ctl) w-full items-center gap-3 rounded-sm px-3 text-sm font-medium text-foreground transition-colors duration-fast -outline-offset-2 hover:bg-fill active:bg-fill-2 aria-[current=page]:bg-fill-2 aria-[current=page]:[&_svg]:text-primary group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0 group-data-[collapsible=icon]:pointer-coarse:h-11"
+      className={cn(
+        "flex h-(--ctl) w-full items-center gap-3 rounded-sm px-3 text-sm font-medium text-foreground -outline-offset-2 hover:bg-fill active:bg-fill-2 aria-[current=page]:bg-fill-2 aria-[current=page]:[&_svg]:text-primary group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-12 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-3.5 group-data-[collapsible=icon]:pointer-coarse:h-11",
+        railMotion,
+      )}
     >
       <Icon
         aria-hidden
-        className="size-4.5 shrink-0 text-muted-foreground group-data-[collapsible=icon]:size-5"
+        className="size-4.5 shrink-0 text-muted-foreground transition-[width,height] duration-base ease-drawer group-data-[collapsible=icon]:size-5"
       />
-      <span className="truncate group-data-[collapsible=icon]:sr-only">
-        {title}
-      </span>
+      <span className={railLabel}>{title}</span>
     </Link>
   );
 
-  if (!collapsed) return link;
-
+  // Always wrapped, so the link keeps its element through a collapse and its
+  // width, padding and label can transition instead of remounting.
   return (
-    <Tooltip>
+    <Tooltip disabled={!collapsed}>
       <TooltipTrigger render={link} />
       <TooltipContent side="right" align="center">
         {title}
@@ -250,8 +262,7 @@ function SidebarNavList({ items, pathname, collapsed }: SidebarNavListProps) {
   );
 }
 
-const sectionLabelClassName =
-  "h-auto px-3 pb-1 text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] text-muted-foreground uppercase group-data-[collapsible=icon]:hidden";
+const sectionLabelClassName = `h-auto px-3 pb-1 text-[0.6875rem] leading-4 font-semibold tracking-[0.06em] text-muted-foreground uppercase ${railHide}`;
 
 type SidebarPlaylistsProps = {
   userPlaylists: MyPlaylist[];
@@ -260,7 +271,7 @@ type SidebarPlaylistsProps = {
 
 function SidebarPlaylists({ userPlaylists, pathname }: SidebarPlaylistsProps) {
   return (
-    <SidebarGroup className="p-0 group-data-[collapsible=icon]:hidden">
+    <SidebarGroup className={cn("p-0", railHide)}>
       <div className="flex items-center justify-between">
         <SidebarGroupLabel className={sectionLabelClassName}>
           Playlists
@@ -305,7 +316,7 @@ function SidebarPlaylists({ userPlaylists, pathname }: SidebarPlaylistsProps) {
 
 function CreatePlaylistPrompt({ user, userPlaylists }: SidebarProps) {
   return (
-    <div className="space-y-2 px-3 group-data-[collapsible=icon]:hidden">
+    <div className={cn("space-y-2 px-3", railHide)}>
       {user && userPlaylists === undefined ? (
         <output className="block text-center text-xs text-muted-foreground">
           Couldn&apos;t load your playlists

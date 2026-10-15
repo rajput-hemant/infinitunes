@@ -52,6 +52,8 @@ type Entry = {
   timer: ReturnType<typeof setTimeout> | undefined;
   /** Materialize ramp still to run on the first applied lens. */
   ramp: boolean;
+  /** The lens was dropped for a size change and waits for the size to settle. */
+  dropped: boolean;
 };
 
 export type LensConfig = {
@@ -335,6 +337,7 @@ function applyLens(el: HTMLElement) {
   const entry = entries.get(el);
   if (!entry) return;
   entry.timer = undefined;
+  entry.dropped = false;
   if (!el.isConnected) {
     unregisterGlass(el);
     return;
@@ -413,9 +416,63 @@ function schedule(el: HTMLElement) {
     applied !== null &&
     (Math.abs(applied.width - el.offsetWidth) > 1 ||
       Math.abs(applied.height - el.offsetHeight) > 1);
-  if (drifted) clearLens(el, entry);
+  if (drifted) {
+    clearLens(el, entry);
+    entry.dropped = true;
+  }
   clearTimeout(entry.timer);
-  entry.timer = setTimeout(() => applyLens(el), applied ? RESIZE_SETTLE_MS : 0);
+  // A dropped lens keeps waiting on every later frame of the same resize: the
+  // lens of a surface that has not been sized yet is built at once, but one
+  // that is mid-transition is rebuilt once, after the size stops moving.
+  entry.timer = setTimeout(
+    () => settleThenApply(el),
+    applied || entry.dropped ? RESIZE_SETTLE_MS : 0,
+  );
+}
+
+/** Layout properties whose transitions move a surface's size or place. */
+const LAYOUT_TRANSITIONS = new Set([
+  "width",
+  "height",
+  "margin-right",
+  "margin-left",
+  "left",
+  "right",
+  "inset-inline-start",
+  "inset-inline-end",
+]);
+
+/** A layout transition is still running somewhere (a frame can outlast the quiet period). */
+function layoutTransitionRunning(): boolean {
+  if (
+    typeof document.getAnimations !== "function" ||
+    typeof CSSTransition === "undefined"
+  ) {
+    return false;
+  }
+  return document
+    .getAnimations()
+    .some(
+      (animation) =>
+        animation instanceof CSSTransition &&
+        animation.playState === "running" &&
+        LAYOUT_TRANSITIONS.has(animation.transitionProperty),
+    );
+}
+
+/**
+ * A slow frame can outlast the quiet period in the middle of a size
+ * transition, and a lens built for an in-between size is thrown away on the
+ * next frame: hold the rebuild until the transition has ended.
+ */
+function settleThenApply(el: HTMLElement) {
+  const entry = entries.get(el);
+  if (!entry) return;
+  if (entry.dropped && layoutTransitionRunning()) {
+    entry.timer = setTimeout(() => settleThenApply(el), RESIZE_SETTLE_MS / 2);
+    return;
+  }
+  applyLens(el);
 }
 
 /**
@@ -437,6 +494,7 @@ export function registerGlass(
       applied: null,
       timer: undefined,
       ramp: materializes(target.role),
+      dropped: false,
     });
     resizeObserver?.observe(el);
     el.addEventListener("animationend", settled);
