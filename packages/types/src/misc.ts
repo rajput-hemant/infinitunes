@@ -72,6 +72,8 @@ export type Queue = {
   artists: ArtistMini[];
   download_url: Quality;
   duration: number;
+  /** Highest stream quality the song has; absent when uncapped or unknown. */
+  maxQuality?: StreamQuality;
 };
 
 type QualitiesMap = {

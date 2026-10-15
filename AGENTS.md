@@ -160,11 +160,10 @@ that are easy to get wrong again:
 - Entities embedded in an `artistMap`/`similarArtists` list (`ArtistMini`,
   `SimilarArtist`) use `name`, not `title`, like `Artist`/`Label` themselves -
   only song/album/playlist/show/episode top-level objects use `title`.
-- `ShowDetails.type` is the literal `"season"`, not `"show"` - the show detail
-  page's own UI/routing concept of "this is a show" has to be derived
-  separately (see `apps/web/components/details-header/details-header.tsx`'s
-  `getKind`/`getId` handling of `Label` and `Artist`, which also lack a plain
-  `id`/`type` field and use `labelId`/`artistId` instead).
+- `ShowDetails.type` is `"show"` (verified live), not `"season"`; its episodes are keyed
+  by the numeric `id` plus `more_info.season_number`, never the perma token
+  (`isShowDetails` in `apps/web/components/details-header/details-header-items.ts`).
+  Artist and Label also lack a plain `id`/`type` (`artistId`/`labelId`), see `getKind`/`getId`.
 - `Quality` (image/download URLs) is a plain templated string, never the
   `{quality,link}[]` array shape some earlier normalized types assumed.
 - `TopShows.trendingPodcasts` is an array of `{items, module}` groups, not a
@@ -242,6 +241,10 @@ bug is appending to them instead of substituting:
   src (leaving `_sounds` undefined) and react-use-audio-player's `getSnapshotFromHowl`
   then throws `Cannot read properties of undefined (reading 'length')` inside the
   play effect. Guard on a falsy `audioSrc` and `toast` instead of calling `load()`.
+- The CDN 404s a `_320` link for songs flagged `more_info["320kbps"] === "false"`.
+  `getDownloadCandidates`/`maxQualityOf` (`packages/types/src/media.ts`) cap the
+  request, and `use-track-playback.ts` steps down a bitrate on each Howl load error
+  (then toasts once and skips). Never pick a link by raw index.
 - Images embed a resolution token with _either_ separator: `-500x500.jpg` for
   song/album/playlist artwork, `_150x150.jpg` for artist and some CDN paths.
   Resizing regexes must accept both (`getImageSrc`/`withSize` in
