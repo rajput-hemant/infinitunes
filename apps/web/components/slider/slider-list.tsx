@@ -15,18 +15,20 @@ type SliderListProps = {
 
 export function SliderList({ title, subtitle, items }: SliderListProps) {
   return (
-    <section className="space-y-3">
-      <header>
-        <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
-          {title}
-        </h2>
+    <section>
+      <Shelf
+        heading={
+          <header>
+            <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
+              {title}
+            </h2>
 
-        {subtitle && (
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
-        )}
-      </header>
-
-      <Shelf>
+            {subtitle && (
+              <p className="text-sm text-muted-foreground">{subtitle}</p>
+            )}
+          </header>
+        }
+      >
         {uniqueBy(items, (item) => item.id).map(({ id, ...props }) => (
           <ShelfItem key={id}>
             <SliderCard {...props} />

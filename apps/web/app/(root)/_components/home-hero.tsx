@@ -1,10 +1,11 @@
-import type { Playlist, Quality } from "@infinitunes/types";
+import type { MediaType, Playlist, Quality } from "@infinitunes/types";
 import { decode, getImageSrc, parseToken } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Play } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 
+import { CardPlay } from "~/components/card-play";
 import { GlassSurface } from "~/components/glass/glass-surface";
 import { ImageWithFallback } from "~/components/image-with-fallback";
 import { getPlaceholderSrc } from "~/components/placeholder-src";
@@ -17,6 +18,8 @@ export type HeroTile = {
   href: Route;
   title: string;
   image: Quality;
+  type: MediaType;
+  token: string;
 };
 
 type HomeHeroProps = {
@@ -105,25 +108,33 @@ export function HomeHero({ playlist, tiles }: HomeHeroProps) {
 
       {tiles
         .slice(0, MAX_TILES)
-        .map(({ key, href: tileHref, title: tileTitle, image }) => (
-          <Link
-            key={key}
-            href={tileHref}
-            aria-label={tileTitle}
-            title={tileTitle}
-            className="group/tile relative isolate block aspect-square overflow-hidden rounded-md shadow-sm outline-none transition-transform duration-fast hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-ring max-md:nth-[n+4]:hidden motion-reduce:transition-none"
-          >
-            <ImageWithFallback
-              src={getImageSrc(image, "high")}
-              fallback={getPlaceholderSrc("playlist")}
-              fill
-              sizes="(min-width: 1024px) 14vw, (min-width: 768px) 25vw, 50vw"
-              loading="lazy"
-              alt=""
-              className="-z-20 rounded-none object-cover"
-            />
-          </Link>
-        ))}
+        .map(
+          ({ key, href: tileHref, title: tileTitle, image, type, token }) => (
+            <div
+              key={key}
+              className="group relative isolate aspect-square overflow-hidden rounded-md shadow-sm transition-transform duration-fast hover:-translate-y-0.5 max-md:nth-[n+4]:hidden motion-reduce:transition-none"
+            >
+              <Link
+                href={tileHref}
+                aria-label={tileTitle}
+                title={tileTitle}
+                className="absolute inset-0 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <ImageWithFallback
+                  src={getImageSrc(image, "high")}
+                  fallback={getPlaceholderSrc("playlist")}
+                  fill
+                  sizes="(min-width: 1024px) 14vw, (min-width: 768px) 25vw, 50vw"
+                  loading="lazy"
+                  alt=""
+                  className="-z-20 rounded-none object-cover"
+                />
+              </Link>
+
+              <CardPlay name={tileTitle} type={type} token={token} />
+            </div>
+          ),
+        )}
     </div>
   );
 }

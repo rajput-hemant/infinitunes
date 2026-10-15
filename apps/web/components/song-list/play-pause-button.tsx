@@ -36,12 +36,11 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
       onClick={isPlaying ? pause : play}
       // Image scrim: must stay dark over arbitrary artwork in both themes, so
       // it is deliberately not a theme token.
-      className="absolute inset-0 z-10 w-full bg-black/40 text-secondary outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring dark:bg-black/75"
+      className="absolute inset-0 z-10 w-full bg-black/40 text-white outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring dark:bg-black/75"
     >
       <Icon
         aria-hidden="true"
-        strokeWidth={isPlaying ? 2 : 9}
-        className="m-auto size-5 transition-transform duration-150 ease-out hover:scale-125 dark:invert"
+        className="m-auto size-5 fill-current transition-transform duration-150 ease-out hover:scale-125"
       />
     </button>
   ) : (
@@ -53,8 +52,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
     >
       <Play
         aria-hidden="true"
-        strokeWidth={9}
-        className="absolute inset-0 z-20 m-auto hidden size-5 text-secondary transition-transform duration-150 ease-out hover:scale-125 group-focus-within/row:block group-hover/row:block dark:invert"
+        className="absolute inset-0 z-20 m-auto hidden size-5 fill-current text-white transition-transform duration-150 ease-out hover:scale-125 group-focus-within/row:block group-hover/row:block"
       />
     </PlayButton>
   );
