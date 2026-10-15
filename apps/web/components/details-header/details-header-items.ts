@@ -37,21 +37,15 @@ export function isKind<K extends TypedDetailsItem["type"]>(
   return "type" in item && item.type === kind;
 }
 
-/**
- * A show page's header item. The types say `"season"`, but upstream answers
- * `"show"` for a show's details; both mean "play this show's season", whose
- * episodes are keyed by the numeric `id` and `more_info.season_number`, never
- * by the perma token.
- */
+/** A show page's header item (live upstream types it `"show"`; older fixtures said `"season"`). */
 export function isShowDetails(item: DetailsItem): item is ShowDetails {
   return (
-    !isLabel(item) && (item.type === "season" || String(item.type) === "show")
+    !isLabel(item) && (item.type === "show" || String(item.type) === "season")
   );
 }
 
 export function getKind(item: DetailsItem): DetailsKind {
-  if (isLabel(item)) return "label";
-  return isShowDetails(item) ? "season" : item.type;
+  return isLabel(item) ? "label" : item.type;
 }
 
 export function getId(item: DetailsItem): string {

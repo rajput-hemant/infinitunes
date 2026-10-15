@@ -24,12 +24,10 @@ describe("details header items", () => {
     expect(getKind(labelFixture)).toBe("label");
   });
 
-  it("treats a show page's header as a season whether upstream says season or show", () => {
-    // The types say "season"; live upstream answers "show" for show details.
+  it("recognises a show page's header whether the type says show or the older season", () => {
     for (const type of ["season", "show"]) {
       const item = Object.assign(albumFixture({ id: "63565" }), { type });
       expect(isShowDetails(item)).toBe(true);
-      expect(getKind(item)).toBe("season");
       expect(getId(item)).toBe("63565");
     }
     expect(isShowDetails(albumFixture())).toBe(false);

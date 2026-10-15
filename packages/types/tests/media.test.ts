@@ -4,7 +4,9 @@ import {
   ensureQueueItemIds,
   newQueueItemId,
   formatDuration,
+  getDownloadCandidates,
   getDownloadLink,
+  maxQualityOf,
   getImageSrc,
   pickShuffleIndex,
   removeFromQueue,
@@ -204,5 +206,35 @@ describe("queue item ids", () => {
   it("returns the same array when ids are already unique", () => {
     const queue = [entry("a", "1"), entry("a", "2")];
     expect(ensureQueueItemIds(queue)).toBe(queue);
+  });
+});
+
+describe("download quality cap", () => {
+  const links = [12, 48, 96, 160, 320]
+    .map((rate) => `https://aac.saavncdn.com/t/x_${rate}.mp4`)
+    .join(",");
+  const at = (rate: number) => `https://aac.saavncdn.com/t/x_${rate}.mp4`;
+
+  it("never asks for a bitrate above what the song has", () => {
+    expect(getDownloadLink(links, "excellent", "high")).toBe(at(160));
+    expect(getDownloadLink(links, "medium", "high")).toBe(at(96));
+    expect(getDownloadLink(links, "excellent")).toBe(at(320));
+  });
+
+  it("lists the requested bitrate first, then every lower one", () => {
+    expect(getDownloadCandidates(links, "excellent", "high")).toEqual([
+      at(160),
+      at(96),
+      at(48),
+      at(12),
+    ]);
+    expect(getDownloadCandidates(links, "low")).toEqual([at(48), at(12)]);
+    expect(getDownloadCandidates("", "high")).toEqual([]);
+  });
+
+  it("reads the cap from the raw 320kbps flag", () => {
+    expect(maxQualityOf({ "320kbps": "false" })).toBe("high");
+    expect(maxQualityOf({ "320kbps": "true" })).toBeUndefined();
+    expect(maxQualityOf({})).toBeUndefined();
   });
 });

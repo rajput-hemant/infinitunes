@@ -35,7 +35,7 @@ import { MoreButton } from "./more-button";
 import { ShareButton } from "./share-button";
 
 const KIND_LABELS: Partial<Record<DetailsKind, string>> = {
-  season: "Podcast",
+  show: "Podcast",
   label: "Record label",
 };
 

@@ -1,7 +1,7 @@
 "use client";
 
 import type { Episode, Song } from "@infinitunes/types";
-import { QUALITIES_MAP, decode } from "@infinitunes/types";
+import { decode, getDownloadLink, maxQualityOf } from "@infinitunes/types";
 import {
   Tooltip,
   TooltipContent,
@@ -78,15 +78,12 @@ export function useDownloadSongs(songs: (Song | Episode)[]) {
   const [downloadQuality] = useDownloadQuality();
   const [isDownloading, setIsDownloading] = React.useState(false);
 
-  const downloadQualityIndex = QUALITIES_MAP.findIndex(
-    ({ quality }) => quality === downloadQuality,
-  );
-
   async function downloadSong(song: Song | Episode) {
-    const links = (song.download_url ?? song.more_info.download_url ?? "")
-      .split(",")
-      .filter(Boolean);
-    const link = links[downloadQualityIndex] ?? links[0];
+    const link = getDownloadLink(
+      song.download_url ?? song.more_info.download_url ?? "",
+      downloadQuality,
+      maxQualityOf(song.more_info),
+    );
     if (!link) return;
 
     const title = decode(song.title);
