@@ -24,9 +24,10 @@ const reveal =
  * Play control over a card's artwork. It is a sibling of the card's link, never
  * a child of it (no button inside an anchor), and sits above the link's
  * stretched hit area, so a click plays and never navigates. Square art shows it
- * bottom right (always on touch); round art centres it, because the bottom
- * right corner of a circle is outside the circle, and shows it only on hover or
- * focus, hidden entirely on touch where a tap opens the page.
+ * bottom right; round art centres it, because the bottom right corner of a
+ * circle is outside the circle. Both show on hover or focus with a fine pointer
+ * and stay visible on touch, where a tap on the button plays and a tap anywhere
+ * else opens the page.
  */
 export function CardPlay(props: CardPlayProps) {
   const { name, type, token, round = false, className } = props;
@@ -42,7 +43,7 @@ export function CardPlay(props: CardPlayProps) {
         "absolute z-20 flex items-center justify-center bg-primary text-primary-foreground shadow-md transition duration-base ease-spring motion-reduce:transition-none",
         reveal,
         round
-          ? "inset-0 m-auto scale-90 opacity-0 pointer-coarse:hidden"
+          ? "inset-0 m-auto pointer-fine:scale-90 pointer-fine:opacity-0"
           : "right-2 bottom-2 pointer-fine:translate-y-1.5 pointer-fine:scale-90 pointer-fine:opacity-0",
         className,
       )}

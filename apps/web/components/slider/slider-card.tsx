@@ -52,6 +52,11 @@ export function SliderCard(props: SliderCardProps) {
   const isExplicit =
     typeof explicit === "string" ? explicit === "true" : Boolean(explicit);
 
+  const titleClass = cn(
+    "max-w-full min-w-0 items-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    round ? "inline-flex" : "flex",
+  );
+
   const label = (
     <>
       {isExplicit && (
@@ -126,23 +131,28 @@ export function SliderCard(props: SliderCardProps) {
           round && "items-center text-center",
         )}
       >
-        <h3 className="w-full text-[0.8125rem] leading-5 font-semibold">
+        <h3
+          className={cn(
+            "w-full text-[0.8125rem] leading-5 font-semibold",
+            round && "text-center",
+          )}
+        >
           {href ? (
-            <Link
-              href={href}
-              className="flex max-w-full min-w-0 items-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
+            <Link href={href} className={titleClass}>
               {label}
             </Link>
           ) : (
-            <span className="flex max-w-full min-w-0 items-center">
-              {label}
-            </span>
+            <span className={titleClass}>{label}</span>
           )}
         </h3>
 
         {subtitle && (
-          <span className="w-full truncate text-xs leading-4 text-muted-foreground capitalize">
+          <span
+            className={cn(
+              "w-full truncate text-xs leading-4 text-muted-foreground capitalize",
+              round && "text-center",
+            )}
+          >
             {subtitle}
           </span>
         )}

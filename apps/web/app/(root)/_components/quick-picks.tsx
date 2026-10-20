@@ -55,13 +55,13 @@ export function QuickPicks({ items }: QuickPicksProps) {
                 <span className="line-clamp-2 min-w-0">{title}</span>
               </Link>
 
-              {/* Over the thumbnail, a sibling of the link. Touch taps open the page instead. */}
+              {/* Over the thumbnail, a sibling of the link. Always visible on touch. */}
               <PlayButton
                 aria-label={`Play ${title}`}
                 type={type}
                 token={token}
                 data-card-play="thumb"
-                className="absolute top-0 left-0 flex size-12 items-center justify-center rounded-sm bg-black/45 text-white opacity-0 outline-none transition-opacity duration-fast group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none pointer-coarse:hidden md:size-14 xl:aspect-square xl:h-full xl:w-auto"
+                className="absolute top-0 left-0 flex size-12 items-center justify-center rounded-sm bg-black/45 text-white opacity-0 outline-none transition-opacity duration-fast group-focus-within:opacity-100 group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring motion-reduce:transition-none pointer-coarse:bg-black/30 pointer-coarse:opacity-100 md:size-14 xl:aspect-square xl:h-full xl:w-auto"
               >
                 <Play aria-hidden="true" className="size-5 fill-current" />
               </PlayButton>
