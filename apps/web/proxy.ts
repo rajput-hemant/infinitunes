@@ -1,3 +1,7 @@
+import {
+  NATIVE_APP_ORIGIN,
+  NATIVE_ORIGIN_HEADER,
+} from "@infinitunes/auth/native-app";
 import { sessionCookiePrefix } from "@infinitunes/auth/session-cookie";
 import { originOf } from "@infinitunes/auth/url";
 import { Ratelimit } from "@upstash/ratelimit";
@@ -180,8 +184,9 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 /**
  * CSRF guard for /api/trpc. State-changing methods must send a matching
- * `Origin` (browsers always do for same-origin POST; Referer is not enough).
- * Safe methods may omit both headers but must match when one is present.
+ * `Origin` (browsers always do for same-origin POST; Referer is not enough),
+ * or come from the native app. Safe methods may omit both headers but must
+ * match when one is present.
  */
 function isSameOriginRequest(req: NextRequest): boolean {
   if (req.method === "OPTIONS") return true;
@@ -200,10 +205,26 @@ function isSameOriginRequest(req: NextRequest): boolean {
   const origin = req.headers.get("origin");
   const referer = req.headers.get("referer");
 
-  if (!SAFE_METHODS.has(req.method)) return isAllowed(origin);
+  if (!SAFE_METHODS.has(req.method)) {
+    return origin ? isAllowed(origin) : isNativeAppRequest(req.headers);
+  }
   if (origin) return isAllowed(origin);
   if (referer) return isAllowed(referer);
   return true;
+}
+
+/**
+ * A request without `Origin` from the native app, which names itself in
+ * `expo-origin` and sends its session cookie explicitly, never ambiently.
+ * A browser cannot produce one: it sends `Origin` and `Sec-Fetch-Site` on
+ * every POST, and a cross-site page can set a custom header only after a
+ * CORS preflight, which this app never grants.
+ */
+function isNativeAppRequest(headers: Headers): boolean {
+  return (
+    headers.get(NATIVE_ORIGIN_HEADER) === NATIVE_APP_ORIGIN &&
+    !headers.has("sec-fetch-site")
+  );
 }
 
 export const config = {

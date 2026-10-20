@@ -187,8 +187,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Data: `useQuery(trpc.<router>.<proc>.queryOptions(input))` from `~/lib/trpc`; imperative calls use
   `trpcClient`. Only `import type` from `@infinitunes/trpc/types`; never `@infinitunes/ui` or the
   `@infinitunes/auth` barrel (`./session-cookie`, `./native-app`, `./schemas` are safe).
-- `/api/trpc` POSTs (every mutation) get 403 from the web proxy's CSRF check: native fetch sends no
-  `Origin`. Mutations need a server-side allowance for authenticated native requests first.
+- Native fetch sends no `Origin`, so `trpcClient` sends `expo-origin: infinitunes://` (`NATIVE_ORIGIN_HEADER`)
+  and the stored cookie with `credentials: "omit"`. `proxy.ts` accepts a POST without `Origin` only with that
+  exact header and no `Sec-Fetch-Site` (browsers always send `Origin`, and cannot add the header cross-site
+  without a CORS preflight): never add `Access-Control-Allow-*` headers to `/api/trpc`.
 - Bun's isolated installs: Babel resolves `nativewind/babel`'s plugins and the JSX runtime from the app, so
   `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`
   are direct dependencies; `jest.config.js` adds `.bun` to the transform allow-list. `expo-doctor` reports
@@ -443,7 +445,11 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
   the `passkey` plugin (RP "Infinitunes", per-app `infinitunes_passkey` table)
   and the `expo` plugin (native clients send `expo-origin`; `NATIVE_APP_ORIGIN`
   from `@infinitunes/auth/native-app` is a trusted origin), and takes extra
-  plugins via `createAuth(db, { plugins })`.
+  plugins via `createAuth(db, { plugins })`. The scheme is trusted as a request
+  origin only: `webRedirectsOnly` rejects non-http(s) `callbackURL`/`redirectTo`
+  values (any app can claim a custom scheme, and reset tokens or the `expo`
+  plugin's appended cookie would travel through it), and `/expo-authorization-proxy`
+  is in `disabledPaths`. Native social sign-in should use the ID token flow.
   The web app injects `nextCookies()` at its call site (`apps/web/lib/auth.ts`) -
   nothing under `@infinitunes/auth` may import `better-auth/next-js`. `createAuth`
   passes `secret`/`baseURL` into Better Auth (`BETTER_AUTH_*` wins over `AUTH_*`)

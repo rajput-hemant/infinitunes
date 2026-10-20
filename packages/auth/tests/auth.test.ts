@@ -370,11 +370,12 @@ describe("Password hashing and credential verification", () => {
 });
 
 describe("Injected plugins and env precedence", () => {
-  it("ships only the passkey and expo plugins by default, never next-cookies", () => {
+  it("ships only the built-in plugins by default, never next-cookies", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
       "passkey",
       "expo",
+      "web-redirects-only",
     ]);
   });
 
@@ -384,6 +385,7 @@ describe("Injected plugins and env precedence", () => {
     expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
       "passkey",
       "expo",
+      "web-redirects-only",
       "test-injected",
     ]);
   });
@@ -473,6 +475,84 @@ describe("Better Auth URL resolution", () => {
     } finally {
       restore();
     }
+  });
+});
+
+describe("Native app trust", () => {
+  const post = (
+    auth: ReturnType<typeof createAuth>,
+    path: string,
+    headers: Record<string, string>,
+    body: Record<string, unknown>,
+  ) =>
+    auth.handler(
+      new Request(`http://localhost:3000/api/auth${path}`, {
+        method: "POST",
+        headers: { "content-type": "application/json", ...headers },
+        body: JSON.stringify(body),
+      }),
+    );
+
+  it("never sends a reset link to the app scheme", async () => {
+    let sent = 0;
+    const auth = createAuth(makeFakeDb(), {
+      sendEmail: async () => {
+        sent++;
+      },
+    });
+    const res = await post(
+      auth,
+      "/request-password-reset",
+      { "expo-origin": "infinitunes://" },
+      { email: "user@example.com", redirectTo: "infinitunes://reset" },
+    );
+    expect(res.status).toBe(403);
+    expect(sent).toBe(0);
+  });
+
+  it("rejects app-scheme callback URLs on reset links and sign-in", async () => {
+    const auth = createAuth(makeFakeDb());
+    const reset = await auth.handler(
+      new Request(
+        "http://localhost:3000/api/auth/reset-password/token?callbackURL=infinitunes%3A%2F%2Freset",
+      ),
+    );
+    expect(reset.status).toBe(403);
+    expect(reset.headers.get("location")).toBeNull();
+
+    const social = await post(
+      auth,
+      "/sign-in/social",
+      { "expo-origin": "infinitunes://" },
+      { provider: "github", callbackURL: "INFINITUNES://home" },
+    );
+    expect(social.status).toBe(403);
+  });
+
+  it("still accepts web redirect targets", async () => {
+    const auth = createAuth(makeFakeDb(), { sendEmail: async () => {} });
+    const res = await post(
+      auth,
+      "/request-password-reset",
+      { origin: "http://localhost:3000" },
+      { email: "user@example.com", redirectTo: "/reset-password" },
+    );
+    // Past the guard and the origin check; the fake database then fails.
+    expect(res.status).not.toBe(403);
+  });
+
+  it("disables the expo OAuth relay", async () => {
+    const auth = createAuth(makeFakeDb());
+    const authorizationURL = encodeURIComponent(
+      "https://evil.example/?state=attacker",
+    );
+    const res = await auth.handler(
+      new Request(
+        `http://localhost:3000/api/auth/expo-authorization-proxy?authorizationURL=${authorizationURL}`,
+      ),
+    );
+    expect(res.status).toBe(404);
+    expect(res.headers.get("set-cookie")).toBeNull();
   });
 });
 

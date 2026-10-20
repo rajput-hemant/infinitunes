@@ -22,6 +22,7 @@ import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
 import { NATIVE_APP_ORIGIN } from "./native-app";
 import { originOf, parseUrl } from "./url";
+import { webRedirectsOnly } from "./web-redirects";
 
 /** Reset links are single use and expire after an hour (Better Auth default, pinned). */
 export const RESET_TOKEN_TTL_SECONDS = 60 * 60;
@@ -103,7 +104,8 @@ export function createAuth(
     env.BETTER_AUTH_URL || resolveAuthUrl(env.AUTH_URL, vercelContext);
   // The base URL is trusted implicitly; also trust this deployment's own host
   // (previews) and the production domain so CSRF/redirect checks pass there,
-  // and the native app, whose requests the `expo` plugin gives its origin.
+  // and the native app, whose requests the `expo` plugin gives its origin
+  // (`webRedirectsOnly` keeps its scheme from being a redirect target).
   const trustedOrigins = [
     ...new Set(
       [baseURL, vercelContext.vercelUrl, vercelContext.vercelProductionUrl]
@@ -136,6 +138,10 @@ export function createAuth(
     secret: env.BETTER_AUTH_SECRET || env.AUTH_SECRET,
     baseURL,
     trustedOrigins,
+    // The `expo` plugin's browser OAuth relay: an unauthenticated GET that
+    // plants a caller-chosen OAuth state cookie, then redirects to any https
+    // URL. The native app has no social sign-in; enable it only with one.
+    disabledPaths: ["/expo-authorization-proxy"],
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: false,
@@ -255,6 +261,7 @@ export function createAuth(
         },
       }),
       expo(),
+      webRedirectsOnly(),
       ...(options.plugins ?? []),
     ],
   });

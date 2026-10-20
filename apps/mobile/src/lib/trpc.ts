@@ -1,3 +1,7 @@
+import {
+  NATIVE_APP_ORIGIN,
+  NATIVE_ORIGIN_HEADER,
+} from "@infinitunes/auth/native-app";
 import type { AppRouter } from "@infinitunes/trpc/types";
 import { createTRPCClient, httpBatchLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
@@ -16,11 +20,19 @@ export const trpcClient = createTRPCClient<AppRouter>({
     httpBatchLink({
       url: `${env.apiUrl}/api/trpc`,
       transformer: superjson,
-      // Native fetch has no cookie jar: send the stored session explicitly.
+      // The session lives in secure storage, not a cookie jar: send it
+      // explicitly, and name the app because native fetch sends no `Origin`
+      // (the web proxy rejects mutations without one or the other).
       headers: async () => {
         const cookie = await authClient.getCookie();
-        return cookie ? { cookie } : {};
+        return {
+          [NATIVE_ORIGIN_HEADER]: NATIVE_APP_ORIGIN,
+          ...(cookie ? { cookie } : {}),
+        };
       },
+      // iOS would otherwise add cookies from the shared system store, which
+      // can hold a stale session next to the stored one.
+      fetch: (url, options) => fetch(url, { ...options, credentials: "omit" }),
     }),
   ],
 });
