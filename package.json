@@ -36,16 +36,16 @@
     "with-env": "bun --env-file=.env --env-file=.env.local"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21.2.3",
-    "@commitlint/config-conventional": "^21.2.3",
-    "@happy-dom/global-registrator": "^20.14.5",
+    "@commitlint/cli": "^21.2.4",
+    "@commitlint/config-conventional": "^21.2.4",
+    "@happy-dom/global-registrator": "^21.0.4",
     "@types/node": "catalog:",
     "husky": "^9.1.7",
-    "knip": "^6.41.0",
+    "knip": "^6.42.1",
     "lint-staged": "^17.6.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
-    "turbo": "^2.11.4"
+    "turbo": "^2.11.10"
   },
   "workspaces": {
     "packages": [
@@ -55,7 +55,7 @@
     "catalog": {
       "@trpc/server": "^11.19.0",
       "@types/bun": "^1.4.2",
-      "@types/node": "^26.6.3",
+      "@types/node": "^26.6.5",
       "@types/react": "^19.3.0",
       "@types/react-dom": "^19.3.0",
       "bcryptjs": "^3.0.3",
@@ -63,8 +63,8 @@
       "drizzle-orm": "^0.45.3",
       "lucide-react": "^1.48.0",
       "next-themes": "^0.4.6",
-      "oxfmt": "^0.70.0",
-      "oxlint": "^1.85.0",
+      "oxfmt": "^0.74.0",
+      "oxlint": "^1.89.0",
       "server-only": "^0.0.1",
       "sonner": "^2.0.8",
       "superjson": "^2.2.6",
