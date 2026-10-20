@@ -357,6 +357,38 @@ const press = (key: string, init: KeyboardEventInit = {}) =>
     window.dispatchEvent(new KeyboardEvent("keydown", { key, ...init }));
   });
 
+function durationToggle() {
+  return document.querySelector<HTMLButtonElement>(
+    'button[aria-label^="Total duration"], button[aria-label^="Remaining time"]',
+  );
+}
+
+/** Figure space pads total mode so the label width matches negative remaining. */
+function endTimeLabel(toggle: HTMLButtonElement | null | undefined) {
+  return toggle?.textContent?.replace(/^\u2007/, "") ?? "";
+}
+
+describe("player duration toggle", () => {
+  it("switches the end label between total and negative remaining time", async () => {
+    position = 117;
+    advancing = false;
+    await mountPlayer();
+
+    const toggle = durationToggle();
+    expect(toggle).not.toBeNull();
+    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+    expect(endTimeLabel(toggle)).toBe("03:20");
+
+    await act(async () => toggle?.click());
+    expect(toggle?.getAttribute("aria-pressed")).toBe("true");
+    expect(endTimeLabel(toggle)).toBe("-01:23");
+
+    await act(async () => toggle?.click());
+    expect(toggle?.getAttribute("aria-pressed")).toBe("false");
+    expect(endTimeLabel(toggle)).toBe("03:20");
+  });
+});
+
 describe("player repeat and volume controls", () => {
   afterEach(() => {
     audio.isLooping = false;
