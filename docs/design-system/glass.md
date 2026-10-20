@@ -1,7 +1,6 @@
 # Liquid Glass: usage guide
 
-The single guide for placing glass. The mockup is the source of truth (`design-mockups/final/glass.css`, `glass.js`,
-`glass-spec.md`); this file says how the app exposes it. Engine code lives in `apps/web/lib/glass/` (pure, unit
+The single guide for placing glass. This file says how the app exposes it. Engine code lives in `apps/web/lib/glass/` (pure, unit
 tested), `apps/web/components/glass/` (DOM) and `apps/web/hooks/`; the stylesheet is `apps/web/styles/glass.css`.
 
 ## What is mounted for you
@@ -194,10 +193,10 @@ prose stay plain.
 | `prefers-reduced-motion`, `data-motion="reduced"` | no materialize, no spring (values jump), tab bar and player change position without a transition, no device-orientation light           |
 
 The scroll edge (`data-glass-edge`) and the lifted selector droplet are deliberately not gated by Solid or the
-contrast modes (the mockup does not either): the edge blurs page content that scrolled under a toolbar, not the
+contrast modes: the edge blurs page content that scrolled under a toolbar, not the
 toolbar's own text, and the droplet's 0.5px blur sits over a surface that is already opaque in those modes.
 
-Contrast holds WCAG AA on text-bearing `m` and `l` surfaces over any backdrop (measured values in `glass-spec.md`);
+Contrast holds WCAG AA on text-bearing `m` and `l` surfaces over any backdrop;
 `s` icon-led surfaces are guaranteed 3:1. Clear glass is AA only near the sampled brightness.
 
 ## How to verify

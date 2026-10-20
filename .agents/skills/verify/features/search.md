@@ -1,6 +1,6 @@
 # Search
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-012 in [verification-history.md](../../../../docs/archive/verification-history.md).
+**DRAFT. Last live proof: none.**
 
 ## Sub-features
 
@@ -25,5 +25,5 @@ Observable end state: URL reflects type and query, results are real catalogue it
 
 ## Gotchas
 
-- Raw HTML entities in titles were seen upstream (ISSUE-012); check `&quot;` in results.
+- Raw HTML entities in titles were seen upstream; check `&quot;` in results.
 - Special characters in the query must be URL-encoded in the path segment.

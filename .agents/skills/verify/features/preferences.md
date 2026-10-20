@@ -1,6 +1,6 @@
 # Appearance and preferences
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-017, ISSUE-019 in [verification-history.md](../../../../docs/archive/verification-history.md).
+**DRAFT. Last live proof: none.**
 
 ## Sub-features
 
@@ -24,4 +24,4 @@ Observable end state: choices persist across reload and apply across pages.
 
 ## Gotchas
 
-- Tailwind 3 baseline screenshots do not exist, so visual regression versus the old build is unproven (ISSUE-017).
+- Tailwind 3 baseline screenshots do not exist, so visual regression versus the old build is unproven.
