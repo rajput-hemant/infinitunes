@@ -3,7 +3,7 @@
 import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
 import { toQueue } from "@infinitunes/types";
 import { useSearchParams } from "next/navigation";
-import type { HTMLAttributes } from "react";
+import { useState, type HTMLAttributes } from "react";
 import { toast } from "sonner";
 
 import {
@@ -55,6 +55,8 @@ export function PlayButton(props: PlayButtonProps) {
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [, setCurrentIndex] = useCurrentSongIndex();
   const [, setActiveRadio] = useActiveRadioSession();
+
+  const [pending, setPending] = useState(false);
 
   const sort = parseSort(searchParams.get("sort"));
 
@@ -177,7 +179,17 @@ export function PlayButton(props: PlayButtonProps) {
     <button
       type="button"
       aria-label={shuffle ? "Shuffle" : "Play"}
-      onClick={playHandler}
+      aria-busy={pending || undefined}
+      data-pending={pending || undefined}
+      onClick={async () => {
+        if (pending) return;
+        setPending(true);
+        try {
+          await playHandler();
+        } finally {
+          setPending(false);
+        }
+      }}
       {...restProps}
     >
       {children}

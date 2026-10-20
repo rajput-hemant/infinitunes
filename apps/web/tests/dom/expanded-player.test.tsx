@@ -60,6 +60,8 @@ async function mountExpanded() {
               track={track}
               position={createPositionStore(0)}
               duration={100}
+              showRemainingTime={false}
+              onToggleRemainingTime={noop}
               isPlaying={false}
               isLoading={false}
               isLooping={false}

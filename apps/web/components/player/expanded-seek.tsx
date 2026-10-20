@@ -7,10 +7,13 @@ import type { PositionStore } from "~/lib/position-store";
 import { cn } from "~/lib/utils";
 
 import { scrubClass, sliderValueOf, useSliderValueText } from "./controls";
+import { DurationToggle, durationFormatFor } from "./duration-toggle";
 
 type ExpandedSeekProps = {
   position: PositionStore;
   duration: number;
+  showRemainingTime: boolean;
+  onToggleRemainingTime: () => void;
   onSeekStart: () => void;
   onSeekChange: (value: number) => void;
   onSeekCommit: () => void;
@@ -20,13 +23,15 @@ type ExpandedSeekProps = {
 export function ExpandedSeek({
   position,
   duration,
+  showRemainingTime,
+  onToggleRemainingTime,
   onSeekStart,
   onSeekChange,
   onSeekCommit,
 }: ExpandedSeekProps) {
   const pos = usePosition(position);
   const seekLabelId = React.useId();
-  const format = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
+  const format = durationFormatFor(duration);
   const seekRef = useSliderValueText(
     `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`,
   );
@@ -50,7 +55,13 @@ export function ExpandedSeek({
       />
       <div className="flex justify-between text-xs/4 tabular-nums text-muted-foreground">
         <span>{formatDuration(pos, format)}</span>
-        <span>{formatDuration(duration, format)}</span>
+        <DurationToggle
+          position={position}
+          duration={duration}
+          format={format}
+          showRemaining={showRemainingTime}
+          onToggle={onToggleRemainingTime}
+        />
       </div>
     </div>
   );

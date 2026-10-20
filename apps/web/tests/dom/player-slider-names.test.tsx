@@ -54,6 +54,8 @@ describe("player slider thumbs", () => {
       <SeekBar
         position={createPositionStore(10)}
         duration={200}
+        showRemainingTime={false}
+        onToggleRemainingTime={() => {}}
         onChange={() => {}}
         onCommit={() => {}}
         onStart={() => {}}
@@ -119,6 +121,8 @@ describe("expanded player sliders", () => {
             }}
             position={createPositionStore(0)}
             duration={100}
+            showRemainingTime={false}
+            onToggleRemainingTime={noop}
             isPlaying={false}
             isLoading={false}
             isLooping={false}

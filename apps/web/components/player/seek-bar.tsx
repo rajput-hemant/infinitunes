@@ -6,10 +6,13 @@ import { usePosition } from "~/lib/position-store";
 import type { PositionStore } from "~/lib/position-store";
 
 import { scrubClass, sliderValueOf, useSliderValueText } from "./controls";
+import { DurationToggle, durationFormatFor } from "./duration-toggle";
 
 type SeekBarProps = {
   position: PositionStore;
   duration: number;
+  showRemainingTime: boolean;
+  onToggleRemainingTime: () => void;
   onChange: (value: number) => void;
   onCommit: () => void;
   onStart: () => void;
@@ -20,13 +23,15 @@ type SeekBarProps = {
 export function SeekBar({
   position,
   duration,
+  showRemainingTime,
+  onToggleRemainingTime,
   onChange,
   onCommit,
   onStart,
 }: SeekBarProps) {
   const pos = usePosition(position);
   const labelId = React.useId();
-  const format = duration >= 3600 ? "hh:mm:ss" : "mm:ss";
+  const format = durationFormatFor(duration);
   const ref = useSliderValueText(
     `${formatDuration(pos, format)} of ${formatDuration(duration, format)}`,
   );
@@ -49,7 +54,13 @@ export function SeekBar({
         onPointerDown={onStart}
         className={scrubClass}
       />
-      <span aria-hidden>{formatDuration(duration, format)}</span>
+      <DurationToggle
+        position={position}
+        duration={duration}
+        format={format}
+        showRemaining={showRemainingTime}
+        onToggle={onToggleRemainingTime}
+      />
     </div>
   );
 }

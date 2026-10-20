@@ -43,6 +43,14 @@ const config: NextConfig = {
   reactStrictMode: true,
   reactCompiler: true,
   typedRoutes: true,
+  experimental: {
+    // Pages read params/cookies, so their data is "dynamic" to the client
+    // router, whose default keeps it 0s: every revisit refetched and showed
+    // `loading.tsx`. Keep it for the shortest catalog TTL (REVALIDATE_SECONDS).
+    // Writes stay current: `refresh()`/`router.refresh()` clear this cache.
+    // Leave `static` alone, it also sets the default cacheLife stale time.
+    staleTimes: { dynamic: 600 },
+  },
   // Keep error/warn: server-side fallbacks (shell data, recordPlay) log through
   // console.error and would otherwise be invisible in production.
   compiler: {

@@ -79,4 +79,22 @@ describe("auth modal close control", () => {
       expect(calls).toEqual([call]);
     },
   );
+
+  it.each([
+    ["/login", "Don't have an account?", "Sign up."],
+    ["/signup", "Already have an account?", "Login."],
+  ])(
+    "on %s the footer reads %s %s with no padding before the period",
+    async (path, lead, tail) => {
+      await open(path);
+      const footer = [...(dialog()?.querySelectorAll("p") ?? [])].at(-1);
+      expect(footer?.textContent?.replace(/\s+/g, " ").trim()).toBe(
+        `${lead} ${tail}`,
+      );
+      const toggle = buttons().find((b) =>
+        tail.startsWith(b.textContent ?? ""),
+      );
+      expect(toggle?.className).toContain("px-0");
+    },
+  );
 });
