@@ -37,6 +37,10 @@ export function createDownloadLinks(
     if (!match) return decrypted;
 
     const [_full, path, ext] = match;
+    // Only JioSaavn's own CDN ships a bitrate ladder. Podcast episodes are
+    // hosted elsewhere (e.g. `.../audio.mp3?utm_source=...`) and have a single
+    // file: rewriting it into `_12`..`_320` variants 404s, so keep it verbatim.
+    if (!BITRATE_SUFFIX.test(path)) return decrypted;
     // The decrypted URL already carries a bitrate suffix (usually `_96` or
     // `_160`). It has to be replaced, not appended to: the CDN 404s on
     // `..._96_320.mp4`.
