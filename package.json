@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run with-env turbo run dev",
+    "dev:mobile": "bun run --cwd apps/mobile metro",
     "build": "bun run with-env turbo run build",
     "start": "bun run with-env turbo run start",
     "lint": "turbo run lint",
@@ -14,11 +15,12 @@
     "skeletons:capture": "bun run --cwd apps/web skeletons:capture && oxfmt --write apps/web/bones",
     "budget": "bun scripts/check-budget.ts",
     "type-check": "turbo run type-check",
-    "test": "bun test --pass-with-no-tests && bun run test:isolated",
+    "test": "bun test --pass-with-no-tests && bun run test:isolated && bun run test:mobile",
     "test:isolated": "bun scripts/test-isolated.ts",
     "test:mocked": "bun scripts/test-isolated.ts mocked",
     "test:dom": "bun scripts/test-isolated.ts dom coreDom",
     "test:routers": "bun scripts/test-isolated.ts routers",
+    "test:mobile": "bun run --filter @infinitunes/mobile test",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
     "db:up": "docker compose up -d",
@@ -53,6 +55,7 @@
       "packages/*"
     ],
     "catalog": {
+      "@better-auth/expo": "1.7.6",
       "@trpc/server": "^11.19.0",
       "@types/bun": "^1.4.2",
       "@types/node": "^26.6.5",

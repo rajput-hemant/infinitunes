@@ -1,7 +1,5 @@
+import { USER_NAME_MAX } from "@infinitunes/types";
 import * as z from "zod";
-
-/** Longest accepted display name; the server hooks in `createAuth` enforce it too (AU-8). */
-export const USER_NAME_MAX = 100;
 
 export const emailSchema = z
   .string()

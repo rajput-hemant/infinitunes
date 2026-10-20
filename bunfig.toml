@@ -2,9 +2,12 @@
 # `mock.module` and a global DOM leak across every file in one bun process, so
 # these files stay out of the plain run. `bun run test:isolated`
 # (scripts/test-isolated.ts) runs each of them in its own process: every file in
-# `apps/web/tests/mocked`, `apps/web/tests/dom` and `packages/core/tests/dom`, plus the two trpc router
-# tests, which mock `@infinitunes/db` with different fakes.
+# `apps/web/tests/mocked`, `apps/web/tests/dom` and `packages/core/tests/dom`,
+# plus the two trpc router tests, which mock `@infinitunes/db` with different
+# fakes. The mobile app's tests need React Native's Jest preset:
+# `bun run test:mobile` runs them.
 pathIgnorePatterns = [
+  "apps/mobile/**",
   "apps/web/tests/dom/**",
   "apps/web/tests/mocked/**",
   "packages/core/tests/dom/**",

@@ -1,0 +1,78 @@
+{
+  "name": "@infinitunes/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "metro": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "lint": "oxlint --deny-warnings",
+    "type-check": "expo customize tsconfig.json && tsc --noEmit",
+    "test": "jest",
+    "doctor": "bunx expo-doctor@latest"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.29.7",
+    "@better-auth/expo": "catalog:",
+    "@gorhom/bottom-sheet": "^5.2.14",
+    "@infinitunes/auth": "workspace:*",
+    "@infinitunes/types": "workspace:*",
+    "@shopify/flash-list": "2.3.2",
+    "@tanstack/react-query": "^5.104.5",
+    "@trpc/client": "^11.19.0",
+    "@trpc/server": "catalog:",
+    "@trpc/tanstack-react-query": "^11.19.0",
+    "better-auth": "catalog:",
+    "expo": "~58.0.16",
+    "expo-asset": "~58.0.17",
+    "expo-audio": "~58.0.9",
+    "expo-blur": "~58.0.5",
+    "expo-constants": "~58.0.12",
+    "expo-dev-client": "~58.0.14",
+    "expo-font": "~58.0.9",
+    "expo-glass-effect": "~58.0.4",
+    "expo-haptics": "~58.0.7",
+    "expo-image": "~58.0.16",
+    "expo-linking": "~58.0.13",
+    "expo-network": "~58.0.3",
+    "expo-router": "~58.0.24",
+    "expo-secure-store": "~58.0.2",
+    "expo-splash-screen": "~58.0.10",
+    "expo-status-bar": "~58.0.3",
+    "expo-symbols": "~58.0.4",
+    "expo-system-ui": "~58.0.6",
+    "expo-web-browser": "~58.0.6",
+    "nativewind": "^4.2.7",
+    "react": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-css-interop": "0.2.7",
+    "react-native-gesture-handler": "~3.3.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "react-native-worklets": "0.13.0",
+    "superjson": "catalog:"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.29.7",
+    "@infinitunes/trpc": "workspace:*",
+    "@infinitunes/typescript-config": "workspace:*",
+    "@react-native/jest-preset": "0.88.0",
+    "@testing-library/react-native": "^14.1.0",
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.3.0",
+    "babel-preset-expo": "~58.0.18",
+    "jest": "^30.0.0",
+    "jest-expo": "~58.0.11",
+    "tailwindcss": "^3.4.17",
+    "typescript": "catalog:"
+  },
+  "expo": {
+    "install": {
+      "exclude": [
+        "typescript"
+      ]
+    }
+  }
+}

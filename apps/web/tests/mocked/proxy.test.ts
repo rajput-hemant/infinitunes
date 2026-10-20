@@ -370,6 +370,58 @@ describe("proxy /api/trpc origin check", () => {
   });
 });
 
+describe("proxy /api/trpc native app requests", () => {
+  let proxy: typeof import("../../proxy").proxy;
+  const url = "http://localhost:3000/api/trpc/user.toggleFavorite";
+  // What React Native's fetch sends: no Origin, no Fetch Metadata.
+  const native = {
+    host: "localhost:3000",
+    "expo-origin": "infinitunes://",
+    cookie: "better-auth.session_token=token",
+  };
+  const post = (headers: Record<string, string>) =>
+    proxy(createNextRequest(url, "POST", headers));
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../../proxy"));
+  });
+
+  it("accepts a POST that names the app in expo-origin", async () => {
+    expect((await post(native)).status).toBe(200);
+  });
+
+  it("still charges native calls to the global bucket", async () => {
+    seenKeys.length = 0;
+    await post({ ...native, "x-real-ip": "203.0.113.7" });
+    expect(seenKeys).toEqual(["203.0.113.7"]);
+  });
+
+  it("rejects a cross-origin browser POST that also sends expo-origin", async () => {
+    const res = await post({ ...native, origin: "https://evil.example" });
+    expect(res.status).toBe(403);
+  });
+
+  it("rejects any request carrying Fetch Metadata, which only browsers send", async () => {
+    for (const site of ["cross-site", "same-site", "same-origin", "none"]) {
+      const res = await post({ ...native, "sec-fetch-site": site });
+      expect(res.status).toBe(403);
+    }
+  });
+
+  it("rejects another or a lookalike app origin", async () => {
+    for (const value of [
+      "exp://",
+      "infinitunes://evil.example",
+      "infinitunes:",
+      "https://localhost:3000",
+    ]) {
+      const res = await post({ ...native, "expo-origin": value });
+      expect(res.status).toBe(403);
+    }
+  });
+});
+
 describe("proxy rate-limit client key (SE-4)", () => {
   let proxy: typeof import("../../proxy").proxy;
 

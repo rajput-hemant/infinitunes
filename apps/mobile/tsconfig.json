@@ -1,0 +1,17 @@
+{
+  "extends": ["@infinitunes/typescript-config/base.json", "expo/tsconfig.base"],
+  "compilerOptions": {
+    "types": ["jest"],
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "~/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts",
+    "nativewind-env.d.ts"
+  ]
+}

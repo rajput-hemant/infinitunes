@@ -170,6 +170,40 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   listing the `.d.ts` file directly in the consumer's own `tsconfig.json`
   `include`/`files`, not a barrel re-export.
 
+## apps/mobile (`@infinitunes/mobile`, Expo SDK 58)
+
+- Layout (`~/*` → `apps/mobile/src/*`): `app/` holds thin route files only (Expo Router, typed routes);
+  `features/<name>/` holds screen content and its hooks; `components/ui/` the shared primitives (`Text`,
+  `Button`, `Icon`, `GlassSurface`); `components/` shared composites; `navigation/` stack options and the
+  player dock geometry; `lib/` clients (`trpc`, `auth-client`, `query-client`, `env`); `theme/` tokens.
+- Each tab is a folder with its own `Stack` (`(tabs)/(home)`, `search`, `library`, `settings`) using
+  `tabStackOptions`; a new tab needs a `NativeTabs.Trigger` with an `sf` and an `md` icon. Scroll containers
+  are `ScreenScrollView` (or a list with `contentInsetAdjustmentBehavior="automatic"` and
+  `playerDockInset` bottom padding), or large titles and the floating mini-player overlap content.
+- Native look per platform: no colours on `NativeTabs` or headers (system glass on iOS 26, Material You on
+  Android). Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
+  with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours,
+  `theme/tokens.ts`), colour JS props from `useTheme().colors`, text via `Text` `variant`/`tone`.
+- Data: `useQuery(trpc.<router>.<proc>.queryOptions(input))` from `~/lib/trpc`; imperative calls use
+  `trpcClient`. Only `import type` from `@infinitunes/trpc/types`; never `@infinitunes/ui` or the
+  `@infinitunes/auth` barrel (`./session-cookie`, `./native-app`, `./schemas` are safe).
+- Native fetch sends no `Origin`, so `trpcClient` sends `expo-origin: infinitunes://` (`NATIVE_ORIGIN_HEADER`)
+  and the stored cookie with `credentials: "omit"`. `proxy.ts` accepts a POST without `Origin` only with that
+  exact header and no `Sec-Fetch-Site` (browsers always send `Origin`, and cannot add the header cross-site
+  without a CORS preflight): never add `Access-Control-Allow-*` headers to `/api/trpc`.
+- The expo auth client turns a relative `callbackURL`/`newUserCallbackURL`/`errorCallbackURL` into
+  `infinitunes://...`, which `webRedirectsOnly` rejects (403): native auth calls never pass them. A native
+  password reset passes a relative path or the web reset page's https URL as `redirectTo` (left untouched).
+- Bun's isolated installs: Babel resolves `nativewind/babel`'s plugins and the JSX runtime from the app, so
+  `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`
+  are direct dependencies; `jest.config.js` adds `.bun` to the transform allow-list. `expo-doctor` reports
+  same-version "duplicates" (Bun peer variants); autolinking module resolution bundles one copy, so only a
+  real version split matters. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
+  over web's.
+- `type-check` runs `expo customize tsconfig.json` first: it writes the gitignored `.expo/types` route
+  types that `tsc` needs in a fresh clone. TypeScript is the repo's 7.x (`expo.install.exclude`).
+- No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`.
+
 ## Song rows take the slim model, never the raw song
 
 Client components (rows, row menus, `SongListClient`, `LibrarySongList`, `PlayAllButton`, details header buttons,
@@ -265,8 +299,8 @@ supply `DATABASE_URL`. Keep initialization lazy; eager evaluation at module scop
 (`docs/local-development.md`, "Shared database with Lipi"). Keep the baseline
 migration idempotent (`IF NOT EXISTS`), never drop or require `user.name` /
 `user.password` (Lipi writes them), and keep the non-production session cookie
-prefix distinct (`apps/web/lib/session-cookie.ts`, used by Better Auth and
-`proxy.ts`). Opt-in DB tests need `TEST_MIGRATION_DATABASE_URL` (a disposable
+prefix distinct (`@infinitunes/auth/session-cookie`, used by Better Auth,
+`proxy.ts` and the mobile auth client). Opt-in DB tests need `TEST_MIGRATION_DATABASE_URL` (a disposable
 admin URL).
 
 ## Media URL shapes (playback / artwork)
@@ -412,7 +446,13 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
   components must import these via `./schemas`, never from `@infinitunes/auth`.
 - `createAuth` in `packages/auth/src/auth.ts` is platform-agnostic: it ships only
   the `passkey` plugin (RP "Infinitunes", per-app `infinitunes_passkey` table)
-  and takes extra plugins via `createAuth(db, { plugins })`.
+  and the `expo` plugin (native clients send `expo-origin`; `NATIVE_APP_ORIGIN`
+  from `@infinitunes/auth/native-app` is a trusted origin), and takes extra
+  plugins via `createAuth(db, { plugins })`. The scheme is trusted as a request
+  origin only: `webRedirectsOnly` rejects non-http(s) `callbackURL`/`redirectTo`
+  values (any app can claim a custom scheme, and reset tokens or the `expo`
+  plugin's appended cookie would travel through it), and `/expo-authorization-proxy`
+  is in `disabledPaths`. Native social sign-in should use the ID token flow.
   The web app injects `nextCookies()` at its call site (`apps/web/lib/auth.ts`) -
   nothing under `@infinitunes/auth` may import `better-auth/next-js`. `createAuth`
   passes `secret`/`baseURL` into Better Auth (`BETTER_AUTH_*` wins over `AUTH_*`)

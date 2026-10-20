@@ -1,8 +1,4 @@
-import {
-  USER_NAME_MAX,
-  changePasswordSchema,
-  emailSchema,
-} from "@infinitunes/auth/schemas";
+import { changePasswordSchema, emailSchema } from "@infinitunes/auth/schemas";
 import {
   betterAuthAccounts,
   betterAuthSessions,
@@ -13,6 +9,7 @@ import {
 import {
   PLAYLIST_DESCRIPTION_MAX,
   PLAYLIST_NAME_MAX,
+  USER_NAME_MAX,
 } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { compare, hash } from "bcryptjs";

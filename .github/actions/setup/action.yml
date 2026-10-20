@@ -9,6 +9,12 @@ runs:
       with:
         bun-version-file: .bun-version
 
+    # The Expo CLI and Jest (apps/mobile) run on Node; Expo SDK 58 needs 22.13+.
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 22
+
     - name: Cache Bun package store
       uses: actions/cache@v4
       with:
