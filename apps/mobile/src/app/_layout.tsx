@@ -3,6 +3,9 @@ import { Stack } from "expo-router";
 
 import { AppProviders } from "~/providers/app-providers";
 
+/** A deep link straight to a modal (`/player`, `/login`) still opens it over the tabs. */
+export const unstable_settings = { anchor: "(tabs)" };
+
 export default function RootLayout() {
   return (
     <AppProviders>

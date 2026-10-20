@@ -8,7 +8,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@better-auth/expo": "1.7.6",
+    "@better-auth/expo": "catalog:",
     "@better-auth/passkey": "^1.7.12",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",

@@ -55,6 +55,7 @@
       "packages/*"
     ],
     "catalog": {
+      "@better-auth/expo": "1.7.6",
       "@trpc/server": "^11.19.0",
       "@types/bun": "^1.4.2",
       "@types/node": "^26.6.5",
