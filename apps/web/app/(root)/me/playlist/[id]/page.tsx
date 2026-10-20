@@ -1,3 +1,4 @@
+import { fetchSongsChunked } from "@infinitunes/core/liked-songs";
 import { formatDuration, getImageSrc, toSongRow } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import { ListMusic } from "lucide-react";
@@ -21,7 +22,6 @@ import {
 import { SongList } from "~/components/song-list/song-list";
 import { controlStyles } from "~/lib/control-styles";
 import { getPlaylistDetails } from "~/lib/db/queries";
-import { fetchSongsChunked } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
 type PlaylistPageProps = {

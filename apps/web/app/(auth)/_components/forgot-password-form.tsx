@@ -3,14 +3,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@infinitunes/auth/client";
 import { forgotPasswordSchema } from "@infinitunes/auth/schemas";
+import { GENERIC_MESSAGE } from "@infinitunes/core/user-message";
 import { Button } from "@infinitunes/ui/components/button";
 import { Loader2, Mail } from "lucide-react";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
-
-import { GENERIC_MESSAGE } from "~/lib/user-message";
 
 import { EmailField } from "./email-field";
 import { authPrimaryButtonStyles } from "./field-styles";

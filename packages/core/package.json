@@ -1,0 +1,40 @@
+{
+  "name": "@infinitunes/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "lint": "oxlint --deny-warnings",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@infinitunes/auth": "workspace:*",
+    "@infinitunes/types": "workspace:*",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "^19.3.0"
+  },
+  "devDependencies": {
+    "@infinitunes/typescript-config": "workspace:*",
+    "@trpc/server": "catalog:",
+    "@types/bun": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "typescript": "catalog:"
+  },
+  "exports": {
+    "./artist-pagination": "./src/artist-pagination.ts",
+    "./error-code": "./src/error-code.ts",
+    "./liked-songs": "./src/liked-songs.ts",
+    "./queue-position": "./src/queue-position.ts",
+    "./user-message": "./src/user-message.ts",
+    "./validations": "./src/validations.ts",
+    "./react/optimistic-favorite": "./src/react/optimistic-favorite.ts",
+    "./react/position-store": "./src/react/position-store.ts",
+    "./react/use-debounced-value": "./src/react/use-debounced-value.ts",
+    "./react/use-playhead": "./src/react/use-playhead.ts"
+  }
+}

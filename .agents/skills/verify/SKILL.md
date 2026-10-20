@@ -12,7 +12,7 @@ disable-model-invocation: true
 
 Surface: web UI at `apps/web`. Driver: the **T3 inbuilt browser tools** (`mcp__t3-code__preview_*`). If they are not available in the session, or `preview_*` calls answer "No preview automation host" repeatedly, fall back to `chrome-devtools-axi` (`open`, `snapshot`, `click`, `fill`, `eval`, `resize`, `screenshot`; named session via `CHROME_DEVTOOLS_AXI_SESSION`).
 
-Issues found are recorded once in [docs/archive/verification-history.md](../../../docs/archive/verification-history.md) (older) or the dated record under `docs/verification/` (newer). Feature files link to them instead of repeating them. The feature map is [features/README.md](features/README.md).
+Report issues in the run's report or an issue tracker, not in the feature files. The feature map is [features/README.md](features/README.md).
 
 ## Prerequisites
 
@@ -89,15 +89,15 @@ curl -s -i -X POST http://localhost:$PORT/api/trpc/user.getUserPlaylists -H 'ori
 
 ## Evidence
 
-Write a dated record `docs/verification/<run-id>.md` plus a folder `docs/verification/<run-id>/` of small screenshots (downscale with `sips -Z 500 in.png --out out.png`; keep each under about 60 KB). Capture the action, the resulting state and the side effect:
+Write the run record and screenshots to a scratch folder outside the repo, not into the tree (downscale with `sips -Z 500 in.png --out out.png`). Capture the action, the resulting state and the side effect:
 
 - Exercise the real user path (forms, clicks), not setters or test-only endpoints.
 - Check DB side effects: `docker exec verify-$PORT-pg psql -U postgres -d verify -c 'select email from "user"'`; `infinitunes_favorite` has one row per user with `songs` as an array; also `infinitunes_playlist`.
 - JioSaavn is live and unmocked. OAuth stops at the provider redirect without real credentials. Passkeys need a real origin and authenticator and cannot be driven here.
 - Say what was measured (DOM) and what was seen by eye. A check that was not run stays "not covered".
-- Update the `Last live proof:` line of the feature file you exercised, with date and record path.
+- Update the `Last live proof:` line of the feature file you exercised, with the date.
 
-Evidence lives in the repo under `docs/verification/`; cleanup never touches it.
+Evidence is kept outside the repo; cleanup never touches it.
 
 ## Cleanup
 
@@ -110,7 +110,7 @@ rm -f .env.local apps/web/.env.local              # the copies you made; keep th
 rm -rf apps/web/.next
 ```
 
-Close your tab with `t3_preview_close`. Confirm `lsof -nP -iTCP:$PORT -sTCP:LISTEN` and `docker ps --filter name=verify-$PORT-pg` are empty, `git status` shows no stray env files, and `docs/verification/<run-id>/` still exists.
+Close your tab with `t3_preview_close`. Confirm `lsof -nP -iTCP:$PORT -sTCP:LISTEN` and `docker ps --filter name=verify-$PORT-pg` are empty, `git status` shows no stray env files, and your evidence folder still exists.
 
 ## Helpers
 

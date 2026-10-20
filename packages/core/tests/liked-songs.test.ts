@@ -1,0 +1,230 @@
+import { describe, expect, it, spyOn } from "bun:test";
+
+import type { Episode, Song } from "@infinitunes/types";
+
+import {
+  chunk,
+  fetchLikedSongsNewestFirst,
+  fetchSongsChunked,
+  orderByIds,
+  settleWithLimit,
+} from "../src/liked-songs";
+
+const song = (id: string) => ({ id }) as Song;
+
+describe("chunk", () => {
+  it("splits into sized groups", () => {
+    expect(chunk([1, 2, 3, 4, 5], 2)).toEqual([[1, 2], [3, 4], [5]]);
+    expect(chunk([], 2)).toEqual([]);
+  });
+});
+
+describe("fetchSongsChunked", () => {
+  it("keeps partial results and logs failures", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    const details = async ({ id }: { id: string }) => {
+      if (id.startsWith("c")) throw new Error("boom");
+      return { songs: id.split(",").map(song) };
+    };
+    const songs = await fetchSongsChunked(["a", "b", "c", "d"], details, 2);
+    expect(songs?.map((s) => s.id)).toEqual(["a", "b"]);
+    expect(err).toHaveBeenCalledTimes(1);
+    err.mockRestore();
+  });
+
+  it("recovers the other 24 ids when one id poisons a full chunk", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const ids = Array.from({ length: 25 }, (_, i) => `id-${i}`);
+      const calls: string[] = [];
+      const details = async ({ id }: { id: string }) => {
+        calls.push(id);
+        if (id.split(",").includes("id-12"))
+          throw Object.assign(new Error("Song not found"), {
+            code: "NOT_FOUND",
+          });
+        return { songs: id.split(",").map(song) };
+      };
+      const result = await fetchSongsChunked(ids, details);
+      expect(result?.map((item) => item.id)).toEqual(
+        ids.filter((id) => id !== "id-12"),
+      );
+      expect(calls).toEqual([ids.join(","), ...ids]);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("does not amplify upstream outages into per-id requests", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      for (const code of ["BAD_GATEWAY", "TIMEOUT"]) {
+        const calls: string[] = [];
+        const result = await fetchSongsChunked(["a", "b"], async ({ id }) => {
+          calls.push(id);
+          throw Object.assign(new Error("Unavailable"), { code });
+        });
+        expect(result).toBeUndefined();
+        expect(calls).toEqual(["a,b"]);
+      }
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("rethrows an outage that hits mid-recovery instead of truncating", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const ids = ["a", "b", "c", "d"];
+      const outage = Object.assign(new Error("Unavailable"), {
+        code: "BAD_GATEWAY",
+      });
+      const details = async ({ id }: { id: string }) => {
+        if (id.includes(",") || id === "a")
+          throw Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+        if (id === "c") throw outage;
+        return { songs: [song(id)] };
+      };
+      await expect(fetchSongsChunked(ids, details, 2)).rejects.toBe(outage);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("rethrows the original error when every id in a chunk is NOT_FOUND", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const original = Object.assign(new Error("batch gone"), {
+        code: "NOT_FOUND",
+      });
+      const details = async ({ id }: { id: string }) => {
+        throw id.includes(",")
+          ? original
+          : Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+      };
+      expect(await fetchSongsChunked(["a", "b"], details)).toBeUndefined();
+      expect(err.mock.calls.some((call) => call[1] === original)).toBe(true);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("bounds recovery concurrency, keeps order and logs one summary", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const ids = Array.from({ length: 12 }, (_, i) => `id-${i}`);
+      let active = 0;
+      let peak = 0;
+      const details = async ({ id }: { id: string }) => {
+        if (id.includes(","))
+          throw Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 2));
+        active -= 1;
+        if (id === "id-5")
+          throw Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+        return { songs: [song(id)] };
+      };
+      const result = await fetchSongsChunked(ids, details, 2);
+      expect(result?.map((item) => item.id)).toEqual(
+        ids.filter((id) => id !== "id-5"),
+      );
+      expect(peak).toBeLessThanOrEqual(3);
+      expect(err).toHaveBeenCalledTimes(1);
+    } finally {
+      err.mockRestore();
+    }
+  });
+
+  it("returns undefined when every chunk fails", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    const songs = await fetchSongsChunked(["a"], async () => {
+      throw new Error("boom");
+    });
+    expect(songs).toBeUndefined();
+    err.mockRestore();
+  });
+});
+
+describe("recently played mixed lists", () => {
+  it("resolves songs and episodes together and keeps history order", async () => {
+    const episode = (id: string) => ({ id, type: "episode" }) as Episode;
+    const details = async ({ id }: { id: string }) => ({
+      // upstream answers in its own order and drops unknown ids
+      songs: id
+        .split(",")
+        .filter((i) => i !== "gone")
+        .reverse()
+        .map((i) => (i.startsWith("EV") ? episode(i) : song(i))),
+    });
+    const ids = ["EV1", "s1", "gone", "EV2"];
+    const fetched = await fetchSongsChunked(ids, details);
+
+    expect(orderByIds(ids, fetched ?? []).map((i) => i.id)).toEqual([
+      "EV1",
+      "s1",
+      "EV2",
+    ]);
+  });
+});
+
+describe("fetchLikedSongsNewestFirst", () => {
+  it("returns the newest like first from an insertion-ordered list", async () => {
+    // addToFavorites appends, so the stored list is oldest-first.
+    const stored = ["first", "second", "third", "fourth", "fifth"];
+    // Upstream answers each chunk in scrambled order.
+    const details = async ({ id }: { id: string }) => ({
+      songs: id.split(",").reverse().map(song),
+    });
+
+    const songs = await fetchLikedSongsNewestFirst(stored, details, 2);
+
+    expect(songs?.map((s) => s.id)).toEqual([
+      "fifth",
+      "fourth",
+      "third",
+      "second",
+      "first",
+    ]);
+    expect(stored[0]).toBe("first");
+  });
+
+  it("returns undefined when every chunk fails", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    const songs = await fetchLikedSongsNewestFirst(["a"], async () => {
+      throw new Error("boom");
+    });
+    expect(songs).toBeUndefined();
+    err.mockRestore();
+  });
+});
+
+describe("settleWithLimit", () => {
+  it("never runs more than the limit at once and keeps input order", async () => {
+    let active = 0;
+    let peak = 0;
+    const results = await settleWithLimit(
+      Array.from({ length: 20 }, (_, i) => i),
+      6,
+      async (n) => {
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 2));
+        active -= 1;
+        if (n === 3) throw new Error("nope");
+        return n * 2;
+      },
+    );
+
+    expect(peak).toBe(6);
+    expect(results).toHaveLength(20);
+    expect(results[2]).toEqual({ status: "fulfilled", value: 4 });
+    expect(results[3]?.status).toBe("rejected");
+    expect(results[19]).toEqual({ status: "fulfilled", value: 38 });
+  });
+
+  it("handles an empty list", async () => {
+    expect(await settleWithLimit([], 6, async () => 1)).toEqual([]);
+  });
+});

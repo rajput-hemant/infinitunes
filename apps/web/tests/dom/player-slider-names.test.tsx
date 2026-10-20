@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
+import { createPositionStore } from "@infinitunes/core/react/position-store";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -8,7 +9,6 @@ import { AudioPlayerProvider } from "react-use-audio-player";
 import { ExpandedPlayer } from "../../components/expanded-player";
 import { PlayerVolume } from "../../components/player/player-volume";
 import { SeekBar } from "../../components/player/seek-bar";
-import { createPositionStore } from "../../lib/position-store";
 
 /** The name a screen reader announces: the aria-labelledby text, else aria-label. */
 function accessibleName(input: HTMLInputElement) {

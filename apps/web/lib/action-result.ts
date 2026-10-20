@@ -1,5 +1,5 @@
-import { getErrorCode } from "~/lib/error-code";
-import { GENERIC_MESSAGE, userMessage } from "~/lib/user-message";
+import { getErrorCode } from "@infinitunes/core/error-code";
+import { GENERIC_MESSAGE, userMessage } from "@infinitunes/core/user-message";
 
 /**
  * Next.js replaces the message of any error thrown by a server action with a

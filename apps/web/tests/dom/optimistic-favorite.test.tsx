@@ -58,7 +58,8 @@ mock.module("sonner", () => {
 const { LikeButton } = await import("../../components/like-button");
 const { useTileFavorite } =
   await import("../../components/song-list/more-button-favorite");
-const { resetFavoriteOverlay } = await import("../../lib/optimistic-favorite");
+const { resetFavoriteOverlay } =
+  await import("@infinitunes/core/react/optimistic-favorite");
 
 const user = { id: "u1" } as never;
 const none = {

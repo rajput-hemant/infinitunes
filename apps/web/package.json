@@ -17,6 +17,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.9.2",
     "@infinitunes/auth": "workspace:*",
+    "@infinitunes/core": "workspace:*",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
     "@infinitunes/trpc": "workspace:*",

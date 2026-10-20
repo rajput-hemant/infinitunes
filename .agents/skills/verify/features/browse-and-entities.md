@@ -1,6 +1,6 @@
 # Browse and entity pages
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-011, ISSUE-012, ISSUE-013, ISSUE-006 in [verification-history.md](../../../../docs/archive/verification-history.md).
+**DRAFT. Last live proof: none.**
 
 ## Sub-features
 
@@ -26,6 +26,6 @@ Observable end state: every index and entity route renders real catalogue data w
 
 ## Gotchas
 
-- Pages fetch upstream at request time; an upstream outage looks like an app 500 (ISSUE-011).
+- Pages fetch upstream at request time; an upstream outage looks like an app 500.
 - `/mix`, `/label`, `/episode` have entity pages but no index; reach them from cards.
-- `proxy.ts` normalizes only names listed in `appRoutes`, which contains `/playlist` (ISSUE-006).
+- `proxy.ts` normalizes only names listed in `appRoutes`, which contains `/playlist`.

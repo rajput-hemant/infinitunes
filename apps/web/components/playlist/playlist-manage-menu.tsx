@@ -1,5 +1,6 @@
 "use client";
 
+import { userMessage } from "@infinitunes/core/user-message";
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import {
   AlertDialog,
@@ -29,7 +30,6 @@ import {
   deletePlaylistOptimistic,
   usePlaylistMeta,
 } from "~/lib/optimistic-playlists";
-import { userMessage } from "~/lib/user-message";
 import { cn, destructiveText } from "~/lib/utils";
 
 import { RenamePlaylistDialog } from "./rename-playlist-dialog";

@@ -83,6 +83,7 @@
       "dependencies": {
         "@hookform/resolvers": "^5.9.2",
         "@infinitunes/auth": "workspace:*",
+        "@infinitunes/core": "workspace:*",
         "@infinitunes/db": "workspace:*",
         "@infinitunes/env": "workspace:*",
         "@infinitunes/trpc": "workspace:*",
@@ -144,6 +145,28 @@
         "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "typescript": "catalog:",
+      },
+    },
+    "packages/core": {
+      "name": "@infinitunes/core",
+      "version": "0.1.0",
+      "dependencies": {
+        "@infinitunes/auth": "workspace:*",
+        "@infinitunes/types": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@infinitunes/typescript-config": "workspace:*",
+        "@trpc/server": "catalog:",
+        "@types/bun": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+        "typescript": "catalog:",
+      },
+      "peerDependencies": {
+        "react": "^19.3.0",
       },
     },
     "packages/db": {
@@ -741,6 +764,8 @@
     "@img/sharp-win32-x64": ["@img/sharp-win32-x64@0.35.5", "", { "os": "win32", "cpu": "x64" }, "sha512-x76eH0vEiHlcMQu8Y8IenntaACtddpT6W0wmXtWrnKcnKI7ME5DdgqhAD6SEWOEl1v2zDvkZDhFA9KnURwpfqg=="],
 
     "@infinitunes/auth": ["@infinitunes/auth@workspace:packages/auth"],
+
+    "@infinitunes/core": ["@infinitunes/core@workspace:packages/core"],
 
     "@infinitunes/db": ["@infinitunes/db@workspace:packages/db"],
 

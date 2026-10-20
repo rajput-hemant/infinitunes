@@ -9,6 +9,14 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 - `@infinitunes/types` is a pure leaf package (zero runtime deps). `User` is NOT
   re-exported from it; import `type { User }` from `@infinitunes/auth`, or from
   `apps/web/lib/auth.ts` which re-exports it for app components.
+- `@infinitunes/core` (`packages/core`) holds platform-agnostic app logic shared by web and
+  mobile, one subpath export per module (no barrel): error mapping (`error-code`,
+  `user-message`), `queue-position`, `liked-songs` (chunked detail fetching),
+  `artist-pagination`, `validations` (zod forms), and `react/*` hooks and stores that
+  need only `react` (`optimistic-favorite`, `position-store`, `use-playhead`,
+  `use-debounced-value`). It must not import `next/*`, the DOM or `@infinitunes/ui`
+  (`.oxlintrc.json` bans DOM globals in `packages/core/src`); its DOM hook tests live in
+  `packages/core/tests/dom` (`bun run test:dom`), and `type-check` covers `src` and `tests`.
 - `bcryptjs` is imported only by `packages/auth`, `packages/db` and `packages/trpc`
   (it ships its own types; `@types/bcryptjs` is not needed). `apps/web` no longer
   imports it. `postgres` and `pg` are unused in app source (provided by `@infinitunes/db`).
@@ -365,7 +373,7 @@ margin or width on the column for a panel, and keep the sidebar gap in flow (its
 A click must change the UI in the same frame; the server write follows and a failure rolls back with a toast.
 Never hang UI state on the action's round trip, and never let only the clicked control change.
 
-- Shared client overlays own the state, layered over server props: likes in `lib/optimistic-favorite.ts`
+- Shared client overlays own the state, layered over server props: likes in `@infinitunes/core/react/optimistic-favorite`
   (`useFavoriteToggle` in `lib/use-favorite-toggle.ts`; hearts, tile menu and player share one key), playlists in
   `lib/optimistic-playlists.ts` (`usePlaylists` for the sidebar and add dialog, `PlaylistTitle`, `PlaylistGate`,
   `PlaylistRow`, `PendingPlaylistCards`), `?lang=` chips in `lib/pending-params.ts`. Use these for new write paths
@@ -417,7 +425,7 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
 - `message` is deprecated; `error` is the replacement.
 - `z.preprocess` signature accepts `(arg, ctx) => result` (second `ctx` param is new; single-arg callbacks still work).
 - `z.discriminatedUnion`, `.min()`, `.max()`, `.regex()`, `.refine()` APIs are unchanged.
-- See `apps/web/lib/env.ts` and `apps/web/lib/validations.ts` for usage examples.
+- See `apps/web/lib/env.ts` and `@infinitunes/core/validations` for usage examples.
 
 ## Shared constants across the monorepo
 

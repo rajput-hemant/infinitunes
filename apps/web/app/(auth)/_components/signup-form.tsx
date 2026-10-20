@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@infinitunes/auth/client";
 import { signUpSchema } from "@infinitunes/auth/schemas";
+import { userMessage } from "@infinitunes/core/user-message";
 import { Button } from "@infinitunes/ui/components/button";
 import { Loader2, Mail } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -11,7 +12,6 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type z from "zod";
 
-import { userMessage } from "~/lib/user-message";
 import { asRoute, safeRedirectPath } from "~/lib/utils";
 
 import { EmailField } from "./email-field";

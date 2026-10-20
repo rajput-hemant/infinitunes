@@ -1,5 +1,6 @@
 "use client";
 
+import { findQueueIndex } from "@infinitunes/core/queue-position";
 import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
 import { toQueue } from "@infinitunes/types";
 import { useSearchParams } from "next/navigation";
@@ -12,7 +13,6 @@ import {
   useIsPlayerInit,
   useQueue,
 } from "~/hooks/use-store";
-import { findQueueIndex } from "~/lib/queue-position";
 import { trpc } from "~/lib/trpc/vanilla";
 
 type PlayButtonProps = HTMLAttributes<HTMLButtonElement> & {

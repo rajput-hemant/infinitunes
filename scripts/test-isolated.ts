@@ -11,6 +11,11 @@ const groups = {
     args: [],
   },
   dom: { cwd: "apps/web/tests/dom", pattern: "*.test.{ts,tsx}", args: [] },
+  coreDom: {
+    cwd: "packages/core/tests/dom",
+    pattern: "*.test.{ts,tsx}",
+    args: [],
+  },
   routers: {
     cwd: ".",
     pattern: "packages/trpc/tests/{history,user}-router.test.ts",

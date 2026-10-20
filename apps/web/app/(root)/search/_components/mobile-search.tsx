@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  SEARCH_DEBOUNCE_MS,
+  useDebouncedValue,
+} from "@infinitunes/core/react/use-debounced-value";
 import { useQuery } from "@tanstack/react-query";
 import { Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -15,10 +19,6 @@ import {
 } from "~/components/search/search-status";
 import { searchUi } from "~/components/search/search-ui";
 import { useRecentSearches } from "~/components/search/use-recent-searches";
-import {
-  SEARCH_DEBOUNCE_MS,
-  useDebouncedValue,
-} from "~/hooks/use-debounced-value";
 import { useIsTyping } from "~/hooks/use-store";
 import { controlStyles } from "~/lib/control-styles";
 import { trpc } from "~/lib/trpc/vanilla";

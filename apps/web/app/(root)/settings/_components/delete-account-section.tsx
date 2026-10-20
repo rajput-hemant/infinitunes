@@ -1,5 +1,6 @@
 "use client";
 
+import { userMessage } from "@infinitunes/core/user-message";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,6 @@ import { toast } from "sonner";
 import { unwrap } from "~/lib/action-result";
 import { deleteUser } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
-import { userMessage } from "~/lib/user-message";
 import { cn, destructiveText } from "~/lib/utils";
 
 import { SettingsCard } from "./settings-card";

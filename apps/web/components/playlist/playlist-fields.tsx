@@ -1,5 +1,6 @@
 "use client";
 
+import type { newPlaylistSchema } from "@infinitunes/core/validations";
 import {
   Field,
   FieldContent,
@@ -13,7 +14,6 @@ import type { z } from "zod";
 
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
-import type { newPlaylistSchema } from "~/lib/validations";
 
 type PlaylistFormData = z.infer<typeof newPlaylistSchema>;
 

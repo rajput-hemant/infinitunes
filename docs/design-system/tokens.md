@@ -1,12 +1,12 @@
 # Design tokens and theme engine
 
-The single reference for every UI unit. Source of truth: `apps/web/styles/globals.css` (tokens), `apps/web/lib/theme/` and `apps/web/lib/theme-config.ts` (engine), `apps/web/lib/control-styles.ts` (control sizes). Target design: `design-mockups/final/`. Glass tokens (`--glass*`, `--blur`, `--shadow*`, glass edge and rim) are not here: see `glass.md`.
+The single reference for every UI unit. Source of truth: `apps/web/styles/globals.css` (tokens), `apps/web/lib/theme/` and `apps/web/lib/theme-config.ts` (engine), `apps/web/lib/control-styles.ts` (control sizes). Glass tokens (`--glass*`, `--blur`, `--shadow*`, glass edge and rim) are not here: see `glass.md`.
 
-## 1. Mockup to app names
+## 1. Design-prototype names to app names
 
-The mockup and the app use different names, and two of them collide with shadcn. Port mockup CSS with this table, never by copying the name.
+The original design prototype and the app use different names, and two of them collide with shadcn. Use this table when porting prototype-style CSS, never copy the name.
 
-| Mockup                                | App                                            | Note                                        |
+| Prototype                             | App                                            | Note                                        |
 | ------------------------------------- | ---------------------------------------------- | ------------------------------------------- |
 | `--bg`                                | `--background` (`bg-background`)               | page                                        |
 | `--surface`                           | `--card`, `--popover`                          | cards, menus, dialogs                       |
@@ -25,7 +25,7 @@ The mockup and the app use different names, and two of them collide with shadcn.
 | `--pad`                               | `--page-pad` (`px-page`)                       | page gutter                                 |
 | `--ambient`                           | `--ambient`                                    | ambient artwork opacity                     |
 
-Mockup `html.dark`, `html.compact`, `html.glass-*`, `html.no-ambient`, `html.reduce-motion` become `.dark` and the `data-*` attributes in section 6.
+Prototype `html.dark`, `html.compact`, `html.glass-*`, `html.no-ambient`, `html.reduce-motion` become `.dark` and the `data-*` attributes in section 6.
 
 ## 2. Colour tokens
 
@@ -48,13 +48,13 @@ Surfaces and text are shared by every accent; only the accent family changes (se
 | `--border` = `--line`                       | `border-border` (default border colour)         | `rgb(0 0 0 / .08)`                                             | `rgb(255 255 255 / .09)` | hairlines. Stronger under `prefers-contrast: more`                                                                  |
 | `--input`                                   | `border-input`                                  | `#86868b`                                                      | `#6c6c70`                | form control borders (3:1 non-text contrast)                                                                        |
 | `--ring`                                    | `ring-ring`, focus outline                      | = primary                                                      | = primary                | focus ring colour                                                                                                   |
-| `--fill`                                    | `bg-fill`                                       | `rgb(0 0 0 / .045)`                                            | `rgb(255 255 255 / .07)` | neutral hover fill (mockup `:hover`)                                                                                |
+| `--fill`                                    | `bg-fill`                                       | `rgb(0 0 0 / .045)`                                            | `rgb(255 255 255 / .07)` | neutral hover fill                                                                                                  |
 | `--fill-2`                                  | `bg-fill-2`                                     | `rgb(0 0 0 / .08)`                                             | `rgb(255 255 255 / .12)` | neutral selected or pressed fill                                                                                    |
 | `--scrim`                                   | `bg-scrim`                                      | `rgb(0 0 0 / .28)`                                             | `rgb(0 0 0 / .5)`        | modal and sheet backdrop                                                                                            |
 | `--sidebar*`                                | `bg-sidebar`, `text-sidebar-foreground`, ...    | alias of background, foreground, primary, accent, border, ring | same                     | shadcn sidebar parts                                                                                                |
 | `--ambient`                                 | plain CSS                                       | `0.62`                                                         | `0.62`                   | opacity of the ambient artwork layer. `0` when `data-ambient="off"`, halved under `prefers-reduced-transparency`    |
 
-Guidance: neutral hover is `hover:bg-fill`, selected is `bg-fill-2`, the active item's icon or label is `text-primary`. Use `bg-primary/10` for an accent wash (mockup `color-mix(accent 8%)`). `text-primary` is guaranteed 4.5:1 only on `--background` and `--card`; on `--muted` or fills use `text-foreground`.
+Guidance: neutral hover is `hover:bg-fill`, selected is `bg-fill-2`, the active item's icon or label is `text-primary`. Use `bg-primary/10` for an accent wash (`color-mix(accent 8%)`). `text-primary` is guaranteed 4.5:1 only on `--background` and `--card`; on `--muted` or fills use `text-foreground`.
 
 Selection (`::selection`) is `bg-primary text-primary-foreground`. Scrollbar, `::selection` and the focus ring follow the accent automatically.
 
@@ -92,7 +92,7 @@ Body text defaults to `0.875rem` (14px) with `line-height: 1.45`, so `text-base`
 
 | Token                                          | Utility                                  | Value                                     | Use                                                                  |
 | ---------------------------------------------- | ---------------------------------------- | ----------------------------------------- | -------------------------------------------------------------------- |
-| `--ease-spring`                                | `ease-spring`                            | `cubic-bezier(0.2, 0.9, 0.25, 1)`         | enter, press, toggles (the mockup spring)                            |
+| `--ease-spring`                                | `ease-spring`                            | `cubic-bezier(0.2, 0.9, 0.25, 1)`         | enter, press, toggles                                                |
 | `--ease-out`, `--ease-in-out`, `--ease-drawer` | `ease-out`, `ease-in-out`, `ease-drawer` | unchanged                                 | existing app curves                                                  |
 | `--duration-fast`                              | `duration-fast`                          | 150ms                                     | hovers, colour changes                                               |
 | `--duration-base`                              | `duration-base`                          | 250ms                                     | menus, toggles, tabs                                                 |
@@ -111,7 +111,7 @@ There is no accent picker. The default accent is neutral (the `#171717` derivati
 - `--primary`: the accent moved only along lightness (hue and chroma kept, chroma shrunk only to stay in sRGB) until it clears 4.5:1 on both `--background` and `--card` of that scheme and for its own text colour.
 - `--primary-foreground`: white (`oklch(1 0 0)`) or near-black (`oklch(0.18 0 0)`), whichever contrasts more, always at least 4.5:1 on `--primary`.
 - `--accent`: soft tint of the accent hue (`oklch(0.94 ...)` light, `oklch(0.30 ...)` dark).
-- A dark accent in dark mode (luminance under 0.03) flips to a light neutral `#f4f4f5`, exactly as the mockup's `applyPrefs`.
+- A dark accent in dark mode (luminance under 0.03) flips to a light neutral `#f4f4f5`.
 
 Derivation keeps a 0.05 contrast headroom so 8-bit rounding in browsers cannot dip below AA. Consequence: a light accent such as yellow or orange becomes a darker, deeper tone on light surfaces (yellow turns olive). That is the cost of guaranteed 4.5:1 for accent text.
 
@@ -134,7 +134,7 @@ Contrast of every preset (from the function; ratios are WCAG 2):
 | yellow  | `#facc15` | `oklch(0.545 0.111 91.9)`  | 4.56    | 4.97    | 4.97       | `oklch(0.861 0.173 91.9)`  | 12.86   | 11.13   | 12.30      |
 | violet  | `#7c3aed` | `oklch(0.541 0.246 293)`   | 5.24    | 5.70    | 5.70       | `oklch(0.637 0.215 293)`   | 5.30    | 4.58    | 5.07       |
 
-Text on the accent is white (`oklch(1 0 0)`) on light surfaces and near-black (`oklch(0.18 0 0)`) on dark surfaces for every preset, rose included. A dark-mode accent light enough to clear 4.5:1 on `--card` cannot also hold 4.5:1 with white text, so the mockup's white-on-rose in dark mode is the one visible departure.
+Text on the accent is white (`oklch(1 0 0)`) on light surfaces and near-black (`oklch(0.18 0 0)`) on dark surfaces for every preset, rose included. A dark-mode accent light enough to clear 4.5:1 on `--card` cannot also hold 4.5:1 with white text, so white-on-rose in dark mode is the one visible departure.
 
 ## 6. Theme config, cookie and `<html>` attributes
 
@@ -155,7 +155,7 @@ Light, dark and system mode stay with `next-themes` (`useTheme()`), which toggle
 
 `<html>` always carries `data-density`, `data-glass-level`, `data-motion`, `data-font`, `data-heading-font`, plus `data-glass-tint="on"` while the tint is on. Style against them with attribute selectors in CSS (`[data-density="compact"]`), or read the matching tokens (`--row`, `--art`) instead of branching. Glass units read `data-glass-level` and the `--glass-*` variables (`docs/design-system/glass.md`).
 
-Mockup class to attribute: `html.glass-subtle` is `[data-glass-level="subtle"]`, `html.glass-off` is `[data-glass-level="solid"]` (the config calls it Solid), `html.compact` is `[data-density="compact"]`, `html.reduce-motion` is `[data-motion="reduced"]`. `glass.css` should key off those attributes. It must not redefine tokens this file owns: `--line`, `--fill`, `--fill-2`, `--scrim`, `--radius`, `--r-*`, `--ctl*`, `--row`, `--art`.
+Prototype class to attribute: `html.glass-subtle` is `[data-glass-level="subtle"]`, `html.glass-off` is `[data-glass-level="solid"]` (the config calls it Solid), `html.compact` is `[data-density="compact"]`, `html.reduce-motion` is `[data-motion="reduced"]`. `glass.css` should key off those attributes. It must not redefine tokens this file owns: `--line`, `--fill`, `--fill-2`, `--scrim`, `--radius`, `--r-*`, `--ctl*`, `--row`, `--art`.
 
 Cookie: `theme-config`, JSON with only the non-default fields (`{}` is never stored), one year, `sameSite=lax`, readable by script (not `httpOnly`; it holds only appearance preferences), plus a derived `html` field (`{a: attributes, s: variables}` from `themeConfigToHtml`, written by `lib/theme/cookie.ts`) that the pre-paint script applies; `parseThemeConfig` ignores it. It is user controlled: `normalizeThemeConfig` validates every field independently, falls back to the default per field, never throws, and rejects prototype keys. Keys the model no longer has (`accent`, `ambient`, `theme`, and the old glass fields `variant`, `refraction`, `sat`, `spec`, `shadow`, `ambientLevel`, `accentTint`) are ignored, and a field that still exists keeps its value if it is valid. Every value that reaches `<html>` comes from the validated config; nothing from the cookie is interpolated.
 

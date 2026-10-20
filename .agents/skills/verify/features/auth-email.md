@@ -1,9 +1,8 @@
 # Email signup, login, logout, session
 
-**Status: LIVE PROOF.** Signup, session persistence, /me access, settings access, logout, post-logout redirect, and post-login client redirect (fixed in ISSUE-023) confirmed in browser runs `browser-radio-3151` and `infinitunes-radio-auth-fixes` (2026-10-02).
-Issues: [ISSUE-019](../../../../docs/archive/verification-history.md#issue-019), [ISSUE-023 (closed)](../../../../docs/archive/verification-history.md#issue-023).
+**Status: LIVE PROOF.** Signup, session persistence, /me access, settings access, logout, post-logout redirect, and post-login client redirect confirmed in browser runs `browser-radio-3151` and `infinitunes-radio-auth-fixes` (2026-10-02).
 
-Last live proof: 2026-10-10, [skill-verify record](../../../../docs/verification/skill-verify-2026-10-10.md) (form signup, form login, UI Logout to `/login`). Earlier: 2026-10-02, runs `browser-radio-3151` and `infinitunes-radio-auth-fixes` (evidence kept outside the repo).
+Last live proof: 2026-10-10 (form signup, form login, UI Logout to `/login`). Earlier: 2026-10-02, runs `browser-radio-3151` and `infinitunes-radio-auth-fixes` (evidence kept outside the repo).
 
 ## Sub-features
 
