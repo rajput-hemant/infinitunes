@@ -10,6 +10,9 @@
     "packages/ui": {
       "ignoreDependencies": ["@shadcn/lint"]
     },
+    "packages/core": {
+      "ignore": ["tests/dom/preload.ts"]
+    },
     "packages/*": {}
   }
 }

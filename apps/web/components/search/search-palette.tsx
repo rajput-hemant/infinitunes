@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  SEARCH_DEBOUNCE_MS,
+  useDebouncedValue,
+} from "@infinitunes/core/react/use-debounced-value";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
@@ -13,10 +17,6 @@ import { usePathname } from "next/navigation";
 import { type ReactNode, Suspense, useEffect, useRef, useState } from "react";
 
 import { QueryScope } from "~/components/query-scope";
-import {
-  SEARCH_DEBOUNCE_MS,
-  useDebouncedValue,
-} from "~/hooks/use-debounced-value";
 import { controlStyles } from "~/lib/control-styles";
 import { trpc } from "~/lib/trpc/vanilla";
 

@@ -1,12 +1,12 @@
 "use server";
 
 import type { changePasswordSchema } from "@infinitunes/auth/schemas";
+import type { newPlaylistSchema } from "@infinitunes/core/validations";
 import { refresh } from "next/cache";
 import type { z } from "zod";
 
 import { toResult } from "./action-result";
 import { api } from "./trpc/server";
-import type { newPlaylistSchema } from "./validations";
 
 // The library is read per request (session cookie, no `"use cache"`), so a
 // write has no cache entry to expire. `refresh()` re-renders the current route

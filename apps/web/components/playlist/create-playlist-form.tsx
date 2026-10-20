@@ -1,6 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { userMessage } from "@infinitunes/core/user-message";
+import { newPlaylistSchema } from "@infinitunes/core/validations";
 import { Button } from "@infinitunes/ui/components/button";
 import { DialogClose, DialogFooter } from "@infinitunes/ui/components/dialog";
 import * as React from "react";
@@ -12,8 +14,6 @@ import { unwrap } from "~/lib/action-result";
 import { createNewPlaylist } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
 import { createPlaylistOptimistic } from "~/lib/optimistic-playlists";
-import { userMessage } from "~/lib/user-message";
-import { newPlaylistSchema } from "~/lib/validations";
 
 import { PlaylistFields } from "./playlist-fields";
 

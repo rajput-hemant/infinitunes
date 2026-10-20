@@ -1,10 +1,10 @@
 "use client";
 
+import { isCurrentTrack } from "@infinitunes/core/queue-position";
 import type { CSSProperties, ReactNode } from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
-import { isCurrentTrack } from "~/lib/queue-position";
 
 type SongRowProps = {
   id: string;

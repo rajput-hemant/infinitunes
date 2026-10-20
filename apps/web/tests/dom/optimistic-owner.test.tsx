@@ -18,7 +18,7 @@ const { LikeButton } = await import("../../components/like-button");
 const { claimOptimisticOwner, resetOptimisticState } =
   await import("../../lib/optimistic-owner");
 const { favoriteKey, toggleFavorite, useFavorite, resetFavoriteOverlay } =
-  await import("../../lib/optimistic-favorite");
+  await import("@infinitunes/core/react/optimistic-favorite");
 
 const none = {
   songs: [],

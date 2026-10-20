@@ -1,6 +1,7 @@
 "use client";
 
-import { resetFavoriteOverlay } from "~/lib/optimistic-favorite";
+import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
+
 import { resetPlaylistOverlay } from "~/lib/optimistic-playlists";
 
 let owner: string | undefined;

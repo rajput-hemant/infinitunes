@@ -1,4 +1,4 @@
-import { getErrorCode } from "~/lib/error-code";
+import { getErrorCode } from "./error-code";
 
 export const GENERIC_MESSAGE = "Something went wrong. Please try again.";
 

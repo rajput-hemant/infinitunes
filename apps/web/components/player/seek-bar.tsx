@@ -1,9 +1,8 @@
+import { usePosition } from "@infinitunes/core/react/position-store";
+import type { PositionStore } from "@infinitunes/core/react/position-store";
 import { formatDuration } from "@infinitunes/types";
 import { Slider } from "@infinitunes/ui/components/slider";
 import * as React from "react";
-
-import { usePosition } from "~/lib/position-store";
-import type { PositionStore } from "~/lib/position-store";
 
 import { scrubClass, sliderValueOf, useSliderValueText } from "./controls";
 import { DurationToggle, durationFormatFor } from "./duration-toggle";

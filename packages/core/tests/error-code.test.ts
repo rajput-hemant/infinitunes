@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { getErrorCode } from "../lib/error-code";
+import { getErrorCode } from "../src/error-code";
 
 describe("getErrorCode", () => {
   it("reads a top-level code", () => {

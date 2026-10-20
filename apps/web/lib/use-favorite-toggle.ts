@@ -1,17 +1,17 @@
 "use client";
 
+import {
+  favoriteKey,
+  toggleFavorite,
+  useFavorite,
+} from "@infinitunes/core/react/optimistic-favorite";
+import { userMessage } from "@infinitunes/core/user-message";
 import type { Favorite } from "@infinitunes/db/schema";
 import { toast } from "sonner";
 
 import { unwrap } from "~/lib/action-result";
 import { addToFavorites, removeFromFavorites } from "~/lib/actions";
 import type { User } from "~/lib/auth";
-import {
-  favoriteKey,
-  toggleFavorite,
-  useFavorite,
-} from "~/lib/optimistic-favorite";
-import { userMessage } from "~/lib/user-message";
 
 // Types the favorites table has a column for; other media types are not likable.
 export const FAVORITE_TYPES = [

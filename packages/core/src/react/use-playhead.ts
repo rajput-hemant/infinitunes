@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import type { PositionStore } from "~/lib/position-store";
+import type { PositionStore } from "./position-store";
 
 /**
  * How often the playhead is sampled while playing. A bar a few hundred pixels

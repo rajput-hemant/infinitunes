@@ -1,5 +1,6 @@
 "use client";
 
+import { userMessage } from "@infinitunes/core/user-message";
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import { toQueueEntry } from "@infinitunes/types";
 import {
@@ -30,7 +31,6 @@ import {
   addSongsOptimistic,
   removeSongOptimistic,
 } from "~/lib/optimistic-playlists";
-import { userMessage } from "~/lib/user-message";
 
 import { TileMoreDesktop } from "./more-button-desktop";
 import { useTileFavorite } from "./more-button-favorite";

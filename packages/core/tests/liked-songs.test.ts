@@ -8,7 +8,7 @@ import {
   fetchSongsChunked,
   orderByIds,
   settleWithLimit,
-} from "../lib/liked-songs";
+} from "../src/liked-songs";
 
 const song = (id: string) => ({ id }) as Song;
 

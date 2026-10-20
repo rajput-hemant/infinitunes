@@ -1,6 +1,7 @@
 "use server";
 
-import { getErrorCode } from "./error-code";
+import { getErrorCode } from "@infinitunes/core/error-code";
+
 import { api } from "./trpc/server";
 
 export type PlayedItem = { id: string; type: "song" | "episode" };

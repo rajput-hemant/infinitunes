@@ -4,7 +4,7 @@ import {
   findQueueIndex,
   isCurrentTrack,
   playToRecord,
-} from "../lib/queue-position";
+} from "../src/queue-position";
 
 const queue = [
   { id: "a", queueItemId: "q1", url: "https://x/song/a/tokA" },
