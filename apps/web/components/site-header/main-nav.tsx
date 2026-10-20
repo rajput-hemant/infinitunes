@@ -47,7 +47,7 @@ export function MainNav({ className, megaMenu }: MainNavProps) {
     <nav
       data-slot="navigation-menu"
       className={cn(
-        "group/navigation-menu relative flex max-w-max flex-1 items-center justify-center",
+        "group/navigation-menu relative flex max-w-max items-center justify-center flex-none shrink-0 grow-0",
         className,
       )}
       onPointerEnter={intent.onPointerEnter}

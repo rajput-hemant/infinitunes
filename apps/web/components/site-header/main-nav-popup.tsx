@@ -35,7 +35,7 @@ export function MainNavPopup({
 }: MainNavPopupProps) {
   return (
     <NavigationMenu
-      className={className}
+      className={cn("flex-none shrink-0 grow-0", className)}
       defaultValue={defaultOpen ? MUSIC : undefined}
     >
       <NavigationMenuList>

@@ -23,8 +23,7 @@ const logInClassName = cn(
   "hidden items-center rounded-full font-medium md:flex",
 );
 
-const mainNavClassName =
-  "hidden lg:block min-[1440px]:in-data-[queue=open]:hidden!";
+const mainNavClassName = "hidden shrink-0 grow-0 lg:block";
 
 /** The catalog menu is cached (an hour), so it normally lands in the static shell. */
 async function CatalogMenu() {
@@ -45,7 +44,6 @@ export function Navbar() {
 
       <ToolbarNavigation />
 
-      {/* A docked queue (1440 and up) takes the column the mega menu needs; the mockup toolbar has no such links. */}
       <Suspense
         fallback={
           <MainNav megaMenu={EMPTY_MEGA_MENU} className={mainNavClassName} />
