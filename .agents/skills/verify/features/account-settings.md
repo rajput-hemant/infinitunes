@@ -1,6 +1,6 @@
 # Account settings, password change, delete account
 
-**DRAFT. Last live proof: none.** Issues: ISSUE-005, ISSUE-007, ISSUE-008, ISSUE-009 in [verification-history.md](../../../../docs/archive/verification-history.md).
+**DRAFT. Last live proof: none.**
 
 ## Sub-features
 
@@ -26,6 +26,6 @@ Observable end state: DB rows match each UI action; old password stops working a
 
 ## Gotchas
 
-- `updateUser` accepts any string as email server-side and does not re-verify; duplicates hit the unique constraint (ISSUE-008).
-- Delete confirmation exists only in the UI (ISSUE-009).
+- `updateUser` accepts any string as email server-side and does not re-verify; duplicates hit the unique constraint.
+- Delete confirmation exists only in the UI.
 - Never drive this against a real account; use only users created in the disposable database.

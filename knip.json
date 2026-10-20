@@ -1,5 +1,5 @@
 {
-  "ignore": ["design-mockups/**", ".agents/**"],
+  "ignore": [".agents/**"],
   "workspaces": {
     "apps/web": {
       "ignore": ["tests/dom/preload.ts", "tests/fixtures/cached-api-fetch.mjs"]

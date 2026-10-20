@@ -13,7 +13,7 @@ const read = (path: string) =>
 const globals = read("../styles/globals.css");
 const fonts = read("../lib/fonts.ts");
 
-// The 12 accents of the approved mockup (design-mockups/shared/data.js).
+// The 12 accents of the design prototype.
 const MOCKUP_PRESETS = {
   zinc: "#18181b",
   slate: "#0f172a",

@@ -1,6 +1,6 @@
 # UI quality and responsive layout
 
-Last live proof: 2026-10-10, [skill-verify record](../../../../docs/verification/skill-verify-2026-10-10.md). Signed-in 320, 200% zoom (640x400), 1920 and 390 light forced colors; the rest of the sweep is in earlier records. Issues: ISSUE-017, ISSUE-019 in [verification-history.md](../../../../docs/archive/verification-history.md).
+Last live proof: 2026-10-10. Signed-in 320, 200% zoom (640x400), 1920 and 390 light forced colors.
 
 ## Sub-features
 
@@ -20,9 +20,9 @@ Every route, at 390px and 1280px, in light and dark.
 2. Tab through header, sidebar, player and dialogs; expect logical order, Esc closing overlays, focus returning to the trigger.
 3. Check loading skeletons, empty states and error pages for layout shift.
 4. Check touch targets on the player at 390px, and that the queue sheet and menus do not trap scroll.
-5. Capture screenshots under `docs/evidence/<run-id>/`.
+5. Capture screenshots under a scratch folder outside the repo.
 
-Observable end state: documented per-route evidence; defects go to the ledger, not into this file.
+Observable end state: documented per-route evidence; defects go in the report or an issue, not into this file.
 
 ## Gotchas
 
