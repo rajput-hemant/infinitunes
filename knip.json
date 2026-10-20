@@ -4,6 +4,13 @@
     "apps/web": {
       "ignore": ["tests/dom/preload.ts", "tests/fixtures/cached-api-fetch.mjs"]
     },
+    "apps/mobile": {
+      "entry": ["src/**/*.ios.{ts,tsx}"],
+      "ignoreDependencies": [
+        "@babel/plugin-transform-react-jsx",
+        "react-native-css-interop"
+      ]
+    },
     "packages/db": {
       "ignore": ["src/drizzle.config.ts"]
     },

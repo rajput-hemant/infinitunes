@@ -20,7 +20,9 @@
     "public",
     "node_modules",
     ".next",
+    ".expo",
     "build",
+    "dist",
     "migrations",
     "bun.lock"
   ]

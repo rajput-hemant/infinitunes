@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/oxlint/configuration_schema.json",
+  "extends": ["../../.oxlintrc.json"],
+  "rules": {
+    // The root layout imports the NativeWind stylesheet for its side effect.
+    "import/no-unassigned-import": ["warn", { "allow": ["**/*.css"] }],
+    // DOM-only advice: React Native has no semantic HTML tags, and
+    // `role="search"` here is the native tab bar's search role.
+    "jsx-a11y/prefer-tag-over-role": "off",
+    // Native components take string `style` props (e.g. StatusBar).
+    "react/style-prop-object": "off"
+  },
+  "ignorePatterns": [".expo", "dist", "ios", "android"]
+}

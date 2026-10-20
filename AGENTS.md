@@ -162,6 +162,35 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   listing the `.d.ts` file directly in the consumer's own `tsconfig.json`
   `include`/`files`, not a barrel re-export.
 
+## apps/mobile (`@infinitunes/mobile`, Expo SDK 58)
+
+- Layout (`~/*` → `apps/mobile/src/*`): `app/` holds thin route files only (Expo Router, typed routes);
+  `features/<name>/` holds screen content and its hooks; `components/ui/` the shared primitives (`Text`,
+  `Button`, `Icon`, `GlassSurface`); `components/` shared composites; `navigation/` stack options and the
+  player dock geometry; `lib/` clients (`trpc`, `auth-client`, `query-client`, `env`); `theme/` tokens.
+- Each tab is a folder with its own `Stack` (`(tabs)/(home)`, `search`, `library`, `settings`) using
+  `tabStackOptions`; a new tab needs a `NativeTabs.Trigger` with an `sf` and an `md` icon. Scroll containers
+  are `ScreenScrollView` (or a list with `contentInsetAdjustmentBehavior="automatic"` and
+  `playerDockInset` bottom padding), or large titles and the floating mini-player overlap content.
+- Native look per platform: no colours on `NativeTabs` or headers (system glass on iOS 26, Material You on
+  Android). Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
+  with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours,
+  `theme/tokens.ts`), colour JS props from `useTheme().colors`, text via `Text` `variant`/`tone`.
+- Data: `useQuery(trpc.<router>.<proc>.queryOptions(input))` from `~/lib/trpc`; imperative calls use
+  `trpcClient`. Only `import type` from `@infinitunes/trpc/types`; never `@infinitunes/ui` or the
+  `@infinitunes/auth` barrel (`./session-cookie`, `./native-app`, `./schemas` are safe).
+- `/api/trpc` POSTs (every mutation) get 403 from the web proxy's CSRF check: native fetch sends no
+  `Origin`. Mutations need a server-side allowance for authenticated native requests first.
+- Bun's isolated installs: Babel resolves `nativewind/babel`'s plugins and the JSX runtime from the app, so
+  `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`
+  are direct dependencies; `jest.config.js` adds `.bun` to the transform allow-list. `expo-doctor` reports
+  same-version "duplicates" (Bun peer variants); autolinking module resolution bundles one copy, so only a
+  real version split matters. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
+  over web's.
+- `type-check` runs `expo customize tsconfig.json` first: it writes the gitignored `.expo/types` route
+  types that `tsc` needs in a fresh clone. TypeScript is the repo's 7.x (`expo.install.exclude`).
+- No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`.
+
 ## Song rows take the slim model, never the raw song
 
 Client components (rows, row menus, `SongListClient`, `LibrarySongList`, `PlayAllButton`, details header buttons,
