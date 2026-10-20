@@ -12,6 +12,7 @@
     "@better-auth/passkey": "^1.7.12",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
+    "@infinitunes/types": "workspace:*",
     "bcryptjs": "catalog:",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",

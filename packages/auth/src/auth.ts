@@ -9,6 +9,7 @@ import {
   infinitunesPasskeys,
   users,
 } from "@infinitunes/db/schema";
+import { USER_NAME_MAX } from "@infinitunes/types";
 import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
@@ -20,7 +21,6 @@ import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
 import { NATIVE_APP_ORIGIN } from "./native-app";
-import { USER_NAME_MAX } from "./schemas";
 import { originOf, parseUrl } from "./url";
 
 /** Reset links are single use and expire after an hour (Better Auth default, pinned). */
