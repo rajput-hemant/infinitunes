@@ -1,6 +1,6 @@
 # Player, queue, download
 
-Last live proof: 2026-10-10, [skill-verify record](../../../../docs/verification/skill-verify-2026-10-10.md). Seek click and synthetic pointer drag only. Issues: ISSUE-003, ISSUE-016 in [verification-history.md](../../../../docs/archive/verification-history.md).
+Last live proof: 2026-10-10. Seek click and synthetic pointer drag only.
 
 ## Sub-features
 
