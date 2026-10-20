@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "lint": "oxlint --deny-warnings",
+    "lint:shadcn": "cd ../.. && oxlint -c packages/ui/.oxlintrc.shadcn.json apps/web packages/ui",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
+    "@shadcn/lint": "0.2.3",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "tailwindcss": "catalog:",
