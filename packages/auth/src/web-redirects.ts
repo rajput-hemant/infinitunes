@@ -10,7 +10,7 @@ const REDIRECT_FIELDS = [
 ] as const;
 
 /** An absolute URL whose scheme is not http(s), e.g. `infinitunes://reset`. */
-export function isAppSchemeUrl(value: unknown): boolean {
+function isAppSchemeUrl(value: unknown): boolean {
   if (typeof value !== "string") return false;
   let protocol: string;
   try {

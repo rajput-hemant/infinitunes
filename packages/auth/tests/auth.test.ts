@@ -510,7 +510,7 @@ describe("Native app trust", () => {
     expect(sent).toBe(0);
   });
 
-  it("rejects app-scheme callback URLs on reset links and sign-in", async () => {
+  it("rejects an app-scheme callback URL on a reset link", async () => {
     const auth = createAuth(makeFakeDb());
     const reset = await auth.handler(
       new Request(
@@ -519,7 +519,10 @@ describe("Native app trust", () => {
     );
     expect(reset.status).toBe(403);
     expect(reset.headers.get("location")).toBeNull();
+  });
 
+  it("rejects an app-scheme callback URL on social sign-in", async () => {
+    const auth = createAuth(makeFakeDb());
     const social = await post(
       auth,
       "/sign-in/social",

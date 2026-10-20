@@ -191,6 +191,9 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   and the stored cookie with `credentials: "omit"`. `proxy.ts` accepts a POST without `Origin` only with that
   exact header and no `Sec-Fetch-Site` (browsers always send `Origin`, and cannot add the header cross-site
   without a CORS preflight): never add `Access-Control-Allow-*` headers to `/api/trpc`.
+- The expo auth client turns a relative `callbackURL`/`newUserCallbackURL`/`errorCallbackURL` into
+  `infinitunes://...`, which `webRedirectsOnly` rejects (403): native auth calls never pass them. A native
+  password reset passes a relative path or the web reset page's https URL as `redirectTo` (left untouched).
 - Bun's isolated installs: Babel resolves `nativewind/babel`'s plugins and the JSX runtime from the app, so
   `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`
   are direct dependencies; `jest.config.js` adds `.bun` to the transform allow-list. `expo-doctor` reports
