@@ -58,6 +58,8 @@ export function ExpandedBody({
   favorites,
   position,
   duration,
+  showRemainingTime,
+  onToggleRemainingTime,
   isPlaying,
   isLoading,
   isLooping,
@@ -133,6 +135,8 @@ export function ExpandedBody({
         <ExpandedSeek
           position={position}
           duration={duration}
+          showRemainingTime={showRemainingTime}
+          onToggleRemainingTime={onToggleRemainingTime}
           onSeekStart={onSeekStart}
           onSeekChange={onSeekChange}
           onSeekCommit={onSeekCommit}

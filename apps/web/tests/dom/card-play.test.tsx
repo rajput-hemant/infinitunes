@@ -107,7 +107,25 @@ describe("card play control", () => {
   });
 
   for (const type of ["artist", "radio_station"] as const) {
-    it(`centres on ${type} art and only shows on hover or focus`, async () => {
+    it(`centres ${type} labels under round artwork`, async () => {
+      const container = await mount(
+        <SliderCard
+          name="Rock"
+          subtitle="English Radio"
+          type={type}
+          url={`https://www.jiosaavn.com/${type}/name/tok`}
+          image={IMAGE}
+        />,
+      );
+      const h3 = container.querySelector("h3");
+      expect(h3?.className).toContain("text-center");
+      expect(h3?.querySelector("a, span")?.className).toContain("inline-flex");
+      const subtitle = h3?.nextElementSibling;
+      expect(subtitle?.className).toContain("text-center");
+      expect(subtitle?.className).toContain("truncate");
+    });
+
+    it(`centres on ${type} art, hover/focus reveal with a fine pointer`, async () => {
       const container = await mount(card(type));
       const button = container.querySelector("[data-card-play]");
       expect(button?.getAttribute("data-card-play")).toBe("round");
@@ -118,7 +136,8 @@ describe("card play control", () => {
       expect(cls).toContain("opacity-0");
       expect(cls).toContain("group-hover:opacity-100");
       expect(cls).toContain("group-focus-within:opacity-100");
-      expect(cls).toContain("pointer-coarse:hidden");
+      expect(cls).toContain("pointer-fine:opacity-0");
+      expect(cls).not.toContain("pointer-coarse:hidden");
       expect(button?.getAttribute("aria-label")).toBe("Play Name");
     });
   }

@@ -61,6 +61,11 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   const [position] = React.useState(createPositionStore);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
+  const [showRemainingTime, setShowRemainingTime] = React.useState(false);
+  const toggleRemainingTime = React.useCallback(
+    () => setShowRemainingTime((on) => !on),
+    [],
+  );
   const pane = useQueuePane();
 
   // third party hooks
@@ -361,6 +366,8 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
               <SeekBar
                 position={position}
                 duration={duration}
+                showRemainingTime={showRemainingTime}
+                onToggleRemainingTime={toggleRemainingTime}
                 onChange={seekChange}
                 onCommit={seekCommit}
                 onStart={() => setIsDragging(true)}
@@ -403,6 +410,8 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
         favorites={favorites}
         position={position}
         duration={duration}
+        showRemainingTime={showRemainingTime}
+        onToggleRemainingTime={toggleRemainingTime}
         isPlaying={isPlaying}
         isLoading={isLoading}
         isLooping={isLooping}

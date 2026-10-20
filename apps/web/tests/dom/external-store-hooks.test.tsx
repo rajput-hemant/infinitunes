@@ -7,9 +7,14 @@ void mock.module("next/navigation", () => ({
   useParams: () => ({}),
 }));
 void mock.module("next/image", () => ({
-  default: ({ src, alt, onError }: Record<string, never>) => (
+  default: ({ src, alt, onError, draggable }: Record<string, unknown>) => (
     // oxlint-disable-next-line next/no-img-element -- this test double stands in for next/image
-    <img src={src} alt={alt} onError={onError} />
+    <img
+      src={src as string}
+      alt={alt as string}
+      onError={onError as (() => void) | undefined}
+      draggable={draggable as boolean | undefined}
+    />
   ),
 }));
 
@@ -34,6 +39,15 @@ afterEach(async () => {
 });
 
 describe("ImageWithFallback", () => {
+  it("renders images non-draggable", async () => {
+    const { container } = await render(
+      <ImageWithFallback src="/a.png" fallback="/fb.png" alt="x" />,
+    );
+    expect(container.querySelector("img")?.getAttribute("draggable")).toBe(
+      "false",
+    );
+  });
+
   it("swaps to the fallback on error and retries after src changes away and back", async () => {
     const view = (src: string) => (
       <ImageWithFallback src={src} fallback="/fb.png" alt="x" />

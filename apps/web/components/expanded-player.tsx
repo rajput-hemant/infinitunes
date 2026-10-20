@@ -39,6 +39,8 @@ export type ExpandedPlayerProps = {
   favorites?: Favorite | null;
   position: PositionStore;
   duration: number;
+  showRemainingTime: boolean;
+  onToggleRemainingTime: () => void;
   isPlaying: boolean;
   isLoading: boolean;
   isLooping: boolean;

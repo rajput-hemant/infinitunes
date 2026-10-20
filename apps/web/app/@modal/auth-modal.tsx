@@ -13,6 +13,7 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 
 import { controlStyles } from "~/lib/control-styles";
+import { cn } from "~/lib/utils";
 
 type AuthModalProps = {
   title: string;
@@ -58,7 +59,10 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
             : "Already have an account? "}
           <Button
             variant="link"
-            className={controlStyles.text}
+            className={cn(
+              controlStyles.text,
+              "inline h-auto min-h-0 px-0 py-0",
+            )}
             onClick={() => router.replace(isLoginPage ? "/signup" : "/login")}
           >
             {isLoginPage ? "Sign up" : "Login"}

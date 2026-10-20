@@ -25,6 +25,7 @@ export function ImageWithFallback(props: ImageWithFallbackProps) {
     <Image
       src={error ? fallback : effectiveSrc}
       alt={alt}
+      draggable={false}
       onError={() => setFailedSrc(effectiveSrc)}
       // `data-loaded` lets the placeholder skeleton behind the image stop
       // pulsing (see globals.css): a pulse that never ends keeps the

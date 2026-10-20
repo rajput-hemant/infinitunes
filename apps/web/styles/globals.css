@@ -489,6 +489,11 @@ html[data-theme-switching] *::after {
     @apply max-w-full;
   }
 
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+  }
+
   ::selection {
     @apply bg-primary text-primary-foreground;
   }
