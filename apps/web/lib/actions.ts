@@ -54,7 +54,11 @@ export async function updateUser(data: {
   email?: string;
   currentPassword?: string;
 }) {
-  return toResult(() => api.user.updateUser(data));
+  return toResult(async () => {
+    const user = await api.user.updateUser(data);
+    refresh();
+    return user;
+  });
 }
 
 /** `password` is omitted by accounts that have none (fresh-session check). */

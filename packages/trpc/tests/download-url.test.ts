@@ -74,6 +74,21 @@ describe("createDownloadLinks round-trip", () => {
   });
 });
 
+describe("createDownloadLinks without a bitrate ladder", () => {
+  it("keeps a non-JioSaavn media URL as the single link", async () => {
+    const { createDownloadLinks } = await import("../src/lib/download");
+    const CryptoJS = (await import("crypto-js")).default;
+    const url =
+      "https://traffic.omny.fm/d/clips/a/b/c/audio.mp3?utm_source=Podcast&in_playlist=x";
+    const encrypted = CryptoJS.DES.encrypt(
+      url,
+      CryptoJS.enc.Utf8.parse(process.env.JIOSAAVN_DES_KEY ?? ""),
+      { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 },
+    ).ciphertext.toString(CryptoJS.enc.Base64);
+    expect(createDownloadLinks(encrypted)).toBe(url);
+  });
+});
+
 describe("every song-returning procedure attaches download_url", () => {
   it("song.recommendations", async () => {
     responses = { "reco.getreco": [song("s1")] };

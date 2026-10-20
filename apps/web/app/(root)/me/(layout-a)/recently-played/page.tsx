@@ -13,6 +13,9 @@ import { orFallback } from "~/lib/degrade";
 import { fetchSongsChunked, orderByIds } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
+// `recordPlay` writes history without `refresh()`, so never reuse a visit.
+export const unstable_dynamicStaleTime = 0;
+
 export const metadata = {
   title: "Recently Played",
   description: "Songs and episodes you listened to lately.",
