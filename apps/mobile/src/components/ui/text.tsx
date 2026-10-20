@@ -5,7 +5,10 @@ import { cx } from "~/lib/class-names";
 import { typeScale } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
 
-const scale = Platform.OS === "ios" ? typeScale.ios : typeScale.android;
+const scale = Platform.select({
+  ios: typeScale.ios,
+  default: typeScale.android,
+});
 
 const toneClasses = {
   default: "text-foreground",

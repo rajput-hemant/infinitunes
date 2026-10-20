@@ -19,4 +19,15 @@ as a development build.
 
 From the repo root: `bun run lint`, `bun run type-check`, `bun run test:mobile` (Jest, also part of
 `bun run test`), `bun run fmt:check`. Native health: `bun run --cwd apps/mobile doctor`. Bundle check without a
-device: `npx expo export --platform ios` (or `android`) in this directory.
+device: `bunx expo export --platform ios` (or `android`) in this directory.
+
+## Known warnings
+
+- `expo-doctor` fails "Check that no duplicate dependencies are installed" for `expo-asset`, `expo-constants`,
+  `expo-font`, `expo-glass-effect` and `expo-linking`. Every listed copy is the same version: Bun's isolated
+  installs create one folder per peer-dependency variant (`expo` and these modules name each other as peers),
+  and autolinking and Metro resolve a single copy. Only a duplicate with a different version is a real problem.
+  expo-doctor has no setting to skip the check, and the hoisted linker is not an option (see `AGENTS.md`).
+- The web app's Vercel install also installs this app's dependencies. `bun install --filter @infinitunes/web`
+  does not avoid them: `@better-auth/expo` (a dependency of `@infinitunes/auth`) resolves its optional `expo-*`
+  peers to this app's copies, which bring in `expo` and React Native. Nothing native is built or bundled there.
