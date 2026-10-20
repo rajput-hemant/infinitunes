@@ -1,3 +1,4 @@
+import { playToRecord } from "@infinitunes/core/queue-position";
 import {
   getDownloadCandidates,
   type Queue,
@@ -7,7 +8,6 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { type PlayedItem } from "~/lib/history-actions";
-import { playToRecord } from "~/lib/queue-position";
 
 /** Tracks in a row that may fail to load before playback stops. */
 const MAX_CONSECUTIVE_FAILURES = 2;

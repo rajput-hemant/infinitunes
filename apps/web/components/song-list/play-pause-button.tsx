@@ -1,11 +1,11 @@
 "use client";
 
+import { isCurrentTrack } from "@infinitunes/core/queue-position";
 import type { MediaType } from "@infinitunes/types";
 import { Pause, Play } from "lucide-react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 
 import { useCurrentSongIndex, useQueue } from "~/hooks/use-store";
-import { isCurrentTrack } from "~/lib/queue-position";
 
 import { PlayButton } from "../play-button";
 

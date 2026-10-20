@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from "bun:test";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-import { useDebouncedValue } from "../../hooks/use-debounced-value";
+import { useDebouncedValue } from "../../src/react/use-debounced-value";
 
 let root: Root | undefined;
 const seen: string[] = [];

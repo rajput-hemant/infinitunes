@@ -2,6 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { emailSchema, passwordSchema } from "@infinitunes/auth/schemas";
+import { userMessage } from "@infinitunes/core/user-message";
+import { nameSchema } from "@infinitunes/core/validations";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Field,
@@ -26,9 +28,7 @@ import { useIsTyping } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
 import { changePassword, updateUser } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
-import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
-import { nameSchema } from "~/lib/validations";
 
 import { SettingsCard } from "./settings-card";
 import { SettingsBlock } from "./settings-row";

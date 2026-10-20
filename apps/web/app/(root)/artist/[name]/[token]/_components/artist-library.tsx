@@ -1,15 +1,15 @@
+import {
+  ARTIST_LAST_INITIAL_PAGE,
+  categorySort,
+  isDefaultCategory,
+  toArtistPage,
+} from "@infinitunes/core/artist-pagination";
 import type { Album, Category, Song } from "@infinitunes/types";
 import { toSongRow } from "@infinitunes/types";
 
 import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
 import { KeyedByParams } from "~/components/search-params-boundary";
 import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
-import {
-  ARTIST_LAST_INITIAL_PAGE,
-  categorySort,
-  isDefaultCategory,
-  toArtistPage,
-} from "~/lib/artist-pagination";
 import { api } from "~/lib/trpc/server";
 import { getViewer } from "~/lib/viewer";
 

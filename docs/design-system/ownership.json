@@ -61,7 +61,7 @@
       "apps/web/tests/player-a11y.test.ts",
       "apps/web/tests/playerbar-favorite-state.test.ts",
       "apps/web/tests/queue-artists.test.ts",
-      "apps/web/tests/queue-position.test.ts",
+      "packages/core/tests/queue-position.test.ts",
       "apps/web/tests/dom/player-renders.test.tsx",
       "apps/web/tests/dom/expanded-player.test.tsx",
       "apps/web/tests/dom/queue-sheet.test.tsx",

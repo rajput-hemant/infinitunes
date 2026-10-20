@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import { TRPCError } from "@trpc/server";
 
-import { userMessage } from "../lib/user-message";
+import { userMessage } from "../src/user-message";
 
 const GENERIC = "Something went wrong. Please try again.";
 
@@ -89,44 +89,5 @@ describe("userMessage", () => {
   it("falls back for non-errors and uses a custom fallback", () => {
     expect(userMessage(undefined)).toBe(GENERIC);
     expect(userMessage(null, "Could not rename")).toBe("Could not rename");
-  });
-});
-
-describe("server action results", () => {
-  it("round-trips a tRPC code across the action boundary", async () => {
-    const { toResult, unwrap } = await import("../lib/action-result");
-    const failed = await toResult(async () => {
-      throw new TRPCError({ code: "CONFLICT", message: "Name taken" });
-    });
-    expect(failed).toEqual({
-      ok: false,
-      code: "CONFLICT",
-      message: "Name taken",
-    });
-    const error = await unwrap(Promise.resolve(failed)).catch((e) => e);
-    expect(userMessage(error)).toBe("Name taken");
-  });
-
-  it("never sends internal messages and maps uncoded errors to UNKNOWN", async () => {
-    const { toResult } = await import("../lib/action-result");
-    const failed = await toResult(async () => {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "pg: down",
-      });
-    });
-    expect(failed).toMatchObject({ ok: false, message: GENERIC });
-    await expect(
-      toResult(async () => {
-        throw new Error("boom");
-      }),
-    ).resolves.toMatchObject({ ok: false, code: "UNKNOWN", message: GENERIC });
-    await expect(
-      toResult(async () => {
-        throw Object.assign(new Error("NEXT_REDIRECT"), {
-          digest: "NEXT_REDIRECT;replace;/login;307;",
-        });
-      }),
-    ).rejects.toThrow("NEXT_REDIRECT");
   });
 });

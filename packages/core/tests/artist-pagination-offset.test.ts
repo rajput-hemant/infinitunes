@@ -6,7 +6,7 @@ import {
   isDefaultCategory,
   nextArtistPage,
   toArtistPage,
-} from "~/lib/artist-pagination";
+} from "../src/artist-pagination";
 
 describe("artist pagination (live-shaped fixtures)", () => {
   it("first fetched page follows the 50 items the artist page already holds", () => {

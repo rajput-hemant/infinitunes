@@ -1,5 +1,6 @@
 "use client";
 
+import type { PositionStore } from "@infinitunes/core/react/position-store";
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { ActiveRadioSession, Queue } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
@@ -17,7 +18,6 @@ import { GlassSurface } from "~/components/glass/glass-surface";
 import { TileMoreButton } from "~/components/song-list/more-button";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import type { PositionStore } from "~/lib/position-store";
 import { cn } from "~/lib/utils";
 
 import { ArtworkWash } from "./player/artwork-wash";

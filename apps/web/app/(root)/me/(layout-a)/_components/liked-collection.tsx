@@ -1,3 +1,7 @@
+import {
+  LIBRARY_FETCH_CONCURRENCY,
+  settleWithLimit,
+} from "@infinitunes/core/liked-songs";
 import { uniqueBy } from "@infinitunes/types";
 import type { ComponentProps } from "react";
 
@@ -11,7 +15,6 @@ import {
   SliderCard,
   type SliderCardProps,
 } from "~/components/slider/slider-card";
-import { LIBRARY_FETCH_CONCURRENCY, settleWithLimit } from "~/lib/liked-songs";
 
 type LikedCollectionProps<T> = {
   /** Saved tokens/ids from the user's favorites; duplicates are ignored. */

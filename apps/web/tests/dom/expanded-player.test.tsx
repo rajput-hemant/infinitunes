@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 
+import { createPositionStore } from "@infinitunes/core/react/position-store";
 import type { Queue as QueueItem } from "@infinitunes/types";
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
@@ -8,7 +9,6 @@ import { createRoot } from "react-dom/client";
 import { AudioPlayerProvider } from "react-use-audio-player";
 
 import { ExpandedPlayer } from "../../components/expanded-player";
-import { createPositionStore } from "../../lib/position-store";
 import { offlineFetch } from "./offline-fetch";
 import { waitFor } from "./wait-for";
 

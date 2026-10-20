@@ -4,9 +4,9 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import type { Root } from "react-dom/client";
 
-import { usePlayhead } from "~/hooks/use-playhead";
-import { createPositionStore } from "~/lib/position-store";
-import type { PositionStore } from "~/lib/position-store";
+import { createPositionStore } from "../../src/react/position-store";
+import type { PositionStore } from "../../src/react/position-store";
+import { usePlayhead } from "../../src/react/use-playhead";
 
 type HarnessProps = {
   store: PositionStore;

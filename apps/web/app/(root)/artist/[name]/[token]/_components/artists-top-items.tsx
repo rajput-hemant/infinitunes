@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  ARTIST_LAST_INITIAL_PAGE,
+  categorySort,
+  nextArtistPage,
+  toArtistPage,
+} from "@infinitunes/core/artist-pagination";
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import type { Album, Category, Song, SongRowItem } from "@infinitunes/types";
 import { toSongRow, uniqueBy } from "@infinitunes/types";
@@ -11,12 +17,6 @@ import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
 import { QueryScope } from "~/components/query-scope";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";
-import {
-  ARTIST_LAST_INITIAL_PAGE,
-  categorySort,
-  nextArtistPage,
-  toArtistPage,
-} from "~/lib/artist-pagination";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 import { trpc } from "~/lib/trpc/vanilla";

@@ -1,6 +1,5 @@
+import { getErrorCode } from "@infinitunes/core/error-code";
 import { notFound } from "next/navigation";
-
-import { getErrorCode } from "~/lib/error-code";
 
 /** True for a tRPC error whose code says the upstream entity does not exist. */
 export function isNotFoundError(error: unknown): boolean {

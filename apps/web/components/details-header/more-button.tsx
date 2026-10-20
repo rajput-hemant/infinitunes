@@ -1,5 +1,6 @@
 "use client";
 
+import { userMessage } from "@infinitunes/core/user-message";
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import type {
   MediaType,
@@ -59,7 +60,6 @@ import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
 import { addSongsOptimistic } from "~/lib/optimistic-playlists";
 import { trpc } from "~/lib/trpc/vanilla";
-import { userMessage } from "~/lib/user-message";
 import { cn } from "~/lib/utils";
 
 import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";

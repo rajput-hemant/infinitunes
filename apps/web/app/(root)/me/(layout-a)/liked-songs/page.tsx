@@ -1,3 +1,4 @@
+import { fetchLikedSongsNewestFirst } from "@infinitunes/core/liked-songs";
 import { toSongRow } from "@infinitunes/types";
 import { Heart } from "lucide-react";
 
@@ -10,7 +11,6 @@ import { LibrarySongList } from "~/components/library/library-song-list";
 import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
-import { fetchLikedSongsNewestFirst } from "~/lib/liked-songs";
 import { api } from "~/lib/trpc/server";
 
 export const metadata = {

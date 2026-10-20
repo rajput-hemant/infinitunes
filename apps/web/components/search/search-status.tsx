@@ -1,7 +1,6 @@
+import { getErrorCode } from "@infinitunes/core/error-code";
 import type { AllSearch } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
-
-import { getErrorCode } from "~/lib/error-code";
 
 export type SearchState =
   | { status: "loading" }
