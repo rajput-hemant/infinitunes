@@ -7,6 +7,9 @@
     "packages/db": {
       "ignore": ["src/drizzle.config.ts"]
     },
+    "packages/ui": {
+      "ignoreDependencies": ["@shadcn/lint"]
+    },
     "packages/*": {}
   }
 }
