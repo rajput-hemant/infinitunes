@@ -20,6 +20,7 @@ const store = createStore();
 function useAtom<Value, Args extends unknown[], Result>(
   target: WritableAtom<Value, Args, Result>,
   _options: { store: typeof store },
+  serverValue: Value,
 ) {
   // A stable `subscribe`: a new identity would unsubscribe and resubscribe on
   // every render, remounting the atom and re-reading storage each time.
@@ -28,7 +29,17 @@ function useAtom<Value, Args extends unknown[], Result>(
     [target],
   );
   const getSnapshot = React.useCallback(() => store.get(target), [target]);
-  const value = React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  // The server snapshot is the atom's default, not the live value: a Suspense
+  // boundary that hydrates after the player already restored localStorage
+  // would otherwise render the restored value against server HTML built from
+  // the default (hydration mismatch). React re-reads `getSnapshot` right after
+  // hydrating, so the restored value still lands.
+  const getServerSnapshot = React.useCallback(() => serverValue, [serverValue]);
+  const value = React.useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    getServerSnapshot,
+  );
   return [value, useSetAtom(target, { store })] as const;
 }
 
@@ -40,16 +51,18 @@ const queueStorage: typeof baseQueueStorage = {
     ensureQueueItemIds(baseQueueStorage.getItem(key, initialValue)),
 };
 
-const queueAtom = atomWithStorage<Queue[]>("queue", [], queueStorage);
+// One stable empty array: a fresh `[]` per call would make the snapshot unstable.
+const EMPTY_QUEUE: Queue[] = [];
+const queueAtom = atomWithStorage<Queue[]>("queue", EMPTY_QUEUE, queueStorage);
 
 export function useQueue() {
-  return useAtom(queueAtom, { store });
+  return useAtom(queueAtom, { store }, EMPTY_QUEUE);
 }
 
 const currentSongIndexAtom = atomWithStorage("current_song_index", 0);
 
 export function useCurrentSongIndex() {
-  return useAtom(currentSongIndexAtom, { store });
+  return useAtom(currentSongIndexAtom, { store }, 0);
 }
 
 const streamQualityAtom = atomWithStorage<StreamQuality>(
@@ -58,7 +71,7 @@ const streamQualityAtom = atomWithStorage<StreamQuality>(
 );
 
 export function useStreamQuality() {
-  return useAtom(streamQualityAtom, { store });
+  return useAtom(streamQualityAtom, { store }, "excellent");
 }
 
 const downloadQualityAtom = atomWithStorage<StreamQuality>(
@@ -67,25 +80,25 @@ const downloadQualityAtom = atomWithStorage<StreamQuality>(
 );
 
 export function useDownloadQuality() {
-  return useAtom(downloadQualityAtom, { store });
+  return useAtom(downloadQualityAtom, { store }, "excellent");
 }
 
 const imageQualityAtom = atomWithStorage<ImageQuality>("image_quality", "high");
 
 export function useImageQuality() {
-  return useAtom(imageQualityAtom, { store });
+  return useAtom(imageQualityAtom, { store }, "high");
 }
 
 const isPlayingAtom = atom(false);
 
 export function useIsPlayerInit() {
-  return useAtom(isPlayingAtom, { store });
+  return useAtom(isPlayingAtom, { store }, false);
 }
 
 const isTyping = atom(false);
 
 export function useIsTyping() {
-  return useAtom(isTyping, { store });
+  return useAtom(isTyping, { store }, false);
 }
 
 const activeRadioSessionAtom = atomWithStorage<ActiveRadioSession | null>(
@@ -94,12 +107,12 @@ const activeRadioSessionAtom = atomWithStorage<ActiveRadioSession | null>(
 );
 
 export function useActiveRadioSession() {
-  return useAtom(activeRadioSessionAtom, { store });
+  return useAtom(activeRadioSessionAtom, { store }, null);
 }
 
 const keyboardShortcutsAtom = atomWithStorage("keyboard_shortcuts", true);
 
 /** WCAG 2.1.4: single-key player shortcuts can be turned off. Default on. */
 export function useKeyboardShortcuts() {
-  return useAtom(keyboardShortcutsAtom, { store });
+  return useAtom(keyboardShortcutsAtom, { store }, true);
 }
