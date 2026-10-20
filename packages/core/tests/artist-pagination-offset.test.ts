@@ -1,5 +1,7 @@
 // Shapes mirror live `artist.songs`/`artist.albums` responses for artist 459320
 // (evidence: PQ-1 batch4); no network needed.
+import { describe, expect, it } from "bun:test";
+
 import {
   ARTIST_LAST_INITIAL_PAGE,
   categorySort,

@@ -25,5 +25,21 @@
     "**/*.config.ts",
     "drizzle.config.ts",
     "next-env.d.ts"
+  ],
+  "overrides": [
+    {
+      "files": ["packages/core/src/**"],
+      "rules": {
+        "no-restricted-globals": [
+          "error",
+          "window",
+          "document",
+          "navigator",
+          "location",
+          "localStorage",
+          "sessionStorage"
+        ]
+      }
+    }
   ]
 }

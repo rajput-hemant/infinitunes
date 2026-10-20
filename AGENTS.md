@@ -14,8 +14,9 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `user-message`), `queue-position`, `liked-songs` (chunked detail fetching),
   `artist-pagination`, `validations` (zod forms), and `react/*` hooks and stores that
   need only `react` (`optimistic-favorite`, `position-store`, `use-playhead`,
-  `use-debounced-value`). It must not import `next/*`, the DOM or `@infinitunes/ui`;
-  its DOM hook tests live in `packages/core/tests/dom` (`bun run test:dom`).
+  `use-debounced-value`). It must not import `next/*`, the DOM or `@infinitunes/ui`
+  (`.oxlintrc.json` bans DOM globals in `packages/core/src`); its DOM hook tests live in
+  `packages/core/tests/dom` (`bun run test:dom`), and `type-check` covers `src` and `tests`.
 - `bcryptjs` is imported only by `packages/auth`, `packages/db` and `packages/trpc`
   (it ships its own types; `@types/bcryptjs` is not needed). `apps/web` no longer
   imports it. `postgres` and `pg` are unused in app source (provided by `@infinitunes/db`).
