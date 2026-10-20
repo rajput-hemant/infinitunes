@@ -1,3 +1,4 @@
+import { sessionCookiePrefix } from "@infinitunes/auth/session-cookie";
 import { originOf } from "@infinitunes/auth/url";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
@@ -13,7 +14,6 @@ import { env } from "./lib/env";
 import { LIMITS, OG_PATH, limiterKinds } from "./lib/rate-limit-scope";
 import type { LimiterKind } from "./lib/rate-limit-scope";
 import { searchRouteAction } from "./lib/search-route";
-import { sessionCookiePrefix } from "./lib/session-cookie";
 
 let redis: Redis | undefined;
 const limiters = new Map<LimiterKind, Ratelimit>();

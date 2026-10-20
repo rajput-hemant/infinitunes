@@ -1,4 +1,5 @@
 import { createAuth } from "@infinitunes/auth";
+import { sessionCookiePrefix } from "@infinitunes/auth/session-cookie";
 import { db } from "@infinitunes/db";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
@@ -6,7 +7,6 @@ import { after } from "next/server";
 import { cache } from "react";
 
 import { TRUSTED_CLIENT_IP_HEADER } from "./client-ip";
-import { sessionCookiePrefix } from "./session-cookie";
 
 let authInstance: ReturnType<typeof createAuth> | undefined;
 

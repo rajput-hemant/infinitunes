@@ -8,6 +8,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@better-auth/expo": "1.7.6",
     "@better-auth/passkey": "^1.7.12",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
@@ -28,6 +29,8 @@
     "./client": "./src/auth-client.ts",
     "./schemas": "./src/schemas.ts",
     "./env": "./src/env.ts",
-    "./url": "./src/url.ts"
+    "./url": "./src/url.ts",
+    "./native-app": "./src/native-app.ts",
+    "./session-cookie": "./src/session-cookie.ts"
   }
 }

@@ -257,8 +257,8 @@ supply `DATABASE_URL`. Keep initialization lazy; eager evaluation at module scop
 (`docs/local-development.md`, "Shared database with Lipi"). Keep the baseline
 migration idempotent (`IF NOT EXISTS`), never drop or require `user.name` /
 `user.password` (Lipi writes them), and keep the non-production session cookie
-prefix distinct (`apps/web/lib/session-cookie.ts`, used by Better Auth and
-`proxy.ts`). Opt-in DB tests need `TEST_MIGRATION_DATABASE_URL` (a disposable
+prefix distinct (`@infinitunes/auth/session-cookie`, used by Better Auth,
+`proxy.ts` and the mobile auth client). Opt-in DB tests need `TEST_MIGRATION_DATABASE_URL` (a disposable
 admin URL).
 
 ## Media URL shapes (playback / artwork)
@@ -404,7 +404,9 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
   components must import these via `./schemas`, never from `@infinitunes/auth`.
 - `createAuth` in `packages/auth/src/auth.ts` is platform-agnostic: it ships only
   the `passkey` plugin (RP "Infinitunes", per-app `infinitunes_passkey` table)
-  and takes extra plugins via `createAuth(db, { plugins })`.
+  and the `expo` plugin (native clients send `expo-origin`; `NATIVE_APP_ORIGIN`
+  from `@infinitunes/auth/native-app` is a trusted origin), and takes extra
+  plugins via `createAuth(db, { plugins })`.
   The web app injects `nextCookies()` at its call site (`apps/web/lib/auth.ts`) -
   nothing under `@infinitunes/auth` may import `better-auth/next-js`. `createAuth`
   passes `secret`/`baseURL` into Better Auth (`BETTER_AUTH_*` wins over `AUTH_*`)

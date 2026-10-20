@@ -370,18 +370,20 @@ describe("Password hashing and credential verification", () => {
 });
 
 describe("Injected plugins and env precedence", () => {
-  it("ships only the passkey plugin by default, never next-cookies", () => {
+  it("ships only the passkey and expo plugins by default, never next-cookies", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
       "passkey",
+      "expo",
     ]);
   });
 
-  it("appends caller-supplied plugins after the passkey plugin", () => {
+  it("appends caller-supplied plugins after the built-in ones", () => {
     const marker = { id: "test-injected" } as unknown as BetterAuthPlugin;
     const auth = createAuth(makeFakeDb(), { plugins: [marker] });
     expect(auth.options.plugins?.map((plugin) => plugin.id)).toEqual([
       "passkey",
+      "expo",
       "test-injected",
     ]);
   });
@@ -449,6 +451,7 @@ describe("Better Auth URL resolution", () => {
       expect(auth.options.trustedOrigins).toEqual([
         "https://infinitunes.example.com",
         "https://infinitunes-abc.vercel.app",
+        "infinitunes://",
       ]);
     } finally {
       restore();
@@ -465,6 +468,7 @@ describe("Better Auth URL resolution", () => {
       expect(auth.options.trustedOrigins).toEqual([
         "https://auth.example.com",
         "https://infinitunes-abc.vercel.app",
+        "infinitunes://",
       ]);
     } finally {
       restore();

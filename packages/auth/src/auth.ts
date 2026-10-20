@@ -1,3 +1,4 @@
+import { expo } from "@better-auth/expo";
 import { passkey } from "@better-auth/passkey";
 import type { DbClient } from "@infinitunes/db/client";
 import {
@@ -18,6 +19,7 @@ import { resetPasswordEmail } from "./emails";
 import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
+import { NATIVE_APP_ORIGIN } from "./native-app";
 import { USER_NAME_MAX } from "./schemas";
 import { originOf, parseUrl } from "./url";
 
@@ -100,13 +102,15 @@ export function createAuth(
   const baseURL =
     env.BETTER_AUTH_URL || resolveAuthUrl(env.AUTH_URL, vercelContext);
   // The base URL is trusted implicitly; also trust this deployment's own host
-  // (previews) and the production domain so CSRF/redirect checks pass there.
+  // (previews) and the production domain so CSRF/redirect checks pass there,
+  // and the native app, whose requests the `expo` plugin gives its origin.
   const trustedOrigins = [
     ...new Set(
       [baseURL, vercelContext.vercelUrl, vercelContext.vercelProductionUrl]
         .map((url) => originOf(url && resolveAuthUrl(url, {})))
         .filter((origin): origin is string => origin !== null),
     ),
+    NATIVE_APP_ORIGIN,
   ];
   const rpID =
     env.BETTER_AUTH_RP_ID || parseUrl(baseURL)?.hostname || "localhost";
@@ -250,6 +254,7 @@ export function createAuth(
           passkey: { modelName: "infinitunes_passkey" },
         },
       }),
+      expo(),
       ...(options.plugins ?? []),
     ],
   });
