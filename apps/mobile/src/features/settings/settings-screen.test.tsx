@@ -44,7 +44,9 @@ describe("SettingsScreen as a guest", () => {
   it("offers to sign in under Account and Security, and nothing destructive", async () => {
     await renderScreen(<SettingsScreen />);
 
-    expect(screen.getAllByRole("button", { name: /^Sign in/ })).toHaveLength(2);
+    expect(
+      screen.getAllByRole("button", { name: /^Sign in to continue/ }),
+    ).toHaveLength(2);
     expect(screen.queryByText("Sign out")).toBeNull();
     expect(screen.queryByText("Delete account")).toBeNull();
     expect(screen.queryByText("Profile")).toBeNull();
@@ -54,7 +56,7 @@ describe("SettingsScreen as a guest", () => {
     const push = await renderSettings();
 
     await fireEvent.press(
-      screen.getAllByRole("button", { name: /^Sign in/ })[0],
+      screen.getAllByRole("button", { name: /^Sign in to continue/ })[0],
     );
 
     expect(push).toHaveBeenCalledWith("/login");

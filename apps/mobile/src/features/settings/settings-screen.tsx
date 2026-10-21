@@ -16,7 +16,8 @@ import {
   useAppearanceMode,
 } from "./appearance-store";
 import { signOut } from "./end-session";
-import { ActionRow, NavigationRow, PickerRow, ValueRow } from "./rows";
+import { PickerRow, ValueRow } from "./selection-rows";
+import { ActionRow, NavigationRow } from "./tap-rows";
 
 const MODE_LABELS = { system: "System", light: "Light", dark: "Dark" } as const;
 
@@ -72,8 +73,8 @@ export function SettingsScreen() {
             </>
           ) : (
             <NavigationRow
-              label="Sign in"
-              detail="Edit your profile and sync your library across devices."
+              label="Sign in to continue"
+              detail="Sign in to edit your profile and change your password."
               onPress={() => router.push("/login")}
             />
           )}
@@ -112,8 +113,8 @@ export function SettingsScreen() {
             />
           ) : (
             <NavigationRow
-              label="Sign in"
-              detail="Sign in to manage your account and delete it."
+              label="Sign in to continue"
+              detail="Sign in to manage your account or delete it."
               onPress={() => router.push("/login")}
             />
           )}
