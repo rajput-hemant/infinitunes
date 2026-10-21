@@ -62,7 +62,7 @@ describe("playSurprise", () => {
     await expect(playSurprise()).resolves.toBeUndefined();
 
     expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Failed to load songs",
+      "Couldn't load songs",
     );
     expect(playerStore.getState().started).toBe(false);
   });

@@ -80,7 +80,7 @@ describe("startStation", () => {
     startStation(rawStationDetails({ songs: [] }));
 
     expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "No songs found for this radio station",
+      "No songs found for this station",
     );
     expect(playerStore.getState()).toMatchObject({
       queue: [],
@@ -112,7 +112,7 @@ describe("playStation", () => {
     ).resolves.toBeUndefined();
 
     expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Failed to load radio station",
+      "Couldn't load this station",
     );
     expect(playerStore.getState().started).toBe(false);
   });
@@ -168,7 +168,7 @@ describe("startSeededRadio", () => {
     await startSeededRadio({ name: "Quiet" });
 
     expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Could not find songs for this radio",
+      "Couldn't find songs for this station",
     );
     expect(playerStore.getState().queue).toEqual([]);
     expect(playerStore.getState().radio).toBeNull();
@@ -180,7 +180,7 @@ describe("startSeededRadio", () => {
     await expect(startSeededRadio({ name: "X" })).resolves.toBeUndefined();
 
     expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Unable to start radio station",
+      "Couldn't start this station",
     );
     expect(procedure("radio.songs")).not.toHaveBeenCalled();
   });

@@ -79,27 +79,23 @@ describe("TransportControls", () => {
   it("cycles repeat through the playlist and the track, saying which", async () => {
     await renderScreen(<TransportControls />);
     expect(
-      screen.getByRole("button", { name: "Repeat: off" }),
+      screen.getByRole("button", { name: "Repeat off" }),
     ).not.toBeSelected();
 
-    await press("Repeat: off");
+    await press("Repeat off");
     expect(jest.mocked(toast)).toHaveBeenLastCalledWith("Looping playlist");
-    expect(
-      screen.getByRole("button", { name: "Repeat: playlist" }),
-    ).toBeSelected();
+    expect(screen.getByRole("button", { name: "Repeat all" })).toBeSelected();
 
-    await press("Repeat: playlist");
+    await press("Repeat all");
     expect(jest.mocked(toast)).toHaveBeenLastCalledWith(
       "Playing current song on repeat",
     );
-    expect(
-      screen.getByRole("button", { name: "Repeat: track" }),
-    ).toBeSelected();
+    expect(screen.getByRole("button", { name: "Repeat one" })).toBeSelected();
 
-    await press("Repeat: track");
+    await press("Repeat one");
     expect(jest.mocked(toast)).toHaveBeenLastCalledWith("Looping disabled");
     expect(
-      screen.getByRole("button", { name: "Repeat: off" }),
+      screen.getByRole("button", { name: "Repeat off" }),
     ).not.toBeSelected();
     expect(playerStore.getState().repeat).toBe("off");
   });

@@ -124,7 +124,7 @@ describe("playEntity for a radio station", () => {
   it("toasts, and asks nothing, for a link that is not a station's", async () => {
     await playEntity("radio_station", "https://example.com/not-a-station");
 
-    expect(toastError()).toHaveBeenCalledWith("Failed to load radio station");
+    expect(toastError()).toHaveBeenCalledWith("Couldn't load this station");
     expect(procedure("radio.stationDetails")).not.toHaveBeenCalled();
   });
 
