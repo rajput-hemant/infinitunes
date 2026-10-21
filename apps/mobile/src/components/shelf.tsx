@@ -3,7 +3,6 @@ import type { CardItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
-import type { ReactElement } from "react";
 import { Pressable, View } from "react-native";
 
 import { sizes } from "~/theme/tokens";
@@ -20,8 +19,6 @@ type ShelfProps = {
   seeAllHref?: Href;
   /** Runs as a card opens its screen. */
   onItemPress?: (item: CardItem) => void;
-  /** A card other than `MediaCard` (a station card with its play button). */
-  renderCard?: (item: CardItem) => ReactElement;
 };
 
 function CardGap() {
@@ -29,13 +26,7 @@ function CardGap() {
 }
 
 /** A titled, horizontally scrolling row of media cards. Renders nothing when empty. */
-export function Shelf({
-  title,
-  items,
-  seeAllHref,
-  onItemPress,
-  renderCard,
-}: ShelfProps) {
+export function Shelf({ title, items, seeAllHref, onItemPress }: ShelfProps) {
   if (items.length === 0) return null;
 
   return (
@@ -59,16 +50,12 @@ export function Shelf({
         // Upstream modules can repeat an item; FlashList needs unique keys.
         data={uniqueBy(items, (item) => item.id)}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) =>
-          renderCard ? (
-            renderCard(item)
-          ) : (
-            <MediaCard
-              item={item}
-              onPress={onItemPress && (() => onItemPress(item))}
-            />
-          )
-        }
+        renderItem={({ item }) => (
+          <MediaCard
+            item={item}
+            onPress={onItemPress && (() => onItemPress(item))}
+          />
+        )}
         ItemSeparatorComponent={CardGap}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: sizes.page }}

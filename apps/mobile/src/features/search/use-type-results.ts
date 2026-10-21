@@ -36,6 +36,7 @@ export function useTypeResults(query: string, type: ListSearchType) {
     status: statusOf(list.items.length, list.isPending, list.error),
     error: list.error,
     isFetchingNextPage: list.isFetchingNextPage,
+    hasNextPage: list.hasNextPage,
     loadMore: list.loadMore,
     retry: () => void list.refetch(),
   };

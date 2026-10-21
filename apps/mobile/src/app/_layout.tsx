@@ -34,6 +34,16 @@ export default function RootLayout() {
             title: "Languages",
           }}
         />
+        <Stack.Screen
+          name="create-playlist"
+          options={{
+            presentation: "formSheet",
+            sheetAllowedDetents: [0.6, 1],
+            sheetGrabberVisible: true,
+            headerShown: true,
+            title: "New Playlist",
+          }}
+        />
         <Stack.Screen name="(auth)" options={{ presentation: "modal" }} />
       </Stack>
     </AppProviders>

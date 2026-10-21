@@ -85,23 +85,53 @@ export function deletePlaylist(id: string, name: string) {
 type Song = { id: string; name: string };
 type Playlist = { id: string; name: string };
 
-function addedMessage(songs: readonly Song[], playlist: Playlist) {
+/** How a toast names the songs: `"FA9LA"` for one, "12 songs" for more. */
+export function songsLabel(songs: readonly Song[]): string {
   const [only] = songs;
-  const what =
-    songs.length === 1 && only ? `"${only.name}"` : `${songs.length} songs`;
-  return `${what} added to "${playlist.name}"`;
+  return songs.length === 1 && only
+    ? `"${only.name}"`
+    : `${songs.length} songs`;
+}
+
+function addSongIds(playlist: Playlist, ids: readonly string[], what: string) {
+  addSongsOptimistic(playlist.id, [...ids], () =>
+    trpcClient.user.addSongsToPlaylist.mutate({
+      playlistId: playlist.id,
+      songs: [...ids],
+    }),
+  )
+    .then(() => toast.success(`${what} added to "${playlist.name}"`))
+    .catch((error: unknown) => toast.error(userMessage(error)))
+    .finally(() => void refreshPlaylists());
 }
 
 /** Adds the songs at once; the write follows, and a failure rolls back with a toast. */
 export function addSongsToPlaylist(playlist: Playlist, songs: readonly Song[]) {
-  const ids = songs.map((song) => song.id);
-  addSongsOptimistic(playlist.id, ids, () =>
-    trpcClient.user.addSongsToPlaylist.mutate({
-      playlistId: playlist.id,
-      songs: ids,
-    }),
+  addSongIds(
+    playlist,
+    songs.map((song) => song.id),
+    songsLabel(songs),
+  );
+}
+
+/**
+ * Creates a playlist and then adds the songs (named `what` in the toast) to
+ * it. The playlist shows as pending at once; the songs follow only once the
+ * server has minted its id, so a refused create (the playlist cap) adds
+ * nothing.
+ */
+export function createPlaylistWithSongs(
+  details: PlaylistDetails,
+  songIds: readonly string[],
+  what: string,
+) {
+  createPlaylistOptimistic(details, () =>
+    trpcClient.user.createNewPlaylist.mutate(details),
   )
-    .then(() => toast.success(addedMessage(songs, playlist)))
+    .then((playlist) => {
+      toast.success(`Playlist "${playlist.name}" created`);
+      if (songIds.length > 0) addSongIds(playlist, songIds, what);
+    })
     .catch((error: unknown) => toast.error(userMessage(error)))
     .finally(() => void refreshPlaylists());
 }

@@ -9,7 +9,9 @@ import {
 import { Link } from "expo-router";
 import { Pressable, RefreshControl, View } from "react-native";
 
+import { CollectionMenu } from "~/components/collection-menu";
 import { EntityHeader } from "~/components/entity-header";
+import { isExplicit } from "~/components/explicit-badge";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
@@ -88,7 +90,9 @@ export function EpisodeContent({
         image={episode.image}
         title={row.name}
         subtitle={[row.subtitle, meta].filter(Boolean).join("\n")}
+        explicit={isExplicit(episode.explicit_content)}
         onPlay={play}
+        actions={<CollectionMenu name={row.name} rows={[row]} />}
       />
       {description ? (
         <View className="gap-1 px-page pb-3">

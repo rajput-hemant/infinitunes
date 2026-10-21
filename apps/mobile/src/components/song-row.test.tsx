@@ -43,6 +43,19 @@ describe("SongRow", () => {
     expect(playerStore.getState().radio?.name).toBe("Flipperachi Radio");
   });
 
+  it("opens the song's own page from its menu", async () => {
+    const app = await renderScreen(
+      <SongRow song={song} onPress={jest.fn()} />,
+      {
+        routes: { "song/[name]/[token]": () => null },
+      },
+    );
+
+    await chooseMenuAction("More actions for FA9LA & Friends", "details");
+
+    expect(app.getPathname()).toBe("/song/fa9la/BSaNI3Yr-token");
+  });
+
   it("plays its list when pressed", async () => {
     const onPress = jest.fn();
     await renderScreen(<SongRow song={song} onPress={onPress} />);

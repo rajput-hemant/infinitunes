@@ -3,9 +3,9 @@ import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
 import { formatDuration } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { Pressable, View } from "react-native";
-import { useReorderableDrag } from "react-native-reorderable-list";
+import { View } from "react-native";
 
+import { DragHandle } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { SongListSkeleton } from "~/components/skeletons";
@@ -35,24 +35,6 @@ type PlaylistSongRowProps = {
   /** Inside the drag list: a handle starts moving the row. */
   reorderable: boolean;
 };
-
-/** Pressing and dragging it moves its row (only inside a `ReorderableList`). */
-function DragHandle({ name }: { name: string }) {
-  const drag = useReorderableDrag();
-  return (
-    <Pressable
-      onPressIn={drag}
-      accessibilityRole="button"
-      accessibilityLabel={`Reorder ${name}`}
-      className="size-ctl items-center justify-center"
-    >
-      <Icon
-        name={{ ios: "line.3.horizontal", android: "drag_handle" }}
-        size={18}
-      />
-    </Pressable>
-  );
-}
 
 function PlaylistSongRow({
   song,

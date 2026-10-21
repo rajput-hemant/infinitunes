@@ -12,6 +12,7 @@ import { NoResults } from "./no-results";
 import { ResultSection } from "./result-section";
 import { isLinked } from "./search-items";
 import type { ListSearchType } from "./search-types";
+import { TopResultPlay } from "./top-result-play";
 import { useAllSearch } from "./use-all-search";
 
 /** Rows shown per group before "See All" switches to the full list. */
@@ -74,6 +75,7 @@ export function AllResults({
             items={[state.top]}
             onPressItem={open}
           />
+          <TopResultPlay item={state.top} />
           <ResultSection
             title="Songs"
             items={getSearchItems(state.data.songs).slice(0, PREVIEW_ROWS)}

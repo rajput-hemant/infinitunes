@@ -88,6 +88,7 @@ describe("ArtistScreen", () => {
 
     expect(await findTitle()).toBeOnTheScreen();
     expect(screen.getByText("48.2K Listeners")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Verified")).toBeOnTheScreen();
     expect(screen.getByText("FA9LA & Friends")).toBeOnTheScreen();
     expect(screen.getByText("Second Song")).toBeOnTheScreen();
     expect(

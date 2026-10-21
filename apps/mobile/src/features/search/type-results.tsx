@@ -5,6 +5,7 @@ import { ActivityIndicator, View } from "react-native";
 
 import { MediaCard } from "~/components/media-card";
 import { SongRow } from "~/components/song-row";
+import { Text } from "~/components/ui/text";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playFrom } from "~/playback/play-collection";
@@ -58,6 +59,10 @@ export function TypeResults({
       <View className="py-4">
         <ActivityIndicator />
       </View>
+    ) : results.status === "ready" && !results.hasNextPage ? (
+      <Text variant="subhead" tone="muted" className="py-6 text-center">
+        You have reached the end of these results.
+      </Text>
     ) : null,
     onEndReached: results.loadMore,
     contentContainerStyle: { paddingBottom: playerDockInset },

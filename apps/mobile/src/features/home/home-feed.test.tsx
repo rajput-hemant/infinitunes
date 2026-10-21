@@ -3,6 +3,7 @@ import {
   rawLaunchData,
   rawSong,
   rawAlbum,
+  rawStationDetails,
 } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { toast } from "sonner-native";
@@ -99,6 +100,39 @@ describe("HomeFeed", () => {
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
     expect(playerStore.getState().queue[0]?.name).toBe("FA9LA & Friends");
     expect(procedure("playlist.details")).toHaveBeenCalledWith({ token: "p1" });
+  });
+
+  it("plays an album from its card without opening it", async () => {
+    home.mockResolvedValue(rawLaunchData());
+    procedure("album.details").mockResolvedValue(
+      rawAlbum({ list: [rawSong()] }),
+    );
+    await renderScreen(<HomeFeed />);
+
+    const [play] = await screen.findAllByRole("button", {
+      name: "Play Udta Teer",
+    });
+    if (!play) throw new Error("no Play button on the album card");
+    await fireEvent.press(play);
+
+    await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
+    expect(procedure("album.details")).toHaveBeenCalledWith({
+      token: "LHgqn,SRpyA_",
+    });
+  });
+
+  it("tunes in a station from its card", async () => {
+    home.mockResolvedValue(rawLaunchData());
+    procedure("radio.stationDetails").mockResolvedValue(rawStationDetails());
+    await renderScreen(<HomeFeed />);
+
+    await fireEvent.press(
+      await screen.findByRole("button", { name: "Play Hindi Hits & More" }),
+    );
+
+    await waitFor(() =>
+      expect(playerStore.getState().radio?.stationId).toBe("session-42"),
+    );
   });
 
   it("starts a shuffled batch of trending songs with Surprise Me", async () => {

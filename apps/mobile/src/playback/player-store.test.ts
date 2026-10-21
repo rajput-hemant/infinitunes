@@ -66,6 +66,41 @@ describe("player store", () => {
     expect(current()).toBe("c");
   });
 
+  it("clears what comes after the current entry and keeps playing it", () => {
+    const { playTracks, clearUpNext } = playerStore.getState();
+    playTracks(rows, { startIndex: 1 });
+
+    clearUpNext();
+
+    expect(ids()).toEqual(["a", "b"]);
+    expect(current()).toBe("b");
+  });
+
+  it("moves an entry without changing what plays", () => {
+    const { playTracks, moveInQueue } = playerStore.getState();
+    playTracks([...rows, toSongRow(rawSong({ id: "d" }))], { startIndex: 1 });
+
+    moveInQueue(3, 2);
+    expect(ids()).toEqual(["a", "b", "d", "c"]);
+    expect(current()).toBe("b");
+
+    // An entry dragged over the playing one shifts its position.
+    moveInQueue(0, 2);
+    expect(ids()).toEqual(["b", "d", "a", "c"]);
+    expect(current()).toBe("b");
+    expect(playerStore.getState().currentIndex).toBe(0);
+  });
+
+  it("ignores a move out of range", () => {
+    const { playTracks, moveInQueue } = playerStore.getState();
+    playTracks(rows);
+    const before = playerStore.getState().queue;
+
+    moveInQueue(1, 5);
+
+    expect(playerStore.getState().queue).toBe(before);
+  });
+
   it("stops at the end, or wraps when the whole queue repeats", () => {
     const { playTracks, advanceAfterEnd, cycleRepeat } = playerStore.getState();
     playTracks(rows, { startIndex: 2 });

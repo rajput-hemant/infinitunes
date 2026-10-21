@@ -35,6 +35,18 @@ describe("Shelf", () => {
     expect(screen.queryByText("See All")).toBeNull();
   });
 
+  it("marks an explicit item's card and names it so", async () => {
+    const explicit = toCardItem(rawAlbum({ explicit_content: "1" }));
+    await renderShelf(<Shelf title="New Releases" items={[explicit]} />);
+
+    expect(
+      screen.getByRole("link", {
+        name: "Udta Teer, Explicit, Sachin-Jigar, Amitabh Bhattacharya",
+      }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText("E")).toBeOnTheScreen();
+  });
+
   it("opens the album screen for a card", async () => {
     const router = await renderShelf(
       <Shelf title="New Releases" items={albums} />,

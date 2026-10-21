@@ -8,6 +8,7 @@ import { Text } from "~/components/ui/text";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
 import { radii } from "~/theme/tokens";
 
+import { RadioBadge } from "./radio-badge";
 import { NextTrackButton, PlayPauseButton } from "./transport-controls";
 
 const ARTWORK_SIZE = 36;
@@ -59,9 +60,17 @@ export function MiniPlayer() {
             {track?.name ?? "Not playing"}
           </Text>
           {track ? (
-            <Text variant="caption" tone="muted" numberOfLines={1}>
-              {track.subtitle}
-            </Text>
+            <View className="flex-row items-center gap-1.5">
+              <RadioBadge />
+              <Text
+                variant="caption"
+                tone="muted"
+                numberOfLines={1}
+                className="flex-1"
+              >
+                {track.subtitle}
+              </Text>
+            </View>
           ) : null}
         </View>
       </Pressable>

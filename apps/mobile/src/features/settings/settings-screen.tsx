@@ -18,6 +18,7 @@ import {
 
 import { signOut } from "./end-session";
 import { languagesSummary } from "./languages-screen";
+import { ProfileHeader } from "./profile-header";
 import { PickerRow, ValueRow } from "./selection-rows";
 import { ActionRow, NavigationRow } from "./tap-rows";
 
@@ -73,9 +74,9 @@ export function SettingsScreen() {
         <FieldGroup.Section title="Account">
           {user ? (
             <>
+              <ProfileHeader user={user} />
               <NavigationRow
-                label="Profile"
-                detail={user.name ? `${user.name}, ${user.email}` : user.email}
+                label="Edit profile"
                 onPress={() => router.push("/profile")}
               />
               <NavigationRow

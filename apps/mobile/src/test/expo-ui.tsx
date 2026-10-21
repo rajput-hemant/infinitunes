@@ -31,8 +31,14 @@ export const FieldGroup = Object.assign(
 );
 
 export const Text = NativeText;
-export const Row = View;
 export const Spacer = () => null;
+
+function Stack({ children, testID }: WithChildren & { testID?: string }) {
+  return <View testID={testID}>{children}</View>;
+}
+
+export const Row = Stack;
+export const Column = Stack;
 
 export function ListItem({
   children,

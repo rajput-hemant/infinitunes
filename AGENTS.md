@@ -199,7 +199,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Playback: one expo-audio `AudioPlayer` (`playback/audio-engine.ts`; not `AudioPlaylist`, which reports no load
   error, so no bitrate step-down) driven by `PlaybackController` (root layout) from `playerStore`. Screens only
   call actions (`playAll`/`shuffleAll`/`playFrom` in `playback/play-collection.ts`, `playNext`, `addToQueue`,
-  `startSeededRadio(radioSeedOf(rows))`) and read slices with `usePlayer(selector)`, `usePlaybackStatus`,
+  `startSeededRadio(radioSeedOf(rows))`, `playEntity(type, url)` for a card's item) and read slices with `usePlayer(selector)`, `usePlaybackStatus`,
   `usePlaybackPosition`; `togglePlayback`/`seekTo` in `playback/transport.ts`. The lock screen gets metadata,
   play/pause and scrubbing; expo-audio's single player has no remote next/previous. expo-audio sets `error` on
   one status event only (the next one, often in the same JS task, says `null`) and nothing guarantees a
@@ -208,14 +208,15 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
   that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
-  `eyebrow` and trailing `actions` (`CollectionMenu`: play next, queue, add all to a playlist, radio).
-  Menus are `NativeMenu` entries that carry their action (`addToPlaylistEntry`, `playRadioEntry`); `SongMenu`
-  is the track's. Rows: `SongRow` (`toSongRow` row or queue entry, `removal`), `MediaRow` (`href` or
+  `eyebrow`, `explicit` (`isExplicit`), `verified` and trailing `actions` (`CollectionMenu`: play next, queue,
+  add all to a playlist, radio, download all). Menus are `NativeMenu` entries that carry their action
+  (`addToPlaylistEntry`, which ends with New Playlist, the `/create-playlist` sheet; `playRadioEntry`);
+  `SongMenu` is the track's. Rows: `SongRow` (`toSongRow` row or queue entry, `removal`), `MediaRow` (`href` or
   `onPress`), `EntityListItem`s for a screen's one `FlashList`. Cards: `MediaCard`/`Shelf` (`toCardItem`
-  items, `seeAllHref`, `onItemPress`, `renderCard`; stations open `/radio/<name>/<token>`, `StationCard` adds
-  play). Artwork goes through `Artwork` (the layout's resolution capped by the Image quality preference).
-  `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an empty page always
-  ends the list, whatever upstream's `last_page`/`total` say). Toasts are
+  items, `seeAllHref`, `onItemPress`; a playable item gets `CardPlayButton`, a sibling of the card's link;
+  stations open `/radio/<name>/<token>`). Artwork goes through `Artwork` (the layout's resolution capped by the Image
+  quality preference). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
+  empty page always ends the list, whatever upstream's `last_page`/`total` say). Toasts are
   `sonner-native`'s `toast` (mounted `Toaster`).
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
   `user-data/playlists.ts` (create, rename, delete, add, remove, move; removals and moves take the server's

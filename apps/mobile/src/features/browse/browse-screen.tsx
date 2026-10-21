@@ -2,7 +2,7 @@ import { LANGUAGES } from "@infinitunes/types";
 import { languageLabel } from "@infinitunes/types";
 import { Stack } from "expo-router";
 import type { Href } from "expo-router";
-import { View } from "react-native";
+import { RefreshControl, View } from "react-native";
 
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Text } from "~/components/ui/text";
@@ -14,10 +14,10 @@ import { useCategoryCovers } from "./use-category-covers";
 
 type Category = { label: string; href: Href; image?: string };
 
-/** Categories, then every language: each tile opens a list. */
+/** Categories, then every language: each tile opens a list. Pull to refresh the covers. */
 export function BrowseScreen() {
   const width = useGridCardWidth();
-  const covers = useCategoryCovers();
+  const { covers, refreshing, refresh } = useCategoryCovers();
   const mixHref = covers.mix && entityHref("mix", covers.mix.perma_url);
 
   const categories: Category[] = [
@@ -42,7 +42,15 @@ export function BrowseScreen() {
   ];
 
   return (
-    <ScreenScrollView contentContainerClassName="gap-6 px-page pt-2">
+    <ScreenScrollView
+      contentContainerClassName="gap-6 px-page pt-2"
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => void refresh()}
+        />
+      }
+    >
       <Stack.Screen options={{ title: "Browse" }} />
       <Text tone="muted">Explore by category, language or mood.</Text>
 

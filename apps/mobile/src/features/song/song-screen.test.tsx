@@ -3,7 +3,7 @@ import { rawAlbum, rawLyrics, rawSong } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 
 import { playerStore } from "~/playback/player-store";
-import { renderScreen } from "~/test/render";
+import { chooseMenuAction, renderScreen } from "~/test/render";
 import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { SongScreen } from "./song-screen";
@@ -111,6 +111,17 @@ describe("SongScreen", () => {
     expect(
       screen.getByRole("button", { name: "Like FA9LA & Friends" }),
     ).toBeOnTheScreen();
+  });
+
+  it("queues the song from the header's menu", async () => {
+    await renderScreen(<SongScreen token="song-token" />);
+    await screen.findByText("FA9LA & Friends");
+
+    await chooseMenuAction("More actions for FA9LA & Friends", "add-to-queue");
+
+    expect(playerStore.getState().queue.map((entry) => entry.id)).toEqual([
+      "BSaNI3Yr",
+    ]);
   });
 
   it("plays just this song", async () => {

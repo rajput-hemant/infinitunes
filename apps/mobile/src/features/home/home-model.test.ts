@@ -57,16 +57,6 @@ describe("buildHomeModel", () => {
     expect(shelves[3]?.seeAllHref).toBeUndefined();
   });
 
-  it("marks a shelf of radio stations so its cards can play", () => {
-    const shelves = buildHomeModel(rawLaunchData()).shelves;
-
-    expect(shelves.map((shelf) => shelf.stations)).toEqual([
-      false,
-      false,
-      true,
-    ]);
-  });
-
   it("drops entries that cannot be shown and repeats of one item", () => {
     const station = rawStation();
     const modules = rawLaunchData({

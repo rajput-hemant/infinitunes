@@ -107,6 +107,40 @@ describe("combined search results", () => {
     expect(playerStore.getState().queue).toEqual([]);
   });
 
+  it("plays a linked top result from its Play button", async () => {
+    // No top query, artist or album match: the first song is the top result,
+    // and song rows have no Play button of their own.
+    procedure("search.all").mockResolvedValue({
+      ...rawAllSearch,
+      topquery: { position: 1, data: [] },
+      artists: { position: 4, data: [] },
+      albums: { position: 3, data: [] },
+    });
+    procedure("song.details").mockResolvedValue({ songs: [rawSong()] });
+    await renderResults();
+
+    const plays = await screen.findAllByRole("button", {
+      name: "Play FA9LA & Friends",
+    });
+    expect(plays).toHaveLength(1);
+    await fireEvent.press(plays[0]!);
+
+    await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
+    expect(procedure("song.details")).toHaveBeenCalledWith({
+      token: "BSaNI3Yr",
+    });
+  });
+
+  it("offers no Play for a top result without a page", async () => {
+    procedure("search.all").mockResolvedValue(rawAllSearch);
+    await renderResults();
+
+    expect(await screen.findByText("Top Result")).toBeOnTheScreen();
+    expect(
+      screen.queryByRole("button", { name: "Play Flipperachi" }),
+    ).toBeNull();
+  });
+
   it("remembers the search when a shelf card opens its page", async () => {
     procedure("search.all").mockResolvedValue(rawAllSearch);
     const onOpenResult = jest.fn();
@@ -180,6 +214,25 @@ describe("combined search results", () => {
 });
 
 describe("results of one type", () => {
+  it("says when the last page is in, and not before", async () => {
+    procedure("search.byType").mockResolvedValue(page([rawSong()]));
+    await renderResults({ type: "song" });
+
+    expect(
+      await screen.findByText("You have reached the end of these results."),
+    ).toBeOnTheScreen();
+  });
+
+  it("keeps the end note off while more pages remain", async () => {
+    procedure("search.byType").mockResolvedValue(page([rawSong()], 120));
+    await renderResults({ type: "song" });
+
+    expect(await screen.findByText("FA9LA & Friends")).toBeOnTheScreen();
+    expect(
+      screen.queryByText("You have reached the end of these results."),
+    ).toBeNull();
+  });
+
   it("plays a song's list from the pressed row", async () => {
     const songs = [
       rawSong(),
