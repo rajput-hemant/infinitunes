@@ -1,5 +1,5 @@
 import { userMessage } from "@infinitunes/core/user-message";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 
 import {
@@ -53,7 +53,10 @@ export function useResolvedItems<Item>({
       return { items, missing: wanted.length - items.length };
     },
     enabled: userId !== undefined && ids !== undefined,
-    placeholderData: keepPreviousData,
+    // The key ends `[..., userId, ids]`: keep the last items across a changed
+    // id list, never across a changed account (they are another listener's).
+    placeholderData: (previous, previousQuery) =>
+      previousQuery?.queryKey.at(-2) === userId ? previous : undefined,
   });
 
   if (source.error) {
