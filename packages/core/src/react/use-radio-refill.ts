@@ -76,6 +76,9 @@ export function useRadioRefill({
       }, delay);
     };
 
+    // This fetch supersedes a pending retry.
+    clearTimeout(retryTimerRef.current);
+    retryTimerRef.current = undefined;
     refillingRef.current = stationId;
     fetchSongs(stationId)
       .then((moreSongs) => {

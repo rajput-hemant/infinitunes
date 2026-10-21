@@ -222,6 +222,28 @@ describe("radio refill", () => {
       expect(ids(getQueue())).toEqual(["a", "b", "c"]);
     });
 
+    it("drops the pending retry once a newer refill starts", async () => {
+      const { render, settle, calls, getQueue } = await setup({
+        activeRadio: station("s1"),
+        queue: ["a", "b", "c"].map(queued),
+        currentIndex: 1,
+      });
+
+      await settle(0, new Error("upstream down"));
+      await render({ currentIndex: 2 });
+      await settle(1, [song("d"), song("e"), song("f"), song("g")]);
+      await advance(REFILL_RETRY_BASE_MS * 4);
+
+      expect(calls).toEqual(["s1", "s1"]);
+      expect(ids(getQueue())).toEqual(["a", "b", "c", "d", "e", "f", "g"]);
+
+      // The backoff starts over: the next failure retries after the base delay.
+      await render({ currentIndex: 4 });
+      await settle(2, new Error("upstream down"));
+      await advance(REFILL_RETRY_BASE_MS);
+      expect(calls).toHaveLength(4);
+    });
+
     it("drops the pending retry when the station changes", async () => {
       const { render, settle, calls } = await setup({
         activeRadio: station("s1"),
