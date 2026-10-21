@@ -26,7 +26,7 @@ bun run db:seed
 bun run dev
 ```
 
-Open http://localhost:3000. The mobile app talks to this server; see `apps/mobile/README.md` for its
+Open http://localhost:3000. The mobile app talks to this server; see [mobile-device-setup.md](mobile-device-setup.md) for the
 `EXPO_PUBLIC_API_URL` and dev build.
 
 ## Local credentials

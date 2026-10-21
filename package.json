@@ -6,6 +6,9 @@
   "scripts": {
     "dev": "bun run with-env turbo run dev",
     "dev:mobile": "bun run --cwd apps/mobile metro",
+    "mobile:android": "bun run --cwd apps/mobile android --device",
+    "mobile:ios": "bun run --cwd apps/mobile ios --device",
+    "mobile:doctor": "bun run --cwd apps/mobile doctor",
     "build": "bun run with-env turbo run build",
     "start": "bun run with-env turbo run start",
     "lint": "turbo run lint",
