@@ -8,7 +8,7 @@ import type {
   ShowDetails,
   Song,
 } from "@infinitunes/types";
-import { decode } from "@infinitunes/types";
+import { decode, isExplicit } from "@infinitunes/types";
 
 export type DetailsItem =
   | Album
@@ -67,9 +67,7 @@ export function getVerified(item: DetailsItem): boolean {
 }
 
 export function getExplicit(item: DetailsItem): boolean {
-  return "explicit_content" in item
-    ? Boolean(Number(item.explicit_content))
-    : false;
+  return "explicit_content" in item && isExplicit(item.explicit_content);
 }
 
 /** The tracks a page lists. A song page lists itself. */

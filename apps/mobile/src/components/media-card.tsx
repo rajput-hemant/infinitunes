@@ -1,4 +1,5 @@
 import type { CardItem, MediaType } from "@infinitunes/types";
+import { isExplicit } from "@infinitunes/types";
 import { Link } from "expo-router";
 import { Pressable, View } from "react-native";
 
@@ -7,7 +8,7 @@ import { isPlayable } from "~/playback/play-entity";
 import { radii, sizes } from "~/theme/tokens";
 
 import { CardPlayButton } from "./card-play-button";
-import { ExplicitBadge, isExplicit } from "./explicit-badge";
+import { ExplicitBadge } from "./explicit-badge";
 import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
 

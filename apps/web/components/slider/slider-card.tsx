@@ -1,5 +1,10 @@
 import type { Quality, MediaType } from "@infinitunes/types";
-import { decode, getImageSrc, parseToken } from "@infinitunes/types";
+import {
+  decode,
+  getImageSrc,
+  isExplicit,
+  parseToken,
+} from "@infinitunes/types";
 import { Badge } from "@infinitunes/ui/components/badge";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 import Link from "next/link";
@@ -49,8 +54,6 @@ export function SliderCard(props: SliderCardProps) {
   const isRadio = type === "radio_station";
   const round = isRadio || type === "artist";
   const href = isRadio ? getHref(url, "radio") : getHref(url, type);
-  const isExplicit =
-    typeof explicit === "string" ? explicit === "true" : Boolean(explicit);
 
   const titleClass = cn(
     "max-w-full min-w-0 items-center rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -59,7 +62,7 @@ export function SliderCard(props: SliderCardProps) {
 
   const label = (
     <>
-      {isExplicit && (
+      {isExplicit(explicit) && (
         <Badge className="mr-1 rounded px-1 py-0 font-bold duration-0">
           <span aria-hidden="true">E</span>
           <span className="sr-only">Explicit</span>

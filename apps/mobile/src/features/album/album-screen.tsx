@@ -1,6 +1,7 @@
 import {
   artistCards,
   decode,
+  isExplicit,
   toCardItems,
   uniqueArtists,
 } from "@infinitunes/types";
@@ -14,7 +15,6 @@ import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
-import { isExplicit } from "~/components/explicit-badge";
 import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
 import { TrackList } from "~/components/track-list";

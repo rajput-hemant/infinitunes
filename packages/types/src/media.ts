@@ -59,6 +59,14 @@ export type CardItem = {
 };
 
 /**
+ * Upstream's `explicit_content` flag. Live data sends "1"/"0"; some list
+ * endpoints say "true", and parsed launch-data items may carry a boolean.
+ */
+export function isExplicit(flag: string | boolean | undefined): boolean {
+  return flag === true || flag === "true" || Number(flag) > 0;
+}
+
+/**
  * Adapts a raw JioSaavn item (title/perma_url/explicit_content) to the
  * `SliderCard`/`SliderList` prop shape (name/url/explicit) - a client-only
  * presentational contract, not a wire shape.

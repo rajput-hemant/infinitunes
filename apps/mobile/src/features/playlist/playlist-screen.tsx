@@ -1,4 +1,9 @@
-import { artistCards, decode, toCardItems } from "@infinitunes/types";
+import {
+  artistCards,
+  decode,
+  isExplicit,
+  toCardItems,
+} from "@infinitunes/types";
 import type { CardItem, Playlist } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
@@ -8,7 +13,6 @@ import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
-import { isExplicit } from "~/components/explicit-badge";
 import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
 import { TrackList } from "~/components/track-list";

@@ -28,6 +28,23 @@ describe("upstream strings are decoded", () => {
     expect(html).not.toContain("&amp;#039;");
   });
 
+  it('slider-card marks upstream\'s "1" as explicit, and "0" not', () => {
+    const card = (explicit: string) =>
+      renderToStaticMarkup(
+        <SliderCard
+          name="Track"
+          type="album"
+          url="https://www.jiosaavn.com/album/track/abc123"
+          image={IMAGE}
+          explicit={explicit}
+          hidePlayButton
+        />,
+      );
+
+    expect(card("1")).toContain("Explicit");
+    expect(card("0")).not.toContain("Explicit");
+  });
+
   it("search-all renders decoded title/subtitle and an empty image alt", () => {
     const data = {
       songs_query: {

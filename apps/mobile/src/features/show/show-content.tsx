@@ -1,5 +1,5 @@
 import type { Show, Sort } from "@infinitunes/types";
-import { decode, formatCount, plainText } from "@infinitunes/types";
+import { decode, formatCount, isExplicit, plainText } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { useState } from "react";
 import { View } from "react-native";
@@ -11,7 +11,6 @@ import {
   renderEntityListItem,
   songItems,
 } from "~/components/entity-list";
-import { isExplicit } from "~/components/explicit-badge";
 import { PagedFooter } from "~/components/paged-footer";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";

@@ -3,6 +3,7 @@ import {
   decode,
   formatCount,
   formatDuration,
+  isExplicit,
   plainText,
   toSongRow,
 } from "@infinitunes/types";
@@ -11,7 +12,6 @@ import { Pressable, RefreshControl, View } from "react-native";
 
 import { CollectionMenu } from "~/components/collection-menu";
 import { EntityHeader } from "~/components/entity-header";
-import { isExplicit } from "~/components/explicit-badge";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";

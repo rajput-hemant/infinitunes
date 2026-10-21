@@ -4,6 +4,7 @@ import type { ArtistMini } from "../src/artist";
 import { rawAlbum } from "../src/fixtures";
 import {
   artistCards,
+  isExplicit,
   plainText,
   toArtistCard,
   toCardItems,
@@ -82,5 +83,18 @@ describe("plainText", () => {
 
   it("is empty without a description", () => {
     expect(plainText(undefined)).toBe("");
+  });
+});
+
+describe("isExplicit", () => {
+  it('reads upstream\'s "1"/"0" as well as "true" and booleans', () => {
+    expect(isExplicit("1")).toBe(true);
+    expect(isExplicit("true")).toBe(true);
+    expect(isExplicit(true)).toBe(true);
+    expect(isExplicit("0")).toBe(false);
+    expect(isExplicit("false")).toBe(false);
+    expect(isExplicit("")).toBe(false);
+    expect(isExplicit(false)).toBe(false);
+    expect(isExplicit(undefined)).toBe(false);
   });
 });
