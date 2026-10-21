@@ -1,5 +1,5 @@
 import { rawChart, rawAlbum } from "@infinitunes/types/fixtures";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { fireEvent, screen, userEvent } from "@testing-library/react-native";
 
 import { renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
@@ -65,5 +65,18 @@ describe("BrowseScreen", () => {
 
     expect(app.getPathname()).toBe("/album");
     expect(app.getSearchParams()).toEqual({ lang: "tamil" });
+  });
+
+  it("refetches every cover on pull to refresh", async () => {
+    await renderScreen(<BrowseScreen />, { routes });
+    const intro = await screen.findByText(
+      "Explore by category, language or mood.",
+    );
+    expect(procedure("get.charts")).toHaveBeenCalledTimes(1);
+
+    await userEvent.setup().pullToRefresh(intro.parent!.parent!);
+
+    expect(procedure("get.charts")).toHaveBeenCalledTimes(2);
+    expect(procedure("get.featuredStations")).toHaveBeenCalledTimes(2);
   });
 });
