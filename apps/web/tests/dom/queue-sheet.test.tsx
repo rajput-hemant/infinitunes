@@ -513,7 +513,9 @@ describe("queue pane open state", () => {
 
     expect(storedIds()).toEqual(["a", "b"]);
     expect(localStorage.getItem("current_song_index")).toBe("1");
-    expect(document.body.textContent).toContain("Nothing queued");
+    // No autoplay exists, so the empty state promises none.
+    expect(document.body.textContent).toContain("Nothing else is queued.");
+    expect(document.body.textContent).not.toContain("Autoplay");
 
     await act(async () => root.unmount());
   });

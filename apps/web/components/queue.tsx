@@ -147,7 +147,7 @@ export function Queue({ open, onOpenChange }: QueueProps) {
             <QueueList upNextOnly />
             {upNext === 0 && (
               <p className="px-2 text-sm text-muted-foreground">
-                Nothing queued. Autoplay continues with similar songs.
+                Nothing else is queued.
               </p>
             )}
           </div>
