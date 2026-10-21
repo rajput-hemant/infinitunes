@@ -121,18 +121,21 @@ export function MediaCard({
   return (
     <View style={{ width: edge }}>
       <CardMenu name={item.name} entries={entries}>
-        <Link href={href} asChild>
-          <Pressable
-            onPress={onPress}
-            accessibilityRole="link"
-            accessibilityLabel={label}
-            {...cardAccessibilityActions(entries)}
-            className="gap-2 active:opacity-70"
-            style={{ width: edge }}
-          >
-            {content}
-          </Pressable>
-        </Link>
+        {(onLongPress) => (
+          <Link href={href} asChild>
+            <Pressable
+              onPress={onPress}
+              onLongPress={onLongPress}
+              accessibilityRole="link"
+              accessibilityLabel={label}
+              {...cardAccessibilityActions(entries)}
+              className="gap-2 active:opacity-70"
+              style={{ width: edge }}
+            >
+              {content}
+            </Pressable>
+          </Link>
+        )}
       </CardMenu>
       {hero && isPlayable(item.type) ? (
         <CardPlayButton

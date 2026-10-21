@@ -1,8 +1,8 @@
 import { MenuView } from "@expo/ui/community/menu";
-import type { MenuAction } from "@expo/ui/community/menu";
+import type { MenuAction, MenuComponentRef } from "@expo/ui/community/menu";
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import { router } from "expo-router";
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import type { RadioSeed } from "~/playback/radio";
 import { startSeededRadio } from "~/playback/radio";
@@ -44,6 +44,8 @@ type NativeMenuProps = {
   children: ReactNode;
   /** A context menu on long press (a card); a tap then reaches the children. */
   openOnLongPress?: boolean;
+  /** `show()` opens the menu from code (Android only; a no-op on iOS). */
+  ref?: Ref<MenuComponentRef>;
   testID?: string;
 };
 
@@ -53,11 +55,13 @@ export function NativeMenu({
   entries,
   children,
   openOnLongPress = false,
+  ref,
   testID,
 }: NativeMenuProps) {
   const runs = collectRuns(entries);
   return (
     <MenuView
+      ref={ref}
       testID={testID}
       shouldOpenOnLongPress={openOnLongPress}
       title={title}

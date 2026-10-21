@@ -170,13 +170,14 @@ export function ListRow({
   // An item without a screen is a labelled view, never a disabled button.
   if (!href && !onPress) {
     return (
-      <View
-        accessible
-        accessibilityLabel={label}
-        className="flex-row items-center opacity-50"
-        style={endPadding}
-      >
-        <View className={bodyClass}>{body}</View>
+      <View className="flex-row items-center" style={endPadding}>
+        <View
+          accessible
+          accessibilityLabel={label}
+          className={`${bodyClass} opacity-50`}
+        >
+          {body}
+        </View>
         {controls}
       </View>
     );

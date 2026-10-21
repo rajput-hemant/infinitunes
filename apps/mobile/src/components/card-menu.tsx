@@ -1,5 +1,8 @@
+import type { MenuComponentRef } from "@expo/ui/community/menu";
 import type { MediaType } from "@infinitunes/types";
+import { useState } from "react";
 import type { ReactElement } from "react";
+import { Platform } from "react-native";
 import type { AccessibilityActionEvent } from "react-native";
 
 import { isPlayable, playEntity, queueEntity } from "~/playback/play-entity";
@@ -58,15 +61,29 @@ export function cardAccessibilityActions(entries: readonly MenuEntry[]) {
 type CardMenuProps = {
   name: string;
   entries: readonly MenuEntry[];
-  children: ReactElement;
+  /** The card's link; pass `onLongPress` to its `Pressable`. */
+  children: (onLongPress: (() => void) | undefined) => ReactElement;
 };
 
-/** A card's long-press context menu (C4: cards carry no Play button). */
+/**
+ * A card's long-press context menu (C4: cards carry no Play button). iOS's
+ * context menu takes the long press itself. Android's menu listens on a
+ * wrapping `Pressable`, which the card's own link shadows as the touch
+ * responder, so the link's long press opens it.
+ */
 export function CardMenu({ name, entries, children }: CardMenuProps) {
-  if (entries.length === 0) return children;
+  // The menu's handle as state (a callback ref), so render never reads a ref.
+  const [menu, setMenu] = useState<MenuComponentRef | null>(null);
+  if (entries.length === 0) return children(undefined);
+  const android = Platform.OS === "android";
   return (
-    <NativeMenu title={name} entries={entries} openOnLongPress>
-      {children}
+    <NativeMenu
+      title={name}
+      entries={entries}
+      openOnLongPress
+      ref={android ? setMenu : undefined}
+    >
+      {children(menu?.show)}
     </NativeMenu>
   );
 }

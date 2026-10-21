@@ -30,7 +30,7 @@ type QuickPickTileProps = {
 };
 
 const TILE_CLASS =
-  "flex-row items-center gap-3 overflow-hidden rounded-md bg-fill pe-3";
+  "flex-row items-center gap-3 overflow-hidden rounded-md bg-fill pr-3";
 
 /**
  * A compact two-column tile (home's quick picks, browse): art or an icon at
@@ -83,27 +83,30 @@ export function QuickPickTile({
     );
   }
 
-  const pressable = (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole={href ? "link" : "button"}
-      accessibilityLabel={accessibilityLabel}
-      {...cardAccessibilityActions(entries)}
-      className={`${TILE_CLASS} active:opacity-70`}
-      style={style}
-    >
-      {content}
-    </Pressable>
-  );
   return (
     <CardMenu name={title} entries={entries}>
-      {href ? (
-        <Link href={href} asChild>
-          {pressable}
-        </Link>
-      ) : (
-        pressable
-      )}
+      {(onLongPress) => {
+        const pressable = (
+          <Pressable
+            onPress={onPress}
+            onLongPress={onLongPress}
+            accessibilityRole={href ? "link" : "button"}
+            accessibilityLabel={accessibilityLabel}
+            {...cardAccessibilityActions(entries)}
+            className={`${TILE_CLASS} active:opacity-70`}
+            style={style}
+          >
+            {content}
+          </Pressable>
+        );
+        return href ? (
+          <Link href={href} asChild>
+            {pressable}
+          </Link>
+        ) : (
+          pressable
+        );
+      }}
     </CardMenu>
   );
 }
