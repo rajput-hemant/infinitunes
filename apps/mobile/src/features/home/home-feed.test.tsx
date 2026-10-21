@@ -126,8 +126,11 @@ describe("HomeFeed", () => {
     procedure("radio.stationDetails").mockResolvedValue(rawStationDetails());
     await renderScreen(<HomeFeed />);
 
-    await fireEvent.press(
-      await screen.findByRole("button", { name: "Play Hindi Hits & More" }),
+    // Cards have no Play button; their long-press menu offers Play.
+    await fireEvent(
+      await screen.findByRole("link", { name: /^Hindi Hits & More/ }),
+      "pressAction",
+      { nativeEvent: { event: "play" } },
     );
 
     await waitFor(() =>

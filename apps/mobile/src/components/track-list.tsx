@@ -7,10 +7,12 @@ import { playFrom } from "~/playback/play-collection";
 
 type TrackListProps = {
   rows: readonly SongRowItem[];
+  /** Track numbers instead of artwork: an album, whose rows share one cover. */
+  numbered?: boolean;
 };
 
 /** The songs of a detail page; a row plays the whole list from itself. */
-export function TrackList({ rows }: TrackListProps) {
+export function TrackList({ rows, numbered = false }: TrackListProps) {
   if (rows.length === 0) {
     return (
       <EmptyState
@@ -28,6 +30,8 @@ export function TrackList({ rows }: TrackListProps) {
           key={`${row.id}-${index}`}
           song={row}
           onPress={() => playFrom(rows, index)}
+          leading={numbered ? "index" : "artwork"}
+          index={index + 1}
         />
       ))}
     </View>

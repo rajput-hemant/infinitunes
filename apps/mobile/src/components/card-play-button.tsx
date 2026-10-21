@@ -1,9 +1,9 @@
-import { useTheme } from "expo-router";
 import type { StyleProp, ViewStyle } from "react-native";
 import { View } from "react-native";
 
 import { usePending } from "~/lib/use-pending";
 import { playEntity, type PlayableType } from "~/playback/play-entity";
+import { useTokenColor } from "~/theme/use-palette";
 
 import { IconButton } from "./ui/icon-button";
 
@@ -17,9 +17,10 @@ type CardPlayButtonProps = {
 };
 
 /**
- * The round Play control of a card (the web's `CardPlay`): it queues the
- * item's tracks, or tunes in a station, without opening its screen. Render it
- * as a sibling of the card's link, never inside it, so both stay reachable.
+ * The round 48pt Play control of a hero card (the web's `CardPlay`): it
+ * queues the item's tracks, or tunes in a station, without opening its
+ * screen. Render it as a sibling of the card's link, never inside it, so both
+ * stay reachable.
  */
 export function CardPlayButton({
   type,
@@ -27,7 +28,7 @@ export function CardPlayButton({
   name,
   style,
 }: CardPlayButtonProps) {
-  const { colors } = useTheme();
+  const onPrimary = useTokenColor("primary-foreground");
   const { run, pending } = usePending();
 
   return (
@@ -37,8 +38,8 @@ export function CardPlayButton({
         label={`Play ${name}`}
         onPress={() => void run(() => playEntity(type, url))}
         disabled={pending}
-        size={18}
-        color={colors.background}
+        size="md"
+        color={onPrimary}
       />
     </View>
   );

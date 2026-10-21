@@ -15,7 +15,7 @@ export function ErrorState({ error, onRetry }: ErrorStateProps) {
       icon={{ ios: "exclamationmark.triangle", android: "error" }}
       title="Couldn't load this"
       message={userMessage(error)}
-      action={{ label: "Try again", onPress: onRetry }}
+      action={{ label: "Try again", onPress: onRetry, variant: "secondary" }}
     />
   );
 }

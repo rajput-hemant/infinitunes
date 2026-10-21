@@ -4,13 +4,15 @@ import { View } from "react-native";
 import { cx } from "~/lib/class-names";
 
 import { Icon } from "./ui/icon";
+import type { IconSizeProp } from "./ui/icon";
 
 type MenuTriggerProps = {
   /** What the menu is for, for screen readers ("More actions for Song"). */
   label: string;
   /** Defaults to the horizontal ellipsis. */
   icon?: SymbolViewProps["name"];
-  size?: number;
+  /** `md` (row controls) by default; `lg` in headers. */
+  size?: IconSizeProp;
   /** Extra classes, e.g. a filled background beside other buttons. */
   className?: string;
 };
@@ -23,7 +25,7 @@ type MenuTriggerProps = {
 export function MenuTrigger({
   label,
   icon = { ios: "ellipsis", android: "more_vert" },
-  size = 20,
+  size = "md",
   className,
 }: MenuTriggerProps) {
   return (

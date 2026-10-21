@@ -447,3 +447,29 @@ Layout helpers: `useGridCardWidth()` and `GRID_GAP` (= `space.md`) from `~/lib/u
 5. Order of work: theme engineer lands 6.1 and the new components (additive) first; screens migrate per feature
    (home, album/playlist/mix, player, library, search, browse, settings), deleting local constants as they go;
    the theme engineer then removes the deprecated `title`, `sizes.art` and `SectionHeading`.
+
+## Deviations (as shipped by the theme + components pass)
+
+Supersets of 6.1/6.2 unless noted; nothing listed there was dropped.
+
+- Spacing: NativeWind's rem is 14, so Tailwind's own `*-4` is 14pt. Only the seven steps (`*-1 2 3 4 6 8 12`)
+  are pinned to points from `space` (`spaceClasses`); other steps stay rem-based until screens drop them (S1).
+- `androidDynamicColors` maps tokens to typed `M3Role` names. Its values cannot be build-time classes (they come
+  from a native call per scheme), so `installDynamicColors()` (`theme/android-colors.android.ts`, called once in
+  `providers/app-providers.tsx`) rewrites NativeWind's root variables on Android 12+ and on every scheme switch;
+  `usePalette()` returns the same values. AA is checked over generated tonal-spot schemes (12 hues, greys, the
+  baseline seed; specs 2021 and 2025) with `@material/material-color-utilities` (dev dependency).
+- Extra props: `Text tone="onSecondary"` (text on `bg-secondary`, the Android tonal fill); `ListRow
+  accessibilityValue`; `MediaCard eyebrow` (hero only); `QuickPickTile item` (enables the long-press menu C4
+  describes); `EmptyState action.variant` (`ErrorState` passes `secondary`); `useTokenColor(token)` in
+  `~/theme/use-palette` (a token as a colour prop, the UIKit colour on iOS, for icon tints).
+- C4's long-press menu is `card-menu.tsx`: a `NativeMenu` with `openOnLongPress` plus the same entries as screen
+  reader actions on the card's link. Play Next / Add to Queue use the new `queueEntity` in `playback/play-entity.ts`.
+- L6: the current row shows the waveform whether playing or paused (it showed a pause glyph when paused); the
+  hint still says which.
+- L7 for song rows needed the flag on the row model: `SongRowItem.explicit` (`true` only when upstream says so).
+- `art.player` is `playerArtSize(windowWidth)`; `artRadius` also has `player`. Round art uses a radius past half
+  the edge, so it stays a circle when `style` resizes it (grids).
+- `FLOATING_DOCK_HEIGHT` is a deprecated alias of `sizes.dock`; `FLOATING_DOCK_INSET` (16) is new in
+  `navigation/player-dock`. `MEDIA_CARD_WIDTH` and `ENTITY_ART_SIZE` are deprecated aliases of `art.card` /
+  `art.header`.

@@ -45,7 +45,7 @@ export const FormField = forwardRef<TextInputHandle, FormFieldProps>(
     }, [error]);
 
     return (
-      <View className="gap-1.5">
+      <View className="gap-2">
         <Text variant="subhead" tone="muted">
           {label}
         </Text>
@@ -64,7 +64,7 @@ export const FormField = forwardRef<TextInputHandle, FormFieldProps>(
             placeholderTextColor={palette["muted-foreground"]}
             selectionColor={colors.primary}
             style={[inputTextStyle, { color: colors.text }]}
-            className="flex-1 py-2.5"
+            className="flex-1 py-3"
             {...inputProps}
           />
           {trailing}

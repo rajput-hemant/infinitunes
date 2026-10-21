@@ -8,13 +8,17 @@ import { Toaster } from "sonner-native";
 
 import { AnnouncingToast } from "~/components/ui/toast-wrapper";
 import { queryClient } from "~/lib/query-client";
+import { installDynamicColors } from "~/theme/android-colors";
 import { restoreAppearance } from "~/theme/appearance";
 import { useNavigationTheme } from "~/theme/navigation-theme";
 import { useOptimisticOwner } from "~/user-data/session";
 
 // The OS keeps no colour-scheme override between launches: apply the saved
-// one before the first frame.
+// one before the first frame, then point the colour classes at Material You
+// (Android 12+; `global.css`, imported first by the root layout, registered
+// the palette they replace).
 restoreAppearance();
+installDynamicColors();
 
 /**
  * App-wide providers. Expo Router already supplies the safe-area provider,

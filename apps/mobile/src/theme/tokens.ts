@@ -6,19 +6,26 @@
  *
  * - iOS resolves colours to UIKit system colours (`iosSystemColors`), which
  *   follow light/dark mode, contrast settings and Liquid Glass by themselves.
- * - Android resolves them to the neutral palette below, the web theme's
+ * - Android 12+ resolves them to Material You roles (`androidDynamicColors`),
+ *   the wallpaper colours its navigation chrome already uses, so content and
+ *   chrome agree.
+ * - Older Android keeps the neutral palette below, the web theme's
  *   (`apps/web/styles/globals.css`) converted to hex, as the native colour
  *   parser has no `oklch()`.
  *
- * Navigation chrome does not use these: it takes system colours on iOS and
- * Material You dynamic colours on Android (`navigation-theme`), read in
- * components through `useTheme().colors`.
+ * Navigation chrome takes the same system colours (`navigation-theme`), read
+ * in components through `useTheme().colors`.
  *
  * Tailwind (`tailwind.config.ts`) and the app config load this module in
  * Node, so it must not import React Native.
  */
 
+import type { AndroidDynamicMaterialColorType } from "expo-router";
+
 export type ColorScheme = "light" | "dark";
+
+/** A Material 3 colour role (`Color.android.dynamic.<role>`). */
+export type M3Role = keyof AndroidDynamicMaterialColorType;
 
 export const COLOR_TOKENS = [
   "background",
@@ -125,15 +132,95 @@ export const iosSystemColors: Partial<Record<ColorToken, string>> = {
 };
 
 /**
- * Corner radii in points, derived from the web's 12px `--radius` base:
- * `sm` 0.66x, `md` 1x, `lg` 1.5x, `xl` 2x.
+ * Material 3 colour roles per token, resolved on Android 12+ from the
+ * wallpaper (`Color.android.dynamic`, the source the navigation chrome reads
+ * in `navigation-theme`) by `android-colors`. Below Android 12 the palette
+ * above applies. `fill*` and `scrim` stay alpha values on both.
  */
-export const radii = {
+export const androidDynamicColors: Partial<Record<ColorToken, M3Role>> = {
+  background: "surface",
+  foreground: "onSurface",
+  card: "surfaceContainerHigh",
+  "card-foreground": "onSurface",
+  primary: "primary",
+  "primary-foreground": "onPrimary",
+  secondary: "secondaryContainer",
+  "secondary-foreground": "onSecondaryContainer",
+  muted: "surfaceContainerHighest",
+  "muted-foreground": "onSurfaceVariant",
+  accent: "secondaryContainer",
+  "accent-foreground": "onSecondaryContainer",
+  destructive: "error",
+  "destructive-foreground": "onError",
+  border: "outlineVariant",
+  input: "outline",
+};
+
+/** The 4pt spacing steps, Tailwind `*-1` (4) to `*-12` (48). Screens use no others. */
+export const space = {
+  xs: 4,
   sm: 8,
   md: 12,
-  lg: 18,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+  xxxl: 48,
+} as const;
+
+/** Tailwind spacing keys of the `space` steps (`gap-3` is `space.md`). */
+export const spaceClasses = {
+  1: space.xs,
+  2: space.sm,
+  3: space.md,
+  4: space.lg,
+  6: space.xl,
+  8: space.xxl,
+  12: space.xxxl,
+} as const;
+
+/** Corner radii in points; `rounded-full` (capsules, round art) comes with Tailwind. */
+export const radii = {
+  xs: 4,
+  sm: 6,
+  md: 10,
+  lg: 16,
   xl: 24,
 } as const;
+
+export type Radius = keyof typeof radii | "full";
+
+/** Artwork edges in points, one per context (`Artwork size`). */
+export const art = {
+  row: 48,
+  mini: 36,
+  pick: 56,
+  tile: 64,
+  avatar: 48,
+  card: 156,
+  header: 240,
+  hero: 280,
+} as const;
+
+/** `player` is Now Playing's art, sized from the window (`playerArtSize`). */
+export type ArtSize = keyof typeof art | "player";
+
+/** Now Playing's artwork edge: the window less its 24pt gutters, at most 360. */
+export function playerArtSize(windowWidth: number): number {
+  return Math.min(windowWidth - 2 * space.xl, 360);
+}
+
+/** Artwork radius per size. Round types (artists, stations) are `full` at every size. */
+export const artRadius: Record<ArtSize, Radius> = {
+  row: "sm",
+  mini: "sm",
+  pick: "sm",
+  tile: "sm",
+  avatar: "full",
+  card: "md",
+  header: "lg",
+  hero: "lg",
+  player: "lg",
+};
 
 /**
  * Control, row and gutter sizes in points: the web's touch-screen
@@ -141,53 +228,102 @@ export const radii = {
  * listener taps alone (an icon button, a menu trigger, a button): Android's
  * 48dp, which also clears iOS's 44pt. `ctl` and `ctl-lg` are visual heights
  * of controls that reach it with hit slop or sit in a row of their own.
+ * `row` is a list row's minimum (it grows with Dynamic Type), `dock` the
+ * floating mini player's height.
  */
 export const sizes = {
   ctl: 40,
   "ctl-lg": 44,
   touch: 48,
-  row: 56,
-  art: 44,
+  row: 64,
+  /** @deprecated Use `art.row` (or `Artwork size="row"`). */
+  art: art.row,
   page: 16,
+  dock: 64,
 } as const;
 
+/** Symbol sizes in points (`Icon size="md"`); no others. */
+export const iconSize = {
+  xs: 12,
+  sm: 16,
+  md: 20,
+  lg: 24,
+  xl: 32,
+  xxl: 48,
+} as const;
+
+export type IconSize = keyof typeof iconSize;
+
+/** Font scale caps: only fixed-height chrome (the mini player) caps its text. */
+export const maxFontScale = { chrome: 1.3 } as const;
+
+/** `title` is a deprecated alias of `title2`, removed once every screen has moved. */
 export type TextVariant =
   | "largeTitle"
+  | "title1"
+  | "title2"
   | "title"
   | "headline"
   | "body"
+  | "label"
   | "subhead"
+  | "footnote"
   | "caption";
 
-type TypeStyle = {
+export type TypeStyle = {
   fontSize: number;
   lineHeight: number;
   fontWeight: "400" | "500" | "600" | "700";
 };
 
+type Scale = Record<Exclude<TextVariant, "title">, TypeStyle>;
+
+/** Dynamic Type's default sizes per text style. */
+const iosScale: Scale = {
+  largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: "700" },
+  title1: { fontSize: 28, lineHeight: 34, fontWeight: "700" },
+  title2: { fontSize: 22, lineHeight: 28, fontWeight: "700" },
+  headline: { fontSize: 17, lineHeight: 22, fontWeight: "600" },
+  body: { fontSize: 17, lineHeight: 22, fontWeight: "400" },
+  label: { fontSize: 17, lineHeight: 22, fontWeight: "600" },
+  subhead: { fontSize: 15, lineHeight: 20, fontWeight: "400" },
+  footnote: { fontSize: 13, lineHeight: 18, fontWeight: "400" },
+  caption: { fontSize: 12, lineHeight: 16, fontWeight: "400" },
+};
+
 /**
- * One semantic type scale, sized per platform: Apple's Dynamic Type defaults
- * on iOS, the Material 3 type scale on Android. Both scale with the user's
- * font size setting.
+ * The Material 3 type scale: headlineMedium, headlineSmall, titleLarge,
+ * titleMedium, bodyLarge, labelLarge, bodyMedium (subhead and footnote),
+ * labelMedium.
+ */
+const androidScale: Scale = {
+  largeTitle: { fontSize: 28, lineHeight: 36, fontWeight: "400" },
+  title1: { fontSize: 24, lineHeight: 32, fontWeight: "400" },
+  title2: { fontSize: 22, lineHeight: 28, fontWeight: "400" },
+  headline: { fontSize: 16, lineHeight: 24, fontWeight: "500" },
+  body: { fontSize: 16, lineHeight: 24, fontWeight: "400" },
+  label: { fontSize: 14, lineHeight: 20, fontWeight: "500" },
+  subhead: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
+  footnote: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
+  caption: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
+};
+
+/**
+ * One semantic type scale, sized per platform. Both scale with the user's
+ * font size setting; no custom fonts.
  */
 export const typeScale: Record<
   "ios" | "android",
   Record<TextVariant, TypeStyle>
 > = {
-  ios: {
-    largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: "700" },
-    title: { fontSize: 22, lineHeight: 28, fontWeight: "700" },
-    headline: { fontSize: 17, lineHeight: 22, fontWeight: "600" },
-    body: { fontSize: 17, lineHeight: 22, fontWeight: "400" },
-    subhead: { fontSize: 15, lineHeight: 20, fontWeight: "400" },
-    caption: { fontSize: 12, lineHeight: 16, fontWeight: "400" },
-  },
-  android: {
-    largeTitle: { fontSize: 32, lineHeight: 40, fontWeight: "400" },
-    title: { fontSize: 22, lineHeight: 28, fontWeight: "400" },
-    headline: { fontSize: 16, lineHeight: 24, fontWeight: "500" },
-    body: { fontSize: 16, lineHeight: 24, fontWeight: "400" },
-    subhead: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
-    caption: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
-  },
+  ios: { ...iosScale, title: iosScale.title2 },
+  android: { ...androidScale, title: androidScale.title2 },
 };
+
+/**
+ * This platform's scale, for `Text` and for native `@expo/ui` text (which
+ * takes sizes, not classes). `EXPO_OS` is inlined at build time, so this
+ * module still needs no React Native import.
+ */
+export const textStyles: Record<TextVariant, TypeStyle> =
+  process.env.EXPO_OS === "ios" ? typeScale.ios : typeScale.android;

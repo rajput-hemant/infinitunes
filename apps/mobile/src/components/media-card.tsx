@@ -5,18 +5,22 @@ import { Pressable, View } from "react-native";
 
 import { entityHref } from "~/navigation/entity-href";
 import { isPlayable } from "~/playback/play-entity";
-import { radii, sizes } from "~/theme/tokens";
+import { art, sizes, space } from "~/theme/tokens";
 
+import {
+  CardMenu,
+  cardAccessibilityActions,
+  cardMenuEntries,
+} from "./card-menu";
 import { CardPlayButton } from "./card-play-button";
 import { ExplicitBadge } from "./explicit-badge";
 import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
 
-/** Card width in points: two and a bit cards fill a phone's width, hinting the shelf scrolls. */
-export const MEDIA_CARD_WIDTH = 150;
+/** @deprecated Use `art.card` from `~/theme/tokens`. */
+export const MEDIA_CARD_WIDTH = art.card;
 
-/** Distance of the play button from the artwork's bottom-right corner. */
-const PLAY_INSET = 4;
+export type MediaCardVariant = "card" | "hero";
 
 /** Types whose artwork is round, as on the web. */
 const ROUND_TYPES: ReadonlySet<MediaType> = new Set([
@@ -24,9 +28,18 @@ const ROUND_TYPES: ReadonlySet<MediaType> = new Set([
   "radio_station",
 ]);
 
+export function isRoundType(type: MediaType): boolean {
+  return ROUND_TYPES.has(type);
+}
+
 type MediaCardProps = {
   item: CardItem;
+  /** The art's edge; the variant's token (`art.card`, `art.hero`) by default. */
   width?: number;
+  /** `hero` (home's featured carousel only): larger art, an eyebrow and a Play button. */
+  variant?: MediaCardVariant;
+  /** The hero's line above the title ("Featured playlist"). */
+  eyebrow?: string;
   /** Runs as the card opens its screen (e.g. search remembers the query). */
   onPress?: () => void;
 };
@@ -35,41 +48,57 @@ type MediaCardProps = {
  * An album, playlist, artist, show, station or other catalog item: square
  * artwork (round for artists and stations), title and subtitle. It opens the
  * item's screen; a type without one renders the card without a link. A
- * playable item gets a Play button over its artwork (the web's `CardPlay`),
- * a sibling of the link so screen readers reach both.
+ * playable item's long press (and its screen reader actions) offers Play,
+ * Play Next and Add to Queue; only the hero variant shows a Play button, a
+ * sibling of the link so screen readers reach both.
  */
 export function MediaCard({
   item,
-  width = MEDIA_CARD_WIDTH,
+  width,
+  variant = "card",
+  eyebrow,
   onPress,
 }: MediaCardProps) {
+  const hero = variant === "hero";
+  const edge = width ?? (hero ? art.hero : art.card);
   const href = entityHref(item.type, item.url);
-  const round = ROUND_TYPES.has(item.type);
+  const round = isRoundType(item.type);
   const explicit = isExplicit(item.explicit);
   const name = explicit ? `${item.name}, Explicit` : item.name;
   const label = item.subtitle ? `${name}, ${item.subtitle}` : name;
+  const entries = cardMenuEntries(item);
+
   const content = (
     <>
       <Artwork
         image={item.image}
-        quality="high"
-        style={{
-          width,
-          height: width,
-          borderRadius: round ? width / 2 : radii.md,
-        }}
+        size={hero ? "hero" : "card"}
+        round={round}
+        style={width === undefined ? undefined : { width, height: width }}
       />
       <View className={round ? "items-center" : undefined}>
-        <View className="flex-row items-center gap-1">
-          {explicit ? <ExplicitBadge /> : null}
-          <Text variant="subhead" numberOfLines={1} className="shrink">
-            {item.name}
-          </Text>
-        </View>
-        {item.subtitle ? (
+        {hero && eyebrow ? (
           <Text variant="caption" tone="muted" numberOfLines={1}>
-            {item.subtitle}
+            {eyebrow}
           </Text>
+        ) : null}
+        <Text variant={hero ? "headline" : "subhead"} numberOfLines={1}>
+          {item.name}
+        </Text>
+        {item.subtitle || explicit ? (
+          <View className="flex-row items-center gap-1">
+            {explicit ? <ExplicitBadge /> : null}
+            {item.subtitle ? (
+              <Text
+                variant="footnote"
+                tone="muted"
+                numberOfLines={1}
+                className="shrink"
+              >
+                {item.subtitle}
+              </Text>
+            ) : null}
+          </View>
         ) : null}
       </View>
     </>
@@ -81,41 +110,45 @@ export function MediaCard({
       <View
         accessible
         accessibilityLabel={label}
-        className="gap-1.5"
-        style={{ width }}
+        className="gap-2"
+        style={{ width: edge }}
       >
         {content}
       </View>
     );
   }
 
-  const linked = (
-    <Link href={href} asChild>
-      <Pressable
-        onPress={onPress}
-        accessibilityRole="link"
-        accessibilityLabel={label}
-        className="gap-1.5 active:opacity-70"
-        style={{ width }}
-      >
-        {content}
-      </Pressable>
-    </Link>
-  );
-  if (!isPlayable(item.type)) return linked;
   return (
-    <View style={{ width }}>
-      {linked}
-      <CardPlayButton
-        type={item.type}
-        url={item.url}
-        name={item.name}
-        style={{
-          position: "absolute",
-          top: width - sizes.touch - PLAY_INSET,
-          end: PLAY_INSET,
-        }}
-      />
+    <View style={{ width: edge }}>
+      <CardMenu name={item.name} entries={entries}>
+        {(onLongPress) => (
+          <Link href={href} asChild>
+            <Pressable
+              onPress={onPress}
+              onLongPress={onLongPress}
+              accessibilityRole="link"
+              accessibilityLabel={label}
+              {...cardAccessibilityActions(entries)}
+              className="gap-2 active:opacity-70"
+              style={{ width: edge }}
+            >
+              {content}
+            </Pressable>
+          </Link>
+        )}
+      </CardMenu>
+      {hero && isPlayable(item.type) ? (
+        <CardPlayButton
+          type={item.type}
+          url={item.url}
+          name={item.name}
+          style={{
+            position: "absolute",
+            top: edge - sizes.touch - space.md,
+            end: space.md,
+          }}
+        />
+      ) : null}
     </View>
   );
 }

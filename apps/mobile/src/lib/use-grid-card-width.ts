@@ -1,9 +1,10 @@
 import { useWindowDimensions } from "react-native";
 
-import { sizes } from "~/theme/tokens";
+import { sizes, space } from "~/theme/tokens";
 
 export const GRID_COLUMNS = 2;
-export const GRID_GAP = 12;
+/** The gap between grid columns and rows (`space.md`). */
+export const GRID_GAP = space.md;
 
 /** Width of a card in the two-column grid: the page gutter outside, `GRID_GAP` between columns. */
 export function useGridCardWidth(): number {

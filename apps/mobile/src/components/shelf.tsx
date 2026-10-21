@@ -1,55 +1,61 @@
 import { uniqueBy } from "@infinitunes/types";
 import type { CardItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
-import { Link } from "expo-router";
 import type { Href } from "expo-router";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
-import { sizes } from "~/theme/tokens";
+import { sizes, space } from "~/theme/tokens";
 
 import { MediaCard } from "./media-card";
-import { TEXT_BUTTON_HIT_SLOP } from "./ui/hit-slop";
-import { Text } from "./ui/text";
-
-const CARD_GAP = 12;
+import type { MediaCardVariant } from "./media-card";
+import { SectionHeader } from "./section-header";
 
 type ShelfProps = {
-  title: string;
+  /** The section's header; leave out for an untitled row (home's featured carousel). */
+  title?: string;
   items: readonly CardItem[];
-  /** The full list's screen; shows a "See All" link in the heading. */
+  /** The full list's screen; shows a "See All" link in the header. */
   seeAllHref?: Href;
   /** Runs as a card opens its screen. */
   onItemPress?: (item: CardItem) => void;
+  /** `hero` cards for the featured carousel; `card` everywhere else. */
+  variant?: MediaCardVariant;
 };
 
 function CardGap() {
-  return <View style={{ width: CARD_GAP }} />;
+  return <View style={{ width: space.md }} />;
 }
 
-/** A titled, horizontally scrolling row of media cards. Renders nothing when empty. */
-export function Shelf({ title, items, seeAllHref, onItemPress }: ShelfProps) {
+/**
+ * A `SectionHeader` over a horizontally scrolling row of media cards; the
+ * list carries the page gutter, the shelf no vertical padding. Renders
+ * nothing when empty.
+ */
+export function Shelf({
+  title,
+  items,
+  seeAllHref,
+  onItemPress,
+  variant = "card",
+}: ShelfProps) {
   if (items.length === 0) return null;
 
   return (
-    <View className="gap-2 py-3">
-      <View className="flex-row items-center justify-between px-page">
-        <Text variant="title" accessibilityRole="header">
-          {title}
-        </Text>
-        {seeAllHref ? (
-          <Link href={seeAllHref} asChild>
-            <Pressable
-              accessibilityRole="link"
-              accessibilityLabel={`See all ${title}`}
-              hitSlop={TEXT_BUTTON_HIT_SLOP}
-            >
-              <Text variant="subhead" tone="muted">
-                See All
-              </Text>
-            </Pressable>
-          </Link>
-        ) : null}
-      </View>
+    <View>
+      {title ? (
+        <SectionHeader
+          title={title}
+          action={
+            seeAllHref
+              ? {
+                  label: "See All",
+                  href: seeAllHref,
+                  accessibilityLabel: `See all ${title}`,
+                }
+              : undefined
+          }
+        />
+      ) : null}
       <FlashList
         horizontal
         // Upstream modules can repeat an item; FlashList needs unique keys.
@@ -58,6 +64,7 @@ export function Shelf({ title, items, seeAllHref, onItemPress }: ShelfProps) {
         renderItem={({ item }) => (
           <MediaCard
             item={item}
+            variant={variant}
             onPress={onItemPress && (() => onItemPress(item))}
           />
         )}

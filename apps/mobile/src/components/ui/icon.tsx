@@ -3,18 +3,35 @@ import { SymbolView } from "expo-symbols";
 import type { SymbolViewProps } from "expo-symbols";
 import type { ColorValue } from "react-native";
 
+import { iconSize } from "~/theme/tokens";
+import type { IconSize } from "~/theme/tokens";
+
+export type SymbolName = SymbolViewProps["name"];
+
+/** A named size from `iconSize`; a number is kept for screens not yet moved to names. */
+export type IconSizeProp = IconSize | number;
+
+export function iconPoints(size: IconSizeProp): number {
+  return typeof size === "number" ? size : iconSize[size];
+}
+
 type IconProps = {
   /** An SF Symbol for iOS and a Material Symbol for Android. */
-  name: SymbolViewProps["name"];
-  size?: number;
+  name: SymbolName;
+  /** `lg` (24, header and toolbar buttons) by default; `md` (20) for row controls. */
+  size?: IconSizeProp;
   /** Defaults to the text colour. */
   color?: ColorValue;
 };
 
 /** A native platform symbol: SF Symbols on iOS, Material Symbols on Android. */
-export function Icon({ name, size = 22, color }: IconProps) {
+export function Icon({ name, size = "lg", color }: IconProps) {
   const { colors } = useTheme();
   return (
-    <SymbolView name={name} size={size} tintColor={color ?? colors.text} />
+    <SymbolView
+      name={name}
+      size={iconPoints(size)}
+      tintColor={color ?? colors.text}
+    />
   );
 }

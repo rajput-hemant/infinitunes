@@ -47,7 +47,7 @@ export const PasswordField = forwardRef<TextInputHandle, PasswordFieldProps>(
                 : { ios: "eye", android: "visibility" }
             }
             label={visible ? "Hide password" : "Show password"}
-            size={18}
+            size="md"
             onPress={() => setVisible((shown) => !shown)}
           />
         }

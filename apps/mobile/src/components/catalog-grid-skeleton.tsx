@@ -1,5 +1,6 @@
 import { View } from "react-native";
 
+import { SkeletonText } from "~/components/skeletons";
 import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 import {
   GRID_COLUMNS,
@@ -20,11 +21,14 @@ export function CatalogGridSkeleton() {
         {range(ROWS).map((row) => (
           <View key={row} className="flex-row" style={{ gap: GRID_GAP }}>
             {range(GRID_COLUMNS).map((column) => (
-              <View key={column} className="gap-1.5">
+              <View key={column} className="gap-2" style={{ width }}>
                 <SkeletonBlock
                   style={{ width, height: width, borderRadius: radii.md }}
                 />
-                <SkeletonBlock className="h-3 w-4/5 rounded-sm" />
+                <View>
+                  <SkeletonText variant="subhead" width="80%" />
+                  <SkeletonText variant="footnote" width="60%" />
+                </View>
               </View>
             ))}
           </View>
