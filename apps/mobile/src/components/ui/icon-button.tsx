@@ -16,7 +16,7 @@ type IconButtonProps = {
   disabled?: boolean;
 };
 
-/** A bare symbol button with a touch target of at least the control size. */
+/** A bare symbol button with a 48pt touch target. */
 export function IconButton({
   icon,
   label,
@@ -30,11 +30,10 @@ export function IconButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      hitSlop={8}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected, disabled }}
-      className="min-h-ctl min-w-ctl items-center justify-center active:opacity-60 disabled:opacity-40"
+      className="min-h-touch min-w-touch items-center justify-center active:opacity-60 disabled:opacity-40"
     >
       <Icon name={icon} size={size} color={color} />
     </Pressable>

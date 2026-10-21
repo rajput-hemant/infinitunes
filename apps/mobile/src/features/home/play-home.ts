@@ -28,6 +28,6 @@ export async function playSurprise() {
       true,
     );
   } catch {
-    toast.error("Failed to load songs");
+    toast.error("Couldn't load songs");
   }
 }

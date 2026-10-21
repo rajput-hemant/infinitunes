@@ -37,6 +37,12 @@ export function NextTrackButton({ size = 24 }: { size?: number }) {
   );
 }
 
+const REPEAT_LABELS = {
+  off: "Repeat off",
+  playlist: "Repeat all",
+  track: "Repeat one",
+} as const;
+
 const REPEAT_ICONS = {
   off: { ios: "repeat", android: "repeat" },
   playlist: { ios: "repeat", android: "repeat_on" },
@@ -72,7 +78,7 @@ export function TransportControls() {
       <NextTrackButton size={30} />
       <IconButton
         icon={REPEAT_ICONS[repeat]}
-        label={`Repeat: ${repeat}`}
+        label={REPEAT_LABELS[repeat]}
         selected={repeat !== "off"}
         color={repeat === "off" ? undefined : colors.primary}
         onPress={() => {

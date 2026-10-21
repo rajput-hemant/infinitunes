@@ -30,7 +30,7 @@ export function MediaRow({
   onPress,
 }: MediaRowProps) {
   const row = (
-    <View className="h-row flex-row items-center gap-3 px-page">
+    <View className="min-h-row flex-row items-center gap-3 px-page py-1">
       <Artwork
         image={image}
         quality={ARTWORK_QUALITY}

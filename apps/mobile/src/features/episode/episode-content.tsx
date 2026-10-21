@@ -46,7 +46,7 @@ function ShowLink({ episode }: { episode: Episode }) {
     <Link href={href} asChild>
       <Pressable
         accessibilityRole="link"
-        className="h-row flex-row items-center justify-between px-page active:opacity-70"
+        className="min-h-row flex-row items-center justify-between px-page py-1 active:opacity-70"
       >
         <View className="flex-1">
           <Text variant="subhead" tone="muted">
@@ -55,7 +55,7 @@ function ShowLink({ episode }: { episode: Episode }) {
           <Text numberOfLines={1}>{decode(episode.more_info.show_title)}</Text>
         </View>
         <Icon
-          name={{ ios: "chevron.right", android: "chevron_right" }}
+          name={{ ios: "chevron.forward", android: "chevron_right" }}
           size={16}
         />
       </Pressable>

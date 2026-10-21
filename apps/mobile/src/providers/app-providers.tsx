@@ -6,6 +6,7 @@ import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
 
+import { AnnouncingToast } from "~/components/ui/toast-wrapper";
 import { queryClient } from "~/lib/query-client";
 import { restoreAppearance } from "~/theme/appearance";
 import { useNavigationTheme } from "~/theme/navigation-theme";
@@ -19,7 +20,8 @@ restoreAppearance();
  * App-wide providers. Expo Router already supplies the safe-area provider,
  * and the auth session needs none: `authClient.useSession()` reads a shared
  * store. `Toaster` renders every `toast()` from `sonner-native` in a window
- * overlay, so toasts show above modals and sheets too. Sheets are native
+ * overlay, so toasts show above modals and sheets too (VoiceOver hears
+ * them through `AnnouncingToast`). Sheets are native
  * (`formSheet` routes, `@expo/ui`'s `BottomSheet`), so no JS sheet provider.
  */
 export function AppProviders({ children }: { children: ReactNode }) {
@@ -31,7 +33,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider value={navigationTheme}>
           {children}
-          <Toaster />
+          <Toaster ToastWrapper={AnnouncingToast} />
           <StatusBar style="auto" />
         </ThemeProvider>
       </QueryClientProvider>

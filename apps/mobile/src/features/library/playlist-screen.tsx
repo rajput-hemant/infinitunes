@@ -6,11 +6,12 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 import { DragHandle } from "~/components/drag-handle";
+import type { ReorderActions } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
+import { MenuTrigger } from "~/components/menu-trigger";
 import { SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
-import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import {
   moveSongInPlaylist,
@@ -33,14 +34,14 @@ type PlaylistSongRowProps = {
   play: () => void;
   onRemove: () => void;
   /** Inside the drag list: a handle starts moving the row. */
-  reorderable: boolean;
+  reorder: ReorderActions | undefined;
 };
 
 function PlaylistSongRow({
   song,
   play,
   onRemove,
-  reorderable,
+  reorder,
 }: PlaylistSongRowProps) {
   return (
     <SwipeableRow
@@ -58,7 +59,7 @@ function PlaylistSongRow({
             removal={{ title: "Remove from Playlist", onRemove }}
           />
         </View>
-        {reorderable ? <DragHandle name={song.name} /> : null}
+        {reorder ? <DragHandle name={song.name} actions={reorder} /> : null}
       </View>
     </SwipeableRow>
   );
@@ -98,12 +99,12 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
               </Text>
             </View>
           }
-          renderRow={(song, play, reorderable) => (
+          renderRow={(song, play, reorder) => (
             <PlaylistSongRow
               song={song}
               play={play}
               onRemove={() => removeSongFromPlaylist(server, song)}
-              reorderable={reorderable}
+              reorder={reorder}
             />
           )}
           onMove={(song, before) =>
@@ -140,16 +141,11 @@ function Playlist({ id }: { id: string }) {
       <Stack.Screen options={{ title: playlist.name }} />
       <Stack.Toolbar placement="right" asChild>
         <PlaylistMenu playlist={playlist} onDeleting={() => router.back()}>
-          <View
-            accessibilityRole="button"
-            accessibilityLabel="Playlist options"
-            className="size-ctl items-center justify-center"
-          >
-            <Icon
-              name={{ ios: "ellipsis.circle", android: "more_vert" }}
-              size={22}
-            />
-          </View>
+          <MenuTrigger
+            label="Playlist options"
+            icon={{ ios: "ellipsis.circle", android: "more_vert" }}
+            size={22}
+          />
         </PlaylistMenu>
       </Stack.Toolbar>
       <PlaylistSongs playlist={playlist} />

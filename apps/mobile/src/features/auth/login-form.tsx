@@ -1,15 +1,14 @@
 import { loginSchema } from "@infinitunes/auth/schemas";
-import { Link } from "expo-router";
 import { useRef } from "react";
 import { View } from "react-native";
 import { toast } from "sonner-native";
 
 import { EmailField } from "~/components/form/email-field";
 import type { TextInputHandle } from "~/components/form/form-field";
+import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
 import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
-import { Text } from "~/components/ui/text";
 import { authClient } from "~/lib/auth-client";
 import { authFailure } from "~/lib/auth-failure";
 import { usePending } from "~/lib/use-pending";
@@ -35,7 +34,7 @@ export function LoginForm() {
         authClient.signIn.email(credentials),
       );
       if (failure) toast.error(failure.message);
-      else toast.success("You have been signed in.");
+      else toast.success("Signed in");
     });
   }
 
@@ -67,13 +66,11 @@ export function LoginForm() {
         onPress={submit}
         className="disabled:opacity-50"
       />
-      <View className="items-center gap-3">
-        <Link href="/forgot-password">
-          <Text tone="muted">Forgot password?</Text>
-        </Link>
-        <Link href="/signup">
-          <Text>Don&apos;t have an account? Sign up</Text>
-        </Link>
+      <View className="items-center">
+        <FormLink href="/forgot-password" tone="muted">
+          Forgot password?
+        </FormLink>
+        <FormLink href="/signup">Don&apos;t have an account? Sign up</FormLink>
       </View>
     </View>
   );

@@ -49,7 +49,7 @@ export function HomeHeader() {
           variant="secondary"
           icon={{ ios: "sparkles", android: "auto_awesome" }}
           label="Surprise Me"
-          accessibilityLabel="Surprise Me - Add songs to queue and play"
+          accessibilityHint="Adds songs to the queue and plays them"
           onPress={() => void run(playSurprise)}
           disabled={pending}
           className="flex-1"

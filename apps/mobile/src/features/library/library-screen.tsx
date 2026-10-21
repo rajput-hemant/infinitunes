@@ -70,7 +70,7 @@ function Library() {
           trailing={
             <View className="size-ctl items-center justify-center">
               <Icon
-                name={{ ios: "chevron.right", android: "chevron_right" }}
+                name={{ ios: "chevron.forward", android: "chevron_right" }}
                 size={14}
               />
             </View>

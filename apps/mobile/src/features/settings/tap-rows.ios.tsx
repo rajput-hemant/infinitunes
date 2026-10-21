@@ -12,7 +12,7 @@ export function NavigationRow({ label, detail, onPress }: TapRowProps) {
     <ListItem
       onPress={onPress}
       supportingText={detail}
-      trailing={<Icon name="chevron.right" size={14} />}
+      trailing={<Icon name="chevron.forward" size={14} />}
     >
       <Text>{label}</Text>
     </ListItem>

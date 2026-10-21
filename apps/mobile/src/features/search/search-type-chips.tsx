@@ -1,5 +1,6 @@
 import { Pressable, ScrollView } from "react-native";
 
+import { CHIP_HIT_SLOP } from "~/components/chip-row";
 import { Text } from "~/components/ui/text";
 import { cx } from "~/lib/class-names";
 
@@ -27,10 +28,11 @@ export function SearchTypeChips({ type, onChange }: SearchTypeChipsProps) {
           <Pressable
             key={option.type}
             onPress={() => onChange(option.type)}
+            hitSlop={CHIP_HIT_SLOP}
             accessibilityRole="tab"
             accessibilityState={{ selected }}
             className={cx(
-              "h-ctl items-center justify-center rounded-full px-4 active:opacity-70",
+              "min-h-ctl items-center justify-center rounded-full px-4 py-1 active:opacity-70",
               selected ? "bg-primary" : "bg-fill-2",
             )}
           >

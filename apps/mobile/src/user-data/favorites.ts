@@ -69,6 +69,8 @@ type FavoriteToggleOptions = { type: FavoriteType; token: string };
  * Optimistic like for one item: `liked` flips in every heart that shows it
  * (row, header, player) in the same frame, the write follows, and a failure
  * rolls back with a toast. Signed out, `toggle` asks the listener to sign in.
+ * `toggle` returns the liked state it asked for, or `undefined` when it wrote
+ * nothing.
  */
 export function useFavoriteToggle({ type, token }: FavoriteToggleOptions) {
   const userId = useUserId();
@@ -77,21 +79,22 @@ export function useFavoriteToggle({ type, token }: FavoriteToggleOptions) {
   const key = favoriteKey(type, token);
   const liked = useFavorite(key, serverLiked);
 
-  function toggle() {
+  function toggle(): boolean | undefined {
     if (!userId) {
       promptSignIn(
         `You need an account to like this ${FAVORITE_COPY[type].label.toLowerCase()}.`,
       );
-      return;
+      return undefined;
     }
     // Unknown liked state: a write would toggle blindly.
-    if (!lists) return;
+    if (!lists) return undefined;
     void impactAsync(ImpactFeedbackStyle.Light);
     toggleFavorite({
       key,
       serverLiked,
       send: (want) => persistFavorite(type, token, want),
     });
+    return !liked;
   }
 
   return { liked, toggle };

@@ -6,6 +6,7 @@ import { useCurrentTrackState } from "~/playback/use-current-track";
 import { radii, sizes } from "~/theme/tokens";
 
 import { LikeButton } from "./like-button";
+import { MenuTrigger } from "./menu-trigger";
 import { SongMenu, type TrackItem } from "./song-menu";
 import { Artwork } from "./ui/artwork";
 import { Icon } from "./ui/icon";
@@ -39,12 +40,19 @@ export function SongRow({ song, onPress, queueItemId, removal }: SongRowProps) {
   });
 
   return (
-    <View className="h-row flex-row items-center gap-3 pl-page pr-2">
+    <View className="min-h-row flex-row items-center gap-3 py-1 pl-page pr-2">
       <Pressable
         onPress={isCurrent ? togglePlayback : onPress}
         accessibilityRole="button"
         accessibilityLabel={song.name}
-        accessibilityHint={isPlaying ? "Pauses playback" : "Plays this song"}
+        accessibilityValue={{ text: creditsOf(song) }}
+        accessibilityHint={
+          isCurrent
+            ? isPlaying
+              ? "Now playing. Pauses playback"
+              : "Paused. Resumes playback"
+            : "Plays this song"
+        }
         accessibilityState={{ selected: isCurrent }}
         className="flex-1 flex-row items-center gap-3 active:opacity-70"
       >
@@ -92,13 +100,7 @@ export function SongRow({ song, onPress, queueItemId, removal }: SongRowProps) {
         <LikeButton type="song" token={song.id} name={song.name} size={20} />
       ) : null}
       <SongMenu song={song} removal={removal}>
-        <View
-          accessibilityRole="button"
-          accessibilityLabel={`More actions for ${song.name}`}
-          className="size-ctl items-center justify-center"
-        >
-          <Icon name={{ ios: "ellipsis", android: "more_vert" }} size={20} />
-        </View>
+        <MenuTrigger label={`More actions for ${song.name}`} />
       </SongMenu>
     </View>
   );

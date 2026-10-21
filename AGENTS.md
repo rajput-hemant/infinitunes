@@ -231,6 +231,15 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   Android). Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
   with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours,
   `theme/tokens.ts`), colour JS props from `useTheme().colors`, text via `Text` `variant`/`tone`.
+- Accessibility: every tappable control is at least `sizes.touch` (48; `IconButton`, `Button`, `MenuTrigger` for a
+  `NativeMenu`'s face, `DragHandle`) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`, `TEXT_BUTTON_HIT_SLOP`); rows and
+  fields use `min-h-*` so Dynamic Type grows them (cap text with `maxFontSizeMultiplier` only in fixed-height chrome, the
+  mini player). An item without a screen is a labelled `View`, never a disabled `Pressable`. Custom pressables set role,
+  label and state; a drag has `ReorderActions`, the scrubber `increment`/`decrement`. `announce()` (`lib/announce.ios.ts`)
+  speaks results VoiceOver cannot see (likes, a new field error); toasts reach it through `AnnouncingToast`, because
+  sonner-native's live region is Android-only. Reanimated CSS animations ignore reduce motion: gate them with
+  `useReducedMotion`. `iosSystemColors` leaves out `muted-foreground` and `destructive` (3.1-3.6:1 on light iOS
+  surfaces); `tokens.test.ts` pins AA for every text pair.
 - Data: `useQuery(trpc.<router>.<proc>.queryOptions(input))` from `~/lib/trpc`; imperative calls use
   `trpcClient`. The query client skips retries for NOT_FOUND, BAD_REQUEST, FORBIDDEN and UNAUTHORIZED
   (`shouldRetry`), so hooks set no `retry`. Home, Top Charts and Top Albums' "All" pass `useCatalogLang()`

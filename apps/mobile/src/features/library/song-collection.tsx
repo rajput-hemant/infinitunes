@@ -6,6 +6,7 @@ import type { ReactElement } from "react";
 import { View } from "react-native";
 import ReorderableList from "react-native-reorderable-list";
 
+import type { ReorderActions } from "~/components/drag-handle";
 import { OptionMenu } from "~/components/option-menu";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
@@ -23,13 +24,14 @@ type SongCollectionProps = {
   /** What the list's own order is called ("Recently played"). */
   recentLabel: string;
   /**
-   * One row; `play` starts the shown list from it. `reorderable` rows are
-   * inside the drag list and show a handle (`useReorderableDrag`).
+   * One row; `play` starts the shown list from it. Rows with `reorder` are
+   * inside the drag list and show a handle (`useReorderableDrag`) whose
+   * actions move the row without dragging.
    */
   renderRow: (
     song: SongRowItem,
     play: () => void,
-    reorderable: boolean,
+    reorder: ReorderActions | undefined,
   ) => ReactElement;
   /**
    * Moves a song in the list's own order (a playlist): `before` is the song
@@ -67,11 +69,28 @@ export function SongCollection({
   const reorderable =
     onMove !== undefined && sort === "recent" && !query.trim();
 
+  /** Moves the shown row `from` to index `to`, as the drag list reports it. */
+  function move(from: number, to: number) {
+    const song = shown[from];
+    if (!song || from === to || !onMove) return;
+    const rest = shown.filter((_, index) => index !== from);
+    onMove(song, rest[to]);
+  }
+
+  const reorderActions = (index: number): ReorderActions | undefined =>
+    reorderable
+      ? {
+          moveUp: index > 0 ? () => move(index, index - 1) : undefined,
+          moveDown:
+            index < shown.length - 1 ? () => move(index, index + 1) : undefined,
+        }
+      : undefined;
+
   const listProps = {
     data: shown,
     keyExtractor: (song: SongRowItem) => song.id,
     renderItem: ({ item, index }: { item: SongRowItem; index: number }) =>
-      renderRow(item, () => playFrom(shown, index), reorderable),
+      renderRow(item, () => playFrom(shown, index), reorderActions(index)),
     ListHeaderComponent: (
       <View>
         {header}
@@ -93,7 +112,7 @@ export function SongCollection({
           </View>
         ) : null}
         <View className="flex-row items-center justify-between px-page">
-          <Text variant="subhead" tone="muted" accessibilityRole="summary">
+          <Text variant="subhead" tone="muted">
             {countLabel(shown.length, songs.length)}
           </Text>
           <OptionMenu
@@ -140,12 +159,7 @@ export function SongCollection({
       {reorderable ? (
         <ReorderableList
           {...listProps}
-          onReorder={({ from, to }) => {
-            const song = shown[from];
-            if (!song || from === to || !onMove) return;
-            const rest = shown.filter((_, index) => index !== from);
-            onMove(song, rest[to]);
-          }}
+          onReorder={({ from, to }) => move(from, to)}
         />
       ) : (
         <FlashList {...listProps} />

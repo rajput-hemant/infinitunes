@@ -53,7 +53,7 @@ describe("ResetPasswordForm", () => {
       token: "tok_123",
     });
     expect(toast.success).toHaveBeenCalledWith(
-      "Password reset. Please sign in with your new password.",
+      "Password reset. Sign in with your new password.",
     );
   });
 

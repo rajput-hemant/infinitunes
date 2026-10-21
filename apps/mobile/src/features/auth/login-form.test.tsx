@@ -44,7 +44,7 @@ describe("LoginForm", () => {
       email: "listener@example.com",
       password: "Secret#123",
     });
-    expect(toast.success).toHaveBeenCalledWith("You have been signed in.");
+    expect(toast.success).toHaveBeenCalledWith("Signed in");
   });
 
   it("shows the server's message for a wrong password", async () => {

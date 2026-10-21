@@ -11,6 +11,9 @@ import { seekTo } from "~/playback/transport";
 
 import { SeekSlider } from "./seek-slider";
 
+/** What a screen reader's swipe up or down seeks by, in seconds. */
+export const SEEK_STEP_SECONDS = 10;
+
 /**
  * The full player's seek bar with elapsed and remaining time. While the
  * listener drags it shows the dragged position, and seeks once on release.
@@ -33,13 +36,28 @@ export function Scrubber() {
     setScrubbed(null);
   }
 
+  /** Screen readers cannot drag the native slider: they step the position instead. */
+  function step(direction: 1 | -1) {
+    const next = position + direction * SEEK_STEP_SECONDS;
+    seekTo(Math.min(Math.max(next, 0), Math.max(duration, 0)));
+  }
+
   return (
     <View
       accessible
       accessibilityRole="adjustable"
       accessibilityLabel="Playback position"
+      accessibilityHint={`Swipe up or down to seek ${SEEK_STEP_SECONDS} seconds`}
       accessibilityValue={{
         text: `${formatDuration(shown, "mm:ss")} of ${formatDuration(duration, "mm:ss")}`,
+      }}
+      accessibilityActions={[
+        { name: "increment", label: "Forward" },
+        { name: "decrement", label: "Back" },
+      ]}
+      onAccessibilityAction={({ nativeEvent }) => {
+        if (nativeEvent.actionName === "increment") step(1);
+        if (nativeEvent.actionName === "decrement") step(-1);
       }}
     >
       <SeekSlider

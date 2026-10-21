@@ -65,7 +65,7 @@ export async function playEntity(type: PlayableType, url: string) {
   if (type === "radio_station") {
     const station = stationRef(url);
     if (station) await playStation(station);
-    else toast.error("Failed to load radio station");
+    else toast.error("Couldn't load this station");
     return;
   }
   let tracks: (Song | Episode)[];

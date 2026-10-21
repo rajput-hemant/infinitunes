@@ -1,6 +1,7 @@
 import type { SearchItem } from "@infinitunes/types";
 import { Pressable, View } from "react-native";
 
+import { TEXT_BUTTON_HIT_SLOP } from "~/components/ui/hit-slop";
 import { Text } from "~/components/ui/text";
 
 import { ResultRow } from "./result-row";
@@ -33,7 +34,7 @@ export function ResultSection({
             onPress={onSeeAll}
             accessibilityRole="button"
             accessibilityLabel={`See all ${title}`}
-            hitSlop={10}
+            hitSlop={TEXT_BUTTON_HIT_SLOP}
           >
             <Text variant="subhead" tone="muted">
               See All

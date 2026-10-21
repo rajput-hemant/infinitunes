@@ -36,7 +36,7 @@ export function PasswordForm() {
         toast.error(failure);
         return;
       }
-      toast.success("Password Updated!");
+      toast.success("Password updated");
       router.back();
     });
   }

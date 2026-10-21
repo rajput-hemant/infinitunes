@@ -97,6 +97,13 @@ export const colors: Record<ColorScheme, Palette> = {
 /**
  * UIKit semantic colours per token. Tokens without one (text on a filled
  * accent, the scrim) keep the palette value on iOS too.
+ *
+ * `muted-foreground` and `destructive` are left out on purpose: they are used
+ * as text, and in light mode `secondaryLabel` (3.4:1 on white, 3.1:1 on
+ * `secondarySystemBackground`) and `systemRed` (3.6:1 on white, 3.2:1 on
+ * `secondarySystemBackground`; 3.5:1 under `destructive-foreground`) miss
+ * WCAG AA's 4.5:1. The palette values pass in both schemes, at the price of
+ * not adapting to Increase Contrast.
  */
 export const iosSystemColors: Partial<Record<ColorToken, string>> = {
   background: "systemBackground",
@@ -108,10 +115,8 @@ export const iosSystemColors: Partial<Record<ColorToken, string>> = {
   secondary: "secondarySystemFill",
   "secondary-foreground": "label",
   muted: "tertiarySystemFill",
-  "muted-foreground": "secondaryLabel",
   accent: "systemFill",
   "accent-foreground": "label",
-  destructive: "systemRed",
   border: "separator",
   input: "systemGray2",
   fill: "quaternarySystemFill",
@@ -132,12 +137,15 @@ export const radii = {
 
 /**
  * Control, row and gutter sizes in points: the web's touch-screen
- * (`pointer: coarse`) values, which also clear both platforms' 44pt/48dp
- * minimum touch targets with hit slop.
+ * (`pointer: coarse`) values, plus `touch`, the smallest size of anything the
+ * listener taps alone (an icon button, a menu trigger, a button): Android's
+ * 48dp, which also clears iOS's 44pt. `ctl` and `ctl-lg` are visual heights
+ * of controls that reach it with hit slop or sit in a row of their own.
  */
 export const sizes = {
   ctl: 40,
   "ctl-lg": 44,
+  touch: 48,
   row: 56,
   art: 44,
   page: 16,

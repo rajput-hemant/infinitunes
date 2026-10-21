@@ -23,7 +23,7 @@ export function startStation(
   startIndex = 0,
 ) {
   if (songs.length === 0) {
-    toast.error("No songs found for this radio station");
+    toast.error("No songs found for this station");
     return;
   }
   playerStore.getState().playTracks(songs.map(toSongRow), {
@@ -42,7 +42,7 @@ export async function playStation({ name, token }: StationRef) {
   try {
     startStation(await trpcClient.radio.stationDetails.query({ name, token }));
   } catch {
-    toast.error("Failed to load radio station");
+    toast.error("Couldn't load this station");
   }
 }
 
@@ -97,13 +97,13 @@ export async function startSeededRadio({
       k: SEED_BATCH,
     });
     if (songs.length === 0) {
-      toast.error("Could not find songs for this radio");
+      toast.error("Couldn't find songs for this station");
       return;
     }
     playerStore.getState().playTracks(songs.map(toSongRow), {
       radio: { stationId, name: `${name} Radio`, type },
     });
   } catch {
-    toast.error("Unable to start radio station");
+    toast.error("Couldn't start this station");
   }
 }

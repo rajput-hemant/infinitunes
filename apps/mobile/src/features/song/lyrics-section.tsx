@@ -40,6 +40,7 @@ export function LyricsSection({ songId }: LyricsSectionProps) {
         onPress={() => setExpanded((open) => !open)}
         accessibilityRole="button"
         accessibilityLabel={expanded ? "Collapse lyrics" : "Read full lyrics"}
+        accessibilityState={{ expanded }}
         className="gap-2 px-page py-2 active:opacity-70"
       >
         {expanded ? (

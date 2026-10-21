@@ -22,6 +22,7 @@ function tileColor(index: number): string {
   return TILE_COLORS[index % TILE_COLORS.length] ?? TILE_COLORS[0];
 }
 
+/** The tile grows with the title at larger text sizes. */
 const TILE_HEIGHT = 96;
 const ART_SIZE = 72;
 
@@ -50,7 +51,7 @@ export function BrowseTile({
         style={{
           width,
           backgroundColor: tileColor(index),
-          height: TILE_HEIGHT,
+          minHeight: TILE_HEIGHT,
           borderRadius: radii.md,
         }}
       >

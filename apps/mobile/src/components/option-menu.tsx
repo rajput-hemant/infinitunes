@@ -11,7 +11,7 @@ type Option<Id extends string> = { id: Id; title: string };
 const TRIGGERS = {
   /** A tinted pill, for controls in a row (a show's season and order). */
   pill: {
-    className: "h-ctl gap-1.5 rounded-lg bg-secondary px-3",
+    className: "min-h-ctl gap-1.5 rounded-lg bg-secondary px-3 py-1",
     tone: "default",
   },
   /** Plain muted text, for a list's sort order beside its count. */
