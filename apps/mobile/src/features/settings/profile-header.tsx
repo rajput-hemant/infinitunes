@@ -1,14 +1,9 @@
 import { Column, Row, Spacer, Text } from "@expo/ui";
 
+import { userInitial } from "~/lib/user-initial";
+import type { InitialUser } from "~/lib/user-initial";
 import { art, space, textStyles } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
-
-type ProfileUser = { name?: string | null; email: string };
-
-/** The avatar's letter: the name's first, else the email's (the web's `userInitial`). */
-export function userInitial({ name, email }: ProfileUser): string {
-  return (name?.trim() || email.trim()).charAt(0).toUpperCase();
-}
 
 const AVATAR = {
   width: art.avatar,
@@ -21,7 +16,7 @@ const AVATAR = {
  * the initial in a filled circle, the name and the email. Display only; the
  * "Edit profile" row under it opens the form.
  */
-export function ProfileHeader({ user }: { user: ProfileUser }) {
+export function ProfileHeader({ user }: { user: InitialUser }) {
   const palette = usePalette();
   const name = user.name?.trim();
 

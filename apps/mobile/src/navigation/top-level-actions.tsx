@@ -4,14 +4,8 @@ import { Platform, Pressable, View } from "react-native";
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
 import { authClient } from "~/lib/auth-client";
+import { userInitial } from "~/lib/user-initial";
 import { maxFontScale } from "~/theme/tokens";
-
-type SessionUser = { name?: string | null; email: string };
-
-/** The avatar's letter: the name's first, else the email's (the web's `userInitial`). */
-function initialOf({ name, email }: SessionUser): string {
-  return (name?.trim() || email.trim()).charAt(0).toUpperCase();
-}
 
 /** The account's initial in a circle (its profile), or Sign In while signed out. */
 function ProfileButton() {
@@ -39,7 +33,7 @@ function ProfileButton() {
           tone="onSecondary"
           maxFontSizeMultiplier={maxFontScale.chrome}
         >
-          {initialOf(user)}
+          {userInitial(user)}
         </Text>
       </View>
     </Pressable>
