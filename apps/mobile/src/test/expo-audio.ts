@@ -56,6 +56,8 @@ export class FakeAudioPlayer {
   lockScreen: { active: boolean; metadata?: AudioMetadata } = {
     active: false,
   };
+  /** How often `setActiveForLockScreen(true)` ran (each one rebuilds the Android session). */
+  lockScreenActivations = 0;
   currentStatus: AudioStatus = idleStatus;
   private readonly listeners = new Set<StatusListener>();
 
@@ -108,6 +110,7 @@ export class FakeAudioPlayer {
     metadata?: AudioMetadata,
     _options?: AudioLockScreenOptions,
   ) {
+    if (active) this.lockScreenActivations += 1;
     this.lockScreen = { active, metadata };
   }
 
@@ -128,6 +131,7 @@ export class FakeAudioPlayer {
   reset() {
     this.loads.length = 0;
     this.lockScreen = { active: false };
+    this.lockScreenActivations = 0;
     this.currentStatus = idleStatus;
   }
 

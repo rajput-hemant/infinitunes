@@ -3,14 +3,18 @@ import { authFailure } from "~/lib/auth-failure";
 import type { AuthFailure } from "~/lib/auth-failure";
 import { queryClient } from "~/lib/query-client";
 import { trpc } from "~/lib/trpc";
+import { playerStore } from "~/playback/player-store";
 import { LIBRARY_QUERY_KEY } from "~/user-data/session";
 
 /**
- * Drops every cached `user.*` query (likes, playlists) and the library lists
+ * Stops playback and drops every cached `user.*` query (likes, playlists) and the library lists
  * resolved from them (history, liked songs, playlist songs). They are keyed
  * per account already; this also frees them, and keeps the catalog cache.
  */
 export function forgetUserData() {
+  // Emptying the queue makes the playback controller stop the engine and take
+  // the track off the lock screen and the media notification.
+  playerStore.setState({ queue: [], currentIndex: 0, radio: null });
   queryClient.removeQueries({ queryKey: trpc.user.pathKey() });
   queryClient.removeQueries({ queryKey: LIBRARY_QUERY_KEY });
 }

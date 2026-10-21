@@ -3,9 +3,16 @@ import { toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawSong } from "@infinitunes/types/fixtures";
 import { act, waitFor } from "@testing-library/react-native";
 import { Directory } from "expo-file-system";
+import {
+  getPermissionsAsync,
+  requestPermissionsAsync,
+  scheduleNotificationAsync,
+} from "expo-notifications";
+import { AppState } from "react-native";
 import { toast } from "sonner-native";
 
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
+import { notificationPromptStore } from "~/lib/notifications";
 import { preferencesStore } from "~/lib/preferences";
 import { chooseMenuAction, renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
@@ -117,6 +124,28 @@ describe("download all", () => {
       loading: "Downloading 3 songs...",
       error: "Download failed",
     });
+  });
+
+  it("asks for notifications once and posts the result when it finishes", async () => {
+    notificationPromptStore.setState({ asked: false });
+    jest
+      .mocked(getPermissionsAsync)
+      .mockResolvedValue({ granted: false, canAskAgain: true } as never);
+    jest.mocked(pickDownloadFolder).mockResolvedValue(new Directory());
+    jest.mocked(saveTracks).mockResolvedValue({ saved: 3, failed: 0 });
+    Object.assign(AppState, { currentState: "background" });
+    await renderWithProviders(menu());
+
+    await chooseMenuAction(trigger, "download-all");
+    await waitFor(() => expect(toast.promise).toHaveBeenCalledTimes(1));
+
+    expect(requestPermissionsAsync).toHaveBeenCalledTimes(1);
+    // Denied: the result is not posted.
+    await waitFor(() => expect(getPermissionsAsync).toHaveBeenCalled());
+    expect(scheduleNotificationAsync).not.toHaveBeenCalled();
+    jest
+      .mocked(getPermissionsAsync)
+      .mockResolvedValue({ granted: true, canAskAgain: true } as never);
   });
 
   it("reports how many saved when some failed, and says 'song' for one", async () => {

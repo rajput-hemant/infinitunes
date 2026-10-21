@@ -2,6 +2,10 @@ import type { SongRowItem } from "@infinitunes/types";
 import { toast } from "sonner-native";
 
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
+import {
+  ensureNotificationPermission,
+  notifyDownloadsFinished,
+} from "~/lib/notifications";
 import { preferencesStore } from "~/lib/preferences";
 import { playerStore } from "~/playback/player-store";
 import { radioSeedOf } from "~/playback/radio";
@@ -26,7 +30,12 @@ async function downloadAll(songs: readonly SongRowItem[]) {
   if (!folder) return;
   const count = `${songs.length} ${songs.length === 1 ? "song" : "songs"}`;
   const { downloadQuality } = preferencesStore.getState();
-  toast.promise(saveTracks(folder, songs, downloadQuality), {
+  void ensureNotificationPermission();
+  const job = saveTracks(folder, songs, downloadQuality).then((result) => {
+    void notifyDownloadsFinished(result, songs.length);
+    return result;
+  });
+  toast.promise(job, {
     loading: `Downloading ${count}...`,
     success: ({ saved, failed }) =>
       failed === 0

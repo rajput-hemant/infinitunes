@@ -1,6 +1,8 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawSong } from "@infinitunes/types/fixtures";
-import { View } from "react-native";
+import { waitFor } from "@testing-library/react-native";
+import { scheduleNotificationAsync } from "expo-notifications";
+import { AppState, View } from "react-native";
 import { toast } from "sonner-native";
 
 import { downloadTrack } from "~/lib/download";
@@ -166,6 +168,27 @@ describe("SongMenu share and download", () => {
       "No link",
     );
     expect(typeof error === "function" && error("odd")).toBe("Download failed");
+  });
+});
+
+describe("SongMenu failed download", () => {
+  it("posts a notification when it fails in the background", async () => {
+    jest.mocked(downloadTrack).mockRejectedValue(new Error("No link"));
+    Object.assign(AppState, { currentState: "background" });
+    await renderMenu(song);
+
+    await chooseMenuAction(TRIGGER, "download");
+    // The toast owns the rejection; the notification is posted beside it.
+    const [job] = jest.mocked(toast.promise).mock.calls[0] ?? [];
+    await expect(job).rejects.toThrow("No link");
+
+    await waitFor(() =>
+      expect(scheduleNotificationAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: expect.objectContaining({ title: "Download failed" }),
+        }),
+      ),
+    );
   });
 });
 

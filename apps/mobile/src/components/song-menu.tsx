@@ -3,6 +3,10 @@ import type { ReactNode } from "react";
 import { toast } from "sonner-native";
 
 import { downloadTrack } from "~/lib/download";
+import {
+  ensureNotificationPermission,
+  notifyDownloadFailed,
+} from "~/lib/notifications";
 import { preferencesStore } from "~/lib/preferences";
 import { shareItem } from "~/lib/share";
 import { useOpenEntity } from "~/navigation/use-open-entity";
@@ -50,7 +54,12 @@ function artistEntry(
 
 function download(song: TrackItem) {
   const quality = preferencesStore.getState().downloadQuality;
-  toast.promise(downloadTrack(song, quality), {
+  void ensureNotificationPermission();
+  const job = downloadTrack(song, quality).catch((error: unknown) => {
+    void notifyDownloadFailed(song.name);
+    throw error;
+  });
+  toast.promise(job, {
     loading: `Downloading "${song.name}"...`,
     success: () => `"${song.name}" is ready`,
     error: (error) =>
