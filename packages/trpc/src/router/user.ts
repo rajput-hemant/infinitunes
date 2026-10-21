@@ -22,6 +22,12 @@ import { protectedProcedure, router } from "../trpc";
 
 export const PLAYLIST_MAX_SONGS = 5000;
 
+/** Playlists one account may own. */
+export const PLAYLIST_MAX_COUNT = 10;
+
+/** Advisory-lock namespace that serializes one user's playlist creates. */
+const myPlaylistsLockKey = "infinitunes_playlist.create";
+
 /**
  * Accounts without a password (passkey/OAuth only) confirm destructive actions
  * with a recently created session instead of a password.
@@ -516,30 +522,40 @@ export const userRouter = router({
 
   createNewPlaylist: protectedProcedure
     .input(newPlaylistInput)
-    .mutation(async ({ ctx, input }) => {
-      const [{ playlistsCount }] = await ctx.db
-        .select({ playlistsCount: count() })
-        .from(myPlaylists)
-        .where(eq(myPlaylists.userId, ctx.session.user.id));
+    .mutation(({ ctx, input }) =>
+      ctx.db.transaction(async (tx) => {
+        const userId = ctx.session.user.id;
+        // Count and insert under a per-user lock (released at commit), or
+        // parallel creates (a double tap, phone and web) all count below the
+        // cap and all insert.
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`${myPlaylistsLockKey}:${userId}`}, 0))`,
+        );
 
-      if (playlistsCount >= 10) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "You can only have 10 playlists, please delete one",
-        });
-      }
+        const [{ playlistsCount }] = await tx
+          .select({ playlistsCount: count() })
+          .from(myPlaylists)
+          .where(eq(myPlaylists.userId, userId));
 
-      const [playlist] = await ctx.db
-        .insert(myPlaylists)
-        .values({
-          name: input.name,
-          description: input.description,
-          userId: ctx.session.user.id,
-        })
-        .returning();
+        if (playlistsCount >= PLAYLIST_MAX_COUNT) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `You can only have ${PLAYLIST_MAX_COUNT} playlists, please delete one`,
+          });
+        }
 
-      return playlist;
-    }),
+        const [playlist] = await tx
+          .insert(myPlaylists)
+          .values({
+            name: input.name,
+            description: input.description,
+            userId,
+          })
+          .returning();
+
+        return playlist;
+      }),
+    ),
 
   updateUser: protectedProcedure
     .input(updateUserInput)
