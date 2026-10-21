@@ -4,11 +4,10 @@ import {
   PLAYLIST_NAME_MAX,
 } from "@infinitunes/types";
 import { useState } from "react";
-import { TextInput, View } from "react-native";
 
-import { ScreenScrollView } from "~/components/screen-scroll-view";
+import { FormField } from "~/components/form/form-field";
+import { FormScreen } from "~/components/form/form-screen";
 import { Button } from "~/components/ui/button";
-import { Text } from "~/components/ui/text";
 import type { PlaylistDetails } from "~/user-data/playlists";
 
 type PlaylistFormProps = {
@@ -16,44 +15,6 @@ type PlaylistFormProps = {
   submitLabel: string;
   onSubmit: (details: PlaylistDetails) => void;
 };
-
-const INPUT_CLASS = "h-ctl-lg rounded-lg bg-fill px-4 text-foreground";
-
-type FieldProps = {
-  label: string;
-  placeholder: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  maxLength: number;
-  error?: string;
-  onSubmitEditing?: () => void;
-};
-
-function Field({ label, placeholder, error, ...input }: FieldProps) {
-  return (
-    <View className="gap-1.5">
-      <Text variant="subhead" tone="muted">
-        {label}
-      </Text>
-      <TextInput
-        accessibilityLabel={label}
-        placeholder={placeholder}
-        className={INPUT_CLASS}
-        returnKeyType="done"
-        {...input}
-      />
-      {error ? (
-        <Text
-          variant="caption"
-          accessibilityRole="alert"
-          className="text-destructive"
-        >
-          {error}
-        </Text>
-      ) : null}
-    </View>
-  );
-}
 
 /**
  * Name and description of a playlist, checked with the same rules as the
@@ -84,29 +45,28 @@ export function PlaylistForm({
   }
 
   return (
-    <ScreenScrollView
-      contentContainerClassName="gap-4 px-page pt-4"
-      keyboardShouldPersistTaps="handled"
-    >
-      <Field
+    <FormScreen>
+      <FormField
         label="Name"
         placeholder="Enter playlist name"
         value={name}
         onChangeText={setName}
         maxLength={PLAYLIST_NAME_MAX}
         error={errorOf("name")}
+        returnKeyType="done"
         onSubmitEditing={submit}
       />
-      <Field
+      <FormField
         label="Description"
         placeholder="Enter playlist description"
         value={description}
         onChangeText={setDescription}
         maxLength={PLAYLIST_DESCRIPTION_MAX}
         error={errorOf("description")}
+        returnKeyType="done"
         onSubmitEditing={submit}
       />
       <Button label={submitLabel} onPress={submit} />
-    </ScreenScrollView>
+    </FormScreen>
   );
 }

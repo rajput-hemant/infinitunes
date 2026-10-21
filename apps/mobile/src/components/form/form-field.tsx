@@ -1,12 +1,14 @@
 import { useTheme } from "expo-router";
-import { forwardRef } from "react";
+import { forwardRef, useEffect } from "react";
 import type { ComponentRef, ReactNode } from "react";
 import { Platform, TextInput, View } from "react-native";
 import type { TextInputProps } from "react-native";
 
 import { Text } from "~/components/ui/text";
+import { announce } from "~/lib/announce";
 import { cx } from "~/lib/class-names";
 import { typeScale } from "~/theme/tokens";
+import { usePalette } from "~/theme/use-palette";
 
 const inputTextStyle = {
   fontSize: Platform.select({
@@ -27,14 +29,20 @@ export type FormFieldProps = Omit<TextInputProps, "style" | "className"> & {
   trailing?: ReactNode;
 };
 
-/** A labelled text input at the control height, with its message beneath. */
+/** A labelled text input at the touch height, with its message beneath. */
 export const FormField = forwardRef<TextInputHandle, FormFieldProps>(
   function FormField(
     { label, error, hint, trailing, editable = true, ...inputProps },
     ref,
   ) {
     const { colors } = useTheme();
+    const palette = usePalette();
     const message = error ?? hint;
+
+    // A new error appears under the field; VoiceOver only hears it if told.
+    useEffect(() => {
+      if (error) announce(error);
+    }, [error]);
 
     return (
       <View className="gap-1.5">
@@ -43,18 +51,20 @@ export const FormField = forwardRef<TextInputHandle, FormFieldProps>(
         </Text>
         <View
           className={cx(
-            "h-ctl-lg flex-row items-center rounded-md bg-fill pl-4",
+            "min-h-touch flex-row items-center rounded-md bg-fill pl-4",
             !editable && "opacity-50",
           )}
         >
           <TextInput
             ref={ref}
             accessibilityLabel={label}
+            accessibilityHint={error ? `Error: ${error}` : hint}
             accessibilityState={{ disabled: !editable }}
             editable={editable}
+            placeholderTextColor={palette["muted-foreground"]}
             selectionColor={colors.primary}
             style={[inputTextStyle, { color: colors.text }]}
-            className="h-full flex-1"
+            className="flex-1 py-2.5"
             {...inputProps}
           />
           {trailing}
