@@ -50,6 +50,7 @@ export function ArtistListHeader({
         title={name}
         subtitle={listenersLabel(artist)}
         round
+        verified={artist.isVerified}
         onPlay={() => playAll(topSongs)}
         onShuffle={() => shuffleAll(topSongs)}
         like={{ type: "artist", token: artist.artistId }}

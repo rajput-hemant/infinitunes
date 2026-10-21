@@ -76,6 +76,23 @@ describe("AlbumScreen", () => {
     ).toBeOnTheScreen();
   });
 
+  it("marks an explicit album, and only that", async () => {
+    procedure("album.details").mockResolvedValue(
+      album({ explicit_content: "1" }),
+    );
+    await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
+
+    expect(await screen.findByText("Udta Teer")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Explicit")).toBeOnTheScreen();
+  });
+
+  it("leaves the explicit mark off a clean album", async () => {
+    await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
+
+    expect(await screen.findByText("Udta Teer")).toBeOnTheScreen();
+    expect(screen.queryByLabelText("Explicit")).toBeNull();
+  });
+
   it("asks upstream for the same-year albums of the album's year", async () => {
     await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
     await screen.findByText("Udta Teer");

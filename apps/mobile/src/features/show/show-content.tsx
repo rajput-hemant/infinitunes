@@ -11,6 +11,7 @@ import {
   renderEntityListItem,
   songItems,
 } from "~/components/entity-list";
+import { isExplicit } from "~/components/explicit-badge";
 import { PagedFooter } from "~/components/paged-footer";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
@@ -65,6 +66,7 @@ export function ShowContent({
             image={details.image}
             title={decode(details.title)}
             subtitle={fansLabel(show)}
+            explicit={isExplicit(details.explicit_content)}
             onPlay={() => play(false)}
             onShuffle={() => play(true)}
             like={{ type: "show", token: details.id }}

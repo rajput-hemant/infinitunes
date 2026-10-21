@@ -14,6 +14,7 @@ import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
+import { isExplicit } from "~/components/explicit-badge";
 import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
 import { TrackList } from "~/components/track-list";
@@ -98,6 +99,7 @@ function AlbumPage({ album, trending }: AlbumPageProps) {
         image={album.image}
         title={decode(album.title)}
         subtitle={albumMeta(album, rows)}
+        explicit={isExplicit(album.explicit_content)}
         onPlay={() => playAll(rows)}
         onShuffle={() => shuffleAll(rows)}
         like={{ type: "album", token: album.id }}

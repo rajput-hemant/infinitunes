@@ -10,6 +10,7 @@ import { Link } from "expo-router";
 import { Pressable, RefreshControl, View } from "react-native";
 
 import { EntityHeader } from "~/components/entity-header";
+import { isExplicit } from "~/components/explicit-badge";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
@@ -88,6 +89,7 @@ export function EpisodeContent({
         image={episode.image}
         title={row.name}
         subtitle={[row.subtitle, meta].filter(Boolean).join("\n")}
+        explicit={isExplicit(episode.explicit_content)}
         onPlay={play}
       />
       {description ? (

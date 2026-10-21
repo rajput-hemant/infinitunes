@@ -19,6 +19,7 @@ import { useMemo } from "react";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
+import { isExplicit } from "~/components/explicit-badge";
 import { SecondaryShelf } from "~/components/secondary-shelf";
 import { SectionHeading } from "~/components/section-heading";
 import { Shelf } from "~/components/shelf";
@@ -114,6 +115,7 @@ function SongPage({ song, modules, trending }: SongPageProps) {
           row.album,
           row.primaryArtists.map((artist) => artist.name).join(", "),
         ])}
+        explicit={isExplicit(song.explicit_content)}
         onPlay={() => playAll(rows)}
         like={{ type: "song", token: song.id }}
       />

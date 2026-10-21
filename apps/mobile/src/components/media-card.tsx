@@ -7,6 +7,7 @@ import { isPlayable } from "~/playback/play-entity";
 import { radii, sizes } from "~/theme/tokens";
 
 import { CardPlayButton } from "./card-play-button";
+import { ExplicitBadge, isExplicit } from "./explicit-badge";
 import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
 
@@ -43,14 +44,14 @@ export function MediaCard({
 }: MediaCardProps) {
   const href = entityHref(item.type, item.url);
   const round = ROUND_TYPES.has(item.type);
+  const explicit = isExplicit(item.explicit);
+  const name = explicit ? `${item.name}, Explicit` : item.name;
   const card = (
     <Pressable
       disabled={!href}
       onPress={onPress}
       accessibilityRole={href ? "link" : undefined}
-      accessibilityLabel={
-        item.subtitle ? `${item.name}, ${item.subtitle}` : item.name
-      }
+      accessibilityLabel={item.subtitle ? `${name}, ${item.subtitle}` : name}
       className="gap-1.5 active:opacity-70"
       style={{ width }}
     >
@@ -64,9 +65,12 @@ export function MediaCard({
         }}
       />
       <View className={round ? "items-center" : undefined}>
-        <Text variant="subhead" numberOfLines={1}>
-          {item.name}
-        </Text>
+        <View className="flex-row items-center gap-1">
+          {explicit ? <ExplicitBadge /> : null}
+          <Text variant="subhead" numberOfLines={1} className="shrink">
+            {item.name}
+          </Text>
+        </View>
         {item.subtitle ? (
           <Text variant="caption" tone="muted" numberOfLines={1}>
             {item.subtitle}
