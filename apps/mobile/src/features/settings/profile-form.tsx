@@ -1,0 +1,115 @@
+import { emailSchema } from "@infinitunes/auth/schemas";
+import { nameSchema } from "@infinitunes/core/validations";
+import { router } from "expo-router";
+import { useRef, useState } from "react";
+import { toast } from "sonner-native";
+
+import { Button } from "~/components/ui/button";
+import { EmailField } from "~/features/auth/form/email-field";
+import { fieldSchemas } from "~/features/auth/form/field-schemas";
+import { FormField } from "~/features/auth/form/form-field";
+import type { TextInputHandle } from "~/features/auth/form/form-field";
+import { FormScreen } from "~/features/auth/form/form-screen";
+import { PasswordField } from "~/features/auth/form/password-field";
+import { usePending } from "~/features/auth/form/use-pending";
+import { useSchemaForm } from "~/features/auth/form/use-schema-form";
+import { trpcClient } from "~/lib/trpc";
+
+import { refreshSession } from "./end-session";
+import { mutationFailure } from "./mutation-failure";
+
+const profileSchema = fieldSchemas({
+  name: nameSchema,
+  email: emailSchema,
+});
+
+type ProfileFormProps = {
+  user: { name?: string | null; email: string };
+};
+
+/**
+ * Edits the display name and email. Changing the email asks for the current
+ * password (the server checks it; accounts without a password need a fresh
+ * sign-in instead), so that field only appears once the email differs.
+ */
+export function ProfileForm({ user }: ProfileFormProps) {
+  const emailInput = useRef<TextInputHandle>(null);
+  const passwordInput = useRef<TextInputHandle>(null);
+  const { values, errors, setValue, validate } = useSchemaForm({
+    schema: profileSchema,
+    initialValues: { name: user.name ?? "", email: user.email },
+  });
+  const [currentPassword, setCurrentPassword] = useState("");
+  const { pending, run } = usePending();
+  const emailChanged = values.email.toLowerCase() !== user.email.toLowerCase();
+
+  function submit() {
+    const profile = validate();
+    if (!profile || pending) return;
+    void run(async () => {
+      const failure = await mutationFailure(() =>
+        trpcClient.user.updateUser.mutate({
+          name: profile.name,
+          ...(emailChanged && {
+            email: profile.email,
+            currentPassword: currentPassword || undefined,
+          }),
+        }),
+      );
+      if (failure) {
+        toast.error(failure);
+        return;
+      }
+      refreshSession();
+      toast.success("Profile Updated!");
+      router.back();
+    });
+  }
+
+  return (
+    <FormScreen>
+      <FormField
+        label="Name"
+        value={values.name}
+        onChangeText={(text) => setValue("name", text)}
+        error={errors.name}
+        editable={!pending}
+        autoComplete="name"
+        textContentType="name"
+        autoCapitalize="words"
+        returnKeyType="next"
+        onSubmitEditing={() => emailInput.current?.focus()}
+      />
+      <EmailField
+        ref={emailInput}
+        value={values.email}
+        onChangeText={(text) => setValue("email", text)}
+        error={errors.email}
+        editable={!pending}
+        returnKeyType={emailChanged ? "next" : "done"}
+        onSubmitEditing={
+          emailChanged ? () => passwordInput.current?.focus() : submit
+        }
+      />
+      {emailChanged ? (
+        <PasswordField
+          ref={passwordInput}
+          purpose="current"
+          label="Current password"
+          hint="Needed to change your email. Leave it blank if you have no password."
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
+          editable={!pending}
+          returnKeyType="done"
+          onSubmitEditing={submit}
+        />
+      ) : null}
+      <Button
+        label={pending ? "Saving..." : "Save profile"}
+        disabled={pending}
+        onPress={submit}
+        className="disabled:opacity-50"
+      />
+    </FormScreen>
+  );
+}
