@@ -86,8 +86,10 @@ describe("useInfiniteList", () => {
 
     await act(async () => result.current.loadMore());
     await waitFor(() => expect(fetchPage).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
-    expect(result.current.hasNextPage).toBe(false);
+    // A render can still show the page before the fetch began (not fetching,
+    // more to come), so wait for the outcome itself, not for the fetch to end.
+    await waitFor(() => expect(result.current.hasNextPage).toBe(false));
+    expect(result.current.isFetchingNextPage).toBe(false);
 
     await act(async () => result.current.loadMore());
     expect(fetchPage).toHaveBeenCalledTimes(2);
