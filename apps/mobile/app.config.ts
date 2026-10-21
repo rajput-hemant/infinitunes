@@ -66,6 +66,7 @@ const config: ExpoConfig = {
         enableRemoteNotifications: false,
       },
     ],
+    "./plugins/android-app-actions/index.ts",
   ],
   experiments: {
     typedRoutes: true,
