@@ -4,8 +4,8 @@ import { Stack } from "expo-router";
 import { CatalogScreen } from "~/components/catalog-screen";
 import { StationCard } from "~/components/station-card";
 import { Text } from "~/components/ui/text";
-import { CATALOG_PAGE_SIZE } from "~/features/browse/catalog-page-size";
 import { trpc, trpcClient } from "~/lib/trpc";
+import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
 import { useInfiniteList } from "~/lib/use-infinite-list";
 
 /** Featured radio stations with endless paging; upstream ends a list with a short page. */

@@ -8,8 +8,7 @@ import { Shelf } from "~/components/shelf";
 import { Text } from "~/components/ui/text";
 import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
-
-import { CATALOG_PAGE_SIZE } from "./catalog-page-size";
+import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
 
 const TRENDING_FALLBACK_TITLE = "Trending Podcasts";
 

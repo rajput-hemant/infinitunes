@@ -1,6 +1,9 @@
 import { uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery, type QueryKey } from "@tanstack/react-query";
 
+/** Items per page of every catalog list (the web's `n: 50`). */
+export const CATALOG_PAGE_SIZE = 50;
+
 type InfiniteListOptions<Page, Item> = {
   /** Unique per list and input, e.g. `[...trpc.get.topAlbums.pathKey(), { lang }]`. */
   queryKey: QueryKey;

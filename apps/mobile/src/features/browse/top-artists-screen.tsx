@@ -6,8 +6,7 @@ import { Stack } from "expo-router";
 import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
 import { trpc } from "~/lib/trpc";
-
-import { CATALOG_PAGE_SIZE } from "./catalog-page-size";
+import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
 
 type TopArtist = TopArtists["top_artists"][number];
 

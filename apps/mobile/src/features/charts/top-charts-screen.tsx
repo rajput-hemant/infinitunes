@@ -6,8 +6,8 @@ import { Stack } from "expo-router";
 import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
 import { Text } from "~/components/ui/text";
-import { CATALOG_PAGE_SIZE } from "~/features/browse/catalog-page-size";
 import { trpc } from "~/lib/trpc";
+import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
 
 const selectCharts = (charts: Chart[]) => uniqueBy(charts, (chart) => chart.id);
 

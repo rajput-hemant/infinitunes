@@ -6,8 +6,8 @@ import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
 import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
+import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
 
-import { CATALOG_PAGE_SIZE } from "./catalog-page-size";
 import { LanguageFilter } from "./language-filter";
 import { useLangParam } from "./use-lang-param";
 
