@@ -4,30 +4,22 @@ import {
   artistSongsPage,
   artistAlbumsPage,
 } from "@infinitunes/types/fixtures";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
-import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
-import { procedure } from "~/test/trpc-mock";
+import { renderScreen } from "~/test/render";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { ArtistScreen } from "./artist-screen";
-import { retryTransient } from "./detail-query";
 
 const initialPlayer = playerStore.getState();
 
 function renderArtist() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { gcTime: Infinity } },
-  });
-  return renderRouter({
-    index: () => (
-      <QueryClientProvider client={queryClient}>
-        <ArtistScreen token={ARTIST_TOKEN} />
-      </QueryClientProvider>
-    ),
-    "album/[token]": () => null,
-    "artist/[token]": () => null,
+  return renderScreen(<ArtistScreen token={ARTIST_TOKEN} />, {
+    routes: {
+      "album/[token]": () => null,
+      "artist/[token]": () => null,
+    },
   });
 }
 
@@ -56,10 +48,6 @@ function selectSort(index: number) {
   return fireEvent(screen.getByTestId("artist-sort"), "onChange", {
     nativeEvent: { selectedSegmentIndex: index, value: "" },
   });
-}
-
-function failure(code: string, message: string) {
-  return Object.assign(new Error(message), { data: { code } });
 }
 
 beforeEach(() => {
@@ -273,7 +261,7 @@ describe("ArtistScreen", () => {
 
   it("shows not found for an unknown artist, without a retry", async () => {
     procedure("artist.details").mockRejectedValue(
-      failure("NOT_FOUND", "Artist not found, please check the id or token"),
+      trpcError("NOT_FOUND", "Artist not found, please check the id or token"),
     );
     await renderArtist();
 
@@ -284,7 +272,7 @@ describe("ArtistScreen", () => {
 
   it("offers a retry when loading fails", async () => {
     procedure("artist.details").mockRejectedValueOnce(
-      failure("BAD_REQUEST", "Please provide Artist id or token"),
+      trpcError("BAD_REQUEST", "Please provide Artist id or token"),
     );
     await renderArtist();
 
@@ -292,18 +280,5 @@ describe("ArtistScreen", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
 
     expect(await findTitle()).toBeOnTheScreen();
-  });
-});
-
-describe("retryTransient", () => {
-  it("retries upstream failures up to three times", () => {
-    const upstream = failure("BAD_GATEWAY", "upstream");
-    expect(retryTransient(0, upstream)).toBe(true);
-    expect(retryTransient(2, upstream)).toBe(true);
-    expect(retryTransient(3, upstream)).toBe(false);
-  });
-
-  it("does not retry a missing entity", () => {
-    expect(retryTransient(0, failure("NOT_FOUND", "missing"))).toBe(false);
   });
 });

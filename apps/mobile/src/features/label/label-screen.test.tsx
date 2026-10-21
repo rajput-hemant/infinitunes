@@ -1,26 +1,19 @@
 import { rawLabel, LABEL_TOKEN } from "@infinitunes/types/fixtures";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
-import { procedure } from "~/test/trpc-mock";
+import { renderScreen } from "~/test/render";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { LabelScreen } from "./label-screen";
 
 const initialPlayer = playerStore.getState();
 
 function renderLabel() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { gcTime: Infinity } },
-  });
-  return renderRouter({
-    index: () => (
-      <QueryClientProvider client={queryClient}>
-        <LabelScreen token={LABEL_TOKEN} />
-      </QueryClientProvider>
-    ),
-    "album/[token]": () => null,
+  return renderScreen(<LabelScreen token={LABEL_TOKEN} />, {
+    routes: {
+      "album/[token]": () => null,
+    },
   });
 }
 
@@ -32,10 +25,6 @@ function selectTab(index: number) {
   return fireEvent(screen.getByTestId("label-tabs"), "onChange", {
     nativeEvent: { selectedSegmentIndex: index, value: "" },
   });
-}
-
-function failure(code: string, message: string) {
-  return Object.assign(new Error(message), { data: { code } });
 }
 
 beforeEach(() => {
@@ -107,7 +96,7 @@ describe("LabelScreen", () => {
 
   it("shows not found for an unknown label, without a retry", async () => {
     procedure("get.label").mockRejectedValue(
-      failure("NOT_FOUND", "Failed to fetch label details"),
+      trpcError("NOT_FOUND", "Failed to fetch label details"),
     );
     await renderLabel();
 
@@ -117,7 +106,7 @@ describe("LabelScreen", () => {
 
   it("offers a retry when loading fails", async () => {
     procedure("get.label").mockRejectedValueOnce(
-      failure("BAD_REQUEST", "Please provide a token"),
+      trpcError("BAD_REQUEST", "Please provide a token"),
     );
     await renderLabel();
 

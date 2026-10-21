@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { retryTransient } from "~/features/artist/detail-query";
 import { trpc } from "~/lib/trpc";
 
 /**
@@ -11,6 +10,5 @@ import { trpc } from "~/lib/trpc";
 export function useShow(token: string) {
   return useQuery({
     ...trpc.show.details.queryOptions({ token }),
-    retry: retryTransient,
   });
 }

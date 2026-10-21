@@ -4,12 +4,11 @@ import {
   rawEpisode,
   SHOW_TOKEN,
 } from "@infinitunes/types/fixtures";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
-import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
-import { procedure } from "~/test/trpc-mock";
+import { renderScreen } from "~/test/render";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { ShowScreen } from "./show-screen";
 
@@ -24,16 +23,7 @@ function serveEpisodes(...pages: ReturnType<typeof rawEpisode>[][]) {
 }
 
 function renderShow() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { gcTime: Infinity } },
-  });
-  return renderRouter({
-    index: () => (
-      <QueryClientProvider client={queryClient}>
-        <ShowScreen token={SHOW_TOKEN} />
-      </QueryClientProvider>
-    ),
-  });
+  return renderScreen(<ShowScreen token={SHOW_TOKEN} />);
 }
 
 function findTitle() {
@@ -44,10 +34,6 @@ function choose(menu: "season-menu" | "sort-menu", id: string) {
   return fireEvent(screen.getByTestId(menu), "onPressAction", {
     nativeEvent: { event: id },
   });
-}
-
-function failure(code: string, message: string) {
-  return Object.assign(new Error(message), { data: { code } });
 }
 
 beforeEach(() => {
@@ -205,7 +191,7 @@ describe("ShowScreen", () => {
 
   it("shows not found for an unknown show, without a retry", async () => {
     procedure("show.details").mockRejectedValue(
-      failure("NOT_FOUND", "No show found, please check the token"),
+      trpcError("NOT_FOUND", "No show found, please check the token"),
     );
     await renderShow();
 
@@ -215,7 +201,7 @@ describe("ShowScreen", () => {
 
   it("offers a retry when loading fails", async () => {
     procedure("show.details").mockRejectedValueOnce(
-      failure("BAD_REQUEST", "Please provide show token"),
+      trpcError("BAD_REQUEST", "Please provide show token"),
     );
     await renderShow();
 

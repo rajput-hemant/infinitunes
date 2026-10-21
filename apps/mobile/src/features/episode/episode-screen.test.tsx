@@ -3,12 +3,11 @@ import {
   SHOW_TOKEN,
   EPISODE_TOKEN,
 } from "@infinitunes/types/fixtures";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
-import { procedure } from "~/test/trpc-mock";
+import { renderScreen } from "~/test/render";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { EpisodeScreen } from "./episode-screen";
 
@@ -30,21 +29,11 @@ const modules = {
 };
 
 function renderEpisode() {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { gcTime: Infinity } },
+  return renderScreen(<EpisodeScreen token={EPISODE_TOKEN} />, {
+    routes: {
+      "show/[token]": () => null,
+    },
   });
-  return renderRouter({
-    index: () => (
-      <QueryClientProvider client={queryClient}>
-        <EpisodeScreen token={EPISODE_TOKEN} />
-      </QueryClientProvider>
-    ),
-    "show/[token]": () => null,
-  });
-}
-
-function failure(code: string, message: string) {
-  return Object.assign(new Error(message), { data: { code } });
 }
 
 beforeEach(() => {
@@ -106,7 +95,7 @@ describe("EpisodeScreen", () => {
 
   it("shows not found for an unknown episode, without a retry", async () => {
     procedure("show.episodeDetails").mockRejectedValue(
-      failure("NOT_FOUND", "No episode found, please check the token"),
+      trpcError("NOT_FOUND", "No episode found, please check the token"),
     );
     await renderEpisode();
 
@@ -126,7 +115,7 @@ describe("EpisodeScreen", () => {
 
   it("offers a retry when loading fails", async () => {
     procedure("show.episodeDetails").mockRejectedValueOnce(
-      failure("BAD_REQUEST", "Please provide episode token"),
+      trpcError("BAD_REQUEST", "Please provide episode token"),
     );
     await renderEpisode();
 

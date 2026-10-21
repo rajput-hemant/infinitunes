@@ -1,14 +1,12 @@
 import {
   categorySort,
   isDefaultCategory,
-  nextArtistPage,
   toArtistPage,
 } from "@infinitunes/core/artist-pagination";
 import type { Category } from "@infinitunes/types";
-import { uniqueBy } from "@infinitunes/types";
-import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { trpc, trpcClient } from "~/lib/trpc";
+import { useInfiniteList } from "~/lib/use-infinite-list";
 
 type ArtistSource = "songs" | "albums";
 
@@ -42,15 +40,17 @@ export function useArtistPages<Raw, Item>({
   keyOf,
   enabled,
 }: ArtistPagesOptions<Raw, Item>) {
-  const query = useInfiniteQuery({
+  return useInfiniteList({
     queryKey: [
       ...trpc.artist[source].pathKey(),
       { id: artistId, cat: category },
     ],
-    queryFn: async ({ pageParam }) => {
+    firstPage: 0,
+    enabled,
+    fetchPage: async (page) => {
       const request = {
         id: artistId,
-        page: pageParam,
+        page,
         cat: isDefaultCategory(category) ? undefined : category,
         sort: categorySort(category),
       };
@@ -59,25 +59,10 @@ export function useArtistPages<Raw, Item>({
           ? await trpcClient.artist.songs.query(request)
           : await trpcClient.artist.albums.query(request);
       const { section, list } = SECTIONS[source];
-      const page = toArtistPage<Raw>(result, section, list);
-      return { items: page.items.map(toItem), last_page: page.last_page };
+      return toArtistPage<Raw>(result, section, list);
     },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage, _pages, lastPageParam) =>
-      nextArtistPage(lastPage, lastPageParam),
-    enabled,
-  });
-
-  const items = uniqueBy(
-    query.data?.pages.flatMap((page) => page.items) ?? [],
+    itemsOf: (page) => page.items.map(toItem),
+    hasMore: (lastPage) => !lastPage.last_page,
     keyOf,
-  );
-
-  function loadMore() {
-    if (query.hasNextPage && !query.isFetchingNextPage) {
-      void query.fetchNextPage();
-    }
-  }
-
-  return { ...query, items, loadMore };
+  });
 }

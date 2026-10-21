@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { retryTransient } from "~/features/artist/detail-query";
 import { trpc } from "~/lib/trpc";
 
 /** Songs and albums the label page lists; the procedure has no further pages in use. */
@@ -16,6 +15,5 @@ export function useLabel(token: string) {
       cat: "popularity",
       sort: "asc",
     }),
-    retry: retryTransient,
   });
 }
