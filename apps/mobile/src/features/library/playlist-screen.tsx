@@ -1,5 +1,6 @@
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
+import { formatDuration } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
@@ -19,6 +20,9 @@ import { SongCollection } from "./song-collection";
 import { SwipeableRow } from "./swipeable-row";
 import { usePlaylistSongs } from "./use-playlist-songs";
 import { useServerPlaylists } from "./use-server-playlists";
+
+const totalSeconds = (songs: readonly SongRowItem[]) =>
+  songs.reduce((total, song) => total + song.duration, 0);
 
 type PlaylistSongRowProps = {
   song: SongRowItem;
@@ -69,11 +73,14 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
           onRefresh={refresh}
           recentLabel="Playlist order"
           header={
-            playlist.description ? (
-              <Text tone="muted" className="px-page pb-3">
-                {playlist.description}
+            <View className="gap-1 px-page pb-3">
+              {playlist.description ? (
+                <Text tone="muted">{playlist.description}</Text>
+              ) : null}
+              <Text variant="subhead" tone="muted">
+                {formatDuration(totalSeconds(items), "hh:mm:ss")} total
               </Text>
-            ) : undefined
+            </View>
           }
           renderRow={(song, play) => (
             <PlaylistSongRow

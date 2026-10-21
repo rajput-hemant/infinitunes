@@ -77,6 +77,7 @@ describe("PlaylistScreen", () => {
     expect(titles).toEqual(["Opening Number", "Middle Song", "Closing Time"]);
     expect(screen.getByText("Windows down")).toBeOnTheScreen();
     expect(screen.getByText("3 songs")).toBeOnTheScreen();
+    expect(screen.getByText("00:05:15 total")).toBeOnTheScreen();
   });
 
   it("says so when the playlist is empty", async () => {
