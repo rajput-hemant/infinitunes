@@ -1,16 +1,16 @@
 "use client";
 
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import { ListMusic } from "lucide-react";
-import Link from "next/link";
-import type { ReactNode } from "react";
-
 import {
   usePlaylistGone,
   usePlaylistMeta,
   usePlaylistRowRemoved,
   useUnconfirmedPlaylists,
-} from "~/lib/optimistic-playlists";
+} from "@infinitunes/core/react/optimistic-playlists";
+import { Skeleton } from "@infinitunes/ui/components/skeleton";
+import { ListMusic } from "lucide-react";
+import Link from "next/link";
+import type { ReactNode } from "react";
+
 import { asRoute, cn } from "~/lib/utils";
 
 /** Hides its children as soon as the playlist is deleted, before the refresh lands. */

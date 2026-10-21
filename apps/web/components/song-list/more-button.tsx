@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  addSongsOptimistic,
+  removeSongOptimistic,
+} from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import { toQueueEntry } from "@infinitunes/types";
@@ -27,10 +31,6 @@ import {
 import { unwrap } from "~/lib/action-result";
 import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
-import {
-  addSongsOptimistic,
-  removeSongOptimistic,
-} from "~/lib/optimistic-playlists";
 
 import { TileMoreDesktop } from "./more-button-desktop";
 import { useTileFavorite } from "./more-button-favorite";

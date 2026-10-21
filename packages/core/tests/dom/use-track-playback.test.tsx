@@ -1,10 +1,13 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import type { Queue, StreamQuality } from "@infinitunes/types";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-import { useTrackPlayback } from "../../hooks/use-track-playback";
+import {
+  PLAYBACK_PROBLEM_MESSAGES,
+  useTrackPlayback,
+} from "../../src/react/use-track-playback";
 
 const urls = (id: string) =>
   `https://cdn/${id}-low.mp3,https://cdn/${id}-high.mp3`;
@@ -14,9 +17,14 @@ function entry(id: string, queueItemId: string, url = urls(id)): Queue {
     id,
     queueItemId,
     name: id,
+    subtitle: "",
+    url: `https://www.jiosaavn.com/song/${id}/${id}-token`,
     type: "song",
+    image: "",
+    artists: [],
     download_url: url,
-  } as unknown as Queue;
+    duration: 180,
+  };
 }
 
 type Props = {
@@ -30,6 +38,12 @@ type Props = {
 
 const roots: Root[] = [];
 
+const messages: string[] = [];
+
+beforeEach(() => {
+  messages.length = 0;
+});
+
 async function setup(initial: Props) {
   const loads: string[] = [];
   const recorded: string[] = [];
@@ -39,7 +53,6 @@ async function setup(initial: Props) {
     loads.push(src);
     loadOptions.push(options);
   };
-  const onEnd = () => {};
   const record = (item: { id: string }) => void recorded.push(item.id);
 
   function Harness(props: Props) {
@@ -49,8 +62,9 @@ async function setup(initial: Props) {
       streamQuality: props.quality ?? "excellent",
       isPlayerInit: true,
       load,
-      onEnd,
       record,
+      onProblem: (problem) =>
+        void messages.push(PLAYBACK_PROBLEM_MESSAGES[problem]),
       loadError: props.loadError,
       isLooping: props.isLooping,
       isReady: props.isReady,
@@ -68,11 +82,6 @@ async function setup(initial: Props) {
   await render(initial);
   return { render, loads, recorded, loadOptions, unplayable };
 }
-
-const toasts: string[] = [];
-mock.module("sonner", () => ({
-  toast: { error: (m: string) => void toasts.push(m), success() {} },
-}));
 
 afterEach(async () => {
   await act(async () => roots.splice(0).forEach((r) => r.unmount()));
@@ -148,6 +157,7 @@ describe("track playback", () => {
 
     expect(loads).toEqual([]);
     expect(recorded).toEqual([]);
+    expect(messages).toEqual([PLAYBACK_PROBLEM_MESSAGES["no-source"]]);
   });
 
   it("treats a rewritten queueItemId as a new entry", async () => {
@@ -168,14 +178,13 @@ describe("track playback load failures", () => {
     "https://cdn/x_12,https://cdn/x_48,https://cdn/x_96,https://cdn/x_160,https://cdn/x_320";
 
   it("starts at the song's best bitrate, not the 320 it does not have", async () => {
-    const song = { ...entry("a", "q1", ladder), maxQuality: "high" } as Queue;
+    const song: Queue = { ...entry("a", "q1", ladder), maxQuality: "high" };
     const { loads } = await setup({ queue: [song], currentIndex: 0 });
 
     expect(loads).toEqual(["https://cdn/x_160"]);
   });
 
   it("steps down a bitrate on each load error, then gives up once and skips", async () => {
-    toasts.length = 0;
     const song = entry("a", "q1", ladder);
     const { render, loads, unplayable } = await setup({
       queue: [song],
@@ -189,13 +198,13 @@ describe("track playback load failures", () => {
       expect(loads.at(-1)).toBe(`https://cdn/x_${rate}`);
       await render({ queue: [song], currentIndex: 0 });
     }
-    expect(toasts).toEqual([]);
+    expect(messages).toEqual([]);
 
     await render({ queue: [song], currentIndex: 0, loadError: "failed" });
     await render({ queue: [song], currentIndex: 0, loadError: "failed 2" });
 
     expect(loads).toHaveLength(5);
-    expect(toasts).toEqual(["Couldn't play this song"]);
+    expect(messages).toEqual(["Couldn't play this song"]);
     expect(unplayable).toEqual(["skip"]);
   });
 
@@ -221,7 +230,6 @@ describe("track playback load failures", () => {
   });
 
   it("stops after two tracks in a row fail, with one network toast, and starts over after a user action", async () => {
-    toasts.length = 0;
     const two = "https://cdn/x_96,https://cdn/x_160";
     const q = ["a", "b", "c"].map((id, i) => entry(id, `q${i}`, two));
     const { render, unplayable } = await setup({ queue: q, currentIndex: 0 });
@@ -232,13 +240,13 @@ describe("track playback load failures", () => {
     };
 
     await failTrack(0);
-    expect(toasts).toEqual(["Couldn't play this song"]);
+    expect(messages).toEqual(["Couldn't play this song"]);
     expect(unplayable).toHaveLength(1);
 
     // The player skipped to the next entry, which fails too.
     await render({ queue: q, currentIndex: 1 });
     await failTrack(1);
-    expect(toasts).toEqual([
+    expect(messages).toEqual([
       "Couldn't play this song",
       "Can't reach the music server. Check your connection and try again.",
     ]);
@@ -247,12 +255,11 @@ describe("track playback load failures", () => {
     // The listener picks another track: the count starts over.
     await render({ queue: q, currentIndex: 2 });
     await failTrack(2);
-    expect(toasts.at(-1)).toBe("Couldn't play this song");
+    expect(messages.at(-1)).toBe("Couldn't play this song");
     expect(unplayable).toHaveLength(2);
   });
 
   it("forgets earlier failures once a track loads", async () => {
-    toasts.length = 0;
     const two = "https://cdn/x_96,https://cdn/x_160";
     const q = ["a", "b"].map((id, i) => entry(id, `q${i}`, two));
     const { render, unplayable } = await setup({ queue: q, currentIndex: 0 });
@@ -265,7 +272,7 @@ describe("track playback load failures", () => {
       await render({ queue: q, currentIndex: 1, loadError });
     }
 
-    expect(toasts).toEqual([
+    expect(messages).toEqual([
       "Couldn't play this song",
       "Couldn't play this song",
     ]);

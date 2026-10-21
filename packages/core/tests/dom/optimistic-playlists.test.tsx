@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import type { MyPlaylist } from "@infinitunes/db/schema";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -13,14 +12,14 @@ import {
   resetPlaylistOverlay,
   usePlaylists,
   type PlaylistView,
-} from "../../lib/optimistic-playlists";
-import { waitFor } from "./wait-for";
+  type UserPlaylist,
+} from "../../src/react/optimistic-playlists";
 
 const playlist = (
   id: string,
   name: string,
   songs: string[] = [],
-): MyPlaylist => ({
+): UserPlaylist => ({
   id,
   name,
   description: null,
@@ -30,7 +29,7 @@ const playlist = (
 });
 
 // The list is written to the DOM and read back, so nothing is reassigned in render.
-function Probe({ server }: { server: MyPlaylist[] | undefined }) {
+function Probe({ server }: { server: UserPlaylist[] | undefined }) {
   return <output>{JSON.stringify(usePlaylists(server) ?? null)}</output>;
 }
 let host: HTMLElement;
@@ -38,12 +37,12 @@ const view = (): PlaylistView[] | undefined =>
   JSON.parse(host.textContent ?? "null") ?? undefined;
 
 const roots: Root[] = [];
-async function mount(server: MyPlaylist[] | undefined) {
+async function mount(server: UserPlaylist[] | undefined) {
   host = document.createElement("div");
   const root = createRoot(host);
   roots.push(root);
   await act(async () => root.render(<Probe server={server} />));
-  return (next: MyPlaylist[] | undefined) =>
+  return (next: UserPlaylist[] | undefined) =>
     act(async () => root.render(<Probe server={next} />));
 }
 
@@ -69,8 +68,8 @@ afterEach(async () => {
 describe("optimistic playlists", () => {
   it("shows a created playlist as pending at once, then with its real id", async () => {
     const rerender = await mount([playlist("a", "A")]);
-    const write = deferred<MyPlaylist>();
-    let created: Promise<MyPlaylist> | undefined;
+    const write = deferred<UserPlaylist>();
+    let created: Promise<UserPlaylist> | undefined;
     await act(async () => {
       created = createPlaylistOptimistic({ name: "New" }, () => write.promise);
     });
@@ -90,7 +89,7 @@ describe("optimistic playlists", () => {
 
   it("removes the pending row when creating fails", async () => {
     await mount([playlist("a", "A")]);
-    const write = deferred<MyPlaylist>();
+    const write = deferred<UserPlaylist>();
     let outcome: Promise<unknown> | undefined;
     await act(async () => {
       outcome = createPlaylistOptimistic(
@@ -100,9 +99,11 @@ describe("optimistic playlists", () => {
     });
     expect(names()).toEqual(["A", "New"]);
 
-    await act(async () => write.reject(new Error("boom")));
-    expect(await outcome).toBe("boom");
-    await waitFor(() => names()?.length === 1);
+    await act(async () => {
+      write.reject(new Error("boom"));
+      expect(await outcome).toBe("boom");
+    });
+    expect(names()).toEqual(["A"]);
   });
 
   it("renames at once and restores the old name on failure", async () => {
@@ -118,9 +119,11 @@ describe("optimistic playlists", () => {
     });
     expect(names()).toEqual(["Fresh"]);
 
-    await act(async () => write.reject(new Error("nope")));
-    await outcome;
-    await waitFor(() => names()?.[0] === "Old");
+    await act(async () => {
+      write.reject(new Error("nope"));
+      await outcome;
+    });
+    expect(names()).toEqual(["Old"]);
   });
 
   it("hides a deleted playlist at once and brings it back on failure", async () => {
@@ -134,9 +137,11 @@ describe("optimistic playlists", () => {
     });
     expect(names()).toEqual(["B"]);
 
-    await act(async () => write.reject(new Error("nope")));
-    await outcome;
-    await waitFor(() => names()?.length === 2);
+    await act(async () => {
+      write.reject(new Error("nope"));
+      await outcome;
+    });
+    expect(names()).toEqual(["A", "B"]);
   });
 
   it("counts an added song immediately and drops it once the server has it", async () => {
@@ -164,20 +169,25 @@ describe("optimistic playlists", () => {
       return { songs: held };
     };
     const gate = deferred();
+    let writes: Promise<unknown>[] = [];
     await act(async () => {
-      void removeSongOptimistic("a", "s2", ids, async (i) => {
-        await gate.promise;
-        return server("s2")(i);
-      });
-      void removeSongOptimistic("a", "s5", ids, server("s5"));
-      void removeSongOptimistic("a", "s7", ids, server("s7"));
+      writes = [
+        removeSongOptimistic("a", "s2", ids, async (i) => {
+          await gate.promise;
+          return server("s2")(i);
+        }),
+        removeSongOptimistic("a", "s5", ids, server("s5")),
+        removeSongOptimistic("a", "s7", ids, server("s7")),
+      ];
     });
     expect(view()?.[0]?.songs).toEqual(["s1", "s3", "s4", "s6"]);
 
     await act(async () => gate.resolve(undefined));
     // The first write's refresh lands while the others are still queued.
     await rerender([playlist("a", "A", ["s1", "s3", "s4", "s5", "s6", "s7"])]);
-    await waitFor(() => sent.length === 3);
+    await act(async () => {
+      await Promise.all(writes);
+    });
 
     expect(sent).toEqual([1, 3, 4]);
     expect(held).toEqual(["s1", "s3", "s4", "s6"]);
@@ -220,7 +230,7 @@ describe("optimistic playlists", () => {
     await act(async () => {
       void createPlaylistOptimistic(
         { name: "X" },
-        () => new Promise<MyPlaylist>(() => {}),
+        () => new Promise<UserPlaylist>(() => {}),
       );
     });
 

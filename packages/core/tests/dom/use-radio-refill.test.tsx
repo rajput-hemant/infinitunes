@@ -1,10 +1,12 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
 import type { ActiveRadioSession, Queue, Song } from "@infinitunes/types";
+import { toQueue } from "@infinitunes/types";
+import { rawSong } from "@infinitunes/types/fixtures";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-import { useRadioRefill } from "../../hooks/use-radio-refill";
+import { useRadioRefill } from "../../src/react/use-radio-refill";
 
 const station = (stationId: string): ActiveRadioSession => ({
   stationId,
@@ -12,18 +14,9 @@ const station = (stationId: string): ActiveRadioSession => ({
   type: "featured",
 });
 
-const queued = (id: string): Queue =>
-  ({ id, queueItemId: `q-${id}`, name: id, type: "song" }) as unknown as Queue;
+const song = (id: string) => rawSong({ id });
 
-const song = (id: string) =>
-  ({
-    id,
-    title: id,
-    type: "song",
-    image: "",
-    perma_url: "",
-    more_info: {},
-  }) as unknown as Song;
+const queued = (id: string): Queue => toQueue(song(id));
 
 type Props = {
   activeRadio: ActiveRadioSession | null;

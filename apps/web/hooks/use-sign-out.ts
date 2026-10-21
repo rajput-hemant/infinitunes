@@ -1,9 +1,8 @@
 "use client";
 
+import { resetOptimisticState } from "@infinitunes/core/optimistic-owner";
 import { useCallback } from "react";
 import { toast } from "sonner";
-
-import { resetOptimisticState } from "~/lib/optimistic-owner";
 
 /**
  * The auth client (with the passkey plugin) is imported on click, so it stays

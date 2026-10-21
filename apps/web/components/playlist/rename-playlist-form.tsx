@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { renamePlaylistOptimistic } from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
 import { newPlaylistSchema } from "@infinitunes/core/validations";
 import type { MyPlaylist } from "@infinitunes/db/schema";
@@ -13,7 +14,6 @@ import type { z } from "zod";
 import { unwrap } from "~/lib/action-result";
 import { renamePlaylist } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
-import { renamePlaylistOptimistic } from "~/lib/optimistic-playlists";
 
 import { PlaylistFields } from "./playlist-fields";
 

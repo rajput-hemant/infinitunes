@@ -4,7 +4,7 @@ import {
   loopModeOf,
   nextTrackIndex,
   prevTrackIndex,
-} from "../components/player/track-index";
+} from "../src/playback-order";
 
 const order = (
   currentIndex: number,

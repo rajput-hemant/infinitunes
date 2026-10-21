@@ -1,5 +1,9 @@
 "use client";
 
+import {
+  deletePlaylistOptimistic,
+  usePlaylistMeta,
+} from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import {
@@ -26,10 +30,6 @@ import { toast } from "sonner";
 import { unwrap } from "~/lib/action-result";
 import { deletePlaylist } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
-import {
-  deletePlaylistOptimistic,
-  usePlaylistMeta,
-} from "~/lib/optimistic-playlists";
 import { cn, destructiveText } from "~/lib/utils";
 
 import { RenamePlaylistDialog } from "./rename-playlist-dialog";

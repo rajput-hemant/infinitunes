@@ -1,3 +1,4 @@
+import { loopModeOf } from "@infinitunes/core/playback-order";
 import { getImageSrc } from "@infinitunes/types";
 import type { Queue } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
@@ -35,7 +36,6 @@ import {
 } from "./controls";
 import { ExpandedPane, type PaneTab } from "./expanded-pane";
 import { ExpandedSeek } from "./expanded-seek";
-import { loopModeOf } from "./track-index";
 
 const PHONE_TABS = [
   { id: "lyrics", label: "Lyrics", Icon: Mic2 },

@@ -1,3 +1,4 @@
+import type { LoopMode } from "@infinitunes/core/playback-order";
 import { Loader2, Pause, Repeat, Repeat1, Shuffle } from "lucide-react";
 
 import { Icons } from "~/components/icons";
@@ -6,7 +7,6 @@ import { cn } from "~/lib/utils";
 
 import { BarButton } from "./bar-button";
 import { ActiveDot } from "./controls";
-import type { LoopMode } from "./track-index";
 
 type PlayerTransportProps = {
   isShuffle: boolean;

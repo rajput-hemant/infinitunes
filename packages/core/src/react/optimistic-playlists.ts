@@ -1,7 +1,14 @@
-"use client";
-
-import type { MyPlaylist } from "@infinitunes/db/schema";
 import { useEffect, useSyncExternalStore } from "react";
+
+/** A playlist as the `user` router returns it: one row of the `playlist` table. */
+export type UserPlaylist = {
+  id: string;
+  name: string;
+  description: string | null;
+  userId: string;
+  songs: string[];
+  createdAt: Date;
+};
 
 /**
  * Shared optimistic playlist state. The viewer's library comes from the server
@@ -19,14 +26,14 @@ import { useEffect, useSyncExternalStore } from "react";
  * by the database. The new row appears at once as `pending` (no link, dimmed)
  * and takes the real id when the write returns.
  */
-export type PlaylistView = MyPlaylist & { pending?: boolean };
+export type PlaylistView = UserPlaylist & { pending?: boolean };
 
 type Created = {
   tempId: string;
   name: string;
   description: string | null;
   createdAt: Date;
-  real?: MyPlaylist;
+  real?: UserPlaylist;
 };
 type Renamed = {
   name: string;
@@ -118,8 +125,8 @@ type CreateInput = { name: string; description?: string };
 /** Adds a pending row now; resolves with the created playlist, rejects (row removed) on failure. */
 export async function createPlaylistOptimistic(
   input: CreateInput,
-  send: () => Promise<MyPlaylist>,
-): Promise<MyPlaylist> {
+  send: () => Promise<UserPlaylist>,
+): Promise<UserPlaylist> {
   nextTemp += 1;
   const record: Created = {
     tempId: `pending-${nextTemp}`,
@@ -303,7 +310,7 @@ export function removeSongOptimistic(
 }
 
 /** Drops the records `server` now agrees with; `at` is the snapshot being checked. */
-function reconcile(server: readonly MyPlaylist[], at: OverlayState) {
+function reconcile(server: readonly UserPlaylist[], at: OverlayState) {
   let changed = false;
   const byId = new Map(server.map((p) => [p.id, p]));
 
@@ -353,7 +360,7 @@ function reconcile(server: readonly MyPlaylist[], at: OverlayState) {
 }
 
 function overlay(
-  server: readonly MyPlaylist[],
+  server: readonly UserPlaylist[],
   at: OverlayState,
 ): PlaylistView[] {
   const list: PlaylistView[] = [];
@@ -407,7 +414,7 @@ function useOverlayState() {
  * library is not an empty one, so nothing is layered over it.
  */
 export function usePlaylists(
-  server: readonly MyPlaylist[] | undefined,
+  server: readonly UserPlaylist[] | undefined,
 ): PlaylistView[] | undefined {
   const at = useOverlayState();
 

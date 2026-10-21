@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "lint": "oxlint --deny-warnings",
     "lint": "oxlint",
     "type-check": "tsc --noEmit"
   },
@@ -16,6 +15,7 @@
     "typescript": "catalog:"
   },
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./fixtures": "./src/fixtures.ts"
   }
 }

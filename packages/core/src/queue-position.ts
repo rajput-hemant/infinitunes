@@ -3,6 +3,9 @@ import type { Queue } from "@infinitunes/types";
 
 type QueueEntry = Pick<Queue, "id" | "queueItemId" | "url">;
 
+/** One listen for the history: a song or a podcast episode. */
+export type PlayedItem = { id: string; type: "song" | "episode" };
+
 /**
  * Whether a track row is the one currently playing. A row that is itself a
  * queue entry (`queueItemId` present in the queue) is compared by that unique
@@ -51,7 +54,7 @@ export function findQueueIndex(
 export function playToRecord(
   track: Pick<Queue, "id" | "queueItemId" | "type"> | undefined,
   lastRecordedId: string | null,
-): { id: string; type: "song" | "episode" } | null {
+): PlayedItem | null {
   if (!track || track.queueItemId === lastRecordedId) return null;
   return { id: track.id, type: track.type === "episode" ? "episode" : "song" };
 }

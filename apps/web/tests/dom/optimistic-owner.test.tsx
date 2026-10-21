@@ -16,7 +16,7 @@ mock.module("~/lib/actions", () => ({
 
 const { LikeButton } = await import("../../components/like-button");
 const { claimOptimisticOwner, resetOptimisticState } =
-  await import("../../lib/optimistic-owner");
+  await import("@infinitunes/core/optimistic-owner");
 const { favoriteKey, toggleFavorite, useFavorite, resetFavoriteOverlay } =
   await import("@infinitunes/core/react/optimistic-favorite");
 

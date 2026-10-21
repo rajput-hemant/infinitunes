@@ -1,34 +1,44 @@
-import { playToRecord } from "@infinitunes/core/queue-position";
 import {
   getDownloadCandidates,
   type Queue,
   type StreamQuality,
 } from "@infinitunes/types";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
 
-import { type PlayedItem } from "~/lib/history-actions";
+import { playToRecord, type PlayedItem } from "../queue-position";
 
 /** Tracks in a row that may fail to load before playback stops. */
 const MAX_CONSECUTIVE_FAILURES = 2;
 
-type LoadOptions = {
-  html5: boolean;
-  loop: boolean;
-  autoplay: boolean;
-  initialMute: boolean;
-  onend: () => void;
+/**
+ * Why the current entry did not start. `no-source`: it has no stream link
+ * (e.g. the server has no media key). `unplayable`: every bitrate failed and
+ * the player skips it. `unreachable`: two entries in a row failed, so playback
+ * stops on this one instead of working through the whole queue.
+ */
+export type PlaybackProblem = "no-source" | "unplayable" | "unreachable";
+
+/** What each app tells the listener for a `PlaybackProblem`. */
+export const PLAYBACK_PROBLEM_MESSAGES: Record<PlaybackProblem, string> = {
+  "no-source": "This song can't be played right now.",
+  unplayable: "Couldn't play this song",
+  unreachable:
+    "Can't reach the music server. Check your connection and try again.",
 };
+
+/** Loads `src` into the audio engine and starts it. */
+export type LoadTrack = (src: string, options: { loop: boolean }) => void;
 
 type TrackPlaybackOptions = {
   queue: Queue[];
   currentIndex: number;
   streamQuality: StreamQuality;
   isPlayerInit: boolean;
-  load: (src: string, options: LoadOptions) => void;
-  onEnd: () => void;
+  load: LoadTrack;
   record: (item: PlayedItem) => void;
-  /** The player's load error for the current source (reset by every load). */
+  /** Reports a problem with the current entry; the app shows the message. */
+  onProblem: (problem: PlaybackProblem) => void;
+  /** The engine's load error for the current source (reset by every load). */
   loadError?: string;
   /** Whether repeat-one is on, so it survives the switch to the next track. */
   isLooping?: boolean;
@@ -39,10 +49,12 @@ type TrackPlaybackOptions = {
 };
 
 /**
- * Loads the current queue entry and records it in the listening history.
+ * Loads the current queue entry and records it in the listening history,
+ * stepping down a bitrate on each load error (`getDownloadCandidates`) and
+ * never loading an empty source.
  *
  * The effect is keyed on the entry (`queueItemId`) and its resolved source, not
- * on `queue`: `load` destroys and recreates the Howl, so keying on the array
+ * on `queue`: `load` replaces the engine's source, so keying on the array
  * would restart the playing track whenever anything is queued, removed or
  * radio-refilled. The entry id is part of the key so the same song queued
  * twice in a row still loads and records its second copy, while a quality
@@ -54,8 +66,8 @@ export function useTrackPlayback({
   streamQuality,
   isPlayerInit,
   load,
-  onEnd,
   record,
+  onProblem,
   loadError,
   isLooping = false,
   isReady = false,
@@ -65,6 +77,7 @@ export function useTrackPlayback({
   const notifiedRef = useRef<string | null>(null);
   const loopRef = useRef(isLooping);
   const unplayableRef = useRef(onUnplayable);
+  const problemRef = useRef(onProblem);
   // Consecutive entries that failed on every bitrate, and whether the next
   // entry change is our own skip (anything else is the listener acting).
   const failuresRef = useRef(0);
@@ -72,6 +85,7 @@ export function useTrackPlayback({
   useEffect(() => {
     loopRef.current = isLooping;
     unplayableRef.current = onUnplayable;
+    problemRef.current = onProblem;
   });
   // How many of this entry's bitrates have failed to load, so the next one down
   // is tried. Keyed by the entry, so it never leaks onto another track.
@@ -133,12 +147,10 @@ export function useTrackPlayback({
     if (failuresRef.current >= MAX_CONSECUTIVE_FAILURES) {
       // Offline or the CDN is down: stop on this track instead of working
       // through the whole queue.
-      toast.error(
-        "Can't reach the music server. Check your connection and try again.",
-      );
+      problemRef.current("unreachable");
       return;
     }
-    toast.error("Couldn't play this song");
+    problemRef.current("unplayable");
     expectSkipRef.current = true;
     unplayableRef.current?.();
   }, [exhausted, queueItemId]);
@@ -149,7 +161,7 @@ export function useTrackPlayback({
     if (exhausted) return;
 
     if (!audioSrc) {
-      toast.error("This song can't be played right now.");
+      problemRef.current("no-source");
       return;
     }
 
@@ -162,19 +174,12 @@ export function useTrackPlayback({
       record(play);
     }
 
-    load(audioSrc, {
-      html5: true,
-      loop: loopRef.current,
-      autoplay: true,
-      initialMute: false,
-      onend: onEnd,
-    });
+    load(audioSrc, { loop: loopRef.current });
   }, [
     audioSrc,
     exhausted,
     isPlayerInit,
     load,
-    onEnd,
     queueItemId,
     record,
     trackId,

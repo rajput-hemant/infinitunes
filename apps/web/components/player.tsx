@@ -1,7 +1,19 @@
 "use client";
 
+import {
+  loopModeOf,
+  nextTrackIndex,
+  prevTrackIndex,
+} from "@infinitunes/core/playback-order";
 import { createPositionStore } from "@infinitunes/core/react/position-store";
 import { usePlayhead } from "@infinitunes/core/react/use-playhead";
+import { useRadioRefill } from "@infinitunes/core/react/use-radio-refill";
+import {
+  PLAYBACK_PROBLEM_MESSAGES,
+  useTrackPlayback,
+  type LoadTrack,
+  type PlaybackProblem,
+} from "@infinitunes/core/react/use-track-playback";
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
 import * as React from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
@@ -9,7 +21,6 @@ import { toast } from "sonner";
 
 import { GlassSurface } from "~/components/glass/glass-surface";
 import { useKeydown } from "~/hooks/use-keydown";
-import { useRadioRefill } from "~/hooks/use-radio-refill";
 import {
   useActiveRadioSession,
   useCurrentSongIndex,
@@ -19,7 +30,6 @@ import {
   useQueue,
   useStreamQuality,
 } from "~/hooks/use-store";
-import { useTrackPlayback } from "~/hooks/use-track-playback";
 import type { User } from "~/lib/auth";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
@@ -32,11 +42,6 @@ import { PlayerTrackInfo } from "./player/player-track-info";
 import { PlayerTransport } from "./player/player-transport";
 import { PlayerVolume } from "./player/player-volume";
 import { MiniProgress, SeekBar } from "./player/seek-bar";
-import {
-  loopModeOf,
-  nextTrackIndex,
-  prevTrackIndex,
-} from "./player/track-index";
 import { useQueuePane } from "./player/use-queue-pane";
 import { Queue } from "./queue";
 
@@ -45,6 +50,10 @@ type PlayerProps = {
   playlists?: MyPlaylist[];
   favorites?: Favorite | null;
 };
+
+function showPlaybackProblem(problem: PlaybackProblem) {
+  toast.error(PLAYBACK_PROBLEM_MESSAGES[problem]);
+}
 
 export function Player({ user, playlists, favorites }: PlayerProps) {
   // stores
@@ -144,14 +153,26 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
     );
   }, [setCurrentIndex]);
 
+  const loadTrack = React.useCallback<LoadTrack>(
+    (src, { loop }) =>
+      load(src, {
+        html5: true,
+        loop,
+        autoplay: true,
+        initialMute: false,
+        onend: onEndHandler,
+      }),
+    [load, onEndHandler],
+  );
+
   useTrackPlayback({
     queue,
     currentIndex,
     streamQuality,
     isPlayerInit,
-    load,
-    onEnd: onEndHandler,
+    load: loadTrack,
     record: recordPlay,
+    onProblem: showPlaybackProblem,
     loadError,
     isLooping,
     isReady,

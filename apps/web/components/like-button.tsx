@@ -1,5 +1,6 @@
 "use client";
 
+import { isFavoriteType } from "@infinitunes/core/favorites";
 import type { Favorite } from "@infinitunes/db/schema";
 import type { MediaType } from "@infinitunes/types";
 import {
@@ -12,7 +13,7 @@ import React from "react";
 
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { isFavoriteType, useFavoriteToggle } from "~/lib/use-favorite-toggle";
+import { useFavoriteToggle } from "~/lib/use-favorite-toggle";
 import { cn } from "~/lib/utils";
 
 type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {

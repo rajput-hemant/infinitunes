@@ -1,5 +1,6 @@
 "use client";
 
+import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import { Button } from "@infinitunes/ui/components/button";
 import {
@@ -14,7 +15,6 @@ import { List, ListX } from "lucide-react";
 
 import { LibraryEmpty } from "~/components/library/library-section";
 import { controlStyles } from "~/lib/control-styles";
-import { usePlaylists } from "~/lib/optimistic-playlists";
 
 import { NewPlaylistForm } from "./new-playlist-form";
 

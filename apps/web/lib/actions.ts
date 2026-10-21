@@ -1,6 +1,7 @@
 "use server";
 
 import type { changePasswordSchema } from "@infinitunes/auth/schemas";
+import type { FavoriteType } from "@infinitunes/core/favorites";
 import type { newPlaylistSchema } from "@infinitunes/core/validations";
 import { refresh } from "next/cache";
 import type { z } from "zod";
@@ -89,8 +90,6 @@ export async function removeSongsFromPlaylist(
     return playlist;
   });
 }
-
-type FavoriteType = "song" | "album" | "playlist" | "artist" | "show";
 
 export async function addToFavorites(token: string, type: FavoriteType) {
   return toResult(async () => {

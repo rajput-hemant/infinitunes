@@ -1,5 +1,6 @@
 "use client";
 
+import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Sidebar as SidebarPrimitive,
@@ -32,7 +33,6 @@ import { siteConfig } from "~/config/site";
 import { useIsHydrated } from "~/hooks/use-is-hydrated";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import type { PlaylistView } from "~/lib/optimistic-playlists";
 import { asRoute, cn, isMacOs } from "~/lib/utils";
 
 import { Icons } from "./icons";
