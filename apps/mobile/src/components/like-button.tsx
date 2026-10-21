@@ -4,6 +4,7 @@ import { useTheme } from "expo-router";
 import { announce } from "~/lib/announce";
 import { useFavoriteToggle } from "~/user-data/favorites";
 
+import type { IconSizeProp } from "./ui/icon";
 import { IconButton } from "./ui/icon-button";
 
 type LikeButtonProps = {
@@ -11,7 +12,8 @@ type LikeButtonProps = {
   /** The item's id (`artistId` for an artist). */
   token: string;
   name: string;
-  size?: number;
+  /** `lg` by default; `md` in rows. */
+  size?: IconSizeProp;
 };
 
 /** The heart for one item. Every heart for the same item flips together (optimistic). */

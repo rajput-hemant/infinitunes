@@ -2,6 +2,7 @@ import type { ArtistCredit } from "./artist";
 import {
   decode,
   getImageSrc,
+  isExplicit,
   maxQualityOf,
   newQueueItemId,
   uniqueArtists,
@@ -21,6 +22,8 @@ export type RowExtras = {
   albumUrl?: string;
   releaseDate?: string;
   language?: string;
+  /** Set only when upstream flags the track explicit (rows show the "E" mark). */
+  explicit?: true;
 };
 
 /**
@@ -84,6 +87,7 @@ function buildSongRow(item: Song | Episode): SongRowItem {
     albumUrl,
     releaseDate: info.release_date ?? undefined,
     language: item.language,
+    ...(isExplicit(item.explicit_content) ? { explicit: true } : {}),
   };
 }
 

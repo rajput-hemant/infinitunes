@@ -75,6 +75,13 @@ describe("toSongRow", () => {
     ).toBeUndefined();
   });
 
+  it("flags explicit tracks, and only those", () => {
+    expect(row.explicit).toBe(true);
+    expect("explicit" in toSongRow({ ...song, explicit_content: "0" })).toBe(
+      false,
+    );
+  });
+
   it("reduces artists to credits and de-duplicates the queue list", () => {
     expect(row.primaryArtists).toEqual([
       {

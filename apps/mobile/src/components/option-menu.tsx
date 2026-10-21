@@ -11,8 +11,8 @@ type Option<Id extends string> = { id: Id; title: string };
 const TRIGGERS = {
   /** A tinted pill, for controls in a row (a show's season and order). */
   pill: {
-    className: "min-h-ctl gap-1.5 rounded-lg bg-secondary px-3 py-1",
-    tone: "default",
+    className: "min-h-ctl gap-1 rounded-full bg-secondary px-3 py-1",
+    tone: "onSecondary",
   },
   /** Plain muted text, for a list's sort order beside its count. */
   plain: { className: "min-h-ctl gap-1", tone: "muted" },
@@ -61,7 +61,7 @@ export function OptionMenu<Id extends string>({
         </Text>
         <Icon
           name={{ ios: "chevron.up.chevron.down", android: "unfold_more" }}
-          size={12}
+          size="xs"
         />
       </View>
     </NativeMenu>

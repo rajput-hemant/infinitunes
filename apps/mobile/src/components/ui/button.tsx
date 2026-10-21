@@ -1,27 +1,43 @@
-import { useTheme } from "expo-router";
-import type { SymbolViewProps } from "expo-symbols";
 import { Pressable } from "react-native";
 import type { PressableProps } from "react-native";
 
 import { cx } from "~/lib/class-names";
+import { useTokenColor } from "~/theme/use-palette";
 
 import { Icon } from "./icon";
+import type { SymbolName } from "./icon";
 import { Text } from "./text";
 
 const variants = {
-  primary: { container: "bg-primary", tone: "onPrimary" },
-  secondary: { container: "bg-secondary", tone: "default" },
-  destructive: { container: "bg-destructive", tone: "onDestructive" },
+  primary: {
+    container: "bg-primary",
+    tone: "onPrimary",
+    ink: "primary-foreground",
+  },
+  secondary: {
+    container: "bg-secondary",
+    tone: "onSecondary",
+    ink: "secondary-foreground",
+  },
+  destructive: {
+    container: "bg-destructive",
+    tone: "onDestructive",
+    ink: "destructive-foreground",
+  },
 } as const;
 
 type ButtonProps = Omit<PressableProps, "children"> & {
   label: string;
   /** A leading symbol, e.g. play or shuffle. */
-  icon?: SymbolViewProps["name"];
+  icon?: SymbolName;
   variant?: keyof typeof variants;
 };
 
-/** An action at the prominent control height: filled primary, a tinted secondary, or a destructive one. */
+/**
+ * A capsule action at the touch height: filled primary, a secondary that is
+ * iOS's tinted capsule and Android's tonal button (`secondaryContainer`), or a
+ * destructive one. It grows with its text.
+ */
 export function Button({
   label,
   icon,
@@ -29,27 +45,21 @@ export function Button({
   className,
   ...props
 }: ButtonProps) {
-  const { colors } = useTheme();
-  const { container, tone } = variants[variant];
+  const { container, tone, ink } = variants[variant];
+  const inkColor = useTokenColor(ink);
 
   return (
     <Pressable
       accessibilityRole="button"
       className={cx(
-        "min-h-touch flex-row items-center justify-center gap-2 rounded-lg px-5 py-2 active:opacity-80",
+        "min-h-touch flex-row items-center justify-center gap-2 rounded-full px-6 py-2 active:opacity-80",
         container,
         className,
       )}
       {...props}
     >
-      {icon ? (
-        <Icon
-          name={icon}
-          size={18}
-          color={variant === "secondary" ? undefined : colors.background}
-        />
-      ) : null}
-      <Text variant="headline" tone={tone}>
+      {icon ? <Icon name={icon} size="md" color={inkColor} /> : null}
+      <Text variant="label" tone={tone}>
         {label}
       </Text>
     </Pressable>

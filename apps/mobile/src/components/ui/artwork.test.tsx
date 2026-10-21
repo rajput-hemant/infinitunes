@@ -1,4 +1,5 @@
 import { act, render, screen } from "@testing-library/react-native";
+import { StyleSheet } from "react-native";
 
 import { preferencesStore } from "~/lib/preferences";
 
@@ -19,6 +20,26 @@ describe("Artwork", () => {
       <Artwork testID="art" image={IMAGE} quality="medium" style={{}} />,
     );
     expect(renderedUri()).toContain("-150x150.jpg");
+  });
+
+  it("takes its edge, radius and resolution from its size token", async () => {
+    await render(<Artwork testID="art" image={IMAGE} size="row" />);
+    expect(screen.getByTestId("art")).toHaveStyle({
+      width: 48,
+      height: 48,
+      borderRadius: 6,
+    });
+    expect(renderedUri()).toContain("-150x150.jpg");
+  });
+
+  it("loads high resolution for large sizes and rounds round art", async () => {
+    await render(<Artwork testID="art" image={IMAGE} size="header" round />);
+    const { borderRadius } = StyleSheet.flatten(
+      screen.getByTestId("art").props.style,
+    );
+    expect(screen.getByTestId("art")).toHaveStyle({ width: 240 });
+    expect(borderRadius).toBeGreaterThanOrEqual(120);
+    expect(renderedUri()).toContain("-500x500.jpg");
   });
 
   it("never loads more than the Image Quality setting allows", async () => {

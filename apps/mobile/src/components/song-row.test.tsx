@@ -83,6 +83,33 @@ describe("SongRow", () => {
     expect(onPress).not.toHaveBeenCalled();
   });
 
+  it("shows its track number instead of the cover in a numbered list", async () => {
+    await renderScreen(
+      <SongRow song={song} onPress={jest.fn()} leading="index" index={4} />,
+    );
+
+    expect(screen.getByText("4")).toBeOnTheScreen();
+    expect(screen.queryByTestId("now-playing")).toBeNull();
+
+    await act(async () => {
+      playerStore.getState().playTracks([song]);
+    });
+
+    expect(screen.queryByText("4")).toBeNull();
+    expect(screen.getByTestId("now-playing")).toBeOnTheScreen();
+  });
+
+  it("leads the credits with the explicit mark", async () => {
+    await renderScreen(
+      <SongRow song={{ ...song, explicit: true }} onPress={jest.fn()} />,
+    );
+
+    expect(screen.getByText("E")).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "FA9LA & Friends" }),
+    ).toHaveAccessibilityValue({ text: "Explicit, Flipperachi" });
+  });
+
   it("asks a signed-out listener to sign in before liking", async () => {
     await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
 

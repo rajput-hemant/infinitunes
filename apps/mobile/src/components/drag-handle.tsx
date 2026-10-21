@@ -50,7 +50,7 @@ export function DragHandle({
     >
       <Icon
         name={{ ios: "line.3.horizontal", android: "drag_handle" }}
-        size={18}
+        size="md"
       />
     </Pressable>
   );
