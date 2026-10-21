@@ -1,7 +1,7 @@
 import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
 import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
-import { router } from "expo-router";
+import { router as appRouter } from "expo-router";
 import { Alert } from "react-native";
 import type { AlertButton } from "react-native";
 import { toast } from "sonner-native";
@@ -182,7 +182,7 @@ describe("creating a playlist", () => {
     await renderLibraryTab();
     await screen.findByText("Road Trip");
     await act(async () =>
-      router.push({
+      appRouter.push({
         pathname: "/me/new-playlist",
         params: { songs: "x1,x2", label: "2 songs" },
       }),
