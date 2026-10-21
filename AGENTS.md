@@ -215,17 +215,22 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
   that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
-  `eyebrow`, `meta`, `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and trailing `actions` (`CollectionMenu`: play next, queue,
+  `eyebrow` (the kind and year, "Album · 2026"), `subtitle` (the credit), `meta` (counts, duration, plays),
+  `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and trailing `actions` (`CollectionMenu`: play next, queue,
   add all to a playlist, radio, download all). Menus are `NativeMenu` entries that carry their action
   (`addToPlaylistEntry`, which ends with New Playlist, the `/create-playlist` sheet; `playRadioEntry`);
   `SongMenu` is the track's. Every titled group starts with `SectionHeader` (`title`, optional text `action`;
   it carries the 24/8 rhythm, sections add no padding). Every row is `ListRow` (artwork, icon or track-number
-  leading, at most two trailing 48pt controls); `SongRow` (`toSongRow` row or queue entry, `removal`,
-  `leading="index"` for albums) and `MediaRow` (`href` or `onPress`) are built on it, `EntityListItem`s feed a
-  screen's one `FlashList`. Cards: `MediaCard`/`Shelf` (`toCardItem` items, `seeAllHref`, `onItemPress`,
-  `variant="hero"` for home's carousel, the only card with `CardPlayButton`), `QuickPickTile` for two-column
-  tiles; a card's long press and screen reader actions offer Play/Play Next/Add to Queue (`card-menu.tsx`);
-  stations open `/radio/<name>/<token>`. Artwork goes through `Artwork` with a `size` token (edge, radius and
+  leading, at most two trailing 48pt controls or `{ chevron: true }`; `checked` makes it a checkbox, `selected`/`paused`
+  the current track; without `href`/`onPress` it is a labelled view whose picture alone dims); `SongRow` (`toSongRow`
+  row or queue entry, `removal`, `leading="index"` for albums: `TrackList numbered`) and `MediaRow` (`href` or
+  `onPress`) are built on it, `EntityListItem`s feed a screen's one `FlashList`. Cards: `MediaCard`/`Shelf`
+  (`toCardItem` items, `seeAllHref`, `onItemPress`, `variant="hero"` for home's carousel, the only card with
+  `CardPlayButton`), `QuickPickTile` for two-column tiles. A card's long press and screen reader actions offer
+  Play/Play Next/Add to Queue through `CardLink` (`card-menu.tsx`): iOS uses the link's own `Link.Menu`, Android
+  mounts a `NativeMenu` on the first long press; never wrap each card in a `MenuView` (one native host per card).
+  `ExplicitBadge accessible={false}` inside a row or card whose label already says "Explicit".
+  Stations open `/radio/<name>/<token>`. Artwork goes through `Artwork` with a `size` token (edge, radius and
   resolution, capped by the Image quality preference). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
   empty page always ends the list, whatever upstream's `last_page`/`total` say). Toasts are
   `sonner-native`'s `toast` (the `Toaster` renders each through `AnnouncingToast`, see Accessibility).
@@ -241,7 +246,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Native look per platform: no colours on `NativeTabs` or headers (system glass on iOS 26, Material You on
   Android). Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
   with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours, Android 12+
-  to Material You roles at runtime via `installDynamicColors`, `theme/tokens.ts`), colour JS props from
+  to Material You roles at runtime: `DynamicColorRoot` sets them as NativeWind `vars()` on a root view in
+  `providers/app-providers.tsx`; never css-interop internals), colour JS props from
   `usePalette()`/`useTokenColor()` or `useTheme().colors`, text via `Text` `variant`/`tone`. Sizes come from
   `theme/tokens.ts` (`space`, `radii`, `art`, `iconSize`, `sizes`, `textStyles`), never literals; NativeWind's
   rem is 14, so only the pinned 4pt steps (`*-1 2 3 4 6 8 12`) are exact points.

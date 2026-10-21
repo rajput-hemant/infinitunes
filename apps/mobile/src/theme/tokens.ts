@@ -237,8 +237,6 @@ export const sizes = {
   "ctl-lg": 44,
   touch: 48,
   row: 64,
-  /** @deprecated Use `art.row` (or `Artwork size="row"`). */
-  art: art.row,
   page: 16,
   dock: 64,
 } as const;
