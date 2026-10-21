@@ -16,6 +16,9 @@ jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
 jest.mock("react-native-gesture-handler/ReanimatedSwipeable", () =>
   require("~/test/swipeable"),
 );
+jest.mock("react-native-reorderable-list", () =>
+  require("~/test/reorderable-list"),
+);
 
 // Toasts are asserted through these spies (`jest.mocked(toast.error)`); the
 // real Toaster needs Reanimated's native side.

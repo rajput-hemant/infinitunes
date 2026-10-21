@@ -144,8 +144,12 @@ const fakeDb = {
 mock.module("@infinitunes/db", () => ({ db: fakeDb }));
 
 const { appRouter } = await import("../src/root");
-const { FRESH_SESSION_MS, PLAYLIST_MAX_SONGS, removeSongAtPlaylistIndex } =
-  await import("../src/router/user");
+const {
+  FRESH_SESSION_MS,
+  PLAYLIST_MAX_SONGS,
+  moveSongInPlaylist,
+  removeSongAtPlaylistIndex,
+} = await import("../src/router/user");
 const { createCallerFactory } = await import("../src/trpc");
 
 describe("removeSongAtPlaylistIndex", () => {
@@ -173,6 +177,38 @@ describe("removeSongAtPlaylistIndex", () => {
 
   it("rejects stale songId at the correct db index", () => {
     expect(removeSongAtPlaylistIndex(["A", "B", "C"], 2, "A")).toBeNull();
+  });
+});
+
+describe("moveSongInPlaylist", () => {
+  it("moves the song at `from` to `to`, forwards and backwards", () => {
+    expect(moveSongInPlaylist(["a", "b", "c", "d"], 0, 2, "a")).toEqual([
+      "b",
+      "c",
+      "a",
+      "d",
+    ]);
+    expect(moveSongInPlaylist(["a", "b", "c", "d"], 3, 1, "d")).toEqual([
+      "a",
+      "d",
+      "b",
+      "c",
+    ]);
+    expect(moveSongInPlaylist(["a", "b"], 1, 1, "b")).toEqual(["a", "b"]);
+  });
+
+  it("moves the copy the index names when a song is in the list twice", () => {
+    expect(moveSongInPlaylist(["a", "b", "a"], 2, 0, "a")).toEqual([
+      "a",
+      "a",
+      "b",
+    ]);
+  });
+
+  it("rejects a stale position or a target past the end", () => {
+    expect(moveSongInPlaylist(["a", "b"], 0, 1, "b")).toBeNull();
+    expect(moveSongInPlaylist(["a", "b"], 2, 0, "a")).toBeNull();
+    expect(moveSongInPlaylist(["a", "b"], 0, 2, "a")).toBeNull();
   });
 });
 
@@ -699,6 +735,53 @@ describe("user router authorization", () => {
 
     expect(state.updates).toHaveLength(1);
     expect(state.updates[0]?.values).toEqual({ betterAuthName: "New Name" });
+  });
+
+  describe("movePlaylistSong", () => {
+    const move = (input: { from: number; to: number; songId: string }) =>
+      signedIn().user.movePlaylistSong({ playlistId: "playlist-1", ...input });
+
+    it("stores the reordered list", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: ["a", "b", "c"],
+      };
+
+      await move({ from: 2, to: 0, songId: "c" });
+
+      expect(state.updates[0]?.values.songs).toEqual(["c", "a", "b"]);
+    });
+
+    it("rejects a stale position without writing", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: ["a", "b", "c"],
+      };
+
+      await expect(move({ from: 0, to: 2, songId: "c" })).rejects.toMatchObject(
+        {
+          code: "BAD_REQUEST",
+        },
+      );
+      expect(state.updates).toHaveLength(0);
+    });
+
+    it("does not touch another user's playlist", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-456",
+        songs: ["a", "b"],
+      };
+
+      await expect(move({ from: 0, to: 1, songId: "a" })).rejects.toMatchObject(
+        {
+          code: "FORBIDDEN",
+        },
+      );
+      expect(state.updates).toHaveLength(0);
+    });
   });
 
   describe("addSongsToPlaylist cap", () => {

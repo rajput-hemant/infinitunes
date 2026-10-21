@@ -2,6 +2,7 @@ import {
   addSongsOptimistic,
   createPlaylistOptimistic,
   deletePlaylistOptimistic,
+  moveSongOptimistic,
   removeSongOptimistic,
   renamePlaylistOptimistic,
   usePlaylists,
@@ -101,6 +102,47 @@ export function addSongsToPlaylist(playlist: Playlist, songs: readonly Song[]) {
     }),
   )
     .then(() => toast.success(addedMessage(songs, playlist)))
+    .catch((error: unknown) => toast.error(userMessage(error)))
+    .finally(() => void refreshPlaylists());
+}
+
+/** `ids` with `songId` moved in front of `before` (to the end without one). */
+function placeSong(
+  ids: readonly string[],
+  songId: string,
+  before: string | undefined,
+) {
+  const rest = ids.filter((id) => id !== songId);
+  const at = before === undefined ? -1 : rest.indexOf(before);
+  rest.splice(at === -1 ? rest.length : at, 0, songId);
+  return rest;
+}
+
+/**
+ * Moves the song in front of `before` at once (the playlist as shown, with
+ * pending writes); the server gets the positions in what it holds, and a
+ * failure puts the song back with a toast. Pass the server's copy as
+ * `playlist`, as for removals.
+ */
+export function moveSongInPlaylist(
+  playlist: UserPlaylist,
+  shown: readonly string[],
+  song: Song,
+  before: string | undefined,
+) {
+  moveSongOptimistic(
+    playlist.id,
+    song.id,
+    placeSong(shown, song.id, before),
+    playlist.songs,
+    (from, to) =>
+      trpcClient.user.movePlaylistSong.mutate({
+        playlistId: playlist.id,
+        from,
+        to,
+        songId: song.id,
+      }),
+  )
     .catch((error: unknown) => toast.error(userMessage(error)))
     .finally(() => void refreshPlaylists());
 }

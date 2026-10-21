@@ -55,6 +55,7 @@
     "react-native-css-interop": "0.2.7",
     "react-native-gesture-handler": "~3.3.0",
     "react-native-reanimated": "4.7.1",
+    "react-native-reorderable-list": "^0.18.2",
     "react-native-safe-area-context": "~5.10.1",
     "react-native-screens": "~4.30.0",
     "react-native-svg": "15.16.0",

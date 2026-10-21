@@ -7,6 +7,7 @@ import {
   addSongsOptimistic,
   createPlaylistOptimistic,
   deletePlaylistOptimistic,
+  moveSongOptimistic,
   removeSongOptimistic,
   renamePlaylistOptimistic,
   resetPlaylistOverlay,
@@ -192,6 +193,110 @@ describe("optimistic playlists", () => {
     expect(sent).toEqual([1, 3, 4]);
     expect(held).toEqual(["s1", "s3", "s4", "s6"]);
     expect(view()?.[0]?.songs).toEqual(["s1", "s3", "s4", "s6"]);
+  });
+
+  it("shows a move at once and sends each move against what the server holds", async () => {
+    const ids = ["s1", "s2", "s3", "s4"];
+    await mount([playlist("a", "A", ids)]);
+    let held = [...ids];
+    const sent: [number, number][] = [];
+    const server = (songId: string) => async (from: number, to: number) => {
+      sent.push([from, to]);
+      expect(held[from]).toBe(songId);
+      const next = held.filter((_, i) => i !== from);
+      next.splice(to, 0, songId);
+      held = next;
+      return { songs: held };
+    };
+    const gate = deferred();
+    let writes: Promise<unknown>[] = [];
+    await act(async () => {
+      writes = [
+        moveSongOptimistic(
+          "a",
+          "s4",
+          ["s4", "s1", "s2", "s3"],
+          ids,
+          async (f, t) => {
+            await gate.promise;
+            return server("s4")(f, t);
+          },
+        ),
+        moveSongOptimistic(
+          "a",
+          "s1",
+          ["s4", "s2", "s3", "s1"],
+          ids,
+          server("s1"),
+        ),
+      ];
+    });
+    expect(view()?.[0]?.songs).toEqual(["s4", "s2", "s3", "s1"]);
+
+    await act(async () => gate.resolve(undefined));
+    await act(async () => {
+      await Promise.all(writes);
+    });
+
+    expect(sent).toEqual([
+      [3, 0],
+      [1, 3],
+    ]);
+    expect(held).toEqual(["s4", "s2", "s3", "s1"]);
+  });
+
+  it("keeps a move's order while a removal and an add land around it", async () => {
+    await mount([playlist("a", "A", ["s1", "s2", "s3"])]);
+    await act(async () => {
+      void moveSongOptimistic(
+        "a",
+        "s3",
+        ["s3", "s1", "s2"],
+        ["s1", "s2", "s3"],
+        () => new Promise(() => {}),
+      );
+      void removeSongOptimistic(
+        "a",
+        "s1",
+        ["s1", "s2", "s3"],
+        () => new Promise(() => {}),
+      );
+      void addSongsOptimistic("a", ["s9"], () => new Promise(() => {}));
+    });
+
+    expect(view()?.[0]?.songs).toEqual(["s3", "s2", "s9"]);
+  });
+
+  it("restores the order before a move that fails", async () => {
+    await mount([playlist("a", "A", ["s1", "s2"])]);
+    const outcome = await act(async () =>
+      moveSongOptimistic("a", "s2", ["s2", "s1"], ["s1", "s2"], async () => {
+        throw new Error("offline");
+      }).catch((e: Error) => e.message),
+    );
+
+    expect(outcome).toBe("offline");
+    expect(view()?.[0]?.songs).toEqual(["s1", "s2"]);
+  });
+
+  it("drops a settled move once the refreshed playlist has its order", async () => {
+    const rerender = await mount([playlist("a", "A", ["s1", "s2"])]);
+    await act(async () => {
+      await moveSongOptimistic(
+        "a",
+        "s2",
+        ["s2", "s1"],
+        ["s1", "s2"],
+        async () => ({
+          songs: ["s2", "s1"],
+        }),
+      );
+    });
+    await rerender([playlist("a", "A", ["s2", "s1"])]);
+    // A later server order wins once the move is reconciled.
+    await rerender([playlist("a", "A", ["s1", "s2"])]);
+
+    expect(view()?.[0]?.songs).toEqual(["s1", "s2"]);
   });
 
   it("rejects a removal whose song is no longer there instead of removing another", async () => {

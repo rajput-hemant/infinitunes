@@ -69,6 +69,53 @@ describe("PlaylistScreen", () => {
     expect(screen.getByText("00:05:15 total")).toBeOnTheScreen();
   });
 
+  it("moves a dragged song at once and saves its new position", async () => {
+    const write = deferred<ReturnType<typeof userPlaylist>>();
+    procedure("user.movePlaylistSong").mockReturnValue(write.promise);
+    await renderPlaylist();
+    await screen.findByText("Opening Number");
+    expect(
+      screen.getByRole("button", { name: "Reorder Closing Time" }),
+    ).toBeOnTheScreen();
+
+    await fireEvent(screen.getByTestId("reorderable-list"), "reorder", {
+      from: 2,
+      to: 0,
+    });
+
+    const titles = screen
+      .getAllByText(/Number|Song|Time/)
+      .map((node) => node.props.children);
+    expect(titles).toEqual(["Closing Time", "Opening Number", "Middle Song"]);
+    expect(procedure("user.movePlaylistSong")).toHaveBeenCalledWith({
+      playlistId: "pl-1",
+      from: 2,
+      to: 0,
+      songId: "c",
+    });
+    await act(async () =>
+      write.resolve(userPlaylist({ ...playlist, songs: ["c", "a", "b"] })),
+    );
+  });
+
+  it("puts a song back where it was when the move fails", async () => {
+    procedure("user.movePlaylistSong").mockRejectedValue(new Error("offline"));
+    await renderPlaylist();
+    await screen.findByText("Opening Number");
+
+    await fireEvent(screen.getByTestId("reorderable-list"), "reorder", {
+      from: 0,
+      to: 2,
+    });
+    await act(async () => {});
+
+    const titles = screen
+      .getAllByText(/Number|Song|Time/)
+      .map((node) => node.props.children);
+    expect(titles).toEqual(["Opening Number", "Middle Song", "Closing Time"]);
+    expect(jest.mocked(toast.error)).toHaveBeenCalled();
+  });
+
   it("says so when the playlist is empty", async () => {
     procedure("user.getUserPlaylists").mockResolvedValue([
       { ...playlist, songs: [] },

@@ -111,6 +111,31 @@ export function removeSongAtPlaylistIndex(
   return next;
 }
 
+const movePlaylistSongInput = z.object({
+  playlistId: z.string(),
+  from: z.number().int().min(0),
+  to: z.number().int().min(0),
+  songId: z.string(),
+});
+
+/**
+ * The songs with the one at `from` moved to `to`, or `null` when `from`
+ * does not hold `songId` (a stale view: the client re-reads and retries) or
+ * `to` is past the end.
+ */
+export function moveSongInPlaylist(
+  songs: string[],
+  from: number,
+  to: number,
+  songId: string,
+) {
+  if (songs[from] !== songId || to >= songs.length) return null;
+  const next = [...songs];
+  next.splice(from, 1);
+  next.splice(to, 0, songId);
+  return next;
+}
+
 const updateUserInput = z.object({
   name: z.string().trim().min(1).max(USER_NAME_MAX).optional(),
   email: emailSchema.transform((email) => email.toLowerCase()).optional(),
@@ -260,6 +285,34 @@ async function getOwnedPlaylist(
   return playlist;
 }
 
+/** Stores a playlist's new song list; the owner is checked again in the write itself. */
+async function saveOwnedPlaylistSongs(
+  ctx: { db: TRPCContext["db"]; session: NonNullable<Session> },
+  playlistId: string,
+  songs: string[],
+) {
+  const [updatedPlaylist] = await ctx.db
+    .update(myPlaylists)
+    .set({ songs })
+    .where(
+      and(
+        eq(myPlaylists.id, playlistId),
+        eq(myPlaylists.userId, ctx.session.user.id),
+      ),
+    )
+    .returning();
+
+  return updatedPlaylist;
+}
+
+/** The client's index no longer holds the song it meant (a stale view). */
+function staleSongPosition() {
+  return new TRPCError({
+    code: "BAD_REQUEST",
+    message: "Song not found in playlist at that position",
+  });
+}
+
 export const userRouter = router({
   getUserPlaylists: protectedProcedure.query(({ ctx }) =>
     ctx.db.query.myPlaylists.findMany({
@@ -294,50 +347,34 @@ export const userRouter = router({
         });
       }
 
-      const [updatedPlaylist] = await ctx.db
-        .update(myPlaylists)
-        .set({ songs: merged })
-        .where(
-          and(
-            eq(myPlaylists.id, input.playlistId),
-            eq(myPlaylists.userId, ctx.session.user.id),
-          ),
-        )
-        .returning();
-
-      return updatedPlaylist;
+      return saveOwnedPlaylistSongs(ctx, input.playlistId, merged);
     }),
 
   removeSongsFromPlaylist: protectedProcedure
     .input(removeSongsFromPlaylistInput)
     .mutation(async ({ ctx, input }) => {
       const playlist = await getOwnedPlaylist(ctx, input.playlistId);
-
       const songs = removeSongAtPlaylistIndex(
         playlist.songs,
         input.index,
         input.songId,
       );
+      if (!songs) throw staleSongPosition();
+      return saveOwnedPlaylistSongs(ctx, input.playlistId, songs);
+    }),
 
-      if (!songs) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Song not found in playlist at that position",
-        });
-      }
-
-      const [updatedPlaylist] = await ctx.db
-        .update(myPlaylists)
-        .set({ songs })
-        .where(
-          and(
-            eq(myPlaylists.id, input.playlistId),
-            eq(myPlaylists.userId, ctx.session.user.id),
-          ),
-        )
-        .returning();
-
-      return updatedPlaylist;
+  movePlaylistSong: protectedProcedure
+    .input(movePlaylistSongInput)
+    .mutation(async ({ ctx, input }) => {
+      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
+      const songs = moveSongInPlaylist(
+        playlist.songs,
+        input.from,
+        input.to,
+        input.songId,
+      );
+      if (!songs) throw staleSongPosition();
+      return saveOwnedPlaylistSongs(ctx, input.playlistId, songs);
     }),
 
   renamePlaylist: protectedProcedure

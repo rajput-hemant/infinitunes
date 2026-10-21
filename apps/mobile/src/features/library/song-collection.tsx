@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import { useState } from "react";
 import type { ReactElement } from "react";
 import { View } from "react-native";
+import ReorderableList from "react-native-reorderable-list";
 
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
@@ -21,8 +22,21 @@ type SongCollectionProps = {
   onRefresh: () => void;
   /** What the list's own order is called ("Recently played"). */
   recentLabel: string;
-  /** One row; `play` starts the shown list from it. */
-  renderRow: (song: SongRowItem, play: () => void) => ReactElement;
+  /**
+   * One row; `play` starts the shown list from it. `reorderable` rows are
+   * inside the drag list and show a handle (`useReorderableDrag`).
+   */
+  renderRow: (
+    song: SongRowItem,
+    play: () => void,
+    reorderable: boolean,
+  ) => ReactElement;
+  /**
+   * Moves a song in the list's own order (a playlist): `before` is the song
+   * it now precedes, `undefined` at the end. Offered while that order is
+   * shown unfiltered.
+   */
+  onMove?: (song: SongRowItem, before: SongRowItem | undefined) => void;
   /** Above the controls (a playlist's title). */
   header?: ReactElement;
 };
@@ -34,7 +48,8 @@ function countLabel(shown: number, total: number): string {
 
 /**
  * A song list with the library's controls: native search to filter, a sort
- * menu, Play and Shuffle over what is shown, and pull to refresh.
+ * menu, Play and Shuffle over what is shown, pull to refresh, and dragging
+ * rows into a new order where the list has one of its own.
  */
 export function SongCollection({
   songs,
@@ -43,12 +58,72 @@ export function SongCollection({
   onRefresh,
   recentLabel,
   renderRow,
+  onMove,
   header,
 }: SongCollectionProps) {
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SongSort>("recent");
   const shown = orderSongs(songs, query, sort);
   const { playTracks } = playerStore.getState();
+  const reorderable =
+    onMove !== undefined && sort === "recent" && !query.trim();
+
+  const listProps = {
+    data: shown,
+    keyExtractor: (song: SongRowItem) => song.id,
+    renderItem: ({ item, index }: { item: SongRowItem; index: number }) =>
+      renderRow(
+        item,
+        () => playTracks(shown, { startIndex: index }),
+        reorderable,
+      ),
+    ListHeaderComponent: (
+      <View>
+        {header}
+        {shown.length > 0 ? (
+          <View className="flex-row gap-3 px-page pb-2">
+            <Button
+              label="Play"
+              icon={{ ios: "play.fill", android: "play_arrow" }}
+              onPress={() => playTracks(shown)}
+              className="flex-1"
+            />
+            <Button
+              label="Shuffle"
+              icon={{ ios: "shuffle", android: "shuffle" }}
+              variant="secondary"
+              onPress={() => playTracks(shown, { shuffle: true })}
+              className="flex-1"
+            />
+          </View>
+        ) : null}
+        <View className="flex-row items-center justify-between px-page">
+          <Text variant="subhead" tone="muted" accessibilityRole="summary">
+            {countLabel(shown.length, songs.length)}
+          </Text>
+          <SortMenu sort={sort} onChange={setSort} recentLabel={recentLabel} />
+        </View>
+        {missing > 0 ? (
+          <Text variant="caption" tone="muted" className="px-page pb-2">
+            {missing === 1
+              ? "1 song couldn't load."
+              : `${missing} songs couldn't load.`}{" "}
+            Pull down to try again.
+          </Text>
+        ) : null}
+      </View>
+    ),
+    ListEmptyComponent: (
+      <Text tone="muted" className="px-page py-10 text-center">
+        No songs match “{query.trim()}”.
+      </Text>
+    ),
+    contentInsetAdjustmentBehavior: "automatic" as const,
+    contentContainerStyle: { paddingBottom: playerDockInset },
+    keyboardShouldPersistTaps: "handled" as const,
+    refreshing,
+    onRefresh,
+  };
 
   return (
     <>
@@ -57,63 +132,19 @@ export function SongCollection({
         autoCapitalize="none"
         onChangeText={(event) => setQuery(event.nativeEvent.text)}
       />
-      <FlashList
-        data={shown}
-        keyExtractor={(song) => song.id}
-        renderItem={({ item, index }) =>
-          renderRow(item, () => playTracks(shown, { startIndex: index }))
-        }
-        ListHeaderComponent={
-          <View>
-            {header}
-            {shown.length > 0 ? (
-              <View className="flex-row gap-3 px-page pb-2">
-                <Button
-                  label="Play"
-                  icon={{ ios: "play.fill", android: "play_arrow" }}
-                  onPress={() => playTracks(shown)}
-                  className="flex-1"
-                />
-                <Button
-                  label="Shuffle"
-                  icon={{ ios: "shuffle", android: "shuffle" }}
-                  variant="secondary"
-                  onPress={() => playTracks(shown, { shuffle: true })}
-                  className="flex-1"
-                />
-              </View>
-            ) : null}
-            <View className="flex-row items-center justify-between px-page">
-              <Text variant="subhead" tone="muted" accessibilityRole="summary">
-                {countLabel(shown.length, songs.length)}
-              </Text>
-              <SortMenu
-                sort={sort}
-                onChange={setSort}
-                recentLabel={recentLabel}
-              />
-            </View>
-            {missing > 0 ? (
-              <Text variant="caption" tone="muted" className="px-page pb-2">
-                {missing === 1
-                  ? "1 song couldn't load."
-                  : `${missing} songs couldn't load.`}{" "}
-                Pull down to try again.
-              </Text>
-            ) : null}
-          </View>
-        }
-        ListEmptyComponent={
-          <Text tone="muted" className="px-page py-10 text-center">
-            No songs match “{query.trim()}”.
-          </Text>
-        }
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerStyle={{ paddingBottom: playerDockInset }}
-        keyboardShouldPersistTaps="handled"
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-      />
+      {reorderable ? (
+        <ReorderableList
+          {...listProps}
+          onReorder={({ from, to }) => {
+            const song = shown[from];
+            if (!song || from === to || !onMove) return;
+            const rest = shown.filter((_, index) => index !== from);
+            onMove(song, rest[to]);
+          }}
+        />
+      ) : (
+        <FlashList {...listProps} />
+      )}
     </>
   );
 }

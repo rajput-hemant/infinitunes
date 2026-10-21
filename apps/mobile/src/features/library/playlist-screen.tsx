@@ -3,7 +3,8 @@ import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
 import { formatDuration } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
+import { useReorderableDrag } from "react-native-reorderable-list";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
@@ -11,8 +12,11 @@ import { SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
-import { removeSongFromPlaylist } from "~/user-data/playlists";
-import { useServerPlaylists } from "~/user-data/playlists";
+import {
+  moveSongInPlaylist,
+  removeSongFromPlaylist,
+  useServerPlaylists,
+} from "~/user-data/playlists";
 
 import { LibraryListView } from "./library-list-view";
 import { PlaylistMenu } from "./playlist-menu";
@@ -28,9 +32,34 @@ type PlaylistSongRowProps = {
   song: SongRowItem;
   play: () => void;
   onRemove: () => void;
+  /** Inside the drag list: a handle starts moving the row. */
+  reorderable: boolean;
 };
 
-function PlaylistSongRow({ song, play, onRemove }: PlaylistSongRowProps) {
+/** Pressing and dragging it moves its row (only inside a `ReorderableList`). */
+function DragHandle({ name }: { name: string }) {
+  const drag = useReorderableDrag();
+  return (
+    <Pressable
+      onPressIn={drag}
+      accessibilityRole="button"
+      accessibilityLabel={`Reorder ${name}`}
+      className="size-ctl items-center justify-center"
+    >
+      <Icon
+        name={{ ios: "line.3.horizontal", android: "drag_handle" }}
+        size={18}
+      />
+    </Pressable>
+  );
+}
+
+function PlaylistSongRow({
+  song,
+  play,
+  onRemove,
+  reorderable,
+}: PlaylistSongRowProps) {
   return (
     <SwipeableRow
       action={{
@@ -39,11 +68,16 @@ function PlaylistSongRow({ song, play, onRemove }: PlaylistSongRowProps) {
         onPress: onRemove,
       }}
     >
-      <SongRow
-        song={song}
-        onPress={play}
-        removal={{ title: "Remove from Playlist", onRemove }}
-      />
+      <View className="flex-row items-center pr-2">
+        <View className="flex-1">
+          <SongRow
+            song={song}
+            onPress={play}
+            removal={{ title: "Remove from Playlist", onRemove }}
+          />
+        </View>
+        {reorderable ? <DragHandle name={song.name} /> : null}
+      </View>
     </SwipeableRow>
   );
 }
@@ -82,13 +116,17 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
               </Text>
             </View>
           }
-          renderRow={(song, play) => (
+          renderRow={(song, play, reorderable) => (
             <PlaylistSongRow
               song={song}
               play={play}
               onRemove={() => removeSongFromPlaylist(server, song)}
+              reorderable={reorderable}
             />
           )}
+          onMove={(song, before) =>
+            moveSongInPlaylist(server, playlist.songs, song, before?.id)
+          }
         />
       )}
     </LibraryListView>
