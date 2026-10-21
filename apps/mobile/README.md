@@ -27,9 +27,11 @@ device: `bunx expo export --platform ios` (or `android`) in this directory.
 ## Known warnings
 
 - `expo-doctor` fails "Check that no duplicate dependencies are installed" for `expo-asset`, `expo-constants`,
-  `expo-font`, `expo-glass-effect` and `expo-linking`. Every listed copy is the same version: Bun's isolated
-  installs create one folder per peer-dependency variant (`expo` and these modules name each other as peers),
-  and autolinking and Metro resolve a single copy. Only a duplicate with a different version is a real problem.
+  `expo-file-system`, `expo-font`, `expo-glass-effect` and `expo-linking`. Every listed copy is the same version:
+  Bun's isolated installs create one folder per peer-dependency variant (`expo` and these modules name each
+  other as peers), and autolinking and Metro resolve a single copy. Only a duplicate with a different version is
+  a real problem. The one exception it lists, `react` 19.3.1 in `packages/core/node_modules`, is that package's
+  dev copy for its own tests; the bundle holds only this app's 19.3.0.
   expo-doctor has no setting to skip the check, and the hoisted linker is not an option (see `AGENTS.md`).
 - The web app's Vercel install also installs this app's dependencies. `bun install --filter @infinitunes/web`
   does not avoid them: `@better-auth/expo` (a dependency of `@infinitunes/auth`) resolves its optional `expo-*`

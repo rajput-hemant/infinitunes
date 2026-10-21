@@ -18,7 +18,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   hooks and stores that need only `react` (`optimistic-favorite`, `optimistic-playlists`,
   `position-store`, `use-playhead`, `use-track-playback`, `use-radio-refill`,
   `use-debounced-value`). Upstream-shape readers shared by both apps (launch data, search
-  items, languages, cards, `plainText`) live in `@infinitunes/types`. Each app keeps only its
+  items, languages, cards, `plainText`, `isExplicit`) live in `@infinitunes/types`. Each app keeps only its
   glue (toasts, audio engine, mutations). Raw-shape test payloads live in
   `@infinitunes/types/fixtures`. It must not import `next/*`, the DOM or `@infinitunes/ui`
   (`.oxlintrc.json` bans DOM globals in `packages/core/src`); its DOM hook tests live in
@@ -208,7 +208,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
   that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
-  `eyebrow`, `explicit` (`isExplicit`), `verified` and trailing `actions` (`CollectionMenu`: play next, queue,
+  `eyebrow`, `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and trailing `actions` (`CollectionMenu`: play next, queue,
   add all to a playlist, radio, download all). Menus are `NativeMenu` entries that carry their action
   (`addToPlaylistEntry`, which ends with New Playlist, the `/create-playlist` sheet; `playRadioEntry`);
   `SongMenu` is the track's. Rows: `SongRow` (`toSongRow` row or queue entry, `removal`), `MediaRow` (`href` or
@@ -254,9 +254,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   a `jest.fn`) for every suite, plus `sonner-native` (assert `jest.mocked(toast.error)`), the SQLite store,
   and stand-ins for Gesture Handler's `ReanimatedSwipeable` and `react-native-reorderable-list`, which do not
   run under Reanimated's Jest runtime. Render with `renderWithProviders`, `renderScreen(ui, { routes })` or
-  `renderStack`; `@expo/ui` lists need `jest.mock("@expo/ui", () => require("~/test/expo-ui"))`. `expo-doctor` reports
+  `renderStack`; `@expo/ui` lists need `jest.mock("@expo/ui", () => require("~/test/expo-ui"))`. Optimistic
+  overlay records expire on real timers: a suite that writes through them runs on fake timers and resets the
+  overlay, or the Jest worker is force-exited. `expo-doctor` reports
   same-version "duplicates" (Bun peer variants); autolinking module resolution bundles one copy, so only a
-  real version split matters. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
+  real version split matters. Its `react` 19.3.1 under `packages/core/node_modules` is core's dev copy for
+  its own tests: Metro bundles only the app's 19.3.0 and Jest maps to it. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
   over web's.
 - `type-check` runs `expo customize tsconfig.json` first: it writes the gitignored `.expo/types` route
   types that `tsc` needs in a fresh clone. TypeScript is the repo's 7.x (`expo.install.exclude`).
