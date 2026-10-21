@@ -108,26 +108,26 @@ describe("combined search results", () => {
   });
 
   it("plays a linked top result from its Play button", async () => {
-    // No top query or artist match: the first album is the top result.
+    // No top query, artist or album match: the first song is the top result,
+    // and song rows have no Play button of their own.
     procedure("search.all").mockResolvedValue({
       ...rawAllSearch,
       topquery: { position: 1, data: [] },
       artists: { position: 4, data: [] },
+      albums: { position: 3, data: [] },
     });
-    procedure("album.details").mockResolvedValue(
-      rawAlbum({ list: [rawSong()] }),
-    );
+    procedure("song.details").mockResolvedValue({ songs: [rawSong()] });
     await renderResults();
 
-    const [play] = await screen.findAllByRole("button", {
-      name: "Play Udta Teer",
+    const plays = await screen.findAllByRole("button", {
+      name: "Play FA9LA & Friends",
     });
-    if (!play) throw new Error("no Play on the top result");
-    await fireEvent.press(play);
+    expect(plays).toHaveLength(1);
+    await fireEvent.press(plays[0]!);
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
-    expect(procedure("album.details")).toHaveBeenCalledWith({
-      token: "LHgqn,SRpyA_",
+    expect(procedure("song.details")).toHaveBeenCalledWith({
+      token: "BSaNI3Yr",
     });
   });
 
