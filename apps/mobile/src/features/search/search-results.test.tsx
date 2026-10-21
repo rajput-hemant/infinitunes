@@ -6,6 +6,7 @@ import type {
 import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 import type { ReactElement } from "react";
 import { Text } from "react-native";
@@ -65,13 +66,15 @@ function renderSearch(ui: ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
+  // Inside a `(tabs)` group, as in the app: entities push onto the tab's stack.
   return renderRouter({
-    index: () => (
+    _layout: () => <Stack />,
+    "(tabs)/_layout": () => <Stack />,
+    "(tabs)/index": () => (
       <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
     ),
-    "song/[token]": () => null,
-    "album/[token]": () => null,
-    "show/[token]": () => null,
+    "(tabs)/song/[token]": () => null,
+    "(tabs)/album/[token]": () => null,
   });
 }
 
@@ -95,6 +98,7 @@ function renderResults(
       type="all"
       header={chips}
       onShowType={jest.fn()}
+      onOpenResult={jest.fn()}
       onSearchArtist={jest.fn()}
       {...props}
     />,
@@ -125,11 +129,13 @@ describe("combined search results", () => {
 
   it("opens a song's page instead of queueing it (it has no media link)", async () => {
     mockAll.mockResolvedValue(allSearch);
-    const router = await renderResults();
+    const onOpenResult = jest.fn();
+    const router = await renderResults({ onOpenResult });
 
     await fireEvent.press(await screen.findByText("FA9LA & Friends"));
 
     expect(router.getPathname()).toBe("/song/BSaNI3Yr");
+    expect(onOpenResult).toHaveBeenCalledTimes(1);
     expect(playerStore.getState().queue).toEqual([]);
   });
 
@@ -199,11 +205,14 @@ describe("results of one type", () => {
       rawSong({ id: "second", title: "Second &amp; Last" }),
     ];
     mockByType.mockResolvedValue(page(songs));
-    await renderResults({ type: "song" });
+    const onOpenResult = jest.fn();
+    await renderResults({ type: "song", onOpenResult });
 
     await fireEvent.press(
       await screen.findByRole("button", { name: "Second & Last" }),
     );
+
+    expect(onOpenResult).toHaveBeenCalledTimes(1);
 
     expect(playerStore.getState().queue.map((entry) => entry.id)).toEqual([
       "BSaNI3Yr",

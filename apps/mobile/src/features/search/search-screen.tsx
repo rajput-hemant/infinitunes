@@ -43,6 +43,7 @@ export function SearchScreen() {
             autoCapitalize: "none",
             onChangeText: (event) => setQuery(event.nativeEvent.text),
             onSearchButtonPress: (event) => add(event.nativeEvent.text),
+            onCancelButtonPress: () => setQuery(""),
           },
         }}
       />
@@ -52,10 +53,16 @@ export function SearchScreen() {
           type={type}
           header={<SearchTypeChips type={type} onChange={setType} />}
           onShowType={setType}
+          onOpenResult={() => add(debouncedQuery)}
           onSearchArtist={(name) => searchFor(name, "artist")}
         />
       ) : (
-        <IdleSearch onSelectRecent={searchFor} />
+        <IdleSearch
+          onSelectRecent={(recent) => {
+            searchFor(recent);
+            add(recent);
+          }}
+        />
       )}
     </>
   );

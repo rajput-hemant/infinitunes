@@ -23,6 +23,7 @@ type AllResultsProps = {
   /** The type chips, rendered above the results. */
   header: ReactElement;
   onShowType: (type: ListSearchType) => void;
+  onOpenResult: () => void;
   /** Items without a screen of their own (artists) open that name's artist results. */
   onSearchArtist: (name: string) => void;
 };
@@ -36,14 +37,19 @@ export function AllResults({
   query,
   header,
   onShowType,
+  onOpenResult,
   onSearchArtist,
 }: AllResultsProps) {
   const openEntity = useOpenEntity();
   const { state, retry } = useAllSearch(query);
 
   function open(item: SearchItem) {
-    if (isLinked(item)) openEntity(item.type, item.perma_url);
-    else onSearchArtist(decode(item.title));
+    if (isLinked(item)) {
+      openEntity(item.type, item.perma_url);
+      onOpenResult();
+    } else {
+      onSearchArtist(decode(item.title));
+    }
   }
 
   return (

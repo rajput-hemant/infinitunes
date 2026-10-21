@@ -21,6 +21,8 @@ type TypeResultsProps = {
   type: ListSearchType;
   /** The type chips, rendered above the list. */
   header: ReactElement;
+  /** A song was played from the list. */
+  onOpenResult: () => void;
 };
 
 const listProps = {
@@ -31,7 +33,12 @@ const listProps = {
 } as const;
 
 /** One type's full result list, paged as it scrolls: songs play, everything else opens. */
-export function TypeResults({ query, type, header }: TypeResultsProps) {
+export function TypeResults({
+  query,
+  type,
+  header,
+  onOpenResult,
+}: TypeResultsProps) {
   const results = useTypeResults(query, type);
   const { width } = useWindowDimensions();
 
@@ -67,9 +74,10 @@ export function TypeResults({ query, type, header }: TypeResultsProps) {
         renderItem={({ item, index }) => (
           <SongRow
             song={item}
-            onPress={() =>
-              playerStore.getState().playTracks(rows, { startIndex: index })
-            }
+            onPress={() => {
+              playerStore.getState().playTracks(rows, { startIndex: index });
+              onOpenResult();
+            }}
           />
         )}
       />

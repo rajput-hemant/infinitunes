@@ -10,6 +10,8 @@ type SearchResultsProps = {
   /** The type chips, rendered at the top of the scrolling results. */
   header: ReactElement;
   onShowType: (type: ListSearchType) => void;
+  /** A result was opened or played: the query led somewhere worth remembering. */
+  onOpenResult: () => void;
   onSearchArtist: (name: string) => void;
 };
 
@@ -19,6 +21,7 @@ export function SearchResults({
   type,
   header,
   onShowType,
+  onOpenResult,
   onSearchArtist,
 }: SearchResultsProps) {
   return type === "all" ? (
@@ -26,9 +29,15 @@ export function SearchResults({
       query={query}
       header={header}
       onShowType={onShowType}
+      onOpenResult={onOpenResult}
       onSearchArtist={onSearchArtist}
     />
   ) : (
-    <TypeResults query={query} type={type} header={header} />
+    <TypeResults
+      query={query}
+      type={type}
+      header={header}
+      onOpenResult={onOpenResult}
+    />
   );
 }
