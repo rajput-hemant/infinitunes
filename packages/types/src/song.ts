@@ -42,7 +42,8 @@ export type Song = {
     starred: string;
     copyright_text: string;
     artistMap: ArtistMap;
-    release_date?: string;
+    /** `null` on many live songs. */
+    release_date?: string | null;
     label_url: string;
     vcode: string;
     vlink: string;

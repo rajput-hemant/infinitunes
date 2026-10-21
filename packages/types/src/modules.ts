@@ -42,7 +42,8 @@ export type Discover = {
     badge: string;
     tags: Record<string, string[]>;
     is_featured: string;
-    sub_type: MediaType;
+    /** A browse tile's kind, e.g. `genre`, `mood`, `music_plus`. */
+    sub_type: string;
     video_thumbnail: string;
     video_url: string;
   };
@@ -80,7 +81,7 @@ export type TagMix = {
   type: MediaType;
   language: string;
   list_count: string;
-  list_type: MediaType;
+  list_type: MediaType | "";
   list: string;
   more_info: {
     firstname: string;

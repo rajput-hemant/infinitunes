@@ -34,7 +34,12 @@ const similar: SimilarArtist = {
 };
 
 const single: ArtistSong = {
-  ...rawSong({ id: "single1", title: "Sahra", type: "song" }),
+  ...rawSong({
+    id: "single1",
+    title: "Sahra",
+    perma_url: "https://www.jiosaavn.com/album/sahra/single1_",
+  }),
+  type: "album",
   more_info: {
     query: "",
     text: "",

@@ -1,4 +1,4 @@
-import type { Playlist } from "@infinitunes/types";
+import type { Playlist, RelatedPlaylist } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -48,10 +48,10 @@ export const playlistRouter = router({
 
   recommendations: publicProcedure
     .input(playlistRecommendInput)
-    .output(z.custom<Playlist[]>())
+    .output(z.custom<RelatedPlaylist[]>())
     .query(async ({ input, ctx: { catalogApi: api } }) => {
       const result = await secondaryList(() =>
-        api<Playlist[]>(endpoints.playlist.recommend, {
+        api<RelatedPlaylist[]>(endpoints.playlist.recommend, {
           query: {
             listid: input.id,
             language: input.lang,

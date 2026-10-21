@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
+import { rawSong } from "../src/fixtures";
 import { toQueue } from "../src/media";
 import { toQueueEntry, toSongRow } from "../src/row";
 import type { Episode } from "../src/show";
@@ -119,6 +120,14 @@ describe("toSongRow", () => {
     expect(mapped.releaseDate).toBe("2024-01-02");
     expect(mapped.album).toBeUndefined();
     expect(mapped.albumUrl).toBeUndefined();
+  });
+
+  it("carries no release date for the live `null`", () => {
+    const undated = rawSong({
+      id: "undated1",
+      more_info: { ...rawSong().more_info, release_date: null },
+    });
+    expect(toSongRow(undated).releaseDate).toBeUndefined();
   });
 });
 
