@@ -68,6 +68,18 @@ describe("FullPlayer", () => {
     expect(procedure("get.lyrics")).not.toHaveBeenCalled();
   });
 
+  it("plays and pauses from a filled 72pt control, with the menu in the top bar", async () => {
+    play(rawSong());
+    await renderScreen(<FullPlayer />);
+
+    const control = await screen.findByTestId("play-pause-prominent");
+    expect(control).toHaveStyle({ width: 72, height: 72 });
+    expect(control).toHaveAccessibleName("Play");
+    expect(
+      screen.getByRole("button", { name: "More actions for FA9LA & Friends" }),
+    ).toBeOnTheScreen();
+  });
+
   it("names the station a radio queue refills from", async () => {
     playerStore.getState().playTracks([toSongRow(rawSong())], {
       radio: { stationId: "st-1", name: "Flipperachi Radio", type: "artist" },

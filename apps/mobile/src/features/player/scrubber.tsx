@@ -2,7 +2,6 @@ import { formatDuration } from "@infinitunes/types";
 import { useRef, useState } from "react";
 import { View } from "react-native";
 
-import { Text } from "~/components/ui/text";
 import {
   usePlaybackPosition,
   usePlaybackStatus,
@@ -10,6 +9,7 @@ import {
 import { seekTo } from "~/playback/transport";
 
 import { SeekSlider } from "./seek-slider";
+import { useWashColors, WashText } from "./wash";
 
 /** What a screen reader's swipe up or down seeks by, in seconds. */
 export const SEEK_STEP_SECONDS = 10;
@@ -21,6 +21,7 @@ export const SEEK_STEP_SECONDS = 10;
 export function Scrubber() {
   const position = usePlaybackPosition();
   const duration = usePlaybackStatus((state) => state.duration);
+  const wash = useWashColors();
   const [scrubbed, setScrubbed] = useState<number | null>(null);
   const scrubbedRef = useRef<number | null>(null);
   const shown = scrubbed ?? position;
@@ -65,14 +66,17 @@ export function Scrubber() {
         max={Math.max(duration, 1)}
         onScrub={scrub}
         onScrubEnd={release}
+        colors={
+          wash ? { active: wash.accent, inactive: wash.track } : undefined
+        }
       />
-      <View className="flex-row justify-between">
-        <Text variant="caption" tone="muted">
+      <View className="mt-1 flex-row justify-between">
+        <WashText variant="caption" tone="muted" numeric>
           {formatDuration(shown, "mm:ss")}
-        </Text>
-        <Text variant="caption" tone="muted">
+        </WashText>
+        <WashText variant="caption" tone="muted" numeric>
           -{formatDuration(Math.max(duration - shown, 0), "mm:ss")}
-        </Text>
+        </WashText>
       </View>
     </View>
   );

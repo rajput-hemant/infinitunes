@@ -8,6 +8,7 @@ export function SeekSlider({
   max,
   onScrub,
   onScrubEnd,
+  colors,
 }: SeekSliderProps) {
   return (
     <Host style={{ height: 32 }}>
@@ -15,6 +16,15 @@ export function SeekSlider({
         value={value}
         min={0}
         max={max}
+        colors={
+          colors
+            ? {
+                thumbColor: colors.active,
+                activeTrackColor: colors.active,
+                inactiveTrackColor: colors.inactive,
+              }
+            : undefined
+        }
         onValueChange={onScrub}
         onValueChangeFinished={onScrubEnd}
       />

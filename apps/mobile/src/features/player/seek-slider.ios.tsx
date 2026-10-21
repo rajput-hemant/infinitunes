@@ -1,4 +1,5 @@
 import { Host, Slider } from "@expo/ui/swift-ui";
+import { tint } from "@expo/ui/swift-ui/modifiers";
 import { useRef } from "react";
 
 import type { SeekSliderProps } from "./seek-slider-props";
@@ -9,6 +10,7 @@ export function SeekSlider({
   max,
   onScrub,
   onScrubEnd,
+  colors,
 }: SeekSliderProps) {
   const editing = useRef(false);
 
@@ -18,6 +20,7 @@ export function SeekSlider({
         value={value}
         min={0}
         max={max}
+        modifiers={colors ? [tint(colors.active)] : undefined}
         onEditingChanged={(isEditing) => {
           editing.current = isEditing;
           if (!isEditing) onScrubEnd();

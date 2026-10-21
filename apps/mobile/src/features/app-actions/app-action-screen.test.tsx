@@ -1,6 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, screen, waitFor } from "@testing-library/react-native";
+import { router } from "expo-router";
 import { Text } from "react-native";
 import { toast } from "sonner-native";
 
@@ -16,7 +17,7 @@ import {
   userPlaylist,
 } from "~/test/user-library";
 
-import { AppActionScreen } from "./app-action-screen";
+import { AppActionScreen, belowIsPlayer } from "./app-action-screen";
 
 const catalog = {
   a: songNamed("a", "First Like"),
@@ -77,6 +78,23 @@ describe("action/resume", () => {
 
     await landsOn(app, "/player");
     expect(play).toHaveBeenCalledTimes(1);
+  });
+
+  it("goes back to an open player instead of stacking another", async () => {
+    playerStore.getState().playTracks([toSongRow(catalog.a)]);
+    playerStore.setState({ started: false });
+    const app = await openLink("/player");
+
+    await act(async () => router.push("/action/resume"));
+
+    await waitFor(() => expect(screen.queryByLabelText("Loading")).toBeNull());
+    expect(app.getPathname()).toBe("/player");
+    // The app's stack, inside the router's root navigator.
+    const stack = app.getRouterState()?.routes[0]?.state;
+    const names = stack?.routes.map((route) => route.name);
+    expect(names?.filter((name) => name === "player")).toHaveLength(1);
+    expect(names).not.toContain("action/[action]");
+    expect(playerStore.getState().started).toBe(true);
   });
 
   it("lands on Home when nothing is queued", async () => {
@@ -211,6 +229,24 @@ describe("action/play-search", () => {
 
     await landsOn(app, "/");
     expect(toast).toHaveBeenCalledWith('No songs found for "zzzz"');
+  });
+});
+
+const route = (name: string) => ({ name });
+
+describe("belowIsPlayer", () => {
+  it("reads the screen under the action screen", () => {
+    expect(
+      belowIsPlayer({ index: 1, routes: [route("player"), route("action")] }),
+    ).toBe(true);
+    expect(
+      belowIsPlayer({ index: 1, routes: [route("(tabs)"), route("action")] }),
+    ).toBe(false);
+  });
+
+  it("is false on a cold start or without a state", () => {
+    expect(belowIsPlayer({ routes: [route("action")] })).toBe(false);
+    expect(belowIsPlayer(undefined)).toBe(false);
   });
 });
 

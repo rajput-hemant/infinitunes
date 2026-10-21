@@ -1,6 +1,12 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { ScrollView, useWindowDimensions, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyState } from "~/components/empty-state";
@@ -9,41 +15,109 @@ import { MenuTrigger } from "~/components/menu-trigger";
 import { SongMenu } from "~/components/song-menu";
 import { Artwork } from "~/components/ui/artwork";
 import { IconButton } from "~/components/ui/icon-button";
-import { Text } from "~/components/ui/text";
+import { usePlaybackStatus } from "~/playback/playback-status";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
-import { radii, sizes } from "~/theme/tokens";
+import { playerArtSize, radii } from "~/theme/tokens";
+import { useTokenColor } from "~/theme/use-palette";
 
 import { PlayerLyrics } from "./player-lyrics";
-import { RadioBadge } from "./radio-badge";
 import { Scrubber } from "./scrubber";
 import { TransportControls } from "./transport-controls";
+import { usePlayerColors } from "./use-player-colors";
+import {
+  Backdrop,
+  gradientFill,
+  nowPlayingWash,
+  OnWash,
+  WashText,
+} from "./wash";
+
+/** iOS lifts the artwork off the wash (spec 2.9); Material is flat. */
+const ART_SHADOW = Platform.select({
+  ios: { boxShadow: "0 8px 24px rgba(0, 0, 0, 0.18)" },
+  default: undefined,
+});
+
+/** How far the artwork settles back while paused. */
+const PAUSED_SCALE = 0.9;
 
 /**
- * The full player, presented as a sheet over the tabs: artwork (or the
- * song's lyrics), the station badge, title, heart and menu, the scrubber and
- * transport, then Lyrics and Up next.
+ * The artwork, a little smaller while paused (the system players' cue).
+ * That is movement, so reduce motion keeps it at full size.
+ */
+function NowPlayingArt({ image }: { image: string }) {
+  const playing = usePlaybackStatus((state) => state.playing);
+  const reduceMotion = useReducedMotion();
+  const scale = useSharedValue(1);
+  useEffect(() => {
+    scale.set(
+      withTiming(playing || reduceMotion ? 1 : PAUSED_SCALE, { duration: 340 }),
+    );
+  }, [playing, reduceMotion, scale]);
+  const animated = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.get() }],
+  }));
+
+  return (
+    <Animated.View style={[{ borderRadius: radii.lg }, ART_SHADOW, animated]}>
+      <Artwork image={image} size="player" testID="now-playing-art" />
+    </Animated.View>
+  );
+}
+
+/** Where the queue comes from: today only a radio station names itself. */
+function PlayingFrom() {
+  const station = usePlayer((state) => state.radio?.name);
+  if (!station) return <View className="flex-1" />;
+  return (
+    <View
+      accessible
+      accessibilityLabel={`Playing ${station}`}
+      className="flex-1 items-center"
+    >
+      <WashText variant="caption" tone="muted" numberOfLines={1}>
+        Playing from
+      </WashText>
+      <WashText variant="footnote" numberOfLines={1}>
+        {station}
+      </WashText>
+    </View>
+  );
+}
+
+/**
+ * Now Playing, presented as a sheet over the tabs (spec 2.10, D3 Ambient
+ * Tonal): the current artwork's wash behind a top bar (close, where the queue
+ * plays from, the song menu), the artwork or its lyrics, title and heart,
+ * scrubber, transport, then Lyrics and Up next. Text and controls take the
+ * wash's contrast-checked colours; without them (loading the first cover,
+ * extraction failed, a contrast miss) the screen is the D1 palette.
  */
 export function FullPlayer() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const track = usePlayer(selectCurrentTrack);
+  const colors = usePlayerColors(track?.image);
+  const background = useTokenColor("background");
   const [showLyrics, setShowLyrics] = useState(false);
 
+  const fill = colors
+    ? gradientFill(colors.wash)
+    : { key: "background", style: { backgroundColor: background } };
+
   const close = (
-    <View className="items-start px-2 pt-1">
-      <IconButton
-        icon={{ ios: "chevron.down", android: "keyboard_arrow_down" }}
-        label="Close player"
-        onPress={() => router.back()}
-      />
-    </View>
+    <IconButton
+      icon={{ ios: "chevron.down", android: "keyboard_arrow_down" }}
+      label="Close player"
+      onPress={() => router.back()}
+    />
   );
 
   if (!track) {
     return (
-      <View className="flex-1">
-        {close}
+      <View className="flex-1 bg-background">
+        <View className="flex-row px-3 pt-2">{close}</View>
         <EmptyState
           icon={{ ios: "music.note", android: "music_note" }}
           title="Not playing"
@@ -53,62 +127,65 @@ export function FullPlayer() {
     );
   }
 
-  const artworkSize = width - sizes.page * 2;
+  const artworkSize = playerArtSize(width);
 
   return (
     <View className="flex-1">
-      {close}
-      {/* Scrolls, so large text and short phones never push the controls off screen. */}
-      <ScrollView
-        contentContainerClassName="grow justify-center gap-6 px-page"
-        contentContainerStyle={{ paddingBottom: insets.bottom }}
-      >
-        {showLyrics ? (
-          <PlayerLyrics track={track} size={artworkSize} />
-        ) : (
-          <Artwork
-            image={track.image}
-            quality="high"
-            style={{
-              width: artworkSize,
-              height: artworkSize,
-              borderRadius: radii.xl,
-            }}
-          />
-        )}
-        <View className="flex-row items-center gap-2">
-          <View className="flex-1 gap-0.5">
-            <RadioBadge />
-            <Text variant="title" numberOfLines={2}>
-              {track.name}
-            </Text>
-            <Text tone="muted" numberOfLines={1}>
-              {track.subtitle}
-            </Text>
-          </View>
-          {track.type === "song" ? (
-            <LikeButton type="song" token={track.id} name={track.name} />
-          ) : null}
+      <Backdrop fill={fill} />
+      <OnWash colors={colors ? nowPlayingWash(colors) : null}>
+        <View className="flex-row items-center px-3 pt-2">
+          {close}
+          <PlayingFrom />
           <SongMenu song={track}>
-            <MenuTrigger label={`More actions for ${track.name}`} size={22} />
+            <MenuTrigger label={`More actions for ${track.name}`} size="lg" />
           </SongMenu>
         </View>
-        <Scrubber />
-        <TransportControls />
-        <View className="flex-row items-center justify-around">
-          <IconButton
-            icon={{ ios: "quote.bubble", android: "lyrics" }}
-            label={showLyrics ? "Hide lyrics" : "Lyrics"}
-            selected={showLyrics}
-            onPress={() => setShowLyrics((shown) => !shown)}
-          />
-          <IconButton
-            icon={{ ios: "list.bullet", android: "queue_music" }}
-            label="Up next"
-            onPress={() => router.push("/queue")}
-          />
-        </View>
-      </ScrollView>
+        {/* Scrolls, so large text and short phones never push the controls off screen. */}
+        <ScrollView
+          contentContainerClassName="grow justify-center px-6 py-4"
+          contentContainerStyle={{ paddingBottom: insets.bottom }}
+        >
+          <View className="items-center">
+            {showLyrics ? (
+              <PlayerLyrics track={track} size={artworkSize} />
+            ) : (
+              <NowPlayingArt image={track.image} />
+            )}
+          </View>
+          <View className="mt-8 flex-row items-center gap-2">
+            <View className="flex-1">
+              <WashText variant="title2" numberOfLines={1}>
+                {track.name}
+              </WashText>
+              <WashText tone="muted" numberOfLines={1}>
+                {track.subtitle}
+              </WashText>
+            </View>
+            {track.type === "song" ? (
+              <LikeButton type="song" token={track.id} name={track.name} />
+            ) : null}
+          </View>
+          <View className="mt-6">
+            <Scrubber />
+          </View>
+          <View className="mt-6">
+            <TransportControls />
+          </View>
+          <View className="mt-8 flex-row items-center justify-between">
+            <IconButton
+              icon={{ ios: "quote.bubble", android: "lyrics" }}
+              label={showLyrics ? "Hide lyrics" : "Lyrics"}
+              selected={showLyrics}
+              onPress={() => setShowLyrics((shown) => !shown)}
+            />
+            <IconButton
+              icon={{ ios: "list.bullet", android: "queue_music" }}
+              label="Up next"
+              onPress={() => router.push("/queue")}
+            />
+          </View>
+        </ScrollView>
+      </OnWash>
     </View>
   );
 }
