@@ -104,8 +104,6 @@ describe("PlaylistScreen", () => {
     procedure("playlist.details").mockRejectedValue(trpcError("NOT_FOUND"));
     await renderScreen(<PlaylistScreen token="nope" />);
 
-    expect(
-      await screen.findByText("Couldn't find this playlist"),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText("Playlist not found")).toBeOnTheScreen();
   });
 });

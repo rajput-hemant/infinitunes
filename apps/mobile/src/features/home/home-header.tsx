@@ -4,11 +4,11 @@ import { languageLabel } from "@infinitunes/types";
 import { Link, router } from "expo-router";
 import { View } from "react-native";
 
+import { ChipRow } from "~/components/chip-row";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
-import { ChipRow } from "~/features/browse/chip-row";
-import { usePendingAction } from "~/features/browse/use-pending-action";
 import { authClient } from "~/lib/auth-client";
+import { usePending } from "~/lib/use-pending";
 
 import { playSurprise } from "./play-home";
 
@@ -34,7 +34,7 @@ const languageChips = [
 /** Greeting by time of day and first name, Surprise Me, Browse and the language chips. */
 export function HomeHeader() {
   const name = authClient.useSession().data?.user.name;
-  const { run: surprise, pending } = usePendingAction(playSurprise);
+  const { run, pending } = usePending();
 
   return (
     <View className="gap-3 pb-2">
@@ -51,7 +51,7 @@ export function HomeHeader() {
           icon={{ ios: "sparkles", android: "auto_awesome" }}
           label="Surprise Me"
           accessibilityLabel="Surprise Me - Add songs to queue and play"
-          onPress={() => void surprise()}
+          onPress={() => void run(playSurprise)}
           disabled={pending}
           className="flex-1"
         />

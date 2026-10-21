@@ -4,9 +4,8 @@ import { languageLabel } from "@infinitunes/types";
 import { router } from "expo-router";
 import { View } from "react-native";
 
+import { ChipRow } from "~/components/chip-row";
 import { Text } from "~/components/ui/text";
-
-import { ChipRow } from "./chip-row";
 
 type LanguageFilterProps = {
   selected: Lang | undefined;

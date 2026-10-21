@@ -5,10 +5,7 @@ import { Link } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { Text } from "~/components/ui/text";
-import {
-  GRID_GAP,
-  useGridCardWidth,
-} from "~/features/browse/use-grid-card-width";
+import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { entityHref } from "~/navigation/entity-href";
 import { radii } from "~/theme/tokens";
 

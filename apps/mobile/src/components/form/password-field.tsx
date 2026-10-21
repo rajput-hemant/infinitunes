@@ -1,9 +1,11 @@
 import { forwardRef, useState } from "react";
 
+import { FormField } from "~/components/form/form-field";
+import type {
+  FormFieldProps,
+  TextInputHandle,
+} from "~/components/form/form-field";
 import { IconButton } from "~/components/ui/icon-button";
-
-import { FormField } from "./form-field";
-import type { FormFieldProps, TextInputHandle } from "./form-field";
 
 /** `passwordSchema` for iOS's strong-password suggestion. */
 const PASSWORD_RULES =

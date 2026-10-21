@@ -1,10 +1,8 @@
-import { rawArtist } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { Share } from "react-native";
 
 import { renderWithProviders } from "~/test/render";
 
-import { artistShareUrl } from "./artist-share-url";
 import { detailHeaderOptions } from "./detail-header-options";
 
 function renderHeaderRight(options: ReturnType<typeof detailHeaderOptions>) {
@@ -19,7 +17,7 @@ describe("detailHeaderOptions", () => {
     });
     const options = detailHeaderOptions({
       name: "Flipperachi",
-      url: artistShareUrl(rawArtist()),
+      url: "https://www.jiosaavn.com/artist/flipperachi/LnMfdXjMGl0_",
     });
     expect(options.title).toBe("Flipperachi");
     expect(options.headerLargeTitle).toBe(false);

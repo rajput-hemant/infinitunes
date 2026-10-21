@@ -6,11 +6,11 @@ import { View } from "react-native";
 
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Text } from "~/components/ui/text";
+import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { entityHref } from "~/navigation/entity-href";
 
 import { BrowseTile } from "./browse-tile";
 import { useCategoryCovers } from "./use-category-covers";
-import { GRID_GAP, useGridCardWidth } from "./use-grid-card-width";
 
 type Category = { label: string; href: Href; image?: string };
 

@@ -7,11 +7,8 @@ import { Pressable, View } from "react-native";
 import { MediaCard } from "~/components/media-card";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
-import {
-  GRID_GAP,
-  useGridCardWidth,
-} from "~/features/browse/use-grid-card-width";
-import { usePendingAction } from "~/features/browse/use-pending-action";
+import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { usePending } from "~/lib/use-pending";
 import { entityHref } from "~/navigation/entity-href";
 import { radii } from "~/theme/tokens";
 
@@ -26,9 +23,7 @@ type HomeHeroProps = {
 export function HomeHero({ featured, tiles }: HomeHeroProps) {
   const tileWidth = useGridCardWidth();
   const href = entityHref(featured.type, featured.url);
-  const { run: play, pending } = usePendingAction(() =>
-    playPlaylist(featured.url),
-  );
+  const { run, pending } = usePending();
 
   const card = (
     <Pressable
@@ -67,7 +62,7 @@ export function HomeHero({ featured, tiles }: HomeHeroProps) {
         label="Play"
         icon={{ ios: "play.fill", android: "play_arrow" }}
         accessibilityLabel={`Play ${featured.name}`}
-        onPress={() => void play()}
+        onPress={() => void run(() => playPlaylist(featured.url))}
         disabled={pending}
       />
       {tiles.length > 0 ? (

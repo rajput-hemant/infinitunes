@@ -2,6 +2,8 @@ import type { MediaType } from "@infinitunes/types";
 import { parseToken } from "@infinitunes/types";
 import type { Href } from "expo-router";
 
+import { stationHref, stationRef } from "./station-ref";
+
 /**
  * Detail screens, shared by the Home, Search and Library stacks
  * (`app/(tabs)/(home,search,library)/<type>/[token].tsx`), so opening one
@@ -26,11 +28,15 @@ export function isEntityType(type: string): type is EntityType {
 
 /**
  * The screen for an upstream item, from its type and perma URL (the token is
- * the URL's last segment, what every details procedure takes). `undefined`
- * for types without a screen (radio stations, channels), so the caller
- * renders the item as not pressable.
+ * the URL's last segment, what every details procedure takes; a radio
+ * station also needs its name). `undefined` for types without a screen
+ * (channels), so the caller renders the item as not pressable.
  */
 export function entityHref(type: MediaType, url: string): Href | undefined {
+  if (type === "radio_station") {
+    const station = stationRef(url);
+    return station && stationHref(station);
+  }
   const token = parseToken(url);
   if (!token || !isEntityType(type)) return undefined;
   return { pathname: ENTITY_ROUTES[type], params: { token } };

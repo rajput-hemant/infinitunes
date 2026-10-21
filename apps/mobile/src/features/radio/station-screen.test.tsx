@@ -3,10 +3,10 @@ import { fireEvent, screen } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
 import { playerStore } from "~/playback/player-store";
+import { startSeededRadio } from "~/playback/radio";
 import { renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
 
-import { startSeededRadio } from "./play-radio";
 import { StationScreen } from "./station-screen";
 
 const stationDetails = procedure("radio.stationDetails");

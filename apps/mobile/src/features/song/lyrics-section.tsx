@@ -1,13 +1,12 @@
+import { plainText } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 
+import { SectionHeading } from "~/components/section-heading";
 import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { trpc } from "~/lib/trpc";
-
-import { lyricsText } from "./lyrics-text";
-import { SectionHeading } from "./section-heading";
 
 type LyricsSectionProps = {
   /** The song's id; upstream looks lyrics up by it. */
@@ -45,15 +44,15 @@ export function LyricsSection({ songId }: LyricsSectionProps) {
       >
         {expanded ? (
           <>
-            <Text tone="muted">{lyricsText(lyrics.lyrics)}</Text>
+            <Text tone="muted">{plainText(lyrics.lyrics)}</Text>
             <Text variant="caption" tone="muted">
-              {lyricsText(lyrics.lyrics_copyright)}
+              {plainText(lyrics.lyrics_copyright)}
             </Text>
           </>
         ) : (
           <>
             <Text tone="muted" numberOfLines={3}>
-              {lyricsText(lyrics.snippet)}
+              {plainText(lyrics.snippet)}
             </Text>
             <Text variant="subhead">Read More</Text>
           </>

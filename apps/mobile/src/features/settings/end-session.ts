@@ -1,6 +1,6 @@
-import { authFailure } from "~/features/auth/auth-failure";
-import type { AuthFailure } from "~/features/auth/auth-failure";
 import { authClient } from "~/lib/auth-client";
+import { authFailure } from "~/lib/auth-failure";
+import type { AuthFailure } from "~/lib/auth-failure";
 import { queryClient } from "~/lib/query-client";
 import { trpc } from "~/lib/trpc";
 

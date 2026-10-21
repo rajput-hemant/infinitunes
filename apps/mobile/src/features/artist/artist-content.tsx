@@ -3,13 +3,14 @@ import { parseArtistBio, toSongRow, uniqueBy } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { useMemo, useState } from "react";
 
+import { entityListKey } from "~/components/entity-list";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playerStore } from "~/playback/player-store";
 
 import { ArtistListHeader } from "./artist-list-header";
+import { renderArtistListItem } from "./artist-list-items";
 import type { ArtistTab } from "./artist-tabs";
 import { visibleTabs } from "./artist-tabs";
-import { listItemKey, renderListItem } from "./render-list-item";
 import { useArtistPanel } from "./use-artist-panel";
 
 type ArtistContentProps = {
@@ -43,9 +44,9 @@ export function ArtistContent({
     <FlashList
       testID="artist-list"
       data={panel.items}
-      keyExtractor={listItemKey}
+      keyExtractor={entityListKey}
       getItemType={(item) => item.kind}
-      renderItem={renderListItem}
+      renderItem={renderArtistListItem}
       ListHeaderComponent={
         <ArtistListHeader
           artist={artist}

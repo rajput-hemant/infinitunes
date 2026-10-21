@@ -77,19 +77,13 @@ function TopSearches() {
         Top Searches
       </Text>
       {data.map((item) => (
-        <Pressable
+        <MediaRow
           key={item.id}
+          title={item.name}
+          subtitle={item.subtitle}
+          image={item.image}
           onPress={() => openEntity(item.type, item.url)}
-          accessibilityRole="button"
-          accessibilityLabel={item.name}
-          className="active:opacity-70"
-        >
-          <MediaRow
-            title={item.name}
-            subtitle={item.subtitle}
-            image={item.image}
-          />
-        </Pressable>
+        />
       ))}
     </View>
   );

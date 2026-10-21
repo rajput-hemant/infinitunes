@@ -230,9 +230,7 @@ describe("SongScreen", () => {
     procedure("song.details").mockResolvedValue(details({ songs: [] }));
     await renderScreen(<SongScreen token="nope" />);
 
-    expect(
-      await screen.findByText("Couldn't find this song"),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText("Song not found")).toBeOnTheScreen();
   });
 
   it("shows not found when the token is an episode", async () => {
@@ -240,18 +238,14 @@ describe("SongScreen", () => {
     procedure("song.details").mockResolvedValue(details({ songs: [episode] }));
     await renderScreen(<SongScreen token="episode-token" />);
 
-    expect(
-      await screen.findByText("Couldn't find this song"),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText("Song not found")).toBeOnTheScreen();
   });
 
   it("shows not found for a token upstream rejects", async () => {
     procedure("song.details").mockRejectedValue(trpcError("NOT_FOUND"));
     await renderScreen(<SongScreen token="nope" />);
 
-    expect(
-      await screen.findByText("Couldn't find this song"),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText("Song not found")).toBeOnTheScreen();
   });
 
   it("offers a retry when the song fails to load", async () => {

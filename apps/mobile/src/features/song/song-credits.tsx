@@ -4,11 +4,10 @@ import { Link } from "expo-router";
 import type { Href } from "expo-router";
 import { Pressable, View } from "react-native";
 
+import { SectionHeading } from "~/components/section-heading";
 import { Text } from "~/components/ui/text";
+import { joinMeta, playsLabel } from "~/lib/meta";
 import { entityHref } from "~/navigation/entity-href";
-
-import { joinMeta, playsLabel } from "./meta";
-import { SectionHeading } from "./section-heading";
 
 type CreditRowProps = {
   label: string;

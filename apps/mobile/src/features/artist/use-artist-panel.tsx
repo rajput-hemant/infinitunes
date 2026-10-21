@@ -9,11 +9,13 @@ import type {
 import { toCardItem, toSongRow } from "@infinitunes/types";
 import type { ReactElement } from "react";
 
+import { cardItems, songItems } from "~/components/entity-list";
+import { PagedFooter } from "~/components/paged-footer";
+
 import type { ArtistListItem } from "./artist-list-items";
-import { albumItems, bioItems, songItems } from "./artist-list-items";
+import { bioItems } from "./artist-list-items";
 import type { ArtistTab } from "./artist-tabs";
 import { OverviewShelves } from "./overview-shelves";
-import { PagedFooter } from "./paged-footer";
 import { useArtistPages } from "./use-artist-pages";
 
 /** Songs shown on the Overview before the shelves; the Songs tab lists them all. */
@@ -86,7 +88,7 @@ export function useArtistPanel({
       };
     case "albums":
       return {
-        items: albumItems(albums.items),
+        items: cardItems(albums.items),
         footer: (
           <PagedFooter
             isPending={albums.isPending}

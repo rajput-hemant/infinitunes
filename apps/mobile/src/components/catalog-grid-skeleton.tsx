@@ -1,13 +1,12 @@
 import { View } from "react-native";
 
 import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
-import { radii } from "~/theme/tokens";
-
 import {
   GRID_COLUMNS,
   GRID_GAP,
   useGridCardWidth,
-} from "./use-grid-card-width";
+} from "~/lib/use-grid-card-width";
+import { radii } from "~/theme/tokens";
 
 const ROWS = 3;
 

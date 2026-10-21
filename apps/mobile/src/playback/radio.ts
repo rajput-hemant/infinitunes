@@ -3,9 +3,8 @@ import type { RadioType, StationDetailsResponse } from "@infinitunes/types";
 import { toast } from "sonner-native";
 
 import { trpcClient } from "~/lib/trpc";
+import type { StationRef } from "~/navigation/station-ref";
 import { playerStore } from "~/playback/player-store";
-
-import type { StationRef } from "./station-ref";
 
 /** Songs asked for when a seeded station starts, as on the web. */
 const SEED_BATCH = 20;

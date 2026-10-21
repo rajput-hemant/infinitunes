@@ -4,16 +4,15 @@ import { useRef } from "react";
 import { View } from "react-native";
 import { toast } from "sonner-native";
 
+import { EmailField } from "~/components/form/email-field";
+import type { TextInputHandle } from "~/components/form/form-field";
+import { PasswordField } from "~/components/form/password-field";
+import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { authClient } from "~/lib/auth-client";
-
-import { authFailure } from "./auth-failure";
-import { EmailField } from "./form/email-field";
-import type { TextInputHandle } from "./form/form-field";
-import { PasswordField } from "./form/password-field";
-import { usePending } from "./form/use-pending";
-import { useSchemaForm } from "./form/use-schema-form";
+import { authFailure } from "~/lib/auth-failure";
+import { usePending } from "~/lib/use-pending";
 
 /**
  * Email and password sign-in. The session store updates on success and the

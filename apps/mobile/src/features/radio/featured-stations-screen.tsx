@@ -1,13 +1,12 @@
 import { toCardItem } from "@infinitunes/types";
 import { Stack } from "expo-router";
 
+import { CatalogScreen } from "~/components/catalog-screen";
+import { StationCard } from "~/components/station-card";
 import { Text } from "~/components/ui/text";
 import { CATALOG_PAGE_SIZE } from "~/features/browse/catalog-page-size";
-import { CatalogScreen } from "~/features/browse/catalog-screen";
 import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
-
-import { StationCard } from "./station-card";
 
 /** Featured radio stations with endless paging; upstream ends a list with a short page. */
 export function FeaturedStationsScreen() {

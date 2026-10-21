@@ -1,4 +1,4 @@
-import { stationHref, stationRef } from "./station-ref";
+import { stationHref, stationRef } from "~/navigation/station-ref";
 
 describe("stationRef", () => {
   it("reads the name and token from a station's perma URL", () => {

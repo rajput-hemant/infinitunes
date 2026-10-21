@@ -80,6 +80,6 @@ describe("MixScreen", () => {
     procedure("get.mix").mockRejectedValue(trpcError("NOT_FOUND"));
     await renderScreen(<MixScreen token="nope" />);
 
-    expect(await screen.findByText("Couldn't find this mix")).toBeOnTheScreen();
+    expect(await screen.findByText("Mix not found")).toBeOnTheScreen();
   });
 });

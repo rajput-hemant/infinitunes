@@ -10,22 +10,22 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { View } from "react-native";
 
+import { DetailScreen } from "~/components/detail/detail-screen";
+import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
+import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
+import { TrackList } from "~/components/track-list";
 import { Text } from "~/components/ui/text";
-import { DetailScreen } from "~/features/song/detail-screen";
-import { DetailSkeleton } from "~/features/song/detail-skeleton";
 import {
   joinMeta,
   playsLabel,
   songCountLabel,
   totalDurationLabel,
-} from "~/features/song/meta";
-import { playAll, shuffleAll } from "~/features/song/play-collection";
-import { SecondaryShelf } from "~/features/song/secondary-shelf";
-import { songRowsOf } from "~/features/song/song-rows";
-import { TrackList } from "~/features/song/track-list";
+} from "~/lib/meta";
+import { songRowsOf } from "~/lib/song-rows";
 import { trpc } from "~/lib/trpc";
+import { playAll, shuffleAll } from "~/playback/play-collection";
 
 type AlbumScreenProps = {
   token: string;
@@ -55,7 +55,8 @@ export function AlbumScreen({ token }: AlbumScreenProps) {
     <DetailScreen
       query={query}
       skeleton={<DetailSkeleton />}
-      noun="album"
+      noun="Album"
+      icon={{ ios: "square.stack", android: "album" }}
       refreshKeys={[
         trpc.album.recommendations.pathKey(),
         trpc.album.sameYear.pathKey(),

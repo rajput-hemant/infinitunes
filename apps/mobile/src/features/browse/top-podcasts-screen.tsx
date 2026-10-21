@@ -2,6 +2,7 @@ import { toCardItem } from "@infinitunes/types";
 import type { TopShows } from "@infinitunes/types";
 import { Stack } from "expo-router";
 
+import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
 import { Shelf } from "~/components/shelf";
 import { Text } from "~/components/ui/text";
@@ -9,7 +10,6 @@ import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
 
 import { CATALOG_PAGE_SIZE } from "./catalog-page-size";
-import { CatalogScreen } from "./catalog-screen";
 
 const TRENDING_FALLBACK_TITLE = "Trending Podcasts";
 

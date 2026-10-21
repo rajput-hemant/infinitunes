@@ -4,16 +4,16 @@ import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+import { DetailScreen } from "~/components/detail/detail-screen";
+import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
+import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
-import { DetailScreen } from "~/features/song/detail-screen";
-import { DetailSkeleton } from "~/features/song/detail-skeleton";
-import { joinMeta } from "~/features/song/meta";
-import { playAll, shuffleAll } from "~/features/song/play-collection";
-import { SecondaryShelf } from "~/features/song/secondary-shelf";
-import { songRowsOf } from "~/features/song/song-rows";
-import { TrackList } from "~/features/song/track-list";
+import { TrackList } from "~/components/track-list";
+import { joinMeta } from "~/lib/meta";
+import { songRowsOf } from "~/lib/song-rows";
 import { trpc } from "~/lib/trpc";
+import { playAll, shuffleAll } from "~/playback/play-collection";
 
 type PlaylistScreenProps = {
   token: string;
@@ -38,7 +38,8 @@ export function PlaylistScreen({ token }: PlaylistScreenProps) {
     <DetailScreen
       query={query}
       skeleton={<DetailSkeleton />}
-      noun="playlist"
+      noun="Playlist"
+      icon={{ ios: "music.note.list", android: "queue_music" }}
       refreshKeys={[
         trpc.playlist.recommendations.pathKey(),
         trpc.get.trending.pathKey(),

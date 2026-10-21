@@ -6,12 +6,13 @@ import { View } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
 import { EntityHeader } from "~/components/entity-header";
-import { albumItems, songItems } from "~/features/artist/artist-list-items";
 import {
-  listItemKey,
-  renderListItem,
-} from "~/features/artist/render-list-item";
-import { SegmentedTabs } from "~/features/artist/segmented-tabs";
+  cardItems,
+  entityListKey,
+  renderEntityListItem,
+  songItems,
+} from "~/components/entity-list";
+import { SegmentedTabs } from "~/components/segmented-tabs";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playerStore } from "~/playback/player-store";
 
@@ -40,14 +41,14 @@ export function LabelContent({
     () => uniqueBy(label.topAlbums.albums, (album) => album.id).map(toCardItem),
     [label.topAlbums.albums],
   );
-  const items = tab === "songs" ? songItems(songs) : albumItems(albums);
+  const items = tab === "songs" ? songItems(songs) : cardItems(albums);
 
   return (
     <FlashList
       data={items}
-      keyExtractor={listItemKey}
+      keyExtractor={entityListKey}
       getItemType={(item) => item.kind}
-      renderItem={renderListItem}
+      renderItem={renderEntityListItem}
       ListHeaderComponent={
         <View className="gap-3 pb-2">
           <EntityHeader

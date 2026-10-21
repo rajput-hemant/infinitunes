@@ -1,7 +1,10 @@
 import { forwardRef } from "react";
 
-import { FormField } from "./form-field";
-import type { FormFieldProps, TextInputHandle } from "./form-field";
+import { FormField } from "~/components/form/form-field";
+import type {
+  FormFieldProps,
+  TextInputHandle,
+} from "~/components/form/form-field";
 
 type EmailFieldProps = Omit<
   FormFieldProps,

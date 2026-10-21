@@ -14,9 +14,8 @@ import { SongRow } from "~/components/song-row";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { trpc } from "~/lib/trpc";
-
-import { startStation } from "./play-radio";
-import type { StationRef } from "./station-ref";
+import type { StationRef } from "~/navigation/station-ref";
+import { startStation } from "~/playback/radio";
 
 /** A station's artwork, name and Play, then the songs coming up. */
 export function StationScreen({ name, token }: StationRef) {

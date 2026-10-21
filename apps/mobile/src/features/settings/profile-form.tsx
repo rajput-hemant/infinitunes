@@ -3,15 +3,15 @@ import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner-native";
 
+import { EmailField } from "~/components/form/email-field";
+import { FormField } from "~/components/form/form-field";
+import type { TextInputHandle } from "~/components/form/form-field";
+import { FormScreen } from "~/components/form/form-screen";
+import { PasswordField } from "~/components/form/password-field";
+import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
-import { EmailField } from "~/features/auth/form/email-field";
-import { FormField } from "~/features/auth/form/form-field";
-import type { TextInputHandle } from "~/features/auth/form/form-field";
-import { FormScreen } from "~/features/auth/form/form-screen";
-import { PasswordField } from "~/features/auth/form/password-field";
-import { usePending } from "~/features/auth/form/use-pending";
-import { useSchemaForm } from "~/features/auth/form/use-schema-form";
 import { trpcClient } from "~/lib/trpc";
+import { usePending } from "~/lib/use-pending";
 
 import { refreshSession } from "./end-session";
 import { mutationFailure } from "./mutation-failure";

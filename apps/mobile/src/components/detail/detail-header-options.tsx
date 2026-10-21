@@ -3,7 +3,8 @@ import type { NativeStackNavigationOptions } from "expo-router";
 import { IconButton } from "~/components/ui/icon-button";
 import { shareItem } from "~/lib/share";
 
-type SharedItem = { name: string; url: string };
+/** An item the header names and shares: its decoded title and perma URL. */
+export type SharedItem = { name: string; url: string };
 
 /**
  * Native header of a detail screen. The entity's own header carries the big

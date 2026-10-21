@@ -3,10 +3,10 @@ import { decode, formatCount } from "@infinitunes/types";
 import { View } from "react-native";
 
 import { EntityHeader } from "~/components/entity-header";
+import { SegmentedTabs } from "~/components/segmented-tabs";
 
 import type { ArtistTab } from "./artist-tabs";
 import { ARTIST_TAB_LABELS, CATEGORIES, CATEGORY_LABELS } from "./artist-tabs";
-import { SegmentedTabs } from "./segmented-tabs";
 
 type ArtistListHeaderProps = {
   artist: Artist;

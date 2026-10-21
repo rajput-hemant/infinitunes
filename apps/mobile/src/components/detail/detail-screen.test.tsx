@@ -8,7 +8,7 @@ import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 import { Share, Text } from "react-native";
 
-import { DetailScreen } from "./detail-screen";
+import { DetailScreen } from "~/components/detail/detail-screen";
 
 type Page = { name: string };
 
@@ -22,7 +22,7 @@ function Harness() {
     <DetailScreen
       query={query}
       skeleton={<Text>Skeleton</Text>}
-      noun="album"
+      noun="Album"
       identity={({ name }) => ({
         name,
         url: "https://www.jiosaavn.com/album/udta-teer/LHgqn,SRpyA_",
@@ -60,9 +60,7 @@ describe("DetailScreen", () => {
     answer.mockResolvedValueOnce(null);
     await renderHarness();
 
-    expect(
-      await screen.findByText("Couldn't find this album"),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText("Album not found")).toBeOnTheScreen();
   });
 
   it("shares the item's web page from the header", async () => {

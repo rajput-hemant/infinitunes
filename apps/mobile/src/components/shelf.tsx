@@ -2,6 +2,7 @@ import type { CardItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
+import type { ReactElement } from "react";
 import { Pressable, View } from "react-native";
 
 import { sizes } from "~/theme/tokens";
@@ -16,6 +17,10 @@ type ShelfProps = {
   items: readonly CardItem[];
   /** The full list's screen; shows a "See All" link in the heading. */
   seeAllHref?: Href;
+  /** Runs as a card opens its screen. */
+  onItemPress?: (item: CardItem) => void;
+  /** A card other than `MediaCard` (a station card with its play button). */
+  renderCard?: (item: CardItem) => ReactElement;
 };
 
 function CardGap() {
@@ -23,7 +28,13 @@ function CardGap() {
 }
 
 /** A titled, horizontally scrolling row of media cards. Renders nothing when empty. */
-export function Shelf({ title, items, seeAllHref }: ShelfProps) {
+export function Shelf({
+  title,
+  items,
+  seeAllHref,
+  onItemPress,
+  renderCard,
+}: ShelfProps) {
   if (items.length === 0) return null;
 
   return (
@@ -46,7 +57,16 @@ export function Shelf({ title, items, seeAllHref }: ShelfProps) {
         horizontal
         data={items}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <MediaCard item={item} />}
+        renderItem={({ item }) =>
+          renderCard ? (
+            renderCard(item)
+          ) : (
+            <MediaCard
+              item={item}
+              onPress={onItemPress && (() => onItemPress(item))}
+            />
+          )
+        }
         ItemSeparatorComponent={CardGap}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: sizes.page }}

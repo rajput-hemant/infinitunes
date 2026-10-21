@@ -137,9 +137,7 @@ describe("AlbumScreen", () => {
     procedure("album.details").mockRejectedValue(trpcError("NOT_FOUND"));
     await renderScreen(<AlbumScreen token="nope" />);
 
-    expect(
-      await screen.findByText("Couldn't find this album"),
-    ).toBeOnTheScreen();
+    expect(await screen.findByText("Album not found")).toBeOnTheScreen();
     expect(screen.queryByText("Try again")).toBeNull();
   });
 });

@@ -2,18 +2,17 @@ import { FlashList } from "@shopify/flash-list";
 import type { ComponentProps, ReactElement } from "react";
 import { ActivityIndicator, View } from "react-native";
 
+import { CatalogGridSkeleton } from "~/components/catalog-grid-skeleton";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { Text } from "~/components/ui/text";
-import { playerDockInset } from "~/navigation/player-dock";
-import { sizes } from "~/theme/tokens";
-
-import { CatalogGridSkeleton } from "./catalog-grid-skeleton";
 import {
   GRID_COLUMNS,
   GRID_GAP,
   useGridCardWidth,
-} from "./use-grid-card-width";
+} from "~/lib/use-grid-card-width";
+import { playerDockInset } from "~/navigation/player-dock";
+import { sizes } from "~/theme/tokens";
 
 /** What a catalog list reads from its query; paging fields are absent for a single page. */
 export type CatalogQuery<Item> = {

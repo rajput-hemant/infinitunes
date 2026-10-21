@@ -3,8 +3,7 @@ import { View } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
 import { SongRow } from "~/components/song-row";
-
-import { playFrom } from "./play-collection";
+import { playFrom } from "~/playback/play-collection";
 
 type TrackListProps = {
   rows: readonly SongRowItem[];

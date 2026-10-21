@@ -1,4 +1,4 @@
-import type { CardItem } from "@infinitunes/types";
+import type { CardItem, MediaType } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import { Image } from "expo-image";
 import { Link } from "expo-router";
@@ -12,22 +12,35 @@ import { Text } from "./ui/text";
 /** Card width in points: two and a bit cards fill a phone's width, hinting the shelf scrolls. */
 export const MEDIA_CARD_WIDTH = 150;
 
+/** Types whose artwork is round, as on the web. */
+const ROUND_TYPES: ReadonlySet<MediaType> = new Set([
+  "artist",
+  "radio_station",
+]);
+
 type MediaCardProps = {
   item: CardItem;
   width?: number;
+  /** Runs as the card opens its screen (e.g. search remembers the query). */
+  onPress?: () => void;
 };
 
 /**
- * An album, playlist, artist, show or other catalog item: square artwork
- * (round for artists), title and subtitle. It opens the item's screen; a type
- * without one renders the card without a link.
+ * An album, playlist, artist, show, station or other catalog item: square
+ * artwork (round for artists and stations), title and subtitle. It opens the
+ * item's screen; a type without one renders the card without a link.
  */
-export function MediaCard({ item, width = MEDIA_CARD_WIDTH }: MediaCardProps) {
+export function MediaCard({
+  item,
+  width = MEDIA_CARD_WIDTH,
+  onPress,
+}: MediaCardProps) {
   const href = entityHref(item.type, item.url);
-  const round = item.type === "artist";
+  const round = ROUND_TYPES.has(item.type);
   const card = (
     <Pressable
       disabled={!href}
+      onPress={onPress}
       accessibilityRole={href ? "link" : undefined}
       accessibilityLabel={
         item.subtitle ? `${item.name}, ${item.subtitle}` : item.name

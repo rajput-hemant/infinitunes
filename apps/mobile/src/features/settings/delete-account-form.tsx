@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { toast } from "sonner-native";
 
+import { FormField } from "~/components/form/form-field";
+import { FormScreen } from "~/components/form/form-screen";
+import { PasswordField } from "~/components/form/password-field";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
-import { FormField } from "~/features/auth/form/form-field";
-import { FormScreen } from "~/features/auth/form/form-screen";
-import { PasswordField } from "~/features/auth/form/password-field";
-import { usePending } from "~/features/auth/form/use-pending";
 import { trpcClient } from "~/lib/trpc";
+import { usePending } from "~/lib/use-pending";
 
 import { forgetUserData, signOut } from "./end-session";
 import { mutationFailure } from "./mutation-failure";

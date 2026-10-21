@@ -6,13 +6,13 @@ import { View } from "react-native";
 import { toast } from "sonner-native";
 
 import { EntityHeader } from "~/components/entity-header";
-import { Text } from "~/components/ui/text";
-import { songItems } from "~/features/artist/artist-list-items";
-import { PagedFooter } from "~/features/artist/paged-footer";
 import {
-  listItemKey,
-  renderListItem,
-} from "~/features/artist/render-list-item";
+  entityListKey,
+  renderEntityListItem,
+  songItems,
+} from "~/components/entity-list";
+import { PagedFooter } from "~/components/paged-footer";
+import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playerStore } from "~/playback/player-store";
 
@@ -54,8 +54,8 @@ export function ShowContent({
   return (
     <FlashList
       data={songItems(episodes.items)}
-      keyExtractor={listItemKey}
-      renderItem={renderListItem}
+      keyExtractor={entityListKey}
+      renderItem={renderEntityListItem}
       ListHeaderComponent={
         <View className="gap-1 pb-2">
           <EntityHeader

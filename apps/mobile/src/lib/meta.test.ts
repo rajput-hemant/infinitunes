@@ -1,7 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 
-import { lyricsText } from "./lyrics-text";
 import {
   joinMeta,
   playsLabel,
@@ -31,13 +30,5 @@ describe("meta line", () => {
     const rows = [rawSong({ id: "a" }), rawSong({ id: "b" })].map(toSongRow);
     expect(totalDurationLabel(rows)).toBe("03:30");
     expect(totalDurationLabel([])).toBe("");
-  });
-});
-
-describe("lyricsText", () => {
-  it("turns breaks into newlines, drops other markup and decodes entities", () => {
-    expect(lyricsText("One<br>Two &amp; Three<br/><i>Four</i>")).toBe(
-      "One\nTwo & Three\nFour",
-    );
   });
 });

@@ -3,11 +3,11 @@ import type { CardItem, TopArtists } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 
+import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
 import { trpc } from "~/lib/trpc";
 
 import { CATALOG_PAGE_SIZE } from "./catalog-page-size";
-import { CatalogScreen } from "./catalog-screen";
 
 type TopArtist = TopArtists["top_artists"][number];
 

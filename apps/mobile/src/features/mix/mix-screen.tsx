@@ -3,14 +3,14 @@ import type { Mix } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+import { DetailScreen } from "~/components/detail/detail-screen";
+import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
-import { DetailScreen } from "~/features/song/detail-screen";
-import { DetailSkeleton } from "~/features/song/detail-skeleton";
-import { joinMeta, songCountLabel } from "~/features/song/meta";
-import { playAll, shuffleAll } from "~/features/song/play-collection";
-import { songRowsOf } from "~/features/song/song-rows";
-import { TrackList } from "~/features/song/track-list";
+import { TrackList } from "~/components/track-list";
+import { joinMeta, songCountLabel } from "~/lib/meta";
+import { songRowsOf } from "~/lib/song-rows";
 import { trpc } from "~/lib/trpc";
+import { playAll, shuffleAll } from "~/playback/play-collection";
 
 /** The web page's mix request: the first twenty songs in these languages. */
 const MIX_REQUEST = { page: 1, n: 20, lang: "hindi,english" } as const;
@@ -26,7 +26,8 @@ export function MixScreen({ token }: MixScreenProps) {
     <DetailScreen
       query={query}
       skeleton={<DetailSkeleton />}
-      noun="mix"
+      noun="Mix"
+      icon={{ ios: "music.note.list", android: "queue_music" }}
       identity={(mix) => ({ name: decode(mix.title), url: mix.perma_url })}
     >
       {(mix) => <MixPage mix={mix} />}

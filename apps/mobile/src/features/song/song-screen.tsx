@@ -16,20 +16,20 @@ import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+import { DetailScreen } from "~/components/detail/detail-screen";
+import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
+import { SecondaryShelf } from "~/components/secondary-shelf";
+import { SectionHeading } from "~/components/section-heading";
 import { Shelf } from "~/components/shelf";
 import { SongListSkeleton } from "~/components/skeletons";
+import { TrackList } from "~/components/track-list";
+import { joinMeta } from "~/lib/meta";
 import { trpc } from "~/lib/trpc";
+import { playAll, shuffleAll } from "~/playback/play-collection";
 
-import { DetailScreen } from "./detail-screen";
-import { DetailSkeleton } from "./detail-skeleton";
 import { LyricsSection } from "./lyrics-section";
-import { joinMeta } from "./meta";
-import { playAll, shuffleAll } from "./play-collection";
-import { SecondaryShelf } from "./secondary-shelf";
-import { SectionHeading } from "./section-heading";
 import { SongCredits } from "./song-credits";
-import { TrackList } from "./track-list";
 
 type SongDetails = { song: Song; modules: SongModules | undefined };
 
@@ -69,7 +69,8 @@ export function SongScreen({ token }: SongScreenProps) {
     <DetailScreen
       query={query}
       skeleton={<DetailSkeleton rows={1} />}
-      noun="song"
+      noun="Song"
+      icon={{ ios: "music.note", android: "music_note" }}
       refreshKeys={[
         trpc.get.lyrics.pathKey(),
         trpc.album.details.pathKey(),

@@ -1,8 +1,7 @@
 import type { ReactNode } from "react";
 
+import { FormScreen } from "~/components/form/form-screen";
 import { Text } from "~/components/ui/text";
-
-import { FormScreen } from "./form/form-screen";
 
 type AuthScreenProps = {
   title: string;

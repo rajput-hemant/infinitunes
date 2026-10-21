@@ -4,15 +4,14 @@ import { useState } from "react";
 import { View } from "react-native";
 import { toast } from "sonner-native";
 
+import { EmailField } from "~/components/form/email-field";
+import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { authClient } from "~/lib/auth-client";
+import { authFailure } from "~/lib/auth-failure";
 import { env } from "~/lib/env";
-
-import { authFailure } from "./auth-failure";
-import { EmailField } from "./form/email-field";
-import { usePending } from "./form/use-pending";
-import { useSchemaForm } from "./form/use-schema-form";
+import { usePending } from "~/lib/use-pending";
 
 /** Shown for every valid submission, so the screen never reveals which emails have accounts. */
 export const FORGOT_PASSWORD_MESSAGE =
