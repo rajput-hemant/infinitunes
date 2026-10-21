@@ -266,48 +266,70 @@ function isUniqueViolation(error: unknown): boolean {
   );
 }
 
-async function getOwnedPlaylist(
-  ctx: { db: TRPCContext["db"]; session: NonNullable<Session> },
-  playlistId: string,
-) {
-  const playlist = await ctx.db.query.myPlaylists.findFirst({
-    where: eq(myPlaylists.id, playlistId),
-  });
+type PlaylistCtx = { db: TRPCContext["db"]; session: NonNullable<Session> };
 
+/** NOT_FOUND for a missing playlist, FORBIDDEN for someone else's. */
+function assertOwnedPlaylist<T extends { userId: string }>(
+  playlist: T | undefined,
+  userId: string,
+): T {
   if (!playlist) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Playlist not found" });
   }
 
-  if (playlist.userId !== ctx.session.user.id) {
+  if (playlist.userId !== userId) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Unauthorized" });
   }
 
   return playlist;
 }
 
-/** Stores a playlist's new song list; the owner is checked again in the write itself. */
-async function saveOwnedPlaylistSongs(
-  ctx: { db: TRPCContext["db"]; session: NonNullable<Session> },
-  playlistId: string,
-  songs: string[],
-) {
-  const [updatedPlaylist] = await ctx.db
-    .update(myPlaylists)
-    .set({ songs })
-    .where(
-      and(
-        eq(myPlaylists.id, playlistId),
-        eq(myPlaylists.userId, ctx.session.user.id),
-      ),
-    )
-    .returning();
+async function getOwnedPlaylist(ctx: PlaylistCtx, playlistId: string) {
+  const playlist = await ctx.db.query.myPlaylists.findFirst({
+    where: eq(myPlaylists.id, playlistId),
+  });
 
-  return updatedPlaylist;
+  return assertOwnedPlaylist(playlist, ctx.session.user.id);
+}
+
+/**
+ * Rewrites a playlist's song list from the list as stored. The row is read
+ * `FOR UPDATE` inside a transaction, so two writes to one playlist (an add on
+ * the phone while the web reorders it) apply one after the other instead of
+ * the later one overwriting the earlier with a stale list. `change` returns
+ * the new list, or throws to leave the playlist as it is.
+ */
+async function updateOwnedPlaylistSongs(
+  ctx: PlaylistCtx,
+  playlistId: string,
+  change: (songs: string[]) => string[],
+) {
+  return ctx.db.transaction(async (tx) => {
+    const [row] = await tx
+      .select({ userId: myPlaylists.userId, songs: myPlaylists.songs })
+      .from(myPlaylists)
+      .where(eq(myPlaylists.id, playlistId))
+      .for("update");
+    const playlist = assertOwnedPlaylist(row, ctx.session.user.id);
+
+    const [updatedPlaylist] = await tx
+      .update(myPlaylists)
+      .set({ songs: change(playlist.songs) })
+      .where(
+        and(
+          eq(myPlaylists.id, playlistId),
+          eq(myPlaylists.userId, ctx.session.user.id),
+        ),
+      )
+      .returning();
+
+    return updatedPlaylist;
+  });
 }
 
 /** The client's index no longer holds the song it meant (a stale view). */
-function staleSongPosition() {
-  return new TRPCError({
+function staleSongPosition(): never {
+  throw new TRPCError({
     code: "BAD_REQUEST",
     message: "Song not found in playlist at that position",
   });
@@ -335,47 +357,44 @@ export const userRouter = router({
 
   addSongsToPlaylist: protectedProcedure
     .input(playlistSongsInput)
-    .mutation(async ({ ctx, input }) => {
-      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
+    .mutation(({ ctx, input }) =>
+      updateOwnedPlaylistSongs(ctx, input.playlistId, (current) => {
+        const merged = [...new Set([...current, ...input.songs])];
 
-      const merged = [...new Set([...playlist.songs, ...input.songs])];
+        if (merged.length > PLAYLIST_MAX_SONGS) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Playlist is full (5,000 songs)",
+          });
+        }
 
-      if (merged.length > PLAYLIST_MAX_SONGS) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Playlist is full (5,000 songs)",
-        });
-      }
-
-      return saveOwnedPlaylistSongs(ctx, input.playlistId, merged);
-    }),
+        return merged;
+      }),
+    ),
 
   removeSongsFromPlaylist: protectedProcedure
     .input(removeSongsFromPlaylistInput)
-    .mutation(async ({ ctx, input }) => {
-      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
-      const songs = removeSongAtPlaylistIndex(
-        playlist.songs,
-        input.index,
-        input.songId,
-      );
-      if (!songs) throw staleSongPosition();
-      return saveOwnedPlaylistSongs(ctx, input.playlistId, songs);
-    }),
+    .mutation(({ ctx, input }) =>
+      updateOwnedPlaylistSongs(
+        ctx,
+        input.playlistId,
+        (current) =>
+          removeSongAtPlaylistIndex(current, input.index, input.songId) ??
+          staleSongPosition(),
+      ),
+    ),
 
   movePlaylistSong: protectedProcedure
     .input(movePlaylistSongInput)
-    .mutation(async ({ ctx, input }) => {
-      const playlist = await getOwnedPlaylist(ctx, input.playlistId);
-      const songs = moveSongInPlaylist(
-        playlist.songs,
-        input.from,
-        input.to,
-        input.songId,
-      );
-      if (!songs) throw staleSongPosition();
-      return saveOwnedPlaylistSongs(ctx, input.playlistId, songs);
-    }),
+    .mutation(({ ctx, input }) =>
+      updateOwnedPlaylistSongs(
+        ctx,
+        input.playlistId,
+        (current) =>
+          moveSongInPlaylist(current, input.from, input.to, input.songId) ??
+          staleSongPosition(),
+      ),
+    ),
 
   renamePlaylist: protectedProcedure
     .input(renamePlaylistInput)

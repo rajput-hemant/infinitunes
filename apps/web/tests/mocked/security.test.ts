@@ -27,54 +27,59 @@ mock.module("~/lib/auth", () => ({
 }));
 
 // Mock the db module
-mock.module("@infinitunes/db", () => ({
-  db: {
-    query: {
-      myPlaylists: {
-        findFirst: async () => mockPlaylist,
-        findMany: async () => (mockPlaylist ? [mockPlaylist] : []),
-      },
-      favorites: {
-        findFirst: async () => mockFavorites,
-      },
-      users: {
-        findFirst: async () => (mockUser ? { id: mockUser.id } : null),
-      },
-      betterAuthAccounts: {
-        findFirst: async () =>
-          mockUser
-            ? {
-                userId: mockUser.id,
-                providerId: "credential",
-                password: mockPasswordHash,
-              }
-            : undefined,
-      },
+const fakeDb = {
+  query: {
+    myPlaylists: {
+      findFirst: async () => mockPlaylist,
+      findMany: async () => (mockPlaylist ? [mockPlaylist] : []),
     },
-    select: () => ({
-      from: () => ({
-        where: async () => [{ playlistsCount: 0 }],
-      }),
-    }),
-    insert: () => ({
-      values: (val: unknown) => ({
-        returning: async () => [val],
-      }),
-    }),
-    update: () => ({
-      set: () => ({
-        where: () => ({
-          returning: async () => [mockPlaylist ?? mockFavorites ?? {}],
-        }),
-      }),
-    }),
-    delete: () => ({
-      where: () => ({
-        returning: async () => [{ id: mockUser?.id }],
-      }),
-    }),
+    favorites: {
+      findFirst: async () => mockFavorites,
+    },
+    users: {
+      findFirst: async () => (mockUser ? { id: mockUser.id } : null),
+    },
+    betterAuthAccounts: {
+      findFirst: async () =>
+        mockUser
+          ? {
+              userId: mockUser.id,
+              providerId: "credential",
+              password: mockPasswordHash,
+            }
+          : undefined,
+    },
   },
-}));
+  select: () => ({
+    from: () => ({
+      // A playlist count, or (`.for("update")`) the locked playlist row.
+      where: () =>
+        Object.assign(Promise.resolve([{ playlistsCount: 0 }]), {
+          for: async () => (mockPlaylist ? [mockPlaylist] : []),
+        }),
+    }),
+  }),
+  transaction: async (fn: (tx: typeof fakeDb) => Promise<unknown>) =>
+    fn(fakeDb),
+  insert: () => ({
+    values: (val: unknown) => ({
+      returning: async () => [val],
+    }),
+  }),
+  update: () => ({
+    set: () => ({
+      where: () => ({
+        returning: async () => [mockPlaylist ?? mockFavorites ?? {}],
+      }),
+    }),
+  }),
+  delete: () => ({
+    where: () => ({
+      returning: async () => [{ id: mockUser?.id }],
+    }),
+  }),
+};
+mock.module("@infinitunes/db", () => ({ db: fakeDb }));
 
 // Mock next/cache
 mock.module("next/cache", () => ({
