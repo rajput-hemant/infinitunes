@@ -1,3 +1,4 @@
+import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
 import { waitFor } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
@@ -7,6 +8,15 @@ import { userPlaylist } from "~/test/user-library";
 import { createPlaylistWithSongs, songsLabel } from "./playlists";
 
 describe("createPlaylistWithSongs", () => {
+  // Each optimistic record expires on a long timer; a real one would keep
+  // the Jest worker alive after the suite.
+  beforeEach(() => jest.useFakeTimers());
+  afterEach(() => {
+    jest.clearAllTimers();
+    jest.useRealTimers();
+    resetPlaylistOverlay();
+  });
+
   it("adds the songs to the playlist the server minted", async () => {
     procedure("user.createNewPlaylist").mockResolvedValue(
       userPlaylist({ id: "pl-9", name: "Road Trip" }),
