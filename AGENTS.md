@@ -182,20 +182,31 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   features use lives in `components/` (`ui/` primitives, `detail/` the entity-screen frame, `form/` the form
   kit), `lib/` (clients, `preferences`, `share`, `download`, `use-infinite-list`, `use-pending`, `meta`),
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
-  `navigation/` (`entityHref`, stack options, player dock) or `theme/` (tokens, `appearance`).
-- Routes are the web's paths (`@infinitunes/core/entity-route`): detail screens live once in
-  `(tabs)/(home,search,library)/` as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and
-  `artist/[name]/[token]/{index,[tab]}` (the season or tab only selects what opens; switching stays in the
-  screen, whose header scrolls in the one list), so they open in the current tab and a web link with the
-  app's scheme lands on them; `+native-intent` maps legacy `<name>-songs` artist links. Lists are `/album`,
-  `/artist`, `/playlist`, `/show`, `/chart`, `/radio`, `/browse` in `(home)`. Link with `entityHref(type,
-  perma_url)`, never a hand-built path (`entityRoute` reads only the type's own section, `SECTIONS`, at exact
-  arity: anything else is `undefined`, an unpressable item); open from handlers with `useOpenEntity()` (it closes the player/queue
-  modals first). Tabs are route groups with their own `Stack` (`tabStackOptions`); a new tab needs a
-  `NativeTabs.Trigger` with an `sf` and an `md` icon. Sheets are native `formSheet` routes (`/queue`,
-  `/languages`) or `@expo/ui`'s `BottomSheet`. Scroll containers are `ScreenScrollView` (or a list with
-  `contentInsetAdjustmentBehavior="automatic"` and `playerDockInset` bottom padding), or large titles and the
-  floating mini-player overlap content.
+  `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
+- Tabs (`app/(tabs)/_layout.tsx`): Home, Library, Create, Radio, plus Search as the iOS search tab
+  (`role="search"`; Android has none). Each is a route group with its own `Stack` (`tabStackOptions`); a new
+  tab needs a `NativeTabs.Trigger` with an `sf` and an `md` icon. Create is an action: its trigger is
+  `disabled` (NativeTabs' `tabPress` cannot be prevented), so the bar never selects it and its `tabPress`
+  listener opens `/create-playlist` (`navigation/create-playlist.ts`); `(tabs)/create.tsx` renders nothing.
+  Settings is not a tab: the root screens' `headerRight` is `TopLevelActions` (`navigation/top-level-actions`:
+  Android's Search, Home's Languages, Settings, the avatar or Sign In), which push onto the current tab.
+- Routes are the web's paths (`@infinitunes/core/entity-route`): detail screens, `search` and the account
+  screens (`settings`, `profile`, `password`, `delete-account`) live once in `(tabs)/(home,search,library,radio)/`
+  (entities as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and `artist/[name]/[token]/{index,[tab]}`;
+  the season or tab only selects what opens, switching stays in the screen, whose header scrolls in the one
+  list), so they open in the current tab and a web link with the app's scheme lands on them (a cold link in
+  Home's stack). `+native-intent` maps legacy `<name>-songs` artist links and sends `/search?q=` (Siri,
+  Assistant) to `/(tabs)/(search)/search` on iOS and `/(tabs)/(home)/search` on Android, as a bare `/search`
+  resolves to the search tab, which Android does not show (it would redirect to Home and drop `q`). Lists are
+  `/album`, `/artist`, `/playlist`, `/show`, `/chart`, `/browse` in `(home)` and `/radio` in `(radio)`. Link with
+  `entityHref(type, perma_url)`, never a hand-built path (`entityRoute` reads only the type's own section,
+  `SECTIONS`, at exact arity: anything else is `undefined`, an unpressable item); open from handlers with
+  `useOpenEntity()` (it closes the player/queue modals first). `/player` is `dangerouslySingular`. Sheets are
+  native `formSheet` routes (`/queue`, `/languages`, `/create-playlist`) or `@expo/ui`'s `BottomSheet`. Scroll
+  containers are `ScreenScrollView` (or a list with `contentInsetAdjustmentBehavior="automatic"` and
+  `playerDockInset` bottom padding), or large titles and the floating mini-player overlap content. Route-tree
+  tests (`navigation/routes.test.tsx`): every tab renders at once, so query inside the selected one, and sign in
+  before `renderRouter` (an `act` with no root mounted breaks it for the rest of the file).
 - Playback: one expo-audio `AudioPlayer` (`playback/audio-engine.ts`; not `AudioPlaylist`, which reports no load
   error, so no bitrate step-down) driven by `PlaybackController` (root layout) from `playerStore`. Screens only
   call actions (`playAll`/`shuffleAll`/`playFrom` in `playback/play-collection.ts`, `playNext`, `addToQueue`,
