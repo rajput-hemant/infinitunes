@@ -6,6 +6,7 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 import { DragHandle } from "~/components/drag-handle";
+import type { ReorderActions } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { MenuTrigger } from "~/components/menu-trigger";
@@ -33,14 +34,14 @@ type PlaylistSongRowProps = {
   play: () => void;
   onRemove: () => void;
   /** Inside the drag list: a handle starts moving the row. */
-  reorderable: boolean;
+  reorder: ReorderActions | undefined;
 };
 
 function PlaylistSongRow({
   song,
   play,
   onRemove,
-  reorderable,
+  reorder,
 }: PlaylistSongRowProps) {
   return (
     <SwipeableRow
@@ -58,7 +59,7 @@ function PlaylistSongRow({
             removal={{ title: "Remove from Playlist", onRemove }}
           />
         </View>
-        {reorderable ? <DragHandle name={song.name} /> : null}
+        {reorder ? <DragHandle name={song.name} actions={reorder} /> : null}
       </View>
     </SwipeableRow>
   );
@@ -98,12 +99,12 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
               </Text>
             </View>
           }
-          renderRow={(song, play, reorderable) => (
+          renderRow={(song, play, reorder) => (
             <PlaylistSongRow
               song={song}
               play={play}
               onRemove={() => removeSongFromPlaylist(server, song)}
-              reorderable={reorderable}
+              reorder={reorder}
             />
           )}
           onMove={(song, before) =>

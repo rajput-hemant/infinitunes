@@ -124,7 +124,19 @@ export function QueueList() {
               }}
             />
           </View>
-          <DragHandle name={item.name} />
+          <DragHandle
+            name={item.name}
+            actions={{
+              moveUp:
+                index > 0
+                  ? () => moveInQueue(firstNext + index, firstNext + index - 1)
+                  : undefined,
+              moveDown:
+                index < upNext.length - 1
+                  ? () => moveInQueue(firstNext + index, firstNext + index + 1)
+                  : undefined,
+            }}
+          />
         </View>
       )}
       ListHeaderComponent={header}

@@ -14,6 +14,12 @@ import { NextTrackButton, PlayPauseButton } from "./transport-controls";
 const ARTWORK_SIZE = 36;
 
 /**
+ * The dock and the tab bar accessory have a fixed height, so the text may
+ * grow only this far; the full player has no such limit.
+ */
+const MAX_FONT_SCALE = 1.3;
+
+/**
  * The compact player: the current track, play/pause and next, and a tap
  * target that opens the full player. It draws no background of its own; the
  * host (tab bar accessory or floating dock) supplies the platform material.
@@ -33,8 +39,9 @@ export function MiniPlayer() {
         onPress={openPlayer}
         accessibilityRole="button"
         accessibilityLabel={
-          track ? `Now playing ${track.name}, open player` : "Open player"
+          track ? `Now playing ${track.name}, ${track.subtitle}` : "Not playing"
         }
+        accessibilityHint="Opens the player"
         className="flex-1 flex-row items-center gap-3"
       >
         {track ? (
@@ -56,7 +63,11 @@ export function MiniPlayer() {
           </View>
         )}
         <View className="flex-1">
-          <Text variant="subhead" numberOfLines={1}>
+          <Text
+            variant="subhead"
+            numberOfLines={1}
+            maxFontSizeMultiplier={MAX_FONT_SCALE}
+          >
             {track?.name ?? "Not playing"}
           </Text>
           {track ? (
@@ -66,6 +77,7 @@ export function MiniPlayer() {
                 variant="caption"
                 tone="muted"
                 numberOfLines={1}
+                maxFontSizeMultiplier={MAX_FONT_SCALE}
                 className="flex-1"
               >
                 {track.subtitle}

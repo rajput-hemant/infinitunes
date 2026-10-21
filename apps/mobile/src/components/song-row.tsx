@@ -45,7 +45,14 @@ export function SongRow({ song, onPress, queueItemId, removal }: SongRowProps) {
         onPress={isCurrent ? togglePlayback : onPress}
         accessibilityRole="button"
         accessibilityLabel={song.name}
-        accessibilityHint={isPlaying ? "Pauses playback" : "Plays this song"}
+        accessibilityValue={{ text: creditsOf(song) }}
+        accessibilityHint={
+          isCurrent
+            ? isPlaying
+              ? "Now playing. Pauses playback"
+              : "Paused. Resumes playback"
+            : "Plays this song"
+        }
         accessibilityState={{ selected: isCurrent }}
         className="flex-1 flex-row items-center gap-3 active:opacity-70"
       >
