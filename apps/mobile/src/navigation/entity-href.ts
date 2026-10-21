@@ -7,7 +7,7 @@ import type { MediaType } from "@infinitunes/types";
 import type { Href } from "expo-router";
 
 /**
- * Detail screens live once in `app/(tabs)/(home,search,library)/`, so opening
+ * Detail screens live once in `app/(tabs)/(home,search,library,radio)/`, so opening
  * one keeps the tab it was opened from, at the web's own paths
  * (`/album/<name>/<token>`, `/show/<name>/<season>/<token>`, ...): a web link
  * opened with the app's scheme lands on the same screen.

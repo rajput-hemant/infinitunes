@@ -5,6 +5,7 @@ import type { Href } from "expo-router";
 import { RefreshControl, View } from "react-native";
 
 import { ScreenScrollView } from "~/components/screen-scroll-view";
+import { SectionHeader } from "~/components/section-header";
 import { Text } from "~/components/ui/text";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { entityHref } from "~/navigation/entity-href";
@@ -43,7 +44,6 @@ export function BrowseScreen() {
 
   return (
     <ScreenScrollView
-      contentContainerClassName="gap-6 px-page pt-2"
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -52,36 +52,32 @@ export function BrowseScreen() {
       }
     >
       <Stack.Screen options={{ title: "Browse" }} />
-      <Text tone="muted">Explore by category, language or mood.</Text>
+      <Text variant="subhead" tone="muted" className="px-page pb-2">
+        Explore by category, language or mood.
+      </Text>
 
-      <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
-        {categories.map((category, index) => (
+      <View className="flex-row flex-wrap px-page" style={{ gap: GRID_GAP }}>
+        {categories.map((category) => (
           <BrowseTile
             key={category.label}
             href={category.href}
             title={category.label}
             image={category.image}
-            index={index}
             width={width}
           />
         ))}
       </View>
 
-      <View className="gap-3">
-        <Text variant="title" accessibilityRole="header">
-          Languages
-        </Text>
-        <View className="flex-row flex-wrap" style={{ gap: GRID_GAP }}>
-          {LANGUAGES.map((lang, index) => (
-            <BrowseTile
-              key={lang}
-              href={{ pathname: "/album", params: { lang } }}
-              title={languageLabel(lang)}
-              index={index}
-              width={width}
-            />
-          ))}
-        </View>
+      <SectionHeader title="Languages" />
+      <View className="flex-row flex-wrap px-page" style={{ gap: GRID_GAP }}>
+        {LANGUAGES.map((lang) => (
+          <BrowseTile
+            key={lang}
+            href={{ pathname: "/album", params: { lang } }}
+            title={languageLabel(lang)}
+            width={width}
+          />
+        ))}
       </View>
     </ScreenScrollView>
   );

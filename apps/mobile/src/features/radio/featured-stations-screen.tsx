@@ -34,7 +34,7 @@ export function FeaturedStationsScreen() {
           message: "Try again later.",
         }}
         header={
-          <Text tone="muted" className="px-page pb-2 pt-2">
+          <Text variant="subhead" tone="muted" className="px-page py-2">
             Endless stations for every mood.
           </Text>
         }

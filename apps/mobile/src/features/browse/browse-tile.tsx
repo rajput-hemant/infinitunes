@@ -1,82 +1,44 @@
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
-import { Pressable, View } from "react-native";
+import { Pressable } from "react-native";
 
 import { Artwork } from "~/components/ui/artwork";
 import { Text } from "~/components/ui/text";
-import { radii } from "~/theme/tokens";
-
-/** Dark enough for white text in light and dark mode; tiles cycle through them. */
-const TILE_COLORS = [
-  "#7c3aed",
-  "#db2777",
-  "#0f766e",
-  "#c2410c",
-  "#1d4ed8",
-  "#15803d",
-  "#be123c",
-  "#4338ca",
-] as const;
-
-function tileColor(index: number): string {
-  return TILE_COLORS[index % TILE_COLORS.length] ?? TILE_COLORS[0];
-}
-
-/** The tile grows with the title at larger text sizes. */
-const TILE_HEIGHT = 96;
-const ART_SIZE = 72;
+import { cx } from "~/lib/class-names";
+import { art } from "~/theme/tokens";
 
 type BrowseTileProps = {
   href: Href;
   title: string;
-  index: number;
   width: number;
-  /** Raw upstream artwork, tucked into the tile's corner. */
+  /** Raw upstream artwork: the list's first cover, flush at the end edge. */
   image?: string;
 };
 
-/** A coloured category or language tile that opens its list. */
-export function BrowseTile({
-  href,
-  title,
-  index,
-  width,
-  image,
-}: BrowseTileProps) {
+/**
+ * A category or language tile that opens its list: a `fill` tile with the
+ * title, and the list's cover at `tile` size inside its end edge, clipped to
+ * the tile's corners. It grows with the title at larger text sizes.
+ */
+export function BrowseTile({ href, title, width, image }: BrowseTileProps) {
   return (
     <Link href={href} asChild>
       <Pressable
         accessibilityRole="link"
-        className="overflow-hidden p-4 active:opacity-80"
-        style={{
-          width,
-          backgroundColor: tileColor(index),
-          minHeight: TILE_HEIGHT,
-          borderRadius: radii.md,
-        }}
+        accessibilityLabel={title}
+        className="flex-row items-center gap-3 overflow-hidden rounded-md bg-fill active:opacity-70"
+        style={{ width, minHeight: art.tile }}
       >
-        <Text variant="headline" style={{ color: "#ffffff" }}>
+        <Text
+          variant="headline"
+          numberOfLines={2}
+          className={cx("flex-1 py-3 pl-3", !image && "pr-3")}
+        >
           {title}
         </Text>
         {image ? (
-          <View
-            className="absolute"
-            style={{
-              right: -12,
-              bottom: -12,
-              transform: [{ rotate: "18deg" }],
-            }}
-          >
-            <Artwork
-              image={image}
-              quality="medium"
-              style={{
-                width: ART_SIZE,
-                height: ART_SIZE,
-                borderRadius: radii.sm,
-              }}
-            />
-          </View>
+          // Flush art takes the tile's corners (the tile clips it).
+          <Artwork image={image} size="tile" style={{ borderRadius: 0 }} />
         ) : null}
       </Pressable>
     </Link>

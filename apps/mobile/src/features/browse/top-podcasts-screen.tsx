@@ -4,8 +4,8 @@ import { Stack } from "expo-router";
 
 import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
+import { SectionHeader } from "~/components/section-header";
 import { Shelf } from "~/components/shelf";
-import { Text } from "~/components/ui/text";
 import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
 import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
@@ -54,13 +54,7 @@ export function TopPodcastsScreen() {
           firstPage ? (
             <>
               <TrendingPodcasts shows={firstPage} />
-              <Text
-                variant="title"
-                accessibilityRole="header"
-                className="px-page pb-1 pt-3"
-              >
-                All Podcasts
-              </Text>
+              <SectionHeader title="All Podcasts" />
             </>
           ) : undefined
         }

@@ -1,7 +1,18 @@
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import { router, Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
-import { Pressable, Text } from "react-native";
+import type { RenderRouterResult } from "expo-router/testing-library";
+import { Platform, Pressable, Text } from "react-native";
+import { toast } from "sonner-native";
+
+import { redirectSystemPath } from "~/app/+native-intent";
+import { signInAs } from "~/test/session-mock";
 
 import { useOpenEntity } from "./use-open-entity";
 
@@ -20,7 +31,9 @@ function OpenArtist() {
 
 describe("app routes", () => {
   it("opens a detail screen inside the tab it was opened from", async () => {
-    const app = await renderRouter("./src/app", { initialUrl: "/search" });
+    const app = await renderRouter("./src/app", {
+      initialUrl: redirectSystemPath({ path: "/search" }),
+    });
     expect(app.getSegments()).toEqual(["(tabs)", "(search)", "search"]);
 
     await act(async () => router.push(ALBUM_PATH));
@@ -58,12 +71,212 @@ describe("app routes", () => {
     expect(app.getSegments()).toEqual(["(tabs)", "(home)", ...segments]);
   });
 
-  it("keeps the library and settings tabs at their old URLs", async () => {
+  it("opens the radio list as its own tab, and a station inside it", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/radio" });
+    expect(app.getSegments()).toEqual(["(tabs)", "(radio)", "radio"]);
+
+    await act(async () => router.push("/radio/hindi-station/station-1"));
+    expect(app.getSegments()).toEqual([
+      "(tabs)",
+      "(radio)",
+      "radio",
+      "[name]",
+      "[token]",
+    ]);
+  });
+
+  it("keeps the library tab and the settings screens at their old URLs", async () => {
+    // Signed in, so the account screens stay open. Before the first render:
+    // `act` with no root mounted, or a sign-in under a mounted app, breaks
+    // `renderRouter` for the rest of the file.
+    signInAs("alice");
     const app = await renderRouter("./src/app", { initialUrl: "/library" });
     expect(app.getSegments()).toEqual(["(tabs)", "(library)", "library"]);
 
-    await act(async () => router.navigate("/settings"));
-    expect(app.getSegments()).toEqual(["(tabs)", "(settings)", "settings"]);
+    // Settings is no longer a tab: it is pushed onto the current one.
+    await act(async () => router.push("/settings"));
+    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "settings"]);
+    await act(async () => router.back());
+    expect(app.getPathname()).toBe("/library");
+
+    for (const path of ["/profile", "/password", "/delete-account"] as const) {
+      await act(async () => router.push(path));
+      expect(app.getPathname()).toBe(path);
+    }
+  });
+
+  it("opens a settings link over Home", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/settings" });
+
+    expect(app.getSegments()).toEqual(["(tabs)", "(home)", "settings"]);
+    await act(async () => router.back());
+    expect(app.getPathname()).toBe("/");
+  });
+});
+
+/** Every tab renders at once; only the selected one takes touches. */
+async function selectedTab(app: RenderRouterResult) {
+  const tab = await waitFor(() => {
+    const [selected] = app.container.queryAll(
+      (node) =>
+        typeof node.props.nativeID === "string" &&
+        node.props.nativeID.startsWith("expo-router-tab:") &&
+        node.props.pointerEvents === "box-none",
+    );
+    if (!selected) throw new Error("No tab is selected");
+    return selected;
+  });
+  return within(tab);
+}
+
+describe("the root screens' header", () => {
+  it("pushes Settings onto the current tab", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/radio" });
+
+    await fireEvent.press(
+      await (await selectedTab(app)).findByRole("button", { name: "Settings" }),
+    );
+    expect(app.getSegments()).toEqual(["(tabs)", "(radio)", "settings"]);
+  });
+
+  it("opens the profile from the avatar when signed in", async () => {
+    signInAs("alice", { name: "Alice" });
+    const app = await renderRouter("./src/app", { initialUrl: "/library" });
+
+    const profile = await (
+      await selectedTab(app)
+    ).findByRole("button", {
+      name: "Profile",
+    });
+    expect(within(profile).getByText("A")).toBeOnTheScreen();
+    await fireEvent.press(profile);
+    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "profile"]);
+  });
+
+  it("offers Sign In instead while signed out", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/radio" });
+
+    const tab = await selectedTab(app);
+    expect(tab.queryByRole("button", { name: "Profile" })).toBeNull();
+    await fireEvent.press(await tab.findByRole("button", { name: "Sign in" }));
+    expect(app.getPathname()).toBe("/login");
+  });
+
+  it("adds Home's language picker", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    await fireEvent.press(
+      await (
+        await selectedTab(app)
+      ).findByRole("button", { name: "Languages" }),
+    );
+    expect(app.getPathname()).toBe("/languages");
+  });
+
+  it("has no search action on iOS, which has the search tab", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/library" });
+
+    const tab = await selectedTab(app);
+    await tab.findByRole("button", { name: "Settings" });
+    expect(tab.queryByRole("button", { name: "Search" })).toBeNull();
+  });
+});
+
+describe("on Android", () => {
+  beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
+  afterEach(() => jest.restoreAllMocks());
+
+  it("pushes search onto the current tab from the app bar", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/library" });
+
+    await fireEvent.press(
+      await (await selectedTab(app)).findByRole("button", { name: "Search" }),
+    );
+    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "search"]);
+  });
+
+  it("opens a search link (Google Assistant) in Home with its query", async () => {
+    const app = await renderRouter("./src/app", {
+      initialUrl: redirectSystemPath({ path: "infinitunes://search?q=siri" }),
+    });
+
+    expect(app.getSegments()).toEqual(["(tabs)", "(home)", "search"]);
+    expect(app.getSearchParams()).toEqual({ q: "siri" });
+  });
+});
+
+/** The tab bar's native "you tapped a disabled tab" event, as UIKit sends it. */
+function tapCreateTab(app: RenderRouterResult) {
+  const [host] = app.container.queryAll(
+    (node) => typeof node.props.onTabSelectionPrevented === "function",
+  );
+  if (!host) throw new Error("No native tab host rendered");
+  return act(async () =>
+    fireEvent(host, "tabSelectionPrevented", {
+      nativeEvent: { preventedScreenKey: "create", provenance: 0 },
+    }),
+  );
+}
+
+describe("the Create tab", () => {
+  it("is a tab the native bar never selects", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    const [create] = app.container.queryAll(
+      (node) =>
+        node.props.screenKey === "create" &&
+        "preventNativeSelection" in node.props,
+    );
+    expect(create?.props.preventNativeSelection).toBe(true);
+  });
+
+  it("opens the New Playlist sheet over the tab that stays selected", async () => {
+    signInAs("alice");
+    const app = await renderRouter("./src/app", { initialUrl: "/library" });
+
+    await tapCreateTab(app);
+    expect(app.getPathname()).toBe("/create-playlist");
+
+    await act(async () => router.back());
+    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "library"]);
+  });
+
+  it("asks a signed-out listener to sign in, staying put", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/library" });
+
+    await tapCreateTab(app);
+    expect(jest.mocked(toast.warning)).toHaveBeenCalledWith(
+      "Sign in to continue",
+      expect.objectContaining({
+        description: "You need an account to make playlists.",
+      }),
+    );
+    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "library"]);
+  });
+});
+
+type StateNode = { routes?: { name: string; state?: StateNode }[] };
+
+/** How many routes in the navigation tree are called `name`. */
+function routesNamed(state: StateNode | undefined, name: string): number {
+  return (state?.routes ?? []).reduce(
+    (count, route) =>
+      count + (route.name === name ? 1 : 0) + routesNamed(route.state, name),
+    0,
+  );
+}
+
+describe("the player", () => {
+  it("opens once however often it is pushed", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    await act(async () => router.push("/player"));
+    await act(async () => router.push("/player"));
+    await act(async () => router.replace("/player"));
+
+    expect(routesNamed(app.getRouterState(), "player")).toBe(1);
+    await act(async () => router.back());
+    expect(app.getPathname()).toBe("/");
   });
 });
 

@@ -6,7 +6,7 @@ import { View } from "react-native";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { EmptyState } from "~/components/empty-state";
 import { EntityHeader } from "~/components/entity-header";
-import { SectionHeading } from "~/components/section-heading";
+import { SectionHeader } from "~/components/section-header";
 import { EntityHeaderSkeleton, SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 import { trpc } from "~/lib/trpc";
@@ -62,7 +62,7 @@ function StationDetails({ details }: { details: StationDetailsResponse }) {
       />
       {rows.length > 0 ? (
         <View>
-          <SectionHeading>Coming up</SectionHeading>
+          <SectionHeader title="Coming up" />
           {rows.map((row, index) => (
             <SongRow
               key={row.id}

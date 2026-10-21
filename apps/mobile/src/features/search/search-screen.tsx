@@ -13,7 +13,8 @@ import { SearchTypeChips } from "./search-type-chips";
 import type { SearchType } from "./search-types";
 
 /**
- * The Search tab: the native header search bar (the iOS 26 search tab's field,
+ * Search (iOS's search tab; on Android pushed from the app bar's search
+ * action): the native header search bar (the iOS 26 search tab's field,
  * Android's Material search view) drives everything on one screen. An empty
  * field shows recent and top searches; text shows results under the type chips.
  * A `/search?q=` link (Siri, Google Assistant) opens with that query searched.
@@ -51,6 +52,7 @@ export function SearchScreen() {
     <>
       <Stack.Screen
         options={{
+          title: "Search",
           headerSearchBarOptions: {
             ref: searchBar,
             placeholder: "Songs, albums, artists, podcasts",

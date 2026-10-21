@@ -62,7 +62,11 @@ describe("sign-in flow in the app's route tree", () => {
     await act(async () => signInAs(null));
     expect(app.getPathname()).toBe("/settings");
 
-    // Settings is the stack's only screen: nothing of the deleted account's is left behind it.
-    expect(activeStackRoutes(app.getRouterState())).toEqual(["settings"]);
+    // Settings is pushed onto a tab (Home, for a link): nothing of the deleted account's is left
+    // between it and the tab's root.
+    expect(activeStackRoutes(app.getRouterState())).toEqual([
+      "index",
+      "settings",
+    ]);
   });
 });
