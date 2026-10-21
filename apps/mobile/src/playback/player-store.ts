@@ -55,6 +55,10 @@ type PlayerActions = {
   /** Queues the track right after the current one. */
   playNext: (track: QueueSource) => void;
   removeAt: (index: number) => void;
+  /** Drops every entry after the current one (the queue's "Clear"). */
+  clearUpNext: () => void;
+  /** Moves the entry at `from` to `to`; the current entry keeps playing. */
+  moveInQueue: (from: number, to: number) => void;
   toggleShuffle: () => void;
   /** Moves the repeat control on and returns the new mode. */
   cycleRepeat: () => LoopMode;
@@ -175,6 +179,27 @@ export const playerStore = createStore<PlayerStore>()(
 
       removeAt(index) {
         set((state) => removeFromQueue(state.queue, state.currentIndex, index));
+      },
+
+      clearUpNext() {
+        set((state) => ({
+          queue: state.queue.slice(0, state.currentIndex + 1),
+        }));
+      },
+
+      moveInQueue(from, to) {
+        set((state) => {
+          const { queue, currentIndex } = state;
+          const entry = queue[from];
+          if (!entry || from === to || to < 0 || to >= queue.length) {
+            return state;
+          }
+          const playing = queue[currentIndex]?.queueItemId;
+          const next = queue.filter((_, index) => index !== from);
+          next.splice(to, 0, entry);
+          const index = next.findIndex((item) => item.queueItemId === playing);
+          return { queue: next, currentIndex: Math.max(index, 0) };
+        });
       },
 
       toggleShuffle() {
