@@ -1,16 +1,19 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { screen, waitFor } from "@testing-library/react-native";
+import { act, screen, waitFor } from "@testing-library/react-native";
+import { Image } from "expo-image";
 import { getColors } from "react-native-image-colors";
 
-import { playerColorsFromSeed } from "~/lib/artwork-colors";
+import { NO_SWATCH, playerColorsFromSeed } from "~/lib/artwork-colors";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
 
+import { findsNoSwatch } from "../../../__mocks__/react-native-image-colors";
 // The Android file by name: Jest resolves the bare path to the `.ios` one.
 import { FloatingPlayerDock as AndroidDock } from "./floating-player-dock.tsx";
 import { FullPlayer } from "./full-player";
 import { MiniPlayer } from "./mini-player";
+import { EXTRACTION_TIMEOUT_MS } from "./use-player-colors";
 
 const SEED = "#5B0F12";
 
@@ -35,10 +38,35 @@ const initial = playerStore.getState();
 beforeEach(() => {
   playerStore.setState(initial, true);
   playerStore.getState().playTracks([toSongRow(rawSong())]);
-  jest.mocked(getColors).mockReset();
+  // Re-arm the module's default (no swatch) over whatever a test scripted;
+  // a bare `mockReset` would answer `undefined`, failing for the wrong reason.
+  jest.mocked(getColors).mockClear().mockImplementation(findsNoSwatch);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+  jest.useRealTimers();
 });
 
 const backdrop = () => screen.getByTestId("player-backdrop-current");
+
+/** Now Playing over two tracks with their own covers, the first washed. */
+async function onSecondCover() {
+  jest.mocked(getColors).mockResolvedValueOnce(iosColors(SEED));
+  playerStore
+    .getState()
+    .playTracks(
+      ["first", "second"].map((id) =>
+        toSongRow(
+          rawSong({ id, image: `https://c.saavncdn.com/${id}-500x500.jpg` }),
+        ),
+      ),
+    );
+  await renderScreen(<FullPlayer />);
+  await waitFor(() =>
+    expect(backdrop()).toHaveStyle({ backgroundImage: expect.anything() }),
+  );
+}
 
 describe("Now Playing's wash", () => {
   it("lays the screen on the cover's wash with checked colours", async () => {
@@ -87,6 +115,78 @@ describe("Now Playing's wash", () => {
 
     await waitFor(() => expect(getColors).toHaveBeenCalled());
     expect(backdrop()).not.toHaveStyle({ backgroundImage: expect.anything() });
+  });
+
+  it("reads the no-swatch fallback as no colour, not a grey cover", async () => {
+    // The module's default here answers the fallback in every field, as the
+    // native one does when it finds no swatch.
+    await renderScreen(<FullPlayer />);
+
+    await waitFor(() => expect(getColors).toHaveBeenCalled());
+    expect(getColors).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ fallback: NO_SWATCH }),
+    );
+    await expect(
+      jest.mocked(getColors).mock.results[0]?.value,
+    ).resolves.toMatchObject({ background: NO_SWATCH });
+    expect(backdrop()).not.toHaveStyle({ backgroundImage: expect.anything() });
+  });
+
+  it("reads a rendition expo-image already holds, so it works offline", async () => {
+    const cached = jest
+      .spyOn(Image, "getCachePathAsync")
+      .mockImplementation(async (key) =>
+        key.includes("150x150") ? "/caches/expo-image/medium.jpg" : null,
+      );
+    jest.mocked(getColors).mockResolvedValue(iosColors(SEED));
+    await renderScreen(<FullPlayer />);
+
+    await waitFor(() =>
+      expect(screen.getByTestId("play-pause-prominent")).toHaveStyle({
+        backgroundColor: expectedColors().control,
+      }),
+    );
+    expect(cached).toHaveBeenCalledWith(expect.stringMatching(/50x50/));
+    expect(getColors).toHaveBeenCalledWith(
+      "file:///caches/expo-image/medium.jpg",
+      expect.anything(),
+    );
+  });
+
+  it("drops the last cover's wash when the next one fails (offline)", async () => {
+    await onSecondCover();
+
+    jest.mocked(getColors).mockRejectedValueOnce(new Error("offline"));
+    await act(async () => playerStore.getState().skipToNext());
+
+    await waitFor(() => expect(getColors).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(backdrop()).not.toHaveStyle({
+        backgroundImage: expect.anything(),
+      }),
+    );
+  });
+
+  it("gives up on an extraction that never settles", async () => {
+    await onSecondCover();
+    jest.useFakeTimers();
+
+    jest.mocked(getColors).mockReturnValueOnce(new Promise(() => {}));
+    await act(async () => playerStore.getState().skipToNext());
+    await waitFor(() => expect(getColors).toHaveBeenCalledTimes(2));
+    // Still loading: the first cover's wash holds.
+    expect(backdrop()).toHaveStyle({ backgroundImage: expect.anything() });
+
+    await act(async () => {
+      jest.advanceTimersByTime(EXTRACTION_TIMEOUT_MS);
+    });
+
+    await waitFor(() =>
+      expect(backdrop()).not.toHaveStyle({
+        backgroundImage: expect.anything(),
+      }),
+    );
   });
 
   it("reads each cover once for every player that shows it", async () => {

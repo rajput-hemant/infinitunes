@@ -17,7 +17,7 @@ import {
   userPlaylist,
 } from "~/test/user-library";
 
-import { AppActionScreen, belowIsPlayer } from "./app-action-screen";
+import { AppActionScreen, landing } from "./app-action-screen";
 
 const catalog = {
   a: songNamed("a", "First Like"),
@@ -33,11 +33,18 @@ function openLink(url: string) {
     {
       index: () => <Text>Home</Text>,
       player: () => <Text>Player</Text>,
+      queue: () => <Text>Queue</Text>,
       login: () => null,
       "action/[action]": AppActionScreen,
     },
     url,
   );
+}
+
+/** The app's stack, inside the router's root navigator, by route name. */
+function stackNames(app: Awaited<ReturnType<typeof openLink>>) {
+  const stack = app.getRouterState()?.routes[0]?.state;
+  return stack?.routes.map((route) => route.name) ?? [];
 }
 
 const queuedIds = () => playerStore.getState().queue.map((entry) => entry.id);
@@ -89,12 +96,64 @@ describe("action/resume", () => {
 
     await waitFor(() => expect(screen.queryByLabelText("Loading")).toBeNull());
     expect(app.getPathname()).toBe("/player");
-    // The app's stack, inside the router's root navigator.
-    const stack = app.getRouterState()?.routes[0]?.state;
-    const names = stack?.routes.map((route) => route.name);
-    expect(names?.filter((name) => name === "player")).toHaveLength(1);
+    const names = stackNames(app);
+    expect(names.filter((name) => name === "player")).toHaveLength(1);
     expect(names).not.toContain("action/[action]");
     expect(playerStore.getState().started).toBe(true);
+  });
+
+  it("closes the queue sheet over an open player instead of stacking one", async () => {
+    playerStore.getState().playTracks([toSongRow(catalog.a)]);
+    const app = await openLink("/player");
+    await act(async () => router.push("/queue"));
+    expect(stackNames(app)).toContain("queue");
+
+    await act(async () => router.push("/action/resume"));
+
+    await waitFor(() => expect(screen.queryByLabelText("Loading")).toBeNull());
+    expect(app.getPathname()).toBe("/player");
+    const names = stackNames(app);
+    expect(names.filter((name) => name === "player")).toHaveLength(1);
+    expect(names).not.toContain("queue");
+    expect(names).not.toContain("action/[action]");
+  });
+
+  it("opens one player for two links that arrive together", async () => {
+    playerStore.getState().playTracks([toSongRow(catalog.a)]);
+    playerStore.setState({ started: false });
+    const app = await openLink("/");
+    const error = jest.spyOn(console, "error");
+
+    await act(async () => {
+      router.push("/action/resume");
+      router.push("/action/resume");
+    });
+    await waitFor(() => expect(app.getPathname()).toBe("/player"));
+    // No action left for a screen an earlier landing took away.
+    expect(error.mock.calls).toEqual([]);
+    error.mockRestore();
+
+    await waitFor(() => expect(screen.queryByLabelText("Loading")).toBeNull());
+    expect(app.getPathname()).toBe("/player");
+    const names = stackNames(app);
+    expect(names.filter((name) => name === "player")).toHaveLength(1);
+    expect(names).not.toContain("action/[action]");
+  });
+
+  it("opens one player for two links over an open player", async () => {
+    playerStore.getState().playTracks([toSongRow(catalog.a)]);
+    const app = await openLink("/player");
+
+    await act(async () => {
+      router.push("/action/resume");
+      router.push("/action/resume");
+    });
+
+    await waitFor(() => expect(screen.queryByLabelText("Loading")).toBeNull());
+    expect(app.getPathname()).toBe("/player");
+    const names = stackNames(app);
+    expect(names.filter((name) => name === "player")).toHaveLength(1);
+    expect(names).not.toContain("action/[action]");
   });
 
   it("lands on Home when nothing is queued", async () => {
@@ -232,21 +291,41 @@ describe("action/play-search", () => {
   });
 });
 
-const route = (name: string) => ({ name });
+const stack = (...names: string[]) => ({
+  key: "root",
+  routes: names.map((name, index) => ({ key: `${name}-${index}`, name })),
+});
+const aimed = (source: string) => ({ source, target: "root" });
+const popTo = (source: string) => ({
+  type: "POP_TO",
+  payload: { name: "player" },
+  ...aimed(source),
+});
 
-describe("belowIsPlayer", () => {
-  it("reads the screen under the action screen", () => {
+describe("landing", () => {
+  it("pops to the player from this screen's place in the stack", () => {
     expect(
-      belowIsPlayer({ index: 1, routes: [route("player"), route("action")] }),
-    ).toBe(true);
+      landing(
+        stack("(tabs)", "player", "queue", "action"),
+        "action-3",
+        "player",
+      ),
+    ).toEqual(popTo("action-3"));
+    // A second link queued over this one: still this screen's position.
     expect(
-      belowIsPlayer({ index: 1, routes: [route("(tabs)"), route("action")] }),
-    ).toBe(false);
+      landing(stack("(tabs)", "action", "action"), "action-1", "player"),
+    ).toEqual(popTo("action-1"));
   });
 
-  it("is false on a cold start or without a state", () => {
-    expect(belowIsPlayer({ routes: [route("action")] })).toBe(false);
-    expect(belowIsPlayer(undefined)).toBe(false);
+  it("leaves from this screen's place, not from the top of the stack", () => {
+    expect(
+      landing(stack("(tabs)", "action", "action"), "action-1", "back"),
+    ).toEqual({ type: "POP", payload: { count: 1 }, ...aimed("action-1") });
+  });
+
+  it("goes Home on a cold start, and does nothing once the screen has left", () => {
+    expect(landing(stack("action"), "action-0", "back")).toBe("home");
+    expect(landing(stack("(tabs)", "player"), "gone", "player")).toBeNull();
   });
 });
 

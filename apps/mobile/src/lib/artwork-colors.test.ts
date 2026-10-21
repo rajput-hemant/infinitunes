@@ -6,6 +6,7 @@ import {
   MIN_CONTROL_CONTRAST,
   MIN_TEXT_CONTRAST,
   mix,
+  NO_SWATCH,
   playerColorsFromSeed,
   seedFromImageColors,
 } from "./artwork-colors";
@@ -24,13 +25,20 @@ const SEEDS = Array.from({ length: 24 }, (_, step) => step * 15).flatMap(
     ),
 );
 
+/** Built once per cover: Material's scheme is the slow part of these tests. */
+const palettes = new Map<string, PlayerColors>();
+
 function colorsFor(
   seed: string,
   scheme: "light" | "dark",
   platform: WashPlatform,
 ) {
+  const key = `${seed} ${scheme} ${platform}`;
+  const known = palettes.get(key);
+  if (known) return known;
   const colors = playerColorsFromSeed(seed, scheme, platform);
-  if (!colors) throw new Error(`${seed} ${scheme} ${platform} fell back`);
+  if (!colors) throw new Error(`${key} fell back`);
+  palettes.set(key, colors);
   return colors;
 }
 
@@ -75,6 +83,52 @@ describe("playerColorsFromSeed", () => {
       }
     },
   );
+
+  it.each(
+    PLATFORMS.flatMap((platform) =>
+      SCHEMES.map((scheme) => [platform, scheme] as const),
+    ),
+  )(
+    "passes everywhere the gradient draws, not only where it is checked (%s, %s)",
+    (platform, scheme) => {
+      // `meetsContrast` samples three stops; this pins that those three stay
+      // a safe proxy for the whole sRGB blend between them.
+      const SAMPLES = 64;
+      let text = Infinity;
+      let marks = Infinity;
+      for (const seed of SEEDS) {
+        const colors = colorsFor(seed, scheme, platform);
+        for (let step = 0; step <= SAMPLES; step++) {
+          const stop = mix(...colors.wash, step / SAMPLES);
+          text = Math.min(
+            text,
+            contrastRatio(colors.foreground, stop),
+            contrastRatio(colors.muted, stop),
+          );
+          marks = Math.min(
+            marks,
+            contrastRatio(colors.accent, stop),
+            contrastRatio(colors.control, stop),
+          );
+        }
+      }
+      expect(text).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
+      expect(marks).toBeGreaterThanOrEqual(MIN_CONTROL_CONTRAST);
+    },
+  );
+
+  it("gives the scrubber's track 3:1 on the wash's bottom stop", () => {
+    for (const platform of PLATFORMS) {
+      for (const scheme of SCHEMES) {
+        for (const seed of SEEDS) {
+          const { track, wash } = colorsFor(seed, scheme, platform);
+          expect(contrastRatio(track, wash[1])).toBeGreaterThanOrEqual(
+            MIN_CONTROL_CONTRAST,
+          );
+        }
+      }
+    }
+  });
 
   it("follows the colour scheme: a deep wash in dark mode, a pale one in light", () => {
     for (const platform of PLATFORMS) {
@@ -142,6 +196,7 @@ describe("meetsContrast", () => {
       accent: "#000000",
       control: "#000000",
       onControl: "#ffffff",
+      track: "#000000",
     });
     expect(meetsContrast(colors)).toBe(false);
     expect(meetsContrast({ ...colors, wash: [wash[0], wash[0]] })).toBe(true);
@@ -151,6 +206,10 @@ describe("meetsContrast", () => {
     expect(meetsContrast(breaking({ control: good.wash[1] }))).toBe(false);
     expect(meetsContrast(breaking({ onControl: good.control }))).toBe(false);
     expect(meetsContrast(breaking({ accent: good.wash[0] }))).toBe(false);
+  });
+
+  it("rejects a scrubber track under 3:1 on the bottom stop", () => {
+    expect(meetsContrast(breaking({ track: good.wash[1] }))).toBe(false);
   });
 
   it("checks the dock's surface too", () => {
@@ -198,6 +257,20 @@ describe("seedFromImageColors", () => {
     ).toBe("#5b0f12");
   });
 
+  it("reads the no-swatch fallback as no colour, in either case", () => {
+    // The extractor answers `fallback` in every field when it finds nothing.
+    expect(
+      seedFromImageColors({
+        platform: "ios",
+        background: NO_SWATCH.toUpperCase(),
+        primary: NO_SWATCH,
+        secondary: NO_SWATCH,
+        detail: NO_SWATCH,
+        quality: "low",
+      }),
+    ).toBeNull();
+  });
+
   it("falls through to the next swatch, and to nothing", () => {
     expect(
       seedFromImageColors({
@@ -209,6 +282,19 @@ describe("seedFromImageColors", () => {
         quality: "low",
       }),
     ).toBe("#C2372F");
+    expect(
+      seedFromImageColors({
+        platform: "android",
+        dominant: NO_SWATCH,
+        average: NO_SWATCH,
+        vibrant: "#c2372f",
+        darkVibrant: NO_SWATCH,
+        lightVibrant: NO_SWATCH,
+        darkMuted: NO_SWATCH,
+        lightMuted: NO_SWATCH,
+        muted: NO_SWATCH,
+      }),
+    ).toBe("#c2372f");
     expect(
       seedFromImageColors({
         platform: "web",
