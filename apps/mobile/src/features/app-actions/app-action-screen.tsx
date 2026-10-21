@@ -13,11 +13,20 @@ function single(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+type StackState = { index?: number; routes: readonly { name: string }[] };
+
+/** Whether the screen under the top of `state` (this action screen) is the player. */
+export function belowIsPlayer(state: StackState | undefined): boolean {
+  if (!state) return false;
+  const top = state.index ?? state.routes.length - 1;
+  return state.routes[top - 1]?.name === "player";
+}
+
 /**
  * `infinitunes://action/<name>`: runs the action once the stored session has
- * loaded (a cold start from Siri reads it first), then leaves for the player,
- * or back where the listener was (Home on a cold start). An unknown action
- * just leaves.
+ * loaded (a cold start from Siri reads it first), then leaves for the player
+ * (back to it when it is already open underneath), or back where the listener
+ * was (Home on a cold start). An unknown action just leaves.
  */
 export function AppActionScreen() {
   const params = useLocalSearchParams<Params>();
@@ -36,8 +45,11 @@ export function AppActionScreen() {
     if (isPending || ran.current) return;
     ran.current = true;
     const land = (outcome: ActionOutcome) => {
-      if (outcome === "player") router.replace("/player");
-      else if (navigation.canGoBack()) navigation.goBack();
+      // A link that arrives while the player is open would stack a second
+      // player over it: step back to the open one instead.
+      if (outcome === "player" && !belowIsPlayer(navigation.getState())) {
+        router.replace("/player");
+      } else if (navigation.canGoBack()) navigation.goBack();
       else router.replace("/");
     };
     const outcome = isAppAction(action)
