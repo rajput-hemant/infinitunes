@@ -7,6 +7,7 @@ import {
   legacyArtistPath,
   splitArtistSlug,
   tabForSegment,
+  type EntityRoute,
 } from "../src/entity-route";
 
 describe("splitArtistSlug", () => {
@@ -181,7 +182,7 @@ describe("entityRoute", () => {
   });
 
   it("reads an episode under its show's section, and the app's own path", () => {
-    const episode = {
+    const episode: EntityRoute = {
       kind: "entity",
       type: "episode",
       name: "ep-1",
