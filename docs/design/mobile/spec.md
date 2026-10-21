@@ -18,6 +18,16 @@ is fewer patterns, each defined once, not new decoration.
   button. Search stays reachable without a tab of its own: on iOS 26 as the system's separate search tab button
   (`role="search"`), on Android as a search action in the top app bar.
 
+**Engineering decisions taken while finishing (2026-10-21), within the owner's:**
+
+- Home's Languages control. Material 3 allows at most three top app bar actions, and Android's Home already
+  needs Search, Settings and Profile. So on Android Languages is the first chip of Home's chip row (label
+  "Languages", `language` icon, opens the `/languages` sheet), next to the language chips it relates to; YouTube's
+  leading Explore chip is the platform precedent, and an overflow menu holding one item would hide it for no
+  gain. iOS has no header Search button (the search tab), so its glass header keeps Languages, Settings and
+  Profile. `hasHeaderLanguages()` (`navigation/top-level-actions.tsx`) is the one switch; Settings > Playback
+  > Languages stays the route from the other tabs.
+
 ## 1. Three directions
 
 **D1. Quiet Native** (recommended)
@@ -66,8 +76,9 @@ All values are points (iOS) / dp (Android). Token names refer to `apps/mobile/sr
 
 Rules:
 
-- S1. Screens use only these steps. No half steps (`*-0.5`, `*-1.5`, `*-2.5`) and no `*-5`, `*-10`; text pairs
-  (title over subtitle) have no gap, their line heights space them.
+- S1. Screens use only these steps. No half steps and no 5 or 10 steps; text pairs (title over subtitle) have no
+  gap, their line heights space them. The Tailwind scale is closed (`spacingScale`): an off-scale class compiles
+  to nothing, and `theme/spacing.test.ts` fails on one.
 - S2. Horizontal: every content block is inset by `page` (16). Full-bleed is allowed only for horizontal lists
   (their content container carries the 16) and row press highlights.
 - S3. Vertical rhythm: sections carry no padding of their own. `SectionHeader` supplies 24 above and 8 below; a
@@ -90,7 +101,8 @@ Android values are the M3 type scale with Roboto / the system font (they scale w
 | `footnote`   | Footnote       | 13/18 regular        | bodyMedium     | 14/20 regular            | row and card subtitles                         |
 | `caption`    | Caption 1      | 12/16 regular        | labelMedium    | 12/16 medium             | eyebrows, times, copyright, badges             |
 
-- T1. `title` stays as a deprecated alias of `title2` until every screen has migrated, then is removed.
+- T1. There is no generic `title`: pick the role (`title1` entity titles, `title2` section headers and Now
+  Playing, `headline` emphasis).
 - T2. Tones: `default`, `muted`, `primary` (new: accent text, e.g. the playing row's title), `onPrimary`,
   `onDestructive`, `error`. Colour goes through `tone`, never a `text-*` class or `style.color`.
 - T3. Tabular figures (`fontVariant: ["tabular-nums"]`) for times and track numbers; `Text` takes `numeric`.
@@ -148,7 +160,8 @@ min height 64, vertical padding 8, grows with Dynamic Type
 - L6. Current track: the title in `tone="primary"` and the leading slot shows the waveform (`sm` icon) on a
   scrim over the art, or in place of the number.
 - L7. Explicit: the `E` badge leads the subtitle line (rows, cards). In the entity header it sits before the title.
-- L8. A row without a destination is a labelled `View` with `opacity-50`, never a disabled `Pressable`.
+- L8. A row without a destination is a labelled `View` whose picture (artwork or icon tile) dims to `opacity-50`,
+  never a disabled `Pressable`; its text keeps full contrast.
 
 ### 2.6 Section headers (`SectionHeader`)
 
@@ -175,9 +188,10 @@ min height 64, vertical padding 8, grows with Dynamic Type
 
 Top to bottom:
 
-1. Navigation large title "Home"; header trailing: Languages (`globe` / `language`).
+1. Navigation large title "Home"; header trailing: Languages (iOS only, `globe`), Settings, Profile; Android
+   puts Search, Settings, Profile there and Languages first in the chip row (see the decisions above).
 2. Greeting line (`subhead`, muted, `px-page`): "Good evening, Priya" (`formatGreeting`).
-3. Language chips (`ChipRow`): For you, then languages. 8 above and below.
+3. Language chips (`ChipRow`): (Android: Languages,) For you, then languages. 8 above and below.
 4. Featured carousel: `Shelf` hero variant with the featured item and the hero tiles. No section title.
 5. Quick picks (`SectionHeader` "Quick picks"): the first two tiles are actions, Surprise me (`sparkles` /
    `auto_awesome`) and Browse (`square.grid.2x2` / `grid_view`), same tile with an icon in place of the art;
@@ -211,8 +225,10 @@ Mini player
 - iOS 26: `NativeTabs.BottomAccessory`; the system draws the glass capsule. Content: art `mini`, 12, title
   `subhead` + subtitle `caption` muted, play/pause (`lg`) and next (`md`) as 48 `IconButton`s. No own background.
 - Android and iOS < 26: `FloatingPlayerDock`, height 64, inset 16 from the screen edges, 8 above the tab bar.
-  Android: `bg-card` (surfaceContainerHigh), radius lg, tonal elevation level 2. iOS < 26: `GlassSurface`, radius
-  full. A 2pt progress line in `primary` runs along the dock's bottom inside its radius.
+  Android (D3): the artwork's tonal surface (surfaceContainerHigh of the scheme the cover seeds; the wallpaper's
+  `card` until its colours pass the contrast check), radius lg, tonal elevation level 2. iOS < 26: `GlassSurface`,
+  radius full, system colours (an artwork tint under translucent material cannot be contrast-checked). A 2pt
+  progress line in the accent runs along the dock's bottom inside its radius.
 
 Now Playing (`/player`, a full-screen sheet)
 
@@ -228,7 +244,11 @@ Now Playing (`/player`, a full-screen sheet)
 6. 32 gap, bottom row, `justify-between`: Lyrics (`quote.bubble` / `lyrics`) and Up next (`list.bullet` /
    `queue_music`), `lg` icons.
 
-Background is `background` on both platforms: no artwork wash, no glass on content.
+Background (D3, owner decision): a top-to-bottom wash from the current artwork, crossfading between tracks
+(450ms, kept under reduce motion as it does not move). Text and controls take the wash's colours, each pair
+checked at 4.5:1 (text) or 3:1 (controls) at both ends and the middle; the play circle takes the wash's
+`control`. Without a passing wash (loading the first cover, extraction failed, a contrast miss) the screen is
+the D1 `background`. No glass on content. The art settles to 90% while paused (full size under reduce motion).
 
 ### 2.11 Empty, error, loading
 
@@ -325,9 +345,10 @@ Each item names the files and the rule above that fixes it.
 | 20  | Album track lists repeat the album cover in every row                                                                                                                                                                                            | `components/track-list.tsx`, `features/album/album-screen.tsx`                                                                                                                                                                                                                                                                                            | L2                 |
 | 21  | Scattered chrome constants: `MAX_FONT_SCALE` local to the mini player, `FLOATING_DOCK_HEIGHT` / dock inset 12 vs page 16                                                                                                                         | `features/player/mini-player.tsx`, `navigation/player-dock.ts`, `features/player/floating-player-dock.tsx`                                                                                                                                                                                                                                                | T5, 2.10           |
 
-## 6. Frozen primitive contract
+## 6. Primitive contract
 
-Two engineers work in parallel:
+Written as the frozen contract between two parallel engineers; the deprecated names it allowed are removed
+(see "As shipped" below for what changed). The split was:
 
 - **Theme + components** owns `src/theme/**`, `src/components/**` (and `src/lib/use-grid-card-width.ts`,
   `src/navigation/player-dock.ts`).
@@ -352,17 +373,16 @@ export const iconSize = { xs: 12, sm: 16, md: 20, lg: 24, xl: 32, xxl: 48 } as c
 export type IconSize = keyof typeof iconSize;
 export const maxFontScale = { chrome: 1.3 } as const;
 export type TextVariant =
-  | "largeTitle" | "title1" | "title2" | "title" /* deprecated = title2 */
+  | "largeTitle" | "title1" | "title2"
   | "headline" | "body" | "label" | "subhead" | "footnote" | "caption";
 export const typeScale: Record<"ios" | "android", Record<TextVariant, TypeStyle>>; // values in 2.2
 export const textStyles: Record<TextVariant, TypeStyle>; // this platform's, for @expo/ui Text
 export const androidDynamicColors: Partial<Record<ColorToken, string>>; // see below
 ```
 
-`sizes.art` is removed once screens use `art.row`; until then it equals `art.row`.
-
-Tailwind classes the screens engineer may use: spacing `*-1 *-2 *-3 *-4 *-6 *-8 *-12`, `px-page`, `min-h-row`,
-`min-h-touch`, `size-touch`; radii `rounded-xs|sm|md|lg|xl|full`; every colour token as `bg-*` / `text-*` /
+Tailwind classes screens may use (the whole scale, `spacingScale`): spacing `*-0 *-px *-1 *-2 *-3 *-4 *-6 *-8
+*-12 *-full` and the named sizes (`px-page`, `min-h-row`, `min-h-touch`, `size-touch`, `h-ctl`, `min-w-row`);
+radii `rounded-xs|sm|md|lg|xl|full`; every colour token as `bg-*` / `text-*` /
 `border-*` (unchanged list: `background foreground card card-foreground primary primary-foreground secondary
 secondary-foreground muted muted-foreground accent accent-foreground destructive destructive-foreground border
 input fill fill-2 fill-3 scrim`).
@@ -390,16 +410,16 @@ Changed or new, with the props screens may pass:
 <Text variant?: TextVariant tone?: "default"|"muted"|"primary"|"onPrimary"|"onDestructive"|"error"
       numeric?: boolean {...RN TextProps} />
 
-// ui/icon, ui/icon-button: `size` also takes an IconSize name ("md"); numbers keep working.
-<Icon name size?: number | IconSize color? />
+// ui/icon, ui/icon-button (and LikeButton, MenuTrigger): `size` is an IconSize name ("md"), never points.
+<Icon name size?: IconSize color? />
 
-// ui/artwork: `size` sets edge, radius and quality; `style` still overrides (layout only).
-<Artwork image size?: ArtSize round?: boolean quality?: ImageQuality style? testID? />
+// ui/artwork: `size` (required) sets edge, radius and quality; `style` still overrides (layout only).
+<Artwork image size: ArtSize round?: boolean quality?: ImageQuality style? testID? />
 
 // ui/button: capsule; text in `label`; `secondary` is tonal on Android.
 <Button label icon? variant?: "primary"|"secondary"|"destructive" {...PressableProps} />
 
-// section-header (new). SectionHeading keeps working as SectionHeader({ title }) until removed.
+// section-header: the only section title.
 <SectionHeader title: string
   action?: { label: string; href?: Href; onPress?: () => void; accessibilityLabel?: string } />
 
@@ -446,30 +466,65 @@ Layout helpers: `useGridCardWidth()` and `GRID_GAP` (= `space.md`) from `~/lib/u
 4. A screen's scroll content has no horizontal padding; each block insets itself with `px-page` (S2).
 5. Order of work: theme engineer lands 6.1 and the new components (additive) first; screens migrate per feature
    (home, album/playlist/mix, player, library, search, browse, settings), deleting local constants as they go;
-   the theme engineer then removes the deprecated `title`, `sizes.art` and `SectionHeading`.
+   the deprecated `title`, `sizes.art`, `SectionHeading`, `FLOATING_DOCK_HEIGHT` and numeric icon sizes are
+   then removed (done).
 
-## Deviations (as shipped by the theme + components pass)
+## As shipped (supersedes 6.1 and 6.2 where they differ)
 
-Supersets of 6.1/6.2 unless noted; nothing listed there was dropped.
+Theme and colour
 
-- Spacing: NativeWind's rem is 14, so Tailwind's own `*-4` is 14pt. Only the seven steps (`*-1 2 3 4 6 8 12`)
-  are pinned to points from `space` (`spaceClasses`); other steps stay rem-based until screens drop them (S1).
-- `androidDynamicColors` maps tokens to typed `M3Role` names. Its values cannot be build-time classes (they come
-  from a native call per scheme), so `installDynamicColors()` (`theme/android-colors.android.ts`, called once in
-  `providers/app-providers.tsx`) rewrites NativeWind's root variables on Android 12+ and on every scheme switch;
-  `usePalette()` returns the same values. AA is checked over generated tonal-spot schemes (12 hues, greys, the
-  baseline seed; specs 2021 and 2025) with `@material/material-color-utilities` (dev dependency).
-- Extra props: `Text tone="onSecondary"` (text on `bg-secondary`, the Android tonal fill); `ListRow
-  accessibilityValue`; `MediaCard eyebrow` (hero only); `QuickPickTile item` (enables the long-press menu C4
-  describes); `EmptyState action.variant` (`ErrorState` passes `secondary`); `useTokenColor(token)` in
-  `~/theme/use-palette` (a token as a colour prop, the UIKit colour on iOS, for icon tints).
-- C4's long-press menu is `card-menu.tsx`: a `NativeMenu` with `openOnLongPress` plus the same entries as screen
-  reader actions on the card's link. Play Next / Add to Queue use the new `queueEntity` in `playback/play-entity.ts`.
-- L6: the current row shows the waveform whether playing or paused (it showed a pause glyph when paused); the
-  hint still says which.
+- Android dynamic colour: `androidDynamicColors` maps tokens to typed `M3Role`s. Their values come from a native
+  call per scheme, so they cannot be build-time classes: `DynamicColorRoot` (`theme/dynamic-color-root.android.tsx`,
+  wrapping the app in `providers/app-providers.tsx`) sets them as NativeWind `vars()` on a root view for the current
+  scheme on Android 12+ (`paletteFor` in `theme/android-colors.android.ts`, cached per scheme); iOS's root renders
+  its children. `usePalette()` returns the same values. AA is checked over generated tonal-spot schemes (12 hues,
+  greys, the baseline seed; specs 2021 and 2025) with `@material/material-color-utilities` (dev dependency).
+- Spacing: `theme.spacing` is closed (`spacingScale`: `0`, `px`, the seven steps, the named `sizes`, plus `full`),
+  so Tailwind's 14pt-rem steps no longer exist; `theme/spacing.test.ts` scans the sources for off-scale classes,
+  which NativeWind would drop silently. Two-column grids use `GridCell` (each column on its page gutter), not
+  half-gap cell padding.
+- `Text`: no `title` variant; extra tone `onSecondary` (text on `bg-secondary`, Android's tonal fill); `color` for
+  a computed colour no tone names (the player wash), which replaces the tone. `useTokenColor(token)` in
+  `~/theme/use-palette` gives a token as a colour prop (the UIKit colour on iOS), for icon tints.
+- Icons take only `IconSize` names; `Artwork` requires `size`. `art.player` is `playerArtSize(windowWidth)`;
+  `artRadius` has `player`. Round art uses a radius past half the edge, so it stays a circle when `style` resizes it.
+- `FLOATING_DOCK_INSET` (16, `navigation/player-dock`) is the dock's side inset; its height is `sizes.dock`.
+
+Components
+
+- `ListRow`: `checked` (a checkbox row with a trailing check, the Languages list), `selected` plus `paused` for the
+  current track (L6: the waveform while playing, a pause mark while paused, the hint saying which),
+  `trailing={{ chevron: true }}` (drawn on iOS only), `accessibilityValue`. A row without `href`/`onPress` is a
+  labelled `View` whose picture alone dims (L8 dimmed the whole row; dimming the text failed contrast), as does a
+  `QuickPickTile` without a destination.
+- C4's long-press menu: `CardLink` (`card-menu.tsx`) with the entries from `useCardMenuEntries(item)` (Play, and
+  for fixed lists Play Next / Add to Queue through `queueEntity` in `playback/play-entity.ts`). iOS uses the link's
+  own `Link.Menu`; Android (and anything without link menus) mounts a `NativeMenu` on the first long press, so a
+  shelf of cards keeps no native menu host per card. The same entries are screen reader actions on the card.
 - L7 for song rows needed the flag on the row model: `SongRowItem.explicit` (`true` only when upstream says so).
-- `art.player` is `playerArtSize(windowWidth)`; `artRadius` also has `player`. Round art uses a radius past half
-  the edge, so it stays a circle when `style` resizes it (grids).
-- `FLOATING_DOCK_HEIGHT` is a deprecated alias of `sizes.dock`; `FLOATING_DOCK_INSET` (16) is new in
-  `navigation/player-dock`. `MEDIA_CARD_WIDTH` and `ENTITY_ART_SIZE` are deprecated aliases of `art.card` /
-  `art.header`.
+  `ExplicitBadge accessible={false}` inside a row or card whose label already says "Explicit".
+- `MediaCard eyebrow` (hero only, also read after the name in its label) and `Shelf eyebrow(item)`; Home names
+  its carousel cards "Featured playlist", "Chart" or "Playlist". `QuickPickTile item` (enables the long-press
+  menu) and `accessibilityHint` (Surprise Me's). `EmptyState action.variant` (`ErrorState` passes `secondary`).
+- `ChipRow`: `tabs` makes it a tablist of tabs (search's result types; Home's language chips stay buttons, they
+  open a list), chips may take a leading `icon`, and taps land while the keyboard is up.
+- Collection running time reads in words to the nearest minute (`totalDurationLabel`: "38 min", "1 hr 12 min").
+
+Navigation and player
+
+- Create tab: NativeTabs' `tabPress` cannot be prevented, so the Create trigger is `disabled` (the bar refuses
+  the selection without dimming the item) and its `tabPress` listener opens the `/create-playlist` sheet;
+  `(tabs)/create.tsx` exists for JS navigation and renders nothing.
+- Search: iOS has the search tab (`role="search"`, iOS 26's separate trailing button). Android has no search tab:
+  the root screens' app bar action pushes the shared `search` route onto the current tab, where the field
+  autofocuses (`features/search/search-bar-options.ts`), and `+native-intent` sends `/search?q=` links to Home's
+  stack there. Settings and Profile are `TopLevelActions` in every root screen's header; Home's Languages is in
+  the header on iOS and the first chip on Android (decision at the top).
+- D3 player: the seed colour comes from `react-native-image-colors` (UIImageColors' background on iOS, Palette's
+  dominant swatch on Android, from the smallest rendition), turned into the wash, text, accent and control colours
+  by Material's content scheme (`lib/artwork-colors.ts`; iOS runs down the artwork's own tonal palette, Android
+  uses M3 roles seeded from it). Every pair must pass `meetsContrast` or the result is `null`, the D1 palette.
+  `OnWash` gives the wash to `WashText` and, through the navigation theme, to icons, the heart and menu
+  triggers. The wash is on Now Playing and the Android dock only; the iOS 26 tab bar accessory and the iOS < 26
+  glass dock keep system colours. Now Playing's play/pause is a 72pt circle in the wash's `control` colour
+  (`primary` on D1), its glyph `xl`.

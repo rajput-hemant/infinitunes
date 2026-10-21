@@ -10,7 +10,7 @@ import { toast } from "sonner-native";
 
 import { preferencesStore } from "~/lib/preferences";
 import { playerStore } from "~/playback/player-store";
-import { renderScreen } from "~/test/render";
+import { chooseCardAction, renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
 
 import { HomeFeed } from "./home-feed";
@@ -52,8 +52,11 @@ describe("HomeFeed", () => {
     await renderScreen(<HomeFeed />);
 
     expect(
-      await screen.findByRole("link", { name: /^Featured Mix/ }),
+      await screen.findByRole("link", {
+        name: /^Featured Mix.*Featured playlist$/,
+      }),
     ).toBeOnTheScreen();
+    expect(screen.getByText("Featured playlist")).toBeOnTheScreen();
     // A chart leads the carousel's tiles and the Charts shelf.
     expect(
       screen.getAllByRole("link", { name: /^Top 15 Hindi & Punjabi/ }),
@@ -140,13 +143,10 @@ describe("HomeFeed", () => {
     await renderScreen(<HomeFeed />);
 
     // Cards have no Play button; their long-press menu offers Play.
-    await fireEvent(
+    await chooseCardAction(
       await screen.findByRole("link", { name: /^Hindi Hits & More/ }),
-      "longPress",
+      "play",
     );
-    await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
-      nativeEvent: { event: "play" },
-    });
 
     await waitFor(() =>
       expect(playerStore.getState().radio?.stationId).toBe("session-42"),
@@ -158,11 +158,12 @@ describe("HomeFeed", () => {
     procedure("get.trending").mockResolvedValue([rawSong(), rawAlbum()]);
     await renderScreen(<HomeFeed />);
 
-    await fireEvent.press(
-      await screen.findByRole("button", {
-        name: "Surprise Me",
-      }),
+    const surprise = await screen.findByRole("button", { name: "Surprise Me" });
+    expect(surprise).toHaveProp(
+      "accessibilityHint",
+      "Plays a shuffled mix of trending songs",
     );
+    await fireEvent.press(surprise);
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
     expect(procedure("get.trending")).toHaveBeenCalledWith({ type: "song" });

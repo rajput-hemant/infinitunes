@@ -2,6 +2,7 @@ import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 
 import {
+  durationInWords,
   joinMeta,
   playsLabel,
   songCountLabel,
@@ -26,9 +27,19 @@ describe("meta line", () => {
     expect(songCountLabel(3)).toBe("3 Songs");
   });
 
-  it("sums the running time of the rows", () => {
+  it("sums the running time of the rows, in words", () => {
     const rows = [rawSong({ id: "a" }), rawSong({ id: "b" })].map(toSongRow);
-    expect(totalDurationLabel(rows)).toBe("03:30");
+    // 105s each: 3.5 minutes rounds to 4.
+    expect(totalDurationLabel(rows)).toBe("4 min");
     expect(totalDurationLabel([])).toBe("");
+  });
+
+  it("reads a running time in hours and minutes", () => {
+    expect(durationInWords(38 * 60 + 10)).toBe("38 min");
+    expect(durationInWords(72 * 60)).toBe("1 hr 12 min");
+    expect(durationInWords(2 * 3600 + 20)).toBe("2 hr");
+    expect(durationInWords(59 * 60 + 45)).toBe("1 hr");
+    expect(durationInWords(20)).toBe("1 min");
+    expect(durationInWords(0)).toBe("");
   });
 });

@@ -5,6 +5,7 @@ import { renderRouter } from "expo-router/testing-library";
 import type { ReactElement } from "react";
 
 import { playerStore } from "~/playback/player-store";
+import { chooseCardAction } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
 
 import { Shelf } from "./shelf";
@@ -85,13 +86,10 @@ describe("Shelf", () => {
     expect(screen.queryByRole("button", { name: "Play Udta Teer" })).toBeNull();
     // No card keeps a native menu host until it is long pressed.
     expect(screen.queryByTestId("card-menu")).toBeNull();
-    await fireEvent(
+    await chooseCardAction(
       screen.getByRole("link", { name: /^Udta Teer/ }),
-      "longPress",
+      "add-to-queue",
     );
-    await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
-      nativeEvent: { event: "add-to-queue" },
-    });
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(2));
     expect(procedure("album.details")).toHaveBeenCalledWith({

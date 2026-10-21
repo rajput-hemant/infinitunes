@@ -8,8 +8,7 @@ import {
   colors,
   iosSystemColors,
   radii,
-  sizes,
-  spaceClasses,
+  spacingScale,
 } from "./src/theme/tokens";
 import type { ColorToken, Palette } from "./src/theme/tokens";
 
@@ -49,14 +48,14 @@ export default {
   content: ["./src/**/*.{ts,tsx}"],
   presets: [nativewindPreset],
   theme: {
+    // Closed, not extended (`spacingScale`): NativeWind's rem is 14, so
+    // Tailwind's own steps would be off the 4pt grid (`*-4` 14pt).
+    spacing: { ...toPixels(spacingScale), full: "100%" },
     extend: {
       colors: Object.fromEntries(
         COLOR_TOKENS.map((token) => [token, tokenColor(token)]),
       ),
       borderRadius: toPixels(radii),
-      // NativeWind's rem is 14, so Tailwind's own `*-4` would be 14pt: the
-      // 4pt steps are pinned in points (`p-4` is 16).
-      spacing: { ...toPixels(spaceClasses), ...toPixels(sizes) },
     },
   },
   plugins: [paletteVariables],

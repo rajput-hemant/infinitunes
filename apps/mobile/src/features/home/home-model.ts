@@ -25,6 +25,8 @@ type HomeShelf = {
 export type HomeModel = {
   /** The featured playlist, then the chart and playlist tiles. */
   carousel: CardItem[];
+  /** Each carousel card's eyebrow by card id: "Featured playlist", "Chart", "Playlist". */
+  eyebrows: Record<string, string>;
   quickPicks: CardItem[];
   shelves: HomeShelf[];
 };
@@ -64,8 +66,21 @@ function toShelf({ key, title, items }: HomeSection): HomeShelf[] {
  */
 export function buildHomeModel(modules: Modules): HomeModel {
   const { featured, quickPicks, heroTiles } = homeHighlights(modules);
+  const charts = new Set<unknown>(modules.charts ?? []);
+  const hero = [
+    ...(featured
+      ? [{ card: toCardItem(featured), eyebrow: "Featured playlist" }]
+      : []),
+    ...heroTiles.map((tile) => ({
+      card: toCardItem(tile),
+      eyebrow: charts.has(tile) ? "Chart" : "Playlist",
+    })),
+  ];
   return {
-    carousel: [...(featured ? [featured] : []), ...heroTiles].map(toCardItem),
+    carousel: hero.map(({ card }) => card),
+    eyebrows: Object.fromEntries(
+      hero.map(({ card, eyebrow }) => [card.id, eyebrow]),
+    ),
     quickPicks: quickPicks.slice(0, QUICK_PICKS).map(toCardItem),
     shelves: homeSections(modules).flatMap(toShelf),
   };

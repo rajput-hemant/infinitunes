@@ -22,11 +22,6 @@ describe("Text", () => {
     expect(screen.getByText("Udta Teer")).toHaveStyle(textStyles.title1);
   });
 
-  it("keeps the deprecated title as title2", async () => {
-    await render(<Text variant="title">Trending</Text>);
-    expect(screen.getByText("Trending")).toHaveStyle(textStyles.title2);
-  });
-
   it("takes a computed colour in place of the tone", async () => {
     await render(
       <Text tone="muted" color="#123456">

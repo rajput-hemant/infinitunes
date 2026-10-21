@@ -22,7 +22,7 @@ export type TextTone = keyof typeof toneClasses;
 const TABULAR = { fontVariant: ["tabular-nums"] } as const;
 
 export type TextProps = NativeTextProps & {
-  /** The role in the type ramp; `title` is a deprecated alias of `title2`. */
+  /** The role in the type ramp (`body` by default). */
   variant?: TextVariant;
   /** The colour; pass it here rather than as a `text-*` class or `style.color`. */
   tone?: TextTone;

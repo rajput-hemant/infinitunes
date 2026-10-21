@@ -1,3 +1,11 @@
+import { space } from "~/theme/tokens";
+
+/**
+ * The native slider host's height: a 32pt row holds both platforms' system
+ * sliders (iOS's thumb, Material's 20dp handle) without clipping.
+ */
+export const SLIDER_HOST = { height: space.xxl } as const;
+
 /** The platform seek slider's contract (`seek-slider.ios.tsx`, `seek-slider.tsx`). */
 export type SeekSliderProps = {
   /** Seconds. */

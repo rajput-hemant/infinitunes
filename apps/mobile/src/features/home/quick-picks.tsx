@@ -26,6 +26,7 @@ export function QuickPicks({ items }: { items: readonly CardItem[] }) {
           width={width}
           title="Surprise Me"
           leading={{ icon: { ios: "sparkles", android: "auto_awesome" } }}
+          accessibilityHint="Plays a shuffled mix of trending songs"
           onPress={() => void run(playSurprise)}
         />
         <QuickPickTile

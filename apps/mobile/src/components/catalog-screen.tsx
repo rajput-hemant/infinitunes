@@ -1,18 +1,14 @@
 import { FlashList } from "@shopify/flash-list";
 import type { ComponentProps, ReactElement } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator } from "react-native";
 
 import { CatalogGridSkeleton } from "~/components/catalog-grid-skeleton";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
+import { GridCell } from "~/components/grid-cell";
 import { Text } from "~/components/ui/text";
-import {
-  GRID_COLUMNS,
-  GRID_GAP,
-  useGridCardWidth,
-} from "~/lib/use-grid-card-width";
+import { GRID_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
-import { sizes } from "~/theme/tokens";
 
 /** What a catalog list reads from its query; paging fields are absent for a single page. */
 type CatalogQuery<Item> = {
@@ -38,9 +34,6 @@ type CatalogScreenProps<Item> = {
 
 const SEEN_IT_ALL = "You have seen it all";
 
-/** Cancels the grid's content padding for full-bleed parts (header, placeholders). */
-const FULL_BLEED = { marginHorizontal: -(sizes.page - GRID_GAP / 2) };
-
 /**
  * A two-column catalog grid with every state of a fetched list: skeleton,
  * error with retry (only while there is nothing to show), empty, pull to
@@ -62,23 +55,14 @@ export function CatalogScreen<Item>({
       data={items}
       numColumns={GRID_COLUMNS}
       keyExtractor={keyOf}
-      renderItem={({ item }) => (
-        <View style={{ padding: GRID_GAP / 2 }}>{renderCard(item, width)}</View>
+      renderItem={({ item, index }) => (
+        <GridCell index={index}>{renderCard(item, width)}</GridCell>
       )}
-      ListHeaderComponent={
-        header ? <View style={FULL_BLEED}>{header}</View> : undefined
-      }
-      ListEmptyComponent={
-        <View style={FULL_BLEED}>
-          <CatalogPlaceholder query={query} empty={empty} />
-        </View>
-      }
+      ListHeaderComponent={header}
+      ListEmptyComponent={<CatalogPlaceholder query={query} empty={empty} />}
       ListFooterComponent={<CatalogFooter query={query} />}
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{
-        paddingHorizontal: sizes.page - GRID_GAP / 2,
-        paddingBottom: playerDockInset,
-      }}
+      contentContainerStyle={{ paddingBottom: playerDockInset }}
       refreshing={query.isRefetching && !query.isFetchingNextPage}
       onRefresh={() => void query.refetch()}
       onEndReached={query.loadMore}

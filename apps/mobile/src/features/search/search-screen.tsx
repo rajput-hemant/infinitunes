@@ -6,10 +6,13 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import type { SearchBarCommands } from "react-native-screens";
 
+import { ChipRow } from "~/components/chip-row";
+
 import { IdleSearch } from "./idle-search";
+import { searchBarOptions } from "./search-bar-options";
 import { useSearchHistory } from "./search-history";
 import { SearchResults } from "./search-results";
-import { SearchTypeChips } from "./search-type-chips";
+import { SEARCH_TYPES } from "./search-types";
 import type { SearchType } from "./search-types";
 
 /**
@@ -54,9 +57,8 @@ export function SearchScreen() {
         options={{
           title: "Search",
           headerSearchBarOptions: {
+            ...searchBarOptions(),
             ref: searchBar,
-            placeholder: "Songs, albums, artists, podcasts",
-            autoCapitalize: "none",
             onChangeText: (event) => setQuery(event.nativeEvent.text),
             onSearchButtonPress: (event) => add(event.nativeEvent.text),
             onCancelButtonPress: () => setQuery(""),
@@ -67,7 +69,17 @@ export function SearchScreen() {
         <SearchResults
           query={debouncedQuery}
           type={type}
-          header={<SearchTypeChips type={type} onChange={setType} />}
+          header={
+            <ChipRow
+              tabs
+              chips={SEARCH_TYPES.map((option) => ({
+                key: option.type,
+                label: option.label,
+                selected: option.type === type,
+                onPress: () => setType(option.type),
+              }))}
+            />
+          }
           onShowType={setType}
           onOpenResult={() => add(debouncedQuery)}
           onSearchArtist={(name) => searchFor(name, "artist")}

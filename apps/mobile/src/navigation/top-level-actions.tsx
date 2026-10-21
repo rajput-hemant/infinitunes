@@ -4,14 +4,8 @@ import { Platform, Pressable, View } from "react-native";
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
 import { authClient } from "~/lib/auth-client";
+import { userInitial } from "~/lib/user-initial";
 import { maxFontScale } from "~/theme/tokens";
-
-type SessionUser = { name?: string | null; email: string };
-
-/** The avatar's letter: the name's first, else the email's (the web's `userInitial`). */
-function initialOf({ name, email }: SessionUser): string {
-  return (name?.trim() || email.trim()).charAt(0).toUpperCase();
-}
 
 /** The account's initial in a circle (its profile), or Sign In while signed out. */
 function ProfileButton() {
@@ -39,11 +33,22 @@ function ProfileButton() {
           tone="onSecondary"
           maxFontSizeMultiplier={maxFontScale.chrome}
         >
-          {initialOf(user)}
+          {userInitial(user)}
         </Text>
       </View>
     </Pressable>
   );
+}
+
+/**
+ * Whether Home's header carries the Languages button. Material 3 allows at
+ * most three app bar actions, and Android's are already Search, Settings and
+ * Profile, so there Languages is the first chip of Home's chip row instead
+ * (`HomeHeader`). iOS has no Search button (the search tab), so its three
+ * glass buttons are Languages, Settings and Profile. Read at render time.
+ */
+export function hasHeaderLanguages(): boolean {
+  return Platform.OS !== "android";
 }
 
 /**
@@ -56,9 +61,9 @@ export function TopLevelActions() {
   return <Actions languages={false} />;
 }
 
-/** `TopLevelActions` with Home's language picker before Settings. */
+/** `TopLevelActions` with Home's language picker before Settings (iOS, `hasHeaderLanguages`). */
 export function HomeTopLevelActions() {
-  return <Actions languages />;
+  return <Actions languages={hasHeaderLanguages()} />;
 }
 
 function Actions({ languages }: { languages: boolean }) {

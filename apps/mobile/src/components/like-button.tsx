@@ -2,9 +2,9 @@ import type { FavoriteType } from "@infinitunes/core/favorites";
 import { useTheme } from "expo-router";
 
 import { announce } from "~/lib/announce";
+import type { IconSize } from "~/theme/tokens";
 import { useFavoriteToggle } from "~/user-data/favorites";
 
-import type { IconSizeProp } from "./ui/icon";
 import { IconButton } from "./ui/icon-button";
 
 type LikeButtonProps = {
@@ -13,7 +13,7 @@ type LikeButtonProps = {
   token: string;
   name: string;
   /** `lg` by default; `md` in rows. */
-  size?: IconSizeProp;
+  size?: IconSize;
 };
 
 /** The heart for one item. Every heart for the same item flips together (optimistic). */

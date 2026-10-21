@@ -2,9 +2,9 @@ import type { SymbolViewProps } from "expo-symbols";
 import { View } from "react-native";
 
 import { cx } from "~/lib/class-names";
+import type { IconSize } from "~/theme/tokens";
 
 import { Icon } from "./ui/icon";
-import type { IconSizeProp } from "./ui/icon";
 
 type MenuTriggerProps = {
   /** What the menu is for, for screen readers ("More actions for Song"). */
@@ -12,7 +12,7 @@ type MenuTriggerProps = {
   /** Defaults to the horizontal ellipsis. */
   icon?: SymbolViewProps["name"];
   /** `md` (row controls) by default; `lg` in headers. */
-  size?: IconSizeProp;
+  size?: IconSize;
   /** Extra classes, e.g. a filled background beside other buttons. */
   className?: string;
 };

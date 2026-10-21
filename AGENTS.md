@@ -189,7 +189,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `disabled` (NativeTabs' `tabPress` cannot be prevented), so the bar never selects it and its `tabPress`
   listener opens `/create-playlist` (`navigation/create-playlist.ts`); `(tabs)/create.tsx` renders nothing.
   Settings is not a tab: the root screens' `headerRight` is `TopLevelActions` (`navigation/top-level-actions`:
-  Android's Search, Home's Languages, Settings, the avatar or Sign In), which push onto the current tab.
+  Android's Search, Settings, the avatar or Sign In), which push onto the current tab. Material 3 allows three
+  app bar actions, so Home's Languages is a header button on iOS only and the first chip of Home's chip row on
+  Android (`hasHeaderLanguages()`, read at render so tests can switch `Platform.OS`). Android's pushed Search
+  autofocuses its field (`features/search/search-bar-options.ts`).
 - Routes are the web's paths (`@infinitunes/core/entity-route`): detail screens, `search` and the account
   screens (`settings`, `profile`, `password`, `delete-account`) live once in `(tabs)/(home,search,library,radio)/`
   (entities as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and `artist/[name]/[token]/{index,[tab]}`;
@@ -239,7 +242,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   row or queue entry, `removal`, `leading="index"` for albums: `TrackList numbered`) and `MediaRow` (`href` or
   `onPress`) are built on it, `EntityListItem`s feed a screen's one `FlashList`. Cards: `MediaCard`/`Shelf`
   (`toCardItem` items, `seeAllHref`, `onItemPress`, `variant="hero"` for home's carousel, the only card with
-  `CardPlayButton`), `QuickPickTile` for two-column tiles. A card's long press and screen reader actions offer
+  `CardPlayButton` and an `eyebrow(item)`), `QuickPickTile` for two-column tiles, `GridCell` for each cell of a
+  two-column `FlashList`. Filter chips are `ChipRow` (`tabs` when they switch the content below, as search's do). A card's long press and screen reader actions offer
   Play/Play Next/Add to Queue through `CardLink` (`card-menu.tsx`): iOS uses the link's own `Link.Menu`, Android
   mounts a `NativeMenu` on the first long press; never wrap each card in a `MenuView` (one native host per card).
   `ExplicitBadge accessible={false}` inside a row or card whose label already says "Explicit".
@@ -262,8 +266,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   to Material You roles at runtime: `DynamicColorRoot` sets them as NativeWind `vars()` on a root view in
   `providers/app-providers.tsx`; never css-interop internals), colour JS props from
   `usePalette()`/`useTokenColor()` or `useTheme().colors`, text via `Text` `variant`/`tone`. Sizes come from
-  `theme/tokens.ts` (`space`, `radii`, `art`, `iconSize`, `sizes`, `textStyles`), never literals; NativeWind's
-  rem is 14, so only the pinned 4pt steps (`*-1 2 3 4 6 8 12`) are exact points.
+  `theme/tokens.ts` (`space`, `radii`, `art`, `iconSize`, `sizes`, `textStyles`), never literals. NativeWind's
+  rem is 14, so `theme.spacing` is closed to `spacingScale` (`0`, `px`, `*-1 2 3 4 6 8 12`, the named `sizes`)
+  plus `full`: any other spacing class compiles to nothing and NativeWind drops it silently, so
+  `theme/spacing.test.ts` scans the sources and fails on one. Icons take `iconSize` names only.
 - Accessibility: every tappable control is at least `sizes.touch` (48; `IconButton`, `Button`, `MenuTrigger` for a
   `NativeMenu`'s face, `DragHandle`, `FormLink` for a form's text link) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`, `TEXT_BUTTON_HIT_SLOP`); rows and
   fields use `min-h-*` so Dynamic Type grows them (cap text with `maxFontSizeMultiplier` only in fixed-height chrome, the
@@ -298,7 +304,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   a `jest.fn`) for every suite, plus `sonner-native` (assert `jest.mocked(toast.error)`), the SQLite store,
   and stand-ins for Gesture Handler's `ReanimatedSwipeable` and `react-native-reorderable-list`, which do not
   run under Reanimated's Jest runtime. Render with `renderWithProviders`, `renderScreen(ui, { routes })` or
-  `renderStack`; `@expo/ui` lists need `jest.mock("@expo/ui", () => require("~/test/expo-ui"))`. Optimistic
+  `renderStack`; pick native menu actions with `chooseMenuAction(trigger, event)` and a card's long-press menu
+  with `chooseCardAction(card, event)` (`src/test/render.tsx`); `@expo/ui` lists need `jest.mock("@expo/ui", () => require("~/test/expo-ui"))`. Optimistic
   overlay records expire on real timers: a suite that writes through them runs on fake timers and resets the
   overlay, or the Jest worker is force-exited. `expo-doctor` reports
   same-version "duplicates" (Bun peer variants); autolinking module resolution bundles one copy, so only a

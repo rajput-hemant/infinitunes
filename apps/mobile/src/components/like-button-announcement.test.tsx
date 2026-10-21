@@ -15,12 +15,20 @@ const announce = jest.spyOn(
 );
 
 beforeEach(async () => {
+  // A settled like arms an 8s expiry, which survives `resetFavoriteOverlay`
+  // once the heart's own props have cleared the record; a real one would
+  // keep the Jest worker alive after the suite (the "force exited" warning).
+  jest.useFakeTimers();
   announce.mockImplementation(() => {});
   await act(async () => signInAs(null));
   procedure("user.getUserFavorites").mockResolvedValue(favoritesRow({}));
 });
 
-afterEach(resetFavoriteOverlay);
+afterEach(() => {
+  jest.clearAllTimers();
+  jest.useRealTimers();
+  resetFavoriteOverlay();
+});
 
 describe("LikeButton announcements (VoiceOver)", () => {
   it("says what a press did, since the screen does not change", async () => {
@@ -31,7 +39,10 @@ describe("LikeButton announcements (VoiceOver)", () => {
     await waitFor(() =>
       expect(procedure("user.getUserFavorites")).toHaveBeenCalled(),
     );
-    await act(async () => {});
+    // The query cache notifies its readers on a timer.
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(10);
+    });
 
     await fireEvent.press(
       await screen.findByRole("button", { name: "Like FA9LA" }),

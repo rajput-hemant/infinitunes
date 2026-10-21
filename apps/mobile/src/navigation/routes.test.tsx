@@ -186,6 +186,22 @@ describe("on Android", () => {
   beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
   afterEach(() => jest.restoreAllMocks());
 
+  it("keeps Home's app bar to three actions, Languages leading the chips", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    const home = await selectedTab(app);
+    await home.findByRole("button", { name: "Settings" });
+    expect(home.getByRole("button", { name: "Search" })).toBeOnTheScreen();
+    expect(home.getByRole("button", { name: "Sign in" })).toBeOnTheScreen();
+    // The only Languages control is the chip, not a fourth app bar button.
+    const [chip, ...others] = home.getAllByRole("button", {
+      name: "Languages",
+    });
+    expect(others).toHaveLength(0);
+    await fireEvent.press(chip!);
+    expect(app.getPathname()).toBe("/languages");
+  });
+
   it("pushes search onto the current tab from the app bar", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/library" });
 

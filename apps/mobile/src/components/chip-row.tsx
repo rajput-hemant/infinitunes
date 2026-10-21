@@ -1,5 +1,7 @@
 import { Platform, Pressable, ScrollView } from "react-native";
 
+import { Icon } from "~/components/ui/icon";
+import type { SymbolName } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { cx } from "~/lib/class-names";
 
@@ -11,6 +13,8 @@ export type Chip = {
   label: string;
   selected: boolean;
   onPress?: () => void;
+  /** A leading symbol, for an action chip among filters (Android's Languages). */
+  icon?: SymbolName;
 };
 
 /**
@@ -29,12 +33,27 @@ const CHIP_STYLE = Platform.select({
   },
 } as const);
 
-/** A horizontally scrolling row of filter chips (capsules); the selected one is filled. */
-export function ChipRow({ chips }: { chips: readonly Chip[] }) {
+type ChipRowProps = {
+  chips: readonly Chip[];
+  /**
+   * The chips switch what the screen below shows (search's result types):
+   * a `tablist` of `tab`s. Otherwise each chip is a button (home's languages
+   * open a list).
+   */
+  tabs?: boolean;
+};
+
+/**
+ * A horizontally scrolling row of filter chips (capsules); the selected one
+ * is filled. A tap lands while the keyboard is up (search's field keeps it).
+ */
+export function ChipRow({ chips, tabs = false }: ChipRowProps) {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      accessibilityRole={tabs ? "tablist" : undefined}
       contentContainerClassName="gap-2 px-page py-2"
     >
       {chips.map((chip) => {
@@ -46,13 +65,14 @@ export function ChipRow({ chips }: { chips: readonly Chip[] }) {
             key={chip.key}
             onPress={chip.onPress}
             hitSlop={CHIP_HIT_SLOP}
-            accessibilityRole="button"
+            accessibilityRole={tabs ? "tab" : "button"}
             accessibilityState={{ selected: chip.selected }}
             className={cx(
-              "min-h-ctl justify-center rounded-full px-4 py-1 active:opacity-70",
+              "min-h-ctl flex-row items-center justify-center gap-2 rounded-full px-4 py-1 active:opacity-70",
               container,
             )}
           >
+            {chip.icon ? <Icon name={chip.icon} size="sm" /> : null}
             <Text variant="subhead" tone={tone}>
               {chip.label}
             </Text>

@@ -1,4 +1,4 @@
-import { userInitial } from "./profile-header";
+import { userInitial } from "./user-initial";
 
 describe("userInitial", () => {
   it("takes the name's first letter, upper-cased", () => {

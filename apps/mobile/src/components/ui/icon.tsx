@@ -8,18 +8,11 @@ import type { IconSize } from "~/theme/tokens";
 
 export type SymbolName = SymbolViewProps["name"];
 
-/** A named size from `iconSize`; a number is kept for screens not yet moved to names. */
-export type IconSizeProp = IconSize | number;
-
-export function iconPoints(size: IconSizeProp): number {
-  return typeof size === "number" ? size : iconSize[size];
-}
-
 type IconProps = {
   /** An SF Symbol for iOS and a Material Symbol for Android. */
   name: SymbolName;
   /** `lg` (24, header and toolbar buttons) by default; `md` (20) for row controls. */
-  size?: IconSizeProp;
+  size?: IconSize;
   /** Defaults to the text colour. */
   color?: ColorValue;
 };
@@ -30,7 +23,7 @@ export function Icon({ name, size = "lg", color }: IconProps) {
   return (
     <SymbolView
       name={name}
-      size={iconPoints(size)}
+      size={iconSize[size]}
       tintColor={color ?? colors.text}
     />
   );

@@ -25,6 +25,8 @@ type QuickPickTileProps = {
   /** Cover art flush at the start, or an icon in its place (an action tile). */
   leading: { artwork: string } | { icon: SymbolName };
   accessibilityLabel?: string;
+  /** What a tap does, when the title does not say it (Surprise me). */
+  accessibilityHint?: string;
   /** The catalog item behind the tile: its long press offers Play, Play Next and Add to Queue. */
   item?: { type: MediaType; url: string };
 };
@@ -43,6 +45,7 @@ export function QuickPickTile({
   onPress,
   leading,
   accessibilityLabel = title,
+  accessibilityHint,
   item,
 }: QuickPickTileProps) {
   const entries = useCardMenuEntries(item);
@@ -96,6 +99,7 @@ export function QuickPickTile({
       onLongPress={onLongPress}
       accessibilityRole={href ? "link" : "button"}
       accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
       {...cardAccessibilityActions(entries)}
       className={`${TILE_CLASS} active:opacity-70`}
       style={style}

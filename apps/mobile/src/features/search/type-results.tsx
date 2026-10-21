@@ -3,17 +3,13 @@ import { FlashList } from "@shopify/flash-list";
 import type { ReactElement } from "react";
 import { ActivityIndicator, View } from "react-native";
 
+import { GridCell } from "~/components/grid-cell";
 import { MediaCard } from "~/components/media-card";
 import { SongRow } from "~/components/song-row";
 import { Text } from "~/components/ui/text";
-import {
-  GRID_COLUMNS,
-  GRID_GAP,
-  useGridCardWidth,
-} from "~/lib/use-grid-card-width";
+import { GRID_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playFrom } from "~/playback/play-collection";
-import { sizes } from "~/theme/tokens";
 
 import { isSongEntry, toResultCard } from "./result-cards";
 import { ResultsPlaceholder } from "./results-placeholder";
@@ -103,16 +99,9 @@ export function TypeResults({
       numColumns={GRID_COLUMNS}
       keyExtractor={(card) => card.id}
       renderItem={({ item, index }) => (
-        <View
-          className={index % 2 === 0 ? "items-start" : "items-end"}
-          style={
-            index % 2 === 0
-              ? { paddingLeft: sizes.page, paddingBottom: GRID_GAP }
-              : { paddingRight: sizes.page, paddingBottom: GRID_GAP }
-          }
-        >
+        <GridCell index={index}>
           <MediaCard item={item} width={cardWidth} onPress={onOpenResult} />
-        </View>
+        </GridCell>
       )}
     />
   );

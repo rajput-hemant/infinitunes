@@ -122,5 +122,12 @@ describe("buildHomeModel", () => {
       "Playlist 6",
       "Playlist 7",
     ]);
+    expect(model.carousel.map((tile) => model.eyebrows[tile.id])).toEqual([
+      "Featured playlist",
+      "Chart",
+      "Playlist",
+      "Playlist",
+      "Playlist",
+    ]);
   });
 });

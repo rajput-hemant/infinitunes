@@ -20,6 +20,8 @@ type ShelfProps = {
   onItemPress?: (item: CardItem) => void;
   /** `hero` cards for the featured carousel; `card` everywhere else. */
   variant?: MediaCardVariant;
+  /** A hero card's line above its title ("Featured playlist"); cards show none. */
+  eyebrow?: (item: CardItem) => string | undefined;
 };
 
 function CardGap() {
@@ -37,6 +39,7 @@ export function Shelf({
   seeAllHref,
   onItemPress,
   variant = "card",
+  eyebrow,
 }: ShelfProps) {
   if (items.length === 0) return null;
 
@@ -65,6 +68,7 @@ export function Shelf({
           <MediaCard
             item={item}
             variant={variant}
+            eyebrow={eyebrow?.(item)}
             onPress={onItemPress && (() => onItemPress(item))}
           />
         )}

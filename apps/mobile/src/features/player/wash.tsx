@@ -75,14 +75,19 @@ export function OnWash({
   );
 }
 
-type WashTextProps = Omit<TextProps, "tone"> & { tone?: "default" | "muted" };
+type WashTextProps = Omit<TextProps, "tone" | "color"> & {
+  tone?: "default" | "muted";
+};
 
 /** `Text` in the wash's foreground or muted colour, the token tone without one. */
-export function WashText({ tone = "default", style, ...props }: WashTextProps) {
+export function WashText({ tone = "default", ...props }: WashTextProps) {
   const wash = useWashColors();
-  if (!wash) return <Text tone={tone} style={style} {...props} />;
-  const color = tone === "muted" ? wash.muted : wash.foreground;
-  return <Text style={[{ color }, style]} {...props} />;
+  const color = wash
+    ? tone === "muted"
+      ? wash.muted
+      : wash.foreground
+    : undefined;
+  return <Text tone={tone} color={color} {...props} />;
 }
 
 /** One painted surface: `key` names what it shows, so a change crossfades. */

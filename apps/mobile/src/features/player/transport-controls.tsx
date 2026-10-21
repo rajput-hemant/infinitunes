@@ -5,11 +5,11 @@ import { Pressable, View } from "react-native";
 import { toast } from "sonner-native";
 
 import { Icon } from "~/components/ui/icon";
-import type { IconSizeProp } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { togglePlayback } from "~/playback/transport";
+import type { IconSize } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
 import { useWashColors } from "./wash";
@@ -28,7 +28,7 @@ function usePlayPause() {
 }
 
 /** Play or pause as a bare glyph: the mini player's. */
-export function PlayPauseButton({ size = "lg" }: { size?: IconSizeProp }) {
+export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
   const { icon, label } = usePlayPause();
   return (
     <IconButton
@@ -69,7 +69,7 @@ export function ProminentPlayPauseButton() {
   );
 }
 
-export function NextTrackButton({ size = "xl" }: { size?: IconSizeProp }) {
+export function NextTrackButton({ size = "xl" }: { size?: IconSize }) {
   return (
     <IconButton
       icon={{ ios: "forward.fill", android: "skip_next" }}

@@ -2,6 +2,7 @@ import { Host, Slider } from "@expo/ui/swift-ui";
 import { tint } from "@expo/ui/swift-ui/modifiers";
 import { useRef } from "react";
 
+import { SLIDER_HOST } from "./seek-slider-props";
 import type { SeekSliderProps } from "./seek-slider-props";
 
 /** A SwiftUI `Slider`: only values the listener drags to count as a scrub. */
@@ -15,7 +16,7 @@ export function SeekSlider({
   const editing = useRef(false);
 
   return (
-    <Host style={{ height: 32 }}>
+    <Host style={SLIDER_HOST}>
       <Slider
         value={value}
         min={0}

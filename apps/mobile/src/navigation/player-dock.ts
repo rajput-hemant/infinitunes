@@ -4,9 +4,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { hasTabBarAccessory } from "~/lib/platform";
 import { sizes, space } from "~/theme/tokens";
 
-/** @deprecated Use `sizes.dock` from `~/theme/tokens`. */
-export const FLOATING_DOCK_HEIGHT = sizes.dock;
-
 /** The floating mini player's inset from the screen's side edges: the page gutter. */
 export const FLOATING_DOCK_INSET = sizes.page;
 
