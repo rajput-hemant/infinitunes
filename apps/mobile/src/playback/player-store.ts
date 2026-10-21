@@ -29,6 +29,12 @@ type PlayerState = {
   repeat: LoopMode;
   /** The station whose songs refill the queue as it runs out. */
   radio: ActiveRadioSession | null;
+  /**
+   * Bumped when a play lands on the entry that is already loaded (Play on
+   * the list that is paused on it, the end of a one-entry looping queue):
+   * nothing new loads, so the controller resumes the engine instead.
+   */
+  resumeRequest: number;
 };
 
 type PlayOptions = {
@@ -71,6 +77,7 @@ const initialState: PlayerState = {
   shuffle: false,
   repeat: "off",
   radio: null,
+  resumeRequest: 0,
 };
 
 function playbackOrder(state: PlayerState) {
@@ -103,15 +110,23 @@ export const playerStore = createStore<PlayerStore>()(
 
       playTracks(tracks, { startIndex = 0, shuffle = false, radio } = {}) {
         if (tracks.length === 0) return;
+        const index = Math.min(Math.max(startIndex, 0), tracks.length - 1);
         const radioState = { radio: radio ?? null };
-        if (!shuffle && isSameQueue(get().queue, tracks)) {
-          set({ currentIndex: startIndex, started: true, ...radioState });
+        const state = get();
+        if (!shuffle && isSameQueue(state.queue, tracks)) {
+          const loaded = state.started && state.currentIndex === index;
+          set({
+            currentIndex: index,
+            started: true,
+            ...radioState,
+            ...(loaded ? { resumeRequest: state.resumeRequest + 1 } : {}),
+          });
           return;
         }
         const ordered = shuffle ? shuffled(tracks) : tracks;
         set({
           queue: ordered.map(toQueueEntry),
-          currentIndex: shuffle ? 0 : startIndex,
+          currentIndex: shuffle ? 0 : index,
           started: true,
           ...radioState,
         });
@@ -143,12 +158,22 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       advanceAfterEnd() {
-        set((state) => ({
-          currentIndex: nextTrackIndex(playbackOrder(state), {
+        set((state) => {
+          const repeatOne = state.repeat === "track";
+          const currentIndex = nextTrackIndex(playbackOrder(state), {
             reason: "ended",
-            repeatOne: state.repeat === "track",
-          }),
-        }));
+            repeatOne,
+          });
+          // A looping queue of one entry wraps onto the entry that just
+          // ended; repeat-one is the engine's own loop.
+          const wrapped =
+            !repeatOne &&
+            state.repeat === "playlist" &&
+            currentIndex === state.currentIndex;
+          return wrapped
+            ? { currentIndex, resumeRequest: state.resumeRequest + 1 }
+            : { currentIndex };
+        });
       },
 
       skipUnplayable() {
@@ -193,7 +218,8 @@ export const playerStore = createStore<PlayerStore>()(
     }),
     {
       name: "player",
-      storage: persistedStorage<Omit<PlayerState, "started">>(),
+      storage:
+        persistedStorage<Omit<PlayerState, "started" | "resumeRequest">>(),
       partialize: ({ queue, currentIndex, shuffle, repeat, radio }) => ({
         queue,
         currentIndex,

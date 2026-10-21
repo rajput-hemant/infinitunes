@@ -23,6 +23,7 @@ import { requestMediaNotificationPermission } from "./media-notification";
 import { playbackPosition, playbackStatusStore } from "./playback-status";
 import { playerStore, selectCurrentTrack, usePlayer } from "./player-store";
 import { recordPlay } from "./record-play";
+import { resumePlayback } from "./transport";
 
 const getPosition = () => audioPlayer.currentTime;
 
@@ -52,6 +53,7 @@ export function PlaybackController() {
   const repeatOne = usePlayer((state) => state.repeat === "track");
   const radio = usePlayer((state) => state.radio);
   const track = usePlayer(selectCurrentTrack);
+  const resumeRequest = usePlayer((state) => state.resumeRequest);
   const { advanceAfterEnd, skipUnplayable, updateQueue } =
     playerStore.getState();
   const streamQuality = usePreferences((state) => state.streamQuality);
@@ -108,6 +110,11 @@ export function PlaybackController() {
   useEffect(() => {
     audioPlayer.loop = repeatOne;
   }, [repeatOne]);
+
+  // A play that landed on the loaded entry loads nothing new (see the store).
+  useEffect(() => {
+    if (resumeRequest > 0) resumePlayback();
+  }, [resumeRequest]);
 
   // A listener, not the status hook: two ends of the same track in a row
   // (repeat) must each advance, and React would merge the equal states; a

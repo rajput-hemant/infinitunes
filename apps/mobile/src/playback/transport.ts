@@ -17,6 +17,12 @@ export function togglePlayback() {
     audioPlayer.pause();
     return;
   }
+  resumePlayback();
+}
+
+/** Plays the loaded source on; one that played to its end starts over. */
+export function resumePlayback() {
+  if (audioPlayer.playing) return;
   if (
     audioPlayer.duration > 0 &&
     audioPlayer.currentTime >= audioPlayer.duration
