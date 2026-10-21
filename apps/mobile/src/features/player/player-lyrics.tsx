@@ -3,8 +3,9 @@ import type { Queue } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import { ActivityIndicator, ScrollView, View } from "react-native";
 
-import { Text } from "~/components/ui/text";
 import { trpc } from "~/lib/trpc";
+
+import { useWashColors, WashText } from "./wash";
 
 type PlayerLyricsProps = {
   track: Queue;
@@ -18,6 +19,7 @@ type PlayerLyricsProps = {
  * upstream has none for say so instead.
  */
 export function PlayerLyrics({ track, size }: PlayerLyricsProps) {
+  const wash = useWashColors();
   const isSong = track.type === "song";
   const lyrics = useQuery({
     ...trpc.get.lyrics.queryOptions({ id: track.id }),
@@ -28,12 +30,17 @@ export function PlayerLyrics({ track, size }: PlayerLyricsProps) {
   let content;
   if (!isSong || lyrics.isError || lyrics.data === null) {
     content = (
-      <Text tone="muted" className="text-center">
+      <WashText tone="muted" className="text-center">
         No lyrics available for this track.
-      </Text>
+      </WashText>
     );
   } else if (!lyrics.data) {
-    content = <ActivityIndicator accessibilityLabel="Loading lyrics" />;
+    content = (
+      <ActivityIndicator
+        accessibilityLabel="Loading lyrics"
+        color={wash?.foreground}
+      />
+    );
   } else {
     return (
       <ScrollView
@@ -41,10 +48,10 @@ export function PlayerLyrics({ track, size }: PlayerLyricsProps) {
         contentContainerClassName="gap-4 py-2"
         accessibilityLabel="Lyrics"
       >
-        <Text variant="headline">{plainText(lyrics.data.lyrics)}</Text>
-        <Text variant="caption" tone="muted">
+        <WashText variant="headline">{plainText(lyrics.data.lyrics)}</WashText>
+        <WashText variant="caption" tone="muted">
           {plainText(lyrics.data.lyrics_copyright)}
-        </Text>
+        </WashText>
       </ScrollView>
     );
   }

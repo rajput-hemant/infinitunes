@@ -1,34 +1,59 @@
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 
-import { GlassSurface } from "~/components/ui/glass-surface";
 import {
-  FLOATING_DOCK_HEIGHT,
+  FLOATING_DOCK_INSET,
   useFloatingDockOffset,
 } from "~/navigation/player-dock";
-import { radii } from "~/theme/tokens";
+import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
+import { radii, sizes } from "~/theme/tokens";
+import { useTokenColor } from "~/theme/use-palette";
 
+import { DockProgress } from "./dock-progress";
 import { MiniPlayer } from "./mini-player";
+import { usePlayerColors } from "./use-player-colors";
+import { Backdrop, dockWash, OnWash } from "./wash";
+
+/** Material 3 elevation level 2: the only shadowed element on Android (P9). */
+const ELEVATION = 3;
 
 /**
- * The mini-player where the tab bar has no accessory slot (Android, iOS
- * before 26): a floating surface just above the tab bar.
+ * The Android mini player: a floating Material 3 card just above the
+ * navigation bar, on the artwork's tonal surface (surface container high of
+ * the scheme the cover seeds) once its colours pass the contrast check, the
+ * wallpaper's `card` until then. The surface crossfades between tracks.
  */
 export function FloatingPlayerDock() {
   const bottom = useFloatingDockOffset();
+  const track = usePlayer(selectCurrentTrack);
+  const colors = usePlayerColors(track?.image);
+  const card = useTokenColor("card");
+  const primary = useTokenColor("primary");
+  const background = colors?.dock.background ?? card;
+
   return (
-    <GlassSurface style={[styles.dock, { bottom }]}>
-      <MiniPlayer />
-    </GlassSurface>
+    <View style={[styles.dock, { bottom, backgroundColor: background }]}>
+      <Backdrop
+        fill={{
+          key: colors ? colors.dock.background : "card",
+          style: { backgroundColor: background },
+        }}
+      />
+      <OnWash colors={colors ? dockWash(colors) : null}>
+        <MiniPlayer />
+      </OnWash>
+      <DockProgress color={colors?.dock.accent ?? primary} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   dock: {
     position: "absolute",
-    left: 12,
-    right: 12,
-    height: FLOATING_DOCK_HEIGHT,
-    borderRadius: radii.xl,
-    borderCurve: "continuous",
+    left: FLOATING_DOCK_INSET,
+    right: FLOATING_DOCK_INSET,
+    height: sizes.dock,
+    borderRadius: radii.lg,
+    overflow: "hidden",
+    elevation: ELEVATION,
   },
 });

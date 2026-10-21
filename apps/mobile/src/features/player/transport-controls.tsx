@@ -1,32 +1,75 @@
 import { LOOP_MODE_MESSAGES } from "@infinitunes/core/playback-order";
 import { selectionAsync } from "expo-haptics";
 import { useTheme } from "expo-router";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 import { toast } from "sonner-native";
 
+import { Icon } from "~/components/ui/icon";
+import type { IconSizeProp } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { togglePlayback } from "~/playback/transport";
+import { useTokenColor } from "~/theme/use-palette";
 
-/** Play or pause; the mini player and the full player share it. */
-export function PlayPauseButton({ size = 28 }: { size?: number }) {
+import { useWashColors } from "./wash";
+
+/** Now Playing's play/pause shape (spec 2.10): a 72pt circle around a 32pt glyph. */
+const PROMINENT_EDGE = 72;
+
+function usePlayPause() {
   const playing = usePlaybackStatus((state) => state.playing);
+  return {
+    icon: playing
+      ? ({ ios: "pause.fill", android: "pause" } as const)
+      : ({ ios: "play.fill", android: "play_arrow" } as const),
+    label: playing ? "Pause" : "Play",
+  };
+}
+
+/** Play or pause as a bare glyph: the mini player's. */
+export function PlayPauseButton({ size = "lg" }: { size?: IconSizeProp }) {
+  const { icon, label } = usePlayPause();
   return (
     <IconButton
-      icon={
-        playing
-          ? { ios: "pause.fill", android: "pause" }
-          : { ios: "play.fill", android: "play_arrow" }
-      }
-      label={playing ? "Pause" : "Play"}
+      icon={icon}
+      label={label}
       onPress={togglePlayback}
       size={size}
     />
   );
 }
 
-export function NextTrackButton({ size = 24 }: { size?: number }) {
+/**
+ * Play or pause as a filled circle, Now Playing's main control: the wash's
+ * control colour on a wash (3:1 against it, its glyph 4.5:1), `primary`
+ * on the D1 palette.
+ */
+export function ProminentPlayPauseButton() {
+  const { icon, label } = usePlayPause();
+  const wash = useWashColors();
+  const primary = useTokenColor("primary");
+  const onPrimary = useTokenColor("primary-foreground");
+
+  return (
+    <Pressable
+      onPress={togglePlayback}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      className="items-center justify-center rounded-full active:opacity-80"
+      style={{
+        width: PROMINENT_EDGE,
+        height: PROMINENT_EDGE,
+        backgroundColor: wash?.control ?? primary,
+      }}
+      testID="play-pause-prominent"
+    >
+      <Icon name={icon} size="xl" color={wash?.onControl ?? onPrimary} />
+    </Pressable>
+  );
+}
+
+export function NextTrackButton({ size = "xl" }: { size?: IconSizeProp }) {
   return (
     <IconButton
       icon={{ ios: "forward.fill", android: "skip_next" }}
@@ -49,9 +92,19 @@ const REPEAT_ICONS = {
   track: { ios: "repeat.1", android: "repeat_one_on" },
 } as const;
 
-/** The full player's row: shuffle, previous, play/pause, next, repeat. */
-export function TransportControls() {
+/**
+ * A toggle's tint: on a wash, `accent` when on and `muted` when off; on the
+ * D1 palette `primary` when on and the default foreground when off.
+ */
+function useToggleColor() {
   const { colors } = useTheme();
+  const wash = useWashColors();
+  return (on: boolean) => (on ? (wash?.accent ?? colors.primary) : wash?.muted);
+}
+
+/** Now Playing's row: shuffle, previous, play/pause, next, repeat. */
+export function TransportControls() {
+  const toggleColor = useToggleColor();
   const shuffle = usePlayer((state) => state.shuffle);
   const repeat = usePlayer((state) => state.repeat);
   const { toggleShuffle, skipToPrevious, cycleRepeat } = playerStore.getState();
@@ -59,10 +112,11 @@ export function TransportControls() {
   return (
     <View className="flex-row items-center justify-between">
       <IconButton
-        icon={{ ios: "shuffle", android: "shuffle" }}
+        icon={{ ios: "shuffle", android: shuffle ? "shuffle_on" : "shuffle" }}
         label="Shuffle"
+        size="md"
         selected={shuffle}
-        color={shuffle ? colors.primary : undefined}
+        color={toggleColor(shuffle)}
         onPress={() => {
           void selectionAsync();
           toggleShuffle();
@@ -72,15 +126,16 @@ export function TransportControls() {
         icon={{ ios: "backward.fill", android: "skip_previous" }}
         label="Previous track"
         onPress={skipToPrevious}
-        size={30}
+        size="xl"
       />
-      <PlayPauseButton size={44} />
-      <NextTrackButton size={30} />
+      <ProminentPlayPauseButton />
+      <NextTrackButton size="xl" />
       <IconButton
         icon={REPEAT_ICONS[repeat]}
         label={REPEAT_LABELS[repeat]}
+        size="md"
         selected={repeat !== "off"}
-        color={repeat === "off" ? undefined : colors.primary}
+        color={toggleColor(repeat !== "off")}
         onPress={() => {
           void selectionAsync();
           toast(LOOP_MODE_MESSAGES[cycleRepeat()]);

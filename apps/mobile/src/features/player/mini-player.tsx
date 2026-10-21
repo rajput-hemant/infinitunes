@@ -4,25 +4,27 @@ import { Pressable, View } from "react-native";
 
 import { Artwork } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
-import { Text } from "~/components/ui/text";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
-import { radii } from "~/theme/tokens";
+import { art, maxFontScale, radii } from "~/theme/tokens";
 
 import { RadioBadge } from "./radio-badge";
 import { NextTrackButton, PlayPauseButton } from "./transport-controls";
+import { WashText } from "./wash";
 
-const ARTWORK_SIZE = 36;
-
-/**
- * The dock and the tab bar accessory have a fixed height, so the text may
- * grow only this far; the full player has no such limit.
- */
-const MAX_FONT_SCALE = 1.3;
+/** The "Not playing" placeholder: the mini artwork's frame. */
+const PLACEHOLDER = {
+  width: art.mini,
+  height: art.mini,
+  borderRadius: radii.sm,
+};
 
 /**
  * The compact player: the current track, play/pause and next, and a tap
  * target that opens the full player. It draws no background of its own; the
- * host (tab bar accessory or floating dock) supplies the platform material.
+ * host supplies it (the iOS 26 tab bar accessory's glass, or the floating
+ * dock, which on Android lays it on the artwork's tonal surface through
+ * `OnWash`). The dock and the accessory have a fixed height, so text scales
+ * only up to `maxFontScale.chrome`.
  */
 export function MiniPlayer() {
   const router = useRouter();
@@ -34,7 +36,7 @@ export function MiniPlayer() {
   };
 
   return (
-    <View className="flex-1 flex-row items-center gap-1 pl-4 pr-2">
+    <View className="flex-1 flex-row items-center pl-4 pr-1">
       <Pressable
         onPress={openPlayer}
         accessibilityRole="button"
@@ -45,51 +47,46 @@ export function MiniPlayer() {
         className="flex-1 flex-row items-center gap-3"
       >
         {track ? (
-          <Artwork
-            image={track.image}
-            quality="medium"
-            style={{
-              width: ARTWORK_SIZE,
-              height: ARTWORK_SIZE,
-              borderRadius: radii.sm,
-            }}
-          />
+          <Artwork image={track.image} size="mini" />
         ) : (
-          <View className="size-9 items-center justify-center rounded-sm bg-muted">
+          <View
+            className="items-center justify-center bg-muted"
+            style={PLACEHOLDER}
+          >
             <Icon
               name={{ ios: "music.note", android: "music_note" }}
-              size={18}
+              size="sm"
             />
           </View>
         )}
         <View className="flex-1">
-          <Text
+          <WashText
             variant="subhead"
             numberOfLines={1}
-            maxFontSizeMultiplier={MAX_FONT_SCALE}
+            maxFontSizeMultiplier={maxFontScale.chrome}
           >
             {track?.name ?? "Not playing"}
-          </Text>
+          </WashText>
           {track ? (
-            <View className="flex-row items-center gap-1.5">
+            <View className="flex-row items-center gap-1">
               <RadioBadge />
-              <Text
+              <WashText
                 variant="caption"
                 tone="muted"
                 numberOfLines={1}
-                maxFontSizeMultiplier={MAX_FONT_SCALE}
+                maxFontSizeMultiplier={maxFontScale.chrome}
                 className="flex-1"
               >
                 {track.subtitle}
-              </Text>
+              </WashText>
             </View>
           ) : null}
         </View>
       </Pressable>
       {track ? (
         <>
-          <PlayPauseButton size={24} />
-          <NextTrackButton size={22} />
+          <PlayPauseButton size="lg" />
+          <NextTrackButton size="md" />
         </>
       ) : null}
     </View>

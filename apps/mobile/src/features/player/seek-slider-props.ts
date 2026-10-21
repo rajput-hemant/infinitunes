@@ -8,4 +8,10 @@ export type SeekSliderProps = {
   onScrub: (value: number) => void;
   /** The drag ended: seek to the last scrubbed value. */
   onScrubEnd: () => void;
+  /**
+   * Colours on an artwork wash: the played part and thumb (3:1 against the
+   * wash) and the unplayed track. iOS tints only the played part; its thumb
+   * and track stay the system's. Unset: the platform's own colours.
+   */
+  colors?: { active: string; inactive: string };
 };
