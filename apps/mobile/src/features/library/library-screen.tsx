@@ -1,16 +1,16 @@
 import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
-import { RefreshControl, View } from "react-native";
+import { RefreshControl } from "react-native";
 import { toast } from "sonner-native";
 
 import { ErrorState } from "~/components/error-state";
+import { ListRow } from "~/components/list-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
+import { SectionHeader } from "~/components/section-header";
 import { SongListSkeleton } from "~/components/skeletons";
-import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { useServerPlaylists } from "~/user-data/playlists";
 
-import { LibraryRow } from "./library-row";
 import { LIBRARY_SHORTCUTS } from "./library-shortcuts";
 import { PlaylistRow } from "./playlist-row";
 import { SignedInGate } from "./signed-in-gate";
@@ -26,13 +26,13 @@ function Playlists() {
 
   return (
     <>
-      <LibraryRow
-        icon={{ ios: "plus", android: "add" }}
+      <ListRow
+        leading={{ icon: { ios: "plus", android: "add" } }}
         title="New Playlist"
         href="/me/new-playlist"
       />
       {playlists.length === 0 ? (
-        <Text tone="muted" className="px-page py-2">
+        <Text tone="muted" className="px-page">
           Collect songs you love into playlists you can play any time.
         </Text>
       ) : (
@@ -62,28 +62,15 @@ function Library() {
       }
     >
       {LIBRARY_SHORTCUTS.map(({ title, icon, href }) => (
-        <LibraryRow
+        <ListRow
           key={title}
-          icon={icon}
+          leading={{ icon }}
           title={title}
           href={href}
-          trailing={
-            <View className="size-ctl items-center justify-center">
-              <Icon
-                name={{ ios: "chevron.forward", android: "chevron_right" }}
-                size={14}
-              />
-            </View>
-          }
+          trailing={{ chevron: true }}
         />
       ))}
-      <Text
-        variant="title"
-        accessibilityRole="header"
-        className="px-page pb-1 pt-4"
-      >
-        Playlists
-      </Text>
+      <SectionHeader title="Playlists" />
       <Playlists />
     </ScreenScrollView>
   );

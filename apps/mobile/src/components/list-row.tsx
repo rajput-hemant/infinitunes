@@ -38,6 +38,11 @@ type ListRowProps = {
   onPress?: () => void;
   /** The current track: accent title, waveform in the leading slot. */
   selected?: boolean;
+  /**
+   * A choice in a multiple-choice list (languages): the row is a checkbox and
+   * shows a check mark at its end while on.
+   */
+  checked?: boolean;
   /** Defaults to the title, "Explicit" and the subtitle. */
   accessibilityLabel?: string;
   accessibilityHint?: string;
@@ -120,11 +125,13 @@ export function ListRow({
   href,
   onPress,
   selected = false,
+  checked,
   accessibilityLabel,
   accessibilityHint,
   accessibilityValue,
 }: ListRowProps) {
   const palette = usePalette();
+  const primary = useTokenColor("primary");
   const [pressed, setPressed] = useState(false);
   const chevron = isChevron(trailing);
   const controls = chevron ? null : trailing;
@@ -155,6 +162,13 @@ export function ListRow({
           </View>
         ) : null}
       </View>
+      {checked ? (
+        <Icon
+          name={{ ios: "checkmark", android: "check" }}
+          size="md"
+          color={primary}
+        />
+      ) : null}
       {chevron && Platform.OS === "ios" ? (
         <Icon
           name={{ ios: "chevron.right", android: "chevron_right" }}
@@ -189,11 +203,13 @@ export function ListRow({
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       android_ripple={{ color: palette["fill-2"], foreground: true }}
-      accessibilityRole={href ? "link" : "button"}
+      accessibilityRole={
+        checked !== undefined ? "checkbox" : href ? "link" : "button"
+      }
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       accessibilityValue={accessibilityValue}
-      accessibilityState={{ selected }}
+      accessibilityState={checked !== undefined ? { checked } : { selected }}
       className={bodyClass}
     >
       {body}

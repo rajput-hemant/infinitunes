@@ -1,9 +1,8 @@
 import { LANGUAGES, languageLabel } from "@infinitunes/types";
 import type { Lang } from "@infinitunes/types";
-import { useTheme } from "expo-router";
-import { Pressable, ScrollView, View } from "react-native";
+import { ScrollView } from "react-native";
 
-import { Icon } from "~/components/ui/icon";
+import { ListRow } from "~/components/list-row";
 import { Text } from "~/components/ui/text";
 import { usePreferences } from "~/lib/preferences";
 
@@ -26,7 +25,6 @@ function toggled(languages: readonly Lang[], lang: Lang): Lang[] {
  * once; no selection is the catalog's default.
  */
 export function LanguagesScreen() {
-  const { colors } = useTheme();
   const languages = usePreferences((preferences) => preferences.languages);
   const setLanguages = usePreferences(
     (preferences) => preferences.setLanguages,
@@ -37,29 +35,14 @@ export function LanguagesScreen() {
       <Text tone="muted" className="px-page pb-2 pt-3">
         Pick the languages you want on Home, Charts and New Releases.
       </Text>
-      {LANGUAGES.map((lang) => {
-        const selected = languages.includes(lang);
-        return (
-          <Pressable
-            key={lang}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: selected }}
-            onPress={() => setLanguages(toggled(languages, lang))}
-            className="min-h-row flex-row items-center justify-between px-page py-1 active:opacity-70"
-          >
-            <Text>{languageLabel(lang)}</Text>
-            {selected ? (
-              <Icon
-                name={{ ios: "checkmark", android: "check" }}
-                size={18}
-                color={colors.primary}
-              />
-            ) : (
-              <View />
-            )}
-          </Pressable>
-        );
-      })}
+      {LANGUAGES.map((lang) => (
+        <ListRow
+          key={lang}
+          title={languageLabel(lang)}
+          checked={languages.includes(lang)}
+          onPress={() => setLanguages(toggled(languages, lang))}
+        />
+      ))}
     </ScrollView>
   );
 }

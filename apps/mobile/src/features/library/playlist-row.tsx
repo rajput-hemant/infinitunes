@@ -1,9 +1,9 @@
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 
+import { ListRow } from "~/components/list-row";
 import { MenuTrigger } from "~/components/menu-trigger";
 
 import { confirmDeletePlaylist } from "./confirm-delete-playlist";
-import { LibraryRow } from "./library-row";
 import { PlaylistMenu } from "./playlist-menu";
 import { SwipeableRow } from "./swipeable-row";
 
@@ -12,13 +12,13 @@ function songCount(count: number): string {
 }
 
 /**
- * One of the listener's playlists. A playlist being created is dimmed and
- * cannot be opened until the server has given it an id.
+ * One of the listener's playlists. A playlist being created is a dimmed,
+ * labelled row (not a disabled button) until the server has given it an id.
  */
 export function PlaylistRow({ playlist }: { playlist: PlaylistView }) {
   const row = (
-    <LibraryRow
-      icon={{ ios: "music.note.list", android: "queue_music" }}
+    <ListRow
+      leading={{ icon: { ios: "music.note.list", android: "queue_music" } }}
       title={playlist.name}
       subtitle={
         playlist.pending ? "Creating…" : songCount(playlist.songs.length)

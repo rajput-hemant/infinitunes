@@ -57,6 +57,17 @@ describe("ListRow", () => {
     expect(row).toHaveProp("className", expect.stringContaining("opacity-50"));
   });
 
+  it("is a checkbox when it is one choice of many", async () => {
+    const onPress = jest.fn();
+    await renderScreen(<ListRow title="Hindi" checked onPress={onPress} />);
+
+    const row = screen.getByRole("checkbox", { name: "Hindi" });
+    expect(row).toBeChecked();
+    await fireEvent.press(row);
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
   it("numbers a track", async () => {
     await renderScreen(
       <ListRow title="Song" leading={{ index: 3 }} onPress={jest.fn()} />,

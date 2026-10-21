@@ -143,9 +143,14 @@ describe("creating a playlist", () => {
     expect(router.getPathname()).toBe("/");
     expect(screen.getByText("Weekend")).toBeOnTheScreen();
     expect(screen.getByText("Creating…")).toBeOnTheScreen();
+    // A labelled view, never a disabled button (it has no screen yet).
+    expect(screen.getByLabelText("Weekend, Creating…")).toBeOnTheScreen();
     expect(
-      screen.getByRole("text", { name: "Weekend, Creating…" }),
-    ).toBeDisabled();
+      screen.queryByRole("link", { name: /^Weekend/ }),
+    ).not.toBeOnTheScreen();
+    expect(
+      screen.queryByRole("button", { name: /^Weekend/ }),
+    ).not.toBeOnTheScreen();
 
     await act(async () =>
       write.resolve(userPlaylist({ id: "pl-9", name: "Weekend" })),

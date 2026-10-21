@@ -1,10 +1,15 @@
 import { FlashList } from "@shopify/flash-list";
 import { Stack } from "expo-router";
-import { useWindowDimensions, View } from "react-native";
+import { View } from "react-native";
 
 import { MediaCard } from "~/components/media-card";
 import { ShelfSkeleton } from "~/components/skeletons";
 import { Text } from "~/components/ui/text";
+import {
+  GRID_COLUMNS,
+  GRID_GAP,
+  useGridCardWidth,
+} from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { sizes } from "~/theme/tokens";
 
@@ -16,19 +21,18 @@ import {
 import { SignedInGate } from "./signed-in-gate";
 import { useLikedCollection } from "./use-liked-collection";
 
-const COLUMNS = 2;
-const COLUMN_GAP = 12;
+/** Each cell carries half the gap on every side, so the content pads the rest of the gutter. */
+const CELL = { padding: GRID_GAP / 2 };
 
 function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
   const { title, emptyMessage, icon } = LIKED_COLLECTIONS[kind];
   const list = useLikedCollection(kind);
-  const { width } = useWindowDimensions();
-  const cardWidth = (width - sizes.page * 2 - COLUMN_GAP) / COLUMNS;
+  const cardWidth = useGridCardWidth();
 
   return (
     <LibraryListView
       list={list}
-      skeleton={<ShelfSkeleton cards={COLUMNS} />}
+      skeleton={<ShelfSkeleton cards={GRID_COLUMNS} />}
       empty={{
         icon,
         title: `No ${title.toLowerCase()} yet`,
@@ -38,23 +42,16 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
       {({ items, missing, refreshing, refresh }) => (
         <FlashList
           data={items}
-          numColumns={COLUMNS}
+          numColumns={GRID_COLUMNS}
           keyExtractor={(card) => card.url}
-          renderItem={({ item, index }) => (
-            <View
-              className="pb-4"
-              style={{
-                // Half a gap on each side of the seam between the columns.
-                paddingLeft: index % COLUMNS === 0 ? 0 : COLUMN_GAP / 2,
-                paddingRight: index % COLUMNS === 0 ? COLUMN_GAP / 2 : 0,
-              }}
-            >
+          renderItem={({ item }) => (
+            <View style={CELL}>
               <MediaCard item={item} width={cardWidth} />
             </View>
           )}
           ListHeaderComponent={
             missing > 0 ? (
-              <Text variant="caption" tone="muted" className="pb-2">
+              <Text variant="caption" tone="muted" style={CELL}>
                 {missing === 1 ? "1 item" : `${missing} items`} couldn't load.
                 Pull down to try again.
               </Text>
@@ -62,8 +59,8 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
           }
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{
-            paddingHorizontal: sizes.page,
-            paddingTop: sizes.page,
+            paddingHorizontal: sizes.page - GRID_GAP / 2,
+            paddingTop: sizes.page - GRID_GAP / 2,
             paddingBottom: playerDockInset,
           }}
           refreshing={refreshing}
