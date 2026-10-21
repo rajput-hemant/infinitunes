@@ -1,14 +1,14 @@
 import type { MediaType } from "@infinitunes/types";
-import { Link } from "expo-router";
 import type { Href } from "expo-router";
 import { Pressable, View } from "react-native";
 
+import { cx } from "~/lib/class-names";
 import { art } from "~/theme/tokens";
 
 import {
-  CardMenu,
+  CardLink,
   cardAccessibilityActions,
-  cardMenuEntries,
+  useCardMenuEntries,
 } from "./card-menu";
 import { Artwork } from "./ui/artwork";
 import { Icon } from "./ui/icon";
@@ -45,19 +45,26 @@ export function QuickPickTile({
   accessibilityLabel = title,
   item,
 }: QuickPickTileProps) {
-  const entries = item ? cardMenuEntries({ ...item, name: title }) : [];
+  const entries = useCardMenuEntries(item);
   const style = { width, minHeight: art.pick };
+  // A tile without a screen dims only its picture, so the title keeps its contrast.
+  const dimmed = !href && !onPress;
   const content = (
     <>
       {"artwork" in leading ? (
-        <Artwork
-          image={leading.artwork}
-          size="pick"
-          style={{ borderRadius: 0 }}
-        />
+        <View className={dimmed ? "opacity-50" : undefined}>
+          <Artwork
+            image={leading.artwork}
+            size="pick"
+            style={{ borderRadius: 0 }}
+          />
+        </View>
       ) : (
         <View
-          className="items-center justify-center self-stretch bg-fill-2"
+          className={cx(
+            "items-center justify-center self-stretch bg-fill-2",
+            dimmed && "opacity-50",
+          )}
           style={{ width: art.pick }}
         >
           <Icon name={leading.icon} size="md" />
@@ -70,12 +77,12 @@ export function QuickPickTile({
   );
 
   // An item without a screen or an action is a labelled view, never a disabled button.
-  if (!href && !onPress) {
+  if (dimmed) {
     return (
       <View
         accessible
         accessibilityLabel={accessibilityLabel}
-        className={`${TILE_CLASS} opacity-50`}
+        className={TILE_CLASS}
         style={style}
       >
         {content}
@@ -83,30 +90,25 @@ export function QuickPickTile({
     );
   }
 
+  const pressable = (onLongPress?: () => void) => (
+    <Pressable
+      onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityRole={href ? "link" : "button"}
+      accessibilityLabel={accessibilityLabel}
+      {...cardAccessibilityActions(entries)}
+      className={`${TILE_CLASS} active:opacity-70`}
+      style={style}
+    >
+      {content}
+    </Pressable>
+  );
+
+  // An action tile (Surprise me) has no item, so no menu.
+  if (!href) return pressable();
   return (
-    <CardMenu name={title} entries={entries}>
-      {(onLongPress) => {
-        const pressable = (
-          <Pressable
-            onPress={onPress}
-            onLongPress={onLongPress}
-            accessibilityRole={href ? "link" : "button"}
-            accessibilityLabel={accessibilityLabel}
-            {...cardAccessibilityActions(entries)}
-            className={`${TILE_CLASS} active:opacity-70`}
-            style={style}
-          >
-            {content}
-          </Pressable>
-        );
-        return href ? (
-          <Link href={href} asChild>
-            {pressable}
-          </Link>
-        ) : (
-          pressable
-        );
-      }}
-    </CardMenu>
+    <CardLink href={href} name={title} entries={entries}>
+      {pressable}
+    </CardLink>
   );
 }

@@ -97,6 +97,8 @@ export type Queue = {
   duration: number;
   /** Highest stream quality the song has; absent when uncapped or unknown. */
   maxQuality?: StreamQuality;
+  /** Set only when upstream flags the track explicit (rows and the player show the "E" mark). */
+  explicit?: true;
 };
 
 type QualitiesMap = {

@@ -129,9 +129,11 @@ describe("HomeFeed", () => {
     // Cards have no Play button; their long-press menu offers Play.
     await fireEvent(
       await screen.findByRole("link", { name: /^Hindi Hits & More/ }),
-      "pressAction",
-      { nativeEvent: { event: "play" } },
+      "longPress",
     );
+    await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
+      nativeEvent: { event: "play" },
+    });
 
     await waitFor(() =>
       expect(playerStore.getState().radio?.stationId).toBe("session-42"),

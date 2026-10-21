@@ -54,7 +54,49 @@ describe("ListRow", () => {
 
     expect(screen.queryByRole("button")).toBeNull();
     const row = screen.getByLabelText("Pending, Creating");
-    expect(row).toHaveProp("className", expect.stringContaining("opacity-50"));
+    // Only the picture dims: dimmed text would fail contrast and read as disabled.
+    expect(row).not.toHaveProp(
+      "className",
+      expect.stringContaining("opacity-50"),
+    );
+  });
+
+  it("dims only the artwork of a row without a destination", async () => {
+    await renderScreen(
+      <ListRow
+        title="Pending"
+        leading={{ artwork: "https://c.saavncdn.com/a-150x150.jpg" }}
+      />,
+    );
+
+    const row = screen.getByLabelText("Pending");
+    expect(row).not.toHaveProp(
+      "className",
+      expect.stringContaining("opacity-50"),
+    );
+    expect(screen.getByTestId("list-row-art")).toHaveProp(
+      "className",
+      "opacity-50",
+    );
+    expect(screen.getByText("Pending")).not.toHaveProp(
+      "className",
+      expect.stringContaining("opacity"),
+    );
+  });
+
+  it("shows the pause mark for a paused current track", async () => {
+    await renderScreen(
+      <ListRow
+        title="Song"
+        leading={{ index: 3 }}
+        onPress={jest.fn()}
+        selected
+        paused
+      />,
+    );
+
+    expect(screen.getByTestId("now-paused")).toBeOnTheScreen();
+    expect(screen.queryByTestId("now-playing")).toBeNull();
   });
 
   it("is a checkbox when it is one choice of many", async () => {
@@ -100,7 +142,9 @@ describe("ListRow", () => {
     expect(
       screen.getByRole("button", { name: "Song, Explicit, Artist" }),
     ).toBeOnTheScreen();
-    expect(screen.getByText("E")).toBeOnTheScreen();
+    expect(
+      screen.getByText("E", { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
   });
 
   it("keeps the 64pt minimum and grows with Dynamic Type", async () => {

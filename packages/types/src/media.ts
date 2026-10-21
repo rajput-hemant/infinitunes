@@ -177,6 +177,7 @@ export function toQueue(item: Song | Episode): Queue {
     download_url: item.download_url ?? item.more_info.download_url ?? "",
     duration: Number(item.more_info.duration) || 0,
     maxQuality: maxQualityOf(item.more_info),
+    ...(isExplicit(item.explicit_content) ? { explicit: true } : {}),
   };
 }
 
