@@ -41,8 +41,10 @@ export default function RootLayout() {
             title: "Languages",
           }}
         />
+        {/* A double tap on Create reuses the open sheet instead of stacking a second. */}
         <Stack.Screen
           name="create-playlist"
+          dangerouslySingular
           options={{
             presentation: "formSheet",
             sheetAllowedDetents: [0.6, 1],

@@ -9,7 +9,12 @@ import { maxFontScale } from "~/theme/tokens";
 
 /** The account's initial in a circle (its profile), or Sign In while signed out. */
 function ProfileButton() {
-  const user = authClient.useSession().data?.user;
+  const { data, isPending } = authClient.useSession();
+  const user = data?.user;
+
+  // A cold start reads the stored session first: no "Sign in" flash for a
+  // signed-in listener (whose tap would open /login and bounce back to Home).
+  if (isPending) return <View className="size-touch" />;
 
   if (!user) {
     return (

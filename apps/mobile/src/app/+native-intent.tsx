@@ -32,7 +32,12 @@ function searchPath(): string {
  * search link onto this platform's search screen.
  */
 export function redirectSystemPath({ path }: { path: string }): string {
-  const pathname = pathnameOf(path);
-  if (pathname === "/search") return `${searchPath()}${suffixOf(path)}`;
+  const pathname = pathnameOf(path).replace(/\/+$/, "") || "/";
+  // Create is an action, not a screen: its link opens the New Playlist sheet.
+  if (pathname === "/create") return `/create-playlist${suffixOf(path)}`;
+  // The web's `/search/<type>?q=` too. The screen takes only `q` (its type
+  // chips are local state), so the type segment is dropped.
+  if (pathname === "/search" || /^\/search\/[^/]+$/.test(pathname))
+    return `${searchPath()}${suffixOf(path)}`;
   return legacyArtistPath(pathname) ?? path;
 }

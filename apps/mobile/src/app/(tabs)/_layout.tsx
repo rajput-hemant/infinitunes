@@ -19,7 +19,9 @@ import { useUserId } from "~/user-data/session";
  * native bar refuses the selection (`preventNativeSelection`, which does not
  * dim the item), the selected tab stays where it was, and the navigator still
  * emits `tabPress`, which opens the New Playlist sheet. `disabled` only stops
- * taps, so the `create` route exists and renders nothing for JS navigation.
+ * taps, so the `create` route exists; if JS navigation ever focuses it, it
+ * leaves again and opens the sheet (`create.tsx`), and `/create` links are
+ * rewritten to `/create-playlist` (`+native-intent`).
  *
  * Search is the iOS search tab (`role="search"`: iOS 26's separate trailing
  * button, a plain fifth tab before it). Android has no search tab: the root
@@ -54,7 +56,7 @@ export default function TabsLayout() {
         <NativeTabs.Trigger
           name="create"
           disabled
-          accessibilityLabel="New Playlist"
+          accessibilityLabel="Create playlist"
           listeners={{ tabPress: () => openCreatePlaylist(userId) }}
         >
           <NativeTabs.Trigger.Icon sf="plus.circle" md="add_circle" />
