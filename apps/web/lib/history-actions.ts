@@ -1,10 +1,9 @@
 "use server";
 
 import { getErrorCode } from "@infinitunes/core/error-code";
+import type { PlayedItem } from "@infinitunes/core/queue-position";
 
 import { api } from "./trpc/server";
-
-export type PlayedItem = { id: string; type: "song" | "episode" };
 
 /**
  * Record a track start in the signed-in user's listening history. Silently

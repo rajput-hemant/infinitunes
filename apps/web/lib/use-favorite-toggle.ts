@@ -1,6 +1,11 @@
 "use client";
 
 import {
+  FAVORITE_COPY,
+  isFavorited,
+  type FavoriteType,
+} from "@infinitunes/core/favorites";
+import {
   favoriteKey,
   toggleFavorite,
   useFavorite,
@@ -12,69 +17,6 @@ import { toast } from "sonner";
 import { unwrap } from "~/lib/action-result";
 import { addToFavorites, removeFromFavorites } from "~/lib/actions";
 import type { User } from "~/lib/auth";
-
-// Types the favorites table has a column for; other media types are not likable.
-export const FAVORITE_TYPES = [
-  "song",
-  "album",
-  "playlist",
-  "artist",
-  "show",
-] as const;
-
-export type FavoriteType = (typeof FAVORITE_TYPES)[number];
-
-export function isFavoriteType(type: string): type is FavoriteType {
-  return (FAVORITE_TYPES as readonly string[]).includes(type);
-}
-
-const removedDefault = (name: string) =>
-  `Successfully removed "${name}" from favorites!`;
-
-// Favorites column and toast copy per likable type.
-export const FAVORITE_COPY: Record<
-  FavoriteType,
-  {
-    key: keyof Pick<
-      Favorite,
-      "songs" | "albums" | "playlists" | "artists" | "podcasts"
-    >;
-    label: string;
-    removed: (name: string) => string;
-    added: (name: string) => string;
-  }
-> = {
-  song: {
-    key: "songs",
-    label: "Song",
-    removed: removedDefault,
-    added: (name) => `"${name}" song added to favorites!`,
-  },
-  album: {
-    key: "albums",
-    label: "Album",
-    removed: removedDefault,
-    added: (name) => `"${name}" album added to favorites!`,
-  },
-  playlist: {
-    key: "playlists",
-    label: "Playlist",
-    removed: (name) => `"${name}" playlist removed from favorites!`,
-    added: (name) => `"${name}" playlist added to favorites!`,
-  },
-  artist: {
-    key: "artists",
-    label: "Artist",
-    removed: removedDefault,
-    added: (name) => `"${name}" artist added to favorites!`,
-  },
-  show: {
-    key: "podcasts",
-    label: "Podcast",
-    removed: () => "Removed from favorites!",
-    added: () => "Added Podcast to favorites!",
-  },
-};
 
 type FavoriteToggleOptions = {
   type: FavoriteType;
@@ -92,7 +34,7 @@ type FavoriteToggleOptions = {
 export function useFavoriteToggle(options: FavoriteToggleOptions) {
   const { type, token, name, user, favourites } = options;
   const copy = FAVORITE_COPY[type];
-  const serverLiked = favourites?.[copy.key].includes(token) ?? false;
+  const serverLiked = isFavorited(favourites, type, token);
   const key = favoriteKey(type, token);
   const liked = useFavorite(key, serverLiked);
 

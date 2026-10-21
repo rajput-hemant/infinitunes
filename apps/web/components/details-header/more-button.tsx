@@ -1,5 +1,6 @@
 "use client";
 
+import { addSongsOptimistic } from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
 import type { MyPlaylist } from "@infinitunes/db/schema";
 import type {
@@ -58,7 +59,6 @@ import { unwrap } from "~/lib/action-result";
 import { addSongsToPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { addSongsOptimistic } from "~/lib/optimistic-playlists";
 import { trpc } from "~/lib/trpc/vanilla";
 import { cn } from "~/lib/utils";
 

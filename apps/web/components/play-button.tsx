@@ -1,5 +1,6 @@
 "use client";
 
+import { shuffled } from "@infinitunes/core/playback-order";
 import { findQueueIndex } from "@infinitunes/core/queue-position";
 import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
 import { toQueue } from "@infinitunes/types";
@@ -28,14 +29,6 @@ type PlayButtonProps = HTMLAttributes<HTMLButtonElement> & {
 
 function parseSort(value: string | null): Sort {
   return value === "asc" ? "asc" : "desc";
-}
-
-/** Every item once, in random order (sorting by a random key per item). */
-function shuffled<T>(items: T[]): T[] {
-  return items
-    .map((item) => ({ item, key: Math.random() }))
-    .sort((a, b) => a.key - b.key)
-    .map(({ item }) => item);
 }
 
 export function PlayButton(props: PlayButtonProps) {

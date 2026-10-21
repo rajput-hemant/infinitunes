@@ -1,17 +1,26 @@
+import { getImageSrc } from "@infinitunes/types";
 import { selectionAsync } from "expo-haptics";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
+import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
+import { radii } from "~/theme/tokens";
+
+import { NextTrackButton, PlayPauseButton } from "./transport-controls";
+
+const ARTWORK_SIZE = 36;
 
 /**
- * The compact player: what is playing, and a tap target that opens the full
- * player. It draws no background of its own; the host (tab bar accessory or
- * floating dock) supplies the platform material.
+ * The compact player: the current track, play/pause and next, and a tap
+ * target that opens the full player. It draws no background of its own; the
+ * host (tab bar accessory or floating dock) supplies the platform material.
  */
 export function MiniPlayer() {
   const router = useRouter();
+  const track = usePlayer(selectCurrentTrack);
 
   const openPlayer = () => {
     void selectionAsync();
@@ -19,19 +28,50 @@ export function MiniPlayer() {
   };
 
   return (
-    <Pressable
-      onPress={openPlayer}
-      accessibilityRole="button"
-      accessibilityLabel="Open player"
-      className="flex-1 flex-row items-center gap-3 px-4"
-    >
-      <View className="size-9 items-center justify-center rounded-sm bg-muted">
-        <Icon name={{ ios: "music.note", android: "music_note" }} size={18} />
-      </View>
-      <Text variant="subhead" numberOfLines={1} className="flex-1">
-        Not playing
-      </Text>
-      <Icon name={{ ios: "play.fill", android: "play_arrow" }} />
-    </Pressable>
+    <View className="flex-1 flex-row items-center gap-1 pl-4 pr-2">
+      <Pressable
+        onPress={openPlayer}
+        accessibilityRole="button"
+        accessibilityLabel={
+          track ? `Now playing ${track.name}, open player` : "Open player"
+        }
+        className="flex-1 flex-row items-center gap-3"
+      >
+        {track ? (
+          <Image
+            source={getImageSrc(track.image, "medium")}
+            style={{
+              width: ARTWORK_SIZE,
+              height: ARTWORK_SIZE,
+              borderRadius: radii.sm,
+            }}
+            accessibilityIgnoresInvertColors
+          />
+        ) : (
+          <View className="size-9 items-center justify-center rounded-sm bg-muted">
+            <Icon
+              name={{ ios: "music.note", android: "music_note" }}
+              size={18}
+            />
+          </View>
+        )}
+        <View className="flex-1">
+          <Text variant="subhead" numberOfLines={1}>
+            {track?.name ?? "Not playing"}
+          </Text>
+          {track ? (
+            <Text variant="caption" tone="muted" numberOfLines={1}>
+              {track.subtitle}
+            </Text>
+          ) : null}
+        </View>
+      </Pressable>
+      {track ? (
+        <>
+          <PlayPauseButton size={24} />
+          <NextTrackButton size={22} />
+        </>
+      ) : null}
+    </View>
   );
 }

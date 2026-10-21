@@ -29,6 +29,9 @@ const config: ExpoConfig = {
     "expo-router",
     "expo-secure-store",
     "expo-web-browser",
+    "expo-sharing",
+    "expo-localization",
+    "expo-sqlite",
     [
       "expo-audio",
       {

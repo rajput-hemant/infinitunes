@@ -46,12 +46,23 @@ type RawCardItem = {
   explicit_content?: string;
 };
 
+/** What a media card renders: decoded texts, the perma URL and raw artwork. */
+export type CardItem = {
+  id: string;
+  name: string;
+  url: string;
+  subtitle?: string;
+  type: MediaType;
+  image: string;
+  explicit?: string;
+};
+
 /**
  * Adapts a raw JioSaavn item (title/perma_url/explicit_content) to the
  * `SliderCard`/`SliderList` prop shape (name/url/explicit) - a client-only
  * presentational contract, not a wire shape.
  */
-export function toCardItem(item: RawCardItem) {
+export function toCardItem(item: RawCardItem): CardItem {
   return {
     id: item.id,
     name: decode(item.title),

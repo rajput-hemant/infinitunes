@@ -27,13 +27,19 @@
   "exports": {
     "./artist-pagination": "./src/artist-pagination.ts",
     "./error-code": "./src/error-code.ts",
+    "./favorites": "./src/favorites.ts",
     "./liked-songs": "./src/liked-songs.ts",
+    "./optimistic-owner": "./src/optimistic-owner.ts",
+    "./playback-order": "./src/playback-order.ts",
     "./queue-position": "./src/queue-position.ts",
     "./user-message": "./src/user-message.ts",
     "./validations": "./src/validations.ts",
     "./react/optimistic-favorite": "./src/react/optimistic-favorite.ts",
+    "./react/optimistic-playlists": "./src/react/optimistic-playlists.ts",
     "./react/position-store": "./src/react/position-store.ts",
     "./react/use-debounced-value": "./src/react/use-debounced-value.ts",
-    "./react/use-playhead": "./src/react/use-playhead.ts"
+    "./react/use-playhead": "./src/react/use-playhead.ts",
+    "./react/use-radio-refill": "./src/react/use-radio-refill.ts",
+    "./react/use-track-playback": "./src/react/use-track-playback.ts"
   }
 }
