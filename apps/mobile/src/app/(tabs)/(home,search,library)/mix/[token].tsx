@@ -1,12 +1,8 @@
-import { EmptyState } from "~/components/empty-state";
+import { useLocalSearchParams } from "expo-router";
 
-/** Route reserved for the mix screen; its screen agent replaces this body. */
-export default function MixScreen() {
-  return (
-    <EmptyState
-      icon={{ ios: "shuffle", android: "shuffle" }}
-      title="Mix"
-      message="This screen is coming soon."
-    />
-  );
+import { MixScreen } from "~/features/mix/mix-screen";
+
+export default function MixRoute() {
+  const { token } = useLocalSearchParams<"/mix/[token]">();
+  return <MixScreen token={token} />;
 }

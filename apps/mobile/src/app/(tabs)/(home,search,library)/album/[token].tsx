@@ -1,12 +1,8 @@
-import { EmptyState } from "~/components/empty-state";
+import { useLocalSearchParams } from "expo-router";
 
-/** Route reserved for the album screen; its screen agent replaces this body. */
-export default function AlbumScreen() {
-  return (
-    <EmptyState
-      icon={{ ios: "square.stack", android: "album" }}
-      title="Album"
-      message="This screen is coming soon."
-    />
-  );
+import { AlbumScreen } from "~/features/album/album-screen";
+
+export default function AlbumRoute() {
+  const { token } = useLocalSearchParams<"/album/[token]">();
+  return <AlbumScreen token={token} />;
 }

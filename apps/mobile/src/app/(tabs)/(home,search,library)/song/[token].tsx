@@ -1,12 +1,8 @@
-import { EmptyState } from "~/components/empty-state";
+import { useLocalSearchParams } from "expo-router";
 
-/** Route reserved for the song screen; its screen agent replaces this body. */
-export default function SongScreen() {
-  return (
-    <EmptyState
-      icon={{ ios: "music.note", android: "music_note" }}
-      title="Song"
-      message="This screen is coming soon."
-    />
-  );
+import { SongScreen } from "~/features/song/song-screen";
+
+export default function SongRoute() {
+  const { token } = useLocalSearchParams<"/song/[token]">();
+  return <SongScreen token={token} />;
 }
