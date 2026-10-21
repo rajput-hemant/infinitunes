@@ -1,24 +1,23 @@
+import {
+  rawShow,
+  rawSeason,
+  rawEpisode,
+  SHOW_TOKEN,
+} from "@infinitunes/types/fixtures";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
+import { procedure } from "~/test/trpc-mock";
 
 import { ShowScreen } from "./show-screen";
-import { rawEpisode, rawSeason, rawShow, SHOW_TOKEN } from "./test-fixtures";
-import { showAnswers } from "./test-trpc";
-
-jest.mock("~/lib/trpc", () => require("~/features/show/test-trpc"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/artist/test-skeleton"),
-);
 
 const initialPlayer = playerStore.getState();
 
 /** Episodes by `page`, one array per page; past the last page upstream answers `[]`. */
 function serveEpisodes(...pages: ReturnType<typeof rawEpisode>[][]) {
-  showAnswers.episodes.mockImplementation(async (input) => {
+  procedure("show.episodes").mockImplementation(async (input) => {
     const { page } = input as { page: number };
     return pages[page - 1] ?? [];
   });
@@ -53,13 +52,13 @@ function failure(code: string, message: string) {
 
 beforeEach(() => {
   playerStore.setState(initialPlayer, true);
-  showAnswers.details.mockResolvedValue(rawShow());
+  procedure("show.details").mockResolvedValue(rawShow());
   serveEpisodes([rawEpisode("9001"), rawEpisode("9002")], [rawEpisode("9003")]);
 });
 
 describe("ShowScreen", () => {
   it("shows a skeleton while the show loads", async () => {
-    showAnswers.details.mockReturnValue(new Promise(() => {}));
+    procedure("show.details").mockReturnValue(new Promise(() => {}));
     await renderShow();
 
     expect(
@@ -74,7 +73,9 @@ describe("ShowScreen", () => {
     expect(screen.getByText("2.3K Fans")).toBeOnTheScreen();
     expect(screen.getByRole("header", { name: "About" })).toBeOnTheScreen();
     expect(screen.getByText("Conversations with creators.")).toBeOnTheScreen();
-    expect(showAnswers.details).toHaveBeenCalledWith({ token: SHOW_TOKEN });
+    expect(procedure("show.details")).toHaveBeenCalledWith({
+      token: SHOW_TOKEN,
+    });
   });
 
   it("lists the latest season's episodes, newest first, by the show's numeric id", async () => {
@@ -82,7 +83,7 @@ describe("ShowScreen", () => {
 
     expect(await screen.findByText("Episode 9001 & more")).toBeOnTheScreen();
     expect(screen.getByText("Episode 9002 & more")).toBeOnTheScreen();
-    expect(showAnswers.episodes).toHaveBeenCalledWith({
+    expect(procedure("show.episodes")).toHaveBeenCalledWith({
       id: "5555",
       season: 2,
       page: 1,
@@ -91,7 +92,7 @@ describe("ShowScreen", () => {
   });
 
   it("switches season without losing the header", async () => {
-    showAnswers.episodes.mockImplementation(async (input) => {
+    procedure("show.episodes").mockImplementation(async (input) => {
       const { season } = input as { season: number };
       return season === 1 ? [rawEpisode("8001")] : [rawEpisode("9001")];
     });
@@ -105,7 +106,7 @@ describe("ShowScreen", () => {
     expect(
       screen.getByRole("header", { name: "The Ranveer Show & Friends" }),
     ).toBeOnTheScreen();
-    expect(showAnswers.episodes).toHaveBeenLastCalledWith({
+    expect(procedure("show.episodes")).toHaveBeenLastCalledWith({
       id: "5555",
       season: 1,
       page: 1,
@@ -120,7 +121,7 @@ describe("ShowScreen", () => {
     await choose("sort-menu", "asc");
 
     await screen.findByText("Episode 9001 & more");
-    expect(showAnswers.episodes).toHaveBeenLastCalledWith({
+    expect(procedure("show.episodes")).toHaveBeenLastCalledWith({
       id: "5555",
       season: 2,
       page: 1,
@@ -129,7 +130,9 @@ describe("ShowScreen", () => {
   });
 
   it("has no season picker for a single-season show", async () => {
-    showAnswers.details.mockResolvedValue(rawShow({ seasons: [rawSeason(2)] }));
+    procedure("show.details").mockResolvedValue(
+      rawShow({ seasons: [rawSeason(2)] }),
+    );
     await renderShow();
     await findTitle();
 
@@ -145,7 +148,7 @@ describe("ShowScreen", () => {
       fireEvent(screen.getByTestId("show-list"), "endReached");
     });
     expect(await screen.findByText("Episode 9003 & more")).toBeOnTheScreen();
-    expect(showAnswers.episodes).toHaveBeenLastCalledWith(
+    expect(procedure("show.episodes")).toHaveBeenLastCalledWith(
       expect.objectContaining({ page: 2 }),
     );
 
@@ -153,7 +156,7 @@ describe("ShowScreen", () => {
     await act(async () => {
       fireEvent(screen.getByTestId("show-list"), "endReached");
     });
-    expect(showAnswers.episodes).toHaveBeenCalledTimes(2);
+    expect(procedure("show.episodes")).toHaveBeenCalledTimes(2);
   });
 
   it("refreshes the show and its episodes on pull to refresh", async () => {
@@ -164,8 +167,12 @@ describe("ShowScreen", () => {
       fireEvent(screen.getByTestId("show-list"), "refresh");
     });
 
-    await waitFor(() => expect(showAnswers.details).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(showAnswers.episodes).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(procedure("show.details")).toHaveBeenCalledTimes(2),
+    );
+    await waitFor(() =>
+      expect(procedure("show.episodes")).toHaveBeenCalledTimes(2),
+    );
   });
 
   it("queues the episodes from the pressed row", async () => {
@@ -197,7 +204,7 @@ describe("ShowScreen", () => {
   });
 
   it("shows not found for an unknown show, without a retry", async () => {
-    showAnswers.details.mockRejectedValue(
+    procedure("show.details").mockRejectedValue(
       failure("NOT_FOUND", "No show found, please check the token"),
     );
     await renderShow();
@@ -207,7 +214,7 @@ describe("ShowScreen", () => {
   });
 
   it("offers a retry when loading fails", async () => {
-    showAnswers.details.mockRejectedValueOnce(
+    procedure("show.details").mockRejectedValueOnce(
       failure("BAD_REQUEST", "Please provide show token"),
     );
     await renderShow();

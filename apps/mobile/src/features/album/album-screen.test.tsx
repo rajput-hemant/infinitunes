@@ -1,18 +1,12 @@
 import type { Album } from "@infinitunes/types";
-import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
+import { rawSong, rawAlbum } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 
-import { catalog, notFoundError } from "~/features/song/catalog-mock";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { AlbumScreen } from "./album-screen";
-
-jest.mock("~/lib/trpc", () => require("~/features/song/catalog-mock"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/song/skeleton-mock"),
-);
 
 const FIRST = rawSong({ id: "song-1", title: "Teer &amp; Tukka" });
 const SECOND = rawSong({ id: "song-2", title: "Second Song" });
@@ -45,17 +39,17 @@ const initial = playerStore.getState();
 
 beforeEach(() => {
   playerStore.setState(initial, true);
-  catalog.album.details.mockResolvedValue(album());
-  catalog.album.recommendations.mockResolvedValue([
+  procedure("album.details").mockResolvedValue(album());
+  procedure("album.recommendations").mockResolvedValue([
     rawAlbum({ id: "9", title: "Related Album" }),
   ]);
-  catalog.album.sameYear.mockResolvedValue([]);
-  catalog.get.trending.mockResolvedValue([]);
+  procedure("album.sameYear").mockResolvedValue([]);
+  procedure("get.trending").mockResolvedValue([]);
 });
 
 describe("AlbumScreen", () => {
   it("shows the skeleton while the album loads", async () => {
-    catalog.album.details.mockReturnValue(new Promise(() => {}));
+    procedure("album.details").mockReturnValue(new Promise(() => {}));
     await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
 
     // Header, song list and shelf each have a placeholder.
@@ -86,8 +80,8 @@ describe("AlbumScreen", () => {
     await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
     await screen.findByText("Udta Teer");
 
-    expect(catalog.album.sameYear).toHaveBeenCalledWith({ year: "2026" });
-    expect(catalog.album.recommendations).toHaveBeenCalledWith({
+    expect(procedure("album.sameYear")).toHaveBeenCalledWith({ year: "2026" });
+    expect(procedure("album.recommendations")).toHaveBeenCalledWith({
       id: "82064668",
     });
   });
@@ -112,7 +106,7 @@ describe("AlbumScreen", () => {
   });
 
   it("keeps the page when a secondary shelf fails", async () => {
-    catalog.album.recommendations.mockRejectedValue(new Error("upstream"));
+    procedure("album.recommendations").mockRejectedValue(new Error("upstream"));
     await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
 
     expect(await screen.findByText("Teer & Tukka")).toBeOnTheScreen();
@@ -122,7 +116,7 @@ describe("AlbumScreen", () => {
   });
 
   it("says so when the album has no songs", async () => {
-    catalog.album.details.mockResolvedValue(album({ list: "" }));
+    procedure("album.details").mockResolvedValue(album({ list: "" }));
     await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
 
     expect(await screen.findByText("No songs yet")).toBeOnTheScreen();
@@ -130,7 +124,7 @@ describe("AlbumScreen", () => {
   });
 
   it("offers a retry when the album fails to load", async () => {
-    catalog.album.details.mockRejectedValueOnce(new Error("boom"));
+    procedure("album.details").mockRejectedValueOnce(new Error("boom"));
     await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
 
     expect(await screen.findByText("Couldn't load this")).toBeOnTheScreen();
@@ -140,7 +134,7 @@ describe("AlbumScreen", () => {
   });
 
   it("shows not found for an album upstream does not have", async () => {
-    catalog.album.details.mockRejectedValue(notFoundError());
+    procedure("album.details").mockRejectedValue(trpcError("NOT_FOUND"));
     await renderScreen(<AlbumScreen token="nope" />);
 
     expect(

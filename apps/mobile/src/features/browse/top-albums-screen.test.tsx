@@ -1,16 +1,10 @@
 import { rawAlbum } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
-import { procedure, renderScreenAt } from "./test-support";
-import { TopAlbumsScreen } from "./top-albums-screen";
+import { renderScreen } from "~/test/render";
+import { procedure } from "~/test/trpc-mock";
 
-jest.mock(
-  "~/lib/trpc",
-  () => require("~/features/browse/test-support").trpcMock,
-);
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/browse/skeleton-mock"),
-);
+import { TopAlbumsScreen } from "./top-albums-screen";
 
 const topAlbums = procedure("get.topAlbums");
 
@@ -23,7 +17,7 @@ const page = (data: ReturnType<typeof rawAlbum>[], lastPage = true) => ({
 describe("TopAlbumsScreen", () => {
   it("shows a skeleton under the language chips while albums load", async () => {
     topAlbums.mockReturnValue(new Promise(() => {}));
-    await renderScreenAt(<TopAlbumsScreen />);
+    await renderScreen(<TopAlbumsScreen />);
 
     expect(screen.getAllByLabelText("Loading").length).toBeGreaterThan(0);
     expect(
@@ -35,7 +29,7 @@ describe("TopAlbumsScreen", () => {
     topAlbums.mockResolvedValue(
       page([rawAlbum(), rawAlbum({ id: "2", title: "Rock &amp; Roll" })]),
     );
-    await renderScreenAt(<TopAlbumsScreen />);
+    await renderScreen(<TopAlbumsScreen />);
 
     expect(await screen.findByText("Udta Teer")).toBeOnTheScreen();
     expect(screen.getByText("Rock & Roll")).toBeOnTheScreen();
@@ -49,7 +43,7 @@ describe("TopAlbumsScreen", () => {
 
   it("filters by the language in the URL and switches language from a chip", async () => {
     topAlbums.mockResolvedValue(page([rawAlbum()]));
-    const app = await renderScreenAt(<TopAlbumsScreen />, {
+    const app = await renderScreen(<TopAlbumsScreen />, {
       initialUrl: "/?lang=tamil",
     });
 
@@ -78,7 +72,7 @@ describe("TopAlbumsScreen", () => {
 
   it("ignores a language it does not offer", async () => {
     topAlbums.mockResolvedValue(page([rawAlbum()]));
-    await renderScreenAt(<TopAlbumsScreen />, { initialUrl: "/?lang=klingon" });
+    await renderScreen(<TopAlbumsScreen />, { initialUrl: "/?lang=klingon" });
 
     await screen.findByText("Udta Teer");
 
@@ -87,7 +81,7 @@ describe("TopAlbumsScreen", () => {
 
   it("says so when a language has no albums", async () => {
     topAlbums.mockResolvedValue(page([]));
-    await renderScreenAt(<TopAlbumsScreen />);
+    await renderScreen(<TopAlbumsScreen />);
 
     expect(await screen.findByText("No albums yet")).toBeOnTheScreen();
   });
@@ -95,7 +89,7 @@ describe("TopAlbumsScreen", () => {
   it("offers a retry after a failed load", async () => {
     topAlbums.mockRejectedValueOnce(new Error("upstream down"));
     topAlbums.mockResolvedValue(page([rawAlbum()]));
-    await renderScreenAt(<TopAlbumsScreen />);
+    await renderScreen(<TopAlbumsScreen />);
 
     await fireEvent.press(await screen.findByText("Try again"));
 

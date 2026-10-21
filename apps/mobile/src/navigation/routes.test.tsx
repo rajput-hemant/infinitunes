@@ -4,14 +4,6 @@ import { renderRouter } from "expo-router/testing-library";
 import { Pressable, Text } from "react-native";
 
 import { useOpenEntity } from "./use-open-entity";
-
-jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-// Native tabs render every tab; the Home feed's data is not under test here.
-jest.mock("~/features/home/trending-list", () => ({
-  TrendingList: () => null,
-}));
-
 const ARTIST_URL =
   "https://www.jiosaavn.com/artist/flipperachi-songs/LnMfdXjMGl0_";
 

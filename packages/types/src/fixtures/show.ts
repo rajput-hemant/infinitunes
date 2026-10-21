@@ -1,5 +1,5 @@
-import type { Episode, Season, Show, ShowDetails } from "@infinitunes/types";
-import { downloadLadder } from "@infinitunes/types/fixtures";
+import type { Episode, Season, Show, ShowDetails } from "../show";
+import { downloadLadder } from "./song";
 
 /**
  * Raw show payloads as upstream sends them: `show_details.type` is `"show"`,

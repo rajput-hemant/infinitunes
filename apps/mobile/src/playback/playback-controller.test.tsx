@@ -4,21 +4,12 @@ import { act, render } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
 import { audioModes, lastPlayer } from "~/test/expo-audio";
+import { signInAs } from "~/test/session-mock";
+import { procedure } from "~/test/trpc-mock";
 
 import { PlaybackController } from "./playback-controller";
 import { playerStore } from "./player-store";
 
-const mockRecord = jest.fn((_item: unknown) => Promise.resolve());
-
-jest.mock("~/lib/auth-client", () => ({
-  authClient: { getCookie: () => "infinitunes.session_token=abc" },
-}));
-jest.mock("~/lib/trpc", () => ({
-  trpcClient: {
-    history: { record: { mutate: (item: unknown) => mockRecord(item) } },
-    radio: { songs: { query: () => Promise.resolve([]) } },
-  },
-}));
 const songs = ["BSaNI3Yr", "Xy12AbCd"].map((id) => rawSong({ id }));
 const rows = songs.map(toSongRow);
 const ladder = (id: string, rate: number) =>
@@ -32,6 +23,8 @@ async function mountController() {
 }
 
 beforeEach(() => {
+  signInAs("listener-1");
+  procedure("radio.songs").mockResolvedValue([]);
   playerStore.setState(initial, true);
   lastPlayer().reset();
 });
@@ -63,7 +56,10 @@ describe("PlaybackController", () => {
 
     expect(player.loads).toEqual([ladder("BSaNI3Yr", 320)]);
     expect(player.playing).toBe(true);
-    expect(mockRecord).toHaveBeenCalledWith({ id: "BSaNI3Yr", type: "song" });
+    expect(procedure("history.record")).toHaveBeenCalledWith({
+      id: "BSaNI3Yr",
+      type: "song",
+    });
     expect(player.lockScreen).toEqual({
       active: true,
       metadata: {
@@ -140,7 +136,7 @@ describe("PlaybackController", () => {
     await act(async () => player.finishTrack());
 
     expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
-    expect(mockRecord).toHaveBeenLastCalledWith({
+    expect(procedure("history.record")).toHaveBeenLastCalledWith({
       id: "Xy12AbCd",
       type: "song",
     });

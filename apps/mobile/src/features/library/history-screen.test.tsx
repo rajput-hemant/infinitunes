@@ -1,25 +1,11 @@
 import { act, screen } from "@testing-library/react-native";
 
+import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
+import { procedure } from "~/test/trpc-mock";
+import { songNamed, catalogAnswering } from "~/test/user-library";
 
 import { HistoryScreen } from "./history-screen";
-import {
-  catalogAnswering,
-  songNamed,
-  trpcClient,
-} from "./library-test-support";
-import { renderLibrary } from "./render-library";
-
-jest.mock("~/lib/trpc", () => require("./library-test-support"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock(
-  "react-native-gesture-handler/ReanimatedSwipeable",
-  () => require("./library-ui-mocks").swipeable,
-);
-jest.mock(
-  "~/components/ui/skeleton",
-  () => require("./library-ui-mocks").skeleton,
-);
 
 const catalog = {
   a: songNamed("a", "Played Long Ago"),
@@ -29,25 +15,25 @@ const catalog = {
 
 beforeEach(async () => {
   await act(async () => signInAs("alice"));
-  trpcClient.history.list.query.mockResolvedValue([
+  procedure("history.list").mockResolvedValue([
     { id: "c", type: "song" },
     { id: "b", type: "song" },
     { id: "a", type: "song" },
   ]);
-  trpcClient.song.items.query.mockImplementation(catalogAnswering(catalog));
+  procedure("song.items").mockImplementation(catalogAnswering(catalog));
 });
 
 describe("HistoryScreen", () => {
   it("asks a signed-out listener to sign in", async () => {
     await act(async () => signInAs(null));
-    await renderLibrary({ index: HistoryScreen });
+    await renderStack({ index: HistoryScreen });
 
     expect(screen.getByRole("button", { name: "Sign in" })).toBeOnTheScreen();
-    expect(trpcClient.history.list.query).not.toHaveBeenCalled();
+    expect(procedure("history.list")).not.toHaveBeenCalled();
   });
 
   it("lists what was played, newest first", async () => {
-    await renderLibrary({ index: HistoryScreen });
+    await renderStack({ index: HistoryScreen });
 
     await screen.findByText("Played Just Now");
     const titles = screen
@@ -61,16 +47,16 @@ describe("HistoryScreen", () => {
   });
 
   it("says so when nothing was played yet", async () => {
-    trpcClient.history.list.query.mockResolvedValue([]);
-    await renderLibrary({ index: HistoryScreen });
+    procedure("history.list").mockResolvedValue([]);
+    await renderStack({ index: HistoryScreen });
 
     expect(await screen.findByText("Nothing played yet")).toBeOnTheScreen();
-    expect(trpcClient.song.items.query).not.toHaveBeenCalled();
+    expect(procedure("song.items")).not.toHaveBeenCalled();
   });
 
   it("shows an error when the history cannot be read", async () => {
-    trpcClient.history.list.query.mockRejectedValue(new Error("down"));
-    await renderLibrary({ index: HistoryScreen });
+    procedure("history.list").mockRejectedValue(new Error("down"));
+    await renderStack({ index: HistoryScreen });
 
     expect(
       await screen.findByRole("button", { name: "Try again" }),

@@ -1,10 +1,10 @@
 import { Children, isValidElement } from "react";
-import type { ReactElement, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Pressable, Text as NativeText, View } from "react-native";
 
 /**
- * `@expo/ui` for the settings tests (`jest.mock("@expo/ui", () =>
- * require("~/features/settings/expo-ui-mock"))`). Its real components are
+ * `@expo/ui` for screens that render its native lists (`jest.mock("@expo/ui", () =>
+ * require("~/test/expo-ui"))`). Its real components are
  * opaque native views in Jest, so these stand in with plain React Native
  * ones that keep the same props: rows are buttons, a picker lists its
  * options as buttons that report `selected`.
@@ -65,7 +65,7 @@ export const Picker = Object.assign(
     <View>
       {Children.map(children, (child) => {
         if (!isValidElement<PickerItemProps>(child)) return null;
-        const { label, value } = (child as ReactElement<PickerItemProps>).props;
+        const { label, value } = child.props;
         return (
           <Pressable
             accessibilityRole="menuitem"

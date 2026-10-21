@@ -1,10 +1,12 @@
-import type { Artist, ArtistSong, SimilarArtist } from "@infinitunes/types";
-import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
+import type { Artist, ArtistSong, SimilarArtist } from "../artist";
+import type { Label } from "../get";
+import { rawAlbum } from "./collections";
+import { rawSong } from "./song";
 
 /**
- * A raw `artist.details` payload shaped like the live one: `name` and
- * `artistId` (no `title`/`id`), `_150x150` artwork, a JSON-encoded `bio`,
- * and the per-tab `urls`. Overrides are shallow.
+ * Raw `artist.details` and `get.label` payloads shaped like the live ones:
+ * `name` and `artistId`/`labelId` (no `title`/`id`), `_150x150` artwork, an
+ * artist's JSON-encoded `bio`, and the per-tab `urls`. Overrides are shallow.
  */
 
 export const ARTIST_TOKEN = "LnMfdXjMGl0_";
@@ -138,5 +140,28 @@ export function artistAlbumsPage(ids: string[], lastPage = false) {
       last_page: lastPage,
       total: 99,
     },
+  };
+}
+
+export const LABEL_TOKEN = "pKJp4RENQb4_";
+
+export function rawLabel(overrides: Partial<Label> = {}): Label {
+  const songs = [
+    rawSong({ id: "BSaNI3Yr" }),
+    rawSong({ id: "second01", title: "Second Song" }),
+  ];
+  const albums = [rawAlbum()];
+  return {
+    labelId: "2203994",
+    name: "Outlaw Productions &amp; Co",
+    image: "https://c.saavncdn.com/labels/Outlaw_Productions_150x150.jpg",
+    topSongs: { songs, total: songs.length },
+    topAlbums: { albums, total: albums.length },
+    urls: {
+      albums: `https://www.jiosaavn.com/label/outlaw-productions-albums/${LABEL_TOKEN}`,
+      songs: `https://www.jiosaavn.com/label/outlaw-productions-songs/${LABEL_TOKEN}`,
+    },
+    availableLanguages: ["arabic"],
+    ...overrides,
   };
 }

@@ -1,18 +1,12 @@
+import { rawLabel, LABEL_TOKEN } from "@infinitunes/types/fixtures";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
+import { procedure } from "~/test/trpc-mock";
 
 import { LabelScreen } from "./label-screen";
-import { LABEL_TOKEN, rawLabel } from "./test-fixtures";
-import { labelAnswer } from "./test-trpc";
-
-jest.mock("~/lib/trpc", () => require("~/features/label/test-trpc"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/artist/test-skeleton"),
-);
 
 const initialPlayer = playerStore.getState();
 
@@ -46,12 +40,12 @@ function failure(code: string, message: string) {
 
 beforeEach(() => {
   playerStore.setState(initialPlayer, true);
-  labelAnswer.mockResolvedValue(rawLabel());
+  procedure("get.label").mockResolvedValue(rawLabel());
 });
 
 describe("LabelScreen", () => {
   it("shows a skeleton while the label loads", async () => {
-    labelAnswer.mockReturnValue(new Promise(() => {}));
+    procedure("get.label").mockReturnValue(new Promise(() => {}));
     await renderLabel();
 
     expect(
@@ -63,7 +57,7 @@ describe("LabelScreen", () => {
     await renderLabel();
     await findTitle();
 
-    expect(labelAnswer).toHaveBeenCalledWith({
+    expect(procedure("get.label")).toHaveBeenCalledWith({
       token: LABEL_TOKEN,
       page: 0,
       n_song: 50,
@@ -101,7 +95,7 @@ describe("LabelScreen", () => {
   });
 
   it("says so when a tab is empty", async () => {
-    labelAnswer.mockResolvedValue(
+    procedure("get.label").mockResolvedValue(
       rawLabel({ topSongs: { songs: [], total: 0 } }),
     );
     await renderLabel();
@@ -112,7 +106,7 @@ describe("LabelScreen", () => {
   });
 
   it("shows not found for an unknown label, without a retry", async () => {
-    labelAnswer.mockRejectedValue(
+    procedure("get.label").mockRejectedValue(
       failure("NOT_FOUND", "Failed to fetch label details"),
     );
     await renderLabel();
@@ -122,7 +116,7 @@ describe("LabelScreen", () => {
   });
 
   it("offers a retry when loading fails", async () => {
-    labelAnswer.mockRejectedValueOnce(
+    procedure("get.label").mockRejectedValueOnce(
       failure("BAD_REQUEST", "Please provide a token"),
     );
     await renderLabel();

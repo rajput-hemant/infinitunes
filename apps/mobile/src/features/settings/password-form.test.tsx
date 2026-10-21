@@ -2,11 +2,9 @@ import { fireEvent, screen } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
 import { renderScreen } from "~/test/render";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { PasswordForm } from "./password-form";
-import { trpcClient, trpcError } from "./trpc-mock";
-
-jest.mock("~/lib/trpc", () => require("~/features/settings/trpc-mock"));
 
 async function submit(current: string, next: string) {
   await fireEvent.changeText(
@@ -28,7 +26,7 @@ describe("PasswordForm", () => {
     );
 
     expect(screen.getAllByText("Password is Required")).toHaveLength(2);
-    expect(trpcClient.user.changePassword.mutate).not.toHaveBeenCalled();
+    expect(procedure("user.changePassword")).not.toHaveBeenCalled();
   });
 
   it("holds the new password to the same rules as sign-up", async () => {
@@ -39,7 +37,7 @@ describe("PasswordForm", () => {
     expect(
       screen.getByText("Password must contain at least one uppercase letter."),
     ).toBeOnTheScreen();
-    expect(trpcClient.user.changePassword.mutate).not.toHaveBeenCalled();
+    expect(procedure("user.changePassword")).not.toHaveBeenCalled();
   });
 
   it("changes the password", async () => {
@@ -47,7 +45,7 @@ describe("PasswordForm", () => {
 
     await submit("Old#Secret1", "New#Secret2");
 
-    expect(trpcClient.user.changePassword.mutate).toHaveBeenCalledWith({
+    expect(procedure("user.changePassword")).toHaveBeenCalledWith({
       password: "Old#Secret1",
       newPassword: "New#Secret2",
     });
@@ -56,8 +54,8 @@ describe("PasswordForm", () => {
 
   it("shows the server's message for a wrong current password", async () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
-    trpcClient.user.changePassword.mutate.mockRejectedValueOnce(
-      trpcError("Current password is incorrect", "BAD_REQUEST"),
+    procedure("user.changePassword").mockRejectedValueOnce(
+      trpcError("BAD_REQUEST", "Current password is incorrect"),
     );
     await renderScreen(<PasswordForm />);
 

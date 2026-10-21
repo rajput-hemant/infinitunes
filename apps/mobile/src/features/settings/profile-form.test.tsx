@@ -1,16 +1,11 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
-import { authClient } from "~/features/auth/auth-client-mock";
 import { renderScreen } from "~/test/render";
+import { authClient } from "~/test/session-mock";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { ProfileForm } from "./profile-form";
-import { trpcClient, trpcError } from "./trpc-mock";
-
-jest.mock("~/lib/auth-client", () =>
-  require("~/features/auth/auth-client-mock"),
-);
-jest.mock("~/lib/trpc", () => require("~/features/settings/trpc-mock"));
 
 const user = { name: "Listener", email: "listener@example.com" };
 const save = () => screen.getByRole("button", { name: "Save profile" });
@@ -33,7 +28,7 @@ describe("ProfileForm", () => {
     await fireEvent.press(save());
 
     expect(screen.getByText("Name is Required")).toBeOnTheScreen();
-    expect(trpcClient.user.updateUser.mutate).not.toHaveBeenCalled();
+    expect(procedure("user.updateUser")).not.toHaveBeenCalled();
   });
 
   it("saves a new name without touching the email, then refreshes the session", async () => {
@@ -42,7 +37,7 @@ describe("ProfileForm", () => {
     await fireEvent.changeText(screen.getByLabelText("Name"), "DJ Listener");
     await fireEvent.press(save());
 
-    expect(trpcClient.user.updateUser.mutate).toHaveBeenCalledWith({
+    expect(procedure("user.updateUser")).toHaveBeenCalledWith({
       name: "DJ Listener",
     });
     expect(toast.success).toHaveBeenCalledWith("Profile Updated!");
@@ -62,7 +57,7 @@ describe("ProfileForm", () => {
     );
     await fireEvent.press(save());
 
-    expect(trpcClient.user.updateUser.mutate).toHaveBeenCalledWith({
+    expect(procedure("user.updateUser")).toHaveBeenCalledWith({
       name: "Listener",
       email: "new@example.com",
       currentPassword: "Secret#123",
@@ -76,13 +71,13 @@ describe("ProfileForm", () => {
     await fireEvent.press(save());
 
     expect(screen.getByText("Please enter a valid email")).toBeOnTheScreen();
-    expect(trpcClient.user.updateUser.mutate).not.toHaveBeenCalled();
+    expect(procedure("user.updateUser")).not.toHaveBeenCalled();
   });
 
   it("shows the server's message when the email is taken", async () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
-    trpcClient.user.updateUser.mutate.mockRejectedValueOnce(
-      trpcError("That email is already in use", "CONFLICT"),
+    procedure("user.updateUser").mockRejectedValueOnce(
+      trpcError("CONFLICT", "That email is already in use"),
     );
     await renderScreen(<ProfileForm user={user} />);
 
@@ -99,8 +94,8 @@ describe("ProfileForm", () => {
 
   it("hides an upstream fault behind generic copy", async () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
-    trpcClient.user.updateUser.mutate.mockRejectedValueOnce(
-      trpcError('relation "user" does not exist', "INTERNAL_SERVER_ERROR"),
+    procedure("user.updateUser").mockRejectedValueOnce(
+      trpcError("INTERNAL_SERVER_ERROR", 'relation "user" does not exist'),
     );
     await renderScreen(<ProfileForm user={user} />);
 

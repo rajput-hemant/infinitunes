@@ -1,19 +1,15 @@
+import type { TopShow } from "@infinitunes/types";
+import { rawPlaylist } from "@infinitunes/types/fixtures";
 import { screen } from "@testing-library/react-native";
 
+import { renderScreen } from "~/test/render";
+import { procedure } from "~/test/trpc-mock";
+
 import { FeaturedPlaylistsScreen } from "./featured-playlists-screen";
-import { procedure, rawPlaylist, renderScreenAt } from "./test-support";
 import { TopArtistsScreen } from "./top-artists-screen";
 import { TopPodcastsScreen } from "./top-podcasts-screen";
 
-jest.mock(
-  "~/lib/trpc",
-  () => require("~/features/browse/test-support").trpcMock,
-);
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/browse/skeleton-mock"),
-);
-
-const show = {
+const show: TopShow = {
   id: "show-1",
   title: "The &amp; Podcast",
   subtitle: "Hosted by Ada",
@@ -37,11 +33,11 @@ describe("FeaturedPlaylistsScreen", () => {
       last_page: true,
       data: [rawPlaylist()],
     });
-    await renderScreenAt(<FeaturedPlaylistsScreen />, {
+    await renderScreen(<FeaturedPlaylistsScreen />, {
       initialUrl: "/?lang=punjabi",
     });
 
-    expect(await screen.findByText("Best of Arijit")).toBeOnTheScreen();
+    expect(await screen.findByText("Hits & Misses")).toBeOnTheScreen();
     expect(procedure("get.featuredPlaylists")).toHaveBeenCalledWith({
       page: 1,
       n: 50,
@@ -55,7 +51,7 @@ describe("FeaturedPlaylistsScreen", () => {
       last_page: true,
       data: [],
     });
-    await renderScreenAt(<FeaturedPlaylistsScreen />);
+    await renderScreen(<FeaturedPlaylistsScreen />);
 
     expect(await screen.findByText("No playlists yet")).toBeOnTheScreen();
   });
@@ -74,7 +70,7 @@ describe("TopPodcastsScreen", () => {
         },
       ],
     });
-    await renderScreenAt(<TopPodcastsScreen />);
+    await renderScreen(<TopPodcastsScreen />);
 
     expect(
       await screen.findByRole("header", { name: "Trending This Week" }),
@@ -88,7 +84,7 @@ describe("TopPodcastsScreen", () => {
 
   it("offers a retry after a failed load", async () => {
     procedure("get.topShows").mockRejectedValue(new Error("upstream down"));
-    await renderScreenAt(<TopPodcastsScreen />);
+    await renderScreen(<TopPodcastsScreen />);
 
     expect(await screen.findByText("Try again")).toBeOnTheScreen();
   });
@@ -109,7 +105,7 @@ describe("TopArtistsScreen", () => {
         },
       ],
     });
-    await renderScreenAt(<TopArtistsScreen />);
+    await renderScreen(<TopArtistsScreen />);
 
     expect(await screen.findByText("Arijit Singh")).toBeOnTheScreen();
     expect(screen.getByText("12.5M Fans")).toBeOnTheScreen();
@@ -117,7 +113,7 @@ describe("TopArtistsScreen", () => {
 
   it("says so when there are no artists", async () => {
     procedure("get.topArtists").mockResolvedValue({ top_artists: [] });
-    await renderScreenAt(<TopArtistsScreen />);
+    await renderScreen(<TopArtistsScreen />);
 
     expect(await screen.findByText("No artists yet")).toBeOnTheScreen();
   });

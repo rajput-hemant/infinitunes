@@ -17,10 +17,9 @@ import { QuickPicks } from "./quick-picks";
 
 /**
  * The home feed: greeting and language chips, then the launch data's hero,
- * quick picks and shelves (trending among them). The name is kept because the
- * shared route test stubs the home screen's content by it.
+ * quick picks and shelves (trending among them).
  */
-export function TrendingList() {
+export function HomeFeed() {
   const home = useQuery({
     ...trpc.home.home.queryOptions({}),
     select: buildHomeModel,

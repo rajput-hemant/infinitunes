@@ -10,10 +10,6 @@ import { Share, Text } from "react-native";
 
 import { DetailScreen } from "./detail-screen";
 
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/song/skeleton-mock"),
-);
-
 type Page = { name: string };
 
 const answer = jest.fn(async (): Promise<Page | null> => ({

@@ -1,12 +1,7 @@
-import { authClient } from "~/features/auth/auth-client-mock";
 import { queryClient } from "~/lib/query-client";
+import { authClient } from "~/test/session-mock";
 
 import { signOut } from "./end-session";
-
-jest.mock("~/lib/auth-client", () =>
-  require("~/features/auth/auth-client-mock"),
-);
-jest.mock("~/lib/trpc", () => require("~/features/settings/trpc-mock"));
 
 const FAVORITES_KEY = [["user", "getUserFavorites"], { type: "query" }, "u1"];
 const PLAYLISTS_KEY = [["user", "getUserPlaylists"], { type: "query" }, "u1"];

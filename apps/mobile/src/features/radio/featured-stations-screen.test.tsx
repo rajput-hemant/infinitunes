@@ -1,22 +1,11 @@
+import { rawStation, rawStationDetails } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
-import {
-  procedure,
-  rawStation,
-  rawStationDetails,
-  renderScreenAt,
-} from "~/features/browse/test-support";
 import { playerStore } from "~/playback/player-store";
+import { renderScreen } from "~/test/render";
+import { procedure } from "~/test/trpc-mock";
 
 import { FeaturedStationsScreen } from "./featured-stations-screen";
-
-jest.mock(
-  "~/lib/trpc",
-  () => require("~/features/browse/test-support").trpcMock,
-);
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/browse/skeleton-mock"),
-);
 
 const featuredStations = procedure("get.featuredStations");
 
@@ -32,7 +21,7 @@ beforeEach(() => {
 describe("FeaturedStationsScreen", () => {
   it("shows a skeleton under the intro while stations load", async () => {
     featuredStations.mockReturnValue(new Promise(() => {}));
-    await renderScreenAt(<FeaturedStationsScreen />);
+    await renderScreen(<FeaturedStationsScreen />);
 
     expect(screen.getAllByLabelText("Loading").length).toBeGreaterThan(0);
     expect(
@@ -46,7 +35,7 @@ describe("FeaturedStationsScreen", () => {
       rawStation(),
       rawStation({ id: "station-2", title: "Punjabi Beats" }),
     ]);
-    await renderScreenAt(<FeaturedStationsScreen />);
+    await renderScreen(<FeaturedStationsScreen />);
 
     expect(await screen.findByText("Hindi Hits & More")).toBeOnTheScreen();
     expect(screen.getAllByText("Hindi Hits & More")).toHaveLength(1);
@@ -57,7 +46,7 @@ describe("FeaturedStationsScreen", () => {
 
   it("says so when there are no stations", async () => {
     featuredStations.mockResolvedValue([]);
-    await renderScreenAt(<FeaturedStationsScreen />);
+    await renderScreen(<FeaturedStationsScreen />);
 
     expect(await screen.findByText("No radio stations")).toBeOnTheScreen();
   });
@@ -65,7 +54,7 @@ describe("FeaturedStationsScreen", () => {
   it("offers a retry after a failed load", async () => {
     featuredStations.mockRejectedValueOnce(new Error("upstream down"));
     featuredStations.mockResolvedValue([rawStation()]);
-    await renderScreenAt(<FeaturedStationsScreen />);
+    await renderScreen(<FeaturedStationsScreen />);
 
     await fireEvent.press(await screen.findByText("Try again"));
 
@@ -74,7 +63,7 @@ describe("FeaturedStationsScreen", () => {
 
   it("opens a station's screen from its card", async () => {
     featuredStations.mockResolvedValue([rawStation()]);
-    const app = await renderScreenAt(<FeaturedStationsScreen />, {
+    const app = await renderScreen(<FeaturedStationsScreen />, {
       routes: { "radio/[name]/[token]": () => null },
     });
 
@@ -86,7 +75,7 @@ describe("FeaturedStationsScreen", () => {
   it("tunes in from the card's play button and starts a radio session", async () => {
     featuredStations.mockResolvedValue([rawStation()]);
     procedure("radio.stationDetails").mockResolvedValue(rawStationDetails());
-    await renderScreenAt(<FeaturedStationsScreen />);
+    await renderScreen(<FeaturedStationsScreen />);
 
     await fireEvent.press(
       await screen.findByRole("button", { name: "Play Hindi Hits & More" }),

@@ -3,7 +3,12 @@ import type {
   ArtistSearch,
   SearchReturnType,
 } from "@infinitunes/types";
-import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
+import {
+  rawAllSearch,
+  rawTopSearches,
+  rawSong,
+  rawAlbum,
+} from "@infinitunes/types/fixtures";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Stack } from "expo-router";
@@ -12,46 +17,11 @@ import type { ReactElement } from "react";
 import { Text } from "react-native";
 
 import { playerStore } from "~/playback/player-store";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { IdleSearch } from "./idle-search";
-import { allSearch, topSearches } from "./search-fixtures";
 import { searchHistoryStore } from "./search-history";
 import { SearchResults } from "./search-results";
-
-const mockTop = jest.fn();
-const mockAll = jest.fn();
-const mockByType = jest.fn();
-
-// A declaration, not a const: the factory runs while the imports load.
-function mockProcedure(name: string, run: (input: unknown) => unknown) {
-  return {
-    queryOptions: (input?: unknown) => ({
-      queryKey: [name, input],
-      queryFn: () => run(input),
-    }),
-    pathKey: () => [name],
-  };
-}
-
-jest.mock("~/lib/trpc", () => {
-  const base = require("~/test/trpc-mock");
-  return {
-    trpc: {
-      ...base.trpc,
-      search: {
-        top: mockProcedure("search.top", (input) => mockTop(input)),
-        all: mockProcedure("search.all", (input) => mockAll(input)),
-        byType: mockProcedure("search.byType", (input) => mockByType(input)),
-      },
-    },
-    trpcClient: {
-      ...base.trpcClient,
-      search: { byType: { query: (input: unknown) => mockByType(input) } },
-    },
-  };
-});
-jest.mock("~/components/ui/skeleton", () => require("./plain-skeleton"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
 
 const initialPlayer = playerStore.getState();
 
@@ -85,9 +55,7 @@ function page<T extends SearchReturnType["results"][number]>(
   return { total, start: 0, results };
 }
 
-const notFound = Object.assign(new Error("No search results found"), {
-  data: { code: "NOT_FOUND" },
-});
+const notFound = trpcError("NOT_FOUND", "No search results found");
 
 function renderResults(
   props: Partial<Parameters<typeof SearchResults>[0]> = {},
@@ -107,7 +75,7 @@ function renderResults(
 
 describe("combined search results", () => {
   it("keeps the chips on screen while loading", async () => {
-    mockAll.mockReturnValue(new Promise(() => {}));
+    procedure("search.all").mockReturnValue(new Promise(() => {}));
     await renderResults();
 
     expect(screen.getByText("chips")).toBeOnTheScreen();
@@ -116,7 +84,7 @@ describe("combined search results", () => {
   });
 
   it("groups the results, decoding titles", async () => {
-    mockAll.mockResolvedValue(allSearch);
+    procedure("search.all").mockResolvedValue(rawAllSearch);
     await renderResults();
 
     expect(await screen.findByText("Top Result")).toBeOnTheScreen();
@@ -124,11 +92,11 @@ describe("combined search results", () => {
     expect(screen.getByText("Udta Teer")).toBeOnTheScreen();
     expect(screen.getByRole("header", { name: "Albums" })).toBeOnTheScreen();
     expect(screen.queryByText("Playlists")).toBeNull();
-    expect(mockAll).toHaveBeenCalledWith({ q: "fa9la" });
+    expect(procedure("search.all")).toHaveBeenCalledWith({ q: "fa9la" });
   });
 
   it("opens a song's page instead of queueing it (it has no media link)", async () => {
-    mockAll.mockResolvedValue(allSearch);
+    procedure("search.all").mockResolvedValue(rawAllSearch);
     const onOpenResult = jest.fn();
     const router = await renderResults({ onOpenResult });
 
@@ -140,7 +108,7 @@ describe("combined search results", () => {
   });
 
   it("searches an artist by name, as they have no page of their own", async () => {
-    mockAll.mockResolvedValue(allSearch);
+    procedure("search.all").mockResolvedValue(rawAllSearch);
     const onSearchArtist = jest.fn();
     await renderResults({ onSearchArtist });
 
@@ -152,7 +120,7 @@ describe("combined search results", () => {
   });
 
   it("switches to the full list from See All", async () => {
-    mockAll.mockResolvedValue(allSearch);
+    procedure("search.all").mockResolvedValue(rawAllSearch);
     const onShowType = jest.fn();
     await renderResults({ onShowType });
 
@@ -164,13 +132,13 @@ describe("combined search results", () => {
   });
 
   it.each<[string, () => void]>([
-    ["null", () => mockAll.mockResolvedValue(null)],
-    ["NOT_FOUND", () => mockAll.mockRejectedValue(notFound)],
+    ["null", () => procedure("search.all").mockResolvedValue(null)],
+    ["NOT_FOUND", () => procedure("search.all").mockRejectedValue(notFound)],
     [
       "groups without items",
       () =>
-        mockAll.mockResolvedValue({
-          ...allSearch,
+        procedure("search.all").mockResolvedValue({
+          ...rawAllSearch,
           topquery: { position: 1, data: [] },
           songs: { position: 2, data: [] },
           albums: { position: 3, data: [] },
@@ -186,12 +154,12 @@ describe("combined search results", () => {
   });
 
   it("offers a retry when the search fails", async () => {
-    mockAll.mockRejectedValueOnce(new Error("offline"));
+    procedure("search.all").mockRejectedValueOnce(new Error("offline"));
     await renderResults();
 
     expect(await screen.findByText("Couldn't load this")).toBeOnTheScreen();
 
-    mockAll.mockResolvedValue(allSearch);
+    procedure("search.all").mockResolvedValue(rawAllSearch);
     await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
 
     expect(await screen.findByText("Top Result")).toBeOnTheScreen();
@@ -204,7 +172,7 @@ describe("results of one type", () => {
       rawSong(),
       rawSong({ id: "second", title: "Second &amp; Last" }),
     ];
-    mockByType.mockResolvedValue(page(songs));
+    procedure("search.byType").mockResolvedValue(page(songs));
     const onOpenResult = jest.fn();
     await renderResults({ type: "song", onOpenResult });
 
@@ -219,7 +187,7 @@ describe("results of one type", () => {
       "second",
     ]);
     expect(playerStore.getState().currentIndex).toBe(1);
-    expect(mockByType).toHaveBeenCalledWith({
+    expect(procedure("search.byType")).toHaveBeenCalledWith({
       q: "fa9la",
       type: "songs",
       page: 1,
@@ -228,13 +196,13 @@ describe("results of one type", () => {
   });
 
   it("opens an album from its card", async () => {
-    mockByType.mockResolvedValue(page([rawAlbum()]));
+    procedure("search.byType").mockResolvedValue(page([rawAlbum()]));
     const router = await renderResults({ type: "album" });
 
     await fireEvent.press(await screen.findByText("Udta Teer"));
 
     expect(router.getPathname()).toBe("/album/LHgqn,SRpyA_");
-    expect(mockByType).toHaveBeenCalledWith(
+    expect(procedure("search.byType")).toHaveBeenCalledWith(
       expect.objectContaining({ type: "albums" }),
     );
   });
@@ -253,7 +221,7 @@ describe("results of one type", () => {
       isRadioPresent: true,
       is_followed: false,
     };
-    mockByType.mockResolvedValue(page([artist]));
+    procedure("search.byType").mockResolvedValue(page([artist]));
     await renderResults({ type: "artist" });
 
     expect(await screen.findByText("Flipperachi")).toBeOnTheScreen();
@@ -263,7 +231,7 @@ describe("results of one type", () => {
   it.each(["song", "album", "playlist", "artist", "show"] as const)(
     "treats NOT_FOUND as no results for %s",
     async (type) => {
-      mockByType.mockRejectedValue(notFound);
+      procedure("search.byType").mockRejectedValue(notFound);
       await renderResults({ type, query: "zzzz" });
 
       expect(await screen.findByText("No results found")).toBeOnTheScreen();
@@ -272,12 +240,12 @@ describe("results of one type", () => {
   );
 
   it("offers a retry when the list fails to load", async () => {
-    mockByType.mockRejectedValueOnce(new Error("offline"));
+    procedure("search.byType").mockRejectedValueOnce(new Error("offline"));
     await renderResults({ type: "album" });
 
     expect(await screen.findByText("Couldn't load this")).toBeOnTheScreen();
 
-    mockByType.mockResolvedValue(page([rawAlbum()]));
+    procedure("search.byType").mockResolvedValue(page([rawAlbum()]));
     await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
 
     expect(await screen.findByText("Udta Teer")).toBeOnTheScreen();
@@ -286,7 +254,7 @@ describe("results of one type", () => {
 
 describe("idle search", () => {
   it("lists the top searches and opens one", async () => {
-    mockTop.mockResolvedValue(topSearches);
+    procedure("search.top").mockResolvedValue(rawTopSearches);
     const router = await renderSearch(
       <IdleSearch onSelectRecent={jest.fn()} />,
     );
@@ -297,16 +265,16 @@ describe("idle search", () => {
   });
 
   it("leaves out a top-searches list that fails", async () => {
-    mockTop.mockRejectedValue(new Error("offline"));
+    procedure("search.top").mockRejectedValue(new Error("offline"));
     await renderSearch(<IdleSearch onSelectRecent={jest.fn()} />);
 
-    await waitFor(() => expect(mockTop).toHaveBeenCalled());
+    await waitFor(() => expect(procedure("search.top")).toHaveBeenCalled());
     expect(screen.queryByText("Top Searches")).toBeNull();
     expect(screen.queryByText("Couldn't load this")).toBeNull();
   });
 
   it("searches a recent query again, and clears the history", async () => {
-    mockTop.mockResolvedValue([]);
+    procedure("search.top").mockResolvedValue([]);
     searchHistoryStore.getState().add("lofi");
     searchHistoryStore.getState().add("arijit");
     const onSelectRecent = jest.fn();

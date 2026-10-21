@@ -2,14 +2,9 @@ import { act, fireEvent, screen } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
 import { renderScreen } from "~/test/render";
+import { authClient, type AuthResult } from "~/test/session-mock";
 
-import { authClient } from "./auth-client-mock";
-import type { AuthResult } from "./auth-client-mock";
 import { LoginForm } from "./login-form";
-
-jest.mock("~/lib/auth-client", () =>
-  require("~/features/auth/auth-client-mock"),
-);
 
 async function fillAndSubmit(email: string, password: string) {
   await fireEvent.changeText(screen.getByLabelText("Email"), email);

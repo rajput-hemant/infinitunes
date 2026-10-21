@@ -1,13 +1,10 @@
-import { rawAlbum } from "@infinitunes/types/fixtures";
+import { rawChart, rawAlbum } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 
-import { BrowseScreen } from "./browse-screen";
-import { procedure, rawChart, renderScreenAt } from "./test-support";
+import { renderScreen } from "~/test/render";
+import { procedure } from "~/test/trpc-mock";
 
-jest.mock(
-  "~/lib/trpc",
-  () => require("~/features/browse/test-support").trpcMock,
-);
+import { BrowseScreen } from "./browse-screen";
 
 const emptyPage = { count: 0, last_page: true, data: [] };
 
@@ -19,7 +16,10 @@ beforeEach(() => {
   });
   procedure("get.charts").mockResolvedValue([rawChart()]);
   procedure("get.featuredPlaylists").mockResolvedValue(emptyPage);
-  procedure("get.topShows").mockResolvedValue(emptyPage);
+  procedure("get.topShows").mockResolvedValue({
+    ...emptyPage,
+    trendingPodcasts: [],
+  });
   procedure("get.topArtists").mockResolvedValue({ top_artists: [] });
   procedure("get.featuredStations").mockResolvedValue([]);
 });
@@ -33,7 +33,7 @@ const routes = {
 describe("BrowseScreen", () => {
   it("shows every category and language tile without waiting on the network", async () => {
     procedure("get.topAlbums").mockReturnValue(new Promise(() => {}));
-    await renderScreenAt(<BrowseScreen />, { routes });
+    await renderScreen(<BrowseScreen />, { routes });
 
     for (const label of [
       "Top Albums",
@@ -51,7 +51,7 @@ describe("BrowseScreen", () => {
   });
 
   it("opens a category's list", async () => {
-    const app = await renderScreenAt(<BrowseScreen />, { routes });
+    const app = await renderScreen(<BrowseScreen />, { routes });
 
     await fireEvent.press(screen.getByRole("link", { name: "Top Charts" }));
 
@@ -59,7 +59,7 @@ describe("BrowseScreen", () => {
   });
 
   it("opens a language's albums", async () => {
-    const app = await renderScreenAt(<BrowseScreen />, { routes });
+    const app = await renderScreen(<BrowseScreen />, { routes });
 
     await fireEvent.press(screen.getByRole("link", { name: "Tamil" }));
 

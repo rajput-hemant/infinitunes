@@ -1,18 +1,12 @@
-import type { Lyrics, Song, SongModules, SongObj } from "@infinitunes/types";
-import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
+import type { Song, SongModules, SongObj } from "@infinitunes/types";
+import { rawAlbum, rawLyrics, rawSong } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
-import { catalog, notFoundError } from "./catalog-mock";
 import { SongScreen } from "./song-screen";
-
-jest.mock("~/lib/trpc", () => require("~/features/song/catalog-mock"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/song/skeleton-mock"),
-);
 
 const SONG_ID = "BSaNI3Yr";
 
@@ -23,13 +17,6 @@ function song(moreInfo: Partial<Song["more_info"]> = {}): Song {
     more_info: { ...base.more_info, has_lyrics: "true", ...moreInfo },
   };
 }
-
-const LYRICS: Lyrics = {
-  lyrics: "First line<br>Second &amp; third<br/><b>bold</b>",
-  script_tracking_url: "",
-  lyrics_copyright: "Lyrics powered by <a href='x'>Musixmatch</a>",
-  snippet: "First line Second",
-};
 
 const section = (title: string) => ({
   title,
@@ -73,15 +60,15 @@ const initial = playerStore.getState();
 
 beforeEach(() => {
   playerStore.setState(initial, true);
-  catalog.song.details.mockResolvedValue(details());
-  catalog.song.recommendations.mockResolvedValue([
+  procedure("song.details").mockResolvedValue(details());
+  procedure("song.recommendations").mockResolvedValue([
     rawSong({ id: "reco-1", title: "Recommended One" }),
   ]);
-  catalog.get.trending.mockResolvedValue([]);
-  catalog.artist.topSongs.mockResolvedValue([]);
-  catalog.get.actorTopSongs.mockResolvedValue([]);
-  catalog.get.lyrics.mockResolvedValue(LYRICS);
-  catalog.album.details.mockResolvedValue(
+  procedure("get.trending").mockResolvedValue([]);
+  procedure("artist.topSongs").mockResolvedValue([]);
+  procedure("get.actorTopSongs").mockResolvedValue([]);
+  procedure("get.lyrics").mockResolvedValue(rawLyrics());
+  procedure("album.details").mockResolvedValue(
     rawAlbum({
       list: [song(), rawSong({ id: "album-2", title: "Album Neighbour" })],
     }),
@@ -90,7 +77,7 @@ beforeEach(() => {
 
 describe("SongScreen", () => {
   it("shows the skeleton while the song loads", async () => {
-    catalog.song.details.mockReturnValue(new Promise(() => {}));
+    procedure("song.details").mockReturnValue(new Promise(() => {}));
     await renderScreen(<SongScreen token="song-token" />);
 
     expect(screen.getAllByRole("progressbar")).toHaveLength(3);
@@ -162,22 +149,22 @@ describe("SongScreen", () => {
       screen.getByText("First line\nSecond & third\nbold"),
     ).toBeOnTheScreen();
     expect(screen.getByText("Lyrics powered by Musixmatch")).toBeOnTheScreen();
-    expect(catalog.get.lyrics).toHaveBeenCalledWith({ id: SONG_ID });
+    expect(procedure("get.lyrics")).toHaveBeenCalledWith({ id: SONG_ID });
   });
 
   it("only looks up lyrics for songs that have them", async () => {
-    catalog.song.details.mockResolvedValue(
+    procedure("song.details").mockResolvedValue(
       details({ songs: [song({ has_lyrics: "false" })] }),
     );
     await renderScreen(<SongScreen token="song-token" />);
     await screen.findByText("FA9LA & Friends");
 
-    expect(catalog.get.lyrics).not.toHaveBeenCalled();
+    expect(procedure("get.lyrics")).not.toHaveBeenCalled();
     expect(screen.queryByRole("header", { name: "Lyrics" })).toBeNull();
   });
 
   it("leaves out the lyrics section when upstream has none", async () => {
-    catalog.get.lyrics.mockResolvedValue(null);
+    procedure("get.lyrics").mockResolvedValue(null);
     await renderScreen(<SongScreen token="song-token" />);
     await screen.findByText("FA9LA & Friends");
 
@@ -186,24 +173,24 @@ describe("SongScreen", () => {
   });
 
   it("shows songs from the same artists, and same actors only for a starring artist", async () => {
-    catalog.artist.topSongs.mockResolvedValue([
+    procedure("artist.topSongs").mockResolvedValue([
       rawSong({ id: "same-artist", title: "Same Artist Song" }),
     ]);
     await renderScreen(<SongScreen token="song-token" />);
 
     expect(await screen.findByText("Same Artist Song")).toBeOnTheScreen();
-    expect(catalog.artist.topSongs).toHaveBeenCalledWith({
+    expect(procedure("artist.topSongs")).toHaveBeenCalledWith({
       artist_id: "2393548",
       song_id: SONG_ID,
       lang: "hindi",
     });
-    expect(catalog.get.actorTopSongs).not.toHaveBeenCalled();
+    expect(procedure("get.actorTopSongs")).not.toHaveBeenCalled();
   });
 
   it("asks for the same actors' songs when an artist is starring", async () => {
     const base = song();
     const [first] = base.more_info.artistMap.artists ?? [];
-    catalog.song.details.mockResolvedValue(
+    procedure("song.details").mockResolvedValue(
       details({
         songs: [
           song({
@@ -215,13 +202,13 @@ describe("SongScreen", () => {
         ],
       }),
     );
-    catalog.get.actorTopSongs.mockResolvedValue([
+    procedure("get.actorTopSongs").mockResolvedValue([
       rawSong({ id: "actor-song", title: "Actor Song" }),
     ]);
     await renderScreen(<SongScreen token="song-token" />);
 
     expect(await screen.findByText("Actor Song")).toBeOnTheScreen();
-    expect(catalog.get.actorTopSongs).toHaveBeenCalledWith({
+    expect(procedure("get.actorTopSongs")).toHaveBeenCalledWith({
       actor_id: "9",
       song_id: SONG_ID,
       lang: "hindi",
@@ -229,7 +216,7 @@ describe("SongScreen", () => {
   });
 
   it("keeps the page when the album lookup fails", async () => {
-    catalog.album.details.mockRejectedValue(new Error("upstream"));
+    procedure("album.details").mockRejectedValue(new Error("upstream"));
     await renderScreen(<SongScreen token="song-token" />);
 
     expect(await screen.findByText("FA9LA & Friends")).toBeOnTheScreen();
@@ -240,7 +227,7 @@ describe("SongScreen", () => {
   });
 
   it("shows not found when upstream answers no songs", async () => {
-    catalog.song.details.mockResolvedValue(details({ songs: [] }));
+    procedure("song.details").mockResolvedValue(details({ songs: [] }));
     await renderScreen(<SongScreen token="nope" />);
 
     expect(
@@ -250,7 +237,7 @@ describe("SongScreen", () => {
 
   it("shows not found when the token is an episode", async () => {
     const episode = Object.assign(song(), { type: "episode" });
-    catalog.song.details.mockResolvedValue(details({ songs: [episode] }));
+    procedure("song.details").mockResolvedValue(details({ songs: [episode] }));
     await renderScreen(<SongScreen token="episode-token" />);
 
     expect(
@@ -259,7 +246,7 @@ describe("SongScreen", () => {
   });
 
   it("shows not found for a token upstream rejects", async () => {
-    catalog.song.details.mockRejectedValue(notFoundError());
+    procedure("song.details").mockRejectedValue(trpcError("NOT_FOUND"));
     await renderScreen(<SongScreen token="nope" />);
 
     expect(
@@ -268,7 +255,7 @@ describe("SongScreen", () => {
   });
 
   it("offers a retry when the song fails to load", async () => {
-    catalog.song.details.mockRejectedValueOnce(new Error("boom"));
+    procedure("song.details").mockRejectedValueOnce(new Error("boom"));
     await renderScreen(<SongScreen token="song-token" />);
 
     expect(await screen.findByText("Couldn't load this")).toBeOnTheScreen();

@@ -1,18 +1,12 @@
 import { rawAlbum } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 
+import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
+import { procedure } from "~/test/trpc-mock";
+import { favoritesRow } from "~/test/user-library";
 
-import { favoriteLists, trpcClient } from "./library-test-support";
 import { LikedCollectionScreen } from "./liked-collection-screen";
-import { renderLibrary } from "./render-library";
-
-jest.mock("~/lib/trpc", () => require("./library-test-support"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock(
-  "~/components/ui/skeleton",
-  () => require("./library-ui-mocks").skeleton,
-);
 
 const albums = {
   "1": rawAlbum({ id: "1", title: "Udta Teer" }),
@@ -24,7 +18,7 @@ const albums = {
 };
 
 function renderLikedAlbums() {
-  return renderLibrary({
+  return renderStack({
     index: () => <LikedCollectionScreen kind="albums" />,
     "album/[token]": () => null,
   });
@@ -32,10 +26,10 @@ function renderLikedAlbums() {
 
 beforeEach(async () => {
   await act(async () => signInAs("alice"));
-  trpcClient.user.getUserFavorites.query.mockResolvedValue(
-    favoriteLists({ albums: ["1", "2"] }),
+  procedure("user.getUserFavorites").mockResolvedValue(
+    favoritesRow({ albums: ["1", "2"] }),
   );
-  trpcClient.album.details.query.mockImplementation(async ({ id }) => {
+  procedure("album.details").mockImplementation(async ({ id }) => {
     const album = albums[id as keyof typeof albums];
     if (!album) throw new Error("gone");
     return album;
@@ -64,15 +58,15 @@ describe("LikedCollectionScreen", () => {
   });
 
   it("says so when nothing is liked", async () => {
-    trpcClient.user.getUserFavorites.query.mockResolvedValue(undefined);
+    procedure("user.getUserFavorites").mockResolvedValue(undefined);
     await renderLikedAlbums();
 
     expect(await screen.findByText("No liked albums yet")).toBeOnTheScreen();
   });
 
   it("notes the albums that could not load", async () => {
-    trpcClient.user.getUserFavorites.query.mockResolvedValue(
-      favoriteLists({ albums: ["1", "2", "3"] }),
+    procedure("user.getUserFavorites").mockResolvedValue(
+      favoritesRow({ albums: ["1", "2", "3"] }),
     );
     await renderLikedAlbums();
 
@@ -81,7 +75,7 @@ describe("LikedCollectionScreen", () => {
   });
 
   it("shows an error when no album can be fetched", async () => {
-    trpcClient.album.details.query.mockRejectedValue(new Error("down"));
+    procedure("album.details").mockRejectedValue(new Error("down"));
     await renderLikedAlbums();
 
     expect(

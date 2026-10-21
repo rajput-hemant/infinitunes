@@ -6,28 +6,17 @@ import { Alert } from "react-native";
 import type { AlertButton } from "react-native";
 import { toast } from "sonner-native";
 
+import { renderStack, chooseMenuAction } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
-
+import { procedure } from "~/test/trpc-mock";
 import {
+  userPlaylist,
+  songNamed,
   catalogAnswering,
   deferred,
-  songNamed,
-  trpcClient,
-  userPlaylist,
-} from "./library-test-support";
-import { PlaylistScreen } from "./playlist-screen";
-import { chooseMenuAction, renderLibrary } from "./render-library";
+} from "~/test/user-library";
 
-jest.mock("~/lib/trpc", () => require("./library-test-support"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock(
-  "react-native-gesture-handler/ReanimatedSwipeable",
-  () => require("./library-ui-mocks").swipeable,
-);
-jest.mock(
-  "~/components/ui/skeleton",
-  () => require("./library-ui-mocks").skeleton,
-);
+import { PlaylistScreen } from "./playlist-screen";
 
 const catalog = {
   a: songNamed("a", "Opening Number"),
@@ -42,7 +31,7 @@ const playlist = userPlaylist({
 });
 
 function renderPlaylist(id = "pl-1") {
-  return renderLibrary(
+  return renderStack(
     { "me/playlist/[id]": PlaylistScreen },
     `/me/playlist/${id}`,
   );
@@ -50,8 +39,8 @@ function renderPlaylist(id = "pl-1") {
 
 beforeEach(async () => {
   await act(async () => signInAs("alice"));
-  trpcClient.user.getUserPlaylists.query.mockResolvedValue([playlist]);
-  trpcClient.song.details.query.mockImplementation(catalogAnswering(catalog));
+  procedure("user.getUserPlaylists").mockResolvedValue([playlist]);
+  procedure("song.details").mockImplementation(catalogAnswering(catalog));
 });
 
 afterEach(() => {
@@ -81,7 +70,7 @@ describe("PlaylistScreen", () => {
   });
 
   it("says so when the playlist is empty", async () => {
-    trpcClient.user.getUserPlaylists.query.mockResolvedValue([
+    procedure("user.getUserPlaylists").mockResolvedValue([
       { ...playlist, songs: [] },
     ]);
     await renderPlaylist();
@@ -97,7 +86,7 @@ describe("PlaylistScreen", () => {
 
   it("shows an error with a retry when the songs cannot load", async () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
-    trpcClient.song.details.query.mockRejectedValueOnce(new Error("down"));
+    procedure("song.details").mockRejectedValueOnce(new Error("down"));
     await renderPlaylist();
 
     await fireEvent.press(
@@ -111,9 +100,7 @@ describe("PlaylistScreen", () => {
 describe("removing a song", () => {
   it("hides it at once and removes it at its position", async () => {
     const write = deferred<ReturnType<typeof userPlaylist>>();
-    trpcClient.user.removeSongsFromPlaylist.mutate.mockReturnValue(
-      write.promise,
-    );
+    procedure("user.removeSongsFromPlaylist").mockReturnValue(write.promise);
     await renderPlaylist();
     await screen.findByText("Middle Song");
 
@@ -123,15 +110,13 @@ describe("removing a song", () => {
 
     expect(screen.queryByText("Middle Song")).toBeNull();
     expect(screen.getByText("Opening Number")).toBeOnTheScreen();
-    expect(trpcClient.user.removeSongsFromPlaylist.mutate).toHaveBeenCalledWith(
-      {
-        playlistId: "pl-1",
-        index: 1,
-        songId: "b",
-      },
-    );
+    expect(procedure("user.removeSongsFromPlaylist")).toHaveBeenCalledWith({
+      playlistId: "pl-1",
+      index: 1,
+      songId: "b",
+    });
 
-    trpcClient.user.getUserPlaylists.query.mockResolvedValue([
+    procedure("user.getUserPlaylists").mockResolvedValue([
       { ...playlist, songs: ["a", "c"] },
     ]);
     await act(async () => write.resolve(userPlaylist()));
@@ -147,17 +132,15 @@ describe("removing a song", () => {
     await chooseMenuAction("More actions for Closing Time", "remove");
 
     expect(screen.queryByText("Closing Time")).toBeNull();
-    expect(trpcClient.user.removeSongsFromPlaylist.mutate).toHaveBeenCalledWith(
-      {
-        playlistId: "pl-1",
-        index: 2,
-        songId: "c",
-      },
-    );
+    expect(procedure("user.removeSongsFromPlaylist")).toHaveBeenCalledWith({
+      playlistId: "pl-1",
+      index: 2,
+      songId: "c",
+    });
   });
 
   it("brings the song back with a toast when the write fails", async () => {
-    trpcClient.user.removeSongsFromPlaylist.mutate.mockRejectedValue(
+    procedure("user.removeSongsFromPlaylist").mockRejectedValue(
       new Error("Could not remove"),
     );
     await renderPlaylist();
@@ -175,7 +158,7 @@ describe("removing a song", () => {
 describe("deleting the playlist from its own screen", () => {
   it("leaves the screen and deletes the playlist once confirmed", async () => {
     const alert = jest.spyOn(Alert, "alert");
-    const app = await renderLibrary({
+    const app = await renderStack({
       index: () => null,
       "me/playlist/[id]": PlaylistScreen,
     });
@@ -189,7 +172,7 @@ describe("deleting the playlist from its own screen", () => {
     );
 
     expect(app.getPathname()).toBe("/");
-    expect(trpcClient.user.deletePlaylist.mutate).toHaveBeenCalledWith({
+    expect(procedure("user.deletePlaylist")).toHaveBeenCalledWith({
       playlistId: "pl-1",
     });
     alert.mockRestore();

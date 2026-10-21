@@ -1,22 +1,16 @@
+import {
+  rawEpisode,
+  SHOW_TOKEN,
+  EPISODE_TOKEN,
+} from "@infinitunes/types/fixtures";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 
-import {
-  EPISODE_TOKEN,
-  rawEpisode,
-  SHOW_TOKEN,
-} from "~/features/show/test-fixtures";
-import { showAnswers } from "~/features/show/test-trpc";
 import { playerStore } from "~/playback/player-store";
+import { procedure } from "~/test/trpc-mock";
 
 import { EpisodeScreen } from "./episode-screen";
-
-jest.mock("~/lib/trpc", () => require("~/features/show/test-trpc"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/artist/test-skeleton"),
-);
 
 const initialPlayer = playerStore.getState();
 
@@ -55,7 +49,7 @@ function failure(code: string, message: string) {
 
 beforeEach(() => {
   playerStore.setState(initialPlayer, true);
-  showAnswers.episodeDetails.mockResolvedValue({
+  procedure("show.episodeDetails").mockResolvedValue({
     episodes: [rawEpisode("9001")],
     modules,
   });
@@ -63,7 +57,7 @@ beforeEach(() => {
 
 describe("EpisodeScreen", () => {
   it("shows a skeleton while the episode loads", async () => {
-    showAnswers.episodeDetails.mockReturnValue(new Promise(() => {}));
+    procedure("show.episodeDetails").mockReturnValue(new Promise(() => {}));
     await renderEpisode();
 
     expect(
@@ -84,7 +78,7 @@ describe("EpisodeScreen", () => {
     expect(
       screen.getByText("First paragraph.\nSecond line & more."),
     ).toBeOnTheScreen();
-    expect(showAnswers.episodeDetails).toHaveBeenCalledWith({
+    expect(procedure("show.episodeDetails")).toHaveBeenCalledWith({
       token: EPISODE_TOKEN,
       season: 1,
       sort: "desc",
@@ -111,7 +105,7 @@ describe("EpisodeScreen", () => {
   });
 
   it("shows not found for an unknown episode, without a retry", async () => {
-    showAnswers.episodeDetails.mockRejectedValue(
+    procedure("show.episodeDetails").mockRejectedValue(
       failure("NOT_FOUND", "No episode found, please check the token"),
     );
     await renderEpisode();
@@ -121,14 +115,17 @@ describe("EpisodeScreen", () => {
   });
 
   it("treats an answer with no episode as not found", async () => {
-    showAnswers.episodeDetails.mockResolvedValue({ episodes: [], modules });
+    procedure("show.episodeDetails").mockResolvedValue({
+      episodes: [],
+      modules,
+    });
     await renderEpisode();
 
     expect(await screen.findByText("Episode not found")).toBeOnTheScreen();
   });
 
   it("offers a retry when loading fails", async () => {
-    showAnswers.episodeDetails.mockRejectedValueOnce(
+    procedure("show.episodeDetails").mockRejectedValueOnce(
       failure("BAD_REQUEST", "Please provide episode token"),
     );
     await renderEpisode();

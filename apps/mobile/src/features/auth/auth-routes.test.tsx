@@ -2,21 +2,7 @@ import { act } from "@testing-library/react-native";
 import { router } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 
-import { signInAs } from "./auth-client-mock";
-
-jest.mock("~/lib/trpc", () => require("~/features/settings/trpc-mock"));
-jest.mock("~/lib/auth-client", () =>
-  require("~/features/auth/auth-client-mock"),
-);
-// Native tabs render every tab; the Home feed's data is not under test here.
-jest.mock("~/features/home/trending-list", () => ({
-  TrendingList: () => null,
-}));
-
-// The first render loads every screen of the app.
-jest.setTimeout(60_000);
-
-beforeEach(() => signInAs(null));
+import { signInAs } from "~/test/session-mock";
 
 type NavigatorState = {
   index?: number;

@@ -2,16 +2,12 @@ import { fireEvent, screen } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
 import { renderScreen } from "~/test/render";
+import { authClient } from "~/test/session-mock";
 
-import { authClient } from "./auth-client-mock";
 import {
   FORGOT_PASSWORD_MESSAGE,
   ForgotPasswordForm,
 } from "./forgot-password-form";
-
-jest.mock("~/lib/auth-client", () =>
-  require("~/features/auth/auth-client-mock"),
-);
 
 async function request(email: string) {
   await fireEvent.changeText(screen.getByLabelText("Email"), email);

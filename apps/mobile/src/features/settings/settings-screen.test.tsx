@@ -4,19 +4,15 @@ import { openBrowserAsync } from "expo-web-browser";
 import { Appearance } from "react-native";
 import { toast } from "sonner-native";
 
-import { authClient, signInAs } from "~/features/auth/auth-client-mock";
 import { preferencesStore } from "~/lib/preferences";
 import { queryClient } from "~/lib/query-client";
 import { renderScreen } from "~/test/render";
+import { signInAs, authClient } from "~/test/session-mock";
 
 import { appearanceStore } from "./appearance-store";
 import { SettingsScreen } from "./settings-screen";
 
-jest.mock("@expo/ui", () => require("~/features/settings/expo-ui-mock"));
-jest.mock("~/lib/auth-client", () =>
-  require("~/features/auth/auth-client-mock"),
-);
-jest.mock("~/lib/trpc", () => require("~/features/settings/trpc-mock"));
+jest.mock("@expo/ui", () => require("~/test/expo-ui"));
 jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn() }));
 
 const FAVORITES_KEY = [["user", "getUserFavorites"], { type: "query" }, "u1"];
@@ -27,7 +23,6 @@ const initialPreferences = preferencesStore.getState();
 afterAll(() => queryClient.clear());
 
 beforeEach(() => {
-  signInAs(null);
   preferencesStore.setState(initialPreferences, true);
   appearanceStore.setState({ mode: "system" });
   jest.spyOn(Appearance, "setColorScheme").mockImplementation(() => {});

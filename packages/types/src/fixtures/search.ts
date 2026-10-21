@@ -1,4 +1,4 @@
-import type { AllSearch, TopSearch } from "@infinitunes/types";
+import type { AllSearch, TopSearch } from "../search";
 
 /**
  * Raw `search.all` and `search.top` payloads for tests, shaped like the live
@@ -8,7 +8,7 @@ import type { AllSearch, TopSearch } from "@infinitunes/types";
 
 const artworkPath = "https://c.saavncdn.com";
 
-export const topSearches: TopSearch[] = [
+export const rawTopSearches: TopSearch[] = [
   {
     id: "LHgqn,SRpyA_",
     title: "Rock &amp; Roll",
@@ -31,7 +31,7 @@ export const topSearches: TopSearch[] = [
   },
 ];
 
-export const allSearch: AllSearch = {
+export const rawAllSearch: AllSearch = {
   topquery: {
     position: 1,
     data: [

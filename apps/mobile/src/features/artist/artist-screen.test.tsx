@@ -1,24 +1,18 @@
+import {
+  rawArtist,
+  ARTIST_TOKEN,
+  artistSongsPage,
+  artistAlbumsPage,
+} from "@infinitunes/types/fixtures";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
+import { procedure } from "~/test/trpc-mock";
 
 import { ArtistScreen } from "./artist-screen";
 import { retryTransient } from "./detail-query";
-import {
-  ARTIST_TOKEN,
-  artistAlbumsPage,
-  artistSongsPage,
-  rawArtist,
-} from "./test-fixtures";
-import { artistAnswers } from "./test-trpc";
-
-jest.mock("~/lib/trpc", () => require("~/features/artist/test-trpc"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/artist/test-skeleton"),
-);
 
 const initialPlayer = playerStore.getState();
 
@@ -70,14 +64,16 @@ function failure(code: string, message: string) {
 
 beforeEach(() => {
   playerStore.setState(initialPlayer, true);
-  artistAnswers.details.mockResolvedValue(rawArtist());
-  artistAnswers.songs.mockResolvedValue(artistSongsPage(["s1", "s2"], true));
-  artistAnswers.albums.mockResolvedValue(artistAlbumsPage(["a1"], true));
+  procedure("artist.details").mockResolvedValue(rawArtist());
+  procedure("artist.songs").mockResolvedValue(
+    artistSongsPage(["s1", "s2"], true),
+  );
+  procedure("artist.albums").mockResolvedValue(artistAlbumsPage(["a1"], true));
 });
 
 describe("ArtistScreen", () => {
   it("shows a skeleton while the artist loads", async () => {
-    artistAnswers.details.mockReturnValue(new Promise(() => {}));
+    procedure("artist.details").mockReturnValue(new Promise(() => {}));
     await renderArtist();
 
     expect(
@@ -89,7 +85,7 @@ describe("ArtistScreen", () => {
     await renderArtist();
     await findTitle();
 
-    expect(artistAnswers.details).toHaveBeenCalledWith({
+    expect(procedure("artist.details")).toHaveBeenCalledWith({
       token: ARTIST_TOKEN,
       n_song: 50,
       n_album: 50,
@@ -162,7 +158,7 @@ describe("ArtistScreen", () => {
     expect(
       screen.getByRole("header", { name: "Flipperachi" }),
     ).toBeOnTheScreen();
-    expect(artistAnswers.songs).toHaveBeenCalledWith({
+    expect(procedure("artist.songs")).toHaveBeenCalledWith({
       id: "2393548",
       page: 0,
       cat: undefined,
@@ -179,7 +175,7 @@ describe("ArtistScreen", () => {
     await selectSort(1);
 
     await screen.findByText("Song s1");
-    expect(artistAnswers.songs).toHaveBeenLastCalledWith({
+    expect(procedure("artist.songs")).toHaveBeenLastCalledWith({
       id: "2393548",
       page: 0,
       cat: "latest",
@@ -188,7 +184,7 @@ describe("ArtistScreen", () => {
   });
 
   it("pages on when the list ends, until upstream says it is the last page", async () => {
-    artistAnswers.songs
+    procedure("artist.songs")
       .mockResolvedValueOnce(artistSongsPage(["s1", "s2"]))
       .mockResolvedValueOnce(artistSongsPage(["s2", "s3"], true));
     await renderArtist();
@@ -202,14 +198,14 @@ describe("ArtistScreen", () => {
 
     expect(await screen.findByText("Song s3")).toBeOnTheScreen();
     expect(screen.getAllByText("Song s2")).toHaveLength(1);
-    expect(artistAnswers.songs).toHaveBeenLastCalledWith(
+    expect(procedure("artist.songs")).toHaveBeenLastCalledWith(
       expect.objectContaining({ page: 1 }),
     );
 
     await act(async () => {
       fireEvent(screen.getByTestId("artist-list"), "endReached");
     });
-    expect(artistAnswers.songs).toHaveBeenCalledTimes(2);
+    expect(procedure("artist.songs")).toHaveBeenCalledTimes(2);
   });
 
   it("refreshes the artist and the open list on pull to refresh", async () => {
@@ -222,8 +218,12 @@ describe("ArtistScreen", () => {
       fireEvent(screen.getByTestId("artist-list"), "refresh");
     });
 
-    await waitFor(() => expect(artistAnswers.details).toHaveBeenCalledTimes(2));
-    await waitFor(() => expect(artistAnswers.songs).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(procedure("artist.details")).toHaveBeenCalledTimes(2),
+    );
+    await waitFor(() =>
+      expect(procedure("artist.songs")).toHaveBeenCalledTimes(2),
+    );
   });
 
   it("lists albums as rows that open the album", async () => {
@@ -237,7 +237,7 @@ describe("ArtistScreen", () => {
   });
 
   it("says so when a tab has nothing to list", async () => {
-    artistAnswers.songs.mockResolvedValue({
+    procedure("artist.songs").mockResolvedValue({
       topSongs: { songs: [], last_page: true, total: 0 },
     });
     await renderArtist();
@@ -260,7 +260,7 @@ describe("ArtistScreen", () => {
   });
 
   it("hides the Biography tab for an artist without one", async () => {
-    artistAnswers.details.mockResolvedValue(rawArtist({ bio: "" }));
+    procedure("artist.details").mockResolvedValue(rawArtist({ bio: "" }));
     await renderArtist();
     await findTitle();
 
@@ -272,18 +272,18 @@ describe("ArtistScreen", () => {
   });
 
   it("shows not found for an unknown artist, without a retry", async () => {
-    artistAnswers.details.mockRejectedValue(
+    procedure("artist.details").mockRejectedValue(
       failure("NOT_FOUND", "Artist not found, please check the id or token"),
     );
     await renderArtist();
 
     expect(await screen.findByText("Artist not found")).toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: "Try again" })).toBeNull();
-    expect(artistAnswers.details).toHaveBeenCalledTimes(1);
+    expect(procedure("artist.details")).toHaveBeenCalledTimes(1);
   });
 
   it("offers a retry when loading fails", async () => {
-    artistAnswers.details.mockRejectedValueOnce(
+    procedure("artist.details").mockRejectedValueOnce(
       failure("BAD_REQUEST", "Please provide Artist id or token"),
     );
     await renderArtist();

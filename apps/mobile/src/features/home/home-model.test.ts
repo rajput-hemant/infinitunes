@@ -1,11 +1,10 @@
-import { rawAlbum } from "@infinitunes/types/fixtures";
-
 import {
   rawChart,
-  rawLaunchData,
   rawPlaylist,
   rawStation,
-} from "~/features/browse/test-support";
+  rawLaunchData,
+  rawAlbum,
+} from "@infinitunes/types/fixtures";
 
 import { buildHomeModel, isHomeEmpty } from "./home-model";
 

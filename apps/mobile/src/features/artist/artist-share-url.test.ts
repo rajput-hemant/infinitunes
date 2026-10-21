@@ -1,5 +1,6 @@
+import { rawArtist, ARTIST_TOKEN } from "@infinitunes/types/fixtures";
+
 import { artistShareUrl } from "./artist-share-url";
-import { ARTIST_TOKEN, rawArtist } from "./test-fixtures";
 
 describe("artistShareUrl", () => {
   it("points at the Overview, not the Songs tab the URL names", () => {

@@ -1,25 +1,17 @@
-import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
+import {
+  rawPlaylist,
+  rawLaunchData,
+  rawSong,
+  rawAlbum,
+} from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
-import {
-  procedure,
-  rawLaunchData,
-  rawPlaylist,
-  renderScreenAt,
-} from "~/features/browse/test-support";
 import { playerStore } from "~/playback/player-store";
+import { renderScreen } from "~/test/render";
+import { procedure } from "~/test/trpc-mock";
 
-import { TrendingList } from "./trending-list";
-
-jest.mock(
-  "~/lib/trpc",
-  () => require("~/features/browse/test-support").trpcMock,
-);
-jest.mock("~/components/ui/skeleton", () =>
-  require("~/features/browse/skeleton-mock"),
-);
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
+import { HomeFeed } from "./home-feed";
 
 const home = procedure("home.home");
 
@@ -32,10 +24,10 @@ beforeEach(() => {
   });
 });
 
-describe("TrendingList", () => {
+describe("HomeFeed", () => {
   it("shows a skeleton under the greeting while the launch data loads", async () => {
     home.mockReturnValue(new Promise(() => {}));
-    await renderScreenAt(<TrendingList />);
+    await renderScreen(<HomeFeed />);
 
     expect(screen.getAllByLabelText("Loading").length).toBeGreaterThan(0);
     expect(screen.getByText("Fresh picks for you.")).toBeOnTheScreen();
@@ -43,7 +35,7 @@ describe("TrendingList", () => {
 
   it("shows the hero, quick picks and a shelf per titled section", async () => {
     home.mockResolvedValue(rawLaunchData());
-    await renderScreenAt(<TrendingList />);
+    await renderScreen(<HomeFeed />);
 
     expect(await screen.findByText("Featured playlist")).toBeOnTheScreen();
     expect(screen.getByText("Quick picks")).toBeOnTheScreen();
@@ -67,7 +59,7 @@ describe("TrendingList", () => {
         top_playlists: [],
       }),
     );
-    await renderScreenAt(<TrendingList />);
+    await renderScreen(<HomeFeed />);
 
     expect(await screen.findByText("Nothing to play yet")).toBeOnTheScreen();
   });
@@ -75,7 +67,7 @@ describe("TrendingList", () => {
   it("offers a retry after a failed load", async () => {
     home.mockRejectedValueOnce(new Error("upstream down"));
     home.mockResolvedValue(rawLaunchData());
-    await renderScreenAt(<TrendingList />);
+    await renderScreen(<HomeFeed />);
 
     await fireEvent.press(await screen.findByText("Try again"));
 
@@ -87,7 +79,7 @@ describe("TrendingList", () => {
     procedure("playlist.details").mockResolvedValue(
       rawPlaylist({ list: [rawSong()] }),
     );
-    await renderScreenAt(<TrendingList />);
+    await renderScreen(<HomeFeed />);
 
     await fireEvent.press(
       await screen.findByRole("button", { name: "Play Featured Mix" }),
@@ -101,7 +93,7 @@ describe("TrendingList", () => {
   it("starts a shuffled batch of trending songs with Surprise Me", async () => {
     home.mockResolvedValue(rawLaunchData());
     procedure("get.trending").mockResolvedValue([rawSong(), rawAlbum()]);
-    await renderScreenAt(<TrendingList />);
+    await renderScreen(<HomeFeed />);
 
     await fireEvent.press(
       await screen.findByRole("button", {
@@ -116,7 +108,7 @@ describe("TrendingList", () => {
   it("tells the listener when Surprise Me finds nothing", async () => {
     home.mockResolvedValue(rawLaunchData());
     procedure("get.trending").mockResolvedValue([]);
-    await renderScreenAt(<TrendingList />);
+    await renderScreen(<HomeFeed />);
 
     await fireEvent.press(await screen.findByText("Surprise Me"));
 
@@ -129,7 +121,7 @@ describe("TrendingList", () => {
 
   it("opens a language's albums from its chip", async () => {
     home.mockResolvedValue(rawLaunchData());
-    const app = await renderScreenAt(<TrendingList />, {
+    const app = await renderScreen(<HomeFeed />, {
       routes: { "browse/albums": () => null },
     });
 

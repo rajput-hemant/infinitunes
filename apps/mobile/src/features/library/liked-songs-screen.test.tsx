@@ -3,27 +3,12 @@ import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlis
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
+import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
+import { procedure } from "~/test/trpc-mock";
+import { favoritesRow, songNamed, catalogAnswering } from "~/test/user-library";
 
-import {
-  catalogAnswering,
-  favoriteLists,
-  songNamed,
-  trpcClient,
-} from "./library-test-support";
 import { LikedSongsScreen } from "./liked-songs-screen";
-import { renderLibrary } from "./render-library";
-
-jest.mock("~/lib/trpc", () => require("./library-test-support"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-jest.mock(
-  "react-native-gesture-handler/ReanimatedSwipeable",
-  () => require("./library-ui-mocks").swipeable,
-);
-jest.mock(
-  "~/components/ui/skeleton",
-  () => require("./library-ui-mocks").skeleton,
-);
 
 const catalog = {
   a: songNamed("a", "First Like"),
@@ -32,15 +17,15 @@ const catalog = {
 };
 
 function renderLikedSongs() {
-  return renderLibrary({ index: LikedSongsScreen, login: () => null });
+  return renderStack({ index: LikedSongsScreen, login: () => null });
 }
 
 beforeEach(async () => {
   await act(async () => signInAs("alice"));
-  trpcClient.user.getUserFavorites.query.mockResolvedValue(
-    favoriteLists({ songs: ["a", "b", "c"] }),
+  procedure("user.getUserFavorites").mockResolvedValue(
+    favoritesRow({ songs: ["a", "b", "c"] }),
   );
-  trpcClient.song.details.query.mockImplementation(catalogAnswering(catalog));
+  procedure("song.details").mockImplementation(catalogAnswering(catalog));
 });
 
 afterEach(() => {
@@ -57,11 +42,11 @@ describe("LikedSongsScreen", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
 
     expect(router.getPathname()).toBe("/login");
-    expect(trpcClient.user.getUserFavorites.query).not.toHaveBeenCalled();
+    expect(procedure("user.getUserFavorites")).not.toHaveBeenCalled();
   });
 
   it("shows a skeleton while the songs load", async () => {
-    trpcClient.song.details.query.mockReturnValue(new Promise(() => {}));
+    procedure("song.details").mockReturnValue(new Promise(() => {}));
     await renderLikedSongs();
 
     expect(await screen.findByLabelText("Loading")).toBeOnTheScreen();
@@ -79,14 +64,14 @@ describe("LikedSongsScreen", () => {
   });
 
   it("says so when nothing is liked yet", async () => {
-    trpcClient.user.getUserFavorites.query.mockResolvedValue(undefined);
+    procedure("user.getUserFavorites").mockResolvedValue(undefined);
     await renderLikedSongs();
 
     expect(await screen.findByText("No liked songs yet")).toBeOnTheScreen();
   });
 
   it("says how many saved songs did not load", async () => {
-    trpcClient.song.details.query.mockImplementation(
+    procedure("song.details").mockImplementation(
       catalogAnswering({ a: catalog.a, c: catalog.c }),
     );
     await renderLikedSongs();
@@ -98,14 +83,14 @@ describe("LikedSongsScreen", () => {
   it("shows an error with a retry when the music service is down", async () => {
     // The shared chunk loader logs each failed chunk.
     jest.spyOn(console, "error").mockImplementation(() => {});
-    trpcClient.song.details.query.mockRejectedValue(new Error("bad gateway"));
+    procedure("song.details").mockRejectedValue(new Error("bad gateway"));
     await renderLikedSongs();
 
     await fireEvent.press(
       await screen.findByRole("button", { name: "Try again" }),
     );
 
-    expect(trpcClient.song.details.query.mock.calls.length).toBeGreaterThan(1);
+    expect(procedure("song.details").mock.calls.length).toBeGreaterThan(1);
   });
 
   it("hides a song at once when it is unliked", async () => {
@@ -117,14 +102,14 @@ describe("LikedSongsScreen", () => {
     );
 
     expect(screen.queryByText("Second Like")).toBeNull();
-    expect(trpcClient.user.removeFromFavorites.mutate).toHaveBeenCalledWith({
+    expect(procedure("user.removeFromFavorites")).toHaveBeenCalledWith({
       type: "song",
       token: "b",
     });
   });
 
   it("brings the song back with a toast when unliking fails", async () => {
-    trpcClient.user.removeFromFavorites.mutate.mockRejectedValue(
+    procedure("user.removeFromFavorites").mockRejectedValue(
       new Error("Could not save"),
     );
     await renderLikedSongs();

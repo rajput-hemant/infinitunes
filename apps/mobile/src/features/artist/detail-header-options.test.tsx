@@ -1,3 +1,4 @@
+import { rawArtist } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { Share } from "react-native";
 
@@ -5,7 +6,6 @@ import { renderWithProviders } from "~/test/render";
 
 import { artistShareUrl } from "./artist-share-url";
 import { detailHeaderOptions } from "./detail-header-options";
-import { rawArtist } from "./test-fixtures";
 
 function renderHeaderRight(options: ReturnType<typeof detailHeaderOptions>) {
   return renderWithProviders(<>{options.headerRight?.({ canGoBack: true })}</>);

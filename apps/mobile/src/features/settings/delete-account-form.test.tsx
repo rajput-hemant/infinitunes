@@ -1,17 +1,12 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
-import { authClient } from "~/features/auth/auth-client-mock";
 import { queryClient } from "~/lib/query-client";
 import { renderScreen } from "~/test/render";
+import { authClient } from "~/test/session-mock";
+import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { DELETE_CONFIRMATION, DeleteAccountForm } from "./delete-account-form";
-import { trpcClient, trpcError } from "./trpc-mock";
-
-jest.mock("~/lib/auth-client", () =>
-  require("~/features/auth/auth-client-mock"),
-);
-jest.mock("~/lib/trpc", () => require("~/features/settings/trpc-mock"));
 
 const FAVORITES_KEY = [["user", "getUserFavorites"], { type: "query" }, "u1"];
 
@@ -46,7 +41,7 @@ describe("DeleteAccountForm", () => {
 
     await confirm();
     expect(deleteButton()).toBeEnabled();
-    expect(trpcClient.user.deleteUser.mutate).not.toHaveBeenCalled();
+    expect(procedure("user.deleteUser")).not.toHaveBeenCalled();
   });
 
   it("deletes the account, signs out and forgets the library", async () => {
@@ -59,7 +54,7 @@ describe("DeleteAccountForm", () => {
     await confirm();
     await fireEvent.press(deleteButton());
 
-    expect(trpcClient.user.deleteUser.mutate).toHaveBeenCalledWith({
+    expect(procedure("user.deleteUser")).toHaveBeenCalledWith({
       password: "Secret#123",
     });
     expect(authClient.signOut).toHaveBeenCalledTimes(1);
@@ -73,15 +68,15 @@ describe("DeleteAccountForm", () => {
     await confirm();
     await fireEvent.press(deleteButton());
 
-    expect(trpcClient.user.deleteUser.mutate).toHaveBeenCalledWith({
+    expect(procedure("user.deleteUser")).toHaveBeenCalledWith({
       password: undefined,
     });
   });
 
   it("keeps the account, and the library, when the server refuses", async () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
-    trpcClient.user.deleteUser.mutate.mockRejectedValueOnce(
-      trpcError("Please sign in again to continue", "UNAUTHORIZED"),
+    procedure("user.deleteUser").mockRejectedValueOnce(
+      trpcError("UNAUTHORIZED", "Please sign in again to continue"),
     );
     await renderScreen(<DeleteAccountForm />);
 

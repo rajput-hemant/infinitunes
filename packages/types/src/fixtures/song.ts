@@ -1,9 +1,9 @@
-import type { Album } from "./album";
-import type { ArtistMini } from "./artist";
-import type { Song } from "./song";
+import type { ArtistMini } from "../artist";
+import type { Lyrics } from "../get";
+import type { Song } from "../song";
 
 /**
- * Raw upstream objects for tests, copied from live `webapi.getLaunchData`
+ * Raw upstream songs for tests, copied from live `webapi.getLaunchData`
  * payloads: HTML-encoded titles, `-150x150` artwork tokens, the nested
  * `more_info`, and a `download_url` as `withDownloadUrl` attaches it (one
  * link per bitrate, in `QUALITIES_MAP` order). Overrides are shallow.
@@ -96,27 +96,13 @@ export function rawSong(overrides: Partial<Song> = {}): Song {
   };
 }
 
-export function rawAlbum(overrides: Partial<Album> = {}): Album {
+/** A `get.lyrics` payload: `<br>`-separated, entity-encoded lines and an HTML copyright. */
+export function rawLyrics(overrides: Partial<Lyrics> = {}): Lyrics {
   return {
-    id: "82064668",
-    title: "Udta Teer",
-    subtitle: "Sachin-Jigar, Amitabh Bhattacharya",
-    header_desc: "",
-    type: "album",
-    perma_url: "https://www.jiosaavn.com/album/udta-teer/LHgqn,SRpyA_",
-    image:
-      "https://c.saavncdn.com/845/Udta-Teer-Hindi-2026-20261015175017-150x150.jpg",
-    language: "hindi",
-    year: "2026",
-    play_count: "",
-    explicit_content: "0",
-    list_count: "0",
-    list_type: "song",
-    list: "",
-    more_info: {
-      song_count: "4",
-      artistMap: { primary_artists: [], featured_artists: [], artists: [] },
-    },
+    lyrics: "First line<br>Second &amp; third<br/><b>bold</b>",
+    script_tracking_url: "",
+    lyrics_copyright: "Lyrics powered by <a href='x'>Musixmatch</a>",
+    snippet: "First line Second",
     ...overrides,
   };
 }

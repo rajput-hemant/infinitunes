@@ -3,16 +3,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import type { ReactNode } from "react";
 
+import { procedure } from "~/test/trpc-mock";
+
 import { useTypeResults } from "./use-type-results";
-
-const mockByType = jest.fn();
-
-jest.mock("~/lib/trpc", () => ({
-  trpc: { search: { byType: { pathKey: () => ["search.byType"] } } },
-  trpcClient: {
-    search: { byType: { query: (input: unknown) => mockByType(input) } },
-  },
-}));
 
 let queryClient: QueryClient;
 
@@ -33,7 +26,7 @@ const albums = (ids: string[]) =>
 
 describe("useTypeResults", () => {
   it("fetches the next page only while the total says there is more", async () => {
-    mockByType
+    procedure("search.byType")
       .mockResolvedValueOnce({ total: 60, start: 0, results: albums(["a"]) })
       .mockResolvedValueOnce({ total: 60, start: 50, results: albums(["b"]) });
     const { result } = await renderHook(() => useTypeResults("rock", "album"), {
@@ -45,8 +38,8 @@ describe("useTypeResults", () => {
     await waitFor(() => expect(result.current.entries).toHaveLength(2));
     await act(async () => result.current.loadMore());
 
-    expect(mockByType).toHaveBeenCalledTimes(2);
-    expect(mockByType).toHaveBeenLastCalledWith({
+    expect(procedure("search.byType")).toHaveBeenCalledTimes(2);
+    expect(procedure("search.byType")).toHaveBeenLastCalledWith({
       q: "rock",
       type: "albums",
       page: 2,
@@ -55,7 +48,7 @@ describe("useTypeResults", () => {
   });
 
   it("keeps a repeated entry once", async () => {
-    mockByType
+    procedure("search.byType")
       .mockResolvedValueOnce({ total: 60, start: 0, results: albums(["a"]) })
       .mockResolvedValueOnce({
         total: 60,

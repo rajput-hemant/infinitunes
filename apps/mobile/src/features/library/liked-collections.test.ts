@@ -1,7 +1,5 @@
 import { toArtistCard } from "./liked-collections";
 
-jest.mock("~/lib/trpc", () => require("./library-test-support"));
-
 describe("toArtistCard", () => {
   it("opens the artist's songs page under the decoded name", () => {
     expect(

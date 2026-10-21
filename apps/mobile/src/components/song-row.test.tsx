@@ -9,9 +9,6 @@ import { renderScreen } from "~/test/render";
 
 import { SongRow } from "./song-row";
 
-jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-
 const song = toSongRow(rawSong());
 const initial = playerStore.getState();
 
