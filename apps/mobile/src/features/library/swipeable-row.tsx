@@ -1,3 +1,4 @@
+import { useTheme } from "expo-router";
 import type { SymbolViewProps } from "expo-symbols";
 import type { ReactNode } from "react";
 import { useRef } from "react";
@@ -25,6 +26,7 @@ export function SwipeableRow({
   action: SwipeAction;
   children: ReactNode;
 }) {
+  const { colors } = useTheme();
   const swipeable = useRef<SwipeableMethods>(null);
 
   return (
@@ -41,8 +43,9 @@ export function SwipeableRow({
           }}
           className="w-24 items-center justify-center gap-1 bg-destructive"
         >
-          <Icon name={action.icon} size={20} color="white" />
-          <Text variant="caption" style={{ color: "white" }}>
+          {/* The destructive fill's own text colour: white fails AA on dark's lighter red. */}
+          <Icon name={action.icon} size={20} color={colors.background} />
+          <Text variant="caption" tone="onDestructive">
             {action.label}
           </Text>
         </Pressable>
