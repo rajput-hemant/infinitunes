@@ -60,13 +60,15 @@ describe("GlassRuntime", () => {
     expect(root.hasAttribute("data-glass-engine")).toBe(false);
   });
 
-  it("registers surfaces added after it starts, but leaves server HTML to hydrate untouched", async () => {
+  it("leaves surfaces in the DOM to hydrate untouched, even ones added after it starts", async () => {
     const early = document.createElement("div");
     early.setAttribute("data-glass", "regular");
     early.setAttribute("data-glass-size", "m");
     document.body.append(early);
     await mountRuntime();
 
+    // A streamed Suspense boundary reveals server HTML that React has not
+    // hydrated yet; writing --g-lens-url onto it is a hydration mismatch.
     const late = document.createElement("div");
     late.setAttribute("data-glass", "clear");
     late.setAttribute("data-glass-size", "s");
@@ -75,10 +77,34 @@ describe("GlassRuntime", () => {
     document.body.append(wrapper);
     await flush();
 
-    // A surface already in the page may belong to a subtree React has not
-    // hydrated yet; writing --g-lens-url onto it would be a hydration mismatch.
-    expect(registered()).toContain(late);
     expect(registered()).not.toContain(early);
+    expect(registered()).not.toContain(late);
+    expect(late.style.getPropertyValue("--g-lens-url")).toBe("");
+  });
+
+  it("hydrates a surface streamed in after the runtime started without a mismatch", async () => {
+    await mountRuntime();
+    const html = renderToString(<GlassSurface size="s" glassRole="toolbar" />);
+    const container = document.createElement("div");
+    document.body.append(container);
+    container.innerHTML = html;
+    await flush();
+
+    const errors: unknown[][] = [];
+    const original = console.error;
+    console.error = (...args: unknown[]) => void errors.push(args);
+    try {
+      await act(async () => {
+        roots.push(
+          hydrateRoot(container, <GlassSurface size="s" glassRole="toolbar" />),
+        );
+      });
+    } finally {
+      console.error = original;
+    }
+
+    expect(errors).toEqual([]);
+    expect(registered()).toEqual([container.firstElementChild as HTMLElement]);
   });
 
   it("registers a hydrated GlassSurface from its own effect, once the runtime has started", async () => {
@@ -137,8 +163,7 @@ describe("GlassRuntime", () => {
   it("stops tracking surfaces that leave the page", async () => {
     await mountRuntime();
     const el = document.createElement("div");
-    el.setAttribute("data-glass", "regular");
-    el.setAttribute("data-glass-size", "m");
+    el.setAttribute("data-slot", "dropdown-menu-content");
     document.body.append(el);
     await flush();
     expect(registered()).toContain(el);

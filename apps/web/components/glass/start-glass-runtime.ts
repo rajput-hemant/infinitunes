@@ -16,9 +16,6 @@ import type { GlassTarget } from "./lens-registry";
 import { configureLens, pruneGlass, registerGlass } from "./lens-registry";
 import { installPressGel } from "./press-gel";
 
-const SURFACE_SELECTOR = "[data-glass][data-glass-size]";
-const GLASS_SELECTOR = `${SURFACE_SELECTOR}, ${OVERLAY_SELECTOR}`;
-
 function isSize(value: string | undefined): value is GlassSize {
   return value === "s" || value === "m" || value === "l" || value === "xl";
 }
@@ -66,10 +63,16 @@ export function register(el: HTMLElement) {
   if (el.dataset.glass === "clear") sampleBehind(el);
 }
 
+/**
+ * Only popups are picked up from the DOM. Anything else that is added can be
+ * server HTML that React streamed in (a Suspense boundary revealing) and has
+ * not hydrated yet: writing `--g-lens-url` onto it makes its hydration report
+ * a style mismatch. Surfaces register from their own effect instead.
+ */
 function registerWithin(node: Node) {
   if (!(node instanceof HTMLElement)) return;
-  if (node.matches(GLASS_SELECTOR)) register(node);
-  node.querySelectorAll<HTMLElement>(GLASS_SELECTOR).forEach(register);
+  if (node.matches(OVERLAY_SELECTOR)) register(node);
+  node.querySelectorAll<HTMLElement>(OVERLAY_SELECTOR).forEach(register);
 }
 
 export { registerGlass };
@@ -140,9 +143,9 @@ export function startGlassRuntime(): () => void {
     }
   };
 
-  // Surfaces in the server HTML are not scanned here: they may not be hydrated
-  // yet, so each registers itself from its own effect. This observer picks up
-  // everything added to the document afterwards (popups, client-rendered UI).
+  // Surfaces are not scanned here: they may be server HTML that is not hydrated
+  // yet (also when streamed in later), so each registers itself from its own
+  // effect. This observer picks up the popups React portals in afterwards.
   evaluate();
 
   const rootObserver = new MutationObserver(queueEvaluate);
@@ -152,32 +155,10 @@ export function startGlassRuntime(): () => void {
   });
 
   const bodyObserver = new MutationObserver((records) => {
-    for (const record of records) {
-      if (record.type === "attributes") {
-        if (
-          record.target instanceof HTMLElement &&
-          record.target.matches(GLASS_SELECTOR)
-        ) {
-          register(record.target);
-        }
-        continue;
-      }
-      record.addedNodes.forEach(registerWithin);
-    }
+    for (const record of records) record.addedNodes.forEach(registerWithin);
     pruneGlass();
   });
-  bodyObserver.observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: [
-      "data-glass",
-      "data-glass-size",
-      "data-glass-role",
-      "data-glass-preset",
-      "data-lens",
-    ],
-  });
+  bodyObserver.observe(document.body, { childList: true, subtree: true });
 
   // The engine starts on idle, so a popup may already be open. Popups are
   // portaled after hydration, which makes them safe to register right away.
