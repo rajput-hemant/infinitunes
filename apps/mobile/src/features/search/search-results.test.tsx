@@ -108,22 +108,26 @@ describe("combined search results", () => {
   });
 
   it("plays a linked top result from its Play button", async () => {
-    const [song] = rawAllSearch.songs.data;
-    if (!song) throw new Error("fixture has no song");
+    // No top query or artist match: the first album is the top result.
     procedure("search.all").mockResolvedValue({
       ...rawAllSearch,
-      topquery: { position: 1, data: [song] },
+      topquery: { position: 1, data: [] },
+      artists: { position: 4, data: [] },
     });
-    procedure("song.details").mockResolvedValue({ songs: [rawSong()] });
+    procedure("album.details").mockResolvedValue(
+      rawAlbum({ list: [rawSong()] }),
+    );
     await renderResults();
 
-    await fireEvent.press(
-      await screen.findByRole("button", { name: "Play FA9LA & Friends" }),
-    );
+    const [play] = await screen.findAllByRole("button", {
+      name: "Play Udta Teer",
+    });
+    if (!play) throw new Error("no Play on the top result");
+    await fireEvent.press(play);
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
-    expect(procedure("song.details")).toHaveBeenCalledWith({
-      token: "BSaNI3Yr",
+    expect(procedure("album.details")).toHaveBeenCalledWith({
+      token: "LHgqn,SRpyA_",
     });
   });
 
