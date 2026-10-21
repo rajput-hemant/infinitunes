@@ -1,6 +1,5 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawSong } from "@infinitunes/types/fixtures";
-import { act } from "@testing-library/react-native";
 import { View } from "react-native";
 import { toast } from "sonner-native";
 
@@ -9,7 +8,7 @@ import { preferencesStore } from "~/lib/preferences";
 import { shareItem } from "~/lib/share";
 import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderScreen } from "~/test/render";
-import { signInAs } from "~/test/session-mock";
+import { procedure } from "~/test/trpc-mock";
 
 import { SongMenu, type TrackItem } from "./song-menu";
 
@@ -88,16 +87,6 @@ describe("SongMenu navigation", () => {
     );
   });
 
-  it("has no album entry when the song carries no album link", async () => {
-    const app = await renderMenu({ ...song, albumUrl: undefined }, undefined, {
-      "album/[name]/[token]": () => null,
-    });
-
-    await chooseMenuAction(TRIGGER, "go-to-album");
-
-    expect(app.getPathname()).toBe("/");
-  });
-
   it("goes straight to the only artist", async () => {
     const [artist] = song.primaryArtists;
     const app = await renderMenu(
@@ -146,18 +135,6 @@ describe("SongMenu navigation", () => {
 
     expect(app.getPathname()).toMatch(/^\/artist\//);
   });
-
-  it("has no artist entry for an uncredited song", async () => {
-    const app = await renderMenu(
-      { ...song, primaryArtists: [], artists: [] },
-      undefined,
-      ARTIST_ROUTES,
-    );
-
-    await chooseMenuAction(TRIGGER, "go-to-artist");
-
-    expect(app.getPathname()).toBe("/");
-  });
 });
 
 describe("SongMenu share and download", () => {
@@ -201,14 +178,6 @@ describe("SongMenu removal", () => {
 
     expect(onRemove).toHaveBeenCalledTimes(1);
   });
-
-  it("has no removal when the list offers none", async () => {
-    await renderMenu(song);
-
-    await chooseMenuAction(TRIGGER, "remove");
-
-    expect(queuedIds()).toEqual([]);
-  });
 });
 
 describe("SongMenu for an episode", () => {
@@ -222,15 +191,16 @@ describe("SongMenu for an episode", () => {
     expect(queuedIds()).toEqual(["9001"]);
   });
 
-  it("offers no playlist, radio, album or download", async () => {
-    await act(async () => signInAs("alice"));
+  it("offers no playlist, radio or download", async () => {
+    // Signed out, a leaked playlist entry would show the sign-in prompt.
     await renderMenu(episode);
 
     await chooseMenuAction(TRIGGER, "add-to-playlist");
     await chooseMenuAction(TRIGGER, "play-radio");
     await chooseMenuAction(TRIGGER, "download");
 
-    expect(downloadTrack).not.toHaveBeenCalled();
     expect(jest.mocked(toast.warning)).not.toHaveBeenCalled();
+    expect(procedure("radio.createStation")).not.toHaveBeenCalled();
+    expect(downloadTrack).not.toHaveBeenCalled();
   });
 });

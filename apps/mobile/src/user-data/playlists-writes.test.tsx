@@ -218,13 +218,13 @@ describe("remove a song", () => {
     const first = deferred<ReturnType<typeof userPlaylist>>();
     procedure("user.removeSongsFromPlaylist")
       .mockReturnValueOnce(first.promise)
-      .mockResolvedValue(userPlaylist({ id: "pl-1", songs: ["c"] }));
+      .mockResolvedValue(userPlaylist({ id: "pl-1", songs: ["b"] }));
 
     await act(async () => {
       removeSongFromPlaylist(server, { id: "a", name: "One" });
-      removeSongFromPlaylist(server, { id: "b", name: "Two" });
+      removeSongFromPlaylist(server, { id: "c", name: "Three" });
     });
-    expect(shown()).toBe("Road Trip:c");
+    expect(shown()).toBe("Road Trip:b");
     expect(procedure("user.removeSongsFromPlaylist")).toHaveBeenCalledTimes(1);
 
     await act(async () =>
@@ -237,8 +237,8 @@ describe("remove a song", () => {
     );
     expect(procedure("user.removeSongsFromPlaylist")).toHaveBeenLastCalledWith({
       playlistId: "pl-1",
-      index: 0,
-      songId: "b",
+      index: 1,
+      songId: "c",
     });
   });
 
