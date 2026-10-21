@@ -29,12 +29,27 @@ const CHIP_STYLE = Platform.select({
   },
 } as const);
 
-/** A horizontally scrolling row of filter chips (capsules); the selected one is filled. */
-export function ChipRow({ chips }: { chips: readonly Chip[] }) {
+type ChipRowProps = {
+  chips: readonly Chip[];
+  /**
+   * The chips switch what the screen below shows (search's result types):
+   * a `tablist` of `tab`s. Otherwise each chip is a button (home's languages
+   * open a list).
+   */
+  tabs?: boolean;
+};
+
+/**
+ * A horizontally scrolling row of filter chips (capsules); the selected one
+ * is filled. A tap lands while the keyboard is up (search's field keeps it).
+ */
+export function ChipRow({ chips, tabs = false }: ChipRowProps) {
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      accessibilityRole={tabs ? "tablist" : undefined}
       contentContainerClassName="gap-2 px-page py-2"
     >
       {chips.map((chip) => {
@@ -46,7 +61,7 @@ export function ChipRow({ chips }: { chips: readonly Chip[] }) {
             key={chip.key}
             onPress={chip.onPress}
             hitSlop={CHIP_HIT_SLOP}
-            accessibilityRole="button"
+            accessibilityRole={tabs ? "tab" : "button"}
             accessibilityState={{ selected: chip.selected }}
             className={cx(
               "min-h-ctl justify-center rounded-full px-4 py-1 active:opacity-70",
