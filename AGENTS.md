@@ -275,6 +275,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - `type-check` runs `expo customize tsconfig.json` first: it writes the gitignored `.expo/types` route
   types that `tsc` needs in a fresh clone. TypeScript is the repo's 7.x (`expo.install.exclude`).
 - No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`; device builds `bun run mobile:android` / `mobile:ios`, guide in `docs/mobile-device-setup.md`.
+- Brand assets: the master vectors are `apps/mobile/assets/brand/{glyph,icon}.svg` (the ribbon-note, traced
+  from `docs/assets/logo1500.png`); `bun run mobile:icons` (`scripts/generate-icons.ts`, sharp) renders every
+  committed PNG in `assets/` (iOS light/dark/tinted, adaptive layers, splash, `notification-icon.png`). Edit the
+  SVG, rerun, commit both; builds never run it. `ios.icon` takes `{light,dark,tinted}` or a `.icon` bundle path.
 - `apps/mobile/e2e` runs the app's real `auth-client`/`trpc` (only native modules stubbed,
   `native-stubs.ts`) against a local web app and scratch database: `MOBILE_E2E_API_URL=... bun
   run test:e2e` (skipped unset; loopback only, it creates accounts). Its header comments name the
