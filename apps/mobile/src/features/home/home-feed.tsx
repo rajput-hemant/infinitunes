@@ -1,4 +1,3 @@
-import type { CardItem } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import { router, Stack } from "expo-router";
 import { RefreshControl } from "react-native";
@@ -7,7 +6,6 @@ import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Shelf } from "~/components/shelf";
-import { StationCard } from "~/components/station-card";
 import { IconButton } from "~/components/ui/icon-button";
 import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
@@ -72,10 +70,6 @@ export function HomeFeed() {
   );
 }
 
-function renderStationCard(item: CardItem) {
-  return <StationCard item={item} />;
-}
-
 function HomeSections({ model }: { model: HomeModel }) {
   return (
     <>
@@ -83,12 +77,8 @@ function HomeSections({ model }: { model: HomeModel }) {
         <HomeHero featured={model.featured} tiles={model.heroTiles} />
       ) : null}
       <QuickPicks items={model.quickPicks} />
-      {model.shelves.map(({ key, stations, ...shelf }) => (
-        <Shelf
-          key={key}
-          {...shelf}
-          renderCard={stations ? renderStationCard : undefined}
-        />
+      {model.shelves.map(({ key, ...shelf }) => (
+        <Shelf key={key} {...shelf} />
       ))}
     </>
   );

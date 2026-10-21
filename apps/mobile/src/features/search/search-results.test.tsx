@@ -107,6 +107,36 @@ describe("combined search results", () => {
     expect(playerStore.getState().queue).toEqual([]);
   });
 
+  it("plays a linked top result from its Play button", async () => {
+    const [song] = rawAllSearch.songs.data;
+    if (!song) throw new Error("fixture has no song");
+    procedure("search.all").mockResolvedValue({
+      ...rawAllSearch,
+      topquery: { position: 1, data: [song] },
+    });
+    procedure("song.details").mockResolvedValue({ songs: [rawSong()] });
+    await renderResults();
+
+    await fireEvent.press(
+      await screen.findByRole("button", { name: "Play FA9LA & Friends" }),
+    );
+
+    await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
+    expect(procedure("song.details")).toHaveBeenCalledWith({
+      token: "BSaNI3Yr",
+    });
+  });
+
+  it("offers no Play for a top result without a page", async () => {
+    procedure("search.all").mockResolvedValue(rawAllSearch);
+    await renderResults();
+
+    expect(await screen.findByText("Top Result")).toBeOnTheScreen();
+    expect(
+      screen.queryByRole("button", { name: "Play Flipperachi" }),
+    ).toBeNull();
+  });
+
   it("remembers the search when a shelf card opens its page", async () => {
     procedure("search.all").mockResolvedValue(rawAllSearch);
     const onOpenResult = jest.fn();

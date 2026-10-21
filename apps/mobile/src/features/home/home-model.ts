@@ -19,8 +19,6 @@ type HomeShelf = {
   key: string;
   title: string;
   items: CardItem[];
-  /** Every item is a radio station, so its cards play and open the station screen. */
-  stations: boolean;
   seeAllHref?: Href;
 };
 
@@ -51,7 +49,6 @@ function toShelf({ key, title, items }: HomeSection): HomeShelf[] {
       key,
       title: decode(title),
       items: cards,
-      stations: cards.every((card) => card.type === "radio_station"),
       seeAllHref: SECTION_LIST[key],
     },
   ];

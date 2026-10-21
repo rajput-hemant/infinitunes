@@ -9,9 +9,8 @@ import { Text } from "~/components/ui/text";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { usePending } from "~/lib/use-pending";
 import { entityHref } from "~/navigation/entity-href";
+import { isPlayable, playEntity } from "~/playback/play-entity";
 import { radii } from "~/theme/tokens";
-
-import { playPlaylist } from "./play-home";
 
 type HomeHeroProps = {
   featured: CardItem;
@@ -23,6 +22,7 @@ export function HomeHero({ featured, tiles }: HomeHeroProps) {
   const tileWidth = useGridCardWidth();
   const href = entityHref(featured.type, featured.url);
   const { run, pending } = usePending();
+  const { type, url } = featured;
 
   const card = (
     <Pressable
@@ -56,13 +56,15 @@ export function HomeHero({ featured, tiles }: HomeHeroProps) {
       ) : (
         card
       )}
-      <Button
-        label="Play"
-        icon={{ ios: "play.fill", android: "play_arrow" }}
-        accessibilityLabel={`Play ${featured.name}`}
-        onPress={() => void run(() => playPlaylist(featured.url))}
-        disabled={pending}
-      />
+      {isPlayable(type) ? (
+        <Button
+          label="Play"
+          icon={{ ios: "play.fill", android: "play_arrow" }}
+          accessibilityLabel={`Play ${featured.name}`}
+          onPress={() => void run(() => playEntity(type, url))}
+          disabled={pending}
+        />
+      ) : null}
       {tiles.length > 0 ? (
         <View className="flex-row flex-wrap pt-2" style={{ gap: GRID_GAP }}>
           {tiles.map((tile) => (

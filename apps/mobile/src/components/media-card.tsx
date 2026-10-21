@@ -3,13 +3,18 @@ import { Link } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { entityHref } from "~/navigation/entity-href";
-import { radii } from "~/theme/tokens";
+import { isPlayable } from "~/playback/play-entity";
+import { radii, sizes } from "~/theme/tokens";
 
+import { CardPlayButton } from "./card-play-button";
 import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
 
 /** Card width in points: two and a bit cards fill a phone's width, hinting the shelf scrolls. */
 export const MEDIA_CARD_WIDTH = 150;
+
+/** Distance of the play button from the artwork's bottom-right corner. */
+const PLAY_INSET = 4;
 
 /** Types whose artwork is round, as on the web. */
 const ROUND_TYPES: ReadonlySet<MediaType> = new Set([
@@ -27,7 +32,9 @@ type MediaCardProps = {
 /**
  * An album, playlist, artist, show, station or other catalog item: square
  * artwork (round for artists and stations), title and subtitle. It opens the
- * item's screen; a type without one renders the card without a link.
+ * item's screen; a type without one renders the card without a link. A
+ * playable item gets a Play button over its artwork (the web's `CardPlay`),
+ * a sibling of the link so screen readers reach both.
  */
 export function MediaCard({
   item,
@@ -69,11 +76,26 @@ export function MediaCard({
     </Pressable>
   );
 
-  return href ? (
+  if (!href) return card;
+  const linked = (
     <Link href={href} asChild>
       {card}
     </Link>
-  ) : (
-    card
+  );
+  if (!isPlayable(item.type)) return linked;
+  return (
+    <View style={{ width }}>
+      {linked}
+      <CardPlayButton
+        type={item.type}
+        url={item.url}
+        name={item.name}
+        style={{
+          position: "absolute",
+          top: width - sizes.ctl - PLAY_INSET,
+          left: width - sizes.ctl - PLAY_INSET,
+        }}
+      />
+    </View>
   );
 }
