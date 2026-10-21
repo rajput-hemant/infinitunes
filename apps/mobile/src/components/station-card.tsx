@@ -3,7 +3,7 @@ import { useTheme } from "expo-router";
 import { View } from "react-native";
 
 import { usePending } from "~/lib/use-pending";
-import { stationRef } from "~/navigation/station-ref";
+import { stationRef } from "~/navigation/entity-href";
 import { playStation } from "~/playback/radio";
 import { sizes } from "~/theme/tokens";
 

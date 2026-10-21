@@ -47,6 +47,7 @@ export function PlaylistScreen({ token }: PlaylistScreenProps) {
       ]}
       identity={(playlist) => ({
         name: decode(playlist.title),
+        type: "playlist",
         url: playlist.perma_url,
       })}
     >

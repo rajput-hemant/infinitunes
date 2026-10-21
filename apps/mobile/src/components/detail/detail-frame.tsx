@@ -7,9 +7,9 @@ import { View } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
+import type { ShareableItem } from "~/lib/share";
 
 import { detailHeaderOptions } from "./detail-header-options";
-import type { SharedItem } from "./detail-header-options";
 
 const NOT_FOUND_ICON: SymbolViewProps["name"] = {
   ios: "magnifyingglass",
@@ -26,7 +26,7 @@ export type DetailFrameProps<Data> = {
   /** The not-found state's symbol; a magnifying glass by default. */
   icon?: SymbolViewProps["name"];
   /** The loaded item's header title and shared web page. */
-  identity: (data: Data) => SharedItem;
+  identity: (data: Data) => ShareableItem;
   children: (data: Data) => ReactNode;
 };
 

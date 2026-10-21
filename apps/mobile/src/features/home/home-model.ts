@@ -9,9 +9,9 @@ import type { Href } from "expo-router";
 
 /** The full list behind a section's "See all". */
 const SECTION_LIST: Record<string, Href> = {
-  new_albums: "/browse/albums",
-  charts: "/charts",
-  top_playlists: "/browse/playlists",
+  new_albums: "/album",
+  charts: "/chart",
+  top_playlists: "/playlist",
   radio: "/radio",
 };
 

@@ -1,3 +1,4 @@
+import type { ArtistTab } from "@infinitunes/core/entity-route";
 import type { Artist, Category, SongRowItem } from "@infinitunes/types";
 import { decode, formatCount } from "@infinitunes/types";
 import { View } from "react-native";
@@ -7,7 +8,6 @@ import { EntityHeader } from "~/components/entity-header";
 import { SegmentedTabs } from "~/components/segmented-tabs";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
-import type { ArtistTab } from "./artist-tabs";
 import { ARTIST_TAB_LABELS, CATEGORIES, CATEGORY_LABELS } from "./artist-tabs";
 
 type ArtistListHeaderProps = {

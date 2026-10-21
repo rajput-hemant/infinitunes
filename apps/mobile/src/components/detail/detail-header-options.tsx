@@ -2,9 +2,7 @@ import type { NativeStackNavigationOptions } from "expo-router";
 
 import { IconButton } from "~/components/ui/icon-button";
 import { shareItem } from "~/lib/share";
-
-/** An item the header names and shares: its decoded title and perma URL. */
-export type SharedItem = { name: string; url: string };
+import type { ShareableItem } from "~/lib/share";
 
 /**
  * Native header of a detail screen. The entity's own header carries the big
@@ -12,7 +10,7 @@ export type SharedItem = { name: string; url: string };
  * item yet (loading, failed) the bar is empty rather than showing the route name.
  */
 export function detailHeaderOptions(
-  item?: SharedItem,
+  item?: ShareableItem,
 ): NativeStackNavigationOptions {
   return {
     title: item?.name ?? "",

@@ -18,6 +18,7 @@ export function EpisodeScreen({ token }: { token: string }) {
       icon={{ ios: "mic", android: "podcasts" }}
       identity={({ episode }) => ({
         name: decode(episode.title),
+        type: "episode",
         url: episode.perma_url,
       })}
     >

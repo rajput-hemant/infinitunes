@@ -1,3 +1,4 @@
+import type { ArtistTab } from "@infinitunes/core/entity-route";
 import type {
   Album,
   Artist,
@@ -14,7 +15,6 @@ import { PagedFooter } from "~/components/paged-footer";
 
 import type { ArtistListItem } from "./artist-list-items";
 import { bioItems } from "./artist-list-items";
-import type { ArtistTab } from "./artist-tabs";
 import { OverviewShelves } from "./overview-shelves";
 import { useArtistPages } from "./use-artist-pages";
 

@@ -25,6 +25,7 @@ function Harness() {
       noun="Album"
       identity={({ name }) => ({
         name,
+        type: "album",
         url: "https://www.jiosaavn.com/album/udta-teer/LHgqn,SRpyA_",
       })}
     >

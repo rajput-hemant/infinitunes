@@ -17,6 +17,7 @@ describe("detailHeaderOptions", () => {
     });
     const options = detailHeaderOptions({
       name: "Flipperachi",
+      type: "artist",
       url: "https://www.jiosaavn.com/artist/flipperachi/LnMfdXjMGl0_",
     });
     expect(options.title).toBe("Flipperachi");

@@ -20,7 +20,7 @@ const albums = {
 function renderLikedAlbums() {
   return renderStack({
     index: () => <LikedCollectionScreen kind="albums" />,
-    "album/[token]": () => null,
+    "album/[name]/[token]": () => null,
   });
 }
 
@@ -54,7 +54,7 @@ describe("LikedCollectionScreen", () => {
     expect(titles).toEqual(["Rock & Roll", "Udta Teer"]);
 
     await fireEvent.press(screen.getByText("Rock & Roll"));
-    expect(router.getPathname()).toBe("/album/Qw3rTy_");
+    expect(router.getPathname()).toBe("/album/rock-roll/Qw3rTy_");
   });
 
   it("says so when nothing is liked", async () => {

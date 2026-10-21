@@ -1,10 +1,14 @@
+import { artistPath, entityRoute } from "@infinitunes/core/entity-route";
 import type { Artist } from "@infinitunes/types";
 
 /**
  * An artist has no `perma_url`, only one URL per tab, whose name slug ends
- * in the tab (`flipperachi-songs`). The web app lands that on its Songs
- * tab; without the suffix it is the Overview, which is what the screen opens on.
+ * in the tab (`flipperachi-songs`). The screen opens on the Overview, so
+ * that is the page it shares.
  */
 export function artistShareUrl(artist: Artist): string {
-  return artist.urls.songs.replace(/-songs(?=\/[^/]+$)/, "");
+  const route = entityRoute(artist.urls.songs, "artist");
+  return route?.kind === "artist"
+    ? artistPath(route.name, route.token, "overview")
+    : artist.urls.songs;
 }

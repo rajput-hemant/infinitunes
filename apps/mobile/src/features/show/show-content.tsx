@@ -23,6 +23,8 @@ type ShowContentProps = {
   show: Show;
   onRefresh: () => Promise<unknown>;
   isRefreshing: boolean;
+  /** The season the route names (`/show/<name>/<season>/<token>`); the latest by default. */
+  initialSeason?: number;
 };
 
 function fansLabel(show: Show): string | undefined {
@@ -35,9 +37,10 @@ export function ShowContent({
   show,
   onRefresh,
   isRefreshing,
+  initialSeason,
 }: ShowContentProps) {
   const { show_details: details } = show;
-  const [chosenSeason, setSeason] = useState<number>();
+  const [chosenSeason, setSeason] = useState(initialSeason);
   const [sort, setSort] = useState<Sort>("desc");
   const season = chosenSeason ?? Number(details.more_info.season_number);
   const episodes = useShowEpisodes({ show, season, sort });

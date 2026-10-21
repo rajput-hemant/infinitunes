@@ -7,7 +7,7 @@ import type {
 import { toast } from "sonner-native";
 
 import { trpcClient } from "~/lib/trpc";
-import type { StationRef } from "~/navigation/station-ref";
+import type { StationRef } from "~/navigation/entity-href";
 
 import { playerStore } from "./player-store";
 

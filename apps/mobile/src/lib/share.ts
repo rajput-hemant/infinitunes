@@ -1,19 +1,30 @@
+import type { MediaType } from "@infinitunes/types";
 import { Share } from "react-native";
+
+import { entityPath } from "~/navigation/entity-href";
 
 import { env } from "./env";
 
+/** An item the share sheet offers: its decoded name, its type and its perma URL. */
+export type ShareableItem = { name: string; type: MediaType; url: string };
+
 /**
- * The web app's page for an upstream item. The web routes mirror JioSaavn's
- * paths (and its proxy redirects the ones that differ, like artist tabs), so
- * the perma URL's path on the web origin is the item's page.
+ * The web app's page for an upstream item: its entity path (the same as the
+ * app's) on the web origin, or the perma URL's own path when it is not one.
  */
-export function webPageUrl(permaUrl: string): string {
-  return env.apiUrl + permaUrl.replace(/^https?:\/\/[^/]+/, "");
+export function webPageUrl({ type, url }: Omit<ShareableItem, "name">) {
+  return (
+    env.apiUrl + (entityPath(type, url) ?? url.replace(/^https?:\/\/[^/]+/, ""))
+  );
 }
 
 /** Opens the system share sheet for an item's web page. */
-export function shareItem({ name, url }: { name: string; url: string }) {
-  const link = webPageUrl(url);
+export function shareItem(item: ShareableItem) {
+  const link = webPageUrl(item);
   // iOS shares `url` as a link and `message` as text; Android takes only `message`.
-  void Share.share({ title: name, message: `${name} ${link}`, url: link });
+  void Share.share({
+    title: item.name,
+    message: `${item.name} ${link}`,
+    url: link,
+  });
 }

@@ -25,8 +25,8 @@ beforeEach(() => {
 });
 
 const routes = {
-  charts: () => null,
-  "browse/albums": () => null,
+  chart: () => null,
+  album: () => null,
   radio: () => null,
 };
 
@@ -55,7 +55,7 @@ describe("BrowseScreen", () => {
 
     await fireEvent.press(screen.getByRole("link", { name: "Top Charts" }));
 
-    expect(app.getPathname()).toBe("/charts");
+    expect(app.getPathname()).toBe("/chart");
   });
 
   it("opens a language's albums", async () => {
@@ -63,7 +63,7 @@ describe("BrowseScreen", () => {
 
     await fireEvent.press(screen.getByRole("link", { name: "Tamil" }));
 
-    expect(app.getPathname()).toBe("/browse/albums");
+    expect(app.getPathname()).toBe("/album");
     expect(app.getSearchParams()).toEqual({ lang: "tamil" });
   });
 });

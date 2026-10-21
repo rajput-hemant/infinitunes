@@ -65,6 +65,7 @@ export function AlbumScreen({ token }: AlbumScreenProps) {
       ]}
       identity={(album) => ({
         name: decode(album.title),
+        type: "album",
         url: album.perma_url,
       })}
     >

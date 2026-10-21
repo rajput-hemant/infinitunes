@@ -18,6 +18,7 @@ export function LabelScreen({ token }: { token: string }) {
       icon={{ ios: "opticaldisc", android: "album" }}
       identity={(label) => ({
         name: decode(label.name),
+        type: "label",
         // A label has no `perma_url`; its albums URL is the page the web opens first.
         url: label.urls.albums,
       })}

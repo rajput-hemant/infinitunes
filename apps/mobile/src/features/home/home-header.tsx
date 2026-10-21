@@ -26,8 +26,7 @@ const languageChips = [
     key: lang,
     label: languageLabel(lang),
     selected: false,
-    onPress: () =>
-      router.push({ pathname: "/browse/albums", params: { lang } }),
+    onPress: () => router.push({ pathname: "/album", params: { lang } }),
   })),
 ];
 

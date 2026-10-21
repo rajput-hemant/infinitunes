@@ -81,6 +81,7 @@ export function SongScreen({ token }: SongScreenProps) {
       ]}
       identity={({ song }) => ({
         name: decode(song.title),
+        type: song.type,
         url: song.perma_url,
       })}
     >

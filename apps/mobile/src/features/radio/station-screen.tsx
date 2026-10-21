@@ -10,7 +10,7 @@ import { SectionHeading } from "~/components/section-heading";
 import { EntityHeaderSkeleton, SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 import { trpc } from "~/lib/trpc";
-import type { StationRef } from "~/navigation/station-ref";
+import type { StationRef } from "~/navigation/entity-href";
 import { startStation } from "~/playback/radio";
 
 const STATION_ICON = {
@@ -37,6 +37,7 @@ export function StationScreen({ name, token }: StationRef) {
       icon={STATION_ICON}
       identity={({ station }) => ({
         name: decode(station.title),
+        type: "radio_station",
         url: station.perma_url,
       })}
     >

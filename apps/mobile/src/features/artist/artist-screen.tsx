@@ -1,3 +1,4 @@
+import type { ArtistTab } from "@infinitunes/core/entity-route";
 import { decode } from "@infinitunes/types";
 
 import { DetailFrame } from "~/components/detail/detail-frame";
@@ -7,8 +8,14 @@ import { artistShareUrl } from "./artist-share-url";
 import { ArtistSkeleton } from "./artist-skeleton";
 import { useArtist } from "./use-artist";
 
+type ArtistScreenProps = {
+  token: string;
+  /** The tab to open on (the route's tab segment). */
+  initialTab: ArtistTab;
+};
+
 /** The artist behind a route token: loading, not found, failed, or the artist. */
-export function ArtistScreen({ token }: { token: string }) {
+export function ArtistScreen({ token, initialTab }: ArtistScreenProps) {
   const query = useArtist(token);
 
   return (
@@ -19,6 +26,7 @@ export function ArtistScreen({ token }: { token: string }) {
       icon={{ ios: "music.microphone", android: "artist" }}
       identity={(artist) => ({
         name: decode(artist.name),
+        type: "artist",
         url: artistShareUrl(artist),
       })}
     >
@@ -27,6 +35,7 @@ export function ArtistScreen({ token }: { token: string }) {
           artist={artist}
           onRefresh={query.refetch}
           isRefreshing={query.isRefetching}
+          initialTab={initialTab}
         />
       )}
     </DetailFrame>

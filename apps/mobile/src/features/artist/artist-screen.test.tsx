@@ -15,12 +15,15 @@ import { ArtistScreen } from "./artist-screen";
 const initialPlayer = playerStore.getState();
 
 function renderArtist() {
-  return renderScreen(<ArtistScreen token={ARTIST_TOKEN} />, {
-    routes: {
-      "album/[token]": () => null,
-      "artist/[token]": () => null,
+  return renderScreen(
+    <ArtistScreen token={ARTIST_TOKEN} initialTab="overview" />,
+    {
+      routes: {
+        "album/[name]/[token]": () => null,
+        "artist/[name]/[token]/[tab]": () => null,
+      },
     },
-  });
+  );
 }
 
 function findTitle() {
@@ -107,7 +110,7 @@ describe("ArtistScreen", () => {
     const app = await renderArtist();
     await fireEvent.press(await screen.findByText("Fadi Aymen & Co"));
 
-    expect(app.getPathname()).toBe("/artist/RbVfsAk3Sd8_");
+    expect(app.getPathname()).toBe("/artist/fadi-aymen/RbVfsAk3Sd8_/songs");
   });
 
   it("queues the top songs from the pressed row", async () => {
@@ -221,7 +224,7 @@ describe("ArtistScreen", () => {
 
     await fireEvent.press(await screen.findByText("Album a1"));
 
-    expect(app.getPathname()).toBe("/album/toka1");
+    expect(app.getPathname()).toBe("/album/album-a1/toka1");
   });
 
   it("says so when a tab has nothing to list", async () => {

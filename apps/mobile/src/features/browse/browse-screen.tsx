@@ -21,19 +21,19 @@ export function BrowseScreen() {
   const mixHref = covers.mix && entityHref("mix", covers.mix.perma_url);
 
   const categories: Category[] = [
-    { label: "Top Albums", href: "/browse/albums", image: covers.albums },
-    { label: "Top Charts", href: "/charts", image: covers.charts },
+    { label: "Top Albums", href: "/album", image: covers.albums },
+    { label: "Top Charts", href: "/chart", image: covers.charts },
     {
       label: "Top Playlists",
-      href: "/browse/playlists",
+      href: "/playlist",
       image: covers.playlists,
     },
-    { label: "Podcasts", href: "/browse/podcasts", image: covers.shows },
-    { label: "Top Artists", href: "/browse/artists", image: covers.artists },
+    { label: "Podcasts", href: "/show", image: covers.shows },
+    { label: "Top Artists", href: "/artist", image: covers.artists },
     { label: "Radio", href: "/radio", image: covers.stations },
     {
       label: "New Releases",
-      href: "/browse/albums",
+      href: "/album",
       image: covers.newReleases,
     },
     ...(covers.mix && mixHref
@@ -67,7 +67,7 @@ export function BrowseScreen() {
           {LANGUAGES.map((lang, index) => (
             <BrowseTile
               key={lang}
-              href={{ pathname: "/browse/albums", params: { lang } }}
+              href={{ pathname: "/album", params: { lang } }}
               title={languageLabel(lang)}
               index={index}
               width={width}

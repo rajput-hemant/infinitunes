@@ -31,7 +31,7 @@ const modules = {
 function renderEpisode() {
   return renderScreen(<EpisodeScreen token={EPISODE_TOKEN} />, {
     routes: {
-      "show/[token]": () => null,
+      "show/[name]/[season]/[token]": () => null,
     },
   });
 }
@@ -90,7 +90,7 @@ describe("EpisodeScreen", () => {
 
     await fireEvent.press(await screen.findByRole("link"));
 
-    expect(app.getPathname()).toBe(`/show/${SHOW_TOKEN}`);
+    expect(app.getPathname()).toBe(`/show/the-ranveer-show/2/${SHOW_TOKEN}`);
   });
 
   it("shows not found for an unknown episode, without a retry", async () => {

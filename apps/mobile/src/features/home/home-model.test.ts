@@ -53,7 +53,7 @@ describe("buildHomeModel", () => {
       name: "Tamil & Telugu",
       type: "playlist",
     });
-    expect(shelves[0]?.seeAllHref).toBe("/browse/albums");
+    expect(shelves[0]?.seeAllHref).toBe("/album");
     expect(shelves[3]?.seeAllHref).toBeUndefined();
   });
 

@@ -43,8 +43,8 @@ function renderSearch(ui: ReactElement) {
     "(tabs)/index": () => (
       <QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>
     ),
-    "(tabs)/song/[token]": () => null,
-    "(tabs)/album/[token]": () => null,
+    "(tabs)/song/[name]/[token]": () => null,
+    "(tabs)/album/[name]/[token]": () => null,
   });
 }
 
@@ -102,7 +102,7 @@ describe("combined search results", () => {
 
     await fireEvent.press(await screen.findByText("FA9LA & Friends"));
 
-    expect(router.getPathname()).toBe("/song/BSaNI3Yr");
+    expect(router.getPathname()).toBe("/song/fa9la/BSaNI3Yr");
     expect(onOpenResult).toHaveBeenCalledTimes(1);
     expect(playerStore.getState().queue).toEqual([]);
   });
@@ -116,7 +116,7 @@ describe("combined search results", () => {
       await screen.findByRole("link", { name: "Udta Teer, Sachin-Jigar" }),
     );
 
-    expect(router.getPathname()).toBe("/album/LHgqn,SRpyA_");
+    expect(router.getPathname()).toBe("/album/udta-teer/LHgqn,SRpyA_");
     expect(onOpenResult).toHaveBeenCalledTimes(1);
   });
 
@@ -214,7 +214,7 @@ describe("results of one type", () => {
 
     await fireEvent.press(await screen.findByText("Udta Teer"));
 
-    expect(router.getPathname()).toBe("/album/LHgqn,SRpyA_");
+    expect(router.getPathname()).toBe("/album/udta-teer/LHgqn,SRpyA_");
     expect(procedure("search.byType")).toHaveBeenCalledWith(
       expect.objectContaining({ type: "albums" }),
     );
@@ -274,7 +274,7 @@ describe("idle search", () => {
 
     await fireEvent.press(await screen.findByText("Rock & Roll"));
 
-    expect(router.getPathname()).toBe("/album/LHgqn,SRpyA_");
+    expect(router.getPathname()).toBe("/album/rock-roll/LHgqn,SRpyA_");
   });
 
   it("leaves out a top-searches list that fails", async () => {

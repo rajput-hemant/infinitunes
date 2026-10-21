@@ -12,7 +12,7 @@ const initialPlayer = playerStore.getState();
 function renderLabel() {
   return renderScreen(<LabelScreen token={LABEL_TOKEN} />, {
     routes: {
-      "album/[token]": () => null,
+      "album/[name]/[token]": () => null,
     },
   });
 }
@@ -62,7 +62,7 @@ describe("LabelScreen", () => {
 
     await fireEvent.press(screen.getByText("Udta Teer"));
 
-    expect(app.getPathname()).toBe("/album/LHgqn,SRpyA_");
+    expect(app.getPathname()).toBe("/album/udta-teer/LHgqn,SRpyA_");
   });
 
   it("lists the songs on the Songs tab and queues them from the pressed row", async () => {

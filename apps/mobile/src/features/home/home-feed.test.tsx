@@ -122,12 +122,12 @@ describe("HomeFeed", () => {
   it("opens a language's albums from its chip", async () => {
     home.mockResolvedValue(rawLaunchData());
     const app = await renderScreen(<HomeFeed />, {
-      routes: { "browse/albums": () => null },
+      routes: { album: () => null },
     });
 
     await fireEvent.press(screen.getByText("Tamil"));
 
-    expect(app.getPathname()).toBe("/browse/albums");
+    expect(app.getPathname()).toBe("/album");
     expect(app.getSearchParams()).toEqual({ lang: "tamil" });
   });
 });

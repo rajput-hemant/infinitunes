@@ -29,7 +29,11 @@ export function MixScreen({ token }: MixScreenProps) {
       skeleton={<DetailSkeleton />}
       noun="Mix"
       icon={{ ios: "music.note.list", android: "queue_music" }}
-      identity={(mix) => ({ name: decode(mix.title), url: mix.perma_url })}
+      identity={(mix) => ({
+        name: decode(mix.title),
+        type: "mix",
+        url: mix.perma_url,
+      })}
     >
       {(mix) => <MixPage mix={mix} />}
     </DetailScreen>
