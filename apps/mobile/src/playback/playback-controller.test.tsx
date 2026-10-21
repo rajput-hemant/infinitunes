@@ -154,6 +154,21 @@ describe("PlaybackController", () => {
     expect(player.playing).toBe(true);
   });
 
+  it("keeps the playing entry loaded while Up next is reordered or cleared", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
+
+    // Moving the next entry above the playing one shifts its index only.
+    await act(async () => playerStore.getState().moveInQueue(1, 0));
+    expect(playerStore.getState().currentIndex).toBe(1);
+    await act(async () => playerStore.getState().clearUpNext());
+
+    expect(player.loads).toEqual([ladder("BSaNI3Yr", 320)]);
+    expect(player.playing).toBe(true);
+    expect(procedure("history.record")).toHaveBeenCalledTimes(1);
+  });
+
   it("starts a looping one-entry queue over when it ends", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows.slice(0, 1)));
