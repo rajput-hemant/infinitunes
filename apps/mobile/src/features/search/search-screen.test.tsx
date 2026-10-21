@@ -68,6 +68,13 @@ describe("SearchScreen", () => {
     expect(searchBar().placeholder).toBe("Songs, albums, artists, podcasts");
   });
 
+  it("opens a ?q= link with that query searched", async () => {
+    await renderStack({ index: Search }, "/?q=fa9la");
+
+    expect(procedure("search.all")).toHaveBeenCalledWith({ q: "fa9la" });
+    expect(await screen.findByText("Top Result")).toBeOnTheScreen();
+  });
+
   it("shows top searches until something is typed", async () => {
     await renderStack({ index: Search });
     await debounce();

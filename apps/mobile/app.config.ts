@@ -49,6 +49,7 @@ const config: ExpoConfig = {
         dark: { image: ICON, backgroundColor: colors.dark.background },
       },
     ],
+    "./plugins/ios-app-intents/app.plugin.ts",
   ],
   experiments: {
     typedRoutes: true,

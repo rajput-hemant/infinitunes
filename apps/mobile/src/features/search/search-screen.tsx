@@ -2,8 +2,8 @@ import {
   SEARCH_DEBOUNCE_MS,
   useDebouncedValue,
 } from "@infinitunes/core/react/use-debounced-value";
-import { Stack } from "expo-router";
-import { useRef, useState } from "react";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import type { SearchBarCommands } from "react-native-screens";
 
 import { IdleSearch } from "./idle-search";
@@ -16,10 +16,12 @@ import type { SearchType } from "./search-types";
  * The Search tab: the native header search bar (the iOS 26 search tab's field,
  * Android's Material search view) drives everything on one screen. An empty
  * field shows recent and top searches; text shows results under the type chips.
+ * A `/search?q=` link (Siri, Google Assistant) opens with that query searched.
  */
 export function SearchScreen() {
+  const { q } = useLocalSearchParams<{ q?: string }>();
   const searchBar = useRef<SearchBarCommands>(null);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(q ?? "");
   const [type, setType] = useState<SearchType>("all");
   const { add } = useSearchHistory();
   const debouncedQuery = useDebouncedValue(query.trim(), SEARCH_DEBOUNCE_MS, {
@@ -32,6 +34,18 @@ export function SearchScreen() {
     setQuery(text);
     setType(nextType);
   }
+
+  // A new `?q=` (the tab already open) searches it.
+  const [linkedQuery, setLinkedQuery] = useState(q);
+  if (q !== linkedQuery) {
+    setLinkedQuery(q);
+    if (q) setQuery(q);
+  }
+
+  // The native field keeps its own text: put the linked query in it.
+  useEffect(() => {
+    if (q) searchBar.current?.setText(q);
+  }, [q]);
 
   return (
     <>

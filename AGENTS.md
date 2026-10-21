@@ -274,6 +274,13 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   over web's.
 - `type-check` runs `expo customize tsconfig.json` first: it writes the gitignored `.expo/types` route
   types that `tsc` needs in a fresh clone. TypeScript is the repo's 7.x (`expo.install.exclude`).
+- Voice assistants (`docs/mobile-assistants.md`): both open `infinitunes://action/<name>` links (`resume`, `play-liked`,
+  `shuffle-liked`, `play-playlist?id=`, `play-search?q=`; plus `/search?q=`), run once by `app/action/[action].tsx` via
+  `features/app-actions/` (the contract: rename nothing without the native sides). Siri's App Intents are Swift in
+  `plugins/ios-app-intents/swift/`, which that plugin copies into the app target (not a pod: Xcode extracts intents
+  metadata only from the app target) and which raises the app target to iOS 17.0. They cannot be compiled on Linux:
+  verify with `expo prebuild --platform ios --no-install` and the pbxproj, and say a change is unbuilt. Playlists reach
+  them through RN `Settings` (`UserDefaults`, `user-data/assistant-shortcuts.ios.ts`).
 - No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`; device builds `bun run mobile:android` / `mobile:ios`, guide in `docs/mobile-device-setup.md`.
 - `apps/mobile/e2e` runs the app's real `auth-client`/`trpc` (only native modules stubbed,
   `native-stubs.ts`) against a local web app and scratch database: `MOBILE_E2E_API_URL=... bun
