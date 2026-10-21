@@ -205,11 +205,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   one status event only (the next one, often in the same JS task, says `null`) and nothing guarantees a
   rendered status between `replace` and the next failure, so the controller latches each load's error/loaded
   from its listener; never feed `useAudioPlayerStatus().error`/`isLoaded` to `useTrackPlayback`.
-- Player colour (D3, Now Playing and the Android dock only): `usePlayerColors` seeds from
-  `react-native-image-colors` (the 50px cover, cached per URL in the query cache), `playerColorsFromSeed`
-  (`lib/artwork-colors.ts`, Material content scheme) builds the wash and `meetsContrast` checks every pair
-  (4.5:1 text, 3:1 controls); no seed or a miss is `null`, the D1 tokens. Lay content on it with `OnWash` /
-  `WashText` (`features/player/wash.tsx`); Jest's `__mocks__/react-native-image-colors.ts` finds no colour.
+- Player wash (D3, Now Playing and the Android dock): seed from `react-native-image-colors`, palette and AA check in
+  `lib/artwork-colors.ts`; no seed or a contrast miss is `null`, the D1 tokens. Lay content on it with `OnWash`/`WashText`.
 - Notifications: the media notification / lock screen is expo-audio's own (Android Media3 foreground service, iOS Now
   Playing; no custom code or icon), activated once (`setActiveForLockScreen`, which rebuilds the Android session) and then
   fed by `updateLockScreenMetadata`. Local notifications (`expo-notifications`, no push, `enableRemoteNotifications: false`)
