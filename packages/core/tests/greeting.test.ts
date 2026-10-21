@@ -1,10 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import {
-  FALLBACK_GREETING,
-  formatGreeting,
-  greetingForHour,
-} from "../../app/(root)/_components/greeting";
+import { formatGreeting, greetingForHour } from "../src/greeting";
 
 describe("greetingForHour", () => {
   it("splits the day at noon and 18:00", () => {
@@ -33,7 +29,7 @@ describe("formatGreeting", () => {
   });
 
   it("falls back to the bare salutation without a usable name", () => {
-    expect(formatGreeting(FALLBACK_GREETING)).toBe("Welcome");
+    expect(formatGreeting("Welcome")).toBe("Welcome");
     expect(formatGreeting("Good morning", null)).toBe("Good morning");
     expect(formatGreeting("Good morning", "  ")).toBe("Good morning");
   });

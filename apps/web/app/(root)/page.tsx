@@ -1,5 +1,10 @@
-import type { MediaType } from "@infinitunes/types";
-import { decode, getImageSrc, parseToken, uniqueBy } from "@infinitunes/types";
+import {
+  decode,
+  getImageSrc,
+  homeHighlights,
+  homeSections,
+  parseToken,
+} from "@infinitunes/types";
 
 import { Shelf } from "~/components/slider/shelf";
 import { ShelfItem } from "~/components/slider/shelf-item";
@@ -12,7 +17,6 @@ import { getHref } from "~/lib/utils";
 import { HomeHeader } from "./_components/home-header";
 import { HomeHero } from "./_components/home-hero";
 import type { HeroTile } from "./_components/home-hero";
-import { homeItems } from "./_components/home-items";
 import { QuickPicks } from "./_components/quick-picks";
 import type { QuickPickItem } from "./_components/quick-picks";
 
@@ -27,36 +31,15 @@ export const metadata = pageMetadata({
   alt: `${siteConfig.name} Homepage`,
 });
 
-/** Sections that are not card lists. */
-const SKIPPED_SECTIONS = new Set([
-  "modules",
-  "global_config",
-  "browse_discover",
-]);
-
 /** Sections laid out as a two-row horizontal grid. */
 const GRID_SECTIONS = new Set(["trending", "new_albums", "charts"]);
 
-/** Fallback card type for sections whose items carry no `type`. */
-const SECTION_TYPE: Record<string, MediaType> = {
-  new_albums: "album",
-  charts: "playlist",
-  top_playlists: "playlist",
-  radio: "radio_station",
-};
-
-const QUICK_PICK_ALBUMS = 4;
-const QUICK_PICK_PLAYLISTS = 4;
-const HERO_TILES = 4;
-
 export default async function HomePage() {
   const homedata = await api.home.home({});
+  const highlights = homeHighlights(homedata);
 
-  const featured = homedata.top_playlists[0];
-  const quickPicks: QuickPickItem[] = [
-    ...homedata.new_albums.slice(0, QUICK_PICK_ALBUMS),
-    ...homedata.top_playlists.slice(1, 1 + QUICK_PICK_PLAYLISTS),
-  ].map((item) => ({
+  const { featured } = highlights;
+  const quickPicks: QuickPickItem[] = highlights.quickPicks.map((item) => ({
     key: `${item.type}-${item.id}`,
     href: getHref(item.perma_url, item.type),
     title: decode(item.title),
@@ -65,19 +48,14 @@ export default async function HomePage() {
     token: parseToken(item.perma_url),
   }));
 
-  const heroTiles: HeroTile[] = [
-    ...(homedata.charts ?? []),
-    ...homedata.top_playlists.slice(1 + QUICK_PICK_PLAYLISTS),
-  ]
-    .slice(0, HERO_TILES)
-    .map((item) => ({
-      key: `${item.type}-${item.id}`,
-      href: getHref(item.perma_url, item.type),
-      title: decode(item.title),
-      image: item.image,
-      type: item.type,
-      token: parseToken(item.perma_url),
-    }));
+  const heroTiles: HeroTile[] = highlights.heroTiles.map((item) => ({
+    key: `${item.type}-${item.id}`,
+    href: getHref(item.perma_url, item.type),
+    title: decode(item.title),
+    image: item.image,
+    type: item.type,
+    token: parseToken(item.perma_url),
+  }));
 
   return (
     <div className="flex flex-col gap-(--page-gap)">
@@ -91,55 +69,33 @@ export default async function HomePage() {
         </div>
       )}
 
-      {Object.entries(homedata).map(([key, section]) => {
-        const items = SKIPPED_SECTIONS.has(key) ? null : homeItems(section);
-        if (!items?.length) return null;
-
-        const sectionTitle = homedata.modules?.[key]?.title;
-
-        return (
-          <section key={key}>
-            <Shelf
-              rows={GRID_SECTIONS.has(key) ? 2 : 1}
-              heading={
-                sectionTitle && (
-                  <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
-                    {decode(sectionTitle)}
-                  </h2>
-                )
-              }
-            >
-              {uniqueBy(items, (item) => item.id || item.title).map(
-                ({
-                  id,
-                  title: itemTitle,
-                  perma_url,
-                  subtitle,
-                  type: itemType,
-                  image,
-                  explicit_content,
-                }) => {
-                  const effectiveType =
-                    itemType || SECTION_TYPE[key] || "playlist";
-
-                  return (
-                    <ShelfItem key={id || itemTitle}>
-                      <SliderCard
-                        name={itemTitle}
-                        url={perma_url}
-                        subtitle={subtitle}
-                        type={effectiveType}
-                        image={image}
-                        explicit={explicit_content}
-                      />
-                    </ShelfItem>
-                  );
-                },
-              )}
-            </Shelf>
-          </section>
-        );
-      })}
+      {homeSections(homedata).map(({ key, title: sectionTitle, items }) => (
+        <section key={key}>
+          <Shelf
+            rows={GRID_SECTIONS.has(key) ? 2 : 1}
+            heading={
+              sectionTitle && (
+                <h2 className="font-heading text-xl leading-7 font-bold tracking-[-0.015em] text-foreground">
+                  {decode(sectionTitle)}
+                </h2>
+              )
+            }
+          >
+            {items.map((item) => (
+              <ShelfItem key={item.id || item.title}>
+                <SliderCard
+                  name={item.title}
+                  url={item.perma_url}
+                  subtitle={item.subtitle}
+                  type={item.type}
+                  image={item.image}
+                  explicit={item.explicit_content}
+                />
+              </ShelfItem>
+            ))}
+          </Shelf>
+        </section>
+      ))}
     </div>
   );
 }

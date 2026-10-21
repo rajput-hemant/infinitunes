@@ -1,5 +1,5 @@
-import { decode, toCardItem } from "@infinitunes/types";
-import type { AllSearch } from "@infinitunes/types";
+import { decode, getSearchItems, toCardItem } from "@infinitunes/types";
+import type { AllSearch, SearchItem } from "@infinitunes/types";
 import type { ReactElement } from "react";
 
 import { ErrorState } from "~/components/error-state";
@@ -10,8 +10,7 @@ import { useOpenEntity } from "~/navigation/use-open-entity";
 
 import { NoResults } from "./no-results";
 import { ResultSection } from "./result-section";
-import { getSearchItems, isLinked } from "./search-items";
-import type { SearchItem } from "./search-items";
+import { isLinked } from "./search-items";
 import type { ListSearchType } from "./search-types";
 import { useAllSearch } from "./use-all-search";
 

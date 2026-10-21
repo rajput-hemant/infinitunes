@@ -1,18 +1,23 @@
+import { formatGreeting, greetingForHour } from "@infinitunes/core/greeting";
 import { LANGUAGES } from "@infinitunes/types";
+import { languageLabel } from "@infinitunes/types";
 import { Link, router } from "expo-router";
 import { View } from "react-native";
 
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { ChipRow } from "~/features/browse/chip-row";
-import { languageLabel } from "~/features/browse/languages";
 import { usePendingAction } from "~/features/browse/use-pending-action";
 import { authClient } from "~/lib/auth-client";
 
-import { currentSalutation, formatGreeting } from "./greeting";
 import { playSurprise } from "./play-home";
 
 const CHIP_COUNT = 10;
+
+/** The salutation for the listener's local time now. */
+function salutationNow() {
+  return greetingForHour(new Date().getHours());
+}
 
 /** "For you" is this screen; each language opens that language's albums. */
 const languageChips = [
@@ -35,7 +40,7 @@ export function HomeHeader() {
     <View className="gap-3 pb-2">
       <View className="gap-1 px-page pt-2">
         <Text variant="title" accessibilityRole="header">
-          {formatGreeting(currentSalutation(), name)}
+          {formatGreeting(salutationNow(), name)}
         </Text>
         <Text tone="muted">Fresh picks for you.</Text>
       </View>

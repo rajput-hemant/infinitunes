@@ -1,11 +1,10 @@
 import { getErrorCode } from "@infinitunes/core/error-code";
 import type { AllSearch } from "@infinitunes/types";
+import { getSearchItems } from "@infinitunes/types";
+import type { SearchItem } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 
 import { trpc } from "~/lib/trpc";
-
-import { getSearchItems } from "./search-items";
-import type { SearchItem } from "./search-items";
 
 /** Groups the top result is taken from, most relevant first. */
 const TOP_RESULT_GROUPS = ["topquery", "artists", "albums", "songs"] as const;

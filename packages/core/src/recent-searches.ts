@@ -1,4 +1,4 @@
-export const RECENT_SEARCHES_KEY = "recent_searches";
+/** How many recent searches each app keeps, newest first. */
 export const MAX_RECENT_SEARCHES = 6;
 
 /** Puts `query` first, drops any earlier copy (case-insensitive) and caps the list. */

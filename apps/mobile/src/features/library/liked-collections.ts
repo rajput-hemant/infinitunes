@@ -1,6 +1,6 @@
 import type { FavoriteLists } from "@infinitunes/core/favorites";
 import type { Artist, CardItem } from "@infinitunes/types";
-import { decode, parseToken, toCardItem } from "@infinitunes/types";
+import { parseToken, toArtistCard, toCardItem } from "@infinitunes/types";
 import type { Href } from "expo-router";
 import type { SymbolViewProps } from "expo-symbols";
 
@@ -19,18 +19,17 @@ type LikedCollection = {
   resolve: (token: string) => Promise<CardItem | undefined>;
 };
 
-/** An artist's card opens the artist screen, whose token is the songs URL's. */
-export function toArtistCard(
+/** A saved artist's card opens the artist screen, whose token is the songs URL's. */
+export function artistDetailsCard(
   artist: Pick<Artist, "artistId" | "name" | "subtitle" | "image" | "urls">,
 ): CardItem {
-  return {
+  return toArtistCard({
     id: artist.artistId,
-    name: decode(artist.name),
-    url: artist.urls.songs,
-    subtitle: artist.subtitle ? decode(artist.subtitle) : undefined,
-    type: "artist",
+    name: artist.name,
+    perma_url: artist.urls.songs,
+    subtitle: artist.subtitle,
     image: artist.image,
-  };
+  });
 }
 
 /** A saved podcast is a show's id; its details are found through an episode. */
@@ -61,7 +60,7 @@ export const LIKED_COLLECTIONS: Record<LikedCollectionKind, LikedCollection> = {
     href: "/me/artists",
     icon: { ios: "music.mic", android: "mic" },
     resolve: async (id) =>
-      toArtistCard(await trpcClient.artist.details.query({ id })),
+      artistDetailsCard(await trpcClient.artist.details.query({ id })),
   },
   playlists: {
     title: "Liked Playlists",

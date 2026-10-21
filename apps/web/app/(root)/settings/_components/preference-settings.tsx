@@ -2,6 +2,7 @@
 
 import type { ImageQuality, Lang } from "@infinitunes/types";
 import { QUALITIES_MAP } from "@infinitunes/types";
+import { isLang } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   ToggleGroup,
@@ -22,7 +23,6 @@ import {
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
-import { isLang } from "./language-options";
 import { QualityRow } from "./quality-row";
 import { SettingsCard } from "./settings-card";
 import { SettingsRow, SwitchRow } from "./settings-row";

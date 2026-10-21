@@ -1,4 +1,10 @@
-import { decode, parseToken, toSongRow } from "@infinitunes/types";
+import {
+  artistCards,
+  decode,
+  parseToken,
+  toCardItems,
+  toSongRow,
+} from "@infinitunes/types";
 import type {
   CardItem,
   Song,
@@ -15,7 +21,6 @@ import { Shelf } from "~/components/shelf";
 import { SongListSkeleton } from "~/components/skeletons";
 import { trpc } from "~/lib/trpc";
 
-import { artistCards, cardItemsOf } from "./cards";
 import { DetailScreen } from "./detail-screen";
 import { DetailSkeleton } from "./detail-skeleton";
 import { LyricsSection } from "./lyrics-section";
@@ -57,7 +62,7 @@ export function SongScreen({ token }: SongScreenProps) {
   // Independent of the song: starts with it instead of after it.
   const trending = useQuery({
     ...trpc.get.trending.queryOptions({ type: "song" }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
 
   return (
@@ -95,7 +100,7 @@ function SongPage({ song, modules, trending }: SongPageProps) {
   const { more_info: info } = song;
   const recommendations = useQuery({
     ...trpc.song.recommendations.queryOptions({ id: song.id }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
 
   return (
@@ -179,7 +184,7 @@ function SameArtistsShelf({ section }: SameArtistsShelfProps) {
       song_id,
       lang: language,
     }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
   return <SecondaryShelf title={section.title} query={query} />;
 }
@@ -196,7 +201,7 @@ function SameActorsShelf({ section }: SameActorsShelfProps) {
       song_id,
       lang: language,
     }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
   return <SecondaryShelf title={section.title} query={query} />;
 }

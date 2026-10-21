@@ -1,18 +1,26 @@
 import type { ArtistCredit } from "./artist";
 
-export type MediaType =
-  | "artist"
-  | "album"
-  | "playlist"
-  | "radio"
-  | "radio_station"
-  | "song"
-  | "channel"
-  | "mix"
-  | "show"
-  | "episode"
-  | "season"
-  | "label";
+export const MEDIA_TYPES = [
+  "artist",
+  "album",
+  "playlist",
+  "radio",
+  "radio_station",
+  "song",
+  "channel",
+  "mix",
+  "show",
+  "episode",
+  "season",
+  "label",
+] as const;
+
+export type MediaType = (typeof MEDIA_TYPES)[number];
+
+/** Narrows an untyped upstream `type` field to a known media type. */
+export function isMediaType(value: unknown): value is MediaType {
+  return MEDIA_TYPES.some((type) => type === value);
+}
 
 /** Raw JioSaavn images and (post-decryption) download links are a single templated URL string. */
 export type Quality = string;
@@ -48,6 +56,21 @@ export const LANGUAGES = [
 ] as const;
 
 export type Lang = (typeof LANGUAGES)[number];
+
+/** Narrows an untrusted string (cookie, query param, stored value) to a supported language. */
+export function isLang(value: unknown): value is Lang {
+  return LANGUAGES.some((lang) => lang === value);
+}
+
+/** The display name of a language id (`"hindi"` -> `"Hindi"`). */
+export function languageLabel(lang: Lang): string {
+  return `${lang.charAt(0).toUpperCase()}${lang.slice(1)}`;
+}
+
+/** A comma-separated language list (the `language` cookie, `?lang=`), unknown entries dropped. */
+export function parseLanguages(value: string | undefined): Lang[] {
+  return (value ?? "").split(",").filter(isLang);
+}
 
 /**
  * Extracts the trailing token from a JioSaavn perma_url.

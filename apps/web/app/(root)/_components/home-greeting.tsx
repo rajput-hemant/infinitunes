@@ -1,10 +1,12 @@
 "use client";
 
+import { formatGreeting, greetingForHour } from "@infinitunes/core/greeting";
 import { Suspense, useSyncExternalStore } from "react";
 
 import { useViewer } from "~/components/viewer-context";
 
-import { FALLBACK_GREETING, formatGreeting, greetingForHour } from "./greeting";
+/** Shown on the server and during hydration, before the visitor's clock is known. */
+const FALLBACK_GREETING = "Welcome";
 
 const subscribe = () => () => {};
 const clientSalutation = () => greetingForHour(new Date().getHours());

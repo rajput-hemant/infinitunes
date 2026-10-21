@@ -1,9 +1,8 @@
 import { decode } from "@infinitunes/types";
+import type { SearchItem } from "@infinitunes/types";
 import { Pressable } from "react-native";
 
 import { MediaRow } from "~/components/media-row";
-
-import type { SearchItem } from "./search-items";
 
 type ResultRowProps = {
   item: SearchItem;

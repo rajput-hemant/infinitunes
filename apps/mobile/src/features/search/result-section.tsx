@@ -1,9 +1,9 @@
+import type { SearchItem } from "@infinitunes/types";
 import { Pressable, View } from "react-native";
 
 import { Text } from "~/components/ui/text";
 
 import { ResultRow } from "./result-row";
-import type { SearchItem } from "./search-items";
 
 type ResultSectionProps = {
   title: string;

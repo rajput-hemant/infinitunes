@@ -1,18 +1,12 @@
 import type { Artist, CardItem, SimilarArtist } from "@infinitunes/types";
-import { decode, toCardItem } from "@infinitunes/types";
+import { toArtistCard, toCardItem } from "@infinitunes/types";
 import type { ReactNode } from "react";
 
 import { Shelf } from "~/components/shelf";
 
-/** `SimilarArtist` names its fields like an artist (`name`, `image_url`), not like a card. */
+/** `SimilarArtist` carries its artwork as `image_url`. */
 function similarArtistCard(artist: SimilarArtist): CardItem {
-  return {
-    id: artist.id,
-    name: decode(artist.name),
-    url: artist.perma_url,
-    type: artist.type,
-    image: artist.image_url,
-  };
+  return toArtistCard({ ...artist, image: artist.image_url });
 }
 
 /**

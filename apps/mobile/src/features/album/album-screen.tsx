@@ -1,4 +1,9 @@
-import { decode, uniqueArtists } from "@infinitunes/types";
+import {
+  artistCards,
+  decode,
+  toCardItems,
+  uniqueArtists,
+} from "@infinitunes/types";
 import type { Album, CardItem, SongRowItem } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
@@ -8,7 +13,6 @@ import { View } from "react-native";
 import { EntityHeader } from "~/components/entity-header";
 import { Shelf } from "~/components/shelf";
 import { Text } from "~/components/ui/text";
-import { artistCards, cardItemsOf } from "~/features/song/cards";
 import { DetailScreen } from "~/features/song/detail-screen";
 import { DetailSkeleton } from "~/features/song/detail-skeleton";
 import {
@@ -44,7 +48,7 @@ export function AlbumScreen({ token }: AlbumScreenProps) {
   // Independent of the album: starts with it instead of after it.
   const trending = useQuery({
     ...trpc.get.trending.queryOptions({ type: "album" }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
 
   return (
@@ -76,11 +80,11 @@ function AlbumPage({ album, trending }: AlbumPageProps) {
   const rows = useMemo(() => songRowsOf(album.list), [album]);
   const recommendations = useQuery({
     ...trpc.album.recommendations.queryOptions({ id: album.id }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
   const sameYear = useQuery({
     ...trpc.album.sameYear.queryOptions({ year: `${album.year}` }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
   const { modules } = album;
   const { copyright_text: copyright } = album.more_info;

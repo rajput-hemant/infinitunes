@@ -1,5 +1,5 @@
 import type { Show, Sort } from "@infinitunes/types";
-import { decode, formatCount } from "@infinitunes/types";
+import { decode, formatCount, plainText } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { useState } from "react";
 import { View } from "react-native";
@@ -16,7 +16,6 @@ import {
 import { playerDockInset } from "~/navigation/player-dock";
 import { playerStore } from "~/playback/player-store";
 
-import { plainText } from "./plain-text";
 import { ShowControls } from "./show-controls";
 import { useShowEpisodes } from "./use-show-episodes";
 

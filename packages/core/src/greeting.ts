@@ -1,6 +1,4 @@
-/** Shown on the server and during hydration, before the visitor's clock is known. */
-export const FALLBACK_GREETING = "Welcome";
-
+/** The home page's salutation for a local hour (0-23). */
 export function greetingForHour(hour: number): string {
   if (hour < 12) return "Good morning";
   if (hour < 18) return "Good afternoon";

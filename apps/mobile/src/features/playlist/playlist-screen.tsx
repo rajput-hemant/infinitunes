@@ -1,4 +1,4 @@
-import { decode } from "@infinitunes/types";
+import { artistCards, decode, toCardItems } from "@infinitunes/types";
 import type { CardItem, Playlist } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
@@ -6,7 +6,6 @@ import { useMemo } from "react";
 
 import { EntityHeader } from "~/components/entity-header";
 import { Shelf } from "~/components/shelf";
-import { artistCards, cardItemsOf } from "~/features/song/cards";
 import { DetailScreen } from "~/features/song/detail-screen";
 import { DetailSkeleton } from "~/features/song/detail-skeleton";
 import { joinMeta } from "~/features/song/meta";
@@ -32,7 +31,7 @@ export function PlaylistScreen({ token }: PlaylistScreenProps) {
   // Independent of the playlist: starts with it instead of after it.
   const trending = useQuery({
     ...trpc.get.trending.queryOptions({ type: "playlist" }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
 
   return (
@@ -63,7 +62,7 @@ function PlaylistPage({ playlist, trending }: PlaylistPageProps) {
   const rows = useMemo(() => songRowsOf(playlist.list), [playlist]);
   const recommendations = useQuery({
     ...trpc.playlist.recommendations.queryOptions({ id: playlist.id }),
-    select: cardItemsOf,
+    select: toCardItems,
   });
   const { modules } = playlist;
 

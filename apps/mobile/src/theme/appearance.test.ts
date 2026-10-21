@@ -1,6 +1,6 @@
 import Storage from "expo-sqlite/kv-store";
 
-/** A fresh copy of the store, as at app start, with the OS call spied on. */
+/** A fresh copy of the store at app launch, with the OS call spied on. */
 function startApp() {
   const started: {
     setColorScheme: jest.SpyInstance;
@@ -13,7 +13,10 @@ function startApp() {
     const setColorScheme = jest
       .spyOn(Appearance, "setColorScheme")
       .mockImplementation(() => {});
-    started.push({ setColorScheme, store: require("./appearance") });
+    const store: typeof import("./appearance") = require("./appearance");
+    // What `AppProviders` does as it loads.
+    store.restoreAppearance();
+    started.push({ setColorScheme, store });
   });
   const [app] = started;
   if (!app) throw new Error("the store module did not load");
@@ -21,7 +24,7 @@ function startApp() {
 }
 
 describe("appearance store", () => {
-  it("reapplies the saved mode when the app starts", async () => {
+  it("restores the saved mode at launch", async () => {
     await Storage.setItemAsync(
       "appearance",
       JSON.stringify({ state: { mode: "dark" }, version: 0 }),

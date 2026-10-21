@@ -1,21 +1,9 @@
+import { addRecentSearch } from "@infinitunes/core/recent-searches";
 import { useStore } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
 
 import { persistedStorage } from "~/lib/persisted-storage";
-
-export const MAX_RECENT_SEARCHES = 6;
-
-/** Puts `query` first, drops any earlier copy (case-insensitive) and caps the list. */
-export function addRecentSearch(list: readonly string[], query: string) {
-  const trimmed = query.trim();
-  if (!trimmed) return [...list];
-
-  const rest = list.filter(
-    (item) => item.toLowerCase() !== trimmed.toLowerCase(),
-  );
-  return [trimmed, ...rest].slice(0, MAX_RECENT_SEARCHES);
-}
 
 type SearchHistory = { queries: string[] };
 

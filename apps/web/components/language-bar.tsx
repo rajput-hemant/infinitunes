@@ -1,6 +1,7 @@
 "use client";
 
 import type { Lang } from "@infinitunes/types";
+import { isLang } from "@infinitunes/types";
 import Link from "next/link";
 
 import { languages } from "~/config/languages";
@@ -9,7 +10,6 @@ import { asRoute } from "~/lib/utils";
 
 import { chipClass } from "./language-chip";
 import { SearchParamsBoundary } from "./search-params-boundary";
-import { isLang } from "./site-header/lang-guard";
 
 function LanguageChips({ language: current }: { language?: Lang }) {
   // The clicked chip is selected now; the URL catches up when the route commits.

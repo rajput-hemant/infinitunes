@@ -1,3 +1,4 @@
+import { parseLanguages } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { LogIn } from "lucide-react";
 import { cookies } from "next/headers";
@@ -9,7 +10,6 @@ import { getViewer } from "~/lib/viewer";
 
 import { PasskeySettings, ProfileForm } from "./account-lazy";
 import { DeleteAccountSection } from "./delete-account-section";
-import { parseLanguageCookie } from "./language-options";
 import { PreferenceSettings } from "./preference-settings";
 import { SettingsCard } from "./settings-card";
 import { SettingsRow } from "./settings-row";
@@ -78,7 +78,7 @@ export async function SecurityCards() {
 /** Playback preferences. The language list comes from a cookie, so this streams. */
 export async function PlaybackCards() {
   const cookieStore = await cookies();
-  const languages = parseLanguageCookie(cookieStore.get("language")?.value);
+  const languages = parseLanguages(cookieStore.get("language")?.value);
 
   return <PreferenceSettings initialLanguages={languages} />;
 }

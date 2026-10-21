@@ -1,9 +1,9 @@
-import { toArtistCard } from "./liked-collections";
+import { artistDetailsCard } from "./liked-collections";
 
-describe("toArtistCard", () => {
+describe("artistDetailsCard", () => {
   it("opens the artist's songs page under the decoded name", () => {
     expect(
-      toArtistCard({
+      artistDetailsCard({
         artistId: "2393548",
         name: "Simon &amp; Garfunkel",
         subtitle: "Folk &amp; rock",

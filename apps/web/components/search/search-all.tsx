@@ -1,10 +1,10 @@
 import type { AllSearch } from "@infinitunes/types";
-import { uniqueBy } from "@infinitunes/types";
+import { getSearchItems, uniqueBy } from "@infinitunes/types";
 import Link from "next/link";
 
 import { cn } from "~/lib/utils";
 
-import { getSearchItemHref, getSearchItems } from "./search-item";
+import { getSearchItemHref } from "./search-item";
 import { searchHref } from "./search-query";
 import { SearchRow } from "./search-row";
 import { searchUi } from "./search-ui";

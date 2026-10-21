@@ -3,6 +3,7 @@ import {
   decode,
   formatCount,
   formatDuration,
+  plainText,
   toSongRow,
 } from "@infinitunes/types";
 import { Link } from "expo-router";
@@ -12,7 +13,6 @@ import { EntityHeader } from "~/components/entity-header";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
-import { plainText } from "~/features/show/plain-text";
 import { entityHref } from "~/navigation/entity-href";
 import { playerStore } from "~/playback/player-store";
 

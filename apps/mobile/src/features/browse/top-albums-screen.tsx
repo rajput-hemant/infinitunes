@@ -1,4 +1,5 @@
 import { toCardItem } from "@infinitunes/types";
+import { languageLabel } from "@infinitunes/types";
 import { Stack } from "expo-router";
 
 import { MediaCard } from "~/components/media-card";
@@ -8,7 +9,6 @@ import { useInfiniteList } from "~/lib/use-infinite-list";
 import { CATALOG_PAGE_SIZE } from "./catalog-page-size";
 import { CatalogScreen } from "./catalog-screen";
 import { LanguageFilter } from "./language-filter";
-import { languageLabel } from "./languages";
 import { useLangParam } from "./use-lang-param";
 
 /** Top albums, filterable by language, with endless paging. */

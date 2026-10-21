@@ -20,9 +20,9 @@ function applyMode(mode: AppearanceMode) {
 }
 
 /**
- * The listener's colour scheme choice, kept across launches. The OS keeps no
- * override between launches, so the saved mode is applied again as soon as
- * this module loads (the store hydrates synchronously) and on every change.
+ * The listener's colour scheme choice, kept across launches and applied on
+ * every change. The OS keeps no override between launches: `restoreAppearance`
+ * applies the saved one at launch.
  */
 export const appearanceStore = createStore<AppearanceState>()(
   persist(
@@ -37,12 +37,14 @@ export const appearanceStore = createStore<AppearanceState>()(
       name: "appearance",
       storage: persistedStorage<Pick<AppearanceState, "mode">>(),
       partialize: ({ mode }) => ({ mode }),
-      onRehydrateStorage: () => (state) => {
-        if (state) applyMode(state.mode);
-      },
     },
   ),
 );
+
+/** Applies the saved mode (the store hydrates synchronously); `AppProviders` calls it at launch. */
+export function restoreAppearance() {
+  applyMode(appearanceStore.getState().mode);
+}
 
 export function useAppearanceMode() {
   return useStore(appearanceStore, ({ mode }) => mode);

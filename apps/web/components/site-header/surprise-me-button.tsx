@@ -2,6 +2,7 @@
 
 import { toQueue } from "@infinitunes/types";
 import type { Song } from "@infinitunes/types";
+import { isLang } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -15,8 +16,6 @@ import {
   useQueue,
 } from "~/hooks/use-store";
 import { trpc } from "~/lib/trpc/vanilla";
-
-import { isLang } from "./lang-guard";
 
 function shuffle<T>(items: T[]): T[] {
   const out = [...items];

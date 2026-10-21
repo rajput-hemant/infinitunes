@@ -1,4 +1,5 @@
 import { LANGUAGES } from "@infinitunes/types";
+import { languageLabel } from "@infinitunes/types";
 import { Stack } from "expo-router";
 import type { Href } from "expo-router";
 import { View } from "react-native";
@@ -8,7 +9,6 @@ import { Text } from "~/components/ui/text";
 import { entityHref } from "~/navigation/entity-href";
 
 import { BrowseTile } from "./browse-tile";
-import { languageLabel } from "./languages";
 import { useCategoryCovers } from "./use-category-covers";
 import { GRID_GAP, useGridCardWidth } from "./use-grid-card-width";
 

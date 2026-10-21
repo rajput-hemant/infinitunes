@@ -1,12 +1,12 @@
 import { LANGUAGES } from "@infinitunes/types";
 import type { Lang } from "@infinitunes/types";
+import { languageLabel } from "@infinitunes/types";
 import { router } from "expo-router";
 import { View } from "react-native";
 
 import { Text } from "~/components/ui/text";
 
 import { ChipRow } from "./chip-row";
-import { languageLabel } from "./languages";
 
 type LanguageFilterProps = {
   selected: Lang | undefined;

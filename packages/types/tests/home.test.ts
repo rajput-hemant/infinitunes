@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
-const { homeItems } = await import("../../app/(root)/_components/home-items");
+import { rawAlbum, rawLaunchData, rawPlaylist } from "../src/fixtures";
+import { homeHighlights, homeItems, homeSections } from "../src/home";
 
 describe("homeItems", () => {
   it("returns null for a section that is not a list", () => {
@@ -62,5 +63,64 @@ describe("homeItems", () => {
       ]) ?? [];
     expect(flagged?.explicit_content).toBe(true);
     expect(other?.explicit_content).toBeUndefined();
+  });
+});
+
+describe("homeSections", () => {
+  it("lists the card sections in order with their titles, skipping configuration", () => {
+    const sections = homeSections(rawLaunchData());
+
+    expect(sections.map(({ key, title }) => [key, title])).toEqual([
+      ["new_albums", "New Releases"],
+      ["charts", "Charts"],
+      ["radio", "Radio Stations"],
+      ["top_playlists", undefined],
+    ]);
+  });
+
+  it("types untyped items from their section and keeps each item once", () => {
+    const [radio] = homeSections(
+      rawLaunchData({
+        new_albums: [],
+        charts: [],
+        top_playlists: [],
+        radio: [],
+        trending: [
+          { id: "1", title: "One", type: "song" },
+          { id: "1", title: "One again" },
+          { id: "2", title: "Two" },
+        ],
+      }),
+    );
+
+    expect(radio?.items.map(({ id, type }) => [id, type])).toEqual([
+      ["1", "song"],
+      ["2", "playlist"],
+    ]);
+  });
+});
+
+describe("homeHighlights", () => {
+  it("features the first playlist and splits the rest into quick picks and tiles", () => {
+    const playlists = Array.from({ length: 7 }, (_, i) =>
+      rawPlaylist({ id: `p${i}` }),
+    );
+    const { featured, quickPicks, heroTiles } = homeHighlights(
+      rawLaunchData({
+        top_playlists: playlists,
+        new_albums: [rawAlbum({ id: "a1" })],
+        charts: [],
+      }),
+    );
+
+    expect(featured?.id).toBe("p0");
+    expect(quickPicks.map(({ id }) => id)).toEqual([
+      "a1",
+      "p1",
+      "p2",
+      "p3",
+      "p4",
+    ]);
+    expect(heroTiles.map(({ id }) => id)).toEqual(["p5", "p6"]);
   });
 });

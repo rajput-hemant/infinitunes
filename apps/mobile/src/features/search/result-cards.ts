@@ -1,5 +1,5 @@
 import type { CardItem, SearchReturnType, Song } from "@infinitunes/types";
-import { decode, toCardItem } from "@infinitunes/types";
+import { decode, toArtistCard, toCardItem } from "@infinitunes/types";
 
 /** One result of `search.byType`, whichever list it came from. */
 export type SearchEntry = SearchReturnType["results"][number];
@@ -16,16 +16,7 @@ export function isSongEntry(entry: SearchEntry): entry is Song {
  * playlists already match `toCardItem`.
  */
 export function toResultCard(entry: CardEntry): CardItem {
-  if ("name" in entry) {
-    return {
-      id: entry.id,
-      name: decode(entry.name),
-      url: entry.perma_url,
-      subtitle: entry.role ? decode(entry.role) : undefined,
-      type: entry.type,
-      image: entry.image,
-    };
-  }
+  if ("name" in entry) return toArtistCard({ ...entry, subtitle: entry.role });
   if ("image_file_url" in entry) {
     return {
       id: entry.id,
