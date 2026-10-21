@@ -1,12 +1,8 @@
-import { EmptyState } from "~/components/empty-state";
+import { useLocalSearchParams } from "expo-router";
 
-/** Route reserved for the playlist screen; its screen agent replaces this body. */
-export default function PlaylistScreen() {
-  return (
-    <EmptyState
-      icon={{ ios: "music.note.list", android: "queue_music" }}
-      title="Playlist"
-      message="This screen is coming soon."
-    />
-  );
+import { PlaylistScreen } from "~/features/playlist/playlist-screen";
+
+export default function PlaylistRoute() {
+  const { token } = useLocalSearchParams<"/playlist/[token]">();
+  return <PlaylistScreen token={token} />;
 }
