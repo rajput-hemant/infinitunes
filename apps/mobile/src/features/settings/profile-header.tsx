@@ -12,22 +12,17 @@ export function userInitial({ name, email }: ProfileUser): string {
   return (name?.trim() || email.trim()).charAt(0).toUpperCase();
 }
 
-type ProfileHeaderProps = {
-  user: ProfileUser;
-  onPress: () => void;
-};
-
 /**
  * The signed-in account at the top of Settings (the web's user menu header):
- * the initial in a filled circle, the name and the email. It opens the
- * profile form.
+ * the initial in a filled circle, the name and the email. Display only; the
+ * "Edit profile" row under it opens the form.
  */
-export function ProfileHeader({ user, onPress }: ProfileHeaderProps) {
+export function ProfileHeader({ user }: { user: ProfileUser }) {
   const palette = colors[useColorScheme() === "dark" ? "dark" : "light"];
   const name = user.name?.trim();
 
   return (
-    <Row spacing={12} alignment="center" onPress={onPress} testID="profile">
+    <Row spacing={12} alignment="center" testID="profile">
       <Column
         alignment="center"
         style={{

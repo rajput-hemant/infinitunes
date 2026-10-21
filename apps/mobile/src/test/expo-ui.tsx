@@ -33,19 +33,8 @@ export const FieldGroup = Object.assign(
 export const Text = NativeText;
 export const Spacer = () => null;
 
-/** A layout container; with `onPress` it is a tappable row, as natively. */
-function Stack({
-  children,
-  onPress,
-  testID,
-}: WithChildren & { onPress?: () => void; testID?: string }) {
-  return onPress ? (
-    <Pressable accessibilityRole="button" onPress={onPress} testID={testID}>
-      {children}
-    </Pressable>
-  ) : (
-    <View testID={testID}>{children}</View>
-  );
+function Stack({ children, testID }: WithChildren & { testID?: string }) {
+  return <View testID={testID}>{children}</View>;
 }
 
 export const Row = Stack;

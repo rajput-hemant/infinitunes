@@ -45,6 +45,7 @@ describe("SettingsScreen as a guest", () => {
     expect(screen.queryByText("Sign out")).toBeNull();
     expect(screen.queryByText("Delete account")).toBeNull();
     expect(screen.queryByTestId("profile")).toBeNull();
+    expect(screen.queryByText("Edit profile")).toBeNull();
   });
 
   it("opens the sign-in flow", async () => {
@@ -76,7 +77,7 @@ describe("SettingsScreen signed in", () => {
     expect(screen.getByText("DJ Listener")).toBeOnTheScreen();
     expect(screen.getByText("listener@example.com")).toBeOnTheScreen();
 
-    await fireEvent.press(screen.getByTestId("profile"));
+    await fireEvent.press(screen.getByRole("button", { name: "Edit profile" }));
     await fireEvent.press(
       screen.getByRole("button", { name: "Change password" }),
     );

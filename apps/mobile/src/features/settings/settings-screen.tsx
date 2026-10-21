@@ -74,8 +74,9 @@ export function SettingsScreen() {
         <FieldGroup.Section title="Account">
           {user ? (
             <>
-              <ProfileHeader
-                user={user}
+              <ProfileHeader user={user} />
+              <NavigationRow
+                label="Edit profile"
                 onPress={() => router.push("/profile")}
               />
               <NavigationRow
