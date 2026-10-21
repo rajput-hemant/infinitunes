@@ -40,13 +40,20 @@ type NativeMenuProps = {
   entries: readonly MenuEntry[];
   /** The trigger; tapping it opens the platform menu. */
   children: ReactNode;
+  testID?: string;
 };
 
 /** The platform menu (SwiftUI `Menu`, a Material dropdown) over entries that carry their own action. */
-export function NativeMenu({ title, entries, children }: NativeMenuProps) {
+export function NativeMenu({
+  title,
+  entries,
+  children,
+  testID,
+}: NativeMenuProps) {
   const runs = collectRuns(entries);
   return (
     <MenuView
+      testID={testID}
       title={title}
       actions={entries.map(toMenuAction)}
       onPressAction={({ nativeEvent }) => runs.get(nativeEvent.event)?.()}

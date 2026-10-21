@@ -6,13 +6,13 @@ import type { ReactElement } from "react";
 import { View } from "react-native";
 import ReorderableList from "react-native-reorderable-list";
 
+import { OptionMenu } from "~/components/option-menu";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playerStore } from "~/playback/player-store";
 
 import { orderSongs, type SongSort } from "./song-order";
-import { SortMenu } from "./sort-menu";
 
 type SongCollectionProps = {
   songs: readonly SongRowItem[];
@@ -101,7 +101,17 @@ export function SongCollection({
           <Text variant="subhead" tone="muted" accessibilityRole="summary">
             {countLabel(shown.length, songs.length)}
           </Text>
-          <SortMenu sort={sort} onChange={setSort} recentLabel={recentLabel} />
+          <OptionMenu
+            label="Sort songs"
+            variant="plain"
+            options={[
+              { id: "recent", title: recentLabel },
+              { id: "title", title: "Title A-Z" },
+              { id: "artist", title: "Artist A-Z" },
+            ]}
+            selectedId={sort}
+            onSelect={setSort}
+          />
         </View>
         {missing > 0 ? (
           <Text variant="caption" tone="muted" className="px-page pb-2">

@@ -1,10 +1,11 @@
 import { toSongRow } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import type { ReactElement } from "react";
-import { ActivityIndicator, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 import { MediaCard } from "~/components/media-card";
 import { SongRow } from "~/components/song-row";
+import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playerStore } from "~/playback/player-store";
 import { sizes } from "~/theme/tokens";
@@ -13,8 +14,6 @@ import { isSongEntry, toResultCard } from "./result-cards";
 import { ResultsPlaceholder } from "./results-placeholder";
 import type { ListSearchType } from "./search-types";
 import { useTypeResults } from "./use-type-results";
-
-const CARD_GAP = 12;
 
 type TypeResultsProps = {
   query: string;
@@ -40,7 +39,7 @@ export function TypeResults({
   onOpenResult,
 }: TypeResultsProps) {
   const results = useTypeResults(query, type);
-  const { width } = useWindowDimensions();
+  const cardWidth = useGridCardWidth();
 
   const common = {
     ...listProps,
@@ -87,7 +86,6 @@ export function TypeResults({
   const cards = results.entries
     .filter((entry) => !isSongEntry(entry))
     .map(toResultCard);
-  const cardWidth = (width - 2 * sizes.page - CARD_GAP) / 2;
 
   return (
     <FlashList
@@ -100,8 +98,8 @@ export function TypeResults({
           className={index % 2 === 0 ? "items-start" : "items-end"}
           style={
             index % 2 === 0
-              ? { paddingLeft: sizes.page, paddingBottom: CARD_GAP }
-              : { paddingRight: sizes.page, paddingBottom: CARD_GAP }
+              ? { paddingLeft: sizes.page, paddingBottom: GRID_GAP }
+              : { paddingRight: sizes.page, paddingBottom: GRID_GAP }
           }
         >
           <MediaCard item={item} width={cardWidth} onPress={onOpenResult} />

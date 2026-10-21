@@ -2,16 +2,12 @@ import type { Season, Sort } from "@infinitunes/types";
 import { decode, uniqueBy } from "@infinitunes/types";
 import { View } from "react-native";
 
-import { OptionMenu } from "./option-menu";
+import { OptionMenu } from "~/components/option-menu";
 
 const SORT_OPTIONS = [
   { id: "desc", title: "Newest" },
   { id: "asc", title: "Oldest" },
-] as const;
-
-function isSort(value: string): value is Sort {
-  return value === "asc" || value === "desc";
-}
+] as const satisfies readonly { id: Sort; title: string }[];
 
 /** Latest season first (upstream lists them oldest first), one entry per season. */
 function seasonOptions(seasons: readonly Season[]) {
@@ -55,9 +51,7 @@ export function ShowControls({
         label="Order"
         options={SORT_OPTIONS}
         selectedId={sort}
-        onSelect={(id) => {
-          if (isSort(id)) onSortChange(id);
-        }}
+        onSelect={onSortChange}
       />
     </View>
   );

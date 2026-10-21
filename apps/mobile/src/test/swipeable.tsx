@@ -4,10 +4,10 @@ import { View } from "react-native";
 
 /**
  * `react-native-gesture-handler/ReanimatedSwipeable` in every suite
- * (`src/test/setup.ts`). Gesture Handler 3.3's swipeable attaches
- * shared-value listeners from a scheduled worklet that throws under
- * Reanimated's Jest runtime inside a router, so it stands in at rest: the row
- * with its revealed actions beside it, and the `close()` handle.
+ * (`src/test/setup.ts`). Under Reanimated's Jest runtime the real one fails
+ * in Gesture Handler 3.3's JS-responder hook ("sharedValue.addListener is not
+ * a function") and the test times out, so it stands in at rest: the row with
+ * its revealed actions beside it, and the `close()` handle.
  */
 
 type SwipeableProps = {

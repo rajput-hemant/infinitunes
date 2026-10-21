@@ -1,11 +1,7 @@
 import type { SongRowItem } from "@infinitunes/types";
 
-export const SONG_SORTS = ["recent", "title", "artist"] as const;
-export type SongSort = (typeof SONG_SORTS)[number];
-
-export function isSongSort(value: string): value is SongSort {
-  return SONG_SORTS.some((sort) => sort === value);
-}
+/** `recent` is the list's own order. */
+export type SongSort = "recent" | "title" | "artist";
 
 /** Lowercase and strip diacritics so "beyonce" finds "Beyoncé". */
 function fold(text: string): string {
