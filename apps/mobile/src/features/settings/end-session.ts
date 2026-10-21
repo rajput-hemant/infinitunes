@@ -22,6 +22,23 @@ export async function signOut(): Promise<AuthFailure | undefined> {
   return failure;
 }
 
+/**
+ * Ends this device's session for an account the server just deleted (its
+ * server session went with it). The account's cached data is dropped whatever
+ * happens. Resolves `false` when a failed sign-out left the stored cookie
+ * behind: the session is then re-read, and the server answers a deleted
+ * session with no user and an expired cookie, which signs the device out.
+ */
+export async function forgetDeletedAccount(): Promise<boolean> {
+  forgetUserData();
+  if (!(await signOut())) return true;
+  // Better Auth's expo client clears the stored cookie before it sends
+  // /sign-out, so a failed request has usually signed out locally anyway.
+  if (!(await authClient.getCookie())) return true;
+  refreshSession();
+  return false;
+}
+
 /** Makes the session store re-read the account after a change made outside Better Auth. */
 export function refreshSession() {
   authClient.$store.notify("$sessionSignal");

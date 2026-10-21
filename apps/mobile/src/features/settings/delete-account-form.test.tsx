@@ -3,7 +3,7 @@ import { toast } from "sonner-native";
 
 import { queryClient } from "~/lib/query-client";
 import { renderScreen } from "~/test/render";
-import { authClient } from "~/test/session-mock";
+import { authClient, signInAs } from "~/test/session-mock";
 import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { DELETE_CONFIRMATION, DeleteAccountForm } from "./delete-account-form";
@@ -60,6 +60,39 @@ describe("DeleteAccountForm", () => {
     expect(authClient.signOut).toHaveBeenCalledTimes(1);
     expect(queryClient.getQueryData(FAVORITES_KEY)).toBeUndefined();
     expect(toast.success).toHaveBeenCalledWith("Account deleted");
+  });
+
+  it("reports the deletion when a failed sign-out already cleared the device", async () => {
+    signInAs("u1");
+    // Better Auth's expo client drops the stored cookie before it sends /sign-out.
+    authClient.signOut.mockImplementationOnce(async () => {
+      signInAs(null);
+      return { error: { status: 503 } };
+    });
+    await renderScreen(<DeleteAccountForm />);
+
+    await confirm();
+    await fireEvent.press(deleteButton());
+
+    expect(queryClient.getQueryData(FAVORITES_KEY)).toBeUndefined();
+    expect(authClient.$store.notify).not.toHaveBeenCalled();
+    expect(toast.success).toHaveBeenCalledWith("Account deleted");
+  });
+
+  it("forgets the library and re-reads the session when the stored cookie survives a failed sign-out", async () => {
+    signInAs("u1");
+    authClient.signOut.mockResolvedValueOnce({ error: { status: 503 } });
+    await renderScreen(<DeleteAccountForm />);
+
+    await confirm();
+    await fireEvent.press(deleteButton());
+
+    expect(queryClient.getQueryData(FAVORITES_KEY)).toBeUndefined();
+    expect(authClient.$store.notify).toHaveBeenCalledWith("$sessionSignal");
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(toast.warning).toHaveBeenCalledWith(
+      "Account deleted, but this device couldn't finish signing out. If your account still shows, sign out in Settings.",
+    );
   });
 
   it("sends no password for an account that has none", async () => {

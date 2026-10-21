@@ -9,7 +9,7 @@ import { Text } from "~/components/ui/text";
 import { trpcClient } from "~/lib/trpc";
 import { usePending } from "~/lib/use-pending";
 
-import { forgetUserData, signOut } from "./end-session";
+import { forgetDeletedAccount } from "./end-session";
 import { mutationFailure } from "./mutation-failure";
 
 /** The phrase the web asks for before it enables deletion. */
@@ -36,11 +36,14 @@ export function DeleteAccountForm() {
         toast.error(failure);
         return;
       }
-      // The server session went with the account; this clears the stored copy,
-      // and the screen guard then returns to the settings list.
-      forgetUserData();
-      await signOut();
-      toast.success("Account deleted");
+      // The screen guard returns to the settings list once the session is gone.
+      if (await forgetDeletedAccount()) {
+        toast.success("Account deleted");
+      } else {
+        toast.warning(
+          "Account deleted, but this device couldn't finish signing out. If your account still shows, sign out in Settings.",
+        );
+      }
     });
   }
 
