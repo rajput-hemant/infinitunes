@@ -61,6 +61,8 @@ const fakeDb = {
   }),
   transaction: async (fn: (tx: typeof fakeDb) => Promise<unknown>) =>
     fn(fakeDb),
+  // The per-user advisory lock playlist creates take.
+  execute: async () => [],
   insert: () => ({
     values: (val: unknown) => ({
       returning: async () => [val],
