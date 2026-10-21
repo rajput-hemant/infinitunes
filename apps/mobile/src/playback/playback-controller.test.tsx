@@ -160,7 +160,8 @@ describe("PlaybackController", () => {
     await act(async () => player.finishLoading());
     playerStore.setState({ repeat: "playlist" });
 
-    await act(async () => player.finishTrack());
+    // The engine's last position can stop short of the reported duration.
+    await act(async () => player.finishTrack(179.9));
 
     expect(player.currentTime).toBe(0);
     expect(player.playing).toBe(true);

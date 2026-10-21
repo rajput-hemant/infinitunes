@@ -17,6 +17,7 @@ import {
   audioPlayer,
   configureAudioSession,
   loadTrack,
+  markSourceEnded,
   nowPlayingMetadata,
 } from "./audio-engine";
 import { requestMediaNotificationPermission } from "./media-notification";
@@ -123,7 +124,11 @@ export function PlaybackController() {
     const subscription = audioPlayer.addListener(
       "playbackStatusUpdate",
       (update) => {
-        if (update.didJustFinish) advanceAfterEnd();
+        if (update.didJustFinish) {
+          // Repeat-one loops in the engine, which plays on from the start.
+          if (!audioPlayer.loop) markSourceEnded(true);
+          advanceAfterEnd();
+        }
         const { error, isLoaded } = update;
         if (error) {
           // The first error of a load counts; it is the one that failed it.

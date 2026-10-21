@@ -147,12 +147,12 @@ export class FakeAudioPlayer {
     this.update({ playbackState: "idle" });
   }
 
-  /** The current source played to its end. */
-  finishTrack() {
+  /** The current source played to its end (at `at`, the duration by default). */
+  finishTrack(at = this.duration) {
     this.update({
       didJustFinish: true,
       playing: false,
-      currentTime: this.duration,
+      currentTime: at,
     });
   }
 

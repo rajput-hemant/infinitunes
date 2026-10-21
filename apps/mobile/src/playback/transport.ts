@@ -1,4 +1,4 @@
-import { audioPlayer } from "./audio-engine";
+import { audioPlayer, hasSourceEnded, markSourceEnded } from "./audio-engine";
 import { playbackPosition } from "./playback-status";
 import { playerStore } from "./player-store";
 
@@ -23,10 +23,8 @@ export function togglePlayback() {
 /** Plays the loaded source on; one that played to its end starts over. */
 export function resumePlayback() {
   if (audioPlayer.playing) return;
-  if (
-    audioPlayer.duration > 0 &&
-    audioPlayer.currentTime >= audioPlayer.duration
-  ) {
+  if (hasSourceEnded()) {
+    markSourceEnded(false);
     void audioPlayer.seekTo(0);
   }
   audioPlayer.play();
