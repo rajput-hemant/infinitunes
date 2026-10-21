@@ -15,7 +15,12 @@ export default function RootLayout() {
       <AssistantPlaylists />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="player" options={{ presentation: "modal" }} />
+        {/* One Now Playing: a second push or replace while it is open reuses it. */}
+        <Stack.Screen
+          name="player"
+          dangerouslySingular
+          options={{ presentation: "modal" }}
+        />
         <Stack.Screen
           name="queue"
           options={{

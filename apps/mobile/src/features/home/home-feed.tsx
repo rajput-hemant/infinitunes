@@ -1,12 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { router, Stack } from "expo-router";
 import { RefreshControl } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Shelf } from "~/components/shelf";
-import { IconButton } from "~/components/ui/icon-button";
 import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
 
@@ -16,17 +14,6 @@ import { buildHomeModel, isHomeEmpty } from "./home-model";
 import type { HomeModel } from "./home-model";
 import { HomeSkeleton } from "./home-skeleton";
 import { QuickPicks } from "./quick-picks";
-
-/** The web header's language picker: Home, Charts and New Releases follow it. */
-function LanguagesButton() {
-  return (
-    <IconButton
-      icon={{ ios: "globe", android: "language" }}
-      label="Languages"
-      onPress={() => router.push("/languages")}
-    />
-  );
-}
 
 /**
  * The home feed: greeting and language chips, then the launch data's hero,
@@ -48,7 +35,6 @@ export function HomeFeed() {
         />
       }
     >
-      <Stack.Screen options={{ headerRight: LanguagesButton }} />
       <HomeHeader />
       {home.data ? (
         isHomeEmpty(home.data) ? (

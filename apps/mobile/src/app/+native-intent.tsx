@@ -1,4 +1,5 @@
 import { legacyArtistPath } from "@infinitunes/core/entity-route";
+import { Platform } from "react-native";
 
 /** `infinitunes://artist/x-songs/tok?a=1` or `/artist/x-songs/tok` -> `/artist/x-songs/tok`. */
 function pathnameOf(url: string): string {
@@ -6,11 +7,32 @@ function pathnameOf(url: string): string {
   return `/${withoutScheme.split(/[?#]/)[0]?.replace(/^\/+/, "") ?? ""}`;
 }
 
+/** The link's `?query` (and `#hash`), as it came. */
+function suffixOf(url: string): string {
+  const start = url.search(/[?#]/);
+  return start === -1 ? "" : url.slice(start);
+}
+
 /**
- * Incoming links use the web's paths, which are the app's routes. Only the
- * web's legacy artist links (`/artist/<name>-songs/<token>`, also JioSaavn's
- * own shape) need rewriting, onto the tab routes the web redirects them to.
+ * Where a `/search` link opens: iOS's search tab, or on Android (no search
+ * tab) the search screen in Home's stack. A bare `/search` would resolve to the
+ * search tab's group, which Android does not show and would leave for Home,
+ * dropping the `?q=` that Siri and Google Assistant links carry.
+ */
+function searchPath(): string {
+  return Platform.OS === "android"
+    ? "/(tabs)/(home)/search"
+    : "/(tabs)/(search)/search";
+}
+
+/**
+ * Incoming links use the web's paths, which are the app's routes. The web's
+ * legacy artist links (`/artist/<name>-songs/<token>`, also JioSaavn's own
+ * shape) are rewritten onto the tab routes the web redirects them to, and a
+ * search link onto this platform's search screen.
  */
 export function redirectSystemPath({ path }: { path: string }): string {
-  return legacyArtistPath(pathnameOf(path)) ?? path;
+  const pathname = pathnameOf(path);
+  if (pathname === "/search") return `${searchPath()}${suffixOf(path)}`;
+  return legacyArtistPath(pathname) ?? path;
 }
