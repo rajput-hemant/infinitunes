@@ -14,7 +14,7 @@ export type OnSurfaceColors = {
   foreground: string;
   /** Subtitles, times and toggles that are off. */
   muted: string;
-  /** Toggles that are on, the liked heart, the played part of the scrubber. */
+  /** The liked heart, the played part of the scrubber. */
   accent: string;
 };
 
@@ -29,7 +29,10 @@ export type PlayerColors = OnSurfaceColors & {
   /** The play/pause shape and its glyph. */
   control: string;
   onControl: string;
-  /** The scrubber's unplayed track where the platform slider takes one. */
+  /**
+   * The scrubber's unplayed track where the platform slider takes one, 3:1
+   * against the wash's bottom stop (the end the scrubber sits nearer).
+   */
   track: string;
   /** The floating dock (Android): an opaque M3 tonal surface. */
   dock: OnSurfaceColors & { background: string };
@@ -42,6 +45,13 @@ export const MIN_TEXT_CONTRAST = 4.5;
 export const MIN_CONTROL_CONTRAST = 3;
 
 const HEX = /^#[\da-f]{6}$/i;
+
+/**
+ * The `fallback` handed to the extractor, which answers it in every field it
+ * finds no swatch for. Its default (`#000000`) is a real colour that would
+ * seed a grey wash; this one reads as "no colour" instead.
+ */
+export const NO_SWATCH = "#010203";
 
 function channels(hex: string): [number, number, number] {
   const value = Number.parseInt(hex.slice(1), 16);
@@ -80,7 +90,9 @@ export function mix(a: string, b: string, amount: number): string {
 function contrastPairs(colors: PlayerColors) {
   const [top, bottom] = colors.wash;
   const washStops = [top, mix(top, bottom, 0.5), bottom];
-  const pairs: [string, string, number][] = [];
+  const pairs: [string, string, number][] = [
+    [colors.track, bottom, MIN_CONTROL_CONTRAST],
+  ];
   for (const stop of washStops) {
     pairs.push(
       [colors.foreground, stop, MIN_TEXT_CONTRAST],
@@ -159,7 +171,7 @@ export function playerColorsFromSeed(
       accent: foreground,
       control: foreground,
       onControl: tone(dark ? 20 : 95),
-      track: tone(dark ? 40 : 80),
+      track: tone(50),
       dock,
     });
   }
@@ -172,7 +184,7 @@ export function playerColorsFromSeed(
     accent: hex(m3.primary),
     control: hex(m3.primary),
     onControl: hex(m3.onPrimary),
-    track: hex(m3.outlineVariant),
+    track: hex(m3.outline),
     dock,
   });
 }
@@ -180,12 +192,20 @@ export function playerColorsFromSeed(
 /**
  * The colour that stands for an artwork: UIImageColors' background on iOS
  * (the colour the cover is mostly made of), Palette's dominant swatch on
- * Android. `null` when the extractor answered nothing usable.
+ * Android. `null` when the extractor answered nothing usable (empty or
+ * malformed fields, or `NO_SWATCH`).
  */
 export function seedFromImageColors(result: ImageColorsResult): string | null {
   const candidates =
     result.platform === "ios"
       ? [result.background, result.primary]
       : [result.dominant, result.vibrant];
-  return candidates.find((color) => HEX.test(color ?? "")) ?? null;
+  return (
+    candidates.find(
+      (color) =>
+        color !== undefined &&
+        HEX.test(color) &&
+        color.toLowerCase() !== NO_SWATCH,
+    ) ?? null
+  );
 }

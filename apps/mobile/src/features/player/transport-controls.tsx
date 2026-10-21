@@ -5,10 +5,12 @@ import { Pressable, View } from "react-native";
 import { toast } from "sonner-native";
 
 import { Icon } from "~/components/ui/icon";
+import type { SymbolName } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { togglePlayback } from "~/playback/transport";
+import { sizes } from "~/theme/tokens";
 import type { IconSize } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
@@ -92,35 +94,71 @@ const REPEAT_ICONS = {
   track: { ios: "repeat.1", android: "repeat_one_on" },
 } as const;
 
+type ModeToggleProps = {
+  icon: SymbolName;
+  label: string;
+  on: boolean;
+  onPress: () => void;
+};
+
 /**
- * A toggle's tint: on a wash, `accent` when on and `muted` when off; on the
- * D1 palette `primary` when on and the default foreground when off.
+ * Shuffle or repeat. "On" is a filled circle behind the glyph (Apple Music's
+ * cue), not only a colour: iOS draws the same symbol in both states, and on
+ * the D1 palette iOS's `primary` is the label colour. The circle takes the
+ * play shape's colours, so it is already checked: `control` 3:1 on every
+ * wash stop, the glyph in `onControl` 4.5:1 on it; on the D1 palette
+ * `primary` and `primary-foreground`. Off, the glyph is the wash's `muted`
+ * (the default foreground on the D1 palette).
  */
-function useToggleColor() {
+function ModeToggle({ icon, label, on, onPress }: ModeToggleProps) {
   const { colors } = useTheme();
   const wash = useWashColors();
-  return (on: boolean) => (on ? (wash?.accent ?? colors.primary) : wash?.muted);
+  const primary = useTokenColor("primary");
+  const onPrimary = useTokenColor("primary-foreground");
+  const fill = wash?.control ?? primary;
+  const glyph = on
+    ? (wash?.onControl ?? onPrimary)
+    : (wash?.muted ?? colors.text);
+
+  return (
+    <Pressable
+      onPress={() => {
+        void selectionAsync();
+        onPress();
+      }}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: on }}
+      className="min-h-touch min-w-touch items-center justify-center active:opacity-60"
+    >
+      <View
+        className="items-center justify-center rounded-full"
+        style={{
+          width: sizes.ctl,
+          height: sizes.ctl,
+          backgroundColor: on ? fill : "transparent",
+        }}
+        testID={on ? "mode-toggle-on" : undefined}
+      >
+        <Icon name={icon} size="md" color={glyph} />
+      </View>
+    </Pressable>
+  );
 }
 
 /** Now Playing's row: shuffle, previous, play/pause, next, repeat. */
 export function TransportControls() {
-  const toggleColor = useToggleColor();
   const shuffle = usePlayer((state) => state.shuffle);
   const repeat = usePlayer((state) => state.repeat);
   const { toggleShuffle, skipToPrevious, cycleRepeat } = playerStore.getState();
 
   return (
     <View className="flex-row items-center justify-between">
-      <IconButton
+      <ModeToggle
         icon={{ ios: "shuffle", android: shuffle ? "shuffle_on" : "shuffle" }}
         label="Shuffle"
-        size="md"
-        selected={shuffle}
-        color={toggleColor(shuffle)}
-        onPress={() => {
-          void selectionAsync();
-          toggleShuffle();
-        }}
+        on={shuffle}
+        onPress={toggleShuffle}
       />
       <IconButton
         icon={{ ios: "backward.fill", android: "skip_previous" }}
@@ -130,16 +168,11 @@ export function TransportControls() {
       />
       <ProminentPlayPauseButton />
       <NextTrackButton size="xl" />
-      <IconButton
+      <ModeToggle
         icon={REPEAT_ICONS[repeat]}
         label={REPEAT_LABELS[repeat]}
-        size="md"
-        selected={repeat !== "off"}
-        color={toggleColor(repeat !== "off")}
-        onPress={() => {
-          void selectionAsync();
-          toast(LOOP_MODE_MESSAGES[cycleRepeat()]);
-        }}
+        on={repeat !== "off"}
+        onPress={() => toast(LOOP_MODE_MESSAGES[cycleRepeat()])}
       />
     </View>
   );

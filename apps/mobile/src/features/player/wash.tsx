@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { StyleSheet, View } from "react-native";
 import type { ViewStyle } from "react-native";
 import Animated, { FadeIn, ReduceMotion } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
 import { Text } from "~/components/ui/text";
 import type { TextProps } from "~/components/ui/text";
@@ -101,23 +102,56 @@ export function gradientFill([top, bottom]: readonly [string, string]) {
   } satisfies BackdropFill;
 }
 
-/**
- * A crossfade carries no movement, so it stays under reduce motion (the
- * repo's "motion is never zero" rule): only the opacity changes.
- */
-const CROSSFADE = FadeIn.duration(450).reduceMotion(ReduceMotion.Never);
+/** How long a new fill takes to fade in over the ones below. */
+const CROSSFADE_MS = 450;
 
 /**
- * Fills its parent with `fill`; a new fill fades in over the previous one,
- * so the wash changes with the track instead of flashing.
+ * A crossfade carries no movement, so it stays under reduce motion (the
+ * repo's "motion is never zero" rule): only the opacity changes. `settled`
+ * runs once the layer is fully opaque.
+ */
+function crossfade(settled: () => void) {
+  return FadeIn.duration(CROSSFADE_MS)
+    .reduceMotion(ReduceMotion.Never)
+    .withCallback((finished) => {
+      "worklet";
+      if (finished) scheduleOnRN(settled);
+    });
+}
+
+/** One painted layer: `id` keeps two layers of the same fill (A, B, A) apart. */
+type Layer = {
+  id: number;
+  fill: BackdropFill;
+  entering: ReturnType<typeof crossfade> | undefined;
+};
+
+/**
+ * Fills its parent with `fill`; a new fill fades in over the layers below,
+ * so the wash changes with the track instead of flashing. Each layer fades
+ * over whatever is showing, mid-fade layers included, so skipping A, B, C
+ * quickly never snaps; once a layer is opaque the ones under it are dropped.
+ * The top layer always paints the latest `fill.style`: a fill whose key stays
+ * (the D1 fallback) can still change colour with the scheme.
  */
 export function Backdrop({ fill }: { fill: BackdropFill }) {
-  const [layers, setLayers] = useState<{
-    current: BackdropFill;
-    previous: BackdropFill | null;
-  }>({ current: fill, previous: null });
-  if (layers.current.key !== fill.key) {
-    setLayers({ current: fill, previous: layers.current });
+  const [layers, setLayers] = useState<{ next: number; stack: Layer[] }>(
+    () => ({ next: 1, stack: [{ id: 0, fill, entering: undefined }] }),
+  );
+  const top = layers.stack.at(-1);
+  if (top?.fill.key !== fill.key) {
+    const id = layers.next;
+    const settled = () =>
+      setLayers((current) => {
+        const index = current.stack.findIndex((layer) => layer.id === id);
+        return index > 0
+          ? { ...current, stack: current.stack.slice(index) }
+          : current;
+      });
+    setLayers({
+      next: id + 1,
+      stack: [...layers.stack, { id, fill, entering: crossfade(settled) }],
+    });
   }
 
   return (
@@ -126,15 +160,17 @@ export function Backdrop({ fill }: { fill: BackdropFill }) {
       style={StyleSheet.absoluteFill}
       testID="player-backdrop"
     >
-      {layers.previous ? (
-        <View style={[StyleSheet.absoluteFill, layers.previous.style]} />
-      ) : null}
-      <Animated.View
-        key={layers.current.key}
-        entering={layers.previous ? CROSSFADE : undefined}
-        style={[StyleSheet.absoluteFill, layers.current.style]}
-        testID="player-backdrop-current"
-      />
+      {layers.stack.map((layer, index) => {
+        const isTop = index === layers.stack.length - 1;
+        return (
+          <Animated.View
+            key={layer.id}
+            entering={layer.entering}
+            style={[StyleSheet.absoluteFill, (isTop ? fill : layer.fill).style]}
+            testID={isTop ? "player-backdrop-current" : "player-backdrop-below"}
+          />
+        );
+      })}
     </View>
   );
 }

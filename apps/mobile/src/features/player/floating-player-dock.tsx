@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
 import {
@@ -26,6 +27,8 @@ export function FloatingPlayerDock() {
   const bottom = useFloatingDockOffset();
   const track = usePlayer(selectCurrentTrack);
   const colors = usePlayerColors(track?.image);
+  // One object per palette, so `OnWash`'s theme stays put between renders.
+  const wash = useMemo(() => (colors ? dockWash(colors) : null), [colors]);
   const card = useTokenColor("card");
   const primary = useTokenColor("primary");
   const background = colors?.dock.background ?? card;
@@ -38,7 +41,7 @@ export function FloatingPlayerDock() {
           style: { backgroundColor: background },
         }}
       />
-      <OnWash colors={colors ? dockWash(colors) : null}>
+      <OnWash colors={wash}>
         <MiniPlayer />
       </OnWash>
       <DockProgress color={colors?.dock.accent ?? primary} />

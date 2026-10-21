@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
@@ -48,12 +48,12 @@ const PAUSED_SCALE = 0.9;
 function NowPlayingArt({ image }: { image: string }) {
   const playing = usePlaybackStatus((state) => state.playing);
   const reduceMotion = useReducedMotion();
-  const scale = useSharedValue(1);
+  const target = playing || reduceMotion ? 1 : PAUSED_SCALE;
+  // Opened while paused, the art starts settled instead of shrinking in.
+  const scale = useSharedValue(target);
   useEffect(() => {
-    scale.set(
-      withTiming(playing || reduceMotion ? 1 : PAUSED_SCALE, { duration: 340 }),
-    );
-  }, [playing, reduceMotion, scale]);
+    scale.set(withTiming(target, { duration: 340 }));
+  }, [target, scale]);
   const animated = useAnimatedStyle(() => ({
     transform: [{ scale: scale.get() }],
   }));
@@ -99,6 +99,11 @@ export function FullPlayer() {
   const { width } = useWindowDimensions();
   const track = usePlayer(selectCurrentTrack);
   const colors = usePlayerColors(track?.image);
+  // One object per palette, so `OnWash`'s theme stays put between renders.
+  const wash = useMemo(
+    () => (colors ? nowPlayingWash(colors) : null),
+    [colors],
+  );
   const background = useTokenColor("background");
   const [showLyrics, setShowLyrics] = useState(false);
 
@@ -132,7 +137,7 @@ export function FullPlayer() {
   return (
     <View className="flex-1">
       <Backdrop fill={fill} />
-      <OnWash colors={colors ? nowPlayingWash(colors) : null}>
+      <OnWash colors={wash}>
         <View className="flex-row items-center px-3 pt-2">
           {close}
           <PlayingFrom />
