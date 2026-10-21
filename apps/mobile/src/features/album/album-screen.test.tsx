@@ -64,7 +64,7 @@ describe("AlbumScreen", () => {
     expect(screen.getByText(/^Album · \d{4}$/)).toBeOnTheScreen();
     // The credit, and the artists shelf card.
     expect(screen.getAllByText("Sachin-Jigar")).toHaveLength(2);
-    expect(screen.getByText("2 Songs · 03:30 · 1.2K Plays")).toBeOnTheScreen();
+    expect(screen.getByText("2 Songs · 4 min · 1.2K Plays")).toBeOnTheScreen();
     expect(screen.getByText("Teer & Tukka")).toBeOnTheScreen();
     expect(screen.getByText("Second Song")).toBeOnTheScreen();
     // The rows share the album's cover, so they are numbered instead.

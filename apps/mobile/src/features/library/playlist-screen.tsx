@@ -1,6 +1,5 @@
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
-import { formatDuration } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
@@ -13,6 +12,7 @@ import { MenuTrigger } from "~/components/menu-trigger";
 import { SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 import { Text } from "~/components/ui/text";
+import { totalDurationLabel } from "~/lib/meta";
 import {
   moveSongInPlaylist,
   removeSongFromPlaylist,
@@ -25,9 +25,6 @@ import { SignedInGate } from "./signed-in-gate";
 import { SongCollection } from "./song-collection";
 import { SwipeableRow } from "./swipeable-row";
 import { usePlaylistSongs } from "./use-playlist-songs";
-
-const totalSeconds = (songs: readonly SongRowItem[]) =>
-  songs.reduce((total, song) => total + song.duration, 0);
 
 type PlaylistSongRowProps = {
   song: SongRowItem;
@@ -96,7 +93,7 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
                 <Text tone="muted">{playlist.description}</Text>
               ) : null}
               <Text variant="subhead" tone="muted">
-                {formatDuration(totalSeconds(items), "hh:mm:ss")} total
+                {totalDurationLabel(items)}
               </Text>
             </View>
           }

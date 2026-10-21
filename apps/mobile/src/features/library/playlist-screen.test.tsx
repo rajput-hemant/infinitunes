@@ -66,7 +66,7 @@ describe("PlaylistScreen", () => {
     expect(titles).toEqual(["Opening Number", "Middle Song", "Closing Time"]);
     expect(screen.getByText("Windows down")).toBeOnTheScreen();
     expect(screen.getByText("3 songs")).toBeOnTheScreen();
-    expect(screen.getByText("00:05:15 total")).toBeOnTheScreen();
+    expect(screen.getByText("5 min")).toBeOnTheScreen();
   });
 
   it("moves a dragged song at once and saves its new position", async () => {
