@@ -112,7 +112,7 @@ export function SongCollection({
           </View>
         ) : null}
         <View className="flex-row items-center justify-between px-page">
-          <Text variant="subhead" tone="muted" accessibilityRole="summary">
+          <Text variant="subhead" tone="muted">
             {countLabel(shown.length, songs.length)}
           </Text>
           <OptionMenu

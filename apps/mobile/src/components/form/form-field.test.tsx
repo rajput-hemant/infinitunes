@@ -14,20 +14,16 @@ const announce = jest.spyOn(
 
 beforeEach(() => announce.mockImplementation(() => {}));
 
+const emailField = (error?: string) => (
+  <FormField label="Email" value="" onChangeText={jest.fn()} error={error} />
+);
+
 describe("FormField", () => {
   it("puts the error on the input itself and announces it", async () => {
-    const field = (error?: string) => (
-      <FormField
-        label="Email"
-        value=""
-        onChangeText={jest.fn()}
-        error={error}
-      />
-    );
-    const { rerender } = await renderWithProviders(field());
+    const { rerender } = await renderWithProviders(emailField());
     expect(announce).not.toHaveBeenCalled();
 
-    await rerender(field("Enter a valid email"));
+    await rerender(emailField("Enter a valid email"));
 
     expect(screen.getByLabelText("Email")).toHaveProp(
       "accessibilityHint",

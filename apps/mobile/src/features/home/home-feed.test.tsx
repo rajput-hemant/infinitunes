@@ -142,7 +142,7 @@ describe("HomeFeed", () => {
 
     await fireEvent.press(
       await screen.findByRole("button", {
-        name: "Surprise Me - Add songs to queue and play",
+        name: "Surprise Me",
       }),
     );
 

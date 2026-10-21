@@ -55,7 +55,7 @@ function ShowLink({ episode }: { episode: Episode }) {
           <Text numberOfLines={1}>{decode(episode.more_info.show_title)}</Text>
         </View>
         <Icon
-          name={{ ios: "chevron.right", android: "chevron_right" }}
+          name={{ ios: "chevron.forward", android: "chevron_right" }}
           size={16}
         />
       </Pressable>
