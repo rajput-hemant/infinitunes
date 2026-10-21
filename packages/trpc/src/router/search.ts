@@ -26,9 +26,10 @@ export const searchRouter = router({
     .input(searchAllInput)
     .output(z.custom<AllSearch | null>())
     .query(async ({ input, ctx: { catalogApi: api } }) => {
+      // API v4 is the shape `AllSearch` describes (`perma_url`, `subtitle`,
+      // `more_info`); v3 sends `url` instead, so no result would link.
       const result = await api<AllSearch>(endpoints.search.all, {
         query: { query: input.q },
-        isVersion4: false,
       });
       // No match is an empty result (`null`), not an error the client logs.
       return hasIdentity(result, "albums") ? (result as AllSearch) : null;
