@@ -50,7 +50,8 @@ const succeed = async (..._args: unknown[]): Promise<AuthResult> => ({
 
 export const authClient = {
   useSession: () => useSyncExternalStore(subscribe, () => session),
-  getCookie: () => (session.data ? "infinitunes.session_token=test" : ""),
+  // Async like Better Auth's expo client: the cookie is read from secure storage.
+  getCookie: async () => (session.data ? "infinitunes.session_token=test" : ""),
   signIn: { email: jest.fn(succeed) },
   signUp: { email: jest.fn(succeed) },
   signOut: jest.fn(succeed),
