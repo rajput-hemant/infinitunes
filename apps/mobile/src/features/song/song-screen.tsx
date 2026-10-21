@@ -16,6 +16,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
@@ -118,6 +119,7 @@ function SongPage({ song, modules, trending }: SongPageProps) {
         explicit={isExplicit(song.explicit_content)}
         onPlay={() => playAll(rows)}
         like={{ type: "song", token: song.id }}
+        actions={<CollectionMenu name={row.name} rows={rows} />}
       />
       {info.has_lyrics === "true" ? <LyricsSection songId={song.id} /> : null}
       <SongCredits song={song} />
