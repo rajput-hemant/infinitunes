@@ -68,7 +68,8 @@ type SongMenuProps = {
 
 /**
  * A track's actions in the platform menu: play next, add to queue, add to
- * playlist, play radio, go to album or artist, share, download, and the
+ * playlist, play radio, its own page, go to album or artist, share,
+ * download, and the
  * list's own removal.
  */
 export function SongMenu({ song, removal, children }: SongMenuProps) {
@@ -106,6 +107,12 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
       playRadioEntry(radioSeedOf([song])),
     );
   }
+  entries.push({
+    id: "details",
+    title: isSong ? "Song Details & Lyrics" : "View Episode Details",
+    image: "info.circle",
+    run: () => openEntity(song.type, song.url),
+  });
   const { albumUrl } = song;
   if (isSong && albumUrl) {
     entries.push({

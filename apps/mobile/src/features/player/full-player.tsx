@@ -1,4 +1,5 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -12,15 +13,22 @@ import { Text } from "~/components/ui/text";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
 import { radii, sizes } from "~/theme/tokens";
 
+import { PlayerLyrics } from "./player-lyrics";
+import { RadioBadge } from "./radio-badge";
 import { Scrubber } from "./scrubber";
 import { TransportControls } from "./transport-controls";
 
-/** The full player, presented as a sheet over the tabs. */
+/**
+ * The full player, presented as a sheet over the tabs: artwork (or the
+ * song's lyrics), the station badge, title, heart and menu, the scrubber and
+ * transport, then Lyrics and Up next.
+ */
 export function FullPlayer() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const track = usePlayer(selectCurrentTrack);
+  const [showLyrics, setShowLyrics] = useState(false);
 
   if (!track) {
     return (
@@ -39,17 +47,22 @@ export function FullPlayer() {
       className="flex-1 justify-center gap-6 px-page"
       style={{ paddingBottom: insets.bottom }}
     >
-      <Artwork
-        image={track.image}
-        quality="high"
-        style={{
-          width: artworkSize,
-          height: artworkSize,
-          borderRadius: radii.xl,
-        }}
-      />
+      {showLyrics ? (
+        <PlayerLyrics track={track} size={artworkSize} />
+      ) : (
+        <Artwork
+          image={track.image}
+          quality="high"
+          style={{
+            width: artworkSize,
+            height: artworkSize,
+            borderRadius: radii.xl,
+          }}
+        />
+      )}
       <View className="flex-row items-center gap-2">
-        <View className="flex-1">
+        <View className="flex-1 gap-0.5">
+          <RadioBadge />
           <Text variant="title" numberOfLines={1}>
             {track.name}
           </Text>
@@ -72,7 +85,13 @@ export function FullPlayer() {
       </View>
       <Scrubber />
       <TransportControls />
-      <View className="items-center">
+      <View className="flex-row items-center justify-around">
+        <IconButton
+          icon={{ ios: "quote.bubble", android: "lyrics" }}
+          label={showLyrics ? "Hide lyrics" : "Lyrics"}
+          selected={showLyrics}
+          onPress={() => setShowLyrics((shown) => !shown)}
+        />
         <IconButton
           icon={{ ios: "list.bullet", android: "queue_music" }}
           label="Up next"
