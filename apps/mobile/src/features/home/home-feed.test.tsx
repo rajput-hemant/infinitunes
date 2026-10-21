@@ -123,7 +123,10 @@ describe("HomeFeed", () => {
     expect(screen.queryByRole("button", { name: "Play Udta Teer" })).toBeNull();
     const [tile] = await screen.findAllByRole("link", { name: "Udta Teer" });
     if (!tile) throw new Error("no quick pick for the album");
-    await fireEvent(tile, "pressAction", { nativeEvent: { event: "play" } });
+    // The screen reader's actions are the long-press menu's entries.
+    await fireEvent(tile, "accessibilityAction", {
+      nativeEvent: { actionName: "play" },
+    });
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
     expect(procedure("album.details")).toHaveBeenCalledWith({
