@@ -1,57 +1,75 @@
-import { toCardItem } from "@infinitunes/types";
-import type { Modules } from "@infinitunes/types";
-import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
-import { ActivityIndicator, View } from "react-native";
+import { RefreshControl } from "react-native";
 
-import { MediaRow } from "~/components/media-row";
-import { Button } from "~/components/ui/button";
-import { Text } from "~/components/ui/text";
+import { EmptyState } from "~/components/empty-state";
+import { ErrorState } from "~/components/error-state";
+import { ScreenScrollView } from "~/components/screen-scroll-view";
+import { Shelf } from "~/components/shelf";
+import { StationShelf } from "~/features/radio/station-shelf";
 import { trpc } from "~/lib/trpc";
-import { playerDockInset } from "~/navigation/player-dock";
 
-const selectTrending = (modules: Modules) =>
-  modules.new_trending.map(toCardItem);
+import { HomeHeader } from "./home-header";
+import { HomeHero } from "./home-hero";
+import { buildHomeModel, isHomeEmpty } from "./home-model";
+import type { HomeModel } from "./home-model";
+import { HomeSkeleton } from "./home-skeleton";
+import { QuickPicks } from "./quick-picks";
 
-/** Today's trending albums, songs and playlists from the launch data. */
+/**
+ * The home feed: greeting and language chips, then the launch data's hero,
+ * quick picks and shelves (trending among them). The name is kept because the
+ * shared route test stubs the home screen's content by it.
+ */
 export function TrendingList() {
-  const { data, error, isPending, isRefetching, refetch } = useQuery({
+  const home = useQuery({
     ...trpc.home.home.queryOptions({}),
-    select: selectTrending,
+    select: buildHomeModel,
   });
 
-  if (isPending) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator />
-      </View>
-    );
-  }
-
-  if (error) {
-    return (
-      <View className="flex-1 items-center justify-center gap-4 px-page">
-        <Text tone="muted">Could not load trending music.</Text>
-        <Button label="Try again" onPress={() => void refetch()} />
-      </View>
-    );
-  }
-
   return (
-    <FlashList
-      data={data}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <MediaRow
-          title={item.name}
-          subtitle={item.subtitle}
-          image={item.image}
+    <ScreenScrollView
+      refreshControl={
+        <RefreshControl
+          refreshing={home.isRefetching}
+          onRefresh={() => void home.refetch()}
         />
+      }
+    >
+      <HomeHeader />
+      {home.data ? (
+        isHomeEmpty(home.data) ? (
+          <EmptyState
+            icon={{ ios: "music.note.house", android: "home" }}
+            title="Nothing to play yet"
+            message="Fresh music will show up here soon."
+            action={{ label: "Try again", onPress: () => void home.refetch() }}
+          />
+        ) : (
+          <HomeSections model={home.data} />
+        )
+      ) : home.error ? (
+        <ErrorState error={home.error} onRetry={() => void home.refetch()} />
+      ) : (
+        <HomeSkeleton />
       )}
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingBottom: playerDockInset }}
-      refreshing={isRefetching}
-      onRefresh={() => void refetch()}
-    />
+    </ScreenScrollView>
+  );
+}
+
+function HomeSections({ model }: { model: HomeModel }) {
+  return (
+    <>
+      {model.featured ? (
+        <HomeHero featured={model.featured} tiles={model.heroTiles} />
+      ) : null}
+      <QuickPicks items={model.quickPicks} />
+      {model.shelves.map(({ key, stations, ...shelf }) =>
+        stations ? (
+          <StationShelf key={key} {...shelf} />
+        ) : (
+          <Shelf key={key} {...shelf} />
+        ),
+      )}
+    </>
   );
 }
