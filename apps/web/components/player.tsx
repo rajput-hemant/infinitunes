@@ -1,7 +1,9 @@
 "use client";
 
 import {
+  LOOP_MODE_MESSAGES,
   loopModeOf,
+  nextLoopMode,
   nextTrackIndex,
   prevTrackIndex,
 } from "@infinitunes/core/playback-order";
@@ -209,25 +211,14 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   function loopHandler() {
     if (!isReady) return;
 
-    if (queue.length === 1) {
-      if (isLooping) {
-        loopOff();
-        toast("Looping disabled");
-      } else {
-        loopOn();
-        toast("Playing current song on repeat");
-      }
-    } else if (!isLooping && !loopPlaylist) {
-      setLoopPlaylist(true);
-      toast("Looping playlist");
-    } else if (!isLooping) {
-      setLoopPlaylist(false);
-      loopOn();
-      toast("Playing current song on repeat");
-    } else {
-      loopOff();
-      toast("Looping disabled");
-    }
+    const next = nextLoopMode(
+      loopModeOf(isLooping, loopPlaylist),
+      queue.length,
+    );
+    setLoopPlaylist(next === "playlist");
+    if (next === "track") loopOn();
+    else if (isLooping) loopOff();
+    toast(LOOP_MODE_MESSAGES[next]);
   }
 
   function skipToNext() {

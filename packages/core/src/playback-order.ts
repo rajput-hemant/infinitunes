@@ -49,3 +49,31 @@ export function loopModeOf(
   if (isLooping) return "track";
   return loopPlaylist ? "playlist" : "off";
 }
+
+/**
+ * The repeat control's next state. A single entry toggles repeat-one; a longer
+ * queue cycles off, then the whole queue, then the current track.
+ */
+export function nextLoopMode(mode: LoopMode, queueLength: number): LoopMode {
+  if (queueLength <= 1) return mode === "track" ? "off" : "track";
+  if (mode === "off") return "playlist";
+  return mode === "playlist" ? "track" : "off";
+}
+
+/** What each app announces when the repeat control lands on a mode. */
+export const LOOP_MODE_MESSAGES: Record<LoopMode, string> = {
+  off: "Looping disabled",
+  playlist: "Looping playlist",
+  track: "Playing current song on repeat",
+};
+
+/** Every item once, in random order. `random` is injectable for tests. */
+export function shuffled<T>(
+  items: readonly T[],
+  random: () => number = Math.random,
+): T[] {
+  return items
+    .map((item) => ({ item, key: random() }))
+    .sort((a, b) => a.key - b.key)
+    .map(({ item }) => item);
+}

@@ -27,18 +27,18 @@ export default function TabsLayout() {
           />
           <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="search" role="search">
+        <NativeTabs.Trigger name="(search)" role="search">
           <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />
           <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="library">
+        <NativeTabs.Trigger name="(library)">
           <NativeTabs.Trigger.Icon
             sf={{ default: "square.stack", selected: "square.stack.fill" }}
             md="library_music"
           />
           <NativeTabs.Trigger.Label>Library</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="settings">
+        <NativeTabs.Trigger name="(settings)">
           <NativeTabs.Trigger.Icon
             sf={{ default: "gearshape", selected: "gearshape.fill" }}
             md="settings"

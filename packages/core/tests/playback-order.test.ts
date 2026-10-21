@@ -2,8 +2,10 @@ import { describe, expect, it } from "bun:test";
 
 import {
   loopModeOf,
+  nextLoopMode,
   nextTrackIndex,
   prevTrackIndex,
+  shuffled,
 } from "../src/playback-order";
 
 const order = (
@@ -87,5 +89,28 @@ describe("loopModeOf", () => {
     expect(loopModeOf(false, true)).toBe("playlist");
     expect(loopModeOf(true, false)).toBe("track");
     expect(loopModeOf(true, true)).toBe("track");
+  });
+});
+
+describe("nextLoopMode", () => {
+  it("cycles off, the whole queue, then the track", () => {
+    expect(nextLoopMode("off", 3)).toBe("playlist");
+    expect(nextLoopMode("playlist", 3)).toBe("track");
+    expect(nextLoopMode("track", 3)).toBe("off");
+  });
+
+  it("toggles repeat-one for a single entry", () => {
+    expect(nextLoopMode("off", 1)).toBe("track");
+    expect(nextLoopMode("playlist", 1)).toBe("track");
+    expect(nextLoopMode("track", 1)).toBe("off");
+  });
+});
+
+describe("shuffled", () => {
+  it("keeps every item once, ordered by the random keys", () => {
+    const keys = [0.9, 0.1, 0.5];
+    const order = shuffled(["a", "b", "c"], () => keys.shift() ?? 0);
+
+    expect(order).toEqual(["b", "c", "a"]);
   });
 });
