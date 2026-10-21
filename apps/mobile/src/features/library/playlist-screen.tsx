@@ -51,7 +51,8 @@ function PlaylistSongRow({
         onPress: onRemove,
       }}
     >
-      <View className="flex-row items-center pr-2">
+      {/* The handle is a third trailing control: it keeps the row's 4pt end inset. */}
+      <View className="flex-row items-center pr-1">
         <View className="flex-1">
           <SongRow
             song={song}
@@ -90,7 +91,7 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
           onRefresh={refresh}
           recentLabel="Playlist order"
           header={
-            <View className="gap-1 px-page pb-3">
+            <View className="px-page pb-3">
               {playlist.description ? (
                 <Text tone="muted">{playlist.description}</Text>
               ) : null}
@@ -144,7 +145,7 @@ function Playlist({ id }: { id: string }) {
           <MenuTrigger
             label="Playlist options"
             icon={{ ios: "ellipsis.circle", android: "more_vert" }}
-            size={22}
+            size="lg"
           />
         </PlaylistMenu>
       </Stack.Toolbar>

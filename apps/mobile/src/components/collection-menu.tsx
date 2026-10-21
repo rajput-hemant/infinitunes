@@ -31,10 +31,21 @@ async function downloadAll(songs: readonly SongRowItem[]) {
   const count = `${songs.length} ${songs.length === 1 ? "song" : "songs"}`;
   const { downloadQuality } = preferencesStore.getState();
   void ensureNotificationPermission();
-  const job = saveTracks(folder, songs, downloadQuality).then((result) => {
-    void notifyDownloadsFinished(result, songs.length);
-    return result;
-  });
+  const job = saveTracks(folder, songs, downloadQuality).then(
+    (result) => {
+      void notifyDownloadsFinished(result, songs.length);
+      return result;
+    },
+    (error: unknown) => {
+      // The whole job failed, so nothing was saved: post that too, and
+      // rethrow so the toast shows the failure.
+      void notifyDownloadsFinished(
+        { saved: 0, failed: songs.length },
+        songs.length,
+      );
+      throw error;
+    },
+  );
   toast.promise(job, {
     loading: `Downloading ${count}...`,
     success: ({ saved, failed }) =>

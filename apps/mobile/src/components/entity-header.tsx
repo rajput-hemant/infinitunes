@@ -2,7 +2,6 @@ import type { FavoriteType } from "@infinitunes/core/favorites";
 import type { ReactNode } from "react";
 import { Platform, View } from "react-native";
 
-import { art } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
 import { ExplicitBadge } from "./explicit-badge";
@@ -11,9 +10,6 @@ import { Artwork } from "./ui/artwork";
 import { Button } from "./ui/button";
 import { Icon } from "./ui/icon";
 import { Text } from "./ui/text";
-
-/** @deprecated Use `art.header` from `~/theme/tokens` (or `Artwork size="header"`). */
-export const ENTITY_ART_SIZE = art.header;
 
 /** iOS lifts the header art off the page; Material 3 is flat. */
 const ART_SHADOW = Platform.select({

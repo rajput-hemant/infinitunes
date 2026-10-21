@@ -114,7 +114,10 @@ describe("colour tokens", () => {
  * Android 12+ derives its scheme from the wallpaper (Material You's tonal
  * spot), which no test can pin. Material's tone design keeps role pairs
  * apart, so check that our role mapping keeps every text pair at AA across
- * seeds round the hue circle, greys and both spec versions.
+ * seeds round the hue circle, greys and both spec versions. Only the tonal
+ * spot variant at standard contrast (level 0) is generated: other variants
+ * (vibrant, expressive...) and the system's medium/high contrast levels are
+ * not covered.
  */
 describe("Material You colour roles", () => {
   const SEEDS = [

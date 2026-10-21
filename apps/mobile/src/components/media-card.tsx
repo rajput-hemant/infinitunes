@@ -1,6 +1,5 @@
 import type { CardItem, MediaType } from "@infinitunes/types";
 import { isExplicit } from "@infinitunes/types";
-import { Link } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { entityHref } from "~/navigation/entity-href";
@@ -8,17 +7,14 @@ import { isPlayable } from "~/playback/play-entity";
 import { art, sizes, space } from "~/theme/tokens";
 
 import {
-  CardMenu,
+  CardLink,
   cardAccessibilityActions,
-  cardMenuEntries,
+  useCardMenuEntries,
 } from "./card-menu";
 import { CardPlayButton } from "./card-play-button";
 import { ExplicitBadge } from "./explicit-badge";
 import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
-
-/** @deprecated Use `art.card` from `~/theme/tokens`. */
-export const MEDIA_CARD_WIDTH = art.card;
 
 export type MediaCardVariant = "card" | "hero";
 
@@ -66,7 +62,7 @@ export function MediaCard({
   const explicit = isExplicit(item.explicit);
   const name = explicit ? `${item.name}, Explicit` : item.name;
   const label = item.subtitle ? `${name}, ${item.subtitle}` : name;
-  const entries = cardMenuEntries(item);
+  const entries = useCardMenuEntries(item);
 
   const content = (
     <>
@@ -87,7 +83,8 @@ export function MediaCard({
         </Text>
         {item.subtitle || explicit ? (
           <View className="flex-row items-center gap-1">
-            {explicit ? <ExplicitBadge /> : null}
+            {/* The card's label already says "Explicit". */}
+            {explicit ? <ExplicitBadge accessible={false} /> : null}
             {item.subtitle ? (
               <Text
                 variant="footnote"
@@ -120,23 +117,21 @@ export function MediaCard({
 
   return (
     <View style={{ width: edge }}>
-      <CardMenu name={item.name} entries={entries}>
+      <CardLink href={href} name={item.name} entries={entries}>
         {(onLongPress) => (
-          <Link href={href} asChild>
-            <Pressable
-              onPress={onPress}
-              onLongPress={onLongPress}
-              accessibilityRole="link"
-              accessibilityLabel={label}
-              {...cardAccessibilityActions(entries)}
-              className="gap-2 active:opacity-70"
-              style={{ width: edge }}
-            >
-              {content}
-            </Pressable>
-          </Link>
+          <Pressable
+            onPress={onPress}
+            onLongPress={onLongPress}
+            accessibilityRole="link"
+            accessibilityLabel={label}
+            {...cardAccessibilityActions(entries)}
+            className="gap-2 active:opacity-70"
+            style={{ width: edge }}
+          >
+            {content}
+          </Pressable>
         )}
-      </CardMenu>
+      </CardLink>
       {hero && isPlayable(item.type) ? (
         <CardPlayButton
           type={item.type}

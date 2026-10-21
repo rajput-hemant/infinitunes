@@ -50,7 +50,10 @@ describe("Shelf", () => {
         name: "Udta Teer, Explicit, Sachin-Jigar, Amitabh Bhattacharya",
       }),
     ).toBeOnTheScreen();
-    expect(screen.getByText("E")).toBeOnTheScreen();
+    // The link's label says it, so the mark itself is hidden from screen readers.
+    expect(
+      screen.getByText("E", { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
   });
 
   it("opens the album screen for a card", async () => {
@@ -80,11 +83,15 @@ describe("Shelf", () => {
     await renderShelf(<Shelf title="New Releases" items={albums} />);
 
     expect(screen.queryByRole("button", { name: "Play Udta Teer" })).toBeNull();
+    // No card keeps a native menu host until it is long pressed.
+    expect(screen.queryByTestId("card-menu")).toBeNull();
     await fireEvent(
       screen.getByRole("link", { name: /^Udta Teer/ }),
-      "pressAction",
-      { nativeEvent: { event: "add-to-queue" } },
+      "longPress",
     );
+    await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
+      nativeEvent: { event: "add-to-queue" },
+    });
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(2));
     expect(procedure("album.details")).toHaveBeenCalledWith({

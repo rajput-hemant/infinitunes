@@ -50,11 +50,11 @@ export function LabelContent({
       getItemType={(item) => item.kind}
       renderItem={renderEntityListItem}
       ListHeaderComponent={
-        <View className="gap-3 pb-2">
+        <View className="gap-2 pb-2">
           <EntityHeader
             image={label.image}
+            eyebrow="Label"
             title={decode(label.name)}
-            subtitle="Record label"
             round
             onPlay={() => playAll(songs)}
             onShuffle={() => shuffleAll(songs)}

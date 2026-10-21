@@ -148,6 +148,34 @@ describe("download all", () => {
       .mockResolvedValue({ granted: true, canAskAgain: true } as never);
   });
 
+  it("posts the failure and fails the toast when saving rejects outright", async () => {
+    jest
+      .mocked(getPermissionsAsync)
+      .mockResolvedValue({ granted: true, canAskAgain: true } as never);
+    jest.mocked(pickDownloadFolder).mockResolvedValue(new Directory());
+    jest
+      .mocked(saveTracks)
+      .mockRejectedValue(new Error("The folder is no longer available"));
+    Object.assign(AppState, { currentState: "background" });
+    await renderWithProviders(menu());
+
+    await chooseMenuAction(trigger, "download-all");
+    await waitFor(() => expect(toast.promise).toHaveBeenCalledTimes(1));
+
+    const [job] = jest.mocked(toast.promise).mock.calls[0] ?? [];
+    await expect(job).rejects.toThrow("The folder is no longer available");
+    await waitFor(() =>
+      expect(scheduleNotificationAsync).toHaveBeenCalledWith(
+        expect.objectContaining({
+          content: expect.objectContaining({
+            title: "Download failed",
+            body: "No songs could be saved.",
+          }),
+        }),
+      ),
+    );
+  });
+
   it("reports how many saved when some failed, and says 'song' for one", async () => {
     jest.mocked(pickDownloadFolder).mockResolvedValue(new Directory());
     jest.mocked(saveTracks).mockResolvedValue({ saved: 2, failed: 1 });

@@ -1,7 +1,6 @@
 import { Column, Text } from "@expo/ui";
-import { useColorScheme } from "react-native";
 
-import { colors } from "~/theme/tokens";
+import { usePalette } from "~/theme/use-palette";
 
 import type { ActionRowProps, TapRowProps } from "./tap-row-props";
 
@@ -15,7 +14,7 @@ export function ActionRow({
   destructive = false,
   onPress,
 }: ActionRowProps) {
-  const palette = colors[useColorScheme() === "dark" ? "dark" : "light"];
+  const palette = usePalette();
 
   return (
     <Column onPress={onPress}>

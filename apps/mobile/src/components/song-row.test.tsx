@@ -75,12 +75,24 @@ describe("SongRow", () => {
       playerStore.getState().playTracks([song]);
       playbackStatusStore.setState({ playing: true });
     });
+    expect(screen.getByTestId("now-playing")).toBeOnTheScreen();
     await fireEvent.press(
       screen.getByRole("button", { name: "FA9LA & Friends" }),
     );
 
-    expect(screen.getByTestId("now-playing")).toBeOnTheScreen();
     expect(onPress).not.toHaveBeenCalled();
+  });
+
+  it("shows the pause mark, not the waveform, while the current row is paused", async () => {
+    await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
+
+    await act(async () => {
+      playerStore.getState().playTracks([song]);
+      playbackStatusStore.setState({ playing: false });
+    });
+
+    expect(screen.getByTestId("now-paused")).toBeOnTheScreen();
+    expect(screen.queryByTestId("now-playing")).toBeNull();
   });
 
   it("shows its track number instead of the cover in a numbered list", async () => {
@@ -89,14 +101,14 @@ describe("SongRow", () => {
     );
 
     expect(screen.getByText("4")).toBeOnTheScreen();
-    expect(screen.queryByTestId("now-playing")).toBeNull();
+    expect(screen.queryByTestId(/^now-/)).toBeNull();
 
     await act(async () => {
       playerStore.getState().playTracks([song]);
     });
 
     expect(screen.queryByText("4")).toBeNull();
-    expect(screen.getByTestId("now-playing")).toBeOnTheScreen();
+    expect(screen.getByTestId(/^now-/)).toBeOnTheScreen();
   });
 
   it("leads the credits with the explicit mark", async () => {
@@ -104,7 +116,9 @@ describe("SongRow", () => {
       <SongRow song={{ ...song, explicit: true }} onPress={jest.fn()} />,
     );
 
-    expect(screen.getByText("E")).toBeOnTheScreen();
+    expect(
+      screen.getByText("E", { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
     expect(
       screen.getByRole("button", { name: "FA9LA & Friends" }),
     ).toHaveAccessibilityValue({ text: "Explicit, Flipperachi" });

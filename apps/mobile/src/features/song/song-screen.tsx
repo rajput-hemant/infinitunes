@@ -22,9 +22,12 @@ import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
 import { SecondaryShelf } from "~/components/secondary-shelf";
-import { SectionHeading } from "~/components/section-heading";
+import { SectionHeader } from "~/components/section-header";
 import { Shelf } from "~/components/shelf";
-import { SongListSkeleton } from "~/components/skeletons";
+import {
+  SectionHeaderSkeleton,
+  SongListSkeleton,
+} from "~/components/skeletons";
 import { TrackList } from "~/components/track-list";
 import { joinMeta } from "~/lib/meta";
 import { trpc } from "~/lib/trpc";
@@ -111,11 +114,10 @@ function SongPage({ song, modules, trending }: SongPageProps) {
     <>
       <EntityHeader
         image={song.image}
+        eyebrow={joinMeta(["Song", song.year])}
         title={row.name}
-        subtitle={joinMeta([
-          row.album,
-          row.primaryArtists.map((artist) => artist.name).join(", "),
-        ])}
+        subtitle={row.primaryArtists.map((artist) => artist.name).join(", ")}
+        meta={row.album}
         explicit={isExplicit(song.explicit_content)}
         onPlay={() => playAll(rows)}
         like={{ type: "song", token: song.id }}
@@ -166,12 +168,19 @@ function MoreFromAlbum({ song, albumUrl }: MoreFromAlbumProps) {
     [data, song.id],
   );
 
-  if (isPending && token !== "") return <SongListSkeleton rows={4} />;
+  if (isPending && token !== "") {
+    return (
+      <>
+        <SectionHeaderSkeleton />
+        <SongListSkeleton rows={4} />
+      </>
+    );
+  }
   if (rows.length === 0) return null;
 
   return (
     <>
-      <SectionHeading>{`More from ${song.album ?? "the album"}`}</SectionHeading>
+      <SectionHeader title={`More from ${song.album ?? "the album"}`} />
       <TrackList rows={rows} />
     </>
   );

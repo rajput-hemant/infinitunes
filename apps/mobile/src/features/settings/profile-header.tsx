@@ -1,9 +1,7 @@
 import { Column, Row, Spacer, Text } from "@expo/ui";
-import { useColorScheme } from "react-native";
 
-import { colors } from "~/theme/tokens";
-
-const AVATAR_SIZE = 48;
+import { art, space, textStyles } from "~/theme/tokens";
+import { usePalette } from "~/theme/use-palette";
 
 type ProfileUser = { name?: string | null; email: string };
 
@@ -12,31 +10,31 @@ export function userInitial({ name, email }: ProfileUser): string {
   return (name?.trim() || email.trim()).charAt(0).toUpperCase();
 }
 
+const AVATAR = {
+  width: art.avatar,
+  height: art.avatar,
+  borderRadius: art.avatar / 2,
+};
+
 /**
  * The signed-in account at the top of Settings (the web's user menu header):
  * the initial in a filled circle, the name and the email. Display only; the
  * "Edit profile" row under it opens the form.
  */
 export function ProfileHeader({ user }: { user: ProfileUser }) {
-  const palette = colors[useColorScheme() === "dark" ? "dark" : "light"];
+  const palette = usePalette();
   const name = user.name?.trim();
 
   return (
-    <Row spacing={12} alignment="center" testID="profile">
+    <Row spacing={space.md} alignment="center" testID="profile">
       <Column
         alignment="center"
-        style={{
-          width: AVATAR_SIZE,
-          height: AVATAR_SIZE,
-          borderRadius: AVATAR_SIZE / 2,
-          backgroundColor: palette.primary,
-        }}
+        style={{ ...AVATAR, backgroundColor: palette.primary }}
       >
         <Spacer flexible />
         <Text
           textStyle={{
-            fontSize: 20,
-            fontWeight: "bold",
+            ...textStyles.title2,
             color: palette["primary-foreground"],
             textAlign: "center",
           }}
@@ -45,13 +43,17 @@ export function ProfileHeader({ user }: { user: ProfileUser }) {
         </Text>
         <Spacer flexible />
       </Column>
-      <Column spacing={2}>
-        <Text textStyle={{ fontSize: 17, fontWeight: "600" }} numberOfLines={1}>
+      {/* A title over a subtitle: their line heights space them. */}
+      <Column>
+        <Text textStyle={textStyles.headline} numberOfLines={1}>
           {name || user.email}
         </Text>
         {name ? (
           <Text
-            textStyle={{ color: palette["muted-foreground"] }}
+            textStyle={{
+              ...textStyles.subhead,
+              color: palette["muted-foreground"],
+            }}
             numberOfLines={1}
           >
             {user.email}

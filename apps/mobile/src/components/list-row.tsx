@@ -38,6 +38,13 @@ type ListRowProps = {
   onPress?: () => void;
   /** The current track: accent title, waveform in the leading slot. */
   selected?: boolean;
+  /** The current track is paused: the pause mark replaces the waveform. */
+  paused?: boolean;
+  /**
+   * A choice in a multiple-choice list (languages): the row is a checkbox and
+   * shows a check mark at its end while on.
+   */
+  checked?: boolean;
   /** Defaults to the title, "Explicit" and the subtitle. */
   accessibilityLabel?: string;
   accessibilityHint?: string;
@@ -45,6 +52,10 @@ type ListRowProps = {
 };
 
 const WAVEFORM: SymbolName = { ios: "waveform", android: "graphic_eq" };
+const PAUSED: SymbolName = { ios: "pause.fill", android: "pause" };
+
+/** What the leading slot shows for the current track. */
+type NowPlaying = "playing" | "paused" | undefined;
 
 function isChevron(
   trailing: ListRowProps["trailing"],
@@ -59,18 +70,22 @@ function isChevron(
 
 function Leading({
   leading,
-  selected,
+  nowPlaying,
+  dimmed,
 }: {
   leading: ListRowLeading;
-  selected: boolean;
+  nowPlaying: NowPlaying;
+  /** A row without a destination: only the picture dims. */
+  dimmed: boolean;
 }) {
   const primary = useTokenColor("primary");
+  const mark = nowPlaying === "paused" ? PAUSED : WAVEFORM;
   if ("index" in leading) {
     return (
       <View className="w-touch items-center">
-        {selected ? (
-          <View testID="now-playing">
-            <Icon name={WAVEFORM} size="sm" color={primary} />
+        {nowPlaying ? (
+          <View testID={`now-${nowPlaying}`}>
+            <Icon name={mark} size="sm" color={primary} />
           </View>
         ) : (
           <Text tone="muted" numeric>
@@ -82,23 +97,28 @@ function Leading({
   }
   if ("icon" in leading) {
     return (
-      <View className="size-touch items-center justify-center rounded-sm bg-fill">
+      <View
+        className={cx(
+          "size-touch items-center justify-center rounded-sm bg-fill",
+          dimmed && "opacity-50",
+        )}
+      >
         <Icon name={leading.icon} size="md" />
       </View>
     );
   }
   return (
-    <View>
+    <View testID="list-row-art" className={dimmed ? "opacity-50" : undefined}>
       <Artwork image={leading.artwork} size="row" round={leading.round} />
-      {selected ? (
+      {nowPlaying ? (
         <View
-          testID="now-playing"
+          testID={`now-${nowPlaying}`}
           className={cx(
             "absolute inset-0 items-center justify-center bg-scrim",
             leading.round ? "rounded-full" : "rounded-sm",
           )}
         >
-          <Icon name={WAVEFORM} size="sm" color="white" />
+          <Icon name={mark} size="sm" color="white" />
         </View>
       ) : null}
     </View>
@@ -120,28 +140,40 @@ export function ListRow({
   href,
   onPress,
   selected = false,
+  paused = false,
+  checked,
   accessibilityLabel,
   accessibilityHint,
   accessibilityValue,
 }: ListRowProps) {
   const palette = usePalette();
+  const primary = useTokenColor("primary");
   const [pressed, setPressed] = useState(false);
   const chevron = isChevron(trailing);
   const controls = chevron ? null : trailing;
+  const dimmed = !href && !onPress;
+  const nowPlaying: NowPlaying = selected
+    ? paused
+      ? "paused"
+      : "playing"
+    : undefined;
   const label =
     accessibilityLabel ??
     [title, explicit && "Explicit", subtitle].filter(Boolean).join(", ");
 
   const body = (
     <>
-      {leading ? <Leading leading={leading} selected={selected} /> : null}
+      {leading ? (
+        <Leading leading={leading} nowPlaying={nowPlaying} dimmed={dimmed} />
+      ) : null}
       <View className="flex-1">
         <Text numberOfLines={1} tone={selected ? "primary" : "default"}>
           {title}
         </Text>
         {subtitle || explicit ? (
           <View className="flex-row items-center gap-1">
-            {explicit ? <ExplicitBadge /> : null}
+            {/* The row's label already says "Explicit". */}
+            {explicit ? <ExplicitBadge accessible={false} /> : null}
             {subtitle ? (
               <Text
                 variant="footnote"
@@ -155,6 +187,13 @@ export function ListRow({
           </View>
         ) : null}
       </View>
+      {checked ? (
+        <Icon
+          name={{ ios: "checkmark", android: "check" }}
+          size="md"
+          color={primary}
+        />
+      ) : null}
       {chevron && Platform.OS === "ios" ? (
         <Icon
           name={{ ios: "chevron.right", android: "chevron_right" }}
@@ -167,15 +206,12 @@ export function ListRow({
   const bodyClass = "min-h-row flex-1 flex-row items-center gap-3 py-2 pl-page";
   const endPadding = { paddingEnd: controls ? space.xs : space.lg };
 
-  // An item without a screen is a labelled view, never a disabled button.
-  if (!href && !onPress) {
+  // An item without a screen is a labelled view, never a disabled button;
+  // only its picture dims (`Leading`), so the text keeps its contrast.
+  if (dimmed) {
     return (
       <View className="flex-row items-center" style={endPadding}>
-        <View
-          accessible
-          accessibilityLabel={label}
-          className={`${bodyClass} opacity-50`}
-        >
+        <View accessible accessibilityLabel={label} className={bodyClass}>
           {body}
         </View>
         {controls}
@@ -189,11 +225,13 @@ export function ListRow({
       onPressIn={() => setPressed(true)}
       onPressOut={() => setPressed(false)}
       android_ripple={{ color: palette["fill-2"], foreground: true }}
-      accessibilityRole={href ? "link" : "button"}
+      accessibilityRole={
+        checked !== undefined ? "checkbox" : href ? "link" : "button"
+      }
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
       accessibilityValue={accessibilityValue}
-      accessibilityState={{ selected }}
+      accessibilityState={checked !== undefined ? { checked } : { selected }}
       className={bodyClass}
     >
       {body}

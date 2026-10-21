@@ -112,6 +112,13 @@ describe("toSongRow", () => {
     expect(fromRow).toEqual(fromRaw);
   });
 
+  it("keeps the explicit mark on the queue entry", () => {
+    expect(toQueueEntry(row).explicit).toBe(true);
+    expect(toQueue(song).explicit).toBe(true);
+    const clean = { ...song, explicit_content: "0" } as Song;
+    expect(toQueueEntry(toSongRow(clean))).not.toHaveProperty("explicit");
+  });
+
   it("maps an episode with its release date and no album", () => {
     const episode = {
       ...song,

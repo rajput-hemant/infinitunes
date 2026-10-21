@@ -56,6 +56,7 @@ export function SongRow({
           : { artwork: song.image }
       }
       selected={isCurrent}
+      paused={isCurrent && !isPlaying}
       onPress={isCurrent ? togglePlayback : onPress}
       accessibilityLabel={song.name}
       accessibilityValue={{

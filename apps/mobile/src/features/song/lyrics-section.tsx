@@ -3,8 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 
-import { SectionHeading } from "~/components/section-heading";
-import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
+import { SectionHeader } from "~/components/section-header";
+import { TextBlockSkeleton } from "~/components/skeletons";
 import { Text } from "~/components/ui/text";
 import { trpc } from "~/lib/trpc";
 
@@ -24,18 +24,12 @@ export function LyricsSection({ songId }: LyricsSectionProps) {
     trpc.get.lyrics.queryOptions({ id: songId }),
   );
 
-  if (isPending) {
-    return (
-      <SkeletonPulse>
-        <SkeletonBlock className="mx-page my-3 h-24 rounded-lg" />
-      </SkeletonPulse>
-    );
-  }
+  if (isPending) return <TextBlockSkeleton />;
   if (!lyrics) return null;
 
   return (
     <View>
-      <SectionHeading>Lyrics</SectionHeading>
+      <SectionHeader title="Lyrics" />
       <Pressable
         onPress={() => setExpanded((open) => !open)}
         accessibilityRole="button"

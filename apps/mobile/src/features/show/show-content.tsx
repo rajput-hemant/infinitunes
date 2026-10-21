@@ -12,6 +12,7 @@ import {
   songItems,
 } from "~/components/entity-list";
 import { PagedFooter } from "~/components/paged-footer";
+import { SectionHeader } from "~/components/section-header";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playAll, shuffleAll } from "~/playback/play-collection";
@@ -60,25 +61,25 @@ export function ShowContent({
       keyExtractor={entityListKey}
       renderItem={renderEntityListItem}
       ListHeaderComponent={
-        <View className="gap-1 pb-2">
+        <View>
           <EntityHeader
             image={details.image}
+            eyebrow="Podcast"
             title={decode(details.title)}
-            subtitle={fansLabel(show)}
+            subtitle={decode(details.subtitle)}
+            meta={fansLabel(show)}
             explicit={isExplicit(details.explicit_content)}
             onPlay={() => play(false)}
             onShuffle={() => play(true)}
             like={{ type: "show", token: details.id }}
           />
           {description ? (
-            <View className="gap-1 px-page pb-2">
-              <Text variant="headline" accessibilityRole="header">
-                {decode(show.modules.show_details.title)}
-              </Text>
-              <Text tone="muted" selectable>
+            <>
+              <SectionHeader title={decode(show.modules.show_details.title)} />
+              <Text tone="muted" selectable className="px-page">
                 {description}
               </Text>
-            </View>
+            </>
           ) : null}
           <ShowControls
             seasons={show.seasons}

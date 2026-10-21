@@ -7,6 +7,7 @@ import { View } from "react-native";
 import ReorderableList from "react-native-reorderable-list";
 
 import type { ReorderActions } from "~/components/drag-handle";
+import { EmptyState } from "~/components/empty-state";
 import { OptionMenu } from "~/components/option-menu";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
@@ -138,9 +139,11 @@ export function SongCollection({
       </View>
     ),
     ListEmptyComponent: (
-      <Text tone="muted" className="px-page py-10 text-center">
-        No songs match “{query.trim()}”.
-      </Text>
+      <EmptyState
+        icon={{ ios: "magnifyingglass", android: "search" }}
+        title={`No songs match “${query.trim()}”`}
+        message="Try another title or artist."
+      />
     ),
     contentInsetAdjustmentBehavior: "automatic" as const,
     contentContainerStyle: { paddingBottom: playerDockInset },

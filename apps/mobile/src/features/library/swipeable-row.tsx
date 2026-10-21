@@ -1,4 +1,3 @@
-import { useTheme } from "expo-router";
 import type { SymbolViewProps } from "expo-symbols";
 import type { ReactNode } from "react";
 import { useRef } from "react";
@@ -8,6 +7,7 @@ import type { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSw
 
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
+import { useTokenColor } from "~/theme/use-palette";
 
 export type SwipeAction = {
   label: string;
@@ -26,7 +26,7 @@ export function SwipeableRow({
   action: SwipeAction;
   children: ReactNode;
 }) {
-  const { colors } = useTheme();
+  const ink = useTokenColor("destructive-foreground");
   const swipeable = useRef<SwipeableMethods>(null);
 
   return (
@@ -41,10 +41,10 @@ export function SwipeableRow({
             swipeable.current?.close();
             action.onPress();
           }}
-          className="w-24 items-center justify-center gap-1 bg-destructive"
+          className="min-w-row items-center justify-center gap-1 bg-destructive px-4"
         >
           {/* The destructive fill's own text colour: white fails AA on dark's lighter red. */}
-          <Icon name={action.icon} size={20} color={colors.background} />
+          <Icon name={action.icon} size="md" color={ink} />
           <Text variant="caption" tone="onDestructive">
             {action.label}
           </Text>

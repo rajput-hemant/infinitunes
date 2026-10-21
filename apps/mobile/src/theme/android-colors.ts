@@ -9,6 +9,3 @@ import type { ColorScheme, Palette } from "./tokens";
 export function paletteFor(scheme: ColorScheme): Palette {
   return colors[scheme];
 }
-
-/** Nothing to install outside Android. */
-export function installDynamicColors() {}

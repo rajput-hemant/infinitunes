@@ -22,8 +22,6 @@ export type RowExtras = {
   albumUrl?: string;
   releaseDate?: string;
   language?: string;
-  /** Set only when upstream flags the track explicit (rows show the "E" mark). */
-  explicit?: true;
 };
 
 /**
@@ -105,5 +103,6 @@ export function toQueueEntry(source: QueueSource): Queue {
     download_url: source.download_url,
     duration: source.duration,
     maxQuality: source.maxQuality,
+    ...(source.explicit ? { explicit: true } : {}),
   };
 }

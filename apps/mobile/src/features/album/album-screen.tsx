@@ -33,15 +33,19 @@ type AlbumScreenProps = {
   token: string;
 };
 
-function albumMeta(album: Album, rows: readonly SongRowItem[]): string {
+/** The album's artists, or upstream's own credit line without them. */
+function albumCredit(album: Album): string {
   const artists = uniqueArtists(album.more_info.artistMap?.artists ?? []);
+  return artists.length > 0
+    ? artists.map((artist) => decode(artist.name)).join(", ")
+    : decode(album.subtitle);
+}
+
+function albumMeta(album: Album, rows: readonly SongRowItem[]): string {
   return joinMeta([
-    artists.length > 0
-      ? artists.map((artist) => decode(artist.name)).join(", ")
-      : decode(album.subtitle),
     songCountLabel(rows.length),
-    playsLabel(album.play_count),
     totalDurationLabel(rows),
+    playsLabel(album.play_count),
   ]);
 }
 
@@ -97,17 +101,19 @@ function AlbumPage({ album, trending }: AlbumPageProps) {
     <>
       <EntityHeader
         image={album.image}
+        eyebrow={joinMeta(["Album", album.year])}
         title={decode(album.title)}
-        subtitle={albumMeta(album, rows)}
+        subtitle={albumCredit(album)}
+        meta={albumMeta(album, rows)}
         explicit={isExplicit(album.explicit_content)}
         onPlay={() => playAll(rows)}
         onShuffle={() => shuffleAll(rows)}
         like={{ type: "album", token: album.id }}
         actions={<CollectionMenu name={decode(album.title)} rows={rows} />}
       />
-      <TrackList rows={rows} />
+      <TrackList rows={rows} numbered />
       {copyright ? (
-        <View className="px-page py-3">
+        <View className="px-page pt-4">
           <Text variant="caption" tone="muted">
             {decode(copyright)}
           </Text>

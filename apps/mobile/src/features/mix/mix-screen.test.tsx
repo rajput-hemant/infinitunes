@@ -27,7 +27,8 @@ describe("MixScreen", () => {
     await renderScreen(<MixScreen token="XyZ_" />);
 
     expect(await screen.findByText("Chill & Focus")).toBeOnTheScreen();
-    expect(screen.getByText("Made for · You · 2 Songs")).toBeOnTheScreen();
+    expect(screen.getByText("Made for You")).toBeOnTheScreen();
+    expect(screen.getByText(/^2 Songs/)).toBeOnTheScreen();
     expect(screen.getByText("Calm One")).toBeOnTheScreen();
     expect(screen.getByText("Calm Two")).toBeOnTheScreen();
     expect(screen.queryByRole("button", { name: /^Like Chill/ })).toBeNull();

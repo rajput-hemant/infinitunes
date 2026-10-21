@@ -44,11 +44,12 @@ export function ArtistListHeader({
   const isPaged = tab === "songs" || tab === "albums";
 
   return (
-    <View className="gap-3 pb-2">
+    <View className="gap-2 pb-2">
       <EntityHeader
         image={artist.image}
+        eyebrow="Artist"
         title={name}
-        subtitle={listenersLabel(artist)}
+        meta={listenersLabel(artist)}
         round
         verified={artist.isVerified}
         onPlay={() => playAll(topSongs)}
