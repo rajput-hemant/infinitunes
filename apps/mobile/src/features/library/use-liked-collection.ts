@@ -1,3 +1,4 @@
+import { getErrorCode } from "@infinitunes/core/error-code";
 import {
   LIBRARY_FETCH_CONCURRENCY,
   settleWithLimit,
@@ -10,6 +11,13 @@ import {
 } from "./liked-collections";
 import { useFavoriteIds } from "./use-favorite-ids";
 import { useResolvedItems } from "./use-resolved-items";
+
+/** A lookup that found nothing: upstream answered, but no longer has the item. */
+function isGone(result: PromiseSettledResult<unknown>): boolean {
+  return result.status === "fulfilled"
+    ? !result.value
+    : getErrorCode(result.reason) === "NOT_FOUND";
+}
 
 /** Liked albums, artists, playlists or podcasts as cards, newest like first. */
 export function useLikedCollection(kind: LikedCollectionKind) {
@@ -25,12 +33,14 @@ export function useLikedCollection(kind: LikedCollectionKind) {
         LIBRARY_FETCH_CONCURRENCY,
         resolve,
       );
-      // A token upstream no longer knows is skipped; none resolving at all
-      // is an outage, not an empty library.
+      // A token upstream no longer knows is skipped (counted as missing).
+      // When none resolves, only a list of such tokens is a library of
+      // removed items; any other failure means the service is down.
       const cards = settled.flatMap((result) =>
         result.status === "fulfilled" && result.value ? [result.value] : [],
       );
-      return cards.length > 0 ? uniqueBy(cards, (card) => card.url) : undefined;
+      if (cards.length > 0) return uniqueBy(cards, (card) => card.url);
+      return settled.every(isGone) ? [] : undefined;
     },
   });
 }

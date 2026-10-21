@@ -3,7 +3,7 @@ import { act, fireEvent, screen } from "@testing-library/react-native";
 
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
-import { procedure } from "~/test/trpc-mock";
+import { procedure, trpcError } from "~/test/trpc-mock";
 import { favoritesRow } from "~/test/user-library";
 
 import { LikedCollectionScreen } from "./liked-collection-screen";
@@ -81,5 +81,36 @@ describe("LikedCollectionScreen", () => {
     expect(
       await screen.findByRole("button", { name: "Try again" }),
     ).toBeOnTheScreen();
+    expect(screen.getByText("Couldn't load this")).toBeOnTheScreen();
+  });
+
+  it("says the albums are gone, with a retry, when upstream no longer has any", async () => {
+    procedure("album.details").mockRejectedValue(trpcError("NOT_FOUND"));
+    await renderLikedAlbums();
+
+    expect(
+      await screen.findByText("These 2 items are no longer available"),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText("Couldn't load this")).not.toBeOnTheScreen();
+    expect(screen.queryByText("No liked albums yet")).not.toBeOnTheScreen();
+
+    // Back upstream: the retry lists it.
+    procedure("album.details").mockImplementation(async ({ id }) => {
+      if (id === "1") return albums["1"];
+      throw trpcError("NOT_FOUND");
+    });
+    await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
+
+    expect(await screen.findByText("Udta Teer")).toBeOnTheScreen();
+    expect(screen.getByText(/1 item couldn't load/)).toBeOnTheScreen();
+  });
+
+  it("treats a mix of removed and failed lookups as an outage", async () => {
+    procedure("album.details").mockImplementation(async ({ id }) => {
+      throw id === "1" ? trpcError("NOT_FOUND") : new Error("down");
+    });
+    await renderLikedAlbums();
+
+    expect(await screen.findByText("Couldn't load this")).toBeOnTheScreen();
   });
 });

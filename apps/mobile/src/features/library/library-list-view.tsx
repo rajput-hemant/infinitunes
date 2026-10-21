@@ -29,10 +29,39 @@ export function LibraryListView<Item>({
     case "error":
       return <ErrorState error={list.error} onRetry={list.retry} />;
     case "ready":
-      return list.items.length === 0 ? (
-        <EmptyState {...empty} />
+      if (list.items.length > 0) return children(list);
+      return list.missing > 0 ? (
+        <UnavailableState
+          icon={empty.icon}
+          missing={list.missing}
+          retry={list.refresh}
+        />
       ) : (
-        children(list)
+        <EmptyState {...empty} />
       );
   }
+}
+
+/** Everything saved here is gone upstream: say so, instead of "nothing yet". */
+function UnavailableState({
+  icon,
+  missing,
+  retry,
+}: {
+  icon: ComponentProps<typeof EmptyState>["icon"];
+  missing: number;
+  retry: () => void;
+}) {
+  return (
+    <EmptyState
+      icon={icon}
+      title={
+        missing === 1
+          ? "This item is no longer available"
+          : `These ${missing} items are no longer available`
+      }
+      message="The music service couldn't find what you saved here. It may have been removed."
+      action={{ label: "Try again", onPress: retry }}
+    />
+  );
 }
