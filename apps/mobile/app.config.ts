@@ -49,6 +49,7 @@ const config: ExpoConfig = {
         dark: { image: ICON, backgroundColor: colors.dark.background },
       },
     ],
+    "./plugins/android-app-actions/index.ts",
   ],
   experiments: {
     typedRoutes: true,
