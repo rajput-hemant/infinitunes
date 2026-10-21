@@ -10,7 +10,7 @@ import { toast } from "sonner-native";
 
 import { preferencesStore } from "~/lib/preferences";
 import { playerStore } from "~/playback/player-store";
-import { renderScreen } from "~/test/render";
+import { chooseCardAction, renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
 
 import { HomeFeed } from "./home-feed";
@@ -143,13 +143,10 @@ describe("HomeFeed", () => {
     await renderScreen(<HomeFeed />);
 
     // Cards have no Play button; their long-press menu offers Play.
-    await fireEvent(
+    await chooseCardAction(
       await screen.findByRole("link", { name: /^Hindi Hits & More/ }),
-      "longPress",
+      "play",
     );
-    await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
-      nativeEvent: { event: "play" },
-    });
 
     await waitFor(() =>
       expect(playerStore.getState().radio?.stationId).toBe("session-42"),

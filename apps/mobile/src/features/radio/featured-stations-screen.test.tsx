@@ -2,7 +2,7 @@ import { rawStation, rawStationDetails } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import { playerStore } from "~/playback/player-store";
-import { renderScreen } from "~/test/render";
+import { chooseCardAction, renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
 
 import { FeaturedStationsScreen } from "./featured-stations-screen";
@@ -78,13 +78,10 @@ describe("FeaturedStationsScreen", () => {
     await renderScreen(<FeaturedStationsScreen />);
 
     // Cards have no Play button; their long-press menu offers Play.
-    await fireEvent(
+    await chooseCardAction(
       await screen.findByRole("link", { name: /^Hindi Hits & More/ }),
-      "longPress",
+      "play",
     );
-    await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
-      nativeEvent: { event: "play" },
-    });
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(2));
     expect(procedure("radio.stationDetails")).toHaveBeenCalledWith({

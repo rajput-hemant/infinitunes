@@ -90,3 +90,18 @@ export async function chooseMenuAction(trigger: string, event: string) {
     nativeEvent: { event },
   });
 }
+
+/**
+ * Long presses `card` (a media card or quick pick tile) and picks `event` in
+ * the menu that opens: a card mounts its native menu only once long pressed
+ * (`CardLink`), so the menu is found after the press.
+ */
+export async function chooseCardAction(
+  card: Parameters<typeof fireEvent>[0],
+  event: string,
+) {
+  await fireEvent(card, "longPress");
+  await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
+    nativeEvent: { event },
+  });
+}
