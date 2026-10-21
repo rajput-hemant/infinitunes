@@ -9,7 +9,7 @@ import type { SearchBarCommands } from "react-native-screens";
 import { ChipRow } from "~/components/chip-row";
 
 import { IdleSearch } from "./idle-search";
-import { SEARCH_BAR_OPTIONS } from "./search-bar-options";
+import { searchBarOptions } from "./search-bar-options";
 import { useSearchHistory } from "./search-history";
 import { SearchResults } from "./search-results";
 import { SEARCH_TYPES } from "./search-types";
@@ -57,7 +57,7 @@ export function SearchScreen() {
         options={{
           title: "Search",
           headerSearchBarOptions: {
-            ...SEARCH_BAR_OPTIONS,
+            ...searchBarOptions(),
             ref: searchBar,
             onChangeText: (event) => setQuery(event.nativeEvent.text),
             onSearchButtonPress: (event) => add(event.nativeEvent.text),

@@ -160,7 +160,8 @@ min height 64, vertical padding 8, grows with Dynamic Type
 - L6. Current track: the title in `tone="primary"` and the leading slot shows the waveform (`sm` icon) on a
   scrim over the art, or in place of the number.
 - L7. Explicit: the `E` badge leads the subtitle line (rows, cards). In the entity header it sits before the title.
-- L8. A row without a destination is a labelled `View` with `opacity-50`, never a disabled `Pressable`.
+- L8. A row without a destination is a labelled `View` whose picture (artwork or icon tile) dims to `opacity-50`,
+  never a disabled `Pressable`; its text keeps full contrast.
 
 ### 2.6 Section headers (`SectionHeader`)
 
