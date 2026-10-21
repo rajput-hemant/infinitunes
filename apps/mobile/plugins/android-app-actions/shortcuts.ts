@@ -226,8 +226,8 @@ const ICON_PATHS: Record<ShortcutIcon, string> = {
     "M13,3c-4.97,0 -9,4.03 -9,9H1l3.89,3.89 0.07,0.14L9,12H6c0,-3.87 3.13,-7 7,-7s7,3.13 7,7 -3.13,7 -7,7c-1.93,0 -3.68,-0.79 -4.94,-2.06l-1.42,1.42C8.27,19.99 10.51,21 13,21c4.97,0 9,-4.03 9,-9s-4.03,-9 -9,-9zM12,8v5l4.28,2.54 0.72,-1.21 -3.5,-2.08V8H12z",
 };
 
-/** Shortcut icons are not tinted by the launcher, so the fill is a fixed accent that reads on light and dark. */
-const ICON_FILL = "#FF7C5CFF";
+/** Shortcut icons are not tinted by the launcher, so the fill is the brand teal (ARGB; `brand` in src/lib/notifications.ts), which reads on light and dark. */
+const ICON_FILL = "#FF067F9A";
 
 /** `res/drawable/<name>.xml` -> contents, one 24dp vector per icon in use. */
 export function buildIconDrawables(): Record<string, string> {
@@ -267,13 +267,16 @@ import android.provider.MediaStore
 class ${PLAY_FROM_SEARCH_ACTIVITY} : Activity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+    // SearchManager.QUERY is always set for MEDIA_PLAY_FROM_SEARCH (the free-form
+    // spoken text, possibly empty for "play music"); the structured extras are
+    // only a fallback when it is blank.
     val query =
       listOf(
+          intent.getStringExtra(SearchManager.QUERY),
           intent.getStringExtra(MediaStore.EXTRA_MEDIA_TITLE),
           intent.getStringExtra(MediaStore.EXTRA_MEDIA_ARTIST),
           intent.getStringExtra(MediaStore.EXTRA_MEDIA_ALBUM),
           intent.getStringExtra(MediaStore.EXTRA_MEDIA_PLAYLIST),
-          intent.getStringExtra(SearchManager.QUERY),
         )
         .firstOrNull { !it.isNullOrBlank() }
         ?.trim()

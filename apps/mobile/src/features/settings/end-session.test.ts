@@ -43,6 +43,7 @@ describe("signOut", () => {
     await signOut();
 
     expect(playerStore.getState().queue).toEqual([]);
+    expect(playerStore.getState().started).toBe(false);
   });
 
   it("keeps everything and reports why when the server call fails", async () => {

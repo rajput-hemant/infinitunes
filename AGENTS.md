@@ -208,8 +208,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Notifications: the media notification / lock screen is expo-audio's own (Android Media3 foreground service, iOS Now
   Playing; no custom code or icon), activated once (`setActiveForLockScreen`, which rebuilds the Android session) and then
   fed by `updateLockScreenMetadata`. Local notifications (`expo-notifications`, no push, `enableRemoteNotifications: false`)
-  live in `lib/notifications.ts`: the Downloads channel, and `ensureNotificationPermission`, the one place that asks
-  (first download, first Android playback; once, never again after a denial; the channel must exist before Android 13's prompt).
+  live in `lib/notifications.ts`: the Downloads channel, the `brand` teal accent (repeated in `app.config.ts`) and
+  `ensureNotificationPermission`, the one place that asks (first download only; once, never again after a denial; `asked`
+  is set after the prompt resolves). Playback never asks: Android 13+ exempts media-session notifications from
+  `POST_NOTIFICATIONS`. The channel is created before asking only because apps targeting API <= 32 need it first.
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
   that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,

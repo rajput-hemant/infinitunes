@@ -53,4 +53,15 @@ describe("android app actions resources", () => {
     expect(kotlin).toContain("infinitunes://action/play-search");
     expect(kotlin).toContain("infinitunes://action/resume");
   });
+
+  it("prefers the free-form query over the structured media extras", () => {
+    const kotlin = buildPlayFromSearchKotlin(ID);
+    const order = [
+      "SearchManager.QUERY",
+      "MediaStore.EXTRA_MEDIA_TITLE",
+      "MediaStore.EXTRA_MEDIA_ARTIST",
+    ].map((extra) => kotlin.indexOf(`getStringExtra(${extra})`));
+    expect(order.every((at) => at >= 0)).toBe(true);
+    expect(order).toEqual(order.toSorted((x, y) => x - y));
+  });
 });

@@ -57,6 +57,34 @@ describe("ensureNotificationPermission", () => {
     expect(notificationPromptStore.getState().asked).toBe(true);
   });
 
+  it("does not burn the only prompt when the request throws", async () => {
+    permissionIs(false);
+    request.mockRejectedValueOnce(new Error("no activity"));
+
+    await expect(ensureNotificationPermission()).resolves.toBe(false);
+    expect(notificationPromptStore.getState().asked).toBe(false);
+
+    request.mockResolvedValueOnce({
+      granted: true,
+      canAskAgain: true,
+    } as never);
+    await expect(ensureNotificationPermission()).resolves.toBe(true);
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows one prompt to concurrent callers", async () => {
+    permissionIs(false);
+    request.mockResolvedValue({ granted: true, canAskAgain: true } as never);
+
+    const results = await Promise.all([
+      ensureNotificationPermission(),
+      ensureNotificationPermission(),
+    ]);
+
+    expect(results).toEqual([true, true]);
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
   it("never prompts where the system will not show it", async () => {
     permissionIs(false, false);
 
