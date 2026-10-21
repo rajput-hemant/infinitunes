@@ -32,8 +32,8 @@ export type StreamQuality = "poor" | "low" | "medium" | "high" | "excellent";
 export type Rights = {
   code: unknown;
   cacheable: unknown;
-  delete_cached_object: unknown;
-  reason: unknown;
+  delete_cached_object?: unknown;
+  reason?: unknown;
 };
 
 export const LANGUAGES = [

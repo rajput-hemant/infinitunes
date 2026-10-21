@@ -41,7 +41,7 @@ export type Playlist = {
   list?: string | Song[];
   more_info: {
     uid: string;
-    is_dolby_content: boolean;
+    is_dolby_content: boolean | null;
     last_updated?: string;
     username: string;
     firstname: string;
@@ -54,7 +54,16 @@ export type Playlist = {
     artists?: ArtistMini[];
     subtitle_desc: string[];
   };
-  modules?: PlaylistModules;
+  /** `null` on playlists inside lists (home). */
+  modules?: PlaylistModules | null;
+};
+
+/**
+ * A `playlist.recommendations` entry: a card-sized playlist whose
+ * `more_info` is only partly filled (often just `firstname`).
+ */
+export type RelatedPlaylist = Omit<Playlist, "more_info"> & {
+  more_info: Partial<Playlist["more_info"]>;
 };
 
 /** Length limits for a user playlist; the web form and the tRPC router both enforce them. */

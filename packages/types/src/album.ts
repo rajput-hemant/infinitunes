@@ -45,14 +45,16 @@ export type Album = {
   year: string;
   play_count: string;
   list_count: string;
-  list_type: MediaType;
+  /** `""` on albums inside lists (recommendations, search, label, artist). */
+  list_type: MediaType | "";
   list?: string | Song[];
   more_info: Partial<{
     artistMap: ArtistMap;
     song_count: string;
     copyright_text: string;
-    is_dolby_content: boolean;
+    is_dolby_content: boolean | null;
     label_url: string;
   }>;
-  modules?: AlbumModules;
+  /** `null` on albums inside lists (home, trending). */
+  modules?: AlbumModules | null;
 };

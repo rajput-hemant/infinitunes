@@ -82,7 +82,7 @@ function buildSongRow(item: Song | Episode): SongRowItem {
     maxQuality: maxQualityOf(info),
     album: album ? decode(album) : undefined,
     albumUrl,
-    releaseDate: info.release_date,
+    releaseDate: info.release_date ?? undefined,
     language: item.language,
   };
 }

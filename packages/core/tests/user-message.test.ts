@@ -39,6 +39,18 @@ describe("userMessage", () => {
     expect(userMessage(error)).toBe(GENERIC);
   });
 
+  it("never shows tRPC's transport message for a non-tRPC response", () => {
+    const bare = (status: number) =>
+      Object.assign(new Error("Unable to transform response from server"), {
+        meta: { response: { status } },
+      });
+    expect(userMessage(bare(429))).toBe(
+      "Too many requests. Please wait a moment and try again.",
+    );
+    expect(userMessage(bare(403))).toBe(GENERIC);
+    expect(userMessage(bare(502))).toBe(GENERIC);
+  });
+
   it("keeps a code-less message but not Next's masked one", () => {
     expect(userMessage(new Error("Playlist not found"))).toBe(
       "Playlist not found",

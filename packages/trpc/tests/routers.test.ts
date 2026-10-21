@@ -17,6 +17,8 @@ let encryptedMediaUrl: string;
 /** Upstream `__call` value -> JSON body, set per test. */
 let responses: Record<string, unknown> = {};
 let calls: string[] = [];
+/** Full upstream URLs, in call order. */
+let urls: URL[] = [];
 
 function downloadUrl(item: object | undefined): string | undefined {
   if (item && "download_url" in item && typeof item.download_url === "string") {
@@ -53,8 +55,10 @@ beforeAll(async () => {
   ]).toString("base64");
 
   globalThis.fetch = async (input) => {
-    const call = new URL(String(input)).searchParams.get("__call") ?? "";
+    const url = new URL(String(input));
+    const call = url.searchParams.get("__call") ?? "";
     calls.push(call);
+    urls.push(url);
     if (!(call in responses)) {
       throw new Error(`unexpected upstream call: ${call}`);
     }
@@ -65,6 +69,23 @@ beforeAll(async () => {
 });
 
 describe("router procedures", () => {
+  it("search.all asks for API v4, the shape AllSearch describes", async () => {
+    urls = [];
+    responses = {
+      "autocomplete.get": {
+        albums: { position: 1, data: [] },
+        songs: { position: 2, data: [] },
+      },
+    };
+
+    await caller.search.all({ q: uniq() });
+
+    // v3 sends `url` instead of `perma_url`, so no result would link.
+    expect(urls.map((url) => url.searchParams.get("api_version"))).toEqual([
+      "4",
+    ]);
+  });
+
   it("home.home returns launch data with processed download URLs", async () => {
     calls = [];
     responses = {

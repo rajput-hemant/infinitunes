@@ -68,8 +68,8 @@ export type SimilarArtist = {
   image_url: string;
   search_keywords: string;
   primary_artist_id: string;
-  combine_artist_pages: number;
-  replace_with_primary_artists: number;
+  combine_artist_pages: number | string;
+  replace_with_primary_artists: number | string;
   languages: string;
   perma_url: string;
   type: "artist";
@@ -95,7 +95,13 @@ export type ArtistMini = {
   role: string;
 };
 
-export type ArtistSong = Omit<Song, "more_info"> & {
+/**
+ * An entry of an artist's `singles` and `latest_release`: upstream sends
+ * these as (often one-song) albums, `type: "album"` with an album perma URL,
+ * not songs.
+ */
+export type ArtistSong = Omit<Song, "more_info" | "type"> & {
+  type: "album";
   more_info: {
     query: string;
     text: string;
