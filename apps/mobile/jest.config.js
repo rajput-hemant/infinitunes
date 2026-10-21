@@ -8,7 +8,8 @@ const reactDir = path.dirname(require.resolve("react/package.json"));
  * Bun's isolated installs keep packages under
  * `node_modules/.bun/<name>@<version>/node_modules`, like pnpm's `.pnpm`
  * store, so the preset's transform allow-list must look past that prefix. It
- * also lists the ESM-only packages the app adds (FlashList).
+ * also lists the ESM-only packages the app adds (FlashList, and Material's
+ * colour utilities for the Material You contrast test).
  *
  * Workspace sources (`packages/core`) are transpiled with the app's Babel,
  * whose helpers (`@babel/runtime`) only the app has: like Metro's
@@ -24,7 +25,10 @@ const reactDir = path.dirname(require.resolve("react/package.json"));
 module.exports = {
   preset: "jest-expo",
   transformIgnorePatterns: transformIgnorePatterns.map((pattern) =>
-    pattern.replace("(.pnpm|", "(.pnpm|.bun|@shopify/flash-list|"),
+    pattern.replace(
+      "(.pnpm|",
+      "(.pnpm|.bun|@shopify/flash-list|@material/material-color-utilities|",
+    ),
   ),
   clearMocks: true,
   modulePaths: ["<rootDir>/node_modules"],

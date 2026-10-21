@@ -9,6 +9,7 @@ import {
   iosSystemColors,
   radii,
   sizes,
+  spaceClasses,
 } from "./src/theme/tokens";
 import type { ColorToken, Palette } from "./src/theme/tokens";
 
@@ -22,7 +23,10 @@ const toPixels = (scale: Record<string, number>) =>
     Object.entries(scale).map(([name, value]) => [name, `${value}px`]),
   );
 
-/** The palette as CSS variables: light on `:root`, dark under the system dark scheme. */
+/**
+ * The palette as CSS variables: light on `:root`, dark under the system dark
+ * scheme. Android 12+ swaps in Material You roles at runtime (`android-colors`).
+ */
 const paletteVariables = plugin(({ addBase }) => {
   addBase({
     ":root": toCssVariables(colors.light),
@@ -50,7 +54,9 @@ export default {
         COLOR_TOKENS.map((token) => [token, tokenColor(token)]),
       ),
       borderRadius: toPixels(radii),
-      spacing: toPixels(sizes),
+      // NativeWind's rem is 14, so Tailwind's own `*-4` would be 14pt: the
+      // 4pt steps are pinned in points (`p-4` is 16).
+      spacing: { ...toPixels(spaceClasses), ...toPixels(sizes) },
     },
   },
   plugins: [paletteVariables],

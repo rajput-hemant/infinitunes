@@ -1,5 +1,18 @@
-import { colors, iosSystemColors } from "./tokens";
-import type { ColorScheme, ColorToken } from "./tokens";
+import {
+  argbFromHex,
+  Hct,
+  hexFromArgb,
+  SchemeTonalSpot,
+} from "@material/material-color-utilities";
+
+import { withDynamicRoles } from "./dynamic-palette";
+import {
+  androidDynamicColors,
+  COLOR_TOKENS,
+  colors,
+  iosSystemColors,
+} from "./tokens";
+import type { ColorScheme, ColorToken, Palette } from "./tokens";
 
 type Rgba = readonly [number, number, number, number];
 
@@ -60,25 +73,33 @@ const TEXT_PAIRS: readonly (readonly [ColorToken, ColorToken])[] = [
   ["destructive-foreground", "destructive"],
   ["destructive", "background"],
   ["destructive", "card"],
+  // `tone="primary"`: the playing row's title.
+  ["primary", "background"],
+  ["primary", "card"],
 ];
+
+/** Every pair's contrast, and muted text on a placeholder's `fill`. */
+function lowestContrasts(palette: Palette) {
+  const opaque = (token: ColorToken) => parse(palette[token]);
+  const pairs = TEXT_PAIRS.map(
+    ([text, surface]) =>
+      [
+        `${text} on ${surface}`,
+        contrast(opaque(text), opaque(surface)),
+      ] as const,
+  );
+  // Placeholders sit on `fill`; `fill-2` only ever carries default-tone text.
+  const fill = flatten(opaque("fill"), opaque("background"));
+  return [
+    ...pairs,
+    ["muted-foreground on fill", contrast(opaque("muted-foreground"), fill)],
+  ] as const;
+}
 
 describe("colour tokens", () => {
   describe.each(SCHEMES)("%s palette", (scheme) => {
-    const palette = colors[scheme];
-    const opaque = (token: ColorToken) => parse(palette[token]);
-
-    it.each(TEXT_PAIRS)("%s on %s meets 4.5:1", (text, surface) => {
-      expect(contrast(opaque(text), opaque(surface))).toBeGreaterThanOrEqual(
-        4.5,
-      );
-    });
-
-    // Placeholders sit on `fill`; `fill-2` only ever carries default-tone text.
-    it("muted text on fill over the background meets 4.5:1", () => {
-      const surface = flatten(opaque("fill"), opaque("background"));
-      expect(
-        contrast(opaque("muted-foreground"), surface),
-      ).toBeGreaterThanOrEqual(4.5);
+    it.each(lowestContrasts(colors[scheme]))("%s meets 4.5:1", (_, ratio) => {
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
     });
   });
 
@@ -86,5 +107,55 @@ describe("colour tokens", () => {
     // secondaryLabel and systemRed are 3.1-3.6:1 on light surfaces.
     expect(iosSystemColors["muted-foreground"]).toBeUndefined();
     expect(iosSystemColors.destructive).toBeUndefined();
+  });
+});
+
+/**
+ * Android 12+ derives its scheme from the wallpaper (Material You's tonal
+ * spot), which no test can pin. Material's tone design keeps role pairs
+ * apart, so check that our role mapping keeps every text pair at AA across
+ * seeds round the hue circle, greys and both spec versions.
+ */
+describe("Material You colour roles", () => {
+  const SEEDS = [
+    ...Array.from({ length: 12 }, (_, step) =>
+      Hct.from(step * 30, 48, 50).toInt(),
+    ),
+    argbFromHex("#6750a4"), // Material's baseline seed
+    argbFromHex("#808080"),
+    argbFromHex("#ffd400"), // a light, high-chroma wallpaper
+  ];
+  const SPECS = ["2021", "2025"] as const;
+
+  const cases = SPECS.flatMap((spec) =>
+    SEEDS.flatMap((seed) =>
+      SCHEMES.map((scheme) => [spec, hexFromArgb(seed), scheme] as const),
+    ),
+  );
+
+  it.each(cases)(
+    "spec %s, seed %s, %s: every text pair meets 4.5:1",
+    (spec, seed, scheme) => {
+      const roles = new SchemeTonalSpot(
+        Hct.fromInt(argbFromHex(seed)),
+        scheme === "dark",
+        0,
+        spec,
+      );
+      // Our roles are all DynamicScheme getters (an ARGB number each).
+      const palette = withDynamicRoles(colors[scheme], (role) =>
+        hexFromArgb(Reflect.get(roles, role)),
+      );
+      for (const [pair, ratio] of lowestContrasts(palette)) {
+        expect([pair, ratio >= 4.5]).toEqual([pair, true]);
+      }
+    },
+  );
+
+  it("maps every opaque token and leaves the alpha ones alone", () => {
+    const mapped = Object.keys(androidDynamicColors);
+    expect(mapped).toEqual(
+      COLOR_TOKENS.filter((token) => !/^(fill|scrim)/.test(token)),
+    );
   });
 });
