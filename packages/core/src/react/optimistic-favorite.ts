@@ -102,6 +102,7 @@ export function useFavorite(key: string, serverLiked: boolean) {
   useEffect(() => {
     // Settled (bit 1) and agreeing with the server's props: nothing left to show.
     if (code >= 2 && ((code & 1) === 1) === serverLiked) {
+      clearTimeout(entries.get(key)?.expiry);
       entries.delete(key);
       emit();
     }
