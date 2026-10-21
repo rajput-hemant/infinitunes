@@ -67,6 +67,7 @@ const config: ExpoConfig = {
       },
     ],
     "./plugins/android-app-actions/index.ts",
+    "./plugins/ios-app-intents/app.plugin.ts",
   ],
   experiments: {
     typedRoutes: true,

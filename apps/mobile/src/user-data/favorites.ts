@@ -37,12 +37,19 @@ const NOTHING_LIKED: FavoriteLists = {
 export function useFavoriteLists(): FavoriteLists | null | undefined {
   const userId = useUserId();
   const { data, isError } = useQuery({
-    queryKey: userQueryKey(trpc.user.getUserFavorites.queryKey(), userId),
-    queryFn: async (): Promise<FavoriteLists> =>
-      (await trpcClient.user.getUserFavorites.query()) ?? NOTHING_LIKED,
+    ...favoriteListsQuery(userId),
     enabled: userId !== undefined,
   });
   return isError ? null : data;
+}
+
+/** The liked-tokens query of `userId`, for hooks and `queryClient.fetchQuery`. */
+export function favoriteListsQuery(userId: string | undefined) {
+  return {
+    queryKey: userQueryKey(trpc.user.getUserFavorites.queryKey(), userId),
+    queryFn: async (): Promise<FavoriteLists> =>
+      (await trpcClient.user.getUserFavorites.query()) ?? NOTHING_LIKED,
+  };
 }
 
 function persistFavorite(type: FavoriteType, token: string, liked: boolean) {

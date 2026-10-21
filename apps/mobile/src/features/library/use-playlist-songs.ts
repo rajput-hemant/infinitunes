@@ -1,9 +1,7 @@
-import { fetchSongsChunked } from "@infinitunes/core/liked-songs";
-import { toSongRow } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 import { useMemo } from "react";
 
-import { trpcClient } from "~/lib/trpc";
+import { fetchSongRows } from "~/lib/song-rows";
 import { refreshPlaylists } from "~/user-data/playlists";
 
 import type { LibraryList } from "./library-list";
@@ -23,12 +21,7 @@ export function usePlaylistSongs(playlist: {
   const list = useResolvedItems({
     scope: `playlist-${playlist.id}`,
     source: { ids: held, reload: refreshPlaylists },
-    resolve: async (ids) => {
-      const songs = await fetchSongsChunked(ids, (input) =>
-        trpcClient.song.details.query(input),
-      );
-      return songs?.map(toSongRow);
-    },
+    resolve: fetchSongRows,
   });
 
   if (list.status !== "ready") return list;

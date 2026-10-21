@@ -49,6 +49,17 @@ jest.mock("expo-notifications", () => ({
   setNotificationHandler: jest.fn(),
 }));
 
+// React Native's `Settings` (iOS `UserDefaults`, the playlists Siri reads)
+// has no Jest build; the root layout writes it in the route-tree suites.
+jest.mock("react-native/Libraries/Settings/NativeSettingsManager", () => ({
+  __esModule: true,
+  default: {
+    getConstants: () => ({ settings: {} }),
+    setValues: jest.fn(),
+    deleteValues: jest.fn(),
+  },
+}));
+
 jest.mock("expo-network", () => ({
   addNetworkStateListener: () => ({ remove: () => {} }),
 }));

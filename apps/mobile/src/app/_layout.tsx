@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 
 import { PlaybackController } from "~/playback/playback-controller";
 import { AppProviders } from "~/providers/app-providers";
+import { AssistantPlaylists } from "~/user-data/assistant-playlists";
 
 /** A deep link straight to a modal (`/player`, `/login`) still opens it over the tabs. */
 export const unstable_settings = { anchor: "(tabs)" };
@@ -11,6 +12,7 @@ export default function RootLayout() {
   return (
     <AppProviders>
       <PlaybackController />
+      <AssistantPlaylists />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="player" options={{ presentation: "modal" }} />
@@ -45,6 +47,8 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen name="(auth)" options={{ presentation: "modal" }} />
+        {/* Siri / Assistant links: a spinner that runs the action and leaves. */}
+        <Stack.Screen name="action/[action]" options={{ animation: "none" }} />
       </Stack>
     </AppProviders>
   );

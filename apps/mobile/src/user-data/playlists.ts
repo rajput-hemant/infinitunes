@@ -26,10 +26,17 @@ import { userQueryKey, useUserId } from "./session";
 export function useServerPlaylists() {
   const userId = useUserId();
   return useQuery({
-    queryKey: userQueryKey(trpc.user.getUserPlaylists.queryKey(), userId),
-    queryFn: () => trpcClient.user.getUserPlaylists.query(),
+    ...serverPlaylistsQuery(userId),
     enabled: userId !== undefined,
   });
+}
+
+/** The playlists query of `userId`, for hooks and `queryClient.fetchQuery`. */
+export function serverPlaylistsQuery(userId: string | undefined) {
+  return {
+    queryKey: userQueryKey(trpc.user.getUserPlaylists.queryKey(), userId),
+    queryFn: () => trpcClient.user.getUserPlaylists.query(),
+  };
 }
 
 /**
