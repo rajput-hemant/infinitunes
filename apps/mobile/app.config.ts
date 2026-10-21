@@ -4,7 +4,9 @@ import type { ExpoConfig } from "expo/config";
 // Node loads this file without a bundler, so the import names its extension.
 import { colors } from "./src/theme/tokens.ts";
 
+// PNGs come from `bun run mobile:icons` (assets/brand/*.svg).
 const ICON = "./assets/icon.png";
+const SPLASH = "./assets/splash-icon.png";
 
 const config: ExpoConfig = {
   name: "Infinitunes",
@@ -15,14 +17,20 @@ const config: ExpoConfig = {
   icon: ICON,
   userInterfaceStyle: "automatic",
   ios: {
+    icon: {
+      light: ICON,
+      dark: "./assets/icon-dark.png",
+      tinted: "./assets/icon-tinted.png",
+    },
     bundleIdentifier: "com.infinitunes.app",
     supportsTablet: true,
   },
   android: {
     package: "com.infinitunes.app",
     adaptiveIcon: {
-      foregroundImage: ICON,
-      backgroundColor: colors.dark.background,
+      foregroundImage: "./assets/adaptive-foreground.png",
+      backgroundImage: "./assets/adaptive-background.png",
+      monochromeImage: "./assets/adaptive-monochrome.png",
     },
   },
   plugins: [
@@ -43,10 +51,10 @@ const config: ExpoConfig = {
     [
       "expo-splash-screen",
       {
-        image: ICON,
-        imageWidth: 120,
+        image: SPLASH,
+        imageWidth: 200,
         backgroundColor: colors.light.background,
-        dark: { image: ICON, backgroundColor: colors.dark.background },
+        dark: { image: SPLASH, backgroundColor: colors.dark.background },
       },
     ],
   ],

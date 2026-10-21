@@ -11,6 +11,7 @@
     "type-check": "expo customize tsconfig.json && tsc --noEmit && tsc -p e2e --noEmit",
     "test": "jest",
     "test:e2e": "bun test ./e2e/stack.e2e.ts ./e2e/production.e2e.ts ./e2e/catalog.e2e.ts",
+    "icons": "bun scripts/generate-icons.ts",
     "doctor": "bunx expo-doctor@1.21.5"
   },
   "dependencies": {
@@ -76,6 +77,7 @@
     "babel-preset-expo": "~58.0.18",
     "jest": "^30.0.0",
     "jest-expo": "~58.0.11",
+    "sharp": "^0.35.5",
     "tailwindcss": "^3.4.17",
     "typescript": "catalog:"
   },
