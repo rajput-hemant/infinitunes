@@ -214,6 +214,25 @@ describe("combined search results", () => {
 });
 
 describe("results of one type", () => {
+  it("says when the last page is in, and not before", async () => {
+    procedure("search.byType").mockResolvedValue(page([rawSong()]));
+    await renderResults({ type: "song" });
+
+    expect(
+      await screen.findByText("You have reached the end of these results."),
+    ).toBeOnTheScreen();
+  });
+
+  it("keeps the end note off while more pages remain", async () => {
+    procedure("search.byType").mockResolvedValue(page([rawSong()], 120));
+    await renderResults({ type: "song" });
+
+    expect(await screen.findByText("FA9LA & Friends")).toBeOnTheScreen();
+    expect(
+      screen.queryByText("You have reached the end of these results."),
+    ).toBeNull();
+  });
+
   it("plays a song's list from the pressed row", async () => {
     const songs = [
       rawSong(),
