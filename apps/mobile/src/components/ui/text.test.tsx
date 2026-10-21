@@ -27,6 +27,20 @@ describe("Text", () => {
     expect(screen.getByText("Trending")).toHaveStyle(textStyles.title2);
   });
 
+  it("takes a computed colour in place of the tone", async () => {
+    await render(
+      <Text tone="muted" color="#123456">
+        On the wash
+      </Text>,
+    );
+    const text = screen.getByText("On the wash");
+    expect(text).toHaveStyle({ color: "#123456" });
+    expect(text).not.toHaveProp(
+      "className",
+      expect.stringContaining("text-muted-foreground"),
+    );
+  });
+
   it("sets tabular figures for numbers", async () => {
     await render(<Text numeric>3:07</Text>);
     expect(screen.getByText("3:07")).toHaveStyle({
