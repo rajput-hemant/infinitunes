@@ -79,7 +79,7 @@ describe("legacyArtistPath", () => {
 });
 
 describe("entityRoute", () => {
-  it("reads the name and token of a perma URL, whatever its section", () => {
+  it("reads the name and token after the type's own section", () => {
     expect(
       entityRoute(
         "https://www.jiosaavn.com/featured/romantic-hits/abc_",
@@ -140,6 +140,84 @@ describe("entityRoute", () => {
       entityRoute("https://www.jiosaavn.com/shows/test-show", "show"),
     ).toBeUndefined();
     expect(entityRoute("", "album")).toBeUndefined();
+  });
+
+  it("reads JioSaavn's /s/ sections, with one qualifier before the name", () => {
+    expect(
+      entityRoute(
+        "https://www.jiosaavn.com/s/album/hindi/x-2026/tok_",
+        "album",
+      ),
+    ).toEqual({ kind: "entity", type: "album", name: "x-2026", token: "tok_" });
+    expect(
+      entityRoute(
+        "https://www.jiosaavn.com/s/playlist/0a1b2c/road-trip/Fp_",
+        "playlist",
+      ),
+    ).toEqual({
+      kind: "entity",
+      type: "playlist",
+      name: "road-trip",
+      token: "Fp_",
+    });
+    expect(
+      entityRoute(
+        "https://www.saavn.com/s/radio/hindi-featured-station/Bhajan-Sagar",
+        "radio_station",
+      ),
+    ).toEqual({
+      kind: "entity",
+      type: "radio_station",
+      name: "hindi-featured-station",
+      token: "Bhajan-Sagar",
+    });
+    // A qualifier is only JioSaavn's, under /s/.
+    expect(
+      entityRoute("https://www.jiosaavn.com/album/hindi/x/tok_", "album"),
+    ).toBeUndefined();
+    expect(
+      entityRoute("https://www.jiosaavn.com/s/album/a/b/c/tok_", "album"),
+    ).toBeUndefined();
+  });
+
+  it("reads an episode under its show's section, and the app's own path", () => {
+    const episode = {
+      kind: "entity",
+      type: "episode",
+      name: "ep-1",
+      token: "E_",
+    };
+    expect(
+      entityRoute("https://www.jiosaavn.com/shows/ep-1/E_", "episode"),
+    ).toEqual(episode);
+    expect(entityRoute("/episode/ep-1/E_", "episode")).toEqual(episode);
+    // A show's (season's) link is not an episode.
+    expect(
+      entityRoute("https://www.jiosaavn.com/shows/the-show/1/S_", "episode"),
+    ).toBeUndefined();
+  });
+
+  it("reads the app's own artist tab route", () => {
+    expect(entityRoute("/artist/arijit-singh/LlRW_/albums", "artist")).toEqual({
+      kind: "artist",
+      name: "arijit-singh",
+      token: "LlRW_",
+      tab: "albums",
+    });
+    expect(entityRoute("/artist/a/LlRW_/extra", "artist")).toBeUndefined();
+  });
+
+  it("refuses a path in another section, or with the section read as the name", () => {
+    expect(entityRoute("/album/only-name", "album")).toBeUndefined();
+    expect(entityRoute("/s/radio/", "radio")).toBeUndefined();
+    expect(entityRoute("/s/radio/hindi", "radio_station")).toBeUndefined();
+    expect(
+      entityRoute("https://www.jiosaavn.com/song/a/tok_", "album"),
+    ).toBeUndefined();
+    expect(entityRoute("/label/t-series-albums/", "label")).toBeUndefined();
+    expect(
+      entityRoute("https://www.jiosaavn.com/shows/x/1/tok_", "season"),
+    ).toBeUndefined();
   });
 });
 

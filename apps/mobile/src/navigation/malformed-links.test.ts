@@ -9,11 +9,8 @@ const BASE = "https://www.jiosaavn.com";
 describe("entityHref for every type that has a screen", () => {
   const cases: [MediaType, string, string][] = [
     ["album", `${BASE}/album/udta-teer/LHgqn_`, "/album/[name]/[token]"],
-    [
-      "episode",
-      `${BASE}/shows/x/episode/ep-1/Ub3k_`,
-      "/episode/[name]/[token]",
-    ],
+    // Live episodes sit under their show's section: /shows/<name>/<token>.
+    ["episode", `${BASE}/shows/ep-1/Ub3k_`, "/episode/[name]/[token]"],
     ["label", `${BASE}/label/t-series/pKJp_`, "/label/[name]/[token]"],
     ["mix", `${BASE}/featured/mix/abc_`, "/mix/[name]/[token]"],
     ["playlist", `${BASE}/featured/hits/abc_`, "/playlist/[name]/[token]"],
@@ -29,7 +26,7 @@ describe("entityHref for every type that has a screen", () => {
     const href = entityHref(type, url);
 
     expect(href).toMatchObject({ pathname });
-    // The route params are the URL's last two segments, whatever came before.
+    // The route params are the segments after the type's section.
     expect(href).toMatchObject({
       params: { token: url.split("/").at(-1) },
     });
@@ -72,7 +69,21 @@ describe("entityHref and entityPath for malformed input", () => {
 
   it("needs a name and a token for an artist, and a season for a show", () => {
     expect(entityHref("artist", `${BASE}/only`)).toBeUndefined();
+    expect(entityHref("artist", `${BASE}/artist/only-songs`)).toBeUndefined();
     expect(entityHref("show", `${BASE}/the-show/mXt_`)).toBeUndefined();
+    expect(entityHref("show", `${BASE}/shows/the-show/mXt_`)).toBeUndefined();
+  });
+
+  it("reads only the type's own section", () => {
+    expect(entityHref("album", `${BASE}/song/a/b_`)).toBeUndefined();
+    expect(entityHref("album", "/album/only-name")).toBeUndefined();
+    expect(entityHref("album", `${BASE}/x/album/a/b_`)).toBeUndefined();
+    expect(stationRef("https://www.saavn.com/s/radio/")).toBeUndefined();
+    expect(stationRef("https://www.saavn.com/s/radio/hindi")).toBeUndefined();
+  });
+
+  it("leaves a label without a token (some albums' label_url) unpressable", () => {
+    expect(entityHref("label", "/label/t-series-albums/")).toBeUndefined();
   });
 
   it("ignores a query string or fragment on a link", () => {

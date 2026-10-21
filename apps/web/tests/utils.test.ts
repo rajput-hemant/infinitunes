@@ -103,6 +103,16 @@ describe("getHref", () => {
     expect(getHref("https://www.jiosaavn.com/shows/test-show", "show")).toBe(
       "#",
     );
+    expect(getHref("https://www.jiosaavn.com/album/only-name", "album")).toBe(
+      "#",
+    );
+  });
+
+  it("returns # for a URL in another type's section", () => {
+    expect(getHref("https://www.jiosaavn.com/song/x/abc_", "album")).toBe("#");
+    expect(
+      getHref("https://www.jiosaavn.com/shows/the-show/1/abc_", "episode"),
+    ).toBe("#");
   });
 
   it("ignores query strings and URL fragments when extracting segments", () => {
