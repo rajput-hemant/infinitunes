@@ -5,7 +5,7 @@ import { toast } from "sonner-native";
 import { trpcClient } from "~/lib/trpc";
 import { stationRef } from "~/navigation/entity-href";
 
-import { playerStore } from "./player-store";
+import { playAll } from "./play-collection";
 import { playStation } from "./radio";
 
 /** Types a card's Play button can queue (the web's `PlayButton`). */
@@ -79,5 +79,5 @@ export async function playEntity(type: PlayableType, url: string) {
     toast.error("Nothing to play here yet.");
     return;
   }
-  playerStore.getState().playTracks(tracks.map(toSongRow));
+  playAll(tracks.map(toSongRow));
 }
