@@ -1,6 +1,9 @@
-import { getErrorCode } from "./error-code";
+import { bareResponseStatus, getErrorCode } from "./error-code";
 
 export const GENERIC_MESSAGE = "Something went wrong. Please try again.";
+
+export const RATE_LIMITED_MESSAGE =
+  "Too many requests. Please wait a moment and try again.";
 
 /** tRPC codes whose server message is written for the user and safe to show. */
 const USER_CODES = new Set([
@@ -35,6 +38,10 @@ export function userMessage(
   if (!message || message.includes(OMITTED_MESSAGE)) return fallback;
 
   const code = getErrorCode(error);
+  if (code === "TOO_MANY_REQUESTS") return RATE_LIMITED_MESSAGE;
+  // Not a tRPC error body (the proxy's 403, a gateway page): tRPC's own
+  // "Unable to transform response from server" is not copy for the user.
+  if (bareResponseStatus(error) !== undefined) return fallback;
   if (code === undefined || USER_CODES.has(code)) return message;
   return fallback;
 }
