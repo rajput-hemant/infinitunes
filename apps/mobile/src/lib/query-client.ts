@@ -31,12 +31,14 @@ const FINAL_CODES = new Set([
   "BAD_REQUEST",
   "FORBIDDEN",
   "UNAUTHORIZED",
+  "TOO_MANY_REQUESTS",
 ]);
 
 /**
  * TanStack's default three retries, minus the failures a retry cannot fix: a
  * missing entity stays missing (retrying would hold the skeleton for seconds
- * before the not-found state), and a rejected input or session stays rejected.
+ * before the not-found state), a rejected input or session stays rejected, and
+ * the proxy's per-minute limiter (429) charges every retry within seconds.
  */
 export function shouldRetry(failureCount: number, error: unknown): boolean {
   const code = getErrorCode(error);
