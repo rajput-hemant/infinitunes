@@ -31,7 +31,7 @@ This is a Bun monorepo. The web app lives in `apps/web`, the iOS and Android app
 
 ### Prerequisites
 
-- [Bun](https://bun.sh) (v1.4.2)
+- [Bun](https://bun.sh) (v1.4.3, see `.bun-version`)
 - [Docker](https://www.docker.com/)
 
 ### Quick Start
@@ -88,7 +88,7 @@ bun run build        # Production build
 bun run lint         # Lint with Oxlint
 bun run fmt:check    # Check formatting with oxfmt
 bun run type-check   # Type check with TypeScript
-bun run test         # Run tests (plain + DOM suites)
+bun run test         # Run all tests (plain, mocked, DOM and mobile Jest)
 ```
 
 <div align=center>
