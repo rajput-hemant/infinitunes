@@ -52,8 +52,11 @@ describe("HomeFeed", () => {
     await renderScreen(<HomeFeed />);
 
     expect(
-      await screen.findByRole("link", { name: /^Featured Mix/ }),
+      await screen.findByRole("link", {
+        name: /^Featured Mix.*Featured playlist$/,
+      }),
     ).toBeOnTheScreen();
+    expect(screen.getByText("Featured playlist")).toBeOnTheScreen();
     // A chart leads the carousel's tiles and the Charts shelf.
     expect(
       screen.getAllByRole("link", { name: /^Top 15 Hindi & Punjabi/ }),
@@ -158,11 +161,12 @@ describe("HomeFeed", () => {
     procedure("get.trending").mockResolvedValue([rawSong(), rawAlbum()]);
     await renderScreen(<HomeFeed />);
 
-    await fireEvent.press(
-      await screen.findByRole("button", {
-        name: "Surprise Me",
-      }),
+    const surprise = await screen.findByRole("button", { name: "Surprise Me" });
+    expect(surprise).toHaveProp(
+      "accessibilityHint",
+      "Plays a shuffled mix of trending songs",
     );
+    await fireEvent.press(surprise);
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
     expect(procedure("get.trending")).toHaveBeenCalledWith({ type: "song" });

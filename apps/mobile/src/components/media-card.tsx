@@ -61,7 +61,9 @@ export function MediaCard({
   const round = isRoundType(item.type);
   const explicit = isExplicit(item.explicit);
   const name = explicit ? `${item.name}, Explicit` : item.name;
-  const label = item.subtitle ? `${name}, ${item.subtitle}` : name;
+  const shownEyebrow = hero ? eyebrow : undefined;
+  // The name first, so a swipe through the carousel hears the title at once.
+  const label = [name, item.subtitle, shownEyebrow].filter(Boolean).join(", ");
   const entries = useCardMenuEntries(item);
 
   const content = (
@@ -73,9 +75,9 @@ export function MediaCard({
         style={width === undefined ? undefined : { width, height: width }}
       />
       <View className={round ? "items-center" : undefined}>
-        {hero && eyebrow ? (
+        {shownEyebrow ? (
           <Text variant="caption" tone="muted" numberOfLines={1}>
-            {eyebrow}
+            {shownEyebrow}
           </Text>
         ) : null}
         <Text variant={hero ? "headline" : "subhead"} numberOfLines={1}>

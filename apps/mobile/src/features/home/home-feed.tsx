@@ -58,7 +58,11 @@ export function HomeFeed() {
 function HomeSections({ model }: { model: HomeModel }) {
   return (
     <>
-      <Shelf variant="hero" items={model.carousel} />
+      <Shelf
+        variant="hero"
+        items={model.carousel}
+        eyebrow={(item) => model.eyebrows[item.id]}
+      />
       <QuickPicks items={model.quickPicks} />
       {model.shelves.map(({ key, ...shelf }) => (
         <Shelf key={key} {...shelf} />
