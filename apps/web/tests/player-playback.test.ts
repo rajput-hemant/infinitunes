@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 const PLAYER = new URL("../components/player.tsx", import.meta.url);
 
 // Reload and record-once behavior is covered by a rendered test:
-// apps/web/tests/dom/track-playback.test.tsx
+// packages/core/tests/dom/use-track-playback.test.tsx
 describe("player playback effects", () => {
   it("fetches radio refills through the uncached vanilla client", async () => {
     const source = await Bun.file(PLAYER).text();

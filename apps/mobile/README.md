@@ -31,3 +31,6 @@ device: `bunx expo export --platform ios` (or `android`) in this directory.
 - The web app's Vercel install also installs this app's dependencies. `bun install --filter @infinitunes/web`
   does not avoid them: `@better-auth/expo` (a dependency of `@infinitunes/auth`) resolves its optional `expo-*`
   peers to this app's copies, which bring in `expo` and React Native. Nothing native is built or bundled there.
+- Lock screen and notification controls offer play/pause and scrubbing but no next/previous track: expo-audio
+  wires those only for its `AudioPlaylist`, which reports no load error (the app needs it to step down a
+  bitrate), so playback uses a single `AudioPlayer`.

@@ -109,8 +109,8 @@ describe("nextLoopMode", () => {
 describe("shuffled", () => {
   it("keeps every item once, ordered by the random keys", () => {
     const keys = [0.9, 0.1, 0.5];
-    const order = shuffled(["a", "b", "c"], () => keys.shift() ?? 0);
+    const items = shuffled(["a", "b", "c"], () => keys.shift() ?? 0);
 
-    expect(order).toEqual(["b", "c", "a"]);
+    expect(items).toEqual(["b", "c", "a"]);
   });
 });
