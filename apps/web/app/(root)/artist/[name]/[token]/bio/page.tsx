@@ -1,8 +1,8 @@
+import { artistPath, splitArtistSlug } from "@infinitunes/core/entity-route";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
-import { artistPath, splitArtistSlug } from "~/lib/artist-route";
 import { asRoute } from "~/lib/utils";
 
 import { ArtistBio } from "../_components/artist-bio";

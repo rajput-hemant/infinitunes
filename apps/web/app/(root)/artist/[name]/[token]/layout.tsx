@@ -1,3 +1,4 @@
+import { splitArtistSlug } from "@infinitunes/core/entity-route";
 import { decode, getImageSrc, toCardItem } from "@infinitunes/types";
 import type { Metadata } from "next";
 import { Suspense } from "react";
@@ -6,7 +7,6 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { DetailsHeaderSkeleton } from "~/components/details-header/details-header-skeleton";
 import { SliderListSkeleton } from "~/components/slider/shelf-skeleton";
 import { SliderList } from "~/components/slider/slider-list";
-import { splitArtistSlug } from "~/lib/artist-route";
 import { pageMetadata } from "~/lib/metadata";
 
 import { artistBio, getArtist } from "./_components/artist-data";

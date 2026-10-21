@@ -26,6 +26,7 @@
   },
   "exports": {
     "./artist-pagination": "./src/artist-pagination.ts",
+    "./entity-route": "./src/entity-route.ts",
     "./error-code": "./src/error-code.ts",
     "./greeting": "./src/greeting.ts",
     "./favorites": "./src/favorites.ts",

@@ -1,12 +1,12 @@
-import { getImageSrc, parseArtistBio } from "@infinitunes/types";
-import type { Metadata } from "next";
-import { cache } from "react";
-
 import {
   artistPath,
   splitArtistSlug,
   type ArtistTab,
-} from "~/lib/artist-route";
+} from "@infinitunes/core/entity-route";
+import { getImageSrc, parseArtistBio } from "@infinitunes/types";
+import type { Metadata } from "next";
+import { cache } from "react";
+
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
 import { api } from "~/lib/trpc/server";

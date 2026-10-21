@@ -1,4 +1,4 @@
-import type { ArtistTab } from "~/lib/artist-route";
+import type { ArtistTab } from "@infinitunes/core/entity-route";
 
 export const TAB_LABELS: Record<ArtistTab, string> = {
   overview: "Overview",
