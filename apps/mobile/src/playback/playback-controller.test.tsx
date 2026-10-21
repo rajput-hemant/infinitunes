@@ -3,6 +3,7 @@ import { rawSong } from "@infinitunes/types/fixtures";
 import { act, render } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
+import { forgetUserData } from "~/features/settings/end-session";
 import { audioModes, lastPlayer } from "~/test/expo-audio";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
@@ -152,6 +153,21 @@ describe("PlaybackController", () => {
 
     expect(player.playing).toBe(false);
     expect(player.lockScreen).toEqual({ active: false });
+  });
+
+  it("stops and clears the lock screen on sign-out, and a later add to queue stays paused", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows.slice(0, 1)));
+    expect(player.playing).toBe(true);
+
+    await act(async () => forgetUserData());
+
+    expect(player.playing).toBe(false);
+    expect(player.lockScreen).toEqual({ active: false });
+    await act(async () => playerStore.getState().addToQueue(rows[1]!));
+    expect(playerStore.getState().started).toBe(false);
+    expect(player.playing).toBe(false);
+    expect(player.loads).toHaveLength(1);
   });
 
   it("moves to the next entry when a track ends", async () => {

@@ -10,21 +10,28 @@ import { AppState, Platform } from "react-native";
 import { createStore } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { colors } from "~/theme/tokens";
-
 import { persistedStorage } from "./persisted-storage";
 
 /**
  * Local notifications only (no push: nothing here registers a token). The
- * downloads channel and the permission prompt live here, and so does the
- * playback notification's permission: on Android 13+ the media controls
- * (expo-audio's foreground service) need the same `POST_NOTIFICATIONS` grant.
+ * downloads channel and the permission prompt live here. The playback
+ * notification is not part of it: Android 13+ exempts media-session
+ * notifications (expo-audio's Media3 service) from `POST_NOTIFICATIONS`, so
+ * playing never asks; the first download does.
  */
 
 export const DOWNLOADS_CHANNEL_ID = "downloads";
 
-/** The tint of the small icon (`app.config.ts` uses the same value). */
-export const NOTIFICATION_ACCENT = colors.light.primary;
+/**
+ * The brand teal of the app icon's ribbon gradient (`assets/brand/glyph.svg`,
+ * its bottom stop). Legible on both light and dark notification shades, unlike
+ * the near-black `primary`. `app.config.ts` repeats the value (that file runs
+ * in Node and cannot load this module): keep them equal.
+ */
+export const brand = "#067f9a";
+
+/** The tint of the small icon and the channel light. */
+export const NOTIFICATION_ACCENT = brand;
 
 // The app shows its own toasts while it is in front, so a notification that
 // arrives then stays out of the way (they are only posted in the background).
@@ -47,7 +54,10 @@ export const notificationPromptStore = createStore<PromptState>()(
   }),
 );
 
-/** Android 13+ shows the permission prompt only once a channel exists. */
+/**
+ * Apps targeting API 32 or lower get Android 13's permission prompt only once
+ * a channel exists, so the channel is created before asking (harmless above).
+ */
 async function ensureDownloadsChannel() {
   if (Platform.OS !== "android") return;
   await setNotificationChannelAsync(DOWNLOADS_CHANNEL_ID, {
@@ -59,20 +69,33 @@ async function ensureDownloadsChannel() {
   });
 }
 
+let promptInFlight: Promise<boolean> | undefined;
+
+/** Shows the system prompt; `asked` is set only once it has resolved. */
+async function askOnce(): Promise<boolean> {
+  const { granted } = await requestPermissionsAsync();
+  notificationPromptStore.setState({ asked: true });
+  return granted;
+}
+
 /**
  * Whether notifications may be posted. Asks the listener once, the first time
- * a feature needs it (first download, first playback on Android 13+), and
- * never again after a refusal, so a denial is respected silently.
+ * a feature needs it (the first download), and never again after a refusal,
+ * so a denial is respected silently. A prompt that throws does not count as
+ * asked; concurrent callers share one prompt.
  */
 export async function ensureNotificationPermission(): Promise<boolean> {
   try {
     await ensureDownloadsChannel();
     const current = await getPermissionsAsync();
     if (current.granted) return true;
-    const { asked } = notificationPromptStore.getState();
-    if (asked || !current.canAskAgain) return false;
-    notificationPromptStore.setState({ asked: true });
-    return (await requestPermissionsAsync()).granted;
+    if (notificationPromptStore.getState().asked || !current.canAskAgain) {
+      return false;
+    }
+    promptInFlight ??= askOnce().finally(() => {
+      promptInFlight = undefined;
+    });
+    return await promptInFlight;
   } catch {
     return false;
   }

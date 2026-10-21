@@ -20,7 +20,6 @@ import {
   markSourceEnded,
   nowPlayingMetadata,
 } from "./audio-engine";
-import { requestMediaNotificationPermission } from "./media-notification";
 import { playbackPosition, playbackStatusStore } from "./playback-status";
 import { playerStore, selectCurrentTrack, usePlayer } from "./player-store";
 import { recordPlay } from "./record-play";
@@ -76,10 +75,6 @@ export function PlaybackController() {
   useEffect(() => {
     void configureAudioSession();
   }, []);
-
-  useEffect(() => {
-    if (started) requestMediaNotificationPermission();
-  }, [started]);
 
   useTrackPlayback({
     queue,
@@ -142,11 +137,13 @@ export function PlaybackController() {
     return () => subscription.remove();
   }, [advanceAfterEnd]);
 
-  // The queue was emptied under the playing entry: nothing is left to show
-  // or control it, so stop the engine and take it off the lock screen.
+  // The queue was emptied under the playing entry (or sign-out reset the
+  // session): nothing is left to show or control it, so stop the engine and
+  // take it off the lock screen. `started` is false after a sign-out, so the
+  // lock screen being active is what says there is something to clear.
   const hasTrack = track !== undefined;
   useEffect(() => {
-    if (!started || hasTrack) return;
+    if (hasTrack || (!started && !lockScreenActive.current)) return;
     audioPlayer.pause();
     audioPlayer.clearLockScreenControls();
     lockScreenActive.current = false;

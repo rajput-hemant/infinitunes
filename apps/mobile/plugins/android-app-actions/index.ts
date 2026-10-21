@@ -82,6 +82,7 @@ const withAndroidAppActions: ConfigPlugin = (config) => {
           "android:name": name,
           "android:exported": "true",
           "android:excludeFromRecents": "true",
+          "android:taskAffinity": "",
           "android:noHistory": "true",
           "android:theme": "@android:style/Theme.NoDisplay",
         },

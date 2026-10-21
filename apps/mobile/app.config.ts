@@ -61,7 +61,9 @@ const config: ExpoConfig = {
       "expo-notifications",
       {
         icon: "./assets/notification-icon.png",
-        color: colors.light.primary,
+        // The brand teal (`brand` in src/lib/notifications.ts; that module
+        // imports native code Node cannot load, so the value is repeated).
+        color: "#067f9a",
         // Local notifications only: no push entitlement, no token.
         enableRemoteNotifications: false,
       },

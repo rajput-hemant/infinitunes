@@ -12,9 +12,16 @@ import { LIBRARY_QUERY_KEY } from "~/user-data/session";
  * per account already; this also frees them, and keeps the catalog cache.
  */
 export function forgetUserData() {
-  // Emptying the queue makes the playback controller stop the engine and take
-  // the track off the lock screen and the media notification.
-  playerStore.setState({ queue: [], currentIndex: 0, radio: null });
+  // Emptying the queue and clearing `started` makes the playback controller
+  // stop the engine and take the track off the lock screen and the media
+  // notification; `started` false also keeps the next "Add to queue" from
+  // auto-playing.
+  playerStore.setState({
+    queue: [],
+    currentIndex: 0,
+    radio: null,
+    started: false,
+  });
   queryClient.removeQueries({ queryKey: trpc.user.pathKey() });
   queryClient.removeQueries({ queryKey: LIBRARY_QUERY_KEY });
 }
