@@ -26,8 +26,8 @@
 
 </div>
 
-This is a Bun monorepo. The web app lives in `apps/web`, the iOS and Android app in `apps/mobile` (see its
-[README](apps/mobile/README.md)).
+This is a Bun monorepo. The web app lives in `apps/web`, the iOS and Android app in `apps/mobile` (device setup:
+[docs/mobile-device-setup.md](docs/mobile-device-setup.md)).
 
 ### Prerequisites
 

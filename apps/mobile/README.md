@@ -5,15 +5,10 @@ web app (`apps/web`) over `/api/trpc` and `/api/auth`.
 
 ## Run
 
-Expo Go does not support this app (native modules beyond the Expo Go set, and no SDK 58 Expo Go yet), so it runs
-as a development build.
-
-1. Start the web app: `bun run dev` from the repo root.
-2. `cp apps/mobile/.env.example apps/mobile/.env.local` and set `EXPO_PUBLIC_API_URL` to an address the
-   device can reach.
-3. Build and install the dev client once (and after any native dependency or config plugin change):
-   `bun run --cwd apps/mobile ios` (Xcode) or `bun run --cwd apps/mobile android` (Android SDK).
-4. Afterwards start only Metro: `bun run dev:mobile`.
+Runs as a development build on a physical device (Expo Go cannot run it). Full setup for Android and iPhone:
+[docs/mobile-device-setup.md](../../docs/mobile-device-setup.md). In short: set `EXPO_PUBLIC_API_URL` in
+`.env.local` to the computer's LAN address (`http://<LAN-IP>:3000`), install once with
+`bun run mobile:android` or `bun run mobile:ios`, then `bun run dev:mobile`.
 
 Screens sit at the web app's paths, so a web link opens in the app with its scheme, e.g.
 `npx uri-scheme open infinitunes://album/<name>/<token> --ios`.
@@ -21,7 +16,7 @@ Screens sit at the web app's paths, so a web link opens in the app with its sche
 ## Checks
 
 From the repo root: `bun run lint`, `bun run type-check`, `bun run test:mobile` (Jest, also part of
-`bun run test`), `bun run fmt:check`. Native health: `bun run --cwd apps/mobile doctor`. Bundle check without a
+`bun run test`), `bun run fmt:check`. Native health: `bun run mobile:doctor`. Bundle check without a
 device: `bunx expo export --platform ios` (or `android`) in this directory.
 
 ## Known warnings
