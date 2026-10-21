@@ -18,8 +18,8 @@ type ShowEpisodesOptions = { show: Show; season: number; sort: Sort };
 
 /**
  * One season's episodes in the chosen order, paged from page 1 until the
- * season's count is reached or a page comes back empty (upstream answers an
- * empty list past the end).
+ * season's count is reached (or, as for every list, a page comes back empty:
+ * upstream answers an empty list past the end).
  */
 export function useShowEpisodes({ show, season, sort }: ShowEpisodesOptions) {
   const id = show.show_details.id;
@@ -30,10 +30,9 @@ export function useShowEpisodes({ show, season, sort }: ShowEpisodesOptions) {
     fetchPage: (page) =>
       trpcClient.show.episodes.query({ id, season, page, sort }),
     itemsOf: (page) => page.map(toSongRow),
-    hasMore: (lastPage, pages) =>
-      lastPage.length > 0 &&
-      (!Number.isFinite(total) ||
-        pages.reduce((count, page) => count + page.length, 0) < total),
+    hasMore: (_lastPage, pages) =>
+      !Number.isFinite(total) ||
+      pages.reduce((count, page) => count + page.length, 0) < total,
     keyOf: (row) => row.id,
   });
 }
