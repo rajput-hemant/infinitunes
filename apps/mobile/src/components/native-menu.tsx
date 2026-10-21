@@ -42,6 +42,8 @@ type NativeMenuProps = {
   entries: readonly MenuEntry[];
   /** The trigger; tapping it opens the platform menu. */
   children: ReactNode;
+  /** A context menu on long press (a card); a tap then reaches the children. */
+  openOnLongPress?: boolean;
   testID?: string;
 };
 
@@ -50,12 +52,14 @@ export function NativeMenu({
   title,
   entries,
   children,
+  openOnLongPress = false,
   testID,
 }: NativeMenuProps) {
   const runs = collectRuns(entries);
   return (
     <MenuView
       testID={testID}
+      shouldOpenOnLongPress={openOnLongPress}
       title={title}
       actions={entries.map(toMenuAction)}
       onPressAction={({ nativeEvent }) => runs.get(nativeEvent.event)?.()}

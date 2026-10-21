@@ -1,10 +1,16 @@
 import { toCardItem } from "@infinitunes/types";
-import { rawAlbum } from "@infinitunes/types/fixtures";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
+import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 import type { ReactElement } from "react";
 
+import { playerStore } from "~/playback/player-store";
+import { procedure } from "~/test/trpc-mock";
+
 import { Shelf } from "./shelf";
+
+const initial = playerStore.getState();
+beforeEach(() => playerStore.setState(initial, true));
 
 const albums = [
   rawAlbum(),
@@ -65,6 +71,51 @@ describe("Shelf", () => {
     await fireEvent.press(screen.getByText("See All"));
 
     expect(router.getPathname()).toBe("/search");
+  });
+
+  it("gives regular cards no Play button, only a long-press menu", async () => {
+    procedure("album.details").mockResolvedValue(
+      rawAlbum({ list: [rawSong(), rawSong({ id: "s2" })] }),
+    );
+    await renderShelf(<Shelf title="New Releases" items={albums} />);
+
+    expect(screen.queryByRole("button", { name: "Play Udta Teer" })).toBeNull();
+    await fireEvent(
+      screen.getByRole("link", { name: /^Udta Teer/ }),
+      "pressAction",
+      { nativeEvent: { event: "add-to-queue" } },
+    );
+
+    await waitFor(() => expect(playerStore.getState().queue).toHaveLength(2));
+    expect(procedure("album.details")).toHaveBeenCalledWith({
+      token: "LHgqn,SRpyA_",
+    });
+  });
+
+  it("offers the menu's actions to screen readers on the card", async () => {
+    await renderShelf(<Shelf title="New Releases" items={albums} />);
+
+    expect(
+      screen
+        .getByRole("link", { name: /^Udta Teer/ })
+        .props.accessibilityActions.map(
+          ({ label }: { label: string }) => label,
+        ),
+    ).toEqual(["Play", "Play Next", "Add to Queue"]);
+  });
+
+  it("shows hero cards without a header, each with a Play button", async () => {
+    procedure("album.details").mockResolvedValue(
+      rawAlbum({ list: [rawSong()] }),
+    );
+    await renderShelf(<Shelf items={albums} variant="hero" />);
+
+    expect(screen.queryByRole("header")).toBeNull();
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Play Udta Teer" }),
+    );
+
+    await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
   });
 
   it("renders nothing without items", async () => {

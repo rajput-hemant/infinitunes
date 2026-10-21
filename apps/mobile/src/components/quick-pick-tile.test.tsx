@@ -1,0 +1,41 @@
+import { fireEvent, screen } from "@testing-library/react-native";
+
+import { renderScreen } from "~/test/render";
+
+import { QuickPickTile } from "./quick-pick-tile";
+
+describe("QuickPickTile", () => {
+  it("opens its item and has no Play button", async () => {
+    const app = await renderScreen(
+      <QuickPickTile
+        width={170}
+        title="Udta Teer"
+        href="/album/udta-teer/abc"
+        leading={{ artwork: "https://c.saavncdn.com/a-150x150.jpg" }}
+        item={{ type: "album", url: "https://www.jiosaavn.com/album/x/abc" }}
+      />,
+      { routes: { "album/[name]/[token]": () => null } },
+    );
+
+    expect(screen.queryByRole("button", { name: /^Play/ })).toBeNull();
+    await fireEvent.press(screen.getByRole("link", { name: "Udta Teer" }));
+
+    expect(app.getPathname()).toBe("/album/udta-teer/abc");
+  });
+
+  it("is an action button with an icon in place of the art", async () => {
+    const onPress = jest.fn();
+    await renderScreen(
+      <QuickPickTile
+        width={170}
+        title="Surprise me"
+        onPress={onPress}
+        leading={{ icon: { ios: "sparkles", android: "auto_awesome" } }}
+      />,
+    );
+
+    await fireEvent.press(screen.getByRole("button", { name: "Surprise me" }));
+
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+});

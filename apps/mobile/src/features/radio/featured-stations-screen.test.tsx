@@ -72,13 +72,16 @@ describe("FeaturedStationsScreen", () => {
     expect(app.getPathname()).toBe("/radio/hindi-featured-station/station-1");
   });
 
-  it("tunes in from the card's play button and starts a radio session", async () => {
+  it("tunes in from the card's menu and starts a radio session", async () => {
     featuredStations.mockResolvedValue([rawStation()]);
     procedure("radio.stationDetails").mockResolvedValue(rawStationDetails());
     await renderScreen(<FeaturedStationsScreen />);
 
-    await fireEvent.press(
-      await screen.findByRole("button", { name: "Play Hindi Hits & More" }),
+    // Cards have no Play button; their long-press menu offers Play.
+    await fireEvent(
+      await screen.findByRole("link", { name: /^Hindi Hits & More/ }),
+      "pressAction",
+      { nativeEvent: { event: "play" } },
     );
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(2));

@@ -6,6 +6,7 @@ import { trpcClient } from "~/lib/trpc";
 import { stationRef } from "~/navigation/entity-href";
 
 import { playAll } from "./play-collection";
+import { playerStore } from "./player-store";
 import { playStation } from "./radio";
 
 /** Types a card's Play button can queue (the web's `PlayButton`). */
@@ -80,4 +81,39 @@ export async function playEntity(type: PlayableType, url: string) {
     return;
   }
   playAll(tracks.map(toSongRow));
+}
+
+/** Types whose tracks can be queued (a station has no fixed list). */
+export type QueueableType = Exclude<PlayableType, "radio_station">;
+
+/**
+ * Queues a catalog item's tracks right after the current one (`next`) or at
+ * the end (`last`), from its card's menu. Failures toast, as `playEntity`.
+ */
+export async function queueEntity(
+  type: QueueableType,
+  url: string,
+  position: "next" | "last",
+) {
+  let tracks: (Song | Episode)[];
+  try {
+    tracks = await tracksOf(type, parseToken(url));
+  } catch {
+    toast.error("Couldn't load songs");
+    return;
+  }
+  if (tracks.length === 0) {
+    toast.error("Nothing to play here yet.");
+    return;
+  }
+  const rows = tracks.map(toSongRow);
+  const { playNext, addToQueue } = playerStore.getState();
+  // Each insert lands right after the current track, so insert backwards.
+  if (position === "next") for (const row of rows.toReversed()) playNext(row);
+  else for (const row of rows) addToQueue(row);
+  toast(
+    `${rows.length} ${rows.length === 1 ? "song" : "songs"} ${
+      position === "next" ? "playing next" : "added to queue"
+    }`,
+  );
 }
