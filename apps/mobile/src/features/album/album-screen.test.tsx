@@ -61,11 +61,15 @@ describe("AlbumScreen", () => {
     await renderScreen(<AlbumScreen token="LHgqn,SRpyA_" />);
 
     expect(await screen.findByText("Udta Teer")).toBeOnTheScreen();
-    expect(
-      screen.getByText("Sachin-Jigar · 2 Songs · 1.2K Plays · 03:30"),
-    ).toBeOnTheScreen();
+    expect(screen.getByText(/^Album · \d{4}$/)).toBeOnTheScreen();
+    // The credit, and the artists shelf card.
+    expect(screen.getAllByText("Sachin-Jigar")).toHaveLength(2);
+    expect(screen.getByText("2 Songs · 03:30 · 1.2K Plays")).toBeOnTheScreen();
     expect(screen.getByText("Teer & Tukka")).toBeOnTheScreen();
     expect(screen.getByText("Second Song")).toBeOnTheScreen();
+    // The rows share the album's cover, so they are numbered instead.
+    expect(screen.getByText("1")).toBeOnTheScreen();
+    expect(screen.getByText("2")).toBeOnTheScreen();
     expect(screen.getByText("(P) 2026 Sony & Co")).toBeOnTheScreen();
     expect(await screen.findByText("Related Album")).toBeOnTheScreen();
     expect(

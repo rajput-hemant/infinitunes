@@ -27,8 +27,7 @@ type PlaylistScreenProps = {
 
 function playlistMeta(playlist: Playlist): string {
   // Upstream lists the facts newest first; the web header reverses them.
-  const facts = playlist.more_info.subtitle_desc.toReversed();
-  return joinMeta([decode(playlist.subtitle), ...facts]);
+  return joinMeta(playlist.more_info.subtitle_desc.toReversed());
 }
 
 /** A catalog playlist, not one of the listener's own (those are in the library). */
@@ -78,8 +77,10 @@ function PlaylistPage({ playlist, trending }: PlaylistPageProps) {
     <>
       <EntityHeader
         image={playlist.image}
+        eyebrow="Playlist"
         title={decode(playlist.title)}
-        subtitle={playlistMeta(playlist)}
+        subtitle={decode(playlist.subtitle)}
+        meta={playlistMeta(playlist)}
         explicit={isExplicit(playlist.explicit_content)}
         onPlay={() => playAll(rows)}
         onShuffle={() => shuffleAll(rows)}

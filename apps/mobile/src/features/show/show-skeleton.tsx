@@ -15,9 +15,10 @@ export function ShowSkeleton() {
       <EntityHeaderSkeleton />
       <TextBlockSkeleton />
       <SkeletonPulse>
-        <View className="flex-row gap-3 px-page pb-2">
-          <SkeletonBlock className="h-ctl w-28 rounded-lg" />
-          <SkeletonBlock className="h-ctl w-28 rounded-lg" />
+        {/* The season and order pills. */}
+        <View className="flex-row gap-3 px-page py-2">
+          <SkeletonBlock className="h-ctl w-1/4 rounded-full" />
+          <SkeletonBlock className="h-ctl w-1/4 rounded-full" />
         </View>
       </SkeletonPulse>
       <SongListSkeleton />

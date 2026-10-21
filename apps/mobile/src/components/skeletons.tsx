@@ -162,6 +162,7 @@ export function EntityHeaderSkeleton({
           <SkeletonText variant="title1" width={200} />
         </View>
         <SkeletonText variant="subhead" width={140} />
+        <SkeletonText variant="footnote" width={180} />
         <View className="mt-4 w-full flex-row gap-3">
           <SkeletonBlock className="h-touch flex-1 rounded-full" />
           {shuffle ? (

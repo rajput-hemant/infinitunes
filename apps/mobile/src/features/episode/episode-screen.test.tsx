@@ -62,7 +62,7 @@ describe("EpisodeScreen", () => {
     ).toBeOnTheScreen();
     expect(screen.getByText(/12\.5K Plays · 62:05 · hindi/)).toBeOnTheScreen();
     expect(
-      screen.getByRole("header", { name: "episode details" }),
+      screen.getByRole("header", { name: "Episode details" }),
     ).toBeOnTheScreen();
     expect(
       screen.getByText("First paragraph.\nSecond line & more."),

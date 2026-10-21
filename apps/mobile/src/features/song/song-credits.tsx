@@ -1,103 +1,76 @@
 import { decode, formatDuration, formatReleaseDate } from "@infinitunes/types";
 import type { Song } from "@infinitunes/types";
-import { Link } from "expo-router";
 import type { Href } from "expo-router";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
-import { SectionHeading } from "~/components/section-heading";
+import { ListRow } from "~/components/list-row";
+import { SectionHeader } from "~/components/section-header";
 import { Text } from "~/components/ui/text";
 import { joinMeta, playsLabel } from "~/lib/meta";
 import { entityHref } from "~/navigation/entity-href";
 
-type CreditRowProps = {
-  label: string;
-  value: string;
-  /** Makes the row a link to the credited item's screen. */
-  href?: Href;
+type Credit = {
+  key: string;
+  /** Who or what is credited ("Flipperachi"). */
+  name: string;
+  /** As what ("Singer", "Album"). */
+  role: string;
+  href: Href | undefined;
 };
 
-function CreditRow({ label, value, href }: CreditRowProps) {
-  if (!value) return null;
-
-  const content = (
-    <>
-      <Text tone="muted" className="capitalize">
-        {label}
-      </Text>
-      <Text numberOfLines={1} className="shrink">
-        {value}
-      </Text>
-    </>
-  );
-  const rowClass =
-    "min-h-ctl flex-row items-center justify-between gap-4 px-page";
-  const accessibilityLabel = `${label}, ${value}`;
-
-  if (!href) {
-    return (
-      <View
-        accessible
-        accessibilityLabel={accessibilityLabel}
-        className={rowClass}
-      >
-        {content}
-      </View>
-    );
-  }
-  return (
-    <Link href={href} asChild>
-      <Pressable
-        accessibilityRole="link"
-        accessibilityLabel={accessibilityLabel}
-        className={`${rowClass} active:opacity-70`}
-      >
-        {content}
-      </Pressable>
-    </Link>
-  );
-}
-
+/** "music_director" as "Music director". */
 function roleLabel(role: string): string {
-  return role.replaceAll("_", " ");
+  const words = role.replaceAll("_", " ");
+  return `${words.charAt(0).toUpperCase()}${words.slice(1)}`;
 }
 
-/** Who made the song and where it lives: album, credited artists by role, label, facts. */
+function creditsOf(song: Song): Credit[] {
+  const { more_info: info } = song;
+  const credits: Credit[] = [
+    {
+      key: "album",
+      name: decode(info.album),
+      role: "Album",
+      href: entityHref("album", info.album_url),
+    },
+    ...(info.artistMap?.artists ?? []).map((artist) => ({
+      key: `${artist.id}-${artist.role}`,
+      name: decode(artist.name),
+      role: roleLabel(artist.role),
+      href: entityHref("artist", artist.perma_url),
+    })),
+    {
+      key: "label",
+      name: decode(info.label),
+      role: "Label",
+      href: entityHref("label", info.label_url),
+    },
+  ];
+  return credits.filter((credit) => credit.name);
+}
+
+/**
+ * Who made the song and where it lives (album, credited artists by role,
+ * label) as rows into their screens, then the facts that have none.
+ */
 export function SongCredits({ song }: { song: Song }) {
   const { more_info: info } = song;
-  const credits = info.artistMap?.artists ?? [];
+  const released = formatReleaseDate(info.release_date);
 
   return (
-    <View className="pb-3">
-      <SectionHeading>Credits</SectionHeading>
-      <CreditRow
-        label="Album"
-        value={decode(info.album)}
-        href={entityHref("album", info.album_url)}
-      />
-      {credits.map((artist) => (
-        <CreditRow
-          key={`${artist.id}-${artist.role}`}
-          label={roleLabel(artist.role)}
-          value={decode(artist.name)}
-          href={entityHref("artist", artist.perma_url)}
-        />
+    <View>
+      <SectionHeader title="Credits" />
+      {creditsOf(song).map(({ key, name, role, href }) => (
+        <ListRow key={key} title={name} subtitle={role} href={href} />
       ))}
-      <CreditRow
-        label="Label"
-        value={decode(info.label)}
-        href={entityHref("label", info.label_url)}
-      />
-      <CreditRow
-        label="Released"
-        value={formatReleaseDate(info.release_date)}
-      />
-      <CreditRow
-        label="Duration"
-        value={formatDuration(info.duration, "mm:ss")}
-      />
-      <View className="gap-1 px-page pt-2">
+      <View className="px-page pt-2">
         <Text variant="caption" tone="muted">
-          {joinMeta([playsLabel(song.play_count), decode(song.language)])}
+          {joinMeta([
+            released && `Released ${released}`,
+            formatDuration(info.duration, "mm:ss"),
+            playsLabel(song.play_count),
+            decode(song.language),
+          ])}
         </Text>
         <Text variant="caption" tone="muted">
           {decode(info.copyright_text)}

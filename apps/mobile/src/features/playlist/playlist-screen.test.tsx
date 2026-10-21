@@ -31,9 +31,10 @@ describe("PlaylistScreen", () => {
     await renderScreen(<PlaylistScreen token="AbCd_" />);
 
     expect(await screen.findByText("Hits & Misses")).toBeOnTheScreen();
-    expect(
-      screen.getByText("Editors Picks · Hindi · 50 Songs"),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("Playlist")).toBeOnTheScreen();
+    // The curator line, and one row's subtitle.
+    expect(screen.getAllByText("Editors Picks")).toHaveLength(2);
+    expect(screen.getByText("Hindi · 50 Songs")).toBeOnTheScreen();
     expect(screen.getByText("Opener")).toBeOnTheScreen();
     expect(screen.getByText("Closer")).toBeOnTheScreen();
     expect(await screen.findByText("Trending Mix")).toBeOnTheScreen();

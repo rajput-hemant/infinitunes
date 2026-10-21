@@ -63,9 +63,7 @@ export function CatalogScreen<Item>({
       numColumns={GRID_COLUMNS}
       keyExtractor={keyOf}
       renderItem={({ item }) => (
-        <View style={{ paddingHorizontal: GRID_GAP / 2, paddingVertical: 6 }}>
-          {renderCard(item, width)}
-        </View>
+        <View style={{ padding: GRID_GAP / 2 }}>{renderCard(item, width)}</View>
       )}
       ListHeaderComponent={
         header ? <View style={FULL_BLEED}>{header}</View> : undefined

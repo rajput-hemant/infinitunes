@@ -88,18 +88,19 @@ describe("SongScreen", () => {
     await renderScreen(<SongScreen token="song-token" />);
 
     expect(await screen.findByText("FA9LA & Friends")).toBeOnTheScreen();
-    expect(screen.getByText("FA9LA · Flipperachi")).toBeOnTheScreen();
+    expect(screen.getByText(/^Song · \d{4}$/)).toBeOnTheScreen();
+    expect(screen.getAllByText("Flipperachi").length).toBeGreaterThan(0);
     expect(
-      screen.getByRole("link", { name: "Album, FA9LA" }),
+      screen.getByRole("link", { name: "FA9LA, Album" }),
     ).toBeOnTheScreen();
     expect(
-      screen.getByRole("link", { name: "singer, Flipperachi" }),
+      screen.getByRole("link", { name: "Flipperachi, Singer" }),
     ).toBeOnTheScreen();
     expect(
-      screen.getByRole("link", { name: "Label, Outlaw Productions" }),
+      screen.getByRole("link", { name: "Outlaw Productions, Label" }),
     ).toBeOnTheScreen();
     expect(screen.getByText("(P) 2024 Outlaw Productions")).toBeOnTheScreen();
-    expect(screen.getByText("01:45")).toBeOnTheScreen();
+    expect(screen.getByText(/01:45/)).toBeOnTheScreen();
     expect(await screen.findByText("Album Neighbour")).toBeOnTheScreen();
     expect(
       screen.getByRole("header", { name: "More from FA9LA" }),

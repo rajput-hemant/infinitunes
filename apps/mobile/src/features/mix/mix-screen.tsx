@@ -8,7 +8,7 @@ import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
 import { TrackList } from "~/components/track-list";
-import { joinMeta, songCountLabel } from "~/lib/meta";
+import { joinMeta, songCountLabel, totalDurationLabel } from "~/lib/meta";
 import { songRowsOf } from "~/lib/song-rows";
 import { trpc } from "~/lib/trpc";
 import { playAll, shuffleAll } from "~/playback/play-collection";
@@ -49,12 +49,12 @@ function MixPage({ mix }: { mix: Mix }) {
       {/* A mix is not a favorite type, so its header has no heart. */}
       <EntityHeader
         image={mix.image}
+        eyebrow="Mix"
         title={decode(mix.title)}
-        subtitle={joinMeta([
-          decode(firstname),
-          decode(lastname),
-          songCountLabel(rows.length),
-        ])}
+        subtitle={[decode(firstname), decode(lastname)]
+          .filter(Boolean)
+          .join(" ")}
+        meta={joinMeta([songCountLabel(rows.length), totalDurationLabel(rows)])}
         onPlay={() => playAll(rows)}
         onShuffle={() => shuffleAll(rows)}
         actions={<CollectionMenu name={decode(mix.title)} rows={rows} />}
