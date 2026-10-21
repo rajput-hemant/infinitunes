@@ -19,8 +19,6 @@ jest.mock("~/lib/trpc", () => ({
     radio: { songs: { query: () => Promise.resolve([]) } },
   },
 }));
-jest.mock("sonner-native", () => ({ toast: { error: jest.fn() } }));
-
 const songs = ["BSaNI3Yr", "Xy12AbCd"].map((id) => rawSong({ id }));
 const rows = songs.map(toSongRow);
 const ladder = (id: string, rate: number) =>
@@ -36,8 +34,6 @@ async function mountController() {
 beforeEach(() => {
   playerStore.setState(initial, true);
   lastPlayer().reset();
-  mockRecord.mockClear();
-  jest.mocked(toast.error).mockClear();
 });
 
 describe("PlaybackController", () => {

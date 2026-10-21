@@ -25,11 +25,13 @@ module.exports = {
   transformIgnorePatterns: transformIgnorePatterns.map((pattern) =>
     pattern.replace("(.pnpm|", "(.pnpm|.bun|@shopify/flash-list|"),
   ),
+  clearMocks: true,
   modulePaths: ["<rootDir>/node_modules"],
   moduleNameMapper: {
     "^react$": reactDir,
     "^react/(.*)$": `${reactDir}/$1`,
     "^expo-audio$": "<rootDir>/src/test/expo-audio.ts",
+    "\\.css$": "<rootDir>/src/test/stylesheet.ts",
   },
   setupFiles: ["<rootDir>/src/test/setup.ts"],
 };

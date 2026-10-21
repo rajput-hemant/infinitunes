@@ -12,7 +12,7 @@ import { toast } from "sonner-native";
 import { queryClient } from "~/lib/query-client";
 import { trpc, trpcClient } from "~/lib/trpc";
 
-import { useUserId } from "./session";
+import { userQueryKey, useUserId } from "./session";
 
 /**
  * The signed-in listener's playlists with pending writes applied (the shared
@@ -22,7 +22,8 @@ import { useUserId } from "./session";
 export function useUserPlaylists(): PlaylistView[] | undefined {
   const userId = useUserId();
   const { data } = useQuery({
-    ...trpc.user.getUserPlaylists.queryOptions(),
+    queryKey: userQueryKey(trpc.user.getUserPlaylists.queryKey(), userId),
+    queryFn: () => trpcClient.user.getUserPlaylists.query(),
     enabled: userId !== undefined,
   });
   return usePlaylists(data);

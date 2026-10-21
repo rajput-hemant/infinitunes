@@ -1,24 +1,36 @@
 /**
  * `~/lib/trpc` for component tests (`jest.mock("~/lib/trpc", () =>
- * require("~/test/trpc-mock"))`): the user-library queries the shared rows
- * read, answering with what a signed-in listener with an empty library gets.
+ * require("~/test/trpc-mock"))`): the user-library procedures the shared
+ * rows use, as `jest.fn`s answering like an account with an empty library
+ * (no favorites row yet, no playlists). Override per test with
+ * `mockResolvedValue`/`mockImplementation`.
  */
 
-function query<Output>(path: string, output: Output) {
-  return {
-    queryKey: () => [path],
-    queryOptions: () => ({
-      queryKey: [path],
-      queryFn: () => Promise.resolve(output),
-    }),
-  };
-}
+const procedureKey = (path: string) => () => [
+  path.split("."),
+  { type: "query" },
+];
 
 export const trpc = {
   user: {
-    getUserFavorites: query("user.getUserFavorites", undefined),
-    getUserPlaylists: query("user.getUserPlaylists", []),
+    getUserFavorites: { queryKey: procedureKey("user.getUserFavorites") },
+    getUserPlaylists: { queryKey: procedureKey("user.getUserPlaylists") },
   },
 };
 
-export const trpcClient = {};
+type FavoriteInput = { type: string; token: string };
+
+export const trpcClient = {
+  user: {
+    getUserFavorites: {
+      query: jest.fn(
+        async (): Promise<Record<string, string[]> | undefined> => undefined,
+      ),
+    },
+    getUserPlaylists: { query: jest.fn(async () => []) },
+    addToFavorites: { mutate: jest.fn(async (_input: FavoriteInput) => []) },
+    removeFromFavorites: {
+      mutate: jest.fn(async (_input: FavoriteInput) => []),
+    },
+  },
+};

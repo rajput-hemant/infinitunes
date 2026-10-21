@@ -10,12 +10,7 @@ import { renderScreen } from "~/test/render";
 import { SongRow } from "./song-row";
 
 jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
-jest.mock("~/lib/auth-client", () => ({
-  authClient: { useSession: () => ({ data: null }), getCookie: () => "" },
-}));
-jest.mock("sonner-native", () => ({
-  toast: Object.assign(jest.fn(), { warning: jest.fn(), error: jest.fn() }),
-}));
+jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
 
 const song = toSongRow(rawSong());
 const initial = playerStore.getState();

@@ -2,14 +2,13 @@ import { MenuView } from "@expo/ui/community/menu";
 import type { MenuAction } from "@expo/ui/community/menu";
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import type { QueueSource, RowExtras } from "@infinitunes/types";
-import { router } from "expo-router";
 import type { ReactNode } from "react";
 import { toast } from "sonner-native";
 
 import { downloadTrack } from "~/lib/download";
 import { preferencesStore } from "~/lib/preferences";
 import { shareItem } from "~/lib/share";
-import { entityHref } from "~/navigation/entity-href";
+import { useOpenEntity } from "~/navigation/use-open-entity";
 import { playerStore } from "~/playback/player-store";
 import { addSongToPlaylist, useUserPlaylists } from "~/user-data/playlists";
 import { promptSignIn, useUserId } from "~/user-data/session";
@@ -45,13 +44,7 @@ function collectRuns(
   return into;
 }
 
-function navigateTo(type: "album" | "artist", url: string) {
-  const href = entityHref(type, url);
-  if (!href) return;
-  // From the full player (a modal) the screen opens in the tabs below it.
-  if (router.canDismiss()) router.dismissAll();
-  router.push(href);
-}
+type OpenEntity = ReturnType<typeof useOpenEntity>;
 
 function playlistEntries(
   song: TrackItem,
@@ -93,7 +86,10 @@ function playlistEntries(
   };
 }
 
-function artistEntry(song: TrackItem): MenuEntry | undefined {
+function artistEntry(
+  song: TrackItem,
+  openEntity: OpenEntity,
+): MenuEntry | undefined {
   const artists = song.primaryArtists ?? song.artists;
   const [only] = artists;
   if (!only) return undefined;
@@ -103,14 +99,14 @@ function artistEntry(song: TrackItem): MenuEntry | undefined {
     image: "music.microphone",
   } as const;
   if (artists.length === 1) {
-    return { ...base, run: () => navigateTo("artist", only.perma_url) };
+    return { ...base, run: () => openEntity("artist", only.perma_url) };
   }
   return {
     ...base,
     subactions: artists.map((artist) => ({
       id: `artist:${artist.id}`,
       title: artist.name,
-      run: () => navigateTo("artist", artist.perma_url),
+      run: () => openEntity("artist", artist.perma_url),
     })),
   };
 }
@@ -141,6 +137,7 @@ type SongMenuProps = {
 export function SongMenu({ song, removal, children }: SongMenuProps) {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
+  const openEntity = useOpenEntity();
   const { playNext, addToQueue } = playerStore.getState();
   const isSong = song.type === "song";
 
@@ -168,10 +165,10 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
       id: "go-to-album",
       title: "Go to Album",
       image: "square.stack",
-      run: () => navigateTo("album", albumUrl),
+      run: () => openEntity("album", albumUrl),
     });
   }
-  const artist = artistEntry(song);
+  const artist = artistEntry(song, openEntity);
   if (artist) entries.push(artist);
   entries.push({
     id: "share",

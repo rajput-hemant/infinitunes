@@ -16,7 +16,6 @@
     "@babel/runtime": "^7.29.7",
     "@better-auth/expo": "catalog:",
     "@expo/ui": "~58.0.21",
-    "@gorhom/bottom-sheet": "^5.2.14",
     "@infinitunes/auth": "workspace:*",
     "@infinitunes/core": "workspace:*",
     "@infinitunes/types": "workspace:*",

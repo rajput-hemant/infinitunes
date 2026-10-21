@@ -189,7 +189,9 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `(settings)/settings`, URLs `/`, `/search`, ...) using `tabStackOptions`; a new tab needs a `NativeTabs.Trigger`
   with an `sf` and an `md` icon. Detail screens live once in `(tabs)/(home,search,library)/<type>/[token]`, so
   they open in the current tab; link to them with `entityHref(type, perma_url)` (token = the URL's last
-  segment), never a hand-built path. Scroll containers are `ScreenScrollView` (or a list with
+  segment), never a hand-built path, and open them from handlers with `useOpenEntity()` (it closes the
+  player/queue modals first). Sheets are native: `formSheet` routes (`/queue`) or `@expo/ui`'s
+  `BottomSheet`. Scroll containers are `ScreenScrollView` (or a list with
   `contentInsetAdjustmentBehavior="automatic"` and `playerDockInset` bottom padding), or large titles and the
   floating mini-player overlap content.
 - Playback: one expo-audio `AudioPlayer` (`playback/audio-engine.ts`; not `AudioPlaylist`, which reports no load
@@ -205,7 +207,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   numbers, `items` already flattened and deduped). Toasts are `sonner-native`'s `toast` (mounted `Toaster`).
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and `addSongToPlaylist`/
   `removeSongFromPlaylist` (`user-data/`); failures roll back with a toast, signed out they `promptSignIn`.
-  Persist client state with zustand `persist` + `persistedStorage` (SQLite kv-store), never secrets.
+  Per-user queries key on `userQueryKey(procedureKey, userId)` so one account's cache never shows for the
+  next (`getUserFavorites` has no row for a new user: return a value, a query may not resolve `undefined`).
+  Persist client state with zustand `persist` + `persistedStorage` (SQLite kv-store, synchronous reads so
+  stores hydrate before the first render), never secrets.
 - Native look per platform: no colours on `NativeTabs` or headers (system glass on iOS 26, Material You on
   Android). Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
   with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours,
@@ -224,8 +229,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`
   are direct dependencies; `jest.config.js` adds `.bun` to the transform allow-list, falls back to the app's
   `node_modules` and maps `react` to the app's copy (else `packages/core` hooks throw "Invalid hook call").
-  Jest swaps `expo-audio` for the scriptable `src/test/expo-audio.ts`; component tests use `renderScreen`
-  and `jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"))`. `expo-doctor` reports
+  Jest swaps `expo-audio` for the scriptable `src/test/expo-audio.ts` and mocks Reanimated, `sonner-native`
+  (assert `jest.mocked(toast.error)`) and the SQLite store in `src/test/setup.ts`; component tests use
+  `renderWithProviders`/`renderScreen`, `require("~/test/trpc-mock")` for `~/lib/trpc` and
+  `require("~/test/session-mock")` (`signInAs`) for `~/lib/auth-client`. `expo-doctor` reports
   same-version "duplicates" (Bun peer variants); autolinking module resolution bundles one copy, so only a
   real version split matters. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
   over web's.

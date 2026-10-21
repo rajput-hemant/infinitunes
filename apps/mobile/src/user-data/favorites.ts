@@ -17,7 +17,7 @@ import { toast } from "sonner-native";
 import { queryClient } from "~/lib/query-client";
 import { trpc, trpcClient } from "~/lib/trpc";
 
-import { promptSignIn, useUserId } from "./session";
+import { promptSignIn, userQueryKey, useUserId } from "./session";
 
 const NOTHING_LIKED: FavoriteLists = {
   songs: [],
@@ -31,17 +31,18 @@ const NOTHING_LIKED: FavoriteLists = {
  * The signed-in listener's liked tokens. `undefined` while signed out or
  * loading, `null` when the read failed: in both cases the liked state is
  * unknown, so nothing may be written over it. A user who never liked
- * anything has no row, which is an empty list, not an unknown one.
+ * anything has no row, which is an empty list, not an unknown one (and a
+ * query may not resolve to `undefined`).
  */
 export function useFavoriteLists(): FavoriteLists | null | undefined {
   const userId = useUserId();
-  const { data, isError, isSuccess } = useQuery({
-    ...trpc.user.getUserFavorites.queryOptions(),
+  const { data, isError } = useQuery({
+    queryKey: userQueryKey(trpc.user.getUserFavorites.queryKey(), userId),
+    queryFn: async (): Promise<FavoriteLists> =>
+      (await trpcClient.user.getUserFavorites.query()) ?? NOTHING_LIKED,
     enabled: userId !== undefined,
   });
-  if (isError) return null;
-  if (!isSuccess) return undefined;
-  return data ?? NOTHING_LIKED;
+  return isError ? null : data;
 }
 
 function persistFavorite(type: FavoriteType, token: string, liked: boolean) {
