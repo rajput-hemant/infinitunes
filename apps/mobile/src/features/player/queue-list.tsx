@@ -5,9 +5,10 @@ import { toast } from "sonner-native";
 
 import { DragHandle } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
+import { MenuTrigger } from "~/components/menu-trigger";
 import { addToPlaylistEntry, NativeMenu } from "~/components/native-menu";
 import { SongRow } from "~/components/song-row";
-import { Icon } from "~/components/ui/icon";
+import { TEXT_BUTTON_HIT_SLOP } from "~/components/ui/hit-slop";
 import { Text } from "~/components/ui/text";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
@@ -40,13 +41,7 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
         }),
       ]}
     >
-      <View
-        accessibilityRole="button"
-        accessibilityLabel="Queue actions"
-        className="size-ctl items-center justify-center"
-      >
-        <Icon name={{ ios: "ellipsis", android: "more_vert" }} size={20} />
-      </View>
+      <MenuTrigger label="Queue actions" />
     </NativeMenu>
   );
 }
@@ -97,7 +92,7 @@ export function QueueList() {
             onPress={clearUpNext}
             accessibilityRole="button"
             accessibilityLabel="Clear up next"
-            hitSlop={10}
+            hitSlop={TEXT_BUTTON_HIT_SLOP}
           >
             <Text variant="subhead">Clear</Text>
           </Pressable>

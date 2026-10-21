@@ -45,7 +45,7 @@ export function LanguagesScreen() {
             accessibilityRole="checkbox"
             accessibilityState={{ checked: selected }}
             onPress={() => setLanguages(toggled(languages, lang))}
-            className="h-row flex-row items-center justify-between px-page active:opacity-70"
+            className="min-h-row flex-row items-center justify-between px-page py-1 active:opacity-70"
           >
             <Text>{languageLabel(lang)}</Text>
             {selected ? (

@@ -1,7 +1,6 @@
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
-import { View } from "react-native";
 
-import { Icon } from "~/components/ui/icon";
+import { MenuTrigger } from "~/components/menu-trigger";
 
 import { confirmDeletePlaylist } from "./confirm-delete-playlist";
 import { LibraryRow } from "./library-row";
@@ -32,16 +31,7 @@ export function PlaylistRow({ playlist }: { playlist: PlaylistView }) {
       trailing={
         playlist.pending ? null : (
           <PlaylistMenu playlist={playlist}>
-            <View
-              accessibilityRole="button"
-              accessibilityLabel={`Options for ${playlist.name}`}
-              className="size-ctl items-center justify-center"
-            >
-              <Icon
-                name={{ ios: "ellipsis", android: "more_vert" }}
-                size={20}
-              />
-            </View>
+            <MenuTrigger label={`Options for ${playlist.name}`} />
           </PlaylistMenu>
         )
       }

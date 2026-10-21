@@ -6,6 +6,7 @@ import { Pressable, View } from "react-native";
 import { MediaRow } from "~/components/media-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SongListSkeleton } from "~/components/skeletons";
+import { TEXT_BUTTON_HIT_SLOP } from "~/components/ui/hit-slop";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { trpc } from "~/lib/trpc";
@@ -35,7 +36,7 @@ function RecentSearches({ onSelectRecent }: IdleSearchProps) {
           onPress={clear}
           accessibilityRole="button"
           accessibilityLabel="Clear recent searches"
-          hitSlop={10}
+          hitSlop={TEXT_BUTTON_HIT_SLOP}
         >
           <Text variant="subhead" tone="muted">
             Clear
@@ -48,7 +49,7 @@ function RecentSearches({ onSelectRecent }: IdleSearchProps) {
           onPress={() => onSelectRecent(query)}
           accessibilityRole="button"
           accessibilityLabel={`Search for ${query}`}
-          className="h-row flex-row items-center gap-3 px-page active:opacity-70"
+          className="min-h-row flex-row items-center gap-3 px-page py-1 active:opacity-70"
         >
           <Icon name={{ ios: "clock", android: "history" }} size={20} />
           <Text numberOfLines={1} className="flex-1">

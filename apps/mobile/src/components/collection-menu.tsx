@@ -1,5 +1,4 @@
 import type { SongRowItem } from "@infinitunes/types";
-import { View } from "react-native";
 import { toast } from "sonner-native";
 
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
@@ -10,13 +9,13 @@ import type { RadioSeed } from "~/playback/radio";
 import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
 
+import { MenuTrigger } from "./menu-trigger";
 import {
   addToPlaylistEntry,
   NativeMenu,
   playRadioEntry,
   type MenuEntry,
 } from "./native-menu";
-import { Icon } from "./ui/icon";
 
 /**
  * Saves the songs into a folder the listener picks, at the download quality
@@ -100,13 +99,10 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
   if (rows.length === 0) return null;
   return (
     <NativeMenu title={name} entries={entries}>
-      <View
-        accessibilityRole="button"
-        accessibilityLabel={`More actions for ${name}`}
-        className="size-ctl-lg items-center justify-center rounded-lg bg-secondary"
-      >
-        <Icon name={{ ios: "ellipsis", android: "more_vert" }} size={20} />
-      </View>
+      <MenuTrigger
+        label={`More actions for ${name}`}
+        className="rounded-lg bg-secondary"
+      />
     </NativeMenu>
   );
 }

@@ -19,27 +19,41 @@ type CreditRowProps = {
 function CreditRow({ label, value, href }: CreditRowProps) {
   if (!value) return null;
 
-  const row = (
-    <Pressable
-      disabled={!href}
-      accessibilityRole={href ? "link" : undefined}
-      accessibilityLabel={`${label}, ${value}`}
-      className="min-h-ctl flex-row items-center justify-between gap-4 px-page active:opacity-70"
-    >
+  const content = (
+    <>
       <Text tone="muted" className="capitalize">
         {label}
       </Text>
-      <Text numberOfLines={1} className="flex-1 text-right">
+      <Text numberOfLines={1} className="shrink">
         {value}
       </Text>
-    </Pressable>
+    </>
   );
-  return href ? (
+  const rowClass =
+    "min-h-ctl flex-row items-center justify-between gap-4 px-page";
+  const accessibilityLabel = `${label}, ${value}`;
+
+  if (!href) {
+    return (
+      <View
+        accessible
+        accessibilityLabel={accessibilityLabel}
+        className={rowClass}
+      >
+        {content}
+      </View>
+    );
+  }
+  return (
     <Link href={href} asChild>
-      {row}
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={accessibilityLabel}
+        className={`${rowClass} active:opacity-70`}
+      >
+        {content}
+      </Pressable>
     </Link>
-  ) : (
-    row
   );
 }
 

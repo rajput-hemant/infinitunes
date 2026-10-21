@@ -1,10 +1,10 @@
 import { forgotPasswordSchema } from "@infinitunes/auth/schemas";
-import { Link } from "expo-router";
 import { useState } from "react";
 import { View } from "react-native";
 import { toast } from "sonner-native";
 
 import { EmailField } from "~/components/form/email-field";
+import { FormLink } from "~/components/form/form-link";
 import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
@@ -53,9 +53,9 @@ export function ForgotPasswordForm() {
         <Text tone="muted" accessibilityRole="alert">
           {FORGOT_PASSWORD_MESSAGE}
         </Text>
-        <Link href="/login" replace>
-          <Text>Back to sign in</Text>
-        </Link>
+        <FormLink href="/login" replace>
+          Back to sign in
+        </FormLink>
       </View>
     );
   }

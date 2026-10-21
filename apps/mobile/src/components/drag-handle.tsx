@@ -11,7 +11,7 @@ export function DragHandle({ name }: { name: string }) {
       onPressIn={drag}
       accessibilityRole="button"
       accessibilityLabel={`Reorder ${name}`}
-      className="size-ctl items-center justify-center"
+      className="size-touch items-center justify-center"
     >
       <Icon
         name={{ ios: "line.3.horizontal", android: "drag_handle" }}

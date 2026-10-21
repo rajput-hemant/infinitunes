@@ -107,9 +107,9 @@ export function EntityHeaderSkeleton({
         <SkeletonBlock className="h-6 w-3/5 rounded-sm" />
         <SkeletonBlock className="h-4 w-2/5 rounded-sm" />
         <View className="w-full flex-row gap-3">
-          <SkeletonBlock className="h-ctl-lg flex-1 rounded-lg" />
+          <SkeletonBlock className="h-touch flex-1 rounded-lg" />
           {shuffle ? (
-            <SkeletonBlock className="h-ctl-lg flex-1 rounded-lg" />
+            <SkeletonBlock className="h-touch flex-1 rounded-lg" />
           ) : null}
         </View>
       </View>

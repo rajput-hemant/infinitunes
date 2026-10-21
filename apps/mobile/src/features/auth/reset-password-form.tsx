@@ -1,10 +1,11 @@
 import { PASSWORD_HINT, resetPasswordSchema } from "@infinitunes/auth/schemas";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { View } from "react-native";
 import { toast } from "sonner-native";
 
 import type { TextInputHandle } from "~/components/form/form-field";
+import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
 import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
@@ -20,9 +21,9 @@ function InvalidLink() {
         This reset link is invalid or has expired. Links work once and last for
         1 hour.
       </Text>
-      <Link href="/forgot-password" replace>
-        <Text>Request a new link</Text>
-      </Link>
+      <FormLink href="/forgot-password" replace>
+        Request a new link
+      </FormLink>
     </View>
   );
 }

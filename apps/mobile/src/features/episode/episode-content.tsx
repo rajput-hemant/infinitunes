@@ -46,7 +46,7 @@ function ShowLink({ episode }: { episode: Episode }) {
     <Link href={href} asChild>
       <Pressable
         accessibilityRole="link"
-        className="h-row flex-row items-center justify-between px-page active:opacity-70"
+        className="min-h-row flex-row items-center justify-between px-page py-1 active:opacity-70"
       >
         <View className="flex-1">
           <Text variant="subhead" tone="muted">

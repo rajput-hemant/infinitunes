@@ -137,12 +137,15 @@ export const radii = {
 
 /**
  * Control, row and gutter sizes in points: the web's touch-screen
- * (`pointer: coarse`) values, which also clear both platforms' 44pt/48dp
- * minimum touch targets with hit slop.
+ * (`pointer: coarse`) values, plus `touch`, the smallest size of anything the
+ * listener taps alone (an icon button, a menu trigger, a button): Android's
+ * 48dp, which also clears iOS's 44pt. `ctl` and `ctl-lg` are visual heights
+ * of controls that reach it with hit slop or sit in a row of their own.
  */
 export const sizes = {
   ctl: 40,
   "ctl-lg": 44,
+  touch: 48,
   row: 56,
   art: 44,
   page: 16,

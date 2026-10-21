@@ -36,7 +36,7 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       className={cx(
-        "h-ctl-lg flex-row items-center justify-center gap-2 rounded-lg px-5 active:opacity-80",
+        "min-h-touch flex-row items-center justify-center gap-2 rounded-lg px-5 py-2 active:opacity-80",
         container,
         className,
       )}

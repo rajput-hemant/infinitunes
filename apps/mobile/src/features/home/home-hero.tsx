@@ -24,13 +24,8 @@ export function HomeHero({ featured, tiles }: HomeHeroProps) {
   const { run, pending } = usePending();
   const { type, url } = featured;
 
-  const card = (
-    <Pressable
-      disabled={!href}
-      accessibilityRole={href ? "link" : undefined}
-      accessibilityLabel={`Featured playlist, ${featured.name}`}
-      className="gap-2 active:opacity-70"
-    >
+  const content = (
+    <>
       <Artwork
         image={featured.image}
         quality="high"
@@ -44,17 +39,26 @@ export function HomeHero({ featured, tiles }: HomeHeroProps) {
           {featured.name}
         </Text>
       </View>
-    </Pressable>
+    </>
   );
+  const label = `Featured playlist, ${featured.name}`;
 
   return (
     <View className="gap-3 px-page py-2">
       {href ? (
         <Link href={href} asChild>
-          {card}
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={label}
+            className="gap-2 active:opacity-70"
+          >
+            {content}
+          </Pressable>
         </Link>
       ) : (
-        card
+        <View accessible accessibilityLabel={label} className="gap-2">
+          {content}
+        </View>
       )}
       {isPlayable(type) ? (
         <Button

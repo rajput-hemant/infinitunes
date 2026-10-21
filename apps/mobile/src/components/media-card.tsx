@@ -47,15 +47,9 @@ export function MediaCard({
   const round = ROUND_TYPES.has(item.type);
   const explicit = isExplicit(item.explicit);
   const name = explicit ? `${item.name}, Explicit` : item.name;
-  const card = (
-    <Pressable
-      disabled={!href}
-      onPress={onPress}
-      accessibilityRole={href ? "link" : undefined}
-      accessibilityLabel={item.subtitle ? `${name}, ${item.subtitle}` : name}
-      className="gap-1.5 active:opacity-70"
-      style={{ width }}
-    >
+  const label = item.subtitle ? `${name}, ${item.subtitle}` : name;
+  const content = (
+    <>
       <Artwork
         image={item.image}
         quality="high"
@@ -78,13 +72,34 @@ export function MediaCard({
           </Text>
         ) : null}
       </View>
-    </Pressable>
+    </>
   );
 
-  if (!href) return card;
+  // A type without a screen is a plain labelled card, not a disabled link.
+  if (!href) {
+    return (
+      <View
+        accessible
+        accessibilityLabel={label}
+        className="gap-1.5"
+        style={{ width }}
+      >
+        {content}
+      </View>
+    );
+  }
+
   const linked = (
     <Link href={href} asChild>
-      {card}
+      <Pressable
+        onPress={onPress}
+        accessibilityRole="link"
+        accessibilityLabel={label}
+        className="gap-1.5 active:opacity-70"
+        style={{ width }}
+      >
+        {content}
+      </Pressable>
     </Link>
   );
   if (!isPlayable(item.type)) return linked;
@@ -97,8 +112,8 @@ export function MediaCard({
         name={item.name}
         style={{
           position: "absolute",
-          top: width - sizes.ctl - PLAY_INSET,
-          left: width - sizes.ctl - PLAY_INSET,
+          top: width - sizes.touch - PLAY_INSET,
+          end: PLAY_INSET,
         }}
       />
     </View>

@@ -54,7 +54,7 @@ export function LibraryRow({
   );
 
   return (
-    <View className="h-row flex-row items-center gap-3 pl-page pr-2">
+    <View className="min-h-row flex-row items-center gap-3 py-1 pl-page pr-2">
       {href ? (
         <Link href={href} asChild>
           {body}

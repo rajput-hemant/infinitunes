@@ -8,9 +8,9 @@ import { View } from "react-native";
 import { DragHandle } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
+import { MenuTrigger } from "~/components/menu-trigger";
 import { SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
-import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import {
   moveSongInPlaylist,
@@ -140,16 +140,11 @@ function Playlist({ id }: { id: string }) {
       <Stack.Screen options={{ title: playlist.name }} />
       <Stack.Toolbar placement="right" asChild>
         <PlaylistMenu playlist={playlist} onDeleting={() => router.back()}>
-          <View
-            accessibilityRole="button"
-            accessibilityLabel="Playlist options"
-            className="size-ctl items-center justify-center"
-          >
-            <Icon
-              name={{ ios: "ellipsis.circle", android: "more_vert" }}
-              size={22}
-            />
-          </View>
+          <MenuTrigger
+            label="Playlist options"
+            icon={{ ios: "ellipsis.circle", android: "more_vert" }}
+            size={22}
+          />
         </PlaylistMenu>
       </Stack.Toolbar>
       <PlaylistSongs playlist={playlist} />

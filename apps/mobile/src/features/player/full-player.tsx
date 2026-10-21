@@ -5,9 +5,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyState } from "~/components/empty-state";
 import { LikeButton } from "~/components/like-button";
+import { MenuTrigger } from "~/components/menu-trigger";
 import { SongMenu } from "~/components/song-menu";
 import { Artwork } from "~/components/ui/artwork";
-import { Icon } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
@@ -74,13 +74,7 @@ export function FullPlayer() {
           <LikeButton type="song" token={track.id} name={track.name} />
         ) : null}
         <SongMenu song={track}>
-          <View
-            accessibilityRole="button"
-            accessibilityLabel={`More actions for ${track.name}`}
-            className="size-ctl items-center justify-center"
-          >
-            <Icon name={{ ios: "ellipsis", android: "more_vert" }} />
-          </View>
+          <MenuTrigger label={`More actions for ${track.name}`} size={22} />
         </SongMenu>
       </View>
       <Scrubber />

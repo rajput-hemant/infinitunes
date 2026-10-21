@@ -8,6 +8,7 @@ import { Pressable, View } from "react-native";
 import { sizes } from "~/theme/tokens";
 
 import { MediaCard } from "./media-card";
+import { TEXT_BUTTON_HIT_SLOP } from "./ui/hit-slop";
 import { Text } from "./ui/text";
 
 const CARD_GAP = 12;
@@ -37,7 +38,11 @@ export function Shelf({ title, items, seeAllHref, onItemPress }: ShelfProps) {
         </Text>
         {seeAllHref ? (
           <Link href={seeAllHref} asChild>
-            <Pressable accessibilityRole="link" hitSlop={10}>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`See all ${title}`}
+              hitSlop={TEXT_BUTTON_HIT_SLOP}
+            >
               <Text variant="subhead" tone="muted">
                 See All
               </Text>

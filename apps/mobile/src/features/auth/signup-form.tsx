@@ -1,15 +1,14 @@
 import { PASSWORD_HINT, signUpSchema } from "@infinitunes/auth/schemas";
-import { Link } from "expo-router";
 import { useRef } from "react";
 import { View } from "react-native";
 import { toast } from "sonner-native";
 
 import { EmailField } from "~/components/form/email-field";
 import type { TextInputHandle } from "~/components/form/form-field";
+import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
 import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
-import { Text } from "~/components/ui/text";
 import { authClient } from "~/lib/auth-client";
 import { authFailure } from "~/lib/auth-failure";
 import { usePending } from "~/lib/use-pending";
@@ -84,9 +83,9 @@ export function SignUpForm() {
         className="disabled:opacity-50"
       />
       <View className="items-center">
-        <Link href="/login" replace>
-          <Text>Already have an account? Sign in</Text>
-        </Link>
+        <FormLink href="/login" replace>
+          Already have an account? Sign in
+        </FormLink>
       </View>
     </View>
   );
