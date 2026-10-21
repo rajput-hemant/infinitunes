@@ -1,7 +1,7 @@
 /**
  * The app's clients against a local production build (`next start`) with
- * the proxy limiter on, e.g. ENABLE_RATE_LIMITING=true, TRUSTED_PROXY=false,
- * RATE_LIMITING_REQUESTS_PER_SECOND=8 and Upstash credentials:
+ * the proxy limiter on (ENABLE_RATE_LIMITING=true, Upstash credentials,
+ * TRUSTED_PROXY=false; the default 50 requests a second is fine):
  *   MOBILE_E2E_API_URL=http://localhost:3000 MOBILE_E2E_PRODUCTION=1 bun run test:e2e
  * Run it on a fresh server: it spends the sign-in and request budgets (the
  * other suites skip themselves in this mode).
@@ -28,6 +28,24 @@ const password = "E2e-Passw0rd!";
 /** Outside the limiter's one-second window. */
 const nextWindow = () => Bun.sleep(1100);
 
+/** 120 native POSTs at once: well past the default 50 a second. */
+async function burst() {
+  const cookie = await authClient.getCookie();
+  return Promise.all(
+    Array.from({ length: 120 }, () =>
+      fetch(`${BASE}/api/trpc/history.record`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          cookie,
+          [NATIVE_ORIGIN_HEADER]: NATIVE_APP_ORIGIN,
+        },
+        body: JSON.stringify({ json: { id: "e2eLimit", type: "song" } }),
+      }).then((response) => response.status),
+    ),
+  );
+}
+
 describe.skipIf(
   !process.env.MOBILE_E2E_API_URL || !process.env.MOBILE_E2E_PRODUCTION,
 )("mobile clients on a production build", () => {
@@ -47,31 +65,25 @@ describe.skipIf(
 
   test("native requests are charged to the limiter", async () => {
     await nextWindow();
-    const cookie = await authClient.getCookie();
-    const statuses = await Promise.all(
-      Array.from({ length: 30 }, () =>
-        fetch(`${BASE}/api/trpc/history.record`, {
-          method: "POST",
-          headers: {
-            "content-type": "application/json",
-            cookie,
-            [NATIVE_ORIGIN_HEADER]: NATIVE_APP_ORIGIN,
-          },
-          body: JSON.stringify({ json: { id: "e2eLimit", type: "song" } }),
-        }).then((response) => response.status),
-      ),
-    );
+    const statuses = await burst();
     expect(statuses).toContain(200);
     expect(statuses).toContain(429);
     expect(statuses.every((s) => s === 200 || s === 429)).toBe(true);
   });
 
   test("a limited call reaches the app as TOO_MANY_REQUESTS with its own copy", async () => {
-    // Still inside the exhausted window.
-    const error = await trpcClient.search.top.query().then(
-      () => undefined,
-      (failure: unknown) => failure,
-    );
+    let error: unknown;
+    // The app's call races a burst; a few tries make it one of the limited.
+    for (let i = 0; i < 5 && !error; i++) {
+      const [, failure] = await Promise.all([
+        burst(),
+        trpcClient.search.top.query().then(
+          () => undefined,
+          (reason: unknown) => reason,
+        ),
+      ]);
+      error = failure;
+    }
     expect(getErrorCode(error)).toBe("TOO_MANY_REQUESTS");
     expect(userMessage(error)).toBe(RATE_LIMITED_MESSAGE);
   });
