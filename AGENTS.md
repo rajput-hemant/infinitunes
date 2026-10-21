@@ -189,7 +189,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   screen, whose header scrolls in the one list), so they open in the current tab and a web link with the
   app's scheme lands on them; `+native-intent` maps legacy `<name>-songs` artist links. Lists are `/album`,
   `/artist`, `/playlist`, `/show`, `/chart`, `/radio`, `/browse` in `(home)`. Link with `entityHref(type,
-  perma_url)`, never a hand-built path; open from handlers with `useOpenEntity()` (it closes the player/queue
+  perma_url)`, never a hand-built path (`entityRoute` reads only the type's own section, `SECTIONS`, at exact
+  arity: anything else is `undefined`, an unpressable item); open from handlers with `useOpenEntity()` (it closes the player/queue
   modals first). Tabs are route groups with their own `Stack` (`tabStackOptions`); a new tab needs a
   `NativeTabs.Trigger` with an `sf` and an `md` icon. Sheets are native `formSheet` routes (`/queue`,
   `/languages`) or `@expo/ui`'s `BottomSheet`. Scroll containers are `ScreenScrollView` (or a list with
@@ -231,7 +232,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours,
   `theme/tokens.ts`), colour JS props from `useTheme().colors`, text via `Text` `variant`/`tone`.
 - Accessibility: every tappable control is at least `sizes.touch` (48; `IconButton`, `Button`, `MenuTrigger` for a
-  `NativeMenu`'s face, `DragHandle`) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`, `TEXT_BUTTON_HIT_SLOP`); rows and
+  `NativeMenu`'s face, `DragHandle`, `FormLink` for a form's text link) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`, `TEXT_BUTTON_HIT_SLOP`); rows and
   fields use `min-h-*` so Dynamic Type grows them (cap text with `maxFontSizeMultiplier` only in fixed-height chrome, the
   mini player). An item without a screen is a labelled `View`, never a disabled `Pressable`. Custom pressables set role,
   label and state; a drag has `ReorderActions`, the scrubber `increment`/`decrement`. `announce()` (`lib/announce.ios.ts`)
@@ -240,8 +241,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `useReducedMotion`. `iosSystemColors` leaves out `muted-foreground` and `destructive` (3.1-3.6:1 on light iOS
   surfaces); `tokens.test.ts` pins AA for every text pair.
 - Data: `useQuery(trpc.<router>.<proc>.queryOptions(input))` from `~/lib/trpc`; imperative calls use
-  `trpcClient`. The query client skips retries for NOT_FOUND, BAD_REQUEST, FORBIDDEN and UNAUTHORIZED
-  (`shouldRetry`), so hooks set no `retry`. Home, Top Charts and Top Albums' "All" pass `useCatalogLang()`
+  `trpcClient`. The query client skips retries for NOT_FOUND, BAD_REQUEST, FORBIDDEN, UNAUTHORIZED and
+  TOO_MANY_REQUESTS (`shouldRetry`), so hooks set no `retry`; `getErrorCode` names the proxy's own code-less
+  403/429 answers FORBIDDEN/TOO_MANY_REQUESTS. Library lists (`useResolvedItems`) count ids upstream no
+  longer has as `missing`; only a real failure is an error, all-missing shows the "no longer available" state. Home, Top Charts and Top Albums' "All" pass `useCatalogLang()`
   (the Languages preference) as `lang`. Only `import type` from `@infinitunes/trpc/types`; never
   `@infinitunes/ui` or the `@infinitunes/auth` barrel (`./session-cookie`, `./native-app`, `./schemas` are safe).
 - Native fetch sends no `Origin`, so `trpcClient` sends `expo-origin: infinitunes://` (`NATIVE_ORIGIN_HEADER`)
