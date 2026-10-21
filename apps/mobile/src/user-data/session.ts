@@ -12,6 +12,12 @@ export function useUserId(): string | undefined {
 }
 
 /**
+ * The prefix of the library's own per-user lists (history, resolved likes and
+ * playlist songs), which are not `user.*` procedures; sign-out drops them too.
+ */
+export const LIBRARY_QUERY_KEY = ["library"] as const;
+
+/**
  * The cache key of a per-user query: the procedure's key plus the user id,
  * so one account's library is never served from the cache to the next, and
  * invalidating the procedure's own key still reaches every user's entry.

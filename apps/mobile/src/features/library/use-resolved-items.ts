@@ -2,7 +2,11 @@ import { userMessage } from "@infinitunes/core/user-message";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner-native";
 
-import { userQueryKey, useUserId } from "~/user-data/session";
+import {
+  LIBRARY_QUERY_KEY,
+  userQueryKey,
+  useUserId,
+} from "~/user-data/session";
 
 import type { LibraryList } from "./library-list";
 
@@ -40,7 +44,7 @@ export function useResolvedItems<Item>({
   const { ids } = source;
 
   const query = useQuery({
-    queryKey: [...userQueryKey(["library", scope], userId), ids],
+    queryKey: [...userQueryKey([...LIBRARY_QUERY_KEY, scope], userId), ids],
     queryFn: async () => {
       const wanted = [...(ids ?? [])];
       if (wanted.length === 0) return { items: [], missing: 0 };

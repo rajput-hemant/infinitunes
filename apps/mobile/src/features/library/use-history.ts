@@ -5,7 +5,11 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useRef } from "react";
 
 import { trpcClient } from "~/lib/trpc";
-import { userQueryKey, useUserId } from "~/user-data/session";
+import {
+  LIBRARY_QUERY_KEY,
+  userQueryKey,
+  useUserId,
+} from "~/user-data/session";
 
 import { useResolvedItems, type IdSource } from "./use-resolved-items";
 
@@ -16,7 +20,7 @@ import { useResolvedItems, type IdSource } from "./use-resolved-items";
 function useHistoryIds(): IdSource {
   const userId = useUserId();
   const query = useQuery({
-    queryKey: userQueryKey(["library", "history-ids"], userId),
+    queryKey: userQueryKey([...LIBRARY_QUERY_KEY, "history-ids"], userId),
     queryFn: () => trpcClient.history.list.query(),
     enabled: userId !== undefined,
     staleTime: 0,
