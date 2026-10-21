@@ -1,6 +1,8 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 
+import { lastPlayer } from "~/test/expo-audio";
+
 import { audioPlayer, markSourceEnded } from "./audio-engine";
 import { playbackPosition } from "./playback-status";
 import { playerStore } from "./player-store";
@@ -84,8 +86,8 @@ describe("resumePlayback", () => {
 
   it("starts a track that played to its end over, once", () => {
     markSourceEnded(true);
-    audioPlayer.finishLoading(180);
-    audioPlayer.finishTrack(179);
+    lastPlayer().finishLoading(180);
+    lastPlayer().finishTrack(179);
     jest.clearAllMocks();
 
     resumePlayback();
@@ -104,7 +106,7 @@ describe("resumePlayback", () => {
   });
 
   it("treats a position at the reported duration as ended", () => {
-    audioPlayer.finishLoading(100);
+    lastPlayer().finishLoading(100);
     void audioPlayer.seekTo(100);
     jest.clearAllMocks();
 

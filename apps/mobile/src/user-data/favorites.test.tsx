@@ -1,3 +1,4 @@
+import type { FavoriteType } from "@infinitunes/core/favorites";
 import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { impactAsync } from "expo-haptics";
@@ -17,7 +18,9 @@ jest.mock("expo-haptics", () => ({
   ImpactFeedbackStyle: { Light: "light" },
 }));
 
-function Heart({ type = "song" as const, token = "BSaNI3Yr" }) {
+type HeartProps = { type?: FavoriteType; token?: string };
+
+function Heart({ type = "song", token = "BSaNI3Yr" }: HeartProps) {
   useOptimisticOwner();
   const { liked, toggle } = useFavoriteToggle({ type, token });
   return (
@@ -44,9 +47,7 @@ const heart = () => screen.getByTestId("heart").props.children as string;
 const add = () => procedure("user.addToFavorites");
 const remove = () => procedure("user.removeFromFavorites");
 
-async function renderHeart(
-  props: { type?: "song" | "album"; token?: string } = {},
-) {
+async function renderHeart(props: HeartProps = {}) {
   const router = await renderStack({
     index: () => <Heart {...props} />,
     login: () => <Text>Login screen</Text>,
@@ -155,7 +156,11 @@ describe("useFavoriteToggle", () => {
     );
 
     const [, options] = jest.mocked(toast.warning).mock.calls[0] ?? [];
-    await act(async () => options?.action?.onClick?.());
+    const action = options?.action;
+    if (typeof action !== "object" || !action || !("onClick" in action)) {
+      throw new Error("The toast has no action");
+    }
+    await act(async () => action.onClick());
     expect(router.getPathname()).toBe("/login");
   });
 

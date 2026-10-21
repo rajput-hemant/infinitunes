@@ -4,6 +4,7 @@ import { shareItem } from "./share";
 
 const share = jest.spyOn(Share, "share").mockResolvedValue({
   action: Share.dismissedAction,
+  activityType: undefined,
 });
 
 beforeEach(() => share.mockClear());

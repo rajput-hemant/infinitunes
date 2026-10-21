@@ -39,7 +39,13 @@ type FormCase = {
   field: string;
 };
 
-function holdAuth(call: jest.Mock<Promise<AuthResult>, never[]>) {
+/** The slice of a `jest.fn` this needs, whatever arguments the Better Auth call takes. */
+type AuthCall = {
+  mockReturnValueOnce: (value: Promise<AuthResult>) => unknown;
+  mock: { calls: readonly unknown[] };
+};
+
+function holdAuth(call: AuthCall) {
   const request = Promise.withResolvers<AuthResult>();
   call.mockReturnValueOnce(request.promise);
   return { request, calls: () => call.mock.calls.length };

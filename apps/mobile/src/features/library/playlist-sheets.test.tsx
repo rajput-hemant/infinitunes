@@ -1,6 +1,7 @@
 import { PLAYLIST_DESCRIPTION_MAX } from "@infinitunes/types";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { router as appRouter } from "expo-router";
+import type { Href } from "expo-router";
 
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
@@ -11,7 +12,7 @@ import { EditPlaylistScreen } from "./edit-playlist-screen";
 import { NewPlaylistScreen } from "./new-playlist-screen";
 
 /** Opens the screen on top of `/`, as the app does, so closing it has somewhere to go. */
-async function open(routes: Parameters<typeof renderStack>[0], path: string) {
+async function open(routes: Parameters<typeof renderStack>[0], path: Href) {
   const router = await renderStack({
     index: () => null,
     login: () => null,
@@ -24,7 +25,7 @@ async function open(routes: Parameters<typeof renderStack>[0], path: string) {
 const renderEdit = (id: string) =>
   open(
     { "me/edit-playlist/[id]": EditPlaylistScreen },
-    `/me/edit-playlist/${id}`,
+    { pathname: "/me/edit-playlist/[id]", params: { id } },
   );
 
 const renderNew = () =>
