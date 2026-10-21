@@ -40,7 +40,6 @@ const KIND_LABELS: Partial<Record<DetailsKind, string>> = {
 };
 
 function getPlayToken(item: DetailsItem): string {
-  if (isShowDetails(item)) return getId(item);
   if (isKind(item, "artist")) return parseToken(item.urls.songs);
   return parseToken("perma_url" in item ? item.perma_url : "");
 }

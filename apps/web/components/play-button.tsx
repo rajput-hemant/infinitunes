@@ -98,12 +98,10 @@ export function PlayButton(props: PlayButtonProps) {
             break;
           }
           case "show": {
-            queue = await trpc.show.episodes.query({
-              id: token,
-              season,
-              page: 1,
-              sort,
-            });
+            // By perma token, like every other type: `show.episodes` wants
+            // the numeric show id and answers a token with no episodes.
+            const show = await trpc.show.details.query({ token, season, sort });
+            queue = show.episodes;
             break;
           }
           case "episode": {

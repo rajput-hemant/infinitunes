@@ -3,7 +3,9 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-const fetched: { id: string; season?: number }[] = [];
+type ShowQuery = { token?: string; season?: number; sort?: string };
+
+const fetched: ShowQuery[] = [];
 
 mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
@@ -12,10 +14,10 @@ mock.module("sonner", () => ({ toast: { success() {}, error() {} } }));
 mock.module("~/lib/trpc/vanilla", () => ({
   trpc: {
     show: {
-      episodes: {
-        query: async (input: { id: string; season?: number }) => {
+      details: {
+        query: async (input: ShowQuery) => {
           fetched.push(input);
-          return [];
+          return { episodes: [] };
         },
       },
     },
@@ -38,7 +40,7 @@ async function click(season?: number) {
   roots.push(root);
   await act(async () => {
     root.render(
-      <PlayButton type="show" token="show1" season={season}>
+      <PlayButton type="show" token="PjReFP-Sguk_" season={season}>
         Go
       </PlayButton>,
     );
@@ -46,7 +48,12 @@ async function click(season?: number) {
   await act(async () => container.querySelector("button")?.click());
 }
 
-describe("PlayButton season", () => {
+describe("PlayButton show", () => {
+  it("fetches the show by its perma token, as a card passes it", async () => {
+    await click();
+    expect(fetched[0]?.token).toBe("PjReFP-Sguk_");
+  });
+
   it("queues the season it is given, not one parsed from the URL", async () => {
     await click(3);
     expect(fetched[0]?.season).toBe(3);
