@@ -6,7 +6,11 @@ import { ActivityIndicator, View } from "react-native";
 import { MediaCard } from "~/components/media-card";
 import { SongRow } from "~/components/song-row";
 import { Text } from "~/components/ui/text";
-import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
+import {
+  GRID_COLUMNS,
+  GRID_GAP,
+  useGridCardWidth,
+} from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playFrom } from "~/playback/play-collection";
 import { sizes } from "~/theme/tokens";
@@ -96,7 +100,7 @@ export function TypeResults({
     <FlashList
       {...common}
       data={cards}
-      numColumns={2}
+      numColumns={GRID_COLUMNS}
       keyExtractor={(card) => card.id}
       renderItem={({ item, index }) => (
         <View

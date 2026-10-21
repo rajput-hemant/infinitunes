@@ -1,8 +1,7 @@
 import type { SearchItem } from "@infinitunes/types";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
-import { TEXT_BUTTON_HIT_SLOP } from "~/components/ui/hit-slop";
-import { Text } from "~/components/ui/text";
+import { SectionHeader } from "~/components/section-header";
 
 import { ResultRow } from "./result-row";
 
@@ -14,7 +13,7 @@ type ResultSectionProps = {
   onSeeAll?: () => void;
 };
 
-/** A titled group of result rows, like a `Shelf` heading without a route to link to. Empty groups render nothing. */
+/** A titled group of result rows; "See All" switches to the type's list. Empty groups render nothing. */
 export function ResultSection({
   title,
   items,
@@ -24,24 +23,19 @@ export function ResultSection({
   if (items.length === 0) return null;
 
   return (
-    <View className="py-3">
-      <View className="flex-row items-center justify-between px-page pb-1">
-        <Text variant="title" accessibilityRole="header">
-          {title}
-        </Text>
-        {onSeeAll ? (
-          <Pressable
-            onPress={onSeeAll}
-            accessibilityRole="button"
-            accessibilityLabel={`See all ${title}`}
-            hitSlop={TEXT_BUTTON_HIT_SLOP}
-          >
-            <Text variant="subhead" tone="muted">
-              See All
-            </Text>
-          </Pressable>
-        ) : null}
-      </View>
+    <View>
+      <SectionHeader
+        title={title}
+        action={
+          onSeeAll
+            ? {
+                label: "See All",
+                onPress: onSeeAll,
+                accessibilityLabel: `See all ${title}`,
+              }
+            : undefined
+        }
+      />
       {items.map((item) => (
         <ResultRow key={item.id} item={item} onPress={onPressItem} />
       ))}
