@@ -1,4 +1,4 @@
-import { resetPasswordSchema } from "@infinitunes/auth/schemas";
+import { PASSWORD_HINT, resetPasswordSchema } from "@infinitunes/auth/schemas";
 import { Link, router } from "expo-router";
 import { useRef, useState } from "react";
 import { View } from "react-native";
@@ -10,7 +10,7 @@ import { authClient } from "~/lib/auth-client";
 
 import { authFailure } from "./auth-failure";
 import type { TextInputHandle } from "./form/form-field";
-import { PASSWORD_HINT, PasswordField } from "./form/password-field";
+import { PasswordField } from "./form/password-field";
 import { usePending } from "./form/use-pending";
 import { useSchemaForm } from "./form/use-schema-form";
 

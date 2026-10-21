@@ -4,7 +4,7 @@ import Storage from "expo-sqlite/kv-store";
 function startApp() {
   const started: {
     setColorScheme: jest.SpyInstance;
-    store: typeof import("./appearance-store");
+    store: typeof import("./appearance");
   }[] = [];
   jest.isolateModules(() => {
     const {
@@ -13,7 +13,7 @@ function startApp() {
     const setColorScheme = jest
       .spyOn(Appearance, "setColorScheme")
       .mockImplementation(() => {});
-    started.push({ setColorScheme, store: require("./appearance-store") });
+    started.push({ setColorScheme, store: require("./appearance") });
   });
   const [app] = started;
   if (!app) throw new Error("the store module did not load");

@@ -19,6 +19,30 @@ export const passwordSchema = z
   )
   .min(8, "Password must be at least 8 characters long.");
 
+/** `passwordSchema` in one sentence, for the field's hint. */
+export const PASSWORD_HINT =
+  "At least 8 characters with upper and lower case, a number and a symbol.";
+
+/** The account's display name. */
+export const nameSchema = z
+  .string()
+  .trim()
+  .min(1, { error: "Name is Required" })
+  .max(USER_NAME_MAX, {
+    error: `Name must be at most ${USER_NAME_MAX} characters long`,
+  });
+
+/**
+ * The profile form: name and email; `currentPassword` confirms an email
+ * change, and an empty `password` leaves it unchanged.
+ */
+export const profileSchema = z.object({
+  name: nameSchema,
+  email: emailSchema,
+  currentPassword: z.string().optional(),
+  password: passwordSchema.or(z.literal("")).optional(),
+});
+
 /** Sign-in only checks presence: accounts made under older, weaker rules must still get in. */
 export const loginSchema = z.object({
   email: emailSchema,

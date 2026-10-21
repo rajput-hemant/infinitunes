@@ -9,10 +9,6 @@ import type { FormFieldProps, TextInputHandle } from "./form-field";
 const PASSWORD_RULES =
   "minlength: 8; required: lower; required: upper; required: digit; required: [-().&@?'#,/\"+_~!$%^*=<>:;[]{}|\\];";
 
-/** Mirrors `passwordSchema` in `@infinitunes/auth/schemas`. */
-export const PASSWORD_HINT =
-  "At least 8 characters with upper and lower case, a number and a symbol.";
-
 type PasswordFieldProps = Omit<
   FormFieldProps,
   | "secureTextEntry"

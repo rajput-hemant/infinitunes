@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@infinitunes/auth/client";
-import { resetPasswordSchema } from "@infinitunes/auth/schemas";
+import { PASSWORD_HINT, resetPasswordSchema } from "@infinitunes/auth/schemas";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { Key, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -16,7 +16,6 @@ import { cn } from "~/lib/utils";
 
 import { authPrimaryButtonStyles } from "./field-styles";
 import { PasswordField } from "./password-field";
-import { PASSWORD_HINT } from "./password-hint";
 
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 

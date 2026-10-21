@@ -1,9 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { emailSchema, passwordSchema } from "@infinitunes/auth/schemas";
+import { profileSchema } from "@infinitunes/auth/schemas";
 import { userMessage } from "@infinitunes/core/user-message";
-import { nameSchema } from "@infinitunes/core/validations";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Field,
@@ -22,7 +21,7 @@ import Image from "next/image";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
+import type { z } from "zod";
 
 import { useIsTyping } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
@@ -49,13 +48,6 @@ const primaryButtonClass = cn(
   controlStyles.text,
   "rounded-sm px-3 font-semibold",
 );
-
-const profileSchema = z.object({
-  name: nameSchema,
-  email: emailSchema,
-  currentPassword: z.string().optional(),
-  password: passwordSchema.or(z.literal("")).optional(),
-});
 
 type FormData = z.infer<typeof profileSchema>;
 

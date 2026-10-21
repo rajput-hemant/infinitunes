@@ -8,8 +8,8 @@ import { preferencesStore } from "~/lib/preferences";
 import { queryClient } from "~/lib/query-client";
 import { renderScreen } from "~/test/render";
 import { signInAs, authClient } from "~/test/session-mock";
+import { appearanceStore } from "~/theme/appearance";
 
-import { appearanceStore } from "./appearance-store";
 import { SettingsScreen } from "./settings-screen";
 
 jest.mock("@expo/ui", () => require("~/test/expo-ui"));

@@ -1,12 +1,10 @@
-import { emailSchema } from "@infinitunes/auth/schemas";
-import { nameSchema } from "@infinitunes/core/validations";
+import { profileSchema } from "@infinitunes/auth/schemas";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner-native";
 
 import { Button } from "~/components/ui/button";
 import { EmailField } from "~/features/auth/form/email-field";
-import { fieldSchemas } from "~/features/auth/form/field-schemas";
 import { FormField } from "~/features/auth/form/form-field";
 import type { TextInputHandle } from "~/features/auth/form/form-field";
 import { FormScreen } from "~/features/auth/form/form-screen";
@@ -17,11 +15,6 @@ import { trpcClient } from "~/lib/trpc";
 
 import { refreshSession } from "./end-session";
 import { mutationFailure } from "./mutation-failure";
-
-const profileSchema = fieldSchemas({
-  name: nameSchema,
-  email: emailSchema,
-});
 
 type ProfileFormProps = {
   user: { name?: string | null; email: string };

@@ -1,4 +1,4 @@
-import { signUpSchema } from "@infinitunes/auth/schemas";
+import { PASSWORD_HINT, signUpSchema } from "@infinitunes/auth/schemas";
 import { Link } from "expo-router";
 import { useRef } from "react";
 import { View } from "react-native";
@@ -11,7 +11,7 @@ import { authClient } from "~/lib/auth-client";
 import { authFailure } from "./auth-failure";
 import { EmailField } from "./form/email-field";
 import type { TextInputHandle } from "./form/form-field";
-import { PASSWORD_HINT, PasswordField } from "./form/password-field";
+import { PasswordField } from "./form/password-field";
 import { usePending } from "./form/use-pending";
 import { useSchemaForm } from "./form/use-schema-form";
 

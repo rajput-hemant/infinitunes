@@ -9,12 +9,12 @@ import { authClient } from "~/lib/auth-client";
 import { env } from "~/lib/env";
 import { usePreferences } from "~/lib/preferences";
 import { playerDockInset } from "~/navigation/player-dock";
-
 import {
   APPEARANCE_MODES,
   appearanceStore,
   useAppearanceMode,
-} from "./appearance-store";
+} from "~/theme/appearance";
+
 import { signOut } from "./end-session";
 import { PickerRow, ValueRow } from "./selection-rows";
 import { ActionRow, NavigationRow } from "./tap-rows";

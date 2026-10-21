@@ -1,4 +1,4 @@
-import { changePasswordSchema } from "@infinitunes/auth/schemas";
+import { PASSWORD_HINT, changePasswordSchema } from "@infinitunes/auth/schemas";
 import { router } from "expo-router";
 import { useRef } from "react";
 import { toast } from "sonner-native";
@@ -6,10 +6,7 @@ import { toast } from "sonner-native";
 import { Button } from "~/components/ui/button";
 import type { TextInputHandle } from "~/features/auth/form/form-field";
 import { FormScreen } from "~/features/auth/form/form-screen";
-import {
-  PASSWORD_HINT,
-  PasswordField,
-} from "~/features/auth/form/password-field";
+import { PasswordField } from "~/features/auth/form/password-field";
 import { usePending } from "~/features/auth/form/use-pending";
 import { useSchemaForm } from "~/features/auth/form/use-schema-form";
 import { trpcClient } from "~/lib/trpc";

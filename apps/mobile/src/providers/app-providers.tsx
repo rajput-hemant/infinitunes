@@ -7,6 +7,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
 
 import { queryClient } from "~/lib/query-client";
+// Applies the saved colour scheme as the store hydrates, before the first frame.
+import "~/theme/appearance";
 import { useNavigationTheme } from "~/theme/navigation-theme";
 import { useOptimisticOwner } from "~/user-data/session";
 
