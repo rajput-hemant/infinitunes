@@ -33,7 +33,7 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
       title="Queue"
       entries={[
         addToPlaylistEntry({
-          songIds: songs.map((song) => song.id),
+          songs,
           signedIn,
           playlists,
           onAdd: (playlist) => addSongsToPlaylist(playlist, songs),

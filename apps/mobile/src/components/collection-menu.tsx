@@ -60,7 +60,7 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
   if (songs.length > 0) {
     entries.push(
       addToPlaylistEntry({
-        songIds: songs.map((song) => song.id),
+        songs,
         signedIn,
         playlists,
         onAdd: (playlist) => addSongsToPlaylist(playlist, songs),

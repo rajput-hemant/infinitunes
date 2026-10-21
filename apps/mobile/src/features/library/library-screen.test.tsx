@@ -1,6 +1,7 @@
 import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
 import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { router } from "expo-router";
 import { Alert } from "react-native";
 import type { AlertButton } from "react-native";
 import { toast } from "sonner-native";
@@ -171,6 +172,36 @@ describe("creating a playlist", () => {
     expect(screen.queryByText("Weekend")).toBeNull();
     expect(toast.error).toHaveBeenCalledWith(
       "You can only have 10 playlists, please delete one",
+    );
+  });
+
+  it("adds a menu's songs to the playlist it creates", async () => {
+    procedure("user.createNewPlaylist").mockResolvedValue(
+      userPlaylist({ id: "pl-9", name: "Weekend" }),
+    );
+    await renderLibraryTab();
+    await screen.findByText("Road Trip");
+    await act(async () =>
+      router.push({
+        pathname: "/me/new-playlist",
+        params: { songs: "x1,x2", label: "2 songs" },
+      }),
+    );
+
+    await fireEvent.changeText(
+      await screen.findByPlaceholderText("Enter playlist name"),
+      "Weekend",
+    );
+    await fireEvent.press(screen.getByRole("button", { name: "Create" }));
+
+    await waitFor(() =>
+      expect(procedure("user.addSongsToPlaylist")).toHaveBeenCalledWith({
+        playlistId: "pl-9",
+        songs: ["x1", "x2"],
+      }),
+    );
+    expect(procedure("user.createNewPlaylist")).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "Weekend" }),
     );
   });
 

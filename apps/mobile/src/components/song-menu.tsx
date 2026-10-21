@@ -99,7 +99,7 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
   if (isSong) {
     entries.push(
       addToPlaylistEntry({
-        songIds: [song.id],
+        songs: [song],
         signedIn,
         playlists,
         onAdd: (playlist) => addSongsToPlaylist(playlist, [song]),

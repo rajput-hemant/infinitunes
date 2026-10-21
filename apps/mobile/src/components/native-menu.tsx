@@ -1,10 +1,12 @@
 import { MenuView } from "@expo/ui/community/menu";
 import type { MenuAction } from "@expo/ui/community/menu";
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
+import { router } from "expo-router";
 import type { ReactNode } from "react";
 
 import type { RadioSeed } from "~/playback/radio";
 import { startSeededRadio } from "~/playback/radio";
+import { songsLabel } from "~/user-data/playlists";
 import { promptSignIn } from "~/user-data/session";
 
 /** A menu action and what it does; entries with sub-actions only open a submenu. */
@@ -65,20 +67,24 @@ export function NativeMenu({
 
 type PlaylistEntryOptions = {
   /** The songs the entry adds; a playlist holding all of them shows checked. */
-  songIds: readonly string[];
+  songs: readonly { id: string; name: string }[];
   signedIn: boolean;
   /** The listener's playlists; `undefined` while loading. */
   playlists: PlaylistView[] | undefined;
   onAdd: (playlist: PlaylistView) => void;
 };
 
-/** "Add to Playlist": a submenu of the listener's playlists, or a sign-in prompt. */
+/**
+ * "Add to Playlist": a submenu of the listener's playlists and "New
+ * Playlist" (a sheet that creates one with these songs), or a sign-in prompt.
+ */
 export function addToPlaylistEntry({
-  songIds,
+  songs,
   signedIn,
   playlists,
   onAdd,
 }: PlaylistEntryOptions): MenuEntry {
+  const songIds = songs.map((song) => song.id);
   const base = {
     id: "add-to-playlist",
     title: "Add to Playlist",
@@ -90,6 +96,16 @@ export function addToPlaylistEntry({
       run: () => promptSignIn("You need an account to make playlists."),
     };
   }
+  const create: MenuEntry = {
+    id: "new-playlist",
+    title: "New Playlist",
+    image: "plus",
+    run: () =>
+      router.push({
+        pathname: "/create-playlist",
+        params: { songs: songIds.join(","), label: songsLabel(songs) },
+      }),
+  };
   if (!playlists?.length) {
     return {
       ...base,
@@ -99,18 +115,24 @@ export function addToPlaylistEntry({
           title: playlists ? "No playlists yet" : "Loading playlists",
           attributes: { disabled: true },
         },
+        create,
       ],
     };
   }
   return {
     ...base,
-    subactions: playlists.map((playlist) => ({
-      id: `playlist:${playlist.id}`,
-      title: playlist.name,
-      state: songIds.every((id) => playlist.songs.includes(id)) ? "on" : "off",
-      attributes: { disabled: playlist.pending === true },
-      run: () => onAdd(playlist),
-    })),
+    subactions: [
+      ...playlists.map((playlist): MenuEntry => ({
+        id: `playlist:${playlist.id}`,
+        title: playlist.name,
+        state: songIds.every((id) => playlist.songs.includes(id))
+          ? "on"
+          : "off",
+        attributes: { disabled: playlist.pending === true },
+        run: () => onAdd(playlist),
+      })),
+      create,
+    ],
   };
 }
 

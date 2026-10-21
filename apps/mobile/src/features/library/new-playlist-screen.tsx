@@ -1,11 +1,26 @@
-import { router, Stack } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 
-import { createPlaylist } from "~/user-data/playlists";
+import { createPlaylist, createPlaylistWithSongs } from "~/user-data/playlists";
 
 import { PlaylistForm } from "./playlist-form";
 import { SignedInGate } from "./signed-in-gate";
 
+/** Comma-joined song ids from a menu's "New Playlist"; none from the library. */
+function songIdsOf(param: string | undefined): string[] {
+  return param ? param.split(",").filter(Boolean) : [];
+}
+
+/**
+ * Names a new playlist. Opened from a song menu's "Add to Playlist", it
+ * also adds those songs (the `songs` and `label` params) once created.
+ */
 export function NewPlaylistScreen() {
+  const { songs, label } = useLocalSearchParams<{
+    songs?: string;
+    label?: string;
+  }>();
+  const songIds = songIdsOf(songs);
+
   return (
     <>
       <Stack.Screen options={{ title: "New Playlist" }} />
@@ -14,7 +29,15 @@ export function NewPlaylistScreen() {
           submitLabel="Create"
           onSubmit={(details) => {
             // The pending row shows in the library while the server mints its id.
-            createPlaylist(details);
+            if (songIds.length > 0) {
+              createPlaylistWithSongs(
+                details,
+                songIds,
+                label ?? `${songIds.length} songs`,
+              );
+            } else {
+              createPlaylist(details);
+            }
             router.back();
           }}
         />

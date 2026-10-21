@@ -1,9 +1,11 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { screen } from "@testing-library/react-native";
+import { router } from "expo-router";
 
 import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderWithProviders } from "~/test/render";
+import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
 
 import { CollectionMenu } from "./collection-menu";
@@ -49,6 +51,19 @@ describe("CollectionMenu", () => {
       language: "arabic",
     });
     expect(queuedIds()).toEqual(["radio-1"]);
+  });
+
+  it("offers a new playlist made of every song", async () => {
+    signInAs("u1");
+    const push = jest.spyOn(router, "push").mockImplementation(() => {});
+    await renderWithProviders(<CollectionMenu name="Udta Teer" rows={rows} />);
+
+    await chooseMenuAction("More actions for Udta Teer", "new-playlist");
+
+    expect(push).toHaveBeenCalledWith({
+      pathname: "/create-playlist",
+      params: { songs: "one,two,three", label: "3 songs" },
+    });
   });
 
   it("renders nothing for an empty collection", async () => {
