@@ -54,7 +54,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
         return;
       }
       refreshSession();
-      toast.success("Profile Updated!");
+      toast.success("Profile updated");
       router.back();
     });
   }

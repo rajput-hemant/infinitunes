@@ -40,7 +40,7 @@ describe("ProfileForm", () => {
     expect(procedure("user.updateUser")).toHaveBeenCalledWith({
       name: "DJ Listener",
     });
-    expect(toast.success).toHaveBeenCalledWith("Profile Updated!");
+    expect(toast.success).toHaveBeenCalledWith("Profile updated");
     expect(authClient.$store.notify).toHaveBeenCalledWith("$sessionSignal");
   });
 

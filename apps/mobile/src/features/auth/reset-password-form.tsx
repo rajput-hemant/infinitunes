@@ -60,7 +60,7 @@ export function ResetPasswordForm({
       if (failure?.code === "INVALID_TOKEN") setTokenRejected(true);
       else if (failure) toast.error(failure.message);
       else {
-        toast.success("Password reset. Please sign in with your new password.");
+        toast.success("Password reset. Sign in with your new password.");
         router.replace("/login");
       }
     });

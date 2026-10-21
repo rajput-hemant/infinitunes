@@ -39,7 +39,7 @@ export function SignUpForm() {
         }),
       );
       if (failure) toast.error(failure.message);
-      else toast.success("Account Created Successfully");
+      else toast.success("Account created");
     });
   }
 

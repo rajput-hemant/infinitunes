@@ -69,7 +69,7 @@ describe("SignUpForm", () => {
       password: "Secret#123",
       name: "listener",
     });
-    expect(toast.success).toHaveBeenCalledWith("Account Created Successfully");
+    expect(toast.success).toHaveBeenCalledWith("Account created");
   });
 
   it("shows the server's message when the email is taken", async () => {

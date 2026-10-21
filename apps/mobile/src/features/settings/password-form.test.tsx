@@ -49,7 +49,7 @@ describe("PasswordForm", () => {
       password: "Old#Secret1",
       newPassword: "New#Secret2",
     });
-    expect(toast.success).toHaveBeenCalledWith("Password Updated!");
+    expect(toast.success).toHaveBeenCalledWith("Password updated");
   });
 
   it("shows the server's message for a wrong current password", async () => {

@@ -59,7 +59,7 @@ describe("DeleteAccountForm", () => {
     });
     expect(authClient.signOut).toHaveBeenCalledTimes(1);
     expect(queryClient.getQueryData(FAVORITES_KEY)).toBeUndefined();
-    expect(toast.success).toHaveBeenCalledWith("Account Deleted!");
+    expect(toast.success).toHaveBeenCalledWith("Account deleted");
   });
 
   it("sends no password for an account that has none", async () => {

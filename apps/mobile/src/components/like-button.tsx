@@ -1,6 +1,7 @@
 import type { FavoriteType } from "@infinitunes/core/favorites";
 import { useTheme } from "expo-router";
 
+import { announce } from "~/lib/announce";
 import { useFavoriteToggle } from "~/user-data/favorites";
 
 import { IconButton } from "./ui/icon-button";
@@ -26,8 +27,12 @@ export function LikeButton({ type, token, name, size }: LikeButtonProps) {
           : { ios: "heart", android: "favorite_border" }
       }
       label={liked ? `Unlike ${name}` : `Like ${name}`}
-      selected={liked}
-      onPress={toggle}
+      onPress={() => {
+        const nowLiked = toggle();
+        if (nowLiked !== undefined) {
+          announce(nowLiked ? `Liked ${name}` : `Removed ${name} from liked`);
+        }
+      }}
       size={size}
       color={liked ? colors.primary : undefined}
     />

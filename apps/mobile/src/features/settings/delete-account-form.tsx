@@ -40,7 +40,7 @@ export function DeleteAccountForm() {
       // and the screen guard then returns to the settings list.
       forgetUserData();
       await signOut();
-      toast.success("Account Deleted!");
+      toast.success("Account deleted");
     });
   }
 

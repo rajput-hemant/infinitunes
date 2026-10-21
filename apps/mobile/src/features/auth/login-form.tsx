@@ -34,7 +34,7 @@ export function LoginForm() {
         authClient.signIn.email(credentials),
       );
       if (failure) toast.error(failure.message);
-      else toast.success("You have been signed in.");
+      else toast.success("Signed in");
     });
   }
 
