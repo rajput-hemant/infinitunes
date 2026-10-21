@@ -103,6 +103,35 @@ describe("PlaybackController", () => {
     expect(toast.error).not.toHaveBeenCalled();
   });
 
+  it("skips an entry whose every bitrate fails, with one toast", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+
+    // Every rung fails with the same message, as a dead CDN path does.
+    const rates = [320, 160, 96, 48, 12];
+    for (let failed = 0; failed < rates.length; failed += 1) {
+      await act(async () => player.failLoading("Source error"));
+    }
+
+    expect(player.loads).toEqual([
+      ...rates.map((rate) => ladder("BSaNI3Yr", rate)),
+      ladder("Xy12AbCd", 320),
+    ]);
+    expect(toast.error).toHaveBeenCalledTimes(1);
+    expect(toast.error).toHaveBeenCalledWith("Couldn't play this song");
+  });
+
+  it("stops and clears the lock screen when the queue is emptied", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows.slice(0, 1)));
+    expect(player.playing).toBe(true);
+
+    await act(async () => playerStore.getState().removeAt(0));
+
+    expect(player.playing).toBe(false);
+    expect(player.lockScreen).toEqual({ active: false });
+  });
+
   it("moves to the next entry when a track ends", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows));
