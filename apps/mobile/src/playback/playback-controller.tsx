@@ -7,7 +7,7 @@ import {
   type PlaybackProblem,
 } from "@infinitunes/core/react/use-track-playback";
 import { useAudioPlayerStatus } from "expo-audio";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner-native";
 
 import { usePreferences } from "~/lib/preferences";
@@ -59,6 +59,7 @@ export function PlaybackController() {
     playerStore.getState();
   const streamQuality = usePreferences((state) => state.streamQuality);
   const status = useAudioPlayerStatus(audioPlayer);
+  const lockScreenActive = useRef(false);
   // The current source's outcome, kept per load. The status hook cannot
   // carry it: the engine reports `error` on one event only (the next status
   // says `null`, often in the same JS task, so React may never render it),
@@ -148,6 +149,7 @@ export function PlaybackController() {
     if (!started || hasTrack) return;
     audioPlayer.pause();
     audioPlayer.clearLockScreenControls();
+    lockScreenActive.current = false;
   }, [started, hasTrack]);
 
   useEffect(() => {
@@ -158,9 +160,19 @@ export function PlaybackController() {
     });
   }, [status.playing, status.isBuffering, status.duration]);
 
+  // Activated once, then only the metadata changes: on Android every
+  // activation rebuilds the MediaSession and takes the foreground-service
+  // notification down for a moment, which the OS may use to end background
+  // playback between two tracks.
   useEffect(() => {
     if (!started || !track) return;
-    audioPlayer.setActiveForLockScreen(true, nowPlayingMetadata(track));
+    const metadata = nowPlayingMetadata(track);
+    if (lockScreenActive.current) {
+      audioPlayer.updateLockScreenMetadata(metadata);
+    } else {
+      audioPlayer.setActiveForLockScreen(true, metadata);
+      lockScreenActive.current = true;
+    }
   }, [started, track]);
 
   return null;

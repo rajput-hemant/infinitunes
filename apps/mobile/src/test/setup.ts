@@ -32,6 +32,23 @@ jest.mock("sonner-native", () => ({
   Toaster: () => null,
 }));
 
+// Local notifications (`~/lib/notifications`): granted by default; tests
+// read and script these spies.
+jest.mock("expo-notifications", () => ({
+  AndroidImportance: { DEFAULT: 3 },
+  getPermissionsAsync: jest.fn(async () => ({
+    granted: true,
+    canAskAgain: true,
+  })),
+  requestPermissionsAsync: jest.fn(async () => ({
+    granted: true,
+    canAskAgain: true,
+  })),
+  scheduleNotificationAsync: jest.fn(async () => "notification-id"),
+  setNotificationChannelAsync: jest.fn(async () => null),
+  setNotificationHandler: jest.fn(),
+}));
+
 jest.mock("expo-network", () => ({
   addNetworkStateListener: () => ({ remove: () => {} }),
 }));

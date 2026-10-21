@@ -70,6 +70,32 @@ describe("PlaybackController", () => {
     });
   });
 
+  it("activates the lock screen once and only updates the metadata per track", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+
+    await act(async () => playerStore.getState().skipToNext());
+
+    // Re-activating rebuilds the Android media session and its notification.
+    expect(player.lockScreenActivations).toBe(1);
+    expect(player.lockScreen).toEqual({
+      active: true,
+      metadata: expect.objectContaining({ title: rows[1]?.name }),
+    });
+  });
+
+  it("shows the next queue after the lock screen was cleared", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows.slice(0, 1)));
+    await act(async () => playerStore.getState().removeAt(0));
+    expect(player.lockScreen).toEqual({ active: false });
+
+    await act(async () => playerStore.getState().playTracks(rows.slice(1)));
+
+    expect(player.lockScreenActivations).toBe(2);
+    expect(player.lockScreen.active).toBe(true);
+  });
+
   it("starts below 320 kbps for a song without that encode", async () => {
     const capped = toSongRow(
       rawSong({

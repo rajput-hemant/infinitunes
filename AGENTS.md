@@ -205,6 +205,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   one status event only (the next one, often in the same JS task, says `null`) and nothing guarantees a
   rendered status between `replace` and the next failure, so the controller latches each load's error/loaded
   from its listener; never feed `useAudioPlayerStatus().error`/`isLoaded` to `useTrackPlayback`.
+- Notifications: the media notification / lock screen is expo-audio's own (Android Media3 foreground service, iOS Now
+  Playing; no custom code or icon), activated once (`setActiveForLockScreen`, which rebuilds the Android session) and then
+  fed by `updateLockScreenMetadata`. Local notifications (`expo-notifications`, no push, `enableRemoteNotifications: false`)
+  live in `lib/notifications.ts`: the Downloads channel, and `ensureNotificationPermission`, the one place that asks
+  (first download, first Android playback; once, never again after a denial; the channel must exist before Android 13's prompt).
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
   that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,

@@ -1,4 +1,5 @@
 import { queryClient } from "~/lib/query-client";
+import { playerStore } from "~/playback/player-store";
 import { authClient } from "~/test/session-mock";
 
 import { signOut } from "./end-session";
@@ -31,6 +32,17 @@ describe("signOut", () => {
     expect(queryClient.getQueryData(HISTORY_KEY)).toBeUndefined();
     expect(queryClient.getQueryData(LIKED_SONGS_KEY)).toBeUndefined();
     expect(queryClient.getQueryData(CATALOG_KEY)).toEqual({ modules: [] });
+  });
+
+  it("empties the queue so the engine and media notification stop", async () => {
+    playerStore.setState({
+      queue: [{ queueItemId: "q1" } as never],
+      started: true,
+    });
+
+    await signOut();
+
+    expect(playerStore.getState().queue).toEqual([]);
   });
 
   it("keeps everything and reports why when the server call fails", async () => {

@@ -57,6 +57,15 @@ const config: ExpoConfig = {
         dark: { image: SPLASH, backgroundColor: colors.dark.background },
       },
     ],
+    [
+      "expo-notifications",
+      {
+        icon: "./assets/notification-icon.png",
+        color: colors.light.primary,
+        // Local notifications only: no push entitlement, no token.
+        enableRemoteNotifications: false,
+      },
+    ],
   ],
   experiments: {
     typedRoutes: true,
