@@ -3,7 +3,7 @@ import type { Song } from "@infinitunes/types";
 import { toast } from "sonner-native";
 
 import { trpcClient } from "~/lib/trpc";
-import { playerStore } from "~/playback/player-store";
+import { playAll, shuffleAll } from "~/playback/play-collection";
 
 /** Plays `songs` as a new queue, or says why nothing played; the radio session ends. */
 function playSongs(
@@ -15,7 +15,7 @@ function playSongs(
     toast.error(emptyMessage);
     return;
   }
-  playerStore.getState().playTracks(songs.map(toSongRow), { shuffle });
+  (shuffle ? shuffleAll : playAll)(songs.map(toSongRow));
 }
 
 /** Plays a playlist from its perma URL; failures toast, nothing throws. */

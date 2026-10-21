@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
+import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 import {
   GRID_COLUMNS,
   GRID_GAP,
@@ -9,8 +9,6 @@ import {
 import { radii } from "~/theme/tokens";
 
 const ROWS = 3;
-
-const range = (count: number) => Array.from({ length: count }, (_, i) => i);
 
 /** Placeholder cards at the real grid geometry, so the list lands without a jump. */
 export function CatalogGridSkeleton() {

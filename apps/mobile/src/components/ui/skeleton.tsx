@@ -5,6 +5,10 @@ import Animated from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
 
+/** `[0, 1, ..., count - 1]`: the keys of a skeleton's repeated blocks. */
+export const range = (count: number) =>
+  Array.from({ length: count }, (_, i) => i);
+
 const PULSE = {
   from: { opacity: 1 },
   to: { opacity: 0.45 },

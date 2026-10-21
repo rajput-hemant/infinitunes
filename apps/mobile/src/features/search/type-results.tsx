@@ -7,7 +7,7 @@ import { MediaCard } from "~/components/media-card";
 import { SongRow } from "~/components/song-row";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
-import { playerStore } from "~/playback/player-store";
+import { playFrom } from "~/playback/play-collection";
 import { sizes } from "~/theme/tokens";
 
 import { isSongEntry, toResultCard } from "./result-cards";
@@ -74,7 +74,7 @@ export function TypeResults({
           <SongRow
             song={item}
             onPress={() => {
-              playerStore.getState().playTracks(rows, { startIndex: index });
+              playFrom(rows, index);
               onOpenResult();
             }}
           />
