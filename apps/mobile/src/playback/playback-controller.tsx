@@ -3,10 +3,11 @@ import { useRadioRefill } from "@infinitunes/core/react/use-radio-refill";
 import {
   PLAYBACK_PROBLEM_MESSAGES,
   useTrackPlayback,
+  type LoadTrack,
   type PlaybackProblem,
 } from "@infinitunes/core/react/use-track-playback";
 import { useAudioPlayerStatus } from "expo-audio";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner-native";
 
 import { usePreferences } from "~/lib/preferences";
@@ -24,6 +25,10 @@ import { playerStore, selectCurrentTrack, usePlayer } from "./player-store";
 import { recordPlay } from "./record-play";
 
 const getPosition = () => audioPlayer.currentTime;
+
+/** What the engine reported for the source loaded last. */
+type SourceState = { error?: string; loaded: boolean };
+const FRESH_SOURCE: SourceState = { loaded: false };
 
 function showProblem(problem: PlaybackProblem) {
   toast.error(PLAYBACK_PROBLEM_MESSAGES[problem]);
@@ -51,6 +56,18 @@ export function PlaybackController() {
     playerStore.getState();
   const streamQuality = usePreferences((state) => state.streamQuality);
   const status = useAudioPlayerStatus(audioPlayer);
+  // The current source's outcome, kept per load. The status hook cannot
+  // carry it: the engine reports `error` on one event only (the next status
+  // says `null`, often in the same JS task, so React may never render it),
+  // and nothing guarantees a rendered status between `replace` and the next
+  // failure, so `isLoaded` and an identical error message could carry over
+  // from the previous source. `useTrackPlayback` steps down
+  // a bitrate on each new `loadError` (the web's player resets it per load).
+  const [source, setSource] = useState<SourceState>(FRESH_SOURCE);
+  const load = useCallback<LoadTrack>((src, options) => {
+    setSource(FRESH_SOURCE);
+    loadTrack(src, options);
+  }, []);
 
   useEffect(() => {
     void configureAudioSession();
@@ -65,12 +82,12 @@ export function PlaybackController() {
     currentIndex,
     streamQuality,
     isPlayerInit: started,
-    load: loadTrack,
+    load,
     record: recordPlay,
     onProblem: showProblem,
-    loadError: status.error ?? undefined,
+    loadError: source.error,
     isLooping: repeatOne,
-    isReady: status.isLoaded,
+    isReady: source.loaded,
     onUnplayable: skipUnplayable,
   });
 
@@ -93,16 +110,33 @@ export function PlaybackController() {
   }, [repeatOne]);
 
   // A listener, not the status hook: two ends of the same track in a row
-  // (repeat) must each advance, and React would merge the equal states.
+  // (repeat) must each advance, and React would merge the equal states; a
+  // load error is a single event (see `source` above).
   useEffect(() => {
     const subscription = audioPlayer.addListener(
       "playbackStatusUpdate",
       (update) => {
         if (update.didJustFinish) advanceAfterEnd();
+        const { error, isLoaded } = update;
+        if (error) {
+          // The first error of a load counts; it is the one that failed it.
+          setSource((prev) => (prev.error ? prev : { ...prev, error }));
+        } else if (isLoaded) {
+          setSource((prev) => (prev.loaded ? prev : { ...prev, loaded: true }));
+        }
       },
     );
     return () => subscription.remove();
   }, [advanceAfterEnd]);
+
+  // The queue was emptied under the playing entry: nothing is left to show
+  // or control it, so stop the engine and take it off the lock screen.
+  const hasTrack = track !== undefined;
+  useEffect(() => {
+    if (!started || hasTrack) return;
+    audioPlayer.pause();
+    audioPlayer.clearLockScreenControls();
+  }, [started, hasTrack]);
 
   useEffect(() => {
     playbackStatusStore.setState({

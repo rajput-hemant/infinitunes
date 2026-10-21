@@ -5,13 +5,19 @@ import type {
   AudioSource,
   AudioStatus,
 } from "expo-audio";
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 
 /**
  * Jest's `expo-audio` (see `jest.config.js`): a scriptable stand-in for the
  * native player. Code under test drives it through the real API; tests read
  * what it was asked to do and script what the engine reports back
  * (`finishLoading`, `failLoading`, `finishTrack`).
+ *
+ * It models the worst case the native module allows, which the controller
+ * has to cope with: `replace` emits nothing by itself (no status is
+ * guaranteed before the next failure), and `error` is set only on
+ * the one `playbackStatusUpdate` that reports it (every other status, and
+ * `currentStatus`, says `null`), so a load error is an event, not a state.
  */
 
 type StatusListener = (status: AudioStatus) => void;
@@ -75,13 +81,13 @@ export class FakeAudioPlayer {
 
   replace(source: AudioSource | string | number | null) {
     this.loads.push(sourceUri(source));
-    this.update({
+    this.currentStatus = {
+      ...this.currentStatus,
       isLoaded: false,
       currentTime: 0,
       duration: 0,
       didJustFinish: false,
-      error: null,
-    });
+    };
   }
 
   play() {
@@ -130,9 +136,15 @@ export class FakeAudioPlayer {
     this.update({ isLoaded: true, duration });
   }
 
-  /** The engine could not load the current source. */
+  /**
+   * The engine could not load the current source. Like Media3, the error
+   * event is followed at once by the idle state change, which carries no
+   * error; inside one `act` both land before React renders.
+   */
   failLoading(error = "Failed to load") {
-    this.update({ error, playing: false });
+    this.currentStatus = { ...this.currentStatus, playing: false };
+    this.emit({ ...this.currentStatus, error });
+    this.update({ playbackState: "idle" });
   }
 
   /** The current source played to its end. */
@@ -146,7 +158,11 @@ export class FakeAudioPlayer {
 
   private update(patch: Partial<AudioStatus>) {
     this.currentStatus = { ...this.currentStatus, ...patch };
-    for (const listener of this.listeners) listener(this.currentStatus);
+    this.emit(this.currentStatus);
+  }
+
+  private emit(status: AudioStatus) {
+    for (const listener of this.listeners) listener(status);
   }
 }
 
@@ -165,11 +181,14 @@ export function createAudioPlayer(): FakeAudioPlayer {
   return player;
 }
 
+/** expo-audio's hook (`useEvent`): the last status event, as React state. */
 export function useAudioPlayerStatus(player: FakeAudioPlayer): AudioStatus {
-  return useSyncExternalStore(
-    (onChange) => player.addListener("playbackStatusUpdate", onChange).remove,
-    () => player.currentStatus,
+  const [status, setStatus] = useState(player.currentStatus);
+  useEffect(
+    () => player.addListener("playbackStatusUpdate", setStatus).remove,
+    [player],
   );
+  return status;
 }
 
 /** Every audio mode the code under test set, oldest first. */

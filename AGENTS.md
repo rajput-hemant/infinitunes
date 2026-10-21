@@ -199,7 +199,9 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   call actions (`playerStore.getState().playTracks(rows, { startIndex, shuffle, radio })`, `playNext`,
   `addToQueue`) and read slices with `usePlayer(selector)`, `usePlaybackStatus`, `usePlaybackPosition`;
   `togglePlayback`/`seekTo` in `playback/transport.ts`. The lock screen gets metadata, play/pause and scrubbing;
-  expo-audio's single player has no remote next/previous.
+  expo-audio's single player has no remote next/previous. expo-audio sets `error` on one status event only (the
+  next one, often in the same JS task, says `null`) and nothing guarantees a rendered status between `replace` and the next failure, so the controller latches each
+  load's error/loaded from its listener; never feed `useAudioPlayerStatus().error`/`isLoaded` to `useTrackPlayback`.
 - Primitives: `SongRow` (`song`: a `toSongRow` row or queue entry, `onPress` plays its list; heart, native
   `SongMenu` via `@expo/ui` `MenuView`, `removal` for the list's own remove), `MediaCard`/`Shelf` (`toCardItem`
   items, `seeAllHref`), `EntityHeader` (`onPlay`, `onShuffle`, `like`), `SongListSkeleton`/`ShelfSkeleton`/
