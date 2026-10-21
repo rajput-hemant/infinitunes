@@ -3,16 +3,13 @@ import { parseArtistBio, toSongRow } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { useMemo, useState } from "react";
 
-import { SongRow } from "~/components/song-row";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playerStore } from "~/playback/player-store";
 
-import { AlbumRow } from "./album-row";
 import { ArtistListHeader } from "./artist-list-header";
-import type { ArtistListItem } from "./artist-list-items";
 import type { ArtistTab } from "./artist-tabs";
 import { visibleTabs } from "./artist-tabs";
-import { BioSection } from "./bio-section";
+import { listItemKey, renderListItem } from "./render-list-item";
 import { useArtistPanel } from "./use-artist-panel";
 
 type ArtistContentProps = {
@@ -21,26 +18,6 @@ type ArtistContentProps = {
   onRefresh: () => Promise<unknown>;
   isRefreshing: boolean;
 };
-
-function renderItem({ item }: { item: ArtistListItem }) {
-  switch (item.kind) {
-    case "song":
-      return (
-        <SongRow
-          song={item.row}
-          onPress={() =>
-            playerStore
-              .getState()
-              .playTracks(item.queue, { startIndex: item.index })
-          }
-        />
-      );
-    case "album":
-      return <AlbumRow card={item.card} />;
-    case "bio":
-      return <BioSection section={item.section} />;
-  }
-}
 
 /** A loaded artist: header, tabs and one list whose rows follow the selected tab. */
 export function ArtistContent({
@@ -66,9 +43,9 @@ export function ArtistContent({
     <FlashList
       testID="artist-list"
       data={panel.items}
-      keyExtractor={(item) => `${item.kind}-${item.id}`}
+      keyExtractor={listItemKey}
       getItemType={(item) => item.kind}
-      renderItem={renderItem}
+      renderItem={renderListItem}
       ListHeaderComponent={
         <ArtistListHeader
           artist={artist}
