@@ -14,7 +14,7 @@ import {
 import { PagedFooter } from "~/components/paged-footer";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
-import { playerStore } from "~/playback/player-store";
+import { playAll, shuffleAll } from "~/playback/play-collection";
 
 import { ShowControls } from "./show-controls";
 import { useShowEpisodes } from "./use-show-episodes";
@@ -51,7 +51,7 @@ export function ShowContent({
       toast("Episodes are still loading");
       return;
     }
-    playerStore.getState().playTracks(episodes.items, { shuffle });
+    (shuffle ? shuffleAll : playAll)(episodes.items);
   }
 
   return (

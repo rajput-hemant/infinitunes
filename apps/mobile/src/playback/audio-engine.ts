@@ -28,8 +28,28 @@ export function configureAudioSession() {
   });
 }
 
+/**
+ * Whether the loaded source played to its end (the engine's `didJustFinish`).
+ * A resume then starts it over: the final position can land a little short of
+ * the reported duration, so comparing the two is not enough.
+ */
+let sourceEnded = false;
+
+export function markSourceEnded(ended: boolean) {
+  sourceEnded = ended;
+}
+
+export function hasSourceEnded() {
+  return (
+    sourceEnded ||
+    (audioPlayer.duration > 0 &&
+      audioPlayer.currentTime >= audioPlayer.duration)
+  );
+}
+
 /** Replaces the source and starts it (`useTrackPlayback`'s engine hook). */
 export const loadTrack: LoadTrack = (src, { loop }) => {
+  sourceEnded = false;
   audioPlayer.replace({ uri: src });
   audioPlayer.loop = loop;
   audioPlayer.play();

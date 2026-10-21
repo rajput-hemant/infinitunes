@@ -10,7 +10,7 @@ import { OptionMenu } from "~/components/option-menu";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
-import { playerStore } from "~/playback/player-store";
+import { playAll, playFrom, shuffleAll } from "~/playback/play-collection";
 
 import { orderSongs, type SongSort } from "./song-order";
 
@@ -64,7 +64,6 @@ export function SongCollection({
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SongSort>("recent");
   const shown = orderSongs(songs, query, sort);
-  const { playTracks } = playerStore.getState();
   const reorderable =
     onMove !== undefined && sort === "recent" && !query.trim();
 
@@ -72,11 +71,7 @@ export function SongCollection({
     data: shown,
     keyExtractor: (song: SongRowItem) => song.id,
     renderItem: ({ item, index }: { item: SongRowItem; index: number }) =>
-      renderRow(
-        item,
-        () => playTracks(shown, { startIndex: index }),
-        reorderable,
-      ),
+      renderRow(item, () => playFrom(shown, index), reorderable),
     ListHeaderComponent: (
       <View>
         {header}
@@ -85,14 +80,14 @@ export function SongCollection({
             <Button
               label="Play"
               icon={{ ios: "play.fill", android: "play_arrow" }}
-              onPress={() => playTracks(shown)}
+              onPress={() => playAll(shown)}
               className="flex-1"
             />
             <Button
               label="Shuffle"
               icon={{ ios: "shuffle", android: "shuffle" }}
               variant="secondary"
-              onPress={() => playTracks(shown, { shuffle: true })}
+              onPress={() => shuffleAll(shown)}
               className="flex-1"
             />
           </View>

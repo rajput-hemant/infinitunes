@@ -1,3 +1,4 @@
+import { uniqueBy } from "@infinitunes/types";
 import type { CardItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { Link } from "expo-router";
@@ -55,7 +56,8 @@ export function Shelf({
       </View>
       <FlashList
         horizontal
-        data={items}
+        // Upstream modules can repeat an item; FlashList needs unique keys.
+        data={uniqueBy(items, (item) => item.id)}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) =>
           renderCard ? (

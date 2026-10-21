@@ -4,14 +4,12 @@ import { radii, sizes } from "~/theme/tokens";
 
 import { ENTITY_ART_SIZE } from "./entity-header";
 import { MEDIA_CARD_WIDTH } from "./media-card";
-import { SkeletonBlock, SkeletonPulse } from "./ui/skeleton";
+import { range, SkeletonBlock, SkeletonPulse } from "./ui/skeleton";
 
 /**
  * Loading placeholders that mirror the real layouts (`SongRow`, `Shelf`,
  * `EntityHeader`) at their real sizes, so content lands without a jump.
  */
-
-const range = (count: number) => Array.from({ length: count }, (_, i) => i);
 
 function SongRowSkeleton() {
   return (

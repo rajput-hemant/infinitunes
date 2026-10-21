@@ -30,6 +30,12 @@ describe("player store", () => {
     expect(current()).toBe("c");
   });
 
+  it("clamps a start index past the end of the list", () => {
+    playerStore.getState().playTracks(rows, { startIndex: 7 });
+
+    expect(current()).toBe("c");
+  });
+
   it("shuffles into a new order of the same songs and starts from the first", () => {
     playerStore.getState().playTracks(rows, { startIndex: 2, shuffle: true });
 

@@ -24,12 +24,18 @@ type ArtworkProps = {
   testID?: string;
 };
 
-/** Upstream artwork at the layout's resolution, capped by the Image Quality setting. */
+/**
+ * Upstream artwork at the layout's resolution, capped by the Image Quality
+ * setting. Keyed by its URL so a recycled list cell (FlashList) drops the
+ * previous row's picture at once instead of showing it until the new one loads.
+ */
 export function Artwork({ image, quality, style, testID }: ArtworkProps) {
   const cap = usePreferences((preferences) => preferences.imageQuality);
+  const src = getImageSrc(image, cappedQuality(quality, cap));
   return (
     <Image
-      source={getImageSrc(image, cappedQuality(quality, cap))}
+      source={src}
+      recyclingKey={src}
       style={style}
       testID={testID}
       transition={150}

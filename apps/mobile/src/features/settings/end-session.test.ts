@@ -5,6 +5,8 @@ import { signOut } from "./end-session";
 
 const FAVORITES_KEY = [["user", "getUserFavorites"], { type: "query" }, "u1"];
 const PLAYLISTS_KEY = [["user", "getUserPlaylists"], { type: "query" }, "u1"];
+const HISTORY_KEY = ["library", "history-ids", "u1"];
+const LIKED_SONGS_KEY = ["library", "liked-songs", "u1", ["a"]];
 const CATALOG_KEY = [["home", "home"], { type: "query" }];
 
 // The app's own client schedules cache-collection timers that outlive a test.
@@ -14,6 +16,8 @@ beforeEach(() => {
   queryClient.clear();
   queryClient.setQueryData(FAVORITES_KEY, { song: ["a"] });
   queryClient.setQueryData(PLAYLISTS_KEY, []);
+  queryClient.setQueryData(HISTORY_KEY, [{ id: "a" }]);
+  queryClient.setQueryData(LIKED_SONGS_KEY, { items: [], missing: 0 });
   queryClient.setQueryData(CATALOG_KEY, { modules: [] });
 });
 
@@ -24,6 +28,8 @@ describe("signOut", () => {
     expect(authClient.signOut).toHaveBeenCalledTimes(1);
     expect(queryClient.getQueryData(FAVORITES_KEY)).toBeUndefined();
     expect(queryClient.getQueryData(PLAYLISTS_KEY)).toBeUndefined();
+    expect(queryClient.getQueryData(HISTORY_KEY)).toBeUndefined();
+    expect(queryClient.getQueryData(LIKED_SONGS_KEY)).toBeUndefined();
     expect(queryClient.getQueryData(CATALOG_KEY)).toEqual({ modules: [] });
   });
 

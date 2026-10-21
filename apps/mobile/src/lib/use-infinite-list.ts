@@ -11,7 +11,11 @@ type InfiniteListOptions<Page, Item> = {
   fetchPage: (page: number) => Promise<Page>;
   /** The items of one page. */
   itemsOf: (page: Page) => readonly Item[];
-  /** Whether a page after `lastPage` exists (e.g. `!lastPage.last_page`). */
+  /**
+   * Whether a page after `lastPage` exists (e.g. `!lastPage.last_page`). Only
+   * asked for a page with items: an empty page always ends the list, whatever
+   * upstream's flags or totals claim.
+   */
   hasMore: (lastPage: Page, pages: readonly Page[]) => boolean;
   /** Upstream repeats items across pages; the first one per key is kept. */
   keyOf: (item: Item) => string;
@@ -42,7 +46,9 @@ export function useInfiniteList<Page, Item>({
     initialPageParam: firstPage,
     enabled,
     getNextPageParam: (lastPage, pages, lastPageParam) =>
-      hasMore(lastPage, pages) ? lastPageParam + 1 : undefined,
+      itemsOf(lastPage).length > 0 && hasMore(lastPage, pages)
+        ? lastPageParam + 1
+        : undefined,
   });
 
   const items = uniqueBy(query.data?.pages.flatMap(itemsOf) ?? [], keyOf);

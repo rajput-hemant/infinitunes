@@ -214,13 +214,16 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `onPress`), `EntityListItem`s for a screen's one `FlashList`. Cards: `MediaCard`/`Shelf` (`toCardItem`
   items, `seeAllHref`, `onItemPress`, `renderCard`; stations open `/radio/<name>/<token>`, `StationCard` adds
   play). Artwork goes through `Artwork` (the layout's resolution capped by the Image quality preference).
-  `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped). Toasts are
+  `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an empty page always
+  ends the list, whatever upstream's `last_page`/`total` say). Toasts are
   `sonner-native`'s `toast` (mounted `Toaster`).
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
   `user-data/playlists.ts` (create, rename, delete, add, remove, move; removals and moves take the server's
   copy from `useServerPlaylists`); failures roll back with a toast, signed out they `promptSignIn`.
   Per-user queries key on `userQueryKey(procedureKey, userId)` so one account's cache never shows for the
-  next (`getUserFavorites` has no row for a new user: return a value, a query may not resolve `undefined`).
+  next (`getUserFavorites` has no row for a new user: return a value, a query may not resolve `undefined`);
+  per-user lists that are not `user.*` procedures key under `LIBRARY_QUERY_KEY`, which sign-out
+  (`forgetUserData`) drops with `user.*`.
   Persist client state with zustand `persist` + `persistedStorage` (SQLite kv-store, synchronous reads so
   stores hydrate before the first render), never secrets.
 - Native look per platform: no colours on `NativeTabs` or headers (system glass on iOS 26, Material You on

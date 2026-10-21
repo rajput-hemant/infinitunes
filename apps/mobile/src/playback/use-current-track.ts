@@ -14,6 +14,7 @@ export function useCurrentTrackState(track: TrackRef) {
   const isCurrent = usePlayer((state) =>
     isCurrentTrack(state.queue, state.currentIndex, track),
   );
-  const playing = usePlaybackStatus((state) => state.playing);
-  return { isCurrent, isPlaying: isCurrent && playing };
+  // Only the current row follows play/pause; the others never re-render for it.
+  const isPlaying = usePlaybackStatus((state) => isCurrent && state.playing);
+  return { isCurrent, isPlaying };
 }

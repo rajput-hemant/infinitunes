@@ -142,6 +142,31 @@ describe("PlaybackController", () => {
     });
   });
 
+  it("resumes the paused entry when its list is played again", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
+    await act(async () => player.pause());
+
+    await act(async () => playerStore.getState().playTracks(rows));
+
+    expect(player.loads).toEqual([ladder("BSaNI3Yr", 320)]);
+    expect(player.playing).toBe(true);
+  });
+
+  it("starts a looping one-entry queue over when it ends", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows.slice(0, 1)));
+    await act(async () => player.finishLoading());
+    playerStore.setState({ repeat: "playlist" });
+
+    // The engine's last position can stop short of the reported duration.
+    await act(async () => player.finishTrack(179.9));
+
+    expect(player.currentTime).toBe(0);
+    expect(player.playing).toBe(true);
+  });
+
   it("never loads an entry without a stream link, and says why", async () => {
     const silent = toSongRow(
       rawSong({

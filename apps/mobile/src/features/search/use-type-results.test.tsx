@@ -47,6 +47,25 @@ describe("useTypeResults", () => {
     });
   });
 
+  it("stops at an empty page whatever the total says", async () => {
+    procedure("search.byType")
+      .mockResolvedValueOnce({ total: 500, start: 0, results: albums(["a"]) })
+      .mockResolvedValueOnce({ total: 500, start: 50, results: [] });
+    const { result } = await renderHook(() => useTypeResults("rock", "album"), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+
+    await act(async () => result.current.loadMore());
+    await waitFor(() =>
+      expect(procedure("search.byType")).toHaveBeenCalledTimes(2),
+    );
+    await waitFor(() => expect(result.current.isFetchingNextPage).toBe(false));
+    await act(async () => result.current.loadMore());
+
+    expect(procedure("search.byType")).toHaveBeenCalledTimes(2);
+  });
+
   it("keeps a repeated entry once", async () => {
     procedure("search.byType")
       .mockResolvedValueOnce({ total: 60, start: 0, results: albums(["a"]) })

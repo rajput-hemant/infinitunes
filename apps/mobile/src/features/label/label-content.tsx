@@ -14,7 +14,7 @@ import {
 } from "~/components/entity-list";
 import { SegmentedTabs } from "~/components/segmented-tabs";
 import { playerDockInset } from "~/navigation/player-dock";
-import { playerStore } from "~/playback/player-store";
+import { playAll, shuffleAll } from "~/playback/play-collection";
 
 import type { LabelTab } from "./label-tabs";
 import { LABEL_TABS, LABEL_TAB_LABELS } from "./label-tabs";
@@ -56,10 +56,8 @@ export function LabelContent({
             title={decode(label.name)}
             subtitle="Record label"
             round
-            onPlay={() => playerStore.getState().playTracks(songs)}
-            onShuffle={() =>
-              playerStore.getState().playTracks(songs, { shuffle: true })
-            }
+            onPlay={() => playAll(songs)}
+            onShuffle={() => shuffleAll(songs)}
           />
           <SegmentedTabs
             testID="label-tabs"

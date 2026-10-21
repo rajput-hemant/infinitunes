@@ -14,7 +14,7 @@ import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { entityHref } from "~/navigation/entity-href";
-import { playerStore } from "~/playback/player-store";
+import { playAll } from "~/playback/play-collection";
 
 type EpisodeContentProps = {
   episode: Episode;
@@ -73,7 +73,7 @@ export function EpisodeContent({
   const meta = metaLine(episode);
 
   // One episode: shuffling it is playing it, the header just has both buttons.
-  const play = () => playerStore.getState().playTracks([row]);
+  const play = () => playAll([row]);
 
   return (
     <ScreenScrollView

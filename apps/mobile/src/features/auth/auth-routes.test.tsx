@@ -44,6 +44,14 @@ describe("sign-in flow in the app's route tree", () => {
     expect(app.getPathname()).toBe("/settings");
   });
 
+  it("treats a reset link that repeats its token as invalid", async () => {
+    const app = await renderRouter("./src/app", {
+      initialUrl: "/reset-password?token=a&token=b",
+    });
+
+    expect(app.getByText(/reset link is invalid/)).toBeTruthy();
+  });
+
   it("returns to the settings list when the account goes away", async () => {
     signInAs("user-1");
     const app = await renderRouter("./src/app", { initialUrl: "/settings" });

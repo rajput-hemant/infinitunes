@@ -3,13 +3,16 @@ import { authFailure } from "~/lib/auth-failure";
 import type { AuthFailure } from "~/lib/auth-failure";
 import { queryClient } from "~/lib/query-client";
 import { trpc } from "~/lib/trpc";
+import { LIBRARY_QUERY_KEY } from "~/user-data/session";
 
 /**
- * Drops every cached `user.*` query (library, playlists). They are keyed per
- * account already; this also frees them, and keeps the catalog cache.
+ * Drops every cached `user.*` query (likes, playlists) and the library lists
+ * resolved from them (history, liked songs, playlist songs). They are keyed
+ * per account already; this also frees them, and keeps the catalog cache.
  */
 export function forgetUserData() {
   queryClient.removeQueries({ queryKey: trpc.user.pathKey() });
+  queryClient.removeQueries({ queryKey: LIBRARY_QUERY_KEY });
 }
 
 /** Signs out on the server and from secure storage, then forgets the account's data. */
