@@ -89,7 +89,6 @@ export function EpisodeContent({
         title={row.name}
         subtitle={[row.subtitle, meta].filter(Boolean).join("\n")}
         onPlay={play}
-        onShuffle={play}
       />
       {description ? (
         <View className="gap-1 px-page pb-3">

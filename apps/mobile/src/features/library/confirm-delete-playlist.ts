@@ -1,6 +1,6 @@
 import { Alert } from "react-native";
 
-import { deletePlaylist } from "./playlist-actions";
+import { deletePlaylist } from "~/user-data/playlists";
 
 /**
  * Asks before deleting (it cannot be undone). `onDeleting` runs when the

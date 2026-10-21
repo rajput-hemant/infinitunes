@@ -12,7 +12,7 @@ import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 export function ArtistSkeleton() {
   return (
     <ScreenScrollView scrollEnabled={false}>
-      <EntityHeaderSkeleton />
+      <EntityHeaderSkeleton round />
       <SkeletonPulse>
         <View className="px-page pb-2">
           <SkeletonBlock className="h-9 w-full rounded-lg" />

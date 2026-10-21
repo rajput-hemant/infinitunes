@@ -12,6 +12,7 @@ import { SongRow } from "~/components/song-row";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { removeSongFromPlaylist } from "~/user-data/playlists";
+import { useServerPlaylists } from "~/user-data/playlists";
 
 import { LibraryListView } from "./library-list-view";
 import { PlaylistMenu } from "./playlist-menu";
@@ -19,7 +20,6 @@ import { SignedInGate } from "./signed-in-gate";
 import { SongCollection } from "./song-collection";
 import { SwipeableRow } from "./swipeable-row";
 import { usePlaylistSongs } from "./use-playlist-songs";
-import { useServerPlaylists } from "./use-server-playlists";
 
 const totalSeconds = (songs: readonly SongRowItem[]) =>
   songs.reduce((total, song) => total + song.duration, 0);

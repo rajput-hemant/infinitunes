@@ -86,12 +86,21 @@ export function AllResults({
             onPressItem={open}
             onSeeAll={() => onShowType("artist")}
           />
-          <Shelf title="Albums" items={shelfItems(state.data, "albums")} />
+          <Shelf
+            title="Albums"
+            items={shelfItems(state.data, "albums")}
+            onItemPress={onOpenResult}
+          />
           <Shelf
             title="Playlists"
             items={shelfItems(state.data, "playlists")}
+            onItemPress={onOpenResult}
           />
-          <Shelf title="Podcasts" items={shelfItems(state.data, "shows")} />
+          <Shelf
+            title="Podcasts"
+            items={shelfItems(state.data, "shows")}
+            onItemPress={onOpenResult}
+          />
         </>
       ) : null}
     </ScreenScrollView>

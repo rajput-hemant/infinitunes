@@ -1,6 +1,7 @@
 import type { FavoriteType } from "@infinitunes/core/favorites";
 import { getImageSrc } from "@infinitunes/types";
 import { Image } from "expo-image";
+import type { ReactNode } from "react";
 import { View } from "react-native";
 
 import { radii } from "~/theme/tokens";
@@ -17,26 +18,34 @@ type EntityHeaderProps = {
   image: string;
   title: string;
   subtitle?: string;
-  /** Round artwork, for artists. */
+  /** A kind label above the title ("Radio station"). */
+  eyebrow?: string;
+  /** Round artwork, for artists and stations. */
   round?: boolean;
   onPlay: () => void;
-  onShuffle: () => void;
+  /** Leave out for a single track or a station, where shuffling means nothing. */
+  onShuffle?: () => void;
   /** The item's heart; `token` is its id (`artistId` for an artist). */
   like?: { type: FavoriteType; token: string };
+  /** Trailing controls after the heart, e.g. the collection's `CollectionMenu`. */
+  actions?: ReactNode;
 };
 
 /**
- * The top of a detail screen (album, playlist, artist, show): artwork, title
- * and subtitle, then Play, Shuffle and the heart.
+ * The top of a detail screen (album, playlist, artist, show, station):
+ * artwork, title and subtitle, then Play, Shuffle, the heart and the
+ * screen's own actions.
  */
 export function EntityHeader({
   image,
   title,
   subtitle,
+  eyebrow,
   round = false,
   onPlay,
   onShuffle,
   like,
+  actions,
 }: EntityHeaderProps) {
   return (
     <View className="items-center gap-4 px-page pb-4 pt-2">
@@ -51,6 +60,11 @@ export function EntityHeader({
         accessibilityIgnoresInvertColors
       />
       <View className="items-center gap-1">
+        {eyebrow ? (
+          <Text variant="caption" tone="muted">
+            {eyebrow}
+          </Text>
+        ) : null}
         <Text
           variant="title"
           accessibilityRole="header"
@@ -72,16 +86,19 @@ export function EntityHeader({
           onPress={onPlay}
           className="flex-1"
         />
-        <Button
-          label="Shuffle"
-          icon={{ ios: "shuffle", android: "shuffle" }}
-          variant="secondary"
-          onPress={onShuffle}
-          className="flex-1"
-        />
+        {onShuffle ? (
+          <Button
+            label="Shuffle"
+            icon={{ ios: "shuffle", android: "shuffle" }}
+            variant="secondary"
+            onPress={onShuffle}
+            className="flex-1"
+          />
+        ) : null}
         {like ? (
           <LikeButton type={like.type} token={like.token} name={title} />
         ) : null}
+        {actions}
       </View>
     </View>
   );

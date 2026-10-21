@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 
 import { entityListKey } from "~/components/entity-list";
 import { playerDockInset } from "~/navigation/player-dock";
-import { playerStore } from "~/playback/player-store";
 
 import { ArtistListHeader } from "./artist-list-header";
 import { renderArtistListItem } from "./artist-list-items";
@@ -55,10 +54,7 @@ export function ArtistContent({
           onTabChange={setTab}
           category={category}
           onCategoryChange={setCategory}
-          onPlay={() => playerStore.getState().playTracks(topSongs)}
-          onShuffle={() =>
-            playerStore.getState().playTracks(topSongs, { shuffle: true })
-          }
+          topSongs={topSongs}
         />
       }
       ListFooterComponent={panel.footer}

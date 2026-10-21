@@ -1,6 +1,3 @@
-import { MenuView } from "@expo/ui/community/menu";
-import type { MenuAction } from "@expo/ui/community/menu";
-import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import type { QueueSource, RowExtras } from "@infinitunes/types";
 import type { ReactNode } from "react";
 import { toast } from "sonner-native";
@@ -10,81 +7,21 @@ import { preferencesStore } from "~/lib/preferences";
 import { shareItem } from "~/lib/share";
 import { useOpenEntity } from "~/navigation/use-open-entity";
 import { playerStore } from "~/playback/player-store";
-import { addSongToPlaylist, useUserPlaylists } from "~/user-data/playlists";
-import { promptSignIn, useUserId } from "~/user-data/session";
+import { radioSeedOf } from "~/playback/radio";
+import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
+import { useUserId } from "~/user-data/session";
+
+import {
+  addToPlaylistEntry,
+  NativeMenu,
+  playRadioEntry,
+  type MenuEntry,
+} from "./native-menu";
 
 /** A catalog row or a queue entry: what a track's menu needs. */
 export type TrackItem = QueueSource & RowExtras;
 
-/** A menu action and what it does; entries with sub-actions only open a submenu. */
-type MenuEntry = Omit<MenuAction, "subactions" | "id"> & {
-  id: string;
-  run?: () => void;
-  subactions?: MenuEntry[];
-};
-
-function toMenuAction({
-  run: _run,
-  subactions,
-  ...action
-}: MenuEntry): MenuAction {
-  return subactions
-    ? { ...action, subactions: subactions.map(toMenuAction) }
-    : action;
-}
-
-function collectRuns(
-  entries: MenuEntry[],
-  into = new Map<string, () => void>(),
-) {
-  for (const entry of entries) {
-    if (entry.run) into.set(entry.id, entry.run);
-    if (entry.subactions) collectRuns(entry.subactions, into);
-  }
-  return into;
-}
-
 type OpenEntity = ReturnType<typeof useOpenEntity>;
-
-function playlistEntries(
-  song: TrackItem,
-  signedIn: boolean,
-  playlists: PlaylistView[] | undefined,
-): MenuEntry {
-  const base = {
-    id: "add-to-playlist",
-    title: "Add to Playlist",
-    image: "music.note.list",
-  } as const;
-  if (!signedIn) {
-    return {
-      ...base,
-      run: () => promptSignIn("You need an account to make playlists."),
-    };
-  }
-  if (!playlists?.length) {
-    return {
-      ...base,
-      subactions: [
-        {
-          id: "no-playlists",
-          title: playlists ? "No playlists yet" : "Loading playlists",
-          attributes: { disabled: true },
-        },
-      ],
-    };
-  }
-  return {
-    ...base,
-    subactions: playlists.map((playlist) => ({
-      id: `playlist:${playlist.id}`,
-      title: playlist.name,
-      state: playlist.songs.includes(song.id) ? "on" : "off",
-      attributes: { disabled: playlist.pending === true },
-      run: () => addSongToPlaylist(playlist, song),
-    })),
-  };
-}
 
 function artistEntry(
   song: TrackItem,
@@ -130,9 +67,9 @@ type SongMenuProps = {
 };
 
 /**
- * A track's actions in the platform menu (SwiftUI `Menu`, a Material
- * dropdown): play next, add to queue, add to playlist, go to album or
- * artist, share, download, and the list's own removal.
+ * A track's actions in the platform menu: play next, add to queue, add to
+ * playlist, play radio, go to album or artist, share, download, and the
+ * list's own removal.
  */
 export function SongMenu({ song, removal, children }: SongMenuProps) {
   const signedIn = useUserId() !== undefined;
@@ -158,7 +95,17 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
       },
     },
   ];
-  if (isSong) entries.push(playlistEntries(song, signedIn, playlists));
+  if (isSong) {
+    entries.push(
+      addToPlaylistEntry({
+        songIds: [song.id],
+        signedIn,
+        playlists,
+        onAdd: (playlist) => addSongsToPlaylist(playlist, [song]),
+      }),
+      playRadioEntry(radioSeedOf([song])),
+    );
+  }
   const { albumUrl } = song;
   if (isSong && albumUrl) {
     entries.push({
@@ -194,15 +141,9 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
     });
   }
 
-  const runs = collectRuns(entries);
-
   return (
-    <MenuView
-      title={song.name}
-      actions={entries.map(toMenuAction)}
-      onPressAction={({ nativeEvent }) => runs.get(nativeEvent.event)?.()}
-    >
+    <NativeMenu title={song.name} entries={entries}>
       {children}
-    </MenuView>
+    </NativeMenu>
   );
 }

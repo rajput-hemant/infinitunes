@@ -8,7 +8,7 @@ import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 export function EpisodeSkeleton() {
   return (
     <ScreenScrollView scrollEnabled={false}>
-      <EntityHeaderSkeleton />
+      <EntityHeaderSkeleton shuffle={false} />
       <SkeletonPulse>
         <View className="gap-2 px-page">
           <SkeletonBlock className="h-5 w-2/5 rounded-sm" />

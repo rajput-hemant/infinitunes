@@ -26,7 +26,7 @@ import { SongListSkeleton } from "~/components/skeletons";
 import { TrackList } from "~/components/track-list";
 import { joinMeta } from "~/lib/meta";
 import { trpc } from "~/lib/trpc";
-import { playAll, shuffleAll } from "~/playback/play-collection";
+import { playAll } from "~/playback/play-collection";
 
 import { LyricsSection } from "./lyrics-section";
 import { SongCredits } from "./song-credits";
@@ -114,7 +114,6 @@ function SongPage({ song, modules, trending }: SongPageProps) {
           row.primaryArtists.map((artist) => artist.name).join(", "),
         ])}
         onPlay={() => playAll(rows)}
-        onShuffle={() => shuffleAll(rows)}
         like={{ type: "song", token: song.id }}
       />
       {info.has_lyrics === "true" ? <LyricsSection songId={song.id} /> : null}

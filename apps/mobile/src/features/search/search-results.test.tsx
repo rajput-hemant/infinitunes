@@ -107,6 +107,19 @@ describe("combined search results", () => {
     expect(playerStore.getState().queue).toEqual([]);
   });
 
+  it("remembers the search when a shelf card opens its page", async () => {
+    procedure("search.all").mockResolvedValue(rawAllSearch);
+    const onOpenResult = jest.fn();
+    const router = await renderResults({ onOpenResult });
+
+    await fireEvent.press(
+      await screen.findByRole("link", { name: "Udta Teer, Sachin-Jigar" }),
+    );
+
+    expect(router.getPathname()).toBe("/album/LHgqn,SRpyA_");
+    expect(onOpenResult).toHaveBeenCalledTimes(1);
+  });
+
   it("searches an artist by name, as they have no page of their own", async () => {
     procedure("search.all").mockResolvedValue(rawAllSearch);
     const onSearchArtist = jest.fn();

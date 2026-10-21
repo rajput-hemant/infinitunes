@@ -3,6 +3,7 @@ import type { Mix } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
+import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
@@ -52,6 +53,7 @@ function MixPage({ mix }: { mix: Mix }) {
         ])}
         onPlay={() => playAll(rows)}
         onShuffle={() => shuffleAll(rows)}
+        actions={<CollectionMenu name={decode(mix.title)} rows={rows} />}
       />
       <TrackList rows={rows} />
     </>

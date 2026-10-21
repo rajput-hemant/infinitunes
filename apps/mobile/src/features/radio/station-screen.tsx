@@ -1,56 +1,47 @@
-import { decode, getImageSrc, toSongRow } from "@infinitunes/types";
+import { decode, toSongRow } from "@infinitunes/types";
 import type { StationDetailsResponse } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
-import { Image } from "expo-image";
-import { Stack } from "expo-router";
-import { RefreshControl, View } from "react-native";
+import { View } from "react-native";
 
+import { DetailScreen } from "~/components/detail/detail-screen";
 import { EmptyState } from "~/components/empty-state";
-import { ENTITY_ART_SIZE } from "~/components/entity-header";
-import { ErrorState } from "~/components/error-state";
-import { ScreenScrollView } from "~/components/screen-scroll-view";
+import { EntityHeader } from "~/components/entity-header";
+import { SectionHeading } from "~/components/section-heading";
 import { EntityHeaderSkeleton, SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
-import { Button } from "~/components/ui/button";
-import { Text } from "~/components/ui/text";
 import { trpc } from "~/lib/trpc";
 import type { StationRef } from "~/navigation/station-ref";
 import { startStation } from "~/playback/radio";
 
+const STATION_ICON = {
+  ios: "dot.radiowaves.left.and.right",
+  android: "radio",
+} as const;
+
 /** A station's artwork, name and Play, then the songs coming up. */
 export function StationScreen({ name, token }: StationRef) {
-  const station = useQuery(
+  const query = useQuery(
     trpc.radio.stationDetails.queryOptions({ name, token }),
   );
 
   return (
-    <ScreenScrollView
-      refreshControl={
-        <RefreshControl
-          refreshing={station.isRefetching}
-          onRefresh={() => void station.refetch()}
-        />
-      }
-    >
-      <Stack.Screen
-        options={{
-          title: station.data ? decode(station.data.station.title) : "Radio",
-        }}
-      />
-      {station.data ? (
-        <StationDetails details={station.data} />
-      ) : station.error ? (
-        <ErrorState
-          error={station.error}
-          onRetry={() => void station.refetch()}
-        />
-      ) : (
+    <DetailScreen
+      query={query}
+      skeleton={
         <>
-          <EntityHeaderSkeleton />
+          <EntityHeaderSkeleton round shuffle={false} />
           <SongListSkeleton />
         </>
-      )}
-    </ScreenScrollView>
+      }
+      noun="Station"
+      icon={STATION_ICON}
+      identity={({ station }) => ({
+        name: decode(station.title),
+        url: station.perma_url,
+      })}
+    >
+      {(details) => <StationDetails details={details} />}
+    </DetailScreen>
   );
 }
 
@@ -60,50 +51,17 @@ function StationDetails({ details }: { details: StationDetailsResponse }) {
 
   return (
     <>
-      <View className="items-center gap-4 px-page pb-4 pt-2">
-        <Image
-          source={getImageSrc(station.image, "high")}
-          style={{
-            width: ENTITY_ART_SIZE,
-            height: ENTITY_ART_SIZE,
-            borderRadius: ENTITY_ART_SIZE / 2,
-          }}
-          transition={150}
-          accessibilityIgnoresInvertColors
-        />
-        <View className="items-center gap-1">
-          <Text variant="caption" tone="muted">
-            Radio station
-          </Text>
-          <Text
-            variant="title"
-            accessibilityRole="header"
-            className="text-center"
-            numberOfLines={2}
-          >
-            {decode(station.title)}
-          </Text>
-          {station.subtitle ? (
-            <Text tone="muted">{decode(station.subtitle)}</Text>
-          ) : null}
-        </View>
-        <Button
-          label="Play"
-          icon={{ ios: "play.fill", android: "play_arrow" }}
-          onPress={() => startStation(details)}
-          className="self-stretch"
-        />
-      </View>
-
+      <EntityHeader
+        image={station.image}
+        title={decode(station.title)}
+        subtitle={station.subtitle ? decode(station.subtitle) : undefined}
+        eyebrow="Radio station"
+        round
+        onPlay={() => startStation(details)}
+      />
       {rows.length > 0 ? (
         <View>
-          <Text
-            variant="title"
-            accessibilityRole="header"
-            className="px-page pb-1 pt-2"
-          >
-            Coming up
-          </Text>
+          <SectionHeading>Coming up</SectionHeading>
           {rows.map((row, index) => (
             <SongRow
               key={row.id}
@@ -114,7 +72,7 @@ function StationDetails({ details }: { details: StationDetailsResponse }) {
         </View>
       ) : (
         <EmptyState
-          icon={{ ios: "dot.radiowaves.left.and.right", android: "radio" }}
+          icon={STATION_ICON}
           title="Ready to tune in"
           message="Tap Play to tune into this radio station."
         />

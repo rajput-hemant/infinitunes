@@ -8,12 +8,12 @@ import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SongListSkeleton } from "~/components/skeletons";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
+import { useServerPlaylists } from "~/user-data/playlists";
 
 import { LibraryRow } from "./library-row";
 import { LIBRARY_SHORTCUTS } from "./library-shortcuts";
 import { PlaylistRow } from "./playlist-row";
 import { SignedInGate } from "./signed-in-gate";
-import { useServerPlaylists } from "./use-server-playlists";
 
 function Playlists() {
   const { data, error, isPending, refetch } = useServerPlaylists();

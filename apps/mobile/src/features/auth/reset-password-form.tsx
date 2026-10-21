@@ -16,7 +16,7 @@ import { usePending } from "~/lib/use-pending";
 function InvalidLink() {
   return (
     <View className="gap-4" accessibilityRole="alert">
-      <Text tone="muted">
+      <Text tone="error">
         This reset link is invalid or has expired. Links work once and last for
         1 hour.
       </Text>

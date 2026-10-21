@@ -1,9 +1,11 @@
-import type { Artist, Category } from "@infinitunes/types";
+import type { Artist, Category, SongRowItem } from "@infinitunes/types";
 import { decode, formatCount } from "@infinitunes/types";
 import { View } from "react-native";
 
+import { CollectionMenu } from "~/components/collection-menu";
 import { EntityHeader } from "~/components/entity-header";
 import { SegmentedTabs } from "~/components/segmented-tabs";
+import { playAll, shuffleAll } from "~/playback/play-collection";
 
 import type { ArtistTab } from "./artist-tabs";
 import { ARTIST_TAB_LABELS, CATEGORIES, CATEGORY_LABELS } from "./artist-tabs";
@@ -15,8 +17,8 @@ type ArtistListHeaderProps = {
   onTabChange: (tab: ArtistTab) => void;
   category: Category;
   onCategoryChange: (category: Category) => void;
-  onPlay: () => void;
-  onShuffle: () => void;
+  /** The Overview's songs: what Play, Shuffle and the menu queue. */
+  topSongs: readonly SongRowItem[];
 };
 
 function listenersLabel(artist: Artist): string | undefined {
@@ -36,21 +38,32 @@ export function ArtistListHeader({
   onTabChange,
   category,
   onCategoryChange,
-  onPlay,
-  onShuffle,
+  topSongs,
 }: ArtistListHeaderProps) {
+  const name = decode(artist.name);
   const isPaged = tab === "songs" || tab === "albums";
 
   return (
     <View className="gap-3 pb-2">
       <EntityHeader
         image={artist.image}
-        title={decode(artist.name)}
+        title={name}
         subtitle={listenersLabel(artist)}
         round
-        onPlay={onPlay}
-        onShuffle={onShuffle}
+        onPlay={() => playAll(topSongs)}
+        onShuffle={() => shuffleAll(topSongs)}
         like={{ type: "artist", token: artist.artistId }}
+        actions={
+          <CollectionMenu
+            name={name}
+            rows={topSongs}
+            radio={{
+              name,
+              artistId: artist.artistId,
+              language: artist.dominantLanguage,
+            }}
+          />
+        }
       />
       <SegmentedTabs
         testID="artist-tabs"

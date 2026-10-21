@@ -104,7 +104,7 @@ export function TypeResults({
               : { paddingRight: sizes.page, paddingBottom: CARD_GAP }
           }
         >
-          <MediaCard item={item} width={cardWidth} />
+          <MediaCard item={item} width={cardWidth} onPress={onOpenResult} />
         </View>
       )}
     />

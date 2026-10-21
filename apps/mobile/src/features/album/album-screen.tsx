@@ -10,6 +10,7 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { View } from "react-native";
 
+import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
@@ -99,6 +100,7 @@ function AlbumPage({ album, trending }: AlbumPageProps) {
         onPlay={() => playAll(rows)}
         onShuffle={() => shuffleAll(rows)}
         like={{ type: "album", token: album.id }}
+        actions={<CollectionMenu name={decode(album.title)} rows={rows} />}
       />
       <TrackList rows={rows} />
       {copyright ? (

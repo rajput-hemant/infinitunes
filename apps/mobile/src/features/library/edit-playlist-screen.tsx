@@ -4,11 +4,11 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { SongListSkeleton } from "~/components/skeletons";
+import { renamePlaylist } from "~/user-data/playlists";
+import { useServerPlaylists } from "~/user-data/playlists";
 
-import { renamePlaylist } from "./playlist-actions";
 import { PlaylistForm } from "./playlist-form";
 import { SignedInGate } from "./signed-in-gate";
-import { useServerPlaylists } from "./use-server-playlists";
 
 function EditPlaylist({ id }: { id: string }) {
   const { data, error, isPending, refetch } = useServerPlaylists();

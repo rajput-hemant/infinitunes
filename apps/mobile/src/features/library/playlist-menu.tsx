@@ -1,6 +1,7 @@
-import { MenuView } from "@expo/ui/community/menu";
 import { router } from "expo-router";
 import type { ReactNode } from "react";
+
+import { NativeMenu } from "~/components/native-menu";
 
 import { confirmDeletePlaylist } from "./confirm-delete-playlist";
 
@@ -19,29 +20,29 @@ export function PlaylistMenu({
   children,
 }: PlaylistMenuProps) {
   return (
-    <MenuView
+    <NativeMenu
       title={playlist.name}
-      actions={[
-        { id: "rename", title: "Rename", image: "pencil" },
+      entries={[
+        {
+          id: "rename",
+          title: "Rename",
+          image: "pencil",
+          run: () =>
+            router.push({
+              pathname: "/me/edit-playlist/[id]",
+              params: { id: playlist.id },
+            }),
+        },
         {
           id: "delete",
           title: "Delete Playlist",
           image: "trash",
           attributes: { destructive: true },
+          run: () => confirmDeletePlaylist(playlist, onDeleting),
         },
       ]}
-      onPressAction={({ nativeEvent }) => {
-        if (nativeEvent.event === "rename") {
-          router.push({
-            pathname: "/me/edit-playlist/[id]",
-            params: { id: playlist.id },
-          });
-        } else if (nativeEvent.event === "delete") {
-          confirmDeletePlaylist(playlist, onDeleting);
-        }
-      }}
     >
       {children}
-    </MenuView>
+    </NativeMenu>
   );
 }

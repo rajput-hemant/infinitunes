@@ -3,10 +3,10 @@ import { toSongRow } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 
 import { trpcClient } from "~/lib/trpc";
+import { refreshPlaylists } from "~/user-data/playlists";
 
 import type { LibraryList } from "./library-list";
 import { useResolvedItems } from "./use-resolved-items";
-import { refreshPlaylists } from "./use-server-playlists";
 
 /**
  * The songs of one playlist in its own order. `playlist.songs` is the

@@ -62,9 +62,8 @@ export const FormField = forwardRef<TextInputHandle, FormFieldProps>(
         {message ? (
           <Text
             variant="caption"
-            tone="muted"
+            tone={error ? "error" : "muted"}
             accessibilityRole={error ? "alert" : undefined}
-            style={error ? { color: colors.notification } : undefined}
           >
             {message}
           </Text>

@@ -76,7 +76,7 @@ export function DeleteAccountForm() {
         label={pending ? "Deleting..." : "Delete account"}
         disabled={!confirmed || pending}
         onPress={submit}
-        variant="secondary"
+        variant="destructive"
         className="disabled:opacity-50"
       />
     </FormScreen>

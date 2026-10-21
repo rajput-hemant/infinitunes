@@ -9,8 +9,7 @@ import { TextInput, View } from "react-native";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
-
-import type { PlaylistDetails } from "./playlist-actions";
+import type { PlaylistDetails } from "~/user-data/playlists";
 
 type PlaylistFormProps = {
   initial?: { name: string; description: string | null };
