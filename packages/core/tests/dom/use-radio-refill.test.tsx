@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, beforeEach, describe, expect, it, jest } from "bun:test";
 
 import type { ActiveRadioSession, Queue, Song } from "@infinitunes/types";
 import { toQueue } from "@infinitunes/types";
@@ -6,7 +6,10 @@ import { rawSong } from "@infinitunes/types/fixtures";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-import { useRadioRefill } from "../../src/react/use-radio-refill";
+import {
+  REFILL_RETRY_BASE_MS,
+  useRadioRefill,
+} from "../../src/react/use-radio-refill";
 
 const station = (stationId: string): ActiveRadioSession => ({
   stationId,
@@ -173,6 +176,79 @@ describe("radio refill", () => {
     await settle(0, [song("late")]);
 
     expect(calls).toEqual(["s1", "s2"]);
+  });
+
+  describe("retry while playback sits on the last entry", () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    const advance = (ms: number) =>
+      act(async () => {
+        jest.advanceTimersByTime(ms);
+      });
+
+    it("retries a failed refill with a doubling delay, nothing else changing", async () => {
+      const { settle, calls } = await setup({
+        activeRadio: station("s1"),
+        queue: ["a", "b"].map(queued),
+        currentIndex: 1,
+      });
+
+      await settle(0, new Error("upstream down"));
+      await advance(REFILL_RETRY_BASE_MS - 1);
+      expect(calls).toEqual(["s1"]);
+      await advance(1);
+      expect(calls).toEqual(["s1", "s1"]);
+
+      await settle(1, new Error("still down"));
+      await advance(REFILL_RETRY_BASE_MS * 2 - 1);
+      expect(calls).toHaveLength(2);
+      await advance(1);
+      expect(calls).toHaveLength(3);
+    });
+
+    it("retries a batch that brought only songs already queued", async () => {
+      const { settle, calls, getQueue } = await setup({
+        activeRadio: station("s1"),
+        queue: ["a", "b"].map(queued),
+        currentIndex: 1,
+      });
+
+      await settle(0, [song("a"), song("b")]);
+      await advance(REFILL_RETRY_BASE_MS);
+      expect(calls).toEqual(["s1", "s1"]);
+
+      await settle(1, [song("c")]);
+      expect(ids(getQueue())).toEqual(["a", "b", "c"]);
+    });
+
+    it("drops the pending retry when the station changes", async () => {
+      const { render, settle, calls } = await setup({
+        activeRadio: station("s1"),
+        queue: ["a", "b"].map(queued),
+        currentIndex: 1,
+      });
+
+      await settle(0, new Error("upstream down"));
+      await render({ activeRadio: null });
+      await advance(REFILL_RETRY_BASE_MS * 4);
+
+      expect(calls).toEqual(["s1"]);
+    });
+
+    it("drops the pending retry on unmount", async () => {
+      const { settle, calls } = await setup({
+        activeRadio: station("s1"),
+        queue: ["a", "b"].map(queued),
+        currentIndex: 1,
+      });
+
+      await settle(0, new Error("upstream down"));
+      await act(async () => roots.splice(0).forEach((r) => r.unmount()));
+      await advance(REFILL_RETRY_BASE_MS * 4);
+
+      expect(calls).toEqual(["s1"]);
+    });
   });
 
   it("does not duplicate songs queued while the refill was in flight", async () => {
