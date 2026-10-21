@@ -1,5 +1,5 @@
 import { Text as NativeText } from "react-native";
-import type { TextProps as NativeTextProps } from "react-native";
+import type { ColorValue, TextProps as NativeTextProps } from "react-native";
 
 import { cx } from "~/lib/class-names";
 import { textStyles } from "~/theme/tokens";
@@ -28,6 +28,11 @@ export type TextProps = NativeTextProps & {
   tone?: TextTone;
   /** Tabular figures, for times and track numbers. */
   numeric?: boolean;
+  /**
+   * A computed colour that no tone names (text on an artwork-derived wash),
+   * e.g. from `useTokenColor`; it replaces `tone`. Prefer `tone`.
+   */
+  color?: ColorValue;
 };
 
 /** Text in the platform type scale and a semantic colour. */
@@ -35,14 +40,20 @@ export function Text({
   variant = "body",
   tone = "default",
   numeric = false,
+  color,
   className,
   style,
   ...props
 }: TextProps) {
   return (
     <NativeText
-      className={cx(toneClasses[tone], className)}
-      style={[textStyles[variant], numeric && TABULAR, style]}
+      className={cx(color === undefined && toneClasses[tone], className)}
+      style={[
+        textStyles[variant],
+        numeric && TABULAR,
+        color !== undefined && { color },
+        style,
+      ]}
       {...props}
     />
   );
