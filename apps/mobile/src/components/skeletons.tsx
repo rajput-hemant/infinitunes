@@ -61,7 +61,41 @@ export function ShelfSkeleton({ cards = 3 }: { cards?: number }) {
   );
 }
 
-export function EntityHeaderSkeleton() {
+/** `SegmentedTabs` while its screen loads. */
+export function SegmentedTabsSkeleton() {
+  return (
+    <SkeletonPulse>
+      <View className="px-page pb-2">
+        <SkeletonBlock className="h-9 w-full rounded-lg" />
+      </View>
+    </SkeletonPulse>
+  );
+}
+
+/** A heading and two lines of text, e.g. a description under its title. */
+export function TextBlockSkeleton() {
+  return (
+    <SkeletonPulse>
+      <View className="gap-2 px-page pb-3">
+        <SkeletonBlock className="h-5 w-2/5 rounded-sm" />
+        <SkeletonBlock className="h-3.5 w-full rounded-sm" />
+        <SkeletonBlock className="h-3.5 w-4/5 rounded-sm" />
+      </View>
+    </SkeletonPulse>
+  );
+}
+
+type EntityHeaderSkeletonProps = {
+  /** Round artwork, for artists and stations. */
+  round?: boolean;
+  /** A Shuffle button beside Play, as the loaded header will have. */
+  shuffle?: boolean;
+};
+
+export function EntityHeaderSkeleton({
+  round = false,
+  shuffle = true,
+}: EntityHeaderSkeletonProps) {
   return (
     <SkeletonPulse>
       <View className="items-center gap-4 px-page pb-4 pt-2">
@@ -69,14 +103,16 @@ export function EntityHeaderSkeleton() {
           style={{
             width: ENTITY_ART_SIZE,
             height: ENTITY_ART_SIZE,
-            borderRadius: radii.lg,
+            borderRadius: round ? ENTITY_ART_SIZE / 2 : radii.lg,
           }}
         />
         <SkeletonBlock className="h-6 w-3/5 rounded-sm" />
         <SkeletonBlock className="h-4 w-2/5 rounded-sm" />
         <View className="w-full flex-row gap-3">
           <SkeletonBlock className="h-ctl-lg flex-1 rounded-lg" />
-          <SkeletonBlock className="h-ctl-lg flex-1 rounded-lg" />
+          {shuffle ? (
+            <SkeletonBlock className="h-ctl-lg flex-1 rounded-lg" />
+          ) : null}
         </View>
       </View>
     </SkeletonPulse>

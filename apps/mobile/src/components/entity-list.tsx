@@ -1,0 +1,62 @@
+import type { CardItem, SongRowItem } from "@infinitunes/types";
+
+import { entityHref } from "~/navigation/entity-href";
+import { playFrom } from "~/playback/play-collection";
+
+import { MediaRow } from "./media-row";
+import { SongRow } from "./song-row";
+
+/**
+ * The rows of an entity screen's one `FlashList` (artist, label, show): its
+ * songs and its albums, whichever tab is active, so the list (and the header
+ * above it) stays mounted while the tab changes.
+ */
+export type EntityListItem =
+  | {
+      kind: "song";
+      id: string;
+      row: SongRowItem;
+      /** The list this row belongs to, played from `index` when pressed. */
+      queue: readonly SongRowItem[];
+      index: number;
+    }
+  | { kind: "card"; id: string; card: CardItem };
+
+/** The first `limit` rows as list items; pressing one queues the whole `queue`. */
+export function songItems(
+  queue: readonly SongRowItem[],
+  limit = queue.length,
+): EntityListItem[] {
+  return queue
+    .slice(0, limit)
+    .map((row, index) => ({ kind: "song", id: row.id, row, queue, index }));
+}
+
+export function cardItems(cards: readonly CardItem[]): EntityListItem[] {
+  return cards.map((card) => ({ kind: "card", id: card.id, card }));
+}
+
+/** `FlashList`'s `renderItem` for the song and card rows. */
+export function renderEntityListItem({ item }: { item: EntityListItem }) {
+  if (item.kind === "song") {
+    return (
+      <SongRow
+        song={item.row}
+        onPress={() => playFrom(item.queue, item.index)}
+      />
+    );
+  }
+  const { card } = item;
+  return (
+    <MediaRow
+      title={card.name}
+      subtitle={card.subtitle}
+      image={card.image}
+      href={entityHref(card.type, card.url)}
+    />
+  );
+}
+
+export function entityListKey(item: { kind: string; id: string }): string {
+  return `${item.kind}-${item.id}`;
+}

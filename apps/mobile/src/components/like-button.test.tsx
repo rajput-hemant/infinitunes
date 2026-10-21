@@ -1,14 +1,12 @@
 import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 
 import { renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
-import { trpcClient } from "~/test/trpc-mock";
+import { procedure } from "~/test/trpc-mock";
+import { favoritesRow } from "~/test/user-library";
 
 import { LikeButton } from "./like-button";
-
-jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
 
 /** Alice liked the song; Bob never liked anything (no favorites row). */
 const likedBy: Record<string, string[]> = { alice: ["BSaNI3Yr"] };
@@ -23,11 +21,9 @@ const heart = <LikeButton type="song" token="BSaNI3Yr" name="FA9LA" />;
 
 beforeEach(async () => {
   await switchTo(null);
-  trpcClient.user.getUserFavorites.query.mockImplementation(async () => {
+  procedure("user.getUserFavorites").mockImplementation(async () => {
     const songs = viewer ? likedBy[viewer] : undefined;
-    return songs
-      ? { songs, albums: [], playlists: [], artists: [], podcasts: [] }
-      : undefined;
+    return songs ? favoritesRow({ songs }) : undefined;
   });
 });
 
@@ -37,12 +33,17 @@ describe("LikeButton", () => {
   it("lets a listener who never liked anything like a song", async () => {
     await switchTo("bob");
     await renderWithProviders(heart);
+    // A tap before the favorites row is known writes nothing; let it land.
+    await waitFor(() =>
+      expect(procedure("user.getUserFavorites")).toHaveBeenCalled(),
+    );
+    await act(async () => {});
 
     await fireEvent.press(
       await screen.findByRole("button", { name: "Like FA9LA" }),
     );
 
-    expect(trpcClient.user.addToFavorites.mutate).toHaveBeenCalledWith({
+    expect(procedure("user.addToFavorites")).toHaveBeenCalledWith({
       type: "song",
       token: "BSaNI3Yr",
     });

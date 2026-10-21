@@ -15,6 +15,9 @@ as a development build.
    `bun run --cwd apps/mobile ios` (Xcode) or `bun run --cwd apps/mobile android` (Android SDK).
 4. Afterwards start only Metro: `bun run dev:mobile`.
 
+Screens sit at the web app's paths, so a web link opens in the app with its scheme, e.g.
+`npx uri-scheme open infinitunes://album/<name>/<token> --ios`.
+
 ## Checks
 
 From the repo root: `bun run lint`, `bun run type-check`, `bun run test:mobile` (Jest, also part of

@@ -11,6 +11,7 @@ import { Text } from "./text";
 const variants = {
   primary: { container: "bg-primary", tone: "onPrimary" },
   secondary: { container: "bg-secondary", tone: "default" },
+  destructive: { container: "bg-destructive", tone: "onDestructive" },
 } as const;
 
 type ButtonProps = Omit<PressableProps, "children"> & {
@@ -20,7 +21,7 @@ type ButtonProps = Omit<PressableProps, "children"> & {
   variant?: keyof typeof variants;
 };
 
-/** An action at the prominent control height: filled primary, or a tinted secondary. */
+/** An action at the prominent control height: filled primary, a tinted secondary, or a destructive one. */
 export function Button({
   label,
   icon,
@@ -45,7 +46,7 @@ export function Button({
         <Icon
           name={icon}
           size={18}
-          color={variant === "primary" ? colors.background : undefined}
+          color={variant === "secondary" ? undefined : colors.background}
         />
       ) : null}
       <Text variant="headline" tone={tone}>

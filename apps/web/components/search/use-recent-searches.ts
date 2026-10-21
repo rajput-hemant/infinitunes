@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useSyncExternalStore } from "react";
-
 import {
   addRecentSearch,
   parseRecentSearches,
-  RECENT_SEARCHES_KEY,
-} from "./recent-searches";
+} from "@infinitunes/core/recent-searches";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
+
+const RECENT_SEARCHES_KEY = "recent_searches";
 
 const listeners = new Set<() => void>();
 

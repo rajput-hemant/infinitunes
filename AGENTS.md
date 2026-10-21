@@ -11,12 +11,15 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `apps/web/lib/auth.ts` which re-exports it for app components.
 - `@infinitunes/core` (`packages/core`) holds platform-agnostic app logic shared by web and
   mobile, one subpath export per module (no barrel): error mapping (`error-code`,
-  `user-message`), `queue-position`, `playback-order` (next/prev/shuffle/repeat rules),
-  `favorites` (likable types, copy), `optimistic-owner`, `liked-songs` (chunked detail
-  fetching), `artist-pagination`, `validations` (zod forms), and `react/*` hooks and stores
-  that need only `react` (`optimistic-favorite`, `optimistic-playlists`, `position-store`,
-  `use-playhead`, `use-track-playback`, `use-radio-refill`, `use-debounced-value`). Each app
-  keeps only its glue (toasts, audio engine, mutations). Raw-shape test payloads live in
+  `user-message`), `entity-route` (the app paths both apps share, parsed from perma URLs),
+  `queue-position`, `playback-order` (next/prev/shuffle/repeat rules), `favorites` (likable
+  types, copy), `optimistic-owner`, `liked-songs` (chunked detail fetching),
+  `artist-pagination`, `greeting`, `recent-searches`, `validations` (zod forms), and `react/*`
+  hooks and stores that need only `react` (`optimistic-favorite`, `optimistic-playlists`,
+  `position-store`, `use-playhead`, `use-track-playback`, `use-radio-refill`,
+  `use-debounced-value`). Upstream-shape readers shared by both apps (launch data, search
+  items, languages, cards, `plainText`) live in `@infinitunes/types`. Each app keeps only its
+  glue (toasts, audio engine, mutations). Raw-shape test payloads live in
   `@infinitunes/types/fixtures`. It must not import `next/*`, the DOM or `@infinitunes/ui`
   (`.oxlintrc.json` bans DOM globals in `packages/core/src`); its DOM hook tests live in
   `packages/core/tests/dom` (`bun run test:dom`), and `type-check` covers `src` and `tests`.
@@ -75,7 +78,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     until `AppSidebarProvider` hydrates (it then sets `data-sidebar-ready`).
   - Tabs are child routes, not state in a slug: artist tabs are
     `artist/[name]/[token]/{page,songs,albums,bio}` under a layout that keeps the
-    header, tab row and shelves mounted (`lib/artist-route.ts`); search results
+    header, tab row and shelves mounted (`@infinitunes/core/entity-route`); search results
     live in a `search/(results)` group whose layout keeps the title and type chips.
     Old `<name>-songs` artist URLs (and JioSaavn's own links) are 308-redirected in
     `proxy.ts`; `getHref` already links the tab routes.
@@ -176,39 +179,46 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 ## apps/mobile (`@infinitunes/mobile`, Expo SDK 58)
 
 - Layout (`~/*` → `apps/mobile/src/*`): `app/` holds thin route files only (Expo Router, typed routes);
-  `features/<name>/` holds screen content and its hooks; `components/ui/` the primitives (`Text`,
-  `Button`, `IconButton`, `Icon`, `GlassSurface`, `Skeleton*`); `components/` shared composites;
-  `playback/` the player; `user-data/` session, favorites and playlists; `navigation/` stack options,
-  `entityHref` and the player dock geometry; `lib/` clients (`trpc`, `auth-client`, `query-client`, `env`),
-  `preferences`, `share`, `download`, `use-infinite-list`; `theme/` tokens; `test/` Jest helpers.
-- Screen wave ownership: a screen agent owns only `src/features/<area>/` and its route files (the matching
-  `app/(tabs)/(home,search,library)/<type>/[token].tsx` placeholder is theirs to replace). Everything else
-  (`components/`, `playback/`, `user-data/`, `lib/`, `navigation/`, `theme/`, `test/`, providers, layouts,
-  `package.json`/`bun.lock`) is shared: ask the spine owner for a change instead of editing it.
-- Tabs are route groups with their own `Stack` (`(tabs)/(home)/index`, `(search)/search`, `(library)/library`,
-  `(settings)/settings`, URLs `/`, `/search`, ...) using `tabStackOptions`; a new tab needs a `NativeTabs.Trigger`
-  with an `sf` and an `md` icon. Detail screens live once in `(tabs)/(home,search,library)/<type>/[token]`, so
-  they open in the current tab; link to them with `entityHref(type, perma_url)` (token = the URL's last
-  segment), never a hand-built path, and open them from handlers with `useOpenEntity()` (it closes the
-  player/queue modals first). Sheets are native: `formSheet` routes (`/queue`) or `@expo/ui`'s
-  `BottomSheet`. Scroll containers are `ScreenScrollView` (or a list with
+  `features/<name>/` holds one area's screens and hooks and never imports another feature; anything two
+  features use lives in `components/` (`ui/` primitives, `detail/` the entity-screen frame, `form/` the form
+  kit), `lib/` (clients, `preferences`, `share`, `download`, `use-infinite-list`, `use-pending`, `meta`),
+  `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
+  `navigation/` (`entityHref`, stack options, player dock) or `theme/` (tokens, `appearance`).
+- Routes are the web's paths (`@infinitunes/core/entity-route`): detail screens live once in
+  `(tabs)/(home,search,library)/` as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and
+  `artist/[name]/[token]/{index,[tab]}` (the season or tab only selects what opens; switching stays in the
+  screen, whose header scrolls in the one list), so they open in the current tab and a web link with the
+  app's scheme lands on them; `+native-intent` maps legacy `<name>-songs` artist links. Lists are `/album`,
+  `/artist`, `/playlist`, `/show`, `/chart`, `/radio`, `/browse` in `(home)`. Link with `entityHref(type,
+  perma_url)`, never a hand-built path; open from handlers with `useOpenEntity()` (it closes the player/queue
+  modals first). Tabs are route groups with their own `Stack` (`tabStackOptions`); a new tab needs a
+  `NativeTabs.Trigger` with an `sf` and an `md` icon. Sheets are native `formSheet` routes (`/queue`,
+  `/languages`) or `@expo/ui`'s `BottomSheet`. Scroll containers are `ScreenScrollView` (or a list with
   `contentInsetAdjustmentBehavior="automatic"` and `playerDockInset` bottom padding), or large titles and the
   floating mini-player overlap content.
 - Playback: one expo-audio `AudioPlayer` (`playback/audio-engine.ts`; not `AudioPlaylist`, which reports no load
   error, so no bitrate step-down) driven by `PlaybackController` (root layout) from `playerStore`. Screens only
-  call actions (`playerStore.getState().playTracks(rows, { startIndex, shuffle, radio })`, `playNext`,
-  `addToQueue`) and read slices with `usePlayer(selector)`, `usePlaybackStatus`, `usePlaybackPosition`;
-  `togglePlayback`/`seekTo` in `playback/transport.ts`. The lock screen gets metadata, play/pause and scrubbing;
-  expo-audio's single player has no remote next/previous. expo-audio sets `error` on one status event only (the
-  next one, often in the same JS task, says `null`) and nothing guarantees a rendered status between `replace` and the next failure, so the controller latches each
-  load's error/loaded from its listener; never feed `useAudioPlayerStatus().error`/`isLoaded` to `useTrackPlayback`.
-- Primitives: `SongRow` (`song`: a `toSongRow` row or queue entry, `onPress` plays its list; heart, native
-  `SongMenu` via `@expo/ui` `MenuView`, `removal` for the list's own remove), `MediaCard`/`Shelf` (`toCardItem`
-  items, `seeAllHref`), `EntityHeader` (`onPlay`, `onShuffle`, `like`), `SongListSkeleton`/`ShelfSkeleton`/
-  `EntityHeaderSkeleton`, `EmptyState`, `ErrorState` (`userMessage` copy, retry) and `useInfiniteList` (page
-  numbers, `items` already flattened and deduped). Toasts are `sonner-native`'s `toast` (mounted `Toaster`).
-- Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and `addSongToPlaylist`/
-  `removeSongFromPlaylist` (`user-data/`); failures roll back with a toast, signed out they `promptSignIn`.
+  call actions (`playAll`/`shuffleAll`/`playFrom` in `playback/play-collection.ts`, `playNext`, `addToQueue`,
+  `startSeededRadio(radioSeedOf(rows))`) and read slices with `usePlayer(selector)`, `usePlaybackStatus`,
+  `usePlaybackPosition`; `togglePlayback`/`seekTo` in `playback/transport.ts`. The lock screen gets metadata,
+  play/pause and scrubbing; expo-audio's single player has no remote next/previous. expo-audio sets `error` on
+  one status event only (the next one, often in the same JS task, says `null`) and nothing guarantees a
+  rendered status between `replace` and the next failure, so the controller latches each load's error/loaded
+  from its listener; never feed `useAudioPlayerStatus().error`/`isLoaded` to `useTrackPlayback`.
+- Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
+  Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
+  that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
+  `eyebrow` and trailing `actions` (`CollectionMenu`: play next, queue, add all to a playlist, radio).
+  Menus are `NativeMenu` entries that carry their action (`addToPlaylistEntry`, `playRadioEntry`); `SongMenu`
+  is the track's. Rows: `SongRow` (`toSongRow` row or queue entry, `removal`), `MediaRow` (`href` or
+  `onPress`), `EntityListItem`s for a screen's one `FlashList`. Cards: `MediaCard`/`Shelf` (`toCardItem`
+  items, `seeAllHref`, `onItemPress`, `renderCard`; stations open `/radio/<name>/<token>`, `StationCard` adds
+  play). Artwork goes through `Artwork` (the layout's resolution capped by the Image quality preference).
+  `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped). Toasts are
+  `sonner-native`'s `toast` (mounted `Toaster`).
+- Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
+  `user-data/playlists.ts` (create, rename, delete, add, remove, move; removals and moves take the server's
+  copy from `useServerPlaylists`); failures roll back with a toast, signed out they `promptSignIn`.
   Per-user queries key on `userQueryKey(procedureKey, userId)` so one account's cache never shows for the
   next (`getUserFavorites` has no row for a new user: return a value, a query may not resolve `undefined`).
   Persist client state with zustand `persist` + `persistedStorage` (SQLite kv-store, synchronous reads so
@@ -218,8 +228,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours,
   `theme/tokens.ts`), colour JS props from `useTheme().colors`, text via `Text` `variant`/`tone`.
 - Data: `useQuery(trpc.<router>.<proc>.queryOptions(input))` from `~/lib/trpc`; imperative calls use
-  `trpcClient`. Only `import type` from `@infinitunes/trpc/types`; never `@infinitunes/ui` or the
-  `@infinitunes/auth` barrel (`./session-cookie`, `./native-app`, `./schemas` are safe).
+  `trpcClient`. The query client skips retries for NOT_FOUND, BAD_REQUEST, FORBIDDEN and UNAUTHORIZED
+  (`shouldRetry`), so hooks set no `retry`. Home, Top Charts and Top Albums' "All" pass `useCatalogLang()`
+  (the Languages preference) as `lang`. Only `import type` from `@infinitunes/trpc/types`; never
+  `@infinitunes/ui` or the `@infinitunes/auth` barrel (`./session-cookie`, `./native-app`, `./schemas` are safe).
 - Native fetch sends no `Origin`, so `trpcClient` sends `expo-origin: infinitunes://` (`NATIVE_ORIGIN_HEADER`)
   and the stored cookie with `credentials: "omit"`. `proxy.ts` accepts a POST without `Origin` only with that
   exact header and no `Sec-Fetch-Site` (browsers always send `Origin`, and cannot add the header cross-site
@@ -231,10 +243,14 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`
   are direct dependencies; `jest.config.js` adds `.bun` to the transform allow-list, falls back to the app's
   `node_modules` and maps `react` to the app's copy (else `packages/core` hooks throw "Invalid hook call").
-  Jest swaps `expo-audio` for the scriptable `src/test/expo-audio.ts` and mocks Reanimated, `sonner-native`
-  (assert `jest.mocked(toast.error)`) and the SQLite store in `src/test/setup.ts`; component tests use
-  `renderWithProviders`/`renderScreen`, `require("~/test/trpc-mock")` for `~/lib/trpc` and
-  `require("~/test/session-mock")` (`signInAs`) for `~/lib/auth-client`. `expo-doctor` reports
+  Jest runs real Reanimated (its `jest/resolver` composed in `src/test/resolver.js`, `setUpTests()`), swaps
+  `expo-audio` for the scriptable `src/test/expo-audio.ts`, and `src/test/setup.ts` maps `~/lib/trpc` to a
+  typed registry (`procedure("album.details").mockResolvedValue(...)`, reset before each test; unanswered
+  catalog procedures reject) and `~/lib/auth-client` to a session store (`signInAs`, every Better Auth call
+  a `jest.fn`) for every suite, plus `sonner-native` (assert `jest.mocked(toast.error)`), the SQLite store,
+  and stand-ins for Gesture Handler's `ReanimatedSwipeable` and `react-native-reorderable-list`, which do not
+  run under Reanimated's Jest runtime. Render with `renderWithProviders`, `renderScreen(ui, { routes })` or
+  `renderStack`; `@expo/ui` lists need `jest.mock("@expo/ui", () => require("~/test/expo-ui"))`. `expo-doctor` reports
   same-version "duplicates" (Bun peer variants); autolinking module resolution bundles one copy, so only a
   real version split matters. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
   over web's.

@@ -18,7 +18,7 @@ const albums = [
 function renderShelf(ui: ReactElement) {
   return renderRouter({
     index: () => ui,
-    "album/[token]": () => null,
+    "album/[name]/[token]": () => null,
     search: () => null,
   });
 }
@@ -42,7 +42,7 @@ describe("Shelf", () => {
 
     await fireEvent.press(screen.getByText("Rock & Roll"));
 
-    expect(router.getPathname()).toBe("/album/Qw3rTy_");
+    expect(router.getPathname()).toBe("/album/rock-roll/Qw3rTy_");
   });
 
   it("links to the full list", async () => {

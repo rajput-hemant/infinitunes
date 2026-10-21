@@ -1,4 +1,5 @@
 import { decode, getImageSrc, parseToken } from "@infinitunes/types";
+import type { SearchItem } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Play } from "lucide-react";
 import Link from "next/link";
@@ -9,7 +10,6 @@ import { cn } from "~/lib/utils";
 import { ImageWithFallback } from "../image-with-fallback";
 import { getPlaceholderSrc } from "../placeholder-src";
 import { PlayButton } from "../play-button";
-import type { SearchItem } from "./search-item";
 import { getSearchItemHref } from "./search-item";
 import { searchUi } from "./search-ui";
 

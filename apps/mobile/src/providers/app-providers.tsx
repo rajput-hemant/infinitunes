@@ -7,8 +7,13 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toaster } from "sonner-native";
 
 import { queryClient } from "~/lib/query-client";
+import { restoreAppearance } from "~/theme/appearance";
 import { useNavigationTheme } from "~/theme/navigation-theme";
 import { useOptimisticOwner } from "~/user-data/session";
+
+// The OS keeps no colour-scheme override between launches: apply the saved
+// one before the first frame.
+restoreAppearance();
 
 /**
  * App-wide providers. Expo Router already supplies the safe-area provider,

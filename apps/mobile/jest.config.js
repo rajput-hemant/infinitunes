@@ -17,6 +17,7 @@ const reactDir = path.dirname(require.resolve("react/package.json"));
  * `packages/core` would load its own dev copy and every hook in it would
  * throw "Invalid hook call" (Metro already bundles one copy). `expo-audio` is replaced at the
  * module boundary by a scriptable fake engine (`src/test/expo-audio.ts`).
+ * Real Reanimated runs in Jest through its own resolver (`src/test/resolver.js`).
  *
  * @type {import("jest").Config}
  */
@@ -33,5 +34,12 @@ module.exports = {
     "^expo-audio$": "<rootDir>/src/test/expo-audio.ts",
     "\\.css$": "<rootDir>/src/test/stylesheet.ts",
   },
-  setupFiles: ["<rootDir>/src/test/setup.ts"],
+  resolver: "<rootDir>/src/test/resolver.js",
+  setupFiles: [
+    "react-native-gesture-handler/jestSetup",
+    "<rootDir>/src/test/setup.ts",
+  ],
+  setupFilesAfterEnv: ["<rootDir>/src/test/setup-after-env.ts"],
+  // The route-tree suites render every tab's first screen on their first test.
+  testTimeout: 30_000,
 };

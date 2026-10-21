@@ -1,9 +1,8 @@
-import { getImageSrc } from "@infinitunes/types";
 import { selectionAsync } from "expo-haptics";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { Pressable, View } from "react-native";
 
+import { Artwork } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
@@ -38,14 +37,14 @@ export function MiniPlayer() {
         className="flex-1 flex-row items-center gap-3"
       >
         {track ? (
-          <Image
-            source={getImageSrc(track.image, "medium")}
+          <Artwork
+            image={track.image}
+            quality="medium"
             style={{
               width: ARTWORK_SIZE,
               height: ARTWORK_SIZE,
               borderRadius: radii.sm,
             }}
-            accessibilityIgnoresInvertColors
           />
         ) : (
           <View className="size-9 items-center justify-center rounded-sm bg-muted">

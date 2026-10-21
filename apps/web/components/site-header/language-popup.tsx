@@ -1,6 +1,7 @@
 "use client";
 
 import type { Lang } from "@infinitunes/types";
+import { isLang, parseLanguages } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Drawer,
@@ -30,7 +31,6 @@ import { languages } from "~/config/languages";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
-import { isLang } from "./lang-guard";
 import {
   LanguageTriggerContent,
   languageTriggerProps,
@@ -48,9 +48,7 @@ type LanguagePopupProps = {
 function savedLanguages(): Lang[] | undefined {
   const saved = getCookie("language");
 
-  return typeof saved === "string"
-    ? saved.split(",").filter(isLang)
-    : undefined;
+  return typeof saved === "string" ? parseLanguages(saved) : undefined;
 }
 
 /** The real popup (Popover from 768px, Drawer below), loaded on intent by `LanguagePicker`. */

@@ -1,17 +1,8 @@
 import {
   PLAYLIST_DESCRIPTION_MAX,
   PLAYLIST_NAME_MAX,
-  USER_NAME_MAX,
 } from "@infinitunes/types";
 import * as z from "zod";
-
-export const nameSchema = z
-  .string()
-  .trim()
-  .min(1, { error: "Name is Required" })
-  .max(USER_NAME_MAX, {
-    error: `Name must be at most ${USER_NAME_MAX} characters long`,
-  });
 
 export const newPlaylistSchema = z.object({
   name: z

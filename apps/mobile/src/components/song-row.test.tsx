@@ -5,12 +5,10 @@ import { toast } from "sonner-native";
 
 import { playbackStatusStore } from "~/playback/playback-status";
 import { playerStore } from "~/playback/player-store";
-import { renderScreen } from "~/test/render";
+import { chooseMenuAction, renderScreen } from "~/test/render";
+import { procedure } from "~/test/trpc-mock";
 
 import { SongRow } from "./song-row";
-
-jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
 
 const song = toSongRow(rawSong());
 const initial = playerStore.getState();
@@ -27,6 +25,22 @@ describe("SongRow", () => {
     expect(screen.getByText("FA9LA & Friends")).toBeOnTheScreen();
     expect(screen.getByText("Flipperachi")).toBeOnTheScreen();
     expect(screen.queryByTestId("now-playing")).toBeNull();
+  });
+
+  it("starts the primary artist's radio from its menu", async () => {
+    procedure("radio.createStation").mockResolvedValue({ stationId: "st-1" });
+    procedure("radio.songs").mockResolvedValue([rawSong({ id: "radio-1" })]);
+    await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
+
+    await chooseMenuAction("More actions for FA9LA & Friends", "play-radio");
+
+    expect(procedure("radio.createStation")).toHaveBeenCalledWith({
+      type: "artist",
+      name: "Flipperachi",
+      artistId: "2393548",
+      language: "arabic",
+    });
+    expect(playerStore.getState().radio?.name).toBe("Flipperachi Radio");
   });
 
   it("plays its list when pressed", async () => {

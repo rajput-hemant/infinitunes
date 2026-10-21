@@ -3,6 +3,7 @@ export * from "./artist";
 export * from "./artist-bio";
 export * from "./config";
 export * from "./get";
+export * from "./home";
 export * from "./misc";
 export * from "./media";
 export * from "./modules";

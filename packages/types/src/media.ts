@@ -1,3 +1,4 @@
+import type { ArtistMini } from "./artist";
 import type {
   ImageQuality,
   MediaType,
@@ -72,6 +73,50 @@ export function toCardItem(item: RawCardItem): CardItem {
     image: item.image,
     explicit: item.explicit_content,
   };
+}
+
+/** `toCardItem` over a list, e.g. as a query's `select`. */
+export function toCardItems(items: readonly RawCardItem[]): CardItem[] {
+  return items.map(toCardItem);
+}
+
+type RawArtistCard = {
+  id: string;
+  name: string;
+  perma_url: string;
+  image: string;
+  subtitle?: string;
+};
+
+/** Artist-shaped items are named `name`, not `title`, so `toCardItem` does not fit them. */
+export function toArtistCard(artist: RawArtistCard): CardItem {
+  return {
+    id: artist.id,
+    name: decode(artist.name),
+    url: artist.perma_url,
+    subtitle: artist.subtitle ? decode(artist.subtitle) : undefined,
+    type: "artist",
+    image: artist.image,
+  };
+}
+
+/** An `artistMap` list as cards; upstream lists an artist once per role, a card shows each once. */
+export function artistCards(artists: readonly ArtistMini[]): CardItem[] {
+  return uniqueArtists([...artists]).map(toArtistCard);
+}
+
+const LINE_BREAKS = /<\s*(?:br\s*\/?|\/p)\s*>/gi;
+const TAGS = /<[^>]*>/g;
+
+/**
+ * Show and episode descriptions are HTML fragments. Native text has no
+ * markup, so line breaks become newlines, every tag is dropped, and only
+ * then are entities decoded (so an encoded `&lt;b&gt;` stays literal text).
+ */
+export function plainText(html: string | undefined): string {
+  return decode(
+    (html ?? "").replace(LINE_BREAKS, "\n").replace(TAGS, ""),
+  ).trim();
 }
 
 let queueItemCounter = 0;

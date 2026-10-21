@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@infinitunes/auth/client";
-import { signUpSchema } from "@infinitunes/auth/schemas";
+import { PASSWORD_HINT, signUpSchema } from "@infinitunes/auth/schemas";
 import { userMessage } from "@infinitunes/core/user-message";
 import { Button } from "@infinitunes/ui/components/button";
 import { Loader2, Mail } from "lucide-react";
@@ -18,7 +18,6 @@ import { EmailField } from "./email-field";
 import { authPrimaryButtonStyles } from "./field-styles";
 import { OAuthButtons } from "./oauth-buttons";
 import { PasswordField } from "./password-field";
-import { PASSWORD_HINT } from "./password-hint";
 
 type SignUpFormData = z.infer<typeof signUpSchema>;
 

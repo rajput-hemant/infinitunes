@@ -1,12 +1,10 @@
+import { getSearchItems } from "@infinitunes/types";
+import type { SearchItem } from "@infinitunes/types";
 import { SearchX } from "lucide-react";
 import Link from "next/link";
 
 import { LibraryEmpty } from "~/components/library/library-section";
-import type { SearchItem } from "~/components/search/search-item";
-import {
-  getSearchItemHref,
-  getSearchItems,
-} from "~/components/search/search-item";
+import { getSearchItemHref } from "~/components/search/search-item";
 import { searchHref } from "~/components/search/search-query";
 import { SearchRow } from "~/components/search/search-row";
 import { searchUi } from "~/components/search/search-ui";

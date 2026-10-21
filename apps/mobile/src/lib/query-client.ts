@@ -1,3 +1,4 @@
+import { getErrorCode } from "@infinitunes/core/error-code";
 import {
   focusManager,
   onlineManager,
@@ -22,12 +23,33 @@ onlineManager.setEventListener((setOnline) => {
   return () => subscription.remove();
 });
 
+const MAX_RETRIES = 3;
+
+/** Codes that name a request or entity that will not change on a second try. */
+const FINAL_CODES = new Set([
+  "NOT_FOUND",
+  "BAD_REQUEST",
+  "FORBIDDEN",
+  "UNAUTHORIZED",
+]);
+
+/**
+ * TanStack's default three retries, minus the failures a retry cannot fix: a
+ * missing entity stays missing (retrying would hold the skeleton for seconds
+ * before the not-found state), and a rejected input or session stays rejected.
+ */
+export function shouldRetry(failureCount: number, error: unknown): boolean {
+  const code = getErrorCode(error);
+  return failureCount < MAX_RETRIES && !(code && FINAL_CODES.has(code));
+}
+
 /** The app's single query cache, shared by hooks and the tRPC options proxy. */
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       // Catalog data changes slowly; the web caches it for 10 to 60 minutes.
       staleTime: 5 * 60 * 1000,
+      retry: shouldRetry,
     },
   },
 });

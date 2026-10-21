@@ -5,15 +5,9 @@ import { Pressable, Text } from "react-native";
 
 import { useOpenEntity } from "./use-open-entity";
 
-jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
-jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
-// Native tabs render every tab; the Home feed's data is not under test here.
-jest.mock("~/features/home/trending-list", () => ({
-  TrendingList: () => null,
-}));
-
 const ARTIST_URL =
   "https://www.jiosaavn.com/artist/flipperachi-songs/LnMfdXjMGl0_";
+const ALBUM_PATH = "/album/udta-teer/LHgqn,SRpyA_";
 
 function OpenArtist() {
   const openEntity = useOpenEntity();
@@ -29,17 +23,39 @@ describe("app routes", () => {
     const app = await renderRouter("./src/app", { initialUrl: "/search" });
     expect(app.getSegments()).toEqual(["(tabs)", "(search)", "search"]);
 
-    await act(async () => router.push("/album/LHgqn,SRpyA_"));
+    await act(async () => router.push(ALBUM_PATH));
 
-    expect(app.getPathname()).toBe("/album/LHgqn,SRpyA_");
+    expect(app.getPathname()).toBe(ALBUM_PATH);
     expect(app.getSegments()).toEqual([
       "(tabs)",
       "(search)",
       "album",
+      "[name]",
       "[token]",
     ]);
     await act(async () => router.back());
     expect(app.getPathname()).toBe("/search");
+  });
+
+  it.each([
+    ["an album", ALBUM_PATH, ["album", "[name]", "[token]"]],
+    [
+      "a show at a season",
+      "/show/the-ranveer-show/2/mXtDJ4Yd2Sw_",
+      ["show", "[name]", "[season]", "[token]"],
+    ],
+    [
+      "an artist tab",
+      "/artist/flipperachi/LnMfdXjMGl0_/songs",
+      ["artist", "[name]", "[token]", "[tab]"],
+    ],
+    ["the top albums list", "/album", ["album"]],
+    ["the charts", "/chart", ["chart"]],
+  ])("opens %s at the web's path", async (_, initialUrl, segments) => {
+    const app = await renderRouter("./src/app", { initialUrl });
+
+    expect(app.getPathname()).toBe(initialUrl);
+    expect(app.getSegments()).toEqual(["(tabs)", "(home)", ...segments]);
   });
 
   it("keeps the library and settings tabs at their old URLs", async () => {
@@ -56,20 +72,20 @@ describe("useOpenEntity", () => {
     _layout: () => <Stack />,
     "(tabs)/_layout": () => <Stack />,
     "(tabs)/index": () => null,
-    "(tabs)/album/[token]": OpenArtist,
-    "(tabs)/artist/[token]": () => null,
+    "(tabs)/album/[name]/[token]": OpenArtist,
+    "(tabs)/artist/[name]/[token]/[tab]": () => null,
     player: OpenArtist,
   };
 
   it("pushes onto the tab, keeping the screen it came from", async () => {
     const app = await renderRouter(tree, { initialUrl: "/" });
-    await act(async () => router.push("/album/LHgqn,SRpyA_"));
+    await act(async () => router.push(ALBUM_PATH));
 
     await fireEvent.press(screen.getByText("Go to Artist"));
-    expect(app.getPathname()).toBe("/artist/LnMfdXjMGl0_");
+    expect(app.getPathname()).toBe("/artist/flipperachi/LnMfdXjMGl0_/songs");
 
     await act(async () => router.back());
-    expect(app.getPathname()).toBe("/album/LHgqn,SRpyA_");
+    expect(app.getPathname()).toBe(ALBUM_PATH);
   });
 
   it("closes the player first, opening the screen in the tab below", async () => {
@@ -77,7 +93,7 @@ describe("useOpenEntity", () => {
     await act(async () => router.push("/player"));
 
     await fireEvent.press(screen.getByText("Go to Artist"));
-    expect(app.getPathname()).toBe("/artist/LnMfdXjMGl0_");
+    expect(app.getPathname()).toBe("/artist/flipperachi/LnMfdXjMGl0_/songs");
 
     await act(async () => router.back());
     expect(app.getPathname()).toBe("/");

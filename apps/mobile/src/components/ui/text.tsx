@@ -14,6 +14,8 @@ const toneClasses = {
   default: "text-foreground",
   muted: "text-muted-foreground",
   onPrimary: "text-primary-foreground",
+  onDestructive: "text-destructive-foreground",
+  error: "text-destructive",
 } as const;
 
 export type TextProps = NativeTextProps & {

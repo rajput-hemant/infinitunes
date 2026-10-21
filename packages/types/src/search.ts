@@ -178,3 +178,39 @@ export type SearchReturnType =
   | PlaylistSearch
   | ArtistSearch
   | PodcastSearch;
+
+/**
+ * One entry of a `search.all` group, whose upstream item types differ per
+ * group. Artists (and the top query) carry no `perma_url`.
+ */
+export type SearchItem = {
+  id: string;
+  title: string;
+  subtitle?: string;
+  extra?: string;
+  perma_url?: string;
+  type: MediaType;
+  image: string;
+};
+
+function isSearchItem(value: unknown): value is SearchItem {
+  if (typeof value !== "object" || value === null) return false;
+  return (
+    "id" in value &&
+    typeof value.id === "string" &&
+    "title" in value &&
+    typeof value.title === "string" &&
+    "type" in value &&
+    typeof value.type === "string" &&
+    "image" in value &&
+    typeof value.image === "string"
+  );
+}
+
+/** A group's entries; the upstream `episodes` group is untyped, so each is checked. */
+export function getSearchItems(
+  group: AllSearch[keyof AllSearch],
+): SearchItem[] {
+  const entries: readonly unknown[] = group.data;
+  return entries.filter(isSearchItem);
+}

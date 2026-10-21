@@ -1,15 +1,23 @@
 /**
- * Jest setup for every suite: the build-time web origin, and an in-memory
- * stand-in for native modules without a Jest build (`expo-audio` is mapped
- * in `jest.config.js`).
+ * Jest setup for every suite: the build-time web origin, Reanimated's Jest
+ * mode (its modules resolve through `src/test/resolver.js`), the app's two
+ * network clients swapped for scriptable fakes (`~/test/trpc-mock`,
+ * `~/test/session-mock`), and in-memory stand-ins for native modules without
+ * a Jest build (`expo-audio` is mapped in `jest.config.js`).
  */
+import { setUpTests } from "react-native-reanimated";
 
 process.env.EXPO_PUBLIC_API_URL = "https://infinitunes.test";
 
-// Reanimated's own Jest stand-in (no UI thread here); the bottom sheet and
-// the skeleton pulse import it.
-jest.mock("react-native-reanimated", () =>
-  require("react-native-reanimated/mock"),
+setUpTests();
+
+jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
+jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
+jest.mock("react-native-gesture-handler/ReanimatedSwipeable", () =>
+  require("~/test/swipeable"),
+);
+jest.mock("react-native-reorderable-list", () =>
+  require("~/test/reorderable-list"),
 );
 
 // Toasts are asserted through these spies (`jest.mocked(toast.error)`); the

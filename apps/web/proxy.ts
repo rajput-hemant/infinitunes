@@ -4,6 +4,7 @@ import {
 } from "@infinitunes/auth/native-app";
 import { sessionCookiePrefix } from "@infinitunes/auth/session-cookie";
 import { originOf } from "@infinitunes/auth/url";
+import { legacyArtistPath } from "@infinitunes/core/entity-route";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { getSessionCookie } from "better-auth/cookies";
@@ -11,7 +12,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 import { appRoutes, userRoutes } from "./config/routes";
-import { legacyArtistPath } from "./lib/artist-route";
 import { getClientKey, resolveTrustedProxy } from "./lib/client-ip";
 import { buildCsp, cspHeaderName } from "./lib/csp";
 import { env } from "./lib/env";

@@ -1,9 +1,13 @@
 "use client";
 
+import {
+  ARTIST_TABS,
+  artistPath,
+  tabForSegment,
+} from "@infinitunes/core/entity-route";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
-import { ARTIST_TABS, artistPath, tabForSegment } from "~/lib/artist-route";
 import { asRoute, cn } from "~/lib/utils";
 
 import { TAB_LABELS } from "./tabs";

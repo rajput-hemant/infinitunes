@@ -1,9 +1,8 @@
+import { entityRoute, entityRoutePath } from "@infinitunes/core/entity-route";
 import { decode } from "@infinitunes/types";
 import type { MediaType } from "@infinitunes/types";
 import { cn } from "@infinitunes/ui/lib/utils";
 import type { Route } from "next";
-
-import { artistPath, splitArtistSlug } from "~/lib/artist-route";
 
 export { cn };
 
@@ -51,9 +50,6 @@ export function ogImageUrl(params: {
   return `/api/og?${query}`;
 }
 
-const JIOSAAVN_URL_RE =
-  /^https?:\/\/(?:[a-zA-Z0-9-]+\.)*(?:jiosaavn|saavn)\.com(?::\d+)?\/(.*)$/i;
-
 export function getHref(
   url: string | undefined | null,
   type: MediaType,
@@ -63,24 +59,9 @@ export function getHref(
     return asRoute(url);
   }
 
-  const match = JIOSAAVN_URL_RE.exec(url);
-  if (!match) return asRoute("#");
-
-  const path = (match[1] ?? "").split(/[?#]/)[0];
-  const segments = path.split("/").filter(Boolean);
-  const count = type === "show" ? 3 : 2;
-  if (segments.length < count) return asRoute("#");
-
-  const trailing = segments.slice(-count);
-
-  if (type === "artist") {
-    // Upstream names carry the tab (`<name>-songs`): link to the tab route directly.
-    const [slug = "", token = ""] = trailing;
-    const { name, tab } = splitArtistSlug(slug);
-    return asRoute(artistPath(name, token, tab));
-  }
-
-  return asRoute(`/${type}/${trailing.join("/")}`);
+  // Upstream artist names carry the tab (`<name>-songs`): the route links the tab directly.
+  const route = entityRoute(url, type);
+  return asRoute(route ? entityRoutePath(route) : "#");
 }
 
 export function isMacOs() {

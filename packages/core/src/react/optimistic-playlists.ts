@@ -45,6 +45,8 @@ type Renamed = {
 // playlist (adds dedupe), and a position goes stale as soon as any earlier write lands.
 type Added = { songId: string; settled: boolean };
 type Removed = { songId: string; settled: boolean };
+// A move records the order the listener left the playlist in; later moves replace it.
+type Moved = { order: readonly string[]; settled: boolean; prev?: Moved };
 
 const EXPIRY_MS = 10000;
 
@@ -53,6 +55,7 @@ const renamed = new Map<string, Renamed>();
 const deleted = new Map<string, { settled: boolean }>();
 const added = new Map<string, Added[]>();
 const removed = new Map<string, Removed[]>();
+const moved = new Map<string, Moved>();
 const queues = new Map<string, Promise<unknown>>();
 
 /** Immutable copy of the records, replaced on every change: the store snapshot. */
@@ -62,6 +65,7 @@ type OverlayState = {
   deleted: ReadonlyMap<string, { settled: boolean }>;
   added: ReadonlyMap<string, readonly Added[]>;
   removed: ReadonlyMap<string, readonly Removed[]>;
+  moved: ReadonlyMap<string, Moved>;
 };
 
 const emptyState: OverlayState = {
@@ -70,6 +74,7 @@ const emptyState: OverlayState = {
   deleted: new Map(),
   added: new Map(),
   removed: new Map(),
+  moved: new Map(),
 };
 
 let state = emptyState;
@@ -83,6 +88,7 @@ function bump() {
     deleted: new Map(deleted),
     added: new Map(added),
     removed: new Map(removed),
+    moved: new Map(moved),
   };
   for (const listener of listeners) listener();
 }
@@ -309,6 +315,62 @@ export function removeSongOptimistic(
   });
 }
 
+/** `order` without the songs `songs` lacks, then the songs `order` lacks, in place. */
+function arrange(songs: readonly string[], order: readonly string[]) {
+  const known = new Set(songs);
+  const ordered = new Set(order);
+  return [
+    ...order.filter((id) => known.has(id)),
+    ...songs.filter((id) => !ordered.has(id)),
+  ];
+}
+
+/**
+ * Shows the playlist in `order` now: its songs as they are on screen, with
+ * `songId` already moved. `send` gets the song's index in what the server
+ * holds at that moment (earlier queued writes included) and the index that
+ * puts it where `order` has it; the server re-checks the id at `from`, so a
+ * stale position never moves another song. `serverSongs` is the list the
+ * drag was made against. A failure restores the previous order.
+ */
+export function moveSongOptimistic(
+  playlistId: string,
+  songId: string,
+  order: readonly string[],
+  serverSongs: readonly string[] | undefined,
+  send: (from: number, to: number) => Promise<unknown>,
+) {
+  const record: Moved = {
+    order: [...order],
+    settled: false,
+    prev: moved.get(playlistId),
+  };
+  moved.set(playlistId, record);
+  bump();
+  return queueWrite(playlistId, async () => {
+    try {
+      const held = confirmedSongs.get(playlistId) ?? serverSongs ?? [];
+      const from = held.indexOf(songId);
+      const to = arrange(held, order).indexOf(songId);
+      if (from === -1) throw new Error("Song is no longer in this playlist");
+      const result = await send(from, to);
+      record.settled = true;
+      bump();
+      expire(() => {
+        if (moved.get(playlistId) === record) moved.delete(playlistId);
+      });
+      return result;
+    } catch (error) {
+      if (moved.get(playlistId) === record) {
+        if (record.prev) moved.set(playlistId, record.prev);
+        else moved.delete(playlistId);
+      }
+      bump();
+      throw error;
+    }
+  });
+}
+
 /** Drops the records `server` now agrees with; `at` is the snapshot being checked. */
 function reconcile(server: readonly UserPlaylist[], at: OverlayState) {
   let changed = false;
@@ -356,6 +418,15 @@ function reconcile(server: readonly UserPlaylist[], at: OverlayState) {
       }
     }
   }
+  for (const [id, record] of at.moved) {
+    const p = byId.get(id);
+    const agrees =
+      !p || arrange(p.songs, record.order).every((s, i) => p.songs[i] === s);
+    if (record.settled && moved.get(id) === record && agrees) {
+      moved.delete(id);
+      changed = true;
+    }
+  }
   if (changed) bump();
 }
 
@@ -368,12 +439,14 @@ function overlay(
     if (at.deleted.has(p.id)) continue;
     const meta = at.renamed.get(p.id);
     const gone = new Set((at.removed.get(p.id) ?? []).map((r) => r.songId));
-    const songs = [
+    const kept = [
       ...p.songs.filter((id) => !gone.has(id)),
       ...(at.added.get(p.id) ?? [])
         .map((r) => r.songId)
         .filter((id) => !p.songs.includes(id)),
     ];
+    const order = at.moved.get(p.id)?.order;
+    const songs = order ? arrange(kept, order) : kept;
     list.push({
       ...p,
       name: meta?.name ?? p.name,
@@ -464,6 +537,7 @@ export function resetPlaylistOverlay() {
   deleted.clear();
   added.clear();
   removed.clear();
+  moved.clear();
   queues.clear();
   queued.clear();
   confirmedSongs.clear();
