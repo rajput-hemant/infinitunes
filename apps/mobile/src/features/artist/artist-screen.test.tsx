@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
@@ -210,6 +210,20 @@ describe("ArtistScreen", () => {
       fireEvent(screen.getByTestId("artist-list"), "endReached");
     });
     expect(artistAnswers.songs).toHaveBeenCalledTimes(2);
+  });
+
+  it("refreshes the artist and the open list on pull to refresh", async () => {
+    await renderArtist();
+    await findTitle();
+    await selectTab("Songs");
+    await screen.findByText("Song s1");
+
+    await act(async () => {
+      fireEvent(screen.getByTestId("artist-list"), "refresh");
+    });
+
+    await waitFor(() => expect(artistAnswers.details).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(artistAnswers.songs).toHaveBeenCalledTimes(2));
   });
 
   it("lists albums as rows that open the album", async () => {

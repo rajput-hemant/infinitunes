@@ -4,7 +4,7 @@ import { ARTIST_TOKEN, rawArtist } from "./test-fixtures";
 describe("artistShareUrl", () => {
   it("points at the Overview, not the Songs tab the URL names", () => {
     expect(artistShareUrl(rawArtist())).toBe(
-      `/artist/flipperachi/${ARTIST_TOKEN}`,
+      `https://www.jiosaavn.com/artist/flipperachi/${ARTIST_TOKEN}`,
     );
   });
 
@@ -12,11 +12,11 @@ describe("artistShareUrl", () => {
     const artist = rawArtist({
       urls: {
         ...rawArtist().urls,
-        songs: `/artist/hit-songs-ahmed/${ARTIST_TOKEN}`,
+        songs: `https://www.jiosaavn.com/artist/hit-songs-ahmed/${ARTIST_TOKEN}`,
       },
     });
     expect(artistShareUrl(artist)).toBe(
-      `/artist/hit-songs-ahmed/${ARTIST_TOKEN}`,
+      `https://www.jiosaavn.com/artist/hit-songs-ahmed/${ARTIST_TOKEN}`,
     );
   });
 });

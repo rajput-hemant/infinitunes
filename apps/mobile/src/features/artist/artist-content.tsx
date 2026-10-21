@@ -1,5 +1,5 @@
 import type { Artist, Category } from "@infinitunes/types";
-import { parseArtistBio, toSongRow } from "@infinitunes/types";
+import { parseArtistBio, toSongRow, uniqueBy } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { useMemo, useState } from "react";
 
@@ -29,7 +29,7 @@ export function ArtistContent({
   const [category, setCategory] = useState<Category>("popularity");
   const bio = useMemo(() => parseArtistBio(artist.bio), [artist.bio]);
   const topSongs = useMemo(
-    () => (artist.topSongs ?? []).map(toSongRow),
+    () => uniqueBy((artist.topSongs ?? []).map(toSongRow), (row) => row.id),
     [artist.topSongs],
   );
   const panel = useArtistPanel({ artist, tab, category, topSongs, bio });

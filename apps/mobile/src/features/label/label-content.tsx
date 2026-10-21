@@ -33,7 +33,7 @@ export function LabelContent({
   // Albums first, as on the web.
   const [tab, setTab] = useState<LabelTab>("albums");
   const songs = useMemo(
-    () => label.topSongs.songs.map(toSongRow),
+    () => uniqueBy(label.topSongs.songs.map(toSongRow), (row) => row.id),
     [label.topSongs.songs],
   );
   const albums = useMemo(

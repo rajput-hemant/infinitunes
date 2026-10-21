@@ -21,8 +21,8 @@ export function rawLabel(overrides: Partial<Label> = {}): Label {
     topSongs: { songs, total: songs.length },
     topAlbums: { albums, total: albums.length },
     urls: {
-      albums: `/label/outlaw-productions-albums/${LABEL_TOKEN}`,
-      songs: `/label/outlaw-productions-songs/${LABEL_TOKEN}`,
+      albums: `https://www.jiosaavn.com/label/outlaw-productions-albums/${LABEL_TOKEN}`,
+      songs: `https://www.jiosaavn.com/label/outlaw-productions-songs/${LABEL_TOKEN}`,
     },
     availableLanguages: ["arabic"],
     ...overrides,

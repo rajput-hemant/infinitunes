@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { act, fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { renderRouter } from "expo-router/testing-library";
 
 import { playerStore } from "~/playback/player-store";
@@ -154,6 +154,18 @@ describe("ShowScreen", () => {
       fireEvent(screen.getByTestId("show-list"), "endReached");
     });
     expect(showAnswers.episodes).toHaveBeenCalledTimes(2);
+  });
+
+  it("refreshes the show and its episodes on pull to refresh", async () => {
+    await renderShow();
+    await screen.findByText("Episode 9001 & more");
+
+    await act(async () => {
+      fireEvent(screen.getByTestId("show-list"), "refresh");
+    });
+
+    await waitFor(() => expect(showAnswers.details).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(showAnswers.episodes).toHaveBeenCalledTimes(2));
   });
 
   it("queues the episodes from the pressed row", async () => {

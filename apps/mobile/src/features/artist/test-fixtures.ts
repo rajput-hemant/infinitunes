@@ -76,10 +76,10 @@ export function rawArtist(overrides: Partial<Artist> = {}): Artist {
     twitter: "",
     wiki: "",
     urls: {
-      albums: `/artist/flipperachi-albums/${ARTIST_TOKEN}`,
+      albums: `https://www.jiosaavn.com/artist/flipperachi-albums/${ARTIST_TOKEN}`,
       bio: `/artist/flipperachi-bio/${ARTIST_TOKEN}`,
-      comments: `/artist/flipperachi-comments/${ARTIST_TOKEN}`,
-      songs: `/artist/flipperachi-songs/${ARTIST_TOKEN}`,
+      comments: `https://www.jiosaavn.com/artist/flipperachi-comments/${ARTIST_TOKEN}`,
+      songs: `https://www.jiosaavn.com/artist/flipperachi-songs/${ARTIST_TOKEN}`,
     },
     availableLanguages: ["arabic"],
     fan_count: "48200",
