@@ -241,6 +241,20 @@ export const sizes = {
   dock: 64,
 } as const;
 
+/**
+ * Tailwind's whole spacing scale in points (`tailwind.config.ts` sets it as
+ * `theme.spacing`, not an extension, plus `full`): `0`, `px`, the seven
+ * `space` steps and the named `sizes` (`px-page`, `min-h-row`, `size-touch`).
+ * A class off it (a half step, a 5 or a 10) compiles to nothing, which NativeWind
+ * drops silently; `spacing.test.ts` fails on one instead.
+ */
+export const spacingScale = {
+  0: 0,
+  px: 1,
+  ...spaceClasses,
+  ...sizes,
+} as const;
+
 /** Symbol sizes in points (`Icon size="md"`); no others. */
 export const iconSize = {
   xs: 12,

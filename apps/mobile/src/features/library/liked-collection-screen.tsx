@@ -1,15 +1,11 @@
 import { FlashList } from "@shopify/flash-list";
 import { Stack } from "expo-router";
-import { View } from "react-native";
 
+import { GridCell } from "~/components/grid-cell";
 import { MediaCard } from "~/components/media-card";
 import { ShelfSkeleton } from "~/components/skeletons";
 import { Text } from "~/components/ui/text";
-import {
-  GRID_COLUMNS,
-  GRID_GAP,
-  useGridCardWidth,
-} from "~/lib/use-grid-card-width";
+import { GRID_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { sizes } from "~/theme/tokens";
 
@@ -20,9 +16,6 @@ import {
 } from "./liked-collections";
 import { SignedInGate } from "./signed-in-gate";
 import { useLikedCollection } from "./use-liked-collection";
-
-/** Each cell carries half the gap on every side, so the content pads the rest of the gutter. */
-const CELL = { padding: GRID_GAP / 2 };
 
 function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
   const { title, emptyMessage, icon } = LIKED_COLLECTIONS[kind];
@@ -44,14 +37,14 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
           data={items}
           numColumns={GRID_COLUMNS}
           keyExtractor={(card) => card.url}
-          renderItem={({ item }) => (
-            <View style={CELL}>
+          renderItem={({ item, index }) => (
+            <GridCell index={index}>
               <MediaCard item={item} width={cardWidth} />
-            </View>
+            </GridCell>
           )}
           ListHeaderComponent={
             missing > 0 ? (
-              <Text variant="caption" tone="muted" style={CELL}>
+              <Text variant="caption" tone="muted" className="px-page pb-3">
                 {missing === 1 ? "1 item" : `${missing} items`} couldn't load.
                 Pull down to try again.
               </Text>
@@ -59,8 +52,7 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
           }
           contentInsetAdjustmentBehavior="automatic"
           contentContainerStyle={{
-            paddingHorizontal: sizes.page - GRID_GAP / 2,
-            paddingTop: sizes.page - GRID_GAP / 2,
+            paddingTop: sizes.page,
             paddingBottom: playerDockInset,
           }}
           refreshing={refreshing}
