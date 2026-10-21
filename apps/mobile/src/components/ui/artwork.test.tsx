@@ -17,7 +17,7 @@ afterEach(() => preferencesStore.getState().setImageQuality("high"));
 describe("Artwork", () => {
   it("loads the resolution the layout asks for", async () => {
     await render(
-      <Artwork testID="art" image={IMAGE} quality="medium" style={{}} />,
+      <Artwork testID="art" image={IMAGE} size="card" quality="medium" />,
     );
     expect(renderedUri()).toContain("-150x150.jpg");
   });
@@ -43,9 +43,7 @@ describe("Artwork", () => {
   });
 
   it("never loads more than the Image Quality setting allows", async () => {
-    await render(
-      <Artwork testID="art" image={IMAGE} quality="high" style={{}} />,
-    );
+    await render(<Artwork testID="art" image={IMAGE} size="card" />);
     expect(renderedUri()).toContain("-500x500.jpg");
 
     await act(async () => preferencesStore.getState().setImageQuality("low"));

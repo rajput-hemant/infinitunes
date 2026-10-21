@@ -256,12 +256,11 @@ export type IconSize = keyof typeof iconSize;
 /** Font scale caps: only fixed-height chrome (the mini player) caps its text. */
 export const maxFontScale = { chrome: 1.3 } as const;
 
-/** `title` is a deprecated alias of `title2`, removed once every screen has moved. */
+/** The type ramp's roles (spec 2.2). */
 export type TextVariant =
   | "largeTitle"
   | "title1"
   | "title2"
-  | "title"
   | "headline"
   | "body"
   | "label"
@@ -275,7 +274,7 @@ export type TypeStyle = {
   fontWeight: "400" | "500" | "600" | "700";
 };
 
-type Scale = Record<Exclude<TextVariant, "title">, TypeStyle>;
+type Scale = Record<TextVariant, TypeStyle>;
 
 /** Dynamic Type's default sizes per text style. */
 const iosScale: Scale = {
@@ -311,12 +310,9 @@ const androidScale: Scale = {
  * One semantic type scale, sized per platform. Both scale with the user's
  * font size setting; no custom fonts.
  */
-export const typeScale: Record<
-  "ios" | "android",
-  Record<TextVariant, TypeStyle>
-> = {
-  ios: { ...iosScale, title: iosScale.title2 },
-  android: { ...androidScale, title: androidScale.title2 },
+export const typeScale: Record<"ios" | "android", Scale> = {
+  ios: iosScale,
+  android: androidScale,
 };
 
 /**

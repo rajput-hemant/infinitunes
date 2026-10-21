@@ -45,10 +45,10 @@ type ArtworkProps = {
   /** Raw upstream artwork URL; resized here. */
   image: string;
   /** Sets the edge, the radius and the resolution (`row`, `card`, `header`...). */
-  size?: ArtSize;
+  size: ArtSize;
   /** Round art (artists, stations) at any size. */
   round?: boolean;
-  /** Overrides the resolution `size` picks; `high` without a size. */
+  /** Overrides the resolution `size` picks. */
   quality?: ImageQuality;
   /** Layout only (a margin, a flexible width); merged over the size's frame. */
   style?: StyleProp<ImageStyle>;
@@ -70,8 +70,8 @@ export function Artwork({
 }: ArtworkProps) {
   const { width } = useWindowDimensions();
   const cap = usePreferences((preferences) => preferences.imageQuality);
-  const frame = size ? artworkFrame(size, width, round) : undefined;
-  const wanted = quality ?? (frame ? qualityFor(frame.width) : "high");
+  const frame = artworkFrame(size, width, round);
+  const wanted = quality ?? qualityFor(frame.width);
   const src = getImageSrc(image, cappedQuality(wanted, cap));
   return (
     <Image

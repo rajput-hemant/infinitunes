@@ -1,16 +1,18 @@
 import { Pressable } from "react-native";
 import type { ColorValue } from "react-native";
 
+import type { IconSize } from "~/theme/tokens";
+
 import { Icon } from "./icon";
-import type { IconSizeProp, SymbolName } from "./icon";
+import type { SymbolName } from "./icon";
 
 type IconButtonProps = {
   icon: SymbolName;
   /** What the button does, for screen readers ("Pause", "Like FA9LA"). */
   label: string;
   onPress: () => void;
-  /** An `iconSize` name (`md` in rows, `lg` in headers) or, until moved, points. */
-  size?: IconSizeProp;
+  /** An `iconSize` name: `md` in rows, `lg` (the default) in headers. */
+  size?: IconSize;
   color?: ColorValue;
   /** A toggle's state (shuffle on, liked). */
   selected?: boolean;
