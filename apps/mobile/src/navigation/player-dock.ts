@@ -2,11 +2,16 @@ import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { hasTabBarAccessory } from "~/lib/platform";
+import { sizes, space } from "~/theme/tokens";
 
-/** Height of the floating mini-player, which sits above the tab bar. */
-export const FLOATING_DOCK_HEIGHT = 64;
+/** @deprecated Use `sizes.dock` from `~/theme/tokens`. */
+export const FLOATING_DOCK_HEIGHT = sizes.dock;
 
-const DOCK_GAP = 8;
+/** The floating mini player's inset from the screen's side edges: the page gutter. */
+export const FLOATING_DOCK_INSET = sizes.page;
+
+/** Space between the floating mini player and the tab bar. */
+const DOCK_GAP = space.sm;
 
 /** UITabBar (49pt) and the Material 3 navigation bar (80dp). */
 const TAB_BAR_HEIGHT = Platform.select({ ios: 49, default: 80 });
@@ -21,6 +26,4 @@ export function useFloatingDockOffset(): number {
  * the floating mini-player. The tab bar accessory is laid out by the system,
  * which insets the content itself.
  */
-export const playerDockInset = hasTabBarAccessory
-  ? 0
-  : FLOATING_DOCK_HEIGHT + DOCK_GAP;
+export const playerDockInset = hasTabBarAccessory ? 0 : sizes.dock + DOCK_GAP;

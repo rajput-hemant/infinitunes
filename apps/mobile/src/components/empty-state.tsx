@@ -1,27 +1,40 @@
-import type { SymbolViewProps } from "expo-symbols";
 import { View } from "react-native";
+
+import { usePalette } from "~/theme/use-palette";
 
 import { Button } from "./ui/button";
 import { Icon } from "./ui/icon";
+import type { SymbolName } from "./ui/icon";
 import { Text } from "./ui/text";
 
 type EmptyStateProps = {
-  icon: SymbolViewProps["name"];
+  icon: SymbolName;
   title: string;
   message?: string;
-  action?: { label: string; onPress: () => void };
+  /** One way forward (primary), or a retry (`variant: "secondary"`). */
+  action?: {
+    label: string;
+    onPress: () => void;
+    variant?: "primary" | "secondary";
+  };
 };
 
 /** A centred notice for an empty list or screen, with an optional way forward. */
 export function EmptyState({ icon, title, message, action }: EmptyStateProps) {
+  const palette = usePalette();
   return (
-    <View className="flex-1 items-center justify-center gap-3 px-page py-10">
-      <Icon name={icon} size={40} />
-      <Text variant="headline" className="text-center">
+    <View className="flex-1 items-center justify-center px-page py-12">
+      <Icon name={icon} size="xxl" color={palette["muted-foreground"]} />
+      <Text variant="headline" className="mt-4 text-center">
         {title}
       </Text>
       {message ? (
-        <Text tone="muted" className="text-center">
+        <Text
+          variant="subhead"
+          tone="muted"
+          className="mt-1 text-center"
+          style={{ maxWidth: 300 }}
+        >
           {message}
         </Text>
       ) : null}
@@ -29,7 +42,8 @@ export function EmptyState({ icon, title, message, action }: EmptyStateProps) {
         <Button
           label={action.label}
           onPress={action.onPress}
-          className="mt-2"
+          variant={action.variant ?? "primary"}
+          className="mt-4"
         />
       ) : null}
     </View>

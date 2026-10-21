@@ -108,10 +108,7 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
   if (rows.length === 0) return null;
   return (
     <NativeMenu title={name} entries={entries}>
-      <MenuTrigger
-        label={`More actions for ${name}`}
-        className="rounded-lg bg-secondary"
-      />
+      <MenuTrigger label={`More actions for ${name}`} size="lg" />
     </NativeMenu>
   );
 }
