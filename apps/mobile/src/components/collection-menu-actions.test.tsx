@@ -18,7 +18,7 @@ jest.mock("~/lib/download", () => ({
   pickDownloadFolder: jest.fn(),
   saveTracks: jest.fn(),
 }));
-jest.mock("expo-file-system", () => ({ Directory: class {} }));
+jest.mock("expo-file-system", () => ({ Directory: jest.fn() }));
 
 const rows = ["one", "two", "three"].map((id) =>
   toSongRow(rawSong({ id, title: `Song ${id}` })),

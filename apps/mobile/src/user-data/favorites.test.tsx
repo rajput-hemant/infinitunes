@@ -189,12 +189,12 @@ describe("useFavoriteToggle", () => {
   });
 });
 
-describe("useFavoriteLists", () => {
-  async function renderLists() {
-    await renderStack({ index: () => <Lists /> });
-  }
-  const lists = () => screen.getByTestId("lists").props.children as string;
+async function renderLists() {
+  await renderStack({ index: () => <Lists /> });
+}
+const lists = () => screen.getByTestId("lists").props.children as string;
 
+describe("useFavoriteLists", () => {
   it("is unknown while signed out, without asking the server", async () => {
     await act(async () => signInAs(null));
     await renderLists();

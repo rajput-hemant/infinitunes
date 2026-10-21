@@ -104,13 +104,9 @@ describe("useInfiniteList", () => {
   });
 
   it("asks for one next page at a time", async () => {
-    let release: (value: Page) => void = () => {};
+    const second = Promise.withResolvers<Page>();
     const fetchPage = jest.fn((n: number) =>
-      n === 1
-        ? Promise.resolve(page(["a"]))
-        : new Promise<Page>((resolve) => {
-            release = resolve;
-          }),
+      n === 1 ? Promise.resolve(page(["a"])) : second.promise,
     );
     const { result } = await listOf(fetchPage);
     await waitFor(() => expect(result.current.items).toHaveLength(1));
@@ -121,7 +117,7 @@ describe("useInfiniteList", () => {
     });
     expect(fetchPage).toHaveBeenCalledTimes(2);
 
-    await act(async () => release(page(["b"], true)));
+    await act(async () => second.resolve(page(["b"], true)));
     await waitFor(() => expect(result.current.items).toHaveLength(2));
   });
 
