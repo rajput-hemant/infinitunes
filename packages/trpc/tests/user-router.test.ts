@@ -34,6 +34,8 @@ const state: {
   deletes: { table: string; where: unknown[] }[];
   updateError: Error | null;
   deleteError: Error | null;
+  locks: { strength: string; inTransaction: boolean }[];
+  inTransaction: boolean;
 } = {
   playlist: null,
   user: null,
@@ -43,6 +45,8 @@ const state: {
   deletes: [],
   updateError: null,
   deleteError: null,
+  locks: [],
+  inTransaction: false,
 };
 
 const fakeDb = {
@@ -88,6 +92,18 @@ const fakeDb = {
       },
     },
   },
+  // The playlist song writes read the row with `select ... for update`.
+  select: () => ({
+    from: () => ({
+      where: (where: Parameters<PgDialect["sqlToQuery"]>[0]) => ({
+        for: async (strength: string) => {
+          state.locks.push({ strength, inTransaction: state.inTransaction });
+          const row = await fakeDb.query.myPlaylists.findFirst({ where });
+          return row ? [row] : [];
+        },
+      }),
+    }),
+  }),
   update: (
     table: typeof users | typeof betterAuthAccounts | typeof myPlaylists,
   ) => ({
@@ -130,6 +146,7 @@ const fakeDb = {
     const updates = [...state.updates];
     const inserts = [...state.inserts];
     const deletes = [...state.deletes];
+    state.inTransaction = true;
     try {
       return await fn(fakeDb);
     } catch (error) {
@@ -137,6 +154,8 @@ const fakeDb = {
       state.inserts = inserts;
       state.deletes = deletes;
       throw error;
+    } finally {
+      state.inTransaction = false;
     }
   },
 };
@@ -222,6 +241,8 @@ describe("user router authorization", () => {
     state.deletes = [];
     state.updateError = null;
     state.deleteError = null;
+    state.locks = [];
+    state.inTransaction = false;
   });
 
   it("rejects protected procedures without a session", async () => {
@@ -751,6 +772,46 @@ describe("user router authorization", () => {
       await move({ from: 2, to: 0, songId: "c" });
 
       expect(state.updates[0]?.values.songs).toEqual(["c", "a", "b"]);
+      // Read under a row lock, in the transaction that writes it.
+      expect(state.locks).toEqual([
+        { strength: "update", inTransaction: true },
+      ]);
+    });
+
+    it("rejects a target past the end without writing", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: ["a", "b", "c"],
+      };
+
+      await expect(move({ from: 0, to: 3, songId: "a" })).rejects.toMatchObject(
+        { code: "BAD_REQUEST" },
+      );
+      expect(state.updates).toHaveLength(0);
+    });
+
+    it("reports a missing playlist as not found", async () => {
+      await expect(move({ from: 0, to: 1, songId: "a" })).rejects.toMatchObject(
+        { code: "NOT_FOUND" },
+      );
+      expect(state.updates).toHaveLength(0);
+    });
+
+    it("rejects negative and fractional positions", async () => {
+      state.playlist = {
+        id: "playlist-1",
+        userId: "user-123",
+        songs: ["a", "b"],
+      };
+
+      await expect(
+        move({ from: -1, to: 0, songId: "a" }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      await expect(
+        move({ from: 0, to: 0.5, songId: "a" }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      expect(state.locks).toHaveLength(0);
     });
 
     it("rejects a stale position without writing", async () => {
