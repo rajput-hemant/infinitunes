@@ -55,7 +55,9 @@ export function useInfiniteList<Page, Item>({
 
   function loadMore() {
     if (query.hasNextPage && !query.isFetchingNextPage) {
-      void query.fetchNextPage();
+      // Two end-reached events in one frame both see the stale `isFetchingNextPage`;
+      // without this the second cancels the first and fetches the page twice.
+      void query.fetchNextPage({ cancelRefetch: false });
     }
   }
 
