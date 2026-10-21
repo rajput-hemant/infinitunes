@@ -1,12 +1,8 @@
-import { EmptyState } from "~/components/empty-state";
+import { useLocalSearchParams } from "expo-router";
 
-/** Route reserved for the podcast screen; its screen agent replaces this body. */
-export default function PodcastScreen() {
-  return (
-    <EmptyState
-      icon={{ ios: "mic", android: "podcasts" }}
-      title="Podcast"
-      message="This screen is coming soon."
-    />
-  );
+import { ShowScreen } from "~/features/show/show-screen";
+
+export default function ShowRoute() {
+  const { token } = useLocalSearchParams<{ token: string }>();
+  return <ShowScreen token={token} />;
 }

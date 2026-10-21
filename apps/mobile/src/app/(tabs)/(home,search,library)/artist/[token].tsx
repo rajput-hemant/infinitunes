@@ -1,12 +1,8 @@
-import { EmptyState } from "~/components/empty-state";
+import { useLocalSearchParams } from "expo-router";
 
-/** Route reserved for the artist screen; its screen agent replaces this body. */
-export default function ArtistScreen() {
-  return (
-    <EmptyState
-      icon={{ ios: "music.microphone", android: "artist" }}
-      title="Artist"
-      message="This screen is coming soon."
-    />
-  );
+import { ArtistScreen } from "~/features/artist/artist-screen";
+
+export default function ArtistRoute() {
+  const { token } = useLocalSearchParams<{ token: string }>();
+  return <ArtistScreen token={token} />;
 }

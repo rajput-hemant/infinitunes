@@ -1,12 +1,8 @@
-import { EmptyState } from "~/components/empty-state";
+import { useLocalSearchParams } from "expo-router";
 
-/** Route reserved for the label screen; its screen agent replaces this body. */
-export default function LabelScreen() {
-  return (
-    <EmptyState
-      icon={{ ios: "building.2", android: "domain" }}
-      title="Label"
-      message="This screen is coming soon."
-    />
-  );
+import { LabelScreen } from "~/features/label/label-screen";
+
+export default function LabelRoute() {
+  const { token } = useLocalSearchParams<{ token: string }>();
+  return <LabelScreen token={token} />;
 }
