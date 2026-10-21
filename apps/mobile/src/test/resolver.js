@@ -9,8 +9,6 @@ const presetResolver = require(presetResolverPath);
  * that have no Jest-capable native side, layered over the React Native
  * preset's resolver. Real Reanimated then runs in every suite, so no
  * component needs a per-test stand-in for an animated view.
- *
- * @type {import("jest-resolve").SyncResolver}
  */
 module.exports = (request, options) =>
   reanimatedResolver(request, {

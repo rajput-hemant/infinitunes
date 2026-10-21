@@ -18,7 +18,7 @@ const TILE_COLORS = [
   "#4338ca",
 ] as const;
 
-export function tileColor(index: number): string {
+function tileColor(index: number): string {
   return TILE_COLORS[index % TILE_COLORS.length] ?? TILE_COLORS[0];
 }
 

@@ -15,7 +15,7 @@ import { playerDockInset } from "~/navigation/player-dock";
 import { sizes } from "~/theme/tokens";
 
 /** What a catalog list reads from its query; paging fields are absent for a single page. */
-export type CatalogQuery<Item> = {
+type CatalogQuery<Item> = {
   items: readonly Item[];
   isPending: boolean;
   error: unknown;

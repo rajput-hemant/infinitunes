@@ -4,7 +4,7 @@ import { useState } from "react";
  * The slice of a Zod schema the form needs, so the app does not depend on
  * `zod` itself: the schemas of `@infinitunes/auth/schemas` fit it.
  */
-export type FormSchema<Output> = {
+type FormSchema<Output> = {
   safeParse(input: unknown):
     | { success: true; data: Output }
     | {

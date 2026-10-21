@@ -12,7 +12,7 @@ export type ShareableItem = { name: string; type: MediaType; url: string };
  * The web app's page for an upstream item: its entity path (the same as the
  * app's) on the web origin, or the perma URL's own path when it is not one.
  */
-export function webPageUrl({ type, url }: Omit<ShareableItem, "name">) {
+function webPageUrl({ type, url }: Omit<ShareableItem, "name">) {
   return (
     env.apiUrl + (entityPath(type, url) ?? url.replace(/^https?:\/\/[^/]+/, ""))
   );

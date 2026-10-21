@@ -68,7 +68,7 @@ export function SongScreen({ token }: SongScreenProps) {
   return (
     <DetailScreen
       query={query}
-      skeleton={<DetailSkeleton rows={1} />}
+      skeleton={<DetailSkeleton rows={1} shuffle={false} />}
       noun="Song"
       icon={{ ios: "music.note", android: "music_note" }}
       refreshKeys={[

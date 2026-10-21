@@ -61,6 +61,30 @@ export function ShelfSkeleton({ cards = 3 }: { cards?: number }) {
   );
 }
 
+/** `SegmentedTabs` while its screen loads. */
+export function SegmentedTabsSkeleton() {
+  return (
+    <SkeletonPulse>
+      <View className="px-page pb-2">
+        <SkeletonBlock className="h-9 w-full rounded-lg" />
+      </View>
+    </SkeletonPulse>
+  );
+}
+
+/** A heading and two lines of text, e.g. a description under its title. */
+export function TextBlockSkeleton() {
+  return (
+    <SkeletonPulse>
+      <View className="gap-2 px-page pb-3">
+        <SkeletonBlock className="h-5 w-2/5 rounded-sm" />
+        <SkeletonBlock className="h-3.5 w-full rounded-sm" />
+        <SkeletonBlock className="h-3.5 w-4/5 rounded-sm" />
+      </View>
+    </SkeletonPulse>
+  );
+}
+
 type EntityHeaderSkeletonProps = {
   /** Round artwork, for artists and stations. */
   round?: boolean;

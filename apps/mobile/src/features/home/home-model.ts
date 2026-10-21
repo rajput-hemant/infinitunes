@@ -15,7 +15,7 @@ const SECTION_LIST: Record<string, Href> = {
   radio: "/radio",
 };
 
-export type HomeShelf = {
+type HomeShelf = {
   key: string;
   title: string;
   items: CardItem[];
