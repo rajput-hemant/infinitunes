@@ -18,6 +18,16 @@ is fewer patterns, each defined once, not new decoration.
   button. Search stays reachable without a tab of its own: on iOS 26 as the system's separate search tab button
   (`role="search"`), on Android as a search action in the top app bar.
 
+**Engineering decisions taken while finishing (2026-10-21), within the owner's:**
+
+- Home's Languages control. Material 3 allows at most three top app bar actions, and Android's Home already
+  needs Search, Settings and Profile. So on Android Languages is the first chip of Home's chip row (label
+  "Languages", `language` icon, opens the `/languages` sheet), next to the language chips it relates to; YouTube's
+  leading Explore chip is the platform precedent, and an overflow menu holding one item would hide it for no
+  gain. iOS has no header Search button (the search tab), so its glass header keeps Languages, Settings and
+  Profile. `hasHeaderLanguages()` (`navigation/top-level-actions.tsx`) is the one switch; Settings > Playback
+  > Languages stays the route from the other tabs.
+
 ## 1. Three directions
 
 **D1. Quiet Native** (recommended)
@@ -175,9 +185,10 @@ min height 64, vertical padding 8, grows with Dynamic Type
 
 Top to bottom:
 
-1. Navigation large title "Home"; header trailing: Languages (`globe` / `language`).
+1. Navigation large title "Home"; header trailing: Languages (iOS only, `globe`), Settings, Profile; Android
+   puts Search, Settings, Profile there and Languages first in the chip row (see the decisions above).
 2. Greeting line (`subhead`, muted, `px-page`): "Good evening, Priya" (`formatGreeting`).
-3. Language chips (`ChipRow`): For you, then languages. 8 above and below.
+3. Language chips (`ChipRow`): (Android: Languages,) For you, then languages. 8 above and below.
 4. Featured carousel: `Shelf` hero variant with the featured item and the hero tiles. No section title.
 5. Quick picks (`SectionHeader` "Quick picks"): the first two tiles are actions, Surprise me (`sparkles` /
    `auto_awesome`) and Browse (`square.grid.2x2` / `grid_view`), same tile with an icon in place of the art;

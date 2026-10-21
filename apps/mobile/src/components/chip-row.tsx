@@ -1,5 +1,7 @@
 import { Platform, Pressable, ScrollView } from "react-native";
 
+import { Icon } from "~/components/ui/icon";
+import type { SymbolName } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { cx } from "~/lib/class-names";
 
@@ -11,6 +13,8 @@ export type Chip = {
   label: string;
   selected: boolean;
   onPress?: () => void;
+  /** A leading symbol, for an action chip among filters (Android's Languages). */
+  icon?: SymbolName;
 };
 
 /**
@@ -64,10 +68,11 @@ export function ChipRow({ chips, tabs = false }: ChipRowProps) {
             accessibilityRole={tabs ? "tab" : "button"}
             accessibilityState={{ selected: chip.selected }}
             className={cx(
-              "min-h-ctl justify-center rounded-full px-4 py-1 active:opacity-70",
+              "min-h-ctl flex-row items-center justify-center gap-2 rounded-full px-4 py-1 active:opacity-70",
               container,
             )}
           >
+            {chip.icon ? <Icon name={chip.icon} size="sm" /> : null}
             <Text variant="subhead" tone={tone}>
               {chip.label}
             </Text>

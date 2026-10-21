@@ -41,6 +41,17 @@ function ProfileButton() {
 }
 
 /**
+ * Whether Home's header carries the Languages button. Material 3 allows at
+ * most three app bar actions, and Android's are already Search, Settings and
+ * Profile, so there Languages is the first chip of Home's chip row instead
+ * (`HomeHeader`). iOS has no Search button (the search tab), so its three
+ * glass buttons are Languages, Settings and Profile. Read at render time.
+ */
+export function hasHeaderLanguages(): boolean {
+  return Platform.OS !== "android";
+}
+
+/**
  * The trailing header of a tab's root screen (Home, Library, Radio): Search
  * (Android only; iOS has the search tab), then Settings and Profile, both
  * pushed onto the current tab. Settings is not a tab of its own. Pass it as
@@ -50,9 +61,9 @@ export function TopLevelActions() {
   return <Actions languages={false} />;
 }
 
-/** `TopLevelActions` with Home's language picker before Settings. */
+/** `TopLevelActions` with Home's language picker before Settings (iOS, `hasHeaderLanguages`). */
 export function HomeTopLevelActions() {
-  return <Actions languages />;
+  return <Actions languages={hasHeaderLanguages()} />;
 }
 
 function Actions({ languages }: { languages: boolean }) {
