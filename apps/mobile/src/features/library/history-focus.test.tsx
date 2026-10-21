@@ -23,13 +23,13 @@ describe("HistoryScreen on a tab that stays mounted", () => {
   it("shows a play made elsewhere when the screen is focused again", async () => {
     const router = await renderStack({
       index: HistoryScreen,
-      elsewhere: () => null,
+      login: () => null,
     });
     await screen.findByText("First Play");
     expect(procedure("history.list")).toHaveBeenCalledTimes(1);
 
     // The listener goes to another screen and plays something there.
-    await act(async () => appRouter.push("/elsewhere"));
+    await act(async () => appRouter.push("/login"));
     procedure("history.list").mockResolvedValue([
       { id: "b", type: "song" },
       { id: "a", type: "song" },
