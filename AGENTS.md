@@ -213,14 +213,18 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
   that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
-  `eyebrow`, `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and trailing `actions` (`CollectionMenu`: play next, queue,
+  `eyebrow`, `meta`, `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and trailing `actions` (`CollectionMenu`: play next, queue,
   add all to a playlist, radio, download all). Menus are `NativeMenu` entries that carry their action
   (`addToPlaylistEntry`, which ends with New Playlist, the `/create-playlist` sheet; `playRadioEntry`);
-  `SongMenu` is the track's. Rows: `SongRow` (`toSongRow` row or queue entry, `removal`), `MediaRow` (`href` or
-  `onPress`), `EntityListItem`s for a screen's one `FlashList`. Cards: `MediaCard`/`Shelf` (`toCardItem`
-  items, `seeAllHref`, `onItemPress`; a playable item gets `CardPlayButton`, a sibling of the card's link;
-  stations open `/radio/<name>/<token>`). Artwork goes through `Artwork` (the layout's resolution capped by the Image
-  quality preference). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
+  `SongMenu` is the track's. Every titled group starts with `SectionHeader` (`title`, optional text `action`;
+  it carries the 24/8 rhythm, sections add no padding). Every row is `ListRow` (artwork, icon or track-number
+  leading, at most two trailing 48pt controls); `SongRow` (`toSongRow` row or queue entry, `removal`,
+  `leading="index"` for albums) and `MediaRow` (`href` or `onPress`) are built on it, `EntityListItem`s feed a
+  screen's one `FlashList`. Cards: `MediaCard`/`Shelf` (`toCardItem` items, `seeAllHref`, `onItemPress`,
+  `variant="hero"` for home's carousel, the only card with `CardPlayButton`), `QuickPickTile` for two-column
+  tiles; a card's long press and screen reader actions offer Play/Play Next/Add to Queue (`card-menu.tsx`);
+  stations open `/radio/<name>/<token>`. Artwork goes through `Artwork` with a `size` token (edge, radius and
+  resolution, capped by the Image quality preference). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
   empty page always ends the list, whatever upstream's `last_page`/`total` say). Toasts are
   `sonner-native`'s `toast` (the `Toaster` renders each through `AnnouncingToast`, see Accessibility).
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
@@ -234,8 +238,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   stores hydrate before the first render), never secrets.
 - Native look per platform: no colours on `NativeTabs` or headers (system glass on iOS 26, Material You on
   Android). Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
-  with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours,
-  `theme/tokens.ts`), colour JS props from `useTheme().colors`, text via `Text` `variant`/`tone`.
+  with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours, Android 12+
+  to Material You roles at runtime via `installDynamicColors`, `theme/tokens.ts`), colour JS props from
+  `usePalette()`/`useTokenColor()` or `useTheme().colors`, text via `Text` `variant`/`tone`. Sizes come from
+  `theme/tokens.ts` (`space`, `radii`, `art`, `iconSize`, `sizes`, `textStyles`), never literals; NativeWind's
+  rem is 14, so only the pinned 4pt steps (`*-1 2 3 4 6 8 12`) are exact points.
 - Accessibility: every tappable control is at least `sizes.touch` (48; `IconButton`, `Button`, `MenuTrigger` for a
   `NativeMenu`'s face, `DragHandle`, `FormLink` for a form's text link) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`, `TEXT_BUTTON_HIT_SLOP`); rows and
   fields use `min-h-*` so Dynamic Type grows them (cap text with `maxFontSizeMultiplier` only in fixed-height chrome, the
@@ -244,7 +251,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   speaks results VoiceOver cannot see (likes, a new field error); toasts reach it through `AnnouncingToast`, because
   sonner-native's live region is Android-only. Reanimated CSS animations ignore reduce motion: gate them with
   `useReducedMotion`. `iosSystemColors` leaves out `muted-foreground` and `destructive` (3.1-3.6:1 on light iOS
-  surfaces); `tokens.test.ts` pins AA for every text pair.
+  surfaces); `tokens.test.ts` pins AA for every text pair, on the palettes and on generated Material You schemes.
 - Data: `useQuery(trpc.<router>.<proc>.queryOptions(input))` from `~/lib/trpc`; imperative calls use
   `trpcClient`. The query client skips retries for NOT_FOUND, BAD_REQUEST, FORBIDDEN, UNAUTHORIZED and
   TOO_MANY_REQUESTS (`shouldRetry`), so hooks set no `retry`; `getErrorCode` names the proxy's own code-less
