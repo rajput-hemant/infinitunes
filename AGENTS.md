@@ -41,8 +41,8 @@ Knip is installed for manual dead-code analysis; do not apply its findings autom
 Bun workspaces + Turborepo. The Next.js app is `@infinitunes/web` at `apps/web`
 (`~/*` → `apps/web/*`, e.g. `~/lib/utils`; there is no `src` dir). Run all gates from the repo root:
 `bun run fmt:check`, `bun run lint` (Oxlint), `bun run type-check`,
-`bun run test` (runs plain tests, then `test:mocked` for process-isolated `mock.module` suites,
-then `test:dom` for happy-dom tests), `bun run build`.
+`bun run test` (runs plain tests, then `test:isolated`, one process per file for the `mock.module`,
+happy-dom and router suites (`scripts/test-isolated.ts`), then `test:mobile`, the app's Jest), `bun run build`.
 DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 `@infinitunes/db` via `bun run --filter`. Single canonical `bun.lock` at root.
 
@@ -217,7 +217,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   stations open `/radio/<name>/<token>`). Artwork goes through `Artwork` (the layout's resolution capped by the Image
   quality preference). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
   empty page always ends the list, whatever upstream's `last_page`/`total` say). Toasts are
-  `sonner-native`'s `toast` (mounted `Toaster`).
+  `sonner-native`'s `toast` (the `Toaster` renders each through `AnnouncingToast`, see Accessibility).
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
   `user-data/playlists.ts` (create, rename, delete, add, remove, move; removals and moves take the server's
   copy from `useServerPlaylists`); failures roll back with a toast, signed out they `promptSignIn`.
@@ -248,7 +248,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   (the Languages preference) as `lang`. Only `import type` from `@infinitunes/trpc/types`; never
   `@infinitunes/ui` or the `@infinitunes/auth` barrel (`./session-cookie`, `./native-app`, `./schemas` are safe).
 - Native fetch sends no `Origin`, so `trpcClient` sends `expo-origin: infinitunes://` (`NATIVE_ORIGIN_HEADER`)
-  and the stored cookie with `credentials: "omit"`. `proxy.ts` accepts a POST without `Origin` only with that
+  and the stored cookie with `credentials: "omit"` (`authClient.getCookie()` reads secure storage: always await it). `proxy.ts` accepts a POST without `Origin` only with that
   exact header and no `Sec-Fetch-Site` (browsers always send `Origin`, and cannot add the header cross-site
   without a CORS preflight): never add `Access-Control-Allow-*` headers to `/api/trpc`.
 - The expo auth client turns a relative `callbackURL`/`newUserCallbackURL`/`errorCallbackURL` into
@@ -278,8 +278,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - `apps/mobile/e2e` runs the app's real `auth-client`/`trpc` (only native modules stubbed,
   `native-stubs.ts`) against a local web app and scratch database: `MOBILE_E2E_API_URL=... bun
   run test:e2e` (skipped unset; loopback only, it creates accounts). Its header comments name the
-  production-limiter mode and the live-payload screen run (`live-screens.test.tsx`). The expo
-  client's `getCookie()` is async: always await it.
+  production-limiter mode and the live-payload screen run (`live-screens.test.tsx`).
 
 ## Song rows take the slim model, never the raw song
 
