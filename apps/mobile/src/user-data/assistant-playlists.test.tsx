@@ -50,4 +50,22 @@ describe("AssistantPlaylists", () => {
 
     expect(shared).toHaveBeenLastCalledWith(null);
   });
+
+  it("clears the previous account's while the next one's load", async () => {
+    await act(async () => signInAs("alice"));
+    procedure("user.getUserPlaylists").mockResolvedValue([
+      userPlaylist({ id: "pl-1", name: "Road Trip" }),
+    ]);
+    renderWithProviders(<AssistantPlaylists />);
+    await waitFor(() =>
+      expect(shared).toHaveBeenLastCalledWith([
+        { id: "pl-1", name: "Road Trip" },
+      ]),
+    );
+
+    procedure("user.getUserPlaylists").mockReturnValue(new Promise(() => {}));
+    await act(async () => signInAs("bob"));
+
+    expect(shared).toHaveBeenLastCalledWith(null);
+  });
 });
