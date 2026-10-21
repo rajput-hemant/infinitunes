@@ -2,6 +2,8 @@ import type { SongRowItem } from "@infinitunes/types";
 import { View } from "react-native";
 import { toast } from "sonner-native";
 
+import { pickDownloadFolder, saveTracks } from "~/lib/download";
+import { preferencesStore } from "~/lib/preferences";
 import { playerStore } from "~/playback/player-store";
 import { radioSeedOf } from "~/playback/radio";
 import type { RadioSeed } from "~/playback/radio";
@@ -16,6 +18,25 @@ import {
 } from "./native-menu";
 import { Icon } from "./ui/icon";
 
+/**
+ * Saves the songs into a folder the listener picks, at the download quality
+ * preference; dismissing the picker does nothing.
+ */
+async function downloadAll(songs: readonly SongRowItem[]) {
+  const folder = await pickDownloadFolder();
+  if (!folder) return;
+  const count = `${songs.length} ${songs.length === 1 ? "song" : "songs"}`;
+  const { downloadQuality } = preferencesStore.getState();
+  toast.promise(saveTracks(folder, songs, downloadQuality), {
+    loading: `Downloading ${count}...`,
+    success: ({ saved, failed }) =>
+      failed === 0
+        ? `Downloaded ${count}`
+        : `Downloaded ${saved} of ${songs.length} songs`,
+    error: "Download failed",
+  });
+}
+
 type CollectionMenuProps = {
   /** The album, playlist or artist; the menu's title. */
   name: string;
@@ -26,7 +47,8 @@ type CollectionMenuProps = {
 
 /**
  * A collection's "more" menu, `EntityHeader`'s trailing control: queue all
- * its songs next or last, add them all to a playlist, or start its radio.
+ * its songs next or last, add them all to a playlist, start its radio, or
+ * download them all into a folder.
  */
 export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
   const signedIn = useUserId() !== undefined;
@@ -66,6 +88,12 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
         onAdd: (playlist) => addSongsToPlaylist(playlist, songs),
       }),
       playRadioEntry(radio ?? radioSeedOf(songs, name)),
+      {
+        id: "download-all",
+        title: "Download",
+        image: "arrow.down.circle",
+        run: () => void downloadAll(songs),
+      },
     );
   }
 
