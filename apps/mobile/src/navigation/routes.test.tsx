@@ -12,6 +12,7 @@ import { Platform, Pressable, Text } from "react-native";
 import { toast } from "sonner-native";
 
 import { redirectSystemPath } from "~/app/+native-intent";
+import { authClient } from "~/lib/auth-client";
 import { signInAs } from "~/test/session-mock";
 
 import { useOpenEntity } from "./use-open-entity";
@@ -162,6 +163,24 @@ describe("the root screens' header", () => {
     expect(app.getPathname()).toBe("/login");
   });
 
+  it("shows neither Sign in nor Profile while the stored session loads", async () => {
+    const useSession = jest
+      .spyOn(authClient, "useSession")
+      .mockReturnValue({ data: null, isPending: true } as ReturnType<
+        typeof authClient.useSession
+      >);
+    try {
+      const app = await renderRouter("./src/app", { initialUrl: "/radio" });
+
+      const tab = await selectedTab(app);
+      await tab.findByRole("button", { name: "Settings" });
+      expect(tab.queryByRole("button", { name: "Sign in" })).toBeNull();
+      expect(tab.queryByRole("button", { name: "Profile" })).toBeNull();
+    } finally {
+      useSession.mockRestore();
+    }
+  });
+
   it("adds Home's language picker", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
@@ -235,6 +254,58 @@ function tapCreateTab(app: RenderRouterResult) {
 }
 
 describe("the Create tab", () => {
+  it("is labelled with its visible name (WCAG 2.5.3)", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    const [create] = app.container.queryAll(
+      (node) =>
+        node.props.screenKey === "create" &&
+        "preventNativeSelection" in node.props,
+    );
+    expect(create?.props.tabBarItemAccessibilityLabel).toContain("Create");
+  });
+
+  it("does not open the sheet just because the tabs render", async () => {
+    signInAs("alice");
+    const app = await renderRouter("./src/app", { initialUrl: "/library" });
+
+    expect(app.getPathname()).toBe("/library");
+    expect(routesNamed(app.getRouterState(), "create-playlist")).toBe(0);
+  });
+
+  it("opens the sheet over the previous tab if /create is reached in-app", async () => {
+    signInAs("alice");
+    const app = await renderRouter("./src/app", { initialUrl: "/library" });
+
+    await act(async () => router.navigate("/create"));
+
+    await waitFor(() => expect(app.getPathname()).toBe("/create-playlist"));
+    await act(async () => router.back());
+    expect(app.getSegments()[1]).not.toBe("create");
+  });
+
+  it("opens the sheet for an infinitunes://create link", async () => {
+    signInAs("alice");
+    const app = await renderRouter("./src/app", {
+      initialUrl: redirectSystemPath({ path: "infinitunes://create" }),
+    });
+
+    expect(app.getPathname()).toBe("/create-playlist");
+  });
+
+  it("stacks one sheet however often Create is tapped", async () => {
+    signInAs("alice");
+    const app = await renderRouter("./src/app", { initialUrl: "/library" });
+
+    await tapCreateTab(app);
+    await act(async () => router.push("/create-playlist"));
+    await tapCreateTab(app);
+
+    expect(routesNamed(app.getRouterState(), "create-playlist")).toBe(1);
+    await act(async () => router.back());
+    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "library"]);
+  });
+
   it("is a tab the native bar never selects", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 

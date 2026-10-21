@@ -4,8 +4,9 @@ import { View } from "react-native";
 import { GRID_GAP } from "~/lib/use-grid-card-width";
 import { sizes } from "~/theme/tokens";
 
-const START = { paddingLeft: sizes.page, paddingBottom: GRID_GAP };
-const END = { paddingRight: sizes.page, paddingBottom: GRID_GAP };
+// Logical edges: in RTL the gutter stays on the outside of each column.
+const START = { paddingStart: sizes.page, paddingBottom: GRID_GAP };
+const END = { paddingEnd: sizes.page, paddingBottom: GRID_GAP };
 
 /**
  * One cell of a full-width two-column `FlashList` (`numColumns={2}`) holding a
