@@ -69,7 +69,7 @@ export function DetailScreen<Data>({
       await Promise.all([
         query.refetch(),
         ...refreshKeys.map((queryKey) =>
-          queryClient.refetchQueries({ queryKey }),
+          queryClient.refetchQueries({ queryKey, type: "active" }),
         ),
       ]);
     } finally {
@@ -102,6 +102,8 @@ export function DetailScreen<Data>({
       <Stack.Screen
         options={{
           title: name,
+          // The artwork leads; the tab stack's large title would repeat the name above it.
+          headerLargeTitle: false,
           headerRight: shareButtonFor({ name, url }),
         }}
       />

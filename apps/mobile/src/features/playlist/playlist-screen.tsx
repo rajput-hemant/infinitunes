@@ -79,17 +79,17 @@ function PlaylistPage({ playlist, trending }: PlaylistPageProps) {
       />
       <TrackList rows={rows} />
       <SecondaryShelf
-        title={modules?.relatedPlaylist.title ?? "Recommended Playlists"}
+        title={modules?.relatedPlaylist?.title ?? "Recommended Playlists"}
         query={recommendations}
       />
       <SecondaryShelf
         title={
-          modules?.currentlyTrendingPlaylists.title ?? "Trending Playlists"
+          modules?.currentlyTrendingPlaylists?.title ?? "Trending Playlists"
         }
         query={trending}
       />
       <Shelf
-        title={modules?.artists.title ?? "Artists"}
+        title={modules?.artists?.title ?? "Artists"}
         items={artistCards(playlist.more_info.artists ?? [])}
       />
     </>

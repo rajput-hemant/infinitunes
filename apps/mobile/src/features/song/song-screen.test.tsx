@@ -112,6 +112,7 @@ describe("SongScreen", () => {
       screen.getByRole("link", { name: "Label, Outlaw Productions" }),
     ).toBeOnTheScreen();
     expect(screen.getByText("(P) 2024 Outlaw Productions")).toBeOnTheScreen();
+    expect(screen.getByText("01:45")).toBeOnTheScreen();
     expect(await screen.findByText("Album Neighbour")).toBeOnTheScreen();
     expect(
       screen.getByRole("header", { name: "More from FA9LA" }),

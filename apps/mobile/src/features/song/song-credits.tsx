@@ -1,4 +1,4 @@
-import { decode, formatReleaseDate } from "@infinitunes/types";
+import { decode, formatDuration, formatReleaseDate } from "@infinitunes/types";
 import type { Song } from "@infinitunes/types";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
@@ -77,6 +77,10 @@ export function SongCredits({ song }: { song: Song }) {
       <CreditRow
         label="Released"
         value={formatReleaseDate(info.release_date)}
+      />
+      <CreditRow
+        label="Duration"
+        value={formatDuration(info.duration, "mm:ss")}
       />
       <View className="gap-1 px-page pt-2">
         <Text variant="caption" tone="muted">

@@ -104,19 +104,19 @@ function AlbumPage({ album, trending }: AlbumPageProps) {
         </View>
       ) : null}
       <SecondaryShelf
-        title={modules?.reco.title ?? "Recommended Albums"}
+        title={modules?.reco?.title ?? "Recommended Albums"}
         query={recommendations}
       />
       <SecondaryShelf
-        title={modules?.currentlyTrending.title ?? "Trending"}
+        title={modules?.currentlyTrending?.title ?? "Trending"}
         query={trending}
       />
       <SecondaryShelf
-        title={modules?.topAlbumsFromSameYear.title ?? "Albums From Same Year"}
+        title={modules?.topAlbumsFromSameYear?.title ?? "Albums From Same Year"}
         query={sameYear}
       />
       <Shelf
-        title={modules?.artists.title ?? "Artists"}
+        title={modules?.artists?.title ?? "Artists"}
         items={artistCards(album.more_info.artistMap?.artists ?? [])}
       />
     </>
