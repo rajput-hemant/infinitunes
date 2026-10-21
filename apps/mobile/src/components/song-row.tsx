@@ -1,5 +1,3 @@
-import { getImageSrc } from "@infinitunes/types";
-import { Image } from "expo-image";
 import { useTheme } from "expo-router";
 import { Pressable, View } from "react-native";
 
@@ -9,6 +7,7 @@ import { radii, sizes } from "~/theme/tokens";
 
 import { LikeButton } from "./like-button";
 import { SongMenu, type TrackItem } from "./song-menu";
+import { Artwork } from "./ui/artwork";
 import { Icon } from "./ui/icon";
 import { Text } from "./ui/text";
 
@@ -50,15 +49,14 @@ export function SongRow({ song, onPress, queueItemId, removal }: SongRowProps) {
         className="flex-1 flex-row items-center gap-3 active:opacity-70"
       >
         <View>
-          <Image
-            source={getImageSrc(song.image, "medium")}
+          <Artwork
+            image={song.image}
+            quality="medium"
             style={{
               width: sizes.art,
               height: sizes.art,
               borderRadius: radii.sm,
             }}
-            transition={150}
-            accessibilityIgnoresInvertColors
           />
           {isCurrent ? (
             <View

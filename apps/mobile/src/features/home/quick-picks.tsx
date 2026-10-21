@@ -1,9 +1,8 @@
 import type { CardItem } from "@infinitunes/types";
-import { getImageSrc } from "@infinitunes/types";
-import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { Pressable, View } from "react-native";
 
+import { Artwork } from "~/components/ui/artwork";
 import { Text } from "~/components/ui/text";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { entityHref } from "~/navigation/entity-href";
@@ -21,10 +20,10 @@ function QuickPick({ item, width }: { item: CardItem; width: number }) {
       className="flex-row items-center gap-2 overflow-hidden bg-fill active:opacity-70"
       style={{ width, borderRadius: radii.md }}
     >
-      <Image
-        source={getImageSrc(item.image, "medium")}
+      <Artwork
+        image={item.image}
+        quality="medium"
         style={{ width: ART_SIZE, height: ART_SIZE }}
-        accessibilityIgnoresInvertColors
       />
       <Text variant="subhead" numberOfLines={2} className="flex-1 pr-2">
         {item.name}

@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 
 import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
+import { useCatalogLang } from "~/lib/preferences";
 import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
 import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
@@ -14,10 +15,17 @@ import { useLangParam } from "./use-lang-param";
 /** Top albums, filterable by language, with endless paging. */
 export function TopAlbumsScreen() {
   const lang = useLangParam();
+  const catalogLang = useCatalogLang();
+  // "All" is the listener's own languages, as New Releases on the web.
+  const requested = lang ?? catalogLang;
   const albums = useInfiniteList({
-    queryKey: [...trpc.get.topAlbums.pathKey(), { lang }],
+    queryKey: [...trpc.get.topAlbums.pathKey(), { lang: requested }],
     fetchPage: (page) =>
-      trpcClient.get.topAlbums.query({ page, n: CATALOG_PAGE_SIZE, lang }),
+      trpcClient.get.topAlbums.query({
+        page,
+        n: CATALOG_PAGE_SIZE,
+        lang: requested,
+      }),
     itemsOf: (page) => page.data,
     hasMore: (page) => !page.last_page,
     keyOf: (album) => album.id,

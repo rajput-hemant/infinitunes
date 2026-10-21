@@ -1,5 +1,6 @@
 import { FieldGroup, Host } from "@expo/ui";
 import { QUALITIES_MAP } from "@infinitunes/types";
+import type { ImageQuality } from "@infinitunes/types";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { openBrowserAsync } from "expo-web-browser";
@@ -16,19 +17,32 @@ import {
 } from "~/theme/appearance";
 
 import { signOut } from "./end-session";
+import { languagesSummary } from "./languages-screen";
 import { PickerRow, ValueRow } from "./selection-rows";
 import { ActionRow, NavigationRow } from "./tap-rows";
 
-const MODE_LABELS = { system: "System", light: "Light", dark: "Dark" } as const;
+const titleCase = (value: string) =>
+  `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
 
 const appearanceOptions = APPEARANCE_MODES.map((mode) => ({
-  label: MODE_LABELS[mode],
+  label: titleCase(mode),
   value: mode,
 }));
 
 const qualityOptions = QUALITIES_MAP.map(({ quality, bitrate }) => ({
-  label: `${quality.charAt(0).toUpperCase()}${quality.slice(1)} (${bitrate})`,
+  label: `${titleCase(quality)} (${bitrate})`,
   value: quality,
+}));
+
+const IMAGE_QUALITIES = [
+  "low",
+  "medium",
+  "high",
+] as const satisfies readonly ImageQuality[];
+
+const imageQualityOptions = IMAGE_QUALITIES.map((value) => ({
+  label: titleCase(value),
+  value,
 }));
 
 async function signOutWithToast() {
@@ -49,6 +63,9 @@ export function SettingsScreen() {
   const downloadQuality = usePreferences((p) => p.downloadQuality);
   const setStreamQuality = usePreferences((p) => p.setStreamQuality);
   const setDownloadQuality = usePreferences((p) => p.setDownloadQuality);
+  const imageQuality = usePreferences((p) => p.imageQuality);
+  const setImageQuality = usePreferences((p) => p.setImageQuality);
+  const languages = usePreferences((p) => p.languages);
 
   return (
     <Host style={{ flex: 1, paddingBottom: playerDockInset }}>
@@ -101,6 +118,17 @@ export function SettingsScreen() {
             value={downloadQuality}
             options={qualityOptions}
             onChange={setDownloadQuality}
+          />
+          <PickerRow
+            label="Image quality"
+            value={imageQuality}
+            options={imageQualityOptions}
+            onChange={setImageQuality}
+          />
+          <NavigationRow
+            label="Languages"
+            detail={languagesSummary(languages)}
+            onPress={() => router.push("/languages")}
           />
         </FieldGroup.Section>
 

@@ -1,5 +1,3 @@
-import { getImageSrc } from "@infinitunes/types";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -7,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EmptyState } from "~/components/empty-state";
 import { LikeButton } from "~/components/like-button";
 import { SongMenu } from "~/components/song-menu";
+import { Artwork } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
@@ -40,15 +39,14 @@ export function FullPlayer() {
       className="flex-1 justify-center gap-6 px-page"
       style={{ paddingBottom: insets.bottom }}
     >
-      <Image
-        source={getImageSrc(track.image, "high")}
+      <Artwork
+        image={track.image}
+        quality="high"
         style={{
           width: artworkSize,
           height: artworkSize,
           borderRadius: radii.xl,
         }}
-        transition={200}
-        accessibilityIgnoresInvertColors
       />
       <View className="flex-row items-center gap-2">
         <View className="flex-1">

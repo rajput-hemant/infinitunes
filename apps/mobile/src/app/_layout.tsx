@@ -24,6 +24,16 @@ export default function RootLayout() {
             title: "Up Next",
           }}
         />
+        <Stack.Screen
+          name="languages"
+          options={{
+            presentation: "formSheet",
+            sheetAllowedDetents: [0.6, 1],
+            sheetGrabberVisible: true,
+            headerShown: true,
+            title: "Languages",
+          }}
+        />
         <Stack.Screen name="(auth)" options={{ presentation: "modal" }} />
       </Stack>
     </AppProviders>

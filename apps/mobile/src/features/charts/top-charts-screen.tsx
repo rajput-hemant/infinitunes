@@ -6,6 +6,7 @@ import { Stack } from "expo-router";
 import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
 import { Text } from "~/components/ui/text";
+import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
 import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
 
@@ -13,8 +14,9 @@ const selectCharts = (charts: Chart[]) => uniqueBy(charts, (chart) => chart.id);
 
 /** The top charts; upstream answers with one page, so there is no paging. */
 export function TopChartsScreen() {
+  const lang = useCatalogLang();
   const charts = useQuery({
-    ...trpc.get.charts.queryOptions({ page: 1, n: CATALOG_PAGE_SIZE }),
+    ...trpc.get.charts.queryOptions({ page: 1, n: CATALOG_PAGE_SIZE, lang }),
     select: selectCharts,
   });
 

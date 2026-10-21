@@ -1,12 +1,11 @@
 import type { FavoriteType } from "@infinitunes/core/favorites";
-import { getImageSrc } from "@infinitunes/types";
-import { Image } from "expo-image";
 import type { ReactNode } from "react";
 import { View } from "react-native";
 
 import { radii } from "~/theme/tokens";
 
 import { LikeButton } from "./like-button";
+import { Artwork } from "./ui/artwork";
 import { Button } from "./ui/button";
 import { Text } from "./ui/text";
 
@@ -49,15 +48,14 @@ export function EntityHeader({
 }: EntityHeaderProps) {
   return (
     <View className="items-center gap-4 px-page pb-4 pt-2">
-      <Image
-        source={getImageSrc(image, "high")}
+      <Artwork
+        image={image}
+        quality="high"
         style={{
           width: ENTITY_ART_SIZE,
           height: ENTITY_ART_SIZE,
           borderRadius: round ? ENTITY_ART_SIZE / 2 : radii.lg,
         }}
-        transition={150}
-        accessibilityIgnoresInvertColors
       />
       <View className="items-center gap-1">
         {eyebrow ? (

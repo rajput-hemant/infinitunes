@@ -1,5 +1,6 @@
 import type { CardItem } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
+import { router, Stack } from "expo-router";
 import { RefreshControl } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
@@ -7,6 +8,8 @@ import { ErrorState } from "~/components/error-state";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Shelf } from "~/components/shelf";
 import { StationCard } from "~/components/station-card";
+import { IconButton } from "~/components/ui/icon-button";
+import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
 
 import { HomeHeader } from "./home-header";
@@ -16,13 +19,25 @@ import type { HomeModel } from "./home-model";
 import { HomeSkeleton } from "./home-skeleton";
 import { QuickPicks } from "./quick-picks";
 
+/** The web header's language picker: Home, Charts and New Releases follow it. */
+function LanguagesButton() {
+  return (
+    <IconButton
+      icon={{ ios: "globe", android: "language" }}
+      label="Languages"
+      onPress={() => router.push("/languages")}
+    />
+  );
+}
+
 /**
  * The home feed: greeting and language chips, then the launch data's hero,
  * quick picks and shelves (trending among them).
  */
 export function HomeFeed() {
+  const lang = useCatalogLang();
   const home = useQuery({
-    ...trpc.home.home.queryOptions({}),
+    ...trpc.home.home.queryOptions({ lang }),
     select: buildHomeModel,
   });
 
@@ -35,6 +50,7 @@ export function HomeFeed() {
         />
       }
     >
+      <Stack.Screen options={{ headerRight: LanguagesButton }} />
       <HomeHeader />
       {home.data ? (
         isHomeEmpty(home.data) ? (

@@ -1,11 +1,10 @@
-import { getImageSrc } from "@infinitunes/types";
-import { Image } from "expo-image";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { radii, sizes } from "~/theme/tokens";
 
+import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
 
 type MediaRowProps = {
@@ -32,11 +31,10 @@ export function MediaRow({
 }: MediaRowProps) {
   const row = (
     <View className="h-row flex-row items-center gap-3 px-page">
-      <Image
-        source={getImageSrc(image, ARTWORK_QUALITY)}
+      <Artwork
+        image={image}
+        quality={ARTWORK_QUALITY}
         style={{ width: sizes.art, height: sizes.art, borderRadius: radii.sm }}
-        transition={150}
-        accessibilityIgnoresInvertColors
       />
       <View className="flex-1">
         <Text variant="body" numberOfLines={1}>

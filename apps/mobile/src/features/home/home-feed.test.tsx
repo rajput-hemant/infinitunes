@@ -7,6 +7,7 @@ import {
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { toast } from "sonner-native";
 
+import { preferencesStore } from "~/lib/preferences";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
@@ -25,6 +26,16 @@ beforeEach(() => {
 });
 
 describe("HomeFeed", () => {
+  it("asks for the listener's languages", async () => {
+    preferencesStore.getState().setLanguages(["tamil", "telugu"]);
+    home.mockResolvedValue(rawLaunchData());
+    await renderScreen(<HomeFeed />);
+
+    await screen.findByText("Featured playlist");
+    expect(home).toHaveBeenCalledWith({ lang: "tamil,telugu" });
+    preferencesStore.getState().setLanguages([]);
+  });
+
   it("shows a skeleton under the greeting while the launch data loads", async () => {
     home.mockReturnValue(new Promise(() => {}));
     await renderScreen(<HomeFeed />);

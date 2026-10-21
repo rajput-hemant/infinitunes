@@ -1,9 +1,8 @@
-import { getImageSrc } from "@infinitunes/types";
-import { Image } from "expo-image";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
 import { Pressable, View } from "react-native";
 
+import { Artwork } from "~/components/ui/artwork";
 import { Text } from "~/components/ui/text";
 import { radii } from "~/theme/tokens";
 
@@ -67,14 +66,14 @@ export function BrowseTile({
               transform: [{ rotate: "18deg" }],
             }}
           >
-            <Image
-              source={getImageSrc(image, "medium")}
+            <Artwork
+              image={image}
+              quality="medium"
               style={{
                 width: ART_SIZE,
                 height: ART_SIZE,
                 borderRadius: radii.sm,
               }}
-              accessibilityIgnoresInvertColors
             />
           </View>
         ) : null}

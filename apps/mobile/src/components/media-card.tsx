@@ -1,12 +1,11 @@
 import type { CardItem, MediaType } from "@infinitunes/types";
-import { getImageSrc } from "@infinitunes/types";
-import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { entityHref } from "~/navigation/entity-href";
 import { radii } from "~/theme/tokens";
 
+import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
 
 /** Card width in points: two and a bit cards fill a phone's width, hinting the shelf scrolls. */
@@ -48,15 +47,14 @@ export function MediaCard({
       className="gap-1.5 active:opacity-70"
       style={{ width }}
     >
-      <Image
-        source={getImageSrc(item.image, "high")}
+      <Artwork
+        image={item.image}
+        quality="high"
         style={{
           width,
           height: width,
           borderRadius: round ? width / 2 : radii.md,
         }}
-        transition={150}
-        accessibilityIgnoresInvertColors
       />
       <View className={round ? "items-center" : undefined}>
         <Text variant="subhead" numberOfLines={1}>

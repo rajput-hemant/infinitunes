@@ -1,10 +1,9 @@
 import type { CardItem } from "@infinitunes/types";
-import { getImageSrc } from "@infinitunes/types";
-import { Image } from "expo-image";
 import { Link } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { MediaCard } from "~/components/media-card";
+import { Artwork } from "~/components/ui/artwork";
 import { Button } from "~/components/ui/button";
 import { Text } from "~/components/ui/text";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
@@ -32,11 +31,10 @@ export function HomeHero({ featured, tiles }: HomeHeroProps) {
       accessibilityLabel={`Featured playlist, ${featured.name}`}
       className="gap-2 active:opacity-70"
     >
-      <Image
-        source={getImageSrc(featured.image, "high")}
+      <Artwork
+        image={featured.image}
+        quality="high"
         style={{ width: "100%", aspectRatio: 1, borderRadius: radii.lg }}
-        transition={150}
-        accessibilityIgnoresInvertColors
       />
       <View>
         <Text variant="caption" tone="muted">
