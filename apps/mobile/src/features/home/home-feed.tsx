@@ -9,15 +9,14 @@ import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
 
 import { HomeHeader } from "./home-header";
-import { HomeHero } from "./home-hero";
 import { buildHomeModel, isHomeEmpty } from "./home-model";
 import type { HomeModel } from "./home-model";
 import { HomeSkeleton } from "./home-skeleton";
 import { QuickPicks } from "./quick-picks";
 
 /**
- * The home feed: greeting and language chips, then the launch data's hero,
- * quick picks and shelves (trending among them).
+ * The home feed: greeting and language chips, then the launch data's
+ * featured carousel, quick picks and shelves (trending among them).
  */
 export function HomeFeed() {
   const lang = useCatalogLang();
@@ -59,9 +58,7 @@ export function HomeFeed() {
 function HomeSections({ model }: { model: HomeModel }) {
   return (
     <>
-      {model.featured ? (
-        <HomeHero featured={model.featured} tiles={model.heroTiles} />
-      ) : null}
+      <Shelf variant="hero" items={model.carousel} />
       <QuickPicks items={model.quickPicks} />
       {model.shelves.map(({ key, ...shelf }) => (
         <Shelf key={key} {...shelf} />

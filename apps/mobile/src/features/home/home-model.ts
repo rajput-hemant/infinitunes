@@ -23,11 +23,14 @@ type HomeShelf = {
 };
 
 export type HomeModel = {
-  featured: CardItem | undefined;
-  heroTiles: CardItem[];
+  /** The featured playlist, then the chart and playlist tiles. */
+  carousel: CardItem[];
   quickPicks: CardItem[];
   shelves: HomeShelf[];
 };
+
+/** Quick picks after the Surprise Me and Browse tiles: four rows of two. */
+const QUICK_PICKS = 6;
 
 /** A titled section as a shelf; an entry without a title or link cannot be shown. */
 function toShelf({ key, title, items }: HomeSection): HomeShelf[] {
@@ -56,19 +59,21 @@ function toShelf({ key, title, items }: HomeSection): HomeShelf[] {
 
 /**
  * The home screen's content from the launch data (`homeHighlights` and
- * `homeSections`, as on the web): the featured playlist, hero tiles, quick
+ * `homeSections`, as on the web): the featured carousel, up to six quick
  * picks, then one shelf per titled section in upstream's order.
  */
 export function buildHomeModel(modules: Modules): HomeModel {
   const { featured, quickPicks, heroTiles } = homeHighlights(modules);
   return {
-    featured: featured && toCardItem(featured),
-    heroTiles: heroTiles.map(toCardItem),
-    quickPicks: quickPicks.map(toCardItem),
+    carousel: [...(featured ? [featured] : []), ...heroTiles].map(toCardItem),
+    quickPicks: quickPicks.slice(0, QUICK_PICKS).map(toCardItem),
     shelves: homeSections(modules).flatMap(toShelf),
   };
 }
 
-export function isHomeEmpty({ featured, quickPicks, shelves }: HomeModel) {
-  return !featured && quickPicks.length === 0 && shelves.length === 0;
+/** No catalog data at all (the Surprise Me and Browse tiles need none). */
+export function isHomeEmpty({ carousel, quickPicks, shelves }: HomeModel) {
+  return (
+    carousel.length === 0 && quickPicks.length === 0 && shelves.length === 0
+  );
 }

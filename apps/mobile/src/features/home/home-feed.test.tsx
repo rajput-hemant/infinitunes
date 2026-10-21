@@ -32,7 +32,7 @@ describe("HomeFeed", () => {
     home.mockResolvedValue(rawLaunchData());
     await renderScreen(<HomeFeed />);
 
-    await screen.findByText("Featured playlist");
+    await screen.findByRole("link", { name: /^Featured Mix/ });
     expect(home).toHaveBeenCalledWith({ lang: "tamil,telugu" });
     preferencesStore.getState().setLanguages([]);
   });
@@ -42,15 +42,25 @@ describe("HomeFeed", () => {
     await renderScreen(<HomeFeed />);
 
     expect(screen.getAllByLabelText("Loading").length).toBeGreaterThan(0);
-    expect(screen.getByText("Fresh picks for you.")).toBeOnTheScreen();
+    expect(
+      screen.getByText(/^Good (morning|afternoon|evening)$/),
+    ).toBeOnTheScreen();
   });
 
-  it("shows the hero, quick picks and a shelf per titled section", async () => {
+  it("shows the featured carousel, quick picks and a shelf per titled section", async () => {
     home.mockResolvedValue(rawLaunchData());
     await renderScreen(<HomeFeed />);
 
-    expect(await screen.findByText("Featured playlist")).toBeOnTheScreen();
-    expect(screen.getByText("Quick picks")).toBeOnTheScreen();
+    expect(
+      await screen.findByRole("link", { name: /^Featured Mix/ }),
+    ).toBeOnTheScreen();
+    // A chart leads the carousel's tiles and the Charts shelf.
+    expect(
+      screen.getAllByRole("link", { name: /^Top 15 Hindi & Punjabi/ }),
+    ).toHaveLength(2);
+    expect(
+      screen.getByRole("header", { name: "Quick picks" }),
+    ).toBeOnTheScreen();
     expect(
       screen.getByRole("header", { name: "New Releases" }),
     ).toBeOnTheScreen();
@@ -102,18 +112,18 @@ describe("HomeFeed", () => {
     expect(procedure("playlist.details")).toHaveBeenCalledWith({ token: "p1" });
   });
 
-  it("plays an album from its card without opening it", async () => {
+  it("plays an album from its quick pick's menu without opening it", async () => {
     home.mockResolvedValue(rawLaunchData());
     procedure("album.details").mockResolvedValue(
       rawAlbum({ list: [rawSong()] }),
     );
     await renderScreen(<HomeFeed />);
 
-    const [play] = await screen.findAllByRole("button", {
-      name: "Play Udta Teer",
-    });
-    if (!play) throw new Error("no Play button on the album card");
-    await fireEvent.press(play);
+    // Quick picks have no Play button (only the carousel does).
+    expect(screen.queryByRole("button", { name: "Play Udta Teer" })).toBeNull();
+    const [tile] = await screen.findAllByRole("link", { name: "Udta Teer" });
+    if (!tile) throw new Error("no quick pick for the album");
+    await fireEvent(tile, "pressAction", { nativeEvent: { event: "play" } });
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
     expect(procedure("album.details")).toHaveBeenCalledWith({
@@ -165,6 +175,17 @@ describe("HomeFeed", () => {
         "No songs found right now",
       ),
     );
+  });
+
+  it("opens Browse from its quick pick, before any catalog data", async () => {
+    home.mockResolvedValue(rawLaunchData());
+    const app = await renderScreen(<HomeFeed />, {
+      routes: { browse: () => null },
+    });
+
+    await fireEvent.press(await screen.findByRole("link", { name: "Browse" }));
+
+    expect(app.getPathname()).toBe("/browse");
   });
 
   it("opens a language's albums from its chip", async () => {

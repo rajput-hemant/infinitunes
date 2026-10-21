@@ -12,13 +12,13 @@ describe("buildHomeModel", () => {
   it("features the first playlist and quick-picks albums and the next playlists", () => {
     const model = buildHomeModel(rawLaunchData());
 
-    expect(model.featured?.name).toBe("Featured Mix");
+    expect(model.carousel.map((item) => item.name)).toEqual([
+      "Featured Mix",
+      "Top 15 Hindi & Punjabi",
+    ]);
     expect(model.quickPicks.map((item) => item.name)).toEqual([
       "Udta Teer",
       "Second Playlist",
-    ]);
-    expect(model.heroTiles.map((item) => item.name)).toEqual([
-      "Top 15 Hindi & Punjabi",
     ]);
   });
 
@@ -82,7 +82,29 @@ describe("buildHomeModel", () => {
     expect(isHomeEmpty(buildHomeModel(rawLaunchData()))).toBe(false);
   });
 
-  it("takes hero tiles from charts, then the playlists after the quick picks", () => {
+  it("keeps six quick picks, to fill four rows after Surprise Me and Browse", () => {
+    const model = buildHomeModel(
+      rawLaunchData({
+        new_albums: Array.from({ length: 4 }, (_, i) =>
+          rawAlbum({ id: `a${i}`, title: `Album ${i}` }),
+        ),
+        top_playlists: Array.from({ length: 6 }, (_, i) =>
+          rawPlaylist({ id: `p${i}`, title: `Playlist ${i}` }),
+        ),
+      }),
+    );
+
+    expect(model.quickPicks.map((item) => item.name)).toEqual([
+      "Album 0",
+      "Album 1",
+      "Album 2",
+      "Album 3",
+      "Playlist 1",
+      "Playlist 2",
+    ]);
+  });
+
+  it("follows the featured playlist with charts, then the playlists after the quick picks", () => {
     const playlists = Array.from({ length: 8 }, (_, i) =>
       rawPlaylist({ id: `p${i}`, title: `Playlist ${i}` }),
     );
@@ -93,7 +115,8 @@ describe("buildHomeModel", () => {
       }),
     );
 
-    expect(model.heroTiles.map((tile) => tile.name)).toEqual([
+    expect(model.carousel.map((tile) => tile.name)).toEqual([
+      "Playlist 0",
       "Chart",
       "Playlist 5",
       "Playlist 6",
