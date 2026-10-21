@@ -6,12 +6,13 @@
  *
  * - iOS resolves colours to UIKit system colours (`iosSystemColors`), which
  *   follow light/dark mode, contrast settings and Liquid Glass by themselves.
- * - Android 12+ resolves them to Material You roles (`androidDynamicColors`),
- *   the wallpaper colours its navigation chrome already uses, so content and
- *   chrome agree.
+ * - Android 12+ resolves them to Material You roles (`androidDynamicColors`,
+ *   applied by `DynamicColorRoot`), the wallpaper colours its navigation
+ *   chrome already uses, so content and chrome agree there.
  * - Older Android keeps the neutral palette below, the web theme's
  *   (`apps/web/styles/globals.css`) converted to hex, as the native colour
- *   parser has no `oklch()`.
+ *   parser has no `oklch()`. Its chrome takes Material's baseline scheme
+ *   (`navigation-theme`), so content and chrome differ in hue there.
  *
  * Navigation chrome takes the same system colours (`navigation-theme`), read
  * in components through `useTheme().colors`.
@@ -134,7 +135,7 @@ export const iosSystemColors: Partial<Record<ColorToken, string>> = {
 /**
  * Material 3 colour roles per token, resolved on Android 12+ from the
  * wallpaper (`Color.android.dynamic`, the source the navigation chrome reads
- * in `navigation-theme`) by `android-colors`. Below Android 12 the palette
+ * in `navigation-theme`) by `android-colors` and `DynamicColorRoot`. Below Android 12 the palette
  * above applies. `fill*` and `scrim` stay alpha values on both.
  */
 export const androidDynamicColors: Partial<Record<ColorToken, M3Role>> = {

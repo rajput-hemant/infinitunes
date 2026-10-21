@@ -1,4 +1,4 @@
-import { toRootVariables, withDynamicRoles } from "./dynamic-palette";
+import { toVariables, withDynamicRoles } from "./dynamic-palette";
 import { colors } from "./tokens";
 
 describe("withDynamicRoles", () => {
@@ -15,10 +15,14 @@ describe("withDynamicRoles", () => {
   });
 });
 
-describe("toRootVariables", () => {
-  it("sets only the given scheme of each variable", () => {
-    expect(toRootVariables(colors.dark, "dark")["--background"]).toEqual({
-      dark: colors.dark.background,
-    });
+describe("toVariables", () => {
+  it("names every token's variable after it", () => {
+    const variables = toVariables(colors.dark);
+
+    expect(variables["--background"]).toBe(colors.dark.background);
+    expect(variables["--fill-2"]).toBe(colors.dark["fill-2"]);
+    expect(Object.keys(variables)).toHaveLength(
+      Object.keys(colors.dark).length,
+    );
   });
 });

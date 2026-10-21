@@ -1,5 +1,5 @@
 import { androidDynamicColors, COLOR_TOKENS } from "./tokens";
-import type { ColorScheme, M3Role, Palette } from "./tokens";
+import type { M3Role, Palette } from "./tokens";
 
 /**
  * `base` with every token that has a Material 3 role (`androidDynamicColors`)
@@ -19,12 +19,9 @@ export function withDynamicRoles(
   return palette;
 }
 
-/** A palette as NativeWind root variables for one scheme (`--background`). */
-export function toRootVariables(
-  palette: Palette,
-  scheme: ColorScheme,
-): Record<string, Partial<Record<ColorScheme, string>>> {
+/** A palette as the CSS variables the colour classes read (`--background`), for `vars()`. */
+export function toVariables(palette: Palette): Record<`--${string}`, string> {
   return Object.fromEntries(
-    COLOR_TOKENS.map((token) => [`--${token}`, { [scheme]: palette[token] }]),
+    COLOR_TOKENS.map((token) => [`--${token}`, palette[token]]),
   );
 }
