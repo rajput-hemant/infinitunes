@@ -137,10 +137,9 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   the player (empty Howler src). Every song array a router returns must be mapped
   through `withDownloadUrl` (`packages/trpc/src/router/utils.ts`) before reaching
   the client, not just the song-details/podcast-episode endpoints.
-- `des-ecb` (used by `createDownloadLinks`) is unsupported by plain Node's default
-  OpenSSL 3 build (`next dev` runs under Node even when invoked via `bun run dev`), but
-  works under Bun's own crypto. Locally reproduce with `NODE_OPTIONS=--openssl-legacy-provider`;
-  don't add that flag to the repo, it's a local-verification workaround only.
+- `createDownloadLinks` decrypts with `crypto-js`, not `node:crypto`: Node's OpenSSL 3
+  has no `des-ecb` (`next dev`/`start` run under Node even via `bun run`), so no
+  `--openssl-legacy-provider` is needed. Don't switch it back.
 - `apps/web/app/api/og/route.tsx` runs on the default Node runtime (Edge is
   deprecated in Next 16). Its font must be loaded with `readFile` from
   `node:fs/promises`, not `fetch()` - undici rejects the `file:` URL that
@@ -264,6 +263,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - `type-check` runs `expo customize tsconfig.json` first: it writes the gitignored `.expo/types` route
   types that `tsc` needs in a fresh clone. TypeScript is the repo's 7.x (`expo.install.exclude`).
 - No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`.
+- `apps/mobile/e2e` runs the app's real `auth-client`/`trpc` (only native modules stubbed,
+  `native-stubs.ts`) against a local web app and scratch database: `MOBILE_E2E_API_URL=... bun
+  run test:e2e` (skipped unset; loopback only, it creates accounts). Its header comments name the
+  production-limiter mode and the live-payload screen run (`live-screens.test.tsx`). The expo
+  client's `getCookie()` is async: always await it.
 
 ## Song rows take the slim model, never the raw song
 
@@ -323,9 +327,10 @@ that are easy to get wrong again:
 - Before trusting any procedure's shape against its declared type, verify
   live (curl the upstream `__call` from `endpoints.ts` via
   `packages/trpc/src/lib/api.ts`'s `BASE_URL`) rather than assuming a type is
-  accurate - the `jiosaavn-api` reference project's own types are sometimes
-  stale vs. the live API (e.g. its `AllSearchRequest` album/song items say
-  `url`, live data says `perma_url`).
+  accurate, and with the same `api_version` the procedure sends: the shape
+  changes with it (`autocomplete.get` without v4 answers `url` instead of
+  `perma_url`, which the `jiosaavn-api` reference types describe). The mobile
+  E2E catalog suite plus `live-screens.test.tsx` do this for every screen.
 - A `data.pages` value from `useInfiniteQuery` is one array per fetched page
   (`T[][]`), not a flat `T[]` - `apps/web/.../episode-list.tsx` had a bare
   `data.pages as Episode[]` cast (should be `.flat()`) that silently treated

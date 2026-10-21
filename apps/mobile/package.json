@@ -8,8 +8,9 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "lint": "oxlint --deny-warnings",
-    "type-check": "expo customize tsconfig.json && tsc --noEmit",
+    "type-check": "expo customize tsconfig.json && tsc --noEmit && tsc -p e2e --noEmit",
     "test": "jest",
+    "test:e2e": "bun test ./e2e/stack.e2e.ts ./e2e/production.e2e.ts ./e2e/catalog.e2e.ts",
     "doctor": "bunx expo-doctor@latest"
   },
   "dependencies": {
@@ -69,6 +70,7 @@
     "@infinitunes/typescript-config": "workspace:*",
     "@react-native/jest-preset": "0.88.0",
     "@testing-library/react-native": "^14.1.0",
+    "@types/bun": "catalog:",
     "@types/jest": "^30.0.0",
     "@types/react": "~19.3.0",
     "babel-preset-expo": "~58.0.18",
