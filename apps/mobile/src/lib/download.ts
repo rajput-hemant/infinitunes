@@ -78,8 +78,9 @@ export async function saveTracks(
 ): Promise<SaveResult> {
   const result: SaveResult = { saved: 0, failed: 0 };
   for (const track of tracks) {
+    let cached: File | undefined;
     try {
-      const cached = await downloadToCache(track, quality);
+      cached = await downloadToCache(track, quality);
       // Android's document provider appends the extension for the type.
       const target = folder.createFile(
         Platform.OS === "android"
@@ -88,10 +89,16 @@ export async function saveTracks(
         MIME_TYPE,
       );
       await target.write(await cached.bytes());
-      cached.delete();
       result.saved += 1;
     } catch {
       result.failed += 1;
+    } finally {
+      // A failed save must not leave the download behind in the cache.
+      try {
+        cached?.delete();
+      } catch {
+        // The cache is the system's to purge; a leftover file is harmless.
+      }
     }
   }
   return result;
