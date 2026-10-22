@@ -1,5 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react-native";
-import { Share } from "react-native";
+import { Platform, Share } from "react-native";
 
 import { renderWithProviders } from "~/test/render";
 
@@ -33,6 +33,36 @@ describe("detailHeaderOptions", () => {
       message:
         "Flipperachi https://infinitunes.test/artist/flipperachi/LnMfdXjMGl0_",
       url: "https://infinitunes.test/artist/flipperachi/LnMfdXjMGl0_",
+    });
+  });
+
+  describe("scrolled under the bar", () => {
+    const item = {
+      name: "Udta Teer",
+      type: "album",
+      url: "https://www.jiosaavn.com/album/udta-teer/LHgqn,SRpyA_",
+    } as const;
+    afterEach(() => jest.restoreAllMocks());
+
+    it("tints and titles Android's bar, and resets both at the top", () => {
+      jest.replaceProperty(Platform, "OS", "android");
+
+      const scrolled = detailHeaderOptions(item, "#e0e0e0");
+      expect(scrolled.headerTitle).toBe("Udta Teer");
+      expect(scrolled.headerStyle).toEqual({ backgroundColor: "#e0e0e0" });
+
+      // Options merge: the reset keys must be present, not left out.
+      const top = detailHeaderOptions(item);
+      expect(top).toHaveProperty("headerStyle", undefined);
+      expect(top.headerTitle).toBe("");
+    });
+
+    it("leaves iOS's bar alone", () => {
+      jest.replaceProperty(Platform, "OS", "ios");
+
+      const scrolled = detailHeaderOptions(item, "#e0e0e0");
+      expect(scrolled.headerTitle).toBe("");
+      expect(scrolled).not.toHaveProperty("headerStyle");
     });
   });
 

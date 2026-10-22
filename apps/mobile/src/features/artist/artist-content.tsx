@@ -4,6 +4,7 @@ import { parseArtistBio, toSongRow, uniqueBy } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { useMemo, useState } from "react";
 
+import { useDetailScrollProps } from "~/components/detail/detail-scroll";
 import { entityListKey } from "~/components/entity-list";
 import { playerDockInset } from "~/navigation/player-dock";
 
@@ -28,6 +29,7 @@ export function ArtistContent({
   isRefreshing,
   initialTab,
 }: ArtistContentProps) {
+  const scrollProps = useDetailScrollProps();
   const bio = useMemo(() => parseArtistBio(artist.bio), [artist.bio]);
   const tabs = visibleTabs(bio.length > 0);
   const [tab, setTab] = useState<ArtistTab>(
@@ -69,6 +71,7 @@ export function ArtistContent({
       refreshing={isRefreshing || panel.isRefetching === true}
       onRefresh={refresh}
       contentInsetAdjustmentBehavior="automatic"
+      {...scrollProps}
       contentContainerStyle={{ paddingBottom: playerDockInset }}
     />
   );

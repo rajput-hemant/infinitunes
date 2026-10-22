@@ -2,14 +2,17 @@ import { getErrorCode } from "@infinitunes/core/error-code";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import type { SymbolViewProps } from "expo-symbols";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { View } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import type { ShareableItem } from "~/lib/share";
+import { usePalette } from "~/theme/use-palette";
 
 import { detailHeaderOptions } from "./detail-header-options";
+import { DetailScrollContext } from "./detail-scroll";
 
 const NOT_FOUND_ICON: SymbolViewProps["name"] = {
   ios: "magnifyingglass",
@@ -33,7 +36,9 @@ export type DetailFrameProps<Data> = {
 /**
  * Every entity screen's states: the skeleton while loading, a final
  * not-found or a retryable failure, and the loaded page with the item's name
- * in a small native header title and Share at its trailing edge.
+ * in a small native header title and Share at its trailing edge. The page's
+ * scroll view reports scrolling under the bar through `useDetailScrollProps`
+ * (Android's tinted, titled bar).
  */
 export function DetailFrame<Data>({
   query,
@@ -44,13 +49,26 @@ export function DetailFrame<Data>({
   children,
 }: DetailFrameProps<Data>) {
   const { data } = query;
+  const [scrolled, setScrolled] = useState(false);
+  const scrolledColor = usePalette().card;
+  // Only the bar follows the scroll: the page renders again only when its
+  // data or the screen's own render does.
+  const page = useMemo(
+    () => (data !== undefined && data !== null ? children(data) : null),
+    [children, data],
+  );
 
   if (data !== undefined && data !== null) {
     return (
-      <>
-        <Stack.Screen options={detailHeaderOptions(identity(data))} />
-        {children(data)}
-      </>
+      <DetailScrollContext value={setScrolled}>
+        <Stack.Screen
+          options={detailHeaderOptions(
+            identity(data),
+            scrolled ? scrolledColor : undefined,
+          )}
+        />
+        {page}
+      </DetailScrollContext>
     );
   }
 

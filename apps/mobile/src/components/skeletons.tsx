@@ -8,6 +8,7 @@ import type { ArtSize, TextVariant } from "~/theme/tokens";
 import { useRadii } from "~/theme/use-radii";
 import { useUserId } from "~/user-data/session";
 
+import { entityTitleVariant, largePlay } from "./entity-header";
 import { CARD_TITLE } from "./media-card";
 import type { MediaCardVariant } from "./media-card";
 import { artworkFrame } from "./ui/artwork";
@@ -191,6 +192,31 @@ export function TextBlockSkeleton() {
   );
 }
 
+/**
+ * The song page's lyrics while they load. Android mirrors the loaded preview
+ * card (`bg-card`, four headline lines and Read More); iOS's preview is plain
+ * text under its header.
+ */
+export function LyricsSkeleton() {
+  if (Platform.OS !== "android") return <TextBlockSkeleton />;
+  return (
+    <SkeletonPulse>
+      <HeaderLine />
+      <View
+        testID="lyrics-skeleton-card"
+        className="mx-page min-h-touch gap-3 rounded-lg bg-card p-4"
+      >
+        <View>
+          {(["100%", "90%", "95%", "70%"] as const).map((width) => (
+            <SkeletonText key={width} variant="headline" width={width} />
+          ))}
+        </View>
+        <SkeletonText variant="label" width={80} />
+      </View>
+    </SkeletonPulse>
+  );
+}
+
 type EntityHeaderSkeletonProps = {
   /** Round artwork, for artists and stations. */
   round?: boolean;
@@ -226,11 +252,12 @@ export function EntityHeaderSkeleton({
           <SkeletonText variant="caption" width={96} />
         </View>
         <View className="mt-1">
-          <SkeletonText variant="title2" width={200} />
+          <SkeletonText variant={entityTitleVariant()} width={200} />
         </View>
         {subtitle ? <SkeletonText variant="subhead" width={140} /> : null}
         {meta ? <SkeletonText variant="footnote" width={180} /> : null}
-        {/* The heart and the menu, then Shuffle and the 56pt Play. */}
+        {/* The heart and the menu, then Shuffle and Play: Android's 40dp
+            tonal and 56dp filled containers, iOS's two 48pt buttons. */}
         <View className="mt-4 w-full flex-row items-center gap-2">
           {range(controls).map((control) => (
             <View
@@ -242,9 +269,19 @@ export function EntityHeaderSkeleton({
           ))}
           <View className="flex-1" />
           {shuffle ? (
-            <SkeletonBlock className="size-touch rounded-full" />
+            <SkeletonBlock
+              className={cx(
+                Platform.OS === "android" ? "size-ctl" : "size-touch",
+                "rounded-full",
+              )}
+            />
           ) : null}
-          <SkeletonBlock className="size-row rounded-full" />
+          <SkeletonBlock
+            className={cx(
+              largePlay() ? "size-row" : "size-touch",
+              "rounded-full",
+            )}
+          />
         </View>
       </View>
     </SkeletonPulse>
