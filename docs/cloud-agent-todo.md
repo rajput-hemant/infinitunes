@@ -243,12 +243,14 @@ Fix the permission race inside `downloadTrack`/`downloadAll` so `song-menu.tsx`/
 - [x] **M-80** **[device sign-off later]** P3 PLAUSIBLE `lib/notifications.ts:87-102` - permission prompt and share sheet are not sequenced; both system sheets overlap on iOS [core#11]
   - Fix: `await ensureNotificationPermission()` inside the download functions before starting. Executor: haiku. Flags: needs device check.
 
-## Batch M17 (sonnet): component tests and snackbar gesture - `components/failure-snackbar.tsx`, new tests under `components/**`, `navigation/**`
+## Batch M17 (sonnet): component tests and snackbar gesture - `components/failure-snackbar.tsx`, new tests under `components/**`, `navigation/**` (branch `fix/m17-component-tests`)
 
-- [ ] **M-81** **[device sign-off later]** P3 CONFIRMED `components/failure-snackbar.tsx:93-126` - snackbar swipe is a JS-thread `PanResponder` [comp P3-9]
+- [x] **M-81** **[device sign-off later]** P3 CONFIRMED `components/failure-snackbar.tsx:93-126` - snackbar swipe is a JS-thread `PanResponder` [comp P3-9]
   - Fix: `Gesture.Pan()` on the UI thread with `runOnJS` for dismiss/release. Executor: sonnet. Flags: needs device check.
-- [ ] **M-82** P3 CONFIRMED `equalizer`, `refresh-control`, `use-schema-form`, `detail-scroll`/`detail-frame` (Android scrolled bar), `card-play-button`, `segmented-tabs` (iOS), `use-quick-action-routing`, `player-dock` - no tests for their behaviour [comp P3-17]
+  - Done: RNGH 3's `usePanGesture` + `GestureDetector` (the installed v3 hook API, `Gesture.Pan()` is its legacy form) with Reanimated shared values; hold/release/dismiss hop through `scheduleOnRN`; velocity threshold now 500 pt/s. Tests drive the pan callbacks. Needs a device check (drag, flick, tap, iOS FullWindowOverlay).
+- [x] **M-82** P3 CONFIRMED `equalizer`, `refresh-control`, `use-schema-form`, `detail-scroll`/`detail-frame` (Android scrolled bar), `card-play-button`, `segmented-tabs` (iOS), `use-quick-action-routing`, `player-dock` - no tests for their behaviour [comp P3-17]
   - Fix: add the tests listed in the comp report (paused/reduced-motion bars, `refreshing` follows only the pull, first issue per field, scroll-past offset bar swap, pending/label, out-of-range index, initial action once, dock inset). Run after M7/M8 so tests match final code. Executor: sonnet. Flags: none.
+  - Done: new tests for equalizer, refresh-control, use-schema-form, detail-scroll (detail-frame's Android bar swap was already pinned in detail-screen.test), card-play-button, iOS segmented-tabs, player-dock, use-quick-action-routing. The last exposed a real bug (router change re-opened the launch action): fixed in its own commit.
 
 ## Batch W2 (sonnet): details and row "more" sheets - `components/song-list/{more-button,more-button-mobile-popup,more-button-radio}.ts(x)`, `components/details-header/more-button.tsx`, `components/{share-options,share-button}.tsx`, `tests/dom/more-button-share-panel.test.tsx`
 
