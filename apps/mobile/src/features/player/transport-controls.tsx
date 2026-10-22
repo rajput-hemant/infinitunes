@@ -14,6 +14,7 @@ import Animated, {
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
+import { usePressScale } from "~/lib/use-press-scale";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { togglePlayback } from "~/playback/transport";
@@ -69,8 +70,8 @@ function useGlyphBounce(name: string) {
 }
 
 /**
- * Play or pause: the mini player's. A bare glyph on iOS; on Android a 40dp
- * filled circle in the wash's control colour (Material 3's filled icon button).
+ * Play or pause: the mini player's. A bare glyph on iOS; on Android Material
+ * 3's filled icon button in the wash's control colour.
  */
 export function PlayPauseButton() {
   const { icon, label } = usePlayPause();
@@ -81,19 +82,15 @@ export function PlayPauseButton() {
   const bounce = useGlyphBounce(icon.ios);
   if (Platform.OS === "android") {
     return (
-      <Pressable
+      <IconButton
+        icon={icon}
+        label={label}
+        variant="filled"
         onPress={togglePlayback}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        className="min-h-touch min-w-touch items-center justify-center active:opacity-80"
-      >
-        <View
-          className="size-ctl items-center justify-center rounded-full"
-          style={{ backgroundColor: wash?.control ?? primary }}
-        >
-          <Icon name={icon} size="md" color={wash?.onControl ?? onPrimary} />
-        </View>
-      </Pressable>
+        size="md"
+        fill={wash?.control ?? primary}
+        color={wash?.onControl ?? onPrimary}
+      />
     );
   }
   return (
@@ -138,6 +135,7 @@ export function ProminentPlayPauseButton() {
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
   const bounce = useGlyphBounce(icon.ios);
   const ripple = usePalette()["fill-2"];
+  const press = usePressScale(0.88);
 
   if (Platform.OS === "android") {
     return (
@@ -167,25 +165,29 @@ export function ProminentPlayPauseButton() {
   }
 
   return (
-    <Pressable
-      onPress={togglePlayback}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      className="items-center justify-center rounded-full active:opacity-80"
-      style={{
-        width: PROMINENT_EDGE,
-        height: PROMINENT_EDGE,
-        backgroundColor: wash?.control ?? primary,
-      }}
-      testID="play-pause-prominent"
-    >
-      <SymbolView
-        name={icon}
-        size={iconSize.xl}
-        tintColor={wash?.onControl ?? onPrimary}
-        animationSpec={bounce}
-      />
-    </Pressable>
+    <Animated.View style={press.style}>
+      <Pressable
+        onPress={togglePlayback}
+        onPressIn={press.onPressIn}
+        onPressOut={press.onPressOut}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        className="items-center justify-center rounded-full active:opacity-80"
+        style={{
+          width: PROMINENT_EDGE,
+          height: PROMINENT_EDGE,
+          backgroundColor: wash?.control ?? primary,
+        }}
+        testID="play-pause-prominent"
+      >
+        <SymbolView
+          name={icon}
+          size={iconSize.xl}
+          tintColor={wash?.onControl ?? onPrimary}
+          animationSpec={bounce}
+        />
+      </Pressable>
+    </Animated.View>
   );
 }
 

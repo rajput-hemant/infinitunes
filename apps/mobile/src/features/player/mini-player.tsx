@@ -1,4 +1,3 @@
-import { selectionAsync } from "expo-haptics";
 import { useRouter } from "expo-router";
 import { NativeTabs } from "expo-router/native-tabs";
 import { Pressable, View } from "react-native";
@@ -33,7 +32,6 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
   const track = usePlayer(selectCurrentTrack);
 
   const openPlayer = () => {
-    void selectionAsync();
     router.push("/player");
   };
 

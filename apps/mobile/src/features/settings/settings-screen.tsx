@@ -14,7 +14,7 @@ import {
   useAppearanceMode,
   useCornerStyle,
 } from "~/theme/appearance";
-import { accentColors } from "~/theme/tokens";
+import { accentColors, sizes } from "~/theme/tokens";
 
 import { signOut } from "./end-session";
 import { languagesSummary } from "./languages-screen";
@@ -36,7 +36,8 @@ import { useSongCacheSettings } from "./use-song-cache-settings";
  * list), like the web's single settings page. The list scrolls itself, so
  * it stops above the floating mini-player instead of padding content: a view
  * around the host takes the inset (a native host's own padding need not shrink
- * its SwiftUI root). With the iOS 26 tab bar accessory the inset is 0.
+ * its SwiftUI root). With the iOS 26 tab bar accessory the inset is 0. On a
+ * wide window the list is at most `sizes.readable` wide, centred.
  */
 export function SettingsScreen() {
   const { data: session } = authClient.useSession();
@@ -57,7 +58,14 @@ export function SettingsScreen() {
 
   return (
     <View style={{ flex: 1, paddingBottom: playerDockInset }}>
-      <Host style={{ flex: 1 }}>
+      <Host
+        style={{
+          flex: 1,
+          width: "100%",
+          maxWidth: sizes.readable,
+          alignSelf: "center",
+        }}
+      >
         <FieldGroup>
           <FieldGroup.Section title="Account">
             {user ? (

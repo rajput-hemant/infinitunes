@@ -1,6 +1,7 @@
 import { render, screen } from "@testing-library/react-native";
 import { StyleSheet, Text } from "react-native";
 
+import { GRID_GAP, gridCardWidth } from "~/lib/use-grid-card-width";
 import { sizes } from "~/theme/tokens";
 
 import { GridCell } from "./grid-cell";
@@ -9,13 +10,13 @@ describe("GridCell", () => {
   it("puts the page gutter on the outer logical edge, so RTL keeps it outside", async () => {
     await render(
       <>
-        <GridCell index={0}>
+        <GridCell index={0} columns={3}>
           <Text>first</Text>
         </GridCell>
-        <GridCell index={1}>
+        <GridCell index={1} columns={3}>
           <Text>middle</Text>
         </GridCell>
-        <GridCell index={2}>
+        <GridCell index={2} columns={3}>
           <Text>second</Text>
         </GridCell>
       </>,
@@ -34,4 +35,37 @@ describe("GridCell", () => {
       expect(style).not.toHaveProperty("paddingRight");
     }
   });
+
+  it.each([4, 6])(
+    "keeps one gap between every pair of %i columns",
+    async (columns) => {
+      const width = 1000;
+      const card = gridCardWidth(width, columns);
+      await render(
+        <>
+          {Array.from({ length: columns }, (_, index) => (
+            <GridCell key={index} index={index} columns={columns}>
+              <Text>{`card ${index}`}</Text>
+            </GridCell>
+          ))}
+        </>,
+      );
+      // A card's left edge: its cell's start plus the start inset (the last sits on the end).
+      const left = (index: number) => {
+        const style = StyleSheet.flatten(
+          screen.getByText(`card ${index}`).parent?.props.style,
+        );
+        const cell = (index * width) / columns;
+        return style.paddingEnd === undefined
+          ? cell + style.paddingStart
+          : cell + width / columns - style.paddingEnd - card;
+      };
+      // Cards are floored to a device pixel, so a gap may grow by under a point.
+      for (let index = 1; index < columns; index++) {
+        const gap = left(index) - left(index - 1) - card;
+        expect(gap).toBeGreaterThanOrEqual(GRID_GAP);
+        expect(gap).toBeLessThan(GRID_GAP + 1);
+      }
+    },
+  );
 });

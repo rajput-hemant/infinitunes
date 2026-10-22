@@ -8,7 +8,7 @@ import {
   MIN_TEXT_CONTRAST,
   playerColorsFromSeed,
 } from "~/lib/artwork-colors";
-import { audioPlayer } from "~/playback/audio-engine";
+import { audioPlayer, replaceSource } from "~/playback/audio-engine";
 import { playbackStatusStore } from "~/playback/playback-status";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
@@ -26,6 +26,7 @@ beforeEach(() => {
   playerStore.setState(initialPlayer, true);
   playbackStatusStore.setState(initialStatus, true);
   audioPlayer.pause();
+  replaceSource("https://example.test/a.mp4");
   playerStore.getState().playTracks(rows, { startIndex: 1 });
 });
 

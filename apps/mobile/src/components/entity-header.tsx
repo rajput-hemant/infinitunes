@@ -64,7 +64,7 @@ type EntityHeaderProps = {
 
 /**
  * The top of a detail screen (album, playlist, mix, artist, show, station),
- * centred: artwork, the kind and verified marks, the title (after the
+ * centred and at most `sizes.readable` wide: artwork, the kind and verified marks, the title (after the
  * explicit mark), the credit and a meta line, then one row: the heart and
  * the screen's own actions, then Shuffle and Play as icon buttons.
  */
@@ -84,7 +84,7 @@ export function EntityHeader({
 }: EntityHeaderProps) {
   const primary = useTokenColor("primary");
   return (
-    <View className="items-center px-page pb-4 pt-2">
+    <View className="w-full max-w-readable items-center self-center px-page pb-4 pt-2">
       {/* The fill gives the iOS shadow an opaque shape to cast from. */}
       <View
         className={`bg-card ${round ? "rounded-full" : "rounded-lg"}`}

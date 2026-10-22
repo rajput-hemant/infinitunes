@@ -1,13 +1,12 @@
-import { pageMetadata } from "~/lib/metadata";
+import { noindexMetadata, pageMetadata } from "~/lib/metadata";
 
 const title = "Terms of Service";
 const description = "The terms governing use of Infinitunes.";
 
-export const metadata = pageMetadata({
-  title,
-  description,
-  url: "/terms",
-});
+export const metadata = {
+  ...pageMetadata({ title, description, url: "/terms" }),
+  ...noindexMetadata,
+};
 
 export default function TermsPage() {
   return (
@@ -17,14 +16,7 @@ export default function TermsPage() {
       </h1>
 
       <p className="rounded-(--r-sm) border border-border bg-fill p-4 text-sm leading-5 text-muted-foreground">
-        Draft placeholder for the owner to replace: these terms are not final
-        and do not constitute legal advice.
-      </p>
-
-      <p className="text-sm leading-5 text-muted-foreground">
-        By using Infinitunes you agree to use the service lawfully, to respect
-        the rights of artists and rights holders, and to accept that all media
-        shown here belongs to its respective owners.
+        The terms are being written and are not available yet.
       </p>
     </div>
   );

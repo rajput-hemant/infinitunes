@@ -5,11 +5,18 @@
  * `~/test/session-mock`), and in-memory stand-ins for native modules without
  * a Jest build (`expo-audio` is mapped in `jest.config.js`).
  */
+import { Dimensions } from "react-native";
 import { setUpTests } from "react-native-reanimated";
 
 process.env.EXPO_PUBLIC_API_URL = "https://infinitunes.test";
 
 setUpTests();
+
+// The default window is a phone in portrait (the React Native preset's is
+// 750pt wide, a `medium` window), so screens render their compact layouts;
+// a suite that needs a wider window sets its own with `Dimensions.set`.
+const phone = { ...Dimensions.get("window"), width: 390, height: 844 };
+Dimensions.set({ window: phone, screen: phone });
 
 jest.mock("expo-file-system", () => require("~/test/expo-file-system"));
 jest.mock("expo-sharing", () => ({ shareAsync: jest.fn() }));

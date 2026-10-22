@@ -3,7 +3,7 @@ import { View } from "react-native";
 
 import { QuickPickTile } from "~/components/quick-pick-tile";
 import { SectionHeader } from "~/components/section-header";
-import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { GRID_GAP, useGrid } from "~/lib/use-grid-card-width";
 import { usePending } from "~/lib/use-pending";
 import { entityHref } from "~/navigation/entity-href";
 
@@ -14,7 +14,7 @@ import { playSurprise } from "./play-home";
  * jump straight in. A tile opens its item; its long press offers Play.
  */
 export function QuickPicks({ items }: { items: readonly CardItem[] }) {
-  const width = useGridCardWidth();
+  const { width } = useGrid("picks");
   // A tap while a batch is loading is ignored.
   const { run } = usePending();
 

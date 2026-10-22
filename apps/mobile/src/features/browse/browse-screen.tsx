@@ -8,7 +8,7 @@ import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SectionHeader } from "~/components/section-header";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
-import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { GRID_GAP, useGrid, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { entityHref } from "~/navigation/entity-href";
 
 import { BrowseTile } from "./browse-tile";
@@ -18,12 +18,12 @@ type Category = { label: string; href: Href; image?: string };
 
 /** Categories, then every language: each tile opens a list. Pull to refresh the covers. */
 export function BrowseScreen() {
-  const width = useGridCardWidth();
+  const { width } = useGrid("browse");
   const fullWidth = useGridCardWidth(1);
   const { covers, refresh } = useCategoryCovers();
   const mixHref = covers.mix && entityHref("mix", covers.mix.perma_url);
 
-  // Six categories fill three rows; the mix, when there is one, spans a row of its own.
+  // Six categories fill whole rows at two or three columns; the mix, when there is one, spans a row of its own.
   const categories: Category[] = [
     { label: "Top Albums", href: "/album", image: covers.albums },
     { label: "Top Charts", href: "/chart", image: covers.charts },

@@ -7,7 +7,7 @@ import { MediaCard } from "~/components/media-card";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
-import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { useGrid } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { sizes } from "~/theme/tokens";
 
@@ -22,7 +22,7 @@ import { useLikedCollection } from "./use-liked-collection";
 function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
   const { title, emptyMessage, icon } = LIKED_COLLECTIONS[kind];
   const list = useLikedCollection(kind);
-  const cardWidth = useGridCardWidth(CARD_COLUMNS);
+  const { columns, width: cardWidth } = useGrid("cards");
 
   return (
     <LibraryListView
@@ -45,10 +45,10 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
       {({ items, missing, refresh }) => (
         <FlashList
           data={items}
-          numColumns={CARD_COLUMNS}
+          numColumns={columns}
           keyExtractor={(card) => card.url}
           renderItem={({ item, index }) => (
-            <GridCell index={index}>
+            <GridCell index={index} columns={columns}>
               <MediaCard item={item} width={cardWidth} />
             </GridCell>
           )}

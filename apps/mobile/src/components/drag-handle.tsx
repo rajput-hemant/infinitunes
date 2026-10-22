@@ -1,4 +1,10 @@
-import { Pressable } from "react-native";
+import {
+  impactAsync,
+  ImpactFeedbackStyle,
+  performAndroidHapticsAsync,
+  AndroidHaptics,
+} from "expo-haptics";
+import { Platform, Pressable } from "react-native";
 import { useReorderableDrag } from "react-native-reorderable-list";
 
 import { Icon } from "./ui/icon";
@@ -34,7 +40,13 @@ export function DragHandle({
   );
   return (
     <Pressable
-      onPressIn={drag}
+      onPressIn={() => {
+        // The row lifts: a tick as the drag starts.
+        void (Platform.OS === "android"
+          ? performAndroidHapticsAsync(AndroidHaptics.Gesture_Start)
+          : impactAsync(ImpactFeedbackStyle.Medium));
+        drag();
+      }}
       accessibilityRole="button"
       accessibilityLabel={`Reorder ${name}`}
       accessibilityHint="Drag to move"

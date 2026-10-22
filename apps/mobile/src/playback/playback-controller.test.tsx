@@ -159,6 +159,102 @@ describe("PlaybackController", () => {
     },
   );
 
+  it("loads the entry again when Play follows an unreachable stop", async () => {
+    const player = await mountController();
+    await act(async () =>
+      playerStore.getState().playTracks([...rows, rows[0]!]),
+    );
+    await act(async () => player.finishLoading());
+    for (let rung = 0; rung < 10; rung += 1) {
+      await act(async () => player.failLoading("Offline"));
+    }
+    expect(player.playing).toBe(false);
+    const loads = player.loads.length;
+
+    expect(player.lockScreen).toEqual({ active: false });
+    await act(async () => togglePlayback());
+
+    expect(player.loads).toHaveLength(loads + 1);
+    expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
+    expect(player.lockScreen.active).toBe(true);
+    expect(player.playing).toBe(true);
+    expect(playbackStatusStore.getState().duration).toBe(0);
+  });
+
+  it("loads a lone failed entry again when Play is pressed", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows.slice(0, 1)));
+    for (let rung = 0; rung < 5; rung += 1) {
+      await act(async () => player.failLoading("Bad file"));
+    }
+    const loads = player.loads.length;
+
+    await act(async () => togglePlayback());
+
+    expect(player.loads).toHaveLength(loads + 1);
+    expect(player.loads.at(-1)).toBe(ladder("BSaNI3Yr", 320));
+  });
+
+  it("does not record the next entry when it never loads after the previous one did", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
+    expect(procedure("history.record")).toHaveBeenCalledTimes(1);
+
+    await act(async () => playerStore.getState().skipToNext());
+    for (let rung = 0; rung < 5; rung += 1) {
+      await act(async () => player.failLoading("404"));
+    }
+
+    expect(procedure("history.record")).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not move on one track per Play press while offline", async () => {
+    const player = await mountController();
+    await act(async () =>
+      playerStore.getState().playTracks([...rows, rows[0]!]),
+    );
+    await act(async () => player.finishLoading());
+    for (let rung = 0; rung < 10; rung += 1) {
+      await act(async () => player.failLoading("Offline"));
+    }
+    const index = playerStore.getState().currentIndex;
+
+    for (let press = 0; press < 3; press += 1) {
+      await act(async () => togglePlayback());
+      for (let rung = 0; rung < 5; rung += 1) {
+        await act(async () => player.failLoading("Offline"));
+      }
+    }
+
+    expect(playerStore.getState().currentIndex).toBe(index);
+  });
+
+  it("records a listen only once the entry has loaded", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    expect(procedure("history.record")).not.toHaveBeenCalled();
+
+    await act(async () => player.finishLoading());
+
+    expect(procedure("history.record")).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves the lock screen cleared when a skip lands on a linkless entry", async () => {
+    const player = await mountController();
+    await act(async () =>
+      playerStore
+        .getState()
+        .playTracks([rows[0]!, { ...rows[1]!, download_url: "" }]),
+    );
+    await act(async () => player.finishLoading());
+    expect(player.lockScreen.active).toBe(true);
+
+    await act(async () => playerStore.getState().skipToNext());
+
+    expect(player.lockScreen).toEqual({ active: false });
+  });
+
   it("stops the previous source and reports a linkless entry", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows));
@@ -194,6 +290,8 @@ describe("PlaybackController", () => {
     "request",
     "queue",
     "playNext",
+    "shuffle",
+    "repeat",
     "quality",
   ] as const)(
     "advances a radio tail after a delayed refill unless the user played something else (%s)",
@@ -218,6 +316,8 @@ describe("PlaybackController", () => {
         if (action === "play") playerStore.getState().playAt(0);
         if (action === "queue") playerStore.getState().addToQueue(rows[1]!);
         if (action === "playNext") playerStore.getState().playNext(rows[1]!);
+        if (action === "shuffle") playerStore.getState().toggleShuffle();
+        if (action === "repeat") playerStore.getState().cycleRepeat();
         if (action === "quality")
           preferencesStore.setState({ streamQuality: "high" });
         if (action === "request") {
@@ -228,9 +328,7 @@ describe("PlaybackController", () => {
       await act(async () => refill.resolve(songs.slice(1)));
 
       expect(playerStore.getState().currentIndex).toBe(
-        action === "none" || action === "queue" || action === "playNext"
-          ? 1
-          : 0,
+        ["none", "queue", "playNext", "shuffle"].includes(action) ? 1 : 0,
       );
       if (action === "none") {
         expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
@@ -300,6 +398,7 @@ describe("PlaybackController", () => {
     const player = await mountController();
 
     await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
 
     expect(player.loads).toEqual([ladder("BSaNI3Yr", 320)]);
     expect(player.playing).toBe(true);
@@ -419,6 +518,7 @@ describe("PlaybackController", () => {
     await act(async () => player.finishLoading());
 
     await act(async () => player.finishTrack());
+    await act(async () => player.finishLoading());
 
     expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
     expect(procedure("history.record")).toHaveBeenLastCalledWith({

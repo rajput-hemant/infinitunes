@@ -1,5 +1,5 @@
 import { Platform, Pressable, StyleSheet, View } from "react-native";
-import type { ColorValue } from "react-native";
+import type { ColorValue, StyleProp, ViewStyle } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,6 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
+import { usePressScale } from "~/lib/use-press-scale";
 import { springs } from "~/theme/motion";
 import { sizes } from "~/theme/tokens";
 import type { IconSize } from "~/theme/tokens";
@@ -53,6 +54,18 @@ type IconButtonProps = {
    */
   selected?: boolean;
   disabled?: boolean;
+  /**
+   * Work is under way (a Play that is fetching): announced as busy and presses
+   * are ignored, but the button does not dim as `disabled` does.
+   */
+  busy?: boolean;
+  /** A container colour that no variant names (a wash's control); `filled`/`tonal` only. */
+  fill?: ColorValue;
+  /** The contained Android button's resting corner radius in px (default: round). */
+  restRadius?: number;
+  /** Layout only (a position); set on the outermost view. */
+  style?: StyleProp<ViewStyle>;
+  testID?: string;
 };
 
 /**
@@ -81,20 +94,31 @@ function SymbolButton({
   large = false,
   selected,
   disabled = false,
+  busy = false,
+  fill,
+  style,
+  testID,
 }: IconButtonProps) {
   const { container, ink } = variants[variant];
+  // iOS: buttons sink a little under the finger (bare symbols too).
+  const ios = Platform.OS === "ios";
+  const press = usePressScale();
   const inkColor = useTokenColor(ink ?? "foreground");
   const selectedInk = useTokenColor("secondary-foreground");
   const ripple = usePalette()["fill-2"];
   // A selected bare symbol takes the tonal container inside the same target.
   const tonal = selected && !container;
-  return (
+  const button = (
     <Pressable
-      onPress={onPress}
+      onPress={busy ? undefined : onPress}
+      onPressIn={ios ? press.onPressIn : undefined}
+      onPressOut={ios ? press.onPressOut : undefined}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected, disabled }}
+      accessibilityState={{ selected, disabled, busy }}
+      testID={testID}
+      style={[fill !== undefined && { backgroundColor: fill }, !ios && style]}
       android_ripple={{
         color: ripple,
         borderless: !container,
@@ -105,7 +129,7 @@ function SymbolButton({
         large ? "size-row" : "min-h-touch min-w-touch",
         container && "overflow-hidden rounded-full",
         container,
-        Platform.OS === "ios" && "active:opacity-60",
+        ios && !busy && "active:opacity-60",
       )}
     >
       {tonal ? (
@@ -120,6 +144,11 @@ function SymbolButton({
         />
       )}
     </Pressable>
+  );
+  return ios ? (
+    <Animated.View style={[style, press.style]}>{button}</Animated.View>
+  ) : (
+    button
   );
 }
 
@@ -150,34 +179,43 @@ function MaterialIconButton({
   large = false,
   selected,
   disabled = false,
+  busy = false,
+  fill: fillColor,
+  restRadius,
+  style,
+  testID,
 }: IconButtonProps & { variant: "filled" | "tonal" }) {
   const { fill, ink } = variants[variant];
   const inkColor = useTokenColor(ink);
-  const backgroundColor = useTokenColor(fill);
+  const tokenFill = useTokenColor(fill);
+  const backgroundColor = fillColor ?? tokenFill;
   const ripple = usePalette()["fill-3"];
   const pressedRadius = useRadii().sm;
   const edge = large ? sizes.row : sizes.ctl;
-  const radius = useSharedValue(edge / 2);
+  const atRest = restRadius ?? edge / 2;
+  const radius = useSharedValue(atRest);
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
   return (
     <AnimatedPressable
-      onPress={onPress}
+      onPress={busy ? undefined : onPress}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={label}
-      accessibilityState={{ selected, disabled }}
+      accessibilityState={{ selected, disabled, busy }}
+      testID={testID}
       hitSlop={large ? undefined : CONTAINED_HIT_SLOP}
       android_ripple={{ color: ripple, foreground: true }}
       onPressIn={() => {
         radius.set(withSpring(pressedRadius, springs.spatialFast));
       }}
       onPressOut={() => {
-        radius.set(withSpring(edge / 2, springs.spatialFast));
+        radius.set(withSpring(atRest, springs.spatialFast));
       }}
       style={[
         styles.contained,
         { width: edge, height: edge, backgroundColor },
         disabled && styles.disabled,
+        style,
         shape,
       ]}
     >

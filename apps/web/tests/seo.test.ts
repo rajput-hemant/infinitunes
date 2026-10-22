@@ -98,6 +98,11 @@ describe("sitemap", () => {
     }
   });
 
+  test("omits the placeholder legal pages", () => {
+    expect(paths).not.toContain("/privacy");
+    expect(paths).not.toContain("/terms");
+  });
+
   test("never lists entity pages, so the catalog is not walked", () => {
     for (const path of paths) {
       expect(path.split("/").filter(Boolean).length).toBeLessThanOrEqual(1);

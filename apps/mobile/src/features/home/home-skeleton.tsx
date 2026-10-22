@@ -13,7 +13,7 @@ import {
   SkeletonText,
 } from "~/components/skeletons";
 import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
-import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { GRID_GAP, useGrid } from "~/lib/use-grid-card-width";
 import { art } from "~/theme/tokens";
 import { useRadii } from "~/theme/use-radii";
 
@@ -65,7 +65,7 @@ function HeroSkeleton() {
 
 /** Quick-pick tiles as `QuickPickTile` draws them: the tile surface, the art and a title line. */
 function QuickPicksSkeleton() {
-  const width = useGridCardWidth();
+  const { width } = useGrid("picks");
   const scale = useRadii();
   return (
     <SkeletonPulse>
