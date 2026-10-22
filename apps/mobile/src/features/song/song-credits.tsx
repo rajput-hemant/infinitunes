@@ -66,7 +66,7 @@ export function SongCredits({ song }: { song: Song }) {
           title={name}
           subtitle={role}
           href={href}
-          trailing={href ? { chevron: true } : undefined}
+          chevron={Boolean(href)}
         />
       ))}
       <View className="px-page pt-2">

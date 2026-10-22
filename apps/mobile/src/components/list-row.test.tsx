@@ -1,9 +1,10 @@
 import { rawAlbum } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
-import { Platform } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
 import { renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
+import { space } from "~/theme/tokens";
 
 import { ListRow } from "./list-row";
 import { IconButton } from "./ui/icon-button";
@@ -140,13 +141,42 @@ describe("ListRow", () => {
     );
 
     expect(screen.getByTestId("now-playing")).toBeOnTheScreen();
-    const row = screen.getByRole("button", { name: "Song" });
-    expect(row).toBeSelected();
-    let container = row.parent;
-    while (container && !/bg-secondary/.test(`${container.props.className}`)) {
-      container = container.parent;
-    }
-    expect(container).not.toBeNull();
+    expect(screen.getByRole("button", { name: "Song" })).toBeSelected();
+    expect(screen.getByTestId("list-row-container")).toHaveProp(
+      "className",
+      "bg-secondary",
+    );
+  });
+
+  it("keeps trailing controls where they are when a row becomes current", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    const trailing = (
+      <IconButton
+        icon={{ ios: "heart", android: "favorite_border" }}
+        label="Like"
+        onPress={() => {}}
+      />
+    );
+    await renderScreen(
+      <>
+        <ListRow title="Plain" onPress={jest.fn()} trailing={trailing} />
+        <ListRow
+          title="Current"
+          onPress={jest.fn()}
+          trailing={trailing}
+          selected
+        />
+      </>,
+    );
+    const [plain, current] = screen
+      .getAllByTestId("list-row-container")
+      .map((fill) => StyleSheet.flatten(fill.parent?.props.style));
+
+    // Distance of the controls from the edge: margin plus padding.
+    const gap = (style: typeof plain) =>
+      (style.marginEnd ?? 0) + (style.paddingEnd ?? 0);
+    expect(gap(current)).toBe(gap(plain));
+    expect(current.marginStart).toBe(space.sm);
   });
 
   it("is a checkbox when it is one choice of many", async () => {
