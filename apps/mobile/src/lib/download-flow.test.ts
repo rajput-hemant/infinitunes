@@ -82,11 +82,14 @@ describe("downloadTrack", () => {
     await downloadTrack(track(), "excellent");
 
     expect(requestedUrl()).toBe("https://aac.saavncdn.com/songs/fa9la_320.mp4");
-    expect(shareAsync).toHaveBeenCalledWith("cache/FA9LA.mp4", {
-      mimeType: "audio/mp4",
-      UTI: "public.mpeg-4-audio",
-      dialogTitle: "FA9LA",
-    });
+    expect(shareAsync).toHaveBeenCalledWith(
+      expect.stringMatching(/^cache\/FA9LA-[a-z0-9-]+\.mp4$/),
+      {
+        mimeType: "audio/mp4",
+        UTI: "public.mpeg-4-audio",
+        dialogTitle: "FA9LA",
+      },
+    );
   });
 
   it("steps down to what the song has when it has no 320kbps", async () => {
@@ -119,7 +122,7 @@ describe("downloadTrack", () => {
     await downloadTrack(track({ name: 'AC/DC: "Back in Black"?' }), "low");
 
     expect(shareAsync).toHaveBeenCalledWith(
-      "cache/ACDC Back in Black.mp4",
+      expect.stringMatching(/^cache\/ACDC Back in Black-[a-z0-9-]+\.mp4$/),
       expect.anything(),
     );
   });
@@ -128,7 +131,7 @@ describe("downloadTrack", () => {
     await downloadTrack(track({ name: "???" }), "low");
 
     expect(shareAsync).toHaveBeenCalledWith(
-      "cache/track.mp4",
+      expect.stringMatching(/^cache\/track-[a-z0-9-]+\.mp4$/),
       expect.anything(),
     );
   });
@@ -140,7 +143,9 @@ describe("saveTracks", () => {
       saveTracks(new Directory(), [track()], "high"),
     ).resolves.toEqual({ saved: 1, failed: 0 });
 
-    expect(mockDeleted).toEqual(["cache/FA9LA.mp4"]);
+    expect(mockDeleted).toEqual([
+      jest.mocked(File.downloadFileAsync).mock.calls[0]?.[1].uri,
+    ]);
   });
 
   it("counts a failed write and still cleans the cache up", async () => {
@@ -150,7 +155,9 @@ describe("saveTracks", () => {
       saveTracks(new Directory(), [track()], "high"),
     ).resolves.toEqual({ saved: 0, failed: 1 });
 
-    expect(mockDeleted).toEqual(["cache/FA9LA.mp4"]);
+    expect(mockDeleted).toEqual([
+      jest.mocked(File.downloadFileAsync).mock.calls[0]?.[1].uri,
+    ]);
   });
 
   it("saves an empty list as nothing saved", async () => {
