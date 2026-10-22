@@ -23,6 +23,13 @@ jest.mock("expo-sharing", () => ({ shareAsync: jest.fn() }));
 
 jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
 jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
+// The v3 gesture hooks load Gesture Handler's Reanimated wrapper, which asks
+// Worklets for the UI runtime on an immediate: Jest's web build of Worklets
+// has none and throws after the suite ends. There is no UI runtime to bind.
+jest.mock(
+  "react-native-gesture-handler/lib/module/handlers/gestures/installUIRuntimeBindings",
+  () => ({ installUIRuntimeBindings: () => undefined }),
+);
 jest.mock("react-native-gesture-handler/ReanimatedSwipeable", () =>
   require("~/test/swipeable"),
 );

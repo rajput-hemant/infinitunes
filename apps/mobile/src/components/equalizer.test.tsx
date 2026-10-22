@@ -26,9 +26,12 @@ function scales(): number[] {
   };
   walk(screen.root);
   return bars.map((bar) => {
-    const { transform } = getAnimatedStyle(bar) as {
-      transform?: { scaleY?: number }[];
-    };
+    // Its web typings take no argument; the native build reads the element.
+    const { transform } = (
+      getAnimatedStyle as unknown as (element: unknown) => {
+        transform?: { scaleY?: number }[];
+      }
+    )(bar);
     return (
       transform?.find((entry) => entry.scaleY !== undefined)?.scaleY ?? NaN
     );

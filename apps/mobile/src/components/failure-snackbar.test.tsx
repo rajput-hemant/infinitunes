@@ -32,6 +32,23 @@ async function renderSnackbar() {
   await renderScreen(<FailureSnackbar />);
 }
 
+const touch = (
+  phase: "onActivate" | "onUpdate" | "onDeactivate",
+  event: Record<string, unknown> = {},
+) =>
+  act(async () => {
+    (lastPan()[phase] as ((event: unknown) => void) | undefined)?.({
+      translationX: 0,
+      translationY: 0,
+      velocityX: 0,
+      velocityY: 0,
+      canceled: false,
+      ...event,
+    });
+    // The worklets mock hops back to the JS thread on a timer.
+    jest.advanceTimersByTime(50);
+  });
+
 describe("FailureSnackbar", () => {
   it("shows nothing until a failure comes in", async () => {
     await renderSnackbar();
@@ -98,23 +115,6 @@ describe("FailureSnackbar", () => {
   });
 
   describe("swipe", () => {
-    const touch = (
-      phase: "onActivate" | "onUpdate" | "onDeactivate",
-      event: Record<string, unknown> = {},
-    ) =>
-      act(async () => {
-        (lastPan()[phase] as ((event: unknown) => void) | undefined)?.({
-          translationX: 0,
-          translationY: 0,
-          velocityX: 0,
-          velocityY: 0,
-          canceled: false,
-          ...event,
-        });
-        // The worklets mock hops back to the JS thread on a timer.
-        jest.advanceTimersByTime(50);
-      });
-
     it("runs on the UI thread and keeps the message after a short drag", async () => {
       await renderSnackbar();
       await act(async () => showFailure(MESSAGE));

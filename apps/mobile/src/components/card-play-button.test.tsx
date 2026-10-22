@@ -17,6 +17,8 @@ function renderButton() {
   );
 }
 
+const button = () => screen.getByRole("button", { name: "Play Udta Teer" });
+
 beforeEach(() => mockPlayEntity.mockReset());
 
 describe("CardPlayButton", () => {
@@ -35,7 +37,6 @@ describe("CardPlayButton", () => {
     let finish!: () => void;
     mockPlayEntity.mockReturnValue(new Promise<void>((r) => (finish = r)));
     await renderButton();
-    const button = () => screen.getByRole("button", { name: "Play Udta Teer" });
     expect(button()).toHaveProp("accessibilityState", {
       selected: undefined,
       disabled: false,

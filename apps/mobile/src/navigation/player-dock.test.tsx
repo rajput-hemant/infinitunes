@@ -11,6 +11,17 @@ const metrics = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
+// `playerDockInset` is decided at load: re-evaluate it per case.
+const inset = (hasTabBarAccessory: boolean) => {
+  let value = -1;
+  jest.isolateModules(() => {
+    jest.doMock("~/lib/platform", () => ({ hasTabBarAccessory }));
+    value = (require("./player-dock") as typeof import("./player-dock"))
+      .playerDockInset;
+  });
+  return value;
+};
+
 describe("player dock", () => {
   afterEach(() => jest.restoreAllMocks());
 
@@ -29,16 +40,6 @@ describe("player dock", () => {
   });
 
   it("pads tab content by the dock only when there is no tab bar accessory", () => {
-    // `playerDockInset` is decided at load: re-evaluate it per case.
-    const inset = (hasTabBarAccessory: boolean) => {
-      let value = -1;
-      jest.isolateModules(() => {
-        jest.doMock("~/lib/platform", () => ({ hasTabBarAccessory }));
-        value = (require("./player-dock") as typeof import("./player-dock"))
-          .playerDockInset;
-      });
-      return value;
-    };
     expect(inset(false)).toBe(sizes.dock + space.sm);
     expect(inset(true)).toBe(0);
   });
