@@ -308,8 +308,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   (`forgetUserData`) drops with `user.*`.
   Persist client state with zustand `persist` + `persistedStorage` (SQLite kv-store, synchronous reads so
   stores hydrate before the first render), never secrets.
-- Native look per platform: no colours on `NativeTabs` or headers (system glass on iOS 26, Material You on
-  Android), except Android's detail app bar, which `useDetailScrollProps` tints to `card` on scroll. Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
+- Native look per platform: `NativeTabs` and headers keep the system surfaces (glass on iOS 26, Material You on
+  Android) and set no background colours; the only colour is the listener's accent, as `NativeTabs`'
+  `tintColor`/`indicatorColor` (`app/(tabs)/_layout.tsx`), plus Android's detail app bar, which
+  `useDetailScrollProps` tints to `card` on scroll. Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
   with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours, Android 12+
   to Material You roles at runtime: `DynamicColorRoot` sets them as NativeWind `vars()` on a root view in
   `providers/app-providers.tsx`; never css-interop internals), colour JS props from
