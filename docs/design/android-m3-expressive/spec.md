@@ -78,7 +78,8 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
 - Search bar: `surfaceContainerHighest` (`bg-muted`), one step above the Top Result card's `card`.
 - Tiles, quick picks, settings tiles: `surfaceContainerHigh` (`bg-card`). Skeletons: `fill` alphas.
 - Filled button: `primary`/`onPrimary`. Tonal: `secondaryContainer`/`onSecondaryContainer`.
-- Selected chip and selected segment: `secondaryContainer`. Idle chip outline: `outlineVariant`.
+- Selected chip: `secondaryContainer`. Idle chip outline: `outlineVariant`. Selected segment of a connected
+  button group: `primary` (see the component below).
 - Section labels in Settings: `primary`. Supporting text: `onSurfaceVariant`.
 - Player surfaces keep the artwork-seeded wash (`wash.tsx`), with D1 tokens as the fallback.
 
@@ -106,7 +107,10 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
   primary "Read More"; the artist's Songs/Albums order is one `OptionMenu` ("Sort by", a 48dp plain trigger) at
   the list's end, never a second connected group under the tabs. The song menu's way in is "View Song Details".
 - **Connected button group** (`segmented-tabs.android.tsx`): 40dp segments, 2dp seams, selected segment
-  `secondaryContainer` with a check and full corners, others `surfaceContainerHighest` with `sm` inner corners.
+  `primary`/`onPrimary` with full corners and no check, others `secondaryContainer` with `sm` inner corners.
+  A group's items are Compose's `ToggleButton`s: the filled toggle's checked container is `Primary`
+  (`FilledButtonTokens.SelectedContainerColor`) and it carries no check icon (selection is colour plus shape);
+  the leading check belongs to the old segmented button and to filter chips.
 - **Filter chip** (`chip-row.tsx`): 32dp, `sm` corners, outline idle; `secondaryContainer` + check selected.
   The selected chip scrolls into view; the row fades its trailing edge natively (`fadingEdgeLength`).
 - **Section header** (both platforms): titleLarge emphasized; the action is a primary text button.
