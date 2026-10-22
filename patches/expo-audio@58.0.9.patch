@@ -51,10 +51,18 @@ index 53571c6..eb4bd88 100644
          }
        }
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/PlayRequestingPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/PlayRequestingPlayer.kt
-index b3a7bf7..e54a148 100644
+index b3a7bf7..aba7cfe 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/PlayRequestingPlayer.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/PlayRequestingPlayer.kt
-@@ -10,8 +10,37 @@ import androidx.media3.common.util.UnstableApi
+@@ -3,6 +3,7 @@ package expo.modules.audio
+ import androidx.media3.common.ForwardingPlayer
+ import androidx.media3.common.Player
+ import androidx.media3.common.util.UnstableApi
++import java.util.IdentityHashMap
+
+ // A media session calls `play()` on its player directly, and a Media3 `MediaController` can also
+ // start playback with `setPlayWhenReady(true)`. Routing both to `onPlay` lets playback started from
+@@ -10,8 +11,67 @@ import androidx.media3.common.util.UnstableApi
  @UnstableApi
  internal class PlayRequestingPlayer(
    player: Player,
@@ -65,6 +73,7 @@ index b3a7bf7..e54a148 100644
 +  private val onNext: (() -> Unit)? = null,
 +  private val onPrevious: (() -> Unit)? = null
  ) : ForwardingPlayer(player) {
++  private val listeners = IdentityHashMap<Player.Listener, Player.Listener>()
 +  private val forwardedCommands = listOfNotNull(
 +    onNext?.let { Player.COMMAND_SEEK_TO_NEXT },
 +    onNext?.let { Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM },
@@ -72,8 +81,37 @@ index b3a7bf7..e54a148 100644
 +    onPrevious?.let { Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM }
 +  )
 +
++  private fun withForwardedCommands(commands: Player.Commands): Player.Commands =
++    commands.buildUpon().addAll(*forwardedCommands.toIntArray()).build()
++
 +  override fun getAvailableCommands(): Player.Commands =
-+    super.getAvailableCommands().buildUpon().addAll(*forwardedCommands.toIntArray()).build()
++    withForwardedCommands(super.getAvailableCommands())
++
++  override fun addListener(listener: Player.Listener) {
++    val forwardingListener = synchronized(listeners) {
++      listeners.getOrPut(listener) { CommandForwardingListener(listener) }
++    }
++    super.addListener(forwardingListener)
++  }
++
++  override fun removeListener(listener: Player.Listener) {
++    val forwardingListener = synchronized(listeners) {
++      listeners.remove(listener)
++    }
++    super.removeListener(forwardingListener ?: listener)
++  }
++
++  private inner class CommandForwardingListener(
++    private val listener: Player.Listener
++  ) : Player.Listener by listener {
++    override fun onAvailableCommandsChanged(availableCommands: Player.Commands) {
++      listener.onAvailableCommandsChanged(withForwardedCommands(availableCommands))
++    }
++
++    override fun onEvents(player: Player, events: Player.Events) {
++      listener.onEvents(this@PlayRequestingPlayer, events)
++    }
++  }
 +
 +  override fun isCommandAvailable(command: Int): Boolean =
 +    command in forwardedCommands || super.isCommandAvailable(command)
