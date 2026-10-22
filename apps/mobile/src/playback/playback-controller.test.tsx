@@ -1,9 +1,9 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, render, waitFor } from "@testing-library/react-native";
-import { Alert } from "react-native";
 
 import { forgetUserData } from "~/features/settings/end-session";
+import { failureStore } from "~/lib/failure";
 import { preferencesStore } from "~/lib/preferences";
 import { queryClient } from "~/lib/query-client";
 import {
@@ -54,24 +54,18 @@ afterEach(() => queryClient.clear());
 
 describe("PlaybackController", () => {
   it("stops the previous source and reports a linkless entry", async () => {
-    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
-    try {
-      const player = await mountController();
-      await act(async () => playerStore.getState().playTracks(rows));
-      await act(async () => player.finishLoading());
-      await act(async () =>
-        playerStore.getState().playTracks([{ ...rows[1]!, download_url: "" }]),
-      );
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
+    await act(async () =>
+      playerStore.getState().playTracks([{ ...rows[1]!, download_url: "" }]),
+    );
 
-      expect(player.playing).toBe(false);
-      expect(alert).toHaveBeenCalledWith(
-        "Playback unavailable",
-        "This song can't be played right now.",
-      );
-      expect(player.loads.at(-1)).toBe("");
-    } finally {
-      alert.mockRestore();
-    }
+    expect(player.playing).toBe(false);
+    expect(failureStore.getState().current?.message).toBe(
+      "This song can't be played right now.",
+    );
+    expect(player.loads.at(-1)).toBe("");
   });
 
   it("resumes the paused entry when its current queue row is pressed", async () => {

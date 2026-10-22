@@ -11,6 +11,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 
+import { showFailure } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
 import { trpc, trpcClient } from "~/lib/trpc";
 
@@ -54,12 +55,18 @@ function persistFavorite(type: FavoriteType, token: string, liked: boolean) {
   const write = liked
     ? trpcClient.user.addToFavorites.mutate(input)
     : trpcClient.user.removeFromFavorites.mutate(input);
-  return write.finally(
-    () =>
-      void queryClient.invalidateQueries({
-        queryKey: trpc.user.getUserFavorites.queryKey(),
-      }),
-  );
+  return write
+    .catch((error: unknown) => {
+      showFailure("Couldn't update your likes. Try again.");
+      // The overlay rolls the heart back on the rejection.
+      throw error;
+    })
+    .finally(
+      () =>
+        void queryClient.invalidateQueries({
+          queryKey: trpc.user.getUserFavorites.queryKey(),
+        }),
+    );
 }
 
 type FavoriteToggleOptions = { type: FavoriteType; token: string };
