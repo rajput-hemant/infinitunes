@@ -1,6 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { File } from "expo-file-system";
+import { Directory, File } from "expo-file-system";
 
 import { putFile, resetFiles } from "~/test/expo-file-system";
 
@@ -144,4 +144,64 @@ it("cannot repopulate the cache when clear happens during a download", async () 
   await clear;
   expect(songCacheStore.getState()).toMatchObject({ songs: {}, listens: {} });
   expect(cacheBytes(songCacheStore.getState().songs)).toBe(0);
+});
+
+it("walks the cache directory once per app run, not per qualified listen", async () => {
+  putFile("file:///cache/frequent-songs/orphan.mp4", 10);
+  const list = jest.spyOn(Directory.prototype, "list");
+  try {
+    await qualify();
+    await cacheQualifiedListen({ ...track, id: "other" }, "excellent");
+    await cacheQualifiedListen({ ...track, id: "other" }, "excellent");
+    expect(list).toHaveBeenCalledTimes(1);
+  } finally {
+    list.mockRestore();
+  }
+});
+
+it("does not persist a play time on every load of a cached song", async () => {
+  await qualify();
+  const saved = jest.fn();
+  const stop = songCacheStore.subscribe(saved);
+  try {
+    cachedSongSource(track, source);
+    cachedSongSource(track, source);
+    cachedSongSource(track, source);
+    expect(saved).not.toHaveBeenCalled();
+  } finally {
+    stop();
+  }
+});
+
+it("evicts by the latest play, including plays not yet persisted", async () => {
+  const size = SONG_CACHE_LIMIT / 2;
+  const now = Date.now();
+  songCacheStore.setState({
+    songs: {
+      [track.id]: { filename: "played.mp4", source, size, lastPlayed: now - 9 },
+      idle: { filename: "idle.mp4", source: "idle", size, lastPlayed: now - 5 },
+    },
+  });
+  putFile("file:///cache/frequent-songs/played.mp4", size);
+  putFile("file:///cache/frequent-songs/idle.mp4", size);
+  expect(cachedSongSource(track, source)).toMatch(/^file:/);
+  await cacheQualifiedListen({ ...track, id: "other" }, "excellent");
+  await cacheQualifiedListen({ ...track, id: "other" }, "excellent");
+  expect(songCacheStore.getState().songs.idle).toBeUndefined();
+  expect(songCacheStore.getState().songs[track.id]).toBeDefined();
+});
+
+it("keeps at most 1,000 listen records, dropping the oldest", async () => {
+  const listens = Object.fromEntries(
+    Array.from({ length: 1000 }, (_, i) => [
+      `song-${i}`,
+      { count: 1, lastPlayed: i + 1 },
+    ]),
+  );
+  songCacheStore.setState({ listens });
+  await cacheQualifiedListen(track, "excellent");
+  const kept = songCacheStore.getState().listens;
+  expect(Object.keys(kept)).toHaveLength(1000);
+  expect(kept["song-0"]).toBeUndefined();
+  expect(kept[track.id]).toBeDefined();
 });

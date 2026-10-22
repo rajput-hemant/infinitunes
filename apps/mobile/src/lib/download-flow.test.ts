@@ -4,11 +4,13 @@ import { shareAsync } from "expo-sharing";
 import { Platform } from "react-native";
 
 import { downloadTrack, pickDownloadFolder, saveTracks } from "./download";
+import { ensureNotificationPermission } from "./notifications";
 
 type MockWritten = { name: string; mime: string | null };
 const mockCreated: MockWritten[] = [];
 const mockDeleted: string[] = [];
 let mockWriteFails = false;
+let mockExisting: string[] = [];
 
 jest.mock("expo-file-system", () => {
   class MockFile {
@@ -24,7 +26,10 @@ jest.mock("expo-file-system", () => {
   }
   class MockDirectory {
     static pickDirectoryAsync = jest.fn();
+    list = () => mockExisting.map((name) => ({ name }));
     createFile(name: string, mime: string | null) {
+      // iOS: expo-file-system's createFile throws on an existing file.
+      if (mockExisting.includes(name)) throw new Error("already exists");
       mockCreated.push({ name, mime });
       return {
         write: async () => {
@@ -40,6 +45,9 @@ jest.mock("expo-file-system", () => {
   };
 });
 jest.mock("expo-sharing", () => ({ shareAsync: jest.fn() }));
+jest.mock("./notifications", () => ({
+  ensureNotificationPermission: jest.fn(async () => true),
+}));
 
 const track = (
   overrides: Partial<Parameters<typeof downloadTrack>[0]> = {},
@@ -56,16 +64,68 @@ beforeEach(() => {
   mockCreated.length = 0;
   mockDeleted.length = 0;
   mockWriteFails = false;
+  mockExisting = [];
   jest.clearAllMocks();
 });
 
 describe("downloadTrack", () => {
+  it("waits for the notification prompt before downloading, so it cannot overlap the share sheet", async () => {
+    const prompt = Promise.withResolvers<boolean>();
+    jest
+      .mocked(ensureNotificationPermission)
+      .mockReturnValueOnce(prompt.promise);
+    const download = downloadTrack(track(), "high");
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(File.downloadFileAsync).not.toHaveBeenCalled();
+    prompt.resolve(false);
+    await download;
+    expect(File.downloadFileAsync).toHaveBeenCalledTimes(1);
+    expect(shareAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("still downloads when the permission check throws", async () => {
+    jest
+      .mocked(ensureNotificationPermission)
+      .mockRejectedValueOnce(new Error("native"));
+    await downloadTrack(track(), "high");
+    expect(shareAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the shared file on Android until the receiver is done with it", async () => {
+    jest.useFakeTimers();
+    jest.replaceProperty(Platform, "OS", "android");
+    try {
+      await downloadTrack(track(), "high");
+      expect(mockDeleted).toEqual([]);
+      jest.advanceTimersByTime(120_000);
+      expect(mockDeleted).toHaveLength(1);
+    } finally {
+      jest.useRealTimers();
+      jest.restoreAllMocks();
+    }
+  });
+
+  it("sweeps a still-pending Android share file on the next download", async () => {
+    jest.useFakeTimers();
+    jest.replaceProperty(Platform, "OS", "android");
+    try {
+      await downloadTrack(track(), "high");
+      const first = jest.mocked(File.downloadFileAsync).mock.calls[0]?.[1].uri;
+      await downloadTrack(track(), "high");
+      expect(mockDeleted).toContain(first);
+    } finally {
+      jest.runAllTimers();
+      jest.useRealTimers();
+      jest.restoreAllMocks();
+    }
+  });
+
   it("isolates concurrent same-title downloads until each share finishes", async () => {
     const firstShare = Promise.withResolvers<void>();
     jest.mocked(shareAsync).mockReturnValueOnce(firstShare.promise);
     const first = downloadTrack(track(), "high");
-    await Promise.resolve();
-    await Promise.resolve();
+    await new Promise((resolve) => setImmediate(resolve));
     await downloadTrack(track(), "high");
 
     const [firstFile, secondFile] = jest
@@ -138,6 +198,30 @@ describe("downloadTrack", () => {
 });
 
 describe("saveTracks", () => {
+  it("waits for the notification prompt before saving", async () => {
+    const prompt = Promise.withResolvers<boolean>();
+    jest
+      .mocked(ensureNotificationPermission)
+      .mockReturnValueOnce(prompt.promise);
+    const saving = saveTracks(new Directory(), [track()], "high");
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(File.downloadFileAsync).not.toHaveBeenCalled();
+    prompt.resolve(true);
+    await expect(saving).resolves.toEqual({ saved: 1, failed: 0 });
+  });
+
+  it("does not fail tracks whose file already exists in the folder on iOS", async () => {
+    mockExisting = ["FA9LA.mp4", "FA9LA (2).mp4"];
+    await expect(
+      saveTracks(new Directory(), [track(), track()], "high"),
+    ).resolves.toEqual({ saved: 2, failed: 0 });
+    expect(mockCreated.map((file) => file.name)).toEqual([
+      "FA9LA (3).mp4",
+      "FA9LA (4).mp4",
+    ]);
+  });
+
   it("cleans the cached download up after saving it", async () => {
     await expect(
       saveTracks(new Directory(), [track()], "high"),

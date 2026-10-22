@@ -225,17 +225,19 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [ ] **M-76** P3 CONFIRMED `plugins/android-app-actions/shortcuts.ts:6` - `DEEP_LINK_SCHEME` duplicates `NATIVE_APP_SCHEME` [core#12]
   - Fix: import it from `@infinitunes/auth/native-app` as `app.config.ts` does. Executor: haiku. Flags: none.
 
-## Batch M16 (sonnet): song cache, downloads, notifications - `lib/{song-cache,download,notifications}.ts`
+## Batch M16 (sonnet): song cache, downloads, notifications - `lib/{song-cache,download,notifications}.ts` (branch `feat/m16-downloads`)
 
 Fix the permission race inside `downloadTrack`/`downloadAll` so `song-menu.tsx`/`collection-menu.tsx` (M3) stay untouched.
 
-- [ ] **M-77** **[device sign-off later]** P2 PLAUSIBLE `lib/song-cache.ts:56-74,126-137,146,220-222,258-260` - synchronous FS work on the JS thread during playback (directory walk per qualified listen and on Settings mount, 1000-entry resort, persist on every load); `refreshSongCache` is also exported unserialized next to `refreshSongCacheSize` [perf#8, core#8, core#13]
+- [x] **M-77** **[device sign-off later]** P2 PLAUSIBLE `lib/song-cache.ts:56-74,126-137,146,220-222,258-260` - synchronous FS work on the JS thread during playback (directory walk per qualified listen and on Settings mount, 1000-entry resort, persist on every load); `refreshSongCache` is also exported unserialized next to `refreshSongCacheSize` [perf#8, core#8, core#13]
   - Fix: async FS, reconcile once per app run (and after a clear), keep the per-listen check to `existing`; in-memory `lastPlayed` persisted per track end, bounded LRU; make `refreshSongCache` module-private. Executor: sonnet. Flags: needs device check.
-- [ ] **M-78** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:72-85` - Android deletes the shared file as soon as the chooser returns; the receiver may still be reading [core#6]
+  - Done: reconcile once per run (and after a clear), sort only past 1000 listens, plays kept in memory and persisted hourly or on the next cache write, `refreshSongCache` private. expo-file-system 58's File/Directory API has no async list/size, so the walk stays synchronous but now rare; the Settings refresh still reconciles on purpose.
+- [x] **M-78** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:72-85` - Android deletes the shared file as soon as the chooser returns; the receiver may still be reading [core#6]
   - Fix: delay the delete (next app foreground or a few seconds) or delete on the next download of the same name. Executor: sonnet. Flags: needs device check.
-- [ ] **M-79** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:118-125` - iOS "Download all" into a folder that already has the files fails every track [core#7]
+- [x] **M-79** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:118-125` - iOS "Download all" into a folder that already has the files fails every track [core#7]
   - Fix: pick `name (2).mp4` or overwrite, add an existing-file case to `download-flow.test.ts`. Verify expo-file-system `createFile` semantics. Executor: sonnet. Flags: needs device check.
-- [ ] **M-80** **[device sign-off later]** P3 PLAUSIBLE `lib/notifications.ts:87-102` - permission prompt and share sheet are not sequenced; both system sheets overlap on iOS [core#11]
+  - Verified: iOS `createFile` runs `validateCanCreate` with overwrite false and throws `FileAlreadyExists`; Android's DocumentFile renames itself. Now picks `name (2).mp4` on iOS.
+- [x] **M-80** **[device sign-off later]** P3 PLAUSIBLE `lib/notifications.ts:87-102` - permission prompt and share sheet are not sequenced; both system sheets overlap on iOS [core#11]
   - Fix: `await ensureNotificationPermission()` inside the download functions before starting. Executor: haiku. Flags: needs device check.
 
 ## Batch M17 (sonnet): component tests and snackbar gesture - `components/failure-snackbar.tsx`, new tests under `components/**`, `navigation/**`
