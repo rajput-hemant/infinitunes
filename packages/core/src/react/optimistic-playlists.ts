@@ -413,7 +413,7 @@ function reconcile(
 ) {
   let changed = false;
   const byId = new Map(server.map((p) => [p.id, p]));
-  const songsOf = (id: string) => {
+  const serverSongs = (id: string) => {
     const p = byId.get(id);
     if (p) return "songs" in p ? p.songs : undefined;
     return complete ? null : undefined;
@@ -421,7 +421,7 @@ function reconcile(
 
   for (const [id, songs] of confirmedSongs) {
     if (queued.has(id)) continue;
-    const p = songsOf(id);
+    const p = serverSongs(id);
     if (p === undefined) continue;
     if (
       !p ||
@@ -468,7 +468,7 @@ function reconcile(
   }
   for (const [id, records] of at.added) {
     if (confirmedSongs.has(id)) continue;
-    const p = songsOf(id);
+    const p = serverSongs(id);
     if (p === undefined) continue;
     for (const r of records) {
       if (r.settled && (!p || p.includes(r.songId))) {
@@ -479,7 +479,7 @@ function reconcile(
   }
   for (const [id, records] of at.removed) {
     if (confirmedSongs.has(id)) continue;
-    const p = songsOf(id);
+    const p = serverSongs(id);
     if (p === undefined) continue;
     for (const r of records) {
       if (r.settled && (!p || !p.includes(r.songId))) {
@@ -490,7 +490,7 @@ function reconcile(
   }
   for (const [id, record] of at.moved) {
     if (confirmedSongs.has(id)) continue;
-    const p = songsOf(id);
+    const p = serverSongs(id);
     if (p === undefined) continue;
     const agrees = !p || arrange(p, record.order).every((s, i) => p[i] === s);
     if (record.settled && moved.get(id) === record && agrees) {

@@ -44,10 +44,13 @@ function Probe({
   const removed = usePlaylistRowRemoved("a", "s2");
   const summaries = useMemo(
     () =>
-      server?.map(({ userId: _, songs, ...p }) => ({
-        ...p,
-        songCount: songs.length,
-        coverSongs: songs.slice(0, 4),
+      server?.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        createdAt: p.createdAt,
+        songCount: p.songs.length,
+        coverSongs: p.songs.slice(0, 4),
       })),
     [server],
   );
