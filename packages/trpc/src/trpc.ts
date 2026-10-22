@@ -1,8 +1,8 @@
 import type { Auth } from "@infinitunes/auth";
+import { validationMessage } from "@infinitunes/core/user-message";
 import type { DbClient } from "@infinitunes/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError } from "zod";
 
 import { api } from "./lib/api";
 
@@ -31,12 +31,8 @@ export type TRPCContext = {
 const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
-    return error.cause instanceof ZodError
-      ? {
-          ...shape,
-          message: error.cause.issues[0]?.message || "Invalid request",
-        }
-      : shape;
+    const message = validationMessage(error.cause);
+    return message ? { ...shape, message } : shape;
   },
 });
 
