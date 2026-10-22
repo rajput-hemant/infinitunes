@@ -46,9 +46,9 @@ type Defaults = {
 };
 
 const DEFAULTS: Defaults = {
-  "user.getUserFavorites": async () => undefined,
+  "user.getUserFavorites": async () => null,
   "user.getUserPlaylists": async () => [],
-  "user.getPlaylistDetails": async () => undefined,
+  "user.getPlaylistDetails": async () => null,
   "user.addToFavorites": async () => [],
   "user.removeFromFavorites": async () => [],
   "user.createNewPlaylist": async () => userPlaylist({ id: "pl-new" }),

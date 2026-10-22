@@ -5,13 +5,13 @@ import {
   moveSongOptimistic,
   removeSongOptimistic,
   renamePlaylistOptimistic,
-  usePlaylists,
-  usePlaylistDetails,
   usePlaylistDetailList,
+  usePlaylists,
   type PlaylistView,
   type UserPlaylist,
 } from "@infinitunes/core/react/optimistic-playlists";
 import { useQueries, useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 import { reportFailure } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
@@ -20,7 +20,8 @@ import { trpc, trpcClient } from "~/lib/trpc";
 import { userQueryKey, useUserId } from "./session";
 
 /**
- * The listener's playlist summaries with the query state.
+ * The listener's playlist summaries (count and cover ids, no songs) with the
+ * query's state; the songs come from `useServerPlaylistDetails`.
  */
 export function useServerPlaylists() {
   const userId = useUserId();
@@ -47,43 +48,62 @@ export function useUserPlaylists(): PlaylistView[] | undefined {
   return usePlaylists(useServerPlaylists().data);
 }
 
-/** Details are private to the account, just like the summary query. */
-export function playlistDetailsQuery(id: string, userId: string | undefined) {
+/** One playlist's detail query (its songs) for `userId`. */
+export function playlistDetailsQuery(
+  playlistId: string,
+  userId: string | undefined,
+) {
   return {
     queryKey: userQueryKey(
-      trpc.user.getPlaylistDetails.queryKey({ id }),
+      trpc.user.getPlaylistDetails.queryKey({ playlistId }),
       userId,
     ),
-    queryFn: () => trpcClient.user.getPlaylistDetails.query({ id }),
+    queryFn: () => trpcClient.user.getPlaylistDetails.query({ playlistId }),
   };
 }
 
-export function useServerPlaylistDetails(id: string) {
+/**
+ * One playlist exactly as the server holds it (`null` when it has none by
+ * that id). Removing or moving a song needs this raw copy (the server indexes
+ * what it holds); the screen shows it through `usePlaylistDetails`.
+ */
+export function useServerPlaylistDetails(playlistId: string) {
   const userId = useUserId();
   return useQuery({
-    ...playlistDetailsQuery(id, userId),
+    ...playlistDetailsQuery(playlistId, userId),
     enabled: userId !== undefined,
   });
 }
 
-/** Membership is loaded only for a surface that needs song ids. */
-export function usePlaylistMembership(
-  playlists: readonly PlaylistView[] | undefined,
-  enabled: boolean,
-) {
-  const userId = useUserId();
-  const details = useQueries({
-    queries: (enabled ? (playlists ?? []) : [])
-      .filter((playlist) => !playlist.pending)
-      .map((playlist) => ({
-        ...playlistDetailsQuery(playlist.id, userId),
-        enabled: enabled && userId !== undefined,
-      })),
-  });
-  return usePlaylistDetailList(details.flatMap(({ data }) => data ?? []));
+// Module level: a stable `combine` keeps one result until the data changes.
+function loadedDetails(results: { data?: UserPlaylist | null }[]) {
+  return results.flatMap(({ data }) => data ?? []);
 }
 
-export { usePlaylistDetails };
+/**
+ * The songs each playlist holds, with pending writes applied, for the "Add to
+ * Playlist" check marks: one detail query per playlist, shared through the
+ * cache. Empty until they load (no marks, as for a playlist without them).
+ */
+export function usePlaylistMembership(): ReadonlyMap<
+  string,
+  ReadonlySet<string>
+> {
+  const userId = useUserId();
+  const ids = useServerPlaylists().data?.map((playlist) => playlist.id);
+  const details = useQueries({
+    queries: (ids ?? []).map((id) => ({
+      ...playlistDetailsQuery(id, userId),
+      enabled: userId !== undefined,
+    })),
+    combine: loadedDetails,
+  });
+  const shown = usePlaylistDetailList(details);
+  return useMemo(
+    () => new Map(shown?.map((p) => [p.id, new Set(p.songs)])),
+    [shown],
+  );
+}
 
 /** Refetches every account's playlists after a write settles. */
 export function refreshPlaylists() {
@@ -133,38 +153,23 @@ export function deletePlaylist(id: string) {
 type Song = { id: string; name: string };
 type Playlist = { id: string; name: string };
 
-function addSongIds(playlist: UserPlaylist, ids: readonly string[]) {
-  addSongsOptimistic(
-    playlist.id,
-    [...ids],
-    () =>
-      trpcClient.user.addSongsToPlaylist.mutate({
-        playlistId: playlist.id,
-        songs: [...ids],
-      }),
-    playlist.songs,
+function addSongIds(playlist: Playlist, ids: readonly string[]) {
+  addSongsOptimistic(playlist.id, [...ids], () =>
+    trpcClient.user.addSongsToPlaylist.mutate({
+      playlistId: playlist.id,
+      songs: [...ids],
+    }),
   )
     .catch(reportFailure(`Couldn't add to ${playlist.name}.`))
     .finally(() => void refreshPlaylists());
 }
 
-/** Load membership before adding so duplicate songs do not inflate the count. */
-export function addSongsToPlaylist(
-  playlist: Playlist,
-  songs: readonly Song[],
-  userId: string | undefined,
-) {
-  if (!userId) return;
-  void queryClient
-    .fetchQuery(playlistDetailsQuery(playlist.id, userId))
-    .then((details) => {
-      if (!details) throw new Error("Playlist not found");
-      addSongIds(
-        details,
-        songs.map((song) => song.id),
-      );
-    })
-    .catch(reportFailure(`Couldn't add to ${playlist.name}.`));
+/** Adds the songs at once; the write follows, and a failure rolls back. */
+export function addSongsToPlaylist(playlist: Playlist, songs: readonly Song[]) {
+  addSongIds(
+    playlist,
+    songs.map((song) => song.id),
+  );
 }
 
 /**

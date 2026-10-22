@@ -2,24 +2,20 @@ import { MenuView } from "@expo/ui/community/menu";
 import type { MenuAction, MenuComponentRef } from "@expo/ui/community/menu";
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import { router } from "expo-router";
-import { useState, type ReactNode, type Ref } from "react";
-import { View } from "react-native";
+import type { ReactNode, Ref } from "react";
 
 import type { RadioSeed } from "~/playback/radio";
 import { startSeededRadio } from "~/playback/radio";
-import { usePlaylistMembership, useUserPlaylists } from "~/user-data/playlists";
 
 /** A menu action and what it does; entries with sub-actions only open a submenu. */
 export type MenuEntry = Omit<MenuAction, "subactions" | "id"> & {
   id: string;
   run?: () => void;
-  playlistSongIds?: readonly string[];
   subactions?: MenuEntry[];
 };
 
 function toMenuAction({
   run: _run,
-  playlistSongIds: _playlistSongIds,
   subactions,
   ...action
 }: MenuEntry): MenuAction {
@@ -60,29 +56,6 @@ export function NativeMenu({
   ref,
   testID,
 }: NativeMenuProps) {
-  const [requested, setRequested] = useState(false);
-  const playlists = useUserPlaylists();
-  const hasMembership = entries.some((entry) =>
-    entry.subactions?.some((item) => item.playlistSongIds !== undefined),
-  );
-  const details = usePlaylistMembership(playlists, requested && hasMembership);
-  const held = new Map(
-    details?.map((playlist) => [playlist.id, new Set(playlist.songs)]),
-  );
-  const checked = (items: readonly MenuEntry[]): MenuEntry[] =>
-    items.map((entry) => ({
-      ...entry,
-      ...(entry.playlistSongIds
-        ? {
-            state: entry.playlistSongIds.every((id) =>
-              held.get(entry.id.slice("playlist:".length))?.has(id),
-            )
-              ? "on"
-              : "off",
-          }
-        : {}),
-      ...(entry.subactions ? { subactions: checked(entry.subactions) } : {}),
-    }));
   const runs = collectRuns(entries);
   return (
     <MenuView
@@ -90,11 +63,10 @@ export function NativeMenu({
       testID={testID}
       shouldOpenOnLongPress={openOnLongPress}
       title={title}
-      actions={checked(entries).map(toMenuAction)}
-      onOpenMenu={() => setRequested(true)}
+      actions={entries.map(toMenuAction)}
       onPressAction={({ nativeEvent }) => runs.get(nativeEvent.event)?.()}
     >
-      <View onTouchStart={() => setRequested(true)}>{children}</View>
+      {children}
     </MenuView>
   );
 }
@@ -104,6 +76,8 @@ type PlaylistEntryOptions = {
   songs: readonly { id: string; name: string }[];
   /** The listener's playlists; `undefined` while loading. */
   playlists: PlaylistView[] | undefined;
+  /** The songs each playlist holds (`usePlaylistMembership`). */
+  membership: ReadonlyMap<string, ReadonlySet<string>>;
   onAdd: (playlist: PlaylistView) => void;
 };
 
@@ -115,6 +89,7 @@ type PlaylistEntryOptions = {
 export function addToPlaylistEntry({
   songs,
   playlists,
+  membership,
   onAdd,
 }: PlaylistEntryOptions): MenuEntry {
   const songIds = songs.map((song) => song.id);
@@ -152,7 +127,9 @@ export function addToPlaylistEntry({
       ...playlists.map((playlist): MenuEntry => ({
         id: `playlist:${playlist.id}`,
         title: playlist.name,
-        playlistSongIds: songIds,
+        state: songIds.every((id) => membership.get(playlist.id)?.has(id))
+          ? "on"
+          : "off",
         attributes: { disabled: playlist.pending === true },
         run: () => onAdd(playlist),
       })),

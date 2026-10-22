@@ -1,8 +1,6 @@
-import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchSongRows } from "~/lib/song-rows";
-import { usePlaylistMembership } from "~/user-data/playlists";
 import {
   LIBRARY_QUERY_KEY,
   userQueryKey,
@@ -15,12 +13,13 @@ import {
  * its icon then).
  */
 export function usePlaylistCovers(
-  playlists: readonly PlaylistView[] | undefined,
+  playlists: readonly { coverSongs: readonly string[] }[] | undefined,
 ): ReadonlyMap<string, string> {
   const userId = useUserId();
-  const details = usePlaylistMembership(playlists, true);
   const firstIds = [
-    ...new Set(details?.flatMap(({ songs }) => songs[0] ?? []) ?? []),
+    ...new Set(
+      playlists?.flatMap(({ coverSongs }) => coverSongs[0] ?? []) ?? [],
+    ),
   ].sort();
   const { data } = useQuery({
     queryKey: [
@@ -36,11 +35,7 @@ export function usePlaylistCovers(
     placeholderData: (previous, previousQuery) =>
       previousQuery?.queryKey.at(-2) === userId ? previous : undefined,
   });
-  return new Map(
-    details?.flatMap((playlist) => {
-      const first = playlist.songs[0];
-      const image = first && data?.get(first);
-      return image ? [[playlist.id, image]] : [];
-    }),
-  );
+  return data ?? EMPTY;
 }
+
+const EMPTY: ReadonlyMap<string, string> = new Map();

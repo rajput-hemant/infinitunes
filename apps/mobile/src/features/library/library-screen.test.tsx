@@ -75,8 +75,8 @@ beforeEach(async () => {
   procedure("user.getUserPlaylists").mockResolvedValue([
     playlistSummary(roadTrip),
   ]);
-  procedure("user.getPlaylistDetails").mockImplementation(async ({ id }) =>
-    id === roadTrip.id ? roadTrip : undefined,
+  procedure("user.getPlaylistDetails").mockImplementation(
+    async ({ playlistId }) => (playlistId === roadTrip.id ? roadTrip : null),
   );
 });
 

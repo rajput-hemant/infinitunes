@@ -42,7 +42,7 @@ function Playlists() {
     <PlaylistRow
       key={playlist.id}
       playlist={playlist}
-      cover={covers.get(playlist.id)}
+      cover={playlist.coverSongs[0] && covers.get(playlist.coverSongs[0])}
     />
   ));
 }

@@ -9,6 +9,7 @@ import { renderStack, chooseMenuAction } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
 import {
+  playlistSummary,
   userPlaylist,
   songNamed,
   catalogAnswering,
@@ -38,8 +39,11 @@ function renderPlaylist(id = "pl-1") {
 
 beforeEach(async () => {
   await act(async () => signInAs("alice"));
-  procedure("user.getPlaylistDetails").mockImplementation(async ({ id }) =>
-    id === playlist.id ? playlist : undefined,
+  procedure("user.getUserPlaylists").mockResolvedValue([
+    playlistSummary(playlist),
+  ]);
+  procedure("user.getPlaylistDetails").mockImplementation(
+    async ({ playlistId }) => (playlistId === playlist.id ? playlist : null),
   );
   procedure("song.details").mockImplementation(catalogAnswering(catalog));
 });

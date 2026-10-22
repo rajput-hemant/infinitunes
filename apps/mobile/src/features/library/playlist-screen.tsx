@@ -1,4 +1,7 @@
-import type { UserPlaylist } from "@infinitunes/core/react/optimistic-playlists";
+import {
+  usePlaylistDetails,
+  type UserPlaylist,
+} from "@infinitunes/core/react/optimistic-playlists";
 import type { SongRowItem } from "@infinitunes/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
@@ -16,7 +19,6 @@ import {
   moveSongInPlaylist,
   removeSongFromPlaylist,
   useServerPlaylistDetails,
-  usePlaylistDetails,
 } from "~/user-data/playlists";
 
 import { LibraryListView } from "./library-list-view";
@@ -81,6 +83,7 @@ function PlaylistSongs({
   server,
 }: {
   playlist: UserPlaylist;
+  /** As the server holds it: removals and moves index into this copy. */
   server: UserPlaylist;
 }) {
   const list = usePlaylistSongs(playlist);
@@ -134,7 +137,7 @@ function Playlist({ id }: { id: string }) {
   const playlist = usePlaylistDetails(data);
 
   if (isPending) return <PlaylistSkeleton />;
-  if (error) {
+  if (data === undefined) {
     return <ErrorState error={error} onRetry={() => void refetch()} />;
   }
   if (!playlist) {

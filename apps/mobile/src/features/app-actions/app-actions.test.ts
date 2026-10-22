@@ -66,12 +66,12 @@ describe.each(["play-liked", "shuffle-liked", "play-playlist"] as const)(
 it.each(["missing", "reject"] as const)(
   "ignores a superseded playlist library lookup that returns %s",
   async (settle) => {
-    const playlists = deferred<ReturnType<typeof userPlaylist> | undefined>();
+    const playlists = deferred<ReturnType<typeof userPlaylist> | null>();
     procedure("user.getPlaylistDetails").mockReturnValueOnce(playlists.promise);
     const pending = runAppAction("play-playlist", context);
     playAll([toSongRow(rawSong({ id: "chosen" }))]);
 
-    if (settle === "missing") playlists.resolve(undefined);
+    if (settle === "missing") playlists.resolve(null);
     else playlists.reject(trpcError("UNAUTHORIZED"));
     expect(await pending).toBe("back");
     expect(failureStore.getState().current).toBeNull();

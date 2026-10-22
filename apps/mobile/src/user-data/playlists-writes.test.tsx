@@ -1,4 +1,7 @@
-import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
+import {
+  resetPlaylistOverlay,
+  usePlaylistDetails,
+} from "@infinitunes/core/react/optimistic-playlists";
 import { act, screen, waitFor } from "@testing-library/react-native";
 import { Text } from "react-native";
 
@@ -7,7 +10,7 @@ import { queryClient } from "~/lib/query-client";
 import { renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure, trpcError } from "~/test/trpc-mock";
-import { deferred, userPlaylist, playlistSummary } from "~/test/user-library";
+import { deferred, playlistSummary, userPlaylist } from "~/test/user-library";
 
 import {
   addSongsToPlaylist,
@@ -16,9 +19,9 @@ import {
   moveSongInPlaylist,
   removeSongFromPlaylist,
   renamePlaylist,
-  useUserPlaylists,
+  usePlaylistMembership,
   useServerPlaylistDetails,
-  usePlaylistDetails,
+  useUserPlaylists,
 } from "./playlists";
 
 const server = userPlaylist({
@@ -31,8 +34,10 @@ const server = userPlaylist({
 function Shown() {
   const playlists = useUserPlaylists();
   const playlist = usePlaylistDetails(useServerPlaylistDetails("pl-1").data);
+  const membership = usePlaylistMembership();
   return (
     <>
+      <Text testID="held">{[...(membership.get("pl-1") ?? [])].join("")}</Text>
       <Text testID="counts">
         {playlists?.map((p) => `${p.name}:${p.songCount}`).join("|")}
       </Text>
@@ -49,6 +54,8 @@ function Shown() {
 }
 
 const shown = () => screen.getByTestId("shown").props.children as string;
+const counts = () => screen.getByTestId("counts").props.children as string;
+const held = () => screen.getByTestId("held").props.children as string;
 
 beforeEach(async () => {
   // Each optimistic record expires on a long timer; a real one would keep
@@ -165,11 +172,9 @@ describe("add songs", () => {
     procedure("user.addSongsToPlaylist").mockReturnValue(write.promise);
 
     await act(async () =>
-      addSongsToPlaylist(
-        { id: "pl-1", name: "Road Trip" },
-        [{ id: "d", name: "FA9LA" }],
-        "alice",
-      ),
+      addSongsToPlaylist({ id: "pl-1", name: "Road Trip" }, [
+        { id: "d", name: "FA9LA" },
+      ]),
     );
     expect(shown()).toBe("Road Trip:abcd");
     expect(procedure("user.addSongsToPlaylist")).toHaveBeenCalledWith({
@@ -182,48 +187,34 @@ describe("add songs", () => {
     );
   });
 
-  it("loads selected membership before adding and counts only new songs", async () => {
-    queryClient.clear();
-    const detail = deferred<ReturnType<typeof userPlaylist> | undefined>();
+  it("counts and checks the songs at once, then counts what the write returns", async () => {
     const write = deferred<ReturnType<typeof userPlaylist>>();
-    procedure("user.getPlaylistDetails").mockReturnValueOnce(detail.promise);
     procedure("user.addSongsToPlaylist").mockReturnValue(write.promise);
 
     await act(async () =>
-      addSongsToPlaylist(
-        server,
-        [
-          { id: "a", name: "Already held" },
-          { id: "d", name: "New song" },
-        ],
-        "alice",
-      ),
+      addSongsToPlaylist({ id: "pl-1", name: "Road Trip" }, [
+        { id: "a", name: "Already held" },
+        { id: "d", name: "New song" },
+      ]),
     );
-    expect(procedure("user.addSongsToPlaylist")).not.toHaveBeenCalled();
-    expect(screen.getByTestId("counts").props.children).toBe("Road Trip:3");
+    // "a" is one of the summary's cover songs, so only "d" is counted.
+    expect(counts()).toBe("Road Trip:4");
+    expect(held()).toBe("abcd");
 
-    await act(async () => detail.resolve(server));
-    expect(procedure("user.getPlaylistDetails")).toHaveBeenLastCalledWith({
-      id: "pl-1",
-    });
-    expect(screen.getByTestId("counts").props.children).toBe("Road Trip:4");
     await act(async () =>
-      write.resolve(userPlaylist({ songs: ["a", "b", "c", "d"] })),
+      write.resolve(userPlaylist({ id: "pl-1", songs: ["a", "b", "c", "d"] })),
     );
+    expect(counts()).toBe("Road Trip:4");
   });
 
   it("takes the songs back out when the write fails", async () => {
     procedure("user.addSongsToPlaylist").mockRejectedValue(new Error("down"));
 
     await act(async () =>
-      addSongsToPlaylist(
-        { id: "pl-1", name: "Road Trip" },
-        [
-          { id: "d", name: "One" },
-          { id: "e", name: "Two" },
-        ],
-        "alice",
-      ),
+      addSongsToPlaylist({ id: "pl-1", name: "Road Trip" }, [
+        { id: "d", name: "One" },
+        { id: "e", name: "Two" },
+      ]),
     );
 
     await waitFor(() => expect(shown()).toBe("Road Trip:abc"));

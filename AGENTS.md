@@ -308,7 +308,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   swallows a failure the listener caused; a play superseded by a newer one stays quiet (`isCurrent()`).
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
   `user-data/playlists.ts` (create, rename, delete, add, remove, move; removals and moves take the server's
-  copy from `useServerPlaylists`); failures roll back and report, signed out they `promptSignIn` (to `/login`).
+  copy from `useServerPlaylistDetails`); failures roll back and report, signed out they `promptSignIn` (to `/login`).
   Per-user queries key on `userQueryKey(procedureKey, userId)` so one account's cache never shows for the
   next (`getUserFavorites` has no row for a new user: return a value, a query may not resolve `undefined`);
   per-user lists that are not `user.*` procedures key under `LIBRARY_QUERY_KEY`, which sign-out
@@ -591,7 +591,9 @@ Never hang UI state on the action's round trip, and never let only the clicked c
 - Shared client overlays own the state, layered over server props: likes in `@infinitunes/core/react/optimistic-favorite`
   (`useFavoriteToggle` in `lib/use-favorite-toggle.ts`; hearts, tile menu and player share one key), playlists in
   `@infinitunes/core/react/optimistic-playlists` (`usePlaylists` for the sidebar and add dialog, `PlaylistTitle`, `PlaylistGate`,
-  `PlaylistRow`, `PendingPlaylistCards`), `?lang=` chips in `lib/pending-params.ts`. Use these for new write paths
+  `PlaylistRow`, `PendingPlaylistCards`), `?lang=` chips in `lib/pending-params.ts`. `user.getUserPlaylists` is a
+  summary (`songCount`, `coverSongs`: the first four ids), never the songs; song ids come only from
+  `getPlaylistDetails` (`usePlaylistDetails`/`usePlaylistDetailList` overlay those). Use these for new write paths
   instead of a per-component `useOptimistic`, which cannot update other components.
 - One write per key in flight, always the latest intent (rapid clicks never double toggle); songs of one playlist
   are written one at a time and removal indexes are adjusted for earlier removals.

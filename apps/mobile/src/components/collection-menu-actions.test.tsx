@@ -1,8 +1,7 @@
-import { MenuView } from "@expo/ui/community/menu";
 import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
 import { toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawSong } from "@infinitunes/types/fixtures";
-import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { act, waitFor } from "@testing-library/react-native";
 import { Directory } from "expo-file-system";
 import {
   getPermissionsAsync,
@@ -77,38 +76,6 @@ describe("add to playlist", () => {
       playlistId: "pl-1",
       songs: ["one", "two", "three"],
     });
-  });
-
-  it("loads membership on menu intent and preserves the all-songs checkmark", async () => {
-    await act(async () => signInAs("alice"));
-    const full = userPlaylist({ songs: rows.map((song) => song.id) });
-    procedure("user.getUserPlaylists").mockResolvedValue([
-      playlistSummary(full),
-    ]);
-    procedure("user.getPlaylistDetails").mockResolvedValue(full);
-    await renderWithProviders(menu());
-    await act(async () => {
-      await jest.advanceTimersByTimeAsync(10);
-    });
-    expect(procedure("user.getPlaylistDetails")).not.toHaveBeenCalled();
-
-    await fireEvent(screen.getByLabelText(trigger), "touchStart");
-    await act(async () => {
-      await jest.advanceTimersByTimeAsync(10);
-    });
-
-    expect(procedure("user.getPlaylistDetails")).toHaveBeenCalledWith({
-      id: full.id,
-    });
-    const actions = screen.UNSAFE_getByType(MenuView).props.actions;
-    expect(
-      actions.find((action: { id: string }) => action.id === "add-to-playlist")
-        ?.subactions,
-    ).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ id: `playlist:${full.id}`, state: "on" }),
-      ]),
-    );
   });
 
   it("offers only queue actions for episodes", async () => {

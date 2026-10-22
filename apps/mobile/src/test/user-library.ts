@@ -28,6 +28,7 @@ export function playlistSummary(overrides: Partial<UserPlaylist> = {}) {
     description: playlist.description,
     createdAt: playlist.createdAt,
     songCount: playlist.songs.length,
+    coverSongs: playlist.songs.slice(0, 4),
   };
 }
 
