@@ -232,6 +232,7 @@ export const config = {
   // Next requires a literal here, so the pattern is mirrored (and asserted
   // equal) in tests/mocked/proxy.test.ts.
   matcher: [
+    "/api/trpc/:path*",
     "/((?!api/(?!trpc|auth|og)|_next/|favicon\\.ico|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|css|js|map|txt|xml|json|webmanifest|mp3|mp4)$).*)",
   ],
 };

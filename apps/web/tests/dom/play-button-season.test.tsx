@@ -24,6 +24,10 @@ mock.module("~/lib/trpc/vanilla", () => ({
   },
 }));
 
+mock.module("react-use-audio-player", () => ({
+  useAudioPlayerContext: () => ({ isPlaying: false, play() {} }),
+}));
+
 const { PlayButton } = await import("../../components/play-button");
 
 const roots: Root[] = [];

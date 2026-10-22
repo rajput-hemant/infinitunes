@@ -22,7 +22,10 @@ type SearchResultsProps = {
   query: string;
   type: ListSearchType;
   initialPage: SearchPage;
-};
+} & Pick<
+  ComponentProps<typeof SongListClient>,
+  "user" | "userFavorites" | "userPlaylists"
+>;
 
 /** Artist results are named `name`; every other card type uses `title`. */
 function getCardTitle(result: CardEntry) {
@@ -39,7 +42,8 @@ function getCardImage(result: CardEntry) {
 }
 
 function SearchResultsContent(props: SearchResultsProps) {
-  const { query, type, initialPage } = props;
+  const { query, type, initialPage, user, userFavorites, userPlaylists } =
+    props;
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
@@ -91,7 +95,12 @@ function SearchResultsContent(props: SearchResultsProps) {
   return (
     <>
       {type === "song" ? (
-        <SongListClient items={songRows} />
+        <SongListClient
+          items={songRows}
+          user={user}
+          userFavorites={userFavorites}
+          userPlaylists={userPlaylists}
+        />
       ) : (
         <div className={searchUi.grid}>
           {cards.map((result) => (
