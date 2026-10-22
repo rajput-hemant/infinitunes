@@ -3,11 +3,11 @@ import { FlashList } from "@shopify/flash-list";
 import type { ReactElement } from "react";
 import { View } from "react-native";
 
+import { EndOfList } from "~/components/end-of-list";
 import { GridCell } from "~/components/grid-cell";
 import { MediaCard } from "~/components/media-card";
 import { SongRow } from "~/components/song-row";
 import { Spinner } from "~/components/ui/spinner";
-import { Text } from "~/components/ui/text";
 import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playFrom } from "~/playback/play-collection";
@@ -63,9 +63,7 @@ export function TypeResults({
         <Spinner />
       </View>
     ) : results.status === "ready" && !results.hasNextPage ? (
-      <Text variant="subhead" tone="muted" className="py-6 text-center">
-        You have reached the end of these results.
-      </Text>
+      <EndOfList>You have reached the end of these results.</EndOfList>
     ) : null,
     onEndReached: results.loadMore,
     contentContainerStyle: { paddingBottom: playerDockInset },
