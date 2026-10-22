@@ -4,6 +4,8 @@ import { renderRouter } from "expo-router/testing-library";
 
 import { signInAs } from "~/test/session-mock";
 
+import { closeAuth } from "./auth-header";
+
 type NavigatorState = {
   index?: number;
   routes: { name: string; state?: NavigatorState }[];
@@ -28,6 +30,26 @@ describe("sign-in flow in the app's route tree", () => {
     await act(async () => signInAs("user-1"));
 
     expect(app.getSegments()).toEqual(["(tabs)", "(search)", "search"]);
+  });
+
+  it("closes back to the screen it was opened from", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/search" });
+
+    await act(async () => router.push("/login"));
+    expect(app.getByRole("button", { name: "Close" })).toBeTruthy();
+    await act(async () => router.push("/signup"));
+    expect(app.queryByRole("button", { name: "Close" })).toBeNull();
+    await act(async () => router.back());
+
+    await act(async () => closeAuth());
+    expect(app.getSegments()).toEqual(["(tabs)", "(search)", "search"]);
+  });
+
+  it("closes a sign-in link opened cold to Home", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/login" });
+
+    await act(async () => closeAuth());
+    expect(app.getSegments()).toEqual(["(tabs)", "(home)"]);
   });
 
   it("sends a signed-in listener who opens a sign-in link to Home", async () => {

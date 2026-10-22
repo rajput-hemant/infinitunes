@@ -1,9 +1,10 @@
 import { forgotPasswordSchema } from "@infinitunes/auth/schemas";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { View } from "react-native";
 
 import { EmailField } from "~/components/form/email-field";
-import { FormError } from "~/components/form/form-error";
+import { FormError, useFocusOnRefusal } from "~/components/form/form-error";
+import type { TextInputHandle } from "~/components/form/form-field";
 import { FormLink } from "~/components/form/form-link";
 import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
@@ -25,6 +26,7 @@ const RESET_PAGE_URL = `${env.apiUrl}/reset-password`;
 
 /** Requests the reset email. */
 export function ForgotPasswordForm() {
+  const emailInput = useRef<TextInputHandle>(null);
   const [sent, setSent] = useState(false);
   const { values, errors, setValue, validate } = useSchemaForm({
     schema: forgotPasswordSchema,
@@ -32,6 +34,7 @@ export function ForgotPasswordForm() {
   });
   const { pending, run } = usePending();
   const [serverError, setServerError] = useState<string>();
+  useFocusOnRefusal(emailInput, serverError, pending);
 
   function submit() {
     const request = validate();
@@ -64,6 +67,7 @@ export function ForgotPasswordForm() {
   return (
     <View className="gap-4">
       <EmailField
+        ref={emailInput}
         value={values.email}
         onChangeText={(text) => setValue("email", text)}
         error={errors.email}

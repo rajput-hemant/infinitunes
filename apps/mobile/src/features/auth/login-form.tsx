@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { View } from "react-native";
 
 import { EmailField } from "~/components/form/email-field";
-import { FormError } from "~/components/form/form-error";
+import { FormError, useFocusOnRefusal } from "~/components/form/form-error";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
@@ -19,6 +19,7 @@ import { usePending } from "~/lib/use-pending";
  * here. No `callbackURL`: the server only accepts web redirects.
  */
 export function LoginForm() {
+  const emailInput = useRef<TextInputHandle>(null);
   const passwordInput = useRef<TextInputHandle>(null);
   const { values, errors, setValue, validate } = useSchemaForm({
     schema: loginSchema,
@@ -26,6 +27,7 @@ export function LoginForm() {
   });
   const { pending, run } = usePending();
   const [serverError, setServerError] = useState<string>();
+  useFocusOnRefusal(emailInput, serverError, pending);
 
   function submit() {
     const credentials = validate();
@@ -41,6 +43,7 @@ export function LoginForm() {
   return (
     <View className="gap-4">
       <EmailField
+        ref={emailInput}
         value={values.email}
         onChangeText={(text) => setValue("email", text)}
         error={errors.email}

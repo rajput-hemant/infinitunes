@@ -7,7 +7,7 @@ import { confirmDeletePlaylist } from "./confirm-delete-playlist";
 import { PlaylistMenu } from "./playlist-menu";
 import { SwipeableRow } from "./swipeable-row";
 
-function songCount(count: number): string {
+export function songCount(count: number): string {
   return count === 1 ? "1 song" : `${count} songs`;
 }
 
@@ -15,10 +15,21 @@ function songCount(count: number): string {
  * One of the listener's playlists. A playlist being created is a dimmed,
  * labelled row (not a disabled button) until the server has given it an id.
  */
-export function PlaylistRow({ playlist }: { playlist: PlaylistView }) {
+export function PlaylistRow({
+  playlist,
+  cover,
+}: {
+  playlist: PlaylistView;
+  /** The first song's artwork; the playlist icon stands in until it loads. */
+  cover?: string;
+}) {
   const row = (
     <ListRow
-      leading={{ icon: { ios: "music.note.list", android: "queue_music" } }}
+      leading={
+        cover
+          ? { artwork: cover }
+          : { icon: { ios: "music.note.list", android: "queue_music" } }
+      }
       title={playlist.name}
       subtitle={
         playlist.pending ? "Creating…" : songCount(playlist.songs.length)

@@ -3,7 +3,7 @@ import { FlashList } from "@shopify/flash-list";
 import { Stack } from "expo-router";
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import ReorderableList from "react-native-reorderable-list";
 
 import type { ReorderActions } from "~/components/drag-handle";
@@ -105,7 +105,8 @@ export function SongCollection({
       <View>
         {header}
         {/* One compact row: the count and sort lead, Shuffle and Play close it. */}
-        <View className="flex-row items-center gap-2 pl-page pr-4">
+        {/* At Play's height even while a filter hides the buttons: no jump. */}
+        <View className="min-h-row flex-row items-center gap-2 pl-page pr-4">
           <Text variant="subhead" tone="muted" className="shrink">
             {countLabel(shown.length, songs.length)}
           </Text>
@@ -203,11 +204,21 @@ export function SongCollectionSkeleton({
           header={
             <>
               {header}
-              <View className="flex-row items-center gap-2 pl-page pr-4">
+              <View className="min-h-row flex-row items-center gap-2 pl-page pr-4">
                 <SkeletonText variant="subhead" width={64} />
-                <SkeletonText variant="subhead" width={88} />
+                {/* The sort trigger's own height (OptionMenu's plain trigger). */}
+                <View className="min-h-ctl justify-center">
+                  <SkeletonText variant="subhead" width={88} />
+                </View>
                 <View className="flex-1" />
-                <SkeletonBlock className="size-touch rounded-full" />
+                {/* Shuffle: Android's 40dp tonal container, iOS's 48pt button. */}
+                <SkeletonBlock
+                  className={
+                    Platform.OS === "android"
+                      ? "size-ctl rounded-full"
+                      : "size-touch rounded-full"
+                  }
+                />
                 <SkeletonBlock className="size-row rounded-full" />
               </View>
             </>
