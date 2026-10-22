@@ -391,7 +391,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
+- [x] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. Done: the pending placeholder is wrapped in an `exiting={CONTENT_CONCEAL}` fade (200ms, reduce-motion safe, exported from `skeletons.tsx`) so it crossfades with the cards' shared-opacity fade; test in `catalog-screen.test.tsx`. (branch `fix/x2-catalog-crossfade`)
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
