@@ -28,6 +28,17 @@ describe("MediaCard", () => {
     );
   });
 
+  it("is not clipped on iOS, which has no ripple", async () => {
+    await renderScreen(<MediaCard item={toCardItem(rawAlbum())} />, {
+      routes: { "album/[name]/[token]": () => null },
+    });
+
+    expect(screen.getByRole("link", { name: /^Udta Teer/ })).toHaveProp(
+      "className",
+      "gap-2",
+    );
+  });
+
   it("ripples within its corners on Android", async () => {
     jest.replaceProperty(Platform, "OS", "android");
     await renderScreen(<MediaCard item={toCardItem(rawAlbum())} />, {
@@ -41,7 +52,7 @@ describe("MediaCard", () => {
     });
     expect(card).toHaveProp(
       "className",
-      expect.stringContaining("overflow-hidden rounded-md"),
+      expect.stringContaining("overflow-hidden rounded-t-md"),
     );
   });
 });
