@@ -59,16 +59,13 @@ function HeaderAction({
       hitSlop={TEXT_BUTTON_HIT_SLOP}
       className="active:opacity-60"
     >
-      {/* Android: a Material text button in the primary colour. */}
-      {Platform.OS === "android" ? (
-        <Text variant="label" tone="primary">
-          {label}
-        </Text>
-      ) : (
-        <Text variant="subhead" tone="muted">
-          {label}
-        </Text>
-      )}
+      {/* A text button in the accent: Material's label, iOS's subhead. */}
+      <Text
+        variant={Platform.OS === "android" ? "label" : "subhead"}
+        tone="primary"
+      >
+        {label}
+      </Text>
     </Pressable>
   );
   return href ? (

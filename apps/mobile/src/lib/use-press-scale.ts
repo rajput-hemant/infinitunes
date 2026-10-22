@@ -7,7 +7,7 @@ import {
 } from "react-native-reanimated";
 import type { WithSpringConfig } from "react-native-reanimated";
 
-import { springs } from "~/theme/motion";
+import { iosPressRelease, springs } from "~/theme/motion";
 
 const PRESSED = 0.96;
 const PRESS_IN = { duration: 90 };
@@ -15,7 +15,7 @@ const PRESS_IN = { duration: 90 };
 /** Android springs back on Material 3 Expressive's fast spatial spring. */
 const RELEASE = Platform.select<WithSpringConfig>({
   android: springs.spatialFast,
-  default: { damping: 14, stiffness: 260, mass: 0.6 },
+  default: iosPressRelease,
 });
 
 /**

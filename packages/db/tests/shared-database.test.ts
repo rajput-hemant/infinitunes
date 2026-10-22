@@ -4,6 +4,9 @@ import { fileURLToPath } from "node:url";
 import postgres from "postgres";
 
 const url = process.env.TEST_MIGRATION_DATABASE_URL;
+const lookupIndexes = fileURLToPath(
+  new URL("../src/migrations/0009_flat_microbe.sql", import.meta.url),
+);
 const script = (name: string) =>
   fileURLToPath(new URL(`../src/${name}.ts`, import.meta.url));
 
@@ -39,6 +42,7 @@ const siblingTables = `
     "updatedAt" timestamp DEFAULT now() NOT NULL
   );
   CREATE UNIQUE INDEX "better_auth_account_provider_account_unique" ON "better_auth_account" ("providerId", "accountId");
+  CREATE INDEX "better_auth_account_user_id_idx" ON "better_auth_account" ("userId");
   CREATE TABLE "better_auth_session" (
     "id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
     "userId" uuid NOT NULL REFERENCES "user"("id") ON DELETE cascade,
@@ -58,6 +62,8 @@ const siblingTables = `
     "createdAt" timestamp DEFAULT now() NOT NULL,
     "updatedAt" timestamp DEFAULT now() NOT NULL
   );
+  CREATE INDEX "better_auth_session_user_id_idx" ON "better_auth_session" ("userId");
+  CREATE INDEX "better_auth_verification_identifier_idx" ON "better_auth_verification" ("identifier");
   CREATE TABLE "lipi_workspace" ("id" uuid PRIMARY KEY, "name" text NOT NULL);
   INSERT INTO "lipi_workspace" VALUES (gen_random_uuid(), 'sibling workspace');
   CREATE SCHEMA IF NOT EXISTS drizzle;
@@ -100,6 +106,18 @@ test.skipIf(!url)(
         run("seed", testUrl.toString());
       }
 
+      const indexSql = (await Bun.file(lookupIndexes).text()).replaceAll(
+        "--> statement-breakpoint",
+        "",
+      );
+      await client.unsafe(indexSql);
+      await client.unsafe(indexSql);
+      const indexes =
+        await client`SELECT indexname FROM pg_indexes WHERE schemaname = 'public'
+        AND indexname IN ('better_auth_account_user_id_idx', 'better_auth_session_user_id_idx',
+          'better_auth_verification_identifier_idx', 'infinitunes_playlist_user_id_idx')`;
+      expect(indexes).toHaveLength(4);
+
       const count = async (table: string) =>
         (await client.unsafe(`SELECT count(*)::int AS n FROM ${table}`))[0].n;
       expect(await count('"user"')).toBe(1);
@@ -121,7 +139,7 @@ test.skipIf(!url)(
 
       expect(await count('"lipi_workspace"')).toBe(1);
       expect(await count("drizzle.__lipi_migrations")).toBe(1);
-      expect(await count("drizzle.__drizzle_migrations")).toBe(9);
+      expect(await count("drizzle.__drizzle_migrations")).toBe(10);
 
       const [{ foreign }] = await client`
         SELECT count(*)::int AS foreign FROM information_schema.tables

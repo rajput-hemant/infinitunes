@@ -19,9 +19,11 @@ type Category = { label: string; href: Href; image?: string };
 /** Categories, then every language: each tile opens a list. Pull to refresh the covers. */
 export function BrowseScreen() {
   const width = useGridCardWidth();
+  const fullWidth = useGridCardWidth(1);
   const { covers, refresh } = useCategoryCovers();
   const mixHref = covers.mix && entityHref("mix", covers.mix.perma_url);
 
+  // Six categories fill three rows; the mix, when there is one, spans a row of its own.
   const categories: Category[] = [
     { label: "Top Albums", href: "/album", image: covers.albums },
     { label: "Top Charts", href: "/chart", image: covers.charts },
@@ -33,14 +35,6 @@ export function BrowseScreen() {
     { label: "Podcasts", href: "/show", image: covers.shows },
     { label: "Top Artists", href: "/artist", image: covers.artists },
     { label: "Radio", href: "/radio", image: covers.stations },
-    {
-      label: "New Releases",
-      href: "/album",
-      image: covers.newReleases,
-    },
-    ...(covers.mix && mixHref
-      ? [{ label: "Made for you", href: mixHref, image: covers.mix.image }]
-      : []),
   ];
 
   return (
@@ -51,6 +45,14 @@ export function BrowseScreen() {
       </Text>
 
       <View className="flex-row flex-wrap px-page" style={{ gap: GRID_GAP }}>
+        {covers.mix && mixHref ? (
+          <BrowseTile
+            href={mixHref}
+            title="Made for you"
+            image={covers.mix.image}
+            width={fullWidth}
+          />
+        ) : null}
         {categories.map((category) => (
           <BrowseTile
             key={category.label}

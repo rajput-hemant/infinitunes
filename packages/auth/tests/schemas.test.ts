@@ -24,6 +24,45 @@ describe("emailSchema", () => {
 });
 
 describe("passwordSchema", () => {
+  it.each([
+    "A1!" + "a".repeat(70),
+    "Aa1!" + "é".repeat(35),
+    "A1!" + "a".repeat(126),
+  ])("rejects a new password exceeding 72 UTF-8 bytes: %s", (password) => {
+    const result = passwordSchema.safeParse(password);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.map((issue) => issue.message)).toContain(
+        "Password must be at most 72 UTF-8 bytes long (some characters use more than one byte).",
+      );
+    }
+    expect(
+      signUpSchema.safeParse({
+        email: "user@example.com",
+        password,
+        confirmPassword: password,
+      }).success,
+    ).toBe(false);
+    expect(
+      resetPasswordSchema.safeParse({ password, confirmPassword: password })
+        .success,
+    ).toBe(false);
+    expect(
+      changePasswordSchema.safeParse({
+        password: "CurrentPassword1!",
+        newPassword: password,
+      }).success,
+    ).toBe(false);
+  });
+
+  it.each([
+    "A1!" + "a".repeat(69),
+    "A1!" + "é".repeat(34) + "a",
+    "A1!" + "😀".repeat(17) + "a",
+  ])("accepts a new password of exactly 72 UTF-8 bytes: %s", (password) =>
+    expect(passwordSchema.safeParse(password).success).toBe(true),
+  );
+
   it("accepts strong passwords meeting all requirements", () => {
     expect(passwordSchema.safeParse("Password123!").success).toBe(true);
     expect(passwordSchema.safeParse("Valid#Pass9").success).toBe(true);
@@ -171,6 +210,30 @@ describe("resetPasswordSchema", () => {
 });
 
 describe("changePasswordSchema", () => {
+  it.each(["weak", "a".repeat(100)])(
+    "accepts a legacy current password: %s",
+    (password) => {
+      expect(
+        changePasswordSchema.safeParse({
+          password,
+          newPassword: "NewPassword123!",
+        }).success,
+      ).toBe(true);
+    },
+  );
+
+  it.each(["", "a".repeat(129)])(
+    "rejects an empty or oversized current password: %s",
+    (password) => {
+      expect(
+        changePasswordSchema.safeParse({
+          password,
+          newPassword: "NewPassword123!",
+        }).success,
+      ).toBe(false);
+    },
+  );
+
   it("takes no email: the account comes from the session", () => {
     const parsed = changePasswordSchema.safeParse({
       password: "OldPassword123!",
