@@ -20,6 +20,7 @@ function switchTo(userId: string | null) {
 const heart = <LikeButton type="song" token="BSaNI3Yr" name="FA9LA" />;
 
 beforeEach(async () => {
+  jest.useFakeTimers();
   await switchTo(null);
   procedure("user.getUserFavorites").mockImplementation(async () => {
     const songs = viewer ? likedBy[viewer] : undefined;
@@ -27,7 +28,11 @@ beforeEach(async () => {
   });
 });
 
-afterEach(resetFavoriteOverlay);
+afterEach(() => {
+  resetFavoriteOverlay();
+  jest.clearAllTimers();
+  jest.useRealTimers();
+});
 
 describe("LikeButton", () => {
   it("lets a listener who never liked anything like a song", async () => {
@@ -37,7 +42,8 @@ describe("LikeButton", () => {
     await waitFor(() =>
       expect(procedure("user.getUserFavorites")).toHaveBeenCalled(),
     );
-    await act(async () => {});
+    // Query invocation precedes the timer that notifies React of its result.
+    await act(async () => jest.advanceTimersByTimeAsync(0));
 
     await fireEvent.press(
       await screen.findByRole("button", { name: "Like FA9LA" }),
