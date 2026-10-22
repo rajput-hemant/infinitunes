@@ -171,10 +171,12 @@ describe("PlaybackController", () => {
     expect(player.playing).toBe(false);
     const loads = player.loads.length;
 
+    expect(player.lockScreen).toEqual({ active: false });
     await act(async () => togglePlayback());
 
     expect(player.loads).toHaveLength(loads + 1);
     expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
+    expect(player.lockScreen.active).toBe(true);
     expect(player.playing).toBe(true);
     expect(playbackStatusStore.getState().duration).toBe(0);
   });
@@ -191,6 +193,41 @@ describe("PlaybackController", () => {
 
     expect(player.loads).toHaveLength(loads + 1);
     expect(player.loads.at(-1)).toBe(ladder("BSaNI3Yr", 320));
+  });
+
+  it("does not record the next entry when it never loads after the previous one did", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
+    expect(procedure("history.record")).toHaveBeenCalledTimes(1);
+
+    await act(async () => playerStore.getState().skipToNext());
+    for (let rung = 0; rung < 5; rung += 1) {
+      await act(async () => player.failLoading("404"));
+    }
+
+    expect(procedure("history.record")).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not move on one track per Play press while offline", async () => {
+    const player = await mountController();
+    await act(async () =>
+      playerStore.getState().playTracks([...rows, rows[0]!]),
+    );
+    await act(async () => player.finishLoading());
+    for (let rung = 0; rung < 10; rung += 1) {
+      await act(async () => player.failLoading("Offline"));
+    }
+    const index = playerStore.getState().currentIndex;
+
+    for (let press = 0; press < 3; press += 1) {
+      await act(async () => togglePlayback());
+      for (let rung = 0; rung < 5; rung += 1) {
+        await act(async () => player.failLoading("Offline"));
+      }
+    }
+
+    expect(playerStore.getState().currentIndex).toBe(index);
   });
 
   it("records a listen only once the entry has loaded", async () => {
@@ -466,6 +503,7 @@ describe("PlaybackController", () => {
     await act(async () => player.finishLoading());
 
     await act(async () => player.finishTrack());
+    await act(async () => player.finishLoading());
 
     expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
     expect(procedure("history.record")).toHaveBeenLastCalledWith({

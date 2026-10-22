@@ -5,6 +5,7 @@ import {
   PLAYBACK_PROBLEM_MESSAGES,
   type LoadTrack,
 } from "@infinitunes/core/react/use-track-playback";
+import type { Queue } from "@infinitunes/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { showFailure } from "~/lib/failure";
@@ -34,6 +35,16 @@ import { playbackPosition, playbackStatusStore } from "./playback-status";
 import { playerStore, selectCurrentTrack, usePlayer } from "./player-store";
 import { recordPlay } from "./record-play";
 import { resumePlayback } from "./transport";
+
+// Tracks are never live streams. Without `isLiveStream: false` iOS infers it
+// from the item's duration, which is still indefinite while the first track
+// loads, and the lock screen shows "Live" instead of the length.
+const activateLockScreen = (track: Queue) =>
+  audioPlayer.setActiveForLockScreen(true, nowPlayingMetadata(track), {
+    isLiveStream: false,
+    showNextTrack: true,
+    showPreviousTrack: true,
+  });
 
 const getPosition = () => audioPlayer.currentTime;
 
@@ -99,6 +110,15 @@ export function PlaybackController() {
       local && current ? { id: current.id, source: src, options } : null;
     setSource(FRESH_SOURCE);
     loadTrack(local ?? src, options);
+    // A problem took the lock screen down: a retry puts it back with the load.
+    if (
+      !lockScreenActive.current &&
+      current &&
+      playerStore.getState().started
+    ) {
+      activateLockScreen(current);
+      lockScreenActive.current = true;
+    }
   }, []);
 
   useEffect(() => {
@@ -118,6 +138,9 @@ export function PlaybackController() {
       markSourceDead();
       if (problem !== "unplayable") {
         replaceSource(null);
+        // Nothing is loaded for the lock screen's or headset's Play to start.
+        audioPlayer.clearLockScreenControls();
+        lockScreenActive.current = false;
         // `replace(null)` emits no status: show the stopped engine now.
         setStatus((prev) => ({
           ...prev,
@@ -298,18 +321,10 @@ export function PlaybackController() {
   // playback between two tracks.
   useEffect(() => {
     if (!started || !track) return;
-    const metadata = nowPlayingMetadata(track);
     if (lockScreenActive.current) {
-      audioPlayer.updateLockScreenMetadata(metadata);
+      audioPlayer.updateLockScreenMetadata(nowPlayingMetadata(track));
     } else {
-      // Tracks are never live streams. Without this iOS infers it from the
-      // item's duration, which is still indefinite while the first track
-      // loads, and the lock screen shows "Live" instead of the length.
-      audioPlayer.setActiveForLockScreen(true, metadata, {
-        isLiveStream: false,
-        showNextTrack: true,
-        showPreviousTrack: true,
-      });
+      activateLockScreen(track);
       lockScreenActive.current = true;
     }
   }, [started, track]);

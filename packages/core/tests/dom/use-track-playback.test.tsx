@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
 import type { Queue, StreamQuality } from "@infinitunes/types";
-import { act } from "react";
+import { act, useEffect, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import {
@@ -50,13 +50,22 @@ async function setup(initial: Props) {
   const recorded: string[] = [];
   const loadOptions: { loop: boolean }[] = [];
   const unplayable: string[] = [];
+  // The engine: a load makes it not ready (the app re-renders for that), and
+  // `loaded()` is the load finishing.
+  const engine = { ready: false, force: () => {} };
   const load = (src: string, options: { loop: boolean }) => {
     loads.push(src);
     loadOptions.push(options);
+    engine.ready = false;
+    engine.force();
   };
   const record = (item: { id: string }) => void recorded.push(item.id);
 
   function Harness(props: Props) {
+    const [, setTick] = useState(0);
+    useEffect(() => {
+      engine.force = () => setTick((n) => n + 1);
+    });
     useTrackPlayback({
       queue: props.queue,
       currentIndex: props.currentIndex,
@@ -68,7 +77,7 @@ async function setup(initial: Props) {
         void messages.push(PLAYBACK_PROBLEM_MESSAGES[problem]),
       loadError: props.loadError,
       isLooping: props.isLooping,
-      isReady: props.isReady ?? true,
+      isReady: props.isReady ?? engine.ready,
       retry: props.retry,
       onUnplayable: () => void unplayable.push("skip"),
     });
@@ -82,7 +91,12 @@ async function setup(initial: Props) {
       root.render(<Harness {...props} />);
     });
   await render(initial);
-  return { render, loads, recorded, loadOptions, unplayable };
+  const loaded = () =>
+    act(async () => {
+      engine.ready = true;
+      engine.force();
+    });
+  return { render, loaded, loads, recorded, loadOptions, unplayable };
 }
 
 afterEach(async () => {
@@ -92,11 +106,12 @@ afterEach(async () => {
 describe("track playback", () => {
   it("loads and records the current entry once", async () => {
     const a = entry("a", "q1");
-    const { render, loads, recorded } = await setup({
+    const { render, loaded, loads, recorded } = await setup({
       queue: [a],
       currentIndex: 0,
     });
 
+    await loaded();
     await render({ queue: [a], currentIndex: 0 });
 
     expect(loads).toHaveLength(1);
@@ -105,15 +120,29 @@ describe("track playback", () => {
 
   it("records a listen only once the entry has loaded", async () => {
     const a = entry("a", "q1");
-    const { render, loads, recorded } = await setup({
+    const { loaded, loads, recorded } = await setup({
       queue: [a],
       currentIndex: 0,
-      isReady: false,
     });
     expect(loads).toHaveLength(1);
     expect(recorded).toEqual([]);
 
-    await render({ queue: [a], currentIndex: 0, isReady: true });
+    await loaded();
+
+    expect(recorded).toEqual(["a"]);
+  });
+
+  it("does not record the next entry on the previous entry's ready state, nor when it never loads", async () => {
+    const queue = [entry("a", "q1"), entry("b", "q2", "https://cdn/b_160")];
+    const { render, loaded, recorded } = await setup({
+      queue,
+      currentIndex: 0,
+    });
+    await loaded();
+    expect(recorded).toEqual(["a"]);
+
+    await render({ queue, currentIndex: 1 });
+    await render({ queue, currentIndex: 1, loadError: "404" });
 
     expect(recorded).toEqual(["a"]);
   });
@@ -134,10 +163,11 @@ describe("track playback", () => {
 
   it("neither reloads nor re-records when entries are queued or removed around the current one", async () => {
     const [a, b, c] = [entry("a", "q1"), entry("b", "q2"), entry("c", "q3")];
-    const { render, loads, recorded } = await setup({
+    const { render, loaded, loads, recorded } = await setup({
       queue: [a, b],
       currentIndex: 1,
     });
+    await loaded();
 
     await render({ queue: [a, b, c], currentIndex: 1 });
     // Removing an earlier entry shifts the current index but not the entry.
@@ -149,9 +179,14 @@ describe("track playback", () => {
 
   it("plays and records the same song queued twice in a row", async () => {
     const queue = [entry("a", "q1"), entry("a", "q2")];
-    const { render, loads, recorded } = await setup({ queue, currentIndex: 0 });
+    const { render, loaded, loads, recorded } = await setup({
+      queue,
+      currentIndex: 0,
+    });
+    await loaded();
 
     await render({ queue, currentIndex: 1 });
+    await loaded();
 
     expect(loads).toHaveLength(2);
     expect(recorded).toEqual(["a", "a"]);
@@ -159,23 +194,31 @@ describe("track playback", () => {
 
   it("records a returned-to entry again, and each new entry once", async () => {
     const queue = [entry("a", "q1"), entry("b", "q2")];
-    const { render, recorded } = await setup({ queue, currentIndex: 0 });
+    const { render, loaded, recorded } = await setup({
+      queue,
+      currentIndex: 0,
+    });
+    await loaded();
 
     await render({ queue, currentIndex: 1 });
+    await loaded();
     await render({ queue, currentIndex: 0 });
+    await loaded();
 
     expect(recorded).toEqual(["a", "b", "a"]);
   });
 
   it("reloads on a quality change without recording a new listen", async () => {
     const queue = [entry("a", "q1")];
-    const { render, loads, recorded } = await setup({
+    const { render, loaded, loads, recorded } = await setup({
       queue,
       currentIndex: 0,
       quality: "excellent",
     });
+    await loaded();
 
     await render({ queue, currentIndex: 0, quality: "poor" });
+    await loaded();
 
     expect(loads).toHaveLength(2);
     expect(loads[0]).not.toBe(loads[1]);
@@ -192,12 +235,14 @@ describe("track playback", () => {
   });
 
   it("treats a rewritten queueItemId as a new entry", async () => {
-    const { render, loads, recorded } = await setup({
+    const { render, loaded, loads, recorded } = await setup({
       queue: [entry("a", "q1")],
       currentIndex: 0,
     });
+    await loaded();
 
     await render({ queue: [entry("a", "q9")], currentIndex: 0 });
+    await loaded();
 
     expect(loads).toHaveLength(2);
     expect(recorded).toEqual(["a", "a"]);

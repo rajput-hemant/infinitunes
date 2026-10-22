@@ -201,16 +201,20 @@ async function mountPlayer(options?: {
   const root = createRoot(container);
   roots.push(root);
   await act(async () => {
-    root.render(
-      <AppRouterContext.Provider value={router}>
-        <SearchParamsContext.Provider value={new URLSearchParams()}>
-          <PrimePlayer />
-          <Player favorites={options?.favorites} />
-        </SearchParamsContext.Provider>
-      </AppRouterContext.Provider>,
-    );
+    root.render(playerTree(options?.favorites));
   });
   return container;
+}
+
+function playerTree(favorites?: Favorite) {
+  return (
+    <AppRouterContext.Provider value={router}>
+      <SearchParamsContext.Provider value={new URLSearchParams()}>
+        <PrimePlayer />
+        <Player favorites={favorites} />
+      </SearchParamsContext.Provider>
+    </AppRouterContext.Provider>
+  );
 }
 
 async function menuLabels() {
@@ -235,11 +239,17 @@ async function menuLabels() {
 // the mounted player loads the resolved source and records the entry.
 describe("player track wiring", () => {
   it("loads the resolved source and records the current entry once", async () => {
+    audio.isReady = false;
     await mountPlayer();
 
     expect(loads).toEqual([
       getDownloadLink(playableQueue[0].download_url, "excellent"),
     ]);
+    expect(recorded).toEqual([]);
+
+    // The listen counts once the source has loaded.
+    audio.isReady = true;
+    await act(async () => roots.at(-1)?.render(playerTree()));
     expect(recorded).toEqual(["a"]);
   });
 });

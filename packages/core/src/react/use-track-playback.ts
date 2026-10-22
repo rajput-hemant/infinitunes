@@ -78,9 +78,9 @@ export function useTrackPlayback({
 }: TrackPlaybackOptions) {
   const lastRecordedRef = useRef<string | null>(null);
   const notifiedRef = useRef<string | null>(null);
-  // The entry `load` was last called for: a stale `isReady` from the previous
-  // source must not record the new entry before it has loaded.
-  const loadedForRef = useRef<string | null>(null);
+  const pendingListenRef = useRef<{ key: string; notReady: boolean } | null>(
+    null,
+  );
   const loopRef = useRef(isLooping);
   const unplayableRef = useRef(onUnplayable);
   const problemRef = useRef(onProblem);
@@ -88,7 +88,9 @@ export function useTrackPlayback({
   // entry change is our own skip (anything else is the listener acting).
   const failuresRef = useRef(0);
   const expectSkipRef = useRef(false);
+  const isReadyRef = useRef(isReady);
   useEffect(() => {
+    isReadyRef.current = isReady;
     loopRef.current = isLooping;
     unplayableRef.current = onUnplayable;
     problemRef.current = onProblem;
@@ -135,10 +137,10 @@ export function useTrackPlayback({
   }, [loadError]);
 
   useEffect(() => {
-    if (!attemptKey) return;
+    if (!queueItemId) return;
     if (expectSkipRef.current) expectSkipRef.current = false;
     else failuresRef.current = 0;
-  }, [attemptKey]);
+  }, [queueItemId]);
 
   useEffect(() => {
     if (isReady) failuresRef.current = 0;
@@ -173,14 +175,36 @@ export function useTrackPlayback({
       return;
     }
 
-    loadedForRef.current = queueItemId;
+    // A render that still carries the previous source's `isReady` arms nothing.
+    pendingListenRef.current = {
+      key: attemptKey ?? "",
+      notReady: !isReadyRef.current,
+    };
     load(audioSrc, { loop: loopRef.current });
-  }, [audioSrc, exhausted, isPlayerInit, load, queueItemId, trackId]);
+  }, [
+    attemptKey,
+    audioSrc,
+    exhausted,
+    isPlayerInit,
+    load,
+    queueItemId,
+    trackId,
+  ]);
 
-  // A listen counts once the entry has loaded; a track that never plays is not history.
+  // A listen counts when `isReady` rises after `load()` was called for the
+  // entry: the render that calls `load` still carries the previous source's
+  // `isReady`, which must not record a track that then fails to load.
   useEffect(() => {
-    if (!isReady || !queueItemId || !trackId) return;
-    if (loadedForRef.current !== queueItemId) return;
+    const pending = pendingListenRef.current;
+    if (!pending || pending.key !== attemptKey || !queueItemId || !trackId) {
+      return;
+    }
+    if (!isReady) {
+      pending.notReady = true;
+      return;
+    }
+    if (!pending.notReady) return;
+    pendingListenRef.current = null;
     const play = playToRecord(
       { id: trackId, queueItemId, type: trackType },
       lastRecordedRef.current,
@@ -188,5 +212,5 @@ export function useTrackPlayback({
     if (!play) return;
     lastRecordedRef.current = queueItemId;
     record(play);
-  }, [isReady, queueItemId, record, trackId, trackType]);
+  }, [attemptKey, isReady, queueItemId, record, trackId, trackType]);
 }
