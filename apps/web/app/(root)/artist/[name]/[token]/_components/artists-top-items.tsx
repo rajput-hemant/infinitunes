@@ -6,7 +6,8 @@ import {
   nextArtistPage,
   toArtistPage,
 } from "@infinitunes/core/artist-pagination";
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import type { Album, Category, Song, SongRowItem } from "@infinitunes/types";
 import { toSongRow, uniqueBy } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
@@ -52,7 +53,7 @@ type ArtistsTopItemsProps = {
   lastInitialPage?: number;
   user?: User;
   userFavorites?: Favorite | null;
-  userPlaylists?: MyPlaylist[];
+  userPlaylists?: PlaylistSummary[];
 };
 
 type TopSongsProps = Pick<

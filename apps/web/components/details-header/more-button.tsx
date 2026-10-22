@@ -1,8 +1,8 @@
 "use client";
 
 import { addSongsOptimistic } from "@infinitunes/core/react/optimistic-playlists";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
-import type { MyPlaylist } from "@infinitunes/db/schema";
 import type {
   MediaType,
   Quality,
@@ -73,7 +73,7 @@ type MoreButtonProps = {
   name: string;
   subtitle: string;
   songs: SongRowItem[];
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   artistId?: string;
   language?: string;
 };

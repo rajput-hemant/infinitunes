@@ -11,7 +11,11 @@ import { preferencesStore } from "~/lib/preferences";
 import { playerStore } from "~/playback/player-store";
 import { radioSeedOf } from "~/playback/radio";
 import type { RadioSeed } from "~/playback/radio";
-import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
+import {
+  addSongsToPlaylist,
+  usePlaylistMembership,
+  useUserPlaylists,
+} from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
 
 import { MenuTrigger } from "./menu-trigger";
@@ -64,6 +68,7 @@ type CollectionMenuProps = {
 export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
+  const membership = usePlaylistMembership();
   const songs = rows.filter((row) => row.type === "song");
 
   const entries: MenuEntry[] = [
@@ -94,6 +99,7 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
             addToPlaylistEntry({
               songs,
               playlists,
+              membership,
               onAdd: (playlist) => addSongsToPlaylist(playlist, songs),
             }),
           ]

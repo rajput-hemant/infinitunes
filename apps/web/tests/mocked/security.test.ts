@@ -128,7 +128,11 @@ describe("Server action authorization security checks", () => {
     it("rejects addSongsToPlaylist with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
-        unwrap(addSongsToPlaylist("playlist-123", ["song-1"])),
+        unwrap(
+          addSongsToPlaylist("00000000-0000-4000-8000-000000000123", [
+            "song-1",
+          ]),
+        ),
       ).rejects.toThrow("Please sign in to continue.");
     });
 
@@ -142,21 +146,31 @@ describe("Server action authorization security checks", () => {
     it("rejects renamePlaylist with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
-        unwrap(renamePlaylist("playlist-123", { name: "Hacked Playlist" })),
+        unwrap(
+          renamePlaylist("00000000-0000-4000-8000-000000000123", {
+            name: "Hacked Playlist",
+          }),
+        ),
       ).rejects.toThrow("Please sign in to continue.");
     });
 
     it("rejects deletePlaylist with sign-in copy", async () => {
       mockUser = undefined;
-      await expect(unwrap(deletePlaylist("playlist-123"))).rejects.toThrow(
-        "Please sign in to continue.",
-      );
+      await expect(
+        unwrap(deletePlaylist("00000000-0000-4000-8000-000000000123")),
+      ).rejects.toThrow("Please sign in to continue.");
     });
 
     it("rejects removeSongsFromPlaylist with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
-        unwrap(removeSongsFromPlaylist("playlist-123", 0, "song-1")),
+        unwrap(
+          removeSongsFromPlaylist(
+            "00000000-0000-4000-8000-000000000123",
+            0,
+            "song-1",
+          ),
+        ),
       ).rejects.toThrow("Please sign in to continue.");
     });
 
@@ -179,45 +193,61 @@ describe("Server action authorization security checks", () => {
     it("rejects addSongsToPlaylist for a playlist owned by user-456 (foreign playlist IDOR prevention)", async () => {
       mockUser = { id: "user-123" };
       mockPlaylist = {
-        id: "playlist-victim",
+        id: "00000000-0000-4000-8000-0000000000bb",
         userId: "user-456", // Different user!
         songs: ["existing-song"],
       };
 
       await expect(
-        unwrap(addSongsToPlaylist("playlist-victim", ["attacker-song"])),
+        unwrap(
+          addSongsToPlaylist("00000000-0000-4000-8000-0000000000bb", [
+            "attacker-song",
+          ]),
+        ),
       ).rejects.toThrow("Unauthorized");
     });
 
     it("rejects playlist mutations for a foreign playlist", async () => {
       mockUser = { id: "user-123" };
       mockPlaylist = {
-        id: "playlist-victim",
+        id: "00000000-0000-4000-8000-0000000000bb",
         userId: "user-456",
         songs: ["existing-song"],
       };
 
       await expect(
-        unwrap(removeSongsFromPlaylist("playlist-victim", 0, "existing-song")),
+        unwrap(
+          removeSongsFromPlaylist(
+            "00000000-0000-4000-8000-0000000000bb",
+            0,
+            "existing-song",
+          ),
+        ),
       ).rejects.toThrow("Unauthorized");
       await expect(
-        unwrap(renamePlaylist("playlist-victim", { name: "Stolen name" })),
+        unwrap(
+          renamePlaylist("00000000-0000-4000-8000-0000000000bb", {
+            name: "Stolen name",
+          }),
+        ),
       ).rejects.toThrow("Unauthorized");
-      await expect(unwrap(deletePlaylist("playlist-victim"))).rejects.toThrow(
-        "Unauthorized",
-      );
+      await expect(
+        unwrap(deletePlaylist("00000000-0000-4000-8000-0000000000bb")),
+      ).rejects.toThrow("Unauthorized");
     });
 
     it("allows addSongsToPlaylist for a playlist owned by session user", async () => {
       mockUser = { id: "user-123" };
       mockPlaylist = {
-        id: "playlist-own",
+        id: "00000000-0000-4000-8000-0000000000aa",
         userId: "user-123", // Matching session user
         songs: ["existing-song"],
       };
 
       const result = await unwrap(
-        addSongsToPlaylist("playlist-own", ["new-song"]),
+        addSongsToPlaylist("00000000-0000-4000-8000-0000000000aa", [
+          "new-song",
+        ]),
       );
       expect(result).toBeDefined();
     });
@@ -243,7 +273,9 @@ describe("Server action authorization security checks", () => {
 
     it("returns a coded result instead of throwing", async () => {
       mockUser = undefined;
-      expect(await deletePlaylist("playlist-123")).toMatchObject({
+      expect(
+        await deletePlaylist("00000000-0000-4000-8000-000000000123"),
+      ).toMatchObject({
         ok: false,
         code: "UNAUTHORIZED",
       });
@@ -274,19 +306,25 @@ describe("Server action authorization security checks", () => {
         unauthorized,
       );
       await expect(
-        addSongsToPlaylist("playlist-123", ["song-1"]),
+        addSongsToPlaylist("00000000-0000-4000-8000-000000000123", ["song-1"]),
       ).resolves.toEqual(unauthorized);
       await expect(
         createNewPlaylist({ name: "Hacked Playlist" }),
       ).resolves.toEqual(unauthorized);
       await expect(
-        renamePlaylist("playlist-123", { name: "Hacked Playlist" }),
+        renamePlaylist("00000000-0000-4000-8000-000000000123", {
+          name: "Hacked Playlist",
+        }),
       ).resolves.toEqual(unauthorized);
-      await expect(deletePlaylist("playlist-123")).resolves.toEqual(
-        unauthorized,
-      );
       await expect(
-        removeSongsFromPlaylist("playlist-123", 0, "song-1"),
+        deletePlaylist("00000000-0000-4000-8000-000000000123"),
+      ).resolves.toEqual(unauthorized);
+      await expect(
+        removeSongsFromPlaylist(
+          "00000000-0000-4000-8000-000000000123",
+          0,
+          "song-1",
+        ),
       ).resolves.toEqual(unauthorized);
       await expect(updateUser({ name: "Attacker" })).resolves.toEqual(
         unauthorized,
@@ -297,36 +335,48 @@ describe("Server action authorization security checks", () => {
     it("returns FORBIDDEN results for a foreign playlist", async () => {
       mockUser = { id: "user-123" };
       mockPlaylist = {
-        id: "playlist-victim",
+        id: "00000000-0000-4000-8000-0000000000bb",
         userId: "user-456",
         songs: ["existing-song"],
       };
       await expect(
-        addSongsToPlaylist("playlist-victim", ["attacker-song"]),
+        addSongsToPlaylist("00000000-0000-4000-8000-0000000000bb", [
+          "attacker-song",
+        ]),
       ).resolves.toEqual(forbidden);
       await expect(
-        removeSongsFromPlaylist("playlist-victim", 0, "existing-song"),
+        removeSongsFromPlaylist(
+          "00000000-0000-4000-8000-0000000000bb",
+          0,
+          "existing-song",
+        ),
       ).resolves.toEqual(forbidden);
       await expect(
-        renamePlaylist("playlist-victim", { name: "Stolen name" }),
+        renamePlaylist("00000000-0000-4000-8000-0000000000bb", {
+          name: "Stolen name",
+        }),
       ).resolves.toEqual(forbidden);
-      await expect(deletePlaylist("playlist-victim")).resolves.toEqual(
-        forbidden,
-      );
+      await expect(
+        deletePlaylist("00000000-0000-4000-8000-0000000000bb"),
+      ).resolves.toEqual(forbidden);
     });
 
     it("returns ok results carrying the data", async () => {
       mockUser = { id: "user-123" };
       mockPlaylist = {
-        id: "playlist-own",
+        id: "00000000-0000-4000-8000-0000000000aa",
         userId: "user-123",
         songs: ["existing-song"],
       };
       expect(
-        await addSongsToPlaylist("playlist-own", ["new-song"]),
+        await addSongsToPlaylist("00000000-0000-4000-8000-0000000000aa", [
+          "new-song",
+        ]),
       ).toMatchObject({ ok: true });
       expect(
-        await addSongsToPlaylist("playlist-own", ["new-song"]),
+        await addSongsToPlaylist("00000000-0000-4000-8000-0000000000aa", [
+          "new-song",
+        ]),
       ).toHaveProperty("data");
       expect(
         await createNewPlaylist({

@@ -1,4 +1,5 @@
 import type { Auth } from "@infinitunes/auth";
+import { validationMessage } from "@infinitunes/core/user-message";
 import type { DbClient } from "@infinitunes/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
@@ -29,6 +30,10 @@ export type TRPCContext = {
 
 const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
+  errorFormatter({ shape, error }) {
+    const message = validationMessage(error.cause);
+    return message ? { ...shape, message } : shape;
+  },
 });
 
 async function resolveSession(

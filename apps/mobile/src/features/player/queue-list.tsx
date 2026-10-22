@@ -10,7 +10,11 @@ import { SongRow } from "~/components/song-row";
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
 import { playerStore, usePlayer } from "~/playback/player-store";
-import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
+import {
+  addSongsToPlaylist,
+  usePlaylistMembership,
+  useUserPlaylists,
+} from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
 
 /** Android labels the groups as Material 3 does Settings' (labelLarge in primary). */
@@ -33,6 +37,7 @@ function SectionLabel({ children }: { children: string }) {
 function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
+  const membership = usePlaylistMembership();
   const songs = queue.filter((entry) => entry.type === "song");
   // Playlists need an account: no menu at all while signed out.
   if (!signedIn || songs.length === 0) return null;
@@ -44,6 +49,7 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
         addToPlaylistEntry({
           songs,
           playlists,
+          membership,
           onAdd: (playlist) => addSongsToPlaylist(playlist, songs),
         }),
       ]}

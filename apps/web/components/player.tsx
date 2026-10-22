@@ -7,6 +7,7 @@ import {
   nextTrackIndex,
   prevTrackIndex,
 } from "@infinitunes/core/playback-order";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import { createPositionStore } from "@infinitunes/core/react/position-store";
 import { usePlayhead } from "@infinitunes/core/react/use-playhead";
 import { useRadioRefill } from "@infinitunes/core/react/use-radio-refill";
@@ -16,7 +17,7 @@ import {
   type LoadTrack,
   type PlaybackProblem,
 } from "@infinitunes/core/react/use-track-playback";
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { Favorite } from "@infinitunes/db/schema";
 import * as React from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
@@ -49,7 +50,7 @@ import { Queue } from "./queue";
 
 type PlayerProps = {
   user?: User;
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   favorites?: Favorite | null;
 };
 
