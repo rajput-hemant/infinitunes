@@ -44,12 +44,14 @@ async function drain(key: string, entry: Entry, send: Send) {
   entry.busy = true;
   // A new write supersedes the safety timer of the previous one.
   clearTimeout(entry.expiry);
-  while (entry.want !== entry.confirmed) {
+  while (entries.get(key) === entry && entry.want !== entry.confirmed) {
     const target = entry.want;
     try {
       await send(target);
+      if (entries.get(key) !== entry) return;
       entry.confirmed = target;
     } catch {
+      if (entries.get(key) !== entry) return;
       entry.want = entry.confirmed;
       emit();
       break;

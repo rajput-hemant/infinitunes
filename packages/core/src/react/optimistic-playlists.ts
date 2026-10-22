@@ -39,22 +39,27 @@ type Renamed = {
   name: string;
   description: string | null;
   settled: boolean;
+  failed?: boolean;
   prev?: Renamed;
 };
 // Songs are matched by id, never by position: the server stores a song once per
 // playlist (adds dedupe), and a position goes stale as soon as any earlier write lands.
-type Added = { songId: string; settled: boolean };
-type Removed = { songId: string; settled: boolean };
+type SongEdit = { songId: string; settled: boolean; sequence: number };
 // A move records the order the listener left the playlist in; later moves replace it.
-type Moved = { order: readonly string[]; settled: boolean; prev?: Moved };
+type Moved = {
+  order: readonly string[];
+  settled: boolean;
+  failed?: boolean;
+  prev?: Moved;
+};
 
 const EXPIRY_MS = 10000;
 
 const created: Created[] = [];
 const renamed = new Map<string, Renamed>();
 const deleted = new Map<string, { settled: boolean }>();
-const added = new Map<string, Added[]>();
-const removed = new Map<string, Removed[]>();
+const added = new Map<string, SongEdit[]>();
+const removed = new Map<string, SongEdit[]>();
 const moved = new Map<string, Moved>();
 const queues = new Map<string, Promise<unknown>>();
 
@@ -63,8 +68,8 @@ type OverlayState = {
   created: readonly Created[];
   renamed: ReadonlyMap<string, Renamed>;
   deleted: ReadonlyMap<string, { settled: boolean }>;
-  added: ReadonlyMap<string, readonly Added[]>;
-  removed: ReadonlyMap<string, readonly Removed[]>;
+  added: ReadonlyMap<string, readonly SongEdit[]>;
+  removed: ReadonlyMap<string, readonly SongEdit[]>;
   moved: ReadonlyMap<string, Moved>;
 };
 
@@ -79,6 +84,7 @@ const emptyState: OverlayState = {
 
 let state = emptyState;
 let nextTemp = 0;
+let nextSongEdit = 0;
 const listeners = new Set<() => void>();
 
 function bump() {
@@ -151,7 +157,8 @@ export async function createPlaylistOptimistic(
     });
     return record.real;
   } catch (error) {
-    created.splice(created.indexOf(record), 1);
+    const at = created.indexOf(record);
+    if (at !== -1) created.splice(at, 1);
     bump();
     throw error;
   }
@@ -178,6 +185,8 @@ export async function renamePlaylistOptimistic(
       if (renamed.get(id) === record) renamed.delete(id);
     });
   } catch (error) {
+    record.failed = true;
+    while (record.prev?.failed) record.prev = record.prev.prev;
     if (renamed.get(id) === record) {
       if (record.prev) renamed.set(id, record.prev);
       else renamed.delete(id);
@@ -208,7 +217,7 @@ export async function deletePlaylistOptimistic(
   }
 }
 
-/** What the server holds for a playlist after our latest confirmed write, while writes are queued. */
+/** Latest confirmed songs, retained until refreshed server data agrees. */
 const confirmedSongs = new Map<string, readonly string[]>();
 const queued = new Map<string, number>();
 
@@ -241,8 +250,8 @@ async function runWrite<T>(
     if (left > 0) queued.set(playlistId, left);
     else {
       queued.delete(playlistId);
-      confirmedSongs.delete(playlistId);
     }
+    bump();
   }
 }
 
@@ -256,9 +265,10 @@ export function addSongsOptimistic(
   songIds: readonly string[],
   send: () => Promise<unknown>,
 ) {
-  const records: Added[] = songIds.map((songId) => ({
+  const records: SongEdit[] = songIds.map((songId) => ({
     songId,
     settled: false,
+    sequence: nextSongEdit++,
   }));
   for (const record of records) pushTo(added, playlistId, record);
   bump();
@@ -291,7 +301,7 @@ export function removeSongOptimistic(
   serverSongs: readonly string[] | undefined,
   send: (index: number) => Promise<unknown>,
 ) {
-  const record: Removed = { songId, settled: false };
+  const record: SongEdit = { songId, settled: false, sequence: nextSongEdit++ };
   pushTo(removed, playlistId, record);
   bump();
   return queueWrite(playlistId, async () => {
@@ -361,6 +371,8 @@ export function moveSongOptimistic(
       });
       return result;
     } catch (error) {
+      record.failed = true;
+      while (record.prev?.failed) record.prev = record.prev.prev;
       if (moved.get(playlistId) === record) {
         if (record.prev) moved.set(playlistId, record.prev);
         else moved.delete(playlistId);
@@ -375,6 +387,22 @@ export function moveSongOptimistic(
 function reconcile(server: readonly UserPlaylist[], at: OverlayState) {
   let changed = false;
   const byId = new Map(server.map((p) => [p.id, p]));
+
+  for (const [id, songs] of confirmedSongs) {
+    if (queued.has(id)) continue;
+    const p = byId.get(id);
+    if (
+      !p ||
+      (p.songs.length === songs.length &&
+        p.songs.every((s, i) => songs[i] === s))
+    ) {
+      confirmedSongs.delete(id);
+      added.delete(id);
+      removed.delete(id);
+      moved.delete(id);
+      changed = true;
+    }
+  }
 
   for (const record of at.created) {
     if (record.real && byId.has(record.real.id)) {
@@ -401,6 +429,7 @@ function reconcile(server: readonly UserPlaylist[], at: OverlayState) {
     }
   }
   for (const [id, records] of at.added) {
+    if (confirmedSongs.has(id)) continue;
     const p = byId.get(id);
     for (const r of records) {
       if (r.settled && (!p || p.songs.includes(r.songId))) {
@@ -410,6 +439,7 @@ function reconcile(server: readonly UserPlaylist[], at: OverlayState) {
     }
   }
   for (const [id, records] of at.removed) {
+    if (confirmedSongs.has(id)) continue;
     const p = byId.get(id);
     for (const r of records) {
       if (r.settled && (!p || !p.songs.includes(r.songId))) {
@@ -419,6 +449,7 @@ function reconcile(server: readonly UserPlaylist[], at: OverlayState) {
     }
   }
   for (const [id, record] of at.moved) {
+    if (confirmedSongs.has(id)) continue;
     const p = byId.get(id);
     const agrees =
       !p || arrange(p.songs, record.order).every((s, i) => p.songs[i] === s);
@@ -438,15 +469,14 @@ function overlay(
   for (const p of server) {
     if (at.deleted.has(p.id)) continue;
     const meta = at.renamed.get(p.id);
-    const gone = new Set((at.removed.get(p.id) ?? []).map((r) => r.songId));
-    const kept = [
-      ...p.songs.filter((id) => !gone.has(id)),
-      ...(at.added.get(p.id) ?? [])
-        .map((r) => r.songId)
-        .filter((id) => !p.songs.includes(id)),
-    ];
+    const additions = new Set(at.added.get(p.id));
+    const kept = new Set(p.songs);
+    for (const edit of songEdits(at, p.id)) {
+      if (additions.has(edit)) kept.add(edit.songId);
+      else kept.delete(edit.songId);
+    }
     const order = at.moved.get(p.id)?.order;
-    const songs = order ? arrange(kept, order) : kept;
+    const songs = order ? arrange([...kept], order) : [...kept];
     list.push({
       ...p,
       name: meta?.name ?? p.name,
@@ -479,6 +509,12 @@ function useOverlayState() {
     subscribe,
     () => state,
     () => emptyState,
+  );
+}
+
+function songEdits(at: OverlayState, id: string) {
+  return [...(at.added.get(id) ?? []), ...(at.removed.get(id) ?? [])].sort(
+    (a, b) => a.sequence - b.sequence,
   );
 }
 
@@ -517,8 +553,10 @@ export function usePlaylistGone(id: string) {
 
 /** Whether this song's row on the playlist page was just removed. */
 export function usePlaylistRowRemoved(playlistId: string, songId: string) {
-  return (useOverlayState().removed.get(playlistId) ?? []).some(
-    (r) => r.songId === songId,
+  const at = useOverlayState();
+  const last = songEdits(at, playlistId).findLast((r) => r.songId === songId);
+  return (
+    last !== undefined && (at.removed.get(playlistId) ?? []).includes(last)
   );
 }
 
