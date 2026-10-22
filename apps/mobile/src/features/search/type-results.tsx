@@ -73,6 +73,7 @@ export function TypeResults({
     const rows = results.entries.filter(isSongEntry).map(toSongRow);
     return (
       <FlashList
+        key={type}
         {...common}
         data={rows}
         keyExtractor={(row) => row.id}
@@ -95,6 +96,7 @@ export function TypeResults({
 
   return (
     <FlashList
+      key={type}
       {...common}
       data={cards}
       numColumns={CARD_COLUMNS}

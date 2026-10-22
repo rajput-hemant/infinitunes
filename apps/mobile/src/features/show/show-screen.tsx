@@ -32,7 +32,6 @@ export function ShowScreen({ token, season }: ShowScreenProps) {
         <ShowContent
           show={show}
           onRefresh={query.refetch}
-          isRefreshing={query.isRefetching}
           initialSeason={Number.isFinite(season) ? season : undefined}
         />
       )}

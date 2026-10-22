@@ -67,7 +67,7 @@ export function EpisodeContent({
   const description = plainText(episode.more_info.description);
   const meta = metaLine(episode);
 
-  // One episode: shuffling it is playing it, the header just has both buttons.
+  // One episode: shuffling it is playing it, so the header offers Play only.
   const play = () => playAll([row]);
 
   return (

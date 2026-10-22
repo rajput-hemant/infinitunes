@@ -1,12 +1,40 @@
-import { fireEvent, screen } from "@testing-library/react-native";
+import { rawAlbum } from "@infinitunes/types/fixtures";
+import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
 import { renderScreen } from "~/test/render";
+import { procedure } from "~/test/trpc-mock";
 
 import { ListRow } from "./list-row";
 import { IconButton } from "./ui/icon-button";
 
 describe("ListRow", () => {
+  it("prefetches the screen of its entity when pressed in, and only then", async () => {
+    procedure("album.details").mockResolvedValue(rawAlbum());
+    await renderScreen(
+      <>
+        <ListRow
+          title="Udta Teer"
+          href="/album/udta-teer/abc"
+          entity={{
+            type: "album",
+            url: "https://www.jiosaavn.com/album/udta-teer/abc",
+          }}
+        />
+        <ListRow title="Plain" onPress={() => {}} />
+      </>,
+      { routes: { "album/[name]/[token]": () => null } },
+    );
+
+    await fireEvent(screen.getByRole("button", { name: "Plain" }), "pressIn");
+    expect(procedure("album.details")).not.toHaveBeenCalled();
+
+    await fireEvent(screen.getByRole("link", { name: "Udta Teer" }), "pressIn");
+    await waitFor(() =>
+      expect(procedure("album.details")).toHaveBeenCalledWith({ token: "abc" }),
+    );
+  });
+
   it("is a link named by its title and subtitle", async () => {
     const app = await renderScreen(
       <ListRow

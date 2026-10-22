@@ -23,13 +23,7 @@ export function LabelScreen({ token }: { token: string }) {
         url: label.urls.albums,
       })}
     >
-      {(label) => (
-        <LabelContent
-          label={label}
-          onRefresh={query.refetch}
-          isRefreshing={query.isRefetching}
-        />
-      )}
+      {(label) => <LabelContent label={label} onRefresh={query.refetch} />}
     </DetailFrame>
   );
 }

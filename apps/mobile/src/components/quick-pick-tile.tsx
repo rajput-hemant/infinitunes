@@ -4,6 +4,7 @@ import { Platform, Pressable, View } from "react-native";
 import Animated from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
+import { prefetchEntity } from "~/lib/entity-queries";
 import { usePressScale } from "~/lib/use-press-scale";
 import { art } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
@@ -113,7 +114,10 @@ export function QuickPickTile({
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
-      onPressIn={press.onPressIn}
+      onPressIn={() => {
+        press.onPressIn();
+        if (item) prefetchEntity(item.type, item.url);
+      }}
       onPressOut={press.onPressOut}
       accessibilityRole={href ? "link" : "button"}
       accessibilityLabel={accessibilityLabel}

@@ -77,9 +77,6 @@ export function useResolvedItems<Item>({
     status: "ready",
     items: query.data.items,
     missing: query.data.missing,
-    refreshing: query.isRefetching,
-    refresh: () => {
-      void Promise.all([source.reload(), query.refetch()]);
-    },
+    refresh: () => Promise.all([source.reload(), query.refetch()]),
   };
 }

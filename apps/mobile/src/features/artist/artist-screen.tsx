@@ -34,7 +34,6 @@ export function ArtistScreen({ token, initialTab }: ArtistScreenProps) {
         <ArtistContent
           artist={artist}
           onRefresh={query.refetch}
-          isRefreshing={query.isRefetching}
           initialTab={initialTab}
         />
       )}

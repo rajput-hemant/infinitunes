@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pressable } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Text } from "~/components/ui/text";
 import { usePalette } from "~/theme/use-palette";
@@ -13,20 +13,18 @@ const PREVIEW_LINES = 3;
  * fold). Short text is plain, with nothing to toggle.
  */
 export function Description({ text }: { text: string }) {
+  // A new text starts collapsed and unmeasured.
+  return <DescriptionBody key={text} text={text} />;
+}
+
+function DescriptionBody({ text }: { text: string }) {
   const [expanded, setExpanded] = useState(false);
   const [clamped, setClamped] = useState(false);
   const palette = usePalette();
   const toggles = clamped || expanded;
 
-  return (
-    <Pressable
-      onPress={toggles ? () => setExpanded((open) => !open) : undefined}
-      disabled={!toggles}
-      accessibilityRole={toggles ? "button" : undefined}
-      accessibilityState={toggles ? { expanded } : undefined}
-      android_ripple={{ color: palette["fill-2"], foreground: true }}
-      className="gap-1 px-page active:opacity-70"
-    >
+  const body = (
+    <>
       <Text
         tone="muted"
         selectable={!toggles}
@@ -45,6 +43,20 @@ export function Description({ text }: { text: string }) {
           {expanded ? "Read Less" : "Read More"}
         </Text>
       ) : null}
+    </>
+  );
+
+  // Short text has nothing to press: a plain view, not a disabled button.
+  if (!toggles) return <View className="gap-1 px-page">{body}</View>;
+  return (
+    <Pressable
+      onPress={() => setExpanded((open) => !open)}
+      accessibilityRole="button"
+      accessibilityState={{ expanded }}
+      android_ripple={{ color: palette["fill-2"], foreground: true }}
+      className="gap-1 px-page active:opacity-70"
+    >
+      {body}
     </Pressable>
   );
 }

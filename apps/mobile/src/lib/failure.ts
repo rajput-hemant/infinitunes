@@ -1,5 +1,6 @@
 import { getErrorCode } from "@infinitunes/core/error-code";
 import { userMessage } from "@infinitunes/core/user-message";
+import { AccessibilityInfo } from "react-native";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 
@@ -12,6 +13,16 @@ export type Failure = { id: number; message: string; action?: FailureAction };
 /** How long a failure stays up; one with an action waits longer to be reached. */
 export const FAILURE_MS = 4000;
 export const FAILURE_WITH_ACTION_MS = 8000;
+/** A screen reader needs longer to reach the message and its action. */
+export const SCREEN_READER_FACTOR = 3;
+
+let screenReader = false;
+void AccessibilityInfo.isScreenReaderEnabled?.()
+  .then((on) => (screenReader = on))
+  .catch(() => {});
+AccessibilityInfo.addEventListener?.("screenReaderChanged", (on) => {
+  screenReader = on;
+});
 
 /**
  * The one failure on screen (`FailureSnackbar`, mounted in the root layout).
@@ -31,10 +42,27 @@ export function showFailure(message: string, action?: FailureAction) {
   clearTimeout(timer);
   failureStore.setState({ current: { id, message, action } });
   announce(message);
+  startTimer(id, Boolean(action));
+}
+
+function startTimer(id: number, withAction: boolean) {
+  clearTimeout(timer);
   timer = setTimeout(
     () => dismissFailure(id),
-    action ? FAILURE_WITH_ACTION_MS : FAILURE_MS,
+    (withAction ? FAILURE_WITH_ACTION_MS : FAILURE_MS) *
+      (screenReader ? SCREEN_READER_FACTOR : 1),
   );
+}
+
+/** Stops failure `id` from leaving while the listener is dragging it. */
+export function holdFailure(id: number) {
+  if (failureStore.getState().current?.id === id) clearTimeout(timer);
+}
+
+/** Starts failure `id`'s countdown over, once the drag let go of it. */
+export function releaseFailure(id: number) {
+  const failure = failureStore.getState().current;
+  if (failure?.id === id) startTimer(id, Boolean(failure.action));
 }
 
 /** Hides failure `id`; a newer one that replaced it stays. */

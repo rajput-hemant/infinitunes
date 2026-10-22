@@ -93,11 +93,10 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
           "Add songs to this playlist from any song's menu and they will show up here.",
       }}
     >
-      {({ items, missing, refreshing, refresh }) => (
+      {({ items, missing, refresh }) => (
         <SongCollection
           songs={items}
           missing={missing}
-          refreshing={refreshing}
           onRefresh={refresh}
           recentLabel="Playlist order"
           header={

@@ -1,3 +1,4 @@
+import type { MediaType } from "@infinitunes/types";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
 import { isValidElement, useState } from "react";
@@ -6,6 +7,7 @@ import { Platform, Pressable, View } from "react-native";
 import type { AccessibilityValue } from "react-native";
 
 import { cx } from "~/lib/class-names";
+import { prefetchEntity } from "~/lib/entity-queries";
 import { space } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
 
@@ -37,6 +39,8 @@ type ListRowProps = {
   href?: Href;
   /** What a tap does when the row is not a link. */
   onPress?: () => void;
+  /** The catalog item the row opens: pressing in warms its screen's data. */
+  entity?: { type: MediaType; url: string };
   /** The current track: accent title, waveform in the leading slot. */
   selected?: boolean;
   /** The current track is paused: the pause mark replaces the waveform. */
@@ -181,6 +185,7 @@ export function ListRow({
   trailing,
   href,
   onPress,
+  entity,
   selected = false,
   paused = false,
   checked,
@@ -296,7 +301,10 @@ export function ListRow({
   const pressable = (
     <Pressable
       onPress={onPress}
-      onPressIn={() => setPressed(true)}
+      onPressIn={() => {
+        setPressed(true);
+        if (entity) prefetchEntity(entity.type, entity.url);
+      }}
       onPressOut={() => setPressed(false)}
       android_ripple={{ color: palette["fill-2"], foreground: true }}
       accessibilityRole={

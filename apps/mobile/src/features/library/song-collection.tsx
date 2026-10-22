@@ -12,6 +12,7 @@ import { OptionMenu } from "~/components/option-menu";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SkeletonText, SongListSkeleton } from "~/components/skeletons";
 import { IconButton } from "~/components/ui/icon-button";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { SkeletonBlock } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
@@ -29,8 +30,7 @@ type SongCollectionProps = {
   songs: readonly SongRowItem[];
   /** Saved songs that did not load; the list says so rather than hiding them. */
   missing: number;
-  refreshing: boolean;
-  onRefresh: () => void;
+  onRefresh: () => Promise<unknown>;
   /** What the list's own order is called ("Recently played"). */
   recentLabel: string;
   /**
@@ -66,7 +66,6 @@ function countLabel(shown: number, total: number): string {
 export function SongCollection({
   songs,
   missing,
-  refreshing,
   onRefresh,
   recentLabel,
   renderRow,
@@ -161,8 +160,7 @@ export function SongCollection({
     contentInsetAdjustmentBehavior: "automatic" as const,
     contentContainerStyle: { paddingBottom: playerDockInset },
     keyboardShouldPersistTaps: "handled" as const,
-    refreshing,
-    onRefresh,
+    refreshControl: <PullToRefresh onRefresh={onRefresh} />,
   };
 
   return (
@@ -171,9 +169,12 @@ export function SongCollection({
         {...FILTER_BAR}
         onChangeText={(event) => setQuery(event.nativeEvent.text)}
       />
-      {reorderable ? (
+      {onMove ? (
+        // One list for the screen's life: filtering only turns dragging off,
+        // so typing never remounts it or loses the scroll position.
         <ReorderableList
           {...listProps}
+          dragEnabled={reorderable}
           onReorder={({ from, to }) => move(from, to)}
         />
       ) : (

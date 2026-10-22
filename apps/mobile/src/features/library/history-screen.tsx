@@ -21,11 +21,10 @@ function History() {
           "Songs and episodes you listen to will show up here, newest first.",
       }}
     >
-      {({ items, missing, refreshing, refresh }) => (
+      {({ items, missing, refresh }) => (
         <SongCollection
           songs={items}
           missing={missing}
-          refreshing={refreshing}
           onRefresh={refresh}
           recentLabel="Recently played"
           renderRow={(song, play) => (

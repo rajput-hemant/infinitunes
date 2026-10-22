@@ -90,6 +90,7 @@ export function PlayerLyrics({ track, size, edges }: PlayerLyricsProps) {
         <ScrollView
           contentContainerClassName="gap-4 py-8"
           accessibilityLabel="Lyrics"
+          nestedScrollEnabled
         >
           <WashText variant="headline">{data.plain}</WashText>
           {data.source !== "lrclib" && data.copyright ? (

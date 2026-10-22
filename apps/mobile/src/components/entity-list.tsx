@@ -55,6 +55,7 @@ export function renderEntityListItem({ item }: { item: EntityListItem }) {
       subtitle={card.subtitle}
       leading={{ artwork: card.image }}
       href={href}
+      entity={href ? card : undefined}
       trailing={href ? { chevron: true } : undefined}
     />
   );

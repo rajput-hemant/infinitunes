@@ -14,6 +14,7 @@ import {
 } from "~/components/entity-list";
 import { PagedFooter } from "~/components/paged-footer";
 import { SectionHeader } from "~/components/section-header";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
@@ -23,7 +24,6 @@ import { useShowEpisodes } from "./use-show-episodes";
 type ShowContentProps = {
   show: Show;
   onRefresh: () => Promise<unknown>;
-  isRefreshing: boolean;
   /** The season the route names (`/show/<name>/<season>/<token>`); the latest by default. */
   initialSeason?: number;
 };
@@ -37,7 +37,6 @@ function fansLabel(show: Show): string | undefined {
 export function ShowContent({
   show,
   onRefresh,
-  isRefreshing,
   initialSeason,
 }: ShowContentProps) {
   const scrollProps = useDetailScrollProps();
@@ -98,11 +97,11 @@ export function ShowContent({
       }
       onEndReached={episodes.loadMore}
       onEndReachedThreshold={0.5}
-      refreshing={isRefreshing || episodes.isRefetching}
-      onRefresh={() => {
-        void onRefresh();
-        void episodes.refetch();
-      }}
+      refreshControl={
+        <PullToRefresh
+          onRefresh={() => Promise.all([onRefresh(), episodes.refetch()])}
+        />
+      }
       contentInsetAdjustmentBehavior="automatic"
       {...scrollProps}
       contentContainerStyle={{ paddingBottom: playerDockInset }}

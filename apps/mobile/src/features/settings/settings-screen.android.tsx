@@ -116,11 +116,6 @@ function RowFace({
   );
 }
 
-/** The segmented list's seams separate the rows; kept so groups read as before. */
-function Divider() {
-  return null;
-}
-
 function TapRow(
   props: Parameters<typeof RowFace>[0] & {
     onPress: () => void;
@@ -251,19 +246,16 @@ export function SettingsScreen() {
         {user ? (
           <>
             <ProfileCard name={user.name} email={user.email} />
-            <Divider />
             <TapRow
               icon={{ ios: "person.crop.circle", android: "person" }}
               title="Edit profile"
               onPress={() => router.push("/profile")}
             />
-            <Divider />
             <TapRow
               icon={{ ios: "lock.fill", android: "lock" }}
               title="Change password"
               onPress={() => router.push("/password")}
             />
-            <Divider />
             <TapRow
               icon={{
                 ios: "rectangle.portrait.and.arrow.right",
@@ -293,7 +285,6 @@ export function SettingsScreen() {
           options={appearanceOptions}
           onChange={appearanceStore.getState().setMode}
         />
-        <Divider />
         <PickRow
           icon={{ ios: "paintpalette.fill", android: "palette" }}
           iconColor={swatch}
@@ -302,7 +293,6 @@ export function SettingsScreen() {
           options={accentOptions}
           onChange={appearanceStore.getState().setAccent}
         />
-        <Divider />
         <PickRow
           icon={{ ios: "app.fill", android: "rounded_corner" }}
           title="Corners"
@@ -320,7 +310,6 @@ export function SettingsScreen() {
           options={qualityOptions}
           onChange={setStreamQuality}
         />
-        <Divider />
         <PickRow
           icon={{ ios: "arrow.down.circle.fill", android: "download" }}
           title="Download quality"
@@ -328,7 +317,6 @@ export function SettingsScreen() {
           options={qualityOptions}
           onChange={setDownloadQuality}
         />
-        <Divider />
         <PickRow
           icon={{ ios: "photo.fill", android: "image" }}
           title="Image quality"
@@ -336,7 +324,6 @@ export function SettingsScreen() {
           options={imageQualityOptions}
           onChange={setImageQuality}
         />
-        <Divider />
         <TapRow
           icon={{ ios: "globe", android: "language" }}
           title="Languages"
@@ -360,13 +347,11 @@ export function SettingsScreen() {
             style={{ minHeight: sizes.touch, marginRight: sizes.page }}
           />
         </View>
-        <Divider />
         <RowFace
           icon={{ ios: "internaldrive.fill", android: "storage" }}
           title="Cached songs"
           value={cache.size}
         />
-        <Divider />
         <TapRow
           icon={{ ios: "trash.fill", android: "delete" }}
           title="Clear cache"
@@ -393,13 +378,11 @@ export function SettingsScreen() {
           title="Privacy policy"
           onPress={() => void openBrowserAsync(`${env.apiUrl}/privacy`)}
         />
-        <Divider />
         <TapRow
           icon={{ ios: "doc.text.fill", android: "description" }}
           title="Terms of service"
           onPress={() => void openBrowserAsync(`${env.apiUrl}/terms`)}
         />
-        <Divider />
         <RowFace
           icon={{ ios: "info.circle.fill", android: "info" }}
           title="Version"

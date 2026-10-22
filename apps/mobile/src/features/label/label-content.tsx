@@ -14,6 +14,7 @@ import {
   songItems,
 } from "~/components/entity-list";
 import { SegmentedTabs } from "~/components/segmented-tabs";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
@@ -23,15 +24,10 @@ import { LABEL_TABS, LABEL_TAB_LABELS } from "./label-tabs";
 type LabelContentProps = {
   label: Label;
   onRefresh: () => Promise<unknown>;
-  isRefreshing: boolean;
 };
 
 /** A loaded label: header, a Songs/Albums switch and one list under it. */
-export function LabelContent({
-  label,
-  onRefresh,
-  isRefreshing,
-}: LabelContentProps) {
+export function LabelContent({ label, onRefresh }: LabelContentProps) {
   const scrollProps = useDetailScrollProps();
   // Albums first, as on the web.
   const [tab, setTab] = useState<LabelTab>("albums");
@@ -79,8 +75,7 @@ export function LabelContent({
           />
         ) : null
       }
-      refreshing={isRefreshing}
-      onRefresh={() => void onRefresh()}
+      refreshControl={<PullToRefresh onRefresh={onRefresh} />}
       contentInsetAdjustmentBehavior="automatic"
       {...scrollProps}
       contentContainerStyle={{ paddingBottom: playerDockInset }}

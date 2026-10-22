@@ -86,6 +86,7 @@ function TopSearches() {
           image={item.image}
           round={isRoundType(item.type)}
           onPress={() => openEntity(item.type, item.url)}
+          entity={item}
         />
       ))}
     </View>

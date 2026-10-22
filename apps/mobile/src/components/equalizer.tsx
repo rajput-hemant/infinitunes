@@ -76,20 +76,22 @@ export function Equalizer({
       const bar = BARS[index]!;
       cancelAnimation(scale);
       if (!playing) {
-        scale.value = withTiming(PAUSED_SCALE, { duration: 160 });
+        scale.set(withTiming(PAUSED_SCALE, { duration: 160 }));
       } else if (reduceMotion) {
-        scale.value = bar.rest;
+        scale.set(bar.rest);
       } else {
-        scale.value = 0.3;
-        scale.value = withDelay(
-          bar.delay,
-          withRepeat(
-            withTiming(1, {
-              duration: bar.period,
-              easing: Easing.inOut(Easing.quad),
-            }),
-            -1,
-            true,
+        scale.set(0.3);
+        scale.set(
+          withDelay(
+            bar.delay,
+            withRepeat(
+              withTiming(1, {
+                duration: bar.period,
+                easing: Easing.inOut(Easing.quad),
+              }),
+              -1,
+              true,
+            ),
           ),
         );
       }
