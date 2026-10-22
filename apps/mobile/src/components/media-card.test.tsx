@@ -1,6 +1,7 @@
 import { toCardItem } from "@infinitunes/types";
 import { rawAlbum } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import { renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
@@ -24,6 +25,23 @@ describe("MediaCard", () => {
       expect(procedure("album.details")).toHaveBeenCalledWith({
         token: "LHgqn,SRpyA_",
       }),
+    );
+  });
+
+  it("ripples within its corners on Android", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    await renderScreen(<MediaCard item={toCardItem(rawAlbum())} />, {
+      routes: { "album/[name]/[token]": () => null },
+    });
+
+    const card = screen.getByRole("link", { name: /^Udta Teer/ });
+    expect(card.props.nativeForegroundAndroid).toMatchObject({
+      type: "RippleAndroid",
+      borderless: false,
+    });
+    expect(card).toHaveProp(
+      "className",
+      expect.stringContaining("overflow-hidden rounded-md"),
     );
   });
 });

@@ -8,6 +8,7 @@ import { usePressScale } from "~/lib/use-press-scale";
 import { entityHref } from "~/navigation/entity-href";
 import { isPlayable } from "~/playback/play-entity";
 import { art, sizes, space } from "~/theme/tokens";
+import { usePalette } from "~/theme/use-palette";
 
 import {
   CardLink,
@@ -75,6 +76,7 @@ export function MediaCard({
   const label = [name, item.subtitle, shownEyebrow].filter(Boolean).join(", ");
   const entries = useCardMenuEntries(item);
   const press = usePressScale();
+  const ripple = usePalette()["fill-2"];
 
   const content = (
     <>
@@ -149,7 +151,9 @@ export function MediaCard({
             accessibilityRole="link"
             accessibilityLabel={label}
             {...cardAccessibilityActions(entries)}
-            className="gap-2"
+            // Android: a bounded ripple over the card, clipped to its corners.
+            android_ripple={{ color: ripple, foreground: true }}
+            className="gap-2 overflow-hidden rounded-md"
             style={{ width: edge }}
           >
             {content}
