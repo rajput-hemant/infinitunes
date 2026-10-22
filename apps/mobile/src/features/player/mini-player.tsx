@@ -1,5 +1,6 @@
 import { selectionAsync } from "expo-haptics";
 import { useRouter } from "expo-router";
+import { NativeTabs } from "expo-router/native-tabs";
 import { Pressable, View } from "react-native";
 
 import { Artwork } from "~/components/ui/artwork";
@@ -24,9 +25,10 @@ const PLACEHOLDER = {
  * host supplies it (the iOS 26 tab bar accessory's glass, or the floating
  * dock, which on Android lays it on the artwork's tonal surface through
  * `OnWash`). The dock and the accessory have a fixed height, so text scales
- * only up to `maxFontScale.chrome`.
+ * only up to `maxFontScale.chrome`. `compact` drops Next, for the narrow
+ * inline accessory.
  */
-export function MiniPlayer() {
+export function MiniPlayer({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const track = usePlayer(selectCurrentTrack);
 
@@ -87,9 +89,20 @@ export function MiniPlayer() {
       {track ? (
         <>
           <PlayPauseButton size="lg" />
-          <NextTrackButton size="md" />
+          {compact ? null : <NextTrackButton size="md" />}
         </>
       ) : null}
     </View>
   );
+}
+
+/**
+ * The mini player in the iOS 26 tab bar accessory. Scrolling down minimizes
+ * the tab bar and moves the accessory inline beside the selected tab, a much
+ * narrower slot: there it keeps the art, the title and play/pause (Apple
+ * Music's inline player). The system renders one copy per placement.
+ */
+export function AccessoryMiniPlayer() {
+  const placement = NativeTabs.BottomAccessory.usePlacement();
+  return <MiniPlayer compact={placement === "inline"} />;
 }
