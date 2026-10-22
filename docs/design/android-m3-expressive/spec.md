@@ -65,9 +65,10 @@ connected-group seams) and `sizes["row-2"]` = 72 (a two-line list row). Rows 56d
 art 136, quick-pick tile 56 high, buttons 40 high reaching 48 with hit slop, chips 32 high reaching 48 with hit
 slop, mini player 64, page gutter 16.
 
-Hit slop only works on the outermost view: Android drops touches outside an `overflow: hidden` view before
-they reach its children, so a slopped child of a clipped container keeps its 40dp target. `Button` and
-`IconButton` make the clipped, shaped view the pressable itself. A native menu (`OptionMenu`, `MenuTrigger`)
+Hit slop only works on the outermost view: Android drops a touch outside a parent's bounds (an
+`overflow: hidden` view's own, else its children's frames, never their slop) before it reaches the children,
+so a slopped child of a clipped or same-size wrapper keeps its 40dp target. `Button` and `IconButton` make the
+clipped, shaped view the pressable itself, with no wrapper. A native menu (`OptionMenu`, `MenuTrigger`)
 hit-tests its child's bounds, so its trigger is the full 48dp instead.
 
 ## Colour roles (Material You, already wired by `DynamicColorRoot`)

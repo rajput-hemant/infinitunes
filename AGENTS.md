@@ -326,8 +326,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   an existing module needs its importers touched (or Metro restarted) before a running dev client picks it up.
 - Accessibility: every tappable control is at least `sizes.touch` (48; `IconButton`, `Button`, `MenuTrigger` for a
   `NativeMenu`'s face, `DragHandle`, `FormLink` for a form's text link) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`,
-  `TEXT_BUTTON_HIT_SLOP`). Android drops touches outside an `overflow: hidden` view before its children, so slop
-  on a child of a clipped view never fires: put it on the outermost view (`Button`, `IconButton`). A native
+  `TEXT_BUTTON_HIT_SLOP`). Android drops a touch outside a parent's bounds (an `overflow: hidden` view's own, else
+  its children's frames, never their slop) before its children, so slop on a wrapped or clipped child never
+  fires: the pressable must be the outermost view (`Button`, `IconButton`; `Button` takes a layout `style`, no
+  class, for that reason). A native
   menu hit-tests its child's bounds, so its trigger needs the full height, not slop (`OptionMenu`). Rows and
   fields use `min-h-*` so Dynamic Type grows them (cap text with `maxFontSizeMultiplier` only in fixed-height chrome, the
   mini player). An item without a screen is a labelled `View`, never a disabled `Pressable`. Custom pressables set role,
