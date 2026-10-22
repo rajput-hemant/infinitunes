@@ -18,7 +18,6 @@ type CatalogQuery<Item> = {
   isPending: boolean;
   error: unknown;
   refetch: () => Promise<unknown>;
-  isRefetching: boolean;
   loadMore?: () => void;
   hasNextPage?: boolean;
   isFetchingNextPage?: boolean;

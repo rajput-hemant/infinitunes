@@ -6,6 +6,7 @@ import { useMemo, useState } from "react";
 
 import { useDetailScrollProps } from "~/components/detail/detail-scroll";
 import { entityListKey } from "~/components/entity-list";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { playerDockInset } from "~/navigation/player-dock";
 
 import { ArtistListHeader } from "./artist-list-header";
@@ -17,7 +18,6 @@ type ArtistContentProps = {
   artist: Artist;
   /** Refetches the artist payload (pull to refresh also refreshes the open list). */
   onRefresh: () => Promise<unknown>;
-  isRefreshing: boolean;
   /** The tab the route opened (a web tab link); Overview when the artist lacks it. */
   initialTab: ArtistTab;
 };
@@ -26,7 +26,6 @@ type ArtistContentProps = {
 export function ArtistContent({
   artist,
   onRefresh,
-  isRefreshing,
   initialTab,
 }: ArtistContentProps) {
   const scrollProps = useDetailScrollProps();
@@ -43,8 +42,7 @@ export function ArtistContent({
   const panel = useArtistPanel({ artist, tab, category, topSongs, bio });
 
   function refresh() {
-    void onRefresh();
-    void panel.refetch?.();
+    return Promise.all([onRefresh(), panel.refetch?.()]);
   }
 
   return (
@@ -68,8 +66,7 @@ export function ArtistContent({
       ListFooterComponent={panel.footer}
       onEndReached={panel.loadMore}
       onEndReachedThreshold={0.5}
-      refreshing={isRefreshing || panel.isRefetching === true}
-      onRefresh={refresh}
+      refreshControl={<PullToRefresh onRefresh={refresh} />}
       contentInsetAdjustmentBehavior="automatic"
       {...scrollProps}
       contentContainerStyle={{ paddingBottom: playerDockInset }}

@@ -4,7 +4,13 @@ import {
   artistSongsPage,
   artistAlbumsPage,
 } from "@infinitunes/types/fixtures";
-import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  screen,
+  userEvent,
+  waitFor,
+} from "@testing-library/react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
@@ -206,9 +212,7 @@ describe("ArtistScreen", () => {
     await selectTab("Songs");
     await screen.findByText("Song s1");
 
-    await act(async () => {
-      fireEvent(screen.getByTestId("artist-list"), "refresh");
-    });
+    await userEvent.setup().pullToRefresh(screen.getByTestId("artist-list"));
 
     await waitFor(() =>
       expect(procedure("artist.details")).toHaveBeenCalledTimes(2),

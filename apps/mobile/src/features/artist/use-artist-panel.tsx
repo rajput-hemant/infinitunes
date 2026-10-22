@@ -27,7 +27,6 @@ type ArtistPanel = {
   /** Only the paged tabs have a next page and a list of their own to refresh. */
   loadMore?: () => void;
   refetch?: () => Promise<unknown>;
-  isRefetching?: boolean;
 };
 
 type ArtistPanelInput = {
@@ -84,7 +83,6 @@ export function useArtistPanel({
         ),
         loadMore: songs.loadMore,
         refetch: songs.refetch,
-        isRefetching: songs.isRefetching,
       };
     case "albums":
       return {
@@ -101,7 +99,6 @@ export function useArtistPanel({
         ),
         loadMore: albums.loadMore,
         refetch: albums.refetch,
-        isRefetching: albums.isRefetching,
       };
     case "bio":
       return {

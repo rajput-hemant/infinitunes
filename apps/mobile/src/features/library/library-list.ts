@@ -7,7 +7,6 @@ export type LibraryList<Item> =
       items: Item[];
       /** Saved entries the music service could not resolve right now. */
       missing: number;
-      refreshing: boolean;
       /** Pull to refresh; a failure keeps the list. */
-      refresh: () => void;
+      refresh: () => Promise<unknown>;
     };

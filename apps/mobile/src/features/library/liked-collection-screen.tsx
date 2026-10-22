@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import { GridCell } from "~/components/grid-cell";
 import { MediaCard } from "~/components/media-card";
 import { ShelfSkeleton } from "~/components/skeletons";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
 import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
@@ -32,7 +33,7 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
         message: emptyMessage,
       }}
     >
-      {({ items, missing, refreshing, refresh }) => (
+      {({ items, missing, refresh }) => (
         <FlashList
           data={items}
           numColumns={CARD_COLUMNS}
@@ -55,8 +56,7 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
             paddingTop: sizes.page,
             paddingBottom: playerDockInset,
           }}
-          refreshing={refreshing}
-          onRefresh={refresh}
+          refreshControl={<PullToRefresh onRefresh={refresh} />}
         />
       )}
     </LibraryListView>

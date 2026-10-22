@@ -45,11 +45,10 @@ function LikedSongs() {
         message: "Tap the heart on any song and it will show up here.",
       }}
     >
-      {({ items, missing, refreshing, refresh }) => (
+      {({ items, missing, refresh }) => (
         <SongCollection
           songs={items}
           missing={missing}
-          refreshing={refreshing}
           onRefresh={refresh}
           recentLabel="Recently liked"
           renderRow={(song, play) => (

@@ -4,7 +4,13 @@ import {
   rawEpisode,
   SHOW_TOKEN,
 } from "@infinitunes/types/fixtures";
-import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  screen,
+  userEvent,
+  waitFor,
+} from "@testing-library/react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
@@ -149,9 +155,7 @@ describe("ShowScreen", () => {
     await renderShow();
     await screen.findByText("Episode 9001 & more");
 
-    await act(async () => {
-      fireEvent(screen.getByTestId("show-list"), "refresh");
-    });
+    await userEvent.setup().pullToRefresh(screen.getByTestId("show-list"));
 
     await waitFor(() =>
       expect(procedure("show.details")).toHaveBeenCalledTimes(2),
