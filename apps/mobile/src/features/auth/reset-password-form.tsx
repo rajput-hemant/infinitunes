@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { View } from "react-native";
 
-import { FormError } from "~/components/form/form-error";
+import { FormError, useFocusOnRefusal } from "~/components/form/form-error";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
@@ -40,6 +40,7 @@ export function ResetPasswordForm({
   token,
   linkError,
 }: ResetPasswordFormProps) {
+  const passwordInput = useRef<TextInputHandle>(null);
   const confirmInput = useRef<TextInputHandle>(null);
   const [tokenRejected, setTokenRejected] = useState(false);
   const { values, errors, setValue, validate } = useSchemaForm({
@@ -48,6 +49,7 @@ export function ResetPasswordForm({
   });
   const { pending, run } = usePending();
   const [serverError, setServerError] = useState<string>();
+  useFocusOnRefusal(passwordInput, serverError, pending);
 
   if (!token || linkError || tokenRejected) return <InvalidLink />;
 
@@ -67,6 +69,7 @@ export function ResetPasswordForm({
   return (
     <View className="gap-4">
       <PasswordField
+        ref={passwordInput}
         purpose="new"
         label="New password"
         value={values.password}

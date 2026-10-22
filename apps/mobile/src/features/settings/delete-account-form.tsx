@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-import { FormError } from "~/components/form/form-error";
+import { FormError, useFocusOnRefusal } from "~/components/form/form-error";
 import { FormField } from "~/components/form/form-field";
+import type { TextInputHandle } from "~/components/form/form-field";
 import { FormScreen } from "~/components/form/form-screen";
 import { PasswordField } from "~/components/form/password-field";
 import { Button } from "~/components/ui/button";
@@ -21,10 +22,12 @@ export const DELETE_CONFIRMATION = "DELETE MY ACCOUNT";
  * signed in recently, and the server says when they must sign in again.
  */
 export function DeleteAccountForm() {
+  const passwordInput = useRef<TextInputHandle>(null);
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const { pending, run } = usePending();
   const [serverError, setServerError] = useState<string>();
+  useFocusOnRefusal(passwordInput, serverError, pending);
   const confirmed = confirmation === DELETE_CONFIRMATION;
 
   function submit() {
@@ -49,6 +52,7 @@ export function DeleteAccountForm() {
         minutes; otherwise sign in again first.
       </Text>
       <PasswordField
+        ref={passwordInput}
         purpose="current"
         label="Your password"
         hint="Leave it blank if your account has no password."

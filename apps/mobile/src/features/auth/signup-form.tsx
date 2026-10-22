@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { View } from "react-native";
 
 import { EmailField } from "~/components/form/email-field";
-import { FormError } from "~/components/form/form-error";
+import { FormError, useFocusOnRefusal } from "~/components/form/form-error";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
@@ -19,6 +19,7 @@ import { usePending } from "~/lib/use-pending";
  * name starts as the part of the email before the `@`, as on the web.
  */
 export function SignUpForm() {
+  const emailInput = useRef<TextInputHandle>(null);
   const passwordInput = useRef<TextInputHandle>(null);
   const confirmInput = useRef<TextInputHandle>(null);
   const { values, errors, setValue, validate } = useSchemaForm({
@@ -27,6 +28,7 @@ export function SignUpForm() {
   });
   const { pending, run } = usePending();
   const [serverError, setServerError] = useState<string>();
+  useFocusOnRefusal(emailInput, serverError, pending);
 
   function submit() {
     const account = validate();
@@ -46,6 +48,7 @@ export function SignUpForm() {
   return (
     <View className="gap-4">
       <EmailField
+        ref={emailInput}
         value={values.email}
         onChangeText={(text) => setValue("email", text)}
         error={errors.email}

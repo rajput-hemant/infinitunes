@@ -2,7 +2,7 @@ import { PASSWORD_HINT, changePasswordSchema } from "@infinitunes/auth/schemas";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 
-import { FormError } from "~/components/form/form-error";
+import { FormError, useFocusOnRefusal } from "~/components/form/form-error";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormScreen } from "~/components/form/form-screen";
 import { PasswordField } from "~/components/form/password-field";
@@ -18,6 +18,7 @@ import { mutationFailure } from "./mutation-failure";
  * device out and keeps this one.
  */
 export function PasswordForm() {
+  const currentInput = useRef<TextInputHandle>(null);
   const newPasswordInput = useRef<TextInputHandle>(null);
   const { values, errors, setValue, validate } = useSchemaForm({
     schema: changePasswordSchema,
@@ -25,6 +26,7 @@ export function PasswordForm() {
   });
   const { pending, run } = usePending();
   const [serverError, setServerError] = useState<string>();
+  useFocusOnRefusal(currentInput, serverError, pending);
 
   function submit() {
     const passwords = validate();
@@ -42,6 +44,7 @@ export function PasswordForm() {
   return (
     <FormScreen>
       <PasswordField
+        ref={currentInput}
         purpose="current"
         label="Current password"
         value={values.password}
