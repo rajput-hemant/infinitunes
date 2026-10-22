@@ -5,6 +5,7 @@ import type {
   StationDetailsResponse,
 } from "@infinitunes/types";
 
+import { showFailure } from "~/lib/failure";
 import { trpcClient } from "~/lib/trpc";
 import type { StationRef } from "~/navigation/entity-href";
 
@@ -35,7 +36,10 @@ export function startStation(
   });
 }
 
-/** Loads a featured station and plays it; failures are silent, nothing throws. */
+/**
+ * Loads a featured station and plays it; a failure shows in the snackbar
+ * (with Retry) unless a newer play replaced it. Nothing throws.
+ */
 export async function playStation({ name, token }: StationRef) {
   const isCurrent = beginPlaybackRequest();
   try {
@@ -45,7 +49,12 @@ export async function playStation({ name, token }: StationRef) {
     });
     if (isCurrent()) startStation(station);
   } catch {
-    // Nothing plays.
+    if (isCurrent()) {
+      showFailure("Couldn't start this station.", {
+        label: "Retry",
+        onPress: () => void playStation({ name, token }),
+      });
+    }
   }
 }
 
@@ -80,7 +89,9 @@ export function radioSeedOf(
 
 /**
  * Creates a station seeded by an artist or a name (the "Play Radio" action of
- * song and artist menus) and plays it; failures are silent, nothing throws.
+ * song and artist menus) and plays it. A failure, or a station with no songs,
+ * shows in the snackbar (with Retry) unless a newer play replaced it.
+ * Nothing throws.
  */
 export async function startSeededRadio({
   name,
@@ -101,11 +112,17 @@ export async function startSeededRadio({
       stationId,
       k: SEED_BATCH,
     });
-    if (!isCurrent() || songs.length === 0) return;
+    if (!isCurrent()) return;
+    if (songs.length === 0) throw new Error("Empty station");
     playerStore.getState().playTracks(songs.map(toSongRow), {
       radio: { stationId, name: `${name} Radio`, type },
     });
   } catch {
-    // Nothing plays.
+    if (isCurrent()) {
+      showFailure("Couldn't start radio.", {
+        label: "Retry",
+        onPress: () => void startSeededRadio({ name, artistId, language }),
+      });
+    }
   }
 }
