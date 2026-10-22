@@ -1,3 +1,4 @@
+import { PASSWORD_HINT } from "@infinitunes/auth/schemas";
 import { fireEvent, screen } from "@testing-library/react-native";
 
 import { renderScreen } from "~/test/render";
@@ -19,11 +20,7 @@ describe("SignUpForm", () => {
   it("explains the password rules before anything is typed", async () => {
     await renderScreen(<SignUpForm />);
 
-    expect(
-      screen.getByText(
-        "At least 8 characters with upper and lower case, a number and a symbol.",
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.getByText(PASSWORD_HINT)).toBeOnTheScreen();
   });
 
   it("shows every field's message and sends nothing", async () => {
