@@ -48,6 +48,8 @@ export const appearanceStore = createStore<AppearanceState>()(
     }),
     {
       name: "appearance",
+      version: 1,
+      migrate: (saved) => saved as Saved,
       storage: persistedStorage<Saved>(),
       partialize: ({ mode, accent, corners }) => ({ mode, accent, corners }),
       // A saved value this build no longer knows falls back to the default.

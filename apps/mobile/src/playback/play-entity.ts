@@ -83,7 +83,7 @@ export async function playEntity(type: PlayableType, url: string) {
     }
     return;
   }
-  if (!isCurrent() || tracks.length === 0) return;
+  if (!isCurrent()) return;
   playAll(tracks.map(toSongRow));
 }
 
@@ -107,9 +107,5 @@ export async function queueEntity(
     return;
   }
   if (tracks.length === 0) return;
-  const rows = tracks.map(toSongRow);
-  const { playNext, addToQueue } = playerStore.getState();
-  // Each insert lands right after the current track, so insert backwards.
-  if (position === "next") for (const row of [...rows].reverse()) playNext(row);
-  else for (const row of rows) addToQueue(row);
+  playerStore.getState().addMany(tracks.map(toSongRow), position);
 }

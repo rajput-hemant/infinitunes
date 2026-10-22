@@ -48,6 +48,8 @@ export const preferencesStore = createStore<PreferencesStore>()(
     }),
     {
       name: "preferences",
+      version: 1,
+      migrate: (saved) => saved as Preferences,
       storage: persistedStorage<Preferences>(),
       partialize: ({
         streamQuality,

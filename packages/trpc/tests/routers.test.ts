@@ -224,4 +224,30 @@ describe("router procedures", () => {
     expect(result.name).toBe("Artist 1");
     expect(result.topSongs?.[0]?.download_url).toContain("_320.mp4");
   });
+
+  it("get.footer falls back to hindi when lang is omitted (S-14)", async () => {
+    urls = [];
+    responses = {
+      "webapi.getFooterDetails": {
+        playlist: [],
+        artist: [],
+        album: [],
+      },
+    };
+
+    await caller.get.footer({});
+    expect(
+      urls
+        .find((u) => u.searchParams.get("__call") === "webapi.getFooterDetails")
+        ?.searchParams.get("language"),
+    ).toBe("hindi");
+
+    urls = [];
+    await caller.get.footer({ lang: "english,tamil" });
+    expect(
+      urls
+        .find((u) => u.searchParams.get("__call") === "webapi.getFooterDetails")
+        ?.searchParams.get("language"),
+    ).toBe("english");
+  });
 });

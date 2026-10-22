@@ -26,6 +26,8 @@ type CacheState = {
 export const songCacheStore = createStore<CacheState>()(
   persist(() => ({ songs: {}, listens: {} }), {
     name: "song-cache",
+    version: 1,
+    migrate: (saved) => saved as CacheState,
     storage: persistedStorage<CacheState>(),
   }),
 );

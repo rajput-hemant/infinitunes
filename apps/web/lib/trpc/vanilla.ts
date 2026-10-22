@@ -12,6 +12,8 @@ export const trpc = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: "/api/trpc",
+      // The route rejects batches over `maxBatchSize` (20); split before that.
+      maxItems: 20,
       maxURLLength: 2083,
       transformer: superjson,
     }),

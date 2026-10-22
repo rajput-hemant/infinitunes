@@ -10,7 +10,11 @@ import type {
   Queue,
   QueueSource,
 } from "@infinitunes/types";
-import { removeFromQueue, toQueueEntry } from "@infinitunes/types";
+import {
+  ensureQueueItemIds,
+  removeFromQueue,
+  toQueueEntry,
+} from "@infinitunes/types";
 import { useStore } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
@@ -62,6 +66,8 @@ type PlayerActions = {
   addToQueue: (track: QueueSource) => void;
   /** Queues the track right after the current one. */
   playNext: (track: QueueSource) => void;
+  /** Inserts `tracks`, in order, right after the current one or at the end. */
+  addMany: (tracks: readonly QueueSource[], position: "next" | "last") => void;
   removeAt: (index: number) => void;
   /** Drops every entry after the current one (the queue's "Clear"). */
   clearUpNext: () => void;
@@ -73,6 +79,8 @@ type PlayerActions = {
   /** Applies `update` to the queue without moving playback (radio refill). */
   updateQueue: (update: (queue: Queue[]) => Queue[]) => void;
 };
+
+type Persisted = Omit<PlayerState, "started" | "resumeRequest">;
 
 export type PlayerStore = PlayerState & PlayerActions;
 
@@ -204,34 +212,36 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       addToQueue(track) {
-        beginPlaybackRequest();
         set((state) => ({ queue: [...state.queue, toQueueEntry(track)] }));
       },
 
       playNext(track) {
-        beginPlaybackRequest();
+        get().addMany([track], "next");
+      },
+
+      addMany(tracks, position) {
         set((state) => {
-          const at = state.queue.length === 0 ? 0 : state.currentIndex + 1;
+          const at =
+            position === "last" || state.queue.length === 0
+              ? state.queue.length
+              : state.currentIndex + 1;
           const queue = [...state.queue];
-          queue.splice(at, 0, toQueueEntry(track));
+          queue.splice(at, 0, ...tracks.map(toQueueEntry));
           return { queue };
         });
       },
 
       removeAt(index) {
-        beginPlaybackRequest();
         set((state) => removeFromQueue(state.queue, state.currentIndex, index));
       },
 
       clearUpNext() {
-        beginPlaybackRequest();
         set((state) => ({
           queue: state.queue.slice(0, state.currentIndex + 1),
         }));
       },
 
       moveInQueue(from, to) {
-        beginPlaybackRequest();
         set((state) => {
           const { queue, currentIndex } = state;
           const entry = queue[from];
@@ -247,12 +257,10 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       toggleShuffle() {
-        beginPlaybackRequest();
         set((state) => ({ shuffle: !state.shuffle }));
       },
 
       cycleRepeat() {
-        beginPlaybackRequest();
         const repeat = nextLoopMode(get().repeat, get().queue.length);
         set({ repeat });
         return repeat;
@@ -264,8 +272,17 @@ export const playerStore = createStore<PlayerStore>()(
     }),
     {
       name: "player",
-      storage:
-        persistedStorage<Omit<PlayerState, "started" | "resumeRequest">>(),
+      version: 1,
+      migrate: (saved) => saved as Persisted,
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<PlayerStore> | undefined;
+        return {
+          ...current,
+          ...saved,
+          queue: ensureQueueItemIds(saved?.queue ?? []),
+        };
+      },
+      storage: persistedStorage<Persisted>(),
       partialize: ({ queue, currentIndex, shuffle, repeat, radio }) => ({
         queue,
         currentIndex,
