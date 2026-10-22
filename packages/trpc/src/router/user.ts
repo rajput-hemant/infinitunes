@@ -144,6 +144,7 @@ const PASSWORD_REQUIRED_MESSAGE = "Enter your current password to continue";
 
 async function loadCredentials(db: TRPCContext["db"], userId: string) {
   const userRecord = await db.query.users.findFirst({
+    columns: { id: true },
     where: eq(users.id, userId),
   });
   if (!userRecord) {
@@ -151,6 +152,7 @@ async function loadCredentials(db: TRPCContext["db"], userId: string) {
   }
 
   const credentialAccount = await db.query.betterAuthAccounts.findFirst({
+    columns: { id: true, password: true },
     where: and(
       eq(betterAuthAccounts.userId, userId),
       eq(betterAuthAccounts.providerId, "credential"),
@@ -274,6 +276,7 @@ function assertOwnedPlaylist<T extends { userId: string }>(
 
 async function getOwnedPlaylist(ctx: PlaylistCtx, playlistId: string) {
   const playlist = await ctx.db.query.myPlaylists.findFirst({
+    columns: { userId: true },
     where: eq(myPlaylists.id, playlistId),
   });
 
