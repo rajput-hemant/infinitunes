@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
 
-import { asRoute } from "~/lib/utils";
-
 import { AuthIntro } from "../_components/auth-intro";
 import { AuthFormSkeleton } from "../_components/auth-skeleton";
 import { authLinkStyles } from "../_components/field-styles";
@@ -36,17 +34,6 @@ export default function SignUpPage() {
           <Link href="/login" className={authLinkStyles}>
             Log in
           </Link>
-        </p>
-        <p>
-          By continuing you agree to the{" "}
-          <Link href={asRoute("/terms")} className={authLinkStyles}>
-            Terms
-          </Link>{" "}
-          and{" "}
-          <Link href={asRoute("/privacy")} className={authLinkStyles}>
-            Privacy Policy
-          </Link>
-          .
         </p>
       </div>
     </div>
