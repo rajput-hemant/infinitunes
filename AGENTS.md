@@ -237,10 +237,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   one status event only (the next one, often in the same JS task, says `null`) and nothing guarantees a
   rendered status between `replace` and the next failure, so the controller latches each load's error/loaded
   from its listener; never feed `useAudioPlayerStatus().error`/`isLoaded` to `useTrackPlayback`.
-  Each native `replace` increments `sourceGeneration`; status and remote-command events carry it
-  at emission. Route JS replacements through `replaceSource` and filter both event streams with
-  `isCurrentSource`, since an event emitted before replacement can reach JS afterward. This needs
-  the patched native binary on both platforms.
+  Each native `replace` increments `sourceGeneration`; status events carry it at emission. Route
+  JS replacements through `replaceSource` and filter status with `isCurrentSource`, since an event
+  emitted before replacement can reach JS afterward. Remote commands are global queue intent and
+  are never source-gated. This needs the patched native binary on both platforms.
 - Frequently played songs cache in `Paths.cache/frequent-songs`, separate from explicit downloads.
   `lib/song-cache.ts` persists its index and counts with zustand + `persistedStorage`: two listens
   with at least half the song heard qualify (seeks do not count), enabled by default. The 500 MiB

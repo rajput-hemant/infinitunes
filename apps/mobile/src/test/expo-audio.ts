@@ -23,10 +23,7 @@ import { useEffect, useState } from "react";
 type StatusListener = (status: AudioStatus) => void;
 type SourceStatus = AudioStatus & { sourceGeneration: number };
 type RemoteCommand = "nextTrack" | "previousTrack";
-type RemoteListener = (event: {
-  command: RemoteCommand;
-  sourceGeneration: number;
-}) => void;
+type RemoteListener = (event: { command: RemoteCommand }) => void;
 type Subscription = { remove: () => void };
 
 const idleStatus: SourceStatus = {
@@ -165,10 +162,7 @@ export class FakeAudioPlayer {
   }
 
   queueRemote(command: RemoteCommand) {
-    const event = {
-      command,
-      sourceGeneration: this.currentStatus.sourceGeneration,
-    };
+    const event = { command };
     return () => {
       for (const listener of this.remoteListeners) listener(event);
     };
@@ -242,7 +236,7 @@ export function createAudioPlayer(): FakeAudioPlayer {
 
 /** expo-audio's hook (`useEvent`): the last status event, as React state. */
 export function useAudioPlayerStatus(player: FakeAudioPlayer): AudioStatus {
-  const [status, setStatus] = useState(player.currentStatus);
+  const [status, setStatus] = useState<AudioStatus>(player.currentStatus);
   useEffect(
     () => player.addListener("playbackStatusUpdate", setStatus).remove,
     [player],

@@ -1,5 +1,5 @@
 diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlayer.kt
-index fb2d0b57..f0e0fc05 100644
+index fb2d0b57..84e63d04 100644
 --- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlayer.kt
 +++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlayer.kt
 @@ -23,6 +23,7 @@ import java.lang.ref.WeakReference
@@ -27,11 +27,11 @@ index fb2d0b57..f0e0fc05 100644
 +  override val supportsPreviousTrack = true
 +
 +  override fun nextTrack() {
-+    emit(REMOTE_COMMAND, mapOf("command" to "nextTrack", "sourceGeneration" to sourceGeneration))
++    emit(REMOTE_COMMAND, mapOf("command" to "nextTrack"))
 +  }
 +
 +  override fun previousTrack() {
-+    emit(REMOTE_COMMAND, mapOf("command" to "previousTrack", "sourceGeneration" to sourceGeneration))
++    emit(REMOTE_COMMAND, mapOf("command" to "previousTrack"))
 +  }
 +
    val currentOffsetFromLive: Double?
@@ -255,7 +255,7 @@ index 332b0c2f..f1845982 100644
      playbackState: string;
      /** String representation of the player's time control status (playing/paused/waiting). */
 diff --git a/node_modules/expo-audio/build/AudioModule.types.d.ts b/node_modules/expo-audio/build/AudioModule.types.d.ts
-index 0d63c9b9..f65505fc 100644
+index 0d63c9b..d4d7bfb 100644
 --- a/node_modules/expo-audio/build/AudioModule.types.d.ts
 +++ b/node_modules/expo-audio/build/AudioModule.types.d.ts
 @@ -222,6 +222,11 @@ export type AudioEvents = {
@@ -266,12 +266,12 @@ index 0d63c9b9..f65505fc 100644
 +   * Patched (infinitunes): fired when the lock screen, a headset or Bluetooth asks for the next or
 +   * previous track. Needs `showNextTrack`/`showPreviousTrack` in the lock screen options.
 +   */
-+  remoteCommand(event: { command: 'nextTrack' | 'previousTrack'; sourceGeneration: number }): void;
++  remoteCommand(event: { command: 'nextTrack' | 'previousTrack' }): void;
  };
  export declare class AudioRecorder extends SharedObject<RecordingEvents> {
      /**
 diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
-index 0f68a520..10472ab6 100644
+index 0f68a520..ce580c04 100644
 --- a/node_modules/expo-audio/ios/AudioPlayer.swift
 +++ b/node_modules/expo-audio/ios/AudioPlayer.swift
 @@ -4,6 +4,7 @@ import Combine
@@ -333,11 +333,11 @@ index 0f68a520..10472ab6 100644
 +  }
 +
 +  func nextTrack() {
-+    emit(event: AudioConstants.remoteCommand, payload: ["command": "nextTrack", "sourceGeneration": sourceGeneration])
++    emit(event: AudioConstants.remoteCommand, payload: ["command": "nextTrack"])
 +  }
 +
 +  func previousTrack() {
-+    emit(event: AudioConstants.remoteCommand, payload: ["command": "previousTrack", "sourceGeneration": sourceGeneration])
++    emit(event: AudioConstants.remoteCommand, payload: ["command": "previousTrack"])
 +  }
 +
    func updateStatus(with dict: [String: Any]) {
@@ -383,7 +383,7 @@ index fe5f5c3a..98d20a8f 100644
    playbackState: string;
    /** String representation of the player's time control status (playing/paused/waiting). */
 diff --git a/node_modules/expo-audio/src/AudioModule.types.ts b/node_modules/expo-audio/src/AudioModule.types.ts
-index 3194a8eb..6c5041e3 100644
+index 3194a8e..0dde086 100644
 --- a/node_modules/expo-audio/src/AudioModule.types.ts
 +++ b/node_modules/expo-audio/src/AudioModule.types.ts
 @@ -281,6 +281,11 @@ export type AudioEvents = {
@@ -394,7 +394,7 @@ index 3194a8eb..6c5041e3 100644
 +   * Patched (infinitunes): fired when the lock screen, a headset or Bluetooth asks for the next or
 +   * previous track. Needs `showNextTrack`/`showPreviousTrack` in the lock screen options.
 +   */
-+  remoteCommand(event: { command: 'nextTrack' | 'previousTrack'; sourceGeneration: number }): void;
++  remoteCommand(event: { command: 'nextTrack' | 'previousTrack' }): void;
  };
  
  export declare class AudioRecorder extends SharedObject<RecordingEvents> {
