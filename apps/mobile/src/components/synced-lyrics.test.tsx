@@ -50,6 +50,17 @@ it("follows the scripted playhead and seeks to a pressed line", async () => {
   );
   seek.mockRestore();
 });
+it("follows the playhead with prominent (Now Playing) lines", async () => {
+  playerStore.getState().playTracks([toSongRow(rawSong())]);
+  await renderWithProviders(
+    <SyncedLyrics lines={lines} songId="BSaNI3Yr" height={200} prominent />,
+  );
+  await act(() => playbackPosition.set(2));
+  expect(screen.getByTestId("lyric-line-active")).toHaveTextContent("First");
+  expect(screen.getByTestId("lyric-line-active")).toHaveStyle({ opacity: 1 });
+  await act(() => playbackPosition.set(6));
+  expect(screen.getByTestId("lyric-line-active")).toHaveTextContent("Second");
+});
 it("does not seek a different playing song from the song page", async () => {
   playerStore.getState().playTracks([toSongRow(rawSong({ id: "other" }))]);
   await renderWithProviders(

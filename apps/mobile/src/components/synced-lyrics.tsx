@@ -3,7 +3,7 @@ import type { LyricLine } from "@infinitunes/core/lyrics";
 import { memo, useCallback, useEffect, useRef } from "react";
 import type { ScrollViewInstance } from "react-native";
 import { Pressable, ScrollView, View } from "react-native";
-import { useReducedMotion } from "react-native-reanimated";
+import Animated, { useReducedMotion } from "react-native-reanimated";
 
 import { Text } from "~/components/ui/text";
 import { usePlaybackPosition } from "~/playback/playback-status";
@@ -17,7 +17,24 @@ type Props = {
   height: number;
   foreground?: string;
   muted?: string;
+  /**
+   * Now Playing's large lines: `title2` emphasized, every line in the
+   * foreground, the inactive ones dimmed and fading as the active line moves.
+   */
+  prominent?: boolean;
 };
+
+/** A prominent inactive line's opacity: the foreground, dimmed. */
+const INACTIVE_OPACITY = 0.55;
+
+/**
+ * A prominent line's dim fades. Only the opacity changes, so it stays under
+ * reduce motion (CSS transitions do not read it, and need not).
+ */
+const LINE_FADE = {
+  transitionProperty: "opacity",
+  transitionDuration: 200,
+} as const;
 
 export function SyncedLyrics(props: Props) {
   const position = usePlaybackPosition();
@@ -39,14 +56,25 @@ const Line = memo(function Line({
   canSeek,
   foreground,
   muted,
+  prominent,
 }: {
   line: LyricLine;
   active: boolean;
   canSeek: boolean;
   foreground?: string;
   muted?: string;
+  prominent?: boolean;
 }) {
-  const text = (
+  const text = prominent ? (
+    <Animated.View
+      style={[{ opacity: active ? 1 : INACTIVE_OPACITY }, LINE_FADE]}
+      testID={active ? "lyric-line-active" : undefined}
+    >
+      <Text variant="title2" emphasized color={foreground}>
+        {line.text || "♪"}
+      </Text>
+    </Animated.View>
+  ) : (
     <Text
       variant="headline"
       tone={active ? "default" : "muted"}
@@ -77,6 +105,7 @@ const TimedLines = memo(function TimedLines({
   height,
   foreground,
   muted,
+  prominent,
 }: Props & { active: number; canSeek: boolean }) {
   const scroll = useRef<ScrollViewInstance>(null);
   const offsets = useRef(new Map<number, number>());
@@ -119,7 +148,12 @@ const TimedLines = memo(function TimedLines({
     <ScrollView
       ref={scroll}
       style={{ height }}
-      contentContainerStyle={{ paddingBottom: height / 2, gap: space.sm }}
+      contentContainerStyle={{
+        // Prominent lines sit under a faded top edge: the first starts below it.
+        paddingTop: prominent ? space.xxl : 0,
+        paddingBottom: height / 2,
+        gap: space.sm,
+      }}
       accessibilityLabel="Synced lyrics"
       onScrollBeginDrag={pause}
       onScrollEndDrag={resumeLater}
@@ -144,6 +178,7 @@ const TimedLines = memo(function TimedLines({
             canSeek={canSeek}
             foreground={foreground}
             muted={muted}
+            prominent={prominent}
           />
         </View>
       ))}
