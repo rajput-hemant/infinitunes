@@ -26,6 +26,7 @@
       "cache": false
     },
     "lint": {},
+    "lint:shadcn": {},
     "type-check": {}
   },
   "globalEnv": [

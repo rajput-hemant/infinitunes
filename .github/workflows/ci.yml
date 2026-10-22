@@ -37,6 +37,9 @@ jobs:
       - name: Check linting
         run: bun run lint
 
+      - name: Check shadcn lint
+        run: bun run lint:shadcn
+
       - name: Check types
         run: bun run type-check
 

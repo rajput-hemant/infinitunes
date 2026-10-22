@@ -354,7 +354,7 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 
 Run `bun run build && bun run budget` first to get real numbers.
 
-- [ ] **T-1** P2 CONFIRMED `packages/ui/package.json:8`, `turbo.json`, `ci.yml:34` - `lint:shadcn` (`no-raw-colors`, `require-static-classes`) is not a turbo task and never runs in CI [lib 4]
+- [x] **T-1** (Done: `lint:shadcn` turbo task, root script and CI step; `--deny-warnings`; 8 `require-static-classes` warnings on `cn(sharedStyleConst)` sites exempted by override in `.oxlintrc.shadcn.json`, no shadcn component touched.) P2 CONFIRMED `packages/ui/package.json:8`, `turbo.json`, `ci.yml:34` - `lint:shadcn` (`no-raw-colors`, `require-static-classes`) is not a turbo task and never runs in CI [lib 4]
   - Fix: add a `lint:shadcn` turbo task and a CI step; run once first and fix or exempt findings. Executor: haiku (sonnet if it finds violations). Flags: none.
 - [ ] **T-2** P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
   - Fix: measure, set ceilings ~5% above current maxima, rewrite the header (or state the raise was deliberate). Executor: sonnet. Flags: none.

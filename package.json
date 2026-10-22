@@ -15,6 +15,7 @@
     "build": "bun run with-env turbo run build",
     "start": "bun run with-env turbo run start",
     "lint": "turbo run lint",
+    "lint:shadcn": "turbo run lint:shadcn",
     "knip": "knip",
     "clean": "bash scripts/clean.sh",
     "deps:update": "bun update -i",
