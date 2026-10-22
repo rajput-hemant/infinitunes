@@ -2,7 +2,12 @@ import { describe, expect, it } from "bun:test";
 
 import { db } from "@infinitunes/db";
 
-import { api, expireSeconds, revalidateSeconds } from "../src/lib/api";
+import {
+  api,
+  API_DEFAULTS,
+  expireSeconds,
+  revalidateSeconds,
+} from "../src/lib/api";
 import { endpoints } from "../src/lib/endpoints";
 import { appRouter } from "../src/root";
 import { createCallerFactory } from "../src/trpc";
@@ -32,6 +37,26 @@ describe("raw API transport", () => {
     const fetchFn: typeof fetch = async () => Response.json({ count: ++calls });
     expect(await api(endpoints.get.charts, {}, fetchFn)).toEqual({ count: 1 });
     expect(await api(endpoints.get.charts, {}, fetchFn)).toEqual({ count: 2 });
+  });
+
+  it("exports and applies API_DEFAULTS for version, timeout and language", async () => {
+    expect(API_DEFAULTS).toEqual({
+      isVersion4: true,
+      timeoutMs: 10_000,
+      language: "hindi,english",
+    });
+
+    let requestedUrl = "";
+    let requestedCookie = "";
+    const fetchFn: typeof fetch = async (url, init) => {
+      requestedUrl = String(url);
+      requestedCookie = String(new Headers(init?.headers).get("cookie") ?? "");
+      return Response.json({});
+    };
+
+    await api(endpoints.get.charts, {}, fetchFn);
+    expect(requestedUrl).toContain("api_version=4");
+    expect(requestedCookie).toContain(`L=${API_DEFAULTS.language}`);
   });
 
   it("keeps encrypted-media detail lifetimes at most ten minutes", () => {
