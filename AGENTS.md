@@ -81,7 +81,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     header, tab row and shelves mounted (`@infinitunes/core/entity-route`); search results
     live in a `search/(results)` group whose layout keeps the title and type chips.
     Old `<name>-songs` artist URLs (and JioSaavn's own links) are 308-redirected in
-    `proxy.ts`; `getHref` already links the tab routes.
+    `proxy.ts`; `getHref` already links the tab routes. Labels follow the same frame:
+    `label/[name]/[token]/{page,albums}` (Songs is the bare route), no `loading.tsx`.
   - `/settings` is one page (sections Account, Appearance, Playback, Security; the old
     `/settings/appearance` and `/settings/preferences` 308 to `#appearance` / `#playback`
     from `next.config.ts`, list in `lib/legacy-redirects.ts`). Its shell, rail, search and
@@ -91,9 +92,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
     CSS `:has()` on cards and sections; give every new control a `SettingsRow` with keywords.
     The profile form and passkey UI are `next/dynamic` (`account-lazy.tsx`) to stay out of
     first-load JS.
-  - Entity pages (album, playlist, song, show, label, episode, mix, radio detail,
+  - Entity pages (album, playlist, song, show, episode, mix, radio detail,
     `/me/*` pages) are whole-page data: they keep a route `loading.tsx`
     with a skeleton that mirrors the page, and Suspense only for secondary lists.
+    Artist and label tab frames (above) use a layout with Suspense instead.
     Catalog list pages put the heading in the shell and the fetched grid in
     `Suspense`; they have no `loading.tsx`.
   - Do not use `<Link prefetch>` (true) or `partialPrefetching`: on 16.3.6 with the
