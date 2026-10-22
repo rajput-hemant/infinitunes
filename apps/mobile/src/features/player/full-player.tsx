@@ -1,7 +1,8 @@
 import { getImageSrc } from "@infinitunes/types";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ComponentRef } from "react";
 import {
   Platform,
   ScrollView,
@@ -59,6 +60,29 @@ const ART_CORNER = Platform.OS === "android" ? "xl" : "lg";
 
 /** How far the artwork settles back while paused. */
 const PAUSED_SCALE = 0.9;
+
+/**
+ * The vertical gradient's colour at `t` (0 top, 1 bottom): a linear sRGB
+ * mix, as CSS gradients interpolate. Non-hex stops come back unmixed.
+ */
+function mixHex([top, bottom]: readonly [string, string], t: number) {
+  const hex = /^#([\da-f]{6})$/i;
+  const a = hex.exec(top)?.[1];
+  const b = hex.exec(bottom)?.[1];
+  if (!a || !b) return t < 0.5 ? top : bottom;
+  const at = Math.min(1, Math.max(0, t));
+  const channel = (value: string, index: number) =>
+    Number.parseInt(value.slice(index, index + 2), 16);
+  return `#${[0, 2, 4]
+    .map((index) =>
+      Math.round(
+        channel(a, index) + (channel(b, index) - channel(a, index)) * at,
+      )
+        .toString(16)
+        .padStart(2, "0"),
+    )
+    .join("")}`;
+}
 
 /** The track title: Material's headlineSmall on Android, iOS's title 2. */
 const TITLE_VARIANT = Platform.select<TextVariant>({
@@ -190,6 +214,20 @@ export function FullPlayer() {
   const background = useTokenColor("background");
   const paletteBackground = usePalette().background;
   const [showLyrics, setShowLyrics] = useState(false);
+  // Where the art / lyrics slot spans down the backdrop (0 top, 1 bottom).
+  const root = useRef<ComponentRef<typeof View>>(null);
+  const slot = useRef<ComponentRef<typeof View>>(null);
+  const [span, setSpan] = useState<readonly [number, number] | null>(null);
+  const measureSlot = () =>
+    root.current?.measureInWindow((_x, rootY, _width, rootHeight) =>
+      slot.current?.measureInWindow((_slotX, y, _slotWidth, height) => {
+        if (rootHeight > 0)
+          setSpan([
+            (y - rootY) / rootHeight,
+            (y + height - rootY) / rootHeight,
+          ]);
+      }),
+    );
 
   const fill = colors
     ? gradientFill(colors.wash)
@@ -221,14 +259,17 @@ export function FullPlayer() {
   const artworkSize = playerArtSize(width);
   // The lyrics fade into the fill: the wash's stops, or Android's D1
   // background (iOS's is a dynamic system colour with no hex to fade).
+  // The wash's colour at the lyrics' own top and bottom, not the screen's.
   const lyricEdges = colors
-    ? colors.wash
+    ? span
+      ? ([mixHex(colors.wash, span[0]), mixHex(colors.wash, span[1])] as const)
+      : colors.wash
     : Platform.OS === "android"
       ? ([paletteBackground, paletteBackground] as const)
       : null;
 
   return (
-    <View className="flex-1">
+    <View ref={root} className="flex-1">
       <Backdrop fill={fill} />
       <OnWash colors={wash}>
         <View className="flex-row items-center px-3 pt-2" style={top}>
@@ -245,7 +286,7 @@ export function FullPlayer() {
         >
           {/* Centred in the space above the pinned Lyrics / Up next row. */}
           <View className="grow justify-center">
-            <View className="items-center">
+            <View ref={slot} onLayout={measureSlot} className="items-center">
               {showLyrics ? (
                 <PlayerLyrics
                   track={track}
@@ -295,6 +336,7 @@ export function FullPlayer() {
             <IconButton
               icon={{ ios: "list.bullet", android: "queue_music" }}
               label="Up next"
+              size="md"
               onPress={() => router.push("/queue")}
             />
           </View>

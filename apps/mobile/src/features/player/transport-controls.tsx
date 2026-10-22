@@ -77,6 +77,8 @@ export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
   const wash = useWashColors();
   const primary = useTokenColor("primary");
   const onPrimary = useTokenColor("primary-foreground");
+  const { colors } = useTheme();
+  const bounce = useGlyphBounce(icon.ios);
   if (Platform.OS === "android") {
     return (
       <Pressable
@@ -95,12 +97,19 @@ export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
     );
   }
   return (
-    <IconButton
-      icon={icon}
-      label={label}
+    <Pressable
       onPress={togglePlayback}
-      size={size}
-    />
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      className="min-h-touch min-w-touch items-center justify-center active:opacity-60"
+    >
+      <SymbolView
+        name={icon}
+        size={iconSize[size]}
+        tintColor={colors.text}
+        animationSpec={bounce}
+      />
+    </Pressable>
   );
 }
 
