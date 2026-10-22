@@ -46,7 +46,8 @@ export function chunk<T>(items: T[], size: number): T[][] {
 
 /**
  * Fetch song details in chunks, tolerating partial failure. Returns undefined
- * only when every details request failed. Upstream `song.getDetails` also resolves
+ * when no songs resolve and at least one request failed. NOT_FOUND is missing,
+ * not a failure. Upstream `song.getDetails` also resolves
  * episode ids, so pass `Song | Episode` for mixed lists.
  */
 export async function fetchSongsChunked<T extends Song | Episode = Song>(
@@ -55,8 +56,10 @@ export async function fetchSongsChunked<T extends Song | Episode = Song>(
   size = LIKED_SONGS_CHUNK_SIZE,
 ): Promise<T[] | undefined> {
   const chunks = chunk(ids, size);
-  const settled = await Promise.allSettled(
-    chunks.map((c) => details({ id: c.join(",") })),
+  const settled = await settleWithLimit(
+    chunks,
+    LIBRARY_FETCH_CONCURRENCY,
+    (c) => details({ id: c.join(",") }),
   );
 
   const results: (T[] | undefined)[] = [];
@@ -65,11 +68,9 @@ export async function fetchSongsChunked<T extends Song | Episode = Song>(
   settled.forEach((result, i) => {
     if (result.status === "fulfilled") {
       results[i] = result.value.songs;
-    } else if (
-      chunks[i]!.length > 1 &&
-      getErrorCode(result.reason) === "NOT_FOUND"
-    ) {
-      poisoned.push(i);
+    } else if (getErrorCode(result.reason) === "NOT_FOUND") {
+      if (chunks[i]!.length > 1) poisoned.push(i);
+      else results[i] = [];
     } else {
       failed += 1;
       console.error("song-details: failed to fetch a chunk", result.reason);
@@ -98,16 +99,8 @@ export async function fetchSongsChunked<T extends Song | Episode = Song>(
           missing += 1;
         }
       }
-      if (missing === chunks[i]!.length) {
-        failed += 1;
-        console.error(
-          "song-details: failed to fetch a chunk",
-          (settled[i] as PromiseRejectedResult).reason,
-        );
-      } else {
-        results[i] = recovered;
-        dropped += missing;
-      }
+      results[i] = recovered;
+      dropped += missing;
     }
   };
   await Promise.all(
@@ -122,8 +115,8 @@ export async function fetchSongsChunked<T extends Song | Episode = Song>(
     );
   }
 
-  if (failed === chunks.length && chunks.length > 0) return undefined;
-  return results.flatMap((songs) => songs ?? []);
+  const songs = results.flatMap((items) => items ?? []);
+  return failed > 0 && songs.length === 0 ? undefined : songs;
 }
 
 /** Items in the order of `ids`, dropping ids that did not resolve. */

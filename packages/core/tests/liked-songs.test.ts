@@ -92,9 +92,9 @@ describe("fetchSongsChunked", () => {
     }
   });
 
-  it.each([["a"], ["a", "b"]])(
+  it.each([{ ids: ["a"] }, { ids: ["a", "b"] }])(
     "returns an empty list when every id is NOT_FOUND: %j",
-    async (...ids) => {
+    async ({ ids }) => {
       const err = spyOn(console, "error").mockImplementation(() => {});
       try {
         const original = Object.assign(new Error("batch gone"), {
@@ -105,7 +105,7 @@ describe("fetchSongsChunked", () => {
             ? original
             : Object.assign(new Error("nf"), { code: "NOT_FOUND" });
         };
-        expect(await fetchSongsChunked(ids, details)).toEqual([]);
+        expect(await fetchSongsChunked([...ids], details)).toEqual([]);
       } finally {
         err.mockRestore();
       }
