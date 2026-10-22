@@ -129,11 +129,11 @@ Gated on the accent decision.
 - [ ] **M-40** **[device sign-off later]** P2 PLAUSIBLE `theme/use-palette.ts:20` - a custom accent replaces only `primary`; containers keep wallpaper roles [design P2-12]
   - Fix: generate `SchemeTonalSpot` from the accent seed and map every role, keep the AA test (`tokens.test.ts`). Executor: opus. Flags: needs device check (decision: reuse the M3 pill).
 
-## Batch M10 (sonnet): network and auth plumbing - `lib/trpc.ts`, `lib/auth-client.ts`, `playback/record-play.ts`, Radio/Search tab queries
+## Batch M10 (sonnet): network and auth plumbing - `lib/trpc.ts`, `lib/auth-client.ts`, `playback/record-play.ts`, Radio/Search tab queries `worktree-agent-ababad090a8d2de55`
 
-- [ ] **M-41** **[device sign-off later]** P2 PLAUSIBLE `lib/trpc.ts:20-37` - `httpBatchLink` makes cold-start Home wait for the slowest query (all tabs mount) [perf#5]
+- [x] **M-41** **[device sign-off later]** P2 PLAUSIBLE `lib/trpc.ts:20-37` - `httpBatchLink` makes cold-start Home wait for the slowest query (all tabs mount) [perf#5]
   - Fix: `httpBatchStreamLink` (or a `splitLink` for `home.home`); `enabled: isFocused` for Radio/Search tab queries. Executor: sonnet. Flags: needs device check. (Pairs with S-4 session lookup server-side.)
-- [ ] **M-42** P2 PLAUSIBLE `lib/trpc.ts:27-33`, `playback/record-play.ts:15` - Keychain/Keystore read on every tRPC request and every play [perf#6]
+- [x] **M-42** P2 PLAUSIBLE `lib/trpc.ts:27-33`, `playback/record-play.ts:15` - Keychain/Keystore read on every tRPC request and every play [perf#6]
   - Fix: in-memory cookie cache in `auth-client.ts`, refreshed on sign-in/out/session signal. Executor: sonnet. Flags: none.
 
 ## Batch M11 (sonnet): player progress and colours - `features/player/{dock-progress,scrubber,use-player-colors}.tsx`, `lib/artwork-colors.ts`, `components/floating-player-dock.tsx`

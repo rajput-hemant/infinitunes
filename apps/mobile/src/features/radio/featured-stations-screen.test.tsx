@@ -7,9 +7,16 @@ import { procedure } from "~/test/trpc-mock";
 
 import { FeaturedStationsScreen } from "./featured-stations-screen";
 
+const mockFocus = { focused: true };
+jest.mock("expo-router", () => ({
+  ...jest.requireActual("expo-router"),
+  useIsFocused: () => mockFocus.focused,
+}));
+
 const featuredStations = procedure("get.featuredStations");
 
 beforeEach(() => {
+  mockFocus.focused = true;
   playerStore.setState({
     queue: [],
     currentIndex: 0,
@@ -19,6 +26,14 @@ beforeEach(() => {
 });
 
 describe("FeaturedStationsScreen", () => {
+  it("does not fetch while its tab has not been shown", async () => {
+    mockFocus.focused = false;
+    featuredStations.mockResolvedValue([rawStation()]);
+    await renderScreen(<FeaturedStationsScreen />);
+
+    expect(featuredStations).not.toHaveBeenCalled();
+  });
+
   it("shows a skeleton under the intro while stations load", async () => {
     featuredStations.mockReturnValue(new Promise(() => {}));
     await renderScreen(<FeaturedStationsScreen />);
