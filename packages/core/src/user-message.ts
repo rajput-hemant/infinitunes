@@ -11,7 +11,6 @@ const USER_CODES = new Set([
   "CONFLICT",
   "FORBIDDEN",
   "NOT_FOUND",
-  "UNAUTHORIZED",
 ]);
 
 /** Next.js replaces server-action error messages with this in production. */
@@ -38,6 +37,7 @@ export function userMessage(
   if (!message || message.includes(OMITTED_MESSAGE)) return fallback;
 
   const code = getErrorCode(error);
+  if (code === "UNAUTHORIZED") return "Please sign in to continue.";
   if (code === "TOO_MANY_REQUESTS") return RATE_LIMITED_MESSAGE;
   // Not a tRPC error body (the proxy's 403, a gateway page): tRPC's own
   // "Unable to transform response from server" is not copy for the user.
