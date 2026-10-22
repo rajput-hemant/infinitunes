@@ -65,7 +65,7 @@ const TimedLines = memo(function TimedLines({
     const line = host?.children.item(activeRef.current);
     if (paused.current || !host || !(line instanceof HTMLElement)) return;
     host.scrollTo({
-      top: Math.max(0, line.offsetTop - host.offsetTop - host.clientHeight / 3),
+      top: Math.max(0, line.offsetTop - host.clientHeight / 3),
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ? "instant"
         : "smooth",

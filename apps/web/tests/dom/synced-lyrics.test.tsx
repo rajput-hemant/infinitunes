@@ -35,10 +35,14 @@ it("highlights the current line, follows the playhead, pauses for browsing, and 
       ),
     );
     const buttons = host.querySelectorAll("button");
+    const section = host.querySelector("section")!;
+    Object.defineProperty(section, "offsetTop", { value: 400 });
+    Object.defineProperty(section, "clientHeight", { value: 300 });
+    Object.defineProperty(buttons[0], "offsetTop", { value: 240 });
     expect(host.querySelector('[aria-current="true"]')).toBeNull();
     await act(async () => position.set(2));
     expect(buttons[0]?.getAttribute("aria-current")).toBe("true");
-    expect(scroll).toHaveBeenCalled();
+    expect(scroll).toHaveBeenLastCalledWith({ top: 140, behavior: "smooth" });
     const count = scroll.mock.calls.length;
     host
       .querySelector('[aria-label="Synced lyrics"]')
