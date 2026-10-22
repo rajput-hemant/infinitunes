@@ -8,7 +8,7 @@ import { GridCell } from "~/components/grid-cell";
 import { MediaCard } from "~/components/media-card";
 import { SongRow } from "~/components/song-row";
 import { Spinner } from "~/components/ui/spinner";
-import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { useGrid } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playFrom } from "~/playback/play-collection";
 
@@ -41,7 +41,7 @@ export function TypeResults({
   onOpenResult,
 }: TypeResultsProps) {
   const results = useTypeResults(query, type);
-  const cardWidth = useGridCardWidth(CARD_COLUMNS);
+  const { columns, width: cardWidth } = useGrid("cards");
 
   const common = {
     ...listProps,
@@ -99,10 +99,10 @@ export function TypeResults({
       key={type}
       {...common}
       data={cards}
-      numColumns={CARD_COLUMNS}
+      numColumns={columns}
       keyExtractor={(card) => card.id}
       renderItem={({ item, index }) => (
-        <GridCell index={index}>
+        <GridCell index={index} columns={columns}>
           <MediaCard item={item} width={cardWidth} onPress={onOpenResult} />
         </GridCell>
       )}

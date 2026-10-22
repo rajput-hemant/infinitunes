@@ -317,6 +317,12 @@ export const sizes = {
   dock: 64,
   /** The seam between the tiles of an Android segmented list or connected button group. */
   seam: 2,
+  /**
+   * The widest a column of text and controls gets (entity headers, forms,
+   * settings), centred on a tablet or in landscape (`max-w-readable`). A phone
+   * in portrait is narrower, so it never applies there.
+   */
+  readable: 672,
 } as const;
 
 /**

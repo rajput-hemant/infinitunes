@@ -9,7 +9,7 @@ import { ErrorState } from "~/components/error-state";
 import { GridCell } from "~/components/grid-cell";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Spinner } from "~/components/ui/spinner";
-import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { useGrid } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 
 /** What a catalog list reads from its query; paging fields are absent for a single page. */
@@ -38,7 +38,7 @@ type CatalogScreenProps<Item> = {
 const SEEN_IT_ALL = "You have seen it all";
 
 /**
- * A three-column catalog grid with every state of a fetched list: skeleton,
+ * A catalog card grid (three columns on a phone) with every state of a fetched list: skeleton,
  * error with retry (only while there is nothing to show), empty, pull to
  * refresh and endless paging. One list stays mounted so the header and the
  * scroll container survive a language change.
@@ -51,16 +51,18 @@ export function CatalogScreen<Item>({
   header,
   round = false,
 }: CatalogScreenProps<Item>) {
-  const width = useGridCardWidth(CARD_COLUMNS);
+  const { columns, width } = useGrid("cards");
   const { items } = query;
 
   return (
     <FlashList
       data={items}
-      numColumns={CARD_COLUMNS}
+      numColumns={columns}
       keyExtractor={keyOf}
       renderItem={({ item, index }) => (
-        <GridCell index={index}>{renderCard(item, width)}</GridCell>
+        <GridCell index={index} columns={columns}>
+          {renderCard(item, width)}
+        </GridCell>
       )}
       ListHeaderComponent={header}
       ListEmptyComponent={

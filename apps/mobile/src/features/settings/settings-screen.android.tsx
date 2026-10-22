@@ -182,7 +182,7 @@ function PickRow<Value extends string>({
         accessibilityLabel={`${title}, ${current?.label ?? ""}`}
       >
         <RowFace
-          width={width - 2 * sizes.page}
+          width={Math.min(width, sizes.readable) - 2 * sizes.page}
           icon={icon}
           iconColor={iconColor}
           title={title}
@@ -222,7 +222,8 @@ function ProfileCard({ name, email }: { name?: string | null; email: string }) {
  * Settings as Material 3 Expressive's segmented list: 56dp tiles (72dp with
  * a value) with a bare leading icon, the title over its value, and a chevron
  * where a row opens a screen; only the profile card has a filled circle. Not
- * the form fields the shared native list renders on Android.
+ * the form fields the shared native list renders on Android. On a wide window
+ * the list is at most `sizes.readable` wide, centred.
  */
 export function SettingsScreen() {
   const { data: session } = authClient.useSession();
@@ -243,6 +244,7 @@ export function SettingsScreen() {
 
   return (
     <ScrollView
+      contentContainerClassName="w-full max-w-readable self-center"
       contentContainerStyle={{ paddingBottom: playerDockInset + space.xl }}
     >
       <Section title="Account">

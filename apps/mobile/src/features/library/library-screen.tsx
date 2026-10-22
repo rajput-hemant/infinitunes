@@ -8,7 +8,7 @@ import { SectionHeader } from "~/components/section-header";
 import { SongListSkeleton } from "~/components/skeletons";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
-import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { GRID_GAP, useGrid } from "~/lib/use-grid-card-width";
 import { useFavoriteLists } from "~/user-data/favorites";
 import { useServerPlaylists } from "~/user-data/playlists";
 
@@ -49,7 +49,7 @@ function Playlists() {
 
 /** Liked Songs and Recently Played, side by side; the liked count is already loaded. */
 function Tiles() {
-  const width = useGridCardWidth();
+  const { width } = useGrid("tiles");
   const liked = useFavoriteLists()?.songs.length;
   return (
     <View className="flex-row px-page pb-2 pt-2" style={{ gap: GRID_GAP }}>
