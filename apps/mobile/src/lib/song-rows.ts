@@ -1,6 +1,7 @@
 import {
   fetchLikedSongsNewestFirst,
   fetchSongsChunked,
+  orderByIds,
 } from "@infinitunes/core/liked-songs";
 import { toSongRow } from "@infinitunes/types";
 import type { Song, SongRowItem } from "@infinitunes/types";
@@ -27,8 +28,7 @@ export async function fetchSongRows(
 ): Promise<SongRowItem[] | undefined> {
   const songs = await fetchSongsChunked([...ids], songDetails);
   if (!songs) return undefined;
-  const byId = new Map(songs.map((song) => [song.id, toSongRow(song)]));
-  return ids.flatMap((id) => byId.get(id) ?? []);
+  return orderByIds(ids, songs.map(toSongRow));
 }
 
 /** The rows of the liked song ids, newest like first; `undefined` as above. */
