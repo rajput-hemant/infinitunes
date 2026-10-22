@@ -19,7 +19,7 @@ describe("MixScreen", () => {
     procedure("get.mix").mockReturnValue(new Promise(() => {}));
     await renderScreen(<MixScreen token="XyZ_" />);
 
-    expect(screen.getAllByRole("progressbar")).toHaveLength(3);
+    expect(screen.getAllByRole("progressbar")).toHaveLength(2); // header and songs: a mix has no shelf
     expect(screen.queryByText("Play")).toBeNull();
   });
 

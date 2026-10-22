@@ -1,9 +1,10 @@
 import { FlashList } from "@shopify/flash-list";
 import { Stack } from "expo-router";
 
+import { CatalogGridSkeleton } from "~/components/catalog-grid-skeleton";
 import { GridCell } from "~/components/grid-cell";
 import { MediaCard } from "~/components/media-card";
-import { ShelfSkeleton } from "~/components/skeletons";
+import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
 import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
@@ -26,7 +27,15 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
   return (
     <LibraryListView
       list={list}
-      skeleton={<ShelfSkeleton cards={CARD_COLUMNS} />}
+      skeleton={
+        // The loaded grid's geometry: three columns, round for artists.
+        <ScreenScrollView
+          scrollEnabled={false}
+          contentContainerStyle={{ paddingTop: sizes.page }}
+        >
+          <CatalogGridSkeleton round={kind === "artists"} />
+        </ScreenScrollView>
+      }
       empty={{
         icon,
         title: `No ${title.toLowerCase()} yet`,

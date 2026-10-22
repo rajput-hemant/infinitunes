@@ -1,9 +1,15 @@
 import { render, screen, within } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
+import { renderScreen } from "~/test/render";
 import { textStyles } from "~/theme/tokens";
 
-import { LyricsSkeleton, ShelfSkeleton, SkeletonText } from "./skeletons";
+import {
+  EntityHeaderSkeleton,
+  LyricsSkeleton,
+  ShelfSkeleton,
+  SkeletonText,
+} from "./skeletons";
 
 describe("LyricsSkeleton", () => {
   afterEach(() => jest.restoreAllMocks());
@@ -20,11 +26,30 @@ describe("LyricsSkeleton", () => {
     ]);
   });
 
-  it("stays plain lines on iOS", async () => {
+  it("mirrors iOS's plain preview: three body lines and Read More", async () => {
     jest.replaceProperty(Platform, "OS", "ios");
     await render(<LyricsSkeleton />);
 
     expect(screen.queryByTestId("lyrics-skeleton-card")).toBeNull();
+    const preview = screen.getByTestId("lyrics-skeleton-plain");
+    const lines = within(preview).getAllByTestId("skeleton-text");
+    expect(lines.map((line) => line.props.style.height)).toEqual([
+      ...Array.from({ length: 3 }, () => textStyles.body.lineHeight),
+      textStyles.subhead.lineHeight,
+    ]);
+  });
+});
+
+describe("EntityHeaderSkeleton", () => {
+  it("draws the menu's dots where the loaded header has its menu", async () => {
+    await renderScreen(<EntityHeaderSkeleton like={false} />);
+    expect(screen.getByTestId("header-skeleton-menu")).toBeOnTheScreen();
+    expect(screen.queryByTestId("header-skeleton-like")).toBeNull();
+  });
+
+  it("leaves the menu out of a header without one", async () => {
+    await renderScreen(<EntityHeaderSkeleton menu={false} />);
+    expect(screen.queryByTestId("header-skeleton-menu")).toBeNull();
   });
 });
 

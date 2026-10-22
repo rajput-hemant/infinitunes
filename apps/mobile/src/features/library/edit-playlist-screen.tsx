@@ -1,9 +1,10 @@
 import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { View } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
-import { SongListSkeleton } from "~/components/skeletons";
+import { Spinner } from "~/components/ui/spinner";
 import { renamePlaylist } from "~/user-data/playlists";
 import { useServerPlaylists } from "~/user-data/playlists";
 
@@ -15,7 +16,14 @@ function EditPlaylist({ id }: { id: string }) {
   const playlists = usePlaylists(data);
   const playlist = playlists?.find((candidate) => candidate.id === id);
 
-  if (isPending) return <SongListSkeleton rows={2} />;
+  // A form, not a list: a spinner as `SignedInGate`'s, not song rows.
+  if (isPending) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Spinner accessibilityLabel="Loading" />
+      </View>
+    );
+  }
   if (!playlists) {
     return <ErrorState error={error} onRetry={() => void refetch()} />;
   }
