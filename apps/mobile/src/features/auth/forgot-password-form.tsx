@@ -80,7 +80,6 @@ export function ForgotPasswordForm() {
         label={pending ? "Sending..." : "Send reset link"}
         disabled={pending}
         onPress={submit}
-        className="disabled:opacity-50"
       />
     </View>
   );

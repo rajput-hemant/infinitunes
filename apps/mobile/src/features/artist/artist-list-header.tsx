@@ -77,7 +77,8 @@ export function ArtistListHeader({
       />
       {/* The order is one choice, not a second tab row: a menu at the list's end. */}
       {isPaged ? (
-        <View className="flex-row items-center justify-end px-page">
+        // The trigger is 48 high for its target; the margin keeps the row's 40.
+        <View className="-my-1 flex-row items-center justify-end px-page">
           <OptionMenu
             testID="artist-sort"
             label="Sort by"

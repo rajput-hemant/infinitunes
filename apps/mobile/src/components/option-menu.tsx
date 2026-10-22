@@ -14,8 +14,12 @@ const TRIGGERS = {
     className: "min-h-ctl gap-1 rounded-full bg-secondary px-3 py-1",
     tone: "onSecondary",
   },
-  /** Plain muted text, for a list's sort order beside its count. */
-  plain: { className: "min-h-ctl gap-1", tone: "muted" },
+  /**
+   * Plain muted text, for a list's sort order beside its count. It is the
+   * full touch height: the native menu hit-tests its child's bounds, so slop
+   * cannot reach it.
+   */
+  plain: { className: "min-h-touch gap-1", tone: "muted" },
 } as const;
 
 type OptionMenuProps<Id extends string> = {

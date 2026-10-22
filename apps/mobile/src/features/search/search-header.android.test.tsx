@@ -17,17 +17,12 @@ function renderHeader(query: string, onCancel = jest.fn()) {
 }
 
 describe("Android SearchHeader", () => {
-  it("leads with the magnifier at rest and with back once the field is focused", async () => {
+  it("keeps a labelled back while empty and unfocused, with no clear", async () => {
     await renderHeader("");
-
-    expect(screen.getByTestId("search-bar-magnifier")).toBeOnTheScreen();
-    expect(screen.queryByRole("button", { name: "Back" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Clear search" })).toBeNull();
-
-    await fireEvent(screen.getByLabelText("Search"), "focus");
+    await fireEvent(screen.getByLabelText("Search"), "blur");
 
     expect(screen.getByRole("button", { name: "Back" })).toBeOnTheScreen();
-    expect(screen.queryByTestId("search-bar-magnifier")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Clear search" })).toBeNull();
   });
 
   it("shows back and clear while there is text", async () => {

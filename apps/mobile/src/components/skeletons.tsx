@@ -10,7 +10,6 @@ import { useUserId } from "~/user-data/session";
 
 import { entityTitleVariant, largePlay } from "./entity-header";
 import { CARD_TITLE } from "./media-card";
-import type { MediaCardVariant } from "./media-card";
 import { artworkFrame } from "./ui/artwork";
 import { range, SkeletonBlock, SkeletonPulse } from "./ui/skeleton";
 
@@ -131,29 +130,17 @@ export function CardTextSkeleton({ hero = false }: { hero?: boolean }) {
   );
 }
 
-type ShelfSkeletonProps = {
-  cards?: number;
-  /** `hero`: the untitled featured carousel's larger cards. */
-  variant?: MediaCardVariant;
-};
-
-export function ShelfSkeleton({
-  cards = 3,
-  variant = "card",
-}: ShelfSkeletonProps) {
-  const frame = useFrame();
-  const hero = variant === "hero";
-  const art = frame(hero ? "hero" : "card");
+export function ShelfSkeleton({ cards = 3 }: { cards?: number }) {
+  const art = useFrame()("card");
   return (
     <SkeletonPulse>
-      {hero ? null : <HeaderLine />}
+      <HeaderLine />
       <View className="flex-row gap-3 overflow-hidden px-page">
         {range(cards).map((card) => (
           <View key={card} className="gap-2" style={{ width: art.width }}>
             <SkeletonBlock style={art} />
             <View>
-              {hero ? <SkeletonText variant="caption" width="40%" /> : null}
-              <CardTextSkeleton hero={hero} />
+              <CardTextSkeleton />
             </View>
           </View>
         ))}

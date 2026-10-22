@@ -68,7 +68,6 @@ export function LoginForm() {
         label={pending ? "Signing in..." : "Sign in"}
         disabled={pending}
         onPress={submit}
-        className="disabled:opacity-50"
       />
       <View className="items-center">
         <FormLink href="/forgot-password" tone="muted">

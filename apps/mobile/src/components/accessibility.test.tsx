@@ -8,6 +8,7 @@ import { renderScreen } from "~/test/render";
 import { ChipRow } from "./chip-row";
 import { MediaCard } from "./media-card";
 import { MenuTrigger } from "./menu-trigger";
+import { OptionMenu } from "./option-menu";
 import { Button } from "./ui/button";
 import { IconButton } from "./ui/icon-button";
 
@@ -50,6 +51,23 @@ describe("touch targets", () => {
       expect.stringContaining("size-touch"),
     );
     expect(screen.getByHintText("Opens a menu")).toBe(trigger);
+  });
+
+  it("gives a plain option menu trigger the full 48pt height", async () => {
+    await renderScreen(
+      <OptionMenu
+        label="Sort by"
+        variant="plain"
+        options={[{ id: "a", title: "Popular" }]}
+        selectedId="a"
+        onSelect={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("Sort by, Popular")).toHaveProp(
+      "className",
+      expect.stringContaining("min-h-touch"),
+    );
   });
 
   it("extends a chip's target above and below its 32pt body", async () => {

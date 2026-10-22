@@ -305,6 +305,8 @@ export const sizes = {
   "ctl-lg": 44,
   touch: 48,
   row: 56,
+  /** A two-line list row (Material's list item with supporting text). */
+  "row-2": 72,
   page: 16,
   dock: 64,
   /** The seam between the tiles of an Android segmented list or connected button group. */

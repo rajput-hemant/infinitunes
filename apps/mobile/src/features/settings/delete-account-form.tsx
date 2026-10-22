@@ -78,7 +78,6 @@ export function DeleteAccountForm() {
         disabled={!confirmed || pending}
         onPress={submit}
         variant="destructive"
-        className="disabled:opacity-50"
       />
     </FormScreen>
   );

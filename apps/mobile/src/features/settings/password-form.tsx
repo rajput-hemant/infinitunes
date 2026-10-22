@@ -71,7 +71,6 @@ export function PasswordForm() {
         label={pending ? "Updating..." : "Update password"}
         disabled={pending}
         onPress={submit}
-        className="disabled:opacity-50"
       />
     </FormScreen>
   );

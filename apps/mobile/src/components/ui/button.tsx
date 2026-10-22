@@ -1,5 +1,5 @@
-import { Platform, Pressable, StyleSheet, View } from "react-native";
-import type { PressableProps } from "react-native";
+import { Platform, Pressable, StyleSheet } from "react-native";
+import type { PressableProps, StyleProp, ViewStyle } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,7 +8,7 @@ import Animated, {
 
 import { cx } from "~/lib/class-names";
 import { springs } from "~/theme/motion";
-import { sizes } from "~/theme/tokens";
+import { sizes, space } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
 import { useRadii } from "~/theme/use-radii";
 
@@ -37,17 +37,22 @@ const variants = {
   },
 } as const;
 
-type ButtonProps = Omit<PressableProps, "children"> & {
+type ButtonProps = Omit<PressableProps, "children" | "className" | "style"> & {
   label: string;
   /** A leading symbol, e.g. play or shuffle. */
   icon?: SymbolName;
   variant?: keyof typeof variants;
+  /**
+   * Layout only (a margin), set on the pressable itself. There is no class
+   * prop: a wrapper view would cut Android's hit slop to its own bounds.
+   */
+  style?: StyleProp<ViewStyle>;
 };
 
 /**
  * A capsule action at the touch height: filled primary, a secondary that is
  * iOS's tinted capsule and Android's tonal button (`secondaryContainer`), or a
- * destructive one. It grows with its text.
+ * destructive one. It grows with its text and dims while disabled.
  */
 export function Button(props: ButtonProps) {
   return Platform.OS === "android" ? (
@@ -61,7 +66,6 @@ function CapsuleButton({
   label,
   icon,
   variant = "primary",
-  className,
   ...props
 }: ButtonProps) {
   const { container, tone, ink } = variants[variant];
@@ -71,9 +75,8 @@ function CapsuleButton({
     <Pressable
       accessibilityRole="button"
       className={cx(
-        "min-h-touch flex-row items-center justify-center gap-2 rounded-full px-4 py-2 active:scale-95 active:opacity-80",
+        "min-h-touch flex-row items-center justify-center gap-2 rounded-full px-4 py-2 active:scale-95 active:opacity-80 disabled:opacity-50",
         container,
-        className,
       )}
       {...props}
     >
@@ -87,6 +90,8 @@ function CapsuleButton({
   );
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 /** The 40dp button's slop to the 48dp target. */
 const BUTTON_HIT_SLOP = { top: 4, bottom: 4 } as const;
 const AT_REST = sizes.ctl / 2;
@@ -94,13 +99,16 @@ const AT_REST = sizes.ctl / 2;
 /**
  * Material 3 Expressive's small button: 40dp high (48dp with slop), fully
  * round at rest, its corners morphing to the small shape while pressed on the
- * fast spatial spring.
+ * fast spatial spring. The pressable is the outermost view and the clipped,
+ * shaped one: Android drops a touch outside a parent's bounds (its children's
+ * frames, never their slop) before reaching a child, so slop on a wrapped
+ * pressable never fires.
  */
 function MaterialButton({
   label,
   icon,
   variant = "primary",
-  className,
+  style,
   onPressIn,
   onPressOut,
   ...props
@@ -114,32 +122,44 @@ function MaterialButton({
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
 
   return (
-    // Classes (the caller's layout) stay on a plain view; the animated one is styled.
-    <View className={className}>
-      <Animated.View style={[styles.clip, { backgroundColor }, shape]}>
-        <Pressable
-          accessibilityRole="button"
-          hitSlop={BUTTON_HIT_SLOP}
-          android_ripple={{ color: ripple }}
-          className="min-h-ctl flex-row items-center justify-center gap-2 px-4"
-          onPressIn={(event) => {
-            radius.set(withSpring(pressedRadius, springs.spatialFast));
-            onPressIn?.(event);
-          }}
-          onPressOut={(event) => {
-            radius.set(withSpring(AT_REST, springs.spatialFast));
-            onPressOut?.(event);
-          }}
-          {...props}
-        >
-          {icon ? <Icon name={icon} size="md" color={inkColor} /> : null}
-          <Text variant="label" tone={tone}>
-            {label}
-          </Text>
-        </Pressable>
-      </Animated.View>
-    </View>
+    <AnimatedPressable
+      accessibilityRole="button"
+      hitSlop={BUTTON_HIT_SLOP}
+      android_ripple={{ color: ripple, foreground: true }}
+      onPressIn={(event) => {
+        radius.set(withSpring(pressedRadius, springs.spatialFast));
+        onPressIn?.(event);
+      }}
+      onPressOut={(event) => {
+        radius.set(withSpring(AT_REST, springs.spatialFast));
+        onPressOut?.(event);
+      }}
+      {...props}
+      style={[
+        styles.button,
+        { backgroundColor },
+        props.disabled ? styles.disabled : undefined,
+        style,
+        shape,
+      ]}
+    >
+      {icon ? <Icon name={icon} size="md" color={inkColor} /> : null}
+      <Text variant="label" tone={tone}>
+        {label}
+      </Text>
+    </AnimatedPressable>
   );
 }
 
-const styles = StyleSheet.create({ clip: { overflow: "hidden" } });
+const styles = StyleSheet.create({
+  button: {
+    minHeight: sizes.ctl,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    overflow: "hidden",
+  },
+  disabled: { opacity: 0.5 },
+});
