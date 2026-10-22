@@ -24,6 +24,8 @@ type FavoriteToggleOptions = {
   name: string;
   user?: User;
   /** `null`: the favorites read failed, so the state is unknown. */
+  favorites?: Favorite | null;
+  /** Legacy alias. */
   favourites?: Favorite | null;
 };
 
@@ -32,16 +34,17 @@ type FavoriteToggleOptions = {
  * shows this item; the write follows, and a failure rolls back with a toast.
  */
 export function useFavoriteToggle(options: FavoriteToggleOptions) {
-  const { type, token, name, user, favourites } = options;
+  const { type, token, name, user, favorites, favourites } = options;
+  const currentFavorites = favorites !== undefined ? favorites : favourites;
   const copy = FAVORITE_COPY[type];
-  const serverLiked = isFavorited(favourites, type, token);
+  const serverLiked = isFavorited(currentFavorites, type, token);
   const key = favoriteKey(type, token);
   const liked = useFavorite(key, serverLiked);
 
   /** Returns true when the click started a toggle. */
   function toggle(): boolean {
     // Unknown favorites state: a write would toggle blindly.
-    if (favourites === null) return false;
+    if (currentFavorites === null) return false;
 
     if (!user) {
       toast.warning("Unable to perform action. Please sign in.", {

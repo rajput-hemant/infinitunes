@@ -89,10 +89,10 @@ export function useImageQuality() {
   return useAtom(imageQualityAtom, { store }, "high");
 }
 
-const isPlayingAtom = atom(false);
+const isPlayerInitAtom = atom(false);
 
 export function useIsPlayerInit() {
-  return useAtom(isPlayingAtom, { store }, false);
+  return useAtom(isPlayerInitAtom, { store }, false);
 }
 
 const isTyping = atom(false);
