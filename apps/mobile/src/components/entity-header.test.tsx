@@ -2,6 +2,7 @@ import { screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
 import { renderScreen } from "~/test/render";
+import { sizes } from "~/theme/tokens";
 
 import { EntityHeader } from "./entity-header";
 
@@ -34,8 +35,13 @@ describe("EntityHeader", () => {
 
   it("makes Play the large button on Android", async () => {
     jest.replaceProperty(Platform, "OS", "android");
-    const { play } = await renderHeader();
+    await renderHeader();
 
-    expect(play).toContain("size-row");
+    expect(screen.getByRole("button", { name: "Play" })).toHaveStyle({
+      width: sizes.row,
+    });
+    expect(screen.getByRole("button", { name: "Shuffle" })).toHaveStyle({
+      width: sizes.ctl,
+    });
   });
 });

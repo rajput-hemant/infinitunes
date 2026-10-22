@@ -256,7 +256,8 @@ export function EntityHeaderSkeleton({
         </View>
         {subtitle ? <SkeletonText variant="subhead" width={140} /> : null}
         {meta ? <SkeletonText variant="footnote" width={180} /> : null}
-        {/* The heart and the menu, then Shuffle and Play (56dp on Android, 48pt on iOS). */}
+        {/* The heart and the menu, then Shuffle and Play: Android's 40dp
+            tonal and 56dp filled containers, iOS's two 48pt buttons. */}
         <View className="mt-4 w-full flex-row items-center gap-2">
           {range(controls).map((control) => (
             <View
@@ -268,7 +269,12 @@ export function EntityHeaderSkeleton({
           ))}
           <View className="flex-1" />
           {shuffle ? (
-            <SkeletonBlock className="size-touch rounded-full" />
+            <SkeletonBlock
+              className={cx(
+                Platform.OS === "android" ? "size-ctl" : "size-touch",
+                "rounded-full",
+              )}
+            />
           ) : null}
           <SkeletonBlock
             className={cx(
