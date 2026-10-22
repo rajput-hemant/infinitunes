@@ -1,4 +1,5 @@
 import { changePasswordSchema, emailSchema } from "@infinitunes/auth/schemas";
+import { newPlaylistSchema } from "@infinitunes/core/validations";
 import {
   betterAuthAccounts,
   betterAuthSessions,
@@ -6,11 +7,7 @@ import {
   myPlaylists,
   users,
 } from "@infinitunes/db/schema";
-import {
-  PLAYLIST_DESCRIPTION_MAX,
-  PLAYLIST_NAME_MAX,
-  USER_NAME_MAX,
-} from "@infinitunes/types";
+import { USER_NAME_MAX } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { compare, hash } from "bcryptjs";
 import { and, count, eq, ne, sql } from "drizzle-orm";
@@ -79,22 +76,7 @@ function favoritePatch(
   };
 }
 
-const newPlaylistInput = z.object({
-  name: z
-    .string()
-    .min(3, { message: "Name must be at least 3 characters long" })
-    .max(PLAYLIST_NAME_MAX, {
-      message: `Name must be at most ${PLAYLIST_NAME_MAX} characters long`,
-    }),
-  description: z
-    .string()
-    .max(PLAYLIST_DESCRIPTION_MAX, {
-      message: `Description must be at most ${PLAYLIST_DESCRIPTION_MAX} characters long`,
-    })
-    .optional(),
-});
-
-const renamePlaylistInput = newPlaylistInput.extend({
+const renamePlaylistInput = newPlaylistSchema.extend({
   playlistId: z.string(),
 });
 
@@ -521,7 +503,7 @@ export const userRouter = router({
     }),
 
   createNewPlaylist: protectedProcedure
-    .input(newPlaylistInput)
+    .input(newPlaylistSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         const userId = ctx.session.user.id;
