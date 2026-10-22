@@ -86,7 +86,7 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts`
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
@@ -107,12 +107,12 @@ M6 is merged. The predictive-back change needs a native rebuild, which the owner
 - [ ] **M-29** **[device sign-off later]** P3 PLAUSIBLE `theme/android-colors.android.ts:11-33`, `dynamic-color-root.android.tsx:18-21` - Material You palette cache never invalidates after a wallpaper change [comp P3-14]
   - Fix: clear on `AppState` `active` or key on the resolved `primary`. Executor: sonnet. Flags: needs device check.
 
-## Batch M8 (sonnet): iOS polish and shared control files - `components/ui/{text,icon-button,button}.tsx`, `components/{card-menu,card-play-button,drag-handle}.tsx`, `components/detail/{detail-scroll,detail-header-options}.tsx`, `features/player/{transport-controls,mini-player}.tsx`, `features/library/swipeable-row.tsx`
+## Batch M8 (sonnet): iOS polish and shared control files - `components/ui/{text,icon-button,button}.tsx`, `components/{card-menu,card-play-button,drag-handle}.tsx`, `components/detail/{detail-scroll,detail-header-options}.tsx`, `features/player/{transport-controls,mini-player}.tsx`, `features/library/swipeable-row.tsx` _(branch `worktree-agent-a80fc897fa184b6f9`)_
 
 Owns every edit to `icon-button.tsx`, `transport-controls.tsx` and `card-play-button.tsx` (iOS and Android items together).
 
-- [ ] **M-36** **[device sign-off later]** P3 PLAUSIBLE `features/library/swipeable-row.tsx:35` - swipe row does not commit on a full swipe [design P3-10]
-  - Fix: iOS full-swipe (>60% width) triggers the destructive action. Executor: sonnet. Flags: needs device check.
+- [x] **M-36** **[device sign-off later]** P3 PLAUSIBLE `features/library/swipeable-row.tsx:35` - swipe row does not commit on a full swipe [design P3-10]
+  - Fix: iOS full-swipe (>60% width) triggers the destructive action. Executor: sonnet. Flags: needs device check. Done: iOS-only `overshootRight`; a UI-thread reaction flags a drag past 60% of the row width, and the release (`onSwipeableWillOpen`) runs the action (`isFullSwipe`, unit-tested). Gesture itself needs a device check.
 
 ## Batch M9 (opus): Android accent - `theme/use-palette.ts` (+ contrast test)
 
@@ -137,7 +137,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -374,7 +374,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
