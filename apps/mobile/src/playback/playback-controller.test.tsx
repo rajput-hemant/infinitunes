@@ -53,6 +53,112 @@ beforeEach(() => {
 afterEach(() => queryClient.clear());
 
 describe("PlaybackController", () => {
+  it("rejects an earlier load of the same URL and events preceding a source clear", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    const oldError = player.queueStatus({ error: "First load failed" });
+    await act(async () => playerStore.getState().skipToNext());
+    await act(async () => playerStore.getState().skipToPrevious());
+    const loads = [...player.loads];
+    await act(async () => oldError());
+    expect(player.loads).toEqual(loads);
+
+    const oldFinish = player.queueStatus({ didJustFinish: true });
+    await act(async () =>
+      playerStore
+        .getState()
+        .playTracks([{ ...rows[1]!, download_url: "" }, rows[0]!]),
+    );
+    await act(async () => oldFinish());
+    expect(playerStore.getState().currentIndex).toBe(0);
+    expect(player.loads.at(-1)).toBe("");
+    expect(player.playing).toBe(false);
+  });
+
+  it("applies a queued remote Next once to the current queue", async () => {
+    const player = await mountController();
+    await act(async () =>
+      playerStore.getState().playTracks([...rows, ...rows]),
+    );
+    const next = player.queueRemote("nextTrack");
+    const oldFinish = player.queueStatus({ didJustFinish: true });
+    await act(async () => playerStore.getState().skipToNext());
+    const loads = player.loads.length;
+    await act(async () => next());
+    expect(playerStore.getState().currentIndex).toBe(2);
+    expect(player.loads).toHaveLength(loads + 1);
+    await act(async () => oldFinish());
+    expect(playerStore.getState().currentIndex).toBe(2);
+    expect(player.loads).toHaveLength(loads + 1);
+  });
+
+  it("does not double-skip when Next and an old finish arrive before replacement", async () => {
+    const player = await mountController();
+    await act(async () =>
+      playerStore.getState().playTracks([...rows, ...rows]),
+    );
+    const oldFinish = player.queueStatus({ didJustFinish: true });
+    await act(async () => {
+      player.pressRemote("nextTrack");
+      oldFinish();
+    });
+    expect(playerStore.getState().currentIndex).toBe(1);
+    expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
+  });
+
+  it("stops offline playback after two failed tracks despite a late loaded event", async () => {
+    const player = await mountController();
+    await act(async () =>
+      playerStore.getState().playTracks([...rows, rows[0]!]),
+    );
+    await act(async () => player.finishLoading());
+    const oldLoaded = player.queueStatus({ isLoaded: true });
+    for (let rung = 0; rung < 5; rung += 1) {
+      await act(async () => player.failLoading("Offline"));
+    }
+    expect(playerStore.getState().currentIndex).toBe(1);
+    await act(async () => oldLoaded());
+    for (let rung = 0; rung < 5; rung += 1) {
+      await act(async () => player.failLoading("Offline"));
+    }
+    expect(playerStore.getState().currentIndex).toBe(1);
+    expect(player.playing).toBe(false);
+    expect(failureStore.getState().current?.message).toBe(
+      "Can't reach the music server. Check your connection and try again.",
+    );
+  });
+
+  it.each(["finish", "error", "loaded"] as const)(
+    "ignores a delayed %s event from the replaced source",
+    async (event) => {
+      const player = await mountController();
+      await act(async () =>
+        playerStore.getState().playTracks([...rows, rows[0]!]),
+      );
+      await act(async () => player.finishLoading());
+      const deliver = player.queueStatus(
+        event === "finish"
+          ? { didJustFinish: true }
+          : event === "error"
+            ? { error: "Previous source failed" }
+            : { isLoaded: true, duration: 999, bufferedTime: 999 },
+      );
+
+      await act(async () => playerStore.getState().skipToNext());
+      const loads = [...player.loads];
+      await act(async () => deliver());
+
+      expect(playerStore.getState().currentIndex).toBe(1);
+      expect(player.loads).toEqual(loads);
+      expect(player.playing).toBe(true);
+      expect(playbackStatusStore.getState().duration).toBe(0);
+      expect(playbackStatusStore.getState().bufferedTime).toBe(0);
+      // An old loaded/error event must not consume the new source's first failure.
+      await act(async () => player.failLoading());
+      expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 160));
+    },
+  );
+
   it("stops the previous source and reports a linkless entry", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows));

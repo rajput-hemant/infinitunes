@@ -21,12 +21,14 @@ import { useEffect, useState } from "react";
  */
 
 type StatusListener = (status: AudioStatus) => void;
+type SourceStatus = AudioStatus & { sourceGeneration: number };
 type RemoteCommand = "nextTrack" | "previousTrack";
 type RemoteListener = (event: { command: RemoteCommand }) => void;
 type Subscription = { remove: () => void };
 
-const idleStatus: AudioStatus = {
+const idleStatus: SourceStatus = {
   id: "fake",
+  sourceGeneration: 0,
   currentTime: 0,
   bufferedTime: 0,
   playbackState: "idle",
@@ -64,7 +66,7 @@ export class FakeAudioPlayer {
   lockScreenOptions?: AudioLockScreenOptions;
   /** How often `setActiveForLockScreen(true)` ran (each one rebuilds the Android session). */
   lockScreenActivations = 0;
-  currentStatus: AudioStatus = idleStatus;
+  currentStatus: SourceStatus = idleStatus;
   private readonly listeners = new Set<StatusListener>();
   private readonly remoteListeners = new Set<RemoteListener>();
 
@@ -92,6 +94,7 @@ export class FakeAudioPlayer {
     this.loads.push(sourceUri(source));
     this.currentStatus = {
       ...this.currentStatus,
+      sourceGeneration: this.currentStatus.sourceGeneration + 1,
       isLoaded: false,
       currentTime: 0,
       bufferedTime: 0,
@@ -149,7 +152,20 @@ export class FakeAudioPlayer {
 
   /** The lock screen, a headset or Bluetooth pressed next or previous. */
   pressRemote(command: RemoteCommand) {
-    for (const listener of this.remoteListeners) listener({ command });
+    this.queueRemote(command)();
+  }
+
+  /** A native event already emitted, waiting for delivery to JS. */
+  queueStatus(patch: Partial<AudioStatus>) {
+    const status = { ...this.currentStatus, ...patch };
+    return () => this.emit(status);
+  }
+
+  queueRemote(command: RemoteCommand) {
+    const event = { command };
+    return () => {
+      for (const listener of this.remoteListeners) listener(event);
+    };
   }
 
   /** Forgets what earlier tests did (the app keeps one player for its lifetime). */
@@ -157,7 +173,10 @@ export class FakeAudioPlayer {
     this.loads.length = 0;
     this.lockScreen = { active: false };
     this.lockScreenActivations = 0;
-    this.currentStatus = idleStatus;
+    this.currentStatus = {
+      ...idleStatus,
+      sourceGeneration: this.currentStatus.sourceGeneration,
+    };
   }
 
   /** Loading can advance while the player is paused. */
@@ -217,7 +236,7 @@ export function createAudioPlayer(): FakeAudioPlayer {
 
 /** expo-audio's hook (`useEvent`): the last status event, as React state. */
 export function useAudioPlayerStatus(player: FakeAudioPlayer): AudioStatus {
-  const [status, setStatus] = useState(player.currentStatus);
+  const [status, setStatus] = useState<AudioStatus>(player.currentStatus);
   useEffect(
     () => player.addListener("playbackStatusUpdate", setStatus).remove,
     [player],

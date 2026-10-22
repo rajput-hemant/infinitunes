@@ -5,7 +5,6 @@ import {
   PLAYBACK_PROBLEM_MESSAGES,
   type LoadTrack,
 } from "@infinitunes/core/react/use-track-playback";
-import { useAudioPlayerStatus } from "expo-audio";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { showFailure } from "~/lib/failure";
@@ -23,9 +22,11 @@ import { lyricsQueryOptions } from "~/lib/use-lyrics";
 import {
   audioPlayer,
   configureAudioSession,
+  isCurrentSource,
   loadTrack,
   markSourceEnded,
   nowPlayingMetadata,
+  replaceSource,
 } from "./audio-engine";
 import { capturePlaybackRequest } from "./playback-request";
 import { playbackPosition, playbackStatusStore } from "./playback-status";
@@ -66,7 +67,7 @@ export function PlaybackController() {
     updateQueue,
   } = playerStore.getState();
   const streamQuality = usePreferences((state) => state.streamQuality);
-  const status = useAudioPlayerStatus(audioPlayer);
+  const [status, setStatus] = useState(() => audioPlayer.currentStatus);
   const lockScreenActive = useRef(false);
   // The current source's outcome, kept per load. The status hook cannot
   // carry it: the engine reports `error` on one event only (the next status
@@ -76,6 +77,7 @@ export function PlaybackController() {
   // from the previous source. `useTrackPlayback` steps down
   // a bitrate on each new `loadError` (the web's player resets it per load).
   const [source, setSource] = useState<SourceState>(FRESH_SOURCE);
+  const loadedEntry = useRef<string | undefined>(undefined);
   const cachedLoad = useRef<{
     id: string;
     source: string;
@@ -89,6 +91,7 @@ export function PlaybackController() {
   const load = useCallback<LoadTrack>((src, options) => {
     awaitingRefill.current = null;
     const current = selectCurrentTrack(playerStore.getState());
+    loadedEntry.current = current?.queueItemId;
     const local = current ? cachedSongSource(current, src) : undefined;
     cachedLoad.current =
       local && current ? { id: current.id, source: src, options } : null;
@@ -110,7 +113,7 @@ export function PlaybackController() {
     onProblem: (problem) => {
       cachedLoad.current = null;
       audioPlayer.pause();
-      if (problem !== "unplayable") audioPlayer.replace(null);
+      if (problem !== "unplayable") replaceSource(null);
       setSource(FRESH_SOURCE);
       showFailure(PLAYBACK_PROBLEM_MESSAGES[problem]);
     },
@@ -179,7 +182,11 @@ export function PlaybackController() {
     const subscription = audioPlayer.addListener(
       "playbackStatusUpdate",
       (update) => {
+        if (!isCurrentSource(update)) return;
         const current = selectCurrentTrack(playerStore.getState());
+        // The queue can move before React runs the source-replacement effect.
+        if (current && current.queueItemId !== loadedEntry.current) return;
+        setStatus(update);
         if (
           current &&
           countListen.current(
@@ -237,11 +244,10 @@ export function PlaybackController() {
   // Lock screen, notification, headset and Bluetooth next/previous: the engine
   // holds one source (patches/expo-audio), so it only reports the press.
   useEffect(() => {
-    const subscription = audioPlayer.addListener(
-      "remoteCommand",
-      ({ command }) =>
-        command === "nextTrack" ? skipToNext() : skipToPrevious(),
-    );
+    const subscription = audioPlayer.addListener("remoteCommand", (event) => {
+      if (event.command === "nextTrack") skipToNext();
+      else skipToPrevious();
+    });
     return () => subscription.remove();
   }, [skipToNext, skipToPrevious]);
 
