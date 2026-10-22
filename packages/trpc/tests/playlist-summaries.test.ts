@@ -60,3 +60,22 @@ it("reads every playlist's song ids in one query for the viewer", async () => {
   expect(queries[0]?.sql).toMatch(/select "id", "songs" from/);
   expect(queries[0]?.params).toEqual(["viewer"]);
 });
+
+it("refuses a playlist id that is not a uuid before reading the database", async () => {
+  const db = {
+    query: {
+      myPlaylists: {
+        findFirst() {
+          throw new Error("must not query");
+        },
+      },
+    },
+  } as unknown as DbClient;
+  const caller = createCallerFactory(userRouter)({
+    db,
+    session: { user: { id: "viewer" } },
+  });
+  await expect(
+    caller.getPlaylistDetails({ playlistId: "garbage" }),
+  ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+});

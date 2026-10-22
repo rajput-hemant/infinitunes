@@ -32,12 +32,15 @@ const myPlaylistsLockKey = "infinitunes_playlist.create";
  */
 export const FRESH_SESSION_MS = 10 * 60 * 1000;
 
+/** Playlist ids are database uuids: anything else is a bad request, not a 500. */
+const playlistId = z.uuid({ error: "That playlist doesn't exist" });
+
 const playlistInput = z.object({
-  playlistId: z.string(),
+  playlistId,
 });
 
 const playlistSongsInput = z.object({
-  playlistId: z.string(),
+  playlistId,
   songs: z.array(z.string().max(64)).max(PLAYLIST_MAX_SONGS),
 });
 
@@ -86,11 +89,11 @@ function favoritePatch(
 }
 
 const renamePlaylistInput = newPlaylistSchema.extend({
-  playlistId: z.string(),
+  playlistId,
 });
 
 const removeSongsFromPlaylistInput = z.object({
-  playlistId: z.string(),
+  playlistId,
   index: z.number().int().min(0),
   songId: z.string(),
 });
@@ -109,7 +112,7 @@ export function removeSongAtPlaylistIndex(
 }
 
 const movePlaylistSongInput = z.object({
-  playlistId: z.string(),
+  playlistId,
   from: z.number().int().min(0),
   to: z.number().int().min(0),
   songId: z.string(),

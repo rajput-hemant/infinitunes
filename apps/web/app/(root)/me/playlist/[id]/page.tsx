@@ -1,3 +1,4 @@
+import { getErrorCode } from "@infinitunes/core/error-code";
 import { fetchSongsChunked } from "@infinitunes/core/liked-songs";
 import { formatDuration, getImageSrc, toSongRow } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -30,7 +31,13 @@ type PlaylistPageProps = {
   }>;
 };
 
-const getPlaylist = cache((id: string) => getPlaylistDetails(id));
+// A malformed id (not a uuid) is refused as BAD_REQUEST: a missing playlist.
+const getPlaylist = cache((id: string) =>
+  getPlaylistDetails(id).catch((error: unknown) => {
+    if (getErrorCode(error) === "BAD_REQUEST") return null;
+    throw error;
+  }),
+);
 
 export async function generateMetadata({
   params,
