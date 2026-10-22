@@ -1,6 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import type { Song } from "@infinitunes/types";
 
+import { showFailure } from "~/lib/failure";
 import { trpcClient } from "~/lib/trpc";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
@@ -19,6 +20,9 @@ export async function playSurprise() {
       true,
     );
   } catch {
-    // Nothing plays; the Home screen stays as it was.
+    showFailure("Couldn't load songs to play.", {
+      label: "Retry",
+      onPress: () => void playSurprise(),
+    });
   }
 }

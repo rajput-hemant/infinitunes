@@ -7,8 +7,8 @@ import {
 } from "@infinitunes/core/react/use-track-playback";
 import { useAudioPlayerStatus } from "expo-audio";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Alert } from "react-native";
 
+import { showFailure } from "~/lib/failure";
 import { usePreferences } from "~/lib/preferences";
 import { queryClient } from "~/lib/query-client";
 import {
@@ -112,7 +112,7 @@ export function PlaybackController() {
       audioPlayer.pause();
       if (problem !== "unplayable") audioPlayer.replace(null);
       setSource(FRESH_SOURCE);
-      Alert.alert("Playback unavailable", PLAYBACK_PROBLEM_MESSAGES[problem]);
+      showFailure(PLAYBACK_PROBLEM_MESSAGES[problem]);
     },
     loadError: source.error,
     isLooping: repeatOne,

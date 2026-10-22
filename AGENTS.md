@@ -19,7 +19,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   `position-store`, `use-playhead`, `use-track-playback`, `use-radio-refill`,
   `use-debounced-value`). Upstream-shape readers shared by both apps (launch data, search
   items, languages, cards, `plainText`, `isExplicit`) live in `@infinitunes/types`. Each app keeps only its
-  glue (toasts, audio engine, mutations). Raw-shape test payloads live in
+  glue (toasts or the mobile failure snackbar, audio engine, mutations). Raw-shape test payloads live in
   `@infinitunes/types/fixtures`. It must not import `next/*`, the DOM or `@infinitunes/ui`
   (`.oxlintrc.json` bans DOM globals in `packages/core/src`); its DOM hook tests live in
   `packages/core/tests/dom` (`bun run test:dom`), and `type-check` covers `src` and `tests`.
@@ -294,9 +294,14 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   (its `recyclingKey` drops the old picture). expo-symbols has no replace transition and replays an
   `animationSpec` on every prop update, so set one only briefly (`useGlyphBounce`). react-native-screens gives
   Android form sheets 0 corners: the root layout sets `sheetCornerRadius` to `radii.xl` there.
+- Failures, never successes, show in the one `FailureSnackbar` (root layout; M3 snackbar on Android, a glass
+  banner in a `FullWindowOverlay` on iOS so it covers modals): `showFailure(message, action?)` or
+  `.catch(reportFailure(fallback))` from `lib/failure.ts`, usable outside React. `reportFailure` shows the
+  server's `userMessage` only for coded tRPC errors (network errors get the fallback). No `catch {}` that
+  swallows a failure the listener caused; a play superseded by a newer one stays quiet (`isCurrent()`).
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
   `user-data/playlists.ts` (create, rename, delete, add, remove, move; removals and moves take the server's
-  copy from `useServerPlaylists`); failures roll back, signed out they `promptSignIn` (to `/login`).
+  copy from `useServerPlaylists`); failures roll back and report, signed out they `promptSignIn` (to `/login`).
   Per-user queries key on `userQueryKey(procedureKey, userId)` so one account's cache never shows for the
   next (`getUserFavorites` has no row for a new user: return a value, a query may not resolve `undefined`);
   per-user lists that are not `user.*` procedures key under `LIBRARY_QUERY_KEY`, which sign-out

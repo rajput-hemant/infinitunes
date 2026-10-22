@@ -2,6 +2,7 @@ import { getErrorCode } from "@infinitunes/core/error-code";
 import { toSongRow } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 
+import { showFailure } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
 import { clearSongCache } from "~/lib/song-cache";
 import { fetchLikedSongRows, fetchSongRows } from "~/lib/song-rows";
@@ -144,7 +145,7 @@ function perform(
 }
 
 /**
- * Runs one app action. Failures land `back`; nothing throws, so the action
+ * Runs one app action. Failures land `back` with a snackbar; nothing throws, so the action
  * screen only navigates on the outcome.
  */
 export async function runAppAction(
@@ -154,6 +155,7 @@ export async function runAppAction(
   try {
     return await perform(action, context);
   } catch {
+    showFailure("Couldn't finish that. Try again in the app.");
     return "back";
   }
 }

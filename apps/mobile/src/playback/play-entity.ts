@@ -1,6 +1,7 @@
 import type { Episode, MediaType, Song } from "@infinitunes/types";
 import { parseToken, toSongRow } from "@infinitunes/types";
 
+import { showFailure } from "~/lib/failure";
 import { trpcClient } from "~/lib/trpc";
 import { stationRef } from "~/navigation/entity-href";
 
@@ -60,7 +61,8 @@ async function tracksOf(
 /**
  * Plays a catalog item from its card (album, playlist, artist, show,
  * station...): fetches its tracks and replaces the queue, or plays the
- * station. Failures are silent; nothing throws, so a handler can `void` it.
+ * station. A failure shows in the snackbar (with Retry) unless a newer play
+ * replaced it; nothing throws, so a handler can `void` it.
  */
 export async function playEntity(type: PlayableType, url: string) {
   const isCurrent = beginPlaybackRequest();
@@ -73,6 +75,12 @@ export async function playEntity(type: PlayableType, url: string) {
   try {
     tracks = await tracksOf(type, parseToken(url));
   } catch {
+    if (isCurrent()) {
+      showFailure("Couldn't play this.", {
+        label: "Retry",
+        onPress: () => void playEntity(type, url),
+      });
+    }
     return;
   }
   if (!isCurrent() || tracks.length === 0) return;
@@ -84,7 +92,7 @@ export type QueueableType = Exclude<PlayableType, "radio_station">;
 
 /**
  * Queues a catalog item's tracks right after the current one (`next`) or at
- * the end (`last`), from its card's menu. Failures are silent, as `playEntity`.
+ * the end (`last`), from its card's menu. A failure shows in the snackbar.
  */
 export async function queueEntity(
   type: QueueableType,
@@ -95,6 +103,7 @@ export async function queueEntity(
   try {
     tracks = await tracksOf(type, parseToken(url));
   } catch {
+    showFailure("Couldn't add this to the queue.");
     return;
   }
   if (tracks.length === 0) return;

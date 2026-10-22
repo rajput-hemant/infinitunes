@@ -5,6 +5,7 @@ import {
   rawStationDetails,
 } from "@infinitunes/types/fixtures";
 
+import { failureStore } from "~/lib/failure";
 import { procedure } from "~/test/trpc-mock";
 
 import { playerStore } from "./player-store";
@@ -120,6 +121,10 @@ describe("playStation", () => {
     ).resolves.toBeUndefined();
 
     expect(playerStore.getState().started).toBe(false);
+    expect(failureStore.getState().current).toMatchObject({
+      message: "Couldn't start this station.",
+      action: { label: "Retry" },
+    });
   });
 });
 
@@ -187,6 +192,9 @@ describe("startSeededRadio", () => {
 
     expect(playerStore.getState().queue).toEqual([]);
     expect(playerStore.getState().radio).toBeNull();
+    expect(failureStore.getState().current?.message).toBe(
+      "Couldn't start radio.",
+    );
   });
 
   it("never asks for songs when creating the station fails", async () => {
@@ -195,5 +203,13 @@ describe("startSeededRadio", () => {
     await expect(startSeededRadio({ name: "X" })).resolves.toBeUndefined();
 
     expect(procedure("radio.songs")).not.toHaveBeenCalled();
+
+    // Retry asks again.
+    procedure("radio.createStation").mockResolvedValue({ stationId: "st-3" });
+    procedure("radio.songs").mockResolvedValue(songs);
+    failureStore.getState().current?.action?.onPress();
+    await new Promise(process.nextTick);
+    await new Promise(process.nextTick);
+    expect(playerStore.getState().radio?.stationId).toBe("st-3");
   });
 });

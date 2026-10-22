@@ -4,6 +4,7 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { impactAsync } from "expo-haptics";
 import { Pressable, Text } from "react-native";
 
+import { FailureSnackbar } from "~/components/failure-snackbar";
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure, trpcError } from "~/test/trpc-mock";
@@ -116,6 +117,31 @@ describe("useFavoriteToggle", () => {
     await act(async () => write.reject(trpcError("INTERNAL_SERVER_ERROR")));
 
     await waitFor(() => expect(heart()).toBe("not liked"));
+  });
+
+  it("says so in the failure snackbar when the write fails", async () => {
+    procedure("user.getUserFavorites").mockResolvedValue(favoritesRow());
+    add().mockRejectedValue(trpcError("INTERNAL_SERVER_ERROR"));
+    await renderStack({
+      index: () => (
+        <>
+          <Heart />
+          <FailureSnackbar />
+        </>
+      ),
+    });
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(10);
+    });
+
+    await fireEvent.press(screen.getByRole("button"));
+
+    expect(
+      await screen.findByRole("alert", {
+        name: "Couldn't update your likes. Try again.",
+      }),
+    ).toBeOnTheScreen();
+    expect(heart()).toBe("not liked");
   });
 
   it("sends the latest intent after rapid taps, one write at a time", async () => {

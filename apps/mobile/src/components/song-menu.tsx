@@ -2,6 +2,7 @@ import type { QueueSource, RowExtras } from "@infinitunes/types";
 import type { ReactNode } from "react";
 
 import { downloadTrack } from "~/lib/download";
+import { showFailure } from "~/lib/failure";
 import {
   ensureNotificationPermission,
   notifyDownloadFailed,
@@ -55,6 +56,8 @@ function download(song: TrackItem) {
   const quality = preferencesStore.getState().downloadQuality;
   void ensureNotificationPermission();
   void downloadTrack(song, quality).catch(() => {
+    // The notification posts only in the background; the snackbar is for now.
+    showFailure(`Couldn't download ${song.name}.`);
     void notifyDownloadFailed(song.name);
   });
 }
