@@ -38,10 +38,6 @@ export function useCategoryCovers() {
       ...trpc.get.featuredStations.queryOptions(FIRST_ONLY),
       select: (stations) => stations[0]?.image,
     }),
-    newReleases: useQuery({
-      ...home,
-      select: (modules) => modules.new_albums[0]?.image,
-    }),
     mix: useQuery({
       ...home,
       select: (modules) => modules.tag_mixes?.[0],
@@ -59,7 +55,6 @@ export function useCategoryCovers() {
       shows: queries.shows.data,
       artists: queries.artists.data,
       stations: queries.stations.data,
-      newReleases: queries.newReleases.data,
       mix: queries.mix.data,
     },
     refresh,

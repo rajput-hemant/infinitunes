@@ -1,6 +1,6 @@
 import { decode } from "@infinitunes/types";
 import type { SearchItem } from "@infinitunes/types";
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 
 import { isRoundType } from "~/components/media-card";
 import { SectionHeader } from "~/components/section-header";
@@ -12,6 +12,12 @@ import { usePalette } from "~/theme/use-palette";
 
 import { resultSubtitle } from "./result-subtitle";
 import { TopResultPlay } from "./top-result-play";
+
+/**
+ * The name: Material's titleLarge emphasized; iOS's semibold headline (iOS
+ * has no emphasized weights, and a regular title2 reads as a heading, not a name).
+ */
+const NAME_VARIANT = Platform.OS === "android" ? "title2" : "headline";
 
 type TopResultCardProps = {
   item: SearchItem;
@@ -45,7 +51,7 @@ export function TopResultCard({ item, onPress }: TopResultCardProps) {
             round={isRoundType(item.type)}
           />
           <View className="flex-1 gap-1">
-            <Text variant="title2" emphasized numberOfLines={2}>
+            <Text variant={NAME_VARIANT} emphasized numberOfLines={2}>
               {title}
             </Text>
             {subtitle ? (
@@ -72,7 +78,7 @@ export function TopResultCardSkeleton() {
         <View className="mx-page flex-row items-center gap-4 rounded-lg bg-card p-4">
           <SkeletonBlock style={artworkFrame("feature", 0)} />
           <View className="flex-1 gap-1">
-            <SkeletonText variant="title2" width="70%" />
+            <SkeletonText variant={NAME_VARIANT} width="70%" />
             <SkeletonText variant="subhead" width="50%" />
           </View>
           <SkeletonBlock className="size-row rounded-full" />

@@ -10,6 +10,7 @@ import { entityHref } from "~/navigation/entity-href";
 import { isPlayable } from "~/playback/play-entity";
 import { art, sizes, space } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
+import { useRadii } from "~/theme/use-radii";
 
 import {
   CardLink,
@@ -22,6 +23,15 @@ import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
 
 export type MediaCardVariant = "card" | "hero";
+
+/**
+ * The hero's art corner and lines: Material's extra-large (28) corner and two
+ * lines (eyebrow, title) at YouTube Music density; iOS keeps `lg` and the subtitle.
+ */
+export const HERO = Platform.select({
+  android: { radius: "xl", subtitle: false },
+  default: { radius: "lg", subtitle: true },
+} as const);
 
 /** A card's title: iOS's semibold footnote, Material's label large (14/500). */
 export const CARD_TITLE = Platform.select({
@@ -78,6 +88,12 @@ export function MediaCard({
   const entries = useCardMenuEntries(item);
   const press = usePressScale();
   const ripple = usePalette()["fill-2"];
+  const scale = useRadii();
+  const subtitle = hero && !HERO.subtitle ? undefined : item.subtitle;
+  const artStyle = {
+    ...(width === undefined ? undefined : { width, height: width }),
+    ...(hero && !round ? { borderRadius: scale[HERO.radius] } : undefined),
+  };
 
   const content = (
     <>
@@ -86,7 +102,7 @@ export function MediaCard({
           image={item.image}
           size={hero ? "hero" : "card"}
           round={round}
-          style={width === undefined ? undefined : { width, height: width }}
+          style={artStyle}
         />
       </Animated.View>
       <View className={round ? "items-center" : undefined}>
@@ -102,11 +118,11 @@ export function MediaCard({
         >
           {item.name}
         </Text>
-        {item.subtitle || explicit ? (
+        {subtitle || explicit ? (
           <View className="flex-row items-center gap-1">
             {/* The card's label already says "Explicit". */}
             {explicit ? <ExplicitBadge accessible={false} /> : null}
-            {item.subtitle ? (
+            {subtitle ? (
               <Text
                 variant={hero ? "footnote" : "caption"}
                 style={{ fontWeight: "400" }}
@@ -114,7 +130,7 @@ export function MediaCard({
                 numberOfLines={1}
                 className="shrink"
               >
-                {item.subtitle}
+                {subtitle}
               </Text>
             ) : null}
           </View>
@@ -159,7 +175,7 @@ export function MediaCard({
               "gap-2",
               Platform.OS === "android" &&
                 (hero
-                  ? "overflow-hidden rounded-t-lg"
+                  ? "overflow-hidden rounded-t-xl"
                   : "overflow-hidden rounded-t-md"),
             )}
             style={{ width: edge }}
