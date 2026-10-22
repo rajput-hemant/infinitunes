@@ -42,8 +42,12 @@ describe("FullPlayer", () => {
     expect(screen.getByText("Lyrics powered by Musixmatch")).toBeOnTheScreen();
     expect(lyrics).toHaveBeenCalledWith({ id: "BSaNI3Yr" });
 
-    await fireEvent.press(screen.getByRole("button", { name: "Hide lyrics" }));
+    // One toggle that shows its state: the filled circle while lyrics are on.
+    expect(toggle).toHaveProp("accessibilityState", { selected: true });
+    expect(screen.getByTestId("mode-toggle-on")).toBeOnTheScreen();
+    await fireEvent.press(toggle);
     expect(screen.queryByText("Lyrics powered by Musixmatch")).toBeNull();
+    expect(toggle).toHaveProp("accessibilityState", { selected: false });
   });
 
   it("says so when the song has no lyrics", async () => {
@@ -92,6 +96,20 @@ describe("FullPlayer", () => {
     ).toBeOnTheScreen();
   });
 
+  it("marks an explicit track before its credit, read once", async () => {
+    play(rawSong({ explicit_content: "1" }));
+    await renderScreen(<FullPlayer />);
+
+    expect(
+      await screen.findByLabelText("Explicit, Flipperachi - FA9LA"),
+    ).toBeOnTheScreen();
+    // Hidden from screen readers: the row's label already says it.
+    expect(
+      screen.getByText("E", { includeHiddenElements: true }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByLabelText("Explicit")).toBeNull();
+  });
+
   it("names the station a radio queue refills from", async () => {
     playerStore.getState().playTracks([toSongRow(rawSong())], {
       radio: { stationId: "st-1", name: "Flipperachi Radio", type: "artist" },
@@ -118,5 +136,15 @@ describe("MiniPlayer", () => {
       }),
     );
     expect(screen.getByLabelText("Playing Hindi Hits")).toBeOnTheScreen();
+  });
+
+  it("drops Next when compact (the inline tab bar accessory)", async () => {
+    play(rawSong());
+    await renderScreen(<MiniPlayer compact />);
+
+    expect(
+      await screen.findByRole("button", { name: "Play" }),
+    ).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Next track" })).toBeNull();
   });
 });

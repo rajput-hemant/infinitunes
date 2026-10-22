@@ -102,8 +102,8 @@ export function gradientFill([top, bottom]: readonly [string, string]) {
   } satisfies BackdropFill;
 }
 
-/** How long a new fill takes to fade in over the ones below. */
-const CROSSFADE_MS = 450;
+/** How long a new fill takes to fade in over the ones below (the artwork's crossfade too). */
+export const CROSSFADE_MS = 450;
 
 /**
  * A crossfade carries no movement, so it stays under reduce motion (the

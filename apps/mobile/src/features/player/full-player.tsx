@@ -1,35 +1,50 @@
+import { getImageSrc } from "@infinitunes/types";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Platform, ScrollView, useWindowDimensions, View } from "react-native";
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withSpring,
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { EmptyState } from "~/components/empty-state";
+import { ExplicitBadge } from "~/components/explicit-badge";
 import { LikeButton } from "~/components/like-button";
 import { MenuTrigger } from "~/components/menu-trigger";
 import { SongMenu } from "~/components/song-menu";
-import { Artwork } from "~/components/ui/artwork";
+import { Artwork, artworkFrame } from "~/components/ui/artwork";
 import { IconButton } from "~/components/ui/icon-button";
+import { usePreferences } from "~/lib/preferences";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
+import { springs } from "~/theme/motion";
 import { playerArtSize } from "~/theme/tokens";
-import { useTokenColor } from "~/theme/use-palette";
+import type { TextVariant } from "~/theme/tokens";
+import { usePalette, useTokenColor } from "~/theme/use-palette";
 import { useRadii } from "~/theme/use-radii";
 
 import { PlayerLyrics } from "./player-lyrics";
 import { Scrubber } from "./scrubber";
-import { TransportControls } from "./transport-controls";
+import { ModeToggle, TransportControls } from "./transport-controls";
 import { usePlayerColors } from "./use-player-colors";
 import {
   Backdrop,
+  CROSSFADE_MS,
   gradientFill,
   nowPlayingWash,
   OnWash,
+  useWashColors,
   WashText,
 } from "./wash";
 
@@ -45,35 +60,89 @@ const ART_CORNER = Platform.OS === "android" ? "xl" : "lg";
 /** How far the artwork settles back while paused. */
 const PAUSED_SCALE = 0.9;
 
+/** The track title: Material's headlineSmall on Android, iOS's title 2. */
+const TITLE_VARIANT = Platform.select<TextVariant>({
+  android: "title1",
+  default: "title2",
+});
+
+/**
+ * Settles the art: Material 3 Expressive's slow spatial spring (a large
+ * surface) on Android, the system players' ease on iOS.
+ */
+function settle(target: number) {
+  return Platform.OS === "android"
+    ? withSpring(target, springs.spatialSlow)
+    : withTiming(target, { duration: 340 });
+}
+
 /**
  * The artwork, a little smaller while paused (the system players' cue).
- * That is movement, so reduce motion keeps it at full size.
+ * That is movement, so reduce motion keeps it at full size. A new track's
+ * cover crossfades over the old one with the wash (expo-image's transition;
+ * `Artwork` would drop the old picture first), at the Image quality cap.
  */
 function NowPlayingArt({ image }: { image: string }) {
   const corner = useRadii();
+  const { width } = useWindowDimensions();
+  const cap = usePreferences((preferences) => preferences.imageQuality);
   const playing = usePlaybackStatus((state) => state.playing);
   const reduceMotion = useReducedMotion();
   const target = playing || reduceMotion ? 1 : PAUSED_SCALE;
   // Opened while paused, the art starts settled instead of shrinking in.
   const scale = useSharedValue(target);
   useEffect(() => {
-    scale.set(withTiming(target, { duration: 340 }));
+    scale.set(settle(target));
   }, [target, scale]);
   const animated = useAnimatedStyle(() => ({
     transform: [{ scale: scale.get() }],
   }));
+  const frame = {
+    ...artworkFrame("player", width, false, corner),
+    borderRadius: corner[ART_CORNER],
+  };
 
   return (
     <Animated.View
       style={[{ borderRadius: corner[ART_CORNER] }, ART_SHADOW, animated]}
     >
-      <Artwork
-        image={image}
-        size="player"
-        testID="now-playing-art"
-        style={{ borderRadius: corner[ART_CORNER] }}
-      />
+      {image ? (
+        <Image
+          // The player's art is always past the 150px picture: the cap decides.
+          source={getImageSrc(image, cap)}
+          style={frame}
+          transition={{ duration: CROSSFADE_MS, effect: "cross-dissolve" }}
+          testID="now-playing-art"
+          accessibilityIgnoresInvertColors
+        />
+      ) : (
+        <Artwork
+          image={image}
+          size="player"
+          testID="now-playing-art"
+          style={{ borderRadius: corner[ART_CORNER] }}
+        />
+      )}
     </Animated.View>
+  );
+}
+
+/**
+ * The "E" before the credit. On a wash the badge's `muted` fill could not
+ * be contrast-checked, so it is a hairline outline in the wash's muted colour.
+ */
+function ExplicitMark() {
+  const wash = useWashColors();
+  if (!wash) return <ExplicitBadge accessible={false} />;
+  return (
+    <View
+      className="rounded-xs px-1"
+      style={{ borderWidth: StyleSheet.hairlineWidth, borderColor: wash.muted }}
+    >
+      <WashText variant="caption" tone="muted">
+        E
+      </WashText>
+    </View>
   );
 }
 
@@ -119,6 +188,7 @@ export function FullPlayer() {
     [colors],
   );
   const background = useTokenColor("background");
+  const paletteBackground = usePalette().background;
   const [showLyrics, setShowLyrics] = useState(false);
 
   const fill = colors
@@ -149,6 +219,13 @@ export function FullPlayer() {
   }
 
   const artworkSize = playerArtSize(width);
+  // The lyrics fade into the fill: the wash's stops, or Android's D1
+  // background (iOS's is a dynamic system colour with no hex to fade).
+  const lyricEdges = colors
+    ? colors.wash
+    : Platform.OS === "android"
+      ? ([paletteBackground, paletteBackground] as const)
+      : null;
 
   return (
     <View className="flex-1">
@@ -163,40 +240,56 @@ export function FullPlayer() {
         </View>
         {/* Scrolls, so large text and short phones never push the controls off screen. */}
         <ScrollView
-          contentContainerClassName="grow justify-center px-6 py-4"
+          contentContainerClassName="grow px-6 py-4"
           contentContainerStyle={{ paddingBottom: insets.bottom }}
         >
-          <View className="items-center">
-            {showLyrics ? (
-              <PlayerLyrics track={track} size={artworkSize} />
-            ) : (
-              <NowPlayingArt image={track.image} />
-            )}
-          </View>
-          <View className="mt-8 flex-row items-center gap-2">
-            <View className="flex-1">
-              <WashText variant="title2" emphasized numberOfLines={1}>
-                {track.name}
-              </WashText>
-              <WashText tone="muted" numberOfLines={1}>
-                {track.subtitle}
-              </WashText>
+          {/* Centred in the space above the pinned Lyrics / Up next row. */}
+          <View className="grow justify-center">
+            <View className="items-center">
+              {showLyrics ? (
+                <PlayerLyrics
+                  track={track}
+                  size={artworkSize}
+                  edges={lyricEdges}
+                />
+              ) : (
+                <NowPlayingArt image={track.image} />
+              )}
             </View>
-            {track.type === "song" ? (
-              <LikeButton type="song" token={track.id} name={track.name} />
-            ) : null}
+            <View className="mt-8 flex-row items-center gap-2">
+              <View className="flex-1">
+                <WashText variant={TITLE_VARIANT} emphasized numberOfLines={1}>
+                  {track.name}
+                </WashText>
+                <View
+                  accessible={track.explicit}
+                  accessibilityLabel={
+                    track.explicit ? `Explicit, ${track.subtitle}` : undefined
+                  }
+                  className="flex-row items-center gap-1"
+                >
+                  {track.explicit ? <ExplicitMark /> : null}
+                  <WashText tone="muted" numberOfLines={1} className="shrink">
+                    {track.subtitle}
+                  </WashText>
+                </View>
+              </View>
+              {track.type === "song" ? (
+                <LikeButton type="song" token={track.id} name={track.name} />
+              ) : null}
+            </View>
+            <View className="mt-6">
+              <Scrubber />
+            </View>
+            <View className="mt-6">
+              <TransportControls />
+            </View>
           </View>
-          <View className="mt-6">
-            <Scrubber />
-          </View>
-          <View className="mt-6">
-            <TransportControls />
-          </View>
-          <View className="mt-8 flex-row items-center justify-between">
-            <IconButton
+          <View className="flex-row items-center justify-between pt-8">
+            <ModeToggle
               icon={{ ios: "quote.bubble", android: "lyrics" }}
-              label={showLyrics ? "Hide lyrics" : "Lyrics"}
-              selected={showLyrics}
+              label="Lyrics"
+              on={showLyrics}
               onPress={() => setShowLyrics((shown) => !shown)}
             />
             <IconButton
