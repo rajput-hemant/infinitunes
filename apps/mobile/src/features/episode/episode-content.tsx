@@ -9,6 +9,7 @@ import {
 
 import { CollectionMenu } from "~/components/collection-menu";
 import { Description } from "~/components/detail/description";
+import { useDetailScrollProps } from "~/components/detail/detail-scroll";
 import { EntityHeader } from "~/components/entity-header";
 import { ListRow } from "~/components/list-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
@@ -70,7 +71,10 @@ export function EpisodeContent({
   const play = () => playAll([row]);
 
   return (
-    <ScreenScrollView refreshControl={<PullToRefresh onRefresh={onRefresh} />}>
+    <ScreenScrollView
+      refreshControl={<PullToRefresh onRefresh={onRefresh} />}
+      {...useDetailScrollProps()}
+    >
       <EntityHeader
         image={episode.image}
         eyebrow="Episode"

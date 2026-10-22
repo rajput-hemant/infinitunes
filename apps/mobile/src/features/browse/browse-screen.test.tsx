@@ -1,4 +1,5 @@
-import { rawChart, rawAlbum } from "@infinitunes/types/fixtures";
+import type { TagMix } from "@infinitunes/types";
+import { rawChart, rawAlbum, rawLaunchData } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, userEvent } from "@testing-library/react-native";
 
 import { renderScreen } from "~/test/render";
@@ -42,12 +43,32 @@ describe("BrowseScreen", () => {
       "Podcasts",
       "Top Artists",
       "Radio",
-      "New Releases",
     ]) {
       expect(screen.getByRole("link", { name: label })).toBeOnTheScreen();
     }
+    // An even grid: New Releases was Top Albums' own `/album` list.
+    expect(screen.queryByText("New Releases")).toBeNull();
     expect(screen.getByRole("link", { name: "Tamil" })).toBeOnTheScreen();
     expect(screen.queryByText("Made for you")).toBeNull();
+  });
+
+  it("adds the mix as a full-width tile when the launch data has one", async () => {
+    procedure("home.home").mockResolvedValue(
+      rawLaunchData({
+        tag_mixes: [
+          {
+            title: "Feel Good",
+            image: "https://c.saavncdn.com/mix-150x150.jpg",
+            perma_url: "https://www.jiosaavn.com/s/mix/feel-good/abc123",
+          } as TagMix,
+        ],
+      }),
+    );
+    await renderScreen(<BrowseScreen />, { routes });
+
+    expect(
+      await screen.findByRole("link", { name: "Made for you" }),
+    ).toBeOnTheScreen();
   });
 
   it("opens a category's list", async () => {

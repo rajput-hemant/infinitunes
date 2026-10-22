@@ -1,4 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import { renderScreen } from "~/test/render";
 
@@ -37,5 +38,27 @@ describe("QuickPickTile", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Surprise me" }));
 
     expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("ripples within its corners on Android", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    await renderScreen(
+      <QuickPickTile
+        width={170}
+        title="Surprise me"
+        onPress={jest.fn()}
+        leading={{ icon: { ios: "sparkles", android: "auto_awesome" } }}
+      />,
+    );
+
+    const tile = screen.getByRole("button", { name: "Surprise me" });
+    expect(tile.props.nativeForegroundAndroid).toMatchObject({
+      type: "RippleAndroid",
+      borderless: false,
+    });
+    expect(tile).toHaveProp(
+      "className",
+      expect.stringContaining("overflow-hidden rounded-md"),
+    );
   });
 });

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Platform, Pressable, View } from "react-native";
 
 import { SectionHeader } from "~/components/section-header";
-import { TextBlockSkeleton } from "~/components/skeletons";
+import { LyricsSkeleton } from "~/components/skeletons";
 import { SyncedLyrics } from "~/components/synced-lyrics";
 import { Text } from "~/components/ui/text";
 import { useLyrics } from "~/lib/use-lyrics";
@@ -16,7 +16,7 @@ export function LyricsSection({ songId }: { songId: string }) {
   // Android: the preview is a filled card (YouTube Music's lyrics card) with
   // a primary text action.
   const android = Platform.OS === "android";
-  if (isPending) return <TextBlockSkeleton />;
+  if (isPending) return <LyricsSkeleton />;
   if (!lyrics?.synced && !lyrics?.plain) return null;
   const preview =
     lyrics.plain ?? lyrics.synced?.map((line) => line.text).join("\n");

@@ -27,6 +27,11 @@ describe("SectionHeader", () => {
 
     const link = screen.getByRole("link", { name: "See All New Releases" });
     expect(link).toHaveProp("hitSlop", TEXT_BUTTON_HIT_SLOP);
+    // The accent tint marks it as an action on both platforms.
+    expect(screen.getByText("See All")).toHaveProp(
+      "className",
+      expect.stringContaining("text-primary"),
+    );
     await fireEvent.press(link);
 
     expect(app.getPathname()).toBe("/search");

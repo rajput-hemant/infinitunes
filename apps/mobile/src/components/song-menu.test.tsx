@@ -1,6 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawSong } from "@infinitunes/types/fixtures";
-import { waitFor } from "@testing-library/react-native";
+import { screen, waitFor } from "@testing-library/react-native";
 import { scheduleNotificationAsync } from "expo-notifications";
 import { AppState, View } from "react-native";
 
@@ -72,6 +72,15 @@ describe("SongMenu queue actions", () => {
 });
 
 describe("SongMenu navigation", () => {
+  it("names the details entry for the kind of track", async () => {
+    await renderMenu(song);
+
+    // The native menu renders its entries as labelled host views.
+    const tree = JSON.stringify(screen.toJSON());
+    expect(tree).toContain('"label":"View Song Details"');
+    expect(tree).not.toContain("Lyrics");
+  });
+
   it("opens the album the song is on", async () => {
     const app = await renderMenu(song, undefined, {
       "album/[name]/[token]": () => null,

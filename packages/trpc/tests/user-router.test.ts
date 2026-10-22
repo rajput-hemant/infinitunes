@@ -11,7 +11,8 @@ import { compare, hash } from "bcryptjs";
 import { getTableName } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
-type TestUser = { id: string; email: string };
+type TestUser = Pick<typeof users.$inferSelect, "id" | "email"> &
+  Partial<typeof users.$inferSelect>;
 type Write = {
   table: string;
   values: Record<string, unknown>;
@@ -74,7 +75,12 @@ const fakeDb = {
       findFirst: async () => null,
     },
     users: {
-      findFirst: async () => state.user,
+      findFirst: async (options?: { columns?: Record<string, boolean> }) => {
+        if (!state.user || !options?.columns) return state.user;
+        return Object.fromEntries(
+          Object.entries(state.user).filter(([key]) => options.columns?.[key]),
+        );
+      },
     },
     betterAuthAccounts: {
       findFirst: async ({
@@ -340,6 +346,9 @@ describe("user router authorization", () => {
     state.user = {
       id: "user-123",
       email: "user@example.com",
+      betterAuthName: "New Name",
+      password: "legacy-bcrypt-hash",
+      name: "Sibling name",
     };
     const caller = createCallerFactory(appRouter)({
       db,
@@ -348,8 +357,11 @@ describe("user router authorization", () => {
 
     const result = await caller.user.updateUser({ name: "New Name" });
 
-    expect(result).toMatchObject({ id: "user-123" });
-    expect(result).not.toHaveProperty("password");
+    expect(result).toEqual({
+      id: "user-123",
+      email: "user@example.com",
+      betterAuthName: "New Name",
+    });
   });
 
   it("maps a duplicate email in updateUser to CONFLICT", async () => {
@@ -486,6 +498,43 @@ describe("user router authorization", () => {
       },
     ];
   }
+
+  it.each([
+    "A1!" + "a".repeat(70),
+    "Aa1!" + "é".repeat(35),
+    "A1!" + "a".repeat(126),
+  ])(
+    "rejects a new password over 72 UTF-8 bytes before writing: %s",
+    async (newPassword) => {
+      await seedPasswordUser();
+      await expect(
+        signedIn().user.changePassword({
+          password: "CurrentPassword1!",
+          newPassword,
+        }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+      expect(state.updates).toHaveLength(0);
+      expect(state.deletes).toHaveLength(0);
+    },
+  );
+
+  it.each(["weak", "a".repeat(100)])(
+    "changes a weak or long legacy current password: %s",
+    async (password) => {
+      await seedPasswordUser();
+      state.accounts[0]!.password = await hash(password, 10);
+      await signedIn().user.changePassword({
+        password,
+        newPassword: "NewPassword2!",
+      });
+      const updated = state.updates.find(
+        (update) => update.table === "better_auth_account",
+      );
+      expect(
+        await compare("NewPassword2!", updated?.values.password as string),
+      ).toBe(true);
+    },
+  );
 
   it("rejects the signed-in password change without a session", async () => {
     const caller = createCallerFactory(appRouter)({ db, session: null });

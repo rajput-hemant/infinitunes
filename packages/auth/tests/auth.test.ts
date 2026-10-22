@@ -354,19 +354,57 @@ describe("Password hashing and credential verification", () => {
     expect(isInvalid).toBe(false);
   });
 
-  it("verifies a legacy bcrypt hash with the configured Better Auth verify handler", async () => {
-    const auth = createAuth(makeFakeDb());
-    const verifyFn = auth.options.emailAndPassword?.password?.verify;
-    expect(verifyFn).toBeTypeOf("function");
+  it.each(["/sign-up/email", "/reset-password", "/change-password"])(
+    "rejects oversized new passwords before database access on %s",
+    async (path) => {
+      const auth = createAuth(makeFakeDb());
+      for (const password of [
+        "A1!" + "a".repeat(70),
+        "Aa1!" + "é".repeat(35),
+        "A1!" + "a".repeat(126),
+      ]) {
+        const response = await auth.handler(
+          new Request(`http://localhost:3000/api/auth${path}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Origin: "http://localhost:3000",
+            },
+            body: JSON.stringify(
+              path === "/sign-up/email"
+                ? { name: "Listener", email: "user@example.com", password }
+                : {
+                    token: "unused-token",
+                    currentPassword: "weak",
+                    newPassword: password,
+                  },
+            ),
+          }),
+        );
+        expect(response.status).toBe(400);
+        expect(await response.json()).toMatchObject({
+          message:
+            "Password must be at most 72 UTF-8 bytes long (some characters use more than one byte).",
+        });
+      }
+    },
+  );
 
-    const password = "s3cret-passw0rd";
-    const legacyHash = await hash(password, 10);
+  it.each(["s3cret-passw0rd", "a".repeat(100)])(
+    "verifies a legacy bcrypt hash with the configured Better Auth verify handler: %s",
+    async (password) => {
+      const auth = createAuth(makeFakeDb());
+      const verifyFn = auth.options.emailAndPassword?.password?.verify;
+      expect(verifyFn).toBeTypeOf("function");
 
-    expect(await verifyFn!({ password, hash: legacyHash })).toBe(true);
-    expect(
-      await verifyFn!({ password: "wrong-password", hash: legacyHash }),
-    ).toBe(false);
-  });
+      const legacyHash = await hash(password, 10);
+
+      expect(await verifyFn!({ password, hash: legacyHash })).toBe(true);
+      expect(
+        await verifyFn!({ password: "wrong-password", hash: legacyHash }),
+      ).toBe(false);
+    },
+  );
 });
 
 describe("Injected plugins and env precedence", () => {

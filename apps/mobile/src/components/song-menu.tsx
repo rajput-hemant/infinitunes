@@ -112,7 +112,7 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
   }
   entries.push({
     id: "details",
-    title: isSong ? "Song Details & Lyrics" : "View Episode Details",
+    title: isSong ? "View Song Details" : "View Episode Details",
     image: "info.circle",
     run: () => openEntity(song.type, song.url),
   });

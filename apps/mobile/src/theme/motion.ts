@@ -17,3 +17,13 @@ export const springs = {
   /** Stiffness 1600, ζ 1: colour and opacity. */
   effectsDefault: { stiffness: 1600, damping: 80 },
 } as const satisfies Record<string, WithSpringConfig>;
+
+/**
+ * iOS's press release: a light, quick spring back from a press sink (not a
+ * Material spring, so mass 0.6 and outside `springs`).
+ */
+export const iosPressRelease = {
+  damping: 14,
+  stiffness: 260,
+  mass: 0.6,
+} as const satisfies WithSpringConfig;

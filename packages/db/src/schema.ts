@@ -54,33 +54,44 @@ export const betterAuthAccounts = pgTable(
     updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
   },
   (table) => ({
+    userIdIndex: index("better_auth_account_user_id_idx").on(table.userId),
     providerAccountUnique: uniqueIndex(
       "better_auth_account_provider_account_unique",
     ).on(table.providerId, table.accountId),
   }),
 );
 
-export const betterAuthSessions = pgTable("better_auth_session", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  userId: uuid("userId")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  token: text("token").notNull().unique(),
-  expiresAt: timestamp("expiresAt", { mode: "date" }).notNull(),
-  ipAddress: text("ipAddress"),
-  userAgent: text("userAgent"),
-  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
-});
+export const betterAuthSessions = pgTable(
+  "better_auth_session",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    token: text("token").notNull().unique(),
+    expiresAt: timestamp("expiresAt", { mode: "date" }).notNull(),
+    ipAddress: text("ipAddress"),
+    userAgent: text("userAgent"),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [index("better_auth_session_user_id_idx").on(table.userId)],
+);
 
-export const betterAuthVerifications = pgTable("better_auth_verification", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  identifier: text("identifier").notNull(),
-  value: text("value").notNull(),
-  expiresAt: timestamp("expiresAt", { mode: "date" }).notNull(),
-  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
-});
+export const betterAuthVerifications = pgTable(
+  "better_auth_verification",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    identifier: text("identifier").notNull(),
+    value: text("value").notNull(),
+    expiresAt: timestamp("expiresAt", { mode: "date" }).notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [
+    index("better_auth_verification_identifier_idx").on(table.identifier),
+  ],
+);
 
 /* ---------------------------------------------------------------------------
  * Better Auth shared rate-limit counters (SE-17). Per-instance memory cannot
@@ -125,16 +136,20 @@ export const infinitunesPasskeys = pgTable("infinitunes_passkey", {
  * App tables
  * ------------------------------------------------------------------------- */
 
-export const myPlaylists = createTable("playlist", {
-  id: uuid("id").defaultRandom().primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  userId: uuid("userId")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  songs: text("songs").array().default([]).notNull(),
-  createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
-});
+export const myPlaylists = createTable(
+  "playlist",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    description: text("description"),
+    userId: uuid("userId")
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    songs: text("songs").array().default([]).notNull(),
+    createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
+  },
+  (table) => [index("infinitunes_playlist_user_id_idx").on(table.userId)],
+);
 
 export const favorites = createTable("favorite", {
   id: uuid("id").defaultRandom().primaryKey(),

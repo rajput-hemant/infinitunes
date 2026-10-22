@@ -6,9 +6,10 @@ import {
 import { fireEvent, screen, userEvent } from "@testing-library/react-native";
 import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
-import { Share, Text } from "react-native";
+import { Platform, Share, Text } from "react-native";
 
 import { DetailScreen } from "~/components/detail/detail-screen";
+import { art } from "~/theme/tokens";
 
 type Page = { name: string };
 
@@ -45,6 +46,34 @@ function renderHarness() {
         <Harness />
       </QueryClientProvider>
     ),
+  });
+}
+
+type Node = ReturnType<typeof screen.getByText>;
+
+function find(node: Node, type: string): Node | undefined {
+  if (node.type === type) return node;
+  for (const child of node.children) {
+    const found = typeof child === "string" ? undefined : find(child, type);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/** The native header's config, as the screen hands it to the platform. */
+function header() {
+  let root = screen.getByText("Page of Udta Teer");
+  while (root.parent) root = root.parent;
+  const config = find(root, "RNSScreenStackHeaderConfig");
+  if (!config) throw new Error("No native header");
+  return config.props as { title?: string; backgroundColor?: string };
+}
+
+async function scrollTo(y: number) {
+  let view = screen.getByText("Page of Udta Teer");
+  while (view.type !== "RCTScrollView" && view.parent) view = view.parent;
+  await fireEvent.scroll(view, {
+    nativeEvent: { contentOffset: { x: 0, y } },
   });
 }
 
@@ -93,5 +122,28 @@ describe("DetailScreen", () => {
       .pullToRefresh(screen.getByText("Page of Udta Teer").parent!.parent!);
 
     expect(await screen.findByText("Page of Updated")).toBeOnTheScreen();
+  });
+
+  describe("on Android", () => {
+    beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
+    afterEach(() => jest.restoreAllMocks());
+
+    it("tints and titles the bar once the header scrolls under it", async () => {
+      await renderHarness();
+      await screen.findByText("Page of Udta Teer");
+      const surface = header().backgroundColor;
+      expect(header().title).toBe("");
+
+      await scrollTo(art.header / 2);
+      expect(header().title).toBe("");
+
+      await scrollTo(art.header + 1);
+      expect(header().title).toBe("Udta Teer");
+      expect(header().backgroundColor).not.toBe(surface);
+
+      await scrollTo(0);
+      expect(header().title).toBe("");
+      expect(header().backgroundColor).toBe(surface);
+    });
   });
 });

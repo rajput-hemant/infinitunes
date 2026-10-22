@@ -594,6 +594,15 @@ export const userRouter = router({
       }
 
       return ctx.db.query.users.findFirst({
+        columns: {
+          id: true,
+          email: true,
+          image: true,
+          betterAuthName: true,
+          emailVerifiedBoolean: true,
+          createdAt: true,
+          updatedAt: true,
+        },
         where: eq(users.id, userId),
       });
     }),
