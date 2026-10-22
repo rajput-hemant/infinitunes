@@ -125,7 +125,8 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
   a 56dp full-round `bg-muted` pill, page-gutter inset, a labelled Back as its navigation icon in every state
   (the screen is pushed; no magnifier), the field, clear at the end while there is text. The native header
   field started after the toolbar's 72dp title inset, far from back. iOS uses the system search tab
-  (`role="search"`). Top Result is a filled card on both platforms (96dp art, titleLarge emphasized, kind and
+  (a `UISearchTab`: `ios.role: "search"` and `automaticallyActivatesSearch` through `unstable_nativeProps`;
+  expo-router's own `role` only sets the magnifier item). Top Result is a filled card on both platforms (96dp art, titleLarge emphasized, kind and
   credit, a 56dp filled Play at its end). Result subtitles name the kind on Android ("Song · Arijit Singh";
   `result-subtitle.ts`); Top Searches names the kind on both ("Song", "Album") and draws artists round.
 - **Empty/error states**: the symbol in a 96dp `secondaryContainer` at `xl` corners, titleLarge title.
