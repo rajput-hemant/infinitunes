@@ -9,17 +9,18 @@ type Shortcut = {
   href: Href;
 };
 
-/** The hub's lists of saved things, in the order the web's library tabs show them. */
-export const LIBRARY_SHORTCUTS: Shortcut[] = [
-  {
-    title: "Liked Songs",
-    icon: { ios: "heart.fill", android: "favorite" },
-    href: "/me/liked-songs",
-  },
-  {
-    title: "Recently Played",
-    icon: { ios: "clock", android: "history" },
-    href: "/me/recently-played",
-  },
-  ...Object.values(LIKED_COLLECTIONS),
-];
+/** The hub's two large tiles: the lists a listener opens most. */
+export const LIKED_SONGS: Shortcut = {
+  title: "Liked Songs",
+  icon: { ios: "heart.fill", android: "favorite" },
+  href: "/me/liked-songs",
+};
+
+export const RECENTLY_PLAYED: Shortcut = {
+  title: "Recently Played",
+  icon: { ios: "clock", android: "history" },
+  href: "/me/recently-played",
+};
+
+/** The other saved lists, as rows, in the order the web's library tabs show them. */
+export const LIBRARY_SHORTCUTS: Shortcut[] = Object.values(LIKED_COLLECTIONS);

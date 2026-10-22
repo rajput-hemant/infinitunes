@@ -8,7 +8,13 @@ import type { AlertButton } from "react-native";
 import { renderStack, chooseMenuAction } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
-import { userPlaylist, deferred } from "~/test/user-library";
+import {
+  catalogAnswering,
+  deferred,
+  favoritesRow,
+  songNamed,
+  userPlaylist,
+} from "~/test/user-library";
 
 import { EditPlaylistScreen } from "./edit-playlist-screen";
 import { LibraryScreen } from "./library-screen";
@@ -40,7 +46,9 @@ async function confirmDelete(alert: jest.SpyInstance) {
 
 async function createPlaylistNamed(name: string) {
   const router = await renderLibraryTab();
-  await fireEvent.press(await screen.findByText("New Playlist"));
+  await fireEvent.press(
+    await screen.findByRole("link", { name: "New Playlist" }),
+  );
   await fireEvent.changeText(
     screen.getByPlaceholderText("Enter playlist name"),
     name,
@@ -103,6 +111,27 @@ describe("LibraryScreen", () => {
     expect(router.getPathname()).toBe("/me/liked-songs");
   });
 
+  it("counts the liked songs on their tile", async () => {
+    procedure("user.getUserFavorites").mockResolvedValue(
+      favoritesRow({ songs: ["a", "b", "c"] }),
+    );
+    await renderLibraryTab();
+
+    expect(
+      await screen.findByRole("link", { name: "Liked Songs, 3 songs" }),
+    ).toBeOnTheScreen();
+  });
+
+  it("shows a playlist's first song as its cover, the icon until then", async () => {
+    procedure("song.details").mockImplementation(
+      catalogAnswering({ a: songNamed("a", "Alpha") }),
+    );
+    await renderLibraryTab();
+
+    expect(await screen.findByTestId("list-row-art")).toBeOnTheScreen();
+    expect(procedure("song.details")).toHaveBeenCalledTimes(1);
+  });
+
   it("shows a skeleton while the playlists load", async () => {
     procedure("user.getUserPlaylists").mockReturnValue(new Promise(() => {}));
     await renderLibraryTab();
@@ -117,7 +146,9 @@ describe("LibraryScreen", () => {
     expect(
       await screen.findByText(/Collect songs you love into playlists/),
     ).toBeOnTheScreen();
-    expect(screen.getByText("New Playlist")).toBeOnTheScreen();
+    expect(
+      screen.getByRole("link", { name: "New Playlist" }),
+    ).toBeOnTheScreen();
   });
 
   it("shows an error with a retry when the playlists cannot load", async () => {
