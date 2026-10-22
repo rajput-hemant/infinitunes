@@ -26,7 +26,7 @@ import {
   useAppearanceMode,
   useCornerStyle,
 } from "~/theme/appearance";
-import { accentColors, sizes } from "~/theme/tokens";
+import { accentColors, sizes, space } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
 import { signOut } from "./end-session";
@@ -59,14 +59,16 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-/** A tonal circle with the row's symbol, Material's leading icon. */
+/** Android 16 Settings' leading icon: the bare 24dp symbol in onSurfaceVariant. */
 function Leading({ icon, color }: { icon: SymbolName; color?: string }) {
+  const palette = usePalette();
   return (
-    <View className="size-ctl items-center justify-center rounded-full bg-secondary">
-      <Icon name={icon} size="md" color={color} />
-    </View>
+    <Icon name={icon} size="lg" color={color ?? palette["muted-foreground"]} />
   );
 }
+
+/** Material's list item heights: 56dp with one line, 72dp with supporting text. */
+const TWO_LINE_HEIGHT = sizes.row + space.lg;
 
 function RowFace({
   icon,
@@ -85,14 +87,17 @@ function RowFace({
   title: string;
   detail?: string;
   value?: string;
-  trailing?: SymbolName;
+  trailing?: SymbolName | null;
   destructive?: boolean;
 }) {
   const palette = usePalette();
   return (
     <View
       className="min-h-row flex-row items-center gap-4 rounded-xs bg-card px-4 py-2"
-      style={width ? { width } : undefined}
+      style={{
+        width,
+        minHeight: detail || value ? TWO_LINE_HEIGHT : undefined,
+      }}
     >
       <Leading
         icon={icon}
@@ -120,9 +125,13 @@ function Divider() {
 }
 
 function TapRow(
-  props: Parameters<typeof RowFace>[0] & { onPress: () => void },
+  props: Parameters<typeof RowFace>[0] & {
+    onPress: () => void;
+    /** Does something here (sign out, clear): no chevron, which means "opens". */
+    action?: boolean;
+  },
 ) {
-  const { onPress, ...face } = props;
+  const { onPress, action = false, ...face } = props;
   return (
     <Pressable
       onPress={onPress}
@@ -135,7 +144,12 @@ function TapRow(
       <RowFace
         {...face}
         trailing={
-          face.trailing ?? { ios: "chevron.forward", android: "chevron_right" }
+          action
+            ? null
+            : (face.trailing ?? {
+                ios: "chevron.forward",
+                android: "chevron_right",
+              })
         }
       />
     </Pressable>
@@ -212,9 +226,10 @@ function ProfileCard({ name, email }: { name?: string | null; email: string }) {
 }
 
 /**
- * Settings as Material 3 Expressive's segmented list: tiles with a tonal
- * leading icon, the title over its value, and a chevron where a row opens a
- * screen, instead of the form fields the shared native list renders on Android.
+ * Settings as Material 3 Expressive's segmented list: 56dp tiles (72dp with
+ * a value) with a bare leading icon, the title over its value, and a chevron
+ * where a row opens a screen; only the profile card has a filled circle. Not
+ * the form fields the shared native list renders on Android.
  */
 export function SettingsScreen() {
   const { data: session } = authClient.useSession();
@@ -259,7 +274,7 @@ export function SettingsScreen() {
               }}
               title="Sign out"
               destructive
-              trailing={{ ios: "chevron.forward", android: "chevron_right" }}
+              action
               onPress={() => void signOut()}
             />
           </>
@@ -359,6 +374,7 @@ export function SettingsScreen() {
           icon={{ ios: "trash.fill", android: "delete" }}
           title="Clear cache"
           destructive
+          action
           onPress={cache.clear}
         />
       </Section>
