@@ -2,11 +2,11 @@ import { Icon } from "@expo/ui";
 
 import type { SFSymbol } from "./tap-row-props";
 
-const SIZE = 30;
+const SIZE = 29;
 const ICON = 16;
 
 /**
- * A white SF Symbol on a tinted rounded square, like the system Settings app.
+ * A white SF Symbol on a 29pt tinted rounded square, like the system Settings app.
  * The symbol's own frame is the tile: SwiftUI centres an image in its frame,
  * where a stack of spacers left the glyph about 2pt low (its text baseline).
  */

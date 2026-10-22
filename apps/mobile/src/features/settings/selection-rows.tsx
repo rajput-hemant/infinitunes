@@ -1,6 +1,8 @@
 import { Picker, Row, Spacer, Switch, Text } from "@expo/ui";
 import type { PickerItemValue } from "@expo/ui";
 
+import { usePalette } from "~/theme/use-palette";
+
 import { RowIcon } from "./row-icon";
 import type { TapRowProps } from "./tap-row-props";
 
@@ -46,12 +48,14 @@ export function ValueRow({
   icon?: TapRowProps["icon"];
   value: string;
 }) {
+  const palette = usePalette();
   return (
     <Row alignment="center" spacing={12}>
       {icon ? <RowIcon {...icon} /> : null}
       <Text>{label}</Text>
       <Spacer flexible />
-      <Text>{value}</Text>
+      {/* A read-only value is secondary text, as in the system Settings app. */}
+      <Text textStyle={{ color: palette["muted-foreground"] }}>{value}</Text>
     </Row>
   );
 }
