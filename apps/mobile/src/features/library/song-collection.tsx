@@ -207,7 +207,7 @@ export function SongCollectionSkeleton({
               <View className="min-h-row flex-row items-center gap-2 pl-page pr-4">
                 <SkeletonText variant="subhead" width={64} />
                 {/* The sort trigger's own height (OptionMenu's plain trigger). */}
-                <View className="min-h-ctl justify-center">
+                <View className="min-h-touch justify-center">
                   <SkeletonText variant="subhead" width={88} />
                 </View>
                 <View className="flex-1" />
