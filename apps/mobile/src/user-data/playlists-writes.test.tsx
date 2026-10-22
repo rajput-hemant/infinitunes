@@ -66,6 +66,9 @@ beforeEach(async () => {
   procedure("user.getUserPlaylists").mockResolvedValue([
     playlistSummary(server),
   ]);
+  procedure("user.getPlaylistMembership").mockResolvedValue([
+    { id: server.id, songs: server.songs },
+  ]);
   procedure("user.getPlaylistDetails").mockResolvedValue(server);
   await renderWithProviders(<Shown />);
   await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
@@ -197,6 +200,7 @@ describe("add songs", () => {
         { id: "d", name: "New song" },
       ]),
     );
+    expect(procedure("user.getPlaylistMembership")).toHaveBeenCalledTimes(1);
     // "a" is one of the summary's cover songs, so only "d" is counted.
     expect(counts()).toBe("Road Trip:4");
     expect(held()).toBe("abcd");

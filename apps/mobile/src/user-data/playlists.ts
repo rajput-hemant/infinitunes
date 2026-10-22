@@ -5,13 +5,12 @@ import {
   moveSongOptimistic,
   removeSongOptimistic,
   renamePlaylistOptimistic,
-  usePlaylistDetailList,
   usePlaylists,
+  usePlaylistSongSets,
   type PlaylistView,
   type UserPlaylist,
 } from "@infinitunes/core/react/optimistic-playlists";
-import { useQueries, useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 
 import { reportFailure } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
@@ -75,35 +74,33 @@ export function useServerPlaylistDetails(playlistId: string) {
   });
 }
 
-// Module level: a stable `combine` keeps one result until the data changes.
-function loadedDetails(results: { data?: UserPlaylist | null }[]) {
-  return results.flatMap(({ data }) => data ?? []);
+/** Every playlist's song ids of `userId`, in one request (`getPlaylistMembership`). */
+export function playlistMembershipQuery(userId: string | undefined) {
+  return {
+    queryKey: userQueryKey(trpc.user.getPlaylistMembership.queryKey(), userId),
+    queryFn: () => trpcClient.user.getPlaylistMembership.query(),
+  };
 }
 
 /**
  * The songs each playlist holds, with pending writes applied, for the "Add to
- * Playlist" check marks: one detail query per playlist, shared through the
- * cache. Empty until they load (no marks, as for a playlist without them).
+ * Playlist" check marks: one query every menu shares, and one map per answer.
+ * Empty until it loads (no marks, as for a playlist without the songs).
+ * M3 builds menus on first press; load this there, lazily.
  */
 export function usePlaylistMembership(): ReadonlyMap<
   string,
   ReadonlySet<string>
 > {
   const userId = useUserId();
-  const ids = useServerPlaylists().data?.map((playlist) => playlist.id);
-  const details = useQueries({
-    queries: (ids ?? []).map((id) => ({
-      ...playlistDetailsQuery(id, userId),
-      enabled: userId !== undefined,
-    })),
-    combine: loadedDetails,
+  const { data } = useQuery({
+    ...playlistMembershipQuery(userId),
+    enabled: userId !== undefined,
   });
-  const shown = usePlaylistDetailList(details);
-  return useMemo(
-    () => new Map(shown?.map((p) => [p.id, new Set(p.songs)])),
-    [shown],
-  );
+  return usePlaylistSongSets(data) ?? NO_MEMBERSHIP;
 }
+
+const NO_MEMBERSHIP: ReadonlyMap<string, ReadonlySet<string>> = new Map();
 
 /** Refetches every account's playlists after a write settles. */
 export function refreshPlaylists() {
@@ -113,6 +110,9 @@ export function refreshPlaylists() {
     }),
     queryClient.invalidateQueries({
       queryKey: trpc.user.getPlaylistDetails.pathKey(),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: trpc.user.getPlaylistMembership.queryKey(),
     }),
   ]);
 }

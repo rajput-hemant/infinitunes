@@ -503,6 +503,20 @@ function reconcile(
 
 type PlaylistDetailView = UserPlaylist & { pending?: boolean };
 
+/** The songs `p` holds with the pending adds and removals applied. */
+function heldSongs(
+  p: { id: string; songs: readonly string[] },
+  at: OverlayState,
+): Set<string> {
+  const additions = new Set(at.added.get(p.id));
+  const kept = new Set(p.songs);
+  for (const edit of songEdits(at, p.id)) {
+    if (additions.has(edit)) kept.add(edit.songId);
+    else kept.delete(edit.songId);
+  }
+  return kept;
+}
+
 function overlayDetails(
   server: readonly UserPlaylist[],
   at: OverlayState,
@@ -511,12 +525,7 @@ function overlayDetails(
   for (const p of server) {
     if (at.deleted.has(p.id)) continue;
     const meta = at.renamed.get(p.id);
-    const additions = new Set(at.added.get(p.id));
-    const kept = new Set(p.songs);
-    for (const edit of songEdits(at, p.id)) {
-      if (additions.has(edit)) kept.add(edit.songId);
-      else kept.delete(edit.songId);
-    }
+    const kept = heldSongs(p, at);
     const order = at.moved.get(p.id)?.order;
     const songs = order ? arrange([...kept], order) : [...kept];
     list.push({
@@ -655,6 +664,36 @@ export function usePlaylistDetailList(
     () => (server ? overlayDetails(server, at) : undefined),
     [server, at],
   );
+}
+
+export type PlaylistSongs = { id: string; songs: readonly string[] };
+
+// One map per (server list, overlay state), however many rows ask.
+const songSets = new WeakMap<
+  readonly PlaylistSongs[],
+  { at: OverlayState; sets: ReadonlyMap<string, ReadonlySet<string>> }
+>();
+
+/**
+ * The songs each playlist holds (`getPlaylistMembership`) with pending writes
+ * applied, for "is this song in that playlist". Built once per server list and
+ * overlay state and shared by every reader; it only reads, the library and
+ * detail readers reconcile.
+ */
+export function usePlaylistSongSets(
+  server: readonly PlaylistSongs[] | undefined,
+): ReadonlyMap<string, ReadonlySet<string>> | undefined {
+  const at = useOverlayState();
+  if (!server) return undefined;
+  const cached = songSets.get(server);
+  if (cached?.at === at) return cached.sets;
+  const sets = new Map(
+    server
+      .filter((p) => !at.deleted.has(p.id))
+      .map((p) => [p.id, heldSongs(p, at)] as const),
+  );
+  songSets.set(server, { at, sets });
+  return sets;
 }
 
 /** One playlist's detail row with the overlay applied; `null` stays `null`. */

@@ -7,6 +7,7 @@ import {
   addSongsOptimistic,
   removeSongOptimistic,
   resetPlaylistOverlay,
+  usePlaylistSongSets,
   usePlaylists,
   type PlaylistSummary,
   type PlaylistView,
@@ -103,4 +104,23 @@ it("counts a removal and drops it from the covers", async () => {
     );
   });
   expect(last()).toMatchObject({ songCount: 1, coverSongs: ["b"] });
+});
+
+it("shares one membership map and shows a pending add in it", async () => {
+  const server = [{ id: "p", songs: ["a"] }];
+  const seen: (ReadonlyMap<string, ReadonlySet<string>> | undefined)[] = [];
+  function Sets() {
+    seen.push(usePlaylistSongSets(server));
+    return null;
+  }
+  const root = createRoot(document.createElement("div"));
+  roots.push(root);
+  await act(async () => root.render([<Sets key="1" />, <Sets key="2" />]));
+  expect(seen[0]).toBe(seen[1]);
+  expect([...(seen[0]?.get("p") ?? [])]).toEqual(["a"]);
+
+  await act(async () => {
+    void addSongsOptimistic("p", ["b"], () => new Promise(() => {}));
+  });
+  expect([...(seen.at(-1)?.get("p") ?? [])]).toEqual(["a", "b"]);
 });
