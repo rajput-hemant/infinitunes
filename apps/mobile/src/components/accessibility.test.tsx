@@ -53,22 +53,26 @@ describe("touch targets", () => {
     expect(screen.getByHintText("Opens a menu")).toBe(trigger);
   });
 
-  it("gives a plain option menu trigger the full 48pt height", async () => {
-    await renderScreen(
-      <OptionMenu
-        label="Sort by"
-        variant="plain"
-        options={[{ id: "a", title: "Popular" }]}
-        selectedId="a"
-        onSelect={jest.fn()}
-      />,
-    );
+  it.each(["plain", "pill"] as const)(
+    "gives a %s option menu trigger the full 48pt height",
+    async (variant) => {
+      await renderScreen(
+        <OptionMenu
+          label="Sort by"
+          variant={variant}
+          options={[{ id: "a", title: "Popular" }]}
+          selectedId="a"
+          onSelect={jest.fn()}
+        />,
+      );
 
-    expect(screen.getByLabelText("Sort by, Popular")).toHaveProp(
-      "className",
-      expect.stringContaining("min-h-touch"),
-    );
-  });
+      // The native menu hit-tests this view: the 40pt pill is drawn inside.
+      expect(screen.getByLabelText("Sort by, Popular")).toHaveProp(
+        "className",
+        expect.stringContaining("min-h-touch"),
+      );
+    },
+  );
 
   it("extends a chip's target above and below its 32pt body", async () => {
     await renderScreen(

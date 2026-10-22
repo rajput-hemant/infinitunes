@@ -8,18 +8,18 @@ import { Text } from "./ui/text";
 
 type Option<Id extends string> = { id: Id; title: string };
 
+/**
+ * Every trigger is the full touch height: the native menu hit-tests its
+ * child's bounds, so slop cannot reach it. What is drawn sits inside.
+ */
 const TRIGGERS = {
-  /** A tinted pill, for controls in a row (a show's season and order). */
+  /** A tinted 40pt pill centred in the 48pt target, for controls in a row (a show's season and order). */
   pill: {
     className: "min-h-ctl gap-1 rounded-full bg-secondary px-3 py-1",
     tone: "onSecondary",
   },
-  /**
-   * Plain muted text, for a list's sort order beside its count. It is the
-   * full touch height: the native menu hit-tests its child's bounds, so slop
-   * cannot reach it.
-   */
-  plain: { className: "min-h-touch gap-1", tone: "muted" },
+  /** Plain muted text, for a list's sort order beside its count. */
+  plain: { className: "gap-1", tone: "muted" },
 } as const;
 
 type OptionMenuProps<Id extends string> = {
@@ -58,15 +58,17 @@ export function OptionMenu<Id extends string>({
       <View
         accessibilityRole="button"
         accessibilityLabel={`${label}, ${selected?.title ?? ""}`}
-        className={cx("flex-row items-center", trigger.className)}
+        className="min-h-touch justify-center"
       >
-        <Text variant="subhead" tone={trigger.tone}>
-          {selected?.title ?? label}
-        </Text>
-        <Icon
-          name={{ ios: "chevron.up.chevron.down", android: "unfold_more" }}
-          size="xs"
-        />
+        <View className={cx("flex-row items-center", trigger.className)}>
+          <Text variant="subhead" tone={trigger.tone}>
+            {selected?.title ?? label}
+          </Text>
+          <Icon
+            name={{ ios: "chevron.up.chevron.down", android: "unfold_more" }}
+            size="xs"
+          />
+        </View>
       </View>
     </NativeMenu>
   );
