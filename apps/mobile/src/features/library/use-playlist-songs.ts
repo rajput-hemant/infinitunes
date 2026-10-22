@@ -17,7 +17,7 @@ export function usePlaylistSongs(playlist: {
   id: string;
   songs: readonly string[];
 }): LibraryList<SongRowItem> {
-  const held = useMemo(() => playlist.songs.toSorted(), [playlist.songs]);
+  const held = useMemo(() => [...playlist.songs].sort(), [playlist.songs]);
   const list = useResolvedItems({
     scope: `playlist-${playlist.id}`,
     source: { ids: held, reload: refreshPlaylists },

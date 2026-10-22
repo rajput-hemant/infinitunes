@@ -11,7 +11,7 @@ const SORT_OPTIONS = [
 
 /** Latest season first (upstream lists them oldest first), one entry per season. */
 function seasonOptions(seasons: readonly Season[]) {
-  return uniqueBy(seasons.toReversed(), (season) => season.id).map(
+  return uniqueBy([...seasons].reverse(), (season) => season.id).map(
     (season) => ({
       id: String(Number(season.more_info.season_number)),
       title: decode(season.title),

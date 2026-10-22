@@ -74,7 +74,7 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
       // Each insert lands right after the current track, so insert backwards.
       run: () => {
         const { playNext } = playerStore.getState();
-        for (const row of rows.toReversed()) playNext(row);
+        for (const row of [...rows].reverse()) playNext(row);
       },
     },
     {

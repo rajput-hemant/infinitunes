@@ -18,7 +18,7 @@ export function usePlaylistCovers(
   const userId = useUserId();
   const firstIds = [
     ...new Set(playlists?.flatMap(({ songs }) => songs[0] ?? []) ?? []),
-  ].toSorted();
+  ].sort();
   const { data } = useQuery({
     queryKey: [
       ...userQueryKey([...LIBRARY_QUERY_KEY, "playlist-covers"], userId),

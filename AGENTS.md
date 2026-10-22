@@ -377,6 +377,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   real version split matters. Its `react` 19.3.1 under `packages/core/node_modules` is core's dev copy for
   its own tests: Metro bundles only the app's 19.3.0 and Jest maps to it. Never switch the repo to the hoisted linker: it hoists mobile's React 19.3.0
   over web's.
+- Hermes on the app's builds lacks `toSorted`/`toReversed`/`toSpliced` (Jest on Node has them, so tests pass while the device throws "undefined is not a function"): copy and sort/reverse instead; `src/test/hermes-builtins.test.ts` scans the app, core and types sources.
 - `type-check` runs `expo customize tsconfig.json` first: it writes the gitignored `.expo/types` route
   types that `tsc` needs in a fresh clone. TypeScript is the repo's 7.x (`expo.install.exclude`).
 - Voice assistants (`docs/mobile-assistants.md`): both open `infinitunes://action/<name>` links (`resume`, `play-liked`,

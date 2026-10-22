@@ -28,7 +28,7 @@ type PlaylistScreenProps = {
 
 function playlistMeta(playlist: Playlist): string {
   // Upstream lists the facts newest first; the web header reverses them.
-  return joinMeta(playlist.more_info.subtitle_desc.toReversed());
+  return joinMeta([...playlist.more_info.subtitle_desc].reverse());
 }
 
 /** The credit line, unless it only repeats a fact the meta line already has ("122.2K Fans"). */

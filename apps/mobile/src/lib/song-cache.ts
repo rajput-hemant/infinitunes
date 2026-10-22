@@ -131,7 +131,7 @@ export function cacheQualifiedListen(track: Queue, quality: StreamQuality) {
         lastPlayed: Date.now(),
       },
     })
-      .toSorted((a, b) => b[1].lastPlayed - a[1].lastPlayed)
+      .sort((a, b) => b[1].lastPlayed - a[1].lastPlayed)
       .slice(0, 1000),
   );
   songCacheStore.setState({ listens: next });
@@ -167,9 +167,9 @@ export function cacheQualifiedListen(track: Queue, quality: StreamQuality) {
         return;
       }
       removeSong(track.id);
-      for (const [id] of Object.entries(
-        songCacheStore.getState().songs,
-      ).toSorted((a, b) => a[1].lastPlayed - b[1].lastPlayed)) {
+      for (const [id] of Object.entries(songCacheStore.getState().songs).sort(
+        (a, b) => a[1].lastPlayed - b[1].lastPlayed,
+      )) {
         if (
           cacheBytes(songCacheStore.getState().songs) + file.size <=
           SONG_CACHE_LIMIT

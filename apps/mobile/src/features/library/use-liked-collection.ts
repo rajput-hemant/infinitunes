@@ -27,7 +27,7 @@ export function useLikedCollection(kind: LikedCollectionKind) {
     scope: `liked-${kind}`,
     source: useFavoriteIds(column),
     resolve: async (stored) => {
-      const tokens = stored.toReversed();
+      const tokens = [...stored].reverse();
       const settled = await settleWithLimit(
         tokens,
         LIBRARY_FETCH_CONCURRENCY,
