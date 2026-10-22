@@ -86,7 +86,7 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts`
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
@@ -137,7 +137,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -217,17 +217,19 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [ ] **M-76** P3 CONFIRMED `plugins/android-app-actions/shortcuts.ts:6` - `DEEP_LINK_SCHEME` duplicates `NATIVE_APP_SCHEME` [core#12]
   - Fix: import it from `@infinitunes/auth/native-app` as `app.config.ts` does. Executor: haiku. Flags: none.
 
-## Batch M16 (sonnet): song cache, downloads, notifications - `lib/{song-cache,download,notifications}.ts`
+## Batch M16 (sonnet): song cache, downloads, notifications - `lib/{song-cache,download,notifications}.ts` (branch `feat/m16-downloads`)
 
 Fix the permission race inside `downloadTrack`/`downloadAll` so `song-menu.tsx`/`collection-menu.tsx` (M3) stay untouched.
 
-- [ ] **M-77** **[device sign-off later]** P2 PLAUSIBLE `lib/song-cache.ts:56-74,126-137,146,220-222,258-260` - synchronous FS work on the JS thread during playback (directory walk per qualified listen and on Settings mount, 1000-entry resort, persist on every load); `refreshSongCache` is also exported unserialized next to `refreshSongCacheSize` [perf#8, core#8, core#13]
+- [x] **M-77** **[device sign-off later]** P2 PLAUSIBLE `lib/song-cache.ts:56-74,126-137,146,220-222,258-260` - synchronous FS work on the JS thread during playback (directory walk per qualified listen and on Settings mount, 1000-entry resort, persist on every load); `refreshSongCache` is also exported unserialized next to `refreshSongCacheSize` [perf#8, core#8, core#13]
   - Fix: async FS, reconcile once per app run (and after a clear), keep the per-listen check to `existing`; in-memory `lastPlayed` persisted per track end, bounded LRU; make `refreshSongCache` module-private. Executor: sonnet. Flags: needs device check.
-- [ ] **M-78** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:72-85` - Android deletes the shared file as soon as the chooser returns; the receiver may still be reading [core#6]
+  - Done: reconcile once per run (and after a clear), sort only past 1000 listens, plays kept in memory and persisted hourly or on the next cache write, `refreshSongCache` private. expo-file-system 58's File/Directory API has no async list/size, so the walk stays synchronous but now rare; the Settings refresh still reconciles on purpose.
+- [x] **M-78** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:72-85` - Android deletes the shared file as soon as the chooser returns; the receiver may still be reading [core#6]
   - Fix: delay the delete (next app foreground or a few seconds) or delete on the next download of the same name. Executor: sonnet. Flags: needs device check.
-- [ ] **M-79** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:118-125` - iOS "Download all" into a folder that already has the files fails every track [core#7]
+- [x] **M-79** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:118-125` - iOS "Download all" into a folder that already has the files fails every track [core#7]
   - Fix: pick `name (2).mp4` or overwrite, add an existing-file case to `download-flow.test.ts`. Verify expo-file-system `createFile` semantics. Executor: sonnet. Flags: needs device check.
-- [ ] **M-80** **[device sign-off later]** P3 PLAUSIBLE `lib/notifications.ts:87-102` - permission prompt and share sheet are not sequenced; both system sheets overlap on iOS [core#11]
+  - Verified: iOS `createFile` runs `validateCanCreate` with overwrite false and throws `FileAlreadyExists`; Android's DocumentFile renames itself. Now picks `name (2).mp4` on iOS.
+- [x] **M-80** **[device sign-off later]** P3 PLAUSIBLE `lib/notifications.ts:87-102` - permission prompt and share sheet are not sequenced; both system sheets overlap on iOS [core#11]
   - Fix: `await ensureNotificationPermission()` inside the download functions before starting. Executor: haiku. Flags: needs device check.
 
 ## Batch M17 (sonnet): component tests and snackbar gesture - `components/failure-snackbar.tsx`, new tests under `components/**`, `navigation/**`
@@ -374,7 +376,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
