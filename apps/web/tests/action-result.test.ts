@@ -78,6 +78,19 @@ describe("unwrap", () => {
 });
 
 describe("server action results", () => {
+  it("keeps friendly sign-in copy across the action boundary", async () => {
+    const failed = await toResult(async () => {
+      throw new TRPCError({ code: "UNAUTHORIZED", message: "Unauthorized" });
+    });
+    expect(failed).toEqual({
+      ok: false,
+      code: "UNAUTHORIZED",
+      message: "Please sign in to continue.",
+    });
+    const error = await unwrap(Promise.resolve(failed)).catch((e) => e);
+    expect(userMessage(error)).toBe("Please sign in to continue.");
+  });
+
   it("round-trips a tRPC code across the action boundary", async () => {
     const failed = await toResult(async () => {
       throw new TRPCError({ code: "CONFLICT", message: "Name taken" });

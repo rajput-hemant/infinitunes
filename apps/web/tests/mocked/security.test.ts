@@ -111,66 +111,66 @@ const {
 
 describe("Server action authorization security checks", () => {
   describe("When unauthenticated (no session user)", () => {
-    it("rejects addToFavorites with Unauthorized", async () => {
+    it("rejects addToFavorites with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
         unwrap(addToFavorites("song_token", "song")),
-      ).rejects.toThrow("Unauthorized");
+      ).rejects.toThrow("Please sign in to continue.");
     });
 
-    it("rejects removeFromFavorites with Unauthorized", async () => {
+    it("rejects removeFromFavorites with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
         unwrap(removeFromFavorites("song_token", "song")),
-      ).rejects.toThrow("Unauthorized");
+      ).rejects.toThrow("Please sign in to continue.");
     });
 
-    it("rejects addSongsToPlaylist with Unauthorized", async () => {
+    it("rejects addSongsToPlaylist with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
         unwrap(addSongsToPlaylist("playlist-123", ["song-1"])),
-      ).rejects.toThrow("Unauthorized");
+      ).rejects.toThrow("Please sign in to continue.");
     });
 
-    it("rejects createNewPlaylist with Unauthorized", async () => {
+    it("rejects createNewPlaylist with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
         unwrap(createNewPlaylist({ name: "Hacked Playlist" })),
-      ).rejects.toThrow("Unauthorized");
+      ).rejects.toThrow("Please sign in to continue.");
     });
 
-    it("rejects renamePlaylist with Unauthorized", async () => {
+    it("rejects renamePlaylist with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
         unwrap(renamePlaylist("playlist-123", { name: "Hacked Playlist" })),
-      ).rejects.toThrow("Unauthorized");
+      ).rejects.toThrow("Please sign in to continue.");
     });
 
-    it("rejects deletePlaylist with Unauthorized", async () => {
+    it("rejects deletePlaylist with sign-in copy", async () => {
       mockUser = undefined;
       await expect(unwrap(deletePlaylist("playlist-123"))).rejects.toThrow(
-        "Unauthorized",
+        "Please sign in to continue.",
       );
     });
 
-    it("rejects removeSongsFromPlaylist with Unauthorized", async () => {
+    it("rejects removeSongsFromPlaylist with sign-in copy", async () => {
       mockUser = undefined;
       await expect(
         unwrap(removeSongsFromPlaylist("playlist-123", 0, "song-1")),
-      ).rejects.toThrow("Unauthorized");
+      ).rejects.toThrow("Please sign in to continue.");
     });
 
-    it("rejects updateUser with Unauthorized", async () => {
+    it("rejects updateUser with sign-in copy", async () => {
       mockUser = undefined;
       await expect(unwrap(updateUser({ name: "Attacker" }))).rejects.toThrow(
-        "Unauthorized",
+        "Please sign in to continue.",
       );
     });
 
-    it("rejects deleteUser with Unauthorized", async () => {
+    it("rejects deleteUser with sign-in copy", async () => {
       mockUser = undefined;
       await expect(unwrap(deleteUser(MOCK_PASSWORD))).rejects.toThrow(
-        "Unauthorized",
+        "Please sign in to continue.",
       );
     });
   });
@@ -261,7 +261,7 @@ describe("Server action authorization security checks", () => {
     const unauthorized = {
       ok: false,
       code: "UNAUTHORIZED",
-      message: "Unauthorized",
+      message: "Please sign in to continue.",
     };
     const forbidden = { ok: false, code: "FORBIDDEN", message: "Unauthorized" };
 

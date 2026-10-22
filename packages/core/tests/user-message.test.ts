@@ -8,15 +8,23 @@ const GENERIC = "Something went wrong. Please try again.";
 
 describe("userMessage", () => {
   it("keeps messages written for the user", () => {
-    for (const code of [
-      "CONFLICT",
-      "BAD_REQUEST",
-      "NOT_FOUND",
-      "UNAUTHORIZED",
-    ] as const) {
+    for (const code of ["CONFLICT", "BAD_REQUEST", "NOT_FOUND"] as const) {
       expect(userMessage(new TRPCError({ code, message: "Name taken" }))).toBe(
         "Name taken",
       );
+    }
+  });
+
+  it("asks the listener to sign in for server and client UNAUTHORIZED errors", () => {
+    for (const message of ["Unauthorized", "Session expired"]) {
+      expect(
+        userMessage(new TRPCError({ code: "UNAUTHORIZED", message })),
+      ).toBe("Please sign in to continue.");
+      expect(
+        userMessage(
+          Object.assign(new Error(message), { data: { code: "UNAUTHORIZED" } }),
+        ),
+      ).toBe("Please sign in to continue.");
     }
   });
 
