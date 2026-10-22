@@ -21,3 +21,24 @@ export function parseApiUrl(value: string | undefined): string {
   }
   return url.origin;
 }
+
+const LOOPBACK = new Set(["127.0.0.1", "localhost", "[::1]"]);
+
+/**
+ * In development a loopback API (`http://127.0.0.1:3000`) only reaches the Mac
+ * from the simulator, or from an Android phone through `adb reverse`. A phone
+ * on Wi-Fi gets the Mac's address from Metro's own host (`hostUri`), so the
+ * API follows the Mac's current IP instead of a stale one in `.env.local`.
+ */
+export function resolveDevApiUrl(
+  origin: string,
+  metroHostUri: string | undefined,
+): string {
+  const url = new URL(origin);
+  const metroHost = metroHostUri?.split(":")[0];
+  if (!metroHost || !LOOPBACK.has(url.hostname) || LOOPBACK.has(metroHost)) {
+    return origin;
+  }
+  url.hostname = metroHost;
+  return url.origin;
+}

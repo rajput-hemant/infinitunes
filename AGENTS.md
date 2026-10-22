@@ -387,7 +387,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   metadata only from the app target) and which raises the app target to iOS 17.0. They cannot be compiled on Linux:
   verify with `expo prebuild --platform ios --no-install` and the pbxproj, and say a change is unbuilt. Playlists reach
   them through RN `Settings` (`UserDefaults`, `user-data/assistant-shortcuts.ios.ts`).
-- No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`, or `bun run dev:native` for Metro plus the dev API (it also runs `adb reverse tcp:3000`, so `EXPO_PUBLIC_API_URL=http://127.0.0.1:3000` serves a USB Android device and the simulator); device builds `bun run mobile:android` / `mobile:ios`, guide in `docs/mobile-device-setup.md`.
+- No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`, or `bun run dev:native` for Metro plus the dev API (it also runs `adb reverse tcp:3000`, so `EXPO_PUBLIC_API_URL=http://127.0.0.1:3000` serves a USB Android device and the simulator; in dev a loopback API host is swapped for Metro's `hostUri` host, `lib/env.ts`, so a phone on Wi-Fi such as a physical iPhone follows the Mac's IP); device builds `bun run mobile:android` / `mobile:ios`, guide in `docs/mobile-device-setup.md`.
 - Brand assets: the master vectors are `apps/mobile/assets/brand/{glyph,icon}.svg` (the ribbon-note, traced
   from `docs/assets/logo1500.png`); `bun run mobile:icons` (`scripts/generate-icons.ts`, sharp) renders every
   committed PNG in `assets/` (iOS light/dark/tinted, adaptive layers, splash, `notification-icon.png`). Edit the
