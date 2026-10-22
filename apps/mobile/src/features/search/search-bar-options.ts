@@ -16,5 +16,8 @@ export function searchBarOptions() {
     autoCapitalize: "none",
     // Read at render, like `hasHeaderLanguages`, so a test can switch platforms.
     autoFocus: Platform.OS === "android",
+    // Below iOS 26.1 (no `UISearchTab`) the field sits under the large title,
+    // where iOS hides it until the listener pulls the page down.
+    hideWhenScrolling: false,
   } as const satisfies SearchBarProps;
 }

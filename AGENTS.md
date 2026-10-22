@@ -184,7 +184,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
   `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
 - Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, then iOS's Search as the system search tab
-  (`role="search"`, last in JSX: iOS 26 draws it as a trailing glass button with the field at the bottom);
+  (last in JSX). expo-router's `role="search"` reaches react-native-screens only as `ios.systemItem` (the
+  magnifier, a plain tab in the pill on iOS 27); the `UISearchTab` (trailing glass button, header field in the
+  bar) needs `unstable_nativeProps={{ ios: { role: "search", automaticallyActivatesSearch: true } }}` (26.1+);
+  below that the field stays under the large title (`hideWhenScrolling: false`);
   Android has no Search tab. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
   `NativeTabs.Trigger` with an `sf` and an `md` icon. On iOS 26 the mini player is the bar's
   `NativeTabs.BottomAccessory` (`AccessoryMiniPlayer`; `usePlacement()` `inline` drops Next) and the bar
