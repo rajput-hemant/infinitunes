@@ -14,7 +14,6 @@ import { ListRow } from "~/components/list-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SectionHeader } from "~/components/section-header";
 import { PullToRefresh } from "~/components/ui/refresh-control";
-import { Text } from "~/components/ui/text";
 import { joinMeta, playsLabel } from "~/lib/meta";
 import { entityHref } from "~/navigation/entity-href";
 import { playAll } from "~/playback/play-collection";

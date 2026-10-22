@@ -32,6 +32,9 @@ export function Description({ text }: { text: string }) {
         selectable={!toggles}
         numberOfLines={expanded ? undefined : PREVIEW_LINES}
         onTextLayout={({ nativeEvent }) => {
+          // ponytail: a clamped layout reports at most the preview's lines, so
+          // exactly three lines gets a toggle that reveals nothing; measure
+          // unclamped off-screen if that ever matters.
           if (!expanded) setClamped(nativeEvent.lines.length >= PREVIEW_LINES);
         }}
       >

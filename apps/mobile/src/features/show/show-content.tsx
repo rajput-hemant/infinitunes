@@ -13,7 +13,6 @@ import {
 } from "~/components/entity-list";
 import { PagedFooter } from "~/components/paged-footer";
 import { SectionHeader } from "~/components/section-header";
-import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
