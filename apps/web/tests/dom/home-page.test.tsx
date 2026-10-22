@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import { AudioPlayerProvider } from "react-use-audio-player";
 
 const image = "https://c.saavncdn.com/cover-500x500.jpg";
 
@@ -56,15 +57,17 @@ async function render() {
   roots.push(root);
   await act(async () => {
     root.render(
-      <ViewerProvider
-        viewer={Promise.resolve({
-          user: undefined,
-          playlists: undefined,
-          favorites: undefined,
-        })}
-      >
-        {await HomePage()}
-      </ViewerProvider>,
+      <AudioPlayerProvider>
+        <ViewerProvider
+          viewer={Promise.resolve({
+            user: undefined,
+            playlists: undefined,
+            favorites: undefined,
+          })}
+        >
+          {await HomePage()}
+        </ViewerProvider>
+      </AudioPlayerProvider>,
     );
   });
   return container;
