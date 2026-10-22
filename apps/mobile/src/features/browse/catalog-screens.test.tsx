@@ -1,6 +1,7 @@
 import type { TopShow } from "@infinitunes/types";
 import { rawPlaylist } from "@infinitunes/types/fixtures";
 import { screen } from "@testing-library/react-native";
+import { Dimensions, StyleSheet } from "react-native";
 
 import { renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
@@ -26,6 +27,19 @@ const show: TopShow = {
   },
 };
 
+/** The `GridCell` around a card: the nearest view with a start or end inset. */
+function cellStyle(title: string) {
+  let node = screen.getByText(title).parent;
+  while (node) {
+    const style = StyleSheet.flatten(node.props.style);
+    if (style?.paddingStart !== undefined || style?.paddingEnd !== undefined) {
+      return style;
+    }
+    node = node.parent;
+  }
+  return undefined;
+}
+
 describe("FeaturedPlaylistsScreen", () => {
   it("lists the playlists of the language in the URL", async () => {
     procedure("get.featuredPlaylists").mockResolvedValue({
@@ -43,6 +57,29 @@ describe("FeaturedPlaylistsScreen", () => {
       n: 50,
       lang: "punjabi",
     });
+  });
+
+  it("lays a tablet's catalog out in six columns", async () => {
+    const phone = Dimensions.get("window");
+    Dimensions.set({ window: { ...phone, width: 1024 } });
+    try {
+      procedure("get.featuredPlaylists").mockResolvedValue({
+        count: 6,
+        last_page: true,
+        data: Array.from({ length: 6 }, (_, index) =>
+          rawPlaylist({ id: `p-${index}`, title: `Playlist ${index}` }),
+        ),
+      });
+      await renderScreen(<FeaturedPlaylistsScreen />);
+      await screen.findByText("Playlist 5");
+
+      // The sixth card's cell sits on the end gutter; at four columns the fourth would.
+      expect(cellStyle("Playlist 0")).toMatchObject({ paddingStart: 16 });
+      expect(cellStyle("Playlist 3")).not.toHaveProperty("paddingEnd");
+      expect(cellStyle("Playlist 5")).toMatchObject({ paddingEnd: 16 });
+    } finally {
+      Dimensions.set({ window: phone });
+    }
   });
 
   it("says so when there are no playlists", async () => {

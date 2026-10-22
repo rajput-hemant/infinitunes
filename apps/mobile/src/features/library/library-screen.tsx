@@ -47,9 +47,9 @@ function Playlists() {
   ));
 }
 
-/** Liked Songs and Recently Played, side by side; the liked count is already loaded. */
+/** Liked Songs and Recently Played, side by side across the row at any width; the liked count is already loaded. */
 function Tiles() {
-  const width = useGridCardWidth();
+  const width = useGridCardWidth(2);
   const liked = useFavoriteLists()?.songs.length;
   return (
     <View className="flex-row px-page pb-2 pt-2" style={{ gap: GRID_GAP }}>

@@ -274,7 +274,7 @@ export function EntityHeaderSkeleton({
   const signedIn = useUserId() !== undefined;
   return (
     <SkeletonPulse>
-      <View className="items-center px-page pb-4 pt-2">
+      <View className="w-full max-w-readable items-center self-center px-page pb-4 pt-2">
         <SkeletonBlock style={frame("header", round)} />
         <View className="mt-3">
           <SkeletonText variant="caption" width={96} />

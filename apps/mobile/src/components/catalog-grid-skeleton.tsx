@@ -2,11 +2,7 @@ import { View } from "react-native";
 
 import { CardTextSkeleton } from "~/components/skeletons";
 import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
-import {
-  CARD_COLUMNS,
-  GRID_GAP,
-  useGridCardWidth,
-} from "~/lib/use-grid-card-width";
+import { GRID_GAP, useGrid } from "~/lib/use-grid-card-width";
 import { useRadii } from "~/theme/use-radii";
 
 const ROWS = 3;
@@ -17,14 +13,14 @@ const FULL = 9999;
 export function CatalogGridSkeleton({ round = false }: { round?: boolean }) {
   const scale = useRadii();
   const radius = round ? FULL : scale.md;
-  const width = useGridCardWidth(CARD_COLUMNS);
+  const { columns, width } = useGrid("cards");
 
   return (
     <SkeletonPulse>
       <View className="px-page" style={{ gap: GRID_GAP }}>
         {range(ROWS).map((row) => (
           <View key={row} className="flex-row" style={{ gap: GRID_GAP }}>
-            {range(CARD_COLUMNS).map((column) => (
+            {range(columns).map((column) => (
               <View key={column} className="gap-2" style={{ width }}>
                 <SkeletonBlock
                   style={{ width, height: width, borderRadius: radius }}

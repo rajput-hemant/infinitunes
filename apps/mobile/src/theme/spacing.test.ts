@@ -125,6 +125,7 @@ describe("spacing scale", () => {
         "page",
         "dock",
         "seam",
+        "readable",
       ].toSorted(),
     );
   });
