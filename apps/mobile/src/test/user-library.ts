@@ -19,6 +19,18 @@ export function userPlaylist(overrides: Partial<UserPlaylist> = {}) {
   } satisfies UserPlaylist;
 }
 
+/** The list response deliberately excludes private ownership and song ids. */
+export function playlistSummary(overrides: Partial<UserPlaylist> = {}) {
+  const playlist = userPlaylist(overrides);
+  return {
+    id: playlist.id,
+    name: playlist.name,
+    description: playlist.description,
+    createdAt: playlist.createdAt,
+    songCount: playlist.songs.length,
+  };
+}
+
 type FavoritesRow = NonNullable<
   inferRouterOutputs<AppRouter>["user"]["getUserFavorites"]
 >;

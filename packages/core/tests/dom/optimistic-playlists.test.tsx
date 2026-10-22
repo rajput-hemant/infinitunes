@@ -12,8 +12,7 @@ import {
   renamePlaylistOptimistic,
   resetPlaylistOverlay,
   usePlaylistRowRemoved,
-  usePlaylists,
-  type PlaylistView,
+  usePlaylistDetailList,
   type UserPlaylist,
 } from "../../src/react/optimistic-playlists";
 
@@ -35,12 +34,12 @@ function Probe({ server }: { server: UserPlaylist[] | undefined }) {
   const removed = usePlaylistRowRemoved("a", "s2");
   return (
     <output data-removed={removed}>
-      {JSON.stringify(usePlaylists(server) ?? null)}
+      {JSON.stringify(usePlaylistDetailList(server) ?? null)}
     </output>
   );
 }
 let host: HTMLElement;
-const view = (): PlaylistView[] | undefined =>
+const view = (): (UserPlaylist & { pending?: boolean })[] | undefined =>
   JSON.parse(host.textContent ?? "null") ?? undefined;
 
 const roots: Root[] = [];

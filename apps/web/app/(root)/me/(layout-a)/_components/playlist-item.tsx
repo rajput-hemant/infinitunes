@@ -1,4 +1,4 @@
-import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import type { SongObj } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
@@ -8,19 +8,23 @@ import { GlassSurface } from "~/components/glass/glass-surface";
 import { ImageCollage } from "~/components/image-collage";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { PlaylistCaption } from "~/components/playlist/playlist-overlay";
+import { getPlaylistDetails } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
 import { asRoute } from "~/lib/utils";
 
-export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
-  const { id, name, description, songs } = playlist;
+export async function PlaylistItem({ playlist }: { playlist: PlaylistSummary }) {
+  const { id, name, description, songCount } = playlist;
 
   let songsDetails: SongObj | undefined;
 
-  if (songs.length) {
+  if (songCount) {
     try {
-      songsDetails = await api.song.details({
-        id: songs.slice(0, 4).join(","),
-      });
+      const detail = await getPlaylistDetails(id);
+      if (detail?.songs.length) {
+        songsDetails = await api.song.details({
+          id: detail.songs.slice(0, 4).join(","),
+        });
+      }
     } catch (error) {
       // Cover art is decoration: show the placeholder instead of failing the
       // whole library page for one playlist.
@@ -55,7 +59,7 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
           <PlaylistManageMenu playlist={{ id, name, description }} />
         </GlassSurface>
 
-        <ImageCollage src={songs.length > 4 ? imageSrcs : [imageSrcs[0]]} />
+        <ImageCollage src={songCount > 4 ? imageSrcs : [imageSrcs[0]]} />
 
         <Skeleton className="absolute inset-0 -z-10 size-full" />
       </div>
@@ -64,7 +68,7 @@ export async function PlaylistItem({ playlist }: { playlist: MyPlaylist }) {
         id={id}
         name={name}
         description={description}
-        songCount={songs.length}
+        songCount={songCount}
       />
     </div>
   );

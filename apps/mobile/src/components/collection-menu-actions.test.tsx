@@ -1,7 +1,8 @@
+import { MenuView } from "@expo/ui/community/menu";
 import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
 import { toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawSong } from "@infinitunes/types/fixtures";
-import { act, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Directory } from "expo-file-system";
 import {
   getPermissionsAsync,
@@ -17,7 +18,7 @@ import { preferencesStore } from "~/lib/preferences";
 import { chooseMenuAction, renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
-import { userPlaylist } from "~/test/user-library";
+import { playlistSummary, userPlaylist } from "~/test/user-library";
 
 import { CollectionMenu } from "./collection-menu";
 
@@ -58,8 +59,9 @@ describe("add to playlist", () => {
 
   it("adds every song to the chosen playlist", async () => {
     await act(async () => signInAs("alice"));
+    procedure("user.getPlaylistDetails").mockResolvedValue(userPlaylist());
     procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1", name: "Road Trip" }),
+      playlistSummary({ id: "pl-1", name: "Road Trip" }),
     ]);
     await renderWithProviders(menu());
 
@@ -75,6 +77,38 @@ describe("add to playlist", () => {
       playlistId: "pl-1",
       songs: ["one", "two", "three"],
     });
+  });
+
+  it("loads membership on menu intent and preserves the all-songs checkmark", async () => {
+    await act(async () => signInAs("alice"));
+    const full = userPlaylist({ songs: rows.map((song) => song.id) });
+    procedure("user.getUserPlaylists").mockResolvedValue([
+      playlistSummary(full),
+    ]);
+    procedure("user.getPlaylistDetails").mockResolvedValue(full);
+    await renderWithProviders(menu());
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(10);
+    });
+    expect(procedure("user.getPlaylistDetails")).not.toHaveBeenCalled();
+
+    await fireEvent(screen.getByLabelText(trigger), "touchStart");
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(10);
+    });
+
+    expect(procedure("user.getPlaylistDetails")).toHaveBeenCalledWith({
+      id: full.id,
+    });
+    const actions = screen.UNSAFE_getByType(MenuView).props.actions;
+    expect(
+      actions.find((action: { id: string }) => action.id === "add-to-playlist")
+        ?.subactions,
+    ).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: `playlist:${full.id}`, state: "on" }),
+      ]),
+    );
   });
 
   it("offers only queue actions for episodes", async () => {

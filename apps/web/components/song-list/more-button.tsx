@@ -4,8 +4,9 @@ import {
   addSongsOptimistic,
   removeSongOptimistic,
 } from "@infinitunes/core/react/optimistic-playlists";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { Favorite } from "@infinitunes/db/schema";
 import { toQueueEntry } from "@infinitunes/types";
 import {
   Download,
@@ -32,6 +33,7 @@ import {
 import { unwrap } from "~/lib/action-result";
 import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
+import { trpc } from "~/lib/trpc/vanilla";
 
 import { TileMoreDesktop } from "./more-button-desktop";
 import { useTileFavorite } from "./more-button-favorite";
@@ -56,8 +58,9 @@ type TileMoreButtonProps = {
   favorites?: Favorite | null;
   item: TileMoreItem;
   showAlbum: boolean;
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   playlistId?: string;
+  playlistSongs?: string[];
   playlistSongIndex?: number;
   className?: string;
 };
@@ -77,6 +80,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     showAlbum,
     playlists,
     playlistId,
+    playlistSongs,
     playlistSongIndex,
     className,
   } = props;
@@ -133,12 +137,18 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function addToPlaylist(id: string, name: string) {
-    // The dialog closes and the song count rises now; a failure rolls both back.
+    // Load membership only for the selected playlist, then update its count.
     setDialogOpen(false);
     toast.promise(
-      addSongsOptimistic(id, [item.id], () =>
-        unwrap(addSongsToPlaylist(id, [item.id])),
-      ),
+      trpc.user.getPlaylistDetails.query({ playlistId: id }).then((playlist) => {
+        if (!playlist) throw new Error("Playlist not found");
+        return addSongsOptimistic(
+          id,
+          [item.id],
+          () => unwrap(addSongsToPlaylist(id, [item.id])),
+          playlist.songs,
+        );
+      }),
       {
         loading: "Adding songs to playlist...",
         success: `"${getItemName(item)}" added to "${name}" playlist`,
@@ -158,7 +168,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       removeSongOptimistic(
         playlistId,
         item.id,
-        playlists?.find((p) => p.id === playlistId)?.songs,
+        playlistSongs,
         (index) => unwrap(removeSongsFromPlaylist(playlistId, index, item.id)),
       ),
       {

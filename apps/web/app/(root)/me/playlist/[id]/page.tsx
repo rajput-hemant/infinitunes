@@ -158,6 +158,7 @@ export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
           <SongList
             items={playlistSongs}
             playlistId={id}
+            playlistSongs={songs}
             playlistSongIndices={playlistSongIndices}
           />
         </>

@@ -38,7 +38,9 @@ function renderPlaylist(id = "pl-1") {
 
 beforeEach(async () => {
   await act(async () => signInAs("alice"));
-  procedure("user.getUserPlaylists").mockResolvedValue([playlist]);
+  procedure("user.getPlaylistDetails").mockImplementation(async ({ id }) =>
+    id === playlist.id ? playlist : undefined,
+  );
   procedure("song.details").mockImplementation(catalogAnswering(catalog));
 });
 
@@ -115,9 +117,10 @@ describe("PlaylistScreen", () => {
   });
 
   it("says so when the playlist is empty", async () => {
-    procedure("user.getUserPlaylists").mockResolvedValue([
-      { ...playlist, songs: [] },
-    ]);
+    procedure("user.getPlaylistDetails").mockResolvedValue({
+      ...playlist,
+      songs: [],
+    });
     await renderPlaylist();
 
     expect(await screen.findByText("Nothing to see here")).toBeOnTheScreen();
@@ -161,9 +164,10 @@ describe("removing a song", () => {
       songId: "b",
     });
 
-    procedure("user.getUserPlaylists").mockResolvedValue([
-      { ...playlist, songs: ["a", "c"] },
-    ]);
+    procedure("user.getPlaylistDetails").mockResolvedValue({
+      ...playlist,
+      songs: ["a", "c"],
+    });
     await act(async () => write.resolve(userPlaylist()));
 
     expect(screen.queryByText("Middle Song")).toBeNull();

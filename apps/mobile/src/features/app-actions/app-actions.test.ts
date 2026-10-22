@@ -33,9 +33,9 @@ describe.each(["play-liked", "shuffle-liked", "play-playlist"] as const)(
       procedure("user.getUserFavorites").mockResolvedValue(
         favoritesRow({ songs: ["older"] }),
       );
-      procedure("user.getUserPlaylists").mockResolvedValue([
+      procedure("user.getPlaylistDetails").mockResolvedValue(
         userPlaylist({ songs: ["older"] }),
-      ]);
+      );
     });
 
     it.each(["resolve", "empty", "reject"] as const)(
@@ -66,12 +66,12 @@ describe.each(["play-liked", "shuffle-liked", "play-playlist"] as const)(
 it.each(["missing", "reject"] as const)(
   "ignores a superseded playlist library lookup that returns %s",
   async (settle) => {
-    const playlists = deferred<ReturnType<typeof userPlaylist>[]>();
-    procedure("user.getUserPlaylists").mockReturnValueOnce(playlists.promise);
+    const playlists = deferred<ReturnType<typeof userPlaylist> | undefined>();
+    procedure("user.getPlaylistDetails").mockReturnValueOnce(playlists.promise);
     const pending = runAppAction("play-playlist", context);
     playAll([toSongRow(rawSong({ id: "chosen" }))]);
 
-    if (settle === "missing") playlists.resolve([]);
+    if (settle === "missing") playlists.resolve(undefined);
     else playlists.reject(trpcError("UNAUTHORIZED"));
     expect(await pending).toBe("back");
     expect(failureStore.getState().current).toBeNull();

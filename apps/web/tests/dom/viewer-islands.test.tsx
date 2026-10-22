@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 
-import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import {
   AppRouterContext,
   type AppRouterInstance,
@@ -71,10 +71,9 @@ const signedIn: Viewer = {
       id: "p1",
       name: "Road trip",
       description: null,
-      userId: "u1",
-      songs: [],
+      songCount: 0,
       createdAt: new Date(0),
-    } satisfies MyPlaylist,
+    } satisfies PlaylistSummary,
   ],
   favorites: null,
 };

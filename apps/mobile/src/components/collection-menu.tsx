@@ -62,7 +62,8 @@ type CollectionMenuProps = {
  * download them all into a folder.
  */
 export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
-  const signedIn = useUserId() !== undefined;
+  const userId = useUserId();
+  const signedIn = userId !== undefined;
   const playlists = useUserPlaylists();
   const songs = rows.filter((row) => row.type === "song");
 
@@ -94,7 +95,7 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
             addToPlaylistEntry({
               songs,
               playlists,
-              onAdd: (playlist) => addSongsToPlaylist(playlist, songs),
+              onAdd: (playlist) => addSongsToPlaylist(playlist, songs, userId),
             }),
           ]
         : []),

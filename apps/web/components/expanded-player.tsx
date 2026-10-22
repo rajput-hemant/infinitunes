@@ -1,7 +1,8 @@
 "use client";
 
 import type { PositionStore } from "@infinitunes/core/react/position-store";
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import type { ActiveRadioSession, Queue } from "@infinitunes/types";
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import {
@@ -35,7 +36,7 @@ export type ExpandedPlayerProps = {
   /** Station the queue is playing from, if any. */
   radio?: ActiveRadioSession | null;
   user?: User;
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   favorites?: Favorite | null;
   position: PositionStore;
   duration: number;

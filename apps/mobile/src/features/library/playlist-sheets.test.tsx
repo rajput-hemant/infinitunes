@@ -6,7 +6,7 @@ import type { Href } from "expo-router";
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
-import { userPlaylist } from "~/test/user-library";
+import { playlistSummary } from "~/test/user-library";
 
 import { EditPlaylistScreen } from "./edit-playlist-screen";
 import { NewPlaylistScreen } from "./new-playlist-screen";
@@ -38,7 +38,7 @@ beforeEach(async () => {
 describe("EditPlaylistScreen", () => {
   it("says so, with a way out, when the playlist is gone", async () => {
     procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1" }),
+      playlistSummary({ id: "pl-1" }),
     ]);
     const router = await renderEdit("pl-gone");
 
@@ -59,7 +59,7 @@ describe("EditPlaylistScreen", () => {
   it("offers a retry when the playlists cannot load, then shows the form", async () => {
     procedure("user.getUserPlaylists")
       .mockRejectedValueOnce(new Error("down"))
-      .mockResolvedValue([userPlaylist({ id: "pl-1", name: "Road Trip" })]);
+      .mockResolvedValue([playlistSummary({ id: "pl-1", name: "Road Trip" })]);
     await renderEdit("pl-1");
 
     await fireEvent.press(
@@ -73,7 +73,7 @@ describe("EditPlaylistScreen", () => {
 
   it("starts the form from the playlist's name and description", async () => {
     procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1", name: "Road Trip", description: "Summer" }),
+      playlistSummary({ id: "pl-1", name: "Road Trip", description: "Summer" }),
     ]);
     await renderEdit("pl-1");
 

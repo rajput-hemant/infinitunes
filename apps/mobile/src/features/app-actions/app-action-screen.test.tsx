@@ -228,10 +228,12 @@ describe("action/play-liked and action/shuffle-liked", () => {
 describe("action/play-playlist", () => {
   beforeEach(async () => {
     await act(async () => signInAs("alice"));
-    procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1", name: "Road Trip", songs: ["b", "a"] }),
-      userPlaylist({ id: "pl-2", name: "Empty", songs: [] }),
-    ]);
+    procedure("user.getPlaylistDetails").mockImplementation(async ({ id }) =>
+      [
+        userPlaylist({ id: "pl-1", name: "Road Trip", songs: ["b", "a"] }),
+        userPlaylist({ id: "pl-2", name: "Empty", songs: [] }),
+      ].find((playlist) => playlist.id === id),
+    );
   });
 
   it("plays the playlist in its own order", async () => {

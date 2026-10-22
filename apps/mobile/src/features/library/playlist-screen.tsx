@@ -1,5 +1,4 @@
-import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
-import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
+import type { UserPlaylist } from "@infinitunes/core/react/optimistic-playlists";
 import type { SongRowItem } from "@infinitunes/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
@@ -16,7 +15,8 @@ import { totalDurationLabel } from "~/lib/meta";
 import {
   moveSongInPlaylist,
   removeSongFromPlaylist,
-  useServerPlaylists,
+  useServerPlaylistDetails,
+  usePlaylistDetails,
 } from "~/user-data/playlists";
 
 import { LibraryListView } from "./library-list-view";
@@ -76,11 +76,14 @@ function PlaylistSkeleton() {
   );
 }
 
-function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
-  const { data } = useServerPlaylists();
+function PlaylistSongs({
+  playlist,
+  server,
+}: {
+  playlist: UserPlaylist;
+  server: UserPlaylist;
+}) {
   const list = usePlaylistSongs(playlist);
-  // Removal indexes against the server's copy, not the overlay's (see user-data).
-  const server = data?.find(({ id }) => id === playlist.id) ?? playlist;
 
   return (
     <LibraryListView
@@ -127,12 +130,11 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
 }
 
 function Playlist({ id }: { id: string }) {
-  const { data, error, isPending, refetch } = useServerPlaylists();
-  const playlists = usePlaylists(data);
-  const playlist = playlists?.find((candidate) => candidate.id === id);
+  const { data, error, isPending, refetch } = useServerPlaylistDetails(id);
+  const playlist = usePlaylistDetails(data);
 
   if (isPending) return <PlaylistSkeleton />;
-  if (!playlists) {
+  if (error) {
     return <ErrorState error={error} onRetry={() => void refetch()} />;
   }
   if (!playlist) {
@@ -158,7 +160,7 @@ function Playlist({ id }: { id: string }) {
           />
         </PlaylistMenu>
       </Stack.Toolbar>
-      <PlaylistSongs playlist={playlist} />
+      <PlaylistSongs playlist={playlist} server={data ?? playlist} />
     </>
   );
 }

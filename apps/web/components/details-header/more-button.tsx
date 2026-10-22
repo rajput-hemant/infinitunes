@@ -1,8 +1,8 @@
 "use client";
 
 import { addSongsOptimistic } from "@infinitunes/core/react/optimistic-playlists";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
-import type { MyPlaylist } from "@infinitunes/db/schema";
 import type {
   MediaType,
   Quality,
@@ -73,7 +73,7 @@ type MoreButtonProps = {
   name: string;
   subtitle: string;
   songs: SongRowItem[];
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   artistId?: string;
   language?: string;
 };
@@ -211,13 +211,19 @@ export function MoreButton(props: MoreButtonProps) {
   }
 
   function addToPlaylist(playlistId: string, playlistName: string) {
-    // The dialog closes and the playlist's count rises now; a failure rolls both back.
+    // Load membership only for the selected playlist, then update its count.
     const songIds = songs.map((song) => song.id);
     setDialogOpen(false);
     toast.promise(
-      addSongsOptimistic(playlistId, songIds, () =>
-        unwrap(addSongsToPlaylist(playlistId, songIds)),
-      ),
+      trpc.user.getPlaylistDetails.query({ playlistId }).then((playlist) => {
+        if (!playlist) throw new Error("Playlist not found");
+        return addSongsOptimistic(
+          playlistId,
+          songIds,
+          () => unwrap(addSongsToPlaylist(playlistId, songIds)),
+          playlist.songs,
+        );
+      }),
       {
         loading: "Adding songs to playlist...",
         success: `${songs.length} song${songs.length === 1 ? "" : "s"} added to "${playlistName}" playlist`,

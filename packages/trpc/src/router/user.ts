@@ -18,6 +18,7 @@ import type { Session, TRPCContext } from "../trpc";
 import { protectedProcedure, router } from "../trpc";
 
 export const PLAYLIST_MAX_SONGS = 5000;
+const FAVORITE_MAX_ITEMS = 5000;
 
 /** Playlists one account may own. */
 export const PLAYLIST_MAX_COUNT = 10;
@@ -37,23 +38,31 @@ const playlistInput = z.object({
 
 const playlistSongsInput = z.object({
   playlistId: z.string(),
-  songs: z.array(z.string().max(64)).max(500),
+  songs: z.array(z.string().max(64)).max(PLAYLIST_MAX_SONGS),
 });
 
 const favoriteInput = z.object({
-  token: z.string().max(64),
+  token: z.string().min(1).max(64),
   type: z.enum(["song", "album", "playlist", "artist", "show"]),
 });
 
 type FavoriteType = z.infer<typeof favoriteInput>["type"];
 
-function emptyFavoriteLists(type: FavoriteType, token: string) {
+const favoriteColumns = {
+  song: "songs",
+  album: "albums",
+  playlist: "playlists",
+  artist: "artists",
+  show: "podcasts",
+} as const;
+
+function emptyFavoriteLists(type: FavoriteType, token?: string) {
   return {
-    songs: type === "song" ? [token] : [],
-    albums: type === "album" ? [token] : [],
-    playlists: type === "playlist" ? [token] : [],
-    artists: type === "artist" ? [token] : [],
-    podcasts: type === "show" ? [token] : [],
+    songs: type === "song" && token !== undefined ? [token] : [],
+    albums: type === "album" && token !== undefined ? [token] : [],
+    playlists: type === "playlist" && token !== undefined ? [token] : [],
+    artists: type === "artist" && token !== undefined ? [token] : [],
+    podcasts: type === "show" && token !== undefined ? [token] : [],
   };
 }
 
@@ -64,7 +73,7 @@ function favoritePatch(
 ) {
   const patch = (column: SQLWrapper) =>
     op === "append"
-      ? sql`case when ${token} = any(${column}) then ${column} else array_append(${column}, ${token}) end`
+      ? sql`case when ${token} = any(${column}) then ${column} when cardinality(${column}) < ${FAVORITE_MAX_ITEMS} then array_append(${column}, ${token}) else ${column} end`
       : sql`array_remove(${column}, ${token})`;
 
   return {
@@ -143,14 +152,6 @@ const REAUTH_MESSAGE = "Please sign in again to continue";
 const PASSWORD_REQUIRED_MESSAGE = "Enter your current password to continue";
 
 async function loadCredentials(db: TRPCContext["db"], userId: string) {
-  const userRecord = await db.query.users.findFirst({
-    columns: { id: true },
-    where: eq(users.id, userId),
-  });
-  if (!userRecord) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "Unauthorized" });
-  }
-
   const credentialAccount = await db.query.betterAuthAccounts.findFirst({
     columns: { id: true, password: true },
     where: and(
@@ -160,7 +161,6 @@ async function loadCredentials(db: TRPCContext["db"], userId: string) {
   });
 
   return {
-    userRecord,
     credentialAccount,
     storedHash: credentialAccount?.password,
   };
@@ -186,12 +186,12 @@ async function verifyCurrentPassword(
   password: string,
 ) {
   const credentials = await loadCredentials(db, userId);
-  if (!credentials.storedHash) {
+  if (!credentials.credentialAccount || !credentials.storedHash) {
     throw new TRPCError({ code: "BAD_REQUEST", message: NO_PASSWORD_MESSAGE });
   }
   await assertPasswordMatches(credentials.storedHash, password);
 
-  return credentials;
+  return credentials.credentialAccount;
 }
 
 /**
@@ -222,27 +222,6 @@ async function confirmIdentity(
     Date.now() - new Date(createdAt).getTime() > FRESH_SESSION_MS
   ) {
     throw new TRPCError({ code: "FORBIDDEN", message: REAUTH_MESSAGE });
-  }
-}
-
-async function storePassword(
-  tx: Pick<TRPCContext["db"], "update" | "insert">,
-  userRecord: { id: string },
-  credentialAccount: { id: string } | undefined,
-  hashedPassword: string,
-) {
-  if (credentialAccount) {
-    await tx
-      .update(betterAuthAccounts)
-      .set({ password: hashedPassword, updatedAt: new Date() })
-      .where(eq(betterAuthAccounts.id, credentialAccount.id));
-  } else {
-    await tx.insert(betterAuthAccounts).values({
-      userId: userRecord.id,
-      accountId: userRecord.id,
-      providerId: "credential",
-      password: hashedPassword,
-    });
   }
 }
 
@@ -329,6 +308,8 @@ function staleSongPosition(): never {
 export const userRouter = router({
   getUserPlaylists: protectedProcedure.query(({ ctx }) =>
     ctx.db.query.myPlaylists.findMany({
+      columns: { id: true, name: true, description: true, createdAt: true },
+      extras: { songCount: sql<number>`cardinality(${myPlaylists.songs})`.as("song_count") },
       where: eq(myPlaylists.userId, ctx.session.user.id),
     }),
   ),
@@ -427,18 +408,18 @@ export const userRouter = router({
       return deletedPlaylist;
     }),
 
-  getUserFavorites: protectedProcedure.query(({ ctx }) =>
-    ctx.db.query.favorites.findFirst({
+  getUserFavorites: protectedProcedure.query(async ({ ctx }) =>
+    (await ctx.db.query.favorites.findFirst({
       where: eq(favorites.userId, ctx.session.user.id),
-    }),
+    })) ?? null,
   ),
 
   addToFavorites: protectedProcedure
     .input(favoriteInput)
-    .mutation(({ ctx, input }) => {
+    .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      return ctx.db
+      const rows = await ctx.db
         .insert(favorites)
         .values({
           userId,
@@ -449,6 +430,15 @@ export const userRouter = router({
           set: favoritePatch(input.type, input.token, "append"),
         })
         .returning();
+
+      const lists = rows[0];
+      if (!lists || !lists[favoriteColumns[input.type]].includes(input.token)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Favorites list is full (5,000 items)",
+        });
+      }
+      return rows;
     }),
 
   removeFromFavorites: protectedProcedure
@@ -462,10 +452,7 @@ export const userRouter = router({
         .returning();
 
       if (rows.length === 0) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Favorites not found",
-        });
+        return [{ userId, ...emptyFavoriteLists(input.type) }];
       }
 
       return rows;
@@ -476,7 +463,7 @@ export const userRouter = router({
     .input(changePasswordSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
-      const { userRecord, credentialAccount } = await verifyCurrentPassword(
+      const credentialAccount = await verifyCurrentPassword(
         ctx.db,
         userId,
         input.password,
@@ -490,7 +477,10 @@ export const userRouter = router({
       // procedures do not receive.
       const currentToken = ctx.session.session?.token;
       await ctx.db.transaction(async (tx) => {
-        await storePassword(tx, userRecord, credentialAccount, hashedPassword);
+        await tx
+          .update(betterAuthAccounts)
+          .set({ password: hashedPassword, updatedAt: new Date() })
+          .where(eq(betterAuthAccounts.id, credentialAccount.id));
 
         await tx
           .delete(betterAuthSessions)
@@ -550,7 +540,6 @@ export const userRouter = router({
       const patch: {
         betterAuthName?: string;
         email?: string;
-        emailVerifiedBoolean?: boolean;
       } = {};
       if (input.name !== undefined) patch.betterAuthName = input.name;
       if (input.email !== undefined) {
@@ -561,12 +550,24 @@ export const userRouter = router({
         if (current?.email !== input.email) {
           await confirmIdentity(ctx, input.currentPassword);
           patch.email = input.email;
-          patch.emailVerifiedBoolean = false;
         }
       }
       if (Object.keys(patch).length > 0) {
         try {
-          await ctx.db.update(users).set(patch).where(eq(users.id, userId));
+          await ctx.db.transaction(async (tx) => {
+            await tx.update(users).set(patch).where(eq(users.id, userId));
+            if (patch.email !== undefined) {
+              const currentToken = ctx.session.session?.token;
+              await tx.delete(betterAuthSessions).where(
+                currentToken
+                  ? and(
+                      eq(betterAuthSessions.userId, userId),
+                      ne(betterAuthSessions.token, currentToken),
+                    )
+                  : eq(betterAuthSessions.userId, userId),
+              );
+            }
+          });
         } catch (error) {
           if (isUniqueViolation(error)) {
             throw new TRPCError({
@@ -597,11 +598,22 @@ export const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       await confirmIdentity(ctx, input.password);
 
-      const [deletedUser] = await ctx.db
-        .delete(users)
-        .where(eq(users.id, ctx.session.user.id))
-        .returning({ id: users.id });
+      try {
+        const [deletedUser] = await ctx.db
+          .delete(users)
+          .where(eq(users.id, ctx.session.user.id))
+          .returning({ id: users.id });
 
-      return deletedUser;
+        return deletedUser;
+      } catch (error) {
+        const cause = error instanceof Error && error.cause ? error.cause : error;
+        if (typeof cause === "object" && cause !== null && "code" in cause && cause.code === "23503") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "This account has linked data that prevents deletion",
+          });
+        }
+        throw error;
+      }
     }),
 });

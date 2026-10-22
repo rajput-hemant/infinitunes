@@ -6,10 +6,12 @@ import {
   removeSongOptimistic,
   renamePlaylistOptimistic,
   usePlaylists,
+  usePlaylistDetails,
+  usePlaylistDetailList,
   type PlaylistView,
   type UserPlaylist,
 } from "@infinitunes/core/react/optimistic-playlists";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 
 import { reportFailure } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
@@ -18,9 +20,7 @@ import { trpc, trpcClient } from "~/lib/trpc";
 import { userQueryKey, useUserId } from "./session";
 
 /**
- * The listener's playlists exactly as the server holds them, with the
- * query's state. Removing or moving a song needs this raw copy (the server
- * indexes what it holds); lists and menus show `useUserPlaylists`.
+ * The listener's playlist summaries with the query state.
  */
 export function useServerPlaylists() {
   const userId = useUserId();
@@ -47,11 +47,54 @@ export function useUserPlaylists(): PlaylistView[] | undefined {
   return usePlaylists(useServerPlaylists().data);
 }
 
+/** Details are private to the account, just like the summary query. */
+export function playlistDetailsQuery(id: string, userId: string | undefined) {
+  return {
+    queryKey: userQueryKey(
+      trpc.user.getPlaylistDetails.queryKey({ id }),
+      userId,
+    ),
+    queryFn: () => trpcClient.user.getPlaylistDetails.query({ id }),
+  };
+}
+
+export function useServerPlaylistDetails(id: string) {
+  const userId = useUserId();
+  return useQuery({
+    ...playlistDetailsQuery(id, userId),
+    enabled: userId !== undefined,
+  });
+}
+
+/** Membership is loaded only for a surface that needs song ids. */
+export function usePlaylistMembership(
+  playlists: readonly PlaylistView[] | undefined,
+  enabled: boolean,
+) {
+  const userId = useUserId();
+  const details = useQueries({
+    queries: (enabled ? (playlists ?? []) : [])
+      .filter((playlist) => !playlist.pending)
+      .map((playlist) => ({
+        ...playlistDetailsQuery(playlist.id, userId),
+        enabled: enabled && userId !== undefined,
+      })),
+  });
+  return usePlaylistDetailList(details.flatMap(({ data }) => data ?? []));
+}
+
+export { usePlaylistDetails };
+
 /** Refetches every account's playlists after a write settles. */
 export function refreshPlaylists() {
-  return queryClient.invalidateQueries({
-    queryKey: trpc.user.getUserPlaylists.queryKey(),
-  });
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: trpc.user.getUserPlaylists.queryKey(),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: trpc.user.getPlaylistDetails.pathKey(),
+    }),
+  ]);
 }
 
 /*
@@ -90,23 +133,38 @@ export function deletePlaylist(id: string) {
 type Song = { id: string; name: string };
 type Playlist = { id: string; name: string };
 
-function addSongIds(playlist: Playlist, ids: readonly string[]) {
-  addSongsOptimistic(playlist.id, [...ids], () =>
-    trpcClient.user.addSongsToPlaylist.mutate({
-      playlistId: playlist.id,
-      songs: [...ids],
-    }),
+function addSongIds(playlist: UserPlaylist, ids: readonly string[]) {
+  addSongsOptimistic(
+    playlist.id,
+    [...ids],
+    () =>
+      trpcClient.user.addSongsToPlaylist.mutate({
+        playlistId: playlist.id,
+        songs: [...ids],
+      }),
+    playlist.songs,
   )
     .catch(reportFailure(`Couldn't add to ${playlist.name}.`))
     .finally(() => void refreshPlaylists());
 }
 
-/** Adds the songs at once; the write follows, and a failure rolls back. */
-export function addSongsToPlaylist(playlist: Playlist, songs: readonly Song[]) {
-  addSongIds(
-    playlist,
-    songs.map((song) => song.id),
-  );
+/** Load membership before adding so duplicate songs do not inflate the count. */
+export function addSongsToPlaylist(
+  playlist: Playlist,
+  songs: readonly Song[],
+  userId: string | undefined,
+) {
+  if (!userId) return;
+  void queryClient
+    .fetchQuery(playlistDetailsQuery(playlist.id, userId))
+    .then((details) => {
+      if (!details) throw new Error("Playlist not found");
+      addSongIds(
+        details,
+        songs.map((song) => song.id),
+      );
+    })
+    .catch(reportFailure(`Couldn't add to ${playlist.name}.`));
 }
 
 /**

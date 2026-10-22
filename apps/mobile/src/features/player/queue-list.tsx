@@ -31,7 +31,8 @@ function SectionLabel({ children }: { children: string }) {
 
 /** "Add to Playlist" for every song in the queue, as one write. */
 function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
-  const signedIn = useUserId() !== undefined;
+  const userId = useUserId();
+  const signedIn = userId !== undefined;
   const playlists = useUserPlaylists();
   const songs = queue.filter((entry) => entry.type === "song");
   // Playlists need an account: no menu at all while signed out.
@@ -44,7 +45,7 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
         addToPlaylistEntry({
           songs,
           playlists,
-          onAdd: (playlist) => addSongsToPlaylist(playlist, songs),
+          onAdd: (playlist) => addSongsToPlaylist(playlist, songs, userId),
         }),
       ]}
     >

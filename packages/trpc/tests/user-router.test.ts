@@ -669,7 +669,7 @@ describe("user router authorization", () => {
       });
     });
 
-    it("changes the email only with a fresh session, and resets verification", async () => {
+    it("changes the email only with a fresh session, preserving verification", async () => {
       await expect(
         sessionAge(FRESH_SESSION_MS + 60_000).user.updateUser({
           email: "new@example.com",
@@ -681,7 +681,6 @@ describe("user router authorization", () => {
 
       expect(state.updates[0]?.values).toEqual({
         email: "new@example.com",
-        emailVerifiedBoolean: false,
       });
     });
 
@@ -781,7 +780,7 @@ describe("user router authorization", () => {
     expect(state.updates).toHaveLength(0);
   });
 
-  it("resets email verification when the email changes", async () => {
+  it("preserves email verification when the email changes", async () => {
     await seedPasswordUser();
 
     await signedIn().user.updateUser({
@@ -791,7 +790,6 @@ describe("user router authorization", () => {
 
     expect(state.updates[0]?.values).toEqual({
       email: "new@example.com",
-      emailVerifiedBoolean: false,
     });
   });
 
@@ -902,6 +900,12 @@ describe("user router authorization", () => {
         playlistId: "playlist-1",
         songs: input,
       });
+
+    it("accepts a whole collection up to the playlist limit", async () => {
+      state.playlist = { id: "playlist-1", userId: "user-123", songs: [] };
+      await add(songs(PLAYLIST_MAX_SONGS));
+      expect(state.updates[0]?.values.songs).toHaveLength(PLAYLIST_MAX_SONGS);
+    });
 
     it("appends new songs at the end", async () => {
       state.playlist = {

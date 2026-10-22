@@ -77,7 +77,8 @@ type SongMenuProps = {
  * list's own removal.
  */
 export function SongMenu({ song, removal, children }: SongMenuProps) {
-  const signedIn = useUserId() !== undefined;
+  const userId = useUserId();
+  const signedIn = userId !== undefined;
   const playlists = useUserPlaylists();
   const openEntity = useOpenEntity();
   const { playNext, addToQueue } = playerStore.getState();
@@ -106,7 +107,7 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
             addToPlaylistEntry({
               songs: [song],
               playlists,
-              onAdd: (playlist) => addSongsToPlaylist(playlist, [song]),
+              onAdd: (playlist) => addSongsToPlaylist(playlist, [song], userId),
             }),
           ]
         : []),

@@ -1,6 +1,7 @@
 "use client";
 
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import type { Sort, SongRowItem } from "@infinitunes/types";
 import { toSongRow, uniqueBy } from "@infinitunes/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -21,7 +22,7 @@ type EpisodeListProps = {
   totalEpisodes: number;
   initialEpisodes: SongRowItem[];
   userFavorites?: Favorite | null;
-  userPlaylists?: MyPlaylist[];
+  userPlaylists?: PlaylistSummary[];
 };
 
 function EpisodeListContent(props: EpisodeListProps) {
