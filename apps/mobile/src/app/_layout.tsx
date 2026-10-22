@@ -1,14 +1,20 @@
 import "../global.css";
 import { Stack } from "expo-router";
+import { Platform } from "react-native";
 
 import { PlaybackController } from "~/playback/playback-controller";
 import { AppProviders } from "~/providers/app-providers";
+import { useRadii } from "~/theme/use-radii";
 import { AssistantPlaylists } from "~/user-data/assistant-playlists";
 
 /** A deep link straight to a modal (`/player`, `/login`) still opens it over the tabs. */
 export const unstable_settings = { anchor: "(tabs)" };
 
 export default function RootLayout() {
+  // Material 3's bottom sheet has extra-large (28dp) top corners; Android's
+  // form sheet is square without one. iOS keeps the system's sheet corners.
+  const corner = useRadii();
+  const sheetCornerRadius = Platform.select({ android: corner.xl });
   return (
     <AppProviders>
       <PlaybackController />
@@ -27,6 +33,7 @@ export default function RootLayout() {
             presentation: "formSheet",
             sheetAllowedDetents: [0.6, 1],
             sheetGrabberVisible: true,
+            sheetCornerRadius,
             headerShown: true,
             title: "Up Next",
           }}
@@ -37,6 +44,7 @@ export default function RootLayout() {
             presentation: "formSheet",
             sheetAllowedDetents: [0.6, 1],
             sheetGrabberVisible: true,
+            sheetCornerRadius,
             headerShown: true,
             title: "Languages",
           }}
@@ -49,6 +57,7 @@ export default function RootLayout() {
             presentation: "formSheet",
             sheetAllowedDetents: [0.6, 1],
             sheetGrabberVisible: true,
+            sheetCornerRadius,
             headerShown: true,
             title: "New Playlist",
           }}

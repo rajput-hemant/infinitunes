@@ -239,6 +239,19 @@ describe("the tab bar", () => {
     ).toHaveLength(0);
   });
 
+  it("makes Search the system search tab, last, on iOS", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    const tabs = app.container.queryAll(
+      (node) =>
+        typeof node.props.screenKey === "string" && "systemItem" in node.props,
+    );
+    expect(tabs).toHaveLength(4);
+    const search = tabs.filter((node) => node.props.systemItem === "search");
+    expect(search).toHaveLength(1);
+    expect(tabs.at(-1)).toBe(search[0]);
+  });
+
   it("opens the sheet for an infinitunes://create link", async () => {
     signInAs("alice");
     const app = await renderRouter("./src/app", {

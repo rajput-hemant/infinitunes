@@ -11,7 +11,7 @@ import { useWashColors, WashText } from "./wash";
  * The station the queue refills from (the web player's "Radio" badge);
  * nothing while the queue is not a radio session. On the D1 palette it is a
  * tonal chip; on a wash the chip's fill could not be contrast-checked, so it
- * is an inline mark in the wash's muted colour.
+ * is an inline mark in the wash's muted colour, ending in a separator dot.
  */
 export function RadioBadge() {
   const { colors } = useTheme();
@@ -33,6 +33,10 @@ export function RadioBadge() {
         <Icon name={icon} size="xs" color={wash.muted} />
         <WashText variant="caption" tone="muted" numberOfLines={1}>
           {name}
+        </WashText>
+        {/* No chip edge here, so a dot keeps the station off the subtitle. */}
+        <WashText variant="caption" tone="muted">
+          ·
         </WashText>
       </View>
     );
