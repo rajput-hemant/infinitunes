@@ -1,6 +1,8 @@
 import type { SongRowItem } from "@infinitunes/types";
 
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
+import type { SaveResult } from "~/lib/download";
+import { showFailure } from "~/lib/failure";
 import {
   ensureNotificationPermission,
   notifyDownloadsFinished,
@@ -29,17 +31,20 @@ async function downloadAll(songs: readonly SongRowItem[]) {
   if (!folder) return;
   const { downloadQuality } = preferencesStore.getState();
   void ensureNotificationPermission();
-  void saveTracks(folder, songs, downloadQuality).then(
-    (result) => {
-      void notifyDownloadsFinished(result, songs.length);
-    },
-    () => {
-      // The whole job failed, so nothing was saved: post that too.
-      void notifyDownloadsFinished(
-        { saved: 0, failed: songs.length },
-        songs.length,
+  // The notification posts only in the background; the snackbar is for now.
+  const finished = (result: SaveResult) => {
+    if (result.failed > 0) {
+      showFailure(
+        result.saved === 0
+          ? "Couldn't download the songs."
+          : `Couldn't download ${result.failed} of ${songs.length} songs.`,
       );
-    },
+    }
+    void notifyDownloadsFinished(result, songs.length);
+  };
+  void saveTracks(folder, songs, downloadQuality).then(finished, () =>
+    // The whole job failed, so nothing was saved.
+    finished({ saved: 0, failed: songs.length }),
   );
 }
 
