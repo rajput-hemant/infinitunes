@@ -8,7 +8,7 @@ import Animated, {
 
 import { cx } from "~/lib/class-names";
 import { springs } from "~/theme/motion";
-import { sizes } from "~/theme/tokens";
+import { sizes, space } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
 import { useRadii } from "~/theme/use-radii";
 
@@ -87,6 +87,8 @@ function CapsuleButton({
   );
 }
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 /** The 40dp button's slop to the 48dp target. */
 const BUTTON_HIT_SLOP = { top: 4, bottom: 4 } as const;
 const AT_REST = sizes.ctl / 2;
@@ -94,7 +96,9 @@ const AT_REST = sizes.ctl / 2;
 /**
  * Material 3 Expressive's small button: 40dp high (48dp with slop), fully
  * round at rest, its corners morphing to the small shape while pressed on the
- * fast spatial spring.
+ * fast spatial spring. The pressable is the clipped, shaped view itself:
+ * Android drops touches outside an `overflow: hidden` parent before reaching
+ * a child, so slop on a child of the clip never fires.
  */
 function MaterialButton({
   label,
@@ -114,32 +118,47 @@ function MaterialButton({
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
 
   return (
-    // Classes (the caller's layout) stay on a plain view; the animated one is styled.
+    // The caller's layout classes sit on a plain, unclipped view.
     <View className={className}>
-      <Animated.View style={[styles.clip, { backgroundColor }, shape]}>
-        <Pressable
-          accessibilityRole="button"
-          hitSlop={BUTTON_HIT_SLOP}
-          android_ripple={{ color: ripple }}
-          className="min-h-ctl flex-row items-center justify-center gap-2 px-4"
-          onPressIn={(event) => {
-            radius.set(withSpring(pressedRadius, springs.spatialFast));
-            onPressIn?.(event);
-          }}
-          onPressOut={(event) => {
-            radius.set(withSpring(AT_REST, springs.spatialFast));
-            onPressOut?.(event);
-          }}
-          {...props}
-        >
-          {icon ? <Icon name={icon} size="md" color={inkColor} /> : null}
-          <Text variant="label" tone={tone}>
-            {label}
-          </Text>
-        </Pressable>
-      </Animated.View>
+      <AnimatedPressable
+        accessibilityRole="button"
+        hitSlop={BUTTON_HIT_SLOP}
+        android_ripple={{ color: ripple, foreground: true }}
+        onPressIn={(event) => {
+          radius.set(withSpring(pressedRadius, springs.spatialFast));
+          onPressIn?.(event);
+        }}
+        onPressOut={(event) => {
+          radius.set(withSpring(AT_REST, springs.spatialFast));
+          onPressOut?.(event);
+        }}
+        {...props}
+        style={[
+          styles.button,
+          { backgroundColor },
+          props.disabled ? styles.disabled : undefined,
+          shape,
+        ]}
+      >
+        {icon ? <Icon name={icon} size="md" color={inkColor} /> : null}
+        <Text variant="label" tone={tone}>
+          {label}
+        </Text>
+      </AnimatedPressable>
     </View>
   );
 }
 
-const styles = StyleSheet.create({ clip: { overflow: "hidden" } });
+const styles = StyleSheet.create({
+  button: {
+    minHeight: sizes.ctl,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: space.sm,
+    paddingHorizontal: space.lg,
+    overflow: "hidden",
+  },
+  // The forms' `disabled:opacity-50`, which the wrapper cannot read.
+  disabled: { opacity: 0.5 },
+});
