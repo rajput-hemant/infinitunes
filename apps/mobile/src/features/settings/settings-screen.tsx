@@ -27,6 +27,7 @@ import {
   imageQualityOptions,
   qualityOptions,
 } from "./settings-options";
+import { ROW_TINT } from "./tap-row-props";
 import { ActionRow, NavigationRow } from "./tap-rows";
 import { useSongCacheSettings } from "./use-song-cache-settings";
 
@@ -44,7 +45,7 @@ export function SettingsScreen() {
   const accent = useAccent();
   const corners = useCornerStyle();
   const scheme = useColorScheme() === "dark" ? "dark" : "light";
-  const accentSwatch = accentColors(accent, scheme)?.primary ?? "#8E8E93";
+  const accentSwatch = accentColors(accent, scheme)?.primary ?? ROW_TINT.gray;
   const streamQuality = usePreferences((p) => p.streamQuality);
   const downloadQuality = usePreferences((p) => p.downloadQuality);
   const setStreamQuality = usePreferences((p) => p.setStreamQuality);
@@ -64,19 +65,22 @@ export function SettingsScreen() {
                 <ProfileHeader user={user} />
                 <NavigationRow
                   label="Edit profile"
-                  icon={{ name: "person.crop.circle.fill", color: "#0A84FF" }}
+                  icon={{
+                    name: "person.crop.circle.fill",
+                    color: ROW_TINT.blue,
+                  }}
                   onPress={() => router.push("/profile")}
                 />
                 <NavigationRow
                   label="Change password"
-                  icon={{ name: "lock.fill", color: "#8E8E93" }}
+                  icon={{ name: "lock.fill", color: ROW_TINT.gray }}
                   onPress={() => router.push("/password")}
                 />
                 <ActionRow
                   label="Sign out"
                   icon={{
                     name: "rectangle.portrait.and.arrow.right",
-                    color: "#FF453A",
+                    color: ROW_TINT.red,
                   }}
                   destructive
                   onPress={() => void signOut()}
@@ -86,7 +90,7 @@ export function SettingsScreen() {
               <NavigationRow
                 label="Sign in to continue"
                 detail="Sign in to edit your profile and change your password."
-                icon={{ name: "person.crop.circle.fill", color: "#0A84FF" }}
+                icon={{ name: "person.crop.circle.fill", color: ROW_TINT.blue }}
                 onPress={() => router.push("/login")}
               />
             )}
@@ -95,7 +99,7 @@ export function SettingsScreen() {
           <FieldGroup.Section title="Appearance">
             <PickerRow
               label="Theme"
-              icon={{ name: "circle.lefthalf.filled", color: "#5E5CE6" }}
+              icon={{ name: "circle.lefthalf.filled", color: ROW_TINT.indigo }}
               value={appearance}
               options={appearanceOptions}
               onChange={appearanceStore.getState().setMode}
@@ -109,7 +113,7 @@ export function SettingsScreen() {
             />
             <PickerRow
               label="Corners"
-              icon={{ name: "app.fill", color: "#8E8E93" }}
+              icon={{ name: "app.fill", color: ROW_TINT.gray }}
               value={corners}
               options={cornerOptions}
               onChange={appearanceStore.getState().setCorners}
@@ -119,28 +123,28 @@ export function SettingsScreen() {
           <FieldGroup.Section title="Playback">
             <PickerRow
               label="Stream quality"
-              icon={{ name: "waveform", color: "#FF375F" }}
+              icon={{ name: "waveform", color: ROW_TINT.pink }}
               value={streamQuality}
               options={qualityOptions}
               onChange={setStreamQuality}
             />
             <PickerRow
               label="Download quality"
-              icon={{ name: "arrow.down.circle.fill", color: "#30B0C7" }}
+              icon={{ name: "arrow.down.circle.fill", color: ROW_TINT.teal }}
               value={downloadQuality}
               options={qualityOptions}
               onChange={setDownloadQuality}
             />
             <PickerRow
               label="Image quality"
-              icon={{ name: "photo.fill", color: "#FF9F0A" }}
+              icon={{ name: "photo.fill", color: ROW_TINT.orange }}
               value={imageQuality}
               options={imageQualityOptions}
               onChange={setImageQuality}
             />
             <NavigationRow
               label="Languages"
-              icon={{ name: "globe", color: "#0A84FF" }}
+              icon={{ name: "globe", color: ROW_TINT.blue }}
               detail={languagesSummary(languages)}
               onPress={() => router.push("/languages")}
             />
@@ -149,18 +153,18 @@ export function SettingsScreen() {
           <FieldGroup.Section title="Storage">
             <SwitchRow
               label="Cache frequently played songs"
-              icon={{ name: "arrow.down.circle.fill", color: "#30B0C7" }}
+              icon={{ name: "arrow.down.circle.fill", color: ROW_TINT.teal }}
               value={cache.enabled}
               onChange={cache.setEnabled}
             />
             <ValueRow
               label="Cached songs"
-              icon={{ name: "internaldrive.fill", color: "#8E8E93" }}
+              icon={{ name: "internaldrive.fill", color: ROW_TINT.gray }}
               value={cache.size}
             />
             <ActionRow
               label="Clear cache"
-              icon={{ name: "trash.fill", color: "#FF453A" }}
+              icon={{ name: "trash.fill", color: ROW_TINT.red }}
               destructive
               onPress={cache.clear}
             />
@@ -170,7 +174,7 @@ export function SettingsScreen() {
             <FieldGroup.Section title="Security">
               <ActionRow
                 label="Delete account"
-                icon={{ name: "trash.fill", color: "#FF453A" }}
+                icon={{ name: "trash.fill", color: ROW_TINT.red }}
                 destructive
                 onPress={() => router.push("/delete-account")}
               />
@@ -180,17 +184,17 @@ export function SettingsScreen() {
           <FieldGroup.Section title="About">
             <ActionRow
               label="Privacy policy"
-              icon={{ name: "hand.raised.fill", color: "#30D158" }}
+              icon={{ name: "hand.raised.fill", color: ROW_TINT.green }}
               onPress={() => void openBrowserAsync(`${env.apiUrl}/privacy`)}
             />
             <ActionRow
               label="Terms of service"
-              icon={{ name: "doc.text.fill", color: "#8E8E93" }}
+              icon={{ name: "doc.text.fill", color: ROW_TINT.gray }}
               onPress={() => void openBrowserAsync(`${env.apiUrl}/terms`)}
             />
             <ValueRow
               label="Version"
-              icon={{ name: "info.circle.fill", color: "#8E8E93" }}
+              icon={{ name: "info.circle.fill", color: ROW_TINT.gray }}
               value={Constants.expoConfig?.version ?? ""}
             />
           </FieldGroup.Section>

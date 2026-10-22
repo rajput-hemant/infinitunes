@@ -168,6 +168,12 @@ export const space = {
   xxxl: 48,
 } as const;
 
+/** iOS's lift under artwork (Material is flat): a black shadow at this opacity. */
+export const artShadow = { color: "#000000", opacity: 0.18 } as const;
+
+/** A centred message's longest line (empty and error states). */
+export const measure = 300;
+
 /** Tailwind spacing keys of the `space` steps (`gap-3` is `space.md`). */
 export const spaceClasses = {
   1: space.xs,

@@ -20,7 +20,7 @@ import { togglePlayback } from "~/playback/transport";
 import { springs } from "~/theme/motion";
 import { iconSize, sizes } from "~/theme/tokens";
 import type { IconSize } from "~/theme/tokens";
-import { useTokenColor } from "~/theme/use-palette";
+import { usePalette, useTokenColor } from "~/theme/use-palette";
 
 import { useWashColors } from "./wash";
 
@@ -137,6 +137,7 @@ export function ProminentPlayPauseButton() {
   }, [playing, radius]);
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
   const bounce = useGlyphBounce(icon.ios);
+  const ripple = usePalette()["fill-2"];
 
   if (Platform.OS === "android") {
     return (
@@ -155,7 +156,7 @@ export function ProminentPlayPauseButton() {
           onPress={togglePlayback}
           accessibilityRole="button"
           accessibilityLabel={label}
-          android_ripple={{ color: "rgba(127, 127, 127, 0.25)" }}
+          android_ripple={{ color: ripple }}
           className="flex-1 items-center justify-center"
           testID="play-pause-prominent"
         >
@@ -287,12 +288,13 @@ function TonalSkipButton({
   const { colors } = useTheme();
   const wash = useWashColors();
   const ink = wash?.foreground ?? colors.text;
+  const ripple = usePalette()["fill-2"];
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
-      android_ripple={{ color: "rgba(127, 127, 127, 0.25)" }}
+      android_ripple={{ color: ripple }}
       className="size-row items-center justify-center overflow-hidden rounded-lg"
     >
       <View

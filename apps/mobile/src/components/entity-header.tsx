@@ -2,6 +2,7 @@ import type { FavoriteType } from "@infinitunes/core/favorites";
 import type { ReactNode } from "react";
 import { Platform, View } from "react-native";
 
+import { artShadow } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
@@ -15,9 +16,9 @@ import { Text } from "./ui/text";
 /** iOS lifts the header art off the page; Material 3 is flat. */
 const ART_SHADOW = Platform.select({
   ios: {
-    shadowColor: "#000",
+    shadowColor: artShadow.color,
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
+    shadowOpacity: artShadow.opacity,
     shadowRadius: 12,
   },
 });
