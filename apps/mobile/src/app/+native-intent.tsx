@@ -39,6 +39,10 @@ export function redirectSystemPath({ path }: { path: string }): string {
   // chips are local state), so the type segment is dropped.
   if (pathname === "/search" || /^\/search\/[^/]+$/.test(pathname))
     return `${searchPath()}${suffixOf(path)}`;
+  // The web's label Albums tab (`/label/<name>/<token>/albums`): the native
+  // label screen is one page, so the link opens it at the label's route.
+  if (/^\/label\/[^/]+\/[^/]+\/albums$/.test(pathname))
+    return `${pathname.slice(0, -"/albums".length)}${suffixOf(path)}`;
   // JioSaavn's own playlist links (`/featured/<name>/<token>`) open the playlist route.
   if (/^\/featured\/[^/]+\/[^/]+$/.test(pathname))
     return `/playlist${pathname.slice("/featured".length)}${suffixOf(path)}`;
