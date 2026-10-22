@@ -707,6 +707,11 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
       "/api/trpc/song.syncedLyrics,missing.json?batch=1",
       "/api/trpc/missing.png",
       "/api/og",
+      "/search/all/50%.json",
+      "/search/songs/a.mp3?q=50%25.json",
+      "/album/x/y.mp3",
+      "/artist/a/b.png",
+      "/search?q=a.json",
     ]) {
       expect(matches(path)).toBe(true);
     }
@@ -716,6 +721,8 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
       "/favicon.ico",
       "/icon-512.png",
       "/fonts/CalSans-SemiBold.woff",
+      "/images/artists/a.jpg",
+      "/images/404.png",
       "/robots.txt",
       "/api/other",
     ]) {

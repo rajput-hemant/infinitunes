@@ -383,10 +383,11 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 - [ ] **T-9** P2 CONFIRMED `apps/web/tsconfig.json:16-21`, root `scripts/*` - tests and scripts are excluded from type-checking, so renamed exports and stale shapes only fail at runtime [lib 1]
   - Fix: `tsconfig.tests.json` (extends, `include: ["tests","scripts","**/*.test.*"]`, `types: ["bun"]`) and a root tsconfig for `scripts/`, chained into `type-check` as `packages/core` does; fix the errors in the same change. Executor: sonnet. Flags: none.
 
-## Batch T4 (haiku; T-13 sonnet): web lib cleanup - `apps/web/lib/{cached-api,search-route,rate-limit-scope,client-ip,env,theme-config,use-favorite-toggle,csp,control-styles,pending-params}.ts`, `lib/glass/{artwork,overlays}.ts`, `lib/theme/{oklch,accent}.ts`, `lib/trpc/server.ts`, `hooks/{use-deferred,use-store}.ts`, `packages/trpc/src/lib/api.ts`
+## Batch T4 (haiku; T-13 sonnet) (branch `fix/t4-proxy-matcher`): web lib cleanup - `apps/web/lib/{cached-api,search-route,rate-limit-scope,client-ip,env,theme-config,use-favorite-toggle,csp,control-styles,pending-params}.ts`, `lib/glass/{artwork,overlays}.ts`, `lib/theme/{oklch,accent}.ts`, `lib/trpc/server.ts`, `hooks/{use-deferred,use-store}.ts`, `packages/trpc/src/lib/api.ts`
 
-- [ ] **T-13** P3 PLAUSIBLE `lib/rate-limit-scope.ts:10`, `tests/mocked/proxy.test.ts:643` - any page path ending in a static extension (`/search/all/50%.json`, `/album/x/y.mp3`) skips the proxy: no search repair, CSP header or limiter charge [lib 8]
+- [x] **T-13** P3 PLAUSIBLE `lib/rate-limit-scope.ts:10`, `tests/mocked/proxy.test.ts:643` - any page path ending in a static extension (`/search/all/50%.json`, `/album/x/y.mp3`) skips the proxy: no search repair, CSP header or limiter charge [lib 8]
   - Fix: anchor the extension exclusion to top-level public files or `_next/`, `favicon.ico`, `/images/`, `/fonts/`; add a search-query case to the matcher test. Executor: sonnet. Flags: none.
+  - Done: exclusion is now `(?:images|fonts)/` plus top-level `[^/]+\.(ext)$`; nested paths ending in an extension reach the proxy. Matcher test covers `/search/all/50%.json`, `/album/x/y.mp3`, `/search?q=a.json`.
 
 ## Extra follow-ups (from earlier work, not in the review batches)
 
