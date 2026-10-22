@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "bun:test";
 
-import { act } from "react";
+import { act, useMemo } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import {
@@ -11,8 +11,9 @@ import {
   removeSongOptimistic,
   renamePlaylistOptimistic,
   resetPlaylistOverlay,
-  usePlaylistRowRemoved,
   usePlaylistDetailList,
+  usePlaylistRowRemoved,
+  usePlaylists,
   type UserPlaylist,
 } from "../../src/react/optimistic-playlists";
 
@@ -29,12 +30,34 @@ const playlist = (
   createdAt: new Date(0),
 });
 
+type Mode = "details" | "library";
+
 // The list is written to the DOM and read back, so nothing is reassigned in render.
-function Probe({ server }: { server: UserPlaylist[] | undefined }) {
+// "library" reads the summaries `getUserPlaylists` returns, "details" the full rows.
+function Probe({
+  server,
+  mode,
+}: {
+  server: UserPlaylist[] | undefined;
+  mode: Mode;
+}) {
   const removed = usePlaylistRowRemoved("a", "s2");
+  const summaries = useMemo(
+    () =>
+      server?.map(({ userId: _, songs, ...p }) => ({
+        ...p,
+        songCount: songs.length,
+        coverSongs: songs.slice(0, 4),
+      })),
+    [server],
+  );
+  const library = usePlaylists(mode === "library" ? summaries : undefined);
+  const details = usePlaylistDetailList(
+    mode === "details" ? server : undefined,
+  );
   return (
     <output data-removed={removed}>
-      {JSON.stringify(usePlaylistDetailList(server) ?? null)}
+      {JSON.stringify((mode === "library" ? library : details) ?? null)}
     </output>
   );
 }
@@ -43,13 +66,16 @@ const view = (): (UserPlaylist & { pending?: boolean })[] | undefined =>
   JSON.parse(host.textContent ?? "null") ?? undefined;
 
 const roots: Root[] = [];
-async function mount(server: UserPlaylist[] | undefined) {
+async function mount(
+  server: UserPlaylist[] | undefined,
+  mode: Mode = "details",
+) {
   host = document.createElement("div");
   const root = createRoot(host);
   roots.push(root);
-  await act(async () => root.render(<Probe server={server} />));
+  await act(async () => root.render(<Probe server={server} mode={mode} />));
   return (next: UserPlaylist[] | undefined) =>
-    act(async () => root.render(<Probe server={next} />));
+    act(async () => root.render(<Probe server={next} mode={mode} />));
 }
 
 function deferred<T = unknown>() {
@@ -73,7 +99,7 @@ afterEach(async () => {
 
 describe("optimistic playlists", () => {
   it("shows a created playlist as pending at once, then with its real id", async () => {
-    const rerender = await mount([playlist("a", "A")]);
+    const rerender = await mount([playlist("a", "A")], "library");
     const write = deferred<UserPlaylist>();
     let created: Promise<UserPlaylist> | undefined;
     await act(async () => {
@@ -94,7 +120,7 @@ describe("optimistic playlists", () => {
   });
 
   it("removes the pending row when creating fails", async () => {
-    await mount([playlist("a", "A")]);
+    await mount([playlist("a", "A")], "library");
     const write = deferred<UserPlaylist>();
     let outcome: Promise<unknown> | undefined;
     await act(async () => {
@@ -336,7 +362,7 @@ describe("optimistic playlists", () => {
   });
 
   it("leaves an unknown library unknown", async () => {
-    await mount(undefined);
+    await mount(undefined, "library");
     await act(async () => {
       void createPlaylistOptimistic(
         { name: "X" },
@@ -348,7 +374,7 @@ describe("optimistic playlists", () => {
   });
 
   it("keeps the next owner's pending create when an old create rejects", async () => {
-    await mount([]);
+    await mount([], "library");
     const old = deferred<UserPlaylist>();
     let outcome: Promise<unknown> | undefined;
     await act(async () => {

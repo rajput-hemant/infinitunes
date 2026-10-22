@@ -8,23 +8,21 @@ import { GlassSurface } from "~/components/glass/glass-surface";
 import { ImageCollage } from "~/components/image-collage";
 import { PlaylistManageMenu } from "~/components/playlist/playlist-manage-menu";
 import { PlaylistCaption } from "~/components/playlist/playlist-overlay";
-import { getPlaylistDetails } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
 import { asRoute } from "~/lib/utils";
 
-export async function PlaylistItem({ playlist }: { playlist: PlaylistSummary }) {
-  const { id, name, description, songCount } = playlist;
+export async function PlaylistItem({
+  playlist,
+}: {
+  playlist: PlaylistSummary;
+}) {
+  const { id, name, description, songCount, coverSongs } = playlist;
 
   let songsDetails: SongObj | undefined;
 
-  if (songCount) {
+  if (coverSongs.length) {
     try {
-      const detail = await getPlaylistDetails(id);
-      if (detail?.songs.length) {
-        songsDetails = await api.song.details({
-          id: detail.songs.slice(0, 4).join(","),
-        });
-      }
+      songsDetails = await api.song.details({ id: coverSongs.join(",") });
     } catch (error) {
       // Cover art is decoration: show the placeholder instead of failing the
       // whole library page for one playlist.

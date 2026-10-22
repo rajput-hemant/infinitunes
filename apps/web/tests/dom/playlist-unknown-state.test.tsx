@@ -59,6 +59,7 @@ const playlist = (id: string, name: string): PlaylistSummary => ({
   name,
   description: null,
   songCount: 0,
+  coverSongs: [],
   createdAt: new Date(0),
 });
 

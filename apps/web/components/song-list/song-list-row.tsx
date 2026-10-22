@@ -39,7 +39,7 @@ type SongListRowProps = {
   favorites?: Favorite | null;
   playlists?: PlaylistSummary[];
   playlistId?: string;
-  playlistSongs?: string[];
+  playlistSongIds?: string[];
   playlistSongIndex?: number;
 };
 
@@ -57,7 +57,7 @@ export function SongListRow(props: SongListRowProps) {
     favorites,
     playlists,
     playlistId,
-    playlistSongs,
+    playlistSongIds,
     playlistSongIndex,
   } = props;
 
@@ -190,7 +190,7 @@ export function SongListRow(props: SongListRowProps) {
           showAlbum={showAlbum}
           playlists={playlists}
           playlistId={playlistId}
-          playlistSongs={playlistSongs}
+          playlistSongIds={playlistSongIds}
           playlistSongIndex={playlistSongIndex}
         />
       </div>

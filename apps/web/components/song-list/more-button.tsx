@@ -33,7 +33,6 @@ import {
 import { unwrap } from "~/lib/action-result";
 import { addSongsToPlaylist, removeSongsFromPlaylist } from "~/lib/actions";
 import type { User } from "~/lib/auth";
-import { trpc } from "~/lib/trpc/vanilla";
 
 import { TileMoreDesktop } from "./more-button-desktop";
 import { useTileFavorite } from "./more-button-favorite";
@@ -60,7 +59,8 @@ type TileMoreButtonProps = {
   showAlbum: boolean;
   playlists?: PlaylistSummary[];
   playlistId?: string;
-  playlistSongs?: string[];
+  /** The playlist's songs as stored: a removal indexes into them. */
+  playlistSongIds?: string[];
   playlistSongIndex?: number;
   className?: string;
 };
@@ -80,7 +80,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     showAlbum,
     playlists,
     playlistId,
-    playlistSongs,
+    playlistSongIds,
     playlistSongIndex,
     className,
   } = props;
@@ -137,18 +137,12 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   }
 
   function addToPlaylist(id: string, name: string) {
-    // Load membership only for the selected playlist, then update its count.
+    // The dialog closes and the song count rises now; a failure rolls both back.
     setDialogOpen(false);
     toast.promise(
-      trpc.user.getPlaylistDetails.query({ playlistId: id }).then((playlist) => {
-        if (!playlist) throw new Error("Playlist not found");
-        return addSongsOptimistic(
-          id,
-          [item.id],
-          () => unwrap(addSongsToPlaylist(id, [item.id])),
-          playlist.songs,
-        );
-      }),
+      addSongsOptimistic(id, [item.id], () =>
+        unwrap(addSongsToPlaylist(id, [item.id])),
+      ),
       {
         loading: "Adding songs to playlist...",
         success: `"${getItemName(item)}" added to "${name}" playlist`,
@@ -165,11 +159,8 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     // The row hides now; the write uses the index the server will see after
     // any earlier removals, and a failure shows the row again with a toast.
     toast.promise(
-      removeSongOptimistic(
-        playlistId,
-        item.id,
-        playlistSongs,
-        (index) => unwrap(removeSongsFromPlaylist(playlistId, index, item.id)),
+      removeSongOptimistic(playlistId, item.id, playlistSongIds, (index) =>
+        unwrap(removeSongsFromPlaylist(playlistId, index, item.id)),
       ),
       {
         loading: "Removing from playlist...",

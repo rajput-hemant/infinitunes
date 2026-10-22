@@ -211,19 +211,13 @@ export function MoreButton(props: MoreButtonProps) {
   }
 
   function addToPlaylist(playlistId: string, playlistName: string) {
-    // Load membership only for the selected playlist, then update its count.
+    // The dialog closes and the playlist's count rises now; a failure rolls both back.
     const songIds = songs.map((song) => song.id);
     setDialogOpen(false);
     toast.promise(
-      trpc.user.getPlaylistDetails.query({ playlistId }).then((playlist) => {
-        if (!playlist) throw new Error("Playlist not found");
-        return addSongsOptimistic(
-          playlistId,
-          songIds,
-          () => unwrap(addSongsToPlaylist(playlistId, songIds)),
-          playlist.songs,
-        );
-      }),
+      addSongsOptimistic(playlistId, songIds, () =>
+        unwrap(addSongsToPlaylist(playlistId, songIds)),
+      ),
       {
         loading: "Adding songs to playlist...",
         success: `${songs.length} song${songs.length === 1 ? "" : "s"} added to "${playlistName}" playlist`,

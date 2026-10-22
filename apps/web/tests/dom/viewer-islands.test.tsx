@@ -72,6 +72,7 @@ const signedIn: Viewer = {
       name: "Road trip",
       description: null,
       songCount: 0,
+      coverSongs: [],
       createdAt: new Date(0),
     } satisfies PlaylistSummary,
   ],

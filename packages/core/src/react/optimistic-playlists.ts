@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useSyncExternalStore } from "react";
 
-/** A playlist as the `user` router returns it: one row of the `playlist` table. */
+/** One row of the `playlist` table, as `getPlaylistDetails` and every write return it. */
 export type UserPlaylist = {
   id: string;
   name: string;
@@ -26,11 +26,17 @@ export type UserPlaylist = {
  * by the database. The new row appears at once as `pending` (no link, dimmed)
  * and takes the real id when the write returns.
  */
+export type PlaylistView = PlaylistSummary & { pending?: boolean };
+
+/**
+ * A library entry as `getUserPlaylists` returns it: the song count and the
+ * first four ids (covers) instead of the whole list, which only the detail
+ * query carries.
+ */
 export type PlaylistSummary = Omit<UserPlaylist, "userId" | "songs"> & {
   songCount: number;
+  coverSongs: string[];
 };
-export type PlaylistView = PlaylistSummary & { pending?: boolean };
-type PlaylistDetailView = UserPlaylist & { pending?: boolean };
 
 type Created = {
   tempId: string;
@@ -92,9 +98,6 @@ let nextSongEdit = 0;
 const listeners = new Set<() => void>();
 
 function bump() {
-  for (const id of baseSongs.keys()) {
-    if (!added.has(id) && !removed.has(id) && !moved.has(id) && !confirmedSongs.has(id)) baseSongs.delete(id);
-  }
   state = {
     created: [...created],
     renamed: new Map(renamed),
@@ -226,7 +229,6 @@ export async function deletePlaylistOptimistic(
 
 /** Latest confirmed songs, retained until refreshed server data agrees. */
 const confirmedSongs = new Map<string, readonly string[]>();
-const baseSongs = new Map<string, readonly string[]>();
 const queued = new Map<string, number>();
 
 function songsOf(result: unknown): readonly string[] | undefined {
@@ -252,14 +254,13 @@ async function runWrite<T>(
     const songs = songsOf(result);
     if (songs) {
       confirmedSongs.set(playlistId, songs);
+      // A library summary cannot confirm songs (it has none), so the copy
+      // also expires like the other records.
       expire(() => {
-        if (!queued.has(playlistId) && confirmedSongs.get(playlistId) === songs) {
+        if (!queued.has(playlistId) && confirmedSongs.get(playlistId) === songs)
           confirmedSongs.delete(playlistId);
-          baseSongs.delete(playlistId);
-        }
       });
-    }
-    else confirmedSongs.delete(playlistId);
+    } else confirmedSongs.delete(playlistId);
     return result;
   } finally {
     const left = (queued.get(playlistId) ?? 1) - 1;
@@ -280,9 +281,7 @@ export function addSongsOptimistic(
   playlistId: string,
   songIds: readonly string[],
   send: () => Promise<unknown>,
-  serverSongs?: readonly string[],
 ) {
-  if (serverSongs && !baseSongs.has(playlistId)) baseSongs.set(playlistId, serverSongs);
   const records: SongEdit[] = songIds.map((songId) => ({
     songId,
     settled: false,
@@ -319,7 +318,6 @@ export function removeSongOptimistic(
   serverSongs: readonly string[] | undefined,
   send: (index: number) => Promise<unknown>,
 ) {
-  if (serverSongs && !baseSongs.has(playlistId)) baseSongs.set(playlistId, serverSongs);
   const record: SongEdit = { songId, settled: false, sequence: nextSongEdit++ };
   pushTo(removed, playlistId, record);
   bump();
@@ -402,22 +400,34 @@ export function moveSongOptimistic(
   });
 }
 
-/** Drops the records `server` now agrees with; `at` is the snapshot being checked. */
-function reconcile(server: readonly (UserPlaylist | PlaylistSummary)[], at: OverlayState, complete = true) {
+/**
+ * Drops the records `server` now agrees with; `at` is the snapshot being
+ * checked. Song records are checked only against detail rows (a summary has
+ * no songs; they expire instead), and only the whole library (`complete`)
+ * proves a playlist is gone.
+ */
+function reconcile(
+  server: readonly (UserPlaylist | PlaylistSummary)[],
+  at: OverlayState,
+  complete: boolean,
+) {
   let changed = false;
   const byId = new Map(server.map((p) => [p.id, p]));
+  const songsOf = (id: string) => {
+    const p = byId.get(id);
+    if (p) return "songs" in p ? p.songs : undefined;
+    return complete ? null : undefined;
+  };
 
   for (const [id, songs] of confirmedSongs) {
     if (queued.has(id)) continue;
-    const p = byId.get(id);
-    if ((!p && !complete) || (p && !("songs" in p))) continue;
+    const p = songsOf(id);
+    if (p === undefined) continue;
     if (
       !p ||
-      (p.songs.length === songs.length &&
-        p.songs.every((s, i) => songs[i] === s))
+      (p.length === songs.length && p.every((s, i) => songs[i] === s))
     ) {
       confirmedSongs.delete(id);
-      baseSongs.delete(id);
       added.delete(id);
       removed.delete(id);
       moved.delete(id);
@@ -433,7 +443,12 @@ function reconcile(server: readonly (UserPlaylist | PlaylistSummary)[], at: Over
     }
   }
   for (const [id, record] of at.deleted) {
-    if (complete && record.settled && !byId.has(id) && deleted.get(id) === record) {
+    if (
+      complete &&
+      record.settled &&
+      !byId.has(id) &&
+      deleted.get(id) === record
+    ) {
       deleted.delete(id);
       changed = true;
     }
@@ -443,7 +458,9 @@ function reconcile(server: readonly (UserPlaylist | PlaylistSummary)[], at: Over
     if (
       record.settled &&
       renamed.get(id) === record &&
-      ((!p && complete) || (p && p.name === record.name && p.description === record.description))
+      (p
+        ? p.name === record.name && p.description === record.description
+        : complete)
     ) {
       renamed.delete(id);
       changed = true;
@@ -451,10 +468,10 @@ function reconcile(server: readonly (UserPlaylist | PlaylistSummary)[], at: Over
   }
   for (const [id, records] of at.added) {
     if (confirmedSongs.has(id)) continue;
-    const p = byId.get(id);
-    if ((!p && !complete) || (p && !("songs" in p))) continue;
+    const p = songsOf(id);
+    if (p === undefined) continue;
     for (const r of records) {
-      if (r.settled && (!p || p.songs.includes(r.songId))) {
+      if (r.settled && (!p || p.includes(r.songId))) {
         dropFrom(added, id, r);
         changed = true;
       }
@@ -462,10 +479,10 @@ function reconcile(server: readonly (UserPlaylist | PlaylistSummary)[], at: Over
   }
   for (const [id, records] of at.removed) {
     if (confirmedSongs.has(id)) continue;
-    const p = byId.get(id);
-    if ((!p && !complete) || (p && !("songs" in p))) continue;
+    const p = songsOf(id);
+    if (p === undefined) continue;
     for (const r of records) {
-      if (r.settled && (!p || !p.songs.includes(r.songId))) {
+      if (r.settled && (!p || !p.includes(r.songId))) {
         dropFrom(removed, id, r);
         changed = true;
       }
@@ -473,10 +490,9 @@ function reconcile(server: readonly (UserPlaylist | PlaylistSummary)[], at: Over
   }
   for (const [id, record] of at.moved) {
     if (confirmedSongs.has(id)) continue;
-    const p = byId.get(id);
-    if ((!p && !complete) || (p && !("songs" in p))) continue;
-    const agrees =
-      !p || arrange(p.songs, record.order).every((s, i) => p.songs[i] === s);
+    const p = songsOf(id);
+    if (p === undefined) continue;
+    const agrees = !p || arrange(p, record.order).every((s, i) => p[i] === s);
     if (record.settled && moved.get(id) === record && agrees) {
       moved.delete(id);
       changed = true;
@@ -484,6 +500,8 @@ function reconcile(server: readonly (UserPlaylist | PlaylistSummary)[], at: Over
   }
   if (changed) bump();
 }
+
+type PlaylistDetailView = UserPlaylist & { pending?: boolean };
 
 function overlayDetails(
   server: readonly UserPlaylist[],
@@ -508,23 +526,6 @@ function overlayDetails(
       songs,
     });
   }
-  const known = new Set(server.map((p) => p.id));
-  for (const c of at.created) {
-    if (c.real && known.has(c.real.id)) continue;
-    list.push(
-      c.real
-        ? { ...c.real }
-        : {
-            id: c.tempId,
-            name: c.name,
-            description: c.description,
-            userId: "",
-            songs: [],
-            createdAt: c.createdAt,
-            pending: true,
-          },
-    );
-  }
   return list;
 }
 
@@ -543,73 +544,124 @@ function songEdits(at: OverlayState, id: string) {
 }
 
 /**
- * The library as it should look now. `undefined` stays `undefined`: an unknown
- * library is not an empty one, so nothing is layered over it.
+ * One summary with the song edits applied: counted against the latest
+ * confirmed songs when a write has returned them, else against the server's
+ * count (an add of a song the playlist already holds counts until its write
+ * returns the real list).
  */
-const summaryViews = new WeakMap<readonly PlaylistSummary[], {
-  at: OverlayState;
-  value: PlaylistView[];
-}>();
-
-function summaryOverlay(server: readonly PlaylistSummary[], at: OverlayState) {
-  const cached = summaryViews.get(server);
-  if (cached?.at === at) return cached.value;
-  const value: PlaylistView[] = server.filter((p) => !at.deleted.has(p.id)).map((p) => {
-    const meta = at.renamed.get(p.id);
-    const confirmed = confirmedSongs.get(p.id);
-    const base = confirmed ?? baseSongs.get(p.id);
-    let songCount = p.songCount;
-    const additions = new Set(at.added.get(p.id));
-    const edits = songEdits(at, p.id).filter((edit) => !confirmed || !edit.settled);
-    if (base) {
-      const held = new Set(base);
-      for (const edit of edits) {
-        if (additions.has(edit)) held.add(edit.songId);
-        else held.delete(edit.songId);
+function summarize(p: PlaylistSummary, at: OverlayState): PlaylistView {
+  const meta = at.renamed.get(p.id);
+  const confirmed = confirmedSongs.get(p.id);
+  const known = [...(confirmed ?? p.coverSongs)];
+  let songCount = confirmed?.length ?? p.songCount;
+  const additions = new Set(at.added.get(p.id));
+  for (const edit of songEdits(at, p.id)) {
+    // The confirmed songs already hold every settled edit.
+    if (confirmed && edit.settled) continue;
+    const index = known.indexOf(edit.songId);
+    if (additions.has(edit)) {
+      if (index === -1) {
+        known.push(edit.songId);
+        songCount += 1;
       }
-      songCount = held.size;
-    } else {
-      const delta = new Map<string, number>();
-      for (const edit of edits) delta.set(edit.songId, additions.has(edit) ? 1 : -1);
-      for (const change of delta.values()) songCount += change;
+    } else if (index !== -1 || !confirmed) {
+      // Without confirmed songs a removed song past the covers is still counted.
+      if (index !== -1) known.splice(index, 1);
+      songCount -= 1;
     }
-    return { ...p, name: meta?.name ?? p.name, description: meta ? meta.description : p.description, songCount: Math.max(0, songCount) };
-  });
+  }
+  return {
+    ...p,
+    name: meta?.name ?? p.name,
+    description: meta ? meta.description : p.description,
+    songCount: Math.max(0, songCount),
+    coverSongs: known.slice(0, 4),
+  };
+}
+
+// One overlaid list per (server list, overlay state), shared by every reader.
+const summaries = new WeakMap<
+  readonly PlaylistSummary[],
+  { at: OverlayState; list: PlaylistView[] }
+>();
+
+function overlaySummaries(
+  server: readonly PlaylistSummary[],
+  at: OverlayState,
+): PlaylistView[] {
+  const cached = summaries.get(server);
+  if (cached?.at === at) return cached.list;
+  const list = server
+    .filter((p) => !at.deleted.has(p.id))
+    .map((p) => summarize(p, at));
   const known = new Set(server.map((p) => p.id));
   for (const c of at.created) {
     if (c.real && known.has(c.real.id)) continue;
-    value.push({ id: c.real?.id ?? c.tempId, name: c.real?.name ?? c.name,
-      description: c.real ? c.real.description : c.description, createdAt: c.real?.createdAt ?? c.createdAt,
-      songCount: c.real?.songs.length ?? 0, pending: c.real ? undefined : true });
+    list.push(
+      c.real
+        ? {
+            id: c.real.id,
+            name: c.real.name,
+            description: c.real.description,
+            createdAt: c.real.createdAt,
+            songCount: c.real.songs.length,
+            coverSongs: c.real.songs.slice(0, 4),
+          }
+        : {
+            id: c.tempId,
+            name: c.name,
+            description: c.description,
+            createdAt: c.createdAt,
+            songCount: 0,
+            coverSongs: [],
+            pending: true,
+          },
+    );
   }
-  summaryViews.set(server, { at, value });
-  return value;
+  summaries.set(server, { at, list });
+  return list;
 }
 
+/**
+ * The library as it should look now. `undefined` stays `undefined`: an unknown
+ * library is not an empty one, so nothing is layered over it.
+ */
 export function usePlaylists(
   server: readonly PlaylistSummary[] | undefined,
 ): PlaylistView[] | undefined {
   const at = useOverlayState();
+
   useEffect(() => {
-    if (server) reconcile(server, at);
+    if (server) reconcile(server, at, true);
   }, [server, at]);
-  return server ? summaryOverlay(server, at) : undefined;
+
+  return server ? overlaySummaries(server, at) : undefined;
 }
 
-/** Song membership and order are overlaid only where details were requested. */
+/**
+ * Detail rows (some of the library, fetched by id) with the song edits
+ * applied: membership and order where a screen needs the songs themselves.
+ */
 export function usePlaylistDetailList(
   server: readonly UserPlaylist[] | undefined,
 ): PlaylistDetailView[] | undefined {
   const at = useOverlayState();
+
   useEffect(() => {
     if (server) reconcile(server, at, false);
   }, [server, at]);
-  return useMemo(() => server ? overlayDetails(server, at) : undefined, [server, at]);
+
+  return useMemo(
+    () => (server ? overlayDetails(server, at) : undefined),
+    [server, at],
+  );
 }
 
-export function usePlaylistDetails(server: UserPlaylist | undefined) {
-  const list = useMemo(() => server ? [server] : undefined, [server]);
-  return usePlaylistDetailList(list)?.find((p) => p.id === server?.id);
+/** One playlist's detail row with the overlay applied; `null` stays `null`. */
+export function usePlaylistDetails(server: UserPlaylist | null | undefined) {
+  const list = useMemo(() => (server ? [server] : undefined), [server]);
+  const playlist = usePlaylistDetailList(list)?.[0];
+  return server === null ? null : playlist;
 }
 
 /** Name and description of one playlist with a pending rename applied. */
@@ -657,6 +709,5 @@ export function resetPlaylistOverlay() {
   queues.clear();
   queued.clear();
   confirmedSongs.clear();
-  baseSongs.clear();
   bump();
 }
