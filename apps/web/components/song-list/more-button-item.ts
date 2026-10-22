@@ -4,7 +4,11 @@ import type { LucideIcon } from "lucide-react";
 import { getHref } from "~/lib/utils";
 
 /** A song row or a queue entry (the player's menu): the fields every menu needs. */
-export type TileMoreItem = QueueSource & RowExtras;
+export type TileMoreItem = QueueSource &
+  RowExtras & {
+    /** Set when the item is itself a queue entry (the player's menu), so a duplicate stays distinct. */
+    queueItemId?: string;
+  };
 
 /** True for a catalog row (it has credits and links), false for the player's queue entry. */
 export function isRowItem(item: TileMoreItem): item is SongRowItem {

@@ -1,12 +1,13 @@
 "use client";
 
+import { findQueueIndex } from "@infinitunes/core/queue-position";
 import {
   addSongsOptimistic,
   removeSongOptimistic,
 } from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
 import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
-import { toQueueEntry } from "@infinitunes/types";
+import { parseToken, toQueueEntry } from "@infinitunes/types";
 import {
   Download,
   Heart,
@@ -98,7 +99,10 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   const { download } = useDownloadSongs(downloadable);
 
   function play() {
-    const songIndex = initialQueue.findIndex((q) => q.id === item.id);
+    const songIndex = findQueueIndex(initialQueue, {
+      token: parseToken(item.url),
+      queueItemId: item.queueItemId,
+    });
 
     if (songIndex !== -1) {
       setCurrentIndex(songIndex);

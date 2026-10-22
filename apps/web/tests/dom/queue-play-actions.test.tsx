@@ -75,6 +75,7 @@ afterEach(async () => {
 async function mount(
   mode: "card" | "menu",
   initial: { queue: Queue[]; index: number; init: boolean },
+  item: Queue = target,
 ) {
   const snapshot = { ...initial, radio: null as ActiveRadioSession | null };
   let seed = () => {};
@@ -106,7 +107,7 @@ async function mount(
             Play card
           </PlayButton>
         ) : (
-          <TileMoreButton item={target} showAlbum={false} favorites={null} />
+          <TileMoreButton item={item} showAlbum={false} favorites={null} />
         )}
       </>,
     ),
@@ -186,6 +187,16 @@ it("preserves radio when Play Song Now selects an existing entry", async () => {
   await click("Play Song Now");
   expect(snapshot.index).toBe(1);
   expect(snapshot.radio).toEqual(radio);
+});
+it("Play Song Now jumps to the entry's own copy when the song is queued twice", async () => {
+  const copy: Queue = { ...target, queueItemId: "second-copy" };
+  const { snapshot, click } = await mount(
+    "menu",
+    { queue: [target, other, copy], index: 1, init: true },
+    copy,
+  );
+  await click("Play Song Now");
+  expect(snapshot.index).toBe(2);
 });
 it("preserves radio when appending a track", async () => {
   const { snapshot, click } = await mount("menu", {
