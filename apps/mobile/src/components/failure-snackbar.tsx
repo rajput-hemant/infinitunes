@@ -64,6 +64,8 @@ export function FailureSnackbar() {
     <SnackbarLayer>
       <View
         pointerEvents="box-none"
+        // Kept as a real view, or the live region is flattened away.
+        collapsable={false}
         style={[styles.anchor, { bottom }]}
         accessibilityLiveRegion="polite"
       >
@@ -128,7 +130,8 @@ function Card({ failure }: { failure: Failure }) {
           // One element for a screen reader; the action is a custom action.
           accessibilityActions={[
             { name: "activate" },
-            { name: "escape" },
+            // Android has no platform escape: a custom action needs its label.
+            { name: "escape", label: "Dismiss" },
             ...(failure.action
               ? [{ name: "action", label: failure.action.label }]
               : []),

@@ -31,7 +31,7 @@ describe("FailureSnackbar", () => {
     expect(alert.props.accessibilityHint).toBe("Dismisses the message");
     expect(alert.props.accessibilityActions).toEqual([
       { name: "activate" },
-      { name: "escape" },
+      { name: "escape", label: "Dismiss" },
     ]);
   });
 
