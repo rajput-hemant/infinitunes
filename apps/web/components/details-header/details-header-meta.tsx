@@ -3,7 +3,7 @@ import { decode, formatCount, formatDuration } from "@infinitunes/types";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-import { asRoute, getHref } from "~/lib/utils";
+import { getHref } from "~/lib/utils";
 
 import type { DetailsItem } from "./details-header-items";
 import { getSongs, isLabel } from "./details-header-items";
@@ -59,7 +59,7 @@ function SongMeta({ song }: { song: Song }) {
 
       <p className="hidden w-fit md:block">
         <Link
-          href={asRoute(song.more_info.label_url ?? "#")}
+          href={getHref(song.more_info.label_url, "label")}
           className="hover:text-foreground"
         >
           {decode(song.more_info.copyright_text)}
