@@ -1,6 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
-import type { ReactTestInstance } from "react-test-renderer";
 
 import { renderScreen } from "~/test/render";
 import { sizes } from "~/theme/tokens";
@@ -8,7 +7,9 @@ import { sizes } from "~/theme/tokens";
 import { Button } from "./button";
 
 /** Whether any host view above `node` clips its children. */
-function hasClippingAncestor(node: ReactTestInstance): boolean {
+function hasClippingAncestor(
+  node: ReturnType<typeof screen.getByRole>,
+): boolean {
   for (let parent = node.parent; parent; parent = parent.parent) {
     if (
       typeof parent.type === "string" &&
