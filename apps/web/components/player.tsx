@@ -327,6 +327,7 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
       loopHandler();
     } else if (e.key === "s") {
       setIsShuffle(!isShuffle);
+      toast(isShuffle ? "Shuffle off" : "Shuffle on");
     } else if (e.key === "q") {
       e.preventDefault();
       pane.setOpen(!pane.open);
