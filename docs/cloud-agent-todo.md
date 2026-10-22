@@ -86,7 +86,7 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts`
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
@@ -137,7 +137,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -150,15 +150,15 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [ ] **M-48** P3 PLAUSIBLE `components/detail/detail-frame.tsx:56-59` - children memo is ineffective [perf#18]
   - Fix: drop the memo or move secondary queries into the page. Executor: haiku. Flags: none.
 
-## Batch M13 (sonnet): settings and forms - `features/settings/{settings-screen,settings-screen.android,end-session,profile-form,tap-rows,row-icon}.tsx`, tests
+## Batch M13 (sonnet): settings and forms - `features/settings/{settings-screen,settings-screen.android,end-session,profile-form,tap-rows,row-icon}.tsx`, tests _(branch `fix/m13-settings-forms`)_
 
-- [ ] **M-49** P2 CONFIRMED `settings-screen.tsx:86`, `settings-screen.android.tsx:270`, `end-session.ts:30-34` - a failed sign-out is swallowed (no snackbar) [screens P2-1]
+- [x] **M-49** P2 CONFIRMED `settings-screen.tsx:86`, `settings-screen.android.tsx:270`, `end-session.ts:30-34` - a failed sign-out is swallowed (no snackbar) [screens P2-1]
   - Fix: show `failure.message` via `showFailure` once inside `signOut` (let `forgetDeletedAccount` opt out); assert it in `settings-screen.test.tsx:104`. Executor: sonnet. Flags: none.
-- [ ] **M-50** P2 CONFIRMED `features/settings/profile-form.tsx:5-17` - no `useFocusOnRefusal` on the profile form, unlike all sibling forms [screens P2-3]
+- [x] **M-50** P2 CONFIRMED `features/settings/profile-form.tsx:5-17` - no `useFocusOnRefusal` on the profile form, unlike all sibling forms [screens P2-3]
   - Fix: `useFocusOnRefusal(emailChanged ? passwordInput : emailInput, serverError, pending)` plus a test mirroring `forms-pending.test.tsx`. Executor: haiku. Flags: none.
-- [ ] **M-51** P3 CONFIRMED `settings-screen.tsx` vs `settings-screen.android.tsx`, `tap-rows.tsx`, `row-icon.tsx` - the whole settings model (sections, labels, handlers, URLs) is duplicated and already drifts (Delete account chevron); non-iOS `tap-rows`/`row-icon` stubs exist only for `tsc` [screens P3-10]
+- [x] **M-51** P3 CONFIRMED `settings-screen.tsx` vs `settings-screen.android.tsx`, `tap-rows.tsx`, `row-icon.tsx` - the whole settings model (sections, labels, handlers, URLs) is duplicated and already drifts (Delete account chevron); non-iOS `tap-rows`/`row-icon` stubs exist only for `tsc` [screens P3-10]
   - Fix: one shared settings list with per-platform row renderers; make the iOS files the base and delete the stubs, or comment them. Executor: sonnet. Flags: none.
-- [ ] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
+- [x] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
   - Executor: haiku (after the fixes land). Flags: none.
 
 ## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts` _(after S1)_
@@ -374,7 +374,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
