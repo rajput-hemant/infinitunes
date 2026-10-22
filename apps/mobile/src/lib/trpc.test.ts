@@ -24,7 +24,7 @@ it("splits large native query batches into URLs at most 2083 characters long", a
       return new Response(
         JSON.stringify(
           Array.from({ length: count }, () => ({
-              result: { data: { json: { songs: [] } } },
+            result: { data: { json: { songs: [] } } },
           })),
         ),
         { headers: { "content-type": "application/json" } },
@@ -34,7 +34,7 @@ it("splits large native query batches into URLs at most 2083 characters long", a
   await Promise.all(
     Array.from({ length: 20 }, (_, chunk) =>
       trpcClient.song.details.query({
-        id: Array.from({ length: 25 }, (_, i) => `song-${chunk}-${i}`).join(
+        id: Array.from({ length: 25 }, (_song, i) => `song-${chunk}-${i}`).join(
           ",",
         ),
       }),
