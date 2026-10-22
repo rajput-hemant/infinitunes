@@ -204,10 +204,12 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       addToQueue(track) {
+        beginPlaybackRequest();
         set((state) => ({ queue: [...state.queue, toQueueEntry(track)] }));
       },
 
       playNext(track) {
+        beginPlaybackRequest();
         set((state) => {
           const at = state.queue.length === 0 ? 0 : state.currentIndex + 1;
           const queue = [...state.queue];

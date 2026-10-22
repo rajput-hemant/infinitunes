@@ -36,6 +36,7 @@ async function mountController() {
 
 beforeEach(() => {
   queryClient.clear();
+  preferencesStore.setState({ streamQuality: "excellent" });
   signInAs("listener-1");
   procedure("radio.songs").mockResolvedValue([]);
   procedure("song.syncedLyrics").mockResolvedValue({
@@ -85,7 +86,16 @@ describe("PlaybackController", () => {
     expect(player.loads).toHaveLength(1);
   });
 
-  it.each(["none", "pause", "seek", "play", "request"] as const)(
+  it.each([
+    "none",
+    "pause",
+    "seek",
+    "play",
+    "request",
+    "queue",
+    "playNext",
+    "quality",
+  ] as const)(
     "advances a radio tail after a delayed refill unless the user acted (%s)",
     async (action) => {
       const refill = Promise.withResolvers<typeof songs>();
@@ -106,6 +116,10 @@ describe("PlaybackController", () => {
         }
         if (action === "seek") seekTo(30);
         if (action === "play") playerStore.getState().playAt(0);
+        if (action === "queue") playerStore.getState().addToQueue(rows[1]!);
+        if (action === "playNext") playerStore.getState().playNext(rows[1]!);
+        if (action === "quality")
+          preferencesStore.setState({ streamQuality: "high" });
         if (action === "request") {
           procedure("album.details").mockReturnValueOnce(new Promise(() => {}));
           void playEntity("album", "https://www.jiosaavn.com/album/x/token");

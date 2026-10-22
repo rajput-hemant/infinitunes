@@ -87,6 +87,7 @@ export function PlaybackController() {
     isCurrent: () => boolean;
   } | null>(null);
   const load = useCallback<LoadTrack>((src, options) => {
+    awaitingRefill.current = null;
     const current = selectCurrentTrack(playerStore.getState());
     const local = current ? cachedSongSource(current, src) : undefined;
     cachedLoad.current =

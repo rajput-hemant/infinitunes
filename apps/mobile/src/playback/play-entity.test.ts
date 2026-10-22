@@ -42,7 +42,17 @@ describe("playEntity", () => {
     expect(queuedIds()).toEqual(["newer"]);
   });
 
-  it.each(["tracks", "row", "next", "previous", "start", "toggle", "seek"])(
+  it.each([
+    "tracks",
+    "row",
+    "next",
+    "previous",
+    "start",
+    "toggle",
+    "seek",
+    "queue",
+    "playNext",
+  ])(
     "discards an async result superseded by a direct %s action",
     async (action) => {
       const state = playerStore.getState();
@@ -60,6 +70,10 @@ describe("playEntity", () => {
       if (action === "start") state.start();
       if (action === "toggle") togglePlayback();
       if (action === "seek") seekTo(30);
+      if (action === "queue")
+        state.addToQueue(toSongRow(rawSong({ id: "queued" })));
+      if (action === "playNext")
+        state.playNext(toSongRow(rawSong({ id: "queued" })));
       const chosen = playerStore.getState().queue;
       older.resolve(rawAlbum({ list: [rawSong({ id: "older" })] }));
       await pending;
