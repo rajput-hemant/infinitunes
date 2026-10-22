@@ -1,10 +1,8 @@
 import { View } from "react-native";
 import type { ColorValue } from "react-native";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
-import {
-  usePlaybackPosition,
-  usePlaybackStatus,
-} from "~/playback/playback-status";
+import { useProgressValues } from "./progress-values";
 
 /** The progress line's thickness (spec 2.10). */
 const LINE = 2;
@@ -12,16 +10,18 @@ const LINE = 2;
 /**
  * The 2pt progress line along the floating dock's bottom edge, clipped by
  * the dock's radius. Decoration only: the full player's scrubber is the
- * accessible position, so screen readers skip it.
+ * accessible position, so screen readers skip it. Both segments are
+ * full-width bars scaled from the left edge on the UI thread, so a playhead
+ * tick neither re-renders React nor lays the line out again.
  */
 export function DockProgress({ color }: { color: ColorValue }) {
-  const position = usePlaybackPosition();
-  const duration = usePlaybackStatus((state) => state.duration);
-  const bufferedTime = usePlaybackStatus((state) => state.bufferedTime);
-  const buffered =
-    duration > 0 ? Math.min(Math.max(bufferedTime / duration, 0), 1) : 0;
-  const fraction =
-    duration > 0 ? Math.min(Math.max(position / duration, 0), 1) : 0;
+  const { played, buffered } = useProgressValues();
+  const bufferedStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleX: buffered.get() }],
+  }));
+  const playedStyle = useAnimatedStyle(() => ({
+    transform: [{ scaleX: played.get() }],
+  }));
 
   return (
     <View
@@ -36,23 +36,31 @@ export function DockProgress({ color }: { color: ColorValue }) {
         width: "100%",
       }}
     >
-      <View
+      <Animated.View
         testID="dock-buffered"
-        style={{
-          position: "absolute",
-          height: LINE,
-          width: `${buffered * 100}%`,
-          backgroundColor: color,
-          opacity: 0.35,
-        }}
+        style={[
+          {
+            position: "absolute",
+            height: LINE,
+            width: "100%",
+            transformOrigin: "left",
+            backgroundColor: color,
+            opacity: 0.35,
+          },
+          bufferedStyle,
+        ]}
       />
-      <View
+      <Animated.View
         testID="dock-progress"
-        style={{
-          height: LINE,
-          width: `${fraction * 100}%`,
-          backgroundColor: color,
-        }}
+        style={[
+          {
+            height: LINE,
+            width: "100%",
+            transformOrigin: "left",
+            backgroundColor: color,
+          },
+          playedStyle,
+        ]}
       />
     </View>
   );
