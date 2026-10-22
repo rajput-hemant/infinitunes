@@ -3,7 +3,7 @@ import type { CardItem, SongRowItem } from "@infinitunes/types";
 import { entityHref } from "~/navigation/entity-href";
 import { playFrom } from "~/playback/play-collection";
 
-import { MediaRow } from "./media-row";
+import { ListRow } from "./list-row";
 import { SongRow } from "./song-row";
 
 /**
@@ -47,12 +47,15 @@ export function renderEntityListItem({ item }: { item: EntityListItem }) {
     );
   }
   const { card } = item;
+  const href = entityHref(card.type, card.url);
+  // `ListRow` directly: iOS marks a row that opens a screen with a chevron.
   return (
-    <MediaRow
+    <ListRow
       title={card.name}
       subtitle={card.subtitle}
-      image={card.image}
-      href={entityHref(card.type, card.url)}
+      leading={{ artwork: card.image }}
+      href={href}
+      trailing={href ? { chevron: true } : undefined}
     />
   );
 }

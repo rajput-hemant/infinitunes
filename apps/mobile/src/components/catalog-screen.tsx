@@ -4,11 +4,11 @@ import { View } from "react-native";
 
 import { CatalogGridSkeleton } from "~/components/catalog-grid-skeleton";
 import { EmptyState } from "~/components/empty-state";
+import { EndOfList } from "~/components/end-of-list";
 import { ErrorState } from "~/components/error-state";
 import { GridCell } from "~/components/grid-cell";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Spinner } from "~/components/ui/spinner";
-import { Text } from "~/components/ui/text";
 import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 
@@ -100,11 +100,7 @@ function CatalogFooter<Item>({ query }: { query: CatalogQuery<Item> }) {
     );
   }
   if (query.items.length > 0 && !query.hasNextPage) {
-    return (
-      <Text tone="muted" className="py-6 text-center">
-        {SEEN_IT_ALL}
-      </Text>
-    );
+    return <EndOfList>{SEEN_IT_ALL}</EndOfList>;
   }
   return null;
 }

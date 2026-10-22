@@ -1,9 +1,12 @@
 import { selectionAsync } from "expo-haptics";
 import { useTheme } from "expo-router";
-import { useEffect } from "react";
+import { SymbolView } from "expo-symbols";
+import type { AnimationSpec } from "expo-symbols";
+import { useEffect, useState } from "react";
 import { Platform, Pressable, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
@@ -15,7 +18,7 @@ import { usePlaybackStatus } from "~/playback/playback-status";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { togglePlayback } from "~/playback/transport";
 import { springs } from "~/theme/motion";
-import { sizes } from "~/theme/tokens";
+import { iconSize, sizes } from "~/theme/tokens";
 import type { IconSize } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
@@ -36,6 +39,35 @@ function usePlayPause() {
   };
 }
 
+/** iOS's play/pause swap: the new glyph bounces once (SF Symbols' bounce effect). */
+const BOUNCE: AnimationSpec = { effect: { type: "bounce", wholeSymbol: true } };
+/** How long the bounce runs; the spec is dropped after it. */
+const BOUNCE_MS = 600;
+
+/**
+ * The bounce spec, set only for a moment after `name` changes, never on mount
+ * and never under reduce motion. expo-symbols replays the effect on every
+ * prop update while a spec is set (a new wash tint would bounce too), so it
+ * is dropped once the bounce has run. expo-symbols has no replace transition.
+ */
+function useGlyphBounce(name: string) {
+  const reduceMotion = useReducedMotion();
+  const [shown, setShown] = useState(name);
+  // Counts glyph changes that bounce; `settled` is the last one whose bounce ran.
+  const [bounce, setBounce] = useState(0);
+  const [settled, setSettled] = useState(0);
+  if (shown !== name) {
+    setShown(name);
+    if (!reduceMotion) setBounce(bounce + 1);
+  }
+  useEffect(() => {
+    if (!bounce) return;
+    const timer = setTimeout(() => setSettled(bounce), BOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [bounce]);
+  return bounce > settled ? BOUNCE : undefined;
+}
+
 /**
  * Play or pause: the mini player's. A bare glyph on iOS; on Android a 40dp
  * filled circle in the wash's control colour (Material 3's filled icon button).
@@ -45,6 +77,8 @@ export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
   const wash = useWashColors();
   const primary = useTokenColor("primary");
   const onPrimary = useTokenColor("primary-foreground");
+  const { colors } = useTheme();
+  const bounce = useGlyphBounce(icon.ios);
   if (Platform.OS === "android") {
     return (
       <Pressable
@@ -63,12 +97,19 @@ export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
     );
   }
   return (
-    <IconButton
-      icon={icon}
-      label={label}
+    <Pressable
       onPress={togglePlayback}
-      size={size}
-    />
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      className="min-h-touch min-w-touch items-center justify-center active:opacity-60"
+    >
+      <SymbolView
+        name={icon}
+        size={iconSize[size]}
+        tintColor={colors.text}
+        animationSpec={bounce}
+      />
+    </Pressable>
   );
 }
 
@@ -95,6 +136,7 @@ export function ProminentPlayPauseButton() {
     );
   }, [playing, radius]);
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
+  const bounce = useGlyphBounce(icon.ios);
 
   if (Platform.OS === "android") {
     return (
@@ -136,7 +178,12 @@ export function ProminentPlayPauseButton() {
       }}
       testID="play-pause-prominent"
     >
-      <Icon name={icon} size="xl" color={wash?.onControl ?? onPrimary} />
+      <SymbolView
+        name={icon}
+        size={iconSize.xl}
+        tintColor={wash?.onControl ?? onPrimary}
+        animationSpec={bounce}
+      />
     </Pressable>
   );
 }
@@ -172,7 +219,7 @@ type ModeToggleProps = {
 };
 
 /**
- * Shuffle or repeat. "On" is a filled circle behind the glyph (Apple Music's
+ * Shuffle, repeat or lyrics. "On" is a filled circle behind the glyph (Apple Music's
  * cue), not only a colour: iOS draws the same symbol in both states, and on
  * the D1 palette iOS's `primary` is the label colour. The circle takes the
  * play shape's colours, so it is already checked: `control` 3:1 on every
@@ -180,7 +227,7 @@ type ModeToggleProps = {
  * `primary` and `primary-foreground`. Off, the glyph is the wash's `muted`
  * (the default foreground on the D1 palette).
  */
-function ModeToggle({ icon, label, on, onPress }: ModeToggleProps) {
+export function ModeToggle({ icon, label, on, onPress }: ModeToggleProps) {
   const { colors } = useTheme();
   const wash = useWashColors();
   const primary = useTokenColor("primary");

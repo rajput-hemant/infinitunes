@@ -7,7 +7,7 @@
     "dev": "bun run with-env turbo run dev",
     "dev:api": "bun run --cwd apps/web dev:api",
     "dev:mobile": "bun run --cwd apps/mobile metro",
-    "dev:native": "sh -c 'trap \"kill 0\" EXIT; bun run dev:api & bun run dev:mobile'",
+    "dev:native": "sh -c 'adb reverse tcp:3000 tcp:3000 >/dev/null 2>&1; trap \"kill 0\" EXIT; bun run dev:api & bun run dev:mobile'",
     "mobile:android": "bun run --cwd apps/mobile android --device",
     "mobile:ios": "bun run --cwd apps/mobile ios --device",
     "mobile:doctor": "bun run --cwd apps/mobile doctor",

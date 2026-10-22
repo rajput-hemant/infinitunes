@@ -1,8 +1,32 @@
-import { render, screen } from "@testing-library/react-native";
+import { render, screen, within } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import { textStyles } from "~/theme/tokens";
 
-import { ShelfSkeleton, SkeletonText } from "./skeletons";
+import { LyricsSkeleton, ShelfSkeleton, SkeletonText } from "./skeletons";
+
+describe("LyricsSkeleton", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it("mirrors Android's lyrics card: four headline lines and Read More", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    await render(<LyricsSkeleton />);
+
+    const card = screen.getByTestId("lyrics-skeleton-card");
+    const lines = within(card).getAllByTestId("skeleton-text");
+    expect(lines.map((line) => line.props.style.height)).toEqual([
+      ...Array.from({ length: 4 }, () => textStyles.headline.lineHeight),
+      textStyles.label.lineHeight,
+    ]);
+  });
+
+  it("stays plain lines on iOS", async () => {
+    jest.replaceProperty(Platform, "OS", "ios");
+    await render(<LyricsSkeleton />);
+
+    expect(screen.queryByTestId("lyrics-skeleton-card")).toBeNull();
+  });
+});
 
 describe("SkeletonText", () => {
   it("takes its line's height, with a bar the height of its font", async () => {

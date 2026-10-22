@@ -1,11 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { QueryKey } from "@tanstack/react-query";
+import type { ScrollViewProps } from "react-native";
 
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 
 import { DetailFrame } from "./detail-frame";
 import type { DetailFrameProps } from "./detail-frame";
+import { useDetailScrollProps } from "./detail-scroll";
 
 type DetailScreenProps<Data> = DetailFrameProps<Data> & {
   /** The page's secondary queries, refetched with `query` on pull to refresh. */
@@ -44,12 +46,17 @@ export function DetailScreen<Data>({
       {...frame}
     >
       {(data) => (
-        <ScreenScrollView
+        <DetailScrollView
           refreshControl={<PullToRefresh onRefresh={refresh} />}
         >
           {children(data)}
-        </ScreenScrollView>
+        </DetailScrollView>
       )}
     </DetailFrame>
   );
+}
+
+/** The loaded page's scroll view, reporting when it scrolls under the bar. */
+function DetailScrollView(props: ScrollViewProps) {
+  return <ScreenScrollView {...props} {...useDetailScrollProps()} />;
 }

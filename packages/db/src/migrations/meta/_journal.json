@@ -64,6 +64,13 @@
       "when": 1791643123538,
       "tag": "0008_restore_shared_user_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1792665942388,
+      "tag": "0009_flat_microbe",
+      "breakpoints": true
     }
   ]
 }
