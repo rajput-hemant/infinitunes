@@ -18,7 +18,13 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { dismissFailure, useFailure, type Failure } from "~/lib/failure";
+import {
+  dismissFailure,
+  holdFailure,
+  releaseFailure,
+  useFailure,
+  type Failure,
+} from "~/lib/failure";
 import { hasTabBarAccessory } from "~/lib/platform";
 import { useFloatingDockOffset } from "~/navigation/player-dock";
 import { springs } from "~/theme/motion";
@@ -88,6 +94,8 @@ function Card({ failure }: { failure: Failure }) {
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) =>
         Math.abs(g.dx) > space.sm || g.dy > space.sm,
+      // The message stays while a finger is on it.
+      onPanResponderGrant: () => holdFailure(failure.id),
       onPanResponderMove: (_, g) => {
         x.set(g.dx);
         y.set(Math.max(g.dy, 0));
@@ -100,11 +108,13 @@ function Card({ failure }: { failure: Failure }) {
           g.vy > DISMISS_VELOCITY;
         if (away) dismissFailure(failure.id);
         else {
+          releaseFailure(failure.id);
           x.set(withSpring(0, springs.spatialDefault));
           y.set(withSpring(0, springs.spatialDefault));
         }
       },
       onPanResponderTerminate: () => {
+        releaseFailure(failure.id);
         x.set(withSpring(0, springs.spatialDefault));
         y.set(withSpring(0, springs.spatialDefault));
       },

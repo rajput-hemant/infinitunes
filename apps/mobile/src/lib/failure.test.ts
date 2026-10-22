@@ -7,6 +7,8 @@ import {
   FAILURE_MS,
   FAILURE_WITH_ACTION_MS,
   failureStore,
+  holdFailure,
+  releaseFailure,
   reportFailure,
   showFailure,
 } from "./failure";
@@ -46,6 +48,18 @@ describe("showFailure", () => {
     jest.advanceTimersByTime(FAILURE_MS);
     expect(current()?.message).toBe("With action");
     jest.advanceTimersByTime(FAILURE_WITH_ACTION_MS - FAILURE_MS);
+    expect(current()).toBeNull();
+  });
+
+  it("stays while it is held, then counts down again from release", () => {
+    showFailure("Dragged");
+    const { id } = current()!;
+    holdFailure(id);
+    jest.advanceTimersByTime(FAILURE_MS * 3);
+    expect(current()?.message).toBe("Dragged");
+
+    releaseFailure(id);
+    jest.advanceTimersByTime(FAILURE_MS);
     expect(current()).toBeNull();
   });
 
