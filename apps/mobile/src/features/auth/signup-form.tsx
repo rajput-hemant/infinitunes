@@ -84,7 +84,6 @@ export function SignUpForm() {
         label={pending ? "Creating account..." : "Sign up"}
         disabled={pending}
         onPress={submit}
-        className="disabled:opacity-50"
       />
       <View className="items-center">
         <FormLink href="/login" replace>

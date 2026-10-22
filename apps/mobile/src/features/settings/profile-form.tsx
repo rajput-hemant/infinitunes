@@ -100,7 +100,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
         label={pending ? "Saving..." : "Save profile"}
         disabled={pending}
         onPress={submit}
-        className="disabled:opacity-50"
       />
     </FormScreen>
   );

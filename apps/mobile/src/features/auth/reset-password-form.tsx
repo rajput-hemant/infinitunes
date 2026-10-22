@@ -96,7 +96,6 @@ export function ResetPasswordForm({
         label={pending ? "Resetting..." : "Reset password"}
         disabled={pending}
         onPress={submit}
-        className="disabled:opacity-50"
       />
     </View>
   );

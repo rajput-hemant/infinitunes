@@ -1,6 +1,6 @@
 import { Platform, View } from "react-native";
 
-import { art } from "~/theme/tokens";
+import { art, space } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
 import { Button } from "./ui/button";
@@ -81,7 +81,7 @@ export function EmptyState({
           label={action.label}
           onPress={action.onPress}
           variant={action.variant ?? "primary"}
-          className={android ? "mt-6" : "mt-4"}
+          style={{ marginTop: android ? space.xl : space.lg }}
         />
       ) : null}
     </View>

@@ -1,31 +1,27 @@
 import { fireEvent, screen } from "@testing-library/react-native";
-import { Platform, StyleSheet } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 
 import { renderScreen } from "~/test/render";
 import { sizes } from "~/theme/tokens";
 
 import { Button } from "./button";
 
-/** Whether any host view above `node` clips its children. */
-function hasClippingAncestor(
-  node: ReturnType<typeof screen.getByRole>,
-): boolean {
-  for (let parent = node.parent; parent; parent = parent.parent) {
-    if (
-      typeof parent.type === "string" &&
-      StyleSheet.flatten(parent.props.style)?.overflow === "hidden"
-    ) {
-      return true;
-    }
-  }
-  return false;
+/** The nearest host (native) view above `node`. */
+function hostParent(node: ReturnType<typeof screen.getByRole>) {
+  let parent = node.parent;
+  while (parent && typeof parent.type !== "string") parent = parent.parent;
+  return parent;
 }
 
 describe("Button on Android", () => {
   beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
 
   it("reaches the 48dp target with slop on the outermost, unclipped pressable", async () => {
-    await renderScreen(<Button label="Save" onPress={jest.fn()} />);
+    await renderScreen(
+      <View testID="host">
+        <Button label="Save" onPress={jest.fn()} />
+      </View>,
+    );
 
     const button = screen.getByRole("button", { name: "Save" });
     const slop = button.props.hitSlop;
@@ -34,9 +30,9 @@ describe("Button on Android", () => {
       minHeight: sizes.ctl,
       overflow: "hidden",
     });
-    // Android drops touches outside an `overflow: hidden` parent: slop on a
-    // child of the clip would never fire.
-    expect(hasClippingAncestor(button)).toBe(false);
+    // Android drops touches outside a parent's laid-out bounds: slop on a
+    // pressable inside a same-size wrapper would never fire.
+    expect(hostParent(button)?.props.testID).toBe("host");
   });
 
   it("presses through the corner morph", async () => {
