@@ -61,6 +61,11 @@ const ART_CORNER = Platform.OS === "android" ? "xl" : "lg";
 /** How far the artwork settles back while paused. */
 const PAUSED_SCALE = 0.9;
 
+/** One `rrggbb` channel (0, 2 or 4) as a number. */
+function channel(value: string, index: number) {
+  return Number.parseInt(value.slice(index, index + 2), 16);
+}
+
 /**
  * The vertical gradient's colour at `t` (0 top, 1 bottom): a linear sRGB
  * mix, as CSS gradients interpolate. Non-hex stops come back unmixed.
@@ -71,8 +76,6 @@ function mixHex([top, bottom]: readonly [string, string], t: number) {
   const b = hex.exec(bottom)?.[1];
   if (!a || !b) return t < 0.5 ? top : bottom;
   const at = Math.min(1, Math.max(0, t));
-  const channel = (value: string, index: number) =>
-    Number.parseInt(value.slice(index, index + 2), 16);
   return `#${[0, 2, 4]
     .map((index) =>
       Math.round(
