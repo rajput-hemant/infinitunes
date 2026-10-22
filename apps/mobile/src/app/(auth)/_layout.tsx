@@ -1,6 +1,7 @@
 import { Redirect, router, Stack } from "expo-router";
 import { useEffect, useState } from "react";
 
+import { authHeaderOptions } from "~/features/auth/auth-header";
 import { authClient } from "~/lib/auth-client";
 
 /**
@@ -27,7 +28,11 @@ export default function AuthLayout() {
   if (signedIn) return null;
 
   return (
-    <Stack>
+    <Stack
+      screenOptions={({ route, navigation }) =>
+        authHeaderOptions(navigation.getState()?.routes[0]?.key === route.key)
+      }
+    >
       <Stack.Screen name="login" options={{ title: "Sign in" }} />
       <Stack.Screen name="signup" options={{ title: "Create account" }} />
       <Stack.Screen
