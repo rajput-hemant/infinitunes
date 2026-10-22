@@ -1,3 +1,4 @@
+import { orderByIds } from "@infinitunes/core/liked-songs";
 import type { SongRowItem } from "@infinitunes/types";
 import { useMemo } from "react";
 
@@ -25,9 +26,8 @@ export function usePlaylistSongs(playlist: {
   });
 
   if (list.status !== "ready") return list;
-  const byId = new Map(list.items.map((song) => [song.id, song]));
   return {
     ...list,
-    items: playlist.songs.flatMap((id) => byId.get(id) ?? []),
+    items: orderByIds(playlist.songs, list.items),
   };
 }

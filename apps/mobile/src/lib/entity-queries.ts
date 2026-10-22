@@ -1,11 +1,9 @@
+import { ARTIST_INITIAL_ITEMS } from "@infinitunes/core/artist-pagination";
 import type { MediaType } from "@infinitunes/types";
 
 import { queryClient } from "~/lib/query-client";
 import { trpc } from "~/lib/trpc";
 import { routeOf } from "~/navigation/entity-href";
-
-/** Songs and albums the artist payload carries: the Overview's rows, the Play queue and the albums shelf. */
-export const ARTIST_INITIAL_ITEMS = 50;
 
 /**
  * The primary query of each detail screen, shared by the screen's hook and

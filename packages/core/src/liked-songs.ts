@@ -121,8 +121,8 @@ export async function fetchSongsChunked<T extends Song | Episode = Song>(
 
 /** Items in the order of `ids`, dropping ids that did not resolve. */
 export function orderByIds<T extends { id: string }>(
-  ids: string[],
-  items: T[],
+  ids: readonly string[],
+  items: readonly T[],
 ): T[] {
   const byId = new Map(items.map((item) => [item.id, item]));
   return ids.flatMap((id) => byId.get(id) ?? []);

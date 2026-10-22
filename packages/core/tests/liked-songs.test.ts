@@ -187,6 +187,26 @@ describe("fetchSongsChunked", () => {
   });
 });
 
+describe("orderByIds", () => {
+  it("keeps requested duplicates, drops missing ids and uses the last matching item", () => {
+    const first = { id: "a", name: "First" };
+    const last = { id: "a", name: "Last" };
+    const other = { id: "b", name: "Other" };
+    const ids = ["b", "gone", "a", "a"];
+    const items = [first, other, last];
+
+    const ordered = orderByIds(ids, items);
+
+    expect(ordered).toEqual([other, last, last]);
+    expect(ordered[1]).toBe(last);
+    expect(ordered[2]).toBe(last);
+    expect(ids).toEqual(["b", "gone", "a", "a"]);
+    expect(items).toEqual([first, other, last]);
+    expect(orderByIds([], items)).toEqual([]);
+    expect(orderByIds(ids, [])).toEqual([]);
+  });
+});
+
 describe("recently played mixed lists", () => {
   it("resolves songs and episodes together and keeps history order", async () => {
     const episode = (id: string) => ({ id, type: "episode" }) as Episode;

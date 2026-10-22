@@ -1,4 +1,5 @@
 import { changePasswordSchema, emailSchema } from "@infinitunes/auth/schemas";
+import { newPlaylistSchema } from "@infinitunes/core/validations";
 import {
   betterAuthAccounts,
   betterAuthSessions,
@@ -6,11 +7,7 @@ import {
   myPlaylists,
   users,
 } from "@infinitunes/db/schema";
-import {
-  PLAYLIST_DESCRIPTION_MAX,
-  PLAYLIST_NAME_MAX,
-  USER_NAME_MAX,
-} from "@infinitunes/types";
+import { USER_NAME_MAX } from "@infinitunes/types";
 import { TRPCError } from "@trpc/server";
 import { compare, hash } from "bcryptjs";
 import { and, count, eq, ne, sql } from "drizzle-orm";
@@ -79,22 +76,7 @@ function favoritePatch(
   };
 }
 
-const newPlaylistInput = z.object({
-  name: z
-    .string()
-    .min(3, { message: "Name must be at least 3 characters long" })
-    .max(PLAYLIST_NAME_MAX, {
-      message: `Name must be at most ${PLAYLIST_NAME_MAX} characters long`,
-    }),
-  description: z
-    .string()
-    .max(PLAYLIST_DESCRIPTION_MAX, {
-      message: `Description must be at most ${PLAYLIST_DESCRIPTION_MAX} characters long`,
-    })
-    .optional(),
-});
-
-const renamePlaylistInput = newPlaylistInput.extend({
+const renamePlaylistInput = newPlaylistSchema.extend({
   playlistId: z.string(),
 });
 
@@ -162,6 +144,7 @@ const PASSWORD_REQUIRED_MESSAGE = "Enter your current password to continue";
 
 async function loadCredentials(db: TRPCContext["db"], userId: string) {
   const userRecord = await db.query.users.findFirst({
+    columns: { id: true },
     where: eq(users.id, userId),
   });
   if (!userRecord) {
@@ -169,6 +152,7 @@ async function loadCredentials(db: TRPCContext["db"], userId: string) {
   }
 
   const credentialAccount = await db.query.betterAuthAccounts.findFirst({
+    columns: { id: true, password: true },
     where: and(
       eq(betterAuthAccounts.userId, userId),
       eq(betterAuthAccounts.providerId, "credential"),
@@ -292,6 +276,7 @@ function assertOwnedPlaylist<T extends { userId: string }>(
 
 async function getOwnedPlaylist(ctx: PlaylistCtx, playlistId: string) {
   const playlist = await ctx.db.query.myPlaylists.findFirst({
+    columns: { userId: true },
     where: eq(myPlaylists.id, playlistId),
   });
 
@@ -521,7 +506,7 @@ export const userRouter = router({
     }),
 
   createNewPlaylist: protectedProcedure
-    .input(newPlaylistInput)
+    .input(newPlaylistSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.transaction(async (tx) => {
         const userId = ctx.session.user.id;
