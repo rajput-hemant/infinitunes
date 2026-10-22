@@ -11,10 +11,8 @@ const SITEMAP_PATHS = [
   "/browse",
   "/chart",
   "/playlist",
-  "/privacy",
   "/radio",
   "/show",
-  "/terms",
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
