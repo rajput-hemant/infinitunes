@@ -158,15 +158,8 @@ export function PlayButton(props: PlayButtonProps) {
         return;
       }
 
+      // No success toast: the player bar already announces what plays.
       setQueue(queueItems);
-
-      toast.success(
-        `${queueItems.length} item${queueItems.length === 1 ? "" : "s"} ${queueItems.length === 1 ? "has" : "have"} been added to the queue`,
-        {
-          description: `Playing "${first.name}"`,
-          position: "bottom-center",
-        },
-      );
 
       setCurrentIndex(0);
       setIsPlayerInit(true);

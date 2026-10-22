@@ -10,7 +10,10 @@ let trending: unknown[] = [];
 let fetchResult: () => Promise<unknown[]> = async () => trending;
 
 mock.module("next/navigation", () => ({ useSearchParams: () => params }));
-mock.module("sonner", () => ({ toast: { success() {}, error() {} } }));
+const successes: unknown[] = [];
+mock.module("sonner", () => ({
+  toast: { success: (m: unknown) => successes.push(m), error() {} },
+}));
 mock.module("~/lib/trpc/vanilla", () => ({
   trpc: {
     get: {
@@ -105,6 +108,7 @@ async function mount(onQueued?: () => void) {
 
 afterEach(async () => {
   fetched.length = 0;
+  successes.length = 0;
   fetchResult = async () => trending;
   Math.random = realRandom;
   params = new URLSearchParams();
@@ -130,6 +134,8 @@ describe("SurpriseMeButton", () => {
     expect(snapshot.init).toBe(true);
     expect(snapshot.radio).toBeNull();
     expect(onQueued).toHaveBeenCalledTimes(1);
+    // The player announces the new track; no toast on top of it.
+    expect(successes).toEqual([]);
   });
 
   it("shuffles the songs", async () => {

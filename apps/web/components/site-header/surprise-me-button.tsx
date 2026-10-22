@@ -87,10 +87,6 @@ async function queueSurprise(
     setQueue(nextQueue);
     setCurrentIndex(0);
     setIsPlayerInit(true);
-    toast.success(`${nextQueue.length} songs added to the queue`, {
-      description: `Playing “${nextQueue[0]?.name}”`,
-      position: "bottom-center",
-    });
     onQueued?.();
   } catch {
     toast.error("Failed to load songs");

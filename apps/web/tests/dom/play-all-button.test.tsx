@@ -1,16 +1,22 @@
-import { afterEach, describe, expect, it } from "bun:test";
+import { afterEach, describe, expect, it, mock } from "bun:test";
 
 import type { ActiveRadioSession, Queue, Song } from "@infinitunes/types";
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
-import { PlayAllButton } from "../../components/library/play-all-button";
-import {
+const successes: unknown[] = [];
+mock.module("sonner", () => ({
+  toast: { success: (m: unknown) => successes.push(m), error() {} },
+}));
+
+const { PlayAllButton } =
+  await import("../../components/library/play-all-button");
+const {
   useActiveRadioSession,
   useCurrentSongIndex,
   useIsPlayerInit,
   useQueue,
-} from "../../hooks/use-store";
+} = await import("../../hooks/use-store");
 
 const song = (id: string) =>
   ({
@@ -78,6 +84,7 @@ async function mount(items: Song[]) {
 }
 
 afterEach(async () => {
+  successes.length = 0;
   await act(async () => roots.splice(0).forEach((r) => r.unmount()));
 });
 
@@ -91,6 +98,8 @@ describe("PlayAllButton", () => {
     expect(snapshot.index).toBe(0);
     expect(snapshot.init).toBe(true);
     expect(snapshot.radio).toBeNull();
+    // The player announces the new track; no toast on top of it.
+    expect(successes).toEqual([]);
   });
 
   it("gives every queued entry its own queueItemId, including a repeated song", async () => {
