@@ -34,6 +34,7 @@ type Props = {
   loadError?: string;
   isLooping?: boolean;
   isReady?: boolean;
+  retry?: number;
 };
 
 const roots: Root[] = [];
@@ -67,7 +68,8 @@ async function setup(initial: Props) {
         void messages.push(PLAYBACK_PROBLEM_MESSAGES[problem]),
       loadError: props.loadError,
       isLooping: props.isLooping,
-      isReady: props.isReady,
+      isReady: props.isReady ?? true,
+      retry: props.retry,
       onUnplayable: () => void unplayable.push("skip"),
     });
     return null;
@@ -99,6 +101,35 @@ describe("track playback", () => {
 
     expect(loads).toHaveLength(1);
     expect(recorded).toEqual(["a"]);
+  });
+
+  it("records a listen only once the entry has loaded", async () => {
+    const a = entry("a", "q1");
+    const { render, loads, recorded } = await setup({
+      queue: [a],
+      currentIndex: 0,
+      isReady: false,
+    });
+    expect(loads).toHaveLength(1);
+    expect(recorded).toEqual([]);
+
+    await render({ queue: [a], currentIndex: 0, isReady: true });
+
+    expect(recorded).toEqual(["a"]);
+  });
+
+  it("tries an entry again after it stopped on a problem when retry is bumped", async () => {
+    const a = entry("a", "q1");
+    const { render, loads } = await setup({ queue: [a], currentIndex: 0 });
+    for (let n = 0; n < 5; n += 1) {
+      await render({ queue: [a], currentIndex: 0, loadError: `e${n}` });
+    }
+    const before = loads.length;
+
+    await render({ queue: [a], currentIndex: 0, loadError: "e4", retry: 1 });
+
+    expect(loads).toHaveLength(before + 1);
+    expect(loads.at(-1)).toBe(loads[0]);
   });
 
   it("neither reloads nor re-records when entries are queued or removed around the current one", async () => {
