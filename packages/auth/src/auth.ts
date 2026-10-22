@@ -14,13 +14,14 @@ import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError } from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 
 import { resetPasswordEmail } from "./emails";
 import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
 import { NATIVE_APP_ORIGIN } from "./native-app";
+import { passwordLengthSchema } from "./schemas";
 import { originOf, parseUrl } from "./url";
 import { webRedirectsOnly } from "./web-redirects";
 
@@ -66,6 +67,15 @@ function normalizeName(
     });
   }
   return { data: { name: name.slice(0, USER_NAME_MAX) } };
+}
+
+function assertNewPasswordLength(password: unknown) {
+  const result = passwordLengthSchema.safeParse(password);
+  if (!result.success) {
+    throw new APIError("BAD_REQUEST", {
+      message: result.error.issues[0]!.message,
+    });
+  }
 }
 
 export function createAuth(
@@ -142,6 +152,20 @@ export function createAuth(
     // plants a caller-chosen OAuth state cookie, then redirects to any https
     // URL. The native app has no social sign-in; enable it only with one.
     disabledPaths: ["/expo-authorization-proxy"],
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path === "/sign-up/email") {
+          assertNewPasswordLength(ctx.body?.password);
+        } else if (
+          ["/reset-password", "/change-password", "/set-password"].includes(
+            ctx.path,
+          )
+        ) {
+          // Reject before a reset consumes its single-use token.
+          assertNewPasswordLength(ctx.body?.newPassword);
+        }
+      }),
+    },
     database: drizzleAdapter(db, {
       provider: "pg",
       usePlural: false,
