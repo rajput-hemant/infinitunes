@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "lint": "oxlint --deny-warnings",
-    "lint:shadcn": "cd ../.. && oxlint -c packages/ui/.oxlintrc.shadcn.json apps/web packages/ui",
+    "lint:shadcn": "cd ../.. && oxlint --deny-warnings -c packages/ui/.oxlintrc.shadcn.json apps/web packages/ui",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

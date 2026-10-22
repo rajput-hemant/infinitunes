@@ -350,30 +350,30 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 - [ ] **W-39** P3 CONFIRMED `library/library-song-list.tsx:154-158` - empty `items` with no filter shows `No songs match ""` [wcomp P3-9]
   - Fix: branch on `query.trim()` and show `LibraryEmpty` otherwise. Executor: haiku. Flags: none.
 
-## Batch T1 (sonnet): CI, budget and lint gates - `.github/workflows/ci.yml`, `turbo.json`, `packages/ui/package.json`, `scripts/check-budget.ts`, `knip.json`, root `package.json` (lint-staged), `next.config.ts`, `lib/image-hosts.ts`
+## Batch T1 (sonnet): CI, budget and lint gates - `.github/workflows/ci.yml`, `turbo.json`, `packages/ui/package.json`, `scripts/check-budget.ts`, `knip.json`, root `package.json` (lint-staged), `next.config.ts`, `lib/image-hosts.ts` (branch `fix/t1-t2-ci-csp`)
 
 Run `bun run build && bun run budget` first to get real numbers.
 
-- [ ] **T-1** P2 CONFIRMED `packages/ui/package.json:8`, `turbo.json`, `ci.yml:34` - `lint:shadcn` (`no-raw-colors`, `require-static-classes`) is not a turbo task and never runs in CI [lib 4]
+- [x] **T-1** (Done: `lint:shadcn` turbo task, root script and CI step; `--deny-warnings`; 8 `require-static-classes` warnings on `cn(sharedStyleConst)` sites exempted by override in `.oxlintrc.shadcn.json`, no shadcn component touched.) P2 CONFIRMED `packages/ui/package.json:8`, `turbo.json`, `ci.yml:34` - `lint:shadcn` (`no-raw-colors`, `require-static-classes`) is not a turbo task and never runs in CI [lib 4]
   - Fix: add a `lint:shadcn` turbo task and a CI step; run once first and fix or exempt findings. Executor: haiku (sonnet if it finds violations). Flags: none.
-- [ ] **T-2** P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
+- [ ] **T-2** (needs a measured build: caps kept, header comment now says they were raised on purpose and must be re-measured with `bun run build && bun run budget`.) P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
   - Fix: measure, set ceilings ~5% above current maxima, rewrite the header (or state the raise was deliberate). Executor: sonnet. Flags: none.
 - [ ] **T-3** P2 CONFIRMED `apps/web/tests/mocked/cached-api.test.ts:8-11,84-100`, `tests/cached-api-runtime.ts`, `ci.yml:85-101` - the `use cache` error-digest round-trip is only covered by a manual script CI never runs [lib 3]
   - Fix: run `tests/cached-api-runtime.ts` with the `cached-api-fetch.mjs` preload in the production job after readiness, list it as a knip `entry`; or make the mocked test throw a structurally cloned error. Executor: sonnet. Flags: none.
-- [ ] **T-4** P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15]
+- [ ] **T-4** (needs a measured build: `forbiddenMode` left as `"warn"`, TODO added; confirm the shell chunk is clean before flipping to `"error"`.) P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15]
   - Fix: run `bun run budget`; if clean flip to `"error"`, else report the offender. Executor: sonnet. Flags: none.
-- [ ] **T-5** P3 CONFIRMED root `package.json` lint-staged vs `apps/web/package.json:11` - pre-commit oxlint is weaker than CI (no `--deny-warnings --nextjs-plugin`) [lib 9]
+- [x] **T-5** (Done: lint-staged oxlint now `--deny-warnings --nextjs-plugin`.) P3 CONFIRMED root `package.json` lint-staged vs `apps/web/package.json:11` - pre-commit oxlint is weaker than CI (no `--deny-warnings --nextjs-plugin`) [lib 9]
   - Fix: add the flags or run `turbo run lint --filter=...[HEAD]`. Executor: haiku. Flags: none.
-- [ ] **T-6** P3 CONFIRMED `knip.json:4-6` - ignores cause false positives (`@happy-dom/global-registrator`, `scripts/api-server.ts`, `tests/cached-api-runtime.ts`) [lib 10]
+- [x] **T-6** (Done: declared as knip `entry`.) P3 CONFIRMED `knip.json:4-6` - ignores cause false positives (`@happy-dom/global-registrator`, `scripts/api-server.ts`, `tests/cached-api-runtime.ts`) [lib 10]
   - Fix: declare them as `entry` instead of `ignore`. Executor: haiku. Flags: none.
-- [ ] **T-7** P3 CONFIRMED `apps/web/next.config.ts:58-66`, `lib/image-hosts.ts:2-4`, `.github/workflows/ci.yml:5` - dead `images.remotePatterns` under `unoptimized: true`; stale `migration/bun-monorepo` branch [lib 16]
+- [x] **T-7** (Done: dead `remotePatterns` and stale comment dropped, `migration/bun-monorepo` removed from the CI push list; PRs still run for `feat/platforms`.) P3 CONFIRMED `apps/web/next.config.ts:58-66`, `lib/image-hosts.ts:2-4`, `.github/workflows/ci.yml:5` - dead `images.remotePatterns` under `unoptimized: true`; stale `migration/bun-monorepo` branch [lib 16]
   - Fix: drop the block and the comment; fix the branch list. Executor: haiku. Flags: none.
 
-## Batch T2 (sonnet): CSP avatars - `apps/web/lib/{csp,image-hosts}.ts`, `apps/web/tests/csp.test.ts`
+## Batch T2 (sonnet): CSP avatars - `apps/web/lib/{csp,image-hosts}.ts`, `apps/web/tests/csp.test.ts` (branch `fix/t1-t2-ci-csp`)
 
 Shares `image-hosts.ts` with T1's T-7: do T2 first or have one executor take both.
 
-- [ ] **T-8** P2 CONFIRMED (gap) / PLAUSIBLE (hosts) `lib/csp.ts:67`, `lib/image-hosts.ts:6-9`, `components/user-avatar.tsx:38`, `packages/auth/src/auth.ts:226-228`, `tests/csp.test.ts:49-56` - `img-src` omits the Google/GitHub avatar hosts, so social-login avatars always violate CSP and break if `CSP_ENFORCE` flips [lib 2]
+- [x] **T-8** (Done: `AVATAR_HOSTS` in `image-hosts.ts`, spread into `img-src`, tests updated; Better Auth maps Google `picture` and GitHub `avatar_url` to `user.image` verbatim, the hosts themselves are the documented Google/GitHub CDNs and were not checked against a live `user.image`; kept out of `parseAllowedImageUrl`.) P2 CONFIRMED (gap) / PLAUSIBLE (hosts) `lib/csp.ts:67`, `lib/image-hosts.ts:6-9`, `components/user-avatar.tsx:38`, `packages/auth/src/auth.ts:226-228`, `tests/csp.test.ts:49-56` - `img-src` omits the Google/GitHub avatar hosts, so social-login avatars always violate CSP and break if `CSP_ENFORCE` flips [lib 2]
   - Fix: `AVATAR_HOSTS = ["lh3.googleusercontent.com", "avatars.githubusercontent.com"]` (confirm against a real `user.image`), spread into `img-src`, update the test; keep them out of `parseAllowedImageUrl`. Executor: sonnet. Flags: none.
 
 ## Batch T3 (sonnet): type-check tests and scripts - new `apps/web/tsconfig.tests.json`, root `tsconfig.json`, `type-check` scripts

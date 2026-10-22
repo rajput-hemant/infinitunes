@@ -14,11 +14,15 @@
  * their gzipped size per route.
  *
  * Ceilings were set in the phase 3 perf audit at af9cea8, which measured
- * 522-557KB gzipped initial JS across routes. Ceilings only ratchet down: a
- * config may lower them but never raise one past the hard caps below, which
- * equal these values. Ratcheted after the skills audit (WP3-5) to about 5% above
- * the measured maxima: catalog 345, detail 405, search 360, account 362,
- * auth 343, modal 344, not-found 241 KB gzipped; fonts 2 preloads / 93KB.
+ * 522-557KB gzipped initial JS across routes. The skills audit (WP3-5)
+ * ratcheted them to about 5% above the measured maxima (catalog 345, detail
+ * 405, search 360, account 362, auth 343, modal 344, not-found 241 KB gzipped;
+ * fonts 2 preloads / 93KB). The current ceilings and hard caps (catalog 365,
+ * detail 425, search 380, account 380, auth 360, modal 365, not-found 255) were
+ * raised 14-20KB above that on purpose as the app grew, so they are NOT the
+ * ratchet. They need re-measuring with `bun run build && bun run budget`; then
+ * set each ceiling (and its hard cap) to about 5% above the measured maximum.
+ * A config may lower a ceiling but never raise one past the hard caps.
  *
  * Routes whose class is not recognised are reported as UNCHECKED, not failed.
  *
@@ -69,6 +73,9 @@ export const defaultConfig: BudgetConfig = {
   maxFontPreloads: 2,
   maxFontPreloadKB: 100,
   forbiddenStrings: ["ZodError", "navigator.credentials"],
+  // TODO: "warn" means the Zod/passkey shell-chunk rule cannot fail CI. Needs a
+  // build (`bun run build && bun run budget`) to confirm the shared chunks are
+  // clean of `forbiddenStrings`, then flip to "error".
   forbiddenMode: "warn",
 };
 

@@ -15,6 +15,19 @@
         "**/settings/_components/settings-search.tsx"
       ],
       "rules": { "shadcn/no-raw-colors": "off" }
+    },
+    {
+      // Class strings built from shared style constants (`controlStyles`,
+      // `destructiveText`, `authLabelStyles`) through `cn()`: static by
+      // construction, which this rule cannot see.
+      "files": [
+        "**/settings/_components/delete-account-section.tsx",
+        "**/(auth)/_components/password-field.tsx",
+        "**/(auth)/_components/email-field.tsx",
+        "**/components/sidebar.tsx",
+        "**/components/playlist/playlist-manage-menu.tsx"
+      ],
+      "rules": { "shadcn/require-static-classes": "off" }
     }
   ]
 }

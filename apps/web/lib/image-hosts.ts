@@ -1,11 +1,23 @@
 /**
- * Hostnames of the image CDN. Single source of truth for `next.config.ts`
- * `images.remotePatterns` and the server-side fetch allowlist in
- * `app/api/og/route.tsx` (an open `image` fetch is an SSRF vector).
+ * Hostnames of the image CDN (also CSP `img-src`) and the server-side fetch
+ * allowlist in `app/api/og/route.tsx` (an open `image` fetch is an SSRF
+ * vector). Images are unoptimized, so `next.config.ts` has no remotePatterns.
  */
 export const IMAGE_CDN_HOSTS = [
   "c.saavncdn.com",
   "c.sop.saavncdn.com",
+] as const;
+
+/**
+ * Hostnames of social-login profile pictures: Better Auth stores Google's
+ * `picture` and GitHub's `avatar_url` verbatim as `user.image`, and
+ * `components/user-avatar.tsx` renders it. CSP `img-src` only; deliberately
+ * not part of `IMAGE_CDN_HOSTS`, so `parseAllowedImageUrl` (the OG route's
+ * server-side fetch allowlist) never fetches them.
+ */
+export const AVATAR_HOSTS = [
+  "lh3.googleusercontent.com",
+  "avatars.githubusercontent.com",
 ] as const;
 
 /** Hostnames serving the decrypted `download_url` audio (CSP `media-src`). */
