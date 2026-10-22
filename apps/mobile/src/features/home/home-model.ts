@@ -3,6 +3,7 @@ import {
   homeHighlights,
   homeSections,
   toCardItem,
+  uniqueBy,
 } from "@infinitunes/types";
 import type { CardItem, HomeSection, Modules } from "@infinitunes/types";
 import type { Href } from "expo-router";
@@ -67,15 +68,19 @@ function toShelf({ key, title, items }: HomeSection): HomeShelf[] {
 export function buildHomeModel(modules: Modules): HomeModel {
   const { featured, quickPicks, heroTiles } = homeHighlights(modules);
   const charts = new Set<unknown>(modules.charts ?? []);
-  const hero = [
-    ...(featured
-      ? [{ card: toCardItem(featured), eyebrow: "Featured playlist" }]
-      : []),
-    ...heroTiles.map((tile) => ({
-      card: toCardItem(tile),
-      eyebrow: charts.has(tile) ? "Chart" : "Playlist",
-    })),
-  ];
+  // Deduped here, once, so `Shelf` need not re-filter on every render.
+  const hero = uniqueBy(
+    [
+      ...(featured
+        ? [{ card: toCardItem(featured), eyebrow: "Featured playlist" }]
+        : []),
+      ...heroTiles.map((tile) => ({
+        card: toCardItem(tile),
+        eyebrow: charts.has(tile) ? "Chart" : "Playlist",
+      })),
+    ],
+    ({ card }) => card.id,
+  );
   return {
     carousel: hero.map(({ card }) => card),
     eyebrows: Object.fromEntries(

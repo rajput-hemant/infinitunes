@@ -9,6 +9,18 @@ import {
 import { buildHomeModel, isHomeEmpty } from "./home-model";
 
 describe("buildHomeModel", () => {
+  it("lists a card once in the carousel when a chart repeats the featured playlist", () => {
+    const base = rawLaunchData();
+    const featured = base.top_playlists[0];
+    const model = buildHomeModel(
+      rawLaunchData({ charts: [rawChart({ id: featured?.id })] }),
+    );
+
+    const ids = model.carousel.map((item) => item.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.filter((id) => id === featured?.id)).toHaveLength(1);
+  });
+
   it("features the first playlist and quick-picks albums and the next playlists", () => {
     const model = buildHomeModel(rawLaunchData());
 
