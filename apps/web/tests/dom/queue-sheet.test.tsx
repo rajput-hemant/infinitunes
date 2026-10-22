@@ -311,6 +311,46 @@ describe("queue pane", () => {
       await act(async () => root.unmount());
     });
 
+    it("offers Undo that puts the removed row back where it was", async () => {
+      const toasts = spyOn(sonner, "toast");
+      const root = await open(["a", "b", "c"]);
+      await act(async () => {
+        removeButton("b")?.click();
+      });
+      await sleep(250);
+      expect(storedIds()).toEqual(["a", "c"]);
+
+      const options = toasts.mock.calls.at(-1)?.[1] as unknown as {
+        action?: { label: string; onClick: () => void };
+      };
+      expect(options.action?.label).toBe("Undo");
+      await act(async () => options.action?.onClick());
+
+      expect(storedIds()).toEqual(["a", "b", "c"]);
+
+      toasts.mockRestore();
+      await act(async () => root.unmount());
+    });
+
+    it("undoes a removal that is still leaving by cancelling it", async () => {
+      const toasts = spyOn(sonner, "toast");
+      const root = await open(["a", "b"]);
+      await act(async () => {
+        removeButton("a")?.click();
+      });
+      const options = toasts.mock.calls.at(-1)?.[1] as unknown as {
+        action?: { onClick: () => void };
+      };
+      await act(async () => options.action?.onClick());
+      await sleep(250);
+
+      expect(storedIds()).toEqual(["a", "b"]);
+      expect(removeButton("a")?.disabled).toBe(false);
+
+      toasts.mockRestore();
+      await act(async () => root.unmount());
+    });
+
     it("removes immediately under reduced motion", async () => {
       window.matchMedia = ((query: string) => ({
         matches: query === "(prefers-reduced-motion: reduce)",
