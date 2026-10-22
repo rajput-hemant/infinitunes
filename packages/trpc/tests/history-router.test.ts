@@ -17,6 +17,8 @@ const state: {
   selectWhere: unknown[];
   selectOrder: unknown[];
   deleteError: Error | null;
+  locks: ReturnType<PgDialect["sqlToQuery"]>[];
+  operations: string[];
 } = {
   rows: [],
   inserted: [],
@@ -26,6 +28,8 @@ const state: {
   selectWhere: [],
   selectOrder: [],
   deleteError: null,
+  locks: [],
+  operations: [],
 };
 
 const dialect = new PgDialect();
@@ -35,12 +39,17 @@ function render(chunk: SQL) {
 }
 
 const fakeDb = {
+  execute: async (query: SQL) => {
+    state.operations.push("lock");
+    state.locks.push(render(query));
+  },
   insert: (table: typeof recentlyPlayed) => ({
     values: (values: Record<string, unknown>) => ({
       onConflictDoUpdate: async (config: {
         target: unknown[];
         set: Record<string, unknown>;
       }) => {
+        state.operations.push("insert");
         state.inserted.push({ table: getTableName(table), values });
         state.conflict = config;
       },
@@ -70,6 +79,7 @@ const fakeDb = {
   }),
   delete: (table: typeof recentlyPlayed) => ({
     where: async (where: SQL) => {
+      state.operations.push("trim");
       state.deleted.push({
         table: getTableName(table),
         where: render(where).params,
@@ -110,6 +120,34 @@ describe("history router", () => {
     state.selectWhere = [];
     state.selectOrder = [];
     state.deleteError = null;
+    state.locks = [];
+    state.operations = [];
+  });
+
+  it("locks each user's insert and trim together, before either write", async () => {
+    await authed().history.record({ id: "abc", type: "song" });
+    const other = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-2" } },
+    });
+    await other.history.record({ id: "def", type: "song" });
+
+    expect(state.operations).toEqual([
+      "lock",
+      "insert",
+      "trim",
+      "lock",
+      "insert",
+      "trim",
+    ]);
+    expect(state.locks.map((query) => query.sql)).toEqual([
+      "select pg_advisory_xact_lock(hashtextextended($1, 0))",
+      "select pg_advisory_xact_lock(hashtextextended($1, 0))",
+    ]);
+    expect(state.locks.map((query) => query.params)).toEqual([
+      ["infinitunes_recently_played.record:user-1"],
+      ["infinitunes_recently_played.record:user-2"],
+    ]);
   });
 
   it("rejects record and list without a session", async () => {

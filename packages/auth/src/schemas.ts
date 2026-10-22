@@ -6,8 +6,19 @@ export const emailSchema = z
   .min(1, "Email is Required")
   .pipe(z.email("Please enter a valid email"));
 
-export const passwordSchema = z
+export const PASSWORD_MAX_BYTES = 72;
+
+export const passwordLengthSchema = z
   .string()
+  .refine(
+    (password) =>
+      new TextEncoder().encode(password).length <= PASSWORD_MAX_BYTES,
+    {
+      message: `Password must be at most ${PASSWORD_MAX_BYTES} UTF-8 bytes long (some characters use more than one byte).`,
+    },
+  );
+
+export const passwordSchema = passwordLengthSchema
   .min(1, "Password is Required")
   .regex(/^(?!\s*$).+/, "Password must not contain Whitespaces.")
   .regex(/^(?=.*[A-Z])/, "Password must contain at least one uppercase letter.")
@@ -21,7 +32,13 @@ export const passwordSchema = z
 
 /** `passwordSchema` in one sentence, for the field's hint. */
 export const PASSWORD_HINT =
-  "At least 8 characters with upper and lower case, a number and a symbol.";
+  "At least 8 characters with upper and lower case, a number and a symbol. At most 72 UTF-8 bytes.";
+
+// Match Better Auth's sign-in limit while allowing older, weaker passwords.
+const currentPasswordSchema = z
+  .string()
+  .min(1, "Password is Required")
+  .max(128, "Password must be at most 128 characters long.");
 
 /** The account's display name. */
 export const nameSchema = z
@@ -46,7 +63,7 @@ export const profileSchema = z.object({
 /** Sign-in only checks presence: accounts made under older, weaker rules must still get in. */
 export const loginSchema = z.object({
   email: emailSchema,
-  password: z.string().min(1, "Password is Required"),
+  password: currentPasswordSchema,
 });
 
 export const signUpSchema = z
@@ -69,7 +86,7 @@ export const signUpSchema = z
 
 /** Signed-in change: the account comes from the session, not the input. */
 export const changePasswordSchema = z.object({
-  password: passwordSchema,
+  password: currentPasswordSchema,
   newPassword: passwordSchema,
 });
 

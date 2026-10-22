@@ -5,6 +5,24 @@ import { getTableConfig } from "drizzle-orm/pg-core";
 import * as schema from "../src/schema";
 
 describe("schema exports", () => {
+  it.each([
+    [schema.betterAuthAccounts, "userId"],
+    [schema.betterAuthSessions, "userId"],
+    [schema.betterAuthVerifications, "identifier"],
+    [schema.myPlaylists, "userId"],
+  ] as const)("indexes lookup columns on %s (%s)", (table, column) => {
+    const { indexes } = getTableConfig(table);
+    expect(
+      indexes.some(
+        ({ config }) =>
+          !config.unique &&
+          config.columns.length === 1 &&
+          "name" in config.columns[0]! &&
+          config.columns[0].name === column,
+      ),
+    ).toBe(true);
+  });
+
   it("exports all better auth tables", () => {
     expect(schema.betterAuthAccounts).toBeDefined();
     expect(schema.betterAuthSessions).toBeDefined();
