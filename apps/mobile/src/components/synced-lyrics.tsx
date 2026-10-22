@@ -155,6 +155,7 @@ const TimedLines = memo(function TimedLines({
         gap: space.sm,
       }}
       accessibilityLabel="Synced lyrics"
+      nestedScrollEnabled
       onScrollBeginDrag={pause}
       onScrollEndDrag={resumeLater}
       onMomentumScrollBegin={() => {
