@@ -25,9 +25,9 @@ import { SectionHeader } from "~/components/section-header";
 import { Shelf } from "~/components/shelf";
 import {
   EntityHeaderSkeleton,
+  LyricsSkeleton,
   SectionHeaderSkeleton,
   SongListSkeleton,
-  TextBlockSkeleton,
 } from "~/components/skeletons";
 import { TrackList } from "~/components/track-list";
 import { entityQueries } from "~/lib/entity-queries";
@@ -80,7 +80,7 @@ export function SongScreen({ token }: SongScreenProps) {
         // `LyricsSection` keeps showing until the lyrics arrive.
         <>
           <EntityHeaderSkeleton shuffle={false} />
-          <TextBlockSkeleton />
+          <LyricsSkeleton />
         </>
       }
       noun="Song"

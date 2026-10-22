@@ -2,6 +2,7 @@ import type { FavoriteType } from "@infinitunes/core/favorites";
 import type { ReactNode } from "react";
 import { Platform, View } from "react-native";
 
+import type { TextVariant } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
 import { ExplicitBadge } from "./explicit-badge";
@@ -20,6 +21,20 @@ const ART_SHADOW = Platform.select({
     shadowRadius: 12,
   },
 });
+
+/**
+ * The title's role: Android's headlineSmall (24/32, emphasized), iOS's
+ * title2. `EntityHeaderSkeleton` reserves the same line. Read at render, so
+ * a test can switch platforms.
+ */
+export const entityTitleVariant = (): TextVariant =>
+  Platform.OS === "android" ? "title1" : "title2";
+
+/**
+ * Android's Play is the action row's one 56dp button; iOS keeps Play and
+ * Shuffle at 48pt, and style alone (filled vs tonal) leads.
+ */
+export const largePlay = () => Platform.OS === "android";
 
 type EntityHeaderProps = {
   /** Raw upstream artwork URL. */
@@ -108,7 +123,7 @@ export function EntityHeader({
       >
         {explicit ? <ExplicitBadge /> : null}
         <Text
-          variant="title2"
+          variant={entityTitleVariant()}
           emphasized
           accessibilityRole="header"
           className="shrink text-center"
@@ -134,8 +149,8 @@ export function EntityHeader({
           {meta}
         </Text>
       ) : null}
-      {/* Compact: the heart and the screen's actions lead, Shuffle and the
-          large Play close the row, where the thumb rests. */}
+      {/* Compact: the heart and the screen's actions lead, Shuffle and Play
+          (Android's the large one) close the row, where the thumb rests. */}
       <View className="mt-4 w-full flex-row items-center gap-2">
         {like ? (
           <LikeButton type={like.type} token={like.token} name={title} />
@@ -154,8 +169,8 @@ export function EntityHeader({
           icon={{ ios: "play.fill", android: "play_arrow" }}
           label="Play"
           variant="filled"
-          size="xl"
-          large
+          size={largePlay() ? "xl" : "lg"}
+          large={largePlay()}
           onPress={onPlay}
         />
       </View>
