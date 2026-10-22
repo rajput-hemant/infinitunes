@@ -2,12 +2,23 @@
 
 import type { PositionStore } from "@infinitunes/core/react/position-store";
 import type { Queue } from "@infinitunes/types";
+import dynamic from "next/dynamic";
 import type * as React from "react";
 
 import { cn } from "~/lib/utils";
 
-import { ExpandedLyrics } from "./expanded-lyrics";
 import { QueueList } from "./queue-list";
+
+const ExpandedLyrics = dynamic(
+  () => import("./expanded-lyrics").then((mod) => mod.ExpandedLyrics),
+  {
+    loading: () => (
+      <output className="px-2 text-sm text-muted-foreground">
+        Loading lyrics...
+      </output>
+    ),
+  },
+);
 
 export type PaneTab = "queue" | "lyrics";
 

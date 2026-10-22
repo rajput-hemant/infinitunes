@@ -14,8 +14,13 @@ import { waitFor } from "./wait-for";
 
 // The lyrics pane queries over the network; answer it offline instead of opening a socket.
 const realFetch = globalThis.fetch;
+const lyricRequests: string[] = [];
 beforeAll(() => {
-  globalThis.fetch = offlineFetch;
+  globalThis.fetch = Object.assign((...args: Parameters<typeof fetch>) => {
+    if (String(args[0]).includes("syncedLyrics"))
+      lyricRequests.push(String(args[0]));
+    return offlineFetch(...args);
+  }, realFetch);
 });
 afterAll(() => {
   globalThis.fetch = realFetch;
@@ -45,7 +50,7 @@ const router = {
   hmrRefresh: noop,
 };
 
-async function mountExpanded() {
+async function mountExpanded(song = track) {
   const container = document.createElement("div");
   document.body.append(container);
   const root = createRoot(container);
@@ -57,7 +62,7 @@ async function mountExpanded() {
             <ExpandedPlayer
               open
               onOpenChange={noop}
-              track={track}
+              track={song}
               position={createPositionStore(0)}
               duration={100}
               showRemainingTime={false}
@@ -196,7 +201,8 @@ describe("expanded player sheet", () => {
   });
 
   it("switches the pane to Lyrics and shows the empty state when there are none", async () => {
-    const root = await mountExpanded();
+    lyricRequests.length = 0;
+    const root = await mountExpanded({ ...track, id: "lyrics-on-demand" });
     const tab = (label: string) =>
       [...document.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find(
         (button) => button.textContent === label,
@@ -204,8 +210,10 @@ describe("expanded player sheet", () => {
 
     expect(tab("Up next")?.getAttribute("aria-selected")).toBe("true");
     expect(tab("Lyrics")?.getAttribute("aria-selected")).toBe("false");
+    expect(lyricRequests).toHaveLength(0);
 
     await act(async () => tab("Lyrics")?.click());
+    await waitFor(() => lyricRequests.length > 0);
     expect(tab("Lyrics")?.getAttribute("aria-selected")).toBe("true");
     expect(
       document
@@ -215,8 +223,9 @@ describe("expanded player sheet", () => {
     // The stubbed endpoint is offline, so the query fails once it settles.
     await waitFor(
       () =>
-        document.querySelector('[role="tabpanel"]')?.textContent !==
-        "Loading lyrics...",
+        document
+          .querySelector('[role="tabpanel"]')
+          ?.textContent?.includes("No lyrics available") === true,
     );
     expect(document.querySelector('[role="tabpanel"]')?.textContent).toContain(
       "No lyrics available",
