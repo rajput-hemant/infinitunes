@@ -44,8 +44,8 @@ type TrackPlaybackOptions = {
   isLooping?: boolean;
   /** True once the current source has loaded; ends a run of failures. */
   isReady?: boolean;
-  /** Every bitrate of the current entry failed to load. */
-  onUnplayable?: () => void;
+  /** Every bitrate of the current entry failed to load; return false when it could not move on. */
+  onUnplayable?: () => void | boolean;
   /** Bump to try the current entry again after a problem (Play with nothing loaded). */
   retry?: number;
 };
@@ -162,7 +162,8 @@ export function useTrackPlayback({
     }
     problemRef.current("unplayable");
     expectSkipRef.current = true;
-    unplayableRef.current?.();
+    // A skip that stays put (a lone or last entry) changes no entry to consume the flag.
+    if (unplayableRef.current?.() === false) expectSkipRef.current = false;
   }, [exhausted, queueItemId]);
 
   useEffect(() => {

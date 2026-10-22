@@ -315,18 +315,14 @@ export function PlaybackController() {
     status.bufferedTime,
   ]);
 
-  // Activated once, then only the metadata changes: on Android every
-  // activation rebuilds the MediaSession and takes the foreground-service
-  // notification down for a moment, which the OS may use to end background
-  // playback between two tracks.
+  // Activated once, by the first load (`load`), then only the metadata
+  // changes: on Android every activation rebuilds the MediaSession and takes
+  // the foreground-service notification down for a moment, which the OS may
+  // use to end background playback between two tracks. An entry that never
+  // loads (no source) leaves it cleared.
   useEffect(() => {
-    if (!started || !track) return;
-    if (lockScreenActive.current) {
-      audioPlayer.updateLockScreenMetadata(nowPlayingMetadata(track));
-    } else {
-      activateLockScreen(track);
-      lockScreenActive.current = true;
-    }
+    if (!started || !track || !lockScreenActive.current) return;
+    audioPlayer.updateLockScreenMetadata(nowPlayingMetadata(track));
   }, [started, track]);
 
   return null;

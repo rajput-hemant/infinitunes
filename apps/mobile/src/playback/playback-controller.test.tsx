@@ -240,6 +240,21 @@ describe("PlaybackController", () => {
     expect(procedure("history.record")).toHaveBeenCalledTimes(1);
   });
 
+  it("leaves the lock screen cleared when a skip lands on a linkless entry", async () => {
+    const player = await mountController();
+    await act(async () =>
+      playerStore
+        .getState()
+        .playTracks([rows[0]!, { ...rows[1]!, download_url: "" }]),
+    );
+    await act(async () => player.finishLoading());
+    expect(player.lockScreen.active).toBe(true);
+
+    await act(async () => playerStore.getState().skipToNext());
+
+    expect(player.lockScreen).toEqual({ active: false });
+  });
+
   it("stops the previous source and reports a linkless entry", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows));

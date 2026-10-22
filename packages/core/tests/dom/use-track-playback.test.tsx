@@ -35,6 +35,8 @@ type Props = {
   isLooping?: boolean;
   isReady?: boolean;
   retry?: number;
+  /** The app's skip finds nowhere to go (a lone or last entry). */
+  stayPut?: boolean;
 };
 
 const roots: Root[] = [];
@@ -79,7 +81,10 @@ async function setup(initial: Props) {
       isLooping: props.isLooping,
       isReady: props.isReady ?? engine.ready,
       retry: props.retry,
-      onUnplayable: () => void unplayable.push("skip"),
+      onUnplayable: () => {
+        unplayable.push("skip");
+        return !props.stayPut;
+      },
     });
     return null;
   }
@@ -303,6 +308,31 @@ describe("track playback load failures", () => {
     await render({ queue: [a, b], currentIndex: 1, isLooping: true });
 
     expect(loadOptions.map((o) => o.loop)).toEqual([true, true]);
+  });
+
+  it("counts failures afresh for the next entry after a skip that stayed put", async () => {
+    const two = "https://cdn/x_96,https://cdn/x_160";
+    const q = ["a", "b"].map((id, i) => entry(id, `q${i}`, two));
+    const { render, unplayable } = await setup({
+      queue: q,
+      currentIndex: 0,
+      stayPut: true,
+    });
+    const failTrack = async (currentIndex: number) => {
+      for (const loadError of ["e1", undefined, "e2"]) {
+        await render({ queue: q, currentIndex, loadError, stayPut: true });
+      }
+    };
+
+    await failTrack(0);
+    expect(unplayable).toHaveLength(1);
+
+    // The listener picks another entry; its failure is its own first.
+    await render({ queue: q, currentIndex: 1, stayPut: true });
+    await failTrack(1);
+
+    expect(unplayable).toHaveLength(2);
+    expect(messages.at(-1)).toBe("Couldn't play this song");
   });
 
   it("stops after two tracks in a row fail, with one network toast, and starts over after a user action", async () => {
