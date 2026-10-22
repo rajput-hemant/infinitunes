@@ -1,7 +1,9 @@
-export type TrustedProxy = "vercel" | "true" | "false";
+export const TRUSTED_PROXY_MODES = ["vercel", "true", "false"] as const;
+
+export type TrustedProxy = (typeof TRUSTED_PROXY_MODES)[number];
 
 /** Shared key for clients whose address cannot be trusted. */
-export const UNTRUSTED_CLIENT_KEY = "untrusted";
+const UNTRUSTED_CLIENT_KEY = "untrusted";
 
 /**
  * Resolves the effective trusted-proxy mode. An explicit `TRUSTED_PROXY` wins;

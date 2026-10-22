@@ -39,13 +39,13 @@ const INLINE_SCRIPT_HASHES = [scriptHash(THEME_BOOTSTRAP_SCRIPT)];
  * app's inline script is allowed by hash (`INLINE_SCRIPT_HASHES`); the Umami
  * `<Script>` is external and allowed by host. Next's RSC payload scripts are
  * inline with per-page text, so a hash policy cannot cover them: resolve that
- * (for example `strict-dynamic` with SRI) before flipping `CSP_ENFORCE`. The two
- * `dangerouslySetInnerHTML` block (lyrics) renders
- * `sanitizeRichText` output as markup, not script, so `script-src` does not
- * apply to them. `style-src` keeps `'unsafe-inline'` on purpose: Sonner/Next
- * inject `<style>` tags and the theme script sets `--radius` inline, and style
- * injection cannot run script. `object-src`, `base-uri` and `form-action` are
- * locked down because they do not fall back to `default-src`.
+ * (for example `strict-dynamic` with SRI) before flipping `CSP_ENFORCE`. The
+ * `dangerouslySetInnerHTML` block (lyrics) renders `sanitizeRichText` output as
+ * markup, not script, so `script-src` does not apply to it. `style-src` keeps
+ * `'unsafe-inline'` on purpose: Sonner/Next inject `<style>` tags and the
+ * theme script sets `--radius` inline, and style injection cannot run script.
+ * `object-src`, `base-uri` and `form-action` are locked down because they do
+ * not fall back to `default-src`.
  */
 export function buildCsp({
   isDev = false,

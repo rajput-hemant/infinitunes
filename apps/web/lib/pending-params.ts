@@ -29,7 +29,7 @@ function subscribe(listener: () => void) {
   };
 }
 
-export function setPendingParam(name: string, value: string) {
+function setPendingParam(name: string, value: string) {
   pending.set(name, value);
   clearTimeout(timers.get(name));
   timers.set(

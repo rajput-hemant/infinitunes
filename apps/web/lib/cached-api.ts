@@ -1,5 +1,6 @@
 import {
   api,
+  API_DEFAULTS,
   type ApiOptions,
   expireSeconds,
   isTransientUpstreamError,
@@ -61,9 +62,9 @@ export const cachedApi: typeof api = async <T = unknown>(
     return api<T>(call, options, fetchFn);
   }
   const normalized: CatalogOptions = {
-    isVersion4: options.isVersion4 ?? true,
-    language: validLangs(options.language) || "hindi,english",
-    timeoutMs: options.timeoutMs ?? 10_000,
+    isVersion4: options.isVersion4 ?? API_DEFAULTS.isVersion4,
+    language: validLangs(options.language) || API_DEFAULTS.language,
+    timeoutMs: options.timeoutMs ?? API_DEFAULTS.timeoutMs,
     query: Object.fromEntries(
       Object.entries(options.query ?? {})
         .filter(([, value]) => value !== undefined && value !== "")

@@ -1,4 +1,4 @@
-import { isSearchType } from "../app/(root)/search/(results)/[type]/[query]/_components/type-map";
+import { isSearchType } from "./search-types";
 
 /** Plural spellings people type or bookmark, mapped to the route's singular type. */
 const TYPE_ALIASES: Readonly<Record<string, string>> = {

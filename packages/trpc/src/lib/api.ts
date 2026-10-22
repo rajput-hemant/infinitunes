@@ -27,6 +27,13 @@ export type ApiOptions = {
   timeoutMs?: number;
 };
 
+/** Default options applied to upstream calls and cache keys. */
+export const API_DEFAULTS = {
+  isVersion4: true,
+  timeoutMs: 10_000,
+  language: "hindi,english",
+} as const;
+
 /** Public catalog cache lifetimes in seconds; absent calls stay uncached. */
 export const REVALIDATE_SECONDS: Readonly<Record<string, number>> = {
   [endpoints.modules.launch_data]: 600,
@@ -204,11 +211,11 @@ async function attempt<T>(
 export async function api<T = unknown>(
   call: string,
   {
-    isVersion4 = true,
+    isVersion4 = API_DEFAULTS.isVersion4,
     query = {},
     language,
     signal,
-    timeoutMs = 10_000,
+    timeoutMs = API_DEFAULTS.timeoutMs,
   }: ApiOptions = {},
   fetchFn: typeof fetch = fetch,
 ): Promise<T> {
@@ -224,7 +231,7 @@ export async function api<T = unknown>(
   }
 
   const url = `${BASE_URL}?__call=${call}&${params.toString()}`;
-  const langs = validLangs(language) || "hindi,english";
+  const langs = validLangs(language) || API_DEFAULTS.language;
   const init: RequestInit = {
     headers: {
       cookie: `L=${langs}; gdpr_acceptance=true; DL=english`,
