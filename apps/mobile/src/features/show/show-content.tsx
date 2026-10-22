@@ -5,6 +5,7 @@ import { useState } from "react";
 import { View } from "react-native";
 
 import { Description } from "~/components/detail/description";
+import { useDetailScrollProps } from "~/components/detail/detail-scroll";
 import { EntityHeader } from "~/components/entity-header";
 import {
   entityListKey,
@@ -39,6 +40,7 @@ export function ShowContent({
   isRefreshing,
   initialSeason,
 }: ShowContentProps) {
+  const scrollProps = useDetailScrollProps();
   const { show_details: details } = show;
   const [chosenSeason, setSeason] = useState(initialSeason);
   const [sort, setSort] = useState<Sort>("desc");
@@ -102,6 +104,7 @@ export function ShowContent({
         void episodes.refetch();
       }}
       contentInsetAdjustmentBehavior="automatic"
+      {...scrollProps}
       contentContainerStyle={{ paddingBottom: playerDockInset }}
       testID="show-list"
     />

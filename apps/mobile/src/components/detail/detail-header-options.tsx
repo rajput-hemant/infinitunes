@@ -1,4 +1,5 @@
 import type { NativeStackNavigationOptions } from "expo-router";
+import { Platform } from "react-native";
 
 import { IconButton } from "~/components/ui/icon-button";
 import { hasHeaderBarItems } from "~/lib/platform";
@@ -12,15 +13,31 @@ import type { ShareableItem } from "~/lib/share";
  * native bar button, the same round glass as the back button; a custom view
  * would sit in a wider capsule. With no item yet (loading, failed) there is no
  * Share.
+ *
+ * Android: once the page scrolls under the bar (`scrolledColor` set, see
+ * `useDetailScrollProps`), the bar takes Material 3's scrolled container
+ * colour and the item's name; it returns to the surface and no title at the
+ * top. Every key is always present: `<Stack.Screen options>` merges into the
+ * previous options, so a left-out key would keep the old value.
  */
 export function detailHeaderOptions(
   item?: ShareableItem,
+  scrolledColor?: string,
 ): NativeStackNavigationOptions {
   const share = item && (() => shareItem(item));
+  const scrolled =
+    Platform.OS === "android" && item !== undefined && scrolledColor;
   return {
     title: item?.name ?? "",
-    headerTitle: "",
+    headerTitle: scrolled ? item.name : "",
     headerLargeTitle: false,
+    ...(Platform.OS === "android"
+      ? {
+          headerStyle: scrolled
+            ? { backgroundColor: scrolledColor }
+            : undefined,
+        }
+      : {}),
     headerRight:
       item && share
         ? () => (
@@ -31,19 +48,22 @@ export function detailHeaderOptions(
             />
           )
         : undefined,
-    ...(hasHeaderBarItems && item && share
+    ...(hasHeaderBarItems
       ? {
-          unstable_headerRightItems: () => [
-            {
-              type: "button" as const,
-              label: `Share ${item.name}`,
-              icon: {
-                type: "sfSymbol" as const,
-                name: "square.and.arrow.up" as const,
-              },
-              onPress: share,
-            },
-          ],
+          unstable_headerRightItems:
+            item && share
+              ? () => [
+                  {
+                    type: "button" as const,
+                    label: `Share ${item.name}`,
+                    icon: {
+                      type: "sfSymbol" as const,
+                      name: "square.and.arrow.up" as const,
+                    },
+                    onPress: share,
+                  },
+                ]
+              : undefined,
         }
       : {}),
   };

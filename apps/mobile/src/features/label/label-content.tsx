@@ -4,6 +4,7 @@ import { FlashList } from "@shopify/flash-list";
 import { useMemo, useState } from "react";
 import { View } from "react-native";
 
+import { useDetailScrollProps } from "~/components/detail/detail-scroll";
 import { EmptyState } from "~/components/empty-state";
 import { EntityHeader } from "~/components/entity-header";
 import {
@@ -31,6 +32,7 @@ export function LabelContent({
   onRefresh,
   isRefreshing,
 }: LabelContentProps) {
+  const scrollProps = useDetailScrollProps();
   // Albums first, as on the web.
   const [tab, setTab] = useState<LabelTab>("albums");
   const songs = useMemo(
@@ -80,6 +82,7 @@ export function LabelContent({
       refreshing={isRefreshing}
       onRefresh={() => void onRefresh()}
       contentInsetAdjustmentBehavior="automatic"
+      {...scrollProps}
       contentContainerStyle={{ paddingBottom: playerDockInset }}
     />
   );
