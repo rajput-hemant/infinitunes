@@ -9,7 +9,7 @@ import { Text } from "~/components/ui/text";
 import { cx } from "~/lib/class-names";
 import { usePressScale } from "~/lib/use-press-scale";
 import { sizes, space } from "~/theme/tokens";
-import { useTokenColor } from "~/theme/use-palette";
+import { usePalette, useTokenColor } from "~/theme/use-palette";
 
 const SEMIBOLD = { fontWeight: "600" } as const;
 
@@ -155,7 +155,10 @@ export function ChipRow({ chips, tabs = false }: ChipRowProps) {
   );
 }
 
-/** One chip: it sinks a little under the finger and springs back. */
+/**
+ * One chip: on iOS it sinks a little under the finger and springs back;
+ * Material 3 chips only ripple.
+ */
 function ChipButton({
   chip,
   tab,
@@ -167,20 +170,26 @@ function ChipButton({
 }) {
   const press = usePressScale();
   const onSecondary = useTokenColor("secondary-foreground");
+  const ripple = usePalette()["fill-2"];
   const { container, tone } = chip.selected
     ? CHIP_STYLE.selected
     : CHIP_STYLE.idle;
   return (
-    <Animated.View style={press.style} onLayout={onLayout}>
+    <Animated.View
+      style={MATERIAL ? undefined : press.style}
+      onLayout={onLayout}
+    >
       <Pressable
         onPress={chip.onPress}
-        onPressIn={press.onPressIn}
-        onPressOut={press.onPressOut}
+        onPressIn={MATERIAL ? undefined : press.onPressIn}
+        onPressOut={MATERIAL ? undefined : press.onPressOut}
+        android_ripple={MATERIAL ? { color: ripple } : undefined}
         hitSlop={CHIP_HIT_SLOP}
         accessibilityRole={tab ? "tab" : "button"}
         accessibilityState={{ selected: chip.selected }}
         className={cx(
-          "min-h-8 flex-row items-center justify-center gap-1 px-3 active:opacity-80",
+          "min-h-8 flex-row items-center justify-center gap-1 px-3",
+          !MATERIAL && "active:opacity-80",
           CHIP_SHAPE,
           container,
         )}
