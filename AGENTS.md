@@ -183,16 +183,20 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   kit), `lib/` (clients, `preferences`, `share`, `download`, `use-infinite-list`, `use-pending`, `meta`),
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
   `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
-- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Search, Library, in that order (Search is a plain iOS tab, not
-  `role="search"`, which iOS 26 pins last; Android has none). Each is a route group with its own `Stack`
-  (`tabStackOptions`); a new tab needs a `NativeTabs.Trigger` with an `sf` and an `md` icon. New Playlist is a
-  row in Library, not a tab; `/create` links open `/create-playlist` (`+native-intent`).
+- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, then iOS's Search as the system search tab
+  (`role="search"`, last in JSX: iOS 26 draws it as a trailing glass button with the field at the bottom);
+  Android has no Search tab. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
+  `NativeTabs.Trigger` with an `sf` and an `md` icon. On iOS 26 the mini player is the bar's
+  `NativeTabs.BottomAccessory` (`AccessoryMiniPlayer`; `usePlacement()` `inline` drops Next) and the bar
+  minimizes on scroll down. New Playlist is the Library Playlists `SectionHeader`'s "New" action; `/create`
+  links open `/create-playlist` (`+native-intent`).
   Settings is not a tab: the root screens' `headerRight` is `TopLevelActions` (`navigation/top-level-actions`:
   Android's Search, Settings, the avatar or Sign In), which push onto the current tab. Languages is in Settings
   only, not the header. On iOS 26 `useTopLevelHeaderOptions(title)` puts the page title at the top left (a custom
-  header item, no large title) and Settings and Profile as separate native glass buttons at the right. Android's pushed Search
-  hides the app bar for its own M3 search bar (`features/search/search-header.android.tsx`, back inside the
-  pill; the native field sat after the toolbar's 72dp inset) and autofocuses it.
+  header item, no large title) and Settings and Profile as separate native glass buttons at the right. Android's
+  pushed Search hides the app bar for its own M3 search bar (`features/search/search-header.android.tsx`: a
+  visible Back in every state, clear while there is text; the native field sat after the toolbar's 72dp inset)
+  and autofocuses it. The auth stack's iOS root gets Close (`authHeaderOptions`); Android shows no bar title.
 - Routes are the web's paths (`@infinitunes/core/entity-route`): detail screens, `search` and the account
   screens (`settings`, `profile`, `password`, `delete-account`) live once in `(tabs)/(home,search,library,radio)/`
   (entities as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and `artist/[name]/[token]/{index,[tab]}`;
@@ -249,7 +253,9 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `POST_NOTIFICATIONS`. The channel is created before asking only because apps targeting API <= 32 need it first.
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
-  that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
+  that finds nothing returns `null` from `select`. Spread `useDetailScrollProps()` (`components/detail/detail-scroll.tsx`)
+  on every detail scroll view: on Android it swaps the app bar to `card` with the title once the header art
+  scrolls under it. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
   `eyebrow` (the kind and year, "Album · 2026"), `subtitle` (the credit), `meta` (counts, duration, plays),
   `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and `actions` (`CollectionMenu`: play next, queue,
   add all to a playlist, radio, download all), which lead the action row; Shuffle and Play close it as icon buttons.
@@ -266,9 +272,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   the current track; without `href`/`onPress` it is a labelled view whose picture alone dims); `SongRow` (`toSongRow`
   row or queue entry, `removal`, `leading="index"` for albums: `TrackList numbered`, which also shows the length;
   `DetailSkeleton numbered` matches) and `MediaRow` (`href` or
-  `onPress`) are built on it, `EntityListItem`s feed a screen's one `FlashList`. Cards: `MediaCard`/`Shelf`
-  (`toCardItem` items, `seeAllHref`, `onItemPress`, `variant="hero"` for home's carousel, the only card with
-  `CardPlayButton` and an `eyebrow(item)`), `QuickPickTile` for two-column tiles (`GRID_COLUMNS`), `GridCell` for each cell of a
+  `onPress`) are built on it, `EntityListItem`s feed a screen's one `FlashList`; on iOS a row that navigates
+  shows a disclosure chevron, and a paged list ends with `EndOfList` (`components/end-of-list.tsx`). Cards: `MediaCard`/`Shelf`
+  (`toCardItem` items, `seeAllHref`, `onItemPress`, `variant="hero"` for home's M3 hero carousel: one
+  `useHeroWidth()` card leaving a 56dp peek, snapping per card, the only card with `CardPlayButton` and an
+  `eyebrow(item)`), `QuickPickTile` for two-column tiles (`GRID_COLUMNS`), `GridCell` for each cell of a
   `CARD_COLUMNS` (three) card `FlashList` (`useGridCardWidth(CARD_COLUMNS)`). Press feedback that moves is
   `usePressScale` (`lib/use-press-scale`: a Reanimated sink-and-spring on an `Animated.View` around the art or tile). Filter chips are `ChipRow` (`tabs` when they switch the content below, as search's do). A card's long press and screen reader actions offer
   Play/Play Next/Add to Queue through `CardLink` (`card-menu.tsx`): iOS uses the link's own `Link.Menu`, Android
@@ -280,7 +288,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `PullToRefresh` (`components/ui/refresh-control.tsx`): it owns `refreshing` for its own pull, so never feed a
   query's `isRefetching` to a `RefreshControl` (a focus refetch would pin the spinner open), and it colours
   Android's spinner (`primary` on `card`). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
-  empty page always ends the list, whatever upstream's `last_page`/`total` say).
+  empty page always ends the list, whatever upstream's `last_page`/`total` say). Forms show a server refusal
+  as `FormError` and move focus to it with `useFocusOnRefusal`.
+- Player sharp edges: Now Playing's art is expo-image with a `CROSSFADE_MS` cross-dissolve, not `Artwork`
+  (its `recyclingKey` drops the old picture). expo-symbols has no replace transition and replays an
+  `animationSpec` on every prop update, so set one only briefly (`useGlyphBounce`). react-native-screens gives
+  Android form sheets 0 corners: the root layout sets `sheetCornerRadius` to `radii.xl` there.
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
   `user-data/playlists.ts` (create, rename, delete, add, remove, move; removals and moves take the server's
   copy from `useServerPlaylists`); failures roll back, signed out they `promptSignIn` (to `/login`).
@@ -291,7 +304,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   Persist client state with zustand `persist` + `persistedStorage` (SQLite kv-store, synchronous reads so
   stores hydrate before the first render), never secrets.
 - Native look per platform: no colours on `NativeTabs` or headers (system glass on iOS 26, Material You on
-  Android). Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
+  Android), except Android's detail app bar, which `useDetailScrollProps` tints to `card` on scroll. Platform differences go in `.ios.tsx`/`.tsx` pairs or `Platform.select`, never in screens. Style
   with semantic classes (`bg-card`, `text-muted-foreground`; iOS maps them to UIKit system colours, Android 12+
   to Material You roles at runtime: `DynamicColorRoot` sets them as NativeWind `vars()` on a root view in
   `providers/app-providers.tsx`; never css-interop internals), colour JS props from
@@ -303,14 +316,19 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - Android is Material 3 Expressive at YouTube Music density (spec and mockup: `docs/design/android-m3-expressive/`).
   Its tokens are the android branches in `theme/tokens.ts` (`radii` 4/8/12/16/28, `emphasizedWeights` behind
   `Text emphasized`, a no-op on iOS; `sizes.seam`) and the springs in `theme/motion.ts` (Compose's
-  `MotionScheme.expressive()`, `damping` as a coefficient). Android-only looks: `Button` (40dp + slop, corners morph
+  `MotionScheme.expressive()`, `damping` as a coefficient; iOS's `iosPressRelease` lives there too). Android-only
+  looks: `Button` and filled/tonal `IconButton` (40dp container + slop, 56dp `large`; corners morph full to `sm`
   while pressed), `ListRow`'s current track (tonal container, `Equalizer`), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp filter chips with a check),
   the dock's filled play circle and Now Playing's paused-square/playing-circle play button, Settings as a segmented
   list. One UI resolves `onSurfaceVariant` to `onSurface`; `withDynamicRoles` fades `muted-foreground` then (keep it).
-  The top app bar is `surface` and detail screens show no bar title on Android. Adding a `.android.tsx` beside
+  The top app bar is `surface`; a detail screen's bar shows its title only once the header art has scrolled
+  under it. The design details (type, shape, components) are the spec's, keep it current. Adding a `.android.tsx` beside
   an existing module needs its importers touched (or Metro restarted) before a running dev client picks it up.
 - Accessibility: every tappable control is at least `sizes.touch` (48; `IconButton`, `Button`, `MenuTrigger` for a
-  `NativeMenu`'s face, `DragHandle`, `FormLink` for a form's text link) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`, `TEXT_BUTTON_HIT_SLOP`); rows and
+  `NativeMenu`'s face, `DragHandle`, `FormLink` for a form's text link) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`,
+  `TEXT_BUTTON_HIT_SLOP`). Android drops touches outside an `overflow: hidden` view before its children, so slop
+  on a child of a clipped view never fires: put it on the outermost view (`Button`, `IconButton`). A native
+  menu hit-tests its child's bounds, so its trigger needs the full height, not slop (`OptionMenu`). Rows and
   fields use `min-h-*` so Dynamic Type grows them (cap text with `maxFontSizeMultiplier` only in fixed-height chrome, the
   mini player). An item without a screen is a labelled `View`, never a disabled `Pressable`. Custom pressables set role,
   label and state; a drag has `ReorderActions`, the scrubber `increment`/`decrement`. `announce()` (`lib/announce.ios.ts`)
@@ -359,7 +377,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   metadata only from the app target) and which raises the app target to iOS 17.0. They cannot be compiled on Linux:
   verify with `expo prebuild --platform ios --no-install` and the pbxproj, and say a change is unbuilt. Playlists reach
   them through RN `Settings` (`UserDefaults`, `user-data/assistant-shortcuts.ios.ts`).
-- No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`, or `bun run dev:native` for Metro plus the dev API; device builds `bun run mobile:android` / `mobile:ios`, guide in `docs/mobile-device-setup.md`.
+- No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`, or `bun run dev:native` for Metro plus the dev API (it also runs `adb reverse tcp:3000`, so `EXPO_PUBLIC_API_URL=http://127.0.0.1:3000` serves a USB Android device and the simulator); device builds `bun run mobile:android` / `mobile:ios`, guide in `docs/mobile-device-setup.md`.
 - Brand assets: the master vectors are `apps/mobile/assets/brand/{glyph,icon}.svg` (the ribbon-note, traced
   from `docs/assets/logo1500.png`); `bun run mobile:icons` (`scripts/generate-icons.ts`, sharp) renders every
   committed PNG in `assets/` (iOS light/dark/tinted, adaptive layers, splash, `notification-icon.png`). Edit the
