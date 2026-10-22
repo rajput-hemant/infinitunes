@@ -3,7 +3,7 @@ import { FlashList } from "@shopify/flash-list";
 import { Stack } from "expo-router";
 import { useState } from "react";
 import type { ReactElement } from "react";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 import ReorderableList from "react-native-reorderable-list";
 
 import type { ReorderActions } from "~/components/drag-handle";
@@ -211,7 +211,14 @@ export function SongCollectionSkeleton({
                   <SkeletonText variant="subhead" width={88} />
                 </View>
                 <View className="flex-1" />
-                <SkeletonBlock className="size-touch rounded-full" />
+                {/* Shuffle: Android's 40dp tonal container, iOS's 48pt button. */}
+                <SkeletonBlock
+                  className={
+                    Platform.OS === "android"
+                      ? "size-ctl rounded-full"
+                      : "size-touch rounded-full"
+                  }
+                />
                 <SkeletonBlock className="size-row rounded-full" />
               </View>
             </>

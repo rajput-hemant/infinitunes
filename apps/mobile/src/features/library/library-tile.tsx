@@ -42,7 +42,7 @@ export function LibraryTile({
           accessibilityRole="link"
           accessibilityLabel={[title, detail].filter(Boolean).join(", ")}
           className={cx(
-            "justify-between gap-3 rounded-lg p-4",
+            "flex-1 justify-between gap-3 rounded-lg p-4",
             MATERIAL ? "bg-card" : "bg-fill",
           )}
           style={{ minHeight: art.feature }}
@@ -60,11 +60,10 @@ export function LibraryTile({
             <Text variant="headline" emphasized numberOfLines={1}>
               {title}
             </Text>
-            {detail ? (
-              <Text variant="subhead" tone="muted" numberOfLines={1}>
-                {detail}
-              </Text>
-            ) : null}
+            {/* Always two lines, so both tiles match and nothing moves when a count lands. */}
+            <Text variant="subhead" tone="muted" numberOfLines={1}>
+              {detail ?? "\u00a0"}
+            </Text>
           </View>
         </Pressable>
       </Link>
