@@ -25,6 +25,8 @@ export const searchHistoryStore = createStore<
     }),
     {
       name: "recent-searches",
+      version: 1,
+      migrate: (saved) => saved as SearchHistory,
       storage: persistedStorage<SearchHistory>(),
       partialize: ({ queries }) => ({ queries }),
     },
