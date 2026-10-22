@@ -3,23 +3,46 @@ import { fireEvent, screen } from "@testing-library/react-native";
 import { preferencesStore } from "~/lib/preferences";
 import { renderScreen } from "~/test/render";
 
-import { languagesSummary, LanguagesScreen } from "./languages-screen";
+import { languagesSummary, LanguagesScreen, toggled } from "./languages-screen";
 
 const languages = () => preferencesStore.getState().languages;
+const row = (name: string) => screen.getByRole("checkbox", { name });
 
 beforeEach(() => preferencesStore.getState().setLanguages([]));
 
 describe("LanguagesScreen", () => {
-  it("adds and removes languages at once, kept in the catalog's order", async () => {
+  it("shows the defaults checked while nothing is chosen", async () => {
     await renderScreen(<LanguagesScreen />);
 
-    await fireEvent.press(screen.getByRole("checkbox", { name: "Tamil" }));
-    await fireEvent.press(screen.getByRole("checkbox", { name: "Hindi" }));
-    expect(languages()).toEqual(["hindi", "tamil"]);
-    expect(screen.getByRole("checkbox", { name: "Hindi" })).toBeChecked();
+    expect(row("Hindi")).toBeChecked();
+    expect(row("English")).toBeChecked();
+    expect(row("Tamil")).not.toBeChecked();
+  });
 
-    await fireEvent.press(screen.getByRole("checkbox", { name: "Hindi" }));
+  it("starts from the defaults, kept in the catalog's order", async () => {
+    await renderScreen(<LanguagesScreen />);
+
+    await fireEvent.press(row("Tamil"));
+    expect(languages()).toEqual(["hindi", "english", "tamil"]);
+
+    await fireEvent.press(row("Hindi"));
+    expect(languages()).toEqual(["english", "tamil"]);
+    expect(row("Hindi")).not.toBeChecked();
+  });
+
+  it("keeps the last checked language", async () => {
+    preferencesStore.getState().setLanguages(["tamil"]);
+    await renderScreen(<LanguagesScreen />);
+
+    await fireEvent.press(row("Tamil"));
     expect(languages()).toEqual(["tamil"]);
+    expect(row("Tamil")).toBeChecked();
+  });
+});
+
+describe("toggled", () => {
+  it("unchecking a default leaves the other", () => {
+    expect(toggled([], "english")).toEqual(["hindi"]);
   });
 });
 
