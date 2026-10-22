@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [master, migration/bun-monorepo]
+    branches: [master]
   pull_request:
   workflow_dispatch:
 

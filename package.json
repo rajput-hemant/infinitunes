@@ -89,7 +89,7 @@
       "oxfmt --write"
     ],
     "*.{ts,tsx,mdx}": [
-      "oxlint --no-error-on-unmatched-pattern"
+      "oxlint --deny-warnings --nextjs-plugin --no-error-on-unmatched-pattern"
     ]
   },
   "commitlint": {

@@ -1,7 +1,7 @@
 /**
- * Hostnames of the image CDN. Single source of truth for `next.config.ts`
- * `images.remotePatterns` and the server-side fetch allowlist in
- * `app/api/og/route.tsx` (an open `image` fetch is an SSRF vector).
+ * Hostnames of the image CDN (also CSP `img-src`) and the server-side fetch
+ * allowlist in `app/api/og/route.tsx` (an open `image` fetch is an SSRF
+ * vector). Images are unoptimized, so `next.config.ts` has no remotePatterns.
  */
 export const IMAGE_CDN_HOSTS = [
   "c.saavncdn.com",
