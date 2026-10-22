@@ -41,6 +41,8 @@ type PlayerState = {
    * nothing new loads, so the controller resumes the engine instead.
    */
   resumeRequest: number;
+  /** Bumped when Play lands on an entry whose source failed or was cleared: it loads again. */
+  retryRequest: number;
 };
 
 type PlayOptions = {
@@ -80,7 +82,10 @@ type PlayerActions = {
   updateQueue: (update: (queue: Queue[]) => Queue[]) => void;
 };
 
-type Persisted = Omit<PlayerState, "started" | "resumeRequest">;
+type Persisted = Omit<
+  PlayerState,
+  "started" | "resumeRequest" | "retryRequest"
+>;
 
 export type PlayerStore = PlayerState & PlayerActions;
 
@@ -92,6 +97,7 @@ const initialState: PlayerState = {
   repeat: "off",
   radio: null,
   resumeRequest: 0,
+  retryRequest: 0,
 };
 
 function playbackOrder(state: PlayerState) {

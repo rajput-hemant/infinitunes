@@ -24,6 +24,7 @@ import {
   configureAudioSession,
   isCurrentSource,
   loadTrack,
+  markSourceDead,
   markSourceEnded,
   nowPlayingMetadata,
   replaceSource,
@@ -59,6 +60,7 @@ export function PlaybackController() {
   const radio = usePlayer((state) => state.radio);
   const track = usePlayer(selectCurrentTrack);
   const resumeRequest = usePlayer((state) => state.resumeRequest);
+  const retryRequest = usePlayer((state) => state.retryRequest);
   const {
     advanceAfterEnd,
     skipToNext,
@@ -113,12 +115,25 @@ export function PlaybackController() {
     onProblem: (problem) => {
       cachedLoad.current = null;
       audioPlayer.pause();
-      if (problem !== "unplayable") replaceSource(null);
+      markSourceDead();
+      if (problem !== "unplayable") {
+        replaceSource(null);
+        // `replace(null)` emits no status: show the stopped engine now.
+        setStatus((prev) => ({
+          ...prev,
+          playing: false,
+          isBuffering: false,
+          duration: 0,
+          currentTime: 0,
+          bufferedTime: 0,
+        }));
+      }
       setSource(FRESH_SOURCE);
       showFailure(PLAYBACK_PROBLEM_MESSAGES[problem]);
     },
     loadError: source.error,
     isLooping: repeatOne,
+    retry: retryRequest,
     isReady: source.loaded,
     onUnplayable: skipUnplayable,
   });
