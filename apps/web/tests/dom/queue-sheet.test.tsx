@@ -10,6 +10,7 @@ import {
 
 import type { Queue as QueueItem } from "@infinitunes/types";
 import { SearchParamsContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
+import * as React from "react";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { AudioPlayerProvider } from "react-use-audio-player";
@@ -132,6 +133,42 @@ describe("queue pane", () => {
     );
 
     await act(async () => root.unmount());
+  });
+
+  it("returns focus to the queue toggle when the pane closes around it", async () => {
+    localStorage.setItem("queue", JSON.stringify([song("p"), song("a")]));
+    localStorage.setItem("current_song_index", "0");
+
+    function Harness() {
+      const [open, setOpen] = React.useState(true);
+      return (
+        <SearchParamsContext.Provider value={new URLSearchParams()}>
+          <AudioPlayerProvider>
+            <button type="button" aria-controls="player-queue">
+              Toggle
+            </button>
+            <Queue open={open} onOpenChange={setOpen} />
+          </AudioPlayerProvider>
+        </SearchParamsContext.Provider>
+      );
+    }
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () => root.render(<Harness />));
+
+    const close = document.querySelector<HTMLButtonElement>(
+      '[aria-label="Close queue"]',
+    );
+    close?.focus();
+    expect(document.activeElement).toBe(close ?? null);
+    await act(async () => close?.click());
+
+    expect(document.activeElement).toBe(
+      document.querySelector('button[aria-controls="player-queue"]'),
+    );
+    await act(async () => root.unmount());
+    container.remove();
   });
 
   it("gives queue artist links a 24px mobile touch target", async () => {
