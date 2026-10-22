@@ -30,7 +30,7 @@ function renderLibraryTab() {
   return renderStack({
     index: LibraryScreen,
     login: () => null,
-    "me/new-playlist": NewPlaylistScreen,
+    "create-playlist": NewPlaylistScreen,
     "me/edit-playlist/[id]": EditPlaylistScreen,
     "me/liked-songs": () => null,
     "me/playlist/[id]": () => null,
@@ -214,7 +214,7 @@ describe("creating a playlist", () => {
     await screen.findByText("Road Trip");
     await act(async () =>
       appRouter.push({
-        pathname: "/me/new-playlist",
+        pathname: "/create-playlist",
         params: { songs: "x1,x2", label: "2 songs" },
       }),
     );
@@ -242,7 +242,7 @@ describe("creating a playlist", () => {
     expect(
       screen.getByText("Name must be at least 3 characters long"),
     ).toBeOnTheScreen();
-    expect(router.getPathname()).toBe("/me/new-playlist");
+    expect(router.getPathname()).toBe("/create-playlist");
     expect(procedure("user.createNewPlaylist")).not.toHaveBeenCalled();
   });
 });

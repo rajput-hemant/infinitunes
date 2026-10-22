@@ -29,7 +29,7 @@ const renderEdit = (id: string) =>
   );
 
 const renderNew = () =>
-  open({ "me/new-playlist": NewPlaylistScreen }, "/me/new-playlist");
+  open({ "create-playlist": NewPlaylistScreen }, "/create-playlist");
 
 beforeEach(async () => {
   await act(async () => signInAs("alice"));

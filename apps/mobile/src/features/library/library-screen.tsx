@@ -82,7 +82,7 @@ function Library() {
         title="Playlists"
         action={{
           label: "New",
-          href: "/me/new-playlist",
+          href: "/create-playlist",
           accessibilityLabel: "New Playlist",
         }}
       />
