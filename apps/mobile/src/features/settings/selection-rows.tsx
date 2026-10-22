@@ -1,3 +1,4 @@
+// The iOS settings list's rows (`settings-screen.tsx`); Android draws its own in `settings-screen.android.tsx`.
 import { Picker, Row, Spacer, Switch, Text } from "@expo/ui";
 import type { PickerItemValue } from "@expo/ui";
 

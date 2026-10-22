@@ -1,4 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { TextInput } from "react-native";
 
 import { renderScreen } from "~/test/render";
 import { authClient } from "~/test/session-mock";
@@ -7,6 +8,11 @@ import { procedure, trpcError } from "~/test/trpc-mock";
 import { ProfileForm } from "./profile-form";
 
 const user = { name: "Listener", email: "listener@example.com" };
+/** `focus()` on a text input is a shared mock under Jest; its `this` says which field. */
+const focus = TextInput.prototype.focus as unknown as jest.Mock<void, []>;
+const focusedField = () =>
+  (focus.mock.contexts.at(-1) as { props: { accessibilityLabel?: string } })
+    ?.props.accessibilityLabel;
 const save = () => screen.getByRole("button", { name: "Save profile" });
 
 describe("ProfileForm", () => {
@@ -86,5 +92,36 @@ describe("ProfileForm", () => {
     await fireEvent.press(save());
 
     expect(authClient.$store.notify).not.toHaveBeenCalled();
+  });
+
+  it("puts the cursor back in the email when a name-only save is refused", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    procedure("user.updateUser").mockRejectedValueOnce(
+      trpcError("INTERNAL_SERVER_ERROR", "Try again"),
+    );
+    await renderScreen(<ProfileForm user={user} />);
+    await fireEvent.changeText(screen.getByLabelText("Name"), "DJ Listener");
+    focus.mockClear();
+
+    await fireEvent.press(save());
+
+    expect(focusedField()).toBe("Email");
+  });
+
+  it("puts the cursor in the current password when a new email is refused", async () => {
+    jest.spyOn(console, "error").mockImplementation(() => {});
+    procedure("user.updateUser").mockRejectedValueOnce(
+      trpcError("UNAUTHORIZED", "Wrong password"),
+    );
+    await renderScreen(<ProfileForm user={user} />);
+    await fireEvent.changeText(
+      screen.getByLabelText("Email"),
+      "new@example.com",
+    );
+    focus.mockClear();
+
+    await fireEvent.press(save());
+
+    expect(focusedField()).toBe("Current password");
   });
 });

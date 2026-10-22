@@ -1,0 +1,108 @@
+import { toSongRow } from "@infinitunes/types";
+import type { SongRowItem } from "@infinitunes/types";
+import { fireEvent, screen } from "@testing-library/react-native";
+import { Text, View } from "react-native";
+
+import { DragHandle } from "~/components/drag-handle";
+import { chooseMenuAction, renderStack } from "~/test/render";
+import { songNamed } from "~/test/user-library";
+
+import { SongCollection } from "./song-collection";
+
+const songs = [
+  toSongRow(songNamed("a", "Opening Number")),
+  toSongRow(songNamed("b", "Middle Song")),
+  toSongRow(songNamed("c", "Closing Time")),
+];
+
+function renderCollection(onMove?: jest.Mock) {
+  const Screen = () => (
+    <SongCollection
+      songs={songs}
+      missing={0}
+      onRefresh={async () => {}}
+      recentLabel="Playlist order"
+      onMove={onMove}
+      renderRow={(song: SongRowItem, _play, reorder) => (
+        <View>
+          <Text>{song.name}</Text>
+          {reorder ? <DragHandle name={song.name} actions={reorder} /> : null}
+        </View>
+      )}
+    />
+  );
+  return renderStack({ index: Screen });
+}
+
+/** What a screen reader offers on the handle of `title`'s row. */
+function actionsOf(title: string) {
+  return (
+    screen
+      .getByLabelText(`Reorder ${title}`)
+      .props.accessibilityActions?.map(
+        (action: { name: string }) => action.name,
+      ) ?? []
+  );
+}
+
+function perform(title: string, actionName: "moveUp" | "moveDown") {
+  return fireEvent(
+    screen.getByLabelText(`Reorder ${title}`),
+    "accessibilityAction",
+    { nativeEvent: { actionName } },
+  );
+}
+
+describe("SongCollection reorder actions", () => {
+  it("offers only the directions a row can go in", async () => {
+    await renderCollection(jest.fn());
+
+    expect(actionsOf("Opening Number")).toEqual(["moveDown"]);
+    expect(actionsOf("Middle Song")).toEqual(["moveUp", "moveDown"]);
+    expect(actionsOf("Closing Time")).toEqual(["moveUp"]);
+  });
+
+  it("moves a row up before the song it passes", async () => {
+    const onMove = jest.fn();
+    await renderCollection(onMove);
+
+    await perform("Closing Time", "moveUp");
+
+    expect(onMove).toHaveBeenCalledWith(songs[2], songs[1]);
+  });
+
+  it("moves a row down before the song after the next one", async () => {
+    const onMove = jest.fn();
+    await renderCollection(onMove);
+
+    await perform("Opening Number", "moveDown");
+
+    // [b, a, c]: `a` now precedes `c`.
+    expect(onMove).toHaveBeenCalledWith(songs[0], songs[2]);
+  });
+
+  it("moves the last-but-one row to the end with no song after it", async () => {
+    const onMove = jest.fn();
+    await renderCollection(onMove);
+
+    await perform("Middle Song", "moveDown");
+
+    expect(onMove).toHaveBeenCalledWith(songs[1], undefined);
+  });
+
+  it("offers no handle when the list has no order of its own", async () => {
+    await renderCollection();
+
+    expect(screen.getByText("Middle Song")).toBeOnTheScreen();
+    expect(screen.queryByLabelText(/^Reorder /)).toBeNull();
+  });
+
+  it("offers no handle once the list is sorted, as that is not its own order", async () => {
+    await renderCollection(jest.fn());
+    expect(screen.getByLabelText("Reorder Middle Song")).toBeOnTheScreen();
+
+    await chooseMenuAction("Sort songs, Playlist order", "title");
+
+    expect(screen.queryByLabelText(/^Reorder /)).toBeNull();
+  });
+});

@@ -158,15 +158,15 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [x] **M-48** P3 PLAUSIBLE `components/detail/detail-frame.tsx:56-59` - children memo is ineffective [perf#18]
   - Fix: drop the memo or move secondary queries into the page. Executor: haiku. Flags: none. Done: memo dropped.
 
-## Batch M13 (sonnet): settings and forms - `features/settings/{settings-screen,settings-screen.android,end-session,profile-form,tap-rows,row-icon}.tsx`, tests
+## Batch M13 (sonnet): settings and forms - `features/settings/{settings-screen,settings-screen.android,end-session,profile-form,tap-rows,row-icon}.tsx`, tests _(branch `fix/m13-settings-forms`)_
 
-- [ ] **M-49** P2 CONFIRMED `settings-screen.tsx:86`, `settings-screen.android.tsx:270`, `end-session.ts:30-34` - a failed sign-out is swallowed (no snackbar) [screens P2-1]
+- [x] **M-49** P2 CONFIRMED `settings-screen.tsx:86`, `settings-screen.android.tsx:270`, `end-session.ts:30-34` - a failed sign-out is swallowed (no snackbar) [screens P2-1]
   - Fix: show `failure.message` via `showFailure` once inside `signOut` (let `forgetDeletedAccount` opt out); assert it in `settings-screen.test.tsx:104`. Executor: sonnet. Flags: none.
-- [ ] **M-50** P2 CONFIRMED `features/settings/profile-form.tsx:5-17` - no `useFocusOnRefusal` on the profile form, unlike all sibling forms [screens P2-3]
+- [x] **M-50** P2 CONFIRMED `features/settings/profile-form.tsx:5-17` - no `useFocusOnRefusal` on the profile form, unlike all sibling forms [screens P2-3]
   - Fix: `useFocusOnRefusal(emailChanged ? passwordInput : emailInput, serverError, pending)` plus a test mirroring `forms-pending.test.tsx`. Executor: haiku. Flags: none.
-- [ ] **M-51** P3 CONFIRMED `settings-screen.tsx` vs `settings-screen.android.tsx`, `tap-rows.tsx`, `row-icon.tsx` - the whole settings model (sections, labels, handlers, URLs) is duplicated and already drifts (Delete account chevron); non-iOS `tap-rows`/`row-icon` stubs exist only for `tsc` [screens P3-10]
+- [x] **M-51** P3 CONFIRMED `settings-screen.tsx` vs `settings-screen.android.tsx`, `tap-rows.tsx`, `row-icon.tsx` - the whole settings model (sections, labels, handlers, URLs) is duplicated and already drifts (Delete account chevron); non-iOS `tap-rows`/`row-icon` stubs exist only for `tsc` [screens P3-10]
   - Fix: one shared settings list with per-platform row renderers; make the iOS files the base and delete the stubs, or comment them. Executor: sonnet. Flags: none.
-- [ ] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
+- [x] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
   - Executor: haiku (after the fixes land). Flags: none.
 
 ## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts` _(after S1)_

@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { useRef, useState } from "react";
 
 import { EmailField } from "~/components/form/email-field";
-import { FormError } from "~/components/form/form-error";
+import { FormError, useFocusOnRefusal } from "~/components/form/form-error";
 import { FormField } from "~/components/form/form-field";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormScreen } from "~/components/form/form-screen";
@@ -36,6 +36,11 @@ export function ProfileForm({ user }: ProfileFormProps) {
   const { pending, run } = usePending();
   const [serverError, setServerError] = useState<string>();
   const emailChanged = values.email.toLowerCase() !== user.email.toLowerCase();
+  useFocusOnRefusal(
+    emailChanged ? passwordInput : emailInput,
+    serverError,
+    pending,
+  );
 
   function submit() {
     const profile = validate();
