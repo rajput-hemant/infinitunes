@@ -121,6 +121,7 @@ describe("spacing scale", () => {
         "ctl-lg",
         "touch",
         "row",
+        "row-2",
         "page",
         "dock",
         "seam",

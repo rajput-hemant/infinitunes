@@ -26,7 +26,7 @@ import {
   useAppearanceMode,
   useCornerStyle,
 } from "~/theme/appearance";
-import { accentColors, sizes, space } from "~/theme/tokens";
+import { accentColors, sizes } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
 import { signOut } from "./end-session";
@@ -67,9 +67,6 @@ function Leading({ icon, color }: { icon: SymbolName; color?: string }) {
   );
 }
 
-/** Material's list item heights: 56dp with one line, 72dp with supporting text. */
-const TWO_LINE_HEIGHT = sizes.row + space.lg;
-
 function RowFace({
   icon,
   iconColor,
@@ -96,7 +93,7 @@ function RowFace({
       className="min-h-row flex-row items-center gap-4 rounded-xs bg-card px-4 py-2"
       style={[
         width ? { width } : null,
-        detail || value ? { minHeight: TWO_LINE_HEIGHT } : null,
+        detail || value ? { minHeight: sizes["row-2"] } : null,
       ]}
     >
       <Leading
