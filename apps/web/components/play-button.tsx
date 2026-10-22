@@ -4,7 +4,6 @@ import { shuffled } from "@infinitunes/core/playback-order";
 import { findQueueIndex } from "@infinitunes/core/queue-position";
 import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
 import { toQueue } from "@infinitunes/types";
-import { useSearchParams } from "next/navigation";
 import { useState, type HTMLAttributes } from "react";
 import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
@@ -28,8 +27,15 @@ type PlayButtonProps = HTMLAttributes<HTMLButtonElement> & {
   shuffle?: boolean;
 };
 
-function parseSort(value: string | null): Sort {
-  return value === "asc" ? "asc" : "desc";
+/**
+ * Read at click time, not with `useSearchParams()`: that hook suspends while a
+ * route is prerendered, and every play control (hero, cards, rows) would push
+ * its page out of the static shell for a `sort` only show/episode pages read.
+ */
+function currentSort(): Sort {
+  return new URLSearchParams(window.location.search).get("sort") === "asc"
+    ? "asc"
+    : "desc";
 }
 
 export function PlayButton(props: PlayButtonProps) {
@@ -43,8 +49,6 @@ export function PlayButton(props: PlayButtonProps) {
     ...restProps
   } = props;
 
-  const searchParams = useSearchParams();
-
   const [initialQueue, setQueue] = useQueue();
   const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
   const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
@@ -53,9 +57,8 @@ export function PlayButton(props: PlayButtonProps) {
 
   const [pending, setPending] = useState(false);
 
-  const sort = parseSort(searchParams.get("sort"));
-
   async function playHandler() {
+    const sort = currentSort();
     const songIndex = shuffle
       ? -1
       : findQueueIndex(initialQueue, { token, queueItemId });
