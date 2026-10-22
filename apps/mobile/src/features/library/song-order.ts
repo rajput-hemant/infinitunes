@@ -38,7 +38,7 @@ export function orderSongs(
   const shown = folded
     ? songs.filter((song) => matches(song, folded))
     : [...songs];
-  if (sort === "title") return [...shown].sort(byTitle);
-  if (sort === "artist") return [...shown].sort(byArtist);
+  if (sort === "title") return shown.sort(byTitle);
+  if (sort === "artist") return shown.sort(byArtist);
   return shown;
 }
