@@ -19,6 +19,10 @@ mock.module("~/lib/trpc/vanilla", () => ({
   trpc: { album: { details: { query: () => albumResult() } } },
 }));
 
+mock.module("react-use-audio-player", () => ({
+  useAudioPlayerContext: () => ({ isPlaying: false, play() {} }),
+}));
+
 const { PlayButton } = await import("../../components/play-button");
 const { useQueue } = await import("../../hooks/use-store");
 

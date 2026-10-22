@@ -6,6 +6,7 @@ import type { Episode, Song, Sort, MediaType } from "@infinitunes/types";
 import { toQueue } from "@infinitunes/types";
 import { useSearchParams } from "next/navigation";
 import { useState, type HTMLAttributes } from "react";
+import { useAudioPlayerContext } from "react-use-audio-player";
 import { toast } from "sonner";
 
 import {
@@ -45,9 +46,10 @@ export function PlayButton(props: PlayButtonProps) {
   const searchParams = useSearchParams();
 
   const [initialQueue, setQueue] = useQueue();
-  const [, setIsPlayerInit] = useIsPlayerInit();
-  const [, setCurrentIndex] = useCurrentSongIndex();
+  const [isPlayerInit, setIsPlayerInit] = useIsPlayerInit();
+  const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
   const [, setActiveRadio] = useActiveRadioSession();
+  const { isPlaying, play } = useAudioPlayerContext();
 
   const [pending, setPending] = useState(false);
 
@@ -60,6 +62,8 @@ export function PlayButton(props: PlayButtonProps) {
 
     if (songIndex !== -1) {
       setCurrentIndex(songIndex);
+      setIsPlayerInit(true);
+      if (isPlayerInit && songIndex === currentIndex && !isPlaying) play();
       return;
     } else {
       let queue: (Song | Episode)[] = [];

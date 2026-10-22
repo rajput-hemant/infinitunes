@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { useDownloadSongs } from "~/components/download-button";
 import { getItemName } from "~/components/song-list/item-name";
 import {
+  useActiveRadioSession,
   useCurrentSongIndex,
   useIsPlayerInit,
   useQueue,
@@ -88,6 +89,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [initialQueue, setQueue] = useQueue();
   const [, setCurrentIndex] = useCurrentSongIndex();
+  const [, setActiveRadio] = useActiveRadioSession();
 
   const { isFavorite, like } = useTileFavorite({ item, user, favorites });
   const playRadio = useTileRadio(item);
@@ -101,6 +103,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     if (songIndex !== -1) {
       setCurrentIndex(songIndex);
     } else {
+      setActiveRadio(null);
       setQueue([toQueueEntry(item)]);
       setCurrentIndex(0);
     }
