@@ -38,6 +38,12 @@ function searchBar(): SearchBarOptions {
   return bar;
 }
 
+const mockFocus = { focused: true };
+jest.mock("expo-router", () => ({
+  ...jest.requireActual("expo-router"),
+  useIsFocused: () => mockFocus.focused,
+}));
+
 const Search = SearchScreen;
 
 const type = (text: string) =>
@@ -51,6 +57,7 @@ const debounce = () =>
 
 beforeEach(() => {
   jest.useFakeTimers();
+  mockFocus.focused = true;
   searchHistoryStore.setState({ queries: [] });
   procedure("search.top").mockResolvedValue(rawTopSearches);
   procedure("search.all").mockResolvedValue(rawAllSearch);
@@ -73,6 +80,14 @@ describe("SearchScreen", () => {
 
     expect(procedure("search.all")).toHaveBeenCalledWith({ q: "fa9la" });
     expect(await screen.findByText("Top Result")).toBeOnTheScreen();
+  });
+
+  it("does not fetch top searches until its tab is shown", async () => {
+    mockFocus.focused = false;
+    await renderStack({ index: Search });
+    await debounce();
+
+    expect(procedure("search.top")).not.toHaveBeenCalled();
   });
 
   it("shows top searches until something is typed", async () => {

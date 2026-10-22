@@ -1,5 +1,5 @@
 import { toCardItem } from "@infinitunes/types";
-import { Stack } from "expo-router";
+import { Stack, useIsFocused } from "expo-router";
 
 import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
@@ -10,7 +10,11 @@ import { useInfiniteList } from "~/lib/use-infinite-list";
 
 /** Featured radio stations with endless paging; upstream ends a list with a short page. */
 export function FeaturedStationsScreen() {
+  // Every tab mounts at cold start: fetch when the tab is first shown, so
+  // Home's feed gets the connection first.
+  const focused = useIsFocused();
   const stations = useInfiniteList({
+    enabled: focused,
     queryKey: trpc.get.featuredStations.pathKey(),
     fetchPage: (page) =>
       trpcClient.get.featuredStations.query({ page, n: CATALOG_PAGE_SIZE }),

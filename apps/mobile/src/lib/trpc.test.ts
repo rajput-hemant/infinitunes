@@ -53,3 +53,33 @@ it("splits large native query batches into URLs at most 2083 characters long", a
     });
   }
 });
+
+it("sends the home feed on its own request so it never waits for a slower query", async () => {
+  signInAs("alice");
+  const requests: string[] = [];
+  jest.spyOn(globalThis, "fetch").mockImplementation(async (input) => {
+    const url = String(input);
+    requests.push(url);
+    const { pathname, searchParams } = new URL(url);
+    const count = pathname.split("/").at(-1)!.split(",").length;
+    const result = { result: { data: { json: {} } } };
+    return new Response(
+      JSON.stringify(
+        searchParams.has("batch")
+          ? Array.from({ length: count }, () => result)
+          : result,
+      ),
+      { headers: { "content-type": "application/json" } },
+    );
+  });
+
+  await Promise.all([
+    trpcClient.home.home.query({}),
+    trpcClient.search.top.query(),
+    trpcClient.get.featuredStations.query({ page: 1, n: 20 }),
+  ]);
+
+  const paths = requests.map((url) => new URL(url).pathname.split("/").at(-1));
+  expect(paths).toContain("home.home");
+  expect(paths.filter((path) => path?.includes("home.home"))).toHaveLength(1);
+});
