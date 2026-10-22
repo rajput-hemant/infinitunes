@@ -1,6 +1,7 @@
 import { authClient } from "~/lib/auth-client";
 import { authFailure } from "~/lib/auth-failure";
 import type { AuthFailure } from "~/lib/auth-failure";
+import { showFailure } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
 import { trpc } from "~/lib/trpc";
 import { playerStore } from "~/playback/player-store";
@@ -26,10 +27,19 @@ export function forgetUserData() {
   queryClient.removeQueries({ queryKey: LIBRARY_QUERY_KEY });
 }
 
-/** Signs out on the server and from secure storage, then forgets the account's data. */
-export async function signOut(): Promise<AuthFailure | undefined> {
+/**
+ * Signs out on the server and from secure storage, then forgets the account's data.
+ * A failure is shown as a snackbar unless the caller reports it itself (`report: false`).
+ */
+export async function signOut({ report = true } = {}): Promise<
+  AuthFailure | undefined
+> {
   const failure = await authFailure(() => authClient.signOut());
-  if (!failure) forgetUserData();
+  if (failure) {
+    if (report) showFailure(failure.message);
+  } else {
+    forgetUserData();
+  }
   return failure;
 }
 
@@ -42,7 +52,7 @@ export async function signOut(): Promise<AuthFailure | undefined> {
  */
 export async function forgetDeletedAccount(): Promise<boolean> {
   forgetUserData();
-  if (!(await signOut())) return true;
+  if (!(await signOut({ report: false }))) return true;
   // Better Auth's expo client clears the stored cookie before it sends
   // /sign-out, so a failed request has usually signed out locally anyway.
   if (!(await authClient.getCookie())) return true;
