@@ -5,7 +5,6 @@ import {
   PLAYBACK_PROBLEM_MESSAGES,
   type LoadTrack,
 } from "@infinitunes/core/react/use-track-playback";
-import { useAudioPlayerStatus } from "expo-audio";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { showFailure } from "~/lib/failure";
@@ -23,9 +22,11 @@ import { lyricsQueryOptions } from "~/lib/use-lyrics";
 import {
   audioPlayer,
   configureAudioSession,
+  isCurrentSource,
   loadTrack,
   markSourceEnded,
   nowPlayingMetadata,
+  replaceSource,
 } from "./audio-engine";
 import { capturePlaybackRequest } from "./playback-request";
 import { playbackPosition, playbackStatusStore } from "./playback-status";
@@ -66,7 +67,7 @@ export function PlaybackController() {
     updateQueue,
   } = playerStore.getState();
   const streamQuality = usePreferences((state) => state.streamQuality);
-  const status = useAudioPlayerStatus(audioPlayer);
+  const [status, setStatus] = useState(audioPlayer.currentStatus);
   const lockScreenActive = useRef(false);
   // The current source's outcome, kept per load. The status hook cannot
   // carry it: the engine reports `error` on one event only (the next status
@@ -110,7 +111,7 @@ export function PlaybackController() {
     onProblem: (problem) => {
       cachedLoad.current = null;
       audioPlayer.pause();
-      if (problem !== "unplayable") audioPlayer.replace(null);
+      if (problem !== "unplayable") replaceSource(null);
       setSource(FRESH_SOURCE);
       showFailure(PLAYBACK_PROBLEM_MESSAGES[problem]);
     },
@@ -179,6 +180,8 @@ export function PlaybackController() {
     const subscription = audioPlayer.addListener(
       "playbackStatusUpdate",
       (update) => {
+        if (!isCurrentSource(update)) return;
+        setStatus(update);
         const current = selectCurrentTrack(playerStore.getState());
         if (
           current &&
@@ -237,11 +240,11 @@ export function PlaybackController() {
   // Lock screen, notification, headset and Bluetooth next/previous: the engine
   // holds one source (patches/expo-audio), so it only reports the press.
   useEffect(() => {
-    const subscription = audioPlayer.addListener(
-      "remoteCommand",
-      ({ command }) =>
-        command === "nextTrack" ? skipToNext() : skipToPrevious(),
-    );
+    const subscription = audioPlayer.addListener("remoteCommand", (event) => {
+      if (!isCurrentSource(event)) return;
+      if (event.command === "nextTrack") skipToNext();
+      else skipToPrevious();
+    });
     return () => subscription.remove();
   }, [skipToNext, skipToPrevious]);
 

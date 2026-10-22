@@ -53,6 +53,28 @@ beforeEach(() => {
 afterEach(() => queryClient.clear());
 
 describe("PlaybackController", () => {
+  it("rejects an earlier load of the same URL and events preceding a source clear", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    const oldError = player.queueStatus({ error: "First load failed" });
+    await act(async () => playerStore.getState().skipToNext());
+    await act(async () => playerStore.getState().skipToPrevious());
+    const loads = [...player.loads];
+    await act(async () => oldError());
+    expect(player.loads).toEqual(loads);
+
+    const oldFinish = player.queueStatus({ didJustFinish: true });
+    await act(async () =>
+      playerStore
+        .getState()
+        .playTracks([{ ...rows[1]!, download_url: "" }, rows[0]!]),
+    );
+    await act(async () => oldFinish());
+    expect(playerStore.getState().currentIndex).toBe(0);
+    expect(player.loads.at(-1)).toBe("");
+    expect(player.playing).toBe(false);
+  });
+
   it.each(["finish", "error", "loaded", "nextTrack", "previousTrack"] as const)(
     "ignores a delayed %s event from the replaced source",
     async (event) => {

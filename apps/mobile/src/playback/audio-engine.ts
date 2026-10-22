@@ -34,6 +34,17 @@ export function configureAudioSession() {
  * the reported duration, so comparing the two is not enough.
  */
 let sourceEnded = false;
+let sourceGeneration = 0;
+
+/** Native events retain the generation at emission, even when JS receives them after replace. */
+export function isCurrentSource(event: { sourceGeneration?: number }) {
+  return event.sourceGeneration === sourceGeneration;
+}
+
+export function replaceSource(src: string | null) {
+  sourceGeneration += 1;
+  audioPlayer.replace(src === null ? null : { uri: src });
+}
 
 export function markSourceEnded(ended: boolean) {
   sourceEnded = ended;
@@ -50,7 +61,7 @@ export function hasSourceEnded() {
 /** Replaces the source and starts it (`useTrackPlayback`'s engine hook). */
 export const loadTrack: LoadTrack = (src, { loop }) => {
   sourceEnded = false;
-  audioPlayer.replace({ uri: src });
+  replaceSource(src);
   audioPlayer.loop = loop;
   audioPlayer.play();
 };
