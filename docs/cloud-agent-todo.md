@@ -86,26 +86,34 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` (branch `worktree-agent-a4bc026a952a4285b`)
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
-- [ ] **M-22** **[device sign-off later]** P1 PLAUSIBLE `AndroidManifest.xml:17`, `app.config.ts` - predictive back disabled (`enableOnBackInvokedCallback=false`) [design P1-11]
+- [x] **M-22** **[device sign-off later]** P1 PLAUSIBLE `AndroidManifest.xml:17`, `app.config.ts` - predictive back disabled (`enableOnBackInvokedCallback=false`) [design P1-11]
   - Fix: `android.predictiveBackGestureEnabled: true`, prebuild, verify the player modal, formSheets and search Back. Executor: sonnet. Flags: needs native rebuild, needs device check.
-- [ ] **M-23** **[device sign-off later]** P2 PLAUSIBLE `navigation/tab-stack-options.ts` - root tab app bars (Home, Radio, Library, Browse, Charts) never tint on scroll [design P2-13]
+  - Done: set `android.predictiveBackGestureEnabled: true`; owner prebuilds and checks the player modal, formSheets and search Back.
+- [x] **M-23** **[device sign-off later]** P2 PLAUSIBLE `navigation/tab-stack-options.ts` - root tab app bars (Home, Radio, Library, Browse, Charts) never tint on scroll [design P2-13]
   - Fix: `useScrolledBar()` hook lifted from `DetailFrame`, `card` once offset > 0. Executor: sonnet. Flags: needs device check.
-- [ ] **M-24** **[device sign-off later]** P2 PLAUSIBLE `features/settings/languages-screen.tsx:58`, `features/player/queue-list.tsx:153`, create-playlist form - Android form sheets sit under the 3-button nav bar [design P2-14]
+  - Done: `navigation/use-scrolled-bar.ts` (`useScrolledBar`) tints the bar `card` once offset > 0; wired into `ScreenScrollView` (a screen's own `onScroll`, e.g. detail, takes over). FlashList root screens must spread it themselves: not done here, their files belong to other batches.
+- [x] **M-24** **[device sign-off later]** P2 PLAUSIBLE `features/settings/languages-screen.tsx:58`, `features/player/queue-list.tsx:153`, create-playlist form - Android form sheets sit under the 3-button nav bar [design P2-14]
   - Fix: Android `paddingBottom: insets.bottom + space.lg`. Executor: sonnet. Flags: needs device check.
-- [ ] **M-25** P3 PLAUSIBLE `components/segmented-tabs.android.tsx:107` - button-group colours snap [design P3-16]
+  - Done: `navigation/sheet-inset.ts` (`useSheetBottomInset`, Android `insets.bottom + space.lg`) in languages, queue and the create-playlist route.
+- [x] **M-25** P3 PLAUSIBLE `components/segmented-tabs.android.tsx:107` - button-group colours snap [design P3-16]
   - Fix: `interpolateColor` on `springs.effectsDefault` (this makes `effectsDefault` live; see M-69). Executor: sonnet. Flags: none.
-- [ ] **M-26** P3 PLAUSIBLE `components/chip-row.tsx:168` - chips scale on Android [design P3-17]
+  - Done: fill follows `springs.effectsDefault` via `interpolateColor`; the label colour still switches at once (Text takes classes).
+- [x] **M-26** P3 PLAUSIBLE `components/chip-row.tsx:168` - chips scale on Android [design P3-17]
   - Fix: ripple only, no `usePressScale` on Android. Executor: haiku. Flags: none.
-- [ ] **M-27** **[device sign-off later]** P3 CONFIRMED `components/list-row.tsx:174,267-275` - current-track tonal container toggles without a transition, and trailing controls jump 4dp when a row becomes current [design P3-18, comp P3-1]
+  - Done: Android chips use a ripple, no press scale or opacity (no test: `MATERIAL` is a module constant).
+- [x] **M-27** **[device sign-off later]** P3 CONFIRMED `components/list-row.tsx:174,267-275` - current-track tonal container toggles without a transition, and trailing controls jump 4dp when a row becomes current [design P3-18, comp P3-1]
   - Fix: animate bg/margin with the effects/spatial springs (reduce-motion gated); give the selected container `paddingEnd` of `(controls ? space.xs : space.lg) - inset` or inset the end by `space.xs`. Executor: sonnet. Flags: needs device check.
-- [ ] **M-28** P3 CONFIRMED `list-row.tsx:36-37,68-77` - `trailing: ReactNode | { chevron: true }` sentinel union [comp P3-11]
+  - Done: tonal container animates (spatial spring for margins/padding, effects spring for the fill, reduce motion via ReduceMotion.System); the end inset is `space.xs` beside controls, so they no longer jump 4dp.
+- [x] **M-28** P3 CONFIRMED `list-row.tsx:36-37,68-77` - `trailing: ReactNode | { chevron: true }` sentinel union [comp P3-11]
   - Fix: a plain `chevron?: boolean` prop (call site `entity-list.tsx:59`). Executor: haiku. Flags: none.
-- [ ] **M-29** **[device sign-off later]** P3 PLAUSIBLE `theme/android-colors.android.ts:11-33`, `dynamic-color-root.android.tsx:18-21` - Material You palette cache never invalidates after a wallpaper change [comp P3-14]
+  - Done: `chevron?: boolean`; call sites updated (entity-list, song-credits, library-screen, episode-content).
+- [x] **M-29** **[device sign-off later]** P3 PLAUSIBLE `theme/android-colors.android.ts:11-33`, `dynamic-color-root.android.tsx:18-21` - Material You palette cache never invalidates after a wallpaper change [comp P3-14]
   - Fix: clear on `AppState` `active` or key on the resolved `primary`. Executor: sonnet. Flags: needs device check.
+  - Done: `refreshDynamicPalettes()` on `AppState` active, `DynamicColorRoot` re-reads. Components using `usePalette()` pick the fresh palette on their next render.
 
 ## Batch M8 (sonnet): iOS polish and shared control files - `components/ui/{text,icon-button,button}.tsx`, `components/{card-menu,card-play-button,drag-handle}.tsx`, `components/detail/{detail-scroll,detail-header-options}.tsx`, `features/player/{transport-controls,mini-player}.tsx`, `features/library/swipeable-row.tsx`
 
@@ -137,7 +145,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -374,7 +382,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
