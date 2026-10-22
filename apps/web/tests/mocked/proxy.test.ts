@@ -297,13 +297,13 @@ describe("proxy /api/trpc origin check", () => {
     const { config } = await import("../../proxy");
     const { unstable_doesMiddlewareMatch } =
       await import("next/experimental/testing/server");
-    const url =
+    const batchUrl =
       "http://localhost:3000/api/trpc/song.syncedLyrics,missing.json?batch=1";
-    expect(unstable_doesMiddlewareMatch({ config, url })).toBe(true);
+    expect(unstable_doesMiddlewareMatch({ config, url: batchUrl })).toBe(true);
     expect(
       (
         await proxy(
-          createNextRequest(url, "GET", {
+          createNextRequest(batchUrl, "GET", {
             origin: "https://evil.example",
           }),
         )
@@ -311,7 +311,7 @@ describe("proxy /api/trpc origin check", () => {
     ).toBe(403);
     limitSuccess = false;
     try {
-      expect((await proxy(createNextRequest(url))).status).toBe(429);
+      expect((await proxy(createNextRequest(batchUrl))).status).toBe(429);
     } finally {
       limitSuccess = true;
     }

@@ -3,7 +3,7 @@ import { afterEach, expect, it, mock } from "bun:test";
 import type { ActiveRadioSession, Queue } from "@infinitunes/types";
 import { toQueue } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 const play = mock(() => {});
@@ -84,12 +84,14 @@ async function mount(
     const [init, setInit] = useIsPlayerInit();
     const [active, setActive] = useActiveRadioSession();
     Object.assign(snapshot, { queue, index, init, radio: active });
-    seed = () => {
-      setQueue(initial.queue);
-      setIndex(initial.index);
-      setInit(initial.init);
-      setActive(radio);
-    };
+    useEffect(() => {
+      seed = () => {
+        setQueue(initial.queue);
+        setIndex(initial.index);
+        setInit(initial.init);
+        setActive(radio);
+      };
+    });
     return null;
   }
   const host = document.createElement("div");
