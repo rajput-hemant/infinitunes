@@ -20,6 +20,9 @@ export function ResultRow({ item, onPress }: ResultRowProps) {
       image={item.image}
       round={isRoundType(item.type)}
       onPress={() => onPress(item)}
+      entity={
+        item.perma_url ? { type: item.type, url: item.perma_url } : undefined
+      }
     />
   );
 }

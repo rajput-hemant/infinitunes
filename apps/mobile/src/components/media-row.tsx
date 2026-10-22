@@ -1,3 +1,4 @@
+import type { MediaType } from "@infinitunes/types";
 import type { Href } from "expo-router";
 
 import { ListRow } from "./list-row";
@@ -13,6 +14,8 @@ type MediaRowProps = {
   href?: Href;
   /** What a tap does instead, when the row is not a link. */
   onPress?: () => void;
+  /** The catalog item it opens, to prefetch on press-in. */
+  entity?: { type: MediaType; url: string };
 };
 
 /** A catalog item as a list row: its artwork, title and subtitle (`ListRow`). */
@@ -23,6 +26,7 @@ export function MediaRow({
   round,
   href,
   onPress,
+  entity,
 }: MediaRowProps) {
   return (
     <ListRow
@@ -31,6 +35,7 @@ export function MediaRow({
       leading={{ artwork: image, round }}
       href={href}
       onPress={onPress}
+      entity={entity}
     />
   );
 }
