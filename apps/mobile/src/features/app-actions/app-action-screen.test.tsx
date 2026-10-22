@@ -6,7 +6,7 @@ import { router } from "expo-router";
 import { Text } from "react-native";
 
 import { failureStore } from "~/lib/failure";
-import { audioPlayer } from "~/playback/audio-engine";
+import { audioPlayer, replaceSource } from "~/playback/audio-engine";
 import { playerStore } from "~/playback/player-store";
 import { putFile, resetFiles } from "~/test/expo-file-system";
 import { renderStack } from "~/test/render";
@@ -83,6 +83,7 @@ describe("action/resume", () => {
 
   it("plays a paused queue on", async () => {
     playerStore.getState().playTracks([toSongRow(catalog.a)]);
+    replaceSource("https://example.test/a.mp4");
     audioPlayer.pause();
     const play = jest.spyOn(audioPlayer, "play");
 

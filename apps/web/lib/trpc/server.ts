@@ -2,15 +2,13 @@
 import "server-only";
 import { db } from "@infinitunes/db";
 import { createCaller } from "@infinitunes/trpc";
-import { cache } from "react";
 
 import { getSession } from "~/lib/auth";
 import { cachedApi } from "~/lib/cached-api";
 
-const createTRPCContext = cache(() => {
-  return { db, session: getSession, catalogApi: cachedApi };
+// Context members are request-safe singletons or thunks (getSession is per-request cache()d).
+export const api = createCaller({
+  db,
+  session: getSession,
+  catalogApi: cachedApi,
 });
-
-const getContext = () => createTRPCContext();
-
-export const api = createCaller(getContext());

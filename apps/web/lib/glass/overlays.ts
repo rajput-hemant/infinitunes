@@ -13,7 +13,7 @@ export type GlassRole =
   | "palette"
   | "toast";
 
-export const GLASS_ROLES: readonly GlassRole[] = [
+const GLASS_ROLES: readonly GlassRole[] = [
   "player",
   "tabbar",
   "toolbar",

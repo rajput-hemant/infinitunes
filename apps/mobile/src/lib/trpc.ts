@@ -19,6 +19,8 @@ export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `${env.apiUrl}/api/trpc`,
+      // The route rejects batches over `maxBatchSize` (20); split before that.
+      maxItems: 20,
       maxURLLength: 2083,
       transformer: superjson,
       // The session lives in secure storage, not a cookie jar: send it

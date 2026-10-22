@@ -10,9 +10,15 @@ function handler(req: Request) {
     endpoint: "/api/trpc",
     req,
     router: appRouter,
-    createContext: async () => ({
+    maxBatchSize: 20,
+    onError: ({ error, path }) => {
+      if (error.code === "INTERNAL_SERVER_ERROR") {
+        console.error(`[trpc] ${path}`, error);
+      }
+    },
+    createContext: () => ({
       db,
-      session: await getSession(),
+      session: getSession,
       catalogApi: cachedApi,
     }),
   });

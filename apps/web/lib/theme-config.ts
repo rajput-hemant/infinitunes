@@ -94,28 +94,23 @@ export function parseThemeConfig(raw: string | undefined): ThemeConfig {
 /** Serializes only the fields that differ from the defaults, so a default config is `{}`. */
 export function serializeThemeConfig(config: ThemeConfig): string {
   const defaults: Record<string, unknown> = { ...DEFAULT_THEME_CONFIG };
-  const entries = Object.entries(config).filter(([key, value]) => {
+  const obj: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(config)) {
     if (key === "glassTuning") {
       const gDefaults = DEFAULT_GLASS_TUNING as Record<string, unknown>;
       const gValue = value as Record<string, unknown>;
-      return Object.keys(gValue).some((gk) => gValue[gk] !== gDefaults[gk]);
-    }
-    return value !== defaults[key];
-  });
-
-  const obj: Record<string, unknown> = Object.fromEntries(entries);
-  if (obj.glassTuning) {
-    const gDefaults = DEFAULT_GLASS_TUNING as Record<string, unknown>;
-    const gValue = obj.glassTuning as Record<string, unknown>;
-    const gDiff = Object.entries(gValue).filter(
-      ([gk, gv]) => gv !== gDefaults[gk],
-    );
-    if (gDiff.length > 0) {
-      obj.glassTuning = Object.fromEntries(gDiff);
-    } else {
-      delete obj.glassTuning;
+      const gDiff = Object.entries(gValue).filter(
+        ([gk, gv]) => gv !== gDefaults[gk],
+      );
+      if (gDiff.length > 0) {
+        obj.glassTuning = Object.fromEntries(gDiff);
+      }
+    } else if (value !== defaults[key]) {
+      obj[key] = value;
     }
   }
+
   return JSON.stringify(obj);
 }
 

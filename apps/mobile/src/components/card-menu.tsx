@@ -1,5 +1,6 @@
 import type { MenuComponentRef } from "@expo/ui/community/menu";
 import type { MediaType } from "@infinitunes/types";
+import { AndroidHaptics, performAndroidHapticsAsync } from "expo-haptics";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
@@ -112,6 +113,7 @@ export function CardLink({ href, name, entries, children }: CardLinkProps) {
     <Link href={href} asChild>
       {/* The system's context menu takes the long press. */}
       <Link.Trigger>{children(ignoreLongPress)}</Link.Trigger>
+      <Link.Preview />
       <Link.Menu title={name}>
         {entries.map(({ id, title, image, run }) => (
           <Link.MenuAction
@@ -148,6 +150,7 @@ function AndroidCardLink({ href, name, entries, children }: CardLinkProps) {
   }, [requested, menu]);
 
   function open() {
+    void performAndroidHapticsAsync(AndroidHaptics.Long_Press);
     if (menu) menu.show();
     else setRequested(true);
   }

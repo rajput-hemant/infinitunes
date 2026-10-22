@@ -5,6 +5,7 @@ import { trpcEnv } from "@infinitunes/trpc/env";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+import { TRUSTED_PROXY_MODES } from "./client-ip";
 import { hasRateLimitCredentials } from "./rate-limit-env";
 
 export const env = createEnv({
@@ -13,7 +14,7 @@ export const env = createEnv({
     UPSTASH_REDIS_REST_URL: z.url().optional(),
     UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
     ENABLE_RATE_LIMITING: z.enum(["true", "false"]).default("false"),
-    TRUSTED_PROXY: z.enum(["vercel", "true", "false"]).optional(),
+    TRUSTED_PROXY: z.enum(TRUSTED_PROXY_MODES).optional(),
     RATE_LIMITING_REQUESTS_PER_SECOND: z.coerce.number().default(50),
     UMAMI_WEBSITE_ID: z.string().optional(),
   },
@@ -30,3 +31,15 @@ export const env = createEnv({
   emptyStringAsUndefined: true,
   skipValidation: process.env.SKIP_ENV_VALIDATION === "true",
 });
+
+let warnedRateLimiting = false;
+if (
+  !warnedRateLimiting &&
+  process.env.NODE_ENV === "production" &&
+  env.ENABLE_RATE_LIMITING !== "true"
+) {
+  warnedRateLimiting = true;
+  console.warn(
+    "[env] Warning: ENABLE_RATE_LIMITING is disabled in production. Public endpoints (/api/trpc, /api/og) are unmetered.",
+  );
+}

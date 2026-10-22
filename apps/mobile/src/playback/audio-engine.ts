@@ -35,6 +35,16 @@ export function configureAudioSession() {
  */
 let sourceEnded = false;
 let sourceGeneration = 0;
+/** False once the source was cleared or failed for good: Play has nothing to play. */
+let sourceLive = false;
+
+export function hasLiveSource() {
+  return sourceLive;
+}
+
+export function markSourceDead() {
+  sourceLive = false;
+}
 
 /** Native events retain the generation at emission, even when JS receives them after replace. */
 export function isCurrentSource(event: { sourceGeneration?: number }) {
@@ -43,6 +53,7 @@ export function isCurrentSource(event: { sourceGeneration?: number }) {
 
 export function replaceSource(src: string | null) {
   sourceGeneration += 1;
+  sourceLive = src !== null;
   audioPlayer.replace(src === null ? null : { uri: src });
 }
 

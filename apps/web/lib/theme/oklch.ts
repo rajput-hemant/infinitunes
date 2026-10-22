@@ -13,11 +13,16 @@ export function normalizeHex(value: string): string | null {
   return `#${digits.length === 3 ? [...digits].map((d) => d + d).join("") : digits}`;
 }
 
+/** Transfers an sRGB channel value in 0..1 to linear sRGB. */
+export function srgbToLinear(value: number): number {
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+}
+
 function hexToLinear(hex: string): Rgb {
   const value = Number.parseInt(hex.slice(1), 16);
   const channel = (shift: number) => {
     const srgb = ((value >> shift) & 255) / 255;
-    return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+    return srgbToLinear(srgb);
   };
   return [channel(16), channel(8), channel(0)];
 }

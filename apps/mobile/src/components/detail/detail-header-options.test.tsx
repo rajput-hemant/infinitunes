@@ -57,11 +57,12 @@ describe("detailHeaderOptions", () => {
       expect(top.headerTitle).toBe("");
     });
 
-    it("leaves iOS's bar alone", () => {
+    it("titles iOS's bar once scrolled, without a tint", () => {
       jest.replaceProperty(Platform, "OS", "ios");
 
       const scrolled = detailHeaderOptions(item, "#e0e0e0");
-      expect(scrolled.headerTitle).toBe("");
+      expect(scrolled.headerTitle).toBe("Udta Teer");
+      expect(detailHeaderOptions(item).headerTitle).toBe("");
       expect(scrolled).not.toHaveProperty("headerStyle");
     });
   });
