@@ -13,6 +13,7 @@ import { EmptyState } from "~/components/empty-state";
 import { EndOfList } from "~/components/end-of-list";
 import { ErrorState } from "~/components/error-state";
 import { GridCell } from "~/components/grid-cell";
+import { CONTENT_CONCEAL } from "~/components/skeletons";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Spinner } from "~/components/ui/spinner";
 import { useGrid } from "~/lib/use-grid-card-width";
@@ -105,7 +106,15 @@ function CatalogPlaceholder<Item>({
   empty,
   round,
 }: Pick<CatalogScreenProps<Item>, "query" | "empty" | "round">) {
-  if (query.isPending) return <CatalogGridSkeleton round={round} />;
+  if (query.isPending) {
+    // Fades out as the cards fade in; Reanimated keeps the exiting view at its
+    // frame, over the new rows, so the layout does not jump.
+    return (
+      <Animated.View exiting={CONTENT_CONCEAL} testID="catalog-skeleton">
+        <CatalogGridSkeleton round={round} />
+      </Animated.View>
+    );
+  }
   if (query.error) {
     return (
       <ErrorState error={query.error} onRetry={() => void query.refetch()} />

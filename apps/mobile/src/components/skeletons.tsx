@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Platform, View } from "react-native";
 import type { DimensionValue } from "react-native";
-import { FadeIn, ReduceMotion } from "react-native-reanimated";
+import { FadeIn, FadeOut, ReduceMotion } from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
 import { iconSize, space, textStyles } from "~/theme/tokens";
@@ -31,10 +31,15 @@ function useFrame() {
 }
 
 /**
- * How loaded content replaces its skeleton: a fade in, with no exit on the
- * skeleton. Opacity alone carries no movement, so it runs under reduce motion.
+ * How loaded content replaces its skeleton: a fade in, with the skeleton
+ * fading out (`CONTENT_CONCEAL`) where it can. Opacity alone carries no movement, so it runs under reduce motion.
  */
 export const CONTENT_REVEAL = FadeIn.duration(200).reduceMotion(
+  ReduceMotion.Never,
+);
+
+/** The skeleton's matching exit: it fades out while the content fades in (a crossfade). */
+export const CONTENT_CONCEAL = FadeOut.duration(200).reduceMotion(
   ReduceMotion.Never,
 );
 
