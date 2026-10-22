@@ -35,7 +35,7 @@ Delete this file in the last PR, once every box is ticked (the repo must not kee
 - Privacy/Terms: interim noindex, out of the sitemap, no consent line. This is being done locally.
 - `deleteUser` and the Lipi-shared user row: deferred to the owner. Do not change what it deletes.
 - DB pool stays `max: 1` (serverless).
-- Tablet scope: columns plus a readable width, no two-pane. Being done locally.
+- Tablet scope: columns plus a readable width, no two-pane. Done (M6 merged).
 - Android accent: build a full Material You `SchemeTonalSpot` from the accent seed and lazy-load the colour library.
 - Android menus stay text-only. Android library lists reuse the M3 search pill.
 - The Home `h1` stays the greeting.
@@ -45,11 +45,10 @@ Delete this file in the last PR, once every box is ticked (the repo must not kee
 
 These items will be merged into `feat/platforms` soon. Avoid their files, or wait until they land.
 
-- **Tablet layouts:** `fix/m6-adaptive-layout`. Files: grid width, catalog screen, entity header, form screen, settings width, the Jest window.
 - **User router:** `fix/s1-user-router`. Files: `user.ts`, `trpc.ts`, core `optimistic-playlists`, the playlist consumers on web and mobile, `user-data/playlists.ts`, the song, native and collection menus.
 - **Upstream and history:** `fix/s3-upstream-history`. Files: `router/{utils,album,playlist,history}.ts`, `synced-lyrics.ts`.
 
-Before starting a batch marked _after S1_ or _after M6_, check `git log --oneline feat/platforms | grep -E "s1-user-router|m6-adaptive-layout"`. If the merge is not there yet, pick another batch.
+Before starting a batch marked _after S1_, check `git log --oneline feat/platforms | grep s1-user-router`. If the merge is not there yet, pick another batch.
 
 ## Batch M3 (opus): song-row menu and per-row subscriptions - `components/{song-row,song-menu,native-menu,like-button}.tsx`, `user-data/{favorites,playlists}.ts`, `navigation/use-open-entity.ts` _(after S1)_
 
@@ -87,9 +86,9 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` _(after M6)_
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
 
-Start after M6 (shared `app.config.ts`); needs a native rebuild.
+M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
 - [ ] **M-22** **[device sign-off later]** P1 PLAUSIBLE `AndroidManifest.xml:17`, `app.config.ts` - predictive back disabled (`enableOnBackInvokedCallback=false`) [design P1-11]
   - Fix: `android.predictiveBackGestureEnabled: true`, prebuild, verify the player modal, formSheets and search Back. Executor: sonnet. Flags: needs native rebuild, needs device check.
@@ -138,7 +137,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` _(after M6)_
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -375,7 +374,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. _(after M6)_
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
