@@ -18,6 +18,9 @@ export const historyRouter = router({
       const userId = ctx.session.user.id;
 
       await ctx.db.transaction(async (tx) => {
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtextextended(${`infinitunes_recently_played.record:${userId}`}, 0))`,
+        );
         await tx
           .insert(recentlyPlayed)
           .values({ userId, itemId: input.id, itemType: input.type })
