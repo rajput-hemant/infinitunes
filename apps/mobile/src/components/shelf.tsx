@@ -2,6 +2,7 @@ import { uniqueBy } from "@infinitunes/types";
 import type { CardItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import type { Href } from "expo-router";
+import { memo, useMemo } from "react";
 import { useWindowDimensions, View } from "react-native";
 
 import { art, playerArtSize, sizes, space } from "~/theme/tokens";
@@ -49,7 +50,7 @@ function CardGap() {
  * nothing when empty. The `hero` variant is Material's hero carousel: one
  * large card with a peek of the next, snapping per card.
  */
-export function Shelf({
+export const Shelf = memo(function Shelf({
   title,
   items,
   seeAllHref,
@@ -58,6 +59,8 @@ export function Shelf({
   eyebrow,
 }: ShelfProps) {
   const heroWidth = useHeroWidth();
+  // Upstream modules can repeat an item; FlashList needs unique keys.
+  const unique = useMemo(() => uniqueBy(items, (item) => item.id), [items]);
   if (items.length === 0) return null;
   const hero = variant === "hero";
 
@@ -79,8 +82,7 @@ export function Shelf({
       ) : null}
       <FlashList
         horizontal
-        // Upstream modules can repeat an item; FlashList needs unique keys.
-        data={uniqueBy(items, (item) => item.id)}
+        data={unique}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <MediaCard
@@ -100,4 +102,4 @@ export function Shelf({
       />
     </View>
   );
-}
+});

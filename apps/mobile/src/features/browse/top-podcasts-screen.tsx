@@ -6,6 +6,7 @@ import { CatalogScreen } from "~/components/catalog-screen";
 import { MediaCard } from "~/components/media-card";
 import { SectionHeader } from "~/components/section-header";
 import { Shelf } from "~/components/shelf";
+import { SectionHeaderSkeleton, ShelfSkeleton } from "~/components/skeletons";
 import { trpc, trpcClient } from "~/lib/trpc";
 import { useInfiniteList } from "~/lib/use-infinite-list";
 import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
@@ -55,6 +56,12 @@ export function TopPodcastsScreen() {
             <>
               <TrendingPodcasts shows={firstPage} />
               <SectionHeader title="All Podcasts" />
+            </>
+          ) : shows.isPending ? (
+            // The loaded header's shape: the Trending shelf, then "All Podcasts".
+            <>
+              <ShelfSkeleton />
+              <SectionHeaderSkeleton />
             </>
           ) : undefined
         }

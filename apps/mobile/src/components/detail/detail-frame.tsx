@@ -2,12 +2,14 @@ import { getErrorCode } from "@infinitunes/core/error-code";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import type { SymbolViewProps } from "expo-symbols";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import type { ReactNode } from "react";
 import { View } from "react-native";
+import Animated from "react-native-reanimated";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
+import { CONTENT_REVEAL } from "~/components/skeletons";
 import type { ShareableItem } from "~/lib/share";
 import { usePalette } from "~/theme/use-palette";
 
@@ -51,12 +53,6 @@ export function DetailFrame<Data>({
   const { data } = query;
   const [scrolled, setScrolled] = useState(false);
   const scrolledColor = usePalette().card;
-  // Only the bar follows the scroll: the page renders again only when its
-  // data or the screen's own render does.
-  const page = useMemo(
-    () => (data !== undefined && data !== null ? children(data) : null),
-    [children, data],
-  );
 
   if (data !== undefined && data !== null) {
     return (
@@ -67,7 +63,9 @@ export function DetailFrame<Data>({
             scrolled ? scrolledColor : undefined,
           )}
         />
-        {page}
+        <Animated.View entering={CONTENT_REVEAL} className="flex-1">
+          {children(data)}
+        </Animated.View>
       </DetailScrollContext>
     );
   }

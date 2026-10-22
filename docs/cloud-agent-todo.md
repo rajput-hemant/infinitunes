@@ -136,19 +136,20 @@ Start after M2 (status/position stores change there).
   - Fix: shared values + `useAnimatedStyle` scaleX; time labels at 1Hz. Executor: sonnet. Flags: needs device check.
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
+    \=======
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` - branch `worktree-agent-a8420b91455e7cd29`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
-- [ ] **M-45** **[device sign-off later]** P2 PLAUSIBLE `features/home/home-feed.tsx:47`, `DetailFrame`, `PagedFooter` - content pops in over skeletons [design P2-2]
-  - Fix: loaded branch `entering={FadeIn.duration(200).reduceMotion(ReduceMotion.Never)}`, no exiting on the skeleton. Executor: sonnet. Flags: needs device check.
-- [ ] **M-46** **[device sign-off later]** P2 CONFIRMED `components/skeletons.tsx:57-78`, `features/browse/top-podcasts-screen.tsx:53-59` - skeletons do not mirror the loaded layout: `SongRowSkeleton` lacks the 48pt heart and menu cells (text column ~100pt too wide, `pr-4` vs `space.xs`), and the TopPodcasts header (Trending shelf, "All Podcasts") appears only after data lands [comp P2-3, screens P3-7, design P2-2 skeleton-rule note]
+- [x] **M-45** **[device sign-off later]** P2 PLAUSIBLE `features/home/home-feed.tsx:47`, `DetailFrame`, `PagedFooter` - content pops in over skeletons [design P2-2]
+  - Fix: loaded branch `entering={FadeIn.duration(200).reduceMotion(ReduceMotion.Never)}`, no exiting on the skeleton. Executor: sonnet. Flags: needs device check. Done: fade on Home, DetailFrame and PagedFooter's empty/error states; the rows of paged lists live in their parents (not M12 files) and are not faded.
+- [x] **M-46** **[device sign-off later]** P2 CONFIRMED `components/skeletons.tsx:57-78`, `features/browse/top-podcasts-screen.tsx:53-59` - skeletons do not mirror the loaded layout: `SongRowSkeleton` lacks the 48pt heart and menu cells (text column ~100pt too wide, `pr-4` vs `space.xs`), and the TopPodcasts header (Trending shelf, "All Podcasts") appears only after data lands [comp P2-3, screens P3-7, design P2-2 skeleton-rule note]
   - Fix: add `size-touch` heart (when `useUserId()`) and `MenuGlyphSkeleton` cells, use the row's `paddingEnd`, keep the numbered length bar; render `ShelfSkeleton` + `SectionHeaderSkeleton` as TopPodcasts' header while pending; overlay-check each skeleton on the loaded page. Executor: sonnet. Flags: needs device check.
-- [ ] **M-47** P3 PLAUSIBLE `components/shelf.tsx:83-92`, `home-feed.tsx:56-64` - `uniqueBy` per render and Home re-diffs every shelf [perf#14]
-  - Fix: dedupe in `buildHomeModel`; consider Home as a vertical FlashList of shelves. Executor: sonnet. Flags: none.
-- [ ] **M-48** P3 PLAUSIBLE `components/detail/detail-frame.tsx:56-59` - children memo is ineffective [perf#18]
-  - Fix: drop the memo or move secondary queries into the page. Executor: haiku. Flags: none.
+- [x] **M-47** P3 PLAUSIBLE `components/shelf.tsx:83-92`, `home-feed.tsx:56-64` - `uniqueBy` per render and Home re-diffs every shelf [perf#14]
+  - Fix: dedupe in `buildHomeModel`; consider Home as a vertical FlashList of shelves. Executor: sonnet. Flags: none. Done: deduped carousel in `buildHomeModel`, `Shelf` memoized; shelf cards already deduped upstream; vertical FlashList not done (optional).
+- [x] **M-48** P3 PLAUSIBLE `components/detail/detail-frame.tsx:56-59` - children memo is ineffective [perf#18]
+  - Fix: drop the memo or move secondary queries into the page. Executor: haiku. Flags: none. Done: memo dropped.
 
 ## Batch M13 (sonnet): settings and forms - `features/settings/{settings-screen,settings-screen.android,end-session,profile-form,tap-rows,row-icon}.tsx`, tests
 
