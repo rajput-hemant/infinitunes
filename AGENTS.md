@@ -258,11 +258,14 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   Skeletons must mirror the loaded layout (`EntityHeaderSkeleton` `like`/`menu`/`subtitle`/`meta` match the
   header; overlay skeleton on loaded page to check). Loading marks are `Spinner` (Compose M3E `LoadingIndicator` on Android). Menus are `NativeMenu` entries that carry their action
   (`addToPlaylistEntry`, which ends with New Playlist, the `/create-playlist` sheet; `playRadioEntry`);
-  `SongMenu` is the track's. Every titled group starts with `SectionHeader` (`title`, optional text `action`;
+  `SongMenu` is the track's. Long detail text (a show's or episode's description) is `Description`
+  (`components/detail`, three lines plus Read More); a list's one-of-many order is an `OptionMenu`, not a second
+  `SegmentedTabs` (the artist's "Sort by"). Every titled group starts with `SectionHeader` (`title`, optional text `action`;
   it carries the 16/8 rhythm, sections add no padding). Every row is `ListRow` (artwork, icon or track-number
   leading, at most two trailing 48pt controls or `{ chevron: true }`; `checked` makes it a checkbox, `selected`/`paused`
   the current track; without `href`/`onPress` it is a labelled view whose picture alone dims); `SongRow` (`toSongRow`
-  row or queue entry, `removal`, `leading="index"` for albums: `TrackList numbered`) and `MediaRow` (`href` or
+  row or queue entry, `removal`, `leading="index"` for albums: `TrackList numbered`, which also shows the length;
+  `DetailSkeleton numbered` matches) and `MediaRow` (`href` or
   `onPress`) are built on it, `EntityListItem`s feed a screen's one `FlashList`. Cards: `MediaCard`/`Shelf`
   (`toCardItem` items, `seeAllHref`, `onItemPress`, `variant="hero"` for home's carousel, the only card with
   `CardPlayButton` and an `eyebrow(item)`), `QuickPickTile` for two-column tiles (`GRID_COLUMNS`), `GridCell` for each cell of a

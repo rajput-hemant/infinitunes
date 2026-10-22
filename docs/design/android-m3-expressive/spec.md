@@ -87,12 +87,18 @@ reaching 48 with hit slop, chips 32 high reaching 48 with hit slop, mini player 
   Every one keeps its `accessibilityLabel`. Text stays on form submits, the empty states' way forward, "See All".
 - **Action row** (entity header, both platforms): heart and the overflow menu lead, a spacer, then Shuffle
   (tonal, 48dp) and Play (filled, 56dp) at the end, where the thumb rests. Song collections (liked songs, history, playlists)
-  put the count and sort first in the same row, then Shuffle and Play.
+  put the count and sort first in the same row, then Shuffle and Play. The header's credit line is in the text
+  colour; only the meta line under it is `onSurfaceVariant` (both share bodyMedium, so colour carries the hierarchy).
+- **Detail text** (both platforms): a show's or episode's description is `Description`, three lines and a
+  primary "Read More"; the artist's Songs/Albums order is one `OptionMenu` ("Sort by") at the list's end, never a
+  second connected group under the tabs.
 - **Connected button group** (`segmented-tabs.android.tsx`): 40dp segments, 2dp seams, selected segment
   `secondaryContainer` with a check and full corners, others `surfaceContainerHighest` with `sm` inner corners.
 - **Filter chip** (`chip-row.tsx`): 32dp, `sm` corners, outline idle; `secondaryContainer` + check selected.
 - **Section header**: titleLarge emphasized; action is a primary text button.
-- **List row**: unchanged geometry (56dp, 48 art at `sm`), ripple feedback. The current track sits in a
+- **List row**: unchanged geometry (56dp, 48 art at `sm`), ripple feedback. Numbered rows (an album's
+  `TrackList numbered`, both platforms) end with the track's length in bodyMedium `onSurfaceVariant`, tabular
+  figures, before the heart and menu; the skeleton (`SongListSkeleton numbered`) mirrors the number and length. The current track sits in a
   `secondaryContainer` tile inset 8dp (`lg` corners), title emphasized, with a three-bar `Equalizer` (still
   and low while paused, static under reduce motion). Leading icons sit in a round `secondaryContainer`.
 - **Search**: Android hides the app bar and shows Material 3's search bar (`search-header.android.tsx`): a

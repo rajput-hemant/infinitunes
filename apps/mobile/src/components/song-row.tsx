@@ -49,7 +49,8 @@ export function SongRow({
   const credits = creditsOf(song);
   const length =
     leading === "index" && song.duration > 0
-      ? formatDuration(song.duration, "mm:ss")
+      ? // "1:45", not the padded "01:45" (`formatDuration` pads for timers).
+        formatDuration(song.duration, "mm:ss").replace(/^0/, "")
       : undefined;
 
   return (
