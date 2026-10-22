@@ -15,6 +15,15 @@ function currentScheme(): ColorScheme {
 }
 
 /**
+ * Forget the palettes read so far. The wallpaper (and so every role) can
+ * change while the app is in the background, and a cached palette would keep
+ * the old colours until the process died; the next `paletteFor` reads anew.
+ */
+export function refreshDynamicPalettes() {
+  cache.clear();
+}
+
+/**
  * The token palette in Material You roles. `Color.android.dynamic` resolves a
  * role for the current scheme only, so a scheme is read while it is current
  * and kept from then on. `DynamicColorRoot` points the colour classes at it.

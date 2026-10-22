@@ -46,7 +46,7 @@ function ShowLink({ episode }: { episode: Episode }) {
         leading={{ icon: { ios: "mic", android: "podcasts" } }}
         title={decode(episode.more_info.show_title)}
         href={href}
-        trailing={{ chevron: true }}
+        chevron
       />
     </>
   );

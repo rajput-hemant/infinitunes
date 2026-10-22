@@ -75,7 +75,7 @@ function Library() {
           leading={{ icon }}
           title={title}
           href={href}
-          trailing={{ chevron: true }}
+          chevron
         />
       ))}
       <SectionHeader

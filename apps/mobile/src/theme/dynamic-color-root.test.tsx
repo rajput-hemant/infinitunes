@@ -1,6 +1,8 @@
-import { render, screen } from "@testing-library/react-native";
-import { Text } from "react-native";
+import { act, render, screen } from "@testing-library/react-native";
+import { AppState, Text } from "react-native";
+import type { AppStateStatus } from "react-native";
 
+import { refreshDynamicPalettes } from "./android-colors.android";
 import { DynamicColorRoot } from "./dynamic-color-root.android";
 import { colors } from "./tokens";
 
@@ -9,6 +11,7 @@ jest.mock("nativewind", () => ({
 }));
 jest.mock("./android-colors.android", () => ({
   hasDynamicColor: true,
+  refreshDynamicPalettes: jest.fn(),
   paletteFor: (scheme: "light" | "dark") => ({
     ...jest.requireActual("./tokens").colors[scheme],
     primary: `#${scheme}-dynamic-primary`,
@@ -31,5 +34,25 @@ describe("DynamicColorRoot (Android)", () => {
         "--background": colors.light.background,
       }),
     });
+  });
+
+  it("reads the roles anew when the app comes back to the foreground", async () => {
+    const listeners: ((state: AppStateStatus) => void)[] = [];
+    jest
+      .spyOn(AppState, "addEventListener")
+      .mockImplementation((_type, listener) => {
+        listeners.push(listener);
+        return { remove: jest.fn() };
+      });
+    await render(
+      <DynamicColorRoot>
+        <Text>Inside</Text>
+      </DynamicColorRoot>,
+    );
+
+    await act(() => listeners[0]?.("background"));
+    expect(refreshDynamicPalettes).not.toHaveBeenCalled();
+    await act(() => listeners[0]?.("active"));
+    expect(refreshDynamicPalettes).toHaveBeenCalledTimes(1);
   });
 });
