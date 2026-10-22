@@ -350,7 +350,7 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 - [ ] **W-39** P3 CONFIRMED `library/library-song-list.tsx:154-158` - empty `items` with no filter shows `No songs match ""` [wcomp P3-9]
   - Fix: branch on `query.trim()` and show `LibraryEmpty` otherwise. Executor: haiku. Flags: none.
 
-## Batch T1 (sonnet): CI, budget and lint gates - `.github/workflows/ci.yml`, `turbo.json`, `packages/ui/package.json`, `scripts/check-budget.ts`, `knip.json`, root `package.json` (lint-staged), `next.config.ts`, `lib/image-hosts.ts`
+## Batch T1 (sonnet): CI, budget and lint gates - `.github/workflows/ci.yml`, `turbo.json`, `packages/ui/package.json`, `scripts/check-budget.ts`, `knip.json`, root `package.json` (lint-staged), `next.config.ts`, `lib/image-hosts.ts` (branch `fix/t1-t2-ci-csp`)
 
 Run `bun run build && bun run budget` first to get real numbers.
 
@@ -369,11 +369,11 @@ Run `bun run build && bun run budget` first to get real numbers.
 - [ ] **T-7** P3 CONFIRMED `apps/web/next.config.ts:58-66`, `lib/image-hosts.ts:2-4`, `.github/workflows/ci.yml:5` - dead `images.remotePatterns` under `unoptimized: true`; stale `migration/bun-monorepo` branch [lib 16]
   - Fix: drop the block and the comment; fix the branch list. Executor: haiku. Flags: none.
 
-## Batch T2 (sonnet): CSP avatars - `apps/web/lib/{csp,image-hosts}.ts`, `apps/web/tests/csp.test.ts`
+## Batch T2 (sonnet): CSP avatars - `apps/web/lib/{csp,image-hosts}.ts`, `apps/web/tests/csp.test.ts` (branch `fix/t1-t2-ci-csp`)
 
 Shares `image-hosts.ts` with T1's T-7: do T2 first or have one executor take both.
 
-- [ ] **T-8** P2 CONFIRMED (gap) / PLAUSIBLE (hosts) `lib/csp.ts:67`, `lib/image-hosts.ts:6-9`, `components/user-avatar.tsx:38`, `packages/auth/src/auth.ts:226-228`, `tests/csp.test.ts:49-56` - `img-src` omits the Google/GitHub avatar hosts, so social-login avatars always violate CSP and break if `CSP_ENFORCE` flips [lib 2]
+- [x] **T-8** (Done: `AVATAR_HOSTS` in `image-hosts.ts`, spread into `img-src`, tests updated; Better Auth maps Google `picture` and GitHub `avatar_url` to `user.image` verbatim, the hosts themselves are the documented Google/GitHub CDNs and were not checked against a live `user.image`; kept out of `parseAllowedImageUrl`.) P2 CONFIRMED (gap) / PLAUSIBLE (hosts) `lib/csp.ts:67`, `lib/image-hosts.ts:6-9`, `components/user-avatar.tsx:38`, `packages/auth/src/auth.ts:226-228`, `tests/csp.test.ts:49-56` - `img-src` omits the Google/GitHub avatar hosts, so social-login avatars always violate CSP and break if `CSP_ENFORCE` flips [lib 2]
   - Fix: `AVATAR_HOSTS = ["lh3.googleusercontent.com", "avatars.githubusercontent.com"]` (confirm against a real `user.image`), spread into `img-src`, update the test; keep them out of `parseAllowedImageUrl`. Executor: sonnet. Flags: none.
 
 ## Batch T3 (sonnet): type-check tests and scripts - new `apps/web/tsconfig.tests.json`, root `tsconfig.json`, `type-check` scripts

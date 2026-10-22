@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { IMAGE_CDN_HOSTS, MEDIA_CDN_HOSTS } from "./image-hosts";
+import { AVATAR_HOSTS, IMAGE_CDN_HOSTS, MEDIA_CDN_HOSTS } from "./image-hosts";
 import { THEME_BOOTSTRAP_SCRIPT } from "./theme-script";
 
 export const CSP_ENFORCING_HEADER = "content-security-policy";
@@ -64,7 +64,13 @@ export function buildCsp({
       ...(umami ? [UMAMI_SCRIPT_HOST] : []),
     ],
     "style-src": ["'self'", "'unsafe-inline'"],
-    "img-src": ["'self'", "data:", "blob:", ...https(IMAGE_CDN_HOSTS)],
+    "img-src": [
+      "'self'",
+      "data:",
+      "blob:",
+      ...https(IMAGE_CDN_HOSTS),
+      ...https(AVATAR_HOSTS),
+    ],
     "media-src": ["'self'", "blob:", ...https(MEDIA_CDN_HOSTS)],
     "connect-src": [
       "'self'",
