@@ -7,7 +7,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { type ReactNode, useEffect, useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { QueryScope } from "~/components/query-scope";
 import { SearchAll } from "~/components/search/search-all";
@@ -19,7 +19,6 @@ import {
 } from "~/components/search/search-status";
 import { searchUi } from "~/components/search/search-ui";
 import { useRecentSearches } from "~/components/search/use-recent-searches";
-import { useIsTyping } from "~/hooks/use-store";
 import { controlStyles } from "~/lib/control-styles";
 import { trpc } from "~/lib/trpc/vanilla";
 import { cn } from "~/lib/utils";
@@ -37,7 +36,6 @@ function MobileSearchContent({ topSearches }: MobileSearchProps) {
   });
   const isIdle = debouncedQuery.length === 0;
 
-  const [, setIsTyping] = useIsTyping();
   const { recent, add, clear } = useRecentSearches();
 
   const { data, error } = useQuery({
@@ -48,10 +46,6 @@ function MobileSearchContent({ topSearches }: MobileSearchProps) {
   });
 
   const results = resolveSearchState(data, error);
-
-  useEffect(() => {
-    setIsTyping(!isIdle);
-  }, [isIdle, setIsTyping]);
 
   const openResults = (value: string) => {
     add(value);

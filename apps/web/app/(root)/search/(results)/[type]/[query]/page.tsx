@@ -8,6 +8,7 @@ import {
 } from "~/components/search/search-query";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
+import { getViewer } from "~/lib/viewer";
 
 import { AllResults } from "./_components/all-results";
 import { SearchResultsSkeleton } from "./_components/results-skeleton";
@@ -56,20 +57,26 @@ async function Results({ params }: Pick<SearchPageProps, "params">) {
 
   const query = decodeSearchQuery(segment);
 
-  return type === "all" ? (
-    <AllResults query={query} />
-  ) : (
+  if (type === "all") return <AllResults query={query} />;
+
+  const [page, viewer] = await Promise.all([
+    api.search.byType({
+      q: query,
+      type: SEARCH_TYPE_MAP[type],
+      page: 1,
+      n: 50,
+    }),
+    type === "song" ? getViewer() : undefined,
+  ]);
+
+  return (
     <SearchResults
       type={type}
       query={query}
-      initialPage={toSearchPage(
-        await api.search.byType({
-          q: query,
-          type: SEARCH_TYPE_MAP[type],
-          page: 1,
-          n: 50,
-        }),
-      )}
+      initialPage={toSearchPage(page)}
+      user={viewer?.user}
+      userFavorites={viewer?.favorites}
+      userPlaylists={viewer?.playlists}
     />
   );
 }

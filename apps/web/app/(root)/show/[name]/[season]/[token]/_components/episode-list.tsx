@@ -38,7 +38,7 @@ function EpisodeListContent(props: EpisodeListProps) {
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["episodes", season, showId],
+      queryKey: ["episodes", season, showId, sort],
       queryFn: async ({ pageParam }) =>
         (
           await trpc.show.episodes.query({
