@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -27,8 +28,8 @@ const SEGMENT_HIT_SLOP = { top: 4, bottom: 4 } as const;
 /**
  * Material 3 Expressive's connected button group (it replaces segmented
  * buttons): 40dp segments 2dp apart, the ends fully round, inner corners
- * small, on `secondaryContainer`; the selected segment turns `primary` and
- * morphs fully round on the default spatial spring. No check mark: that is
+ * small, on `secondaryContainer`; the selected segment turns `primary` (effects
+ * spring) and morphs fully round (default spatial spring). No check mark: that is
  * the old segmented button's; Compose's `ToggleButton` (the group's item)
  * marks selection by colour (`Primary`/`OnPrimary`) and shape alone.
  */
@@ -79,9 +80,12 @@ function Segment({
   const ripple = usePalette()["fill-2"];
   // 1 is fully round; 0 has the small inner corners.
   const round = useSharedValue(selected ? 1 : 0);
+  // The fill follows on the effects spring: colour never overshoots.
+  const fill = useSharedValue(selected ? 1 : 0);
   useEffect(() => {
     round.set(withSpring(selected ? 1 : 0, springs.spatialDefault));
-  }, [selected, round]);
+    fill.set(withSpring(selected ? 1 : 0, springs.effectsDefault));
+  }, [selected, round, fill]);
   const shape = useAnimatedStyle(() => {
     const innerRadius = inner + (FULL - inner) * round.get();
     return {
@@ -89,6 +93,11 @@ function Segment({
       borderBottomLeftRadius: first ? FULL : innerRadius,
       borderTopRightRadius: last ? FULL : innerRadius,
       borderBottomRightRadius: last ? FULL : innerRadius,
+      backgroundColor: interpolateColor(
+        Math.min(1, Math.max(0, fill.get())),
+        [0, 1],
+        [idleFill, selectedFill],
+      ),
     };
   });
 
@@ -102,11 +111,7 @@ function Segment({
       accessibilityRole="tab"
       accessibilityLabel={label}
       accessibilityState={{ selected }}
-      style={[
-        styles.segment,
-        { backgroundColor: selected ? selectedFill : idleFill },
-        shape,
-      ]}
+      style={[styles.segment, shape]}
     >
       <Text
         variant="label"
