@@ -3,6 +3,7 @@ import { SESSION_COOKIE_PREFIXES } from "@infinitunes/auth/session-cookie";
 import { createAuthClient } from "better-auth/react";
 import * as SecureStore from "expo-secure-store";
 
+import { cachedStorage } from "./cached-storage";
 import { env } from "./env";
 
 /**
@@ -15,7 +16,8 @@ export const authClient = createAuthClient({
   baseURL: env.apiUrl,
   plugins: [
     expoClient({
-      storage: SecureStore,
+      // In-memory copy: tRPC and playback read the cookie on every call.
+      storage: cachedStorage(SecureStore),
       storagePrefix: "infinitunes",
       cookiePrefix: [...SESSION_COOKIE_PREFIXES],
     }),
