@@ -9,6 +9,7 @@ import { addToPlaylistEntry, NativeMenu } from "~/components/native-menu";
 import { SongRow } from "~/components/song-row";
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
+import { useSheetBottomInset } from "~/navigation/sheet-inset";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
@@ -62,6 +63,7 @@ export function QueueList() {
   const queue = usePlayer((state) => state.queue);
   const currentIndex = usePlayer((state) => state.currentIndex);
   const { playAt, removeAt, clearUpNext, moveInQueue } = playerStore.getState();
+  const bottomInset = useSheetBottomInset();
 
   if (queue.length === 0) {
     return (
@@ -151,6 +153,7 @@ export function QueueList() {
         </Text>
       }
       contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingBottom: bottomInset }}
     />
   );
 }
