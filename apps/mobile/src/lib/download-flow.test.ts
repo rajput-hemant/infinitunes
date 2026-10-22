@@ -60,6 +60,24 @@ beforeEach(() => {
 });
 
 describe("downloadTrack", () => {
+  it("isolates concurrent same-title downloads until each share finishes", async () => {
+    const firstShare = Promise.withResolvers<void>();
+    jest.mocked(shareAsync).mockReturnValueOnce(firstShare.promise);
+    const first = downloadTrack(track(), "high");
+    await Promise.resolve();
+    await Promise.resolve();
+    await downloadTrack(track(), "high");
+
+    const [firstFile, secondFile] = jest
+      .mocked(File.downloadFileAsync)
+      .mock.calls.map((call) => call[1]);
+    expect(firstFile?.uri).not.toBe(secondFile?.uri);
+    expect(mockDeleted).toEqual([secondFile?.uri]);
+    firstShare.resolve();
+    await first;
+    expect(mockDeleted).toEqual([secondFile?.uri, firstFile?.uri]);
+  });
+
   it("downloads the bitrate asked for and hands the file to the share sheet", async () => {
     await downloadTrack(track(), "excellent");
 

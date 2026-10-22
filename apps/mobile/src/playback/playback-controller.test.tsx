@@ -1,9 +1,11 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, render, waitFor } from "@testing-library/react-native";
+import { Alert } from "react-native";
 
 import { forgetUserData } from "~/features/settings/end-session";
 import { preferencesStore } from "~/lib/preferences";
+import { queryClient } from "~/lib/query-client";
 import {
   cacheQualifiedListen,
   clearSongCache,
@@ -14,9 +16,11 @@ import { resetFiles } from "~/test/expo-file-system";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
 
+import { playEntity } from "./play-entity";
 import { PlaybackController } from "./playback-controller";
 import { playbackStatusStore } from "./playback-status";
 import { playerStore } from "./player-store";
+import { seekTo, togglePlayback } from "./transport";
 
 const songs = ["BSaNI3Yr", "Xy12AbCd"].map((id) => rawSong({ id }));
 const rows = songs.map(toSongRow);
@@ -31,13 +35,87 @@ async function mountController() {
 }
 
 beforeEach(() => {
+  queryClient.clear();
   signInAs("listener-1");
   procedure("radio.songs").mockResolvedValue([]);
   playerStore.setState(initial, true);
   lastPlayer().reset();
 });
 
+afterEach(() => queryClient.clear());
+
 describe("PlaybackController", () => {
+  it("stops the previous source and reports a linkless entry", async () => {
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    try {
+      const player = await mountController();
+      await act(async () => playerStore.getState().playTracks(rows));
+      await act(async () => player.finishLoading());
+      await act(async () =>
+        playerStore.getState().playTracks([{ ...rows[1]!, download_url: "" }]),
+      );
+
+      expect(player.playing).toBe(false);
+      expect(alert).toHaveBeenCalledWith(
+        "Playback unavailable",
+        "This song can't be played right now.",
+      );
+      expect(player.loads.at(-1)).toBe("");
+    } finally {
+      alert.mockRestore();
+    }
+  });
+
+  it("resumes the paused entry when its current queue row is pressed", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
+    await act(async () => player.pause());
+
+    await act(async () => playerStore.getState().playAt(0));
+
+    expect(player.playing).toBe(true);
+    expect(player.loads).toHaveLength(1);
+  });
+
+  it.each(["none", "pause", "seek", "play", "request"] as const)(
+    "advances a radio tail after a delayed refill unless the user acted (%s)",
+    async (action) => {
+      const refill = Promise.withResolvers<typeof songs>();
+      procedure("radio.songs").mockReturnValueOnce(refill.promise);
+      const player = await mountController();
+      await act(async () =>
+        playerStore.getState().playTracks(rows.slice(0, 1), {
+          radio: { stationId: "late", name: "Late", type: "featured" },
+        }),
+      );
+      await act(async () => player.finishLoading());
+      await act(async () => player.finishTrack());
+
+      await act(async () => {
+        if (action === "pause") {
+          togglePlayback();
+          togglePlayback();
+        }
+        if (action === "seek") seekTo(30);
+        if (action === "play") playerStore.getState().playAt(0);
+        if (action === "request") {
+          procedure("album.details").mockReturnValueOnce(new Promise(() => {}));
+          void playEntity("album", "https://www.jiosaavn.com/album/x/token");
+        }
+      });
+      await act(async () => refill.resolve(songs.slice(1)));
+
+      expect(playerStore.getState().currentIndex).toBe(
+        action === "none" ? 1 : 0,
+      );
+      if (action === "none") {
+        expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
+        expect(player.playing).toBe(true);
+      }
+    },
+  );
+
   it("prefetches the lyrics of the playing song and the next one", async () => {
     procedure("song.syncedLyrics").mockResolvedValue({
       synced: null,
