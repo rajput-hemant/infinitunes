@@ -73,7 +73,10 @@ async function playLiked(
     return "back";
   }
   const rows = await likedSongs(userId);
-  if (rows.length === 0) return "back";
+  if (rows.length === 0) {
+    showFailure("You haven't liked any songs yet");
+    return "back";
+  }
   if (shuffle) shuffleAll(rows);
   else playAll(rows);
   return "player";
@@ -89,11 +92,17 @@ async function playPlaylist(
   }
   const playlists = await queryClient.fetchQuery(serverPlaylistsQuery(userId));
   const playlist = playlists.find((candidate) => candidate.id === id);
-  if (!playlist) return "back";
-  if (playlist.songs.length === 0) return "back";
-  const rows = await fetchSongRows(playlist.songs);
+  if (!playlist) {
+    showFailure("That playlist isn't in your library");
+    return "back";
+  }
+  const rows =
+    playlist.songs.length === 0 ? [] : await fetchSongRows(playlist.songs);
   if (!rows) throw new Error("Couldn't load this playlist's songs");
-  if (rows.length === 0) return "back";
+  if (rows.length === 0) {
+    showFailure(`${playlist.name} has no songs to play`);
+    return "back";
+  }
   playAll(rows);
   return "player";
 }
@@ -117,9 +126,15 @@ async function topSong(q: string) {
 
 async function playSearch(q: string | undefined): Promise<ActionOutcome> {
   const term = q?.trim();
-  if (!term) return "back";
+  if (!term) {
+    showFailure("Say a song, artist or album to play");
+    return "back";
+  }
   const song = await topSong(term);
-  if (!song) return "back";
+  if (!song) {
+    showFailure(`No songs found for “${term}”`);
+    return "back";
+  }
   playAll([toSongRow(song)]);
   return "player";
 }
@@ -145,7 +160,7 @@ function perform(
 }
 
 /**
- * Runs one app action. Failures land `back` with a snackbar; nothing throws, so the action
+ * Runs one app action. Failures and empty results land `back` with a snackbar; nothing throws, so the action
  * screen only navigates on the outcome.
  */
 export async function runAppAction(

@@ -5,6 +5,7 @@ import { File } from "expo-file-system";
 import { router } from "expo-router";
 import { Text } from "react-native";
 
+import { failureStore } from "~/lib/failure";
 import { audioPlayer } from "~/playback/audio-engine";
 import { playerStore } from "~/playback/player-store";
 import { putFile, resetFiles } from "~/test/expo-file-system";
@@ -48,6 +49,8 @@ function stackNames(app: Awaited<ReturnType<typeof openLink>>) {
   return stack?.routes.map((route) => route.name) ?? [];
 }
 
+const failureMessage = () => failureStore.getState().current?.message;
+
 const queuedIds = () => playerStore.getState().queue.map((entry) => entry.id);
 
 async function landsOn(
@@ -59,6 +62,7 @@ async function landsOn(
 
 beforeEach(() => {
   playerStore.setState(initialPlayer, true);
+  failureStore.setState({ current: null });
   procedure("song.details").mockImplementation(catalogAnswering(catalog));
 });
 
@@ -197,6 +201,7 @@ describe("action/play-liked and action/shuffle-liked", () => {
 
     await landsOn(app, "/");
     expect(queuedIds()).toEqual([]);
+    expect(failureMessage()).toBe("You haven't liked any songs yet");
   });
 
   it("does not read the likes of a signed-out listener", async () => {
@@ -240,12 +245,14 @@ describe("action/play-playlist", () => {
     const app = await openLink("/action/play-playlist?id=pl-2");
 
     await landsOn(app, "/");
+    expect(failureMessage()).toBe("Empty has no songs to play");
   });
 
   it("plays nothing for a playlist the listener doesn't have", async () => {
     const app = await openLink("/action/play-playlist?id=gone");
 
     await landsOn(app, "/");
+    expect(failureMessage()).toBe("That playlist isn't in your library");
     expect(queuedIds()).toEqual([]);
   });
 });
@@ -276,6 +283,14 @@ describe("action/play-search", () => {
     const app = await openLink("/action/play-search?q=zzzz");
 
     await landsOn(app, "/");
+    expect(failureMessage()).toBe("No songs found for “zzzz”");
+  });
+
+  it("says so for an empty term", async () => {
+    const app = await openLink("/action/play-search?q=%20");
+
+    await landsOn(app, "/");
+    expect(failureMessage()).toBe("Say a song, artist or album to play");
   });
 });
 
