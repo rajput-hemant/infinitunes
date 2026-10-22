@@ -279,14 +279,16 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 - [ ] **W-13** P3 CONFIRMED `(root)/browse/page.tsx:43-47,61-65` - "Top Albums" and "New Releases" tiles both link to `/album` [routes 13]
   - Fix: point New Releases at `/album?lang=<first language>` or drop it. Executor: haiku. Flags: none.
 
-## Batch W4 (opus): label route restructure - `apps/web/app/(root)/label/[name]/[token]/{page,loading}.tsx`, `packages/core/src/entity-route.ts`
+## Batch W4 (opus): label route restructure - `apps/web/app/(root)/label/[name]/[token]/{page,loading}.tsx`, `packages/core/src/entity-route.ts` - branch `fix/w4-label-tab-routes`
 
 `entity-route` is shared with mobile: re-run mobile route tests after the change.
 
-- [ ] **W-14** P2 PLAUSIBLE `(root)/label/[name]/[token]/loading.tsx:1-17` - `usePathname()` outside `PathnameBoundary`, so the shell degrades to the generic `(root)/loading.tsx` grid and the page shows three layouts in a row [routes 5]
+- [x] **W-14** P2 PLAUSIBLE `(root)/label/[name]/[token]/loading.tsx:1-17` - `usePathname()` outside `PathnameBoundary`, so the shell degrades to the generic `(root)/loading.tsx` grid and the page shows three layouts in a row [routes 5]
   - Fix: static header/tab skeleton, list-vs-grid choice behind `PathnameBoundary` with the grid as the null fallback (or always the grid); add a dom test with no pathname. Executor: sonnet. Flags: none. (Superseded if W-15's layout lands first.)
-- [ ] **W-15** P2 CONFIRMED `label/[name]/[token]/page.tsx:62-63,69-117`, `lib/types` fixture `label/music-label/lbl123_` - label tabs are `<Link>`s that re-skeleton the whole page, both lists are rendered and shipped every visit, and a slug without `-songs`/`-albums` makes both tabs link to the same URL (Songs unreachable) [routes 6]
+  - Done: superseded by W-15, the route `loading.tsx` is deleted; the layout's header and tab row and each panel have their own Suspense skeletons.
+- [x] **W-15** P2 CONFIRMED `label/[name]/[token]/page.tsx:62-63,69-117`, `lib/types` fixture `label/music-label/lbl123_` - label tabs are `<Link>`s that re-skeleton the whole page, both lists are rendered and shipped every visit, and a slug without `-songs`/`-albums` makes both tabs link to the same URL (Songs unreachable) [routes 6]
   - Fix: mirror the artist pattern: `label/[name]/[token]/layout.tsx` (header + tab nav) with `page.tsx` (songs) and `albums/page.tsx`, map `-songs`/`-albums` slugs in `getHref`/`entity-route` like `legacyArtistPath`. Minimal fallback: client-state tabs, render only the active panel, never rewrite the slug. Executor: opus. Flags: none.
+  - Done: Songs on the bare route, Albums on `/albums`; `entityRoute` splits the slug into an optional `tab` on the label's `entity` route, `legacyLabelPath` 308s both suffixes in `proxy.ts`. Follow-up (mobile): `+native-intent.tsx` has no mapping for the web's `/label/<name>/<token>/albums`.
 
 ## Batch W5 (sonnet): `/me`, show and home routes - `apps/web/app/(root)/me/**`, `app/(root)/show/[name]/[season]/[token]/page.tsx`, `app/(root)/_components/home-greeting.tsx`, `app/(root)/page.tsx`, `lib/db/queries.ts` _(after S1)_
 
@@ -391,3 +393,4 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
   - one PR per platform, with no visual redesign
+- [ ] **X-4** P3 Label tab follow-ups from W-15: `apps/mobile/src/app/+native-intent.tsx` should map the web's `/label/<name>/<token>/albums` onto `/label/<name>/<token>` (as it maps `/featured`); `components/details-header/details-header-meta.tsx` should link `label_url` with `getHref(..., "label")` instead of `asRoute` (it goes through the 308 now); `AGENTS.md` (entity pages with a `loading.tsx`) and `.agents/skills/verify/features/README.md` (route list) should describe the label tab routes.

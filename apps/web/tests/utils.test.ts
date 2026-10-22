@@ -125,6 +125,23 @@ describe("getHref", () => {
   });
 });
 
+describe("getHref label tabs", () => {
+  it("links a label's tab route, not the suffixed slug", () => {
+    expect(
+      getHref(
+        "https://www.jiosaavn.com/label/outlaw-productions-albums/tok_",
+        "label",
+      ),
+    ).toBe("/label/outlaw-productions/tok_/albums");
+    expect(
+      getHref(
+        "https://www.jiosaavn.com/label/outlaw-productions-songs/tok_",
+        "label",
+      ),
+    ).toBe("/label/outlaw-productions/tok_");
+  });
+});
+
 describe("route-arity invariant", () => {
   const ROUTES = [
     "/album/[name]/[token]",
@@ -137,6 +154,7 @@ describe("route-arity invariant", () => {
     "/show/[name]/[season]/[token]",
     "/episode/[name]/[token]",
     "/label/[name]/[token]",
+    "/label/[name]/[token]/albums",
     "/mix/[name]/[token]",
     "/radio/[name]/[token]",
   ];
@@ -191,6 +209,10 @@ describe("route-arity invariant", () => {
     },
     {
       url: "https://www.jiosaavn.com/label/music-label/lbl123_",
+      type: "label",
+    },
+    {
+      url: "https://www.jiosaavn.com/label/outlaw-productions-albums/lbl123_",
       type: "label",
     },
     {

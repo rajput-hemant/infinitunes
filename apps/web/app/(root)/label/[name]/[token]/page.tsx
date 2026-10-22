@@ -1,121 +1,34 @@
-import { getImageSrc, uniqueBy } from "@infinitunes/types";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@infinitunes/ui/components/tabs";
 import { Disc3 } from "lucide-react";
-import type { Metadata } from "next";
-import Link from "next/link";
-import { cache } from "react";
+import { Suspense } from "react";
 
-import { DetailsHeader } from "~/components/details-header/details-header";
 import { LibraryEmpty } from "~/components/library/library-section";
-import { SliderCard } from "~/components/slider/slider-card";
 import { SongList } from "~/components/song-list/song-list";
-import { pageMetadata } from "~/lib/metadata";
-import { orNotFound } from "~/lib/not-found";
-import { api } from "~/lib/trpc/server";
-import { asRoute } from "~/lib/utils";
+import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
 
-const getLabel = cache(async (token: string) =>
-  orNotFound(
-    api.get.label({
-      token,
-      page: 0,
-      n_song: 50,
-      n_album: 50,
-      cat: "popularity",
-      sort: "asc",
-    }),
-  ),
-);
+import { getLabel } from "./_components/label-data";
 
-type LabelDetailsPageProps = {
-  params: Promise<{
-    name: string;
-    token: string;
-  }>;
-};
+type LabelSongsPageProps = PageProps<"/label/[name]/[token]">;
 
-export async function generateMetadata({
-  params,
-}: LabelDetailsPageProps): Promise<Metadata> {
-  const { name, token } = await params;
-
+async function SongsPanel({ params }: Pick<LabelSongsPageProps, "params">) {
+  const { token } = await params;
   const label = await getLabel(token);
 
-  return pageMetadata({
-    title: label.name,
-    description: "Record Label",
-    url: `/label/${name}/${token}`,
-    image: getImageSrc(label.image, "high"),
-    square: true,
-  });
+  return label.topSongs.songs.length > 0 ? (
+    <SongList items={label.topSongs.songs} />
+  ) : (
+    <LibraryEmpty
+      icon={Disc3}
+      title="No songs yet"
+      titleAs="p"
+      description="This label has no songs to show right now."
+    />
+  );
 }
 
-export default async function LabelDetailsPage(props: LabelDetailsPageProps) {
-  const { name, token } = await props.params;
-
-  const label = await getLabel(token);
-  const tabHref = (tab: "songs" | "albums") =>
-    asRoute(`/label/${name.replace(/-(songs|albums)$/, `-${tab}`)}/${token}`);
-
+export default function LabelSongsPage({ params }: LabelSongsPageProps) {
   return (
-    <div className="flex flex-col gap-(--page-gap)">
-      <DetailsHeader item={label} />
-
-      <Tabs defaultValue={name.endsWith("-songs") ? "Songs" : "Albums"}>
-        <TabsList className="mx-auto flex max-w-fit lg:mx-0">
-          <TabsTrigger
-            value="Songs"
-            render={<Link href={tabHref("songs")}>Songs</Link>}
-          />
-          <TabsTrigger
-            value="Albums"
-            render={<Link href={tabHref("albums")}>Albums</Link>}
-          />
-        </TabsList>
-
-        <TabsContent value="Songs">
-          {label.topSongs.songs.length > 0 ? (
-            <SongList items={label.topSongs.songs} />
-          ) : (
-            <LibraryEmpty
-              icon={Disc3}
-              title="No songs yet"
-              titleAs="p"
-              description="This label has no songs to show right now."
-            />
-          )}
-        </TabsContent>
-
-        <TabsContent value="Albums">
-          {label.topAlbums.albums.length === 0 && (
-            <LibraryEmpty
-              icon={Disc3}
-              title="No albums yet"
-              titleAs="p"
-              description="This label has no albums to show right now."
-            />
-          )}
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(11rem,1fr))] gap-6 max-sm:gap-4">
-            {uniqueBy(label.topAlbums.albums, (album) => album.id).map(
-              ({ id, title, perma_url, subtitle, type, image }) => (
-                <SliderCard
-                  key={id}
-                  name={title}
-                  url={perma_url}
-                  subtitle={subtitle}
-                  type={type}
-                  image={image}
-                />
-              ),
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+    <Suspense fallback={<SongListSkeleton length={20} />}>
+      <SongsPanel params={params} />
+    </Suspense>
   );
 }

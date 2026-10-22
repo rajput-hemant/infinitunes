@@ -4,8 +4,12 @@ import {
   artistPath,
   entityRoute,
   entityRoutePath,
+  labelPath,
+  labelTabForSegment,
   legacyArtistPath,
+  legacyLabelPath,
   splitArtistSlug,
+  splitLabelSlug,
   tabForSegment,
   type EntityRoute,
 } from "../src/entity-route";
@@ -79,6 +83,67 @@ describe("legacyArtistPath", () => {
   });
 });
 
+describe("splitLabelSlug", () => {
+  it("reads the tab out of JioSaavn's label slug", () => {
+    expect(splitLabelSlug("t-series-albums")).toEqual({
+      name: "t-series",
+      tab: "albums",
+    });
+    expect(splitLabelSlug("t-series-songs")).toEqual({
+      name: "t-series",
+      tab: "songs",
+    });
+  });
+
+  it("leaves a plain name on the Songs tab, and never empties it", () => {
+    expect(splitLabelSlug("music-label")).toEqual({
+      name: "music-label",
+      tab: "songs",
+    });
+    expect(splitLabelSlug("-albums").name).toBe("-albums");
+    expect(splitLabelSlug("t-series-bio")).toEqual({
+      name: "t-series-bio",
+      tab: "songs",
+    });
+  });
+});
+
+describe("labelPath", () => {
+  it("puts Albums in a child segment, Songs on the bare route", () => {
+    expect(labelPath("t-series", "tok_", "songs")).toBe("/label/t-series/tok_");
+    expect(labelPath("t-series", "tok_", "albums")).toBe(
+      "/label/t-series/tok_/albums",
+    );
+  });
+});
+
+describe("labelTabForSegment", () => {
+  it("maps the selected child segment to a tab", () => {
+    expect(labelTabForSegment(null)).toBe("songs");
+    expect(labelTabForSegment("albums")).toBe("albums");
+    expect(labelTabForSegment("songs")).toBe("songs");
+    expect(labelTabForSegment("bio")).toBe("songs");
+  });
+});
+
+describe("legacyLabelPath", () => {
+  it("maps both slug suffixes onto the tab routes", () => {
+    expect(legacyLabelPath("/label/outlaw-productions-albums/tok_")).toBe(
+      "/label/outlaw-productions/tok_/albums",
+    );
+    expect(legacyLabelPath("/label/outlaw-productions-songs/tok_")).toBe(
+      "/label/outlaw-productions/tok_",
+    );
+  });
+
+  it("ignores everything that is already a current URL", () => {
+    expect(legacyLabelPath("/label/music-label/tok_")).toBeNull();
+    expect(legacyLabelPath("/label/music-label/tok_/albums")).toBeNull();
+    expect(legacyLabelPath("/label/t-series-albums")).toBeNull();
+    expect(legacyLabelPath("/artist/x-albums/tok_")).toBeNull();
+  });
+});
+
 describe("entityRoute", () => {
   it("reads the name and token after the type's own section", () => {
     expect(
@@ -128,9 +193,49 @@ describe("entityRoute", () => {
     ).toEqual({
       kind: "entity",
       type: "label",
-      name: "outlaw-productions-albums",
+      name: "outlaw-productions",
       token: "pKJp4RENQb4_",
+      tab: "albums",
     });
+  });
+
+  it("splits a label's tab off the name slug, Songs by default", () => {
+    expect(
+      entityRoute(
+        "https://www.jiosaavn.com/label/outlaw-productions-songs/tok_",
+        "label",
+      ),
+    ).toEqual({
+      kind: "entity",
+      type: "label",
+      name: "outlaw-productions",
+      token: "tok_",
+      tab: "songs",
+    });
+    expect(
+      entityRoute(
+        "https://www.jiosaavn.com/label/music-label/lbl123_",
+        "label",
+      ),
+    ).toEqual({
+      kind: "entity",
+      type: "label",
+      name: "music-label",
+      token: "lbl123_",
+      tab: "songs",
+    });
+  });
+
+  it("reads the app's own label Albums route", () => {
+    expect(entityRoute("/label/t-series/tok_/albums", "label")).toEqual({
+      kind: "entity",
+      type: "label",
+      name: "t-series",
+      token: "tok_",
+      tab: "albums",
+    });
+    expect(entityRoute("/label/t-series/tok_/songs", "label")).toBeUndefined();
+    expect(entityRoute("/label/t-series/tok_/bio", "label")).toBeUndefined();
   });
 
   it("refuses other sites and URLs too short for the type", () => {
@@ -238,5 +343,26 @@ describe("entityRoutePath", () => {
     expect(
       entityRoutePath({ kind: "artist", name: "a", token: "t_", tab: "bio" }),
     ).toBe("/artist/a/t_/bio");
+  });
+
+  it("links a label's tab route", () => {
+    expect(
+      entityRoutePath({
+        kind: "entity",
+        type: "label",
+        name: "l",
+        token: "t_",
+        tab: "albums",
+      }),
+    ).toBe("/label/l/t_/albums");
+    expect(
+      entityRoutePath({
+        kind: "entity",
+        type: "label",
+        name: "l",
+        token: "t_",
+        tab: "songs",
+      }),
+    ).toBe("/label/l/t_");
   });
 });
