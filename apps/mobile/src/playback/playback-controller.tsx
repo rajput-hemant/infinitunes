@@ -2,10 +2,12 @@ import { usePlayhead } from "@infinitunes/core/react/use-playhead";
 import { useRadioRefill } from "@infinitunes/core/react/use-radio-refill";
 import {
   useTrackPlayback,
+  PLAYBACK_PROBLEM_MESSAGES,
   type LoadTrack,
 } from "@infinitunes/core/react/use-track-playback";
 import { useAudioPlayerStatus } from "expo-audio";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Alert } from "react-native";
 
 import { usePreferences } from "~/lib/preferences";
 import { queryClient } from "~/lib/query-client";
@@ -25,6 +27,7 @@ import {
   markSourceEnded,
   nowPlayingMetadata,
 } from "./audio-engine";
+import { capturePlaybackRequest } from "./playback-request";
 import { playbackPosition, playbackStatusStore } from "./playback-status";
 import { playerStore, selectCurrentTrack, usePlayer } from "./player-store";
 import { recordPlay } from "./record-play";
@@ -79,6 +82,10 @@ export function PlaybackController() {
     options: Parameters<LoadTrack>[1];
   } | null>(null);
   const countListen = useRef(createCacheListenTracker());
+  const awaitingRefill = useRef<{
+    entryId: string;
+    isCurrent: () => boolean;
+  } | null>(null);
   const load = useCallback<LoadTrack>((src, options) => {
     const current = selectCurrentTrack(playerStore.getState());
     const local = current ? cachedSongSource(current, src) : undefined;
@@ -99,7 +106,13 @@ export function PlaybackController() {
     isPlayerInit: started,
     load,
     record: recordPlay,
-    onProblem: () => undefined,
+    onProblem: (problem) => {
+      cachedLoad.current = null;
+      audioPlayer.pause();
+      if (problem !== "unplayable") audioPlayer.replace(null);
+      setSource(FRESH_SOURCE);
+      Alert.alert("Playback unavailable", PLAYBACK_PROBLEM_MESSAGES[problem]);
+    },
     loadError: source.error,
     isLooping: repeatOne,
     isReady: source.loaded,
@@ -113,6 +126,24 @@ export function PlaybackController() {
     fetchSongs: fetchRadioSongs,
     setQueue: updateQueue,
   });
+
+  useEffect(() => {
+    const pending = awaitingRefill.current;
+    if (!pending) return;
+    if (
+      !pending.isCurrent() ||
+      !started ||
+      track?.queueItemId !== pending.entryId ||
+      !radio
+    ) {
+      awaitingRefill.current = null;
+      return;
+    }
+    if (queue[currentIndex + 1]) {
+      awaitingRefill.current = null;
+      advanceAfterEnd();
+    }
+  }, [queue, currentIndex, started, track, radio, advanceAfterEnd]);
 
   usePlayhead({
     store: playbackPosition,
@@ -164,6 +195,19 @@ export function PlaybackController() {
           // Repeat-one loops in the engine, which plays on from the start.
           if (!audioPlayer.loop) markSourceEnded(true);
           advanceAfterEnd();
+          const state = playerStore.getState();
+          if (
+            current &&
+            state.radio &&
+            state.repeat === "off" &&
+            selectCurrentTrack(state)?.queueItemId === current.queueItemId &&
+            !state.queue[state.currentIndex + 1]
+          ) {
+            awaitingRefill.current = {
+              entryId: current.queueItemId,
+              isCurrent: capturePlaybackRequest(),
+            };
+          }
         }
         const { error, isLoaded } = update;
         if (error) {

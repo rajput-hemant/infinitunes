@@ -38,6 +38,13 @@ beforeEach(() => {
   queryClient.clear();
   signInAs("listener-1");
   procedure("radio.songs").mockResolvedValue([]);
+  procedure("song.syncedLyrics").mockResolvedValue({
+    synced: null,
+    plain: null,
+    instrumental: false,
+    source: "lrclib",
+    copyright: null,
+  });
   playerStore.setState(initial, true);
   lastPlayer().reset();
 });
@@ -360,7 +367,7 @@ describe("PlaybackController", () => {
     expect(player.playing).toBe(true);
   });
 
-  it("never loads an entry without a stream link", async () => {
+  it("clears the source for an entry without a stream link", async () => {
     const silent = toSongRow(
       rawSong({
         id: "NoLink01",
@@ -372,7 +379,7 @@ describe("PlaybackController", () => {
 
     await act(async () => playerStore.getState().playTracks([silent]));
 
-    expect(player.loads).toEqual([]);
+    expect(player.loads).toEqual([""]);
   });
 });
 
