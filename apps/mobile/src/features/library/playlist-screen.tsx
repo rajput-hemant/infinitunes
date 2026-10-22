@@ -140,7 +140,7 @@ function Playlist({ id }: { id: string }) {
   if (data === undefined) {
     return <ErrorState error={error} onRetry={() => void refetch()} />;
   }
-  if (!playlist) {
+  if (!data || !playlist) {
     return (
       <EmptyState
         icon={{ ios: "music.note.list", android: "queue_music" }}
@@ -163,7 +163,7 @@ function Playlist({ id }: { id: string }) {
           />
         </PlaylistMenu>
       </Stack.Toolbar>
-      <PlaylistSongs playlist={playlist} server={data ?? playlist} />
+      <PlaylistSongs playlist={playlist} server={data} />
     </>
   );
 }

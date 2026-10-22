@@ -593,7 +593,7 @@ Never hang UI state on the action's round trip, and never let only the clicked c
   `@infinitunes/core/react/optimistic-playlists` (`usePlaylists` for the sidebar and add dialog, `PlaylistTitle`, `PlaylistGate`,
   `PlaylistRow`, `PendingPlaylistCards`), `?lang=` chips in `lib/pending-params.ts`. `user.getUserPlaylists` is a
   summary (`songCount`, `coverSongs`: the first four ids), never the songs; song ids come only from
-  `getPlaylistDetails` (`usePlaylistDetails`/`usePlaylistDetailList` overlay those) and, for mobile's
+  `getPlaylistDetails` (`usePlaylistDetails` overlays one) and, for mobile's
   "Add to Playlist" check marks, `getPlaylistMembership` (one query, `usePlaylistSongSets`). Use these for new write paths
   instead of a per-component `useOptimistic`, which cannot update other components.
 - One write per key in flight, always the latest intent (rapid clicks never double toggle); songs of one playlist
