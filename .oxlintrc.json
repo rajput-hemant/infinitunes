@@ -28,6 +28,13 @@
   ],
   "overrides": [
     {
+      "files": ["src/**", "apps/mobile/src/**", "packages/*/src/**"],
+      "rules": {
+        "unicorn/no-array-sort": "off",
+        "unicorn/no-array-reverse": "off"
+      }
+    },
+    {
       "files": ["packages/core/src/**"],
       "rules": {
         "no-restricted-globals": [
