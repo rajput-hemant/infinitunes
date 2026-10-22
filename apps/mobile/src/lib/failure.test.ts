@@ -73,6 +73,13 @@ describe("showFailure", () => {
 });
 
 describe("reportFailure", () => {
+  it("asks the listener to sign in for a coded unauthorized failure", () => {
+    reportFailure("Couldn't finish that.")(
+      trpcError("UNAUTHORIZED", "Unauthorized"),
+    );
+    expect(current()?.message).toBe("Please sign in to continue.");
+  });
+
   it("shows a refusal written for the listener", () => {
     reportFailure("Couldn't create the playlist.")(
       trpcError(

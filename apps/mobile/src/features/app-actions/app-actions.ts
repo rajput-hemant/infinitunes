@@ -2,12 +2,13 @@ import { getErrorCode } from "@infinitunes/core/error-code";
 import { toSongRow } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 
-import { showFailure } from "~/lib/failure";
+import { reportFailure, showFailure } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
 import { clearSongCache } from "~/lib/song-cache";
 import { fetchLikedSongRows, fetchSongRows } from "~/lib/song-rows";
 import { trpcClient } from "~/lib/trpc";
 import { playAll, shuffleAll } from "~/playback/play-collection";
+import { beginPlaybackRequest } from "~/playback/playback-request";
 import { playerStore } from "~/playback/player-store";
 import { resumePlayback } from "~/playback/transport";
 import { favoriteListsQuery } from "~/user-data/favorites";
@@ -67,12 +68,14 @@ async function likedSongs(userId: string): Promise<SongRowItem[]> {
 async function playLiked(
   userId: string | undefined,
   shuffle: boolean,
+  isCurrent: () => boolean,
 ): Promise<ActionOutcome> {
   if (!userId) {
     promptSignIn();
     return "back";
   }
   const rows = await likedSongs(userId);
+  if (!isCurrent()) return "back";
   if (rows.length === 0) {
     showFailure("You haven't liked any songs yet");
     return "back";
@@ -85,12 +88,14 @@ async function playLiked(
 async function playPlaylist(
   userId: string | undefined,
   id: string | undefined,
+  isCurrent: () => boolean,
 ): Promise<ActionOutcome> {
   if (!userId) {
     promptSignIn();
     return "back";
   }
   const playlists = await queryClient.fetchQuery(serverPlaylistsQuery(userId));
+  if (!isCurrent()) return "back";
   const playlist = playlists.find((candidate) => candidate.id === id);
   if (!playlist) {
     showFailure("That playlist isn't in your library");
@@ -98,6 +103,7 @@ async function playPlaylist(
   }
   const rows =
     playlist.songs.length === 0 ? [] : await fetchSongRows(playlist.songs);
+  if (!isCurrent()) return "back";
   if (!rows) throw new Error("Couldn't load this playlist's songs");
   if (rows.length === 0) {
     showFailure(`${playlist.name} has no songs to play`);
@@ -124,13 +130,17 @@ async function topSong(q: string) {
   }
 }
 
-async function playSearch(q: string | undefined): Promise<ActionOutcome> {
+async function playSearch(
+  q: string | undefined,
+  isCurrent: () => boolean,
+): Promise<ActionOutcome> {
   const term = q?.trim();
   if (!term) {
     showFailure("Say a song, artist or album to play");
     return "back";
   }
   const song = await topSong(term);
+  if (!isCurrent()) return "back";
   if (!song) {
     showFailure(`No songs found for “${term}”`);
     return "back";
@@ -142,6 +152,7 @@ async function playSearch(q: string | undefined): Promise<ActionOutcome> {
 function perform(
   action: AppAction,
   { userId, id, q }: AppActionContext,
+  isCurrent: () => boolean,
 ): ActionOutcome | Promise<ActionOutcome> {
   switch (action) {
     case "clear-cache":
@@ -149,13 +160,13 @@ function perform(
     case "resume":
       return resume();
     case "play-liked":
-      return playLiked(userId, false);
+      return playLiked(userId, false, isCurrent);
     case "shuffle-liked":
-      return playLiked(userId, true);
+      return playLiked(userId, true, isCurrent);
     case "play-playlist":
-      return playPlaylist(userId, id);
+      return playPlaylist(userId, id, isCurrent);
     case "play-search":
-      return playSearch(q);
+      return playSearch(q, isCurrent);
   }
 }
 
@@ -167,10 +178,14 @@ export async function runAppAction(
   action: AppAction,
   context: AppActionContext,
 ): Promise<ActionOutcome> {
+  const isCurrent =
+    action === "clear-cache" ? () => true : beginPlaybackRequest();
   try {
-    return await perform(action, context);
-  } catch {
-    showFailure("Couldn't finish that. Try again in the app.");
+    return await perform(action, context, isCurrent);
+  } catch (error) {
+    if (isCurrent()) {
+      reportFailure("Couldn't finish that. Try again in the app.")(error);
+    }
     return "back";
   }
 }
