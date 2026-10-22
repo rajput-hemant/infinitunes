@@ -299,7 +299,10 @@ describe("user router authorization", () => {
     await expect(
       caller.user.addSongsToPlaylist({
         playlistId: "playlist-1",
-        songs: Array.from({ length: 501 }, (_, i) => `song-${i}`),
+        songs: Array.from(
+          { length: PLAYLIST_MAX_SONGS + 1 },
+          (_, i) => `song-${i}`,
+        ),
       }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
