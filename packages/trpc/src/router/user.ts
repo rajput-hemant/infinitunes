@@ -323,6 +323,17 @@ export const userRouter = router({
     }),
   ),
 
+  /**
+   * Every playlist's song ids in one query, for "Add to Playlist" check marks
+   * (mobile menus); the library list itself stays a summary.
+   */
+  getPlaylistMembership: protectedProcedure.query(({ ctx }) =>
+    ctx.db.query.myPlaylists.findMany({
+      columns: { id: true, songs: true },
+      where: eq(myPlaylists.userId, ctx.session.user.id),
+    }),
+  ),
+
   getPlaylistDetails: protectedProcedure
     .input(playlistInput)
     .query(async ({ ctx, input }) => {
