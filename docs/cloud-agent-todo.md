@@ -86,7 +86,7 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts`
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
@@ -137,7 +137,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -256,15 +256,15 @@ Do P1 + the extraction together so the fix is applied once.
 - [ ] **W-10** P3 CONFIRMED `details-header/more-button.tsx:267-273` - the Download entry disappears while a download runs (`hide: isDownloading`) [wcomp P3-11]
   - Fix: keep it, `disabled`/`aria-busy`. Executor: haiku. Flags: none.
 
-## Batch W3 (sonnet): catalog list pages and metadata - `apps/web/app/(root)/{album,playlist,radio,show,artist}/page.tsx` + their `_components/{top-albums,featured-playlists,featured-stations,top-podcasts}.tsx`, `app/(root)/browse/page.tsx`
+## Batch W3 (sonnet): catalog list pages and metadata - `apps/web/app/(root)/{album,playlist,radio,show,artist}/page.tsx` + their `_components/{top-albums,featured-playlists,featured-stations,top-podcasts}.tsx`, `app/(root)/browse/page.tsx` (branch `fix/w3-web-batch`)
 
 Does not touch `browse/_components` (W7 moves `catalog-states`).
 
-- [ ] **W-11** P2 CONFIRMED `(root)/album/page.tsx:30-45` + `top-albums.tsx:20-29`, `playlist/page.tsx:27-43` + `featured-playlists.tsx:23-32`, `radio/page.tsx:30-46` + `featured-stations.tsx:25-34`, `show/page.tsx:46-52` + `top-podcasts.tsx:19-28` - `?page=N` is fetched by the server but the client infinite query is seeded as page 1, so scrolling loads page 2 under page N and drops page N as a duplicate [routes 3]
+- [x] **W-11** P2 CONFIRMED `(root)/album/page.tsx:30-45` + `top-albums.tsx:20-29`, `playlist/page.tsx:27-43` + `featured-playlists.tsx:23-32`, `radio/page.tsx:30-46` + `featured-stations.tsx:25-34`, `show/page.tsx:46-52` + `top-podcasts.tsx:19-28` - `?page=N` is fetched by the server but the client infinite query is seeded as page 1, so scrolling loads page 2 under page N and drops page N as a duplicate [routes 3]
   - Fix: pass the parsed page into the client components for `initialPageParam` and `pageParams: [page]` (or stop reading `page` and drop it from `KeyedByParams`); add one dom test seeding page 3 and asserting the next request is page 4. Executor: sonnet. Flags: none.
-- [ ] **W-12** P3 CONFIRMED `(root)/playlist/page.tsx:14-15`, `show/page.tsx:18-19`, `artist/page.tsx:18`, `album/page.tsx:15` - static metadata copy: build-time year, "Saavn" brand leak, EDM description on podcasts, padded `/artist` title, trailing "." on `/album` [routes 12]
+- [x] **W-12** P3 CONFIRMED `(root)/playlist/page.tsx:14-15`, `show/page.tsx:18-19`, `artist/page.tsx:18`, `album/page.tsx:15` - static metadata copy: build-time year, "Saavn" brand leak, EDM description on podcasts, padded `/artist` title, trailing "." on `/album` [routes 12]
   - Fix: rewrite the four strings; drop the year or compute it in `generateMetadata`. Executor: haiku. Flags: none.
-- [ ] **W-13** P3 CONFIRMED `(root)/browse/page.tsx:43-47,61-65` - "Top Albums" and "New Releases" tiles both link to `/album` [routes 13]
+- [x] **W-13** P3 CONFIRMED `(root)/browse/page.tsx:43-47,61-65` - "Top Albums" and "New Releases" tiles both link to `/album` [routes 13]
   - Fix: point New Releases at `/album?lang=<first language>` or drop it. Executor: haiku. Flags: none.
 
 ## Batch W4 (opus): label route restructure - `apps/web/app/(root)/label/[name]/[token]/{page,loading}.tsx`, `packages/core/src/entity-route.ts`
@@ -374,7 +374,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps

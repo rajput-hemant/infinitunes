@@ -16,21 +16,24 @@ import { trpc } from "~/lib/trpc/vanilla";
 type FeaturedStationsProps = {
   initialStations: Radio[];
   lang?: Lang;
+  /** The 1-based page `initial*` holds (`?page=N`); the next request is N + 1. */
+  page?: number;
 };
 
 function FeaturedStationsContent({
   initialStations,
   lang,
+  page = 1,
 }: FeaturedStationsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["featured-stations", lang],
+      queryKey: ["featured-stations", lang, page],
       queryFn: ({ pageParam }) =>
         trpc.get.featuredStations.query({ page: pageParam, n: 50, lang }),
-      initialPageParam: 1,
-      getNextPageParam: (stations, allPages) =>
-        stations.length < 50 ? null : allPages.length + 1,
-      initialData: { pages: [initialStations], pageParams: [1] },
+      initialPageParam: page,
+      getNextPageParam: (stations, _allPages, lastPageParam) =>
+        stations.length < 50 ? null : lastPageParam + 1,
+      initialData: { pages: [initialStations], pageParams: [page] },
     });
 
   const stations = uniqueBy(data.pages.flat(), (station) => station.id);

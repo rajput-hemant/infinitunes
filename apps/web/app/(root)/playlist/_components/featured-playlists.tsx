@@ -14,25 +14,28 @@ import { trpc } from "~/lib/trpc/vanilla";
 type FeaturedPlaylistsProps = {
   initialPlaylists: FeaturedPlaylists;
   lang?: Lang;
+  /** The 1-based page `initial*` holds (`?page=N`); the next request is N + 1. */
+  page?: number;
 };
 
 function FeaturedPlaylistsContent({
   initialPlaylists,
   lang,
+  page = 1,
 }: FeaturedPlaylistsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["featured-playlists", lang],
+      queryKey: ["featured-playlists", lang, page],
       queryFn: ({ pageParam }) =>
         trpc.get.featuredPlaylists.query({ page: pageParam, n: 50, lang }),
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, allPages) =>
-        lastPage.last_page ? null : allPages.length + 1,
-      initialData: { pages: [initialPlaylists], pageParams: [1] },
+      initialPageParam: page,
+      getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+        lastPage.last_page ? null : lastPageParam + 1,
+      initialData: { pages: [initialPlaylists], pageParams: [page] },
     });
 
   const featuredPlaylists = uniqueBy(
-    data.pages.flatMap((page) => page.data),
+    data.pages.flatMap((group) => group.data),
     (playlist) => playlist.id,
   );
 
