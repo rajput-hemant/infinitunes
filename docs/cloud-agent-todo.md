@@ -86,7 +86,7 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts`
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
@@ -137,7 +137,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -267,14 +267,16 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 - [ ] **W-13** P3 CONFIRMED `(root)/browse/page.tsx:43-47,61-65` - "Top Albums" and "New Releases" tiles both link to `/album` [routes 13]
   - Fix: point New Releases at `/album?lang=<first language>` or drop it. Executor: haiku. Flags: none.
 
-## Batch W4 (opus): label route restructure - `apps/web/app/(root)/label/[name]/[token]/{page,loading}.tsx`, `packages/core/src/entity-route.ts`
+## Batch W4 (opus): label route restructure - `apps/web/app/(root)/label/[name]/[token]/{page,loading}.tsx`, `packages/core/src/entity-route.ts` - branch `fix/w4-label-tab-routes`
 
 `entity-route` is shared with mobile: re-run mobile route tests after the change.
 
-- [ ] **W-14** P2 PLAUSIBLE `(root)/label/[name]/[token]/loading.tsx:1-17` - `usePathname()` outside `PathnameBoundary`, so the shell degrades to the generic `(root)/loading.tsx` grid and the page shows three layouts in a row [routes 5]
+- [x] **W-14** P2 PLAUSIBLE `(root)/label/[name]/[token]/loading.tsx:1-17` - `usePathname()` outside `PathnameBoundary`, so the shell degrades to the generic `(root)/loading.tsx` grid and the page shows three layouts in a row [routes 5]
   - Fix: static header/tab skeleton, list-vs-grid choice behind `PathnameBoundary` with the grid as the null fallback (or always the grid); add a dom test with no pathname. Executor: sonnet. Flags: none. (Superseded if W-15's layout lands first.)
-- [ ] **W-15** P2 CONFIRMED `label/[name]/[token]/page.tsx:62-63,69-117`, `lib/types` fixture `label/music-label/lbl123_` - label tabs are `<Link>`s that re-skeleton the whole page, both lists are rendered and shipped every visit, and a slug without `-songs`/`-albums` makes both tabs link to the same URL (Songs unreachable) [routes 6]
+  - Done: superseded by W-15, the route `loading.tsx` is deleted; the layout's header and tab row and each panel have their own Suspense skeletons.
+- [x] **W-15** P2 CONFIRMED `label/[name]/[token]/page.tsx:62-63,69-117`, `lib/types` fixture `label/music-label/lbl123_` - label tabs are `<Link>`s that re-skeleton the whole page, both lists are rendered and shipped every visit, and a slug without `-songs`/`-albums` makes both tabs link to the same URL (Songs unreachable) [routes 6]
   - Fix: mirror the artist pattern: `label/[name]/[token]/layout.tsx` (header + tab nav) with `page.tsx` (songs) and `albums/page.tsx`, map `-songs`/`-albums` slugs in `getHref`/`entity-route` like `legacyArtistPath`. Minimal fallback: client-state tabs, render only the active panel, never rewrite the slug. Executor: opus. Flags: none.
+  - Done: Songs on the bare route, Albums on `/albums`; `entityRoute` splits the slug into an optional `tab` on the label's `entity` route, `legacyLabelPath` 308s both suffixes in `proxy.ts`. Follow-up (mobile): `+native-intent.tsx` has no mapping for the web's `/label/<name>/<token>/albums`.
 
 ## Batch W5 (sonnet): `/me`, show and home routes - `apps/web/app/(root)/me/**`, `app/(root)/show/[name]/[season]/[token]/page.tsx`, `app/(root)/_components/home-greeting.tsx`, `app/(root)/page.tsx`, `lib/db/queries.ts` _(after S1)_
 
@@ -374,8 +376,9 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
   - one PR per platform, with no visual redesign
+- [ ] **X-4** P3 Label tab follow-ups from W-15: `apps/mobile/src/app/+native-intent.tsx` should map the web's `/label/<name>/<token>/albums` onto `/label/<name>/<token>` (as it maps `/featured`); `components/details-header/details-header-meta.tsx` should link `label_url` with `getHref(..., "label")` instead of `asRoute` (it goes through the 308 now); `AGENTS.md` (entity pages with a `loading.tsx`) and `.agents/skills/verify/features/README.md` (route list) should describe the label tab routes.
