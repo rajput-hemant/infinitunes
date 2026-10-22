@@ -138,6 +138,12 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
 - **Checkbox rows** (languages): every row shows its checkbox (`check_box` / `check_box_outline_blank`). The
   list shows the effective selection: the defaults while none is chosen, and the last checked can't be
   unchecked.
+- **Snackbar** (`components/failure-snackbar.tsx`, failures only): Material 3's snackbar on an inverse surface
+  (the `foreground` token as the fill and `background` as the text, a pinned AA pair), a 48dp+ bar at `xs`
+  corners, bodyMedium copy, an optional labelLarge text action ("Retry"), level-3 elevation, spanning the page gutters
+  above the floating dock and navigation bar. Enters with a 150ms fade and scale from 80%, exits with a 75ms fade
+  (a fade only under reduce motion); one at a time, about 4s (8s with an action), tap or swipe to dismiss; a live
+  region so TalkBack reads it. iOS shows the same failures as a glass capsule with an SF Symbol.
 - **Loading indicator**: footers and gates use `Spinner`, Compose's M3E `LoadingIndicator` on Android.
 - **Pull to refresh**: `PullToRefresh`, the spinner in `primary` on a `card` disc (the stock control is white on
   white), shown only for the listener's own pull.
