@@ -3,7 +3,11 @@ import { afterEach, describe, expect, it, mock } from "bun:test";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
+const toastError = mock((_message: string) => {});
 mock.module("next/navigation", () => ({ usePathname: () => "/song/x/abc" }));
+mock.module("sonner", () => ({
+  toast: Object.assign(() => {}, { success() {}, error: toastError }),
+}));
 
 const { ShareOptions } = await import("../../components/share-options");
 
@@ -74,6 +78,48 @@ describe("ShareOptions copy", () => {
 
     await act(async () => button.click());
     expect(button.textContent).toBe("Link Copied");
+  });
+
+  it("resets the Link Copied label after a moment", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: () => Promise.resolve() },
+      configurable: true,
+    });
+    const c = await mount(<ShareOptions />);
+    const button = c.querySelector("button") as HTMLButtonElement;
+    await act(async () => button.click());
+    expect(button.textContent).toBe("Link Copied");
+
+    await act(async () => new Promise((r) => setTimeout(r, 2100)));
+    expect(button.textContent).toBe("Copy Link");
+  });
+
+  it("reports a rejected clipboard write instead of claiming success", async () => {
+    toastError.mockClear();
+    Object.defineProperty(navigator, "clipboard", {
+      value: { writeText: () => Promise.reject(new Error("denied")) },
+      configurable: true,
+    });
+    const c = await mount(<ShareOptions />);
+    const button = c.querySelector("button") as HTMLButtonElement;
+    await act(async () => button.click());
+
+    expect(button.textContent).toBe("Copy Link");
+    expect(toastError).toHaveBeenCalledWith("Couldn't copy the link");
+  });
+
+  it("reports a missing clipboard API", async () => {
+    toastError.mockClear();
+    Object.defineProperty(navigator, "clipboard", {
+      value: undefined,
+      configurable: true,
+    });
+    const c = await mount(<ShareOptions />);
+    const button = c.querySelector("button") as HTMLButtonElement;
+    await act(async () => button.click());
+
+    expect(button.textContent).toBe("Copy Link");
+    expect(toastError).toHaveBeenCalledWith("Couldn't copy the link");
   });
 });
 

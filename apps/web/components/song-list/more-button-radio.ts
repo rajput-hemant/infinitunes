@@ -20,29 +20,32 @@ export type RadioStart = {
   setActiveRadio: ReturnType<typeof useActiveRadioSession>[1];
 };
 
+/** What a station is created from: the row and the details header both reduce to this. */
+export type RadioSeed = {
+  type: "artist" | "featured";
+  name: string;
+  artistId?: string;
+  language?: string;
+};
+
 /**
- * Creates a station for the tile and starts it. Kept outside the hook: the
- * React Compiler bails out on try/catch around ternaries and optional chains.
+ * Creates a station from `seed` and starts it. The one "create station then
+ * play" path for every "Play Radio" entry. Kept outside the hooks: the React
+ * Compiler bails out on try/catch around ternaries and optional chains.
  */
-export async function startTileRadio(item: TileMoreItem, radio: RadioStart) {
+export async function startRadio(seed: RadioSeed, radio: RadioStart) {
   const { client, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
     radio;
+  const { type, name, artistId, language } = seed;
 
   try {
-    toast.loading("Starting radio...", { id: "song-radio" });
-    const artists = getItemArtists(item);
-    const primary = artists?.[0];
-    const artistName = primary?.name;
-    const artistId = primary?.id;
-
-    const stationName = artistName || getItemName(item);
-    const radioType: "artist" | "featured" = artistName ? "artist" : "featured";
+    toast.loading("Starting radio...", { id: "play-radio" });
 
     const { stationId } = await client.radio.createStation.mutate({
-      type: radioType,
-      name: stationName,
+      type,
+      name,
       artistId,
-      language: item.language,
+      language,
     });
 
     const radioSongs = await client.radio.songs.query({
@@ -52,7 +55,7 @@ export async function startTileRadio(item: TileMoreItem, radio: RadioStart) {
 
     if (!radioSongs.length) {
       toast.error("Could not find songs for this radio", {
-        id: "song-radio",
+        id: "play-radio",
       });
       return;
     }
@@ -61,36 +64,53 @@ export async function startTileRadio(item: TileMoreItem, radio: RadioStart) {
     setQueue(radioQueue);
     setActiveRadio({
       stationId,
-      name: `${stationName} Radio`,
-      type: radioType,
+      name: `${name} Radio`,
+      type,
+      language,
     });
     setCurrentIndex(0);
     setIsPlayerInit(true);
 
-    toast.success(`Playing "${stationName} Radio"`, {
-      id: "song-radio",
+    toast.success(`Playing "${name} Radio"`, {
+      id: "play-radio",
       description: `Added ${radioQueue.length} station tracks to queue`,
     });
   } catch {
-    toast.error("Unable to start radio station", { id: "song-radio" });
+    toast.error("Unable to start radio station", { id: "play-radio" });
   }
 }
 
-export function useTileRadio(item: TileMoreItem) {
+/** The artist's station when the row has credits, otherwise one named after the item. */
+export function tileRadioSeed(item: TileMoreItem): RadioSeed {
+  const primary = getItemArtists(item)?.[0];
+  const artistName = primary?.name;
+
+  return {
+    type: artistName ? "artist" : "featured",
+    name: artistName || getItemName(item),
+    artistId: primary?.id,
+    language: item.language,
+  };
+}
+
+export function useRadioStart() {
   const [, setQueue] = useQueue();
   const [, setCurrentIndex] = useCurrentSongIndex();
   const [, setIsPlayerInit] = useIsPlayerInit();
   const [, setActiveRadio] = useActiveRadioSession();
 
-  async function playRadio() {
-    await startTileRadio(item, {
+  return (seed: RadioSeed) =>
+    startRadio(seed, {
       client: trpc,
       setQueue,
       setCurrentIndex,
       setIsPlayerInit,
       setActiveRadio,
     });
-  }
+}
 
-  return playRadio;
+export function useTileRadio(item: TileMoreItem) {
+  const start = useRadioStart();
+
+  return () => start(tileRadioSeed(item));
 }

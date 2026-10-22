@@ -75,6 +75,41 @@ describe("phone more-menu share panel", () => {
   });
 });
 
+describe("phone more-menu entries", () => {
+  it("closes the sheet when an entry is chosen", async () => {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    let chosen = 0;
+    await act(async () => {
+      root.render(
+        <TileMoreMobile
+          item={item}
+          showAlbum={false}
+          entries={[
+            { label: "Play Song Now", onClick: () => chosen++, icon: Play },
+          ]}
+        />,
+      );
+    });
+    await act(async () =>
+      container
+        .querySelector<HTMLButtonElement>('[aria-label="More options"]')
+        ?.click(),
+    );
+    expect(button("Cancel")).toBeDefined();
+
+    await act(async () => button("Play Song Now")?.click());
+    await act(async () => new Promise((r) => setTimeout(r, 100)));
+
+    expect(chosen).toBe(1);
+    expect(button("Cancel")).toBeUndefined();
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+});
+
 describe("row share target", () => {
   it("shares the song's own page, not the page the row sits on", async () => {
     const container = document.createElement("div");
