@@ -1,5 +1,6 @@
 import { Share } from "react-native";
 
+import { failureStore } from "./failure";
 import { shareItem } from "./share";
 
 const share = jest.spyOn(Share, "share").mockResolvedValue({
@@ -10,6 +11,19 @@ const share = jest.spyOn(Share, "share").mockResolvedValue({
 beforeEach(() => share.mockClear());
 
 describe("shareItem", () => {
+  it("says so when the share sheet cannot open", async () => {
+    failureStore.setState({ current: null });
+    share.mockRejectedValueOnce(new Error("no activity"));
+
+    shareItem({ name: "A", type: "album", url: "https://www.jiosaavn.com/a" });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(failureStore.getState().current?.message).toBe(
+      "Couldn't open the share sheet.",
+    );
+  });
+
   it("shares the web page of an album, not JioSaavn's own URL", () => {
     shareItem({
       name: "Udta Teer",

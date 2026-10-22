@@ -29,4 +29,16 @@ describe("Description", () => {
     expect(screen.getByText("About").props.numberOfLines).toBeUndefined();
     expect(screen.getByText("Read Less")).toBeTruthy();
   });
+
+  it("starts collapsed again when the text changes", async () => {
+    const view = await renderWithProviders(<Description text="About" />);
+    await layOut(3);
+    await fireEvent.press(screen.getByRole("button", { expanded: false }));
+    expect(screen.getByText("Read Less")).toBeTruthy();
+
+    await view.rerender(<Description text="Other" />);
+
+    expect(screen.queryByText("Read Less")).toBeNull();
+    expect(screen.getByText("Other").props.numberOfLines).toBe(3);
+  });
 });

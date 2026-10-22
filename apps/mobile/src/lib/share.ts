@@ -4,6 +4,7 @@ import { Share } from "react-native";
 import { entityPath } from "~/navigation/entity-href";
 
 import { env } from "./env";
+import { reportFailure } from "./failure";
 
 /** An item the share sheet offers: its decoded name, its type and its perma URL. */
 export type ShareableItem = { name: string; type: MediaType; url: string };
@@ -22,9 +23,9 @@ function webPageUrl({ type, url }: Omit<ShareableItem, "name">) {
 export function shareItem(item: ShareableItem) {
   const link = webPageUrl(item);
   // iOS shares `url` as a link and `message` as text; Android takes only `message`.
-  void Share.share({
+  Share.share({
     title: item.name,
     message: `${item.name} ${link}`,
     url: link,
-  });
+  }).catch(reportFailure("Couldn't open the share sheet."));
 }
