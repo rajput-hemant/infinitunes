@@ -60,23 +60,59 @@ function saveBlob(blob: Blob, filename: string) {
   anchor.click();
 }
 
+/** Above this many songs the user confirms first: each one is a separate file. */
+const CONFIRM_ABOVE = 10;
+const PROGRESS_TOAST = "download-progress";
+
 /**
- * Runs every download and reports a failure as a toast. `setBusy` brackets the
- * run. Kept outside the hook: the React Compiler bails out on try/finally.
+ * Downloads the songs one after another (each blob is released before the next
+ * starts, and the browser is not asked for N save dialogs at once), reports
+ * progress and any partial failure as toasts. `setBusy` brackets the run. Kept
+ * outside the hook: the React Compiler bails out on try/finally.
  */
 async function downloadAll(
   songs: Downloadable[],
   downloadSong: (song: Downloadable) => Promise<void>,
   setBusy: (busy: boolean) => void,
 ) {
+  if (
+    songs.length > CONFIRM_ABOVE &&
+    !window.confirm(`Download ${songs.length} songs one by one?`)
+  ) {
+    return;
+  }
+
   setBusy(true);
+  let failed = 0;
   try {
-    await Promise.all(songs.map((song) => downloadSong(song)));
-  } catch (error) {
-    console.error(error);
-    toast.error("Download failed. Please try again.");
+    for (const [index, song] of songs.entries()) {
+      if (songs.length > 1) {
+        toast.loading(`Downloading ${index + 1} of ${songs.length}`, {
+          id: PROGRESS_TOAST,
+        });
+      }
+      try {
+        await downloadSong(song);
+      } catch (error) {
+        console.error(error);
+        failed++;
+      }
+    }
   } finally {
     setBusy(false);
+  }
+
+  if (songs.length === 1) {
+    if (failed) toast.error("Download failed. Please try again.");
+  } else if (failed === songs.length) {
+    toast.error("Download failed. Please try again.", { id: PROGRESS_TOAST });
+  } else if (failed) {
+    toast.error(
+      `Downloaded ${songs.length - failed} of ${songs.length} songs, ${failed} failed`,
+      { id: PROGRESS_TOAST },
+    );
+  } else if (songs.length > 1) {
+    toast.success(`Downloaded ${songs.length} songs`, { id: PROGRESS_TOAST });
   }
 }
 
@@ -99,7 +135,8 @@ export function useDownloadSongs(songs: Downloadable[]) {
     const title = downloadTitle(song);
     const chunks = await readAudio(link);
 
-    toast.success(`Downloaded ${title}`);
+    // A batch reports once at the end; a single song says its name.
+    if (songs.length === 1) toast.success(`Downloaded ${title}`);
     saveBlob(new Blob(chunks, { type: "audio/mp4" }), `${title}.m4a`);
   }
 
