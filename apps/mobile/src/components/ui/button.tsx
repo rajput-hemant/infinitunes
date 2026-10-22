@@ -7,6 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
+import { usePressScale } from "~/lib/use-press-scale";
 import { springs } from "~/theme/motion";
 import { sizes, space } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
@@ -66,27 +67,41 @@ function CapsuleButton({
   label,
   icon,
   variant = "primary",
+  style,
+  onPressIn,
+  onPressOut,
   ...props
 }: ButtonProps) {
   const { container, tone, ink } = variants[variant];
   const inkColor = useTokenColor(ink);
+  const press = usePressScale();
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      className={cx(
-        "min-h-touch flex-row items-center justify-center gap-2 rounded-full px-4 py-2 active:scale-95 active:opacity-80 disabled:opacity-50",
-        container,
-      )}
-      {...props}
-    >
-      {icon ? (
-        <Icon name={icon} size="md" color={inkColor} weight="semibold" />
-      ) : null}
-      <Text variant="label" tone={tone}>
-        {label}
-      </Text>
-    </Pressable>
+    <Animated.View style={[style, press.style]}>
+      <Pressable
+        accessibilityRole="button"
+        className={cx(
+          "min-h-touch flex-row items-center justify-center gap-2 rounded-full px-4 py-2 active:opacity-80 disabled:opacity-50",
+          container,
+        )}
+        {...props}
+        onPressIn={(event) => {
+          press.onPressIn();
+          onPressIn?.(event);
+        }}
+        onPressOut={(event) => {
+          press.onPressOut();
+          onPressOut?.(event);
+        }}
+      >
+        {icon ? (
+          <Icon name={icon} size="md" color={inkColor} weight="semibold" />
+        ) : null}
+        <Text variant="label" tone={tone}>
+          {label}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 

@@ -19,6 +19,19 @@ const toneClasses = {
 
 export type TextTone = keyof typeof toneClasses;
 
+/** iOS scales each role along its own Dynamic Type text style (Android ignores the prop). */
+const RAMPS = {
+  largeTitle: "largeTitle",
+  title1: "title1",
+  title2: "title2",
+  headline: "headline",
+  body: "body",
+  label: "headline",
+  subhead: "subheadline",
+  footnote: "footnote",
+  caption: "caption1",
+} as const satisfies Record<TextVariant, NativeTextProps["dynamicTypeRamp"]>;
+
 const TABULAR = { fontVariant: ["tabular-nums"] } as const;
 
 export type TextProps = NativeTextProps & {
@@ -50,6 +63,7 @@ export function Text({
 }: TextProps) {
   return (
     <NativeText
+      dynamicTypeRamp={RAMPS[variant]}
       className={cx(color === undefined && toneClasses[tone], className)}
       style={[
         textStyles[variant],

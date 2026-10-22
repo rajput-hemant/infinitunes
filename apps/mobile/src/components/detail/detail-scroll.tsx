@@ -1,5 +1,4 @@
 import { createContext, use, useMemo } from "react";
-import { Platform } from "react-native";
 import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
 import { art } from "~/theme/tokens";
@@ -22,17 +21,15 @@ type DetailScrollProps = {
 
 /**
  * Spread on a detail page's one scroll view (a `ScrollView` or `FlashList`):
- * on Android it reports when the entity header scrolls under the top app bar,
- * which `DetailFrame` then tints and titles (Material 3's scrolled bar). iOS's
- * glass bar already separates itself, so there it adds nothing. Read at
- * render, so a test can switch platforms.
+ * it reports when the entity header scrolls under the top bar, which
+ * `DetailFrame` then titles (and, on Android, tints: Material 3's scrolled
+ * bar). iOS's glass bar already separates itself, so it only gains the title.
  */
 export function useDetailScrollProps(): DetailScrollProps {
   const setScrolled = use(DetailScrollContext);
-  const android = Platform.OS === "android";
   return useMemo(
     () =>
-      android && setScrolled
+      setScrolled
         ? {
             // React skips the render when the flag did not change.
             onScroll: ({ nativeEvent }) =>
@@ -40,6 +37,6 @@ export function useDetailScrollProps(): DetailScrollProps {
             scrollEventThrottle: 16,
           }
         : {},
-    [android, setScrolled],
+    [setScrolled],
   );
 }

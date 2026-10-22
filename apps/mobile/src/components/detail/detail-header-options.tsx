@@ -14,10 +14,9 @@ import type { ShareableItem } from "~/lib/share";
  * would sit in a wider capsule. With no item yet (loading, failed) there is no
  * Share.
  *
- * Android: once the page scrolls under the bar (`scrolledColor` set, see
- * `useDetailScrollProps`), the bar takes Material 3's scrolled container
- * colour and the item's name; it returns to the surface and no title at the
- * top. Every key is always present: `<Stack.Screen options>` merges into the
+ * Once the page scrolls under the bar (`scrolledColor` set, see
+ * `useDetailScrollProps`), the bar shows the item's name, and on Android also
+ * takes Material 3's scrolled container colour; both return at the top. Every key is always present: `<Stack.Screen options>` merges into the
  * previous options, so a left-out key would keep the old value.
  */
 export function detailHeaderOptions(
@@ -25,8 +24,7 @@ export function detailHeaderOptions(
   scrolledColor?: string,
 ): NativeStackNavigationOptions {
   const share = item && (() => shareItem(item));
-  const scrolled =
-    Platform.OS === "android" && item !== undefined && scrolledColor;
+  const scrolled = item !== undefined && scrolledColor;
   return {
     title: item?.name ?? "",
     headerTitle: scrolled ? item.name : "",
