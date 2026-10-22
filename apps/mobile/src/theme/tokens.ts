@@ -366,7 +366,7 @@ type Scale = Record<TextVariant, TypeStyle>;
 const iosScale: Scale = {
   largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: "700" },
   title1: { fontSize: 28, lineHeight: 34, fontWeight: "700" },
-  title2: { fontSize: 20, lineHeight: 25, fontWeight: "700" },
+  title2: { fontSize: 22, lineHeight: 28, fontWeight: "700" },
   headline: { fontSize: 17, lineHeight: 22, fontWeight: "600" },
   body: { fontSize: 17, lineHeight: 22, fontWeight: "400" },
   label: { fontSize: 17, lineHeight: 22, fontWeight: "600" },
@@ -378,12 +378,12 @@ const iosScale: Scale = {
 /**
  * The Material 3 type scale: headlineMedium, headlineSmall, titleLarge,
  * titleMedium, bodyLarge, labelLarge, bodyMedium (subhead and footnote),
- * labelMedium.
+ * labelMedium. `title2` is titleLarge at its full 22/28, as iOS's Title 2.
  */
 const androidScale: Scale = {
   largeTitle: { fontSize: 28, lineHeight: 36, fontWeight: "400" },
   title1: { fontSize: 24, lineHeight: 32, fontWeight: "400" },
-  title2: { fontSize: 20, lineHeight: 28, fontWeight: "500" },
+  title2: { fontSize: 22, lineHeight: 28, fontWeight: "500" },
   headline: { fontSize: 16, lineHeight: 24, fontWeight: "500" },
   body: { fontSize: 16, lineHeight: 24, fontWeight: "400" },
   label: { fontSize: 14, lineHeight: 20, fontWeight: "500" },

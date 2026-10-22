@@ -6,6 +6,7 @@ import Animated from "react-native-reanimated";
 import { cx } from "~/lib/class-names";
 import { usePressScale } from "~/lib/use-press-scale";
 import { art } from "~/theme/tokens";
+import { usePalette } from "~/theme/use-palette";
 
 import {
   CardLink,
@@ -57,6 +58,7 @@ export function QuickPickTile({
 }: QuickPickTileProps) {
   const entries = useCardMenuEntries(item);
   const press = usePressScale(0.97);
+  const ripple = usePalette()["fill-2"];
   const style = { width, minHeight: art.pick };
   // A tile without a screen dims only its picture, so the title keeps its contrast.
   const dimmed = !href && !onPress;
@@ -117,6 +119,8 @@ export function QuickPickTile({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       {...cardAccessibilityActions(entries)}
+      // Android: a bounded ripple, clipped by the tile's own corners.
+      android_ripple={{ color: ripple, foreground: true }}
       className={TILE_CLASS}
       style={style}
     >

@@ -3,11 +3,13 @@ import { isExplicit } from "@infinitunes/types";
 import { Platform, Pressable, View } from "react-native";
 import Animated from "react-native-reanimated";
 
+import { cx } from "~/lib/class-names";
 import { prefetchEntity } from "~/lib/entity-queries";
 import { usePressScale } from "~/lib/use-press-scale";
 import { entityHref } from "~/navigation/entity-href";
 import { isPlayable } from "~/playback/play-entity";
 import { art, sizes, space } from "~/theme/tokens";
+import { usePalette } from "~/theme/use-palette";
 
 import {
   CardLink,
@@ -75,6 +77,7 @@ export function MediaCard({
   const label = [name, item.subtitle, shownEyebrow].filter(Boolean).join(", ");
   const entries = useCardMenuEntries(item);
   const press = usePressScale();
+  const ripple = usePalette()["fill-2"];
 
   const content = (
     <>
@@ -149,7 +152,16 @@ export function MediaCard({
             accessibilityRole="link"
             accessibilityLabel={label}
             {...cardAccessibilityActions(entries)}
-            className="gap-2"
+            // Android: a bounded ripple over the card, its top corners the
+            // art's; the bottom stays square so the subtitle is never clipped.
+            android_ripple={{ color: ripple, foreground: true }}
+            className={cx(
+              "gap-2",
+              Platform.OS === "android" &&
+                (hero
+                  ? "overflow-hidden rounded-t-lg"
+                  : "overflow-hidden rounded-t-md"),
+            )}
             style={{ width: edge }}
           >
             {content}
