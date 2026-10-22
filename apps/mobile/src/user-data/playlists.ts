@@ -11,6 +11,7 @@ import {
 } from "@infinitunes/core/react/optimistic-playlists";
 import { useQuery } from "@tanstack/react-query";
 
+import { reportFailure } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
 import { trpc, trpcClient } from "~/lib/trpc";
 
@@ -55,7 +56,8 @@ export function refreshPlaylists() {
 
 /*
  * Each write below shows in every list at once (the shared overlay) and rolls
- * back when it fails. Nothing here clears the overlay: it drops
+ * back when it fails, saying why in the failure snackbar (the server's
+ * refusal, such as the playlist cap, or generic copy). Nothing here clears the overlay: it drops
  * its own records once the refreshed playlists agree.
  */
 
@@ -65,7 +67,7 @@ export function createPlaylist(details: PlaylistDetails) {
   createPlaylistOptimistic(details, () =>
     trpcClient.user.createNewPlaylist.mutate(details),
   )
-    .catch(() => undefined)
+    .catch(reportFailure("Couldn't create the playlist."))
     .finally(() => void refreshPlaylists());
 }
 
@@ -73,7 +75,7 @@ export function renamePlaylist(id: string, details: PlaylistDetails) {
   renamePlaylistOptimistic(id, details, () =>
     trpcClient.user.renamePlaylist.mutate({ playlistId: id, ...details }),
   )
-    .catch(() => undefined)
+    .catch(reportFailure("Couldn't rename the playlist."))
     .finally(() => void refreshPlaylists());
 }
 
@@ -81,7 +83,7 @@ export function deletePlaylist(id: string) {
   deletePlaylistOptimistic(id, () =>
     trpcClient.user.deletePlaylist.mutate({ playlistId: id }),
   )
-    .catch(() => undefined)
+    .catch(reportFailure("Couldn't delete the playlist."))
     .finally(() => void refreshPlaylists());
 }
 
@@ -95,7 +97,7 @@ function addSongIds(playlist: Playlist, ids: readonly string[]) {
       songs: [...ids],
     }),
   )
-    .catch(() => undefined)
+    .catch(reportFailure(`Couldn't add to ${playlist.name}.`))
     .finally(() => void refreshPlaylists());
 }
 
@@ -122,7 +124,7 @@ export function createPlaylistWithSongs(
     .then((playlist) => {
       if (songIds.length > 0) addSongIds(playlist, songIds);
     })
-    .catch(() => undefined)
+    .catch(reportFailure("Couldn't create the playlist."))
     .finally(() => void refreshPlaylists());
 }
 
@@ -163,7 +165,7 @@ export function moveSongInPlaylist(
         songId: song.id,
       }),
   )
-    .catch(() => undefined)
+    .catch(reportFailure("Couldn't move the song."))
     .finally(() => void refreshPlaylists());
 }
 
@@ -181,6 +183,6 @@ export function removeSongFromPlaylist(playlist: UserPlaylist, song: Song) {
       songId: song.id,
     }),
   )
-    .catch(() => undefined)
+    .catch(reportFailure(`Couldn't remove ${song.name}.`))
     .finally(() => void refreshPlaylists());
 }

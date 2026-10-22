@@ -77,4 +77,11 @@ describe("reportFailure", () => {
     );
     expect(current()?.message).toBe("Couldn't create the playlist.");
   });
+
+  it("never shows a network error's own text", () => {
+    reportFailure("Couldn't create the playlist.")(
+      new TypeError("Network request failed"),
+    );
+    expect(current()?.message).toBe("Couldn't create the playlist.");
+  });
 });

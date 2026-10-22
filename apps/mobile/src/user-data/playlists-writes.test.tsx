@@ -2,6 +2,7 @@ import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlis
 import { act, screen, waitFor } from "@testing-library/react-native";
 import { Text } from "react-native";
 
+import { failureStore } from "~/lib/failure";
 import { renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure, trpcError } from "~/test/trpc-mock";
@@ -83,6 +84,10 @@ describe("create", () => {
 
     await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
     expect(shown()).toBe("Road Trip:abc");
+    // The server's own refusal is the snackbar's copy.
+    expect(failureStore.getState().current?.message).toBe(
+      "You can only have 10 playlists, please delete one",
+    );
   });
 });
 
@@ -108,6 +113,9 @@ describe("rename", () => {
 
     await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
     expect(shown()).toBe("Road Trip:abc");
+    expect(failureStore.getState().current?.message).toBe(
+      "Couldn't rename the playlist.",
+    );
   });
 });
 

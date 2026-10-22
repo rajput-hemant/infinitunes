@@ -1,3 +1,4 @@
+import { getErrorCode } from "@infinitunes/core/error-code";
 import { userMessage } from "@infinitunes/core/user-message";
 import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
@@ -46,10 +47,16 @@ export function dismissFailure(id: number) {
 /**
  * A rejection handler that shows the server's message when it is written for
  * the listener (`userMessage`: a refusal such as the playlist cap), else
- * `fallback`.
+ * `fallback`. An error without a tRPC code (the network, a thrown bug) never
+ * shows its own message.
  */
 export function reportFailure(fallback: string) {
-  return (error: unknown) => showFailure(userMessage(error, fallback));
+  return (error: unknown) =>
+    showFailure(
+      getErrorCode(error) === undefined
+        ? fallback
+        : userMessage(error, fallback),
+    );
 }
 
 export function useFailure() {
