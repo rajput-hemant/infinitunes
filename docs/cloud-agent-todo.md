@@ -356,17 +356,17 @@ Run `bun run build && bun run budget` first to get real numbers.
 
 - [x] **T-1** (Done: `lint:shadcn` turbo task, root script and CI step; `--deny-warnings`; 8 `require-static-classes` warnings on `cn(sharedStyleConst)` sites exempted by override in `.oxlintrc.shadcn.json`, no shadcn component touched.) P2 CONFIRMED `packages/ui/package.json:8`, `turbo.json`, `ci.yml:34` - `lint:shadcn` (`no-raw-colors`, `require-static-classes`) is not a turbo task and never runs in CI [lib 4]
   - Fix: add a `lint:shadcn` turbo task and a CI step; run once first and fix or exempt findings. Executor: haiku (sonnet if it finds violations). Flags: none.
-- [ ] **T-2** P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
+- [ ] **T-2** (needs a measured build: caps kept, header comment now says they were raised on purpose and must be re-measured with `bun run build && bun run budget`.) P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
   - Fix: measure, set ceilings ~5% above current maxima, rewrite the header (or state the raise was deliberate). Executor: sonnet. Flags: none.
 - [ ] **T-3** P2 CONFIRMED `apps/web/tests/mocked/cached-api.test.ts:8-11,84-100`, `tests/cached-api-runtime.ts`, `ci.yml:85-101` - the `use cache` error-digest round-trip is only covered by a manual script CI never runs [lib 3]
   - Fix: run `tests/cached-api-runtime.ts` with the `cached-api-fetch.mjs` preload in the production job after readiness, list it as a knip `entry`; or make the mocked test throw a structurally cloned error. Executor: sonnet. Flags: none.
-- [ ] **T-4** P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15]
+- [ ] **T-4** (needs a measured build: `forbiddenMode` left as `"warn"`, TODO added; confirm the shell chunk is clean before flipping to `"error"`.) P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15]
   - Fix: run `bun run budget`; if clean flip to `"error"`, else report the offender. Executor: sonnet. Flags: none.
-- [ ] **T-5** P3 CONFIRMED root `package.json` lint-staged vs `apps/web/package.json:11` - pre-commit oxlint is weaker than CI (no `--deny-warnings --nextjs-plugin`) [lib 9]
+- [x] **T-5** (Done: lint-staged oxlint now `--deny-warnings --nextjs-plugin`.) P3 CONFIRMED root `package.json` lint-staged vs `apps/web/package.json:11` - pre-commit oxlint is weaker than CI (no `--deny-warnings --nextjs-plugin`) [lib 9]
   - Fix: add the flags or run `turbo run lint --filter=...[HEAD]`. Executor: haiku. Flags: none.
-- [ ] **T-6** P3 CONFIRMED `knip.json:4-6` - ignores cause false positives (`@happy-dom/global-registrator`, `scripts/api-server.ts`, `tests/cached-api-runtime.ts`) [lib 10]
+- [x] **T-6** (Done: declared as knip `entry`.) P3 CONFIRMED `knip.json:4-6` - ignores cause false positives (`@happy-dom/global-registrator`, `scripts/api-server.ts`, `tests/cached-api-runtime.ts`) [lib 10]
   - Fix: declare them as `entry` instead of `ignore`. Executor: haiku. Flags: none.
-- [ ] **T-7** P3 CONFIRMED `apps/web/next.config.ts:58-66`, `lib/image-hosts.ts:2-4`, `.github/workflows/ci.yml:5` - dead `images.remotePatterns` under `unoptimized: true`; stale `migration/bun-monorepo` branch [lib 16]
+- [x] **T-7** (Done: dead `remotePatterns` and stale comment dropped, `migration/bun-monorepo` removed from the CI push list; PRs still run for `feat/platforms`.) P3 CONFIRMED `apps/web/next.config.ts:58-66`, `lib/image-hosts.ts:2-4`, `.github/workflows/ci.yml:5` - dead `images.remotePatterns` under `unoptimized: true`; stale `migration/bun-monorepo` branch [lib 16]
   - Fix: drop the block and the comment; fix the branch list. Executor: haiku. Flags: none.
 
 ## Batch T2 (sonnet): CSP avatars - `apps/web/lib/{csp,image-hosts}.ts`, `apps/web/tests/csp.test.ts` (branch `fix/t1-t2-ci-csp`)
