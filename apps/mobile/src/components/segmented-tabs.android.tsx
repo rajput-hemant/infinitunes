@@ -10,7 +10,7 @@ import Animated, {
 import { Text } from "~/components/ui/text";
 import { springs } from "~/theme/motion";
 import { sizes, space } from "~/theme/tokens";
-import { usePalette, useTokenColor } from "~/theme/use-palette";
+import { usePalette } from "~/theme/use-palette";
 import { useRadii } from "~/theme/use-radii";
 
 type SegmentedTabsProps<Tab extends string> = {
@@ -75,9 +75,10 @@ function Segment({
   onPress: () => void;
 }) {
   const inner = useRadii().sm;
-  const selectedFill = useTokenColor("primary");
-  const idleFill = useTokenColor("secondary");
-  const ripple = usePalette()["fill-2"];
+  const palette = usePalette();
+  const selectedFill = palette.primary;
+  const idleFill = palette.secondary;
+  const ripple = palette["fill-2"];
   // 1 is fully round; 0 has the small inner corners.
   const round = useSharedValue(selected ? 1 : 0);
   // The fill follows on the effects spring: colour never overshoots.

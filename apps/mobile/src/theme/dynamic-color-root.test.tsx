@@ -1,5 +1,6 @@
 import { act, render, screen } from "@testing-library/react-native";
 import { AppState, Text } from "react-native";
+import type { AppStateStatus } from "react-native";
 
 import { refreshDynamicPalettes } from "./android-colors.android";
 import { DynamicColorRoot } from "./dynamic-color-root.android";
@@ -36,7 +37,7 @@ describe("DynamicColorRoot (Android)", () => {
   });
 
   it("reads the roles anew when the app comes back to the foreground", async () => {
-    const listeners: ((state: string) => void)[] = [];
+    const listeners: ((state: AppStateStatus) => void)[] = [];
     jest
       .spyOn(AppState, "addEventListener")
       .mockImplementation((_type, listener) => {
