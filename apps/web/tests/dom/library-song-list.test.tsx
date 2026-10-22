@@ -325,7 +325,7 @@ describe("LibrarySongList", () => {
     withList(
       async (container) => {
         const like = container.querySelector<HTMLButtonElement>(
-          '[aria-label="Like"]',
+          '[aria-label^="Like"]',
         );
         expect(like?.getAttribute("aria-disabled")).toBe("true");
 
@@ -356,7 +356,7 @@ describe("LibrarySongList", () => {
     withList(
       async (container) => {
         const like = container.querySelector<HTMLButtonElement>(
-          '[aria-label="Like"]',
+          '[aria-label^="Like"]',
         );
         expect(like).not.toBeNull();
         expect(like?.getAttribute("aria-disabled")).toBe("false");

@@ -7,6 +7,7 @@ import { createRoot } from "react-dom/client";
 const toasts: string[] = [];
 mock.module("sonner", () => ({
   toast: {
+    loading: (message: string) => toasts.push(`loading:${message}`),
     success: (message: string) => toasts.push(`success:${message}`),
     error: (message: string) => toasts.push(`error:${message}`),
   },
@@ -19,11 +20,11 @@ const realFetch = globalThis.fetch;
 const realCreateObjectURL = URL.createObjectURL;
 const realRevoke = URL.revokeObjectURL;
 
-function song(title: string): Song {
+function song(title: string, url = "https://cdn.example/a_96.mp4"): Song {
   return {
     id: "s1",
     title,
-    more_info: { download_url: "https://cdn.example/a_96.mp4" },
+    more_info: { download_url: url },
   } as unknown as Song;
 }
 
@@ -89,5 +90,72 @@ describe("download button", () => {
 
     expect(names).toEqual(["Rock & Roll.m4a"]);
     expect(toasts).toEqual(["success:Downloaded Rock & Roll"]);
+  });
+
+  async function clickMany(songs: Song[]) {
+    const container = document.createElement("div");
+    document.body.append(container);
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(<DownloadButton songs={songs} />);
+    });
+    await act(async () =>
+      container.querySelector<HTMLButtonElement>("button")?.click(),
+    );
+    await act(async () => new Promise((r) => setTimeout(r, 50)));
+    await act(async () => root.unmount());
+    container.remove();
+  }
+
+  it("downloads one song at a time and reports partial failure", async () => {
+    let inFlight = 0;
+    let peak = 0;
+    globalThis.fetch = (async (input: string | URL | Request) => {
+      inFlight++;
+      peak = Math.max(peak, inFlight);
+      await new Promise((r) => setTimeout(r, 2));
+      inFlight--;
+      return String(input).includes("bad")
+        ? new Response("no", { status: 500 })
+        : new Response("audio", { status: 200 });
+    }) as typeof fetch;
+    const saved: string[] = [];
+    URL.createObjectURL = () => "blob:x";
+    URL.revokeObjectURL = () => {};
+    const click = HTMLAnchorElement.prototype.click;
+    HTMLAnchorElement.prototype.click = function (this: HTMLAnchorElement) {
+      saved.push(this.download);
+    };
+    try {
+      await clickMany([
+        song("A", "https://cdn.example/a_96.mp4"),
+        song("B", "https://cdn.example/bad_96.mp4"),
+        song("C", "https://cdn.example/c_96.mp4"),
+      ]);
+    } finally {
+      HTMLAnchorElement.prototype.click = click;
+    }
+
+    expect(peak).toBe(1);
+    expect(saved).toEqual(["A.m4a", "C.m4a"]);
+    expect(toasts).toContain("loading:Downloading 1 of 3");
+    expect(toasts).toContain("loading:Downloading 3 of 3");
+    expect(toasts.at(-1)).toBe("error:Downloaded 2 of 3 songs, 1 failed");
+  });
+
+  it("asks before downloading more than ten songs and stops on cancel", async () => {
+    let fetched = 0;
+    globalThis.fetch = (() => {
+      fetched++;
+      return Promise.resolve(new Response("audio"));
+    }) as typeof fetch;
+    const realConfirm = window.confirm;
+    window.confirm = () => false;
+    try {
+      await clickMany(Array.from({ length: 11 }, (_, i) => song(`S${i}`)));
+    } finally {
+      window.confirm = realConfirm;
+    }
+    expect(fetched).toBe(0);
   });
 });

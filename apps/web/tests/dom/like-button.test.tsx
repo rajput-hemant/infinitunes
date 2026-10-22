@@ -71,4 +71,12 @@ describe("LikeButton", () => {
       container.querySelector("button")?.getAttribute("aria-pressed"),
     ).toBe("false");
   });
+
+  it("names the track so a screen reader can tell rows apart", async () => {
+    const container = await render({ type: "show", token: "show-2" });
+
+    expect(container.querySelector("button")?.getAttribute("aria-label")).toBe(
+      "Like Name",
+    );
+  });
 });

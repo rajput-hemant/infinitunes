@@ -63,6 +63,16 @@ describe("PlayButton show", () => {
     expect(fetched[0]?.season).toBe(3);
   });
 
+  it("reads the sort from the URL at click time, with no hook", async () => {
+    window.history.replaceState(null, "", "/show/x/1/PjReFP-Sguk_?sort=asc");
+    try {
+      await click();
+      expect(fetched[0]?.sort).toBe("asc");
+    } finally {
+      window.history.replaceState(null, "", "/");
+    }
+  });
+
   it("leaves the season to the first one when none is given", async () => {
     await click();
     expect(fetched[0]?.season).toBeUndefined();

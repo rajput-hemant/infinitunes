@@ -1,4 +1,4 @@
-import { removeFromQueue } from "@infinitunes/types";
+import { removeFromQueue, type Queue } from "@infinitunes/types";
 import * as React from "react";
 import { toast } from "sonner";
 
@@ -27,6 +27,8 @@ export function useQueueRemoval() {
 
   // Pending exit timers by queueItemId; also the synchronous double-click guard.
   const pending = React.useRef(new Map<string, number>());
+  // Where each committed removal sat, for Undo.
+  const removedAt = React.useRef(new Map<string, number>());
 
   // The removed row takes focus with it: hand it to the row that took its
   // place (or the last one still staying), or to the list once none is left.
@@ -57,6 +59,7 @@ export function useQueueRemoval() {
         (item) => item.queueItemId === queueItemId,
       );
       if (index === -1) return;
+      removedAt.current.set(queueItemId, index);
 
       const next = removeFromQueue(current, playing, index);
       latest.current = { queue: next.queue, currentIndex: next.currentIndex };
@@ -85,6 +88,40 @@ export function useQueueRemoval() {
     };
   }, [commitRemoval]);
 
+  function undoRemoval(song: Queue) {
+    const id = song.queueItemId;
+    const timer = pending.current.get(id);
+    if (timer !== undefined) {
+      // Still animating out: cancel it, nothing was removed yet.
+      window.clearTimeout(timer);
+      pending.current.delete(id);
+      setLeaving((ids) => {
+        const rest = new Set(ids);
+        rest.delete(id);
+        return rest;
+      });
+      return;
+    }
+
+    const at = removedAt.current.get(id);
+    removedAt.current.delete(id);
+    const { queue: current, currentIndex: playing } = latest.current;
+    if (at === undefined || current.some((item) => item.queueItemId === id)) {
+      return;
+    }
+
+    const index = Math.min(at, current.length);
+    const restored = [
+      ...current.slice(0, index),
+      song,
+      ...current.slice(index),
+    ];
+    const shifted = index <= playing ? playing + 1 : playing;
+    latest.current = { queue: restored, currentIndex: shifted };
+    setQueue(restored);
+    setCurrentIndex(shifted);
+  }
+
   function removeItem(queueItemId: string) {
     if (pending.current.has(queueItemId)) return;
 
@@ -107,7 +144,7 @@ export function useQueueRemoval() {
     if (song) {
       toast("Removed from queue", {
         description: `Removed "${song.name}" from the queue`,
-        duration: 10000,
+        action: { label: "Undo", onClick: () => undoRemoval(song) },
       });
     }
   }

@@ -10,7 +10,10 @@ let albumList: unknown[] = [];
 mock.module("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
-mock.module("sonner", () => ({ toast: { success() {}, error() {} } }));
+const successes: unknown[] = [];
+mock.module("sonner", () => ({
+  toast: { success: (m: unknown) => successes.push(m), error() {} },
+}));
 mock.module("~/lib/trpc/vanilla", () => ({
   trpc: {
     album: {
@@ -107,6 +110,7 @@ async function mount(props: { shuffle?: boolean }) {
 
 afterEach(async () => {
   fetched.length = 0;
+  successes.length = 0;
   Math.random = realRandom;
   await act(async () => roots.splice(0).forEach((r) => r.unmount()));
 });
@@ -123,6 +127,8 @@ describe("PlayButton shuffle", () => {
     expect(order).toEqual(["b", "d", "c", "e", "a"]);
     expect([...order].sort()).toEqual(ids);
     expect(snapshot.index).toBe(0);
+    // The player announces the new track; no toast on top of it.
+    expect(successes).toEqual([]);
   });
 
   it("keeps the source order when shuffle is off", async () => {
