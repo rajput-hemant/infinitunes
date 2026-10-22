@@ -89,7 +89,12 @@ describe("Browse page", () => {
     expect(linkFor(container, "Podcasts")).toBe("/show");
     expect(linkFor(container, "Top Artists")).toBe("/artist");
     expect(linkFor(container, "Radio")).toBe("/radio");
-    expect(linkFor(container, "New Releases")).toBe("/album");
+    // A second tile onto the same /album route was a duplicate.
+    expect(linkFor(container, "New Releases")).toBeUndefined();
+    const hrefs = [...container.querySelectorAll("a")].map((a) =>
+      a.getAttribute("href"),
+    );
+    expect(hrefs.filter((href) => href === "/album")).toHaveLength(1);
     expect(linkFor(container, "Made for you")).toBe("/mix/daily/m1");
   });
 

@@ -270,15 +270,15 @@ Do P1 + the extraction together so the fix is applied once.
 - [x] **W-10** P3 CONFIRMED `details-header/more-button.tsx:267-273` - the Download entry disappears while a download runs (`hide: isDownloading`) [wcomp P3-11]
   - Fix: keep it, `disabled`/`aria-busy`. Executor: haiku. Flags: none.
 
-## Batch W3 (sonnet): catalog list pages and metadata - `apps/web/app/(root)/{album,playlist,radio,show,artist}/page.tsx` + their `_components/{top-albums,featured-playlists,featured-stations,top-podcasts}.tsx`, `app/(root)/browse/page.tsx`
+## Batch W3 (sonnet): catalog list pages and metadata - `apps/web/app/(root)/{album,playlist,radio,show,artist}/page.tsx` + their `_components/{top-albums,featured-playlists,featured-stations,top-podcasts}.tsx`, `app/(root)/browse/page.tsx` (branch `fix/w3-web-batch`)
 
 Does not touch `browse/_components` (W7 moves `catalog-states`).
 
-- [ ] **W-11** P2 CONFIRMED `(root)/album/page.tsx:30-45` + `top-albums.tsx:20-29`, `playlist/page.tsx:27-43` + `featured-playlists.tsx:23-32`, `radio/page.tsx:30-46` + `featured-stations.tsx:25-34`, `show/page.tsx:46-52` + `top-podcasts.tsx:19-28` - `?page=N` is fetched by the server but the client infinite query is seeded as page 1, so scrolling loads page 2 under page N and drops page N as a duplicate [routes 3]
+- [x] **W-11** P2 CONFIRMED `(root)/album/page.tsx:30-45` + `top-albums.tsx:20-29`, `playlist/page.tsx:27-43` + `featured-playlists.tsx:23-32`, `radio/page.tsx:30-46` + `featured-stations.tsx:25-34`, `show/page.tsx:46-52` + `top-podcasts.tsx:19-28` - `?page=N` is fetched by the server but the client infinite query is seeded as page 1, so scrolling loads page 2 under page N and drops page N as a duplicate [routes 3]
   - Fix: pass the parsed page into the client components for `initialPageParam` and `pageParams: [page]` (or stop reading `page` and drop it from `KeyedByParams`); add one dom test seeding page 3 and asserting the next request is page 4. Executor: sonnet. Flags: none.
-- [ ] **W-12** P3 CONFIRMED `(root)/playlist/page.tsx:14-15`, `show/page.tsx:18-19`, `artist/page.tsx:18`, `album/page.tsx:15` - static metadata copy: build-time year, "Saavn" brand leak, EDM description on podcasts, padded `/artist` title, trailing "." on `/album` [routes 12]
+- [x] **W-12** P3 CONFIRMED `(root)/playlist/page.tsx:14-15`, `show/page.tsx:18-19`, `artist/page.tsx:18`, `album/page.tsx:15` - static metadata copy: build-time year, "Saavn" brand leak, EDM description on podcasts, padded `/artist` title, trailing "." on `/album` [routes 12]
   - Fix: rewrite the four strings; drop the year or compute it in `generateMetadata`. Executor: haiku. Flags: none.
-- [ ] **W-13** P3 CONFIRMED `(root)/browse/page.tsx:43-47,61-65` - "Top Albums" and "New Releases" tiles both link to `/album` [routes 13]
+- [x] **W-13** P3 CONFIRMED `(root)/browse/page.tsx:43-47,61-65` - "Top Albums" and "New Releases" tiles both link to `/album` [routes 13]
   - Fix: point New Releases at `/album?lang=<first language>` or drop it. Executor: haiku. Flags: none.
 
 ## Batch W4 (opus): label route restructure - `apps/web/app/(root)/label/[name]/[token]/{page,loading}.tsx`, `packages/core/src/entity-route.ts` - branch `fix/w4-label-tab-routes`

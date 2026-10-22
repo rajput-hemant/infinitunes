@@ -12,7 +12,7 @@ import { api } from "~/lib/trpc/server";
 import { AlbumsSubtitle } from "./_components/albums-subtitle";
 import { TopAlbums } from "./_components/top-albums";
 
-const title = `Listen to New Hindi Songs Online Only on ${siteConfig.name}.`;
+const title = `Listen to New Hindi Songs Online Only on ${siteConfig.name}`;
 const description = `Listen to Latest and Trending Bollywood Hindi songs online for free with ${siteConfig.name} anytime, anywhere. Download or listen to unlimited new & old Hindi songs online. Search from most trending, weekly top 15, Hindi movie songs, etc on ${siteConfig.name}.`;
 
 export const metadata = pageMetadata({
@@ -29,8 +29,10 @@ type AlbumsPageProps = {
 async function AlbumsGrid({ searchParams }: AlbumsPageProps) {
   const { page, lang } = await searchParams;
 
+  const pageNumber = parsePageParam(page);
+
   const topAlbums = await api.get.topAlbums({
-    page: parsePageParam(page),
+    page: pageNumber,
     n: 50,
     lang,
   });
@@ -39,6 +41,7 @@ async function AlbumsGrid({ searchParams }: AlbumsPageProps) {
     <TopAlbums
       key={`${lang ?? "all"}-${topAlbums.data[0]?.id ?? "albums"}`}
       initialAlbums={topAlbums}
+      page={pageNumber}
       lang={lang}
     />
   );

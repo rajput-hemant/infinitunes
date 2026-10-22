@@ -30,8 +30,10 @@ type RadioPageProps = {
 async function StationsGrid({ searchParams }: RadioPageProps) {
   const { page, lang } = await searchParams;
 
+  const pageNumber = parsePageParam(page);
+
   const radioStations = await api.get.featuredStations({
-    page: parsePageParam(page),
+    page: pageNumber,
     n: 50,
     lang,
   });
@@ -40,6 +42,7 @@ async function StationsGrid({ searchParams }: RadioPageProps) {
     <FeaturedStations
       key={`${lang ?? "all"}-${radioStations[0]?.id ?? "stations"}`}
       initialStations={radioStations}
+      page={pageNumber}
       lang={lang}
     />
   );
