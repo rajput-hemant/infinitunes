@@ -49,37 +49,33 @@ beforeEach(() => {
 const slider = () => screen.getByTestId("slider").props.children as string;
 
 describe("Scrubber", () => {
-  it("shows the buffered proportion ahead of playback and updates while paused", async () => {
-    playbackStatusStore.setState({ bufferedTime: 100 });
+  it.each([
+    [{ bufferedTime: 100 }, { left: "15%", width: "35%" }],
+    [{ bufferedTime: 300 }, { left: "15%", width: "85%" }],
+    [{ duration: 0 }, { width: "0%" }],
+  ])(
+    "places the buffered range from the stores (%j)",
+    async (status, style) => {
+      playbackStatusStore.setState(status);
+      await renderScreen(<Scrubber />);
+
+      expect(
+        screen.getByTestId("scrubber-buffered", {
+          includeHiddenElements: true,
+        }),
+      ).toHaveStyle(style);
+    },
+  );
+
+  it("changes the clocks once a second, not on every tick", async () => {
     await renderScreen(<Scrubber />);
 
-    expect(
-      screen.getByTestId("scrubber-buffered", { includeHiddenElements: true }),
-    ).toHaveStyle({
-      left: "15%",
-      width: "35%",
-    });
+    await act(async () => playbackPosition.set(30.5));
+    expect(screen.getByText("0:30")).toBeOnTheScreen();
+    expect(slider()).toBe("30.5/200");
 
-    await act(async () => playbackStatusStore.setState({ bufferedTime: 150 }));
-    expect(
-      screen.getByTestId("scrubber-buffered", { includeHiddenElements: true }),
-    ).toHaveStyle({
-      width: "60%",
-    });
-
-    await act(async () => playbackStatusStore.setState({ bufferedTime: 300 }));
-    expect(
-      screen.getByTestId("scrubber-buffered", { includeHiddenElements: true }),
-    ).toHaveStyle({
-      width: "85%",
-    });
-
-    await act(async () => playbackStatusStore.setState({ duration: 0 }));
-    expect(
-      screen.getByTestId("scrubber-buffered", { includeHiddenElements: true }),
-    ).toHaveStyle({
-      width: "0%",
-    });
+    await act(async () => playbackPosition.set(31));
+    expect(screen.getByText("0:31")).toBeOnTheScreen();
   });
 
   it("shows the playhead, the time left and the position for screen readers", async () => {

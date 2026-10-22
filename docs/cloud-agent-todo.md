@@ -138,11 +138,13 @@ Gated on the accent decision.
 
 ## Batch M11 (sonnet): player progress and colours - `features/player/{dock-progress,scrubber,use-player-colors}.tsx`, `lib/artwork-colors.ts`, `components/floating-player-dock.tsx`
 
+Branch: `worktree-agent-af553c0fcbf1fa499`
+
 Start after M2 (status/position stores change there).
 
-- [ ] **M-43** **[device sign-off later]** P2 PLAUSIBLE `features/player/dock-progress.tsx:18-55`, `scrubber.tsx:39-131` - scrubber/dock progress relayout every tick [perf#10]
+- [x] **M-43** **[device sign-off later]** P2 PLAUSIBLE `features/player/dock-progress.tsx:18-55`, `scrubber.tsx:39-131` - scrubber/dock progress relayout every tick [perf#10]
   - Fix: shared values + `useAnimatedStyle` scaleX; time labels at 1Hz. Executor: sonnet. Flags: needs device check.
-- [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
+- [x] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
 ## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` - branch `worktree-agent-a8420b91455e7cd29`
