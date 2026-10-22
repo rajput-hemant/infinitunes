@@ -2,6 +2,7 @@ import "../global.css";
 import { Stack } from "expo-router";
 import { Platform } from "react-native";
 
+import { FailureSnackbar } from "~/components/failure-snackbar";
 import { PlaybackController } from "~/playback/playback-controller";
 import { AppProviders } from "~/providers/app-providers";
 import { useRadii } from "~/theme/use-radii";
@@ -66,6 +67,7 @@ export default function RootLayout() {
         {/* Siri / Assistant links: a spinner that runs the action and leaves. */}
         <Stack.Screen name="action/[action]" options={{ animation: "none" }} />
       </Stack>
+      <FailureSnackbar />
     </AppProviders>
   );
 }
