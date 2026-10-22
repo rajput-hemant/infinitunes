@@ -28,7 +28,8 @@ describe("playSurprise", () => {
     await playSurprise();
 
     expect(trending).toHaveBeenCalledWith({ type: "song" });
-    expect(queuedIds().sort()).toEqual(["s1", "s2", "s3"]);
+    expect(queuedIds()).toHaveLength(3);
+    expect(queuedIds()).toEqual(expect.arrayContaining(["s1", "s2", "s3"]));
     // A shuffled queue starts from its first entry.
     expect(playerStore.getState()).toMatchObject({
       currentIndex: 0,
