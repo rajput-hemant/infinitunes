@@ -43,6 +43,7 @@ export function QueueRow({ item, isLeaving, onRemove }: QueueRowProps) {
 
             <TilePlayPauseButton
               id={item.id}
+              name={item.name}
               type={item.type}
               token={parseToken(item.url)}
               queueItemId={item.queueItemId}

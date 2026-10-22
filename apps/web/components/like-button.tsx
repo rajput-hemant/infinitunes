@@ -51,7 +51,7 @@ export function LikeButton(props: LikeButtonProps) {
     <Tooltip>
       <TooltipTrigger
         delay={0}
-        aria-label="Like"
+        aria-label={`Like ${name}`}
         aria-pressed={optimisticLike}
         // Not `disabled`: on Base UI's trigger that only suppresses the
         // tooltip, not the button, and a native-disabled button would never
