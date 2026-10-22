@@ -49,7 +49,7 @@ describe("EditPlaylistScreen", () => {
     expect(router.getPathname()).toBe("/");
   });
 
-  it("shows a skeleton while the playlists load", async () => {
+  it("shows a spinner while the playlists load", async () => {
     procedure("user.getUserPlaylists").mockReturnValue(new Promise(() => {}));
     await renderEdit("pl-1");
 

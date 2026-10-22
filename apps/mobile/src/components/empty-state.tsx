@@ -1,6 +1,6 @@
 import { Platform, View } from "react-native";
 
-import { art, space } from "~/theme/tokens";
+import { art, measure, space } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
 import { Button } from "./ui/button";
@@ -71,7 +71,7 @@ export function EmptyState({
           variant="subhead"
           tone="muted"
           className={android ? "mt-2 text-center" : "mt-1 text-center"}
-          style={{ maxWidth: 300 }}
+          style={{ maxWidth: measure }}
         >
           {message}
         </Text>

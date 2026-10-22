@@ -26,7 +26,7 @@ import {
   useAppearanceMode,
   useCornerStyle,
 } from "~/theme/appearance";
-import { accentColors, sizes } from "~/theme/tokens";
+import { accentColors, sizes, space } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
 import { signOut } from "./end-session";
@@ -124,6 +124,7 @@ function TapRow(
   },
 ) {
   const { onPress, action = false, ...face } = props;
+  const ripple = usePalette()["fill-2"];
   return (
     <Pressable
       onPress={onPress}
@@ -131,7 +132,7 @@ function TapRow(
       accessibilityLabel={[props.title, props.detail]
         .filter(Boolean)
         .join(", ")}
-      android_ripple={{ color: "rgba(127,127,127,0.2)", foreground: true }}
+      android_ripple={{ color: ripple, foreground: true }}
     >
       <RowFace
         {...face}
@@ -241,7 +242,9 @@ export function SettingsScreen() {
   const cache = useSongCacheSettings();
 
   return (
-    <ScrollView contentContainerStyle={{ paddingBottom: playerDockInset + 24 }}>
+    <ScrollView
+      contentContainerStyle={{ paddingBottom: playerDockInset + space.xl }}
+    >
       <Section title="Account">
         {user ? (
           <>

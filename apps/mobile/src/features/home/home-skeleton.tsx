@@ -1,6 +1,10 @@
 import { Platform, View } from "react-native";
 
 import { HERO } from "~/components/media-card";
+import {
+  PICK_TILE_CLASS,
+  PICK_TILE_HEIGHT,
+} from "~/components/quick-pick-tile";
 import { useHeroWidth } from "~/components/shelf";
 import {
   CardTextSkeleton,
@@ -9,7 +13,6 @@ import {
   SkeletonText,
 } from "~/components/skeletons";
 import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
-import { cx } from "~/lib/class-names";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { art } from "~/theme/tokens";
 import { useRadii } from "~/theme/use-radii";
@@ -60,22 +63,27 @@ function HeroSkeleton() {
   );
 }
 
-/** Quick-pick tiles as `QuickPickTile` draws them: the tile surface, flush art and a title line. */
+/** Quick-pick tiles as `QuickPickTile` draws them: the tile surface, the art and a title line. */
 function QuickPicksSkeleton() {
   const width = useGridCardWidth();
+  const scale = useRadii();
   return (
     <SkeletonPulse>
       <View className="flex-row flex-wrap px-page" style={{ gap: GRID_GAP }}>
         {range(PICK_TILES).map((tile) => (
           <View
             key={tile}
-            className={cx(
-              "flex-row items-center gap-3 overflow-hidden rounded-md",
-              MATERIAL ? "bg-card" : "bg-fill",
-            )}
-            style={{ width, minHeight: art.pick }}
+            className={PICK_TILE_CLASS}
+            style={{ width, minHeight: PICK_TILE_HEIGHT }}
           >
-            <SkeletonBlock style={{ width: art.pick, height: art.pick }} />
+            {/* Android's art is inset at `sm`; iOS's is flush, clipped by the tile. */}
+            <SkeletonBlock
+              style={{
+                width: art.pick,
+                height: art.pick,
+                borderRadius: MATERIAL ? scale.sm : 0,
+              }}
+            />
             <SkeletonText
               variant={MATERIAL ? "label" : "footnote"}
               width="55%"

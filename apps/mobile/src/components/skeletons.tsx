@@ -166,14 +166,27 @@ export function SegmentedTabsSkeleton() {
   );
 }
 
-/** A section title and two lines of text, e.g. a description under its header. */
+/** Three body lines and Read More: a clamped preview (`Description`, iOS's lyrics). */
+function PreviewLines({ readMore }: { readMore: TextVariant }) {
+  return (
+    <>
+      <View>
+        {(["100%", "95%", "70%"] as const).map((width) => (
+          <SkeletonText key={width} variant="body" width={width} />
+        ))}
+      </View>
+      <SkeletonText variant={readMore} width={80} />
+    </>
+  );
+}
+
+/** A section title over a `Description` (a show's or episode's About). */
 export function TextBlockSkeleton() {
   return (
     <SkeletonPulse>
       <HeaderLine />
-      <View className="px-page">
-        <SkeletonText variant="body" width="100%" />
-        <SkeletonText variant="body" width="80%" />
+      <View className="gap-1 px-page">
+        <PreviewLines readMore="subhead" />
       </View>
     </SkeletonPulse>
   );
@@ -181,11 +194,20 @@ export function TextBlockSkeleton() {
 
 /**
  * The song page's lyrics while they load. Android mirrors the loaded preview
- * card (`bg-card`, four headline lines and Read More); iOS's preview is plain
- * text under its header.
+ * card (`bg-card`, four headline lines and Read More); iOS's preview is three
+ * plain lines and Read More under its header (`LyricsSection`).
  */
 export function LyricsSkeleton() {
-  if (Platform.OS !== "android") return <TextBlockSkeleton />;
+  if (Platform.OS !== "android") {
+    return (
+      <SkeletonPulse>
+        <HeaderLine />
+        <View testID="lyrics-skeleton-plain" className="gap-2 px-page py-2">
+          <PreviewLines readMore="subhead" />
+        </View>
+      </SkeletonPulse>
+    );
+  }
   return (
     <SkeletonPulse>
       <HeaderLine />
@@ -201,6 +223,26 @@ export function LyricsSkeleton() {
         <SkeletonText variant="label" width={80} />
       </View>
     </SkeletonPulse>
+  );
+}
+
+/**
+ * The header's menu trigger (`MenuTrigger`): its three dots in their 48pt
+ * target, upright on Android (`more_vert`), across on iOS (`ellipsis`).
+ */
+function MenuGlyphSkeleton() {
+  return (
+    <View
+      testID="header-skeleton-menu"
+      className={cx(
+        "size-touch items-center justify-center gap-1",
+        Platform.OS === "android" ? "flex-col" : "flex-row",
+      )}
+    >
+      {range(3).map((dot) => (
+        <SkeletonBlock key={dot} className="size-1 rounded-full" />
+      ))}
+    </View>
   );
 }
 
@@ -230,7 +272,6 @@ export function EntityHeaderSkeleton({
   const frame = useFrame();
   // Signed out, the header has no heart (`LikeButton` renders nothing).
   const signedIn = useUserId() !== undefined;
-  const controls = Number(like && signedIn) + Number(menu);
   return (
     <SkeletonPulse>
       <View className="items-center px-page pb-4 pt-2">
@@ -246,14 +287,15 @@ export function EntityHeaderSkeleton({
         {/* The heart and the menu, then Shuffle and Play: Android's 40dp
             tonal and 56dp filled containers, iOS's two 48pt buttons. */}
         <View className="mt-4 w-full flex-row items-center gap-2">
-          {range(controls).map((control) => (
+          {like && signedIn ? (
             <View
-              key={control}
+              testID="header-skeleton-like"
               className="size-touch items-center justify-center"
             >
               <SkeletonBlock className="size-6 rounded-full" />
             </View>
-          ))}
+          ) : null}
+          {menu ? <MenuGlyphSkeleton /> : null}
           <View className="flex-1" />
           {shuffle ? (
             <SkeletonBlock

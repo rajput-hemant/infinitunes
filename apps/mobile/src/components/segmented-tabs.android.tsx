@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -8,8 +8,8 @@ import Animated, {
 
 import { Text } from "~/components/ui/text";
 import { springs } from "~/theme/motion";
-import { sizes } from "~/theme/tokens";
-import { useTokenColor } from "~/theme/use-palette";
+import { sizes, space } from "~/theme/tokens";
+import { usePalette, useTokenColor } from "~/theme/use-palette";
 import { useRadii } from "~/theme/use-radii";
 
 type SegmentedTabsProps<Tab extends string> = {
@@ -28,7 +28,9 @@ const SEGMENT_HIT_SLOP = { top: 4, bottom: 4 } as const;
  * Material 3 Expressive's connected button group (it replaces segmented
  * buttons): 40dp segments 2dp apart, the ends fully round, inner corners
  * small, on `secondaryContainer`; the selected segment turns `primary` and
- * morphs fully round on the default spatial spring.
+ * morphs fully round on the default spatial spring. No check mark: that is
+ * the old segmented button's; Compose's `ToggleButton` (the group's item)
+ * marks selection by colour (`Primary`/`OnPrimary`) and shape alone.
  */
 export function SegmentedTabs<Tab extends string>({
   tabs,
@@ -74,6 +76,7 @@ function Segment({
   const inner = useRadii().sm;
   const selectedFill = useTokenColor("primary");
   const idleFill = useTokenColor("secondary");
+  const ripple = usePalette()["fill-2"];
   // 1 is fully round; 0 has the small inner corners.
   const round = useSharedValue(selected ? 1 : 0);
   useEffect(() => {
@@ -89,31 +92,42 @@ function Segment({
     };
   });
 
+  // The pressable is the clipped, shaped view itself: Android drops a touch
+  // outside an `overflow: hidden` parent, so a child's slop never reached 48dp.
   return (
-    <Animated.View
+    <AnimatedPressable
+      onPress={onPress}
+      hitSlop={SEGMENT_HIT_SLOP}
+      android_ripple={{ color: ripple, foreground: true }}
+      accessibilityRole="tab"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
       style={[
-        { flex: 1, overflow: "hidden" },
+        styles.segment,
         { backgroundColor: selected ? selectedFill : idleFill },
         shape,
       ]}
     >
-      <Pressable
-        onPress={onPress}
-        hitSlop={SEGMENT_HIT_SLOP}
-        android_ripple={{ color: "rgba(127, 127, 127, 0.2)" }}
-        accessibilityRole="tab"
-        accessibilityLabel={label}
-        accessibilityState={{ selected }}
-        className="min-h-ctl items-center justify-center px-2"
+      <Text
+        variant="label"
+        tone={selected ? "onPrimary" : "onSecondary"}
+        numberOfLines={1}
       >
-        <Text
-          variant="label"
-          tone={selected ? "onPrimary" : "onSecondary"}
-          numberOfLines={1}
-        >
-          {label}
-        </Text>
-      </Pressable>
-    </Animated.View>
+        {label}
+      </Text>
+    </AnimatedPressable>
   );
 }
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+const styles = StyleSheet.create({
+  segment: {
+    flex: 1,
+    overflow: "hidden",
+    minHeight: sizes.ctl,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: space.sm,
+  },
+});

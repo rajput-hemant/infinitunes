@@ -56,9 +56,6 @@ type ListRowProps = {
   accessibilityValue?: AccessibilityValue;
 };
 
-const WAVEFORM: SymbolName = { ios: "waveform", android: "graphic_eq" };
-const PAUSED: SymbolName = { ios: "pause.fill", android: "pause" };
-
 /**
  * Android (Material 3 Expressive): the current track sits in a tonal
  * container. Read at render, so a test can switch platforms.
@@ -79,7 +76,12 @@ function isChevron(
   );
 }
 
-/** The current track's mark: iOS's waveform or pause glyph, Android's equalizer. */
+/**
+ * The current track's mark on both platforms: bars that bounce while playing
+ * and rest low and still while paused (Apple Music's and YouTube Music's
+ * cue). A pause glyph read as "tap to pause" while the mini player offered
+ * Play, so a paused row now shows a state, not an action.
+ */
 function NowMark({
   nowPlaying,
   color,
@@ -89,15 +91,7 @@ function NowMark({
 }) {
   return (
     <View testID={`now-${nowPlaying}`}>
-      {Platform.OS === "android" ? (
-        <Equalizer playing={nowPlaying === "playing"} color={color} />
-      ) : (
-        <Icon
-          name={nowPlaying === "paused" ? PAUSED : WAVEFORM}
-          size="sm"
-          color={color}
-        />
-      )}
+      <Equalizer playing={nowPlaying === "playing"} color={color} />
     </View>
   );
 }

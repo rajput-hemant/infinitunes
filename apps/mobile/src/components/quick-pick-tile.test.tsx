@@ -61,4 +61,20 @@ describe("QuickPickTile", () => {
       expect.stringContaining("overflow-hidden rounded-md"),
     );
   });
+
+  it("tints the icon's cell with a fill over the tile, not a second surface", async () => {
+    await renderScreen(
+      <QuickPickTile
+        width={170}
+        title="Surprise me"
+        onPress={jest.fn()}
+        leading={{ icon: { ios: "sparkles", android: "auto_awesome" } }}
+      />,
+    );
+
+    expect(screen.getByTestId("pick-icon-cell")).toHaveProp(
+      "className",
+      expect.stringContaining("bg-fill-2"),
+    );
+  });
 });

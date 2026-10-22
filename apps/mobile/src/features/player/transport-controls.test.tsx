@@ -95,6 +95,17 @@ describe("TransportControls", () => {
     expect(screen.getByRole("button", { name: "Repeat all" })).toBeSelected();
   });
 
+  it("keeps the circle a native view while off, so turning on keeps its corners", async () => {
+    await renderScreen(<TransportControls />);
+    // A flattened view is created on "on" with only the changed props on
+    // Android, and the circle drew square.
+    for (const circle of screen.getAllByTestId("mode-toggle-off")) {
+      expect(circle.props.collapsable).toBe(false);
+    }
+    await press("Shuffle");
+    expect(screen.getByTestId("mode-toggle-on").props.collapsable).toBe(false);
+  });
+
   it("draws the circle in the wash's checked play-shape colours", async () => {
     const colors = playerColorsFromSeed("#5B0F12", "light", "ios");
     if (!colors) throw new Error("the test seed must pass");

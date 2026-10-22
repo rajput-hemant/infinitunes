@@ -7,6 +7,8 @@ import {
 
 import { withDynamicRoles } from "./dynamic-palette";
 import {
+  accentColors,
+  ACCENT_IDS,
   androidDynamicColors,
   COLOR_TOKENS,
   colors,
@@ -99,6 +101,26 @@ function lowestContrasts(palette: Palette) {
 describe("colour tokens", () => {
   describe.each(SCHEMES)("%s palette", (scheme) => {
     it.each(lowestContrasts(colors[scheme]))("%s meets 4.5:1", (_, ratio) => {
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+    });
+  });
+
+  // The accent replaces `primary` and its text: every preset in both schemes,
+  // as text on the page and card and under its own text colour.
+  describe.each(
+    ACCENT_IDS.filter((id) => id !== "default").flatMap((id) =>
+      SCHEMES.map((scheme) => [id, scheme] as const),
+    ),
+  )("%s accent, %s", (accent, scheme) => {
+    const preset = accentColors(accent, scheme);
+    const palette: Palette = preset
+      ? {
+          ...colors[scheme],
+          primary: preset.primary,
+          "primary-foreground": preset.foreground,
+        }
+      : colors[scheme];
+    it.each(lowestContrasts(palette))("%s meets 4.5:1", (_, ratio) => {
       expect(ratio).toBeGreaterThanOrEqual(4.5);
     });
   });

@@ -8,17 +8,19 @@ import {
 } from "~/components/skeletons";
 import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 
-/** The show screen while it loads: header, description lines, the pickers and episode rows. */
+/** The show screen while it loads: header, description lines, the order picker and episode rows. */
 export function ShowSkeleton() {
   return (
     <ScreenScrollView scrollEnabled={false}>
       <EntityHeaderSkeleton menu={false} />
       <TextBlockSkeleton />
       <SkeletonPulse>
-        {/* The season and order pills. */}
+        {/* The order pill (`OptionMenu`): 40pt drawn in its 48pt target. Only
+            a show with several seasons adds a season pill beside it. */}
         <View className="flex-row gap-3 px-page py-2">
-          <SkeletonBlock className="h-ctl w-1/4 rounded-full" />
-          <SkeletonBlock className="h-ctl w-1/4 rounded-full" />
+          <View className="min-h-touch w-1/4 justify-center">
+            <SkeletonBlock className="h-ctl rounded-full" />
+          </View>
         </View>
       </SkeletonPulse>
       <SongListSkeleton />

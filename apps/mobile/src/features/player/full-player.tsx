@@ -283,10 +283,7 @@ export function FullPlayer() {
           </SongMenu>
         </View>
         {/* Scrolls, so large text and short phones never push the controls off screen. */}
-        <ScrollView
-          contentContainerClassName="grow px-6 py-4"
-          contentContainerStyle={{ paddingBottom: insets.bottom }}
-        >
+        <ScrollView contentContainerClassName="grow px-6 py-4">
           {/* Centred in the space above the pinned Lyrics / Up next row. */}
           <View className="grow justify-center">
             <View ref={slot} onLayout={measureSlot} className="items-center">
@@ -329,21 +326,28 @@ export function FullPlayer() {
               <TransportControls />
             </View>
           </View>
-          <View className="flex-row items-center justify-between pt-8">
-            <ModeToggle
-              icon={{ ios: "quote.bubble", android: "lyrics" }}
-              label="Lyrics"
-              on={showLyrics}
-              onPress={() => setShowLyrics((shown) => !shown)}
-            />
-            <IconButton
-              icon={{ ios: "list.bullet", android: "queue_music" }}
-              label="Up next"
-              size="md"
-              onPress={() => router.push("/queue")}
-            />
-          </View>
         </ScrollView>
+        {/* Pinned outside the scroll view: an Android ScrollView whose scroller
+            has not settled (a layout change on a new track or the lyrics
+            toggle) takes the next touch down for itself, so a tap on Up next
+            was dropped. */}
+        <View
+          className="flex-row items-center justify-between px-6 pt-4"
+          style={{ paddingBottom: insets.bottom }}
+        >
+          <ModeToggle
+            icon={{ ios: "quote.bubble", android: "lyrics" }}
+            label="Lyrics"
+            on={showLyrics}
+            onPress={() => setShowLyrics((shown) => !shown)}
+          />
+          <IconButton
+            icon={{ ios: "list.bullet", android: "queue_music" }}
+            label="Up next"
+            size="md"
+            onPress={() => router.push("/queue")}
+          />
+        </View>
       </OnWash>
     </View>
   );

@@ -12,6 +12,8 @@ type DetailSkeletonProps = {
   like?: boolean;
   /** Numbered rows with lengths (an album's `TrackList numbered`). */
   numbered?: boolean;
+  /** The shelf after the songs (a mix has none). */
+  shelf?: boolean;
 };
 
 /** The loading page of a detail screen: header, song list, one shelf. */
@@ -20,12 +22,13 @@ export function DetailSkeleton({
   shuffle = true,
   like = true,
   numbered = false,
+  shelf = true,
 }: DetailSkeletonProps) {
   return (
     <>
       <EntityHeaderSkeleton shuffle={shuffle} like={like} />
       <SongListSkeleton rows={rows} numbered={numbered} />
-      <ShelfSkeleton />
+      {shelf ? <ShelfSkeleton /> : null}
     </>
   );
 }

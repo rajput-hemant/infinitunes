@@ -184,7 +184,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
   `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
 - Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, then iOS's Search as the system search tab
-  (`role="search"`, last in JSX: iOS 26 draws it as a trailing glass button with the field at the bottom);
+  (last in JSX). expo-router's `role="search"` reaches react-native-screens only as `ios.systemItem` (the
+  magnifier, a plain tab in the pill on iOS 27); the `UISearchTab` (trailing glass button, header field in the
+  bar) needs `unstable_nativeProps={{ ios: { role: "search", automaticallyActivatesSearch: true } }}` (26.1+);
+  below that the field stays under the large title (`hideWhenScrolling: false`);
   Android has no Search tab. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
   `NativeTabs.Trigger` with an `sf` and an `md` icon. On iOS 26 the mini player is the bar's
   `NativeTabs.BottomAccessory` (`AccessoryMiniPlayer`; `usePlacement()` `inline` drops Next) and the bar
@@ -325,7 +328,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `Text emphasized`, a no-op on iOS; `sizes.seam`) and the springs in `theme/motion.ts` (Compose's
   `MotionScheme.expressive()`, `damping` as a coefficient; iOS's `iosPressRelease` lives there too). Android-only
   looks: `Button` and filled/tonal `IconButton` (40dp container + slop, 56dp `large`; corners morph full to `sm`
-  while pressed), `ListRow`'s current track (tonal container, `Equalizer`), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp filter chips with a check),
+  while pressed), `ListRow`'s current track (tonal container; the `Equalizer` mark is both platforms'), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp filter chips with a check),
   the dock's filled play circle and Now Playing's paused-square/playing-circle play button, Settings as a segmented
   list. One UI resolves `onSurfaceVariant` to `onSurface`; `withDynamicRoles` fades `muted-foreground` then (keep it).
   The top app bar is `surface`; a detail screen's bar shows its title only once the header art has scrolled

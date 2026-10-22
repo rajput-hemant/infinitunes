@@ -168,6 +168,12 @@ export const space = {
   xxxl: 48,
 } as const;
 
+/** iOS's lift under artwork (Material is flat): a black shadow at this opacity. */
+export const artShadow = { color: "#000000", opacity: 0.18 } as const;
+
+/** A centred message's longest line (empty and error states). */
+export const measure = 300;
+
 /** Tailwind spacing keys of the `space` steps (`gap-3` is `space.md`). */
 export const spaceClasses = {
   1: space.xs,
@@ -225,11 +231,11 @@ export const ACCENTS = {
   blue: { light: "#0a63d8", dark: "#5aa9ff" },
   indigo: { light: "#4f46e5", dark: "#8b8cff" },
   purple: { light: "#8e3fd1", dark: "#c08bff" },
-  pink: { light: "#d6336c", dark: "#ff7aa8" },
-  red: { light: "#d62828", dark: "#ff7a72" },
-  orange: { light: "#c2570c", dark: "#ffa24d" },
-  green: { light: "#1f8a4c", dark: "#4ad58a" },
-  teal: { light: "#0f8a8a", dark: "#4fd1c9" },
+  pink: { light: "#cc2962", dark: "#ff7aa8" },
+  red: { light: "#d22727", dark: "#ff7a72" },
+  orange: { light: "#b14f0b", dark: "#ffa24d" },
+  green: { light: "#1c7b44", dark: "#4ad58a" },
+  teal: { light: "#0d7a7a", dark: "#4fd1c9" },
 } as const satisfies Record<
   string,
   { light: string; dark: string } | undefined

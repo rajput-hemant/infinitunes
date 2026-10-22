@@ -78,7 +78,8 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
 - Search bar: `surfaceContainerHighest` (`bg-muted`), one step above the Top Result card's `card`.
 - Tiles, quick picks, settings tiles: `surfaceContainerHigh` (`bg-card`). Skeletons: `fill` alphas.
 - Filled button: `primary`/`onPrimary`. Tonal: `secondaryContainer`/`onSecondaryContainer`.
-- Selected chip and selected segment: `secondaryContainer`. Idle chip outline: `outlineVariant`.
+- Selected chip: `secondaryContainer`. Idle chip outline: `outlineVariant`. Selected segment of a connected
+  button group: `primary` (see the component below).
 - Section labels in Settings: `primary`. Supporting text: `onSurfaceVariant`.
 - Player surfaces keep the artwork-seeded wash (`wash.tsx`), with D1 tokens as the fallback.
 
@@ -106,7 +107,10 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
   primary "Read More"; the artist's Songs/Albums order is one `OptionMenu` ("Sort by", a 48dp plain trigger) at
   the list's end, never a second connected group under the tabs. The song menu's way in is "View Song Details".
 - **Connected button group** (`segmented-tabs.android.tsx`): 40dp segments, 2dp seams, selected segment
-  `secondaryContainer` with a check and full corners, others `surfaceContainerHighest` with `sm` inner corners.
+  `primary`/`onPrimary` with full corners and no check, others `secondaryContainer` with `sm` inner corners.
+  A group's items are Compose's `ToggleButton`s: the filled toggle's checked container is `Primary`
+  (`FilledButtonTokens.SelectedContainerColor`) and it carries no check icon (selection is colour plus shape);
+  the leading check belongs to the old segmented button and to filter chips.
 - **Filter chip** (`chip-row.tsx`): 32dp, `sm` corners, outline idle; `secondaryContainer` + check selected.
   The selected chip scrolls into view; the row fades its trailing edge natively (`fadingEdgeLength`).
 - **Section header** (both platforms): titleLarge emphasized; the action is a primary text button.
@@ -114,14 +118,15 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
   `TrackList numbered`, both platforms) end with the track's length in bodyMedium `onSurfaceVariant`, tabular
   figures, before the heart and menu; the skeleton (`SongListSkeleton numbered`) mirrors the number and length.
   The current track sits in a `secondaryContainer` tile inset 8dp (`lg` corners), title emphasized, with a
-  three-bar `Equalizer` (still and low while paused, static under reduce motion). Leading icons sit in a round
+  three-bar `Equalizer` (both platforms; still and low while paused, never a pause glyph, static under reduce motion). Leading icons sit in a round
   `secondaryContainer`. iOS rows that navigate show a disclosure chevron. A paged list's last line is
   `EndOfList` (`components/end-of-list.tsx`).
 - **Search**: Android hides the app bar and shows Material 3's search view bar (`search-header.android.tsx`):
   a 56dp full-round `bg-muted` pill, page-gutter inset, a labelled Back as its navigation icon in every state
   (the screen is pushed; no magnifier), the field, clear at the end while there is text. The native header
   field started after the toolbar's 72dp title inset, far from back. iOS uses the system search tab
-  (`role="search"`). Top Result is a filled card on both platforms (96dp art, titleLarge emphasized, kind and
+  (a `UISearchTab`: `ios.role: "search"` and `automaticallyActivatesSearch` through `unstable_nativeProps`;
+  expo-router's own `role` only sets the magnifier item). Top Result is a filled card on both platforms (96dp art, titleLarge emphasized, kind and
   credit, a 56dp filled Play at its end). Result subtitles name the kind on Android ("Song · Arijit Singh";
   `result-subtitle.ts`); Top Searches names the kind on both ("Song", "Album") and draws artists round.
 - **Empty/error states**: the symbol in a 96dp `secondaryContainer` at `xl` corners, titleLarge title.
@@ -155,7 +160,8 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
 - **Home hero** (M3 hero carousel, both platforms): one large card (`useHeroWidth()` in `shelf.tsx`) leaving
   a 56dp peek of the next, snapping per card. Android: `xl` corners, eyebrow and title only; its play button
   is a rounded square (`md`).
-- **Quick-pick tile**: `bg-card`, `md` corners, art flush start, title labelLarge, a bounded ripple. Browse
+- **Quick-pick tile**: `bg-card`, 56dp, `md` corners, 48dp art inset 4dp at `sm` (concentric; an action tile's icon
+  sits in the same cell, `fill-2` over the tile), title labelLarge, a bounded ripple. Browse
   tiles share its press sink (`usePressScale`; iOS's release spring is `iosPressRelease` in `theme/motion.ts`).
   Browse has six categories ("Made for you" spans a full row) and no New Releases tile (Top Albums' `/album`).
 - **Library**: Liked Songs and Recently Played are the hub's two large tiles (`LibraryTile`); New Playlist is

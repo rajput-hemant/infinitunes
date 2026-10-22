@@ -14,6 +14,17 @@ const TAB_LABEL = Platform.select({
 } as const);
 
 /**
+ * The system search tab. expo-router's `role="search"` only reaches
+ * react-native-screens as `ios.systemItem` (the magnifier item: a plain tab
+ * in the pill on iOS 27); `ios.role` makes the tab a `UISearchTab` (iOS
+ * 26.1+), and `automaticallyActivatesSearch` detaches it trailing on iOS 27
+ * and moves the search screen's header field into the tab bar, focused.
+ */
+const SEARCH_TAB = {
+  ios: { role: "search", automaticallyActivatesSearch: true },
+} as const;
+
+/**
  * Platform tab bars (UITabBarController, Material 3 navigation bar) with the
  * system materials: no colours are set here, so iOS 26 keeps Liquid Glass and
  * Android its Material You surface. Each tab owns a stack, so pushed screens
@@ -77,7 +88,11 @@ export default function TabsLayout() {
             screen's header field moving into the tab bar. Last in the JSX so
             the order is the same on iOS 18, where it is a plain trailing tab. */}
         {Platform.OS === "ios" ? (
-          <NativeTabs.Trigger name="(search)" role="search">
+          <NativeTabs.Trigger
+            name="(search)"
+            role="search"
+            unstable_nativeProps={SEARCH_TAB}
+          >
             {/* The system's title wins; this names the tab for tests and tooling. */}
             <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
           </NativeTabs.Trigger>

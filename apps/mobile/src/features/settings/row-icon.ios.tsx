@@ -1,5 +1,7 @@
 import { Icon } from "@expo/ui";
+import type { ColorValue } from "react-native";
 
+import { ROW_TINT } from "./tap-row-props";
 import type { SFSymbol } from "./tap-row-props";
 
 const SIZE = 29;
@@ -12,15 +14,16 @@ const ICON = 16;
  */
 export function RowIcon({
   name,
-  color = "#8E8E93",
+  color = ROW_TINT.gray,
 }: {
   name: SFSymbol;
-  color?: string;
+  color?: ColorValue;
 }) {
   return (
     <Icon
       name={name}
       size={ICON}
+      // White in both schemes, as the Settings app's tiles.
       color="#FFFFFF"
       style={{
         width: SIZE,
