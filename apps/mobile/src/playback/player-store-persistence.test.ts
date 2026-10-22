@@ -23,7 +23,7 @@ describe("player persistence", () => {
 
     const saved = stored();
     expect(saved).toMatchObject({
-      version: 0,
+      version: 1,
       state: { currentIndex: 1, repeat: "playlist", shuffle: true },
     });
     expect(Object.keys(saved?.state as object).toSorted()).toEqual([

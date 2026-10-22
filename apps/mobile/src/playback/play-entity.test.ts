@@ -1,4 +1,4 @@
-import { toSongRow } from "@infinitunes/types";
+import { toQueueEntry, toSongRow } from "@infinitunes/types";
 import {
   rawAlbum,
   rawArtist,
@@ -8,9 +8,10 @@ import {
   rawStationDetails,
 } from "@infinitunes/types/fixtures";
 
+import { failureStore } from "~/lib/failure";
 import { procedure } from "~/test/trpc-mock";
 
-import { isPlayable, playEntity } from "./play-entity";
+import { isPlayable, playEntity, queueEntity } from "./play-entity";
 import { playerStore } from "./player-store";
 import { seekTo, togglePlayback } from "./transport";
 
@@ -42,17 +43,7 @@ describe("playEntity", () => {
     expect(queuedIds()).toEqual(["newer"]);
   });
 
-  it.each([
-    "tracks",
-    "row",
-    "next",
-    "previous",
-    "start",
-    "toggle",
-    "seek",
-    "queue",
-    "playNext",
-  ])(
+  it.each(["tracks", "row", "next", "previous", "start", "toggle", "seek"])(
     "discards an async result superseded by a direct %s action",
     async (action) => {
       const state = playerStore.getState();
@@ -70,16 +61,39 @@ describe("playEntity", () => {
       if (action === "start") state.start();
       if (action === "toggle") togglePlayback();
       if (action === "seek") seekTo(30);
-      if (action === "queue")
-        state.addToQueue(toSongRow(rawSong({ id: "queued" })));
-      if (action === "playNext")
-        state.playNext(toSongRow(rawSong({ id: "queued" })));
       const chosen = playerStore.getState().queue;
       older.resolve(rawAlbum({ list: [rawSong({ id: "older" })] }));
       await pending;
       expect(playerStore.getState().queue).toBe(chosen);
     },
   );
+
+  it.each(["addToQueue", "playNext", "removeAt", "toggleShuffle"] as const)(
+    "still plays an in-flight result after a %s edit",
+    async (edit) => {
+      const state = playerStore.getState();
+      state.playTracks(
+        [rawSong({ id: "direct" }), rawSong({ id: "x" })].map(toSongRow),
+      );
+      const older = Promise.withResolvers<ReturnType<typeof rawAlbum>>();
+      procedure("album.details").mockReturnValueOnce(older.promise);
+      const pending = playEntity("album", ALBUM_URL);
+      if (edit === "removeAt") state.removeAt(1);
+      else if (edit === "toggleShuffle") state.toggleShuffle();
+      else state[edit](toSongRow(rawSong({ id: "queued" })));
+      older.resolve(rawAlbum({ list: [rawSong({ id: "fetched" })] }));
+      await pending;
+      expect(queuedIds()).toEqual(["fetched"]);
+    },
+  );
+
+  it("shows a message when the album has nothing to play", async () => {
+    procedure("album.details").mockResolvedValue(rawAlbum({ list: "" }));
+    await playEntity("album", ALBUM_URL);
+    expect(failureStore.getState().current?.message).toBe(
+      "Nothing to play yet",
+    );
+  });
 
   it("queues an album's songs by its token and starts playing", async () => {
     const details = procedure("album.details");
@@ -152,6 +166,50 @@ describe("playEntity", () => {
     await playEntity("playlist", "https://www.jiosaavn.com/featured/x/abc_");
 
     expect(playerStore.getState().started).toBe(false);
+  });
+});
+
+describe("queueEntity", () => {
+  const songs = ["a", "b", "c"].map((id) => rawSong({ id }));
+
+  it("keeps order when play next fills an empty queue", async () => {
+    procedure("album.details").mockResolvedValue(rawAlbum({ list: songs }));
+    await queueEntity("album", ALBUM_URL, "next");
+    expect(queuedIds()).toEqual(["a", "b", "c"]);
+  });
+
+  it("puts play next right after the current track, in order", async () => {
+    playerStore
+      .getState()
+      .playTracks([rawSong({ id: "1" }), rawSong({ id: "2" })].map(toSongRow));
+    procedure("album.details").mockResolvedValue(rawAlbum({ list: songs }));
+    await queueEntity("album", ALBUM_URL, "next");
+    expect(queuedIds()).toEqual(["1", "a", "b", "c", "2"]);
+  });
+
+  it("appends in order for the end of the queue", async () => {
+    playerStore.getState().playTracks([toSongRow(rawSong({ id: "1" }))]);
+    procedure("album.details").mockResolvedValue(rawAlbum({ list: songs }));
+    await queueEntity("album", ALBUM_URL, "last");
+    expect(queuedIds()).toEqual(["1", "a", "b", "c"]);
+  });
+});
+
+describe("restored queue", () => {
+  it("gives hydrated entries without a queueItemId one", async () => {
+    const { queueItemId: _, ...bare } = toQueueEntry(toSongRow(rawSong()));
+    playerStore.persist.getOptions().storage?.setItem("player", {
+      state: {
+        queue: [bare as never],
+        currentIndex: 0,
+        shuffle: false,
+        repeat: "off",
+        radio: null,
+      },
+      version: 1,
+    });
+    await playerStore.persist.rehydrate();
+    expect(playerStore.getState().queue[0]?.queueItemId).toBeTruthy();
   });
 });
 

@@ -196,7 +196,7 @@ describe("PlaybackController", () => {
     "playNext",
     "quality",
   ] as const)(
-    "advances a radio tail after a delayed refill unless the user acted (%s)",
+    "advances a radio tail after a delayed refill unless the user played something else (%s)",
     async (action) => {
       const refill = Promise.withResolvers<typeof songs>();
       procedure("radio.songs").mockReturnValueOnce(refill.promise);
@@ -228,7 +228,9 @@ describe("PlaybackController", () => {
       await act(async () => refill.resolve(songs.slice(1)));
 
       expect(playerStore.getState().currentIndex).toBe(
-        action === "none" ? 1 : 0,
+        action === "none" || action === "queue" || action === "playNext"
+          ? 1
+          : 0,
       );
       if (action === "none") {
         expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
