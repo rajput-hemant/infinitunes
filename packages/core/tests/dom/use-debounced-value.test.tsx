@@ -68,4 +68,13 @@ describe("useDebouncedValue", () => {
     await render("");
     expect(latest()).toBe("");
   });
+
+  it("keeps the cleared value while the next search waits to settle", async () => {
+    await render("old");
+    await render("");
+    await render("new");
+    expect(latest()).toBe("");
+    await advance(200);
+    expect(latest()).toBe("new");
+  });
 });

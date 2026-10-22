@@ -6,6 +6,7 @@ import {
   chunk,
   fetchLikedSongsNewestFirst,
   fetchSongsChunked,
+  LIBRARY_FETCH_CONCURRENCY,
   orderByIds,
   settleWithLimit,
 } from "../src/liked-songs";
@@ -91,22 +92,61 @@ describe("fetchSongsChunked", () => {
     }
   });
 
-  it("rethrows the original error when every id in a chunk is NOT_FOUND", async () => {
+  it.each([{ ids: ["a"] }, { ids: ["a", "b"] }])(
+    "returns an empty list when every id is NOT_FOUND: %j",
+    async ({ ids }) => {
+      const err = spyOn(console, "error").mockImplementation(() => {});
+      try {
+        const original = Object.assign(new Error("batch gone"), {
+          code: "NOT_FOUND",
+        });
+        const details = async ({ id }: { id: string }) => {
+          throw id.includes(",")
+            ? original
+            : Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+        };
+        expect(await fetchSongsChunked([...ids], details)).toEqual([]);
+      } finally {
+        err.mockRestore();
+      }
+    },
+  );
+
+  it("does not call a partly failed, otherwise missing library all-missing", async () => {
     const err = spyOn(console, "error").mockImplementation(() => {});
     try {
-      const original = Object.assign(new Error("batch gone"), {
-        code: "NOT_FOUND",
-      });
-      const details = async ({ id }: { id: string }) => {
-        throw id.includes(",")
-          ? original
-          : Object.assign(new Error("nf"), { code: "NOT_FOUND" });
-      };
-      expect(await fetchSongsChunked(["a", "b"], details)).toBeUndefined();
-      expect(err.mock.calls.some((call) => call[1] === original)).toBe(true);
+      const result = await fetchSongsChunked(
+        ["missing", "offline"],
+        async ({ id }) => {
+          throw Object.assign(new Error(id), {
+            code: id === "missing" ? "NOT_FOUND" : "TIMEOUT",
+          });
+        },
+        1,
+      );
+      expect(result).toBeUndefined();
     } finally {
       err.mockRestore();
     }
+  });
+
+  it("bounds initial chunk requests and preserves chunk order", async () => {
+    const ids = Array.from({ length: 200 }, (_, i) => `id-${i}`);
+    let active = 0;
+    let peak = 0;
+    const result = await fetchSongsChunked(
+      ids,
+      async ({ id }) => {
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 1));
+        active -= 1;
+        return { songs: id.split(",").map(song) };
+      },
+      2,
+    );
+    expect(peak).toBe(LIBRARY_FETCH_CONCURRENCY);
+    expect(result?.map((s) => s.id)).toEqual(ids);
   });
 
   it("bounds recovery concurrency, keeps order and logs one summary", async () => {

@@ -19,6 +19,7 @@ export const trpcClient = createTRPCClient<AppRouter>({
   links: [
     httpBatchLink({
       url: `${env.apiUrl}/api/trpc`,
+      maxURLLength: 2083,
       transformer: superjson,
       // The session lives in secure storage, not a cookie jar: send it
       // explicitly, and name the app because native fetch sends no `Origin`

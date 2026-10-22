@@ -11,6 +11,7 @@ import {
   removeSongOptimistic,
   renamePlaylistOptimistic,
   resetPlaylistOverlay,
+  usePlaylistRowRemoved,
   usePlaylists,
   type PlaylistView,
   type UserPlaylist,
@@ -31,7 +32,12 @@ const playlist = (
 
 // The list is written to the DOM and read back, so nothing is reassigned in render.
 function Probe({ server }: { server: UserPlaylist[] | undefined }) {
-  return <output>{JSON.stringify(usePlaylists(server) ?? null)}</output>;
+  const removed = usePlaylistRowRemoved("a", "s2");
+  return (
+    <output data-removed={removed}>
+      {JSON.stringify(usePlaylists(server) ?? null)}
+    </output>
+  );
 }
 let host: HTMLElement;
 const view = (): PlaylistView[] | undefined =>
@@ -340,5 +346,193 @@ describe("optimistic playlists", () => {
     });
 
     expect(view()).toBeUndefined();
+  });
+
+  it("keeps the next owner's pending create when an old create rejects", async () => {
+    await mount([]);
+    const old = deferred<UserPlaylist>();
+    let outcome: Promise<unknown> | undefined;
+    await act(async () => {
+      outcome = createPlaylistOptimistic(
+        { name: "Alice" },
+        () => old.promise,
+      ).catch(() => undefined);
+      resetPlaylistOverlay();
+      void createPlaylistOptimistic(
+        { name: "Bob" },
+        () => new Promise(() => {}),
+      );
+    });
+    await act(async () => {
+      old.reject(new Error("old account"));
+      await outcome;
+    });
+    expect(names()).toEqual(["Bob"]);
+  });
+
+  it.each([
+    [0, 1],
+    [1, 0],
+  ])(
+    "does not restore failed renames (failure order %i, %i)",
+    async (first, second) => {
+      await mount([playlist("a", "Original")]);
+      const gates = [deferred(), deferred()];
+      const writes: Promise<unknown>[] = [];
+      await act(async () => {
+        gates.forEach((gate, i) =>
+          writes.push(
+            renamePlaylistOptimistic(
+              "a",
+              { name: `Edit ${i}` },
+              () => gate.promise,
+            ).catch(() => undefined),
+          ),
+        );
+      });
+      for (const i of [first, second]) {
+        await act(async () => {
+          gates[i]!.reject(new Error("offline"));
+          await writes[i];
+        });
+      }
+      expect(names()).toEqual(["Original"]);
+    },
+  );
+
+  it("skips a failed rename to restore the last successful predecessor", async () => {
+    await mount([playlist("a", "Original")]);
+    const gates = [deferred(), deferred(), deferred()];
+    const writes: Promise<unknown>[] = [];
+    await act(async () => {
+      gates.forEach((gate, i) =>
+        writes.push(
+          renamePlaylistOptimistic(
+            "a",
+            { name: `Edit ${i}` },
+            () => gate.promise,
+          ).catch(() => undefined),
+        ),
+      );
+    });
+    await act(async () => {
+      gates[0]!.resolve(undefined);
+      gates[1]!.reject(new Error("offline"));
+      await Promise.all(writes.slice(0, 2));
+      gates[2]!.reject(new Error("offline"));
+      await writes[2];
+    });
+    expect(names()).toEqual(["Edit 0"]);
+  });
+
+  it("does not restore a failed move when the next move also fails", async () => {
+    const ids = ["s1", "s2", "s3"];
+    await mount([playlist("a", "A", ids)]);
+    const first = deferred();
+    let writes: Promise<unknown>[] = [];
+    await act(async () => {
+      writes = [
+        moveSongOptimistic(
+          "a",
+          "s3",
+          ["s3", "s1", "s2"],
+          ids,
+          () => first.promise,
+        ).catch(() => undefined),
+        moveSongOptimistic("a", "s2", ["s2", "s3", "s1"], ids, async () => {
+          throw new Error("offline");
+        }).catch(() => undefined),
+      ];
+      first.reject(new Error("offline"));
+      await Promise.all(writes);
+    });
+    expect(view()?.[0]?.songs).toEqual(ids);
+  });
+
+  it("keeps the confirmed order after the queue drains until props catch up", async () => {
+    const ids = ["s1", "s2", "s3"];
+    await mount([playlist("a", "A", ids)]);
+    await act(async () => {
+      await moveSongOptimistic(
+        "a",
+        "s3",
+        ["s3", "s1", "s2"],
+        ids,
+        async () => ({ songs: ["s3", "s1", "s2"] }),
+      );
+    });
+    const indexes: number[] = [];
+    await act(async () => {
+      await removeSongOptimistic("a", "s3", ids, async (index) => {
+        indexes.push(index);
+        return { songs: ["s1", "s2"] };
+      });
+    });
+    expect(indexes).toEqual([0]);
+  });
+
+  it("uses a refreshed server order after it acknowledges the confirmed write", async () => {
+    const ids = ["s1", "s2", "s3"];
+    const rerender = await mount([playlist("a", "A", ids)]);
+    await act(async () => {
+      await removeSongOptimistic("a", "s1", ids, async () => ({
+        songs: ["s2", "s3"],
+      }));
+    });
+    await rerender([playlist("a", "A", ["s2", "s3"])]);
+    const changed = ["s3", "s2"];
+    await rerender([playlist("a", "A", changed)]);
+    const indexes: number[] = [];
+    await act(async () => {
+      await removeSongOptimistic("a", "s3", changed, async (index) => {
+        indexes.push(index);
+        return { songs: ["s2"] };
+      });
+    });
+    expect(indexes).toEqual([0]);
+  });
+
+  it("hides a pending add when a removal follows and keeps it hidden after settlement", async () => {
+    await mount([playlist("a", "A", ["s1"])]);
+    const add = deferred();
+    let writes: Promise<unknown>[] = [];
+    await act(async () => {
+      writes = [
+        addSongsOptimistic("a", ["s2"], () => add.promise),
+        removeSongOptimistic("a", "s2", ["s1"], async () => ({
+          songs: ["s1"],
+        })),
+      ];
+    });
+    expect(view()?.[0]?.songs).toEqual(["s1"]);
+    await act(async () => {
+      add.resolve({ songs: ["s1", "s2"] });
+      await Promise.all(writes);
+    });
+    expect(view()?.[0]?.songs).toEqual(["s1"]);
+  });
+
+  it("shows a re-add after a pending removal as the latest intent", async () => {
+    const ids = ["s1", "s2", "s3"];
+    await mount([playlist("a", "A", ids)]);
+    const removal = deferred();
+    let writes: Promise<unknown>[] = [];
+    await act(async () => {
+      writes = [
+        removeSongOptimistic("a", "s2", ids, () => removal.promise),
+        addSongsOptimistic("a", ["s2"], async () => ({
+          songs: ["s1", "s3", "s2"],
+        })),
+      ];
+    });
+    expect(view()?.[0]?.songs).toEqual(["s1", "s3", "s2"]);
+    expect(host.querySelector("output")?.getAttribute("data-removed")).toBe(
+      "false",
+    );
+    await act(async () => {
+      removal.resolve({ songs: ["s1", "s3"] });
+      await Promise.all(writes);
+    });
+    expect(view()?.[0]?.songs).toEqual(["s1", "s3", "s2"]);
   });
 });
