@@ -95,6 +95,15 @@ describe("FeaturedPlaylistsScreen", () => {
 });
 
 describe("TopPodcastsScreen", () => {
+  it("holds the header's place with a shelf and section skeleton while loading", async () => {
+    procedure("get.topShows").mockReturnValue(new Promise(() => {}));
+    await renderScreen(<TopPodcastsScreen />);
+
+    // The grid's own skeleton plus the header's shelf and section header.
+    expect(screen.getAllByLabelText("Loading").length).toBeGreaterThan(1);
+    expect(screen.queryByRole("header", { name: "All Podcasts" })).toBeNull();
+  });
+
   it("puts the trending shelf above every show", async () => {
     procedure("get.topShows").mockResolvedValue({
       count: 1,

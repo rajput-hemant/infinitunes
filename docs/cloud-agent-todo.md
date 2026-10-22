@@ -86,7 +86,7 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts`
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
@@ -137,18 +137,18 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` - branch `worktree-agent-a8420b91455e7cd29`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
-- [ ] **M-45** **[device sign-off later]** P2 PLAUSIBLE `features/home/home-feed.tsx:47`, `DetailFrame`, `PagedFooter` - content pops in over skeletons [design P2-2]
-  - Fix: loaded branch `entering={FadeIn.duration(200).reduceMotion(ReduceMotion.Never)}`, no exiting on the skeleton. Executor: sonnet. Flags: needs device check.
-- [ ] **M-46** **[device sign-off later]** P2 CONFIRMED `components/skeletons.tsx:57-78`, `features/browse/top-podcasts-screen.tsx:53-59` - skeletons do not mirror the loaded layout: `SongRowSkeleton` lacks the 48pt heart and menu cells (text column ~100pt too wide, `pr-4` vs `space.xs`), and the TopPodcasts header (Trending shelf, "All Podcasts") appears only after data lands [comp P2-3, screens P3-7, design P2-2 skeleton-rule note]
+- [x] **M-45** **[device sign-off later]** P2 PLAUSIBLE `features/home/home-feed.tsx:47`, `DetailFrame`, `PagedFooter` - content pops in over skeletons [design P2-2]
+  - Fix: loaded branch `entering={FadeIn.duration(200).reduceMotion(ReduceMotion.Never)}`, no exiting on the skeleton. Executor: sonnet. Flags: needs device check. Done: fade on Home, DetailFrame and PagedFooter's empty/error states; the rows of paged lists live in their parents (not M12 files) and are not faded.
+- [x] **M-46** **[device sign-off later]** P2 CONFIRMED `components/skeletons.tsx:57-78`, `features/browse/top-podcasts-screen.tsx:53-59` - skeletons do not mirror the loaded layout: `SongRowSkeleton` lacks the 48pt heart and menu cells (text column ~100pt too wide, `pr-4` vs `space.xs`), and the TopPodcasts header (Trending shelf, "All Podcasts") appears only after data lands [comp P2-3, screens P3-7, design P2-2 skeleton-rule note]
   - Fix: add `size-touch` heart (when `useUserId()`) and `MenuGlyphSkeleton` cells, use the row's `paddingEnd`, keep the numbered length bar; render `ShelfSkeleton` + `SectionHeaderSkeleton` as TopPodcasts' header while pending; overlay-check each skeleton on the loaded page. Executor: sonnet. Flags: needs device check.
-- [ ] **M-47** P3 PLAUSIBLE `components/shelf.tsx:83-92`, `home-feed.tsx:56-64` - `uniqueBy` per render and Home re-diffs every shelf [perf#14]
-  - Fix: dedupe in `buildHomeModel`; consider Home as a vertical FlashList of shelves. Executor: sonnet. Flags: none.
-- [ ] **M-48** P3 PLAUSIBLE `components/detail/detail-frame.tsx:56-59` - children memo is ineffective [perf#18]
-  - Fix: drop the memo or move secondary queries into the page. Executor: haiku. Flags: none.
+- [x] **M-47** P3 PLAUSIBLE `components/shelf.tsx:83-92`, `home-feed.tsx:56-64` - `uniqueBy` per render and Home re-diffs every shelf [perf#14]
+  - Fix: dedupe in `buildHomeModel`; consider Home as a vertical FlashList of shelves. Executor: sonnet. Flags: none. Done: deduped carousel in `buildHomeModel`, `Shelf` memoized; shelf cards already deduped upstream; vertical FlashList not done (optional).
+- [x] **M-48** P3 PLAUSIBLE `components/detail/detail-frame.tsx:56-59` - children memo is ineffective [perf#18]
+  - Fix: drop the memo or move secondary queries into the page. Executor: haiku. Flags: none. Done: memo dropped.
 
 ## Batch M13 (sonnet): settings and forms - `features/settings/{settings-screen,settings-screen.android,end-session,profile-form,tap-rows,row-icon}.tsx`, tests
 
@@ -374,7 +374,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps

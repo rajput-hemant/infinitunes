@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
+import Animated from "react-native-reanimated";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Shelf } from "~/components/shelf";
+import { CONTENT_REVEAL } from "~/components/skeletons";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
@@ -39,7 +42,9 @@ export function HomeFeed() {
             action={{ label: "Try again", onPress: () => void home.refetch() }}
           />
         ) : (
-          <HomeSections model={home.data} />
+          <Animated.View entering={CONTENT_REVEAL}>
+            <HomeSections model={home.data} />
+          </Animated.View>
         )
       ) : home.error ? (
         <ErrorState error={home.error} onRetry={() => void home.refetch()} />
@@ -51,13 +56,13 @@ export function HomeFeed() {
 }
 
 function HomeSections({ model }: { model: HomeModel }) {
+  const eyebrow = useCallback(
+    (item: { id: string }) => model.eyebrows[item.id],
+    [model.eyebrows],
+  );
   return (
     <>
-      <Shelf
-        variant="hero"
-        items={model.carousel}
-        eyebrow={(item) => model.eyebrows[item.id]}
-      />
+      <Shelf variant="hero" items={model.carousel} eyebrow={eyebrow} />
       <QuickPicks items={model.quickPicks} />
       {model.shelves.map(({ key, ...shelf }) => (
         <Shelf key={key} {...shelf} />
