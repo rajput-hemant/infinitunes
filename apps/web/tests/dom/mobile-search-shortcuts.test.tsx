@@ -1,6 +1,6 @@
 import { afterEach, expect, it, mock } from "bun:test";
 
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
 import { setInputValue } from "./set-input-value";
@@ -25,7 +25,10 @@ afterEach(async () => {
 it("leaves player shortcuts enabled after departing a nonempty search", async () => {
   let typing = false;
   function Probe() {
-    [typing] = useIsTyping();
+    const [isTyping] = useIsTyping();
+    useEffect(() => {
+      typing = isTyping;
+    }, [isTyping]);
     return null;
   }
   const host = document.createElement("div");
