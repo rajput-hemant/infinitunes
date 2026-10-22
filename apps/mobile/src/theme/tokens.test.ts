@@ -5,9 +5,11 @@ import {
   SchemeTonalSpot,
 } from "@material/material-color-utilities";
 
+import * as plainAccent from "./accent-palette";
+import * as androidAccent from "./accent-palette.android";
 import { withDynamicRoles } from "./dynamic-palette";
 import {
-  accentColors,
+  ACCENTS,
   ACCENT_IDS,
   androidDynamicColors,
   COLOR_TOKENS,
@@ -105,21 +107,20 @@ describe("colour tokens", () => {
     });
   });
 
-  // The accent replaces `primary` and its text: every preset in both schemes,
-  // as text on the page and card and under its own text colour.
+  // iOS: the accent replaces `primary` and its text over the system colours.
+  // Android: it is the seed of a whole tonal spot scheme. Every preset in
+  // both schemes, on both platforms.
   describe.each(
     ACCENT_IDS.filter((id) => id !== "default").flatMap((id) =>
-      SCHEMES.map((scheme) => [id, scheme] as const),
+      SCHEMES.flatMap((scheme) =>
+        (["ios", "android"] as const).map(
+          (platform) => [id, scheme, platform] as const,
+        ),
+      ),
     ),
-  )("%s accent, %s", (accent, scheme) => {
-    const preset = accentColors(accent, scheme);
-    const palette: Palette = preset
-      ? {
-          ...colors[scheme],
-          primary: preset.primary,
-          "primary-foreground": preset.foreground,
-        }
-      : colors[scheme];
+  )("%s accent, %s, %s", (accent, scheme, platform) => {
+    const { withAccent } = platform === "ios" ? plainAccent : androidAccent;
+    const palette = withAccent(colors[scheme], accent, scheme);
     it.each(lowestContrasts(palette))("%s meets 4.5:1", (_, ratio) => {
       expect(ratio).toBeGreaterThanOrEqual(4.5);
     });
@@ -149,6 +150,10 @@ describe("Material You colour roles", () => {
     argbFromHex("#6750a4"), // Material's baseline seed
     argbFromHex("#808080"),
     argbFromHex("#ffd400"), // a light, high-chroma wallpaper
+    // The accent presets, which seed the scheme on Android.
+    ...Object.values(ACCENTS).flatMap((preset) =>
+      preset ? [argbFromHex(preset.light), argbFromHex(preset.dark)] : [],
+    ),
   ];
   const SPECS = ["2021", "2025"] as const;
 

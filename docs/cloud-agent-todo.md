@@ -122,12 +122,13 @@ Owns every edit to `icon-button.tsx`, `transport-controls.tsx` and `card-play-bu
 - [x] **M-36** **[device sign-off later]** P3 PLAUSIBLE `features/library/swipeable-row.tsx:35` - swipe row does not commit on a full swipe [design P3-10]
   - Fix: iOS full-swipe (>60% width) triggers the destructive action. Executor: sonnet. Flags: needs device check. Done: iOS-only `overshootRight`; a UI-thread reaction flags a drag past 60% of the row width, and the release (`onSwipeableWillOpen`) runs the action (`isFullSwipe`, unit-tested). Gesture itself needs a device check.
 
-## Batch M9 (opus): Android accent - `theme/use-palette.ts` (+ contrast test)
+## Batch M9 (opus): Android accent - `theme/use-palette.ts` (+ contrast test) - `fix/m9-android-accent`
 
 Gated on the accent decision.
 
-- [ ] **M-40** **[device sign-off later]** P2 PLAUSIBLE `theme/use-palette.ts:20` - a custom accent replaces only `primary`; containers keep wallpaper roles [design P2-12]
+- [x] **M-40** **[device sign-off later]** P2 PLAUSIBLE `theme/use-palette.ts:20` - a custom accent replaces only `primary`; containers keep wallpaper roles [design P2-12]
   - Fix: generate `SchemeTonalSpot` from the accent seed and map every role, keep the AA test (`tokens.test.ts`). Executor: opus. Flags: needs device check (decision: reuse the M3 pill).
+  - Done: `theme/accent-palette{,.android}.ts`; Android builds the scheme (library `require`d on first use) for `usePalette`, `ThemeRoot`'s class variables and the nav chrome; iOS keeps the two-token override.
 
 ## Batch M10 (sonnet): network and auth plumbing - `lib/trpc.ts`, `lib/auth-client.ts`, `playback/record-play.ts`, Radio/Search tab queries `worktree-agent-ababad090a8d2de55`
 
