@@ -69,23 +69,24 @@ export const FormField = forwardRef<TextInputHandle, FormFieldProps>(
           className={cx(
             "min-h-touch flex-row items-center pl-4",
             outlined
-              ? cx(
-                  "min-h-row rounded-xs",
-                  error
-                    ? "border-destructive"
-                    : focused
-                      ? "border-primary"
-                      : "border-input",
-                )
+              ? cx("min-h-row rounded-xs border-input")
               : "rounded-md bg-fill",
             !editable && "opacity-50",
           )}
-          style={
-            outlined
-              ? { borderWidth: focused || error ? 2 : 1, marginTop: space.sm }
-              : undefined
-          }
+          style={outlined ? { borderWidth: 1, marginTop: space.sm } : undefined}
         >
+          {outlined && (focused || error) ? (
+            // The 2dp focus/error ring is drawn over the 1dp border, so the
+            // field's layout never shifts by the extra pixel.
+            <View
+              pointerEvents="none"
+              className={cx(
+                "absolute rounded-xs border-2",
+                error ? "border-destructive" : "border-primary",
+              )}
+              style={{ top: -1, left: -1, right: -1, bottom: -1 }}
+            />
+          ) : null}
           {outlined ? (
             <Text
               variant="caption"
@@ -93,7 +94,7 @@ export const FormField = forwardRef<TextInputHandle, FormFieldProps>(
               importantForAccessibility="no"
               className="absolute bg-background px-1"
               style={{
-                top: -space.sm - (focused || error ? 2 : 1),
+                top: -space.sm - 1,
                 left: space.md,
               }}
             >

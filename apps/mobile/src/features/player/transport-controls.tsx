@@ -72,7 +72,7 @@ function useGlyphBounce(name: string) {
  * Play or pause: the mini player's. A bare glyph on iOS; on Android a 40dp
  * filled circle in the wash's control colour (Material 3's filled icon button).
  */
-export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
+export function PlayPauseButton() {
   const { icon, label } = usePlayPause();
   const wash = useWashColors();
   const primary = useTokenColor("primary");
@@ -105,7 +105,7 @@ export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
     >
       <SymbolView
         name={icon}
-        size={iconSize[size]}
+        size={iconSize.lg}
         tintColor={colors.text}
         animationSpec={bounce}
       />

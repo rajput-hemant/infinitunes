@@ -88,7 +88,7 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
       </Pressable>
       {track ? (
         <>
-          <PlayPauseButton size="lg" />
+          <PlayPauseButton />
           {compact ? null : <NextTrackButton size="md" />}
         </>
       ) : null}
