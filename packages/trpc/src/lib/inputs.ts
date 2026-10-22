@@ -1,99 +1,99 @@
 import { z } from "zod";
 
-const lang = z.string().optional();
-const page = z.coerce.number().optional();
-const n = z.coerce.number().optional();
+const lang = z.string().max(300).optional();
+const page = z.coerce.number().int().min(0).max(1000).optional();
+const n = z.coerce.number().int().min(1).max(100).optional();
 
 export const songInput = z.object({
-  id: z.string().optional(),
-  token: z.string().optional(),
+  id: z.string().max(200).optional(),
+  token: z.string().max(200).optional(),
   lang,
 });
 
 /** Comma-separated ids that may name songs or episodes. */
 export const songItemsInput = z.object({
-  id: z.string(),
+  id: z.string().max(1000),
   lang,
 });
 
 export const songRecommendInput = z.object({
-  id: z.string(),
+  id: z.string().max(200),
   lang,
 });
 
 export const albumInput = z.object({
-  id: z.string().optional(),
-  token: z.string().optional(),
+  id: z.string().max(200).optional(),
+  token: z.string().max(200).optional(),
   lang,
 });
 
 export const albumRecommendInput = z.object({
-  id: z.string(),
+  id: z.string().max(200),
   lang,
 });
 
 export const albumSameYearInput = z.object({
-  year: z.string(),
+  year: z.string().regex(/^\d{4}$/),
   lang,
 });
 
 export const playlistInput = z.object({
-  id: z.string().optional(),
-  token: z.string().optional(),
+  id: z.string().max(200).optional(),
+  token: z.string().max(200).optional(),
   lang,
 });
 
 export const playlistRecommendInput = z.object({
-  id: z.string(),
+  id: z.string().max(200),
   lang,
 });
 
 export const artistInput = z.object({
-  id: z.string().optional(),
-  token: z.string().optional(),
-  page: z.coerce.number().default(0),
-  n_song: z.coerce.number().default(10),
-  n_album: z.coerce.number().default(10),
+  id: z.string().max(200).optional(),
+  token: z.string().max(200).optional(),
+  page: z.coerce.number().int().min(0).max(1000).default(0),
+  n_song: z.coerce.number().int().min(1).max(100).default(10),
+  n_album: z.coerce.number().int().min(1).max(100).default(10),
   lang,
 });
 
 export const artistSongsAlbumsInput = z.object({
-  id: z.string(),
+  id: z.string().max(200),
   page,
-  cat: z.string().optional(),
-  sort: z.string().optional(),
+  cat: z.string().max(200).optional(),
+  sort: z.string().max(200).optional(),
   lang,
 });
 
 export const artistTopSongsInput = z.object({
-  artist_id: z.string(),
-  song_id: z.string(),
-  page: z.coerce.number().default(1),
-  cat: z.string().optional(),
-  sort: z.string().optional(),
+  artist_id: z.string().max(200),
+  song_id: z.string().max(200),
+  page: z.coerce.number().int().min(0).max(1000).default(1),
+  cat: z.string().max(200).optional(),
+  sort: z.string().max(200).optional(),
   lang,
 });
 
 export const showInput = z.object({
-  token: z.string().optional(),
-  season: z.coerce.number().optional(),
-  sort: z.string().optional(),
+  token: z.string().max(200).optional(),
+  season: z.coerce.number().int().min(1).max(100).optional(),
+  sort: z.string().max(200).optional(),
 });
 
 export const showEpisodesInput = z.object({
-  id: z.string(),
-  season: z.coerce.number().optional(),
+  id: z.string().max(200),
+  season: z.coerce.number().int().min(1).max(100).optional(),
   page,
-  sort: z.string().optional(),
+  sort: z.string().max(200).optional(),
 });
 
 export const searchAllInput = z.object({
-  q: z.string(),
+  q: z.string().max(200),
 });
 
 export const searchByTypeInput = z.object({
   type: z.enum(["songs", "albums", "playlists", "artists", "podcasts"]),
-  q: z.string(),
+  q: z.string().max(200),
   page,
   n,
 });
@@ -110,35 +110,35 @@ export const getPagedInput = z.object({
 });
 
 export const getActorTopSongsInput = z.object({
-  actor_id: z.string(),
-  song_id: z.string(),
+  actor_id: z.string().max(200),
+  song_id: z.string().max(200),
   lang,
 });
 
 export const getFooterInput = z.object({
-  lang: z.string(),
+  lang,
   page,
   n,
 });
 
 export const getLyricsInput = z.object({
-  id: z.string(),
+  id: z.string().max(200),
 });
 
 export const getMixInput = z.object({
-  token: z.string().optional(),
+  token: z.string().max(200).optional(),
   page,
-  n: z.coerce.number().default(20),
+  n: z.coerce.number().int().min(1).max(100).default(20),
   lang,
 });
 
 export const getLabelInput = z.object({
-  token: z.string().optional(),
+  token: z.string().max(200).optional(),
   page,
-  n_song: z.coerce.number().default(10),
-  n_album: z.coerce.number().default(10),
-  cat: z.string().optional(),
-  sort: z.string().optional(),
+  n_song: z.coerce.number().int().min(1).max(100).default(10),
+  n_album: z.coerce.number().int().min(1).max(100).default(10),
+  cat: z.string().max(200).optional(),
+  sort: z.string().max(200).optional(),
   lang,
 });
 
@@ -149,22 +149,22 @@ export const getMegaMenuInput = z.object({
 
 export const createStationInput = z.object({
   type: z.enum(["featured", "artist", "song"]).default("featured"),
-  name: z.string(),
-  language: z.string().optional(),
-  artistId: z.string().optional(),
-  query: z.string().optional(),
-  mode: z.string().optional(),
+  name: z.string().max(200),
+  language: z.string().max(300).optional(),
+  artistId: z.string().max(200).optional(),
+  query: z.string().max(200).optional(),
+  mode: z.string().max(200).optional(),
 });
 
 export const radioSongsInput = z.object({
-  stationId: z.string(),
+  stationId: z.string().max(200),
   k: z.coerce.number().int().min(1).max(50).default(20),
-  next: z.coerce.number().int().optional(),
-  lang: z.string().optional(),
+  next: z.coerce.number().int().min(0).max(1000).optional(),
+  lang,
 });
 
 export const stationDetailsInput = z.object({
-  name: z.string().optional(),
-  token: z.string(),
-  lang: z.string().optional(),
+  name: z.string().max(200).optional(),
+  token: z.string().max(200),
+  lang,
 });

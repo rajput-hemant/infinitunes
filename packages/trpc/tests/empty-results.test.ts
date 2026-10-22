@@ -43,7 +43,7 @@ describe("secondary lists return [] instead of throwing NOT_FOUND", () => {
 
   it("album.sameYear", async () => {
     responses = { "search.topAlbumsoftheYear": [] };
-    expect(await caller.album.sameYear({ year: uniq() })).toEqual([]);
+    expect(await caller.album.sameYear({ year: "2024" })).toEqual([]);
   });
 
   it("playlist.recommendations", async () => {
@@ -112,7 +112,7 @@ describe("secondary upstream outages", () => {
         const lists = await Promise.all([
           caller.song.recommendations({ id: uniq() }),
           caller.album.recommendations({ id: uniq() }),
-          caller.album.sameYear({ year: uniq() }),
+          caller.album.sameYear({ year: "2024" }),
           caller.playlist.recommendations({ id: uniq() }),
           caller.artist.topSongs({ artist_id: uniq(), song_id: "s1" }),
           caller.get.actorTopSongs({ actor_id: uniq(), song_id: "s1" }),
