@@ -1,3 +1,4 @@
+import { toSongRow } from "@infinitunes/types";
 import {
   rawAlbum,
   rawArtist,
@@ -11,6 +12,7 @@ import { procedure } from "~/test/trpc-mock";
 
 import { isPlayable, playEntity } from "./play-entity";
 import { playerStore } from "./player-store";
+import { seekTo, togglePlayback } from "./transport";
 
 const ALBUM_URL = "https://www.jiosaavn.com/album/udta-teer/LHgqn,SRpyA_";
 
@@ -28,6 +30,57 @@ function queuedIds() {
 }
 
 describe("playEntity", () => {
+  it("keeps the newer async play when an older lookup resolves last", async () => {
+    const older = Promise.withResolvers<ReturnType<typeof rawAlbum>>();
+    procedure("album.details")
+      .mockReturnValueOnce(older.promise)
+      .mockResolvedValueOnce(rawAlbum({ list: [rawSong({ id: "newer" })] }));
+    const pending = playEntity("album", ALBUM_URL);
+    await playEntity("album", ALBUM_URL);
+    older.resolve(rawAlbum({ list: [rawSong({ id: "older" })] }));
+    await pending;
+    expect(queuedIds()).toEqual(["newer"]);
+  });
+
+  it.each([
+    "tracks",
+    "row",
+    "next",
+    "previous",
+    "start",
+    "toggle",
+    "seek",
+    "queue",
+    "playNext",
+  ])(
+    "discards an async result superseded by a direct %s action",
+    async (action) => {
+      const state = playerStore.getState();
+      state.playTracks(
+        [rawSong({ id: "direct" }), rawSong({ id: "next" })].map(toSongRow),
+      );
+      const older = Promise.withResolvers<ReturnType<typeof rawAlbum>>();
+      procedure("album.details").mockReturnValueOnce(older.promise);
+      const pending = playEntity("album", ALBUM_URL);
+      if (action === "tracks")
+        state.playTracks([toSongRow(rawSong({ id: "chosen" }))]);
+      if (action === "row") state.playAt(1);
+      if (action === "next") state.skipToNext();
+      if (action === "previous") state.skipToPrevious();
+      if (action === "start") state.start();
+      if (action === "toggle") togglePlayback();
+      if (action === "seek") seekTo(30);
+      if (action === "queue")
+        state.addToQueue(toSongRow(rawSong({ id: "queued" })));
+      if (action === "playNext")
+        state.playNext(toSongRow(rawSong({ id: "queued" })));
+      const chosen = playerStore.getState().queue;
+      older.resolve(rawAlbum({ list: [rawSong({ id: "older" })] }));
+      await pending;
+      expect(playerStore.getState().queue).toBe(chosen);
+    },
+  );
+
   it("queues an album's songs by its token and starts playing", async () => {
     const details = procedure("album.details");
     details.mockResolvedValue(

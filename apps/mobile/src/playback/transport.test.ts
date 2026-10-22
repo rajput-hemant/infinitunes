@@ -117,6 +117,20 @@ describe("resumePlayback", () => {
 });
 
 describe("seekTo", () => {
+  it("resumes at an explicit seek position after completion", () => {
+    lastPlayer().finishLoading(180);
+    lastPlayer().finishTrack(179.9);
+    markSourceEnded(true);
+
+    seekTo(75);
+    jest.clearAllMocks();
+    resumePlayback();
+
+    expect(seek).not.toHaveBeenCalled();
+    expect(audioPlayer.currentTime).toBe(75);
+    expect(play).toHaveBeenCalledTimes(1);
+  });
+
   it("moves the engine and the playhead together", () => {
     seekTo(75);
 

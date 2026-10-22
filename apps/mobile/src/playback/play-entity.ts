@@ -5,6 +5,7 @@ import { trpcClient } from "~/lib/trpc";
 import { stationRef } from "~/navigation/entity-href";
 
 import { playAll } from "./play-collection";
+import { beginPlaybackRequest } from "./playback-request";
 import { playerStore } from "./player-store";
 import { playStation } from "./radio";
 
@@ -62,6 +63,7 @@ async function tracksOf(
  * station. Failures are silent; nothing throws, so a handler can `void` it.
  */
 export async function playEntity(type: PlayableType, url: string) {
+  const isCurrent = beginPlaybackRequest();
   if (type === "radio_station") {
     const station = stationRef(url);
     if (station) await playStation(station);
@@ -73,7 +75,7 @@ export async function playEntity(type: PlayableType, url: string) {
   } catch {
     return;
   }
-  if (tracks.length === 0) return;
+  if (!isCurrent() || tracks.length === 0) return;
   playAll(tracks.map(toSongRow));
 }
 

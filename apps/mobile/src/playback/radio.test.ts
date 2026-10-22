@@ -87,6 +87,18 @@ describe("startStation", () => {
 });
 
 describe("playStation", () => {
+  it("does not replace a newer direct play with late station details", async () => {
+    const details =
+      Promise.withResolvers<ReturnType<typeof rawStationDetails>>();
+    procedure("radio.stationDetails").mockReturnValueOnce(details.promise);
+    const pending = playStation({ name: "old", token: "old" });
+    playerStore.getState().playTracks([toSongRow(rawSong({ id: "chosen" }))]);
+    details.resolve(rawStationDetails());
+    await pending;
+    expect(queuedIds()).toEqual(["chosen"]);
+    expect(playerStore.getState().radio).toBeNull();
+  });
+
   it("loads a featured station by name and token and plays it", async () => {
     const details = procedure("radio.stationDetails");
     details.mockResolvedValue(rawStationDetails({ station: rawStation() }));
@@ -113,6 +125,19 @@ describe("playStation", () => {
 
 describe("startSeededRadio", () => {
   const songs = [rawSong(), rawSong({ id: "Ab12Cd34" })];
+
+  it("discards a seeded station whose songs arrive after a newer play", async () => {
+    procedure("radio.createStation").mockResolvedValue({ stationId: "old" });
+    const batch = Promise.withResolvers<typeof songs>();
+    procedure("radio.songs").mockReturnValueOnce(batch.promise);
+    const pending = startSeededRadio({ name: "Old" });
+    await Promise.resolve();
+    playerStore.getState().playTracks([toSongRow(rawSong({ id: "chosen" }))]);
+    batch.resolve(songs);
+    await pending;
+    expect(queuedIds()).toEqual(["chosen"]);
+    expect(playerStore.getState().radio).toBeNull();
+  });
 
   it("makes an artist station and queues its first batch as '<name> Radio'", async () => {
     const create = procedure("radio.createStation");

@@ -8,6 +8,7 @@ import type {
 import { trpcClient } from "~/lib/trpc";
 import type { StationRef } from "~/navigation/entity-href";
 
+import { beginPlaybackRequest } from "./playback-request";
 import { playerStore } from "./player-store";
 
 /** Songs asked for when a seeded station starts, as on the web. */
@@ -21,6 +22,7 @@ export function startStation(
   { station, stationId, songs }: StationDetailsResponse,
   startIndex = 0,
 ) {
+  beginPlaybackRequest();
   if (songs.length === 0) return;
   playerStore.getState().playTracks(songs.map(toSongRow), {
     startIndex,
@@ -35,8 +37,13 @@ export function startStation(
 
 /** Loads a featured station and plays it; failures are silent, nothing throws. */
 export async function playStation({ name, token }: StationRef) {
+  const isCurrent = beginPlaybackRequest();
   try {
-    startStation(await trpcClient.radio.stationDetails.query({ name, token }));
+    const station = await trpcClient.radio.stationDetails.query({
+      name,
+      token,
+    });
+    if (isCurrent()) startStation(station);
   } catch {
     // Nothing plays.
   }
@@ -80,6 +87,7 @@ export async function startSeededRadio({
   artistId,
   language,
 }: RadioSeed) {
+  const isCurrent = beginPlaybackRequest();
   const type: RadioType = artistId ? "artist" : "featured";
   try {
     const { stationId } = await trpcClient.radio.createStation.mutate({
@@ -88,11 +96,12 @@ export async function startSeededRadio({
       artistId,
       language,
     });
+    if (!isCurrent()) return;
     const songs = await trpcClient.radio.songs.query({
       stationId,
       k: SEED_BATCH,
     });
-    if (songs.length === 0) return;
+    if (!isCurrent() || songs.length === 0) return;
     playerStore.getState().playTracks(songs.map(toSongRow), {
       radio: { stationId, name: `${name} Radio`, type },
     });

@@ -69,6 +69,18 @@ describe("playTracks", () => {
 });
 
 describe("start and playAt", () => {
+  it("requests a resume for the started current entry only", () => {
+    state().playTracks(rows);
+    const before = state().resumeRequest;
+    state().playAt(0);
+    expect(state().resumeRequest).toBe(before + 1);
+    state().playAt(1);
+    expect(state().resumeRequest).toBe(before + 1);
+    playerStore.setState({ started: false });
+    state().playAt(1);
+    expect(state().resumeRequest).toBe(before + 1);
+  });
+
   it("does not start an empty queue", () => {
     state().start();
     expect(state().started).toBe(false);

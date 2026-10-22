@@ -1,4 +1,5 @@
 import { audioPlayer, hasSourceEnded, markSourceEnded } from "./audio-engine";
+import { beginPlaybackRequest } from "./playback-request";
 import { playbackPosition } from "./playback-status";
 import { playerStore } from "./player-store";
 
@@ -14,6 +15,7 @@ export function togglePlayback() {
     return;
   }
   if (audioPlayer.playing) {
+    beginPlaybackRequest();
     audioPlayer.pause();
     return;
   }
@@ -22,6 +24,7 @@ export function togglePlayback() {
 
 /** Plays the loaded source on; one that played to its end starts over. */
 export function resumePlayback() {
+  beginPlaybackRequest();
   if (audioPlayer.playing) return;
   if (hasSourceEnded()) {
     markSourceEnded(false);
@@ -31,6 +34,8 @@ export function resumePlayback() {
 }
 
 export function seekTo(seconds: number) {
+  beginPlaybackRequest();
+  if (seconds < audioPlayer.duration) markSourceEnded(false);
   playbackPosition.set(seconds);
   void audioPlayer.seekTo(seconds);
 }

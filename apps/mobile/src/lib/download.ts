@@ -1,5 +1,5 @@
 import type { QueueSource, StreamQuality } from "@infinitunes/types";
-import { getDownloadCandidates } from "@infinitunes/types";
+import { getDownloadCandidates, newQueueItemId } from "@infinitunes/types";
 import { Directory, File, Paths } from "expo-file-system";
 import { shareAsync } from "expo-sharing";
 import { Platform } from "react-native";
@@ -51,10 +51,11 @@ async function downloadToCache(
   track: DownloadableTrack,
   quality: StreamQuality,
 ) {
+  const temporaryName = `${baseNameFor(track.name)}-${newQueueItemId()}.mp4`;
   const { file } = await downloadAudio(
     track,
     quality,
-    new File(Paths.cache, fileNameFor(track.name)),
+    new File(Paths.cache, temporaryName),
   );
   return file;
 }
@@ -69,11 +70,19 @@ export async function downloadTrack(
   quality: StreamQuality,
 ) {
   const file = await downloadToCache(track, quality);
-  await shareAsync(file.uri, {
-    mimeType: MIME_TYPE,
-    UTI: "public.mpeg-4-audio",
-    dialogTitle: track.name,
-  });
+  try {
+    await shareAsync(file.uri, {
+      mimeType: MIME_TYPE,
+      UTI: "public.mpeg-4-audio",
+      dialogTitle: track.name,
+    });
+  } finally {
+    try {
+      file.delete();
+    } catch {
+      // The cache is the system's to purge; a leftover file is harmless.
+    }
+  }
 }
 
 /**

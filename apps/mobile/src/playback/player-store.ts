@@ -17,6 +17,8 @@ import { createStore } from "zustand/vanilla";
 
 import { persistedStorage } from "~/lib/persisted-storage";
 
+import { beginPlaybackRequest } from "./playback-request";
+
 type PlayerState = {
   queue: Queue[];
   currentIndex: number;
@@ -113,6 +115,7 @@ export const playerStore = createStore<PlayerStore>()(
       ...initialState,
 
       playTracks(tracks, { startIndex = 0, shuffle = false, radio } = {}) {
+        beginPlaybackRequest();
         if (tracks.length === 0) return;
         const index = Math.min(Math.max(startIndex, 0), tracks.length - 1);
         const radioState = { radio: radio ?? null };
@@ -137,15 +140,25 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       playAt(index) {
-        if (index < 0 || index >= get().queue.length) return;
-        set({ currentIndex: index, started: true });
+        const state = get();
+        if (index < 0 || index >= state.queue.length) return;
+        beginPlaybackRequest();
+        set({
+          currentIndex: index,
+          started: true,
+          ...(state.started && state.currentIndex === index
+            ? { resumeRequest: state.resumeRequest + 1 }
+            : {}),
+        });
       },
 
       start() {
+        beginPlaybackRequest();
         if (get().queue.length > 0) set({ started: true });
       },
 
       skipToNext() {
+        beginPlaybackRequest();
         set((state) => ({
           currentIndex: nextTrackIndex(playbackOrder(state), {
             reason: "skip",
@@ -155,6 +168,7 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       skipToPrevious() {
+        beginPlaybackRequest();
         set((state) => ({
           currentIndex: prevTrackIndex(playbackOrder(state)),
           started: true,
@@ -190,10 +204,12 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       addToQueue(track) {
+        beginPlaybackRequest();
         set((state) => ({ queue: [...state.queue, toQueueEntry(track)] }));
       },
 
       playNext(track) {
+        beginPlaybackRequest();
         set((state) => {
           const at = state.queue.length === 0 ? 0 : state.currentIndex + 1;
           const queue = [...state.queue];
@@ -203,16 +219,19 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       removeAt(index) {
+        beginPlaybackRequest();
         set((state) => removeFromQueue(state.queue, state.currentIndex, index));
       },
 
       clearUpNext() {
+        beginPlaybackRequest();
         set((state) => ({
           queue: state.queue.slice(0, state.currentIndex + 1),
         }));
       },
 
       moveInQueue(from, to) {
+        beginPlaybackRequest();
         set((state) => {
           const { queue, currentIndex } = state;
           const entry = queue[from];
@@ -228,10 +247,12 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       toggleShuffle() {
+        beginPlaybackRequest();
         set((state) => ({ shuffle: !state.shuffle }));
       },
 
       cycleRepeat() {
+        beginPlaybackRequest();
         const repeat = nextLoopMode(get().repeat, get().queue.length);
         set({ repeat });
         return repeat;
