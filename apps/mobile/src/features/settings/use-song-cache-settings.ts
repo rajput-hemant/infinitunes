@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Alert } from "react-native";
 
+import { showFailure } from "~/lib/failure";
 import { usePreferences } from "~/lib/preferences";
 import {
   clearSongCache,
@@ -30,7 +31,9 @@ export function useSongCacheSettings() {
             text: "Clear cache",
             style: "destructive",
             onPress: () => {
-              void clearSongCache().catch(() => undefined);
+              void clearSongCache().catch(() =>
+                showFailure("Couldn't clear the song cache."),
+              );
             },
           },
         ],
