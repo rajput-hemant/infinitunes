@@ -41,12 +41,6 @@ Delete this file in the last PR, once every box is ticked (the repo must not kee
 - The Home `h1` stays the greeting.
 - Rate limiting: warn when it is off in production, never fail the build.
 
-## Do not touch (in progress locally on other branches)
-
-These items will be merged into `feat/platforms` soon. Avoid their files, or wait until they land.
-
-- **Upstream and history:** `fix/s3-upstream-history`. Files: `router/{utils,album,playlist,history}.ts`, `synced-lyrics.ts`.
-
 
 ## Batch M3 (opus): song-row menu and per-row subscriptions - `components/{song-row,song-menu,native-menu,like-button}.tsx`, `user-data/{favorites,playlists}.ts`, `navigation/use-open-entity.ts` 
 
