@@ -60,8 +60,11 @@ describe("GridCell", () => {
           ? cell + style.paddingStart
           : cell + width / columns - style.paddingEnd - card;
       };
+      // Cards are floored to a device pixel, so a gap may grow by under a point.
       for (let index = 1; index < columns; index++) {
-        expect(left(index) - left(index - 1)).toBeCloseTo(card + GRID_GAP);
+        const gap = left(index) - left(index - 1) - card;
+        expect(gap).toBeGreaterThanOrEqual(GRID_GAP);
+        expect(gap).toBeLessThan(GRID_GAP + 1);
       }
     },
   );

@@ -18,12 +18,12 @@ type Category = { label: string; href: Href; image?: string };
 
 /** Categories, then every language: each tile opens a list. Pull to refresh the covers. */
 export function BrowseScreen() {
-  const { width } = useGrid("picks");
+  const { width } = useGrid("browse");
   const fullWidth = useGridCardWidth(1);
   const { covers, refresh } = useCategoryCovers();
   const mixHref = covers.mix && entityHref("mix", covers.mix.perma_url);
 
-  // Six categories fill three rows on a phone; the mix, when there is one, spans a row of its own.
+  // Six categories fill whole rows at two or three columns; the mix, when there is one, spans a row of its own.
   const categories: Category[] = [
     { label: "Top Albums", href: "/album", image: covers.albums },
     { label: "Top Charts", href: "/chart", image: covers.charts },

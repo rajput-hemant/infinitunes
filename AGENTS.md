@@ -284,8 +284,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   (`toCardItem` items, `seeAllHref`, `onItemPress`, `variant="hero"` for home's M3 hero carousel: one
   `useHeroWidth()` card leaving a 56dp peek, snapping per card, the only card with `CardPlayButton` and an
   `eyebrow(item)`), `QuickPickTile` for tiles, `GridCell columns` for each cell of a card `FlashList`; grids
-  take `{ columns, width }` from `useGrid("picks" | "cards" | "tiles")` (`GRID_COLUMNS` per `useWindowClass()`,
-  compact/medium/expanded at 600/840: phones keep 2/3/2, never a fixed count). Headers, forms and settings cap at
+  take `{ columns, width }` from `useGrid("picks" | "browse" | "cards")` (`GRID_COLUMNS` per `useWindowClass()`,
+  compact/medium/expanded at 600/840, widths floored to a device pixel; never a fixed count; Jest defaults to a 390pt phone). Headers, forms and settings cap at
   `max-w-readable` (`sizes.readable`), centred. Press feedback that moves is
   `usePressScale` (`lib/use-press-scale`: a Reanimated sink-and-spring on an `Animated.View` around the art or tile). Filter chips are `ChipRow` (`tabs` when they switch the content below, as search's do). A card's long press and screen reader actions offer
   Play/Play Next/Add to Queue through `CardLink` (`card-menu.tsx`): iOS uses the link's own `Link.Menu`, Android
