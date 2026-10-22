@@ -44,8 +44,10 @@ type TrackPlaybackOptions = {
   isLooping?: boolean;
   /** True once the current source has loaded; ends a run of failures. */
   isReady?: boolean;
-  /** Every bitrate of the current entry failed to load. */
-  onUnplayable?: () => void;
+  /** Every bitrate of the current entry failed to load; return false when it could not move on. */
+  onUnplayable?: () => void | boolean;
+  /** Bump to try the current entry again after a problem (Play with nothing loaded). */
+  retry?: number;
 };
 
 /**
@@ -72,9 +74,13 @@ export function useTrackPlayback({
   isLooping = false,
   isReady = false,
   onUnplayable,
+  retry = 0,
 }: TrackPlaybackOptions) {
   const lastRecordedRef = useRef<string | null>(null);
   const notifiedRef = useRef<string | null>(null);
+  const pendingListenRef = useRef<{ key: string; notReady: boolean } | null>(
+    null,
+  );
   const loopRef = useRef(isLooping);
   const unplayableRef = useRef(onUnplayable);
   const problemRef = useRef(onProblem);
@@ -82,7 +88,9 @@ export function useTrackPlayback({
   // entry change is our own skip (anything else is the listener acting).
   const failuresRef = useRef(0);
   const expectSkipRef = useRef(false);
+  const isReadyRef = useRef(isReady);
   useEffect(() => {
+    isReadyRef.current = isReady;
     loopRef.current = isLooping;
     unplayableRef.current = onUnplayable;
     problemRef.current = onProblem;
@@ -99,23 +107,25 @@ export function useTrackPlayback({
   const trackId = track?.id;
   const trackType = track?.type;
   const queueItemId = track?.queueItemId;
-  const tried = failure && failure.id === queueItemId ? failure.tried : 0;
+  // A retry starts the entry's bitrate ladder over, like a new entry.
+  const attemptKey = queueItemId && `${queueItemId}:${retry}`;
+  const tried = failure && failure.id === attemptKey ? failure.tried : 0;
   const exhausted = candidates.length > 0 && tried >= candidates.length;
   const audioSrc = candidates[tried] ?? "";
 
   // Adjusting state while rendering: another entry starts with a clean slate,
   // so coming back to this one later tries its best bitrate again.
-  const [seenItem, setSeenItem] = useState(queueItemId);
-  if (seenItem !== queueItemId) {
-    setSeenItem(queueItemId);
+  const [seenItem, setSeenItem] = useState(attemptKey);
+  if (seenItem !== attemptKey) {
+    setSeenItem(attemptKey);
     setFailure(null);
   }
 
   // Only a new error counts: the previous track's error stays set until the
   // next load starts, and must not be charged to the track that follows it.
-  const currentItemRef = useRef(queueItemId);
+  const currentItemRef = useRef(attemptKey);
   useEffect(() => {
-    currentItemRef.current = queueItemId;
+    currentItemRef.current = attemptKey;
   });
   useEffect(() => {
     const id = currentItemRef.current;
@@ -152,7 +162,8 @@ export function useTrackPlayback({
     }
     problemRef.current("unplayable");
     expectSkipRef.current = true;
-    unplayableRef.current?.();
+    // A skip that stays put (a lone or last entry) changes no entry to consume the flag.
+    if (unplayableRef.current?.() === false) expectSkipRef.current = false;
   }, [exhausted, queueItemId]);
 
   useEffect(() => {
@@ -165,24 +176,42 @@ export function useTrackPlayback({
       return;
     }
 
-    const play = playToRecord(
-      { id: trackId, queueItemId, type: trackType },
-      lastRecordedRef.current,
-    );
-    if (play) {
-      lastRecordedRef.current = queueItemId;
-      record(play);
-    }
-
+    // A render that still carries the previous source's `isReady` arms nothing.
+    pendingListenRef.current = {
+      key: attemptKey ?? "",
+      notReady: !isReadyRef.current,
+    };
     load(audioSrc, { loop: loopRef.current });
   }, [
+    attemptKey,
     audioSrc,
     exhausted,
     isPlayerInit,
     load,
     queueItemId,
-    record,
     trackId,
-    trackType,
   ]);
+
+  // A listen counts when `isReady` rises after `load()` was called for the
+  // entry: the render that calls `load` still carries the previous source's
+  // `isReady`, which must not record a track that then fails to load.
+  useEffect(() => {
+    const pending = pendingListenRef.current;
+    if (!pending || pending.key !== attemptKey || !queueItemId || !trackId) {
+      return;
+    }
+    if (!isReady) {
+      pending.notReady = true;
+      return;
+    }
+    if (!pending.notReady) return;
+    pendingListenRef.current = null;
+    const play = playToRecord(
+      { id: trackId, queueItemId, type: trackType },
+      lastRecordedRef.current,
+    );
+    if (!play) return;
+    lastRecordedRef.current = queueItemId;
+    record(play);
+  }, [attemptKey, isReady, queueItemId, record, trackId, trackType]);
 }

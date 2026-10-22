@@ -41,6 +41,8 @@ type PlayerState = {
    * nothing new loads, so the controller resumes the engine instead.
    */
   resumeRequest: number;
+  /** Bumped when Play lands on an entry whose source failed or was cleared: it loads again. */
+  retryRequest: number;
 };
 
 type PlayOptions = {
@@ -62,7 +64,7 @@ type PlayerActions = {
   /** The current track played to its end. */
   advanceAfterEnd: () => void;
   /** Every bitrate of the current entry failed; move on unless it is the only one. */
-  skipUnplayable: () => void;
+  skipUnplayable: () => boolean;
   addToQueue: (track: QueueSource) => void;
   /** Queues the track right after the current one. */
   playNext: (track: QueueSource) => void;
@@ -80,7 +82,10 @@ type PlayerActions = {
   updateQueue: (update: (queue: Queue[]) => Queue[]) => void;
 };
 
-type Persisted = Omit<PlayerState, "started" | "resumeRequest">;
+type Persisted = Omit<
+  PlayerState,
+  "started" | "resumeRequest" | "retryRequest"
+>;
 
 export type PlayerStore = PlayerState & PlayerActions;
 
@@ -92,6 +97,7 @@ const initialState: PlayerState = {
   repeat: "off",
   radio: null,
   resumeRequest: 0,
+  retryRequest: 0,
 };
 
 function playbackOrder(state: PlayerState) {
@@ -203,12 +209,14 @@ export const playerStore = createStore<PlayerStore>()(
       },
 
       skipUnplayable() {
-        if (get().queue.length < 2) return;
+        const before = get().currentIndex;
+        if (get().queue.length < 2) return false;
         set((state) => ({
           currentIndex: nextTrackIndex(playbackOrder(state), {
             reason: "skip",
           }),
         }));
+        return get().currentIndex !== before;
       },
 
       addToQueue(track) {

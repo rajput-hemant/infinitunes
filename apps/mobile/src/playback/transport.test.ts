@@ -3,7 +3,7 @@ import { rawSong } from "@infinitunes/types/fixtures";
 
 import { lastPlayer } from "~/test/expo-audio";
 
-import { audioPlayer, markSourceEnded } from "./audio-engine";
+import { audioPlayer, markSourceEnded, replaceSource } from "./audio-engine";
 import { playbackPosition } from "./playback-status";
 import { playerStore } from "./player-store";
 import { resumePlayback, seekTo, togglePlayback } from "./transport";
@@ -30,6 +30,19 @@ function restoreQueue() {
 }
 
 describe("togglePlayback", () => {
+  it("asks the controller to load again when nothing is loaded", () => {
+    restoreQueue();
+    playerStore.getState().start();
+    replaceSource(null);
+    const before = playerStore.getState().retryRequest;
+    jest.clearAllMocks();
+
+    togglePlayback();
+
+    expect(playerStore.getState().retryRequest).toBe(before + 1);
+    expect(play).not.toHaveBeenCalled();
+  });
+
   it("starts the restored queue on the first press, without touching the engine", () => {
     restoreQueue();
 
@@ -62,6 +75,7 @@ describe("togglePlayback", () => {
   it("resumes a paused track where it stopped", () => {
     restoreQueue();
     playerStore.getState().start();
+    replaceSource("https://example.test/a.mp4");
     void audioPlayer.seekTo(42);
     jest.clearAllMocks();
 
