@@ -1,6 +1,12 @@
 import { FlashList } from "@shopify/flash-list";
-import type { ComponentProps, ReactElement } from "react";
+import { type ComponentProps, type ReactElement, useEffect } from "react";
 import { View } from "react-native";
+import Animated, {
+  ReduceMotion,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 
 import { CatalogGridSkeleton } from "~/components/catalog-grid-skeleton";
 import { EmptyState } from "~/components/empty-state";
@@ -37,11 +43,18 @@ type CatalogScreenProps<Item> = {
 
 const SEEN_IT_ALL = "You have seen it all";
 
+/** Opacity alone carries no movement, so it runs under reduce motion too. */
+const REVEAL = { duration: 200, reduceMotion: ReduceMotion.Never };
+
 /**
  * A catalog card grid (three columns on a phone) with every state of a fetched list: skeleton,
  * error with retry (only while there is nothing to show), empty, pull to
  * refresh and endless paging. One list stays mounted so the header and the
  * scroll container survive a language change.
+ *
+ * The cards that replace the skeleton fade in together. One shared opacity,
+ * not an `entering` per cell: cells FlashList mounts later (a fast fling, a
+ * new page) and recycled ones read 1 and show at once.
  */
 export function CatalogScreen<Item>({
   query,
@@ -53,6 +66,13 @@ export function CatalogScreen<Item>({
 }: CatalogScreenProps<Item>) {
   const { columns, width } = useGrid("cards");
   const { items } = query;
+  const loaded = items.length > 0;
+  // Already loaded at mount (a cached list): no fade.
+  const opacity = useSharedValue(loaded ? 1 : 0);
+  useEffect(() => {
+    opacity.set(loaded ? withTiming(1, REVEAL) : 0);
+  }, [loaded, opacity]);
+  const reveal = useAnimatedStyle(() => ({ opacity: opacity.get() }));
 
   return (
     <FlashList
@@ -60,9 +80,11 @@ export function CatalogScreen<Item>({
       numColumns={columns}
       keyExtractor={keyOf}
       renderItem={({ item, index }) => (
-        <GridCell index={index} columns={columns}>
-          {renderCard(item, width)}
-        </GridCell>
+        <Animated.View style={reveal}>
+          <GridCell index={index} columns={columns}>
+            {renderCard(item, width)}
+          </GridCell>
+        </Animated.View>
       )}
       ListHeaderComponent={header}
       ListEmptyComponent={
