@@ -48,7 +48,6 @@ These items will be merged into `feat/platforms` soon. Avoid their files, or wai
 - **Tablet layouts:** `fix/m6-adaptive-layout`. Files: grid width, catalog screen, entity header, form screen, settings width, the Jest window.
 - **User router:** `fix/s1-user-router`. Files: `user.ts`, `trpc.ts`, core `optimistic-playlists`, the playlist consumers on web and mobile, `user-data/playlists.ts`, the song, native and collection menus.
 - **Upstream and history:** `fix/s3-upstream-history`. Files: `router/{utils,album,playlist,history}.ts`, `synced-lyrics.ts`.
-- **404 and legal:** `fix/w1-not-found-legal`. Files: the web `not-found`, privacy, terms, sitemap and sign-up.
 
 Before starting a batch marked _after S1_ or _after M6_, check `git log --oneline feat/platforms | grep -E "s1-user-router|m6-adaptive-layout"`. If the merge is not there yet, pick another batch.
 
