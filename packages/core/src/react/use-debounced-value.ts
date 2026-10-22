@@ -18,6 +18,7 @@ export function useDebouncedValue<T>(
 ): T {
   const [settled, setSettled] = useState(value);
   const skipWait = immediate !== undefined && value === immediate;
+  if (skipWait && !Object.is(settled, value)) setSettled(value);
 
   useEffect(() => {
     if (skipWait) return;
