@@ -293,6 +293,30 @@ describe("proxy /api/trpc origin check", () => {
     expect(res.status).toBe(403);
   });
 
+  it("guards batches ending in a static-file extension", async () => {
+    const { config } = await import("../../proxy");
+    const { unstable_doesMiddlewareMatch } =
+      await import("next/experimental/testing/server");
+    const url =
+      "http://localhost:3000/api/trpc/song.syncedLyrics,missing.json?batch=1";
+    expect(unstable_doesMiddlewareMatch({ config, url })).toBe(true);
+    expect(
+      (
+        await proxy(
+          createNextRequest(url, "GET", {
+            origin: "https://evil.example",
+          }),
+        )
+      ).status,
+    ).toBe(403);
+    limitSuccess = false;
+    try {
+      expect((await proxy(createNextRequest(url))).status).toBe(429);
+    } finally {
+      limitSuccess = true;
+    }
+  });
+
   it("rejects a non-GET with only a same-origin Referer (Origin required)", async () => {
     const res = await call({
       referer: "http://localhost:3000/search?q=x",
@@ -619,17 +643,21 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
   it("matches pages, trpc, auth and og but not static assets or other api routes", async () => {
     const { config } = await import("../../proxy");
     const { PROXY_MATCHER } = await import("../../lib/rate-limit-scope");
-    expect(config.matcher).toEqual([PROXY_MATCHER]);
-    const re = new RegExp(`^${config.matcher[0]}$`);
+    const { unstable_doesMiddlewareMatch } =
+      await import("next/experimental/testing/server");
+    const matches = (url: string) =>
+      unstable_doesMiddlewareMatch({ config, url });
     for (const path of [
       "/",
       "/album/x/tok_",
       "/artist/a.b/tok_",
       "/api/auth/sign-in/email",
       "/api/trpc/song.details",
+      "/api/trpc/song.syncedLyrics,missing.json?batch=1",
+      "/api/trpc/missing.png",
       "/api/og",
     ]) {
-      expect(re.test(path)).toBe(true);
+      expect(matches(path)).toBe(true);
     }
     for (const path of [
       "/_next/static/chunks/a.js",
@@ -640,8 +668,9 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
       "/robots.txt",
       "/api/other",
     ]) {
-      expect(re.test(path)).toBe(false);
+      expect(matches(path)).toBe(false);
     }
+    expect(config.matcher).toEqual(PROXY_MATCHER);
   });
 });
 
