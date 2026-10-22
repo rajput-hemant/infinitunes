@@ -4,7 +4,7 @@ import type { FocusEventHandler, PointerEventHandler } from "react";
 import { startGlassNow } from "~/components/glass/glass-loader";
 
 /** The attribute that marks a trigger, in the shell and in the real popup alike. */
-export const DEFERRED_ATTR = "data-deferred";
+const DEFERRED_ATTR = "data-deferred";
 
 type Deferred<M> = {
   /** The loaded module, or `null` until its chunk has arrived. */

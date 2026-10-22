@@ -26,7 +26,7 @@ export const SURFACES = {
 
 export type Scheme = keyof typeof SURFACES;
 
-export type AccentScheme = {
+type AccentScheme = {
   /** Fill and text colour of the accent. */
   primary: string;
   /** Text and icons drawn on `primary`. */
