@@ -118,7 +118,7 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
   `TrackList numbered`, both platforms) end with the track's length in bodyMedium `onSurfaceVariant`, tabular
   figures, before the heart and menu; the skeleton (`SongListSkeleton numbered`) mirrors the number and length.
   The current track sits in a `secondaryContainer` tile inset 8dp (`lg` corners), title emphasized, with a
-  three-bar `Equalizer` (still and low while paused, static under reduce motion). Leading icons sit in a round
+  three-bar `Equalizer` (both platforms; still and low while paused, never a pause glyph, static under reduce motion). Leading icons sit in a round
   `secondaryContainer`. iOS rows that navigate show a disclosure chevron. A paged list's last line is
   `EndOfList` (`components/end-of-list.tsx`).
 - **Search**: Android hides the app bar and shows Material 3's search view bar (`search-header.android.tsx`):
