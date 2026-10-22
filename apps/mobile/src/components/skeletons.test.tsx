@@ -45,7 +45,7 @@ describe("SkeletonText", () => {
 
 describe("ShelfSkeleton", () => {
   it("is one loading indicator", async () => {
-    await render(<ShelfSkeleton variant="hero" />);
+    await render(<ShelfSkeleton />);
 
     expect(screen.getAllByRole("progressbar")).toHaveLength(1);
   });
