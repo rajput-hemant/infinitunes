@@ -153,14 +153,27 @@ export function ShareOptions({
   const pathname = usePathname();
 
   const [isCopied, setIsCopied] = React.useState(false);
+  const resetTimer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // An unresolvable item link is "#": share the page rather than a dead anchor.
   const url = `${siteConfig.url}${path?.startsWith("/") ? path : pathname}`;
 
+  React.useEffect(() => () => clearTimeout(resetTimer.current), []);
+
   function copy() {
-    navigator.clipboard.writeText(url);
-    setIsCopied(true);
-    toast.success("Link copied");
+    // Only claim success once the write lands; it can reject (permissions) or
+    // the API can be missing (insecure context).
+    Promise.resolve()
+      .then(() => navigator.clipboard.writeText(url))
+      .then(
+        () => {
+          setIsCopied(true);
+          toast.success("Link copied");
+          clearTimeout(resetTimer.current);
+          resetTimer.current = setTimeout(() => setIsCopied(false), 2000);
+        },
+        () => toast.error("Couldn't copy the link"),
+      );
   }
 
   return (
