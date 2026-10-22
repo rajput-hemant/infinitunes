@@ -5,8 +5,9 @@ import {
   useRoute,
 } from "expo-router";
 import { useEffect, useRef } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 
+import { Spinner } from "~/components/ui/spinner";
 import { authClient } from "~/lib/auth-client";
 
 import { isAppAction, runAppAction, type ActionOutcome } from "./app-actions";
@@ -104,11 +105,8 @@ export function AppActionScreen() {
   }, [isPending, action, userId, id, q, navigation, key]);
 
   return (
-    <View
-      className="flex-1 items-center justify-center bg-background"
-      accessibilityLabel="Loading"
-    >
-      <ActivityIndicator />
+    <View className="flex-1 items-center justify-center bg-background">
+      <Spinner accessibilityLabel="Loading" />
     </View>
   );
 }
