@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
+import { TRUSTED_PROXY_MODES } from "~/lib/client-ip";
 import { hasRateLimitCredentials } from "~/lib/rate-limit-env";
 
 const creds = {
@@ -53,6 +54,14 @@ describe("env.ts rate-limit wiring", () => {
     NODE_ENV: "test",
   };
 
+  const prodAuth = {
+    AUTH_SECRET: "secret-123456789012345678901234567890",
+    GOOGLE_CLIENT_ID: "google-id",
+    GOOGLE_CLIENT_SECRET: "google-secret",
+    GITHUB_CLIENT_ID: "github-id",
+    GITHUB_CLIENT_SECRET: "github-secret",
+  };
+
   async function loadEnv(extra: Record<string, string>) {
     const proc = Bun.spawn(
       [process.execPath, "-e", 'await import("./lib/env.ts")'],
@@ -72,6 +81,7 @@ describe("env.ts rate-limit wiring", () => {
   }
 
   const message = "ENABLE_RATE_LIMITING=true requires";
+  const warnMessage = "ENABLE_RATE_LIMITING is disabled in production";
 
   it("fails startup when enabled with only the token", async () => {
     const { output, code } = await loadEnv({
@@ -96,5 +106,37 @@ describe("env.ts rate-limit wiring", () => {
     });
     expect(output).not.toContain(message);
     expect(code).toBe(0);
+  });
+
+  it("warns on startup in production when ENABLE_RATE_LIMITING is disabled", async () => {
+    const { output, code } = await loadEnv({
+      NODE_ENV: "production",
+      ENABLE_RATE_LIMITING: "false",
+      ...prodAuth,
+    });
+    expect(code).toBe(0);
+    expect(output).toContain(warnMessage);
+  });
+
+  it("does not warn in production when ENABLE_RATE_LIMITING is enabled", async () => {
+    const { output, code } = await loadEnv({
+      NODE_ENV: "production",
+      ENABLE_RATE_LIMITING: "true",
+      UPSTASH_REDIS_REST_URL: "https://example.upstash.io",
+      UPSTASH_REDIS_REST_TOKEN: "token",
+      ...prodAuth,
+    });
+    expect(code).toBe(0);
+    expect(output).not.toContain(warnMessage);
+  });
+
+  it("validates TRUSTED_PROXY against TRUSTED_PROXY_MODES", async () => {
+    for (const mode of TRUSTED_PROXY_MODES) {
+      const { code } = await loadEnv({ TRUSTED_PROXY: mode });
+      expect(code).toBe(0);
+    }
+    const { output, code } = await loadEnv({ TRUSTED_PROXY: "invalid_proxy" });
+    expect(code).not.toBe(0);
+    expect(output).toContain("TRUSTED_PROXY");
   });
 });
