@@ -7,7 +7,11 @@ import { DetailScreen } from "~/components/detail/detail-screen";
 import { EmptyState } from "~/components/empty-state";
 import { EntityHeader } from "~/components/entity-header";
 import { SectionHeader } from "~/components/section-header";
-import { EntityHeaderSkeleton, SongListSkeleton } from "~/components/skeletons";
+import {
+  EntityHeaderSkeleton,
+  SectionHeaderSkeleton,
+  SongListSkeleton,
+} from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 import { trpc } from "~/lib/trpc";
 import type { StationRef } from "~/navigation/entity-href";
@@ -29,7 +33,14 @@ export function StationScreen({ name, token }: StationRef) {
       query={query}
       skeleton={
         <>
-          <EntityHeaderSkeleton round shuffle={false} />
+          <EntityHeaderSkeleton
+            round
+            shuffle={false}
+            like={false}
+            menu={false}
+            meta={false}
+          />
+          <SectionHeaderSkeleton />
           <SongListSkeleton />
         </>
       }

@@ -24,6 +24,7 @@ export function FeaturedStationsScreen() {
       <Stack.Screen options={{ title: "Radio" }} />
       <CatalogScreen
         query={stations}
+        round
         keyOf={(station) => station.id}
         renderCard={(station, width) => (
           <MediaCard item={toCardItem(station)} width={width} />

@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run with-env next dev",
+    "dev:api": "bun run with-env --conditions react-server --watch scripts/api-server.ts",
     "build": "bun run with-env next build",
     "start": "bun run with-env next start",
     "lint": "oxlint --deny-warnings --nextjs-plugin",

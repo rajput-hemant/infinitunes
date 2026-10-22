@@ -1,7 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import {
   contrastRatio,
@@ -128,17 +127,12 @@ describe("TransportControls", () => {
     ).not.toBeSelected();
 
     await press("Repeat off");
-    expect(jest.mocked(toast)).toHaveBeenLastCalledWith("Looping playlist");
     expect(screen.getByRole("button", { name: "Repeat all" })).toBeSelected();
 
     await press("Repeat all");
-    expect(jest.mocked(toast)).toHaveBeenLastCalledWith(
-      "Playing current song on repeat",
-    );
     expect(screen.getByRole("button", { name: "Repeat one" })).toBeSelected();
 
     await press("Repeat one");
-    expect(jest.mocked(toast)).toHaveBeenLastCalledWith("Looping disabled");
     expect(
       screen.getByRole("button", { name: "Repeat off" }),
     ).not.toBeSelected();

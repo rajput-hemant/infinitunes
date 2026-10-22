@@ -42,9 +42,10 @@ describe("PlaylistScreen", () => {
       screen.getByRole("header", { name: "Trending Playlists" }),
     ).toBeOnTheScreen();
     expect(screen.getByText("Arijit & Co")).toBeOnTheScreen();
+    // Signed out: likes need an account, so there is no heart.
     expect(
-      screen.getByRole("button", { name: "Like Hits & Misses" }),
-    ).toBeOnTheScreen();
+      screen.queryByRole("button", { name: "Like Hits & Misses" }),
+    ).toBeNull();
   });
 
   it("plays the playlist, and from a pressed row", async () => {

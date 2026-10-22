@@ -7,6 +7,7 @@ import {
   COLOR_TOKENS,
   colors,
   iosSystemColors,
+  ACCENT_TOKENS,
   radii,
   spacingScale,
 } from "./src/theme/tokens";
@@ -16,6 +17,13 @@ const toCssVariables = (palette: Palette) =>
   Object.fromEntries(
     COLOR_TOKENS.map((token) => [`--${token}`, palette[token]]),
   );
+
+const radiusVariables = Object.fromEntries(
+  Object.entries(radii).map(([name, value]) => [
+    `--radius-${name}`,
+    `${value}px`,
+  ]),
+);
 
 const toPixels = (scale: Record<string, number>) =>
   Object.fromEntries(
@@ -28,7 +36,10 @@ const toPixels = (scale: Record<string, number>) =>
  */
 const paletteVariables = plugin(({ addBase }) => {
   addBase({
-    ":root": toCssVariables(colors.light),
+    ":root": {
+      ...toCssVariables(colors.light),
+      ...radiusVariables,
+    },
     "@media (prefers-color-scheme: dark)": {
       ":root": toCssVariables(colors.dark),
     },
@@ -38,7 +49,10 @@ const paletteVariables = plugin(({ addBase }) => {
 /** A UIKit system colour on iOS, the palette variable everywhere else. */
 function tokenColor(token: ColorToken) {
   const paletteValue = `var(--${token})`;
-  const systemColor = iosSystemColors[token];
+  // The accent setting replaces these at runtime, so they stay variables on iOS.
+  const systemColor = (ACCENT_TOKENS as readonly string[]).includes(token)
+    ? undefined
+    : iosSystemColors[token];
   return systemColor
     ? platformSelect({ ios: platformColor(systemColor), default: paletteValue })
     : paletteValue;
@@ -55,7 +69,9 @@ export default {
       colors: Object.fromEntries(
         COLOR_TOKENS.map((token) => [token, tokenColor(token)]),
       ),
-      borderRadius: toPixels(radii),
+      borderRadius: Object.fromEntries(
+        Object.keys(radii).map((name) => [name, `var(--radius-${name})`]),
+      ),
     },
   },
   plugins: [paletteVariables],

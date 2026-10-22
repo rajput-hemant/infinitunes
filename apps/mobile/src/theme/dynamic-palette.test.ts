@@ -13,6 +13,15 @@ describe("withDynamicRoles", () => {
     expect(palette.fill).toBe(colors.light.fill);
     expect(palette.scrim).toBe(colors.light.scrim);
   });
+
+  it("fades supporting text when the system resolves it to the text colour (One UI)", () => {
+    const palette = withDynamicRoles(colors.dark, (role) =>
+      role === "onSurface" || role === "onSurfaceVariant" ? "#fcfcff" : null,
+    );
+
+    expect(palette.foreground).toBe("#fcfcff");
+    expect(palette["muted-foreground"]).toBe("rgba(252, 252, 255, 0.72)");
+  });
 });
 
 describe("toVariables", () => {

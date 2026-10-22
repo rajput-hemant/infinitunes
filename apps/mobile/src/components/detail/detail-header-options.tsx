@@ -1,28 +1,50 @@
 import type { NativeStackNavigationOptions } from "expo-router";
 
 import { IconButton } from "~/components/ui/icon-button";
+import { hasHeaderBarItems } from "~/lib/platform";
 import { shareItem } from "~/lib/share";
 import type { ShareableItem } from "~/lib/share";
 
 /**
- * Native header of a detail screen. The entity's own header carries the big
- * title, so the bar keeps a small one; Share sits at its trailing edge. With no
- * item yet (loading, failed) the bar is empty rather than showing the route name.
+ * Native header of a detail screen. The entity's own header shows the title
+ * under the artwork, so the bar shows none (`title` still names the screen for
+ * the back button's menu); Share sits at its trailing edge. iOS 26 gets it as a
+ * native bar button, the same round glass as the back button; a custom view
+ * would sit in a wider capsule. With no item yet (loading, failed) there is no
+ * Share.
  */
 export function detailHeaderOptions(
   item?: ShareableItem,
 ): NativeStackNavigationOptions {
+  const share = item && (() => shareItem(item));
   return {
     title: item?.name ?? "",
+    headerTitle: "",
     headerLargeTitle: false,
-    headerRight: item
-      ? () => (
-          <IconButton
-            icon={{ ios: "square.and.arrow.up", android: "share" }}
-            label={`Share ${item.name}`}
-            onPress={() => shareItem(item)}
-          />
-        )
-      : undefined,
+    headerRight:
+      item && share
+        ? () => (
+            <IconButton
+              icon={{ ios: "square.and.arrow.up", android: "share" }}
+              label={`Share ${item.name}`}
+              onPress={share}
+            />
+          )
+        : undefined,
+    ...(hasHeaderBarItems && item && share
+      ? {
+          unstable_headerRightItems: () => [
+            {
+              type: "button" as const,
+              label: `Share ${item.name}`,
+              icon: {
+                type: "sfSymbol" as const,
+                name: "square.and.arrow.up" as const,
+              },
+              onPress: share,
+            },
+          ],
+        }
+      : {}),
   };
 }

@@ -6,8 +6,9 @@ import {
   useFloatingDockOffset,
 } from "~/navigation/player-dock";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
-import { radii, sizes } from "~/theme/tokens";
+import { sizes } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
+import { useRadii } from "~/theme/use-radii";
 
 import { DockProgress } from "./dock-progress";
 import { MiniPlayer } from "./mini-player";
@@ -24,6 +25,7 @@ const ELEVATION = 3;
  * wallpaper's `card` until then. The surface crossfades between tracks.
  */
 export function FloatingPlayerDock() {
+  const scale = useRadii();
   const bottom = useFloatingDockOffset();
   const track = usePlayer(selectCurrentTrack);
   const colors = usePlayerColors(track?.image);
@@ -34,7 +36,12 @@ export function FloatingPlayerDock() {
   const background = colors?.dock.background ?? card;
 
   return (
-    <View style={[styles.dock, { bottom, backgroundColor: background }]}>
+    <View
+      style={[
+        styles.dock,
+        { bottom, backgroundColor: background, borderRadius: scale.lg },
+      ]}
+    >
       <Backdrop
         fill={{
           key: colors ? colors.dock.background : "card",
@@ -55,7 +62,6 @@ const styles = StyleSheet.create({
     left: FLOATING_DOCK_INSET,
     right: FLOATING_DOCK_INSET,
     height: sizes.dock,
-    borderRadius: radii.lg,
     overflow: "hidden",
     elevation: ELEVATION,
   },

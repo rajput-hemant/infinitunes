@@ -4,13 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 import { View } from "react-native";
 
 import { ListRow } from "~/components/list-row";
+import { isRoundType } from "~/components/media-card";
 import { MediaRow } from "~/components/media-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SectionHeader } from "~/components/section-header";
-import { SongListSkeleton } from "~/components/skeletons";
+import {
+  SectionHeaderSkeleton,
+  SongListSkeleton,
+} from "~/components/skeletons";
 import { trpc } from "~/lib/trpc";
 import { useOpenEntity } from "~/navigation/use-open-entity";
 
+import { kindLabel } from "./result-subtitle";
 import { useSearchHistory } from "./search-history";
 
 type IdleSearchProps = {
@@ -58,9 +63,18 @@ function TopSearches() {
   });
 
   // A discovery list: when it fails or is empty the section is left out.
-  if (isPending) return <SongListSkeleton rows={5} />;
+  if (isPending) {
+    return (
+      <>
+        <SectionHeaderSkeleton />
+        <SongListSkeleton rows={8} />
+      </>
+    );
+  }
   if (!data?.length) return null;
 
+  // Upstream's subtitle is the raw type ("song"): name the kind instead and
+  // draw artists round, like every other list.
   return (
     <View>
       <SectionHeader title="Top Searches" />
@@ -68,8 +82,9 @@ function TopSearches() {
         <MediaRow
           key={item.id}
           title={item.name}
-          subtitle={item.subtitle}
+          subtitle={kindLabel(item.type)}
           image={item.image}
+          round={isRoundType(item.type)}
           onPress={() => openEntity(item.type, item.url)}
         />
       ))}

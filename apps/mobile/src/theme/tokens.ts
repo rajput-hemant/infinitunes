@@ -179,27 +179,94 @@ export const spaceClasses = {
   12: space.xxxl,
 } as const;
 
-/** Corner radii in points; `rounded-full` (capsules, round art) comes with Tailwind. */
-export const radii = {
-  xs: 4,
-  sm: 6,
-  md: 10,
-  lg: 16,
-  xl: 24,
-} as const;
+type RadiusScale = Record<"xs" | "sm" | "md" | "lg" | "xl", number>;
+
+/**
+ * Corner radii in points; `rounded-full` (capsules, round art) comes with
+ * Tailwind. Android takes Material 3 Expressive's shape scale (extra-small 4,
+ * small 8, medium 12, large 16, extra-large 28). Tailwind's defaults are
+ * iOS's; `ThemeRoot` sets this platform's at runtime.
+ */
+export const radii: RadiusScale =
+  process.env.EXPO_OS === "android"
+    ? { xs: 4, sm: 8, md: 12, lg: 16, xl: 28 }
+    : { xs: 4, sm: 6, md: 10, lg: 16, xl: 24 };
 
 export type Radius = keyof typeof radii | "full";
+
+/** Corner styles: a multiplier on `radii` (the web's corner roundness setting). */
+export const CORNER_STYLES = {
+  sharp: 0.35,
+  default: 1,
+  round: 1.6,
+} as const;
+
+export type CornerStyle = keyof typeof CORNER_STYLES;
+
+/** `radii` scaled for a corner style. */
+export function scaledRadii(
+  style: CornerStyle,
+): Record<keyof typeof radii, number> {
+  const scale = CORNER_STYLES[style];
+  return Object.fromEntries(
+    Object.entries(radii).map(([name, value]) => [
+      name,
+      Math.round(value * scale),
+    ]),
+  ) as Record<keyof typeof radii, number>;
+}
+
+/**
+ * Accent presets: the colour of `primary` (filled buttons, the selected chip,
+ * the tab bar tint) and its text. `default` keeps the neutral palette.
+ */
+export const ACCENTS = {
+  default: undefined,
+  blue: { light: "#0a63d8", dark: "#5aa9ff" },
+  indigo: { light: "#4f46e5", dark: "#8b8cff" },
+  purple: { light: "#8e3fd1", dark: "#c08bff" },
+  pink: { light: "#d6336c", dark: "#ff7aa8" },
+  red: { light: "#d62828", dark: "#ff7a72" },
+  orange: { light: "#c2570c", dark: "#ffa24d" },
+  green: { light: "#1f8a4c", dark: "#4ad58a" },
+  teal: { light: "#0f8a8a", dark: "#4fd1c9" },
+} as const satisfies Record<
+  string,
+  { light: string; dark: string } | undefined
+>;
+
+export type AccentId = keyof typeof ACCENTS;
+
+export const ACCENT_IDS = Object.keys(ACCENTS) as AccentId[];
+
+/** The `primary` and `primary-foreground` colours of an accent, or undefined for the default. */
+export function accentColors(
+  accent: AccentId,
+  scheme: ColorScheme,
+): { primary: string; foreground: string } | undefined {
+  const preset = ACCENTS[accent];
+  if (!preset) return undefined;
+  return {
+    primary: preset[scheme],
+    foreground: scheme === "dark" ? "#101010" : "#ffffff",
+  };
+}
+
+/** Tokens an accent replaces. */
+export const ACCENT_TOKENS = ["primary", "primary-foreground"] as const;
 
 /** Artwork edges in points, one per context (`Artwork size`). */
 export const art = {
   row: 48,
   mini: 36,
-  pick: 56,
-  tile: 64,
+  pick: 48,
+  tile: 56,
   avatar: 48,
-  card: 156,
-  header: 240,
-  hero: 280,
+  card: 136,
+  /** The Top Result card's art (Android search). */
+  feature: 96,
+  header: 200,
+  hero: 208,
 } as const;
 
 /** `player` is Now Playing's art, sized from the window (`playerArtSize`). */
@@ -218,6 +285,7 @@ export const artRadius: Record<ArtSize, Radius> = {
   tile: "sm",
   avatar: "full",
   card: "md",
+  feature: "md",
   header: "lg",
   hero: "lg",
   player: "lg",
@@ -236,9 +304,11 @@ export const sizes = {
   ctl: 40,
   "ctl-lg": 44,
   touch: 48,
-  row: 64,
+  row: 56,
   page: 16,
   dock: 64,
+  /** The seam between the tiles of an Android segmented list or connected button group. */
+  seam: 2,
 } as const;
 
 /**
@@ -288,13 +358,15 @@ export type TypeStyle = {
   fontWeight: "400" | "500" | "600" | "700";
 };
 
+type Weight = TypeStyle["fontWeight"];
+
 type Scale = Record<TextVariant, TypeStyle>;
 
 /** Dynamic Type's default sizes per text style. */
 const iosScale: Scale = {
   largeTitle: { fontSize: 34, lineHeight: 41, fontWeight: "700" },
   title1: { fontSize: 28, lineHeight: 34, fontWeight: "700" },
-  title2: { fontSize: 22, lineHeight: 28, fontWeight: "700" },
+  title2: { fontSize: 20, lineHeight: 25, fontWeight: "700" },
   headline: { fontSize: 17, lineHeight: 22, fontWeight: "600" },
   body: { fontSize: 17, lineHeight: 22, fontWeight: "400" },
   label: { fontSize: 17, lineHeight: 22, fontWeight: "600" },
@@ -311,7 +383,7 @@ const iosScale: Scale = {
 const androidScale: Scale = {
   largeTitle: { fontSize: 28, lineHeight: 36, fontWeight: "400" },
   title1: { fontSize: 24, lineHeight: 32, fontWeight: "400" },
-  title2: { fontSize: 22, lineHeight: 28, fontWeight: "400" },
+  title2: { fontSize: 20, lineHeight: 28, fontWeight: "500" },
   headline: { fontSize: 16, lineHeight: 24, fontWeight: "500" },
   body: { fontSize: 16, lineHeight: 24, fontWeight: "400" },
   label: { fontSize: 14, lineHeight: 20, fontWeight: "500" },
@@ -319,6 +391,26 @@ const androidScale: Scale = {
   footnote: { fontSize: 14, lineHeight: 20, fontWeight: "400" },
   caption: { fontSize: 12, lineHeight: 16, fontWeight: "500" },
 };
+
+/**
+ * Material 3 Expressive's emphasized styles: the same sizes a weight up, for
+ * hierarchy (section and entity titles, the playing title, a selected chip).
+ * iOS has none (`Text emphasized` is a no-op there).
+ */
+export const emphasizedWeights: Partial<Record<TextVariant, Weight>> =
+  process.env.EXPO_OS === "android"
+    ? {
+        largeTitle: "500",
+        title1: "500",
+        title2: "700",
+        headline: "700",
+        body: "500",
+        label: "700",
+        subhead: "500",
+        footnote: "500",
+        caption: "700",
+      }
+    : {};
 
 /**
  * One semantic type scale, sized per platform. Both scale with the user's

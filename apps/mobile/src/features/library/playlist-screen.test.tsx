@@ -4,7 +4,6 @@ import { act, fireEvent, screen } from "@testing-library/react-native";
 import { router } from "expo-router";
 import { Alert } from "react-native";
 import type { AlertButton } from "react-native";
-import { toast } from "sonner-native";
 
 import { renderStack, chooseMenuAction } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
@@ -113,7 +112,6 @@ describe("PlaylistScreen", () => {
       .getAllByText(/Number|Song|Time/)
       .map((node) => node.props.children);
     expect(titles).toEqual(["Opening Number", "Middle Song", "Closing Time"]);
-    expect(jest.mocked(toast.error)).toHaveBeenCalled();
   });
 
   it("says so when the playlist is empty", async () => {
@@ -186,7 +184,7 @@ describe("removing a song", () => {
     });
   });
 
-  it("brings the song back with a toast when the write fails", async () => {
+  it("brings the song back when the write fails", async () => {
     procedure("user.removeSongsFromPlaylist").mockRejectedValue(
       new Error("Could not remove"),
     );
@@ -198,7 +196,6 @@ describe("removing a song", () => {
     );
 
     expect(await screen.findByText("Middle Song")).toBeOnTheScreen();
-    expect(toast.error).toHaveBeenCalledWith("Could not remove");
   });
 });
 

@@ -4,7 +4,6 @@ import {
   rawStation,
   rawStationDetails,
 } from "@infinitunes/types/fixtures";
-import { toast } from "sonner-native";
 
 import { procedure } from "~/test/trpc-mock";
 
@@ -76,12 +75,9 @@ describe("startStation", () => {
     });
   });
 
-  it("toasts and leaves the queue alone when the station has no songs", () => {
+  it("leaves the queue alone when the station has no songs", () => {
     startStation(rawStationDetails({ songs: [] }));
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "No songs found for this station",
-    );
     expect(playerStore.getState()).toMatchObject({
       queue: [],
       started: false,
@@ -104,16 +100,13 @@ describe("playStation", () => {
     expect(playerStore.getState().started).toBe(true);
   });
 
-  it("toasts instead of throwing when the lookup fails", async () => {
+  it("does not throw when the lookup fails", async () => {
     procedure("radio.stationDetails").mockRejectedValue(new Error("down"));
 
     await expect(
       playStation({ name: "x", token: "y" }),
     ).resolves.toBeUndefined();
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Couldn't load this station",
-    );
     expect(playerStore.getState().started).toBe(false);
   });
 });
@@ -161,27 +154,21 @@ describe("startSeededRadio", () => {
     expect(playerStore.getState().radio?.type).toBe("featured");
   });
 
-  it("toasts and queues nothing when the station has no songs", async () => {
+  it("queues nothing when the station has no songs", async () => {
     procedure("radio.createStation").mockResolvedValue({ stationId: "st-2" });
     procedure("radio.songs").mockResolvedValue([]);
 
     await startSeededRadio({ name: "Quiet" });
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Couldn't find songs for this station",
-    );
     expect(playerStore.getState().queue).toEqual([]);
     expect(playerStore.getState().radio).toBeNull();
   });
 
-  it("toasts when creating the station fails, and never asks for songs", async () => {
+  it("never asks for songs when creating the station fails", async () => {
     procedure("radio.createStation").mockRejectedValue(new Error("down"));
 
     await expect(startSeededRadio({ name: "X" })).resolves.toBeUndefined();
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Couldn't start this station",
-    );
     expect(procedure("radio.songs")).not.toHaveBeenCalled();
   });
 });

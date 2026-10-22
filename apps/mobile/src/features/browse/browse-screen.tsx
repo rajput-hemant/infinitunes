@@ -2,10 +2,11 @@ import { LANGUAGES } from "@infinitunes/types";
 import { languageLabel } from "@infinitunes/types";
 import { Stack } from "expo-router";
 import type { Href } from "expo-router";
-import { RefreshControl, View } from "react-native";
+import { View } from "react-native";
 
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SectionHeader } from "~/components/section-header";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { entityHref } from "~/navigation/entity-href";
@@ -18,7 +19,7 @@ type Category = { label: string; href: Href; image?: string };
 /** Categories, then every language: each tile opens a list. Pull to refresh the covers. */
 export function BrowseScreen() {
   const width = useGridCardWidth();
-  const { covers, refreshing, refresh } = useCategoryCovers();
+  const { covers, refresh } = useCategoryCovers();
   const mixHref = covers.mix && entityHref("mix", covers.mix.perma_url);
 
   const categories: Category[] = [
@@ -43,14 +44,7 @@ export function BrowseScreen() {
   ];
 
   return (
-    <ScreenScrollView
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => void refresh()}
-        />
-      }
-    >
+    <ScreenScrollView refreshControl={<PullToRefresh onRefresh={refresh} />}>
       <Stack.Screen options={{ title: "Browse" }} />
       <Text variant="subhead" tone="muted" className="px-page pb-2">
         Explore by category, language or mood.

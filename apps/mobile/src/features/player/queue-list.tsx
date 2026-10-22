@@ -1,22 +1,29 @@
 import type { Queue } from "@infinitunes/types";
-import { Pressable, View } from "react-native";
+import { Platform, View } from "react-native";
 import ReorderableList from "react-native-reorderable-list";
-import { toast } from "sonner-native";
 
 import { DragHandle } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
 import { MenuTrigger } from "~/components/menu-trigger";
 import { addToPlaylistEntry, NativeMenu } from "~/components/native-menu";
 import { SongRow } from "~/components/song-row";
-import { TEXT_BUTTON_HIT_SLOP } from "~/components/ui/hit-slop";
+import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
 
+/** Android labels the groups as Material 3 does Settings' (labelLarge in primary). */
+const android = () => Platform.OS === "android";
+
 function SectionLabel({ children }: { children: string }) {
   return (
-    <Text variant="subhead" tone="muted" accessibilityRole="header">
+    <Text
+      variant={android() ? "label" : "subhead"}
+      tone={android() ? "primary" : "muted"}
+      emphasized
+      accessibilityRole="header"
+    >
       {children}
     </Text>
   );
@@ -27,7 +34,8 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
   const songs = queue.filter((entry) => entry.type === "song");
-  if (songs.length === 0) return null;
+  // Playlists need an account: no menu at all while signed out.
+  if (!signedIn || songs.length === 0) return null;
 
   return (
     <NativeMenu
@@ -35,7 +43,6 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
       entries={[
         addToPlaylistEntry({
           songs,
-          signedIn,
           playlists,
           onAdd: (playlist) => addSongsToPlaylist(playlist, songs),
         }),
@@ -48,7 +55,7 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
 
 /**
  * The queue sheet, as the web's queue pane: what is playing, then Up next
- * (drag a handle to reorder, a row's menu to remove it, Clear to empty it),
+ * (drag a handle to reorder, a row's menu to remove it, the clear button to empty it),
  * and a menu that saves the queue to a playlist.
  */
 export function QueueList() {
@@ -62,6 +69,7 @@ export function QueueList() {
         icon={{ ios: "list.bullet", android: "queue_music" }}
         title="Nothing queued"
         message="Songs you play or add to the queue show up here."
+        placement="top"
       />
     );
   }
@@ -85,17 +93,15 @@ export function QueueList() {
           />
         </>
       ) : null}
-      <View className="min-h-ctl flex-row items-center justify-between px-page">
+      <View className="min-h-touch flex-row items-center justify-between pl-page pr-1">
         <SectionLabel>{`Up next · ${upNext.length}`}</SectionLabel>
         {upNext.length > 0 ? (
-          <Pressable
+          <IconButton
+            icon={{ ios: "trash", android: "clear_all" }}
+            label="Clear up next"
+            size="md"
             onPress={clearUpNext}
-            accessibilityRole="button"
-            accessibilityLabel="Clear up next"
-            hitSlop={TEXT_BUTTON_HIT_SLOP}
-          >
-            <Text variant="subhead">Clear</Text>
-          </Pressable>
+          />
         ) : null}
       </View>
     </View>
@@ -119,7 +125,6 @@ export function QueueList() {
                 title: "Remove from Queue",
                 onRemove: () => {
                   removeAt(firstNext + index);
-                  toast("Removed from queue");
                 },
               }}
             />

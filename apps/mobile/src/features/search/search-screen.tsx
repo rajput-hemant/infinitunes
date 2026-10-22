@@ -2,14 +2,14 @@ import {
   SEARCH_DEBOUNCE_MS,
   useDebouncedValue,
 } from "@infinitunes/core/react/use-debounced-value";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import type { SearchBarCommands } from "react-native-screens";
 
 import { ChipRow } from "~/components/chip-row";
 
 import { IdleSearch } from "./idle-search";
-import { searchBarOptions } from "./search-bar-options";
+import { SearchHeader } from "./search-header";
 import { useSearchHistory } from "./search-history";
 import { SearchResults } from "./search-results";
 import { SEARCH_TYPES } from "./search-types";
@@ -17,8 +17,8 @@ import type { SearchType } from "./search-types";
 
 /**
  * Search (iOS's search tab; on Android pushed from the app bar's search
- * action): the native header search bar (the iOS 26 search tab's field,
- * Android's Material search view) drives everything on one screen. An empty
+ * action): the search field (`SearchHeader`: the iOS 26 search tab's native
+ * field, Android's Material 3 search bar) drives everything on one screen. An empty
  * field shows recent and top searches; text shows results under the type chips.
  * A `/search?q=` link (Siri, Google Assistant) opens with that query searched.
  */
@@ -53,17 +53,12 @@ export function SearchScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          title: "Search",
-          headerSearchBarOptions: {
-            ...searchBarOptions(),
-            ref: searchBar,
-            onChangeText: (event) => setQuery(event.nativeEvent.text),
-            onSearchButtonPress: (event) => add(event.nativeEvent.text),
-            onCancelButtonPress: () => setQuery(""),
-          },
-        }}
+      <SearchHeader
+        query={query}
+        fieldRef={searchBar}
+        onChangeText={setQuery}
+        onSubmit={add}
+        onCancel={() => setQuery("")}
       />
       {debouncedQuery ? (
         <SearchResults

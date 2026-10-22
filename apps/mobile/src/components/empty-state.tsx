@@ -1,5 +1,6 @@
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 
+import { art } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
 import { Button } from "./ui/button";
@@ -17,22 +18,59 @@ type EmptyStateProps = {
     onPress: () => void;
     variant?: "primary" | "secondary";
   };
+  /**
+   * `top` in a sheet: a sheet lays its content out at its largest detent, so
+   * a centred notice would sit below the fold of the smaller one.
+   */
+  placement?: "center" | "top";
 };
 
 /** A centred notice for an empty list or screen, with an optional way forward. */
-export function EmptyState({ icon, title, message, action }: EmptyStateProps) {
+export function EmptyState({
+  icon,
+  title,
+  message,
+  action,
+  placement = "center",
+}: EmptyStateProps) {
   const palette = usePalette();
+  // Android (Material 3 Expressive): the symbol in a tonal extra-large shape,
+  // a titleLarge headline.
+  const android = Platform.OS === "android";
   return (
-    <View className="flex-1 items-center justify-center px-page py-12">
-      <Icon name={icon} size="xxl" color={palette["muted-foreground"]} />
-      <Text variant="headline" className="mt-4 text-center">
+    <View
+      className={
+        placement === "top"
+          ? "items-center px-page py-8"
+          : "flex-1 items-center justify-center px-page py-12"
+      }
+    >
+      {android ? (
+        <View
+          className="items-center justify-center rounded-xl bg-secondary"
+          style={{ width: art.feature, height: art.feature }}
+        >
+          <Icon
+            name={icon}
+            size="xxl"
+            color={palette["secondary-foreground"]}
+          />
+        </View>
+      ) : (
+        <Icon name={icon} size="xxl" color={palette["muted-foreground"]} />
+      )}
+      <Text
+        variant={android ? "title2" : "headline"}
+        emphasized
+        className={android ? "mt-6 text-center" : "mt-4 text-center"}
+      >
         {title}
       </Text>
       {message ? (
         <Text
           variant="subhead"
           tone="muted"
-          className="mt-1 text-center"
+          className={android ? "mt-2 text-center" : "mt-1 text-center"}
           style={{ maxWidth: 300 }}
         >
           {message}
@@ -43,7 +81,7 @@ export function EmptyState({ icon, title, message, action }: EmptyStateProps) {
           label={action.label}
           onPress={action.onPress}
           variant={action.variant ?? "primary"}
-          className="mt-4"
+          className={android ? "mt-6" : "mt-4"}
         />
       ) : null}
     </View>

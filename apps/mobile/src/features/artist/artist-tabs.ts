@@ -22,6 +22,6 @@ export const CATEGORIES = [
 
 export const CATEGORY_LABELS: Record<Category, string> = {
   popularity: "Popular",
-  latest: "Date",
-  alphabetical: "Name",
+  latest: "Newest",
+  alphabetical: "A-Z",
 };

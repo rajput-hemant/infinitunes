@@ -6,7 +6,6 @@ import {
   rawStationDetails,
 } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { preferencesStore } from "~/lib/preferences";
 import { playerStore } from "~/playback/player-store";
@@ -37,14 +36,12 @@ describe("HomeFeed", () => {
     preferencesStore.getState().setLanguages([]);
   });
 
-  it("shows a skeleton under the greeting while the launch data loads", async () => {
+  it("shows a skeleton under the language chips while the launch data loads", async () => {
     home.mockReturnValue(new Promise(() => {}));
     await renderScreen(<HomeFeed />);
 
     expect(screen.getAllByLabelText("Loading").length).toBeGreaterThan(0);
-    expect(
-      screen.getByText(/^Good (morning|afternoon|evening)$/),
-    ).toBeOnTheScreen();
+    expect(screen.getByText("For you")).toBeOnTheScreen();
   });
 
   it("shows the featured carousel, quick picks and a shelf per titled section", async () => {
@@ -167,20 +164,6 @@ describe("HomeFeed", () => {
 
     await waitFor(() => expect(playerStore.getState().queue).toHaveLength(1));
     expect(procedure("get.trending")).toHaveBeenCalledWith({ type: "song" });
-  });
-
-  it("tells the listener when Surprise Me finds nothing", async () => {
-    home.mockResolvedValue(rawLaunchData());
-    procedure("get.trending").mockResolvedValue([]);
-    await renderScreen(<HomeFeed />);
-
-    await fireEvent.press(await screen.findByText("Surprise Me"));
-
-    await waitFor(() =>
-      expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-        "No songs found right now",
-      ),
-    );
   });
 
   it("opens Browse from its quick pick, before any catalog data", async () => {

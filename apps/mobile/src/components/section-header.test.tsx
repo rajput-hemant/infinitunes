@@ -6,13 +6,13 @@ import { SectionHeader } from "./section-header";
 import { TEXT_BUTTON_HIT_SLOP } from "./ui/hit-slop";
 
 describe("SectionHeader", () => {
-  it("is a header with 24 above and 8 below", async () => {
+  it("is a header with 16 above and 8 below", async () => {
     await renderScreen(<SectionHeader title="Quick picks" />);
 
     const header = screen.getByRole("header", { name: "Quick picks" });
     expect(header).toBeOnTheScreen();
     expect(header.parent?.props.className).toEqual(
-      expect.stringContaining("pb-2 pt-6"),
+      expect.stringContaining("pb-2 pt-4"),
     );
   });
 

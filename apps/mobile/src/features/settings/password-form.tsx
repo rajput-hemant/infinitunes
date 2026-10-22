@@ -1,8 +1,8 @@
 import { PASSWORD_HINT, changePasswordSchema } from "@infinitunes/auth/schemas";
 import { router } from "expo-router";
-import { useRef } from "react";
-import { toast } from "sonner-native";
+import { useRef, useState } from "react";
 
+import { FormError } from "~/components/form/form-error";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormScreen } from "~/components/form/form-screen";
 import { PasswordField } from "~/components/form/password-field";
@@ -24,6 +24,7 @@ export function PasswordForm() {
     initialValues: { password: "", newPassword: "" },
   });
   const { pending, run } = usePending();
+  const [serverError, setServerError] = useState<string>();
 
   function submit() {
     const passwords = validate();
@@ -32,11 +33,8 @@ export function PasswordForm() {
       const failure = await mutationFailure(() =>
         trpcClient.user.changePassword.mutate(passwords),
       );
-      if (failure) {
-        toast.error(failure);
-        return;
-      }
-      toast.success("Password updated");
+      setServerError(failure ?? undefined);
+      if (failure) return;
       router.back();
     });
   }
@@ -65,6 +63,7 @@ export function PasswordForm() {
         returnKeyType="done"
         onSubmitEditing={submit}
       />
+      <FormError message={serverError} />
       <Button
         label={pending ? "Updating..." : "Update password"}
         disabled={pending}

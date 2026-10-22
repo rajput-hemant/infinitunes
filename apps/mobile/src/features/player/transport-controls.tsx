@@ -1,8 +1,12 @@
-import { LOOP_MODE_MESSAGES } from "@infinitunes/core/playback-order";
 import { selectionAsync } from "expo-haptics";
 import { useTheme } from "expo-router";
-import { Pressable, View } from "react-native";
-import { toast } from "sonner-native";
+import { useEffect } from "react";
+import { Platform, Pressable, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
@@ -10,6 +14,7 @@ import { IconButton } from "~/components/ui/icon-button";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import { togglePlayback } from "~/playback/transport";
+import { springs } from "~/theme/motion";
 import { sizes } from "~/theme/tokens";
 import type { IconSize } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
@@ -18,6 +23,8 @@ import { useWashColors } from "./wash";
 
 /** Now Playing's play/pause shape (spec 2.10): a 72pt circle around a 32pt glyph. */
 const PROMINENT_EDGE = 72;
+/** The paused shape's corners on Android: Material 3 Expressive's extra-large. */
+const PAUSED_RADIUS = 24;
 
 function usePlayPause() {
   const playing = usePlaybackStatus((state) => state.playing);
@@ -29,9 +36,32 @@ function usePlayPause() {
   };
 }
 
-/** Play or pause as a bare glyph: the mini player's. */
+/**
+ * Play or pause: the mini player's. A bare glyph on iOS; on Android a 40dp
+ * filled circle in the wash's control colour (Material 3's filled icon button).
+ */
 export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
   const { icon, label } = usePlayPause();
+  const wash = useWashColors();
+  const primary = useTokenColor("primary");
+  const onPrimary = useTokenColor("primary-foreground");
+  if (Platform.OS === "android") {
+    return (
+      <Pressable
+        onPress={togglePlayback}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        className="min-h-touch min-w-touch items-center justify-center active:opacity-80"
+      >
+        <View
+          className="size-ctl items-center justify-center rounded-full"
+          style={{ backgroundColor: wash?.control ?? primary }}
+        >
+          <Icon name={icon} size="md" color={wash?.onControl ?? onPrimary} />
+        </View>
+      </Pressable>
+    );
+  }
   return (
     <IconButton
       icon={icon}
@@ -49,9 +79,49 @@ export function PlayPauseButton({ size = "lg" }: { size?: IconSize }) {
  */
 export function ProminentPlayPauseButton() {
   const { icon, label } = usePlayPause();
+  const playing = label === "Pause";
   const wash = useWashColors();
   const primary = useTokenColor("primary");
   const onPrimary = useTokenColor("primary-foreground");
+  // Android: Material 3 Expressive's shape morph, a rounded square while
+  // paused and a circle while playing, on the default spatial spring.
+  const radius = useSharedValue(playing ? PROMINENT_EDGE / 2 : PAUSED_RADIUS);
+  useEffect(() => {
+    radius.set(
+      withSpring(
+        playing ? PROMINENT_EDGE / 2 : PAUSED_RADIUS,
+        springs.spatialDefault,
+      ),
+    );
+  }, [playing, radius]);
+  const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
+
+  if (Platform.OS === "android") {
+    return (
+      <Animated.View
+        style={[
+          {
+            width: PROMINENT_EDGE,
+            height: PROMINENT_EDGE,
+            overflow: "hidden",
+            backgroundColor: wash?.control ?? primary,
+          },
+          shape,
+        ]}
+      >
+        <Pressable
+          onPress={togglePlayback}
+          accessibilityRole="button"
+          accessibilityLabel={label}
+          android_ripple={{ color: "rgba(127, 127, 127, 0.25)" }}
+          className="flex-1 items-center justify-center"
+          testID="play-pause-prominent"
+        >
+          <Icon name={icon} size="xl" color={wash?.onControl ?? onPrimary} />
+        </Pressable>
+      </Animated.View>
+    );
+  }
 
   return (
     <Pressable
@@ -146,6 +216,43 @@ function ModeToggle({ icon, label, on, onPress }: ModeToggleProps) {
   );
 }
 
+/** The tonal skip buttons' tint: their text colour at this opacity. */
+const TONAL_ALPHA = 0.14;
+
+/**
+ * Previous or next on Android's Now Playing: Material 3 Expressive's tonal
+ * icon button, a 56dp rounded square tinted from the text colour, so it reads
+ * on any wash.
+ */
+function TonalSkipButton({
+  icon,
+  label,
+  onPress,
+}: {
+  icon: SymbolName;
+  label: string;
+  onPress: () => void;
+}) {
+  const { colors } = useTheme();
+  const wash = useWashColors();
+  const ink = wash?.foreground ?? colors.text;
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      android_ripple={{ color: "rgba(127, 127, 127, 0.25)" }}
+      className="size-row items-center justify-center overflow-hidden rounded-lg"
+    >
+      <View
+        className="absolute inset-0"
+        style={{ backgroundColor: ink, opacity: TONAL_ALPHA }}
+      />
+      <Icon name={icon} size="xl" color={ink} />
+    </Pressable>
+  );
+}
+
 /** Now Playing's row: shuffle, previous, play/pause, next, repeat. */
 export function TransportControls() {
   const shuffle = usePlayer((state) => state.shuffle);
@@ -160,19 +267,35 @@ export function TransportControls() {
         on={shuffle}
         onPress={toggleShuffle}
       />
-      <IconButton
-        icon={{ ios: "backward.fill", android: "skip_previous" }}
-        label="Previous track"
-        onPress={skipToPrevious}
-        size="xl"
-      />
+      {Platform.OS === "android" ? (
+        <TonalSkipButton
+          icon={{ ios: "backward.fill", android: "skip_previous" }}
+          label="Previous track"
+          onPress={skipToPrevious}
+        />
+      ) : (
+        <IconButton
+          icon={{ ios: "backward.fill", android: "skip_previous" }}
+          label="Previous track"
+          onPress={skipToPrevious}
+          size="xl"
+        />
+      )}
       <ProminentPlayPauseButton />
-      <NextTrackButton size="xl" />
+      {Platform.OS === "android" ? (
+        <TonalSkipButton
+          icon={{ ios: "forward.fill", android: "skip_next" }}
+          label="Next track"
+          onPress={playerStore.getState().skipToNext}
+        />
+      ) : (
+        <NextTrackButton size="xl" />
+      )}
       <ModeToggle
         icon={REPEAT_ICONS[repeat]}
         label={REPEAT_LABELS[repeat]}
         on={repeat !== "off"}
-        onPress={() => toast(LOOP_MODE_MESSAGES[cycleRepeat()])}
+        onPress={() => cycleRepeat()}
       />
     </View>
   );

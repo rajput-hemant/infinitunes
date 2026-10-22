@@ -9,6 +9,7 @@ import { cx } from "~/lib/class-names";
 import { space } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
 
+import { Equalizer } from "./equalizer";
 import { ExplicitBadge } from "./explicit-badge";
 import { Artwork } from "./ui/artwork";
 import { Icon } from "./ui/icon";
@@ -54,6 +55,12 @@ type ListRowProps = {
 const WAVEFORM: SymbolName = { ios: "waveform", android: "graphic_eq" };
 const PAUSED: SymbolName = { ios: "pause.fill", android: "pause" };
 
+/**
+ * Android (Material 3 Expressive): the current track sits in a tonal
+ * container. Read at render, so a test can switch platforms.
+ */
+const tonalNowPlaying = () => Platform.OS === "android";
+
 /** What the leading slot shows for the current track. */
 type NowPlaying = "playing" | "paused" | undefined;
 
@@ -68,6 +75,29 @@ function isChevron(
   );
 }
 
+/** The current track's mark: iOS's waveform or pause glyph, Android's equalizer. */
+function NowMark({
+  nowPlaying,
+  color,
+}: {
+  nowPlaying: "playing" | "paused";
+  color: string;
+}) {
+  return (
+    <View testID={`now-${nowPlaying}`}>
+      {Platform.OS === "android" ? (
+        <Equalizer playing={nowPlaying === "playing"} color={color} />
+      ) : (
+        <Icon
+          name={nowPlaying === "paused" ? PAUSED : WAVEFORM}
+          size="sm"
+          color={color}
+        />
+      )}
+    </View>
+  );
+}
+
 function Leading({
   leading,
   nowPlaying,
@@ -78,15 +108,16 @@ function Leading({
   /** A row without a destination: only the picture dims. */
   dimmed: boolean;
 }) {
-  const primary = useTokenColor("primary");
-  const mark = nowPlaying === "paused" ? PAUSED : WAVEFORM;
+  const palette = usePalette();
+  // On Android's tonal container the mark takes the container's text colour.
+  const markColor = tonalNowPlaying()
+    ? palette["secondary-foreground"]
+    : palette.primary;
   if ("index" in leading) {
     return (
       <View className="w-touch items-center">
         {nowPlaying ? (
-          <View testID={`now-${nowPlaying}`}>
-            <Icon name={mark} size="sm" color={primary} />
-          </View>
+          <NowMark nowPlaying={nowPlaying} color={markColor} />
         ) : (
           <Text tone="muted" numeric>
             {leading.index}
@@ -96,14 +127,26 @@ function Leading({
     );
   }
   if ("icon" in leading) {
+    // Android: Material 3's leading icon in a round tonal container.
     return (
       <View
         className={cx(
-          "size-touch items-center justify-center rounded-sm bg-fill",
+          "size-touch items-center justify-center",
+          Platform.OS === "android"
+            ? "rounded-full bg-secondary"
+            : "rounded-sm bg-fill",
           dimmed && "opacity-50",
         )}
       >
-        <Icon name={leading.icon} size="md" />
+        <Icon
+          name={leading.icon}
+          size="md"
+          color={
+            Platform.OS === "android"
+              ? palette["secondary-foreground"]
+              : undefined
+          }
+        />
       </View>
     );
   }
@@ -112,13 +155,12 @@ function Leading({
       <Artwork image={leading.artwork} size="row" round={leading.round} />
       {nowPlaying ? (
         <View
-          testID={`now-${nowPlaying}`}
           className={cx(
             "absolute inset-0 items-center justify-center bg-scrim",
             leading.round ? "rounded-full" : "rounded-sm",
           )}
         >
-          <Icon name={mark} size="sm" color="white" />
+          <NowMark nowPlaying={nowPlaying} color="white" />
         </View>
       ) : null}
     </View>
@@ -167,7 +209,17 @@ export function ListRow({
         <Leading leading={leading} nowPlaying={nowPlaying} dimmed={dimmed} />
       ) : null}
       <View className="flex-1">
-        <Text numberOfLines={1} tone={selected ? "primary" : "default"}>
+        <Text
+          numberOfLines={1}
+          tone={
+            selected
+              ? tonalNowPlaying()
+                ? "onSecondary"
+                : "primary"
+              : "default"
+          }
+          emphasized={selected}
+        >
           {title}
         </Text>
         {subtitle || explicit ? (
@@ -187,7 +239,17 @@ export function ListRow({
           </View>
         ) : null}
       </View>
-      {checked ? (
+      {/* iOS marks only the chosen rows; Material 3 shows every row's checkbox. */}
+      {checked !== undefined && Platform.OS === "android" ? (
+        <Icon
+          name={{
+            ios: "checkmark",
+            android: checked ? "check_box" : "check_box_outline_blank",
+          }}
+          size="lg"
+          color={checked ? primary : palette["muted-foreground"]}
+        />
+      ) : checked ? (
         <Icon
           name={{ ios: "checkmark", android: "check" }}
           size="md"
@@ -203,15 +265,27 @@ export function ListRow({
       ) : null}
     </>
   );
-  const bodyClass = "min-h-row flex-1 flex-row items-center gap-3 py-2 pl-page";
-  const endPadding = { paddingEnd: controls ? space.xs : space.lg };
+  // Android's tonal container is inset by `space.sm` on both sides; the
+  // padding inside shrinks by as much, so its contents keep their place.
+  const inset = tonalNowPlaying() && selected ? space.sm : 0;
+  const bodyClass = "min-h-row flex-1 flex-row items-center gap-3 py-1";
+  const bodyStyle = { paddingStart: space.lg - inset };
+  const endPadding = {
+    paddingEnd: Math.max(0, (controls ? space.xs : space.lg) - inset),
+  };
+  const container = inset ? { marginHorizontal: inset } : undefined;
 
   // An item without a screen is a labelled view, never a disabled button;
   // only its picture dims (`Leading`), so the text keeps its contrast.
   if (dimmed) {
     return (
       <View className="flex-row items-center" style={endPadding}>
-        <View accessible accessibilityLabel={label} className={bodyClass}>
+        <View
+          accessible
+          accessibilityLabel={label}
+          className={bodyClass}
+          style={bodyStyle}
+        >
           {body}
         </View>
         {controls}
@@ -233,6 +307,7 @@ export function ListRow({
       accessibilityValue={accessibilityValue}
       accessibilityState={checked !== undefined ? { checked } : { selected }}
       className={bodyClass}
+      style={bodyStyle}
     >
       {body}
     </Pressable>
@@ -242,8 +317,9 @@ export function ListRow({
       className={cx(
         "flex-row items-center",
         pressed && Platform.OS === "ios" && "bg-fill-2",
+        container && "overflow-hidden rounded-lg bg-secondary",
       )}
-      style={endPadding}
+      style={[endPadding, container]}
     >
       {href ? (
         <Link href={href} asChild>

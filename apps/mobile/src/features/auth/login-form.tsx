@@ -1,9 +1,9 @@
 import { loginSchema } from "@infinitunes/auth/schemas";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { View } from "react-native";
-import { toast } from "sonner-native";
 
 import { EmailField } from "~/components/form/email-field";
+import { FormError } from "~/components/form/form-error";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
@@ -25,6 +25,7 @@ export function LoginForm() {
     initialValues: { email: "", password: "" },
   });
   const { pending, run } = usePending();
+  const [serverError, setServerError] = useState<string>();
 
   function submit() {
     const credentials = validate();
@@ -33,8 +34,7 @@ export function LoginForm() {
       const failure = await authFailure(() =>
         authClient.signIn.email(credentials),
       );
-      if (failure) toast.error(failure.message);
-      else toast.success("Signed in");
+      setServerError(failure?.message);
     });
   }
 
@@ -60,6 +60,7 @@ export function LoginForm() {
         returnKeyType="go"
         onSubmitEditing={submit}
       />
+      <FormError message={serverError} />
       <Button
         label={pending ? "Signing in..." : "Sign in"}
         disabled={pending}

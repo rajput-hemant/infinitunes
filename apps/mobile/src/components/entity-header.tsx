@@ -7,8 +7,8 @@ import { useTokenColor } from "~/theme/use-palette";
 import { ExplicitBadge } from "./explicit-badge";
 import { LikeButton } from "./like-button";
 import { Artwork } from "./ui/artwork";
-import { Button } from "./ui/button";
 import { Icon } from "./ui/icon";
+import { IconButton } from "./ui/icon-button";
 import { Text } from "./ui/text";
 
 /** iOS lifts the header art off the page; Material 3 is flat. */
@@ -49,8 +49,8 @@ type EntityHeaderProps = {
 /**
  * The top of a detail screen (album, playlist, mix, artist, show, station),
  * centred: artwork, the kind and verified marks, the title (after the
- * explicit mark), the credit and a meta line, then Play and Shuffle, and
- * below them the heart and the screen's own actions.
+ * explicit mark), the credit and a meta line, then one row: the heart and
+ * the screen's own actions, then Shuffle and Play as icon buttons.
  */
 export function EntityHeader({
   image,
@@ -77,7 +77,7 @@ export function EntityHeader({
         <Artwork image={image} size="header" round={round} />
       </View>
       {eyebrow || verified ? (
-        <View className="mt-4 flex-row items-center gap-2">
+        <View className="mt-3 flex-row items-center gap-2">
           {eyebrow ? (
             <Text variant="caption" tone="muted">
               {eyebrow}
@@ -103,12 +103,13 @@ export function EntityHeader({
       ) : null}
       <View
         className={`flex-row items-center justify-center gap-2 ${
-          eyebrow || verified ? "mt-1" : "mt-4"
+          eyebrow || verified ? "mt-1" : "mt-3"
         }`}
       >
         {explicit ? <ExplicitBadge /> : null}
         <Text
-          variant="title1"
+          variant="title2"
+          emphasized
           accessibilityRole="header"
           className="shrink text-center"
           numberOfLines={2}
@@ -116,13 +117,10 @@ export function EntityHeader({
           {title}
         </Text>
       </View>
+      {/* The credit reads in the text colour; only the facts under it are muted,
+          or the two lines look alike (Android's subhead and footnote share a size). */}
       {subtitle ? (
-        <Text
-          variant="subhead"
-          tone="muted"
-          className="text-center"
-          numberOfLines={2}
-        >
+        <Text variant="subhead" className="text-center" numberOfLines={2}>
           {subtitle}
         </Text>
       ) : null}
@@ -136,31 +134,31 @@ export function EntityHeader({
           {meta}
         </Text>
       ) : null}
-      <View className="mt-4 w-full flex-row items-center gap-3">
-        <Button
-          label="Play"
-          icon={{ ios: "play.fill", android: "play_arrow" }}
-          onPress={onPlay}
-          className="flex-1"
-        />
+      {/* Compact: the heart and the screen's actions lead, Shuffle and the
+          large Play close the row, where the thumb rests. */}
+      <View className="mt-4 w-full flex-row items-center gap-2">
+        {like ? (
+          <LikeButton type={like.type} token={like.token} name={title} />
+        ) : null}
+        {actions}
+        <View className="flex-1" />
         {onShuffle ? (
-          <Button
-            label="Shuffle"
+          <IconButton
             icon={{ ios: "shuffle", android: "shuffle" }}
-            variant="secondary"
+            label="Shuffle"
+            variant="tonal"
             onPress={onShuffle}
-            className="flex-1"
           />
         ) : null}
+        <IconButton
+          icon={{ ios: "play.fill", android: "play_arrow" }}
+          label="Play"
+          variant="filled"
+          size="xl"
+          large
+          onPress={onPlay}
+        />
       </View>
-      {like || actions ? (
-        <View className="mt-2 flex-row items-center justify-center gap-6">
-          {like ? (
-            <LikeButton type={like.type} token={like.token} name={title} />
-          ) : null}
-          {actions}
-        </View>
-      ) : null}
     </View>
   );
 }

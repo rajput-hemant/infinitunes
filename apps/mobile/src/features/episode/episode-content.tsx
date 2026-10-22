@@ -6,13 +6,14 @@ import {
   plainText,
   toSongRow,
 } from "@infinitunes/types";
-import { RefreshControl } from "react-native";
 
 import { CollectionMenu } from "~/components/collection-menu";
+import { Description } from "~/components/detail/description";
 import { EntityHeader } from "~/components/entity-header";
 import { ListRow } from "~/components/list-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SectionHeader } from "~/components/section-header";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
 import { joinMeta, playsLabel } from "~/lib/meta";
 import { entityHref } from "~/navigation/entity-href";
@@ -22,7 +23,6 @@ type EpisodeContentProps = {
   episode: Episode;
   modules: EpisodeDetail["modules"];
   onRefresh: () => Promise<unknown>;
-  isRefreshing: boolean;
 };
 
 /** "12.5K Plays · 62:05 · hindi", skipping what upstream leaves out. */
@@ -62,7 +62,6 @@ export function EpisodeContent({
   episode,
   modules,
   onRefresh,
-  isRefreshing,
 }: EpisodeContentProps) {
   const row = toSongRow(episode);
   const description = plainText(episode.more_info.description);
@@ -72,14 +71,7 @@ export function EpisodeContent({
   const play = () => playAll([row]);
 
   return (
-    <ScreenScrollView
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={() => void onRefresh()}
-        />
-      }
-    >
+    <ScreenScrollView refreshControl={<PullToRefresh onRefresh={onRefresh} />}>
       <EntityHeader
         image={episode.image}
         eyebrow="Episode"
@@ -95,9 +87,7 @@ export function EpisodeContent({
           <SectionHeader
             title={capitalized(decode(modules.episode_details.title))}
           />
-          <Text tone="muted" selectable className="px-page">
-            {description}
-          </Text>
+          <Description text={description} />
         </>
       ) : null}
       <ShowLink episode={episode} />

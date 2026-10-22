@@ -1,11 +1,10 @@
 import { Stack } from "expo-router";
 
-import { SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 
 import { LibraryListView } from "./library-list-view";
 import { SignedInGate } from "./signed-in-gate";
-import { SongCollection } from "./song-collection";
+import { SongCollection, SongCollectionSkeleton } from "./song-collection";
 import { useHistory } from "./use-history";
 
 function History() {
@@ -14,7 +13,7 @@ function History() {
   return (
     <LibraryListView
       list={list}
-      skeleton={<SongListSkeleton />}
+      skeleton={<SongCollectionSkeleton />}
       empty={{
         icon: { ios: "clock", android: "history" },
         title: "Nothing played yet",

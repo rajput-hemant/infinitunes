@@ -1,13 +1,11 @@
 import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
-import { userMessage } from "@infinitunes/core/user-message";
-import { RefreshControl } from "react-native";
-import { toast } from "sonner-native";
 
 import { ErrorState } from "~/components/error-state";
 import { ListRow } from "~/components/list-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SectionHeader } from "~/components/section-header";
 import { SongListSkeleton } from "~/components/skeletons";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
 import { useServerPlaylists } from "~/user-data/playlists";
 
@@ -45,22 +43,10 @@ function Playlists() {
 }
 
 function Library() {
-  const { isRefetching, refetch } = useServerPlaylists();
-
-  async function refresh() {
-    const result = await refetch();
-    if (result.isError) toast.error(userMessage(result.error));
-  }
+  const { refetch } = useServerPlaylists();
 
   return (
-    <ScreenScrollView
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefetching}
-          onRefresh={() => void refresh()}
-        />
-      }
-    >
+    <ScreenScrollView refreshControl={<PullToRefresh onRefresh={refetch} />}>
       {LIBRARY_SHORTCUTS.map(({ title, icon, href }) => (
         <ListRow
           key={title}

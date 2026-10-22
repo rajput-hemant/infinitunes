@@ -2,7 +2,6 @@ import { claimOptimisticOwner } from "@infinitunes/core/optimistic-owner";
 import type { QueryKey } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useEffect } from "react";
-import { toast } from "sonner-native";
 
 import { authClient } from "~/lib/auth-client";
 
@@ -40,10 +39,7 @@ export function useOptimisticOwner() {
   }, [userId]);
 }
 
-/** Tells a signed-out listener why an action needs an account, with a way in. */
-export function promptSignIn(reason: string) {
-  toast.warning("Sign in to continue", {
-    description: reason,
-    action: { label: "Sign in", onClick: () => router.push("/login") },
-  });
+/** Sends a signed-out listener to sign in. */
+export function promptSignIn() {
+  router.push("/login");
 }

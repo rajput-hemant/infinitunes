@@ -11,6 +11,7 @@ import type { ActionRowProps, TapRowProps } from "./tap-row-props";
 export function ActionRow({
   label,
   detail,
+  icon: _icon,
   destructive = false,
   onPress,
 }: ActionRowProps) {

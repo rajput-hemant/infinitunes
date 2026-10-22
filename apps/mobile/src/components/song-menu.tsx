@@ -1,6 +1,5 @@
 import type { QueueSource, RowExtras } from "@infinitunes/types";
 import type { ReactNode } from "react";
-import { toast } from "sonner-native";
 
 import { downloadTrack } from "~/lib/download";
 import {
@@ -55,15 +54,8 @@ function artistEntry(
 function download(song: TrackItem) {
   const quality = preferencesStore.getState().downloadQuality;
   void ensureNotificationPermission();
-  const job = downloadTrack(song, quality).catch((error: unknown) => {
+  void downloadTrack(song, quality).catch(() => {
     void notifyDownloadFailed(song.name);
-    throw error;
-  });
-  toast.promise(job, {
-    loading: `Downloading "${song.name}"...`,
-    success: () => `"${song.name}" is ready`,
-    error: (error) =>
-      error instanceof Error ? error.message : "Download failed",
   });
 }
 
@@ -101,18 +93,20 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
       image: "text.line.last.and.arrowtriangle.forward",
       run: () => {
         addToQueue(song);
-        toast(`"${song.name}" added to queue`);
       },
     },
   ];
   if (isSong) {
     entries.push(
-      addToPlaylistEntry({
-        songs: [song],
-        signedIn,
-        playlists,
-        onAdd: (playlist) => addSongsToPlaylist(playlist, [song]),
-      }),
+      ...(signedIn
+        ? [
+            addToPlaylistEntry({
+              songs: [song],
+              playlists,
+              onAdd: (playlist) => addSongsToPlaylist(playlist, [song]),
+            }),
+          ]
+        : []),
       playRadioEntry(radioSeedOf([song])),
     );
   }

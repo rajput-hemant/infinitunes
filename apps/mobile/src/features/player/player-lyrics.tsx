@@ -1,67 +1,61 @@
-import { plainText } from "@infinitunes/types";
 import type { Queue } from "@infinitunes/types";
-import { useQuery } from "@tanstack/react-query";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
-import { trpc } from "~/lib/trpc";
+import { SyncedLyrics } from "~/components/synced-lyrics";
+import { Spinner } from "~/components/ui/spinner";
+import { useLyrics } from "~/lib/use-lyrics";
 
 import { useWashColors, WashText } from "./wash";
 
-type PlayerLyricsProps = {
-  track: Queue;
-  /** The square the artwork leaves; lyrics scroll inside it. */
-  size: number;
-};
+type PlayerLyricsProps = { track: Queue; size: number };
 
-/**
- * The playing song's lyrics in place of its artwork (the expanded web
- * player's Lyrics tab), fetched only while shown. Episodes and songs
- * upstream has none for say so instead.
- */
 export function PlayerLyrics({ track, size }: PlayerLyricsProps) {
   const wash = useWashColors();
   const isSong = track.type === "song";
-  const lyrics = useQuery({
-    ...trpc.get.lyrics.queryOptions({ id: track.id }),
-    enabled: isSong,
-    staleTime: Infinity,
-  });
-
-  let content;
-  if (!isSong || lyrics.isError || lyrics.data === null) {
-    content = (
-      <WashText tone="muted" className="text-center">
-        No lyrics available for this track.
-      </WashText>
+  const lyrics = useLyrics(track.id, isSong);
+  const data = lyrics.data;
+  if (data?.synced && isSong)
+    return (
+      <View style={{ width: size }}>
+        <SyncedLyrics
+          key={track.id}
+          lines={data.synced}
+          songId={track.id}
+          height={size}
+          foreground={wash?.foreground}
+          muted={wash?.muted}
+        />
+      </View>
     );
-  } else if (!lyrics.data) {
-    content = (
-      <ActivityIndicator
-        accessibilityLabel="Loading lyrics"
-        color={wash?.foreground}
-      />
-    );
-  } else {
+  if (data?.plain && isSong)
     return (
       <ScrollView
         style={{ width: size, height: size }}
         contentContainerClassName="gap-4 py-2"
         accessibilityLabel="Lyrics"
       >
-        <WashText variant="headline">{plainText(lyrics.data.lyrics)}</WashText>
-        <WashText variant="caption" tone="muted">
-          {plainText(lyrics.data.lyrics_copyright)}
-        </WashText>
+        <WashText variant="headline">{data.plain}</WashText>
+        {data.source !== "lrclib" && data.copyright ? (
+          <WashText variant="caption" tone="muted">
+            {data.copyright}
+          </WashText>
+        ) : null}
       </ScrollView>
     );
-  }
-
   return (
     <View
       className="items-center justify-center"
       style={{ width: size, height: size }}
     >
-      {content}
+      {isSong && lyrics.isPending ? (
+        <Spinner accessibilityLabel="Loading lyrics" color={wash?.foreground} />
+      ) : (
+        <WashText tone="muted" className="text-center">
+          {data?.instrumental
+            ? "Instrumental track"
+            : "No lyrics available for this track."}
+        </WashText>
+      )}
     </View>
   );
 }

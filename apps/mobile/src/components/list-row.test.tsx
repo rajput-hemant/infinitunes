@@ -1,4 +1,5 @@
 import { fireEvent, screen } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import { renderScreen } from "~/test/render";
 
@@ -97,6 +98,27 @@ describe("ListRow", () => {
 
     expect(screen.getByTestId("now-paused")).toBeOnTheScreen();
     expect(screen.queryByTestId("now-playing")).toBeNull();
+  });
+
+  it("puts the current track in a tonal container on Android", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    await renderScreen(
+      <ListRow
+        title="Song"
+        leading={{ artwork: "https://c.saavncdn.com/a-150x150.jpg" }}
+        onPress={jest.fn()}
+        selected
+      />,
+    );
+
+    expect(screen.getByTestId("now-playing")).toBeOnTheScreen();
+    const row = screen.getByRole("button", { name: "Song" });
+    expect(row).toBeSelected();
+    let container = row.parent;
+    while (container && !/bg-secondary/.test(`${container.props.className}`)) {
+      container = container.parent;
+    }
+    expect(container).not.toBeNull();
   });
 
   it("is a checkbox when it is one choice of many", async () => {

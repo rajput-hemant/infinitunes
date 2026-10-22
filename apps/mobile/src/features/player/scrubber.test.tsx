@@ -38,18 +38,55 @@ const seek = jest.spyOn(audioPlayer, "seekTo");
 
 beforeEach(() => {
   jest.clearAllMocks();
-  playbackStatusStore.setState({ duration: 200, playing: false });
+  playbackStatusStore.setState({
+    duration: 200,
+    bufferedTime: 0,
+    playing: false,
+  });
   playbackPosition.set(30);
 });
 
 const slider = () => screen.getByTestId("slider").props.children as string;
 
 describe("Scrubber", () => {
+  it("shows the buffered proportion ahead of playback and updates while paused", async () => {
+    playbackStatusStore.setState({ bufferedTime: 100 });
+    await renderScreen(<Scrubber />);
+
+    expect(
+      screen.getByTestId("scrubber-buffered", { includeHiddenElements: true }),
+    ).toHaveStyle({
+      left: "15%",
+      width: "35%",
+    });
+
+    await act(async () => playbackStatusStore.setState({ bufferedTime: 150 }));
+    expect(
+      screen.getByTestId("scrubber-buffered", { includeHiddenElements: true }),
+    ).toHaveStyle({
+      width: "60%",
+    });
+
+    await act(async () => playbackStatusStore.setState({ bufferedTime: 300 }));
+    expect(
+      screen.getByTestId("scrubber-buffered", { includeHiddenElements: true }),
+    ).toHaveStyle({
+      width: "85%",
+    });
+
+    await act(async () => playbackStatusStore.setState({ duration: 0 }));
+    expect(
+      screen.getByTestId("scrubber-buffered", { includeHiddenElements: true }),
+    ).toHaveStyle({
+      width: "0%",
+    });
+  });
+
   it("shows the playhead, the time left and the position for screen readers", async () => {
     await renderScreen(<Scrubber />);
 
-    expect(screen.getByText("00:30")).toBeOnTheScreen();
-    expect(screen.getByText("-02:50")).toBeOnTheScreen();
+    expect(screen.getByText("0:30")).toBeOnTheScreen();
+    expect(screen.getByText("-2:50")).toBeOnTheScreen();
     expect(slider()).toBe("30/200");
     expect(
       screen.getByLabelText("Playback position").props.accessibilityValue,
@@ -61,7 +98,7 @@ describe("Scrubber", () => {
 
     await act(async () => playbackPosition.set(45));
 
-    expect(screen.getByText("00:45")).toBeOnTheScreen();
+    expect(screen.getByText("0:45")).toBeOnTheScreen();
     expect(slider()).toBe("45/200");
   });
 
@@ -69,20 +106,20 @@ describe("Scrubber", () => {
     await renderScreen(<Scrubber />);
 
     await fireEvent.press(screen.getByLabelText("drag to 90"));
-    expect(screen.getByText("01:30")).toBeOnTheScreen();
-    expect(screen.getByText("-01:50")).toBeOnTheScreen();
+    expect(screen.getByText("1:30")).toBeOnTheScreen();
+    expect(screen.getByText("-1:50")).toBeOnTheScreen();
     expect(seek).not.toHaveBeenCalled();
 
     // The playhead keeps ticking while dragging; the drag wins.
     await act(async () => playbackPosition.set(31));
-    expect(screen.getByText("01:30")).toBeOnTheScreen();
+    expect(screen.getByText("1:30")).toBeOnTheScreen();
 
     await fireEvent.press(screen.getByLabelText("release"));
 
     expect(seek).toHaveBeenCalledTimes(1);
     expect(seek).toHaveBeenCalledWith(90);
     expect(playbackPosition.get()).toBe(90);
-    expect(screen.getByText("01:30")).toBeOnTheScreen();
+    expect(screen.getByText("1:30")).toBeOnTheScreen();
   });
 
   it("seeks to where the drag ended, not where it started", async () => {
@@ -110,7 +147,7 @@ describe("Scrubber", () => {
     await renderScreen(<Scrubber />);
 
     expect(slider()).toBe("0/1");
-    expect(screen.getByText("-00:00")).toBeOnTheScreen();
+    expect(screen.getByText("-0:00")).toBeOnTheScreen();
   });
 
   it("never lets the slider run past the end", async () => {
@@ -118,6 +155,6 @@ describe("Scrubber", () => {
     await renderScreen(<Scrubber />);
 
     expect(slider()).toBe("200/200");
-    expect(screen.getByText("-00:00")).toBeOnTheScreen();
+    expect(screen.getByText("-0:00")).toBeOnTheScreen();
   });
 });

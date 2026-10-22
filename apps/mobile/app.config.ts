@@ -2,6 +2,7 @@ import { NATIVE_APP_SCHEME } from "@infinitunes/auth/native-app";
 import type { ExpoConfig } from "expo/config";
 
 // Node loads this file without a bundler, so the import names its extension.
+import { buildIosQuickActions } from "./plugins/ios-quick-actions.ts";
 import { colors } from "./src/theme/tokens.ts";
 
 // PNGs come from `bun run mobile:icons` (assets/brand/*.svg).
@@ -24,6 +25,10 @@ const config: ExpoConfig = {
     },
     bundleIdentifier: "com.infinitunes.app",
     supportsTablet: true,
+    infoPlist: {
+      // The dev client's floating "Tools" button covers the header buttons.
+      EXDevMenuShowFloatingActionButton: false,
+    },
   },
   android: {
     package: "com.infinitunes.app",
@@ -68,7 +73,10 @@ const config: ExpoConfig = {
         enableRemoteNotifications: false,
       },
     ],
+    ["expo-quick-actions", { iosActions: buildIosQuickActions() }],
     "./plugins/android-app-actions/index.ts",
+    "./plugins/android-kotlin-target/index.ts",
+    "./plugins/dev-menu-no-fab.ts",
     "./plugins/ios-app-intents/app.plugin.ts",
   ],
   experiments: {

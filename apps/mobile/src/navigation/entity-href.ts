@@ -29,7 +29,7 @@ function hasScreen(type: MediaType): type is EntityScreen {
 }
 
 /** A station is typed `radio_station` upstream; its screen is under `/radio`, as on the web. */
-function routeOf(type: MediaType, url: string): EntityRoute | undefined {
+export function routeOf(type: MediaType, url: string): EntityRoute | undefined {
   return entityRoute(url, type === "radio_station" ? "radio" : type);
 }
 

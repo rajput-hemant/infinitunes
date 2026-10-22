@@ -12,7 +12,7 @@ import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 export function ShowSkeleton() {
   return (
     <ScreenScrollView scrollEnabled={false}>
-      <EntityHeaderSkeleton />
+      <EntityHeaderSkeleton menu={false} />
       <TextBlockSkeleton />
       <SkeletonPulse>
         {/* The season and order pills. */}

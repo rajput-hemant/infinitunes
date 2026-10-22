@@ -19,6 +19,7 @@ describe("preferences", () => {
   it("defaults to the web's: best streaming and artwork, the catalog's own languages", () => {
     expect(preferencesStore.getState()).toMatchObject({
       streamQuality: "excellent",
+      cacheFrequentSongs: true,
       downloadQuality: "excellent",
       imageQuality: "high",
       languages: [],
@@ -33,6 +34,7 @@ describe("preferences", () => {
     const saved = stored();
     expect(saved?.state).toEqual({
       streamQuality: "low",
+      cacheFrequentSongs: true,
       downloadQuality: "excellent",
       imageQuality: "high",
       languages: ["tamil", "english"],
@@ -41,6 +43,7 @@ describe("preferences", () => {
 
   it("restores the saved choices on launch", async () => {
     preferencesStore.getState().setImageQuality("low");
+    preferencesStore.getState().setCacheFrequentSongs(false);
     const saved = Storage.getItemSync("preferences");
     preferencesStore.setState(initial, true);
     await Storage.setItemAsync("preferences", saved ?? "");
@@ -48,6 +51,7 @@ describe("preferences", () => {
     await preferencesStore.persist.rehydrate();
 
     expect(preferencesStore.getState().imageQuality).toBe("low");
+    expect(preferencesStore.getState().cacheFrequentSongs).toBe(false);
     // Actions survive a rehydrate: they are not part of what was saved.
     expect(typeof preferencesStore.getState().setImageQuality).toBe("function");
   });

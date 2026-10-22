@@ -3,7 +3,6 @@ import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorit
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { impactAsync } from "expo-haptics";
 import { Pressable, Text } from "react-native";
-import { toast } from "sonner-native";
 
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
@@ -89,7 +88,6 @@ describe("useFavoriteToggle", () => {
 
     await act(async () => write.resolve([]));
     expect(heart()).toBe("liked");
-    expect(jest.mocked(toast.error)).not.toHaveBeenCalled();
   });
 
   it("removes a like that the server holds", async () => {
@@ -106,7 +104,7 @@ describe("useFavoriteToggle", () => {
     expect(add()).not.toHaveBeenCalled();
   });
 
-  it("rolls the heart back and toasts the reason when the write fails", async () => {
+  it("rolls the heart back when the write fails", async () => {
     procedure("user.getUserFavorites").mockResolvedValue(favoritesRow());
     const write = deferred<never[]>();
     add().mockReturnValue(write.promise);
@@ -118,7 +116,6 @@ describe("useFavoriteToggle", () => {
     await act(async () => write.reject(trpcError("INTERNAL_SERVER_ERROR")));
 
     await waitFor(() => expect(heart()).toBe("not liked"));
-    expect(jest.mocked(toast.error)).toHaveBeenCalledTimes(1);
   });
 
   it("sends the latest intent after rapid taps, one write at a time", async () => {
@@ -140,27 +137,13 @@ describe("useFavoriteToggle", () => {
     expect(heart()).toBe("not liked");
   });
 
-  it("asks a signed-out listener to sign in, naming what they tried to like", async () => {
+  it("sends a signed-out listener to sign in", async () => {
     await act(async () => signInAs(null));
     const router = await renderHeart({ type: "album", token: "LHgqn" });
 
     await fireEvent.press(screen.getByRole("button"));
 
     expect(add()).not.toHaveBeenCalled();
-    expect(heart()).toBe("not liked");
-    expect(jest.mocked(toast.warning)).toHaveBeenCalledWith(
-      "Sign in to continue",
-      expect.objectContaining({
-        description: "You need an account to like this album.",
-      }),
-    );
-
-    const [, options] = jest.mocked(toast.warning).mock.calls[0] ?? [];
-    const action = options?.action;
-    if (typeof action !== "object" || !action || !("onClick" in action)) {
-      throw new Error("The toast has no action");
-    }
-    await act(async () => action.onClick());
     expect(router.getPathname()).toBe("/login");
   });
 
@@ -173,7 +156,6 @@ describe("useFavoriteToggle", () => {
     expect(add()).not.toHaveBeenCalled();
     expect(remove()).not.toHaveBeenCalled();
     expect(heart()).toBe("not liked");
-    expect(jest.mocked(toast.warning)).not.toHaveBeenCalled();
   });
 
   it("clears one account's pending like when another signs in", async () => {

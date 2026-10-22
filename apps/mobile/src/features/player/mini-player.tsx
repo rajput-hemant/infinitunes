@@ -62,6 +62,7 @@ export function MiniPlayer() {
         <View className="flex-1">
           <WashText
             variant="subhead"
+            emphasized
             numberOfLines={1}
             maxFontSizeMultiplier={maxFontScale.chrome}
           >

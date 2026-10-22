@@ -32,7 +32,7 @@ export type HomeModel = {
 };
 
 /** Quick picks after the Surprise Me and Browse tiles: four rows of two. */
-const QUICK_PICKS = 6;
+export const QUICK_PICKS = 6;
 
 /** A titled section as a shelf; an entry without a title or link cannot be shown. */
 function toShelf({ key, title, items }: HomeSection): HomeShelf[] {

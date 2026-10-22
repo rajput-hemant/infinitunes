@@ -1,10 +1,9 @@
 import { getErrorCode } from "@infinitunes/core/error-code";
-import { userMessage } from "@infinitunes/core/user-message";
 import { toSongRow } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
-import { toast } from "sonner-native";
 
 import { queryClient } from "~/lib/query-client";
+import { clearSongCache } from "~/lib/song-cache";
 import { fetchLikedSongRows, fetchSongRows } from "~/lib/song-rows";
 import { trpcClient } from "~/lib/trpc";
 import { playAll, shuffleAll } from "~/playback/play-collection";
@@ -22,6 +21,7 @@ import { promptSignIn } from "~/user-data/session";
  */
 export const APP_ACTIONS = [
   "resume",
+  "clear-cache",
   "play-liked",
   "shuffle-liked",
   "play-playlist",
@@ -44,7 +44,7 @@ export type AppActionContext = {
 };
 
 /** Where the app lands after an action: the player once something plays, else back. */
-export type ActionOutcome = "player" | "back";
+export type ActionOutcome = "player" | "back" | "home";
 
 /** Starts the restored queue, or plays the paused one on; `back` when nothing is queued. */
 function resume(): ActionOutcome {
@@ -68,16 +68,11 @@ async function playLiked(
   shuffle: boolean,
 ): Promise<ActionOutcome> {
   if (!userId) {
-    promptSignIn("You need an account to play your liked songs.");
+    promptSignIn();
     return "back";
   }
   const rows = await likedSongs(userId);
-  if (rows.length === 0) {
-    toast("No liked songs yet", {
-      description: "Tap the heart on any song and it will show up here.",
-    });
-    return "back";
-  }
+  if (rows.length === 0) return "back";
   if (shuffle) shuffleAll(rows);
   else playAll(rows);
   return "player";
@@ -88,25 +83,16 @@ async function playPlaylist(
   id: string | undefined,
 ): Promise<ActionOutcome> {
   if (!userId) {
-    promptSignIn("You need an account to play your playlists.");
+    promptSignIn();
     return "back";
   }
   const playlists = await queryClient.fetchQuery(serverPlaylistsQuery(userId));
   const playlist = playlists.find((candidate) => candidate.id === id);
-  if (!playlist) {
-    toast.error("Couldn't find that playlist");
-    return "back";
-  }
-  if (playlist.songs.length === 0) {
-    toast(`"${playlist.name}" has no songs yet`);
-    return "back";
-  }
+  if (!playlist) return "back";
+  if (playlist.songs.length === 0) return "back";
   const rows = await fetchSongRows(playlist.songs);
   if (!rows) throw new Error("Couldn't load this playlist's songs");
-  if (rows.length === 0) {
-    toast("These songs are no longer available");
-    return "back";
-  }
+  if (rows.length === 0) return "back";
   playAll(rows);
   return "player";
 }
@@ -130,15 +116,9 @@ async function topSong(q: string) {
 
 async function playSearch(q: string | undefined): Promise<ActionOutcome> {
   const term = q?.trim();
-  if (!term) {
-    toast.error("Say what to play");
-    return "back";
-  }
+  if (!term) return "back";
   const song = await topSong(term);
-  if (!song) {
-    toast(`No songs found for "${term}"`);
-    return "back";
-  }
+  if (!song) return "back";
   playAll([toSongRow(song)]);
   return "player";
 }
@@ -148,6 +128,8 @@ function perform(
   { userId, id, q }: AppActionContext,
 ): ActionOutcome | Promise<ActionOutcome> {
   switch (action) {
+    case "clear-cache":
+      return clearSongCache().then(() => "home" as const);
     case "resume":
       return resume();
     case "play-liked":
@@ -162,8 +144,8 @@ function perform(
 }
 
 /**
- * Runs one app action. Failures toast and land `back`; nothing throws, so
- * the action screen only navigates on the outcome.
+ * Runs one app action. Failures land `back`; nothing throws, so the action
+ * screen only navigates on the outcome.
  */
 export async function runAppAction(
   action: AppAction,
@@ -171,8 +153,7 @@ export async function runAppAction(
 ): Promise<ActionOutcome> {
   try {
     return await perform(action, context);
-  } catch (error) {
-    toast.error(userMessage(error));
+  } catch {
     return "back";
   }
 }

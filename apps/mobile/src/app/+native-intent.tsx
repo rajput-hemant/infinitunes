@@ -39,5 +39,8 @@ export function redirectSystemPath({ path }: { path: string }): string {
   // chips are local state), so the type segment is dropped.
   if (pathname === "/search" || /^\/search\/[^/]+$/.test(pathname))
     return `${searchPath()}${suffixOf(path)}`;
+  // JioSaavn's own playlist links (`/featured/<name>/<token>`) open the playlist route.
+  if (/^\/featured\/[^/]+\/[^/]+$/.test(pathname))
+    return `/playlist${pathname.slice("/featured".length)}${suffixOf(path)}`;
   return legacyArtistPath(pathname) ?? path;
 }

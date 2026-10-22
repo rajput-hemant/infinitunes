@@ -17,8 +17,9 @@ import { Artwork } from "~/components/ui/artwork";
 import { IconButton } from "~/components/ui/icon-button";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
-import { playerArtSize, radii } from "~/theme/tokens";
+import { playerArtSize } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
+import { useRadii } from "~/theme/use-radii";
 
 import { PlayerLyrics } from "./player-lyrics";
 import { Scrubber } from "./scrubber";
@@ -38,6 +39,9 @@ const ART_SHADOW = Platform.select({
   default: undefined,
 });
 
+/** Material 3 Expressive gives the hero artwork the extra-large shape (28dp). */
+const ART_CORNER = Platform.OS === "android" ? "xl" : "lg";
+
 /** How far the artwork settles back while paused. */
 const PAUSED_SCALE = 0.9;
 
@@ -46,6 +50,7 @@ const PAUSED_SCALE = 0.9;
  * That is movement, so reduce motion keeps it at full size.
  */
 function NowPlayingArt({ image }: { image: string }) {
+  const corner = useRadii();
   const playing = usePlaybackStatus((state) => state.playing);
   const reduceMotion = useReducedMotion();
   const target = playing || reduceMotion ? 1 : PAUSED_SCALE;
@@ -59,8 +64,15 @@ function NowPlayingArt({ image }: { image: string }) {
   }));
 
   return (
-    <Animated.View style={[{ borderRadius: radii.lg }, ART_SHADOW, animated]}>
-      <Artwork image={image} size="player" testID="now-playing-art" />
+    <Animated.View
+      style={[{ borderRadius: corner[ART_CORNER] }, ART_SHADOW, animated]}
+    >
+      <Artwork
+        image={image}
+        size="player"
+        testID="now-playing-art"
+        style={{ borderRadius: corner[ART_CORNER] }}
+      />
     </Animated.View>
   );
 }
@@ -96,6 +108,8 @@ function PlayingFrom() {
 export function FullPlayer() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  // Android shows the player edge to edge, under the status bar; iOS's sheet starts below it.
+  const top = { paddingTop: Platform.OS === "android" ? insets.top : 0 };
   const { width } = useWindowDimensions();
   const track = usePlayer(selectCurrentTrack);
   const colors = usePlayerColors(track?.image);
@@ -122,7 +136,9 @@ export function FullPlayer() {
   if (!track) {
     return (
       <View className="flex-1 bg-background">
-        <View className="flex-row px-3 pt-2">{close}</View>
+        <View className="flex-row px-3 pt-2" style={top}>
+          {close}
+        </View>
         <EmptyState
           icon={{ ios: "music.note", android: "music_note" }}
           title="Not playing"
@@ -138,7 +154,7 @@ export function FullPlayer() {
     <View className="flex-1">
       <Backdrop fill={fill} />
       <OnWash colors={wash}>
-        <View className="flex-row items-center px-3 pt-2">
+        <View className="flex-row items-center px-3 pt-2" style={top}>
           {close}
           <PlayingFrom />
           <SongMenu song={track}>
@@ -159,7 +175,7 @@ export function FullPlayer() {
           </View>
           <View className="mt-8 flex-row items-center gap-2">
             <View className="flex-1">
-              <WashText variant="title2" numberOfLines={1}>
+              <WashText variant="title2" emphasized numberOfLines={1}>
                 {track.name}
               </WashText>
               <WashText tone="muted" numberOfLines={1}>

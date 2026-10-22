@@ -4,7 +4,6 @@ import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { router as appRouter } from "expo-router";
 import { Alert } from "react-native";
 import type { AlertButton } from "react-native";
-import { toast } from "sonner-native";
 
 import { renderStack, chooseMenuAction } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
@@ -158,10 +157,9 @@ describe("creating a playlist", () => {
 
     expect(await screen.findByText("0 songs")).toBeOnTheScreen();
     expect(screen.queryByText("Creating…")).toBeNull();
-    expect(toast.success).toHaveBeenCalledWith('Playlist "Weekend" created');
   });
 
-  it("removes the pending row and says why when the server refuses", async () => {
+  it("removes the pending row when the server refuses", async () => {
     procedure("user.createNewPlaylist").mockRejectedValue(
       Object.assign(
         new Error("You can only have 10 playlists, please delete one"),
@@ -175,9 +173,6 @@ describe("creating a playlist", () => {
 
     await screen.findByText("Road Trip");
     expect(screen.queryByText("Weekend")).toBeNull();
-    expect(toast.error).toHaveBeenCalledWith(
-      "You can only have 10 playlists, please delete one",
-    );
   });
 
   it("adds a menu's songs to the playlist it creates", async () => {
@@ -236,7 +231,7 @@ describe("renaming a playlist", () => {
     });
   });
 
-  it("puts the old name back with a toast when the write fails", async () => {
+  it("puts the old name back when the write fails", async () => {
     procedure("user.renamePlaylist").mockRejectedValue(
       new Error("Could not rename"),
     );
@@ -245,7 +240,6 @@ describe("renaming a playlist", () => {
 
     expect(await screen.findByText("Road Trip")).toBeOnTheScreen();
     expect(screen.queryByText("Highway")).toBeNull();
-    expect(toast.error).toHaveBeenCalledWith("Could not rename");
   });
 });
 
@@ -282,7 +276,7 @@ describe("deleting a playlist", () => {
     expect(alert).toHaveBeenCalledTimes(1);
   });
 
-  it("brings the playlist back with a toast when the delete fails", async () => {
+  it("brings the playlist back when the delete fails", async () => {
     const alert = jest.spyOn(Alert, "alert");
     procedure("user.deletePlaylist").mockRejectedValue(
       new Error("Could not delete"),
@@ -294,6 +288,5 @@ describe("deleting a playlist", () => {
     await confirmDelete(alert);
 
     expect(await screen.findByText("Road Trip")).toBeOnTheScreen();
-    expect(toast.error).toHaveBeenCalledWith("Could not delete");
   });
 });

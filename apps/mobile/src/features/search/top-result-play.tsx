@@ -1,8 +1,7 @@
 import { decode } from "@infinitunes/types";
 import type { SearchItem } from "@infinitunes/types";
-import { View } from "react-native";
 
-import { Button } from "~/components/ui/button";
+import { IconButton } from "~/components/ui/icon-button";
 import { usePending } from "~/lib/use-pending";
 import { isPlayable, playEntity } from "~/playback/play-entity";
 
@@ -17,14 +16,13 @@ export function TopResultPlay({ item }: { item: SearchItem }) {
   if (!url || !isPlayable(type)) return null;
 
   return (
-    <View className="flex-row px-page pb-2">
-      <Button
-        label="Play"
-        icon={{ ios: "play.fill", android: "play_arrow" }}
-        accessibilityLabel={`Play ${decode(item.title)}`}
-        onPress={() => void run(() => playEntity(type, url))}
-        disabled={pending}
-      />
-    </View>
+    <IconButton
+      icon={{ ios: "play.fill", android: "play_arrow" }}
+      label={`Play ${decode(item.title)}`}
+      variant="filled"
+      large
+      onPress={() => void run(() => playEntity(type, url))}
+      disabled={pending}
+    />
   );
 }

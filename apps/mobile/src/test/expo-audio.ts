@@ -21,10 +21,14 @@ import { useEffect, useState } from "react";
  */
 
 type StatusListener = (status: AudioStatus) => void;
+type RemoteCommand = "nextTrack" | "previousTrack";
+type RemoteListener = (event: { command: RemoteCommand }) => void;
+type Subscription = { remove: () => void };
 
 const idleStatus: AudioStatus = {
   id: "fake",
   currentTime: 0,
+  bufferedTime: 0,
   playbackState: "idle",
   timeControlStatus: "paused",
   reasonForWaitingToPlay: "",
@@ -56,10 +60,13 @@ export class FakeAudioPlayer {
   lockScreen: { active: boolean; metadata?: AudioMetadata } = {
     active: false,
   };
+  /** The options the last `setActiveForLockScreen` call passed. */
+  lockScreenOptions?: AudioLockScreenOptions;
   /** How often `setActiveForLockScreen(true)` ran (each one rebuilds the Android session). */
   lockScreenActivations = 0;
   currentStatus: AudioStatus = idleStatus;
   private readonly listeners = new Set<StatusListener>();
+  private readonly remoteListeners = new Set<RemoteListener>();
 
   get playing() {
     return this.currentStatus.playing;
@@ -87,6 +94,7 @@ export class FakeAudioPlayer {
       ...this.currentStatus,
       isLoaded: false,
       currentTime: 0,
+      bufferedTime: 0,
       duration: 0,
       didJustFinish: false,
     };
@@ -108,8 +116,9 @@ export class FakeAudioPlayer {
   setActiveForLockScreen(
     active: boolean,
     metadata?: AudioMetadata,
-    _options?: AudioLockScreenOptions,
+    options?: AudioLockScreenOptions,
   ) {
+    this.lockScreenOptions = options;
     if (active) this.lockScreenActivations += 1;
     this.lockScreen = { active, metadata };
   }
@@ -122,9 +131,25 @@ export class FakeAudioPlayer {
     this.lockScreen = { active: false };
   }
 
-  addListener(_event: "playbackStatusUpdate", listener: StatusListener) {
-    this.listeners.add(listener);
-    return { remove: () => void this.listeners.delete(listener) };
+  addListener(
+    event: "playbackStatusUpdate",
+    listener: StatusListener,
+  ): Subscription;
+  addListener(event: "remoteCommand", listener: RemoteListener): Subscription;
+  addListener(
+    event: "playbackStatusUpdate" | "remoteCommand",
+    listener: StatusListener | RemoteListener,
+  ): Subscription {
+    const set = (
+      event === "remoteCommand" ? this.remoteListeners : this.listeners
+    ) as Set<typeof listener>;
+    set.add(listener);
+    return { remove: () => void set.delete(listener) };
+  }
+
+  /** The lock screen, a headset or Bluetooth pressed next or previous. */
+  pressRemote(command: RemoteCommand) {
+    for (const listener of this.remoteListeners) listener({ command });
   }
 
   /** Forgets what earlier tests did (the app keeps one player for its lifetime). */
@@ -133,6 +158,11 @@ export class FakeAudioPlayer {
     this.lockScreen = { active: false };
     this.lockScreenActivations = 0;
     this.currentStatus = idleStatus;
+  }
+
+  /** Loading can advance while the player is paused. */
+  bufferTo(bufferedTime: number) {
+    this.update({ bufferedTime });
   }
 
   /** The engine finished loading the current source. */

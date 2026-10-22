@@ -8,8 +8,8 @@ import {
   requestPermissionsAsync,
   scheduleNotificationAsync,
 } from "expo-notifications";
+import { router } from "expo-router";
 import { AppState } from "react-native";
-import { toast } from "sonner-native";
 
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
 import { notificationPromptStore } from "~/lib/notifications";
@@ -46,17 +46,13 @@ describe("add to playlist", () => {
     resetPlaylistOverlay();
   });
 
-  it("asks a signed-out listener to sign in instead", async () => {
+  it("offers no Add to Playlist while signed out", async () => {
     await renderWithProviders(menu());
 
-    await chooseMenuAction(trigger, "add-to-playlist");
+    const push = jest.spyOn(router, "push").mockImplementation(() => {});
+    await chooseMenuAction(trigger, "new-playlist");
 
-    expect(jest.mocked(toast.warning)).toHaveBeenCalledWith(
-      "Sign in to continue",
-      expect.objectContaining({
-        description: "You need an account to make playlists.",
-      }),
-    );
+    expect(push).not.toHaveBeenCalled();
     expect(procedure("user.addSongsToPlaylist")).not.toHaveBeenCalled();
   });
 
@@ -105,7 +101,6 @@ describe("download all", () => {
     await act(async () => {});
 
     expect(saveTracks).not.toHaveBeenCalled();
-    expect(toast.promise).not.toHaveBeenCalled();
   });
 
   it("saves the songs into the folder at the download quality preference", async () => {
@@ -116,14 +111,9 @@ describe("download all", () => {
     await renderWithProviders(menu());
 
     await chooseMenuAction(trigger, "download-all");
-    await waitFor(() => expect(toast.promise).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(saveTracks).toHaveBeenCalledTimes(1));
 
     expect(saveTracks).toHaveBeenCalledWith(folder, rows, "low");
-    const [, messages] = jest.mocked(toast.promise).mock.calls[0] ?? [];
-    expect(messages).toMatchObject({
-      loading: "Downloading 3 songs...",
-      error: "Download failed",
-    });
   });
 
   it("asks for notifications once and posts the result when it finishes", async () => {
@@ -137,7 +127,7 @@ describe("download all", () => {
     await renderWithProviders(menu());
 
     await chooseMenuAction(trigger, "download-all");
-    await waitFor(() => expect(toast.promise).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(saveTracks).toHaveBeenCalledTimes(1));
 
     expect(requestPermissionsAsync).toHaveBeenCalledTimes(1);
     // Denied: the result is not posted.
@@ -148,7 +138,7 @@ describe("download all", () => {
       .mockResolvedValue({ granted: true, canAskAgain: true } as never);
   });
 
-  it("posts the failure and fails the toast when saving rejects outright", async () => {
+  it("posts the failure when saving rejects outright", async () => {
     jest
       .mocked(getPermissionsAsync)
       .mockResolvedValue({ granted: true, canAskAgain: true } as never);
@@ -160,10 +150,8 @@ describe("download all", () => {
     await renderWithProviders(menu());
 
     await chooseMenuAction(trigger, "download-all");
-    await waitFor(() => expect(toast.promise).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(saveTracks).toHaveBeenCalledTimes(1));
 
-    const [job] = jest.mocked(toast.promise).mock.calls[0] ?? [];
-    await expect(job).rejects.toThrow("The folder is no longer available");
     await waitFor(() =>
       expect(scheduleNotificationAsync).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -174,34 +162,5 @@ describe("download all", () => {
         }),
       ),
     );
-  });
-
-  it("reports how many saved when some failed, and says 'song' for one", async () => {
-    jest.mocked(pickDownloadFolder).mockResolvedValue(new Directory());
-    jest.mocked(saveTracks).mockResolvedValue({ saved: 2, failed: 1 });
-    await renderWithProviders(menu());
-
-    await chooseMenuAction(trigger, "download-all");
-    await waitFor(() => expect(toast.promise).toHaveBeenCalledTimes(1));
-
-    const [, messages] = jest.mocked(toast.promise).mock.calls[0] ?? [];
-    const success = messages?.success;
-    expect(typeof success).toBe("function");
-    if (typeof success !== "function") return;
-    expect(success({ saved: 2, failed: 1 })).toBe("Downloaded 2 of 3 songs");
-    expect(success({ saved: 3, failed: 0 })).toBe("Downloaded 3 songs");
-  });
-
-  it("says 'song' for a single download", async () => {
-    jest.mocked(pickDownloadFolder).mockResolvedValue(new Directory());
-    jest.mocked(saveTracks).mockResolvedValue({ saved: 1, failed: 0 });
-    await renderWithProviders(menu(rows.slice(0, 1)));
-
-    await chooseMenuAction(trigger, "download-all");
-    await waitFor(() => expect(toast.promise).toHaveBeenCalledTimes(1));
-
-    expect(jest.mocked(toast.promise).mock.calls[0]?.[1]).toMatchObject({
-      loading: "Downloading 1 song...",
-    });
   });
 });

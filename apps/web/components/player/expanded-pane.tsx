@@ -1,5 +1,6 @@
 "use client";
 
+import type { PositionStore } from "@infinitunes/core/react/position-store";
 import type { Queue } from "@infinitunes/types";
 import type * as React from "react";
 
@@ -22,6 +23,8 @@ type ExpandedPaneProps = {
   onTabChange: (tab: PaneTab) => void;
   /** Phones show the pane only on request; md and up always show it. */
   visible: boolean;
+  position: PositionStore;
+  onSeek: (seconds: number) => void;
 };
 
 /** Up next and Lyrics beside the artwork, switched by a segmented control. */
@@ -31,6 +34,8 @@ export function ExpandedPane({
   tab,
   onTabChange,
   visible,
+  position,
+  onSeek,
 }: ExpandedPaneProps) {
   function handleTabKeyDown(
     event: React.KeyboardEvent<HTMLButtonElement>,
@@ -94,7 +99,7 @@ export function ExpandedPane({
         {tab === "queue" ? (
           <QueueList upNextOnly />
         ) : (
-          <ExpandedLyrics track={track} />
+          <ExpandedLyrics track={track} position={position} onSeek={onSeek} />
         )}
       </div>
     </section>

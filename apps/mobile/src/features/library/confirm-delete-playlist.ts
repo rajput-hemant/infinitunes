@@ -21,7 +21,7 @@ export function confirmDeletePlaylist(
         style: "destructive",
         onPress: () => {
           onDeleting?.();
-          deletePlaylist(playlist.id, playlist.name);
+          deletePlaylist(playlist.id);
         },
       },
     ],

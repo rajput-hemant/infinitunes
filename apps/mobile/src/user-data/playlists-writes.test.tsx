@@ -1,7 +1,6 @@
 import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
 import { act, screen, waitFor } from "@testing-library/react-native";
 import { Text } from "react-native";
-import { toast } from "sonner-native";
 
 import { renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
@@ -54,11 +53,8 @@ afterEach(() => {
   resetPlaylistOverlay();
 });
 
-const toastError = () => jest.mocked(toast.error);
-const toastSuccess = () => jest.mocked(toast.success);
-
 describe("create", () => {
-  it("shows a pending row at once, then toasts the minted playlist", async () => {
+  it("shows a pending row at once, then the minted playlist", async () => {
     const write = deferred<ReturnType<typeof userPlaylist>>();
     procedure("user.createNewPlaylist").mockReturnValue(write.promise);
 
@@ -73,12 +69,9 @@ describe("create", () => {
     await act(async () =>
       write.resolve(userPlaylist({ id: "pl-2", name: "Gym" })),
     );
-    await waitFor(() =>
-      expect(toastSuccess()).toHaveBeenCalledWith('Playlist "Gym" created'),
-    );
   });
 
-  it("removes the pending row and says why when the server refuses", async () => {
+  it("removes the pending row when the server refuses", async () => {
     procedure("user.createNewPlaylist").mockRejectedValue(
       trpcError(
         "FORBIDDEN",
@@ -88,11 +81,7 @@ describe("create", () => {
 
     await act(async () => createPlaylist({ name: "Eleventh" }));
 
-    await waitFor(() =>
-      expect(toastError()).toHaveBeenCalledWith(
-        "You can only have 10 playlists, please delete one",
-      ),
-    );
+    await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
     expect(shown()).toBe("Road Trip:abc");
   });
 });
@@ -112,48 +101,42 @@ describe("rename", () => {
     await act(async () => write.resolve(userPlaylist({ name: "Commute" })));
   });
 
-  it("puts the old name back with a toast when it fails", async () => {
+  it("puts the old name back when it fails", async () => {
     procedure("user.renamePlaylist").mockRejectedValue(new Error("down"));
 
     await act(async () => renamePlaylist("pl-1", { name: "Commute" }));
 
-    await waitFor(() => expect(toastError()).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
     expect(shown()).toBe("Road Trip:abc");
   });
 });
 
 describe("delete", () => {
-  it("drops the playlist at once and confirms by name", async () => {
+  it("drops the playlist at once", async () => {
     const write = deferred<ReturnType<typeof userPlaylist>>();
     procedure("user.deletePlaylist").mockReturnValue(write.promise);
 
-    await act(async () => deletePlaylist("pl-1", "Road Trip"));
+    await act(async () => deletePlaylist("pl-1"));
     expect(shown()).toBe("");
     expect(procedure("user.deletePlaylist")).toHaveBeenCalledWith({
       playlistId: "pl-1",
     });
 
     await act(async () => write.resolve(server));
-    await waitFor(() =>
-      expect(toastSuccess()).toHaveBeenCalledWith(
-        'Playlist "Road Trip" deleted',
-      ),
-    );
   });
 
-  it("brings the playlist back with a toast when it fails", async () => {
+  it("brings the playlist back when it fails", async () => {
     procedure("user.deletePlaylist").mockRejectedValue(new Error("down"));
 
-    await act(async () => deletePlaylist("pl-1", "Road Trip"));
+    await act(async () => deletePlaylist("pl-1"));
 
-    await waitFor(() => expect(toastError()).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
     expect(shown()).toBe("Road Trip:abc");
-    expect(toastSuccess()).not.toHaveBeenCalled();
   });
 });
 
 describe("add songs", () => {
-  it("shows the songs at once and names one song or a count in the toast", async () => {
+  it("shows the songs at once", async () => {
     const write = deferred<ReturnType<typeof userPlaylist>>();
     procedure("user.addSongsToPlaylist").mockReturnValue(write.promise);
 
@@ -171,11 +154,6 @@ describe("add songs", () => {
     await act(async () =>
       write.resolve(userPlaylist({ id: "pl-1", songs: ["a", "b", "c", "d"] })),
     );
-    await waitFor(() =>
-      expect(toastSuccess()).toHaveBeenCalledWith(
-        '"FA9LA" added to "Road Trip"',
-      ),
-    );
   });
 
   it("takes the songs back out when the write fails", async () => {
@@ -188,9 +166,8 @@ describe("add songs", () => {
       ]),
     );
 
-    await waitFor(() => expect(toastError()).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
     expect(shown()).toBe("Road Trip:abc");
-    expect(toastSuccess()).not.toHaveBeenCalled();
   });
 });
 
@@ -242,7 +219,7 @@ describe("remove a song", () => {
     });
   });
 
-  it("brings the row back with a toast when it fails", async () => {
+  it("brings the row back when it fails", async () => {
     procedure("user.removeSongsFromPlaylist").mockRejectedValue(
       new Error("down"),
     );
@@ -251,7 +228,7 @@ describe("remove a song", () => {
       removeSongFromPlaylist(server, { id: "b", name: "Two" }),
     );
 
-    await waitFor(() => expect(toastError()).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
     expect(shown()).toBe("Road Trip:abc");
   });
 });
@@ -299,7 +276,7 @@ describe("move a song", () => {
     expect(shown()).toBe("Road Trip:bca");
   });
 
-  it("puts the order back with a toast when it fails", async () => {
+  it("puts the order back when it fails", async () => {
     procedure("user.movePlaylistSong").mockRejectedValue(new Error("down"));
 
     await act(async () =>
@@ -311,7 +288,7 @@ describe("move a song", () => {
       ),
     );
 
-    await waitFor(() => expect(toastError()).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
     expect(shown()).toBe("Road Trip:abc");
   });
 });

@@ -2,7 +2,7 @@ import { Text as NativeText } from "react-native";
 import type { ColorValue, TextProps as NativeTextProps } from "react-native";
 
 import { cx } from "~/lib/class-names";
-import { textStyles } from "~/theme/tokens";
+import { emphasizedWeights, textStyles } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
 
 const toneClasses = {
@@ -28,6 +28,8 @@ export type TextProps = NativeTextProps & {
   tone?: TextTone;
   /** Tabular figures, for times and track numbers. */
   numeric?: boolean;
+  /** Material 3 Expressive's emphasized style (a weight up) on Android; nothing on iOS. */
+  emphasized?: boolean;
   /**
    * A computed colour that no tone names (text on an artwork-derived wash),
    * e.g. from `useTokenColor`; it replaces `tone`. Prefer `tone`.
@@ -40,6 +42,7 @@ export function Text({
   variant = "body",
   tone = "default",
   numeric = false,
+  emphasized = false,
   color,
   className,
   style,
@@ -51,6 +54,10 @@ export function Text({
       style={[
         textStyles[variant],
         numeric && TABULAR,
+        emphasized &&
+          emphasizedWeights[variant] && {
+            fontWeight: emphasizedWeights[variant],
+          },
         color !== undefined && { color },
         style,
       ]}

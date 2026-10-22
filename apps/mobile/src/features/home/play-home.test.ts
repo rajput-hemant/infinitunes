@@ -1,5 +1,4 @@
 import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
-import { toast } from "sonner-native";
 
 import { playerStore } from "~/playback/player-store";
 import { procedure } from "~/test/trpc-mock";
@@ -43,27 +42,21 @@ describe("playSurprise", () => {
     expect(queuedIds()).toEqual(["s9"]);
   });
 
-  it("says so, and keeps the queue, when nothing is trending", async () => {
+  it("keeps the queue when nothing is trending", async () => {
     procedure("get.trending").mockResolvedValue([rawSong({ id: "keep" })]);
     await playSurprise();
     procedure("get.trending").mockResolvedValue([rawAlbum()]);
 
     await playSurprise();
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "No songs found right now",
-    );
     expect(queuedIds()).toEqual(["keep"]);
   });
 
-  it("toasts instead of throwing when the lookup fails", async () => {
+  it("does not throw when the lookup fails", async () => {
     procedure("get.trending").mockRejectedValue(new Error("down"));
 
     await expect(playSurprise()).resolves.toBeUndefined();
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Couldn't load songs",
-    );
     expect(playerStore.getState().started).toBe(false);
   });
 });

@@ -1,8 +1,10 @@
 import type { MediaType } from "@infinitunes/types";
 import type { Href } from "expo-router";
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
+import Animated from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
+import { usePressScale } from "~/lib/use-press-scale";
 import { art } from "~/theme/tokens";
 
 import {
@@ -31,8 +33,13 @@ type QuickPickTileProps = {
   item?: { type: MediaType; url: string };
 };
 
-const TILE_CLASS =
-  "flex-row items-center gap-3 overflow-hidden rounded-md bg-fill pr-3";
+/** Material's tiles sit on a tonal surface container; iOS's on a translucent fill. */
+const MATERIAL = Platform.OS === "android";
+
+const TILE_CLASS = cx(
+  "flex-row items-center gap-3 overflow-hidden rounded-md pr-2",
+  MATERIAL ? "bg-card" : "bg-fill",
+);
 
 /**
  * A compact two-column tile (home's quick picks, browse): art or an icon at
@@ -49,6 +56,7 @@ export function QuickPickTile({
   item,
 }: QuickPickTileProps) {
   const entries = useCardMenuEntries(item);
+  const press = usePressScale(0.97);
   const style = { width, minHeight: art.pick };
   // A tile without a screen dims only its picture, so the title keeps its contrast.
   const dimmed = !href && !onPress;
@@ -65,7 +73,8 @@ export function QuickPickTile({
       ) : (
         <View
           className={cx(
-            "items-center justify-center self-stretch bg-fill-2",
+            "items-center justify-center self-stretch",
+            MATERIAL ? "bg-muted" : "bg-fill-2",
             dimmed && "opacity-50",
           )}
           style={{ width: art.pick }}
@@ -73,7 +82,12 @@ export function QuickPickTile({
           <Icon name={leading.icon} size="md" />
         </View>
       )}
-      <Text variant="subhead" numberOfLines={2} className="flex-1">
+      <Text
+        variant={MATERIAL ? "label" : "footnote"}
+        numberOfLines={2}
+        className="flex-1"
+        style={MATERIAL ? undefined : { fontWeight: "600" }}
+      >
         {title}
       </Text>
     </>
@@ -97,22 +111,29 @@ export function QuickPickTile({
     <Pressable
       onPress={onPress}
       onLongPress={onLongPress}
+      onPressIn={press.onPressIn}
+      onPressOut={press.onPressOut}
       accessibilityRole={href ? "link" : "button"}
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       {...cardAccessibilityActions(entries)}
-      className={`${TILE_CLASS} active:opacity-70`}
+      className={TILE_CLASS}
       style={style}
     >
       {content}
     </Pressable>
   );
 
-  // An action tile (Surprise me) has no item, so no menu.
-  if (!href) return pressable();
+  // iOS's link menu wraps the tile in a full-width host: the view keeps the column.
   return (
-    <CardLink href={href} name={title} entries={entries}>
-      {pressable}
-    </CardLink>
+    <Animated.View style={[{ width }, press.style]}>
+      {href ? (
+        <CardLink href={href} name={title} entries={entries}>
+          {pressable}
+        </CardLink>
+      ) : (
+        pressable()
+      )}
+    </Animated.View>
   );
 }

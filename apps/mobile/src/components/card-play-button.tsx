@@ -1,5 +1,5 @@
 import type { StyleProp, ViewStyle } from "react-native";
-import { View } from "react-native";
+import { Platform, View } from "react-native";
 
 import { usePending } from "~/lib/use-pending";
 import { playEntity, type PlayableType } from "~/playback/play-entity";
@@ -17,7 +17,7 @@ type CardPlayButtonProps = {
 };
 
 /**
- * The round 48pt Play control of a hero card (the web's `CardPlay`): it
+ * The 48pt Play control (round on iOS, a rounded square on Android) of a hero card (the web's `CardPlay`): it
  * queues the item's tracks, or tunes in a station, without opening its
  * screen. Render it as a sibling of the card's link, never inside it, so both
  * stay reachable.
@@ -31,8 +31,11 @@ export function CardPlayButton({
   const onPrimary = useTokenColor("primary-foreground");
   const { run, pending } = usePending();
 
+  // Android: Material 3 Expressive's rounded-square filled icon button.
+  const shape =
+    Platform.OS === "android" ? "overflow-hidden rounded-md" : "rounded-full";
   return (
-    <View className="rounded-full bg-primary" style={style}>
+    <View className={`bg-primary ${shape}`} style={style}>
       <IconButton
         icon={{ ios: "play.fill", android: "play_arrow" }}
         label={`Play ${name}`}

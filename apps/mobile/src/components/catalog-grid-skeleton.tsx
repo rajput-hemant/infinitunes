@@ -1,33 +1,37 @@
 import { View } from "react-native";
 
-import { SkeletonText } from "~/components/skeletons";
+import { CardTextSkeleton } from "~/components/skeletons";
 import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 import {
-  GRID_COLUMNS,
+  CARD_COLUMNS,
   GRID_GAP,
   useGridCardWidth,
 } from "~/lib/use-grid-card-width";
-import { radii } from "~/theme/tokens";
+import { useRadii } from "~/theme/use-radii";
 
 const ROWS = 3;
+/** Past half the edge: a circle at any width. */
+const FULL = 9999;
 
 /** Placeholder cards at the real grid geometry, so the list lands without a jump. */
-export function CatalogGridSkeleton() {
-  const width = useGridCardWidth();
+export function CatalogGridSkeleton({ round = false }: { round?: boolean }) {
+  const scale = useRadii();
+  const radius = round ? FULL : scale.md;
+  const width = useGridCardWidth(CARD_COLUMNS);
 
   return (
     <SkeletonPulse>
       <View className="px-page" style={{ gap: GRID_GAP }}>
         {range(ROWS).map((row) => (
           <View key={row} className="flex-row" style={{ gap: GRID_GAP }}>
-            {range(GRID_COLUMNS).map((column) => (
+            {range(CARD_COLUMNS).map((column) => (
               <View key={column} className="gap-2" style={{ width }}>
                 <SkeletonBlock
-                  style={{ width, height: width, borderRadius: radii.md }}
+                  style={{ width, height: width, borderRadius: radius }}
                 />
-                <View>
-                  <SkeletonText variant="subhead" width="80%" />
-                  <SkeletonText variant="footnote" width="60%" />
+                {/* Round cards centre their text (`MediaCard`). */}
+                <View className={round ? "items-center" : undefined}>
+                  <CardTextSkeleton />
                 </View>
               </View>
             ))}

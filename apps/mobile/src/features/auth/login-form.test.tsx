@@ -1,5 +1,4 @@
 import { act, fireEvent, screen } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { renderScreen } from "~/test/render";
 import { authClient, type AuthResult } from "~/test/session-mock";
@@ -44,7 +43,6 @@ describe("LoginForm", () => {
       email: "listener@example.com",
       password: "Secret#123",
     });
-    expect(toast.success).toHaveBeenCalledWith("Signed in");
   });
 
   it("shows the server's message for a wrong password", async () => {
@@ -55,46 +53,9 @@ describe("LoginForm", () => {
 
     await fillAndSubmit("listener@example.com", "Wrong#123");
 
-    expect(toast.error).toHaveBeenCalledWith("Invalid email or password");
-    expect(toast.success).not.toHaveBeenCalled();
-  });
-
-  it("hides a server fault's details behind generic copy", async () => {
-    authClient.signIn.email.mockResolvedValueOnce({
-      error: { status: 500, message: "connect ECONNREFUSED 10.0.0.4:5432" },
-    });
-    await renderScreen(<LoginForm />);
-
-    await fillAndSubmit("listener@example.com", "Secret#123");
-
-    expect(toast.error).toHaveBeenCalledWith(
-      "Something went wrong. Please try again.",
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Invalid email or password",
     );
-  });
-
-  it("says so when the request limit is hit", async () => {
-    authClient.signIn.email.mockResolvedValueOnce({
-      error: { status: 429 },
-    });
-    await renderScreen(<LoginForm />);
-
-    await fillAndSubmit("listener@example.com", "Secret#123");
-
-    expect(toast.error).toHaveBeenCalledWith(
-      "Too many attempts. Please wait a minute and try again.",
-    );
-  });
-
-  it("reports a request that never reached the server", async () => {
-    jest.spyOn(console, "error").mockImplementation(() => {});
-    authClient.signIn.email.mockRejectedValueOnce(
-      new Error("Network request failed"),
-    );
-    await renderScreen(<LoginForm />);
-
-    await fillAndSubmit("listener@example.com", "Secret#123");
-
-    expect(toast.error).toHaveBeenCalledWith("Network request failed");
   });
 
   it("locks the form while signing in, and sends once", async () => {

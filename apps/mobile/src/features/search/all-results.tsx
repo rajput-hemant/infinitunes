@@ -5,14 +5,17 @@ import type { ReactElement } from "react";
 import { ErrorState } from "~/components/error-state";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Shelf } from "~/components/shelf";
-import { ShelfSkeleton, SongListSkeleton } from "~/components/skeletons";
+import {
+  SectionHeaderSkeleton,
+  SongListSkeleton,
+} from "~/components/skeletons";
 import { useOpenEntity } from "~/navigation/use-open-entity";
 
 import { NoResults } from "./no-results";
 import { ResultSection } from "./result-section";
 import { isLinked } from "./search-items";
 import type { ListSearchType } from "./search-types";
-import { TopResultPlay } from "./top-result-play";
+import { TopResultCard, TopResultCardSkeleton } from "./top-result-card";
 import { useAllSearch } from "./use-all-search";
 
 /** Rows shown per group before "See All" switches to the full list. */
@@ -60,8 +63,9 @@ export function AllResults({
       {header}
       {state.status === "loading" ? (
         <>
-          <SongListSkeleton rows={4} />
-          <ShelfSkeleton />
+          <TopResultCardSkeleton />
+          <SectionHeaderSkeleton />
+          <SongListSkeleton rows={PREVIEW_ROWS} />
         </>
       ) : null}
       {state.status === "error" ? (
@@ -70,12 +74,7 @@ export function AllResults({
       {state.status === "empty" ? <NoResults query={query} /> : null}
       {state.status === "ready" ? (
         <>
-          <ResultSection
-            title="Top Result"
-            items={[state.top]}
-            onPressItem={open}
-          />
-          <TopResultPlay item={state.top} />
+          <TopResultCard item={state.top} onPress={open} />
           <ResultSection
             title="Songs"
             items={getSearchItems(state.data.songs).slice(0, PREVIEW_ROWS)}

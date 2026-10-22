@@ -1,9 +1,9 @@
 import { forgotPasswordSchema } from "@infinitunes/auth/schemas";
 import { useState } from "react";
 import { View } from "react-native";
-import { toast } from "sonner-native";
 
 import { EmailField } from "~/components/form/email-field";
+import { FormError } from "~/components/form/form-error";
 import { FormLink } from "~/components/form/form-link";
 import { useSchemaForm } from "~/components/form/use-schema-form";
 import { Button } from "~/components/ui/button";
@@ -31,6 +31,7 @@ export function ForgotPasswordForm() {
     initialValues: { email: "" },
   });
   const { pending, run } = usePending();
+  const [serverError, setServerError] = useState<string>();
 
   function submit() {
     const request = validate();
@@ -42,8 +43,8 @@ export function ForgotPasswordForm() {
           redirectTo: RESET_PAGE_URL,
         }),
       );
-      if (failure) toast.error(failure.message);
-      else setSent(true);
+      setServerError(failure?.message);
+      if (!failure) setSent(true);
     });
   }
 
@@ -70,6 +71,7 @@ export function ForgotPasswordForm() {
         returnKeyType="send"
         onSubmitEditing={submit}
       />
+      <FormError message={serverError} />
       <Button
         label={pending ? "Sending..." : "Send reset link"}
         disabled={pending}

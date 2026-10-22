@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 /**
  * Tracks one in-flight task (a submit, a play request), so its controls can
  * disable; a run while one is pending is ignored. `task` handles its own
- * failures (toasts); the returned promise settles when it does.
+ * failures; the returned promise settles when it does.
  */
 export function usePending() {
   const [pending, setPending] = useState(false);

@@ -27,6 +27,19 @@ describe("android app actions resources", () => {
     expect(xml.match(/android:enabled="true"/g)).toHaveLength(4);
   });
 
+  it("exposes clear-cache and keeps Library Assistant-only", () => {
+    expect(SHORTCUTS.find((s) => s.id === "clear_cache")).toMatchObject({
+      launcher: true,
+      icon: "trash",
+      link: "infinitunes://action/clear-cache",
+    });
+    expect(SHORTCUTS.find((s) => s.id === "feature_library")).toMatchObject({
+      launcher: false,
+      featureNames: ["library", "my library", "my music"],
+    });
+    expect(buildIconDrawables()).toHaveProperty("ic_shortcut_trash");
+  });
+
   it("only references labels, arrays and icons that are generated", () => {
     const strings = buildStrings();
     const arrays = buildArraysXml();

@@ -75,9 +75,8 @@ describe("AlbumScreen", () => {
     expect(
       screen.getByRole("header", { name: "Recommended Albums" }),
     ).toBeOnTheScreen();
-    expect(
-      screen.getByRole("button", { name: "Like Udta Teer" }),
-    ).toBeOnTheScreen();
+    // Signed out: likes need an account, so there is no heart.
+    expect(screen.queryByRole("button", { name: "Like Udta Teer" })).toBeNull();
   });
 
   it("marks an explicit album, and only that", async () => {

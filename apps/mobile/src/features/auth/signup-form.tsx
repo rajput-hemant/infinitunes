@@ -1,9 +1,9 @@
 import { PASSWORD_HINT, signUpSchema } from "@infinitunes/auth/schemas";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { View } from "react-native";
-import { toast } from "sonner-native";
 
 import { EmailField } from "~/components/form/email-field";
+import { FormError } from "~/components/form/form-error";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
@@ -26,6 +26,7 @@ export function SignUpForm() {
     initialValues: { email: "", password: "", confirmPassword: "" },
   });
   const { pending, run } = usePending();
+  const [serverError, setServerError] = useState<string>();
 
   function submit() {
     const account = validate();
@@ -38,8 +39,7 @@ export function SignUpForm() {
           name: account.email.split("@")[0],
         }),
       );
-      if (failure) toast.error(failure.message);
-      else toast.success("Account created");
+      setServerError(failure?.message);
     });
   }
 
@@ -76,6 +76,7 @@ export function SignUpForm() {
         returnKeyType="go"
         onSubmitEditing={submit}
       />
+      <FormError message={serverError} />
       <Button
         label={pending ? "Creating account..." : "Sign up"}
         disabled={pending}

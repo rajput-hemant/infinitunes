@@ -9,7 +9,7 @@ import type { ReorderActions } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { MenuTrigger } from "~/components/menu-trigger";
-import { SongListSkeleton } from "~/components/skeletons";
+import { SkeletonText } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 import { Text } from "~/components/ui/text";
 import { totalDurationLabel } from "~/lib/meta";
@@ -22,7 +22,7 @@ import {
 import { LibraryListView } from "./library-list-view";
 import { PlaylistMenu } from "./playlist-menu";
 import { SignedInGate } from "./signed-in-gate";
-import { SongCollection } from "./song-collection";
+import { SongCollection, SongCollectionSkeleton } from "./song-collection";
 import { SwipeableRow } from "./swipeable-row";
 import { usePlaylistSongs } from "./use-playlist-songs";
 
@@ -63,6 +63,19 @@ function PlaylistSongRow({
   );
 }
 
+/** The playlist while it loads: its duration line over the collection's. */
+function PlaylistSkeleton() {
+  return (
+    <SongCollectionSkeleton
+      header={
+        <View className="px-page pb-3">
+          <SkeletonText variant="subhead" width={120} />
+        </View>
+      }
+    />
+  );
+}
+
 function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
   const { data } = useServerPlaylists();
   const list = usePlaylistSongs(playlist);
@@ -72,7 +85,7 @@ function PlaylistSongs({ playlist }: { playlist: PlaylistView }) {
   return (
     <LibraryListView
       list={list}
-      skeleton={<SongListSkeleton />}
+      skeleton={<PlaylistSkeleton />}
       empty={{
         icon: { ios: "music.note.list", android: "queue_music" },
         title: "Nothing to see here",
@@ -119,7 +132,7 @@ function Playlist({ id }: { id: string }) {
   const playlists = usePlaylists(data);
   const playlist = playlists?.find((candidate) => candidate.id === id);
 
-  if (isPending) return <SongListSkeleton />;
+  if (isPending) return <PlaylistSkeleton />;
   if (!playlists) {
     return <ErrorState error={error} onRetry={() => void refetch()} />;
   }

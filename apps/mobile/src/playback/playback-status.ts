@@ -15,12 +15,15 @@ export type PlaybackStatus = {
   buffering: boolean;
   /** Seconds; 0 until the source has loaded. */
   duration: number;
+  /** End of the loaded range containing the playhead, in seconds. */
+  bufferedTime: number;
 };
 
 export const playbackStatusStore = createStore<PlaybackStatus>()(() => ({
   playing: false,
   buffering: false,
   duration: 0,
+  bufferedTime: 0,
 }));
 
 export function usePlaybackStatus<Slice>(

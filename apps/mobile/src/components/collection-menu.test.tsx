@@ -62,7 +62,7 @@ describe("CollectionMenu", () => {
 
     expect(push).toHaveBeenCalledWith({
       pathname: "/create-playlist",
-      params: { songs: "one,two,three", label: "3 songs" },
+      params: { songs: "one,two,three" },
     });
   });
 

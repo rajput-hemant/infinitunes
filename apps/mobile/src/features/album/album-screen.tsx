@@ -19,6 +19,7 @@ import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
 import { TrackList } from "~/components/track-list";
 import { Text } from "~/components/ui/text";
+import { entityQueries } from "~/lib/entity-queries";
 import {
   joinMeta,
   playsLabel,
@@ -50,7 +51,7 @@ function albumMeta(album: Album, rows: readonly SongRowItem[]): string {
 }
 
 export function AlbumScreen({ token }: AlbumScreenProps) {
-  const query = useQuery(trpc.album.details.queryOptions({ token }));
+  const query = useQuery(entityQueries.album(token));
   // Independent of the album: starts with it instead of after it.
   const trending = useQuery({
     ...trpc.get.trending.queryOptions({ type: "album" }),
@@ -60,7 +61,7 @@ export function AlbumScreen({ token }: AlbumScreenProps) {
   return (
     <DetailScreen
       query={query}
-      skeleton={<DetailSkeleton />}
+      skeleton={<DetailSkeleton numbered />}
       noun="Album"
       icon={{ ios: "square.stack", android: "album" }}
       refreshKeys={[

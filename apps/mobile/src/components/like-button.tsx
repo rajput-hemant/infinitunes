@@ -4,6 +4,7 @@ import { useTheme } from "expo-router";
 import { announce } from "~/lib/announce";
 import type { IconSize } from "~/theme/tokens";
 import { useFavoriteToggle } from "~/user-data/favorites";
+import { useUserId } from "~/user-data/session";
 
 import { IconButton } from "./ui/icon-button";
 
@@ -16,10 +17,15 @@ type LikeButtonProps = {
   size?: IconSize;
 };
 
-/** The heart for one item. Every heart for the same item flips together (optimistic). */
+/**
+ * The heart for one item. Every heart for the same item flips together
+ * (optimistic). Likes need an account, so a signed-out listener sees none.
+ */
 export function LikeButton({ type, token, name, size }: LikeButtonProps) {
   const { colors } = useTheme();
+  const signedIn = useUserId() !== undefined;
   const { liked, toggle } = useFavoriteToggle({ type, token });
+  if (!signedIn) return null;
 
   return (
     <IconButton

@@ -183,16 +183,16 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   kit), `lib/` (clients, `preferences`, `share`, `download`, `use-infinite-list`, `use-pending`, `meta`),
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
   `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
-- Tabs (`app/(tabs)/_layout.tsx`): Home, Library, Create, Radio, plus Search as the iOS search tab
-  (`role="search"`; Android has none). Each is a route group with its own `Stack` (`tabStackOptions`); a new
-  tab needs a `NativeTabs.Trigger` with an `sf` and an `md` icon. Create is an action: its trigger is
-  `disabled` (NativeTabs' `tabPress` cannot be prevented), so the bar never selects it and its `tabPress`
-  listener opens `/create-playlist` (`navigation/create-playlist.ts`); `(tabs)/create.tsx` renders nothing.
+- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Search, Library, in that order (Search is a plain iOS tab, not
+  `role="search"`, which iOS 26 pins last; Android has none). Each is a route group with its own `Stack`
+  (`tabStackOptions`); a new tab needs a `NativeTabs.Trigger` with an `sf` and an `md` icon. New Playlist is a
+  row in Library, not a tab; `/create` links open `/create-playlist` (`+native-intent`).
   Settings is not a tab: the root screens' `headerRight` is `TopLevelActions` (`navigation/top-level-actions`:
-  Android's Search, Settings, the avatar or Sign In), which push onto the current tab. Material 3 allows three
-  app bar actions, so Home's Languages is a header button on iOS only and the first chip of Home's chip row on
-  Android (`hasHeaderLanguages()`, read at render so tests can switch `Platform.OS`). Android's pushed Search
-  autofocuses its field (`features/search/search-bar-options.ts`).
+  Android's Search, Settings, the avatar or Sign In), which push onto the current tab. Languages is in Settings
+  only, not the header. On iOS 26 `useTopLevelHeaderOptions(title)` puts the page title at the top left (a custom
+  header item, no large title) and Settings and Profile as separate native glass buttons at the right. Android's pushed Search
+  hides the app bar for its own M3 search bar (`features/search/search-header.android.tsx`, back inside the
+  pill; the native field sat after the toolbar's 72dp inset) and autofocuses it.
 - Routes are the web's paths (`@infinitunes/core/entity-route`): detail screens, `search` and the account
   screens (`settings`, `profile`, `password`, `delete-account`) live once in `(tabs)/(home,search,library,radio)/`
   (entities as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and `artist/[name]/[token]/{index,[tab]}`;
@@ -205,7 +205,9 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `entityHref(type, perma_url)`, never a hand-built path (`entityRoute` reads only the type's own section,
   `SECTIONS`, at exact arity: anything else is `undefined`, an unpressable item); open from handlers with
   `useOpenEntity()` (it closes the player/queue modals first). `/player` is `dangerouslySingular`. Sheets are
-  native `formSheet` routes (`/queue`, `/languages`, `/create-playlist`) or `@expo/ui`'s `BottomSheet`. Scroll
+  native `formSheet` routes (`/queue`, `/languages`, `/create-playlist`; Android draws no header there, so the
+  route renders `SheetHeader`, and a sheet's empty state uses `EmptyState placement="top"`: content lays out at the
+  largest detent) or `@expo/ui`'s `BottomSheet`. Scroll
   containers are `ScreenScrollView` (or a list with `contentInsetAdjustmentBehavior="automatic"` and
   `playerDockInset` bottom padding), or large titles and the floating mini-player overlap content. Route-tree
   tests (`navigation/routes.test.tsx`): every tab renders at once, so query inside the selected one, and sign in
@@ -215,10 +217,27 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   call actions (`playAll`/`shuffleAll`/`playFrom` in `playback/play-collection.ts`, `playNext`, `addToQueue`,
   `startSeededRadio(radioSeedOf(rows))`, `playEntity(type, url)` for a card's item) and read slices with `usePlayer(selector)`, `usePlaybackStatus`,
   `usePlaybackPosition`; `togglePlayback`/`seekTo` in `playback/transport.ts`. The lock screen gets metadata,
-  play/pause and scrubbing; expo-audio's single player has no remote next/previous. expo-audio sets `error` on
+  play/pause, scrubbing and next/previous: `patches/expo-audio` (applied by `scripts/apply-patches.ts` on `postinstall`,
+  as bun's `patchedDependencies` fails on the isolated layout) makes the single player report the lock screen,
+  headset and Bluetooth buttons as a `remoteCommand` event (`nextTrack`/`previousTrack`), which the controller maps to
+  `skipToNext`/`skipToPrevious`; the options set `showNextTrack`/`showPreviousTrack` (they replace the seek buttons).
+  Native status includes `bufferedTime` in seconds (iOS loaded range end, Android buffered position), refreshed while paused/loading for player buffering tracks.
+  Android's buttons are player commands (`COMMAND_SEEK_TO_NEXT`/`PREVIOUS`), not custom session commands (One UI
+  drops those), and the injected session metadata carries the duration (else the notification's bar stays empty).
+  `apps/mobile/package.json` `expo.autolinking.buildFromSource: ["expo-audio"]` is required: SDK 58 links a prebuilt
+  AAR (`local-maven-repo`) that ignores the patched Kotlin. Native code: needs a rebuild, and an expo-audio upgrade
+  must regenerate the patch (diff a pristine `npm pack` against the patched copy, excluding `android/build`). expo-audio sets `error` on
   one status event only (the next one, often in the same JS task, says `null`) and nothing guarantees a
   rendered status between `replace` and the next failure, so the controller latches each load's error/loaded
   from its listener; never feed `useAudioPlayerStatus().error`/`isLoaded` to `useTrackPlayback`.
+- Frequently played songs cache in `Paths.cache/frequent-songs`, separate from explicit downloads.
+  `lib/song-cache.ts` persists its index and counts with zustand + `persistedStorage`: two listens
+  with at least half the song heard qualify (seeks do not count), enabled by default. The 500 MiB
+  cap evicts least recently played files; Stream quality controls downloads. The controller selects
+  a matching local source and evicts/retries streaming at the same bitrate on local load errors,
+  preserving the shared bitrate ladder. Storage settings clear only this directory and reset counts.
+  `infinitunes://action/clear-cache` clears it and lands on Home. It is one
+  of the four launcher shortcuts on both platforms; Library remains Android Assistant-only.
 - Player wash (D3, Now Playing and the Android dock): seed from `react-native-image-colors`, palette and AA check in
   `lib/artwork-colors.ts`; no seed or a contrast miss is `null`, the D1 tokens. Lay content on it with `OnWash`/`WashText`.
 - Notifications: the media notification / lock screen is expo-audio's own (Android Media3 foreground service, iOS Now
@@ -232,28 +251,36 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
   that finds nothing returns `null` from `select`. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
   `eyebrow` (the kind and year, "Album · 2026"), `subtitle` (the credit), `meta` (counts, duration, plays),
-  `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and trailing `actions` (`CollectionMenu`: play next, queue,
-  add all to a playlist, radio, download all). Menus are `NativeMenu` entries that carry their action
+  `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and `actions` (`CollectionMenu`: play next, queue,
+  add all to a playlist, radio, download all), which lead the action row; Shuffle and Play close it as icon buttons.
+  Compact UI: a symbol alone replaces icon-plus-text wherever it is unambiguous (`IconButton` `variant`
+  `filled`/`tonal`, `large` for a screen's Play; keep the label); text stays on submits and empty-state actions.
+  Skeletons must mirror the loaded layout (`EntityHeaderSkeleton` `like`/`menu`/`subtitle`/`meta` match the
+  header; overlay skeleton on loaded page to check). Loading marks are `Spinner` (Compose M3E `LoadingIndicator` on Android). Menus are `NativeMenu` entries that carry their action
   (`addToPlaylistEntry`, which ends with New Playlist, the `/create-playlist` sheet; `playRadioEntry`);
   `SongMenu` is the track's. Every titled group starts with `SectionHeader` (`title`, optional text `action`;
-  it carries the 24/8 rhythm, sections add no padding). Every row is `ListRow` (artwork, icon or track-number
+  it carries the 16/8 rhythm, sections add no padding). Every row is `ListRow` (artwork, icon or track-number
   leading, at most two trailing 48pt controls or `{ chevron: true }`; `checked` makes it a checkbox, `selected`/`paused`
   the current track; without `href`/`onPress` it is a labelled view whose picture alone dims); `SongRow` (`toSongRow`
   row or queue entry, `removal`, `leading="index"` for albums: `TrackList numbered`) and `MediaRow` (`href` or
   `onPress`) are built on it, `EntityListItem`s feed a screen's one `FlashList`. Cards: `MediaCard`/`Shelf`
   (`toCardItem` items, `seeAllHref`, `onItemPress`, `variant="hero"` for home's carousel, the only card with
-  `CardPlayButton` and an `eyebrow(item)`), `QuickPickTile` for two-column tiles, `GridCell` for each cell of a
-  two-column `FlashList`. Filter chips are `ChipRow` (`tabs` when they switch the content below, as search's do). A card's long press and screen reader actions offer
+  `CardPlayButton` and an `eyebrow(item)`), `QuickPickTile` for two-column tiles (`GRID_COLUMNS`), `GridCell` for each cell of a
+  `CARD_COLUMNS` (three) card `FlashList` (`useGridCardWidth(CARD_COLUMNS)`). Press feedback that moves is
+  `usePressScale` (`lib/use-press-scale`: a Reanimated sink-and-spring on an `Animated.View` around the art or tile). Filter chips are `ChipRow` (`tabs` when they switch the content below, as search's do). A card's long press and screen reader actions offer
   Play/Play Next/Add to Queue through `CardLink` (`card-menu.tsx`): iOS uses the link's own `Link.Menu`, Android
   mounts a `NativeMenu` on the first long press; never wrap each card in a `MenuView` (one native host per card).
   `ExplicitBadge accessible={false}` inside a row or card whose label already says "Explicit".
   Stations open `/radio/<name>/<token>`. Artwork goes through `Artwork` with a `size` token (edge, radius and
-  resolution, capped by the Image quality preference). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
-  empty page always ends the list, whatever upstream's `last_page`/`total` say). Toasts are
-  `sonner-native`'s `toast` (the `Toaster` renders each through `AnnouncingToast`, see Accessibility).
+  resolution: 150px while it covers the edge's physical pixels, `PixelRatio`, else 500px; capped by the Image
+  quality preference, so soft art on a device is usually that setting, not the code). Pull to refresh is
+  `PullToRefresh` (`components/ui/refresh-control.tsx`): it owns `refreshing` for its own pull, so never feed a
+  query's `isRefetching` to a `RefreshControl` (a focus refetch would pin the spinner open), and it colours
+  Android's spinner (`primary` on `card`). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
+  empty page always ends the list, whatever upstream's `last_page`/`total` say).
 - Writes follow the web's optimistic overlays: `LikeButton`/`useFavoriteToggle` and every playlist write in
   `user-data/playlists.ts` (create, rename, delete, add, remove, move; removals and moves take the server's
-  copy from `useServerPlaylists`); failures roll back with a toast, signed out they `promptSignIn`.
+  copy from `useServerPlaylists`); failures roll back, signed out they `promptSignIn` (to `/login`).
   Per-user queries key on `userQueryKey(procedureKey, userId)` so one account's cache never shows for the
   next (`getUserFavorites` has no row for a new user: return a value, a query may not resolve `undefined`);
   per-user lists that are not `user.*` procedures key under `LIBRARY_QUERY_KEY`, which sign-out
@@ -270,13 +297,21 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   rem is 14, so `theme.spacing` is closed to `spacingScale` (`0`, `px`, `*-1 2 3 4 6 8 12`, the named `sizes`)
   plus `full`: any other spacing class compiles to nothing and NativeWind drops it silently, so
   `theme/spacing.test.ts` scans the sources and fails on one. Icons take `iconSize` names only.
+- Android is Material 3 Expressive at YouTube Music density (spec and mockup: `docs/design/android-m3-expressive/`).
+  Its tokens are the android branches in `theme/tokens.ts` (`radii` 4/8/12/16/28, `emphasizedWeights` behind
+  `Text emphasized`, a no-op on iOS; `sizes.seam`) and the springs in `theme/motion.ts` (Compose's
+  `MotionScheme.expressive()`, `damping` as a coefficient). Android-only looks: `Button` (40dp + slop, corners morph
+  while pressed), `ListRow`'s current track (tonal container, `Equalizer`), the outlined `FormField`, the Top Result card, `segmented-tabs.android.tsx` (connected button group), `ChipRow` (8dp filter chips with a check),
+  the dock's filled play circle and Now Playing's paused-square/playing-circle play button, Settings as a segmented
+  list. One UI resolves `onSurfaceVariant` to `onSurface`; `withDynamicRoles` fades `muted-foreground` then (keep it).
+  The top app bar is `surface` and detail screens show no bar title on Android. Adding a `.android.tsx` beside
+  an existing module needs its importers touched (or Metro restarted) before a running dev client picks it up.
 - Accessibility: every tappable control is at least `sizes.touch` (48; `IconButton`, `Button`, `MenuTrigger` for a
   `NativeMenu`'s face, `DragHandle`, `FormLink` for a form's text link) or reaches it with `hitSlop` (`CHIP_HIT_SLOP`, `TEXT_BUTTON_HIT_SLOP`); rows and
   fields use `min-h-*` so Dynamic Type grows them (cap text with `maxFontSizeMultiplier` only in fixed-height chrome, the
   mini player). An item without a screen is a labelled `View`, never a disabled `Pressable`. Custom pressables set role,
   label and state; a drag has `ReorderActions`, the scrubber `increment`/`decrement`. `announce()` (`lib/announce.ios.ts`)
-  speaks results VoiceOver cannot see (likes, a new field error); toasts reach it through `AnnouncingToast`, because
-  sonner-native's live region is Android-only. Reanimated CSS animations ignore reduce motion: gate them with
+  speaks results VoiceOver cannot see (likes, a new field error). Reanimated CSS animations ignore reduce motion: gate them with
   `useReducedMotion`. `iosSystemColors` leaves out `muted-foreground` and `destructive` (3.1-3.6:1 on light iOS
   surfaces); `tokens.test.ts` pins AA for every text pair, on the palettes and on generated Material You schemes.
 - Data: `useQuery(trpc.<router>.<proc>.queryOptions(input))` from `~/lib/trpc`; imperative calls use
@@ -301,7 +336,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `expo-audio` for the scriptable `src/test/expo-audio.ts`, and `src/test/setup.ts` maps `~/lib/trpc` to a
   typed registry (`procedure("album.details").mockResolvedValue(...)`, reset before each test; unanswered
   catalog procedures reject) and `~/lib/auth-client` to a session store (`signInAs`, every Better Auth call
-  a `jest.fn`) for every suite, plus `sonner-native` (assert `jest.mocked(toast.error)`), the SQLite store,
+  a `jest.fn`) for every suite, plus the SQLite store,
   and stand-ins for Gesture Handler's `ReanimatedSwipeable` and `react-native-reorderable-list`, which do not
   run under Reanimated's Jest runtime. Render with `renderWithProviders`, `renderScreen(ui, { routes })` or
   `renderStack`; pick native menu actions with `chooseMenuAction(trigger, event)` and a card's long-press menu
@@ -321,11 +356,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   metadata only from the app target) and which raises the app target to iOS 17.0. They cannot be compiled on Linux:
   verify with `expo prebuild --platform ios --no-install` and the pbxproj, and say a change is unbuilt. Playlists reach
   them through RN `Settings` (`UserDefaults`, `user-data/assistant-shortcuts.ios.ts`).
-- No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`; device builds `bun run mobile:android` / `mobile:ios`, guide in `docs/mobile-device-setup.md`.
+- No `build`/`dev`/`start` scripts in the app (root turbo tasks must not start Metro): `bun run dev:mobile`, or `bun run dev:native` for Metro plus the dev API; device builds `bun run mobile:android` / `mobile:ios`, guide in `docs/mobile-device-setup.md`.
 - Brand assets: the master vectors are `apps/mobile/assets/brand/{glyph,icon}.svg` (the ribbon-note, traced
   from `docs/assets/logo1500.png`); `bun run mobile:icons` (`scripts/generate-icons.ts`, sharp) renders every
   committed PNG in `assets/` (iOS light/dark/tinted, adaptive layers, splash, `notification-icon.png`). Edit the
   SVG, rerun, commit both; builds never run it. `ios.icon` takes `{light,dark,tinted}` or a `.icon` bundle path.
+- iOS home-screen quick actions are the same launcher `SHORTCUTS`: `plugins/ios-quick-actions.ts` feeds `expo-quick-actions`'s plugin (Info.plist items, SF Symbols) and our own `navigation/use-quick-action-routing` (in `(tabs)/_layout.tsx`, a sub-layout) navigates to `params.href`; not `expo-quick-actions/router`, which imports `expo-router/build/hooks` and fails under Bun's isolated install.
 - Android Assistant App Actions and launcher shortcuts are generated by the config plugin
   `apps/mobile/plugins/android-app-actions/` (`shortcuts.ts` builds `shortcuts.xml`, strings, icons; it only emits deep
   links the app routes). App Actions register only after a Play Console upload of the same package, and Assistant cannot
@@ -334,6 +370,10 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `native-stubs.ts`) against a local web app and scratch database: `MOBILE_E2E_API_URL=... bun
   run test:e2e` (skipped unset; loopback only, it creates accounts). Its header comments name the
   production-limiter mode and the live-payload screen run (`live-screens.test.tsx`).
+
+## Lyrics
+
+- `song.syncedLyrics({ id })` resolves decoded song metadata, tries LRCLIB get, duration-matched (±3 seconds) search, then a cleaned-title retry before JioSaavn plain lyrics. Missing lyrics return nulls; instrumental matches stop fallback. `@infinitunes/core/lyrics` parses LRC and selects the active line. This normalized multi-provider procedure is an exception to catalog raw passthrough; `get.lyrics` remains raw. LRCLIB requests currently bypass the Next catalog cache (client queries stay fresh indefinitely).
 
 ## Song rows take the slim model, never the raw song
 

@@ -1,7 +1,6 @@
 import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
 import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
 import { act, fireEvent, screen } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
@@ -61,6 +60,9 @@ describe("LikedSongsScreen", () => {
       .map((node) => node.props.children);
     expect(titles).toEqual(["Third Like", "Second Like", "First Like"]);
     expect(screen.getByText("3 songs")).toBeOnTheScreen();
+    // The count row's compact controls.
+    expect(screen.getByRole("button", { name: "Shuffle" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Play" })).toBeOnTheScreen();
   });
 
   it("says so when nothing is liked yet", async () => {
@@ -108,7 +110,7 @@ describe("LikedSongsScreen", () => {
     });
   });
 
-  it("brings the song back with a toast when unliking fails", async () => {
+  it("brings the song back when unliking fails", async () => {
     procedure("user.removeFromFavorites").mockRejectedValue(
       new Error("Could not save"),
     );
@@ -120,6 +122,5 @@ describe("LikedSongsScreen", () => {
     );
 
     expect(await screen.findByText("Second Like")).toBeOnTheScreen();
-    expect(toast.error).toHaveBeenCalledWith("Could not save");
   });
 });

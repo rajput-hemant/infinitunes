@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { RefreshControl } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { Shelf } from "~/components/shelf";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
 
@@ -27,12 +27,7 @@ export function HomeFeed() {
 
   return (
     <ScreenScrollView
-      refreshControl={
-        <RefreshControl
-          refreshing={home.isRefetching}
-          onRefresh={() => void home.refetch()}
-        />
-      }
+      refreshControl={<PullToRefresh onRefresh={home.refetch} />}
     >
       <HomeHeader />
       {home.data ? (

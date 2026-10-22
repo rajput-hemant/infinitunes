@@ -1,4 +1,4 @@
-import { toSongRow } from "@infinitunes/types";
+import { plainText, toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawLyrics, rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 
@@ -21,8 +21,14 @@ function play(...tracks: Parameters<typeof toSongRow>[0][]) {
 
 describe("FullPlayer", () => {
   it("swaps the artwork for the song's lyrics and back", async () => {
-    const lyrics = procedure("get.lyrics");
-    lyrics.mockResolvedValue(rawLyrics());
+    const lyrics = procedure("song.syncedLyrics");
+    lyrics.mockResolvedValue({
+      synced: null,
+      plain: plainText(rawLyrics().lyrics),
+      copyright: plainText(rawLyrics().lyrics_copyright),
+      instrumental: false,
+      source: "jiosaavn",
+    });
     play(rawSong());
     await renderScreen(<FullPlayer />);
 
@@ -41,7 +47,13 @@ describe("FullPlayer", () => {
   });
 
   it("says so when the song has no lyrics", async () => {
-    procedure("get.lyrics").mockResolvedValue(null);
+    procedure("song.syncedLyrics").mockResolvedValue({
+      synced: null,
+      plain: null,
+      copyright: null,
+      instrumental: false,
+      source: "jiosaavn",
+    });
     play(rawSong());
     await renderScreen(<FullPlayer />);
 
@@ -65,7 +77,7 @@ describe("FullPlayer", () => {
     expect(
       screen.getByText("No lyrics available for this track."),
     ).toBeOnTheScreen();
-    expect(procedure("get.lyrics")).not.toHaveBeenCalled();
+    expect(procedure("song.syncedLyrics")).not.toHaveBeenCalled();
   });
 
   it("plays and pauses from a filled 72pt control, with the menu in the top bar", async () => {

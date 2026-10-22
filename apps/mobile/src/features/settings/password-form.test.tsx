@@ -1,8 +1,7 @@
 import { fireEvent, screen } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { renderScreen } from "~/test/render";
-import { procedure, trpcError } from "~/test/trpc-mock";
+import { procedure } from "~/test/trpc-mock";
 
 import { PasswordForm } from "./password-form";
 
@@ -49,19 +48,5 @@ describe("PasswordForm", () => {
       password: "Old#Secret1",
       newPassword: "New#Secret2",
     });
-    expect(toast.success).toHaveBeenCalledWith("Password updated");
-  });
-
-  it("shows the server's message for a wrong current password", async () => {
-    jest.spyOn(console, "error").mockImplementation(() => {});
-    procedure("user.changePassword").mockRejectedValueOnce(
-      trpcError("BAD_REQUEST", "Current password is incorrect"),
-    );
-    await renderScreen(<PasswordForm />);
-
-    await submit("Wrong#Secret1", "New#Secret2");
-
-    expect(toast.error).toHaveBeenCalledWith("Current password is incorrect");
-    expect(toast.success).not.toHaveBeenCalled();
   });
 });

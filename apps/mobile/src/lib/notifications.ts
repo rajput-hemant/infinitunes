@@ -33,8 +33,8 @@ export const brand = "#067f9a";
 /** The tint of the small icon and the channel light. */
 export const NOTIFICATION_ACCENT = brand;
 
-// The app shows its own toasts while it is in front, so a notification that
-// arrives then stays out of the way (they are only posted in the background).
+// A notification that arrives while the app is in front stays out of the way
+// (they are only posted in the background).
 setNotificationHandler({
   handleNotification: async () => ({
     shouldShowBanner: false,
@@ -102,7 +102,7 @@ export async function ensureNotificationPermission(): Promise<boolean> {
 }
 
 async function post(title: string, body: string, kind: string) {
-  // In front, the toast already says it.
+  // Posted only in the background.
   if (AppState.currentState === "active") return;
   try {
     // Never prompts here: the permission was asked when the download began.

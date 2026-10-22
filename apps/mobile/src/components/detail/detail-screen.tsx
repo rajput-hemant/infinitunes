@@ -1,9 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import type { QueryKey } from "@tanstack/react-query";
-import { useState } from "react";
-import { RefreshControl } from "react-native";
 
 import { ScreenScrollView } from "~/components/screen-scroll-view";
+import { PullToRefresh } from "~/components/ui/refresh-control";
 
 import { DetailFrame } from "./detail-frame";
 import type { DetailFrameProps } from "./detail-frame";
@@ -26,20 +25,14 @@ export function DetailScreen<Data>({
   ...frame
 }: DetailScreenProps<Data>) {
   const queryClient = useQueryClient();
-  const [refreshing, setRefreshing] = useState(false);
 
-  async function refresh() {
-    setRefreshing(true);
-    try {
-      await Promise.all([
-        query.refetch(),
-        ...refreshKeys.map((queryKey) =>
-          queryClient.refetchQueries({ queryKey, type: "active" }),
-        ),
-      ]);
-    } finally {
-      setRefreshing(false);
-    }
+  function refresh() {
+    return Promise.all([
+      query.refetch(),
+      ...refreshKeys.map((queryKey) =>
+        queryClient.refetchQueries({ queryKey, type: "active" }),
+      ),
+    ]);
   }
 
   return (
@@ -52,12 +45,7 @@ export function DetailScreen<Data>({
     >
       {(data) => (
         <ScreenScrollView
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={() => void refresh()}
-            />
-          }
+          refreshControl={<PullToRefresh onRefresh={refresh} />}
         >
           {children(data)}
         </ScreenScrollView>

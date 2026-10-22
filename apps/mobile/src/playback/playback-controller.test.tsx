@@ -1,14 +1,21 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { act, render } from "@testing-library/react-native";
-import { toast } from "sonner-native";
+import { act, render, waitFor } from "@testing-library/react-native";
 
 import { forgetUserData } from "~/features/settings/end-session";
+import { preferencesStore } from "~/lib/preferences";
+import {
+  cacheQualifiedListen,
+  clearSongCache,
+  songCacheStore,
+} from "~/lib/song-cache";
 import { audioModes, lastPlayer } from "~/test/expo-audio";
+import { resetFiles } from "~/test/expo-file-system";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
 
 import { PlaybackController } from "./playback-controller";
+import { playbackStatusStore } from "./playback-status";
 import { playerStore } from "./player-store";
 
 const songs = ["BSaNI3Yr", "Xy12AbCd"].map((id) => rawSong({ id }));
@@ -31,6 +38,44 @@ beforeEach(() => {
 });
 
 describe("PlaybackController", () => {
+  it("prefetches the lyrics of the playing song and the next one", async () => {
+    procedure("song.syncedLyrics").mockResolvedValue({
+      synced: null,
+      plain: null,
+      instrumental: false,
+      source: "lrclib",
+      copyright: null,
+    });
+    await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+
+    await waitFor(() => {
+      expect(procedure("song.syncedLyrics")).toHaveBeenCalledWith({
+        id: songs[0].id,
+      });
+      expect(procedure("song.syncedLyrics")).toHaveBeenCalledWith({
+        id: songs[1].id,
+      });
+    });
+  });
+
+  it("mirrors buffering progress while paused and clears it for a new source", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => {
+      player.finishLoading(200);
+      player.pause();
+      player.bufferTo(120);
+    });
+    expect(playbackStatusStore.getState()).toMatchObject({
+      playing: false,
+      bufferedTime: 120,
+    });
+
+    await act(async () => playerStore.getState().skipToNext());
+    expect(playbackStatusStore.getState().bufferedTime).toBe(0);
+  });
+
   it("sets up a background, lock-screen capable audio session", async () => {
     await mountController();
 
@@ -123,10 +168,9 @@ describe("PlaybackController", () => {
       ladder("BSaNI3Yr", 160),
       ladder("BSaNI3Yr", 96),
     ]);
-    expect(toast.error).not.toHaveBeenCalled();
   });
 
-  it("skips an entry whose every bitrate fails, with one toast", async () => {
+  it("skips an entry whose every bitrate fails", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows));
 
@@ -140,8 +184,6 @@ describe("PlaybackController", () => {
       ...rates.map((rate) => ladder("BSaNI3Yr", rate)),
       ladder("Xy12AbCd", 320),
     ]);
-    expect(toast.error).toHaveBeenCalledTimes(1);
-    expect(toast.error).toHaveBeenCalledWith("Couldn't play this song");
   });
 
   it("stops and clears the lock screen when the queue is emptied", async () => {
@@ -184,6 +226,22 @@ describe("PlaybackController", () => {
     });
   });
 
+  it("shows next/previous on the lock screen and follows the remote buttons", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
+    expect(player.lockScreenOptions).toMatchObject({
+      showNextTrack: true,
+      showPreviousTrack: true,
+    });
+
+    await act(async () => player.pressRemote("nextTrack"));
+    expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 320));
+
+    await act(async () => player.pressRemote("previousTrack"));
+    expect(player.loads.at(-1)).toBe(ladder("BSaNI3Yr", 320));
+  });
+
   it("resumes the paused entry when its list is played again", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows));
@@ -224,7 +282,7 @@ describe("PlaybackController", () => {
     expect(player.playing).toBe(true);
   });
 
-  it("never loads an entry without a stream link, and says why", async () => {
+  it("never loads an entry without a stream link", async () => {
     const silent = toSongRow(
       rawSong({
         id: "NoLink01",
@@ -237,8 +295,30 @@ describe("PlaybackController", () => {
     await act(async () => playerStore.getState().playTracks([silent]));
 
     expect(player.loads).toEqual([]);
-    expect(toast.error).toHaveBeenCalledWith(
-      "This song can't be played right now.",
-    );
+  });
+});
+
+describe("PlaybackController song cache", () => {
+  beforeEach(async () => {
+    await clearSongCache();
+    resetFiles();
+    preferencesStore.setState({
+      cacheFrequentSongs: true,
+      streamQuality: "excellent",
+    });
+    const entry = { ...rows[0]!, queueItemId: "qualify" };
+    await cacheQualifiedListen(entry, "excellent");
+    await cacheQualifiedListen(entry, "excellent");
+  });
+
+  it("loads the cached file, evicts a corrupt file and retries streaming before stepping down", async () => {
+    const player = await mountController();
+    await act(async () => playerStore.getState().playTracks(rows));
+    expect(player.loads[0]).toMatch(/^file:\/\/\/cache\/frequent-songs\//);
+    await act(async () => player.failLoading());
+    expect(player.loads.at(-1)).toBe(ladder("BSaNI3Yr", 320));
+    expect(songCacheStore.getState().songs.BSaNI3Yr).toBeUndefined();
+    await act(async () => player.failLoading());
+    expect(player.loads.at(-1)).toBe(ladder("BSaNI3Yr", 160));
   });
 });

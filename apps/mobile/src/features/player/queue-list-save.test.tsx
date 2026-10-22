@@ -3,7 +3,6 @@ import { toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawSong } from "@infinitunes/types/fixtures";
 import { act, screen } from "@testing-library/react-native";
 import { router } from "expo-router";
-import { toast } from "sonner-native";
 
 import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderScreen } from "~/test/render";
@@ -45,18 +44,11 @@ describe("QueueList empty state", () => {
 });
 
 describe("saving the queue to a playlist", () => {
-  it("asks a signed-out listener to sign in", async () => {
+  it("shows no queue menu while signed out", async () => {
     playerStore.getState().playTracks(songs);
     await renderScreen(<QueueList />);
 
-    await chooseMenuAction("Queue actions", "add-to-playlist");
-
-    expect(jest.mocked(toast.warning)).toHaveBeenCalledWith(
-      "Sign in to continue",
-      expect.objectContaining({
-        description: "You need an account to make playlists.",
-      }),
-    );
+    expect(screen.queryByLabelText("Queue actions")).toBeNull();
   });
 
   it("adds every song in the queue, including the one playing, to the chosen playlist", async () => {
@@ -108,7 +100,7 @@ describe("saving the queue to a playlist", () => {
 
     expect(push).toHaveBeenCalledWith({
       pathname: "/create-playlist",
-      params: { songs: "a,b", label: "2 songs" },
+      params: { songs: "a,b" },
     });
     push.mockRestore();
   });

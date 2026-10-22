@@ -3,7 +3,6 @@ import { rawEpisode, rawSong } from "@infinitunes/types/fixtures";
 import { waitFor } from "@testing-library/react-native";
 import { scheduleNotificationAsync } from "expo-notifications";
 import { AppState, View } from "react-native";
-import { toast } from "sonner-native";
 
 import { downloadTrack } from "~/lib/download";
 import { preferencesStore } from "~/lib/preferences";
@@ -62,16 +61,13 @@ describe("SongMenu queue actions", () => {
     expect(queuedIds()).toEqual(["now", "BSaNI3Yr"]);
   });
 
-  it("adds it to the end of the queue and says so", async () => {
+  it("adds it to the end of the queue", async () => {
     playerStore.getState().playTracks([toSongRow(rawSong({ id: "now" }))]);
     await renderMenu(song);
 
     await chooseMenuAction(TRIGGER, "add-to-queue");
 
     expect(queuedIds()).toEqual(["now", "BSaNI3Yr"]);
-    expect(jest.mocked(toast)).toHaveBeenCalledWith(
-      '"FA9LA & Friends" added to queue',
-    );
   });
 });
 
@@ -148,7 +144,7 @@ describe("SongMenu share and download", () => {
     expect(shareItem).toHaveBeenCalledWith(song);
   });
 
-  it("downloads at the download quality preference, with a progress toast", async () => {
+  it("downloads at the download quality preference", async () => {
     preferencesStore.getState().setDownloadQuality("low");
     jest.mocked(downloadTrack).mockResolvedValue(undefined);
     await renderMenu(song);
@@ -156,18 +152,6 @@ describe("SongMenu share and download", () => {
     await chooseMenuAction(TRIGGER, "download");
 
     expect(downloadTrack).toHaveBeenCalledWith(song, "low");
-    const [, messages] = jest.mocked(toast.promise).mock.calls[0] ?? [];
-    expect(messages).toMatchObject({
-      loading: 'Downloading "FA9LA & Friends"...',
-    });
-    const { success, error } = messages ?? {};
-    expect(typeof success === "function" && success(undefined)).toBe(
-      '"FA9LA & Friends" is ready',
-    );
-    expect(typeof error === "function" && error(new Error("No link"))).toBe(
-      "No link",
-    );
-    expect(typeof error === "function" && error("odd")).toBe("Download failed");
   });
 });
 
@@ -178,10 +162,6 @@ describe("SongMenu failed download", () => {
     await renderMenu(song);
 
     await chooseMenuAction(TRIGGER, "download");
-    // The toast owns the rejection; the notification is posted beside it.
-    const [job] = jest.mocked(toast.promise).mock.calls[0] ?? [];
-    await expect(job).rejects.toThrow("No link");
-
     await waitFor(() =>
       expect(scheduleNotificationAsync).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -222,7 +202,6 @@ describe("SongMenu for an episode", () => {
     await chooseMenuAction(TRIGGER, "play-radio");
     await chooseMenuAction(TRIGGER, "download");
 
-    expect(jest.mocked(toast.warning)).not.toHaveBeenCalled();
     expect(procedure("radio.createStation")).not.toHaveBeenCalled();
     expect(downloadTrack).not.toHaveBeenCalled();
   });

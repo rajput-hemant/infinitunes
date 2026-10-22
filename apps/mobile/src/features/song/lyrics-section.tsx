@@ -1,32 +1,25 @@
-import { plainText } from "@infinitunes/types";
-import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
 
 import { SectionHeader } from "~/components/section-header";
 import { TextBlockSkeleton } from "~/components/skeletons";
+import { SyncedLyrics } from "~/components/synced-lyrics";
 import { Text } from "~/components/ui/text";
-import { trpc } from "~/lib/trpc";
+import { useLyrics } from "~/lib/use-lyrics";
+import { art } from "~/theme/tokens";
+import { usePalette } from "~/theme/use-palette";
 
-type LyricsSectionProps = {
-  /** The song's id; upstream looks lyrics up by it. */
-  songId: string;
-};
-
-/**
- * Collapsed to the upstream snippet; a tap shows the full text and its
- * copyright. Only songs flagged `has_lyrics` render it, and a lookup that
- * comes back empty or fails leaves the section out.
- */
-export function LyricsSection({ songId }: LyricsSectionProps) {
+export function LyricsSection({ songId }: { songId: string }) {
   const [expanded, setExpanded] = useState(false);
-  const { data: lyrics, isPending } = useQuery(
-    trpc.get.lyrics.queryOptions({ id: songId }),
-  );
-
+  const { data: lyrics, isPending } = useLyrics(songId);
+  const palette = usePalette();
+  // Android: the preview is a filled card (YouTube Music's lyrics card) with
+  // a primary text action.
+  const android = Platform.OS === "android";
   if (isPending) return <TextBlockSkeleton />;
-  if (!lyrics) return null;
-
+  if (!lyrics?.synced && !lyrics?.plain) return null;
+  const preview =
+    lyrics.plain ?? lyrics.synced?.map((line) => line.text).join("\n");
   return (
     <View>
       <SectionHeader title="Lyrics" />
@@ -35,24 +28,49 @@ export function LyricsSection({ songId }: LyricsSectionProps) {
         accessibilityRole="button"
         accessibilityLabel={expanded ? "Collapse lyrics" : "Read full lyrics"}
         accessibilityState={{ expanded }}
-        className="gap-2 px-page py-2 active:opacity-70"
+        android_ripple={{ color: palette["fill-2"], foreground: true }}
+        className={
+          android
+            ? "mx-page min-h-touch gap-3 overflow-hidden rounded-lg bg-card p-4"
+            : "min-h-touch gap-2 px-page py-2 active:opacity-70"
+        }
       >
-        {expanded ? (
-          <>
-            <Text tone="muted">{plainText(lyrics.lyrics)}</Text>
-            <Text variant="caption" tone="muted">
-              {plainText(lyrics.lyrics_copyright)}
-            </Text>
-          </>
-        ) : (
-          <>
-            <Text tone="muted" numberOfLines={3}>
-              {plainText(lyrics.snippet)}
-            </Text>
-            <Text variant="subhead">Read More</Text>
-          </>
+        {!expanded && (
+          <Text
+            variant={android ? "headline" : "body"}
+            emphasized
+            tone={android ? "default" : "muted"}
+            numberOfLines={android ? 4 : 3}
+          >
+            {preview}
+          </Text>
         )}
+        <Text
+          variant={android ? "label" : "subhead"}
+          tone={android ? "primary" : "default"}
+        >
+          {expanded ? "Read Less" : "Read More"}
+        </Text>
       </Pressable>
+      {expanded && (
+        <View className={android ? "gap-2 px-page pt-3" : "gap-2 px-page"}>
+          {lyrics.synced ? (
+            <SyncedLyrics
+              key={songId}
+              songId={songId}
+              lines={lyrics.synced}
+              height={art.hero}
+            />
+          ) : (
+            <Text tone="muted">{lyrics.plain}</Text>
+          )}
+          {lyrics.source !== "lrclib" && lyrics.copyright ? (
+            <Text variant="caption" tone="muted">
+              {lyrics.copyright}
+            </Text>
+          ) : null}
+        </View>
+      )}
     </View>
   );
 }

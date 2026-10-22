@@ -11,6 +11,9 @@ process.env.EXPO_PUBLIC_API_URL = "https://infinitunes.test";
 
 setUpTests();
 
+jest.mock("expo-file-system", () => require("~/test/expo-file-system"));
+jest.mock("expo-sharing", () => ({ shareAsync: jest.fn() }));
+
 jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
 jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
 jest.mock("react-native-gesture-handler/ReanimatedSwipeable", () =>
@@ -19,18 +22,6 @@ jest.mock("react-native-gesture-handler/ReanimatedSwipeable", () =>
 jest.mock("react-native-reorderable-list", () =>
   require("~/test/reorderable-list"),
 );
-
-// Toasts are asserted through these spies (`jest.mocked(toast.error)`); the
-// real Toaster needs Reanimated's native side.
-jest.mock("sonner-native", () => ({
-  toast: Object.assign(jest.fn(), {
-    success: jest.fn(),
-    error: jest.fn(),
-    warning: jest.fn(),
-    promise: jest.fn(),
-  }),
-  Toaster: () => null,
-}));
 
 // Local notifications (`~/lib/notifications`): granted by default; tests
 // read and script these spies.

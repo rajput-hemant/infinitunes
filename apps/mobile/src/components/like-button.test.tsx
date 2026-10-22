@@ -65,8 +65,6 @@ describe("LikeButton", () => {
     ).toBeOnTheScreen();
 
     await switchTo(null);
-    expect(
-      screen.getByRole("button", { name: "Like FA9LA" }),
-    ).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: /Like FA9LA/ })).toBeNull();
   });
 });

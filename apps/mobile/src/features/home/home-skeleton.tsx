@@ -5,7 +5,10 @@ import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { art } from "~/theme/tokens";
 
-const PICK_TILES = 4;
+import { QUICK_PICKS } from "./home-model";
+
+/** Surprise Me and Browse, then the picks. */
+const PICK_TILES = 2 + QUICK_PICKS;
 
 /** The featured carousel, the quick picks grid and a shelf, at their real sizes. */
 export function HomeSkeleton() {

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "bun run with-env turbo run dev",
+    "dev:api": "bun run --cwd apps/web dev:api",
     "dev:mobile": "bun run --cwd apps/mobile metro",
+    "dev:native": "sh -c 'trap \"kill 0\" EXIT; bun run dev:api & bun run dev:mobile'",
     "mobile:android": "bun run --cwd apps/mobile android --device",
     "mobile:ios": "bun run --cwd apps/mobile ios --device",
     "mobile:doctor": "bun run --cwd apps/mobile doctor",
@@ -39,6 +41,7 @@
     "db:check": "bun run --filter @infinitunes/db db:check",
     "ui": "bunx shadcn@latest --cwd packages/ui",
     "prepare": "husky",
+    "postinstall": "bun scripts/apply-patches.ts",
     "with-env": "bun --env-file=.env --env-file=.env.local"
   },
   "devDependencies": {

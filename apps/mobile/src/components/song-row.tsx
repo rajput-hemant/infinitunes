@@ -1,3 +1,5 @@
+import { formatDuration } from "@infinitunes/types";
+
 import { togglePlayback } from "~/playback/transport";
 import { useCurrentTrackState } from "~/playback/use-current-track";
 
@@ -5,6 +7,7 @@ import { LikeButton } from "./like-button";
 import { ListRow } from "./list-row";
 import { MenuTrigger } from "./menu-trigger";
 import { SongMenu, type TrackItem } from "./song-menu";
+import { Text } from "./ui/text";
 
 type SongRowProps = {
   song: TrackItem;
@@ -44,6 +47,10 @@ export function SongRow({
     queueItemId,
   });
   const credits = creditsOf(song);
+  const length =
+    leading === "index" && song.duration > 0
+      ? formatDuration(song.duration, "mm:ss")
+      : undefined;
 
   return (
     <ListRow
@@ -60,7 +67,9 @@ export function SongRow({
       onPress={isCurrent ? togglePlayback : onPress}
       accessibilityLabel={song.name}
       accessibilityValue={{
-        text: song.explicit ? `Explicit, ${credits}` : credits,
+        text: [song.explicit && "Explicit", credits, length]
+          .filter(Boolean)
+          .join(", "),
       }}
       accessibilityHint={
         isCurrent
@@ -71,6 +80,12 @@ export function SongRow({
       }
       trailing={
         <>
+          {/* A numbered list shares one cover, so its rows have room for the length. */}
+          {length ? (
+            <Text variant="footnote" tone="muted" numeric>
+              {length}
+            </Text>
+          ) : null}
           {song.type === "song" ? (
             <LikeButton
               type="song"

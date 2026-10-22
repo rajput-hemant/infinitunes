@@ -7,6 +7,8 @@ type MediaRowProps = {
   subtitle?: string;
   /** Raw upstream artwork URL; resized for a row here. */
   image: string;
+  /** Round artwork, for artists and stations. */
+  round?: boolean;
   /** The item's screen: the row is a link to it. */
   href?: Href;
   /** What a tap does instead, when the row is not a link. */
@@ -18,6 +20,7 @@ export function MediaRow({
   title,
   subtitle,
   image,
+  round,
   href,
   onPress,
 }: MediaRowProps) {
@@ -25,7 +28,7 @@ export function MediaRow({
     <ListRow
       title={title}
       subtitle={subtitle}
-      leading={{ artwork: image }}
+      leading={{ artwork: image, round }}
       href={href}
       onPress={onPress}
     />

@@ -3,8 +3,8 @@ import { decode, formatCount, isExplicit, plainText } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { useState } from "react";
 import { View } from "react-native";
-import { toast } from "sonner-native";
 
+import { Description } from "~/components/detail/description";
 import { EntityHeader } from "~/components/entity-header";
 import {
   entityListKey,
@@ -48,10 +48,7 @@ export function ShowContent({
   const description = plainText(details.more_info.description);
 
   function play(shuffle: boolean) {
-    if (episodes.items.length === 0) {
-      toast("Episodes are still loading");
-      return;
-    }
+    if (episodes.items.length === 0) return;
     (shuffle ? shuffleAll : playAll)(episodes.items);
   }
 
@@ -76,9 +73,7 @@ export function ShowContent({
           {description ? (
             <>
               <SectionHeader title={decode(show.modules.show_details.title)} />
-              <Text tone="muted" selectable className="px-page">
-                {description}
-              </Text>
+              <Description text={description} />
             </>
           ) : null}
           <ShowControls

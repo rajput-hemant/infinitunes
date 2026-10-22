@@ -6,8 +6,6 @@ import type { ReactNode, Ref } from "react";
 
 import type { RadioSeed } from "~/playback/radio";
 import { startSeededRadio } from "~/playback/radio";
-import { songsLabel } from "~/user-data/playlists";
-import { promptSignIn } from "~/user-data/session";
 
 /** A menu action and what it does; entries with sub-actions only open a submenu. */
 export type MenuEntry = Omit<MenuAction, "subactions" | "id"> & {
@@ -76,7 +74,6 @@ export function NativeMenu({
 type PlaylistEntryOptions = {
   /** The songs the entry adds; a playlist holding all of them shows checked. */
   songs: readonly { id: string; name: string }[];
-  signedIn: boolean;
   /** The listener's playlists; `undefined` while loading. */
   playlists: PlaylistView[] | undefined;
   onAdd: (playlist: PlaylistView) => void;
@@ -84,11 +81,11 @@ type PlaylistEntryOptions = {
 
 /**
  * "Add to Playlist": a submenu of the listener's playlists and "New
- * Playlist" (a sheet that creates one with these songs), or a sign-in prompt.
+ * Playlist" (a sheet that creates one with these songs). Signed in only:
+ * callers leave it out for a signed-out listener.
  */
 export function addToPlaylistEntry({
   songs,
-  signedIn,
   playlists,
   onAdd,
 }: PlaylistEntryOptions): MenuEntry {
@@ -98,12 +95,6 @@ export function addToPlaylistEntry({
     title: "Add to Playlist",
     image: "music.note.list",
   } as const;
-  if (!signedIn) {
-    return {
-      ...base,
-      run: () => promptSignIn("You need an account to make playlists."),
-    };
-  }
   const create: MenuEntry = {
     id: "new-playlist",
     title: "New Playlist",
@@ -111,7 +102,7 @@ export function addToPlaylistEntry({
     run: () =>
       router.push({
         pathname: "/create-playlist",
-        params: { songs: songIds.join(","), label: songsLabel(songs) },
+        params: { songs: songIds.join(",") },
       }),
   };
   if (!playlists?.length) {

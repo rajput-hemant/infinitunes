@@ -6,7 +6,6 @@ import {
   rawSong,
   rawStationDetails,
 } from "@infinitunes/types/fixtures";
-import { toast } from "sonner-native";
 
 import { procedure } from "~/test/trpc-mock";
 
@@ -86,25 +85,19 @@ describe("playEntity", () => {
     });
   });
 
-  it("says so when the item has nothing to play, and keeps the queue", async () => {
+  it("keeps the queue when the item has nothing to play", async () => {
     procedure("album.details").mockResolvedValue(rawAlbum({ list: "" }));
 
     await playEntity("album", ALBUM_URL);
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Nothing to play here yet.",
-    );
     expect(queuedIds()).toEqual([]);
   });
 
-  it("toasts when the lookup fails", async () => {
+  it("does not start when the lookup fails", async () => {
     procedure("playlist.details").mockRejectedValue(new Error("down"));
 
     await playEntity("playlist", "https://www.jiosaavn.com/featured/x/abc_");
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Couldn't load songs",
-    );
     expect(playerStore.getState().started).toBe(false);
   });
 });

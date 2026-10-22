@@ -1,13 +1,15 @@
 import { FlashList } from "@shopify/flash-list";
 import type { ComponentProps, ReactElement } from "react";
-import { ActivityIndicator } from "react-native";
+import { View } from "react-native";
 
 import { CatalogGridSkeleton } from "~/components/catalog-grid-skeleton";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { GridCell } from "~/components/grid-cell";
+import { PullToRefresh } from "~/components/ui/refresh-control";
+import { Spinner } from "~/components/ui/spinner";
 import { Text } from "~/components/ui/text";
-import { GRID_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 
 /** What a catalog list reads from its query; paging fields are absent for a single page. */
@@ -30,12 +32,14 @@ type CatalogScreenProps<Item> = {
   empty: Pick<ComponentProps<typeof EmptyState>, "icon" | "title" | "message">;
   /** Stays on screen in every state (language chips, the intro line). */
   header?: ReactElement;
+  /** The cards' art is round (artists, stations): the skeleton's too. */
+  round?: boolean;
 };
 
 const SEEN_IT_ALL = "You have seen it all";
 
 /**
- * A two-column catalog grid with every state of a fetched list: skeleton,
+ * A three-column catalog grid with every state of a fetched list: skeleton,
  * error with retry (only while there is nothing to show), empty, pull to
  * refresh and endless paging. One list stays mounted so the header and the
  * scroll container survive a language change.
@@ -46,25 +50,27 @@ export function CatalogScreen<Item>({
   renderCard,
   empty,
   header,
+  round = false,
 }: CatalogScreenProps<Item>) {
-  const width = useGridCardWidth();
+  const width = useGridCardWidth(CARD_COLUMNS);
   const { items } = query;
 
   return (
     <FlashList
       data={items}
-      numColumns={GRID_COLUMNS}
+      numColumns={CARD_COLUMNS}
       keyExtractor={keyOf}
       renderItem={({ item, index }) => (
         <GridCell index={index}>{renderCard(item, width)}</GridCell>
       )}
       ListHeaderComponent={header}
-      ListEmptyComponent={<CatalogPlaceholder query={query} empty={empty} />}
+      ListEmptyComponent={
+        <CatalogPlaceholder query={query} empty={empty} round={round} />
+      }
       ListFooterComponent={<CatalogFooter query={query} />}
       contentInsetAdjustmentBehavior="automatic"
       contentContainerStyle={{ paddingBottom: playerDockInset }}
-      refreshing={query.isRefetching && !query.isFetchingNextPage}
-      onRefresh={() => void query.refetch()}
+      refreshControl={<PullToRefresh onRefresh={query.refetch} />}
       onEndReached={query.loadMore}
       onEndReachedThreshold={0.5}
     />
@@ -74,8 +80,9 @@ export function CatalogScreen<Item>({
 function CatalogPlaceholder<Item>({
   query,
   empty,
-}: Pick<CatalogScreenProps<Item>, "query" | "empty">) {
-  if (query.isPending) return <CatalogGridSkeleton />;
+  round,
+}: Pick<CatalogScreenProps<Item>, "query" | "empty" | "round">) {
+  if (query.isPending) return <CatalogGridSkeleton round={round} />;
   if (query.error) {
     return (
       <ErrorState error={query.error} onRetry={() => void query.refetch()} />
@@ -86,7 +93,11 @@ function CatalogPlaceholder<Item>({
 
 function CatalogFooter<Item>({ query }: { query: CatalogQuery<Item> }) {
   if (query.isFetchingNextPage) {
-    return <ActivityIndicator className="py-6" />;
+    return (
+      <View className="py-6">
+        <Spinner />
+      </View>
+    );
   }
   if (query.items.length > 0 && !query.hasNextPage) {
     return (

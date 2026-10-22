@@ -1,5 +1,4 @@
 import type { SongRowItem } from "@infinitunes/types";
-import { toast } from "sonner-native";
 
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
 import {
@@ -28,32 +27,20 @@ import {
 async function downloadAll(songs: readonly SongRowItem[]) {
   const folder = await pickDownloadFolder();
   if (!folder) return;
-  const count = `${songs.length} ${songs.length === 1 ? "song" : "songs"}`;
   const { downloadQuality } = preferencesStore.getState();
   void ensureNotificationPermission();
-  const job = saveTracks(folder, songs, downloadQuality).then(
+  void saveTracks(folder, songs, downloadQuality).then(
     (result) => {
       void notifyDownloadsFinished(result, songs.length);
-      return result;
     },
-    (error: unknown) => {
-      // The whole job failed, so nothing was saved: post that too, and
-      // rethrow so the toast shows the failure.
+    () => {
+      // The whole job failed, so nothing was saved: post that too.
       void notifyDownloadsFinished(
         { saved: 0, failed: songs.length },
         songs.length,
       );
-      throw error;
     },
   );
-  toast.promise(job, {
-    loading: `Downloading ${count}...`,
-    success: ({ saved, failed }) =>
-      failed === 0
-        ? `Downloaded ${count}`
-        : `Downloaded ${saved} of ${songs.length} songs`,
-    error: "Download failed",
-  });
 }
 
 type CollectionMenuProps = {
@@ -92,20 +79,20 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
       run: () => {
         const { addToQueue } = playerStore.getState();
         for (const row of rows) addToQueue(row);
-        toast(
-          `${rows.length} ${rows.length === 1 ? "song" : "songs"} added to queue`,
-        );
       },
     },
   ];
   if (songs.length > 0) {
     entries.push(
-      addToPlaylistEntry({
-        songs,
-        signedIn,
-        playlists,
-        onAdd: (playlist) => addSongsToPlaylist(playlist, songs),
-      }),
+      ...(signedIn
+        ? [
+            addToPlaylistEntry({
+              songs,
+              playlists,
+              onAdd: (playlist) => addSongsToPlaylist(playlist, songs),
+            }),
+          ]
+        : []),
       playRadioEntry(radio ?? radioSeedOf(songs, name)),
       {
         id: "download-all",

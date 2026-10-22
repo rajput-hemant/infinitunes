@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { trpc } from "~/lib/trpc";
+import { entityQueries } from "~/lib/entity-queries";
 
 /**
  * The show with its seasons. Only the show-level fields are used from it: the
@@ -8,7 +8,5 @@ import { trpc } from "~/lib/trpc";
  * switching either keeps the header and seasons on screen.
  */
 export function useShow(token: string) {
-  return useQuery({
-    ...trpc.show.details.queryOptions({ token }),
-  });
+  return useQuery(entityQueries.show(token));
 }

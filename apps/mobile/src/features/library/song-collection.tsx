@@ -9,12 +9,21 @@ import ReorderableList from "react-native-reorderable-list";
 import type { ReorderActions } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
 import { OptionMenu } from "~/components/option-menu";
-import { Button } from "~/components/ui/button";
+import { ScreenScrollView } from "~/components/screen-scroll-view";
+import { SkeletonText, SongListSkeleton } from "~/components/skeletons";
+import { IconButton } from "~/components/ui/icon-button";
+import { SkeletonBlock } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playAll, playFrom, shuffleAll } from "~/playback/play-collection";
 
 import { orderSongs, type SongSort } from "./song-order";
+
+/** The header's filter field (the collection and its skeleton). */
+const FILTER_BAR = {
+  placeholder: "Filter by title or artist",
+  autoCapitalize: "none",
+} as const;
 
 type SongCollectionProps = {
   songs: readonly SongRowItem[];
@@ -95,25 +104,9 @@ export function SongCollection({
     ListHeaderComponent: (
       <View>
         {header}
-        {shown.length > 0 ? (
-          <View className="flex-row gap-3 px-page pb-2">
-            <Button
-              label="Play"
-              icon={{ ios: "play.fill", android: "play_arrow" }}
-              onPress={() => playAll(shown)}
-              className="flex-1"
-            />
-            <Button
-              label="Shuffle"
-              icon={{ ios: "shuffle", android: "shuffle" }}
-              variant="secondary"
-              onPress={() => shuffleAll(shown)}
-              className="flex-1"
-            />
-          </View>
-        ) : null}
-        <View className="flex-row items-center justify-between px-page">
-          <Text variant="subhead" tone="muted">
+        {/* One compact row: the count and sort lead, Shuffle and Play close it. */}
+        <View className="flex-row items-center gap-2 pl-page pr-4">
+          <Text variant="subhead" tone="muted" className="shrink">
             {countLabel(shown.length, songs.length)}
           </Text>
           <OptionMenu
@@ -127,6 +120,25 @@ export function SongCollection({
             selectedId={sort}
             onSelect={setSort}
           />
+          <View className="flex-1" />
+          {shown.length > 0 ? (
+            <>
+              <IconButton
+                icon={{ ios: "shuffle", android: "shuffle" }}
+                label="Shuffle"
+                variant="tonal"
+                onPress={() => shuffleAll(shown)}
+              />
+              <IconButton
+                icon={{ ios: "play.fill", android: "play_arrow" }}
+                label="Play"
+                variant="filled"
+                size="xl"
+                large
+                onPress={() => playAll(shown)}
+              />
+            </>
+          ) : null}
         </View>
         {missing > 0 ? (
           <Text variant="caption" tone="muted" className="px-page pb-2">
@@ -155,8 +167,7 @@ export function SongCollection({
   return (
     <>
       <Stack.SearchBar
-        placeholder="Filter by title or artist"
-        autoCapitalize="none"
+        {...FILTER_BAR}
         onChangeText={(event) => setQuery(event.nativeEvent.text)}
       />
       {reorderable ? (
@@ -167,6 +178,42 @@ export function SongCollection({
       ) : (
         <FlashList {...listProps} />
       )}
+    </>
+  );
+}
+
+type SongCollectionSkeletonProps = {
+  /** The screen's own lines above the controls (a playlist's duration). */
+  header?: ReactElement;
+};
+
+/**
+ * The collection while it loads, at its real geometry: the same filter field
+ * in the header (so the content starts where it will), the count, sort,
+ * Shuffle and Play row, then rows.
+ */
+export function SongCollectionSkeleton({
+  header,
+}: SongCollectionSkeletonProps) {
+  return (
+    <>
+      <Stack.SearchBar {...FILTER_BAR} />
+      <ScreenScrollView scrollEnabled={false}>
+        <SongListSkeleton
+          header={
+            <>
+              {header}
+              <View className="flex-row items-center gap-2 pl-page pr-4">
+                <SkeletonText variant="subhead" width={64} />
+                <SkeletonText variant="subhead" width={88} />
+                <View className="flex-1" />
+                <SkeletonBlock className="size-touch rounded-full" />
+                <SkeletonBlock className="size-row rounded-full" />
+              </View>
+            </>
+          }
+        />
+      </ScreenScrollView>
     </>
   );
 }

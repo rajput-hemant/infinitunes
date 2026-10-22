@@ -6,9 +6,11 @@
  *
  * Geometry (1024 canvas): the glyph path lives in the traced logo's own space,
  * its box centred on (GLYPH_CENTER) with a half-diagonal reach of GLYPH_REACH.
- *  - iOS: full-bleed square, no rounding/gloss (the OS masks it), glyph at 0.64.
+ *  - iOS: full-bleed square, no rounding/gloss (the OS masks it), glyph at 0.58 (about 55% of the tile, as system icons are).
  *  - Android adaptive: 108dp canvas, the launcher may crop to a 66dp circle
- *    (radius 313px here), so reach * scale must stay below that.
+ *    (radius 313px here), so reach * scale must stay below that; the glyph is
+ *    sized to Material's 48dp keyline (about 46% of the canvas) so tighter
+ *    launcher masks (One UI's squircle) never clip it.
  *  - Splash: glyph only, inside the 2/3 circle Android 12 masks to.
  */
 import { mkdir, readFile } from "node:fs/promises";
@@ -27,8 +29,8 @@ const GLYPH_REACH = 518;
 const GLYPH_HEIGHT = 964;
 const ADAPTIVE_SAFE_RADIUS = (1024 * 66) / 108 / 2;
 
-const IOS_SCALE = 0.64;
-const ADAPTIVE_SCALE = 0.58;
+const IOS_SCALE = 0.58;
+const ADAPTIVE_SCALE = 0.48;
 const SPLASH_SCALE = 0.64;
 
 const NOTIFICATION_SIZE = 96;

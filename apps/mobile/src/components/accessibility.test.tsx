@@ -52,7 +52,7 @@ describe("touch targets", () => {
     expect(screen.getByHintText("Opens a menu")).toBe(trigger);
   });
 
-  it("extends a chip's target above and below its 40pt body", async () => {
+  it("extends a chip's target above and below its 32pt body", async () => {
     await renderScreen(
       <ChipRow
         chips={[
@@ -64,7 +64,7 @@ describe("touch targets", () => {
 
     expect(screen.getByRole("button", { name: "Tamil" })).toHaveProp(
       "hitSlop",
-      { top: 4, bottom: 4 },
+      { top: 8, bottom: 8 },
     );
     expect(screen.getByRole("button", { name: "Hindi" })).toBeSelected();
     expect(screen.getByRole("button", { name: "Tamil" })).not.toBeSelected();

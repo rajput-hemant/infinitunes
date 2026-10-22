@@ -1,3 +1,5 @@
+import { View } from "react-native";
+
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import {
   EntityHeaderSkeleton,
@@ -9,8 +11,16 @@ import {
 export function LabelSkeleton() {
   return (
     <ScreenScrollView scrollEnabled={false}>
-      <EntityHeaderSkeleton />
-      <SegmentedTabsSkeleton />
+      <View className="gap-2 pb-2">
+        <EntityHeaderSkeleton
+          round
+          like={false}
+          menu={false}
+          subtitle={false}
+          meta={false}
+        />
+        <SegmentedTabsSkeleton />
+      </View>
       <SongListSkeleton />
     </ScreenScrollView>
   );

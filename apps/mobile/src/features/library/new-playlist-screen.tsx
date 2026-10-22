@@ -12,29 +12,22 @@ function songIdsOf(param: string | undefined): string[] {
 
 /**
  * Names a new playlist. Opened from a song menu's "Add to Playlist", it
- * also adds those songs (the `songs` and `label` params) once created.
+ * also adds those songs (the `songs` param) once created.
  */
 export function NewPlaylistScreen() {
-  const { songs, label } = useLocalSearchParams<{
-    songs?: string;
-    label?: string;
-  }>();
+  const { songs } = useLocalSearchParams<{ songs?: string }>();
   const songIds = songIdsOf(songs);
 
   return (
     <>
       <Stack.Screen options={{ title: "New Playlist" }} />
-      <SignedInGate>
+      <SignedInGate placement="top">
         <PlaylistForm
           submitLabel="Create"
           onSubmit={(details) => {
             // The pending row shows in the library while the server mints its id.
             if (songIds.length > 0) {
-              createPlaylistWithSongs(
-                details,
-                songIds,
-                label ?? `${songIds.length} songs`,
-              );
+              createPlaylistWithSongs(details, songIds);
             } else {
               createPlaylist(details);
             }

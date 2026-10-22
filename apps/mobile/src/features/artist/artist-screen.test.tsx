@@ -47,9 +47,9 @@ function selectTab(label: "Overview" | "Songs" | "Albums" | "Biography") {
   });
 }
 
-function selectSort(index: number) {
-  return fireEvent(screen.getByTestId("artist-sort"), "onChange", {
-    nativeEvent: { selectedSegmentIndex: index, value: "" },
+function selectSort(category: string) {
+  return fireEvent(screen.getByTestId("artist-sort"), "pressAction", {
+    nativeEvent: { event: category },
   });
 }
 
@@ -164,7 +164,7 @@ describe("ArtistScreen", () => {
     await selectTab("Songs");
     await screen.findByText("Song s1");
 
-    await selectSort(1);
+    await selectSort("latest");
 
     await screen.findByText("Song s1");
     expect(procedure("artist.songs")).toHaveBeenLastCalledWith({

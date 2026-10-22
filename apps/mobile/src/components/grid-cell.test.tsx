@@ -13,6 +13,9 @@ describe("GridCell", () => {
           <Text>first</Text>
         </GridCell>
         <GridCell index={1}>
+          <Text>middle</Text>
+        </GridCell>
+        <GridCell index={2}>
           <Text>second</Text>
         </GridCell>
       </>,

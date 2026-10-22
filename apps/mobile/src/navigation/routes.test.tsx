@@ -9,7 +9,6 @@ import { router, Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 import type { RenderRouterResult } from "expo-router/testing-library";
 import { Platform, Pressable, Text } from "react-native";
-import { toast } from "sonner-native";
 
 import { redirectSystemPath } from "~/app/+native-intent";
 import { authClient } from "~/lib/auth-client";
@@ -181,15 +180,12 @@ describe("the root screens' header", () => {
     }
   });
 
-  it("adds Home's language picker", async () => {
+  it("keeps Languages out of the header: it lives in Settings only", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
-    await fireEvent.press(
-      await (
-        await selectedTab(app)
-      ).findByRole("button", { name: "Languages" }),
-    );
-    expect(app.getPathname()).toBe("/languages");
+    const tab = await selectedTab(app);
+    await tab.findByRole("button", { name: "Settings" });
+    expect(tab.queryByRole("button", { name: "Languages" })).toBeNull();
   });
 
   it("has no search action on iOS, which has the search tab", async () => {
@@ -205,20 +201,14 @@ describe("on Android", () => {
   beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
   afterEach(() => jest.restoreAllMocks());
 
-  it("keeps Home's app bar to three actions, Languages leading the chips", async () => {
+  it("keeps Home's app bar to Search, Settings and Profile", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
     const home = await selectedTab(app);
     await home.findByRole("button", { name: "Settings" });
     expect(home.getByRole("button", { name: "Search" })).toBeOnTheScreen();
     expect(home.getByRole("button", { name: "Sign in" })).toBeOnTheScreen();
-    // The only Languages control is the chip, not a fourth app bar button.
-    const [chip, ...others] = home.getAllByRole("button", {
-      name: "Languages",
-    });
-    expect(others).toHaveLength(0);
-    await fireEvent.press(chip!);
-    expect(app.getPathname()).toBe("/languages");
+    expect(home.queryByRole("button", { name: "Languages" })).toBeNull();
   });
 
   it("pushes search onto the current tab from the app bar", async () => {
@@ -240,48 +230,13 @@ describe("on Android", () => {
   });
 });
 
-/** The tab bar's native "you tapped a disabled tab" event, as UIKit sends it. */
-function tapCreateTab(app: RenderRouterResult) {
-  const [host] = app.container.queryAll(
-    (node) => typeof node.props.onTabSelectionPrevented === "function",
-  );
-  if (!host) throw new Error("No native tab host rendered");
-  return act(async () =>
-    fireEvent(host, "tabSelectionPrevented", {
-      nativeEvent: { preventedScreenKey: "create", provenance: 0 },
-    }),
-  );
-}
-
-describe("the Create tab", () => {
-  it("is labelled with its visible name (WCAG 2.5.3)", async () => {
+describe("the tab bar", () => {
+  it("has no Create tab: New Playlist lives in Library", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
-    const [create] = app.container.queryAll(
-      (node) =>
-        node.props.screenKey === "create" &&
-        "preventNativeSelection" in node.props,
-    );
-    expect(create?.props.tabBarItemAccessibilityLabel).toContain("Create");
-  });
-
-  it("does not open the sheet just because the tabs render", async () => {
-    signInAs("alice");
-    const app = await renderRouter("./src/app", { initialUrl: "/library" });
-
-    expect(app.getPathname()).toBe("/library");
-    expect(routesNamed(app.getRouterState(), "create-playlist")).toBe(0);
-  });
-
-  it("opens the sheet over the previous tab if /create is reached in-app", async () => {
-    signInAs("alice");
-    const app = await renderRouter("./src/app", { initialUrl: "/library" });
-
-    await act(async () => router.navigate("/create"));
-
-    await waitFor(() => expect(app.getPathname()).toBe("/create-playlist"));
-    await act(async () => router.back());
-    expect(app.getSegments()[1]).not.toBe("create");
+    expect(
+      app.container.queryAll((node) => node.props.screenKey === "create"),
+    ).toHaveLength(0);
   });
 
   it("opens the sheet for an infinitunes://create link", async () => {
@@ -291,54 +246,6 @@ describe("the Create tab", () => {
     });
 
     expect(app.getPathname()).toBe("/create-playlist");
-  });
-
-  it("stacks one sheet however often Create is tapped", async () => {
-    signInAs("alice");
-    const app = await renderRouter("./src/app", { initialUrl: "/library" });
-
-    await tapCreateTab(app);
-    await act(async () => router.push("/create-playlist"));
-    await tapCreateTab(app);
-
-    expect(routesNamed(app.getRouterState(), "create-playlist")).toBe(1);
-    await act(async () => router.back());
-    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "library"]);
-  });
-
-  it("is a tab the native bar never selects", async () => {
-    const app = await renderRouter("./src/app", { initialUrl: "/" });
-
-    const [create] = app.container.queryAll(
-      (node) =>
-        node.props.screenKey === "create" &&
-        "preventNativeSelection" in node.props,
-    );
-    expect(create?.props.preventNativeSelection).toBe(true);
-  });
-
-  it("opens the New Playlist sheet over the tab that stays selected", async () => {
-    signInAs("alice");
-    const app = await renderRouter("./src/app", { initialUrl: "/library" });
-
-    await tapCreateTab(app);
-    expect(app.getPathname()).toBe("/create-playlist");
-
-    await act(async () => router.back());
-    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "library"]);
-  });
-
-  it("asks a signed-out listener to sign in, staying put", async () => {
-    const app = await renderRouter("./src/app", { initialUrl: "/library" });
-
-    await tapCreateTab(app);
-    expect(jest.mocked(toast.warning)).toHaveBeenCalledWith(
-      "Sign in to continue",
-      expect.objectContaining({
-        description: "You need an account to make playlists.",
-      }),
-    );
-    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "library"]);
   });
 });
 

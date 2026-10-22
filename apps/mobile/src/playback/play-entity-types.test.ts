@@ -7,7 +7,6 @@ import {
   rawSong,
   rawStationDetails,
 } from "@infinitunes/types/fixtures";
-import { toast } from "sonner-native";
 
 import { procedure } from "~/test/trpc-mock";
 
@@ -18,7 +17,6 @@ const initial = playerStore.getState();
 beforeEach(() => playerStore.setState(initial, true));
 
 const queuedIds = () => playerStore.getState().queue.map((entry) => entry.id);
-const toastError = () => jest.mocked(toast.error);
 
 describe("playEntity by type", () => {
   it("plays a song by its token", async () => {
@@ -105,7 +103,6 @@ describe("playEntity by type", () => {
       "https://www.jiosaavn.com/artist/x/LnMfdXjMGl0_",
     );
 
-    expect(toastError()).toHaveBeenCalledWith("Nothing to play here yet.");
     expect(playerStore.getState().started).toBe(false);
   });
 
@@ -121,10 +118,9 @@ describe("playEntity by type", () => {
 });
 
 describe("playEntity for a radio station", () => {
-  it("toasts, and asks nothing, for a link that is not a station's", async () => {
+  it("asks nothing for a link that is not a station's", async () => {
     await playEntity("radio_station", "https://example.com/not-a-station");
 
-    expect(toastError()).toHaveBeenCalledWith("Couldn't load this station");
     expect(procedure("radio.stationDetails")).not.toHaveBeenCalled();
   });
 

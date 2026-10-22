@@ -2,12 +2,9 @@ import { formatGreeting, greetingForHour } from "@infinitunes/core/greeting";
 import { LANGUAGES } from "@infinitunes/types";
 import { languageLabel } from "@infinitunes/types";
 import { router } from "expo-router";
-import { View } from "react-native";
 
 import { ChipRow } from "~/components/chip-row";
-import { Text } from "~/components/ui/text";
 import { authClient } from "~/lib/auth-client";
-import { hasHeaderLanguages } from "~/navigation/top-level-actions";
 
 const CHIP_COUNT = 10;
 
@@ -15,15 +12,6 @@ const CHIP_COUNT = 10;
 function salutationNow() {
   return greetingForHour(new Date().getHours());
 }
-
-/** The Languages preference, where the app bar has no room for it (`hasHeaderLanguages`). */
-const languagesChip = {
-  key: "languages",
-  label: "Languages",
-  selected: false,
-  icon: { ios: "globe", android: "language" },
-  onPress: () => router.push("/languages"),
-} as const;
 
 /** "For you" is this screen; each language opens that language's albums. */
 const languageChips = [
@@ -36,22 +24,13 @@ const languageChips = [
   })),
 ];
 
-/** The greeting by time of day and first name, then the language chips. */
-export function HomeHeader() {
+/** Home's title: the greeting by time of day and first name ("Good morning, Asha"). */
+export function useHomeGreeting(): string {
   const name = authClient.useSession().data?.user.name;
+  return formatGreeting(salutationNow(), name);
+}
 
-  return (
-    <View>
-      <Text variant="subhead" tone="muted" className="px-page">
-        {formatGreeting(salutationNow(), name)}
-      </Text>
-      <ChipRow
-        chips={
-          hasHeaderLanguages()
-            ? languageChips
-            : [languagesChip, ...languageChips]
-        }
-      />
-    </View>
-  );
+/** The language chips under Home's title (the greeting). */
+export function HomeHeader() {
+  return <ChipRow chips={languageChips} />;
 }

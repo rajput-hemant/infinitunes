@@ -1,7 +1,10 @@
 import type { CardItem, MediaType } from "@infinitunes/types";
 import { isExplicit } from "@infinitunes/types";
-import { Pressable, View } from "react-native";
+import { Platform, Pressable, View } from "react-native";
+import Animated from "react-native-reanimated";
 
+import { prefetchEntity } from "~/lib/entity-queries";
+import { usePressScale } from "~/lib/use-press-scale";
 import { entityHref } from "~/navigation/entity-href";
 import { isPlayable } from "~/playback/play-entity";
 import { art, sizes, space } from "~/theme/tokens";
@@ -17,6 +20,12 @@ import { Artwork } from "./ui/artwork";
 import { Text } from "./ui/text";
 
 export type MediaCardVariant = "card" | "hero";
+
+/** A card's title: iOS's semibold footnote, Material's label large (14/500). */
+export const CARD_TITLE = Platform.select({
+  android: { variant: "label", style: undefined },
+  default: { variant: "footnote", style: { fontWeight: "600" } },
+} as const);
 
 /** Types whose artwork is round, as on the web. */
 const ROUND_TYPES: ReadonlySet<MediaType> = new Set([
@@ -65,22 +74,29 @@ export function MediaCard({
   // The name first, so a swipe through the carousel hears the title at once.
   const label = [name, item.subtitle, shownEyebrow].filter(Boolean).join(", ");
   const entries = useCardMenuEntries(item);
+  const press = usePressScale();
 
   const content = (
     <>
-      <Artwork
-        image={item.image}
-        size={hero ? "hero" : "card"}
-        round={round}
-        style={width === undefined ? undefined : { width, height: width }}
-      />
+      <Animated.View style={press.style}>
+        <Artwork
+          image={item.image}
+          size={hero ? "hero" : "card"}
+          round={round}
+          style={width === undefined ? undefined : { width, height: width }}
+        />
+      </Animated.View>
       <View className={round ? "items-center" : undefined}>
         {shownEyebrow ? (
           <Text variant="caption" tone="muted" numberOfLines={1}>
             {shownEyebrow}
           </Text>
         ) : null}
-        <Text variant={hero ? "headline" : "subhead"} numberOfLines={1}>
+        <Text
+          variant={hero ? "headline" : CARD_TITLE.variant}
+          numberOfLines={1}
+          style={hero ? undefined : CARD_TITLE.style}
+        >
           {item.name}
         </Text>
         {item.subtitle || explicit ? (
@@ -89,7 +105,8 @@ export function MediaCard({
             {explicit ? <ExplicitBadge accessible={false} /> : null}
             {item.subtitle ? (
               <Text
-                variant="footnote"
+                variant={hero ? "footnote" : "caption"}
+                style={{ fontWeight: "400" }}
                 tone="muted"
                 numberOfLines={1}
                 className="shrink"
@@ -124,10 +141,15 @@ export function MediaCard({
           <Pressable
             onPress={onPress}
             onLongPress={onLongPress}
+            onPressIn={() => {
+              press.onPressIn();
+              prefetchEntity(item.type, item.url);
+            }}
+            onPressOut={press.onPressOut}
             accessibilityRole="link"
             accessibilityLabel={label}
             {...cardAccessibilityActions(entries)}
-            className="gap-2 active:opacity-70"
+            className="gap-2"
             style={{ width: edge }}
           >
             {content}

@@ -1,16 +1,18 @@
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { router } from "expo-router";
 import { openBrowserAsync } from "expo-web-browser";
-import { Appearance } from "react-native";
-import { toast } from "sonner-native";
+import { Alert, Appearance } from "react-native";
 
 import { preferencesStore } from "~/lib/preferences";
 import { queryClient } from "~/lib/query-client";
+import { songCacheStore } from "~/lib/song-cache";
+import { putFile, resetFiles } from "~/test/expo-file-system";
 import { renderScreen } from "~/test/render";
 import { signInAs, authClient } from "~/test/session-mock";
 import { appearanceStore } from "~/theme/appearance";
 
 import { SettingsScreen } from "./settings-screen";
+import { SettingsScreen as AndroidSettingsScreen } from "./settings-screen.android";
 
 jest.mock("@expo/ui", () => require("~/test/expo-ui"));
 jest.mock("expo-web-browser", () => ({ openBrowserAsync: jest.fn() }));
@@ -36,12 +38,12 @@ async function renderSettings() {
 }
 
 describe("SettingsScreen as a guest", () => {
-  it("offers to sign in under Account and Security, and nothing destructive", async () => {
+  it("offers to sign in under Account, and nothing destructive", async () => {
     await renderScreen(<SettingsScreen />);
 
     expect(
       screen.getAllByRole("button", { name: /^Sign in to continue/ }),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(screen.queryByText("Sign out")).toBeNull();
     expect(screen.queryByText("Delete account")).toBeNull();
     expect(screen.queryByTestId("profile")).toBeNull();
@@ -100,16 +102,13 @@ describe("SettingsScreen signed in", () => {
     expect(queryClient.getQueryData(FAVORITES_KEY)).toBeUndefined();
   });
 
-  it("tells the listener when sign-out fails, and keeps the cache", async () => {
+  it("keeps the cache when sign-out fails", async () => {
     queryClient.setQueryData(FAVORITES_KEY, { song: ["a"] });
     authClient.signOut.mockResolvedValueOnce({ error: { status: 503 } });
     await renderScreen(<SettingsScreen />);
 
     await fireEvent.press(screen.getByRole("button", { name: "Sign out" }));
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "Something went wrong. Please try again.",
-    );
     expect(queryClient.getQueryData(FAVORITES_KEY)).toEqual({ song: ["a"] });
   });
 });
@@ -131,7 +130,7 @@ describe("SettingsScreen preferences", () => {
     await renderScreen(<SettingsScreen />);
 
     const [streamMedium, downloadMedium] = screen.getAllByRole("menuitem", {
-      name: "Medium (96kbps)",
+      name: "96 kbps",
     });
     await fireEvent.press(streamMedium);
     expect(preferencesStore.getState()).toMatchObject({
@@ -165,4 +164,62 @@ describe("SettingsScreen about", () => {
     );
     expect(screen.getByText("Version")).toBeOnTheScreen();
   });
+});
+
+describe("SettingsScreen storage", () => {
+  it("shows cache size, persists the toggle, and confirms before clearing", async () => {
+    resetFiles();
+    putFile("file:///cache/frequent-songs/test.mp4", 1024 * 1024);
+    songCacheStore.setState({
+      songs: {
+        test: {
+          filename: "test.mp4",
+          source: "test",
+          size: 1024 * 1024,
+          lastPlayed: 1,
+        },
+      },
+    });
+    const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+    await renderScreen(<SettingsScreen />);
+    const toggle = screen.getByRole("switch", {
+      name: "Cache frequently played songs",
+    });
+    expect(toggle.props.value).toBe(true);
+    await fireEvent(toggle, "valueChange", false);
+    expect(preferencesStore.getState().cacheFrequentSongs).toBe(false);
+    expect(screen.getByText("Cached songs")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("button", { name: "Clear cache" }));
+    expect(alert).toHaveBeenCalledWith(
+      "Clear song cache?",
+      expect.any(String),
+      expect.any(Array),
+    );
+    const confirm = alert.mock.calls
+      .at(-1)?.[2]
+      ?.find((button) => button.text === "Clear cache");
+    await act(async () => confirm?.onPress?.());
+    expect(screen.getByText("0 KB")).toBeOnTheScreen();
+    alert.mockRestore();
+  });
+});
+
+it("shows Android Storage rows with an accessible toggle and clear confirmation", async () => {
+  const alert = jest.spyOn(Alert, "alert").mockImplementation(() => {});
+  await renderScreen(<AndroidSettingsScreen />);
+  expect(screen.getByText("Storage")).toBeOnTheScreen();
+  expect(screen.getByText("Cached songs")).toBeOnTheScreen();
+  await fireEvent(
+    screen.getByRole("switch", { name: "Cache frequently played songs" }),
+    "valueChange",
+    false,
+  );
+  expect(preferencesStore.getState().cacheFrequentSongs).toBe(false);
+  await fireEvent.press(screen.getByRole("button", { name: "Clear cache" }));
+  expect(alert).toHaveBeenCalledWith(
+    "Clear song cache?",
+    expect.any(String),
+    expect.any(Array),
+  );
+  alert.mockRestore();
 });

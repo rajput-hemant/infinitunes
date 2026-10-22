@@ -55,6 +55,7 @@ export function landing(
   key: string,
   outcome: ActionOutcome,
 ): LandingAction | "home" | null {
+  if (outcome === "home") return "home";
   const index = state.routes.findIndex((route) => route.key === key);
   if (index === -1) return null;
   const aimed = { source: key, target: state.key };

@@ -1,6 +1,4 @@
-import { userMessage } from "@infinitunes/core/user-message";
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner-native";
 
 import {
   LIBRARY_QUERY_KEY,
@@ -81,11 +79,7 @@ export function useResolvedItems<Item>({
     missing: query.data.missing,
     refreshing: query.isRefetching,
     refresh: () => {
-      void Promise.all([source.reload(), query.refetch()]).then(
-        ([, result]) => {
-          if (result.isError) toast.error(userMessage(result.error));
-        },
-      );
+      void Promise.all([source.reload(), query.refetch()]);
     },
   };
 }

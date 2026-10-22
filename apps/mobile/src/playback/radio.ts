@@ -4,7 +4,6 @@ import type {
   SongRowItem,
   StationDetailsResponse,
 } from "@infinitunes/types";
-import { toast } from "sonner-native";
 
 import { trpcClient } from "~/lib/trpc";
 import type { StationRef } from "~/navigation/entity-href";
@@ -22,10 +21,7 @@ export function startStation(
   { station, stationId, songs }: StationDetailsResponse,
   startIndex = 0,
 ) {
-  if (songs.length === 0) {
-    toast.error("No songs found for this station");
-    return;
-  }
+  if (songs.length === 0) return;
   playerStore.getState().playTracks(songs.map(toSongRow), {
     startIndex,
     radio: {
@@ -37,12 +33,12 @@ export function startStation(
   });
 }
 
-/** Loads a featured station and plays it; failures toast, nothing throws. */
+/** Loads a featured station and plays it; failures are silent, nothing throws. */
 export async function playStation({ name, token }: StationRef) {
   try {
     startStation(await trpcClient.radio.stationDetails.query({ name, token }));
   } catch {
-    toast.error("Couldn't load this station");
+    // Nothing plays.
   }
 }
 
@@ -77,7 +73,7 @@ export function radioSeedOf(
 
 /**
  * Creates a station seeded by an artist or a name (the "Play Radio" action of
- * song and artist menus) and plays it; failures toast, nothing throws.
+ * song and artist menus) and plays it; failures are silent, nothing throws.
  */
 export async function startSeededRadio({
   name,
@@ -96,14 +92,11 @@ export async function startSeededRadio({
       stationId,
       k: SEED_BATCH,
     });
-    if (songs.length === 0) {
-      toast.error("Couldn't find songs for this station");
-      return;
-    }
+    if (songs.length === 0) return;
     playerStore.getState().playTracks(songs.map(toSongRow), {
       radio: { stationId, name: `${name} Radio`, type },
     });
   } catch {
-    toast.error("Couldn't start this station");
+    // Nothing plays.
   }
 }

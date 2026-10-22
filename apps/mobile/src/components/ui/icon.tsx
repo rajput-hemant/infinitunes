@@ -15,15 +15,18 @@ type IconProps = {
   size?: IconSize;
   /** Defaults to the text colour. */
   color?: ColorValue;
+  /** SF Symbol weight (iOS); `semibold` for glyphs that sit beside a label. */
+  weight?: SymbolViewProps["weight"];
 };
 
 /** A native platform symbol: SF Symbols on iOS, Material Symbols on Android. */
-export function Icon({ name, size = "lg", color }: IconProps) {
+export function Icon({ name, size = "lg", color, weight }: IconProps) {
   const { colors } = useTheme();
   return (
     <SymbolView
       name={name}
       size={iconSize[size]}
+      weight={weight}
       tintColor={color ?? colors.text}
     />
   );

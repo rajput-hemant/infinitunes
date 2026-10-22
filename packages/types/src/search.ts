@@ -188,9 +188,13 @@ export type SearchItem = {
   title: string;
   subtitle?: string;
   extra?: string;
+  /** The kind in words ("Artist"); `extra` is then the raw role ("primary"). */
+  description?: string;
   perma_url?: string;
   type: MediaType;
   image: string;
+  /** Credits: songs carry `singers`/`primary_artists`, albums `music`. */
+  more_info?: { singers?: string; primary_artists?: string; music?: string };
 };
 
 function isSearchItem(value: unknown): value is SearchItem {

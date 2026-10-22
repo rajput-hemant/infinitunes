@@ -6,7 +6,8 @@ import {
 import type { ColorValue } from "react-native";
 
 import { paletteFor } from "./android-colors";
-import { iosSystemColors } from "./tokens";
+import { useAccent } from "./appearance";
+import { ACCENT_TOKENS, accentColors, iosSystemColors } from "./tokens";
 import type { ColorToken, Palette } from "./tokens";
 
 /**
@@ -15,7 +16,16 @@ import type { ColorToken, Palette } from "./tokens";
  * Material You roles the classes resolve to. Prefer semantic classes.
  */
 export function usePalette(): Palette {
-  return paletteFor(useColorScheme() === "dark" ? "dark" : "light");
+  const scheme = useColorScheme() === "dark" ? "dark" : "light";
+  const accent = accentColors(useAccent(), scheme);
+  const base = paletteFor(scheme);
+  return accent
+    ? {
+        ...base,
+        primary: accent.primary,
+        "primary-foreground": accent.foreground,
+      }
+    : base;
 }
 
 /**
@@ -24,7 +34,16 @@ export function usePalette(): Palette {
  */
 export function useTokenColor(token: ColorToken): ColorValue {
   const palette = usePalette();
+  // `primary` follows the accent class (a variable), not the UIKit label colour.
   const systemColor =
-    Platform.OS === "ios" ? iosSystemColors[token] : undefined;
+    Platform.OS === "ios" && !ACCENT_TOKENS.includes(token as never)
+      ? iosSystemColors[token]
+      : undefined;
   return systemColor ? platformColor(systemColor) : palette[token];
+}
+
+/** The accent as the tab bar's tint, or undefined to keep the system tint. */
+export function useTabAccent(): string | undefined {
+  const scheme = useColorScheme() === "dark" ? "dark" : "light";
+  return accentColors(useAccent(), scheme)?.primary;
 }

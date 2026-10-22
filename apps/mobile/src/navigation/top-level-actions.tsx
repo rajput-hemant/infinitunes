@@ -1,9 +1,11 @@
 import { router } from "expo-router";
+import type { NativeStackNavigationOptions } from "expo-router";
 import { Platform, Pressable, View } from "react-native";
 
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
 import { authClient } from "~/lib/auth-client";
+import { hasHeaderBarItems } from "~/lib/platform";
 import { userInitial } from "~/lib/user-initial";
 import { maxFontScale } from "~/theme/tokens";
 
@@ -46,32 +48,12 @@ function ProfileButton() {
 }
 
 /**
- * Whether Home's header carries the Languages button. Material 3 allows at
- * most three app bar actions, and Android's are already Search, Settings and
- * Profile, so there Languages is the first chip of Home's chip row instead
- * (`HomeHeader`). iOS has no Search button (the search tab), so its three
- * glass buttons are Languages, Settings and Profile. Read at render time.
- */
-export function hasHeaderLanguages(): boolean {
-  return Platform.OS !== "android";
-}
-
-/**
  * The trailing header of a tab's root screen (Home, Library, Radio): Search
  * (Android only; iOS has the search tab), then Settings and Profile, both
- * pushed onto the current tab. Settings is not a tab of its own. Pass it as
- * the root screen's `headerRight`.
+ * pushed onto the current tab. Settings is not a tab of its own. Languages
+ * lives in Settings only. Pass it as the root screen's `headerRight`.
  */
 export function TopLevelActions() {
-  return <Actions languages={false} />;
-}
-
-/** `TopLevelActions` with Home's language picker before Settings (iOS, `hasHeaderLanguages`). */
-export function HomeTopLevelActions() {
-  return <Actions languages={hasHeaderLanguages()} />;
-}
-
-function Actions({ languages }: { languages: boolean }) {
   return (
     <View className="flex-row items-center">
       {Platform.OS === "android" ? (
@@ -79,13 +61,6 @@ function Actions({ languages }: { languages: boolean }) {
           icon={{ ios: "magnifyingglass", android: "search" }}
           label="Search"
           onPress={() => router.push("/search")}
-        />
-      ) : null}
-      {languages ? (
-        <IconButton
-          icon={{ ios: "globe", android: "language" }}
-          label="Languages"
-          onPress={() => router.push("/languages")}
         />
       ) : null}
       <IconButton
@@ -96,4 +71,80 @@ function Actions({ languages }: { languages: boolean }) {
       <ProfileButton />
     </View>
   );
+}
+
+/**
+ * The root screens' header options. iOS 26 wraps everything in one `headerRight`
+ * view in a single glass capsule, so iOS uses native items that each keep their
+ * own glass button (`sharesBackground: false`), with the page title as a
+ * leading item (Apple Music's layout: title left, actions right on one row).
+ * Other platforms keep the view and the system title. A hook: the profile
+ * button follows the session.
+ */
+export function useTopLevelHeaderOptions(
+  title: string,
+): Pick<
+  NativeStackNavigationOptions,
+  | "title"
+  | "headerRight"
+  | "headerLargeTitle"
+  | "headerTitle"
+  | "unstable_headerLeftItems"
+  | "unstable_headerRightItems"
+> {
+  const { data, isPending } = authClient.useSession();
+  const signedIn = Boolean(data?.user);
+
+  if (!hasHeaderBarItems) return { title, headerRight: TopLevelActions };
+
+  return {
+    title,
+    headerRight: TopLevelActions,
+    headerLargeTitle: false,
+    headerTitle: "",
+    unstable_headerLeftItems: () => [
+      {
+        type: "custom" as const,
+        element: (
+          // Home's title is the greeting with a name: one line, shrunk to fit.
+          <Text
+            variant="largeTitle"
+            accessibilityRole="header"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {title}
+          </Text>
+        ),
+        hidesSharedBackground: true,
+      },
+    ],
+    unstable_headerRightItems: () => [
+      {
+        type: "button" as const,
+        label: "Settings",
+        icon: { type: "sfSymbol" as const, name: "gearshape" as const },
+        sharesBackground: false,
+        onPress: () => router.push("/settings"),
+      },
+      // A cold start reads the stored session first: no Sign in flash.
+      ...(isPending
+        ? []
+        : [
+            {
+              type: "button" as const,
+              label: signedIn ? "Profile" : "Sign in",
+              icon: {
+                type: "sfSymbol" as const,
+                name: signedIn
+                  ? ("person.crop.circle.fill" as const)
+                  : ("person.crop.circle" as const),
+              },
+              sharesBackground: false,
+              onPress: () => router.push(signedIn ? "/profile" : "/login"),
+            },
+          ]),
+    ],
+  };
 }

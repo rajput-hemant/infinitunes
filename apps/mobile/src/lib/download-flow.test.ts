@@ -87,7 +87,11 @@ describe("downloadTrack", () => {
   });
 
   it("rejects when the CDN refuses, without sharing", async () => {
-    jest.mocked(File.downloadFileAsync).mockRejectedValueOnce(new Error("404"));
+    for (let i = 0; i < 4; i += 1) {
+      jest
+        .mocked(File.downloadFileAsync)
+        .mockRejectedValueOnce(new Error("404"));
+    }
 
     await expect(downloadTrack(track(), "high")).rejects.toThrow("404");
     expect(shareAsync).not.toHaveBeenCalled();

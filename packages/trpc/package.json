@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@infinitunes/auth": "workspace:*",
+    "@infinitunes/core": "workspace:*",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/types": "workspace:*",
     "@trpc/server": "catalog:",

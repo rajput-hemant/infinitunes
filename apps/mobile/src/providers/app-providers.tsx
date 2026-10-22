@@ -4,13 +4,12 @@ import { StatusBar } from "expo-status-bar";
 import type { ReactNode } from "react";
 import { StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Toaster } from "sonner-native";
 
-import { AnnouncingToast } from "~/components/ui/toast-wrapper";
 import { queryClient } from "~/lib/query-client";
 import { restoreAppearance } from "~/theme/appearance";
 import { DynamicColorRoot } from "~/theme/dynamic-color-root";
 import { useNavigationTheme } from "~/theme/navigation-theme";
+import { ThemeRoot } from "~/theme/theme-root";
 import { useOptimisticOwner } from "~/user-data/session";
 
 // The OS keeps no colour-scheme override between launches: apply the saved
@@ -20,10 +19,8 @@ restoreAppearance();
 /**
  * App-wide providers. Expo Router already supplies the safe-area provider,
  * and the auth session needs none: `authClient.useSession()` reads a shared
- * store. `Toaster` renders every `toast()` from `sonner-native` in a window
- * overlay, so toasts show above modals and sheets too (VoiceOver hears
- * them through `AnnouncingToast`). Sheets are native
- * (`formSheet` routes, `@expo/ui`'s `BottomSheet`), so no JS sheet provider.
+ * store. Sheets are native (`formSheet` routes, `@expo/ui`'s `BottomSheet`),
+ * so no JS sheet provider.
  */
 export function AppProviders({ children }: { children: ReactNode }) {
   const navigationTheme = useNavigationTheme();
@@ -31,15 +28,16 @@ export function AppProviders({ children }: { children: ReactNode }) {
 
   return (
     <GestureHandlerRootView style={styles.root}>
-      {/* Material You content colours on Android 12+, under every screen and toast. */}
+      {/* Material You content colours on Android 12+, under every screen. */}
       <DynamicColorRoot>
-        <QueryClientProvider client={queryClient}>
-          <ThemeProvider value={navigationTheme}>
-            {children}
-            <Toaster ToastWrapper={AnnouncingToast} />
-            <StatusBar style="auto" />
-          </ThemeProvider>
-        </QueryClientProvider>
+        <ThemeRoot>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider value={navigationTheme}>
+              {children}
+              <StatusBar style="auto" />
+            </ThemeProvider>
+          </QueryClientProvider>
+        </ThemeRoot>
       </DynamicColorRoot>
     </GestureHandlerRootView>
   );

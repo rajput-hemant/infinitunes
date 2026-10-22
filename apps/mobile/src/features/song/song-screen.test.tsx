@@ -1,3 +1,4 @@
+import { plainText } from "@infinitunes/types";
 import type { Song, SongModules, SongObj } from "@infinitunes/types";
 import { rawAlbum, rawLyrics, rawSong } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
@@ -67,7 +68,13 @@ beforeEach(() => {
   procedure("get.trending").mockResolvedValue([]);
   procedure("artist.topSongs").mockResolvedValue([]);
   procedure("get.actorTopSongs").mockResolvedValue([]);
-  procedure("get.lyrics").mockResolvedValue(rawLyrics());
+  procedure("song.syncedLyrics").mockResolvedValue({
+    synced: null,
+    plain: plainText(rawLyrics().lyrics),
+    copyright: plainText(rawLyrics().lyrics_copyright),
+    instrumental: false,
+    source: "jiosaavn",
+  });
   procedure("album.details").mockResolvedValue(
     rawAlbum({
       list: [song(), rawSong({ id: "album-2", title: "Album Neighbour" })],
@@ -80,7 +87,8 @@ describe("SongScreen", () => {
     procedure("song.details").mockReturnValue(new Promise(() => {}));
     await renderScreen(<SongScreen token="song-token" />);
 
-    expect(screen.getAllByRole("progressbar")).toHaveLength(3);
+    // The header and the lyrics lines, as the loaded page opens.
+    expect(screen.getAllByRole("progressbar")).toHaveLength(2);
     expect(screen.queryByText("Play")).toBeNull();
   });
 
@@ -109,9 +117,10 @@ describe("SongScreen", () => {
     expect(
       screen.getByRole("header", { name: "You might like" }),
     ).toBeOnTheScreen();
+    // Signed out: likes need an account, so there is no heart.
     expect(
-      screen.getByRole("button", { name: "Like FA9LA & Friends" }),
-    ).toBeOnTheScreen();
+      screen.queryByRole("button", { name: "Like FA9LA & Friends" }),
+    ).toBeNull();
   });
 
   it("queues the song from the header's menu", async () => {
@@ -149,10 +158,12 @@ describe("SongScreen", () => {
     ]);
   });
 
-  it("collapses lyrics to the snippet and expands them as plain text", async () => {
+  it("collapses lyrics to three lines and expands them as plain text", async () => {
     await renderScreen(<SongScreen token="song-token" />);
 
-    expect(await screen.findByText("First line Second")).toBeOnTheScreen();
+    expect(
+      await screen.findByText("First line\nSecond & third\nbold"),
+    ).toBeOnTheScreen();
     await fireEvent.press(
       screen.getByRole("button", { name: "Read full lyrics" }),
     );
@@ -161,22 +172,34 @@ describe("SongScreen", () => {
       screen.getByText("First line\nSecond & third\nbold"),
     ).toBeOnTheScreen();
     expect(screen.getByText("Lyrics powered by Musixmatch")).toBeOnTheScreen();
-    expect(procedure("get.lyrics")).toHaveBeenCalledWith({ id: SONG_ID });
+    expect(procedure("song.syncedLyrics")).toHaveBeenCalledWith({
+      id: SONG_ID,
+    });
   });
 
-  it("only looks up lyrics for songs that have them", async () => {
+  it("looks up LRCLIB even when JioSaavn has no lyrics", async () => {
     procedure("song.details").mockResolvedValue(
       details({ songs: [song({ has_lyrics: "false" })] }),
     );
     await renderScreen(<SongScreen token="song-token" />);
     await screen.findByText("FA9LA & Friends");
 
-    expect(procedure("get.lyrics")).not.toHaveBeenCalled();
-    expect(screen.queryByRole("header", { name: "Lyrics" })).toBeNull();
+    expect(procedure("song.syncedLyrics")).toHaveBeenCalledWith({
+      id: SONG_ID,
+    });
+    expect(
+      await screen.findByRole("header", { name: "Lyrics" }),
+    ).toBeOnTheScreen();
   });
 
   it("leaves out the lyrics section when upstream has none", async () => {
-    procedure("get.lyrics").mockResolvedValue(null);
+    procedure("song.syncedLyrics").mockResolvedValue({
+      synced: null,
+      plain: null,
+      copyright: null,
+      instrumental: false,
+      source: "jiosaavn",
+    });
     await renderScreen(<SongScreen token="song-token" />);
     await screen.findByText("FA9LA & Friends");
 

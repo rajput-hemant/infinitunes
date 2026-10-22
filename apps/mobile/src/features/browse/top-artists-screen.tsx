@@ -39,6 +39,7 @@ export function TopArtistsScreen() {
       <Stack.Screen options={{ title: "Top Artists" }} />
       <CatalogScreen
         query={{ ...artists, items: artists.data ?? [] }}
+        round
         keyOf={(artist) => artist.id}
         renderCard={(artist, width) => (
           <MediaCard item={artist} width={width} />

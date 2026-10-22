@@ -1,13 +1,12 @@
 import type { SongRowItem } from "@infinitunes/types";
 import { Stack } from "expo-router";
 
-import { SongListSkeleton } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 import { useFavoriteToggle } from "~/user-data/favorites";
 
 import { LibraryListView } from "./library-list-view";
 import { SignedInGate } from "./signed-in-gate";
-import { SongCollection } from "./song-collection";
+import { SongCollection, SongCollectionSkeleton } from "./song-collection";
 import { SwipeableRow } from "./swipeable-row";
 import { useLikedSongs } from "./use-liked-songs";
 
@@ -39,7 +38,7 @@ function LikedSongs() {
   return (
     <LibraryListView
       list={list}
-      skeleton={<SongListSkeleton />}
+      skeleton={<SongCollectionSkeleton />}
       empty={{
         icon: { ios: "heart", android: "favorite_border" },
         title: "No liked songs yet",

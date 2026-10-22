@@ -27,7 +27,6 @@ export function EpisodeScreen({ token }: { token: string }) {
           episode={episode}
           modules={modules}
           onRefresh={query.refetch}
-          isRefreshing={query.isRefetching}
         />
       )}
     </DetailFrame>

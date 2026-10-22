@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { endpoints } from "../lib/endpoints";
 import { songInput, songItemsInput, songRecommendInput } from "../lib/inputs";
+import { getSyncedLyrics } from "../lib/synced-lyrics";
 import { publicProcedure, router } from "../trpc";
 import { isRecord, secondaryList, withDownloadUrl } from "./utils";
 
@@ -42,6 +43,10 @@ async function fetchSongObj(
 }
 
 export const songRouter = router({
+  syncedLyrics: publicProcedure
+    .input(z.object({ id: z.string().trim().min(1).max(100) }))
+    .query(({ input, ctx }) => getSyncedLyrics(input.id, ctx.catalogApi)),
+
   // Song ids or a song token: the caller owns knowing these are songs.
   details: publicProcedure
     .input(songInput)

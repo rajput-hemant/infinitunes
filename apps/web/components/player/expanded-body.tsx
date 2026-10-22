@@ -270,6 +270,12 @@ export function ExpandedBody({
         tab={tab}
         onTabChange={setTab}
         visible={showPane}
+        position={position}
+        onSeek={(value) => {
+          onSeekStart();
+          onSeekChange(value);
+          onSeekCommit();
+        }}
       />
     </div>
   );

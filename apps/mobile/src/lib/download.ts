@@ -1,5 +1,5 @@
 import type { QueueSource, StreamQuality } from "@infinitunes/types";
-import { getDownloadLink } from "@infinitunes/types";
+import { getDownloadCandidates } from "@infinitunes/types";
 import { Directory, File, Paths } from "expo-file-system";
 import { shareAsync } from "expo-sharing";
 import { Platform } from "react-native";
@@ -21,18 +21,42 @@ function fileNameFor(name: string): string {
   return `${baseNameFor(name)}.mp4`;
 }
 
-/** Downloads the track's link at `quality` into the cache; rejects without one. */
+/** Shared bitrate fallback for explicit downloads and the playback cache. */
+export async function downloadAudio(
+  track: DownloadableTrack,
+  quality: StreamQuality,
+  destination: File,
+): Promise<{ file: File; source: string }> {
+  let failure: unknown = new Error("This song can't be downloaded right now.");
+  for (const source of getDownloadCandidates(
+    track.download_url,
+    quality,
+    track.maxQuality,
+  )) {
+    try {
+      const file = await File.downloadFileAsync(source, destination, {
+        idempotent: true,
+      });
+      return { file, source };
+    } catch (error) {
+      failure = error;
+      // Android can leave a partial file after a failed transfer.
+      if (destination.exists) destination.delete();
+    }
+  }
+  throw failure;
+}
+
 async function downloadToCache(
   track: DownloadableTrack,
   quality: StreamQuality,
-): Promise<File> {
-  const link = getDownloadLink(track.download_url, quality, track.maxQuality);
-  if (!link) throw new Error("This song can't be downloaded right now.");
-  return File.downloadFileAsync(
-    link,
+) {
+  const { file } = await downloadAudio(
+    track,
+    quality,
     new File(Paths.cache, fileNameFor(track.name)),
-    { idempotent: true },
   );
+  return file;
 }
 
 /**

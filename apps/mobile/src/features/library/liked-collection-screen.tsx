@@ -5,7 +5,7 @@ import { GridCell } from "~/components/grid-cell";
 import { MediaCard } from "~/components/media-card";
 import { ShelfSkeleton } from "~/components/skeletons";
 import { Text } from "~/components/ui/text";
-import { GRID_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
+import { CARD_COLUMNS, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
 import { sizes } from "~/theme/tokens";
 
@@ -20,12 +20,12 @@ import { useLikedCollection } from "./use-liked-collection";
 function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
   const { title, emptyMessage, icon } = LIKED_COLLECTIONS[kind];
   const list = useLikedCollection(kind);
-  const cardWidth = useGridCardWidth();
+  const cardWidth = useGridCardWidth(CARD_COLUMNS);
 
   return (
     <LibraryListView
       list={list}
-      skeleton={<ShelfSkeleton cards={GRID_COLUMNS} />}
+      skeleton={<ShelfSkeleton cards={CARD_COLUMNS} />}
       empty={{
         icon,
         title: `No ${title.toLowerCase()} yet`,
@@ -35,7 +35,7 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
       {({ items, missing, refreshing, refresh }) => (
         <FlashList
           data={items}
-          numColumns={GRID_COLUMNS}
+          numColumns={CARD_COLUMNS}
           keyExtractor={(card) => card.url}
           renderItem={({ item, index }) => (
             <GridCell index={index}>

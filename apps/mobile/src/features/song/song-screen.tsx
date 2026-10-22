@@ -19,16 +19,18 @@ import { useMemo } from "react";
 
 import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
-import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
 import { SecondaryShelf } from "~/components/secondary-shelf";
 import { SectionHeader } from "~/components/section-header";
 import { Shelf } from "~/components/shelf";
 import {
+  EntityHeaderSkeleton,
   SectionHeaderSkeleton,
   SongListSkeleton,
+  TextBlockSkeleton,
 } from "~/components/skeletons";
 import { TrackList } from "~/components/track-list";
+import { entityQueries } from "~/lib/entity-queries";
 import { joinMeta } from "~/lib/meta";
 import { trpc } from "~/lib/trpc";
 import { playAll } from "~/playback/play-collection";
@@ -61,7 +63,7 @@ type SongScreenProps = {
 
 export function SongScreen({ token }: SongScreenProps) {
   const query = useQuery({
-    ...trpc.song.details.queryOptions({ token }),
+    ...entityQueries.song(token),
     select: selectSong,
   });
   // Independent of the song: starts with it instead of after it.
@@ -73,11 +75,18 @@ export function SongScreen({ token }: SongScreenProps) {
   return (
     <DetailScreen
       query={query}
-      skeleton={<DetailSkeleton rows={1} shuffle={false} />}
+      skeleton={
+        // The header, then the lyrics section's own loading lines, which
+        // `LyricsSection` keeps showing until the lyrics arrive.
+        <>
+          <EntityHeaderSkeleton shuffle={false} />
+          <TextBlockSkeleton />
+        </>
+      }
       noun="Song"
       icon={{ ios: "music.note", android: "music_note" }}
       refreshKeys={[
-        trpc.get.lyrics.pathKey(),
+        trpc.song.syncedLyrics.pathKey(),
         trpc.album.details.pathKey(),
         trpc.song.recommendations.pathKey(),
         trpc.get.trending.pathKey(),
@@ -123,7 +132,7 @@ function SongPage({ song, modules, trending }: SongPageProps) {
         like={{ type: "song", token: song.id }}
         actions={<CollectionMenu name={row.name} rows={rows} />}
       />
-      {info.has_lyrics === "true" ? <LyricsSection songId={song.id} /> : null}
+      <LyricsSection songId={song.id} />
       <SongCredits song={song} />
       <MoreFromAlbum song={row} albumUrl={info.album_url} />
       <SecondaryShelf

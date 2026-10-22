@@ -57,15 +57,11 @@ describe("LikeButton announcements (VoiceOver)", () => {
     });
   });
 
-  it("stays quiet when nothing was liked (signed out)", async () => {
+  it("shows no heart while signed out", async () => {
     await renderWithProviders(
       <LikeButton type="song" token="BSaNI3Yr" name="FA9LA" />,
     );
 
-    await fireEvent.press(
-      await screen.findByRole("button", { name: "Like FA9LA" }),
-    );
-
-    expect(announce).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: "Like FA9LA" })).toBeNull();
   });
 });

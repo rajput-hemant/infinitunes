@@ -1,8 +1,9 @@
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { SongListSkeleton } from "~/components/skeletons";
+import { Spinner } from "~/components/ui/spinner";
 
 type PagedFooterProps = {
   isPending: boolean;
@@ -35,7 +36,7 @@ export function PagedFooter({
   if (isFetchingNextPage) {
     return (
       <View className="py-4">
-        <ActivityIndicator />
+        <Spinner />
       </View>
     );
   }

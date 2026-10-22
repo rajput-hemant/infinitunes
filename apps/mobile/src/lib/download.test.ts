@@ -59,7 +59,12 @@ describe("saveTracks", () => {
   });
 
   it("keeps going when one download fails", async () => {
-    jest.mocked(File.downloadFileAsync).mockRejectedValueOnce(new Error("404"));
+    // All four candidates at or below high fail for the first song.
+    for (let i = 0; i < 4; i += 1) {
+      jest
+        .mocked(File.downloadFileAsync)
+        .mockRejectedValueOnce(new Error("404"));
+    }
     const songs = [rawSong({ id: "a" }), rawSong({ id: "b" })].map(toSongRow);
 
     const result = await saveTracks(new Directory(), songs, "high");

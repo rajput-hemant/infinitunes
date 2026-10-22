@@ -1,5 +1,4 @@
 import { fireEvent, screen } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { renderScreen } from "~/test/render";
 import { authClient } from "~/test/session-mock";
@@ -52,9 +51,6 @@ describe("ResetPasswordForm", () => {
       newPassword: "Secret#123",
       token: "tok_123",
     });
-    expect(toast.success).toHaveBeenCalledWith(
-      "Password reset. Sign in with your new password.",
-    );
   });
 
   it("turns a rejected token into the invalid-link state", async () => {
@@ -68,10 +64,9 @@ describe("ResetPasswordForm", () => {
     await reset("Secret#123", "Secret#123");
 
     expect(screen.getByText("Request a new link")).toBeOnTheScreen();
-    expect(toast.error).not.toHaveBeenCalled();
   });
 
-  it("toasts any other failure and keeps the form", async () => {
+  it("keeps the form on any other failure", async () => {
     authClient.resetPassword.mockResolvedValueOnce({ error: { status: 429 } });
     await renderScreen(
       <ResetPasswordForm token="tok_123" linkError={undefined} />,
@@ -79,9 +74,6 @@ describe("ResetPasswordForm", () => {
 
     await reset("Secret#123", "Secret#123");
 
-    expect(toast.error).toHaveBeenCalledWith(
-      "Too many attempts. Please wait a minute and try again.",
-    );
     expect(screen.getByLabelText("New password")).toBeOnTheScreen();
   });
 });

@@ -1,17 +1,15 @@
-import { useTheme } from "expo-router";
 import { View } from "react-native";
 import type { ViewProps } from "react-native";
 
+import { useTokenColor } from "~/theme/use-palette";
+
 /**
  * A floating control's background: an elevated Material 3 surface container
- * (Android has no glass material).
+ * (`surfaceContainerHigh`; Android has no glass material).
  */
 export function GlassSurface({ style, ...props }: ViewProps) {
-  const { colors } = useTheme();
+  const card = useTokenColor("card");
   return (
-    <View
-      style={[{ backgroundColor: colors.card, elevation: 3 }, style]}
-      {...props}
-    />
+    <View style={[{ backgroundColor: card, elevation: 3 }, style]} {...props} />
   );
 }

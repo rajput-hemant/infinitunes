@@ -1,0 +1,311 @@
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlayer.kt
+index fb2d0b5..7a6bf4f 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlayer.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/AudioPlayer.kt
+@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference
+ 
+ private const val PLAYBACK_STATUS_UPDATE = "playbackStatusUpdate"
+ private const val AUDIO_SAMPLE_UPDATE = "audioSampleUpdate"
++private const val REMOTE_COMMAND = "remoteCommand"
+ private const val SEEK_JUMP_INTERVAL_MS: Long = 10_000
+ 
+ @UnstableApi
+@@ -72,6 +73,18 @@ class AudioPlayer(
+   override val isLive: Boolean
+     get() = ref.isCurrentMediaItemLive
+ 
++  // Remote next/previous (lock screen, headset, Bluetooth) are decided by JS: the player holds one source.
++  override val supportsNextTrack = true
++  override val supportsPreviousTrack = true
++
++  override fun nextTrack() {
++    emit(REMOTE_COMMAND, mapOf("command" to "nextTrack"))
++  }
++
++  override fun previousTrack() {
++    emit(REMOTE_COMMAND, mapOf("command" to "previousTrack"))
++  }
++
+   val currentOffsetFromLive: Double?
+     get() {
+       val offset = ref.currentLiveOffset
+@@ -174,6 +187,7 @@ class AudioPlayer(
+     return mapOf(
+       "id" to id,
+       "currentTime" to currentTime,
++      "bufferedTime" to (ref.bufferedPosition.coerceAtLeast(0L) / 1000.0),
+       "playbackState" to playbackStateToString(ref.playbackState),
+       "timeControlStatus" to if (playingStatus) {
+         "playing"
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/BaseAudioPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/BaseAudioPlayer.kt
+index 53571c6..eb4bd88 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/BaseAudioPlayer.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/BaseAudioPlayer.kt
+@@ -63,7 +63,7 @@ abstract class BaseAudioPlayer(
+         sendStatusUpdate()
+       }
+       .onEach {
+-        if (playing) {
++        if (playing || ref.isLoading) {
+           sendStatusUpdate()
+         }
+       }
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/PlayRequestingPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/PlayRequestingPlayer.kt
+index b3a7bf7..e54a148 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/PlayRequestingPlayer.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/PlayRequestingPlayer.kt
+@@ -10,8 +10,37 @@ import androidx.media3.common.util.UnstableApi
+ @UnstableApi
+ internal class PlayRequestingPlayer(
+   player: Player,
+-  private val onPlay: () -> Unit
++  private val onPlay: () -> Unit,
++  // A single-source player has no next/previous item; the owner (JS) picks the track, so these
++  // commands are advertised and forwarded to it instead of seeking within the item list.
++  private val onNext: (() -> Unit)? = null,
++  private val onPrevious: (() -> Unit)? = null
+ ) : ForwardingPlayer(player) {
++  private val forwardedCommands = listOfNotNull(
++    onNext?.let { Player.COMMAND_SEEK_TO_NEXT },
++    onNext?.let { Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM },
++    onPrevious?.let { Player.COMMAND_SEEK_TO_PREVIOUS },
++    onPrevious?.let { Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM }
++  )
++
++  override fun getAvailableCommands(): Player.Commands =
++    super.getAvailableCommands().buildUpon().addAll(*forwardedCommands.toIntArray()).build()
++
++  override fun isCommandAvailable(command: Int): Boolean =
++    command in forwardedCommands || super.isCommandAvailable(command)
++
++  override fun hasNextMediaItem(): Boolean = onNext != null || super.hasNextMediaItem()
++
++  override fun hasPreviousMediaItem(): Boolean = onPrevious != null || super.hasPreviousMediaItem()
++
++  override fun seekToNext() = onNext?.invoke() ?: super.seekToNext()
++
++  override fun seekToNextMediaItem() = onNext?.invoke() ?: super.seekToNextMediaItem()
++
++  override fun seekToPrevious() = onPrevious?.invoke() ?: super.seekToPrevious()
++
++  override fun seekToPreviousMediaItem() = onPrevious?.invoke() ?: super.seekToPreviousMediaItem()
++
+   override fun play() = onPlay()
+ 
+   override fun setPlayWhenReady(playWhenReady: Boolean) {
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
+index 255baad..3f8198c 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/AudioControlsService.kt
+@@ -24,6 +24,7 @@ import androidx.media3.session.MediaSessionService
+ import androidx.media3.session.MediaStyleNotificationHelper
+ import androidx.media3.session.SessionCommand
+ import expo.modules.audio.AudioLockScreenOptions
++import expo.modules.audio.AudioPlaylist
+ import expo.modules.audio.LockScreenPlayable
+ import expo.modules.audio.Metadata
+ import expo.modules.audio.PlayRequestingPlayer
+@@ -280,7 +281,7 @@ class AudioControlsService : MediaSessionService() {
+         CommandButton.Builder(CommandButton.ICON_PREVIOUS)
+           .setDisplayName("Previous Track")
+           .setEnabled(true)
+-          .setSessionCommand(SessionCommand(ACTION_PREVIOUS_TRACK, Bundle.EMPTY))
++          .setPlayerCommand(Player.COMMAND_SEEK_TO_PREVIOUS)
+           .setSlots(CommandButton.SLOT_BACK)
+           .build()
+       )
+@@ -321,7 +322,7 @@ class AudioControlsService : MediaSessionService() {
+         CommandButton.Builder(CommandButton.ICON_NEXT)
+           .setDisplayName("Next Track")
+           .setEnabled(true)
+-          .setSessionCommand(SessionCommand(ACTION_NEXT_TRACK, Bundle.EMPTY))
++          .setPlayerCommand(Player.COMMAND_SEEK_TO_NEXT)
+           .setSlots(CommandButton.SLOT_FORWARD)
+           .build()
+       )
+@@ -383,7 +384,13 @@ class AudioControlsService : MediaSessionService() {
+   }
+ 
+   private fun resolveSessionPlayer(playable: LockScreenPlayable, options: AudioLockScreenOptions?): Player {
+-    val player = PlayRequestingPlayer(playable.player) { playable.requestPlay() }
++    val ownsTrackChoice = playable !is AudioPlaylist
++    val player = PlayRequestingPlayer(
++      playable.player,
++      onPlay = { playable.requestPlay() },
++      onNext = if (ownsTrackChoice) ({ playable.nextTrack() }) else null,
++      onPrevious = if (ownsTrackChoice) ({ playable.previousTrack() }) else null
++    )
+     val isLive = options?.isLiveStream ?: playable.isLive
+     if (!isLive) {
+       return player
+diff --git a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
+index 18203a3..c70f234 100644
+--- a/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
++++ b/node_modules/expo-audio/android/src/main/java/expo/modules/audio/service/MetadataInjectingPlayer.kt
+@@ -3,6 +3,7 @@ package expo.modules.audio.service
+ import android.os.Handler
+ import android.os.Looper
+ import androidx.core.net.toUri
++import androidx.media3.common.C
+ import androidx.media3.common.FlagSet
+ import androidx.media3.common.ForwardingPlayer
+ import androidx.media3.common.MediaMetadata
+@@ -45,6 +46,8 @@ internal class MetadataInjectingPlayer(
+       .setAlbumTitle(metadata?.albumTitle)
+       .setArtworkUri(metadata?.artworkUrl?.toString()?.toUri())
+       .setArtworkData(null, null)
++      // The notification's progress bar and the lock screen's scrubber need the length.
++      .setDurationMs(duration.takeIf { it != C.TIME_UNSET && !isCurrentMediaItemLive })
+       .build()
+   }
+ 
+@@ -89,5 +92,13 @@ internal class MetadataInjectingPlayer(
+     override fun onEvents(player: Player, events: Player.Events) {
+       listener.onEvents(this@MetadataInjectingPlayer, events)
+     }
++
++    // The length is known once the item is ready: republish the metadata that carries it.
++    override fun onPlaybackStateChanged(playbackState: Int) {
++      listener.onPlaybackStateChanged(playbackState)
++      if (playbackState == Player.STATE_READY) {
++        listener.onMediaMetadataChanged(this@MetadataInjectingPlayer.mediaMetadata)
++      }
++    }
+   }
+ }
+diff --git a/node_modules/expo-audio/build/Audio.types.d.ts b/node_modules/expo-audio/build/Audio.types.d.ts
+index 332b0c2..37ccd1e 100644
+--- a/node_modules/expo-audio/build/Audio.types.d.ts
++++ b/node_modules/expo-audio/build/Audio.types.d.ts
+@@ -206,6 +206,8 @@ export type AudioStatus = {
+     id: string;
+     /** Current playback position in seconds. */
+     currentTime: number;
++    /** End of the loaded range containing the playhead, in seconds (native players). */
++    bufferedTime: number;
+     /** String representation of the player's internal playback state. */
+     playbackState: string;
+     /** String representation of the player's time control status (playing/paused/waiting). */
+diff --git a/node_modules/expo-audio/build/AudioModule.types.d.ts b/node_modules/expo-audio/build/AudioModule.types.d.ts
+index 0d63c9b..d4d7bfb 100644
+--- a/node_modules/expo-audio/build/AudioModule.types.d.ts
++++ b/node_modules/expo-audio/build/AudioModule.types.d.ts
+@@ -222,6 +222,11 @@ export type AudioEvents = {
+     playbackStatusUpdate(status: AudioStatus): void;
+     /** Fired when audio sampling is enabled and new sample data is available. */
+     audioSampleUpdate(data: AudioSample): void;
++  /**
++   * Patched (infinitunes): fired when the lock screen, a headset or Bluetooth asks for the next or
++   * previous track. Needs `showNextTrack`/`showPreviousTrack` in the lock screen options.
++   */
++  remoteCommand(event: { command: 'nextTrack' | 'previousTrack' }): void;
+ };
+ export declare class AudioRecorder extends SharedObject<RecordingEvents> {
+     /**
+diff --git a/node_modules/expo-audio/ios/AudioPlayer.swift b/node_modules/expo-audio/ios/AudioPlayer.swift
+index 0f68a52..6a2e383 100644
+--- a/node_modules/expo-audio/ios/AudioPlayer.swift
++++ b/node_modules/expo-audio/ios/AudioPlayer.swift
+@@ -4,6 +4,7 @@ import Combine
+ private enum AudioConstants {
+   static let playbackStatus = "playbackStatusUpdate"
+   static let audioSample = "audioSampleUpdate"
++  static let remoteCommand = "remoteCommand"
+ }
+ 
+ public class AudioPlayer: SharedRef<AVPlayer>, Playable, LockScreenPlayable {
+@@ -147,12 +148,26 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable, LockScreenPlayable {
+     }
+   }
+ 
++  private func bufferedTime(at position: Double) -> Double {
++    for value in ref.currentItem?.loadedTimeRanges ?? [] {
++      let range = value.timeRangeValue
++      let start = range.start.seconds
++      let end = CMTimeRangeGetEnd(range).seconds
++      if start.isFinite && end.isFinite && start <= position && position <= end {
++        return max(0, end)
++      }
++    }
++    return 0
++  }
++
+   func currentStatus(knownCurrentTime: Double? = nil) -> [String: Any?] {
+     let currentDuration = ref.status == .readyToPlay ? duration : 0.0
+     let rate = isPlaying ? ref.rate : currentRate
++    let position = knownCurrentTime ?? currentTime
+     return [
+       "id": id,
+-      "currentTime": knownCurrentTime ?? currentTime,
++      "currentTime": position,
++      "bufferedTime": bufferedTime(at: position),
+       "playbackState": statusToString(status: ref.status),
+       "timeControlStatus": timeControlStatusString(status: ref.timeControlStatus),
+       "reasonForWaitingToPlay": reasonForWaitingToPlayString(status: ref.reasonForWaitingToPlay),
+@@ -182,6 +197,23 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable, LockScreenPlayable {
+     }
+   }
+ 
++  // Remote next/previous (lock screen, headset, CarPlay) are decided by JS: the player holds one source.
++  var supportsNextTrack: Bool {
++    true
++  }
++
++  var supportsPreviousTrack: Bool {
++    true
++  }
++
++  func nextTrack() {
++    emit(event: AudioConstants.remoteCommand, payload: ["command": "nextTrack"])
++  }
++
++  func previousTrack() {
++    emit(event: AudioConstants.remoteCommand, payload: ["command": "previousTrack"])
++  }
++
+   func updateStatus(with dict: [String: Any]) {
+     // Reading currentTime waits on the player's lock while a source swap pauses it.
+     var arguments = currentStatus(knownCurrentTime: dict["currentTime"] as? Double)
+@@ -224,6 +256,13 @@ public class AudioPlayer: SharedRef<AVPlayer>, Playable, LockScreenPlayable {
+   }
+ 
+   private func setupPublisher() {
++    // The playhead observer does not tick while paused or waiting for data.
++    ref.publisher(for: \.currentItem?.loadedTimeRanges)
++      .sink { [weak self] _ in
++        self?.updateStatus(with: [:])
++      }
++      .store(in: &cancellables)
++
+     ref.publisher(for: \.currentItem?.status)
+       .sink { [weak self] status in
+         guard let self, let status else {
+diff --git a/node_modules/expo-audio/src/Audio.types.ts b/node_modules/expo-audio/src/Audio.types.ts
+index fe5f5c3..aea5894 100644
+--- a/node_modules/expo-audio/src/Audio.types.ts
++++ b/node_modules/expo-audio/src/Audio.types.ts
+@@ -219,6 +219,8 @@ export type AudioStatus = {
+   id: string;
+   /** Current playback position in seconds. */
+   currentTime: number;
++  /** End of the loaded range containing the playhead, in seconds (native players). */
++  bufferedTime: number;
+   /** String representation of the player's internal playback state. */
+   playbackState: string;
+   /** String representation of the player's time control status (playing/paused/waiting). */
+diff --git a/node_modules/expo-audio/src/AudioModule.types.ts b/node_modules/expo-audio/src/AudioModule.types.ts
+index 3194a8e..0dde086 100644
+--- a/node_modules/expo-audio/src/AudioModule.types.ts
++++ b/node_modules/expo-audio/src/AudioModule.types.ts
+@@ -281,6 +281,11 @@ export type AudioEvents = {
+   playbackStatusUpdate(status: AudioStatus): void;
+   /** Fired when audio sampling is enabled and new sample data is available. */
+   audioSampleUpdate(data: AudioSample): void;
++  /**
++   * Patched (infinitunes): fired when the lock screen, a headset or Bluetooth asks for the next or
++   * previous track. Needs `showNextTrack`/`showPreviousTrack` in the lock screen options.
++   */
++  remoteCommand(event: { command: 'nextTrack' | 'previousTrack' }): void;
+ };
+ 
+ export declare class AudioRecorder extends SharedObject<RecordingEvents> {

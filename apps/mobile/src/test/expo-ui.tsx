@@ -1,6 +1,11 @@
 import { Children, isValidElement } from "react";
 import type { ReactNode } from "react";
-import { Pressable, Text as NativeText, View } from "react-native";
+import {
+  Pressable,
+  Switch as NativeSwitch,
+  Text as NativeText,
+  View,
+} from "react-native";
 
 /**
  * `@expo/ui` for screens that render its native lists (`jest.mock("@expo/ui", () =>
@@ -32,6 +37,7 @@ export const FieldGroup = Object.assign(
 
 export const Text = NativeText;
 export const Spacer = () => null;
+export const Icon = () => null;
 
 function Stack({ children, testID }: WithChildren & { testID?: string }) {
   return <View testID={testID}>{children}</View>;
@@ -86,3 +92,21 @@ export const Picker = Object.assign(
   ),
   { Item: PickerItem },
 );
+
+export function Switch({
+  label,
+  value,
+  onValueChange,
+}: {
+  label?: string;
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+}) {
+  return (
+    <NativeSwitch
+      accessibilityLabel={label}
+      value={value}
+      onValueChange={onValueChange}
+    />
+  );
+}

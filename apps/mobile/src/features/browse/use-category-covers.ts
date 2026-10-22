@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 
 import { trpc } from "~/lib/trpc";
 
@@ -10,7 +9,7 @@ const FIRST_ONLY = { page: 1, n: 1 } as const;
  * item deep (the web's `n: 1`). Its artwork decorates the tile, and the mix
  * tile links to it. A list that fails or is empty leaves its tile plain, so
  * the tiles never wait on the network. `refresh` refetches them all (pull to
- * refresh); `refreshing` stays on until every one has settled.
+ * refresh).
  */
 export function useCategoryCovers() {
   const home = trpc.home.home.queryOptions({});
@@ -48,15 +47,8 @@ export function useCategoryCovers() {
       select: (modules) => modules.tag_mixes?.[0],
     }),
   };
-  const [refreshing, setRefreshing] = useState(false);
-
-  async function refresh() {
-    setRefreshing(true);
-    try {
-      await Promise.all(Object.values(queries).map((query) => query.refetch()));
-    } finally {
-      setRefreshing(false);
-    }
+  function refresh() {
+    return Promise.all(Object.values(queries).map((query) => query.refetch()));
   }
 
   return {
@@ -70,7 +62,6 @@ export function useCategoryCovers() {
       newReleases: queries.newReleases.data,
       mix: queries.mix.data,
     },
-    refreshing,
     refresh,
   };
 }

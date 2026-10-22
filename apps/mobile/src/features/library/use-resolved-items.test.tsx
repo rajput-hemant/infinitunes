@@ -1,7 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import type { ReactNode } from "react";
-import { toast } from "sonner-native";
 
 import { signInAs } from "~/test/session-mock";
 import { deferred } from "~/test/user-library";
@@ -174,7 +173,7 @@ describe("useResolvedItems", () => {
     );
   });
 
-  it("refreshes the source and the items, and toasts when the lookup fails", async () => {
+  it("refreshes the source and the items, and keeps the list when the lookup fails", async () => {
     const source = idsOf(["a"]);
     const resolve = jest
       .fn<Promise<Item[] | undefined>, [string[]]>()
@@ -188,7 +187,7 @@ describe("useResolvedItems", () => {
     });
 
     expect(source.reload).toHaveBeenCalledTimes(1);
-    await waitFor(() => expect(toast.error).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(resolve).toHaveBeenCalledTimes(2));
     // The list stays as it was.
     expect(result.current).toMatchObject({
       status: "ready",

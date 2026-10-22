@@ -8,6 +8,7 @@ import { persistedStorage } from "./persisted-storage";
 type Preferences = {
   /** Bitrate playback asks for first; it steps down on a load error. */
   streamQuality: StreamQuality;
+  cacheFrequentSongs: boolean;
   /** Bitrate a download asks for, capped at what the song has. */
   downloadQuality: StreamQuality;
   /** The largest artwork the app loads; smaller layouts ask for less anyway. */
@@ -21,6 +22,7 @@ type Preferences = {
 
 type PreferenceActions = {
   setStreamQuality: (quality: StreamQuality) => void;
+  setCacheFrequentSongs: (enabled: boolean) => void;
   setDownloadQuality: (quality: StreamQuality) => void;
   setImageQuality: (quality: ImageQuality) => void;
   setLanguages: (languages: Lang[]) => void;
@@ -33,6 +35,9 @@ export const preferencesStore = createStore<PreferencesStore>()(
   persist(
     (set) => ({
       streamQuality: "excellent",
+      cacheFrequentSongs: true,
+      setCacheFrequentSongs: (cacheFrequentSongs) =>
+        set({ cacheFrequentSongs }),
       downloadQuality: "excellent",
       imageQuality: "high",
       languages: [],
@@ -46,10 +51,17 @@ export const preferencesStore = createStore<PreferencesStore>()(
       storage: persistedStorage<Preferences>(),
       partialize: ({
         streamQuality,
+        cacheFrequentSongs,
         downloadQuality,
         imageQuality,
         languages,
-      }) => ({ streamQuality, downloadQuality, imageQuality, languages }),
+      }) => ({
+        streamQuality,
+        cacheFrequentSongs,
+        downloadQuality,
+        imageQuality,
+        languages,
+      }),
     },
   ),
 );

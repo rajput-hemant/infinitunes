@@ -1,6 +1,5 @@
 import type { Episode, MediaType, Song } from "@infinitunes/types";
 import { parseToken, toSongRow } from "@infinitunes/types";
-import { toast } from "sonner-native";
 
 import { trpcClient } from "~/lib/trpc";
 import { stationRef } from "~/navigation/entity-href";
@@ -60,26 +59,21 @@ async function tracksOf(
 /**
  * Plays a catalog item from its card (album, playlist, artist, show,
  * station...): fetches its tracks and replaces the queue, or plays the
- * station. Failures toast; nothing throws, so a handler can `void` it.
+ * station. Failures are silent; nothing throws, so a handler can `void` it.
  */
 export async function playEntity(type: PlayableType, url: string) {
   if (type === "radio_station") {
     const station = stationRef(url);
     if (station) await playStation(station);
-    else toast.error("Couldn't load this station");
     return;
   }
   let tracks: (Song | Episode)[];
   try {
     tracks = await tracksOf(type, parseToken(url));
   } catch {
-    toast.error("Couldn't load songs");
     return;
   }
-  if (tracks.length === 0) {
-    toast.error("Nothing to play here yet.");
-    return;
-  }
+  if (tracks.length === 0) return;
   playAll(tracks.map(toSongRow));
 }
 
@@ -88,7 +82,7 @@ export type QueueableType = Exclude<PlayableType, "radio_station">;
 
 /**
  * Queues a catalog item's tracks right after the current one (`next`) or at
- * the end (`last`), from its card's menu. Failures toast, as `playEntity`.
+ * the end (`last`), from its card's menu. Failures are silent, as `playEntity`.
  */
 export async function queueEntity(
   type: QueueableType,
@@ -99,21 +93,12 @@ export async function queueEntity(
   try {
     tracks = await tracksOf(type, parseToken(url));
   } catch {
-    toast.error("Couldn't load songs");
     return;
   }
-  if (tracks.length === 0) {
-    toast.error("Nothing to play here yet.");
-    return;
-  }
+  if (tracks.length === 0) return;
   const rows = tracks.map(toSongRow);
   const { playNext, addToQueue } = playerStore.getState();
   // Each insert lands right after the current track, so insert backwards.
   if (position === "next") for (const row of rows.toReversed()) playNext(row);
   else for (const row of rows) addToQueue(row);
-  toast(
-    `${rows.length} ${rows.length === 1 ? "song" : "songs"} ${
-      position === "next" ? "playing next" : "added to queue"
-    }`,
-  );
 }

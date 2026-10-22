@@ -1,12 +1,13 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, screen, waitFor } from "@testing-library/react-native";
+import { File } from "expo-file-system";
 import { router } from "expo-router";
 import { Text } from "react-native";
-import { toast } from "sonner-native";
 
 import { audioPlayer } from "~/playback/audio-engine";
 import { playerStore } from "~/playback/player-store";
+import { putFile, resetFiles } from "~/test/expo-file-system";
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure, trpcError } from "~/test/trpc-mock";
@@ -189,32 +190,25 @@ describe("action/play-liked and action/shuffle-liked", () => {
     expect(playerStore.getState().started).toBe(true);
   });
 
-  it("says so when nothing is liked", async () => {
+  it("plays nothing when nothing is liked", async () => {
     procedure("user.getUserFavorites").mockResolvedValue(undefined);
 
     const app = await openLink("/action/play-liked");
 
     await landsOn(app, "/");
-    expect(toast).toHaveBeenCalledWith("No liked songs yet", expect.anything());
     expect(queuedIds()).toEqual([]);
   });
 
-  it("asks a signed-out listener to sign in", async () => {
+  it("does not read the likes of a signed-out listener", async () => {
     await act(async () => signInAs(null));
 
     const app = await openLink("/action/play-liked");
 
     await landsOn(app, "/");
-    expect(jest.mocked(toast.warning)).toHaveBeenCalledWith(
-      "Sign in to continue",
-      expect.objectContaining({
-        description: "You need an account to play your liked songs.",
-      }),
-    );
     expect(procedure("user.getUserFavorites")).not.toHaveBeenCalled();
   });
 
-  it("toasts when the library can't be read", async () => {
+  it("plays nothing when the library can't be read", async () => {
     procedure("user.getUserFavorites").mockRejectedValue(
       trpcError("INTERNAL_SERVER_ERROR"),
     );
@@ -222,7 +216,6 @@ describe("action/play-liked and action/shuffle-liked", () => {
     const app = await openLink("/action/play-liked");
 
     await landsOn(app, "/");
-    expect(jest.mocked(toast.error)).toHaveBeenCalled();
     expect(queuedIds()).toEqual([]);
   });
 });
@@ -243,20 +236,16 @@ describe("action/play-playlist", () => {
     expect(queuedIds()).toEqual(["b", "a"]);
   });
 
-  it("says so when the playlist has no songs", async () => {
+  it("plays nothing when the playlist has no songs", async () => {
     const app = await openLink("/action/play-playlist?id=pl-2");
 
     await landsOn(app, "/");
-    expect(toast).toHaveBeenCalledWith('"Empty" has no songs yet');
   });
 
-  it("toasts for a playlist the listener doesn't have", async () => {
+  it("plays nothing for a playlist the listener doesn't have", async () => {
     const app = await openLink("/action/play-playlist?id=gone");
 
     await landsOn(app, "/");
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Couldn't find that playlist",
-    );
     expect(queuedIds()).toEqual([]);
   });
 });
@@ -281,13 +270,12 @@ describe("action/play-search", () => {
     expect(queuedIds()).toEqual(["top"]);
   });
 
-  it("says so when no song matches", async () => {
+  it("lands back when no song matches", async () => {
     procedure("search.byType").mockRejectedValue(trpcError("NOT_FOUND"));
 
     const app = await openLink("/action/play-search?q=zzzz");
 
     await landsOn(app, "/");
-    expect(toast).toHaveBeenCalledWith('No songs found for "zzzz"');
   });
 });
 
@@ -334,4 +322,14 @@ it("lands on Home for an unknown action", async () => {
 
   await landsOn(app, "/");
   expect(queuedIds()).toEqual([]);
+});
+
+it("clears the song cache as a guest, and lands on Home", async () => {
+  resetFiles();
+  putFile("file:///cache/frequent-songs/song.mp4", 1024 * 1024);
+  putFile("file:///downloads/explicit.mp4", 2048);
+  const app = await openLink("/player");
+  await act(async () => router.push("/action/clear-cache"));
+  await landsOn(app, "/");
+  expect(new File("file:///downloads/explicit.mp4").exists).toBe(true);
 });

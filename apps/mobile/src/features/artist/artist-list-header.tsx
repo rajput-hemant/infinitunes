@@ -5,6 +5,7 @@ import { View } from "react-native";
 
 import { CollectionMenu } from "~/components/collection-menu";
 import { EntityHeader } from "~/components/entity-header";
+import { OptionMenu } from "~/components/option-menu";
 import { SegmentedTabs } from "~/components/segmented-tabs";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
@@ -74,14 +75,21 @@ export function ArtistListHeader({
         value={tab}
         onChange={onTabChange}
       />
+      {/* The order is one choice, not a second tab row: a menu at the list's end. */}
       {isPaged ? (
-        <SegmentedTabs
-          testID="artist-sort"
-          tabs={CATEGORIES}
-          labels={CATEGORY_LABELS}
-          value={category}
-          onChange={onCategoryChange}
-        />
+        <View className="flex-row items-center justify-end px-page">
+          <OptionMenu
+            testID="artist-sort"
+            label="Sort by"
+            variant="plain"
+            options={CATEGORIES.map((id) => ({
+              id,
+              title: CATEGORY_LABELS[id],
+            }))}
+            selectedId={category}
+            onSelect={onCategoryChange}
+          />
+        </View>
       ) : null}
     </View>
   );

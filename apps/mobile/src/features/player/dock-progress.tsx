@@ -17,6 +17,9 @@ const LINE = 2;
 export function DockProgress({ color }: { color: ColorValue }) {
   const position = usePlaybackPosition();
   const duration = usePlaybackStatus((state) => state.duration);
+  const bufferedTime = usePlaybackStatus((state) => state.bufferedTime);
+  const buffered =
+    duration > 0 ? Math.min(Math.max(bufferedTime / duration, 0), 1) : 0;
   const fraction =
     duration > 0 ? Math.min(Math.max(position / duration, 0), 1) : 0;
 
@@ -25,15 +28,32 @@ export function DockProgress({ color }: { color: ColorValue }) {
       pointerEvents="none"
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      testID="dock-progress"
       style={{
         position: "absolute",
         left: 0,
         bottom: 0,
         height: LINE,
-        width: `${fraction * 100}%`,
-        backgroundColor: color,
+        width: "100%",
       }}
-    />
+    >
+      <View
+        testID="dock-buffered"
+        style={{
+          position: "absolute",
+          height: LINE,
+          width: `${buffered * 100}%`,
+          backgroundColor: color,
+          opacity: 0.35,
+        }}
+      />
+      <View
+        testID="dock-progress"
+        style={{
+          height: LINE,
+          width: `${fraction * 100}%`,
+          backgroundColor: color,
+        }}
+      />
+    </View>
   );
 }

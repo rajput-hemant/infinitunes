@@ -16,6 +16,7 @@ import { EntityHeader } from "~/components/entity-header";
 import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
 import { TrackList } from "~/components/track-list";
+import { entityQueries } from "~/lib/entity-queries";
 import { joinMeta } from "~/lib/meta";
 import { songRowsOf } from "~/lib/song-rows";
 import { trpc } from "~/lib/trpc";
@@ -30,9 +31,15 @@ function playlistMeta(playlist: Playlist): string {
   return joinMeta(playlist.more_info.subtitle_desc.toReversed());
 }
 
+/** The credit line, unless it only repeats a fact the meta line already has ("122.2K Fans"). */
+function playlistCredit(playlist: Playlist): string | undefined {
+  const credit = decode(playlist.subtitle);
+  return /\bfans$/i.test(credit) ? undefined : credit || undefined;
+}
+
 /** A catalog playlist, not one of the listener's own (those are in the library). */
 export function PlaylistScreen({ token }: PlaylistScreenProps) {
-  const query = useQuery(trpc.playlist.details.queryOptions({ token }));
+  const query = useQuery(entityQueries.playlist(token));
   // Independent of the playlist: starts with it instead of after it.
   const trending = useQuery({
     ...trpc.get.trending.queryOptions({ type: "playlist" }),
@@ -79,7 +86,7 @@ function PlaylistPage({ playlist, trending }: PlaylistPageProps) {
         image={playlist.image}
         eyebrow="Playlist"
         title={decode(playlist.title)}
-        subtitle={decode(playlist.subtitle)}
+        subtitle={playlistCredit(playlist)}
         meta={playlistMeta(playlist)}
         explicit={isExplicit(playlist.explicit_content)}
         onPlay={() => playAll(rows)}

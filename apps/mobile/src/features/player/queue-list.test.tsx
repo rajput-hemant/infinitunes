@@ -1,7 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderScreen } from "~/test/render";
@@ -46,14 +45,13 @@ describe("QueueList", () => {
     expect(screen.getByText("Nothing else is queued.")).toBeOnTheScreen();
   });
 
-  it("removes an entry from its menu with a toast", async () => {
+  it("removes an entry from its menu", async () => {
     await renderScreen(<QueueList />);
     await screen.findByText("Delta");
 
     await chooseMenuAction("More actions for Delta", "remove");
 
     expect(ids()).toEqual(["a", "b", "c"]);
-    expect(jest.mocked(toast)).toHaveBeenCalledWith("Removed from queue");
   });
 
   it("reorders up next by dragging", async () => {

@@ -160,7 +160,11 @@ describe("combined search results", () => {
     await renderResults({ onSearchArtist });
 
     await fireEvent.press(
-      (await screen.findAllByRole("button", { name: "Flipperachi" }))[0],
+      (
+        await screen.findAllByRole("button", {
+          name: /^Flipperachi(, Artist)?$/,
+        })
+      )[0],
     );
 
     expect(onSearchArtist).toHaveBeenCalledWith("Flipperachi");

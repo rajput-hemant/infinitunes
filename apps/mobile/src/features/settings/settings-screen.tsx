@@ -1,55 +1,34 @@
 import { FieldGroup, Host } from "@expo/ui";
-import { QUALITIES_MAP } from "@infinitunes/types";
-import type { ImageQuality } from "@infinitunes/types";
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import { openBrowserAsync } from "expo-web-browser";
-import { toast } from "sonner-native";
+import { useColorScheme } from "react-native";
 
 import { authClient } from "~/lib/auth-client";
 import { env } from "~/lib/env";
 import { usePreferences } from "~/lib/preferences";
 import { playerDockInset } from "~/navigation/player-dock";
 import {
-  APPEARANCE_MODES,
   appearanceStore,
+  useAccent,
   useAppearanceMode,
+  useCornerStyle,
 } from "~/theme/appearance";
+import { accentColors } from "~/theme/tokens";
 
 import { signOut } from "./end-session";
 import { languagesSummary } from "./languages-screen";
 import { ProfileHeader } from "./profile-header";
-import { PickerRow, ValueRow } from "./selection-rows";
+import { PickerRow, SwitchRow, ValueRow } from "./selection-rows";
+import {
+  accentOptions,
+  appearanceOptions,
+  cornerOptions,
+  imageQualityOptions,
+  qualityOptions,
+} from "./settings-options";
 import { ActionRow, NavigationRow } from "./tap-rows";
-
-const titleCase = (value: string) =>
-  `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
-
-const appearanceOptions = APPEARANCE_MODES.map((mode) => ({
-  label: titleCase(mode),
-  value: mode,
-}));
-
-const qualityOptions = QUALITIES_MAP.map(({ quality, bitrate }) => ({
-  label: `${titleCase(quality)} (${bitrate})`,
-  value: quality,
-}));
-
-const IMAGE_QUALITIES = [
-  "low",
-  "medium",
-  "high",
-] as const satisfies readonly ImageQuality[];
-
-const imageQualityOptions = IMAGE_QUALITIES.map((value) => ({
-  label: titleCase(value),
-  value,
-}));
-
-async function signOutWithToast() {
-  const failure = await signOut();
-  if (failure) toast.error(failure.message);
-}
+import { useSongCacheSettings } from "./use-song-cache-settings";
 
 /**
  * Every setting on one native grouped list (a SwiftUI `Form`, a Material 3
@@ -60,6 +39,10 @@ export function SettingsScreen() {
   const { data: session } = authClient.useSession();
   const user = session?.user;
   const appearance = useAppearanceMode();
+  const accent = useAccent();
+  const corners = useCornerStyle();
+  const scheme = useColorScheme() === "dark" ? "dark" : "light";
+  const accentSwatch = accentColors(accent, scheme)?.primary ?? "#8E8E93";
   const streamQuality = usePreferences((p) => p.streamQuality);
   const downloadQuality = usePreferences((p) => p.downloadQuality);
   const setStreamQuality = usePreferences((p) => p.setStreamQuality);
@@ -67,6 +50,7 @@ export function SettingsScreen() {
   const imageQuality = usePreferences((p) => p.imageQuality);
   const setImageQuality = usePreferences((p) => p.setImageQuality);
   const languages = usePreferences((p) => p.languages);
+  const cache = useSongCacheSettings();
 
   return (
     <Host style={{ flex: 1, paddingBottom: playerDockInset }}>
@@ -77,22 +61,29 @@ export function SettingsScreen() {
               <ProfileHeader user={user} />
               <NavigationRow
                 label="Edit profile"
+                icon={{ name: "person.crop.circle.fill", color: "#0A84FF" }}
                 onPress={() => router.push("/profile")}
               />
               <NavigationRow
                 label="Change password"
+                icon={{ name: "lock.fill", color: "#8E8E93" }}
                 onPress={() => router.push("/password")}
               />
               <ActionRow
                 label="Sign out"
+                icon={{
+                  name: "rectangle.portrait.and.arrow.right",
+                  color: "#FF453A",
+                }}
                 destructive
-                onPress={() => void signOutWithToast()}
+                onPress={() => void signOut()}
               />
             </>
           ) : (
             <NavigationRow
               label="Sign in to continue"
               detail="Sign in to edit your profile and change your password."
+              icon={{ name: "person.crop.circle.fill", color: "#0A84FF" }}
               onPress={() => router.push("/login")}
             />
           )}
@@ -101,65 +92,102 @@ export function SettingsScreen() {
         <FieldGroup.Section title="Appearance">
           <PickerRow
             label="Theme"
+            icon={{ name: "circle.lefthalf.filled", color: "#5E5CE6" }}
             value={appearance}
             options={appearanceOptions}
             onChange={appearanceStore.getState().setMode}
+          />
+          <PickerRow
+            label="Accent color"
+            icon={{ name: "paintpalette.fill", color: accentSwatch }}
+            value={accent}
+            options={accentOptions}
+            onChange={appearanceStore.getState().setAccent}
+          />
+          <PickerRow
+            label="Corners"
+            icon={{ name: "app.fill", color: "#8E8E93" }}
+            value={corners}
+            options={cornerOptions}
+            onChange={appearanceStore.getState().setCorners}
           />
         </FieldGroup.Section>
 
         <FieldGroup.Section title="Playback">
           <PickerRow
             label="Stream quality"
+            icon={{ name: "waveform", color: "#FF375F" }}
             value={streamQuality}
             options={qualityOptions}
             onChange={setStreamQuality}
           />
           <PickerRow
             label="Download quality"
+            icon={{ name: "arrow.down.circle.fill", color: "#30B0C7" }}
             value={downloadQuality}
             options={qualityOptions}
             onChange={setDownloadQuality}
           />
           <PickerRow
             label="Image quality"
+            icon={{ name: "photo.fill", color: "#FF9F0A" }}
             value={imageQuality}
             options={imageQualityOptions}
             onChange={setImageQuality}
           />
           <NavigationRow
             label="Languages"
+            icon={{ name: "globe", color: "#0A84FF" }}
             detail={languagesSummary(languages)}
             onPress={() => router.push("/languages")}
           />
         </FieldGroup.Section>
 
-        <FieldGroup.Section title="Security">
-          {user ? (
+        <FieldGroup.Section title="Storage">
+          <SwitchRow
+            label="Cache frequently played songs"
+            icon={{ name: "arrow.down.circle.fill", color: "#30B0C7" }}
+            value={cache.enabled}
+            onChange={cache.setEnabled}
+          />
+          <ValueRow
+            label="Cached songs"
+            icon={{ name: "internaldrive.fill", color: "#8E8E93" }}
+            value={cache.size}
+          />
+          <ActionRow
+            label="Clear cache"
+            icon={{ name: "trash.fill", color: "#FF453A" }}
+            destructive
+            onPress={cache.clear}
+          />
+        </FieldGroup.Section>
+
+        {user ? (
+          <FieldGroup.Section title="Security">
             <ActionRow
               label="Delete account"
+              icon={{ name: "trash.fill", color: "#FF453A" }}
               destructive
               onPress={() => router.push("/delete-account")}
             />
-          ) : (
-            <NavigationRow
-              label="Sign in to continue"
-              detail="Sign in to manage your account or delete it."
-              onPress={() => router.push("/login")}
-            />
-          )}
-        </FieldGroup.Section>
+          </FieldGroup.Section>
+        ) : null}
 
         <FieldGroup.Section title="About">
           <ActionRow
             label="Privacy policy"
+            icon={{ name: "hand.raised.fill", color: "#30D158" }}
             onPress={() => void openBrowserAsync(`${env.apiUrl}/privacy`)}
           />
           <ActionRow
             label="Terms of service"
+            icon={{ name: "doc.text.fill", color: "#8E8E93" }}
             onPress={() => void openBrowserAsync(`${env.apiUrl}/terms`)}
           />
           <ValueRow
             label="Version"
+            icon={{ name: "info.circle.fill", color: "#8E8E93" }}
             value={Constants.expoConfig?.version ?? ""}
           />
         </FieldGroup.Section>

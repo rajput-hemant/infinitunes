@@ -162,7 +162,7 @@ describe("download notifications", () => {
     );
   });
 
-  it("stays silent while the app is in front (the toast says it)", async () => {
+  it("stays silent while the app is in front", async () => {
     appIs("active");
 
     await notifyDownloadsFinished({ saved: 1, failed: 0 }, 1);

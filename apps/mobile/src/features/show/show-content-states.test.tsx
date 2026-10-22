@@ -1,6 +1,5 @@
 import { rawEpisode, rawShow, SHOW_TOKEN } from "@infinitunes/types/fixtures";
 import { fireEvent, screen, waitFor } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
@@ -20,15 +19,12 @@ beforeEach(() => {
 });
 
 describe("ShowScreen episode list", () => {
-  it("says the episodes are still loading rather than playing nothing", async () => {
+  it("does not play while the episodes are still loading", async () => {
     procedure("show.episodes").mockReturnValue(new Promise(() => {}));
     await renderScreen(<ShowScreen token={SHOW_TOKEN} />);
 
     await fireEvent.press(await screen.findByRole("button", { name: "Play" }));
 
-    expect(jest.mocked(toast)).toHaveBeenCalledWith(
-      "Episodes are still loading",
-    );
     expect(playerStore.getState().queue).toEqual([]);
   });
 

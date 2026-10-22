@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { toast } from "sonner-native";
 
+import { FormError } from "~/components/form/form-error";
 import { FormField } from "~/components/form/form-field";
 import { FormScreen } from "~/components/form/form-screen";
 import { PasswordField } from "~/components/form/password-field";
@@ -24,6 +24,7 @@ export function DeleteAccountForm() {
   const [password, setPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
   const { pending, run } = usePending();
+  const [serverError, setServerError] = useState<string>();
   const confirmed = confirmation === DELETE_CONFIRMATION;
 
   function submit() {
@@ -32,18 +33,10 @@ export function DeleteAccountForm() {
       const failure = await mutationFailure(() =>
         trpcClient.user.deleteUser.mutate({ password: password || undefined }),
       );
-      if (failure) {
-        toast.error(failure);
-        return;
-      }
+      setServerError(failure ?? undefined);
+      if (failure) return;
       // The screen guard returns to the settings list once the session is gone.
-      if (await forgetDeletedAccount()) {
-        toast.success("Account deleted");
-      } else {
-        toast.warning(
-          "Account deleted, but this device couldn't finish signing out. If your account still shows, sign out in Settings.",
-        );
-      }
+      await forgetDeletedAccount();
     });
   }
 
@@ -75,6 +68,7 @@ export function DeleteAccountForm() {
         returnKeyType="done"
         onSubmitEditing={submit}
       />
+      <FormError message={serverError} />
       <Button
         label={pending ? "Deleting..." : "Delete account"}
         disabled={!confirmed || pending}

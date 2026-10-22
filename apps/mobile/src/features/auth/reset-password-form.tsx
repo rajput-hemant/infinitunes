@@ -2,8 +2,8 @@ import { PASSWORD_HINT, resetPasswordSchema } from "@infinitunes/auth/schemas";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { View } from "react-native";
-import { toast } from "sonner-native";
 
+import { FormError } from "~/components/form/form-error";
 import type { TextInputHandle } from "~/components/form/form-field";
 import { FormLink } from "~/components/form/form-link";
 import { PasswordField } from "~/components/form/password-field";
@@ -47,6 +47,7 @@ export function ResetPasswordForm({
     initialValues: { password: "", confirmPassword: "" },
   });
   const { pending, run } = usePending();
+  const [serverError, setServerError] = useState<string>();
 
   if (!token || linkError || tokenRejected) return <InvalidLink />;
 
@@ -57,12 +58,9 @@ export function ResetPasswordForm({
       const failure = await authFailure(() =>
         authClient.resetPassword({ newPassword: reset.password, token }),
       );
+      setServerError(failure?.message);
       if (failure?.code === "INVALID_TOKEN") setTokenRejected(true);
-      else if (failure) toast.error(failure.message);
-      else {
-        toast.success("Password reset. Sign in with your new password.");
-        router.replace("/login");
-      }
+      else if (!failure) router.replace("/login");
     });
   }
 
@@ -90,6 +88,7 @@ export function ResetPasswordForm({
         returnKeyType="go"
         onSubmitEditing={submit}
       />
+      <FormError message={serverError} />
       <Button
         label={pending ? "Resetting..." : "Reset password"}
         disabled={pending}

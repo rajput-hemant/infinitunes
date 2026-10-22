@@ -1,17 +1,22 @@
 import { usePlayhead } from "@infinitunes/core/react/use-playhead";
 import { useRadioRefill } from "@infinitunes/core/react/use-radio-refill";
 import {
-  PLAYBACK_PROBLEM_MESSAGES,
   useTrackPlayback,
   type LoadTrack,
-  type PlaybackProblem,
 } from "@infinitunes/core/react/use-track-playback";
 import { useAudioPlayerStatus } from "expo-audio";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner-native";
 
 import { usePreferences } from "~/lib/preferences";
+import { queryClient } from "~/lib/query-client";
+import {
+  cachedSongSource,
+  cacheQualifiedListen,
+  createCacheListenTracker,
+  evictCachedSong,
+} from "~/lib/song-cache";
 import { trpcClient } from "~/lib/trpc";
+import { lyricsQueryOptions } from "~/lib/use-lyrics";
 
 import {
   audioPlayer,
@@ -30,10 +35,6 @@ const getPosition = () => audioPlayer.currentTime;
 /** What the engine reported for the source loaded last. */
 type SourceState = { error?: string; loaded: boolean };
 const FRESH_SOURCE: SourceState = { loaded: false };
-
-function showProblem(problem: PlaybackProblem) {
-  toast.error(PLAYBACK_PROBLEM_MESSAGES[problem]);
-}
 
 // Uncached on purpose: every refill must hit upstream for fresh songs.
 const fetchRadioSongs = (stationId: string) =>
@@ -54,8 +55,13 @@ export function PlaybackController() {
   const radio = usePlayer((state) => state.radio);
   const track = usePlayer(selectCurrentTrack);
   const resumeRequest = usePlayer((state) => state.resumeRequest);
-  const { advanceAfterEnd, skipUnplayable, updateQueue } =
-    playerStore.getState();
+  const {
+    advanceAfterEnd,
+    skipToNext,
+    skipToPrevious,
+    skipUnplayable,
+    updateQueue,
+  } = playerStore.getState();
   const streamQuality = usePreferences((state) => state.streamQuality);
   const status = useAudioPlayerStatus(audioPlayer);
   const lockScreenActive = useRef(false);
@@ -67,9 +73,19 @@ export function PlaybackController() {
   // from the previous source. `useTrackPlayback` steps down
   // a bitrate on each new `loadError` (the web's player resets it per load).
   const [source, setSource] = useState<SourceState>(FRESH_SOURCE);
+  const cachedLoad = useRef<{
+    id: string;
+    source: string;
+    options: Parameters<LoadTrack>[1];
+  } | null>(null);
+  const countListen = useRef(createCacheListenTracker());
   const load = useCallback<LoadTrack>((src, options) => {
+    const current = selectCurrentTrack(playerStore.getState());
+    const local = current ? cachedSongSource(current, src) : undefined;
+    cachedLoad.current =
+      local && current ? { id: current.id, source: src, options } : null;
     setSource(FRESH_SOURCE);
-    loadTrack(src, options);
+    loadTrack(local ?? src, options);
   }, []);
 
   useEffect(() => {
@@ -83,7 +99,7 @@ export function PlaybackController() {
     isPlayerInit: started,
     load,
     record: recordPlay,
-    onProblem: showProblem,
+    onProblem: () => undefined,
     loadError: source.error,
     isLooping: repeatOne,
     isReady: source.loaded,
@@ -104,6 +120,17 @@ export function PlaybackController() {
     playing: status.playing,
   });
 
+  // The playing song's lyrics and the next song's are cached before the
+  // listener opens the lyrics (`prefetchQuery` swallows failures).
+  const lyricsIds = [queue[currentIndex], queue[currentIndex + 1]]
+    .flatMap((entry) => (entry?.type === "song" ? [entry.id] : []))
+    .join(",");
+  useEffect(() => {
+    for (const id of lyricsIds.split(",")) {
+      if (id) void queryClient.prefetchQuery(lyricsQueryOptions(id));
+    }
+  }, [lyricsIds]);
+
   useEffect(() => {
     audioPlayer.loop = repeatOne;
   }, [repeatOne]);
@@ -120,6 +147,19 @@ export function PlaybackController() {
     const subscription = audioPlayer.addListener(
       "playbackStatusUpdate",
       (update) => {
+        const current = selectCurrentTrack(playerStore.getState());
+        if (
+          current &&
+          countListen.current(
+            current,
+            update.currentTime,
+            update.duration,
+            update.playing && update.isLoaded && !update.isBuffering,
+            update.didJustFinish,
+          )
+        ) {
+          void cacheQualifiedListen(current, streamQuality);
+        }
         if (update.didJustFinish) {
           // Repeat-one loops in the engine, which plays on from the start.
           if (!audioPlayer.loop) markSourceEnded(true);
@@ -127,6 +167,18 @@ export function PlaybackController() {
         }
         const { error, isLoaded } = update;
         if (error) {
+          const cached = cachedLoad.current;
+          if (cached) {
+            cachedLoad.current = null;
+            evictCachedSong(cached.id);
+            setSource(FRESH_SOURCE);
+            // Retry the same bitrate remotely before charging a failure to the shared ladder.
+            loadTrack(cached.source, {
+              ...cached.options,
+              loop: audioPlayer.loop,
+            });
+            return;
+          }
           // The first error of a load counts; it is the one that failed it.
           setSource((prev) => (prev.error ? prev : { ...prev, error }));
         } else if (isLoaded) {
@@ -135,7 +187,18 @@ export function PlaybackController() {
       },
     );
     return () => subscription.remove();
-  }, [advanceAfterEnd]);
+  }, [advanceAfterEnd, streamQuality]);
+
+  // Lock screen, notification, headset and Bluetooth next/previous: the engine
+  // holds one source (patches/expo-audio), so it only reports the press.
+  useEffect(() => {
+    const subscription = audioPlayer.addListener(
+      "remoteCommand",
+      ({ command }) =>
+        command === "nextTrack" ? skipToNext() : skipToPrevious(),
+    );
+    return () => subscription.remove();
+  }, [skipToNext, skipToPrevious]);
 
   // The queue was emptied under the playing entry (or sign-out reset the
   // session): nothing is left to show or control it, so stop the engine and
@@ -154,8 +217,14 @@ export function PlaybackController() {
       playing: status.playing,
       buffering: status.isBuffering,
       duration: status.duration,
+      bufferedTime: status.bufferedTime ?? 0,
     });
-  }, [status.playing, status.isBuffering, status.duration]);
+  }, [
+    status.playing,
+    status.isBuffering,
+    status.duration,
+    status.bufferedTime,
+  ]);
 
   // Activated once, then only the metadata changes: on Android every
   // activation rebuilds the MediaSession and takes the foreground-service
@@ -167,7 +236,14 @@ export function PlaybackController() {
     if (lockScreenActive.current) {
       audioPlayer.updateLockScreenMetadata(metadata);
     } else {
-      audioPlayer.setActiveForLockScreen(true, metadata);
+      // Tracks are never live streams. Without this iOS infers it from the
+      // item's duration, which is still indefinite while the first track
+      // loads, and the lock screen shows "Live" instead of the length.
+      audioPlayer.setActiveForLockScreen(true, metadata, {
+        isLiveStream: false,
+        showNextTrack: true,
+        showPreviousTrack: true,
+      });
       lockScreenActive.current = true;
     }
   }, [started, track]);

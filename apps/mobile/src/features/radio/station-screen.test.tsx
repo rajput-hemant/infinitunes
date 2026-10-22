@@ -1,6 +1,5 @@
 import { rawStationDetails, rawSong } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { playerStore } from "~/playback/player-store";
 import { startSeededRadio } from "~/playback/radio";
@@ -82,9 +81,6 @@ describe("StationScreen", () => {
 
     await fireEvent.press(screen.getByRole("button", { name: "Play" }));
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "No songs found for this station",
-    );
     expect(playerStore.getState().queue).toHaveLength(0);
   });
 
@@ -126,7 +122,7 @@ describe("startSeededRadio", () => {
     });
   });
 
-  it("toasts instead of playing when the station has no songs", async () => {
+  it("does not play when the station has no songs", async () => {
     procedure("radio.createStation").mockResolvedValue({
       stationId: "artist-7",
     });
@@ -134,19 +130,6 @@ describe("startSeededRadio", () => {
 
     await startSeededRadio({ name: "Nobody" });
 
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Couldn't find songs for this station",
-    );
     expect(playerStore.getState().radio).toBeNull();
-  });
-
-  it("toasts when the station cannot be created", async () => {
-    procedure("radio.createStation").mockRejectedValue(new Error("nope"));
-
-    await startSeededRadio({ name: "Nobody" });
-
-    expect(jest.mocked(toast.error)).toHaveBeenCalledWith(
-      "Couldn't start this station",
-    );
   });
 });

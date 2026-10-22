@@ -1,7 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
-import { toast } from "sonner-native";
 
 import { playbackStatusStore } from "~/playback/playback-status";
 import { playerStore } from "~/playback/player-store";
@@ -124,18 +123,11 @@ describe("SongRow", () => {
     ).toHaveAccessibilityValue({ text: "Explicit, Flipperachi" });
   });
 
-  it("asks a signed-out listener to sign in before liking", async () => {
+  it("shows no heart while signed out", async () => {
     await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
 
-    await fireEvent.press(
-      screen.getByRole("button", { name: "Like FA9LA & Friends" }),
-    );
-
-    expect(toast.warning).toHaveBeenCalledWith(
-      "Sign in to continue",
-      expect.objectContaining({
-        description: "You need an account to like this song.",
-      }),
-    );
+    expect(
+      screen.queryByRole("button", { name: "Like FA9LA & Friends" }),
+    ).toBeNull();
   });
 });

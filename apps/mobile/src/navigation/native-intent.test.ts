@@ -69,4 +69,10 @@ describe("redirectSystemPath", () => {
       jest.restoreAllMocks();
     }
   });
+
+  it("opens JioSaavn's featured playlist links on the playlist route", () => {
+    expect(
+      redirectSystemPath({ path: "infinitunes://featured/top-50/abc__?x=1" }),
+    ).toBe("/playlist/top-50/abc__?x=1");
+  });
 });

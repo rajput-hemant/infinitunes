@@ -13,3 +13,6 @@ export const hasLiquidGlass = isLiquidGlassAvailable();
  */
 export const hasTabBarAccessory =
   Platform.OS === "ios" && Number.parseInt(Platform.Version, 10) >= 26;
+
+/** Native header bar items (separate glass buttons) exist from iOS 26 too. */
+export const hasHeaderBarItems = hasTabBarAccessory;

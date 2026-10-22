@@ -31,6 +31,7 @@
     "./greeting": "./src/greeting.ts",
     "./favorites": "./src/favorites.ts",
     "./liked-songs": "./src/liked-songs.ts",
+    "./lyrics": "./src/lyrics.ts",
     "./optimistic-owner": "./src/optimistic-owner.ts",
     "./playback-order": "./src/playback-order.ts",
     "./queue-position": "./src/queue-position.ts",

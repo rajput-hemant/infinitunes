@@ -1,5 +1,4 @@
 import {
-  FAVORITE_COPY,
   isFavorited,
   type FavoriteLists,
   type FavoriteType,
@@ -9,10 +8,8 @@ import {
   toggleFavorite,
   useFavorite,
 } from "@infinitunes/core/react/optimistic-favorite";
-import { userMessage } from "@infinitunes/core/user-message";
 import { useQuery } from "@tanstack/react-query";
 import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
-import { toast } from "sonner-native";
 
 import { queryClient } from "~/lib/query-client";
 import { trpc, trpcClient } from "~/lib/trpc";
@@ -57,17 +54,12 @@ function persistFavorite(type: FavoriteType, token: string, liked: boolean) {
   const write = liked
     ? trpcClient.user.addToFavorites.mutate(input)
     : trpcClient.user.removeFromFavorites.mutate(input);
-  return write
-    .catch((error: unknown) => {
-      toast.error(userMessage(error));
-      throw error;
-    })
-    .finally(
-      () =>
-        void queryClient.invalidateQueries({
-          queryKey: trpc.user.getUserFavorites.queryKey(),
-        }),
-    );
+  return write.finally(
+    () =>
+      void queryClient.invalidateQueries({
+        queryKey: trpc.user.getUserFavorites.queryKey(),
+      }),
+  );
 }
 
 type FavoriteToggleOptions = { type: FavoriteType; token: string };
@@ -75,7 +67,7 @@ type FavoriteToggleOptions = { type: FavoriteType; token: string };
 /**
  * Optimistic like for one item: `liked` flips in every heart that shows it
  * (row, header, player) in the same frame, the write follows, and a failure
- * rolls back with a toast. Signed out, `toggle` asks the listener to sign in.
+ * rolls back. Signed out, `toggle` asks the listener to sign in.
  * `toggle` returns the liked state it asked for, or `undefined` when it wrote
  * nothing.
  */
@@ -88,9 +80,7 @@ export function useFavoriteToggle({ type, token }: FavoriteToggleOptions) {
 
   function toggle(): boolean | undefined {
     if (!userId) {
-      promptSignIn(
-        `You need an account to like this ${FAVORITE_COPY[type].label.toLowerCase()}.`,
-      );
+      promptSignIn();
       return undefined;
     }
     // Unknown liked state: a write would toggle blindly.
