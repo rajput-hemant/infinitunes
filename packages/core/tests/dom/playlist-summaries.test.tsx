@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, it } from "bun:test";
+import { afterEach, beforeEach, expect, it, jest } from "bun:test";
 
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -35,10 +35,12 @@ const row = (songs: string[]): UserPlaylist => ({
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
-  const promise = new Promise<T>((res) => {
+  let reject!: (reason: Error) => void;
+  const promise = new Promise<T>((res, rej) => {
     resolve = res;
+    reject = rej;
   });
-  return { promise, resolve };
+  return { promise, resolve, reject };
 }
 
 let snapshots: (PlaylistView[] | undefined)[];
@@ -123,4 +125,39 @@ it("shares one membership map and shows a pending add in it", async () => {
     void addSongsOptimistic("p", ["b"], () => new Promise(() => {}));
   });
   expect([...(seen.at(-1)?.get("p") ?? [])]).toEqual(["a", "b"]);
+});
+
+it("expires confirmed songs even when a write queued behind them fails", async () => {
+  jest.useFakeTimers();
+  try {
+    await mount(summary(1, ["a"]));
+    const first = deferred<UserPlaylist>();
+    const second = deferred<UserPlaylist>();
+    let writes: Promise<unknown>[] = [];
+    await act(async () => {
+      writes = [
+        addSongsOptimistic("p", ["b"], () => first.promise),
+        addSongsOptimistic("p", ["c"], () => second.promise).catch(() => {}),
+      ];
+    });
+    await act(async () => {
+      first.resolve(row(["a", "b"]));
+      await writes[0];
+    });
+    // The confirmed copy's timer fires while the second write is queued.
+    await act(async () => {
+      jest.advanceTimersByTime(10_000);
+    });
+    await act(async () => {
+      second.reject(new Error("down"));
+      await writes[1];
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(10_000);
+    });
+    // Only the server's count is left: no confirmed copy outlives the queue.
+    expect(last()).toMatchObject({ songCount: 1, coverSongs: ["a"] });
+  } finally {
+    jest.useRealTimers();
+  }
 });

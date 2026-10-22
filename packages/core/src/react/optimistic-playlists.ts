@@ -245,6 +245,19 @@ function songsOf(result: unknown): readonly string[] | undefined {
  * between. The count goes up when the write is queued (see `queueWrite`), so
  * the tracked songs survive the gap between two queued writes.
  */
+/**
+ * A library summary cannot confirm songs (it has none), so the copy also
+ * expires like the other records; while a write is still queued the timer
+ * re-arms, as that write may fail and never replace the copy.
+ */
+function expireConfirmed(playlistId: string, songs: readonly string[]) {
+  expire(() => {
+    if (confirmedSongs.get(playlistId) !== songs) return;
+    if (queued.has(playlistId)) expireConfirmed(playlistId, songs);
+    else confirmedSongs.delete(playlistId);
+  });
+}
+
 async function runWrite<T>(
   playlistId: string,
   run: () => Promise<T>,
@@ -254,12 +267,7 @@ async function runWrite<T>(
     const songs = songsOf(result);
     if (songs) {
       confirmedSongs.set(playlistId, songs);
-      // A library summary cannot confirm songs (it has none), so the copy
-      // also expires like the other records.
-      expire(() => {
-        if (!queued.has(playlistId) && confirmedSongs.get(playlistId) === songs)
-          confirmedSongs.delete(playlistId);
-      });
+      expireConfirmed(playlistId, songs);
     } else confirmedSongs.delete(playlistId);
     return result;
   } finally {
