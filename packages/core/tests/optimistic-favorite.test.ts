@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
+import { claimOptimisticOwner } from "../src/optimistic-owner";
 import {
   favoriteKey,
   resetFavoriteOverlay,
@@ -63,5 +64,30 @@ describe("toggleFavorite", () => {
     await settle();
 
     expect(sent).toEqual([true]);
+  });
+
+  it("does not send the previous owner's queued intent after an account switch", async () => {
+    claimOptimisticOwner("alice");
+    const sent: string[] = [];
+    let release = () => {};
+    let cookie = "alice";
+    const send = (liked: boolean) => {
+      sent.push(`${cookie}:${liked}`);
+      return new Promise<void>((resolve) => {
+        release = resolve;
+      });
+    };
+    const key = favoriteKey("song", "shared");
+    toggleFavorite({ key, serverLiked: false, send });
+    toggleFavorite({ key, serverLiked: false, send });
+
+    cookie = "bob";
+    claimOptimisticOwner("bob");
+    // Bob can write the same key while Alice's original request completes.
+    toggleFavorite({ key, serverLiked: false, send: async () => {} });
+    release();
+    await settle();
+
+    expect(sent).toEqual(["alice:true"]);
   });
 });

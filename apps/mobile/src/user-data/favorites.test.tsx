@@ -169,6 +169,21 @@ describe("useFavoriteToggle", () => {
 
     await waitFor(() => expect(heart()).toBe("not liked"));
   });
+
+  it("does not send Alice's queued unlike after Bob signs in", async () => {
+    procedure("user.getUserFavorites").mockResolvedValue(favoritesRow());
+    const first = deferred<never[]>();
+    add().mockReturnValueOnce(first.promise);
+    await renderHeart();
+    await fireEvent.press(screen.getByRole("button"));
+    await fireEvent.press(screen.getByRole("button"));
+    expect(remove()).not.toHaveBeenCalled();
+
+    await act(async () => signInAs("bob"));
+    await act(async () => first.resolve([]));
+
+    expect(remove()).not.toHaveBeenCalled();
+  });
 });
 
 async function renderLists() {
