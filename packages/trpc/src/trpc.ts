@@ -32,7 +32,10 @@ const t = initTRPC.context<TRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     return error.cause instanceof ZodError
-      ? { ...shape, message: error.cause.issues[0]?.message || "Invalid request" }
+      ? {
+          ...shape,
+          message: error.cause.issues[0]?.message || "Invalid request",
+        }
       : shape;
   },
 });

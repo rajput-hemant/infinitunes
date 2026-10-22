@@ -128,7 +128,7 @@ describe("favorite bounds and empty accounts", () => {
   it("unlikes an absent row idempotently in the existing array response", async () => {
     expect(
       await caller().removeFromFavorites({ type: "song", token: "a" }),
-    ).toEqual([{ userId: "u", ...emptyLists() }]);
+    ).toEqual([]);
   });
   it.each(["addToFavorites", "removeFromFavorites"] as const)(
     "%s rejects an empty token before writing",
@@ -185,21 +185,18 @@ describe("favorite bounds and empty accounts", () => {
 });
 
 describe("account security mutations", () => {
-  it.each([false, true])(
-    "maps foreign-key deletion failure to CONFLICT (wrapped=%s)",
-    async (wrapped) => {
-      const foreignKey = Object.assign(new Error("foreign key detail"), {
-        code: "23503",
-      });
-      state.deleteError = wrapped
-        ? new Error("Drizzle query failed", { cause: foreignKey })
-        : foreignKey;
-      await expect(caller().deleteUser({})).rejects.toMatchObject({
-        code: "CONFLICT",
-        message: expect.stringContaining("linked"),
-      });
-    },
-  );
+  it("maps a foreign-key deletion failure to CONFLICT", async () => {
+    const foreignKey = Object.assign(new Error("foreign key detail"), {
+      code: "23503",
+    });
+    state.deleteError = new Error("Drizzle query failed", {
+      cause: foreignKey,
+    });
+    await expect(caller().deleteUser({})).rejects.toMatchObject({
+      code: "CONFLICT",
+      message: expect.stringContaining("another app"),
+    });
+  });
   it("preserves unrelated delete failures", async () => {
     state.deleteError = new Error("offline");
     await expect(caller().deleteUser({})).rejects.toThrow("offline");
@@ -216,12 +213,12 @@ describe("account security mutations", () => {
     expect(state.userReads).toBe(0);
     expect(state.writes[0]?.table).toBe("better_auth_account");
   });
-  it("preserves verification and revokes other sessions in the email transaction", async () => {
+  it("resets verification and revokes other sessions in the email transaction", async () => {
     await caller().updateUser({ email: "new@example.com" });
     expect(state.writes).toEqual([
       {
         table: getTableName(users),
-        values: { email: "new@example.com" },
+        values: { email: "new@example.com", emailVerifiedBoolean: false },
         transaction: true,
       },
       {

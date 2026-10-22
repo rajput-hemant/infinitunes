@@ -56,13 +56,13 @@ const favoriteColumns = {
   show: "podcasts",
 } as const;
 
-function emptyFavoriteLists(type: FavoriteType, token?: string) {
+function emptyFavoriteLists(type: FavoriteType, token: string) {
   return {
-    songs: type === "song" && token !== undefined ? [token] : [],
-    albums: type === "album" && token !== undefined ? [token] : [],
-    playlists: type === "playlist" && token !== undefined ? [token] : [],
-    artists: type === "artist" && token !== undefined ? [token] : [],
-    podcasts: type === "show" && token !== undefined ? [token] : [],
+    songs: type === "song" ? [token] : [],
+    albums: type === "album" ? [token] : [],
+    playlists: type === "playlist" ? [token] : [],
+    artists: type === "artist" ? [token] : [],
+    podcasts: type === "show" ? [token] : [],
   };
 }
 
@@ -225,14 +225,16 @@ async function confirmIdentity(
   }
 }
 
-function isUniqueViolation(error: unknown): boolean {
+/** The Postgres error code under a Drizzle query error, e.g. `23505`. */
+function pgErrorCode(error: unknown): unknown {
   const cause = error instanceof Error ? error.cause : undefined;
-  return (
-    typeof cause === "object" &&
-    cause !== null &&
-    "code" in cause &&
-    cause.code === "23505"
-  );
+  return typeof cause === "object" && cause !== null && "code" in cause
+    ? cause.code
+    : undefined;
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return pgErrorCode(error) === "23505";
 }
 
 type PlaylistCtx = { db: TRPCContext["db"]; session: NonNullable<Session> };
@@ -308,8 +310,15 @@ function staleSongPosition(): never {
 export const userRouter = router({
   getUserPlaylists: protectedProcedure.query(({ ctx }) =>
     ctx.db.query.myPlaylists.findMany({
+      // A summary: the count and the first four ids (covers), never the whole
+      // song list, which only `getPlaylistDetails` returns.
       columns: { id: true, name: true, description: true, createdAt: true },
-      extras: { songCount: sql<number>`cardinality(${myPlaylists.songs})`.as("song_count") },
+      extras: {
+        songCount: sql<number>`cardinality(${myPlaylists.songs})`.as(
+          "song_count",
+        ),
+        coverSongs: sql<string[]>`${myPlaylists.songs}[1:4]`.as("cover_songs"),
+      },
       where: eq(myPlaylists.userId, ctx.session.user.id),
     }),
   ),
@@ -324,7 +333,8 @@ export const userRouter = router({
         ),
       });
 
-      return playlist ?? undefined;
+      // TanStack Query rejects `undefined` data: a missing playlist is `null`.
+      return playlist ?? null;
     }),
 
   addSongsToPlaylist: protectedProcedure
@@ -408,10 +418,11 @@ export const userRouter = router({
       return deletedPlaylist;
     }),
 
-  getUserFavorites: protectedProcedure.query(async ({ ctx }) =>
-    (await ctx.db.query.favorites.findFirst({
-      where: eq(favorites.userId, ctx.session.user.id),
-    })) ?? null,
+  getUserFavorites: protectedProcedure.query(
+    async ({ ctx }) =>
+      (await ctx.db.query.favorites.findFirst({
+        where: eq(favorites.userId, ctx.session.user.id),
+      })) ?? null,
   ),
 
   addToFavorites: protectedProcedure
@@ -443,20 +454,15 @@ export const userRouter = router({
 
   removeFromFavorites: protectedProcedure
     .input(favoriteInput)
-    .mutation(async ({ ctx, input }) => {
-      const userId = ctx.session.user.id;
-      const rows = await ctx.db
+    // No favorites row yet means nothing to remove: `[]`, so an unlike is
+    // idempotent instead of a NOT_FOUND that rolls the heart back.
+    .mutation(({ ctx, input }) =>
+      ctx.db
         .update(favorites)
         .set(favoritePatch(input.type, input.token, "remove"))
-        .where(eq(favorites.userId, userId))
-        .returning();
-
-      if (rows.length === 0) {
-        return [{ userId, ...emptyFavoriteLists(input.type) }];
-      }
-
-      return rows;
-    }),
+        .where(eq(favorites.userId, ctx.session.user.id))
+        .returning(),
+    ),
 
   /** Signed-in password change. The account comes from the session. */
   changePassword: protectedProcedure
@@ -540,6 +546,7 @@ export const userRouter = router({
       const patch: {
         betterAuthName?: string;
         email?: string;
+        emailVerifiedBoolean?: boolean;
       } = {};
       if (input.name !== undefined) patch.betterAuthName = input.name;
       if (input.email !== undefined) {
@@ -550,6 +557,8 @@ export const userRouter = router({
         if (current?.email !== input.email) {
           await confirmIdentity(ctx, input.currentPassword);
           patch.email = input.email;
+          // Nothing has verified the new address yet.
+          patch.emailVerifiedBoolean = false;
         }
       }
       if (Object.keys(patch).length > 0) {
@@ -558,14 +567,16 @@ export const userRouter = router({
             await tx.update(users).set(patch).where(eq(users.id, userId));
             if (patch.email !== undefined) {
               const currentToken = ctx.session.session?.token;
-              await tx.delete(betterAuthSessions).where(
-                currentToken
-                  ? and(
-                      eq(betterAuthSessions.userId, userId),
-                      ne(betterAuthSessions.token, currentToken),
-                    )
-                  : eq(betterAuthSessions.userId, userId),
-              );
+              await tx
+                .delete(betterAuthSessions)
+                .where(
+                  currentToken
+                    ? and(
+                        eq(betterAuthSessions.userId, userId),
+                        ne(betterAuthSessions.token, currentToken),
+                      )
+                    : eq(betterAuthSessions.userId, userId),
+                );
             }
           });
         } catch (error) {
@@ -606,11 +617,13 @@ export const userRouter = router({
 
         return deletedUser;
       } catch (error) {
-        const cause = error instanceof Error && error.cause ? error.cause : error;
-        if (typeof cause === "object" && cause !== null && "code" in cause && cause.code === "23503") {
+        // The `user` row is shared with Lipi: a row there that references it
+        // (foreign key violation) blocks the delete.
+        if (pgErrorCode(error) === "23503") {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "This account has linked data that prevents deletion",
+            message:
+              "This account is also used by another app, so it can't be deleted here",
           });
         }
         throw error;

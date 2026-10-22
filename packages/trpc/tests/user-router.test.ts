@@ -339,6 +339,7 @@ describe("user router authorization", () => {
 
     expect(state.updates[0]?.values).toMatchObject({
       email: "new@example.com",
+      emailVerifiedBoolean: false,
     });
   });
 
@@ -412,7 +413,7 @@ describe("user router authorization", () => {
 
     await expect(
       caller.user.getPlaylistDetails({ playlistId: "playlist-victim" }),
-    ).resolves.toBeUndefined();
+    ).resolves.toBeNull();
     await expect(
       caller.user.addSongsToPlaylist({
         playlistId: "playlist-victim",
@@ -669,7 +670,7 @@ describe("user router authorization", () => {
       });
     });
 
-    it("changes the email only with a fresh session, preserving verification", async () => {
+    it("changes the email only with a fresh session, and resets verification", async () => {
       await expect(
         sessionAge(FRESH_SESSION_MS + 60_000).user.updateUser({
           email: "new@example.com",
@@ -681,6 +682,7 @@ describe("user router authorization", () => {
 
       expect(state.updates[0]?.values).toEqual({
         email: "new@example.com",
+        emailVerifiedBoolean: false,
       });
     });
 
@@ -780,7 +782,7 @@ describe("user router authorization", () => {
     expect(state.updates).toHaveLength(0);
   });
 
-  it("preserves email verification when the email changes", async () => {
+  it("resets email verification when the email changes", async () => {
     await seedPasswordUser();
 
     await signedIn().user.updateUser({
@@ -790,6 +792,7 @@ describe("user router authorization", () => {
 
     expect(state.updates[0]?.values).toEqual({
       email: "new@example.com",
+      emailVerifiedBoolean: false,
     });
   });
 
