@@ -86,7 +86,7 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts`
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
@@ -137,7 +137,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -291,25 +291,25 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 - [ ] **W-21** P3 CONFIRMED `(root)/_components/home-greeting.tsx:27,36`, `(root)/page.tsx:27-32` - the document's only `h1` is the time-of-day greeting [routes 18]
   - Fix: greeting as `p` plus a visually hidden `h1`, or `h1` only when signed in. Executor: sonnet. Flags: needs user decision (design call).
 
-## Batch W6 (sonnet): player and play controls, a11y - `components/{play-button,play-all-button,queue,player,like-button,download-button}.tsx`, `components/song-list/play-pause-button.tsx`, `components/player/use-queue-removal.ts`, `components/site-header/surprise-me-button.tsx`, `tests/dom/{queue-sheet,like-button,card-play,download-button,play-button-season}.test.tsx`, `tests/player-a11y.test.ts`
+## Batch W6 (sonnet): player and play controls, a11y _(branch `worktree-agent-a02df50c3b60cedf5`)_ - `components/{play-button,play-all-button,queue,player,like-button,download-button}.tsx`, `components/song-list/play-pause-button.tsx`, `components/player/use-queue-removal.ts`, `components/site-header/surprise-me-button.tsx`, `tests/dom/{queue-sheet,like-button,card-play,download-button,play-button-season}.test.tsx`, `tests/player-a11y.test.ts`
 
-- [ ] **W-22** P2 PLAUSIBLE `components/play-button.tsx:46,56` - `useSearchParams()` in every play control (hero, quick picks, cards, rows) for a `sort` only show/episode read; may push the home content out of the static shell [wcomp P2-1]
+- [x] **W-22** P2 PLAUSIBLE `components/play-button.tsx:46,56` - `useSearchParams()` in every play control (hero, quick picks, cards, rows) for a `sort` only show/episode read; may push the home content out of the static shell [wcomp P2-1] Done: `sort` read from `window.location.search` at click time. Prerendered `index.html` NOT confirmed (no `next build` run).
   - Fix: read `sort` at click time from `window.location.search` in those two branches (or pass it as a prop) and remove the hook; confirm `.next/server/app/index.html` contains the hero or add an `instant()` e2e for `/`. Executor: sonnet. Flags: none.
-- [ ] **W-23** P2 CONFIRMED `components/download-button.tsx:67-81,100-103` - "Download N songs" runs `Promise.all` over every song: N blobs in memory, N save dialogs the browser blocks, one failure masks partial success [wcomp P2-3]
+- [x] **W-23** P2 CONFIRMED `components/download-button.tsx:67-81,100-103` - "Download N songs" runs `Promise.all` over every song: N blobs in memory, N save dialogs the browser blocks, one failure masks partial success [wcomp P2-3] Done: sequential, progress toast, partial-failure toast, confirm above 10.
   - Fix: sequential (or 2 at a time), release each blob, one progress toast ("3 of 40"), report partial failure, consider a confirm above ~10. Executor: sonnet. Flags: none.
-- [ ] **W-24** P2 CONFIRMED `components/queue.tsx:40-48,64,85-93`, `player.tsx:331-333,401` - closing the queue pane (Escape, close, `q`) while focused inside drops focus to `body` [wcomp P2-4]
+- [x] **W-24** P2 CONFIRMED `components/queue.tsx:40-48,64,85-93`, `player.tsx:331-333,401` - closing the queue pane (Escape, close, `q`) while focused inside drops focus to `body` [wcomp P2-4] Done: layout effect refocuses the `aria-controls` toggle on close.
   - Fix: on close, if the pane contains `document.activeElement`, focus `[aria-controls="player-queue"]`; optionally focus the pane on open. Executor: sonnet. Flags: none.
-- [ ] **W-25** P2 CONFIRMED `song-list/play-pause-button.tsx:35,47-52`, `play-button.tsx:176`, `like-button.tsx:54` - row play/like controls are all named "Play" / "Like" with no track name [wcomp P2-7]
+- [x] **W-25** P2 CONFIRMED `song-list/play-pause-button.tsx:35,47-52`, `play-button.tsx:176`, `like-button.tsx:54` - row play/like controls are all named "Play" / "Like" with no track name [wcomp P2-7] Done: `Play/Pause/Like <name>`; `TilePlayPauseButton` takes `name` (callers `song-list-row`, `queue-row` updated; three other dom tests now match `^="Like"`).
   - Fix: `aria-label={`Play ${item.name}`}` / "Pause ..." and `Like ${name}` (keep the word first for `aria-pressed`); update the like-button and a11y tests. Executor: haiku. Flags: none.
-- [ ] **W-26** P3 CONFIRMED `play-button.tsx:160-166`, `library/play-all-button.tsx:43-46`, `surprise-me-button.tsx:90-93` - success toast on every Play over a player that already announces it [wcomp P3-2]
+- [x] **W-26** P3 CONFIRMED `play-button.tsx:160-166`, `library/play-all-button.tsx:43-46`, `surprise-me-button.tsx:90-93` - success toast on every Play over a player that already announces it [wcomp P3-2] Done: toasts dropped; `playAllToastTitle` and its test removed.
   - Fix: drop for Play/Play All/Surprise Me; keep toasts for radio and errors. Executor: haiku. Flags: none.
-- [ ] **W-27** P3 CONFIRMED `components/player/use-queue-removal.ts:107-112` - "Removed from queue" lives 10s with no Undo [wcomp P3-1]
+- [x] **W-27** P3 CONFIRMED `components/player/use-queue-removal.ts:107-112` - "Removed from queue" lives 10s with no Undo [wcomp P3-1] Done: Undo action (cancels a leaving row or reinserts at the old index), default duration.
   - Fix: `action: { label: "Undo" }` reinserting at the old index, or default duration. Executor: sonnet. Flags: none.
-- [ ] **W-28** P3 CONFIRMED `components/player.tsx:328-330` - `s` (shuffle) gives no feedback while `l` toasts [wcomp P3-4]
+- [x] **W-28** P3 CONFIRMED `components/player.tsx:328-330` - `s` (shuffle) gives no feedback while `l` toasts [wcomp P3-4] Done: `s` toasts Shuffle on/off.
   - Fix: toast "Shuffle on/off" or write it to the `aria-live` `<output>`. Executor: haiku. Flags: none.
-- [ ] **W-29** P3 CONFIRMED `components/queue.tsx:50-53` - `clearUpNext` calls `setCurrentIndex(currentIndex)` (no-op) [wcomp P3-12]
+- [x] **W-29** P3 CONFIRMED `components/queue.tsx:50-53` - `clearUpNext` calls `setCurrentIndex(currentIndex)` (no-op) [wcomp P3-12] Done.
   - Fix: delete the line. Executor: haiku. Flags: none.
-- [ ] **W-30** P3 CONFIRMED `tests/dom/*`, `tests/player-a11y.test.ts` - missing web tests: `ExpandedPane` phone toggles/`aria-expanded`, `MainNavPopup` with duplicate titles, plus those named in W-4, W-7, W-22..W-25 [wcomp T-1]
+- [x] **W-30** P3 CONFIRMED `tests/dom/*`, `tests/player-a11y.test.ts` - missing web tests: `ExpandedPane` phone toggles/`aria-expanded`, `MainNavPopup` with duplicate titles, plus those named in W-4, W-7, W-22..W-25 [wcomp T-1] Done: `ExpandedPane` phone toggles/`aria-expanded` were already covered (`expanded-player.test.tsx`); added `main-nav-popup.test.tsx` (duplicate titles render; the duplicate `key={title}` warning is W7's fix in `main-nav-popup.tsx`) and tests with W-22..W-25. W-4/W-7 tests belong to batch W2.
   - Executor: sonnet, alongside each fix. Flags: none.
 
 ## Batch W7 (haiku): small component and route nits - `components/{slider/slider-list,slider/slider-card,error-illustration,route-error,catalog-load-more,site-header/main-nav-popup,search/use-search-palette-keys,library/library-song-list}.tsx`, `app/(root)/{playlist/[name]/[token],album/[name]/[token],radio/[name]/[token]}/page.tsx`, `app/(root)/settings/_components/{profile-form,settings-search}.tsx`, `app/@modal/**`, `app/(root)/browse/_components/catalog-states.tsx`, `app/(root)/loading.tsx` _(after S1)_
@@ -374,7 +374,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
