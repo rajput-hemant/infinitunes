@@ -1,3 +1,4 @@
+// The iOS settings list's rows (`settings-screen.tsx`); Android draws its own in `settings-screen.android.tsx`.
 import { Icon } from "@expo/ui";
 import type { ColorValue } from "react-native";
 

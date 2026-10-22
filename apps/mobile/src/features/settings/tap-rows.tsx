@@ -1,9 +1,10 @@
+// The iOS settings list's rows (`settings-screen.tsx`); Android draws its own in `settings-screen.android.tsx`.
 import { ListItem, Text } from "@expo/ui";
 
 import { Icon } from "~/components/ui/icon";
 import { usePalette } from "~/theme/use-palette";
 
-import { RowIcon } from "./row-icon.ios";
+import { RowIcon } from "./row-icon";
 import type { ActionRowProps, TapRowProps } from "./tap-row-props";
 
 /** A tappable row that opens another screen, with a disclosure chevron. */
