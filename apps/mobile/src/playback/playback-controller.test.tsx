@@ -53,6 +53,40 @@ beforeEach(() => {
 afterEach(() => queryClient.clear());
 
 describe("PlaybackController", () => {
+  it.each(["finish", "error", "loaded", "nextTrack", "previousTrack"] as const)(
+    "ignores a delayed %s event from the replaced source",
+    async (event) => {
+      const player = await mountController();
+      await act(async () =>
+        playerStore.getState().playTracks([...rows, rows[0]!]),
+      );
+      await act(async () => player.finishLoading());
+      const deliver =
+        event === "nextTrack" || event === "previousTrack"
+          ? player.queueRemote(event)
+          : player.queueStatus(
+              event === "finish"
+                ? { didJustFinish: true }
+                : event === "error"
+                  ? { error: "Previous source failed" }
+                  : { isLoaded: true, duration: 999, bufferedTime: 999 },
+            );
+
+      await act(async () => playerStore.getState().skipToNext());
+      const loads = [...player.loads];
+      await act(async () => deliver());
+
+      expect(playerStore.getState().currentIndex).toBe(1);
+      expect(player.loads).toEqual(loads);
+      expect(player.playing).toBe(true);
+      expect(playbackStatusStore.getState().duration).toBe(0);
+      expect(playbackStatusStore.getState().bufferedTime).toBe(0);
+      // An old loaded/error event must not consume the new source's first failure.
+      await act(async () => player.failLoading());
+      expect(player.loads.at(-1)).toBe(ladder("Xy12AbCd", 160));
+    },
+  );
+
   it("stops the previous source and reports a linkless entry", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows));
