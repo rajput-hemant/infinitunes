@@ -248,14 +248,18 @@ export function ModeToggle({ icon, label, on, onPress }: ModeToggleProps) {
       accessibilityState={{ selected: on }}
       className="min-h-touch min-w-touch items-center justify-center active:opacity-60"
     >
+      {/* Never flattened: off, a transparent view with only a radius is no
+          native view, and Android's Fabric then creates it on "on" with only
+          the changed props, so it drew square (no radius). */}
       <View
+        collapsable={false}
         className="items-center justify-center rounded-full"
         style={{
           width: sizes.ctl,
           height: sizes.ctl,
           backgroundColor: on ? fill : "transparent",
         }}
-        testID={on ? "mode-toggle-on" : undefined}
+        testID={on ? "mode-toggle-on" : "mode-toggle-off"}
       >
         <Icon name={icon} size="md" color={glyph} />
       </View>
