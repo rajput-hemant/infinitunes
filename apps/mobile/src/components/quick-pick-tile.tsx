@@ -6,7 +6,7 @@ import Animated from "react-native-reanimated";
 import { cx } from "~/lib/class-names";
 import { prefetchEntity } from "~/lib/entity-queries";
 import { usePressScale } from "~/lib/use-press-scale";
-import { art } from "~/theme/tokens";
+import { art, sizes } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
 import {
@@ -38,10 +38,18 @@ type QuickPickTileProps = {
 /** Material's tiles sit on a tonal surface container; iOS's on a translucent fill. */
 const MATERIAL = Platform.OS === "android";
 
-const TILE_CLASS = cx(
+/**
+ * Android: Material 3 Expressive's 56dp tile with the 48dp art inset 4dp at
+ * `sm` corners, concentric with the tile's `md`. iOS: a 48pt tile with the
+ * art flush at its start, clipped by the tile. `QuickPicksSkeleton` draws
+ * the same box.
+ */
+export const PICK_TILE_CLASS = cx(
   "flex-row items-center gap-3 overflow-hidden rounded-md pr-2",
-  MATERIAL ? "bg-card" : "bg-fill",
+  MATERIAL ? "bg-card pl-1" : "bg-fill",
 );
+export const PICK_TILE_HEIGHT = MATERIAL ? sizes.row : art.pick;
+const FLUSH_ART = MATERIAL ? undefined : { borderRadius: 0 };
 
 /**
  * A compact two-column tile (home's quick picks, browse): art or an icon at
@@ -60,27 +68,26 @@ export function QuickPickTile({
   const entries = useCardMenuEntries(item);
   const press = usePressScale(0.97);
   const ripple = usePalette()["fill-2"];
-  const style = { width, minHeight: art.pick };
+  const style = { width, minHeight: PICK_TILE_HEIGHT };
   // A tile without a screen dims only its picture, so the title keeps its contrast.
   const dimmed = !href && !onPress;
   const content = (
     <>
       {"artwork" in leading ? (
         <View className={dimmed ? "opacity-50" : undefined}>
-          <Artwork
-            image={leading.artwork}
-            size="pick"
-            style={{ borderRadius: 0 }}
-          />
+          <Artwork image={leading.artwork} size="pick" style={FLUSH_ART} />
         </View>
       ) : (
+        // The art's place: a fill over the tile's own surface, so it tints
+        // with the tile instead of reading as a darker block.
         <View
+          testID="pick-icon-cell"
           className={cx(
-            "items-center justify-center self-stretch",
-            MATERIAL ? "bg-muted" : "bg-fill-2",
+            "items-center justify-center bg-fill-2",
+            MATERIAL ? "rounded-sm" : "self-stretch",
             dimmed && "opacity-50",
           )}
-          style={{ width: art.pick }}
+          style={{ width: art.pick, minHeight: art.pick }}
         >
           <Icon name={leading.icon} size="md" />
         </View>
@@ -102,7 +109,7 @@ export function QuickPickTile({
       <View
         accessible
         accessibilityLabel={accessibilityLabel}
-        className={TILE_CLASS}
+        className={PICK_TILE_CLASS}
         style={style}
       >
         {content}
@@ -125,7 +132,7 @@ export function QuickPickTile({
       {...cardAccessibilityActions(entries)}
       // Android: a bounded ripple, clipped by the tile's own corners.
       android_ripple={{ color: ripple, foreground: true }}
-      className={TILE_CLASS}
+      className={PICK_TILE_CLASS}
       style={style}
     >
       {content}

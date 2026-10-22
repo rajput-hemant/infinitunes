@@ -155,7 +155,8 @@ hit-tests its child's bounds, so its trigger is the full 48dp instead.
 - **Home hero** (M3 hero carousel, both platforms): one large card (`useHeroWidth()` in `shelf.tsx`) leaving
   a 56dp peek of the next, snapping per card. Android: `xl` corners, eyebrow and title only; its play button
   is a rounded square (`md`).
-- **Quick-pick tile**: `bg-card`, `md` corners, art flush start, title labelLarge, a bounded ripple. Browse
+- **Quick-pick tile**: `bg-card`, 56dp, `md` corners, 48dp art inset 4dp at `sm` (concentric; an action tile's icon
+  sits in the same cell, `fill-2` over the tile), title labelLarge, a bounded ripple. Browse
   tiles share its press sink (`usePressScale`; iOS's release spring is `iosPressRelease` in `theme/motion.ts`).
   Browse has six categories ("Made for you" spans a full row) and no New Releases tile (Top Albums' `/album`).
 - **Library**: Liked Songs and Recently Played are the hub's two large tiles (`LibraryTile`); New Playlist is
