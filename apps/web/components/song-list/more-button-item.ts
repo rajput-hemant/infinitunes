@@ -19,6 +19,8 @@ export type TileMoreEntry = {
   label: string;
   icon: LucideIcon;
   onClick: () => void;
+  /** Stays listed but cannot be chosen (and reads as busy), e.g. a download in progress. */
+  disabled?: boolean;
 };
 
 export function getItemUrl(item: TileMoreItem): string {

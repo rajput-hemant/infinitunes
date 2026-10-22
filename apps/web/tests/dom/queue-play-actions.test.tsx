@@ -116,7 +116,7 @@ async function mount(
   const click = (label: string) =>
     act(async () => {
       const button = [...host.querySelectorAll("button")].find(
-        (item) => item.textContent === label,
+        (b) => b.textContent === label,
       );
       if (!button) throw new Error(`Missing action ${label}`);
       button.click();

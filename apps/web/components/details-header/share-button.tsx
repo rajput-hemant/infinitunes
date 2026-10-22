@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@infinitunes/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,29 +7,28 @@ import {
 } from "@infinitunes/ui/components/dropdown-menu";
 import { Share2 } from "lucide-react";
 
-import { controlStyles } from "~/lib/control-styles";
-
 import { ShareOptions } from "../share-options";
+import { headerIconClassName } from "./header-icon";
 
 type ShareButtonProps = {
   title: string;
+  /** The trigger's `data-deferred` name, so focus can follow the shell's swap. */
+  name?: string;
+  /** The shell was clicked before this chunk arrived: open at once. */
+  defaultOpen?: boolean;
 };
 
-export function ShareButton({ title }: ShareButtonProps) {
+/** Loaded with the header's popup chunk (`more-button-popup`), never statically. */
+export function ShareButton({ title, name, defaultOpen }: ShareButtonProps) {
   return (
-    <DropdownMenu>
+    <DropdownMenu defaultOpen={defaultOpen}>
       <DropdownMenuTrigger
-        render={
-          <Button
-            aria-label="Share"
-            size="icon"
-            variant="ghost"
-            className={controlStyles.headerIcon}
-          >
-            <Share2 aria-hidden="true" className="size-5" />
-          </Button>
-        }
-      />
+        aria-label="Share"
+        data-deferred={name}
+        className={headerIconClassName}
+      >
+        <Share2 aria-hidden="true" className="size-5" />
+      </DropdownMenuTrigger>
 
       <DropdownMenuContent align="start" className="w-auto min-w-48">
         <ShareOptions isDropDownItem title={title} />

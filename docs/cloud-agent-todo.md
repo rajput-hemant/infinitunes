@@ -86,7 +86,7 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts`
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
@@ -137,7 +137,7 @@ Start after M2 (status/position stores change there).
 - [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
@@ -239,21 +239,23 @@ Fix the permission race inside `downloadTrack`/`downloadAll` so `song-menu.tsx`/
 
 ## Batch W2 (sonnet): details and row "more" sheets - `components/song-list/{more-button,more-button-mobile-popup,more-button-radio}.ts(x)`, `components/details-header/more-button.tsx`, `components/{share-options,share-button}.tsx`, `tests/dom/more-button-share-panel.test.tsx`
 
+Branch: `worktree-agent-aa5afa3af9174331f`. W-6: `bun run budget` unmeasured (no `next build`); by import graph the header chunk now holds Drawer, DropdownMenu, share and the dialog, loaded on intent.
+
 Do P1 + the extraction together so the fix is applied once.
 
-- [ ] **W-4** P1 CONFIRMED `song-list/more-button-mobile-popup.tsx:107-116`, `details-header/more-button.tsx:329-340` - phone "more" bottom sheets never close after an action (needs Cancel; Add to Playlist opens a dialog over the open drawer) [wcomp P1-1]
+- [x] **W-4** P1 CONFIRMED `song-list/more-button-mobile-popup.tsx:107-116`, `details-header/more-button.tsx:329-340` - phone "more" bottom sheets never close after an action (needs Cancel; Add to Playlist opens a dialog over the open drawer) [wcomp P1-1]
   - Fix: render entries as `DrawerClose` (as `user-menu-sheet.tsx:74-77` does), close the header drawer before opening the playlist dialog; add "choosing an entry closes the sheet" tests for row and header. Executor: sonnet. Flags: none.
-- [ ] **W-5** P2 CONFIRMED `details-header/more-button.tsx:278-390,103-164`, `more-button-mobile-popup.tsx:54-173`, `more-button-radio.ts:27-77` - two drifted copies of the share drawer and of "create station then play" [wcomp P2-5]
+- [x] **W-5** P2 CONFIRMED `details-header/more-button.tsx:278-390,103-164`, `more-button-mobile-popup.tsx:54-173`, `more-button-radio.ts:27-77` - two drifted copies of the share drawer and of "create station then play" [wcomp P2-5]
   - Fix: one `MoreSheet({ art, title, subtitle, entries, sharePath })` and one `startRadio(seed, radio)`. Executor: sonnet. Flags: none.
-- [ ] **W-6** P2 CONFIRMED `details-header/more-button.tsx:14-30,65`, `share-button.tsx` - the header menu imports Drawer, DropdownMenu and the Add-to-playlist Dialog statically while the row menu defers all three (detail routes carry the largest budget class) [wcomp P2-6]
+- [x] **W-6** P2 CONFIRMED `details-header/more-button.tsx:14-30,65`, `share-button.tsx` - the header menu imports Drawer, DropdownMenu and the Add-to-playlist Dialog statically while the row menu defers all three (detail routes carry the largest budget class) [wcomp P2-6]
   - Fix: shell trigger with identical classes/ARIA, `useDeferred("details-more", () => import("./more-button-popup"))`, `React.lazy` for the dialog, fold `ShareButton` into the chunk; check `bun run budget`. Executor: sonnet. Flags: none.
-- [ ] **W-7** P2 CONFIRMED `components/share-options.tsx:160-164` - `navigator.clipboard.writeText` unawaited: a rejection is unhandled and the UI still says "Link Copied" [wcomp P2-2]
+- [x] **W-7** P2 CONFIRMED `components/share-options.tsx:160-164` - `navigator.clipboard.writeText` unawaited: a rejection is unhandled and the UI still says "Link Copied" [wcomp P2-2]
   - Fix: `.then(success, () => toast.error("Couldn't copy the link"))`, guard undefined `navigator.clipboard`, add a rejected-write test. Executor: haiku. Flags: none.
-- [ ] **W-8** P3 CONFIRMED `share-options.tsx:155,162` - `isCopied` never resets ("Link Copied" for the rest of the page) [wcomp P3-3]
+- [x] **W-8** P3 CONFIRMED `share-options.tsx:155,162` - `isCopied` never resets ("Link Copied" for the rest of the page) [wcomp P3-3]
   - Fix: reset on a 2s timer or menu close. Executor: haiku. Flags: none.
-- [ ] **W-9** P3 CONFIRMED `song-list/more-button.tsx:100-104` - "Play Song Now" matches by `id`, not `queueItemId` (duplicate track jumps to the first copy) [wcomp P3-10]
+- [x] **W-9** P3 CONFIRMED `song-list/more-button.tsx:100-104` - "Play Song Now" matches by `id`, not `queueItemId` (duplicate track jumps to the first copy) [wcomp P3-10]
   - Fix: `findQueueIndex(initialQueue, { token: item.id, queueItemId })` as `play-button.tsx:60` does. Executor: haiku. Flags: none.
-- [ ] **W-10** P3 CONFIRMED `details-header/more-button.tsx:267-273` - the Download entry disappears while a download runs (`hide: isDownloading`) [wcomp P3-11]
+- [x] **W-10** P3 CONFIRMED `details-header/more-button.tsx:267-273` - the Download entry disappears while a download runs (`hide: isDownloading`) [wcomp P3-11]
   - Fix: keep it, `disabled`/`aria-busy`. Executor: haiku. Flags: none.
 
 ## Batch W3 (sonnet): catalog list pages and metadata - `apps/web/app/(root)/{album,playlist,radio,show,artist}/page.tsx` + their `_components/{top-albums,featured-playlists,featured-stations,top-podcasts}.tsx`, `app/(root)/browse/page.tsx`
@@ -374,7 +376,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 ## Extra follow-ups (from earlier work, not in the review batches)
 
 - [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe.
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
