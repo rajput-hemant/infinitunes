@@ -17,7 +17,7 @@ import type { SQL } from "drizzle-orm";
 import { eq } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
-import { createAuth } from "../src/auth";
+import { createAuth, revokeOtherSessions } from "../src/auth";
 
 function makeFakeDb() {
   const query: Record<string, unknown> = {
@@ -609,6 +609,133 @@ describe("Shared schema / table mapping", () => {
     );
     expect(getTableName(infinitunesPasskeys)).toBe("infinitunes_passkey");
     expect(infinitunesPasskeys.credentialID.name).toBe("credentialID");
+  });
+});
+
+describe("Email change configuration (X-1)", () => {
+  it("only changes the email through a link, never without verification", () => {
+    const auth = createAuth(makeFakeDb());
+    expect(auth.options.user?.changeEmail?.enabled).toBe(true);
+    expect(
+      auth.options.user?.changeEmail?.updateEmailWithoutVerification,
+    ).toBeFalsy();
+    expect(auth.options.emailVerification?.expiresIn).toBe(3600);
+  });
+
+  it("mails the confirmation link to the new address and swallows delivery failures", async () => {
+    const sent: { to: string; text: string; subject: string }[] = [];
+    const ok = createAuth(makeFakeDb(), {
+      sendEmail: async (email) => void sent.push(email),
+    });
+    await ok.options.emailVerification?.sendVerificationEmail?.({
+      user: { email: "new@example.com" } as never,
+      url: "https://app.test/api/auth/verify-email?token=tok",
+      token: "tok",
+    });
+    expect(sent[0]?.to).toBe("new@example.com");
+    expect(sent[0]?.subject).toContain("new Infinitunes email");
+    expect(sent[0]?.text).toContain("verify-email?token=tok");
+
+    const failing = createAuth(makeFakeDb(), {
+      sendEmail: async () => {
+        throw new Error("boom");
+      },
+    });
+    const original = console.error;
+    console.error = () => {};
+    try {
+      await expect(
+        failing.options.emailVerification?.sendVerificationEmail?.({
+          user: { email: "new@example.com" } as never,
+          url: "https://app.test/x",
+          token: "tok",
+        }),
+      ).resolves.toBeUndefined();
+    } finally {
+      console.error = original;
+    }
+  });
+});
+
+describe("Sessions after a confirmed email change", () => {
+  type Recorded = { deleted: boolean; where?: SQL };
+  function fakeSessionDb(newestToken: string | undefined) {
+    const recorded: Recorded = { deleted: false };
+    const db = {
+      select: () => ({
+        from: () => ({
+          where: () => ({
+            orderBy: () => ({
+              limit: async () => (newestToken ? [{ token: newestToken }] : []),
+            }),
+          }),
+        }),
+      }),
+      delete: () => ({
+        where: async (where: SQL) => {
+          recorded.deleted = true;
+          recorded.where = where;
+        },
+      }),
+    };
+    return { db: db as never, recorded };
+  }
+  const params = (where?: SQL) =>
+    where
+      ? (
+          new PgDialect().sqlToQuery(where) as unknown as {
+            sql: string;
+            params: unknown[];
+          }
+        ).params
+      : [];
+
+  it("keeps the confirming browser's session and drops the rest", async () => {
+    const { db, recorded } = fakeSessionDb("newest");
+    await revokeOtherSessions(db, "user-1", "mine");
+    expect(recorded.deleted).toBe(true);
+    expect(params(recorded.where)).toEqual(["user-1", "mine"]);
+  });
+
+  it("keeps the newest session when the opener had none", async () => {
+    const { db, recorded } = fakeSessionDb("newest");
+    await revokeOtherSessions(db, "user-1", undefined);
+    expect(params(recorded.where)).toEqual(["user-1", "newest"]);
+  });
+
+  it("revokes everything when there is no session to keep", async () => {
+    const { db, recorded } = fakeSessionDb(undefined);
+    await revokeOtherSessions(db, "user-1", undefined);
+    expect(params(recorded.where)).toEqual(["user-1"]);
+  });
+
+  it("logs and swallows a database failure", async () => {
+    const original = console.error;
+    console.error = () => {};
+    try {
+      await expect(
+        revokeOtherSessions(
+          {
+            delete: () => ({
+              where: async () => {
+                throw new Error("down");
+              },
+            }),
+          } as never,
+          "user-1",
+          "mine",
+        ),
+      ).resolves.toBeUndefined();
+    } finally {
+      console.error = original;
+    }
+  });
+
+  it("wires the hook into Better Auth", () => {
+    const auth = createAuth(makeFakeDb());
+    expect(auth.options.emailVerification?.afterEmailVerification).toBeTypeOf(
+      "function",
+    );
   });
 });
 

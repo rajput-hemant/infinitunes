@@ -50,16 +50,20 @@ export async function deletePlaylist(playlistId: string) {
   });
 }
 
-export async function updateUser(data: {
-  name?: string;
-  email?: string;
-  currentPassword?: string;
-}) {
+export async function updateUser(data: { name?: string }) {
   return toResult(async () => {
     const user = await api.user.updateUser(data);
     refresh();
     return user;
   });
+}
+
+/** Mails a confirmation link to the new address; nothing changes until it is opened. */
+export async function requestEmailChange(data: {
+  email: string;
+  currentPassword?: string;
+}) {
+  return toResult(() => api.user.requestEmailChange(data));
 }
 
 /** `password` is omitted by accounts that have none (fresh-session check). */

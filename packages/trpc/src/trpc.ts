@@ -21,6 +21,12 @@ export type TRPCContext = {
   db: DbClient;
   catalogApi?: typeof api;
   /**
+   * Asks Better Auth (as the signed-in user) to mail a confirmation link to
+   * `email`; the address changes only when it is opened. Absent where no
+   * mailer-backed auth is wired, which makes email changes unavailable.
+   */
+  requestEmailChange?: (email: string) => Promise<void>;
+  /**
    * A loaded session, or a thunk. The RSC caller passes `getSession` so
    * public procedures skip the lookup; the HTTP adapter passes the value.
    * `protectedProcedure` resolves either form.

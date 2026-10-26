@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 
 import type { DbClient } from "@infinitunes/db/client";
-import { betterAuthSessions, users } from "@infinitunes/db/schema";
+import { users } from "@infinitunes/db/schema";
 import { hash } from "bcryptjs";
 import { getTableName, type SQL } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
@@ -213,35 +213,10 @@ describe("account security mutations", () => {
     expect(state.userReads).toBe(0);
     expect(state.writes[0]?.table).toBe("better_auth_account");
   });
-  it("resets verification and revokes other sessions in the email transaction", async () => {
-    await caller().updateUser({ email: "new@example.com" });
-    expect(state.writes).toEqual([
-      {
-        table: getTableName(users),
-        values: { email: "new@example.com", emailVerifiedBoolean: false },
-        transaction: true,
-      },
-      {
-        table: getTableName(betterAuthSessions),
-        params: ["u", "current"],
-        transaction: true,
-      },
-    ]);
-  });
-  it("revokes all sessions if the current token is unavailable", async () => {
-    await caller(null).updateUser({ email: "new@example.com" });
-    expect(state.writes[1]?.params).toEqual(["u"]);
-  });
-  it("rolls back the email when session revocation fails", async () => {
-    state.deleteError = new Error("revoke failed");
-    await expect(
-      caller().updateUser({ email: "new@example.com" }),
-    ).rejects.toThrow("revoke failed");
-    expect(state.writes).toEqual([]);
-  });
-  it("keeps other sessions for name and unchanged-email updates", async () => {
-    await caller().updateUser({ name: "New", email: "old@example.com" });
+  it("never writes the email or touches sessions from updateUser", async () => {
+    await caller().updateUser({ name: "New" });
     expect(state.writes).toHaveLength(1);
+    expect(state.writes[0]?.table).toBe(getTableName(users));
     expect(state.writes[0]?.values).toEqual({ betterAuthName: "New" });
   });
 });

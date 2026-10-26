@@ -3,7 +3,7 @@ import "server-only";
 import { db } from "@infinitunes/db";
 import { createCaller } from "@infinitunes/trpc";
 
-import { getSession } from "~/lib/auth";
+import { getSession, requestEmailChange } from "~/lib/auth";
 import { cachedApi } from "~/lib/cached-api";
 
 // Context members are request-safe singletons or thunks (getSession is per-request cache()d).
@@ -11,4 +11,5 @@ export const api = createCaller({
   db,
   session: getSession,
   catalogApi: cachedApi,
+  requestEmailChange,
 });

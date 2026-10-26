@@ -58,6 +58,7 @@ const DEFAULTS: Defaults = {
   "user.renamePlaylist": async () => userPlaylist(),
   "user.deletePlaylist": async () => userPlaylist(),
   "user.updateUser": async () => undefined,
+  "user.requestEmailChange": async () => ({ pendingEmail: "" }),
   "user.changePassword": async () => undefined,
   "user.deleteUser": async () => ({ id: "user-1" }),
   "history.list": async () => [],

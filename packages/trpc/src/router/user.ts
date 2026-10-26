@@ -136,10 +136,17 @@ export function moveSongInPlaylist(
   return next;
 }
 
-const updateUserInput = z.object({
+/**
+ * Strict so a stale client still sending `email` gets an error instead of a
+ * silently dropped change: the email moves through `requestEmailChange`.
+ */
+const updateUserInput = z.strictObject({
   name: z.string().trim().min(1).max(USER_NAME_MAX).optional(),
-  email: emailSchema.transform((email) => email.toLowerCase()).optional(),
-  /** Required (and verified) only when the email actually changes. */
+});
+
+const requestEmailChangeInput = z.object({
+  email: emailSchema.transform((email) => email.toLowerCase()),
+  /** Required for accounts that have a password (else a fresh session). */
   currentPassword: z.string().max(200).optional(),
 });
 
@@ -234,10 +241,6 @@ function pgErrorCode(error: unknown): unknown {
   return typeof cause === "object" && cause !== null && "code" in cause
     ? cause.code
     : undefined;
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  return pgErrorCode(error) === "23505";
 }
 
 type PlaylistCtx = { db: TRPCContext["db"]; session: NonNullable<Session> };
@@ -557,51 +560,11 @@ export const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
-      const patch: {
-        betterAuthName?: string;
-        email?: string;
-        emailVerifiedBoolean?: boolean;
-      } = {};
-      if (input.name !== undefined) patch.betterAuthName = input.name;
-      if (input.email !== undefined) {
-        const current = await ctx.db.query.users.findFirst({
-          columns: { email: true },
-          where: eq(users.id, userId),
-        });
-        if (current?.email !== input.email) {
-          await confirmIdentity(ctx, input.currentPassword);
-          patch.email = input.email;
-          // Nothing has verified the new address yet.
-          patch.emailVerifiedBoolean = false;
-        }
-      }
-      if (Object.keys(patch).length > 0) {
-        try {
-          await ctx.db.transaction(async (tx) => {
-            await tx.update(users).set(patch).where(eq(users.id, userId));
-            if (patch.email !== undefined) {
-              const currentToken = ctx.session.session?.token;
-              await tx
-                .delete(betterAuthSessions)
-                .where(
-                  currentToken
-                    ? and(
-                        eq(betterAuthSessions.userId, userId),
-                        ne(betterAuthSessions.token, currentToken),
-                      )
-                    : eq(betterAuthSessions.userId, userId),
-                );
-            }
-          });
-        } catch (error) {
-          if (isUniqueViolation(error)) {
-            throw new TRPCError({
-              code: "CONFLICT",
-              message: "That email is already in use",
-            });
-          }
-          throw error;
-        }
+      if (input.name !== undefined) {
+        await ctx.db
+          .update(users)
+          .set({ betterAuthName: input.name })
+          .where(eq(users.id, userId));
       }
 
       return ctx.db.query.users.findFirst({
@@ -616,6 +579,50 @@ export const userRouter = router({
         },
         where: eq(users.id, userId),
       });
+    }),
+
+  /**
+   * Starts an email change (X-1). Nothing is written here: Better Auth mails a
+   * link to the NEW address and swaps the email only when it is opened. The
+   * answer is the same whether or not that address already has an account, so
+   * the form cannot probe for registered emails.
+   */
+  requestEmailChange: protectedProcedure
+    .input(requestEmailChangeInput)
+    .mutation(async ({ ctx, input }) => {
+      const current = await ctx.db.query.users.findFirst({
+        columns: { email: true },
+        where: eq(users.id, ctx.session.user.id),
+      });
+      if (current?.email === input.email) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "That is already your email",
+        });
+      }
+
+      await confirmIdentity(ctx, input.currentPassword);
+
+      if (!ctx.requestEmailChange) {
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Changing your email is not available right now",
+        });
+      }
+      try {
+        await ctx.requestEmailChange(input.email);
+      } catch (error) {
+        console.error(
+          "[user] email change request failed:",
+          error instanceof Error ? error.message : "unknown error",
+        );
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "We couldn't start the email change. Try again later",
+        });
+      }
+
+      return { pendingEmail: input.email };
     }),
 
   deleteUser: protectedProcedure
