@@ -18,6 +18,7 @@ import { eq } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
 import { createAuth, revokeOtherSessions } from "../src/auth";
+import { parseFingerprints } from "../src/native-app";
 
 function makeFakeDb() {
   const query: Record<string, unknown> = {
@@ -224,6 +225,98 @@ describe("Better Auth configuration", () => {
     }
   });
 
+  it("adds Sign in with Apple only when its client ID is set", async () => {
+    expect(createAuth(makeFakeDb()).options.socialProviders).not.toHaveProperty(
+      "apple",
+    );
+
+    process.env.APPLE_CLIENT_ID = "com.infinitunes.web";
+    try {
+      const auth = createAuth(makeFakeDb());
+      // Native ID tokens are issued to the bundle id.
+      expect(auth.options.socialProviders?.apple).toMatchObject({
+        clientId: "com.infinitunes.web",
+        appBundleIdentifier: "com.infinitunes.app",
+      });
+      const res = await auth.handler(
+        new Request("http://localhost:3000/api/auth/social-providers"),
+      );
+      expect(await res.json()).toEqual(["google", "github", "apple"]);
+
+      // No secret: the web redirect flow is refused, the app's ID token is not.
+      const social = (body: Record<string, unknown>) =>
+        auth.handler(
+          new Request("http://localhost:3000/api/auth/sign-in/social", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              origin: "http://localhost:3000",
+            },
+            body: JSON.stringify({ provider: "apple", ...body }),
+          }),
+        );
+      const redirect = await social({ callbackURL: "/" });
+      expect(redirect.status).toBe(400);
+      expect((await redirect.json()).message).toContain("iOS app only");
+      const native = await social({ idToken: { token: "not-a-jwt" } });
+      expect(native.status).not.toBe(500);
+      expect(JSON.stringify(await native.json())).not.toContain("iOS app only");
+    } finally {
+      delete process.env.APPLE_CLIENT_ID;
+    }
+  });
+
+  it("accepts the Android app's passkey origin next to the web's", () => {
+    const passkeyOrigin = (auth: ReturnType<typeof createAuth>) =>
+      (
+        auth.options.plugins?.find((plugin) => plugin.id === "passkey") as
+          | { options?: { origin?: unknown } }
+          | undefined
+      )?.options?.origin;
+    expect(passkeyOrigin(createAuth(makeFakeDb()))).toEqual([
+      "http://localhost:3000",
+    ]);
+
+    // keytool's colon hex, as Play Console shows it.
+    const hex = Array.from({ length: 32 }, (_, i) =>
+      ((i * 37 + 250) % 256).toString(16).padStart(2, "0").toUpperCase(),
+    ).join(":");
+    process.env.ANDROID_CERT_SHA256_FINGERPRINTS = ` ${hex} `;
+    try {
+      expect(passkeyOrigin(createAuth(makeFakeDb()))).toEqual([
+        "http://localhost:3000",
+        `android:apk-key-hash:${Buffer.from(hex.replace(/:/g, ""), "hex").toString("base64url")}`,
+      ]);
+    } finally {
+      delete process.env.ANDROID_CERT_SHA256_FINGERPRINTS;
+    }
+  });
+
+  it("normalises Android fingerprints and refuses a malformed one", () => {
+    const hex = Array(32).fill("ab").join(":");
+    expect(parseFingerprints(` ${hex} ,, ${hex.toUpperCase()}`)).toEqual([
+      hex.toUpperCase(),
+      hex.toUpperCase(),
+    ]);
+    expect(parseFingerprints(undefined)).toEqual([]);
+
+    // Too short, a SHA-1, and no separators.
+    for (const bad of [
+      "AB:CD",
+      Array(20).fill("AB").join(":"),
+      "AB".repeat(32),
+    ]) {
+      process.env.ANDROID_CERT_SHA256_FINGERPRINTS = bad;
+      try {
+        expect(() => createAuth(makeFakeDb())).toThrow(
+          "ANDROID_CERT_SHA256_FINGERPRINTS",
+        );
+      } finally {
+        delete process.env.ANDROID_CERT_SHA256_FINGERPRINTS;
+      }
+    }
+  });
+
   it("generates UUID primary keys via advanced.database.generateId", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.advanced?.database?.generateId).toBe("uuid");
@@ -414,6 +507,7 @@ describe("Injected plugins and env precedence", () => {
       "passkey",
       "expo",
       "web-redirects-only",
+      "infinitunes-social-providers",
     ]);
   });
 
@@ -424,6 +518,7 @@ describe("Injected plugins and env precedence", () => {
       "passkey",
       "expo",
       "web-redirects-only",
+      "infinitunes-social-providers",
       "test-injected",
     ]);
   });

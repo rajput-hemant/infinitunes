@@ -123,6 +123,10 @@ Set these in your Vercel project settings:
 | `GOOGLE_CLIENT_SECRET`              | Google OAuth client secret (optional unless prod)                                                      |
 | `GITHUB_CLIENT_ID`                  | GitHub OAuth client ID (optional unless prod)                                                          |
 | `GITHUB_CLIENT_SECRET`              | GitHub OAuth client secret (optional unless prod)                                                      |
+| `APPLE_CLIENT_ID`                   | Sign in with Apple Services ID (optional; enables Apple in the iOS app)                                |
+| `APPLE_CLIENT_SECRET`               | Sign in with Apple client secret JWT (optional; only a web flow needs it)                              |
+| `APPLE_TEAM_ID`                     | Apple Team ID for `/.well-known/apple-app-site-association` (optional; iOS passkeys)                   |
+| `ANDROID_CERT_SHA256_FINGERPRINTS`  | Android signing cert SHA-256s, comma-separated (optional; `assetlinks.json`, Android passkeys)         |
 | `DATABASE_URL`                      | PostgreSQL connection string                                                                           |
 | `UPSTASH_REDIS_REST_URL`            | Upstash Redis URL (optional, rate limiting)                                                            |
 | `UPSTASH_REDIS_REST_TOKEN`          | Upstash Redis token (optional, rate limiting)                                                          |

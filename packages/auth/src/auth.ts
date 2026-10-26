@@ -14,14 +14,23 @@ import { compare, hash } from "bcryptjs";
 import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import {
+  APIError,
+  createAuthEndpoint,
+  createAuthMiddleware,
+} from "better-auth/api";
 import { and, desc, eq, ne } from "drizzle-orm";
 
 import { changeEmailVerificationEmail, resetPasswordEmail } from "./emails";
 import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
-import { NATIVE_APP_ORIGIN } from "./native-app";
+import {
+  androidApkKeyHashOrigin,
+  NATIVE_APP_ID,
+  NATIVE_APP_ORIGIN,
+  parseFingerprints,
+} from "./native-app";
 import { passwordLengthSchema } from "./schemas";
 import { originOf, parseUrl } from "./url";
 import { webRedirectsOnly } from "./web-redirects";
@@ -190,6 +199,31 @@ export function createAuth(
     env.GITHUB_CLIENT_ID,
     env.GITHUB_CLIENT_SECRET,
   );
+  // The iOS app's ID tokens name the bundle id as their audience; verifying
+  // one needs no secret, so the redirect flow is refused (`hooks.before`). A
+  // future web Apple flow needs a real secret and
+  // `audience: [clientId, NATIVE_APP_ID]`.
+  const apple = env.APPLE_CLIENT_ID
+    ? {
+        clientId: env.APPLE_CLIENT_ID,
+        clientSecret: env.APPLE_CLIENT_SECRET ?? "",
+        appBundleIdentifier: NATIVE_APP_ID,
+      }
+    : undefined;
+  // Only configured providers: Better Auth warns on every request about one
+  // without credentials. Production always has Google and GitHub (`./env`).
+  const socialProviders = {
+    ...(google && { google }),
+    ...(github && { github }),
+    ...(apple && { apple }),
+  };
+  // The Android app signs passkey assertions with its own origin.
+  const passkeyOrigins = [
+    baseURL,
+    ...parseFingerprints(env.ANDROID_CERT_SHA256_FINGERPRINTS).map(
+      androidApkKeyHashOrigin,
+    ),
+  ].filter((origin): origin is string => Boolean(origin));
 
   // Set once Better Auth exists: the confirm hook reads the opener's session.
   let sessionTokenOf = async (_headers: Headers): Promise<string | undefined> =>
@@ -201,7 +235,7 @@ export function createAuth(
     trustedOrigins,
     // The `expo` plugin's browser OAuth relay: an unauthenticated GET that
     // plants a caller-chosen OAuth state cookie, then redirects to any https
-    // URL. The native app has no social sign-in; enable it only with one.
+    // URL. The native app signs in with ID tokens, which never use it.
     disabledPaths: ["/expo-authorization-proxy"],
     hooks: {
       before: createAuthMiddleware(async (ctx) => {
@@ -214,6 +248,15 @@ export function createAuth(
         ) {
           // Reject before a reset consumes its single-use token.
           assertNewPasswordLength(ctx.body?.newPassword);
+        } else if (
+          ["/sign-in/social", "/link-social"].includes(ctx.path) &&
+          ctx.body?.provider === "apple" &&
+          !ctx.body?.idToken
+        ) {
+          // Apple is the app's ID token flow only (see `apple` above).
+          throw new APIError("BAD_REQUEST", {
+            message: "Sign in with Apple is available in the iOS app only",
+          });
         }
       }),
     },
@@ -310,12 +353,7 @@ export function createAuth(
       },
     },
 
-    // Only configured providers: Better Auth warns on every request about one
-    // without credentials. Production always has both (see `./env`).
-    socialProviders: {
-      ...(google && { google }),
-      ...(github && { github }),
-    },
+    socialProviders,
 
     session: {
       expiresIn: 60 * 60 * 24 * 30, // 30 days
@@ -368,13 +406,25 @@ export function createAuth(
       passkey({
         rpID,
         rpName: "Infinitunes",
-        origin: baseURL,
+        // Never `[]`: it would skip the plugin's request-origin fallback.
+        origin: passkeyOrigins.length ? passkeyOrigins : null,
         schema: {
           passkey: { modelName: "infinitunes_passkey" },
         },
       }),
       expo(),
       webRedirectsOnly(),
+      {
+        id: "infinitunes-social-providers",
+        endpoints: {
+          // The providers this server signs in with; the app hides the rest.
+          socialProviders: createAuthEndpoint(
+            "/social-providers",
+            { method: "GET" },
+            async (ctx) => ctx.json(Object.keys(socialProviders)),
+          ),
+        },
+      },
       ...(options.plugins ?? []),
     ],
   });

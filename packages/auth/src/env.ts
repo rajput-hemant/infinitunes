@@ -33,6 +33,12 @@ export function authSchema(ctx: AuthEnvContext = {}) {
     GOOGLE_CLIENT_SECRET: requiredInProduction(),
     GITHUB_CLIENT_ID: requiredInProduction(),
     GITHUB_CLIENT_SECRET: requiredInProduction(),
+    // Sign in with Apple (the native app's ID token flow): optional.
+    APPLE_CLIENT_ID: z.string().optional(),
+    APPLE_CLIENT_SECRET: z.string().optional(),
+    // The Android app's signing certificates (colon hex, comma-separated):
+    // its passkey origin and `/.well-known/assetlinks.json`.
+    ANDROID_CERT_SHA256_FINGERPRINTS: z.string().optional(),
     RESEND_API_KEY: z.string().optional(),
     EMAIL_FROM: z.string().optional(),
     BETTER_AUTH_URL: z.url().optional(),

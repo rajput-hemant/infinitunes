@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Platform, Pressable, StyleSheet } from "react-native";
 import type { PressableProps, StyleProp, ViewStyle } from "react-native";
 import Animated, {
@@ -43,6 +44,8 @@ type ButtonProps = Omit<PressableProps, "children" | "className" | "style"> & {
   label: string;
   /** A leading symbol, e.g. play or shuffle. */
   icon?: SymbolName;
+  /** A leading mark that is not a symbol (a provider's logo); replaces `icon`. */
+  leading?: ReactNode;
   variant?: keyof typeof variants;
   /**
    * Layout only (a margin), set on the pressable itself. There is no class
@@ -67,6 +70,7 @@ export function Button(props: ButtonProps) {
 function CapsuleButton({
   label,
   icon,
+  leading,
   variant = "primary",
   style,
   onPress,
@@ -100,9 +104,10 @@ function CapsuleButton({
           onPressOut?.(event);
         }}
       >
-        {icon ? (
-          <Icon name={icon} size="md" color={inkColor} weight="semibold" />
-        ) : null}
+        {leading ??
+          (icon ? (
+            <Icon name={icon} size="md" color={inkColor} weight="semibold" />
+          ) : null)}
         <Text variant="label" tone={tone}>
           {label}
         </Text>
@@ -128,6 +133,7 @@ const AT_REST = sizes.ctl / 2;
 function MaterialButton({
   label,
   icon,
+  leading,
   variant = "primary",
   style,
   onPress,
@@ -169,7 +175,8 @@ function MaterialButton({
         shape,
       ]}
     >
-      {icon ? <Icon name={icon} size="md" color={inkColor} /> : null}
+      {leading ??
+        (icon ? <Icon name={icon} size="md" color={inkColor} /> : null)}
       <Text variant="label" tone={tone}>
         {label}
       </Text>

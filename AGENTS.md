@@ -386,6 +386,15 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
 - The expo auth client turns a relative `callbackURL`/`newUserCallbackURL`/`errorCallbackURL` into
   `infinitunes://...`, which `webRedirectsOnly` rejects (403): native auth calls never pass them. A native
   password reset passes a relative path or the web reset page's https URL as `redirectTo` (left untouched).
+- Provider sign-in (`features/auth/provider-sign-in.ts`, `provider-buttons.tsx`): Apple
+  (`expo-apple-authentication`, iOS) and Google (`@react-native-google-signin`, `webClientId` = the server's
+  `GOOGLE_CLIENT_ID`, the token's audience) pass an ID token to `signIn.social`. Passkeys run the ceremony
+  through `authClient.$fetch` (it keeps the challenge cookie) and `react-native-passkey`, not
+  `passkeyClient()`, whose sign-in calls the browser WebAuthn API; the associated domain is the https
+  `EXPO_PUBLIC_API_URL` host (`app.config.ts`). A button shows only if the server lists the provider and the
+  build has its ids; on iOS Google needs Apple (guideline 4.8), and Apple and passkeys need
+  `EXPO_PUBLIC_APPLE_PAID_TEAM=true` (a free Apple ID cannot sign those capabilities). Cancels are silent. Jest stubs all three
+  (`src/test/native-auth.tsx`).
 - Bun's isolated installs: Babel resolves `nativewind/babel`'s plugins and the JSX runtime from the app, so
   `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`
   are direct dependencies; `jest.config.js` adds `.bun` to the transform allow-list, falls back to the app's
@@ -687,7 +696,11 @@ The project uses Zod ^4.6.5. Key differences from Zod 3:
   origin only: `webRedirectsOnly` rejects non-http(s) `callbackURL`/`redirectTo`
   values (any app can claim a custom scheme, and reset tokens or the `expo`
   plugin's appended cookie would travel through it), and `/expo-authorization-proxy`
-  is in `disabledPaths`. Native social sign-in should use the ID token flow.
+  is in `disabledPaths`. Native social sign-in uses the ID token flow (Apple, Google; GitHub has
+  none, so it stays web-only). Apple is on when `APPLE_CLIENT_ID` is set (optional, audience
+  `NATIVE_APP_ID`); `GET /api/auth/social-providers` lists the configured providers. Passkey
+  `origin` is the base URL plus `android:apk-key-hash:` origins from `ANDROID_CERT_SHA256_FINGERPRINTS`,
+  which with `APPLE_TEAM_ID` also feeds `app/.well-known/{assetlinks.json,apple-app-site-association}`.
   The web app injects `nextCookies()` at its call site (`apps/web/lib/auth.ts`) -
   nothing under `@infinitunes/auth` may import `better-auth/next-js`. `createAuth`
   passes `secret`/`baseURL` into Better Auth (`BETTER_AUTH_*` wins over `AUTH_*`)
