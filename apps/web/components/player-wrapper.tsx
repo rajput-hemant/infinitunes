@@ -1,13 +1,14 @@
 "use client";
 
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import dynamic from "next/dynamic";
 
 import type { User } from "~/lib/auth";
 
 type PlayerWrapperProps = {
   user?: User;
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   favorites?: Favorite | null;
 };
 

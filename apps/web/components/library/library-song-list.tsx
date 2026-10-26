@@ -1,6 +1,7 @@
 "use client";
 
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import type { SongRowItem } from "@infinitunes/types";
 import { decode } from "@infinitunes/types";
 import { Input } from "@infinitunes/ui/components/input";
@@ -55,7 +56,7 @@ type LibrarySongListProps = {
   user?: User;
   items: SongRowItem[];
   userFavorites?: Favorite | null;
-  userPlaylists?: MyPlaylist[];
+  userPlaylists?: PlaylistSummary[];
   showAlbum?: boolean;
   className?: string;
   /** Label of the default (server-order) sort, e.g. "Recently played". */

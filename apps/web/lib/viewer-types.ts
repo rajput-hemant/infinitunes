@@ -1,4 +1,5 @@
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 
 import type { User } from "~/lib/auth";
 
@@ -9,6 +10,6 @@ import type { User } from "~/lib/auth";
  */
 export type Viewer = {
   user: User | undefined;
-  playlists: MyPlaylist[] | undefined;
+  playlists: PlaylistSummary[] | undefined;
   favorites: Favorite | null | undefined;
 };

@@ -1,10 +1,11 @@
 import { recentlyPlayed } from "@infinitunes/db/schema";
-import { and, desc, eq, notInArray, sql } from "drizzle-orm";
+import { and, count, desc, eq, notInArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { protectedProcedure, router } from "../trpc";
 
 export const HISTORY_LIMIT = 50;
+export const HISTORY_TRIM_THRESHOLD = 60;
 
 const recordInput = z.object({
   id: z.string().min(1).max(64),
@@ -36,21 +37,28 @@ export const historyRouter = router({
             set: { playedAt: sql`now()` },
           });
 
-        const keep = tx
-          .select({ id: recentlyPlayed.id })
+        const [{ historyCount }] = await tx
+          .select({ historyCount: count() })
           .from(recentlyPlayed)
-          .where(eq(recentlyPlayed.userId, userId))
-          .orderBy(desc(recentlyPlayed.playedAt))
-          .limit(HISTORY_LIMIT);
+          .where(eq(recentlyPlayed.userId, userId));
 
-        await tx
-          .delete(recentlyPlayed)
-          .where(
-            and(
-              eq(recentlyPlayed.userId, userId),
-              notInArray(recentlyPlayed.id, keep),
-            ),
-          );
+        if (Number(historyCount) > HISTORY_TRIM_THRESHOLD) {
+          const keep = tx
+            .select({ id: recentlyPlayed.id })
+            .from(recentlyPlayed)
+            .where(eq(recentlyPlayed.userId, userId))
+            .orderBy(desc(recentlyPlayed.playedAt))
+            .limit(HISTORY_LIMIT);
+
+          await tx
+            .delete(recentlyPlayed)
+            .where(
+              and(
+                eq(recentlyPlayed.userId, userId),
+                notInArray(recentlyPlayed.id, keep),
+              ),
+            );
+        }
       });
 
       return { ok: true as const };

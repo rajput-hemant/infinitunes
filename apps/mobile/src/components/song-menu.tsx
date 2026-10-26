@@ -12,7 +12,11 @@ import { shareItem } from "~/lib/share";
 import { useOpenEntity } from "~/navigation/use-open-entity";
 import { playerStore } from "~/playback/player-store";
 import { radioSeedOf } from "~/playback/radio";
-import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
+import {
+  addSongsToPlaylist,
+  usePlaylistMembership,
+  useUserPlaylists,
+} from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
 
 import {
@@ -79,6 +83,7 @@ type SongMenuProps = {
 export function SongMenu({ song, removal, children }: SongMenuProps) {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
+  const membership = usePlaylistMembership();
   const openEntity = useOpenEntity();
   const { playNext, addToQueue } = playerStore.getState();
   const isSong = song.type === "song";
@@ -106,6 +111,7 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
             addToPlaylistEntry({
               songs: [song],
               playlists,
+              membership,
               onAdd: (playlist) => addSongsToPlaylist(playlist, [song]),
             }),
           ]

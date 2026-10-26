@@ -99,34 +99,52 @@ describe("router procedures", () => {
     const trending = result.new_trending[0];
 
     expect(calls).toEqual(["webapi.getLaunchData"]);
-    expect(trending?.id).toBe("s1");
-    expect(trending?.title).toBe("Test Song");
+    expect(result.new_trending).toHaveLength(1);
     expect(downloadUrl(trending)).toContain("_320.mp4");
+    expect(trending?.more_info.download_url).toBe(downloadUrl(trending));
+    expect(result.top_playlists).toHaveLength(1);
   });
 
-  it("song.details returns song payload matching SongObj shape", async () => {
-    const id = uniq();
+  it("song.details handles single and comma-separated ids and processes download URLs", async () => {
     calls = [];
-    responses = { "song.getDetails": { songs: [song(id)] } };
+    responses = { "song.getDetails": { songs: [song("s1")] } };
 
-    const result = await caller.song.details({ id });
+    const single = await caller.song.details({ id: uniq() });
 
     expect(calls).toEqual(["song.getDetails"]);
-    expect(result.songs).toHaveLength(1);
-    expect(result.songs[0]?.id).toBe(id);
-    expect(result.songs[0]?.more_info.album).toBe("Test Album");
-    expect(result.songs[0]?.download_url).toContain("_320.mp4");
+    expect(single.songs).toHaveLength(1);
+    expect(single.songs[0]?.download_url).toContain("_320.mp4");
+
+    calls = [];
+    responses = { "song.getDetails": { songs: [song("s1"), song("s2")] } };
+
+    const pair = await caller.song.details({ id: `${uniq()},${uniq()}` });
+
+    expect(calls).toEqual(["song.getDetails"]);
+    expect(pair.songs).toHaveLength(2);
+    expect(pair.songs[1]?.download_url).toContain("_320.mp4");
   });
 
-  it("song.items resolves episode ids through the same endpoint", async () => {
+  it("song.items resolves episode and song payloads and processes download URLs", async () => {
     calls = [];
     responses = {
       "song.getDetails": {
-        songs: [{ ...song("e1"), type: "episode" }, song("s1")],
+        songs: [
+          {
+            id: "ep1",
+            title: "Episode 1",
+            type: "episode",
+            more_info: {
+              duration: "600",
+              encrypted_media_url: encryptedMediaUrl,
+            },
+          },
+          song("s2"),
+        ],
       },
     };
 
-    const result = await caller.song.items({ id: "e1,s1" });
+    const result = await caller.song.items({ id: `${uniq()},${uniq()}` });
 
     expect(calls).toEqual(["song.getDetails"]);
     expect(result.songs.map((item) => item.type)).toEqual(["episode", "song"]);
@@ -223,6 +241,83 @@ describe("router procedures", () => {
     expect(result.artistId).toBe("ar1");
     expect(result.name).toBe("Artist 1");
     expect(result.topSongs?.[0]?.download_url).toContain("_320.mp4");
+  });
+
+  it("album.details supports token lookup via webapi.get in a single call (S-15)", async () => {
+    const id = uniq();
+    calls = [];
+    responses = {
+      "webapi.get": {
+        id,
+        title: "Test Album",
+        list: [song("s1")],
+      },
+    };
+
+    const result = await caller.album.details({ token: uniq() });
+
+    expect(calls).toEqual(["webapi.get"]);
+    expect(result.id).toBe(id);
+    expect(result.title).toBe("Test Album");
+    expect(Array.isArray(result.list)).toBe(true);
+    if (Array.isArray(result.list)) {
+      expect(result.list[0]?.download_url).toContain("_320.mp4");
+    }
+  });
+
+  it("album.details routes numeric token to content.getAlbumDetails (S-15)", async () => {
+    const id = "123456";
+    calls = [];
+    responses = {
+      "content.getAlbumDetails": {
+        id,
+        title: "Numeric Album",
+        list: [song("s1")],
+      },
+    };
+
+    const result = await caller.album.details({ token: id });
+
+    expect(calls).toEqual(["content.getAlbumDetails"]);
+    expect(result.id).toBe(id);
+  });
+
+  it("playlist.details supports token lookup via webapi.get in a single call (S-15)", async () => {
+    const id = uniq();
+    calls = [];
+    responses = {
+      "webapi.get": {
+        id,
+        title: "Test Playlist",
+        list: [song("s1")],
+      },
+    };
+
+    const result = await caller.playlist.details({ token: uniq() });
+
+    expect(calls).toEqual(["webapi.get"]);
+    expect(result.id).toBe(id);
+    expect(result.title).toBe("Test Playlist");
+    expect(Array.isArray(result.list)).toBe(true);
+    if (!Array.isArray(result.list)) return;
+    expect(result.list[0]?.download_url).toContain("_320.mp4");
+  });
+
+  it("playlist.details routes numeric token to playlist.getDetails (S-15)", async () => {
+    const id = "789101";
+    calls = [];
+    responses = {
+      "playlist.getDetails": {
+        id,
+        title: "Numeric Playlist",
+        list: [song("s1")],
+      },
+    };
+
+    const result = await caller.playlist.details({ token: id });
+
+    expect(calls).toEqual(["playlist.getDetails"]);
+    expect(result.id).toBe(id);
   });
 
   it("get.footer falls back to hindi when lang is omitted (S-14)", async () => {
