@@ -1,9 +1,13 @@
-import { fetchSongsChunked, orderByIds } from "@infinitunes/core/liked-songs";
-import { toSongRow } from "@infinitunes/types";
+import {
+  lookupSongsChunked,
+  resolveWithCache,
+} from "@infinitunes/core/liked-songs";
+import type { SongRowItem } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useRef } from "react";
 
+import { toRowLookup } from "~/lib/song-rows";
 import { trpcClient } from "~/lib/trpc";
 import {
   LIBRARY_QUERY_KEY,
@@ -45,14 +49,18 @@ function useHistoryIds(): IdSource {
 
 /** Recently played songs and episodes, newest first. */
 export function useHistory() {
-  return useResolvedItems({
+  return useResolvedItems<SongRowItem>({
     scope: "history",
+    // `song.items` also resolves episodes: its own cache, not `song-row`'s.
+    itemKind: "history-row",
     source: useHistoryIds(),
-    resolve: async (ids) => {
-      const items = await fetchSongsChunked(ids, (input) =>
-        trpcClient.song.items.query(input),
-      );
-      return items && orderByIds(ids, items).map(toSongRow);
-    },
+    resolve: (ids, cache) =>
+      resolveWithCache(ids, cache, async (misses) =>
+        toRowLookup(
+          await lookupSongsChunked(misses, (input) =>
+            trpcClient.song.items.query(input),
+          ),
+        ),
+      ),
   });
 }

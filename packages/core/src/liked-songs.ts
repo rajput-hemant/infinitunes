@@ -45,16 +45,18 @@ export function chunk<T>(items: T[], size: number): T[][] {
 }
 
 /**
- * Fetch song details in chunks, tolerating partial failure. Returns undefined
- * when no songs resolve and at least one request failed. NOT_FOUND is missing,
- * not a failure. Upstream `song.getDetails` also resolves
- * episode ids, so pass `Song | Episode` for mixed lists.
+ * What one lookup of several ids found: the items by id and the ids upstream
+ * answered for but no longer has. An id in neither could not be fetched.
  */
-export async function fetchSongsChunked<T extends Song | Episode = Song>(
+export type Lookup<T> = { found: Map<string, T>; gone: string[] };
+
+type Settled<T> = { songs: T[]; gone: string[]; failed: number };
+
+async function settleSongsChunked<T extends Song | Episode>(
   ids: string[],
   details: (input: { id: string }) => Promise<{ songs: T[] }>,
-  size = LIKED_SONGS_CHUNK_SIZE,
-): Promise<T[] | undefined> {
+  size: number,
+): Promise<Settled<T>> {
   const chunks = chunk(ids, size);
   const settled = await settleWithLimit(
     chunks,
@@ -115,8 +117,107 @@ export async function fetchSongsChunked<T extends Song | Episode = Song>(
     );
   }
 
-  const songs = results.flatMap((items) => items ?? []);
+  // Only a chunk upstream answered can say an id is gone; a failed chunk's
+  // ids are unknown, not missing.
+  const gone = chunks.flatMap((held, i) => {
+    const answered = results[i];
+    if (!answered) return [];
+    const returned = new Set(answered.map((item) => item.id));
+    return held.filter((id) => !returned.has(id));
+  });
+  return { songs: results.flatMap((items) => items ?? []), gone, failed };
+}
+
+/**
+ * Fetch song details in chunks, tolerating partial failure. Returns undefined
+ * when no songs resolve and at least one request failed. NOT_FOUND is missing,
+ * not a failure. Upstream `song.getDetails` also resolves
+ * episode ids, so pass `Song | Episode` for mixed lists.
+ */
+export async function fetchSongsChunked<T extends Song | Episode = Song>(
+  ids: string[],
+  details: (input: { id: string }) => Promise<{ songs: T[] }>,
+  size = LIKED_SONGS_CHUNK_SIZE,
+): Promise<T[] | undefined> {
+  const { songs, failed } = await settleSongsChunked(ids, details, size);
   return failed > 0 && songs.length === 0 ? undefined : songs;
+}
+
+/**
+ * `fetchSongsChunked` as a `Lookup`: an id is gone only when the chunk that
+ * held it was answered without it, never because its chunk failed.
+ */
+export async function lookupSongsChunked<T extends Song | Episode = Song>(
+  ids: string[],
+  details: (input: { id: string }) => Promise<{ songs: T[] }>,
+  size = LIKED_SONGS_CHUNK_SIZE,
+): Promise<Lookup<T>> {
+  const { songs, gone } = await settleSongsChunked(ids, details, size);
+  return { found: new Map(songs.map((item) => [item.id, item])), gone };
+}
+
+/**
+ * One lookup per id, `LIBRARY_FETCH_CONCURRENCY` at a time. An id whose run
+ * resolves to nothing or rejects NOT_FOUND is gone; any other rejection
+ * leaves it unfetched.
+ */
+export async function lookupEach<T>(
+  ids: string[],
+  run: (id: string) => Promise<T | undefined>,
+): Promise<Lookup<T>> {
+  const settled = await settleWithLimit(ids, LIBRARY_FETCH_CONCURRENCY, run);
+  const found = new Map<string, T>();
+  const gone: string[] = [];
+  settled.forEach((result, i) => {
+    const id = ids[i]!;
+    if (result.status === "fulfilled") {
+      if (result.value === undefined) gone.push(id);
+      else found.set(id, result.value);
+    } else if (getErrorCode(result.reason) === "NOT_FOUND") {
+      gone.push(id);
+    }
+  });
+  return { found, gone };
+}
+
+/** Per-id memory of looked-up items: `null` is gone, `undefined` unknown. */
+export type ItemCache<T> = {
+  get: (id: string) => T | null | undefined;
+  set: (id: string, item: T | null) => void;
+};
+
+/**
+ * The items of `ids` in that order, looking up only the ids `cache` does not
+ * know and remembering what the lookup found (and what it found gone). So a
+ * list that gains one id makes one request, and one that loses an id none.
+ * `undefined` when nothing resolved and some id could not be fetched.
+ */
+export async function resolveWithCache<T>(
+  ids: readonly string[],
+  cache: ItemCache<T>,
+  lookup: (ids: string[]) => Promise<Lookup<T>>,
+): Promise<T[] | undefined> {
+  const known = new Map<string, T | null>();
+  const misses: string[] = [];
+  for (const id of new Set(ids)) {
+    const cached = cache.get(id);
+    if (cached === undefined) misses.push(id);
+    else known.set(id, cached);
+  }
+  if (misses.length > 0) {
+    const { found, gone } = await lookup(misses);
+    for (const id of gone) {
+      known.set(id, null);
+      cache.set(id, null);
+    }
+    for (const [id, item] of found) {
+      known.set(id, item);
+      cache.set(id, item);
+    }
+  }
+  const items = ids.flatMap((id) => known.get(id) ?? []);
+  const failed = ids.some((id) => !known.has(id));
+  return failed && items.length === 0 ? undefined : items;
 }
 
 /** Items in the order of `ids`, dropping ids that did not resolve. */

@@ -21,11 +21,14 @@ type Entry = {
 
 const entries = new Map<string, Entry>();
 const listeners = new Set<() => void>();
+/** Bumped on every change, for lists that read many entries at once. */
+let version = 0;
 
 // Safety net if a refresh never delivers matching props (e.g. another tab).
 const EXPIRY_MS = 8000;
 
 function emit() {
+  version += 1;
   for (const listener of listeners) listener();
 }
 
@@ -111,6 +114,24 @@ export function useFavorite(key: string, serverLiked: boolean) {
   }, [key, serverLiked, code]);
 
   return code === -1 ? serverLiked : (code & 1) === 1;
+}
+
+/**
+ * What `useFavorite` shows for `key` right now, without subscribing: for a
+ * list that filters many items at once (which re-renders through
+ * `useFavoriteOverlayVersion`). Each item's own heart still clears the entry.
+ */
+export function peekFavorite(key: string, serverLiked: boolean): boolean {
+  return entries.get(key)?.want ?? serverLiked;
+}
+
+/** Re-renders the caller on every pending like change; pair with `peekFavorite`. */
+export function useFavoriteOverlayVersion(): number {
+  return useSyncExternalStore(
+    subscribe,
+    () => version,
+    () => 0,
+  );
 }
 
 /** Test hook: forget every pending entry. */
