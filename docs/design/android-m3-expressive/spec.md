@@ -67,7 +67,8 @@ slop, mini player 64, page gutter 16.
 
 Hit slop only works on the outermost view: Android drops a touch outside a parent's bounds (an
 `overflow: hidden` view's own, else its children's frames, never their slop) before it reaches the children,
-so a slopped child of a clipped or same-size wrapper keeps its 40dp target. `Button` and `IconButton` make the
+so a slopped child inside an `overflow: hidden` or `scroll` wrapper keeps its 40dp target; a same-size wrapper
+that does not clip gives no such guarantee on RN 0.88 Fabric. `Button` and `IconButton` make the
 clipped, shaped view the pressable itself, with no wrapper. A native menu (`OptionMenu`, `MenuTrigger`)
 hit-tests its child's bounds, so its trigger is the full 48dp instead.
 
