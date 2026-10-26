@@ -111,29 +111,27 @@ export function MediaCard({
             {shownEyebrow}
           </Text>
         ) : null}
-        <Text
-          variant={hero ? "headline" : CARD_TITLE.variant}
-          numberOfLines={1}
-          style={hero ? undefined : CARD_TITLE.style}
-        >
-          {item.name}
-        </Text>
-        {subtitle || explicit ? (
-          <View className="flex-row items-center gap-1">
-            {/* The card's label already says "Explicit". */}
-            {explicit ? <ExplicitBadge accessible={false} /> : null}
-            {subtitle ? (
-              <Text
-                variant={hero ? "footnote" : "caption"}
-                style={{ fontWeight: "400" }}
-                tone="muted"
-                numberOfLines={1}
-                className="shrink"
-              >
-                {subtitle}
-              </Text>
-            ) : null}
-          </View>
+        <View className="flex-row items-center gap-1">
+          {/* The card's label already says "Explicit". */}
+          {explicit ? <ExplicitBadge accessible={false} /> : null}
+          <Text
+            variant={hero ? "headline" : CARD_TITLE.variant}
+            numberOfLines={1}
+            className="shrink"
+            style={hero ? undefined : CARD_TITLE.style}
+          >
+            {item.name}
+          </Text>
+        </View>
+        {subtitle ? (
+          <Text
+            variant={hero ? "footnote" : "caption"}
+            style={{ fontWeight: "400" }}
+            tone="muted"
+            numberOfLines={1}
+          >
+            {subtitle}
+          </Text>
         ) : null}
       </View>
     </>
