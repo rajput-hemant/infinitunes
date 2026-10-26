@@ -18,25 +18,60 @@ type ScrolledBarProps = {
  * after its own props). iOS's glass bar separates itself: no props there.
  */
 export function useScrolledBar(): ScrolledBarProps {
+  const setUnder = useScrolledBarSetter();
+  return useMemo(
+    () =>
+      setUnder
+        ? {
+            onScroll: ({ nativeEvent }) =>
+              setUnder(nativeEvent.contentOffset.y > 0),
+            scrollEventThrottle: 16,
+          }
+        : {},
+    [setUnder],
+  );
+}
+
+/**
+ * The worklet side of `useScrolledBarSetter`: crosses to JS (`schedule`, e.g.
+ * `scheduleOnRN`) only when the content goes under the bar or back. `last`
+ * is a shared value holding the side the bar is on.
+ */
+export function crossesBar(
+  offsetY: number,
+  last: { value: boolean },
+  set: ((under: boolean) => void) | undefined,
+  schedule: (fn: (under: boolean) => void, under: boolean) => void,
+) {
+  "worklet";
+  const under = offsetY > 0;
+  if (!set || under === last.value) return;
+  last.value = under;
+  schedule(set, under);
+}
+
+/**
+ * The same bar tint as a plain setter, for a list whose `onScroll` must be a
+ * Reanimated handler (`ReorderableList`): call it from the worklet with
+ * `scheduleOnRN` when the content goes under the bar or back. `undefined` on
+ * iOS.
+ */
+export function useScrolledBarSetter(): ((under: boolean) => void) | undefined {
   const navigation = useNavigation();
   const card = usePalette().card;
   const scrolled = useRef(false);
   return useMemo(
     () =>
       Platform.OS === "android"
-        ? {
-            onScroll: ({ nativeEvent }) => {
-              const under = nativeEvent.contentOffset.y > 0;
-              // Only a change touches the navigator.
-              if (under === scrolled.current) return;
-              scrolled.current = under;
-              navigation.setOptions({
-                headerStyle: under ? { backgroundColor: card } : undefined,
-              });
-            },
-            scrollEventThrottle: 16,
+        ? (under: boolean) => {
+            // Only a change touches the navigator.
+            if (under === scrolled.current) return;
+            scrolled.current = under;
+            navigation.setOptions({
+              headerStyle: under ? { backgroundColor: card } : undefined,
+            });
           }
-        : {},
+        : undefined,
     [navigation, card],
   );
 }

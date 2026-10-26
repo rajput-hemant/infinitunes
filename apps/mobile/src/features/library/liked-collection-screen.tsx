@@ -9,6 +9,7 @@ import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Text } from "~/components/ui/text";
 import { useGrid } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
+import { useScrolledBar } from "~/navigation/use-scrolled-bar";
 import { sizes } from "~/theme/tokens";
 
 import { LibraryListView } from "./library-list-view";
@@ -23,6 +24,7 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
   const { title, emptyMessage, icon } = LIKED_COLLECTIONS[kind];
   const list = useLikedCollection(kind);
   const { columns, width: cardWidth } = useGrid("cards");
+  const scrolledBar = useScrolledBar();
 
   return (
     <LibraryListView
@@ -66,6 +68,7 @@ function LikedCollection({ kind }: { kind: LikedCollectionKind }) {
             paddingBottom: playerDockInset,
           }}
           refreshControl={<PullToRefresh onRefresh={refresh} />}
+          {...scrolledBar}
         />
       )}
     </LibraryListView>

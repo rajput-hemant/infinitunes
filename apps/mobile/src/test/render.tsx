@@ -105,3 +105,14 @@ export async function chooseCardAction(
     nativeEvent: { event },
   });
 }
+
+/**
+ * Scrolls the list that holds the visible `text` to offset `y`: fires the
+ * scroll on the nearest `RCTScrollView` above it (a scroll event does not
+ * bubble in React Native).
+ */
+export async function scrollListTo(text: string, y: number) {
+  let view = screen.getByText(text);
+  while (view.type !== "RCTScrollView" && view.parent) view = view.parent;
+  await fireEvent.scroll(view, { nativeEvent: { contentOffset: { x: 0, y } } });
+}

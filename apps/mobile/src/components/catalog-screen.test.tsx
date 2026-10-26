@@ -1,10 +1,17 @@
 import { screen } from "@testing-library/react-native";
-import { Text } from "react-native";
+import { Platform, Text } from "react-native";
 
-import { renderScreen } from "~/test/render";
+import { renderScreen, scrollListTo } from "~/test/render";
+import { colors } from "~/theme/tokens";
 
 import { CatalogScreen } from "./catalog-screen";
 import { CONTENT_CONCEAL } from "./skeletons";
+
+const mockSetOptions = jest.fn();
+jest.mock("expo-router", () => ({
+  ...jest.requireActual("expo-router"),
+  useNavigation: () => ({ setOptions: mockSetOptions }),
+}));
 
 const query = (over: object) => ({
   items: [] as string[],
@@ -38,5 +45,15 @@ describe("CatalogScreen", () => {
     await renderCatalog({ items: ["a", "b"] });
     expect(screen.getByText("a")).toBeTruthy();
     expect(screen.queryByTestId("catalog-skeleton")).toBeNull();
+  });
+
+  it("tints the Android app bar once the grid scrolls under it", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    mockSetOptions.mockClear();
+    await renderCatalog({ items: ["a", "b"] });
+    await scrollListTo("a", 40);
+    expect(mockSetOptions).toHaveBeenCalledWith({
+      headerStyle: { backgroundColor: colors.light.card },
+    });
   });
 });

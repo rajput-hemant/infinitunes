@@ -1,13 +1,22 @@
 import { toSongRow } from "@infinitunes/types";
 import type { SongRowItem } from "@infinitunes/types";
 import { fireEvent, screen } from "@testing-library/react-native";
-import { Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 
 import { DragHandle } from "~/components/drag-handle";
-import { chooseMenuAction, renderStack } from "~/test/render";
+import { chooseMenuAction, renderStack, scrollListTo } from "~/test/render";
 import { songNamed } from "~/test/user-library";
+import { colors } from "~/theme/tokens";
 
 import { SongCollection } from "./song-collection";
+
+const mockSetOptions = jest.fn();
+jest.mock("expo-router", () => ({
+  ...jest.requireActual("expo-router"),
+  useNavigation: () => ({ setOptions: mockSetOptions }),
+}));
+
+const tinted = { headerStyle: { backgroundColor: colors.light.card } };
 
 const songs = [
   toSongRow(songNamed("a", "Opening Number")),
@@ -104,5 +113,28 @@ describe("SongCollection reorder actions", () => {
     await chooseMenuAction("Sort songs, Playlist order", "title");
 
     expect(screen.queryByLabelText(/^Reorder /)).toBeNull();
+  });
+});
+
+describe("SongCollection app bar", () => {
+  beforeEach(() => {
+    jest.replaceProperty(Platform, "OS", "android");
+    mockSetOptions.mockClear();
+  });
+
+  it("tints the Android bar as the plain list scrolls under it", async () => {
+    await renderCollection();
+
+    await scrollListTo("Middle Song", 40);
+
+    expect(mockSetOptions).toHaveBeenCalledWith(tinted);
+  });
+
+  it("gives the reorderable list a Reanimated scroll handler", async () => {
+    await renderCollection(jest.fn());
+
+    // ReorderableList composes only Reanimated handlers: never the plain one.
+    const list = screen.getByTestId("reorderable-list");
+    expect(list.props.onScroll).toEqual(expect.any(Function));
   });
 });
