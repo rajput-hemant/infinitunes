@@ -66,16 +66,19 @@ Edits `song-collection.tsx`; M-17 waits on the user decision.
 - [ ] **M-17** **[device sign-off later]** P3 PLAUSIBLE `features/library/song-collection.tsx:168-171,202` - Liked Songs, History and playlist screens use Android's native header `Stack.SearchBar` (the 72dp inset problem Search already replaced) [screens P3-11]
   - Fix: accept it, or reuse `search-header.android.tsx`'s pill as a list header. Executor: opus. Flags: needs device check (decision: reuse the M3 pill).
 
-## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx`
+## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx` (branch `fix/m5-virtualized-tracks`)
 
 Runs after M4 only if both touch playlist hooks (they do not share files otherwise).
 
-- [ ] **M-18** **[device sign-off later]** P1 PLAUSIBLE `components/track-list.tsx:25-37`, `detail-screen.tsx:48-54`, `album-screen.tsx:115`, `playlist-screen.tsx:97` - album and catalog playlist track lists are not virtualized (a big ScrollView of rows) [perf#2]
+- [x] **M-18** **[device sign-off later]** P1 PLAUSIBLE `components/track-list.tsx:25-37`, `detail-screen.tsx:48-54`, `album-screen.tsx:115`, `playlist-screen.tsx:97` - album and catalog playlist track lists are not virtualized (a big ScrollView of rows) [perf#2]
   - Fix: one `FlashList` as in `artist-content.tsx:49`, header/shelves as `ListHeader/Footer`, keep `useDetailScrollProps`; `TrackList numbered` and `DetailSkeleton numbered` keep matching. Executor: opus. Flags: needs device check.
-- [ ] **M-19** P3 CONFIRMED `features/library/playlist-screen.tsx:131-151` - no header title while loading, errored or not found [screens P3-3]
+  - Done: `DetailScreen list` lets the page's own `FlashList` (`TrackListPage`, header and shelves as `ListHeader/Footer`, `useDetailListProps` for refresh and the detail scroll props) be the scroll view on album, catalog playlist and mix; `TrackList` stays inline for the song page's "More from". Needs a device check.
+- [x] **M-19** P3 CONFIRMED `features/library/playlist-screen.tsx:131-151` - no header title while loading, errored or not found [screens P3-3]
   - Fix: render `<Stack.Screen options={{ title: playlist?.name ?? "Playlist" }} />` unconditionally. Executor: haiku. Flags: none.
-- [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
+  - Done: the library playlist screen titles its header "Playlist" until the name loads.
+- [x] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
+  - Done: `playlistAsList` (`features/library/use-playlist-by-id.ts`) and `usePlaylistById` feed `LibraryListView` on both screens; the rename sheet keeps the summaries query.
 
 ## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` (branch `worktree-agent-a4bc026a952a4285b`)
 
