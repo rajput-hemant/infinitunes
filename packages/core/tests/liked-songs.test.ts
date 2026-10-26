@@ -1,4 +1,4 @@
-import { describe, expect, it, spyOn } from "bun:test";
+import { describe, expect, it, mock, spyOn } from "bun:test";
 
 import type { Episode, Song } from "@infinitunes/types";
 
@@ -7,7 +7,10 @@ import {
   fetchLikedSongsNewestFirst,
   fetchSongsChunked,
   LIBRARY_FETCH_CONCURRENCY,
+  lookupEach,
+  lookupSongsChunked,
   orderByIds,
+  resolveWithCache,
   settleWithLimit,
 } from "../src/liked-songs";
 
@@ -286,5 +289,119 @@ describe("settleWithLimit", () => {
 
   it("handles an empty list", async () => {
     expect(await settleWithLimit([], 6, async () => 1)).toEqual([]);
+  });
+});
+
+const notFound = () => Object.assign(new Error("nf"), { code: "NOT_FOUND" });
+
+describe("lookupSongsChunked", () => {
+  it("marks ids gone only where upstream answered without them", async () => {
+    const err = spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const details = async ({ id }: { id: string }) => {
+        const ids = id.split(",");
+        if (ids.includes("c")) throw new Error("outage");
+        if (ids.includes("x")) throw notFound();
+        // "b" is silently left out of its answered chunk.
+        return { songs: ids.filter((i) => i !== "b").map(song) };
+      };
+      const { found, gone } = await lookupSongsChunked(
+        ["a", "b", "c", "d", "x", "y"],
+        details,
+        2,
+      );
+      expect([...found.keys()]).toEqual(["a", "y"]);
+      // "c" and "d" were in the failed chunk: unknown, not gone.
+      expect(gone).toEqual(["b", "x"]);
+    } finally {
+      err.mockRestore();
+    }
+  });
+});
+
+describe("lookupEach", () => {
+  it("sorts each id into found, gone or unfetched", async () => {
+    const { found, gone } = await lookupEach(
+      ["a", "nothing", "nf", "down"],
+      async (id) => {
+        if (id === "nf") throw notFound();
+        if (id === "down") throw new Error("outage");
+        return id === "nothing" ? undefined : { id };
+      },
+    );
+    expect([...found.entries()]).toEqual([["a", { id: "a" }]]);
+    expect(gone).toEqual(["nothing", "nf"]);
+  });
+});
+
+describe("resolveWithCache", () => {
+  type Item = { id: string };
+  const memory = () => {
+    const map = new Map<string, Item | null>();
+    const cache = {
+      get: (id: string) => map.get(id),
+      set: (id: string, item: Item | null) => void map.set(id, item),
+    };
+    return { map, cache };
+  };
+  const echo = (gone: string[] = []) =>
+    mock(async (ids: string[]) => ({
+      found: new Map(
+        ids.filter((id) => !gone.includes(id)).map((id) => [id, { id }]),
+      ),
+      gone: ids.filter((id) => gone.includes(id)),
+    }));
+
+  it("looks up only the ids the cache does not know, in list order", async () => {
+    const { map, cache } = memory();
+    map.set("b", { id: "b" });
+    map.set("gone", null);
+    const lookup = echo();
+
+    const items = await resolveWithCache(
+      ["a", "gone", "b", "c"],
+      cache,
+      lookup,
+    );
+
+    expect(lookup).toHaveBeenCalledTimes(1);
+    expect(lookup.mock.calls[0]?.[0]).toEqual(["a", "c"]);
+    expect(items).toEqual([{ id: "a" }, { id: "b" }, { id: "c" }]);
+    expect(map.get("c")).toEqual({ id: "c" });
+  });
+
+  it("asks upstream for nothing when every id is known", async () => {
+    const { cache } = memory();
+    const lookup = echo(["x"]);
+    await resolveWithCache(["a", "x"], cache, lookup);
+
+    expect(await resolveWithCache(["x", "a"], cache, lookup)).toEqual([
+      { id: "a" },
+    ]);
+    expect(lookup).toHaveBeenCalledTimes(1);
+  });
+
+  it("remembers nothing for an id that could not be fetched", async () => {
+    const { map, cache } = memory();
+    const lookup = mock(async () => ({
+      found: new Map<string, Item>(),
+      gone: [],
+    }));
+
+    expect(await resolveWithCache(["a"], cache, lookup)).toBeUndefined();
+    expect(map.has("a")).toBe(false);
+  });
+
+  it("is an empty list when every id is gone, and keeps partial results", async () => {
+    const { cache } = memory();
+    expect(await resolveWithCache(["x"], cache, echo(["x"]))).toEqual([]);
+
+    const partial = mock(async () => ({
+      found: new Map([["a", { id: "a" }]]),
+      gone: [],
+    }));
+    expect(await resolveWithCache(["a", "down"], cache, partial)).toEqual([
+      { id: "a" },
+    ]);
   });
 });
