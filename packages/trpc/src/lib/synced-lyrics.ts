@@ -61,7 +61,14 @@ function usable(match: Match) {
   );
 }
 
-async function request(path: "get" | "search", query: Query): Promise<unknown> {
+const PER_REQUEST_TIMEOUT_MS = 5000;
+export const DEFAULT_LYRICS_TIMEOUT_MS = 8000;
+
+async function request(
+  path: "get" | "search",
+  query: Query,
+  signal?: AbortSignal,
+): Promise<unknown> {
   const url = new URL(`https://lrclib.net/api/${path}`);
   url.searchParams.set("track_name", query.title);
   url.searchParams.set("artist_name", query.artist);
@@ -71,9 +78,13 @@ async function request(path: "get" | "search", query: Query): Promise<unknown> {
       url.searchParams.set("duration", String(query.duration));
   }
   try {
+    const timeoutSignal = AbortSignal.timeout(PER_REQUEST_TIMEOUT_MS);
+    const combinedSignal = signal
+      ? AbortSignal.any([signal, timeoutSignal])
+      : timeoutSignal;
     const response = await fetch(url, {
       headers: { "User-Agent": USER_AGENT },
-      signal: AbortSignal.timeout(5000),
+      signal: combinedSignal,
     });
     if (!response.ok) return null;
     return await response.json();
@@ -82,10 +93,15 @@ async function request(path: "get" | "search", query: Query): Promise<unknown> {
   }
 }
 
-async function lookup(query: Query): Promise<Match | null> {
-  const direct = candidate.safeParse(await request("get", query));
+async function lookup(
+  query: Query,
+  signal?: AbortSignal,
+): Promise<Match | null> {
+  if (signal?.aborted) return null;
+  const direct = candidate.safeParse(await request("get", query, signal));
   if (direct.success && usable(direct.data)) return direct.data;
-  const results = await request("search", query);
+  if (signal?.aborted) return null;
+  const results = await request("search", query, signal);
   if (!Array.isArray(results) || query.duration <= 0) return null;
   const matches = results.flatMap((item: unknown) => {
     const parsed = candidate.safeParse(item);
@@ -118,12 +134,22 @@ function cleanTitle(title: string) {
 export async function getSyncedLyrics(
   id: string,
   catalogApi: typeof api,
+  timeoutMs: number = DEFAULT_LYRICS_TIMEOUT_MS,
+  callerSignal?: AbortSignal,
 ): Promise<SyncedLyrics> {
   // shortcut: LRCLIB bypasses the Next catalog cache; add an injected cache if lookup traffic warrants it.
+  const timeoutSignal = AbortSignal.timeout(timeoutMs);
+  const signal = callerSignal
+    ? AbortSignal.any([callerSignal, timeoutSignal])
+    : timeoutSignal;
+
+  if (signal.aborted) return { ...empty };
+
   try {
     const details = songShape.safeParse(
       await catalogApi(endpoints.song.id, {
         query: { pids: id, type: "song" },
+        signal,
       }),
     );
     const song = details.success ? details.data.songs[0] : undefined;
@@ -138,11 +164,11 @@ export async function getSyncedLyrics(
         album: decode(info.album ?? ""),
         duration: Number.isFinite(duration) && duration > 0 ? duration : 0,
       };
-      if (query.title && query.artist) {
-        let match = await lookup(query);
+      if (query.title && query.artist && !signal.aborted) {
+        let match = await lookup(query, signal);
         const title = cleanTitle(query.title);
-        if (!match && title && title !== query.title)
-          match = await lookup({ ...query, title });
+        if (!match && title && title !== query.title && !signal.aborted)
+          match = await lookup({ ...query, title }, signal);
         if (match) {
           const lines = parseLrc(match.syncedLyrics ?? "");
           return {
@@ -158,18 +184,23 @@ export async function getSyncedLyrics(
   } catch {
     // Lyrics are optional; a metadata outage must still allow the plain fallback.
   }
-  try {
-    const plain = plainShape.safeParse(
-      await catalogApi(endpoints.get.lyrics, { query: { lyrics_id: id } }),
-    );
-    if (plain.success)
-      return {
-        ...empty,
-        plain: plainText(plain.data.lyrics).trim() || null,
-        copyright: plainText(plain.data.lyrics_copyright ?? "") || null,
-      };
-  } catch {
-    // Both providers may have nothing or be temporarily unavailable.
+  if (!signal.aborted) {
+    try {
+      const plain = plainShape.safeParse(
+        await catalogApi(endpoints.get.lyrics, {
+          query: { lyrics_id: id },
+          signal,
+        }),
+      );
+      if (plain.success)
+        return {
+          ...empty,
+          plain: plainText(plain.data.lyrics).trim() || null,
+          copyright: plainText(plain.data.lyrics_copyright ?? "") || null,
+        };
+    } catch {
+      // Both providers may have nothing or be temporarily unavailable.
+    }
   }
   return { ...empty };
 }

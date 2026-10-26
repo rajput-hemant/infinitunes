@@ -6,12 +6,14 @@ Docker runs only infrastructure. The app, migrations and seed run on host Bun 1.
 
 All ports bind to `127.0.0.1`.
 
-| Service               | Image                                | Port   |
-| :-------------------- | :----------------------------------- | :----- |
-| PostgreSQL            | `postgres:18.6-alpine`               | `5432` |
-| Redis                 | `redis:7.4-alpine`                   | `6379` |
-| Serverless Redis HTTP | `hiett/serverless-redis-http:0.0.10` | `8079` |
-| Web app (host Bun)    | -                                    | `3000` |
+| Service               | Image                         | Port   |
+| :-------------------- | :---------------------------- | :----- |
+| PostgreSQL            | `postgres:alpine`             | `5432` |
+| Redis                 | `redis:alpine`                | `6379` |
+| Serverless Redis HTTP | `hiett/serverless-redis-http` | `8079` |
+| Web app (host Bun)    | -                             | `3000` |
+
+Images are unpinned: `docker compose pull` (then `bun run db:up`) moves to the newest release.
 
 Compose project `local-platforms`, database `local_platforms`, volumes `local_platforms_pgdata_18` and `local_platforms_redis_data`. Starting the stack again from any checkout that uses the same compose file reuses the same containers and data.
 
@@ -116,3 +118,7 @@ The limiter covers pages, `/api/trpc` and `/api/auth` with the global bucket. `P
 ## Resetting
 
 There is no reset command. To start clean, run `bun run db:down`, then remove the two named volumes yourself. Volumes from older setups (including any PostgreSQL 17 volume) are never touched or adopted automatically; PostgreSQL 18 cannot read PG17 data, so move it with `pg_dump` and restore if needed. Never run `docker system prune` for this.
+
+## Postgres upgrades
+
+The volume keeps each major's cluster in its own directory (`/var/lib/postgresql/<major>/docker`), so when a pull brings a new major, Postgres starts an empty database beside the old one: the data looks gone but is still in the volume. Before pulling, dump with the running image: `docker exec local-platforms-postgres pg_dumpall -U postgres > backup.sql`; after the new image starts, restore with `docker exec -i local-platforms-postgres psql -U postgres < backup.sql`. Lipi shares this database, so upgrade once for both.

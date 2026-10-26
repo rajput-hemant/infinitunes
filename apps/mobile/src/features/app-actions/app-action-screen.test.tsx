@@ -196,7 +196,7 @@ describe("action/play-liked and action/shuffle-liked", () => {
   });
 
   it("plays nothing when nothing is liked", async () => {
-    procedure("user.getUserFavorites").mockResolvedValue(undefined);
+    procedure("user.getUserFavorites").mockResolvedValue(null);
 
     const app = await openLink("/action/play-liked");
 
@@ -229,10 +229,13 @@ describe("action/play-liked and action/shuffle-liked", () => {
 describe("action/play-playlist", () => {
   beforeEach(async () => {
     await act(async () => signInAs("alice"));
-    procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1", name: "Road Trip", songs: ["b", "a"] }),
-      userPlaylist({ id: "pl-2", name: "Empty", songs: [] }),
-    ]);
+    procedure("user.getPlaylistDetails").mockImplementation(
+      async ({ playlistId }) =>
+        [
+          userPlaylist({ id: "pl-1", name: "Road Trip", songs: ["b", "a"] }),
+          userPlaylist({ id: "pl-2", name: "Empty", songs: [] }),
+        ].find((playlist) => playlist.id === playlistId) ?? null,
+    );
   });
 
   it("plays the playlist in its own order", async () => {

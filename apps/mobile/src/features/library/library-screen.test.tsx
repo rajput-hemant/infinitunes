@@ -14,6 +14,7 @@ import {
   favoritesRow,
   songNamed,
   userPlaylist,
+  playlistSummary,
 } from "~/test/user-library";
 
 import { EditPlaylistScreen } from "./edit-playlist-screen";
@@ -71,7 +72,12 @@ async function renameRoadTripTo(name: string) {
 
 beforeEach(async () => {
   await act(async () => signInAs("alice"));
-  procedure("user.getUserPlaylists").mockResolvedValue([roadTrip]);
+  procedure("user.getUserPlaylists").mockResolvedValue([
+    playlistSummary(roadTrip),
+  ]);
+  procedure("user.getPlaylistDetails").mockImplementation(
+    async ({ playlistId }) => (playlistId === roadTrip.id ? roadTrip : null),
+  );
 });
 
 afterEach(() => {

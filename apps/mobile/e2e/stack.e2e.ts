@@ -266,7 +266,7 @@ describe.skipIf(
     let playlistId = "";
 
     test("a new account has no favorites row, playlists or history", async () => {
-      expect(await trpcClient.user.getUserFavorites.query()).toBeUndefined();
+      expect(await trpcClient.user.getUserFavorites.query()).toBeNull();
       expect(await trpcClient.user.getUserPlaylists.query()).toEqual([]);
       expect(await trpcClient.history.list.query()).toEqual([]);
     });
@@ -447,7 +447,7 @@ describe.skipIf(
       ).toBe("FORBIDDEN");
       expect(
         await other.trpc.user.getPlaylistDetails.query({ playlistId }),
-      ).toBeUndefined();
+      ).toBeNull();
       expect(
         await codeOf(
           other.trpc.user.renamePlaylist.mutate({

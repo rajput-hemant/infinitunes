@@ -9,12 +9,7 @@ import {
   albumSameYearInput,
 } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import {
-  hasIdentity,
-  mapDownloadUrls,
-  resolveNumericId,
-  secondaryList,
-} from "./utils";
+import { hasIdentity, mapDownloadUrls, secondaryList } from "./utils";
 
 export const albumRouter = router({
   details: publicProcedure
@@ -28,12 +23,13 @@ export const albumRouter = router({
           message: "Please provide album id or a token",
         });
       }
-      const t = token ?? "";
-      const albumid = id ?? (await resolveNumericId(t, "album", api));
-      const result = await api(endpoints.album.id, {
+      const isNumeric = (val?: string) => Boolean(val && /^\d+$/.test(val));
+      const albumid = id || (isNumeric(token) ? token : undefined);
+      const endpoint = albumid ? endpoints.album.id : endpoints.album.link;
+      const result = await api(endpoint, {
         query: {
           albumid,
-          token: t,
+          token: albumid ? (token ?? "") : token,
           type: "album",
         },
         language: lang,

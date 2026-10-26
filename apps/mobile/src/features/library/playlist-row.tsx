@@ -31,9 +31,7 @@ export function PlaylistRow({
           : { icon: { ios: "music.note.list", android: "queue_music" } }
       }
       title={playlist.name}
-      subtitle={
-        playlist.pending ? "Creating…" : songCount(playlist.songs.length)
-      }
+      subtitle={playlist.pending ? "Creating…" : songCount(playlist.songCount)}
       href={
         playlist.pending
           ? undefined
