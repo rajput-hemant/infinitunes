@@ -208,7 +208,7 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [x] **M-66** P3 CONFIRMED `components/ui/spinner.tsx:11-15`, `spinner.android.tsx:9-27` - iOS and Android spinners differ in size and accessibility label [comp P3-2]
   - Fix: iOS default label "Loading" in a `sizes.touch` box. Executor: haiku. Flags: none.
   - Done: iOS Spinner is one progressbar, default label "Loading", in a 48pt box.
-- [ ] **M-67** P3 CONFIRMED `song-menu.tsx:90`, `collection-menu.tsx:73`, `native-menu.tsx:96`, `card-menu.tsx:26` - menu icons are SF Symbol names and never render on Android [comp P3-3] _Held: song-menu is in owner's M3._
+- [x] **M-67** P3 CONFIRMED `song-menu.tsx:90`, `collection-menu.tsx:73`, `native-menu.tsx:96`, `card-menu.tsx:26` - menu icons are SF Symbol names and never render on Android [comp P3-3] _Held: song-menu is in owner's M3._ Closed: per Decisions, Android menus stay text-only (no change).
   - Fix: decide, then either drop `image` for Android or map `{ ios, android }` once in `toMenuAction`. Executor: sonnet (decision) / haiku (mechanical). Flags: needs user decision.
 - [x] **M-68** P3 CONFIRMED `theme/appearance.ts:54-66` - `merge` validates accent and corners but not `mode` [comp P3-5]
   - Fix: `mode: APPEARANCE_MODES.includes(value.mode) ? value.mode : "system"`. Executor: haiku. Flags: none.
@@ -313,7 +313,7 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
   - Fix: `readSort(searchParams)` returning `"asc" | "desc"` used by both; give `generateMetadata` the `searchParams` prop; add a test. Executor: sonnet. Flags: none.
 - [x] **W-18** P3 CONFIRMED `show/.../page.tsx:19,21,76-82,134-136` - the page re-implements `getViewer()` with a `.catch(() => undefined)` hack [routes 9] Done locally.
   - Fix: `const { user, favorites, playlists } = await getViewer();` in `ShowEpisodeSection`; delete the three imports and the catch. Executor: haiku. Flags: none.
-- [ ] **W-19** P3 CONFIRMED `(root)/me/(layout-a)/shows/page.tsx:14-21` - two sequential upstream calls per saved podcast (`show.episodes` then `show.details`) [routes 10] Skipped locally: needs a favorites column, migration and a live DB.
+- [ ] **W-19** P3 CONFIRMED `(root)/me/(layout-a)/shows/page.tsx:14-21` - two sequential upstream calls per saved podcast (`show.episodes` then `show.details`) [routes 10] Skipped locally: needs a favorites column, migration and a live DB. _(taken locally)_
   - Fix: store the show token/`show_url` with the favorite id, one `show.details` per item; keep the two-call path as lazy fallback for old rows. Executor: sonnet. Flags: needs live DB.
 - [x] **W-20** P3 CONFIRMED `(root)/me/playlist/[id]/page.tsx:120-131` - whole-playlist duration shown as "95:12" and "1 Songs" [routes 11] Done locally.
   - Fix: `"hh:mm:ss"` at 3600s or more; reuse `LibraryHeading`'s pluralisation. Executor: haiku. Flags: none.
@@ -368,12 +368,12 @@ Run `bun run build && bun run budget` first to get real numbers.
 
 - [x] **T-1** (Done: `lint:shadcn` turbo task, root script and CI step; `--deny-warnings`; 8 `require-static-classes` warnings on `cn(sharedStyleConst)` sites exempted by override in `.oxlintrc.shadcn.json`, no shadcn component touched.) P2 CONFIRMED `packages/ui/package.json:8`, `turbo.json`, `ci.yml:34` - `lint:shadcn` (`no-raw-colors`, `require-static-classes`) is not a turbo task and never runs in CI [lib 4]
   - Fix: add a `lint:shadcn` turbo task and a CI step; run once first and fix or exempt findings. Executor: haiku (sonnet if it finds violations). Flags: none.
-- [ ] **T-2** (needs a measured build: caps kept, header comment now says they were raised on purpose and must be re-measured with `bun run build && bun run budget`.) P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
+- [ ] **T-2** (needs a measured build: caps kept, header comment now says they were raised on purpose and must be re-measured with `bun run build && bun run budget`.) P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5] _(taken locally)_
   - Fix: measure, set ceilings ~5% above current maxima, rewrite the header (or state the raise was deliberate). Executor: sonnet. Flags: none.
 - [x] **T-3** P2 CONFIRMED `apps/web/tests/mocked/cached-api.test.ts:8-11,84-100`, `tests/cached-api-runtime.ts`, `ci.yml:85-101` - the `use cache` error-digest round-trip is only covered by a manual script CI never runs [lib 3]
   - Fix: run `tests/cached-api-runtime.ts` with the `cached-api-fetch.mjs` preload in the production job after readiness, list it as a knip `entry`; or make the mocked test throw a structurally cloned error. Executor: sonnet. Flags: none.
   - Done: second option (`next build` cannot run here). `tests/mocked/cached-api.test.ts` now wraps the upstream error so that, once `catalogRequest` sets its digest, it reads as a `structuredClone` (plain `Error`, only name/message/digest, no class or `code`); every classification test therefore goes through the digest round-trip. `tests/cached-api-runtime.ts` was already a knip `entry` (T-6). The runtime script is still manual.
-- [ ] **T-4** (needs a measured build: `forbiddenMode` left as `"warn"`, TODO added; confirm the shell chunk is clean before flipping to `"error"`.) P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15]
+- [ ] **T-4** (needs a measured build: `forbiddenMode` left as `"warn"`, TODO added; confirm the shell chunk is clean before flipping to `"error"`.) P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15] _(taken locally)_
   - Fix: run `bun run budget`; if clean flip to `"error"`, else report the offender. Executor: sonnet. Flags: none.
 - [x] **T-5** (Done: lint-staged oxlint now `--deny-warnings --nextjs-plugin`.) P3 CONFIRMED root `package.json` lint-staged vs `apps/web/package.json:11` - pre-commit oxlint is weaker than CI (no `--deny-warnings --nextjs-plugin`) [lib 9]
   - Fix: add the flags or run `turbo run lint --filter=...[HEAD]`. Executor: haiku. Flags: none.
