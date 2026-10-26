@@ -47,6 +47,8 @@ type ButtonProps = Omit<PressableProps, "children" | "className" | "style"> & {
   /** A leading mark that is not a symbol (a provider's logo); replaces `icon`. */
   leading?: ReactNode;
   variant?: keyof typeof variants;
+  /** Wider horizontal padding, for a screen's one main action (Play). */
+  roomy?: boolean;
   /**
    * Layout only (a margin), set on the pressable itself. There is no class
    * prop: a wrapper view would cut Android's hit slop to its own bounds.
@@ -72,6 +74,7 @@ function CapsuleButton({
   icon,
   leading,
   variant = "primary",
+  roomy = false,
   style,
   onPress,
   onPressIn,
@@ -87,7 +90,8 @@ function CapsuleButton({
       <Pressable
         accessibilityRole="button"
         className={cx(
-          "min-h-touch flex-row items-center justify-center gap-2 rounded-full px-4 py-2 active:opacity-80 disabled:opacity-50",
+          "min-h-touch flex-row items-center justify-center gap-2 rounded-full py-2 active:opacity-80 disabled:opacity-50",
+          roomy ? "px-8" : "px-4",
           container,
         )}
         {...props}
@@ -135,6 +139,7 @@ function MaterialButton({
   icon,
   leading,
   variant = "primary",
+  roomy = false,
   style,
   onPress,
   onPressIn,
@@ -170,6 +175,7 @@ function MaterialButton({
       style={[
         styles.button,
         { backgroundColor },
+        roomy && styles.roomy,
         props.disabled ? styles.disabled : undefined,
         style,
         shape,
@@ -195,4 +201,5 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   disabled: { opacity: 0.5 },
+  roomy: { paddingHorizontal: space.xxl },
 });

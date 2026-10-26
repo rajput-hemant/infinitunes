@@ -1,6 +1,7 @@
+import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { router } from "expo-router";
 import { Share } from "react-native";
 
@@ -36,6 +37,51 @@ describe("the header's collection menu", () => {
     ).toBeOnTheScreen();
     await fireEvent.press(shareButton);
     expect(share).toHaveBeenCalledTimes(1);
+  });
+
+  it("asks a signed-out listener to sign in from its Like entry", async () => {
+    const push = jest.spyOn(router, "push").mockImplementation(() => {});
+    await renderWithProviders(
+      <CollectionMenu
+        name="Udta Teer"
+        rows={rows}
+        like={{ type: "album", token: "a1" }}
+      />,
+    );
+
+    await chooseMenuAction("More actions for Udta Teer", "favorite");
+
+    expect(push).toHaveBeenCalledWith("/login");
+  });
+
+  it("likes the item from its Like entry, signed in", async () => {
+    jest.useFakeTimers();
+    try {
+      await act(async () => signInAs("bob"));
+      procedure("user.getUserFavorites").mockResolvedValue(null);
+      await renderWithProviders(
+        <CollectionMenu
+          name="Udta Teer"
+          rows={rows}
+          like={{ type: "album", token: "a1" }}
+        />,
+      );
+      await waitFor(() =>
+        expect(procedure("user.getUserFavorites")).toHaveBeenCalled(),
+      );
+      await act(async () => jest.advanceTimersByTimeAsync(0));
+
+      await chooseMenuAction("More actions for Udta Teer", "favorite");
+
+      expect(procedure("user.addToFavorites")).toHaveBeenCalledWith({
+        type: "album",
+        token: "a1",
+      });
+    } finally {
+      resetFavoriteOverlay();
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    }
   });
 
   it("queues every song after the current one, in order", async () => {

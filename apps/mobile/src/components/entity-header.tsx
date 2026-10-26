@@ -1,16 +1,16 @@
 import type { FavoriteType } from "@infinitunes/core/favorites";
-import { Platform, Pressable, View } from "react-native";
+import { Platform, Pressable, useColorScheme, View } from "react-native";
 
 import { usePlayerColors } from "~/features/player/use-player-colors";
 import { OnWash, nowPlayingWash } from "~/features/player/wash";
-import { artShadow } from "~/theme/tokens";
+import { artShadow, translucentFill } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
 
+import { downloadAll } from "./collection-menu";
 import type { CollectionMenuSpec } from "./collection-menu";
 import { DetailMenu } from "./detail/detail-menu";
 import { ExplicitBadge } from "./explicit-badge";
-import { LikeButton } from "./like-button";
 import { Artwork } from "./ui/artwork";
 import { Button } from "./ui/button";
 import { Icon } from "./ui/icon";
@@ -93,6 +93,8 @@ export function EntityHeader({
   const primary = useTokenColor("primary");
   const colors = usePlayerColors(image);
   const wash = colors?.wash[0];
+  const glass = translucentFill[useColorScheme() === "dark" ? "dark" : "light"];
+  const songs = (menu?.rows ?? []).filter((row) => row.type === "song");
   return (
     <OnWash colors={colors ? nowPlayingWash(colors) : null}>
       <View className="w-full">
@@ -110,7 +112,9 @@ export function EntityHeader({
             }}
           />
         ) : null}
-        {menu ? <DetailMenu name={title} {...menu} /> : null}
+        {menu || like ? (
+          <DetailMenu name={title} like={like} {...menu} />
+        ) : null}
         <View className="w-full max-w-readable items-center self-center px-page pb-6 pt-2">
           {/* The fill gives the iOS shadow an opaque shape to cast from. */}
           <View
@@ -188,29 +192,31 @@ export function EntityHeader({
               {meta}
             </Text>
           ) : null}
-          {/* Shuffle and the heart match (round, tonal); Play takes the rest. */}
-          <View className="mt-6 w-full flex-row items-center gap-3">
+          {/* Shuffle and Download are equal round buttons on a translucent
+              fill (the wash shows through) around the solid Play capsule. */}
+          <View className="mt-6 flex-row items-center justify-center gap-3">
             {onShuffle ? (
               <IconButton
                 icon={{ ios: "shuffle", android: "shuffle" }}
                 label="Shuffle"
                 variant="tonal"
+                fill={glass}
                 onPress={onShuffle}
               />
             ) : null}
             <Button
               label="Play"
               icon={{ ios: "play.fill", android: "play_arrow" }}
+              roomy
               onPress={onPlay}
-              style={{ flex: 1 }}
             />
-            {like ? (
-              <LikeButton
-                type={like.type}
-                token={like.token}
-                linkToken={like.linkToken}
-                name={title}
+            {songs.length > 0 ? (
+              <IconButton
+                icon={{ ios: "arrow.down.circle", android: "download" }}
+                label={`Download ${title}`}
                 variant="tonal"
+                fill={glass}
+                onPress={() => void downloadAll(songs)}
               />
             ) : null}
           </View>

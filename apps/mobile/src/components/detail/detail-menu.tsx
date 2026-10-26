@@ -1,8 +1,11 @@
+import type { FavoriteType } from "@infinitunes/core/favorites";
 import { createContext, use, useEffect } from "react";
 
 import { useCollectionEntries } from "~/components/collection-menu";
 import type { CollectionMenuSpec } from "~/components/collection-menu";
 import type { MenuEntry } from "~/components/native-menu";
+import { announce } from "~/lib/announce";
+import { useFavoriteToggle } from "~/user-data/favorites";
 
 /** The "more" menu a detail page puts in its native header, next to Share. */
 export type HeaderMenu = { title: string; entries: readonly MenuEntry[] };
@@ -12,17 +15,50 @@ export const DetailMenuContext = createContext<
   ((menu: HeaderMenu | undefined) => void) | undefined
 >(undefined);
 
+type DetailMenuProps = Omit<CollectionMenuSpec, "rows"> & {
+  rows?: CollectionMenuSpec["rows"];
+  /** The item's favourite, as the first entry (signed out it asks to sign in). */
+  like?: { type: FavoriteType; token: string; linkToken?: string };
+};
+
 /**
- * Renders nothing: hands the collection's menu to the frame's header bar
- * (`EntityHeader` mounts it from its `menu` prop). Outside a frame it is
- * inert.
+ * Renders nothing: hands the page's menu (Like, then the collection's
+ * entries) to the frame's header bar (`EntityHeader` mounts it). Outside a
+ * frame it is inert.
  */
-export function DetailMenu(spec: CollectionMenuSpec) {
+export function DetailMenu({ like, rows = [], ...spec }: DetailMenuProps) {
   const register = use(DetailMenuContext);
-  const entries = useCollectionEntries(spec);
+  const { liked, toggle } = useFavoriteToggle({
+    type: like?.type ?? "song",
+    token: like?.token ?? "",
+    linkToken: like?.linkToken,
+  });
+  const collection = useCollectionEntries({ ...spec, rows });
+  const entries: MenuEntry[] = [
+    ...(like
+      ? [
+          {
+            id: "favorite",
+            title: liked ? `Unlike ${spec.name}` : `Like ${spec.name}`,
+            image: liked ? "heart.fill" : "heart",
+            run: () => {
+              const nowLiked = toggle();
+              if (nowLiked !== undefined) {
+                announce(
+                  nowLiked
+                    ? `Liked ${spec.name}`
+                    : `Removed ${spec.name} from liked`,
+                );
+              }
+            },
+          } satisfies MenuEntry,
+        ]
+      : []),
+    ...collection,
+  ];
   // shortcut: re-registers on what the menu shows (JSON drops the `run`s) and
   // its rows' ids, not on closure identity; upgrade if a run reads other state.
-  const key = JSON.stringify([entries, spec.rows.map((row) => row.id)]);
+  const key = JSON.stringify([entries, rows.map((row) => row.id)]);
 
   useEffect(() => {
     if (!register || entries.length === 0) return;
