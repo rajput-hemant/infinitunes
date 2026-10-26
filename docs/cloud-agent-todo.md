@@ -41,16 +41,16 @@ Delete this file in the last PR, once every box is ticked (the repo must not kee
 - The Home `h1` stays the greeting.
 - Rate limiting: warn when it is off in production, never fail the build.
 
-## Batch M3 (opus): song-row menu and per-row subscriptions - `components/{song-row,song-menu,native-menu,like-button}.tsx`, `user-data/{favorites,playlists}.ts`, `navigation/use-open-entity.ts` _(in progress locally, do not take)_
+## Batch M3 (opus): song-row menu and per-row subscriptions - `components/{song-row,song-menu,native-menu,like-button}.tsx`, `user-data/{favorites,playlists}.ts`, `navigation/use-open-entity.ts` _(done locally)_
 
 Coordinate with S1 (S-6 changes the playlists payload shape): either land S-6 first, or keep the per-playlist `Set` here and swap the source later.
 
-- [ ] **M-11** **[device sign-off later]** P1 PLAUSIBLE `components/song-row.tsx:98-100`, `song-menu.tsx:79-161`, `native-menu.tsx:61-71` - one native `MenuView` host plus a full playlist submenu per song row, with `useUserPlaylists()` and `every/includes` over up to 10x5000 ids per row per render [perf#1]
+- [x] **M-11** **[device sign-off later]** P1 PLAUSIBLE `components/song-row.tsx:98-100`, `song-menu.tsx:79-161`, `native-menu.tsx:61-71` - one native `MenuView` host plus a full playlist submenu per song row, with `useUserPlaylists()` and `every/includes` over up to 10x5000 ids per row per render [perf#1] Done locally: Android rows mount their menu on first press (`SongMenuButton`); iOS keeps one menu per row (`MenuView.show()` is a no-op there).
   - Problem: dozens of native hosts and O(rows x ids) work per list render. Fix: use the card pattern (`card-menu.tsx:140-170`): plain `IconButton` trigger, mount one `NativeMenu` lazily on first press and build entries there; a per-playlist `Set` in `useUserPlaylists`.
   - Executor: opus. Flags: needs device check.
-- [ ] **M-12** P2 PLAUSIBLE `user-data/favorites.ts:35-42,81-86`, `components/like-button.tsx:27` - `LikeButton` observes the whole favorites query without `select` [perf#11]
+- [x] **M-12** P2 PLAUSIBLE `user-data/favorites.ts:35-42,81-86`, `components/like-button.tsx:27` - `LikeButton` observes the whole favorites query without `select` [perf#11] Done locally: `useIsFavorited` selects one item.
   - Fix: `useIsFavorited(type, token)` with a boolean `select`. Executor: sonnet. Flags: none.
-- [ ] **M-13** P3 PLAUSIBLE `navigation/use-open-entity.ts:13`, `like-button.tsx:26`, `song-menu.tsx:80` - `useOpenEntity` / `useUserId` subscribed per row [perf#19]
+- [x] **M-13** P3 PLAUSIBLE `navigation/use-open-entity.ts:13`, `like-button.tsx:26`, `song-menu.tsx:80` - `useOpenEntity` / `useUserId` subscribed per row [perf#19] Done locally: covered by M-11 on Android; iOS rows keep `useOpenEntity`.
   - Fix: hoist to the list or read at press time. Do after M-11. Executor: sonnet. Flags: none.
 
 ## Batch M4 (opus): liked and per-song data fetching - `features/library/{use-liked-collection,liked-collections,use-resolved-items,use-playlist-songs,use-playlist-covers,liked-songs-screen,song-collection}.ts(x)`, `packages/core/src/liked-songs.ts`
@@ -286,19 +286,19 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
   - Fix: mirror the artist pattern: `label/[name]/[token]/layout.tsx` (header + tab nav) with `page.tsx` (songs) and `albums/page.tsx`, map `-songs`/`-albums` slugs in `getHref`/`entity-route` like `legacyArtistPath`. Minimal fallback: client-state tabs, render only the active panel, never rewrite the slug. Executor: opus. Flags: none.
   - Done: Songs on the bare route, Albums on `/albums`; `entityRoute` splits the slug into an optional `tab` on the label's `entity` route, `legacyLabelPath` 308s both suffixes in `proxy.ts`. Follow-up (mobile): `+native-intent.tsx` has no mapping for the web's `/label/<name>/<token>/albums`.
 
-## Batch W5 (sonnet): `/me`, show and home routes - `apps/web/app/(root)/me/**`, `app/(root)/show/[name]/[season]/[token]/page.tsx`, `app/(root)/_components/home-greeting.tsx`, `app/(root)/page.tsx`, `lib/db/queries.ts` _(in progress locally, do not take)_
+## Batch W5 (sonnet): `/me`, show and home routes - `apps/web/app/(root)/me/**`, `app/(root)/show/[name]/[season]/[token]/page.tsx`, `app/(root)/_components/home-greeting.tsx`, `app/(root)/page.tsx`, `lib/db/queries.ts` _(done locally)_
 
-- [ ] **W-16** P2 PLAUSIBLE `(root)/me/(layout-a)/layout.tsx:25-29,63-65`, `error.tsx`, `page.tsx:28`, `albums/page.tsx:14`, `liked-songs/page.tsx:29-32`, `recently-played/page.tsx:25` - with a stale session cookie the page body throws UNAUTHORIZED into `error.tsx` before the `ProfileHeader` redirect lands [routes 4]
+- [x] **W-16** P2 PLAUSIBLE `(root)/me/(layout-a)/layout.tsx:25-29,63-65`, `error.tsx`, `page.tsx:28`, `albums/page.tsx:14`, `liked-songs/page.tsx:29-32`, `recently-played/page.tsx:25` - with a stale session cookie the page body throws UNAUTHORIZED into `error.tsx` before the `ProfileHeader` redirect lands [routes 4] Done locally: `requireUser()`.
   - Fix: one `requireUser()` (`getViewer()` then `redirect("/login")`) at the top of every `/me` page and in `ProfileHeader`; add a mocked test with a null session. Executor: sonnet. Flags: none.
-- [ ] **W-17** P3 CONFIRMED `show/.../page.tsx:33-42,45,54,131-137`, `inputs.ts:80` - `?sort=` is not normalised and `generateMetadata` and the page fetch under different cache keys for `?sort=asc` [routes 8]
+- [x] **W-17** P3 CONFIRMED `show/.../page.tsx:33-42,45,54,131-137`, `inputs.ts:80` - `?sort=` is not normalised and `generateMetadata` and the page fetch under different cache keys for `?sort=asc` [routes 8] Done locally: `readSort()`.
   - Fix: `readSort(searchParams)` returning `"asc" | "desc"` used by both; give `generateMetadata` the `searchParams` prop; add a test. Executor: sonnet. Flags: none.
-- [ ] **W-18** P3 CONFIRMED `show/.../page.tsx:19,21,76-82,134-136` - the page re-implements `getViewer()` with a `.catch(() => undefined)` hack [routes 9]
+- [x] **W-18** P3 CONFIRMED `show/.../page.tsx:19,21,76-82,134-136` - the page re-implements `getViewer()` with a `.catch(() => undefined)` hack [routes 9] Done locally.
   - Fix: `const { user, favorites, playlists } = await getViewer();` in `ShowEpisodeSection`; delete the three imports and the catch. Executor: haiku. Flags: none.
-- [ ] **W-19** P3 CONFIRMED `(root)/me/(layout-a)/shows/page.tsx:14-21` - two sequential upstream calls per saved podcast (`show.episodes` then `show.details`) [routes 10]
+- [ ] **W-19** P3 CONFIRMED `(root)/me/(layout-a)/shows/page.tsx:14-21` - two sequential upstream calls per saved podcast (`show.episodes` then `show.details`) [routes 10] Skipped locally: needs a favorites column, migration and a live DB.
   - Fix: store the show token/`show_url` with the favorite id, one `show.details` per item; keep the two-call path as lazy fallback for old rows. Executor: sonnet. Flags: needs live DB.
-- [ ] **W-20** P3 CONFIRMED `(root)/me/playlist/[id]/page.tsx:120-131` - whole-playlist duration shown as "95:12" and "1 Songs" [routes 11]
+- [x] **W-20** P3 CONFIRMED `(root)/me/playlist/[id]/page.tsx:120-131` - whole-playlist duration shown as "95:12" and "1 Songs" [routes 11] Done locally.
   - Fix: `"hh:mm:ss"` at 3600s or more; reuse `LibraryHeading`'s pluralisation. Executor: haiku. Flags: none.
-- [ ] **W-21** P3 CONFIRMED `(root)/_components/home-greeting.tsx:27,36`, `(root)/page.tsx:27-32` - the document's only `h1` is the time-of-day greeting [routes 18]
+- [x] **W-21** P3 CONFIRMED `(root)/_components/home-greeting.tsx:27,36`, `(root)/page.tsx:27-32` - the document's only `h1` is the time-of-day greeting [routes 18] Kept per Decisions (greeting stays the h1).
   - Fix: greeting as `p` plus a visually hidden `h1`, or `h1` only when signed in. Executor: sonnet. Flags: needs user decision (design call).
 
 ## Batch W6 (sonnet): player and play controls, a11y _(branch `worktree-agent-a02df50c3b60cedf5`)_ - `components/{play-button,play-all-button,queue,player,like-button,download-button}.tsx`, `components/song-list/play-pause-button.tsx`, `components/player/use-queue-removal.ts`, `components/site-header/surprise-me-button.tsx`, `tests/dom/{queue-sheet,like-button,card-play,download-button,play-button-season}.test.tsx`, `tests/player-a11y.test.ts`
