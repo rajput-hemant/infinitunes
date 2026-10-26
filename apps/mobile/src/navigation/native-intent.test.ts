@@ -1,5 +1,3 @@
-import { Platform } from "react-native";
-
 import { redirectSystemPath } from "~/app/+native-intent";
 
 describe("redirectSystemPath", () => {
@@ -24,7 +22,7 @@ describe("redirectSystemPath", () => {
     }
   });
 
-  it("opens a search link in the iOS search tab, keeping its query", () => {
+  it("opens a search link in the Search tab, keeping its query", () => {
     expect(redirectSystemPath({ path: "infinitunes://search?q=arijit" })).toBe(
       "/(tabs)/(search)/search?q=arijit",
     );
@@ -56,18 +54,6 @@ describe("redirectSystemPath", () => {
     expect(redirectSystemPath({ path: "/create-playlist" })).toBe(
       "/create-playlist",
     );
-  });
-
-  it("opens a search link in Home's stack on Android, which has no search tab", () => {
-    jest.replaceProperty(Platform, "OS", "android");
-
-    try {
-      expect(
-        redirectSystemPath({ path: "infinitunes://search?q=a%20r%20rahman" }),
-      ).toBe("/(tabs)/(home)/search?q=a%20r%20rahman");
-    } finally {
-      jest.restoreAllMocks();
-    }
   });
 
   it("opens a label's albums link on the label screen, which is one page", () => {

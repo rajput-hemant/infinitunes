@@ -42,9 +42,8 @@ function useSearchField(linked: string | undefined) {
 }
 
 /**
- * Search (iOS's search tab; on Android pushed from the app bar's search
- * action): the search field (`SearchHeader`: the iOS 26 search tab's native
- * field, Android's Material 3 search bar) drives everything on one screen. An empty
+ * Search (the Search tab's root): the search field (`SearchHeader`: iOS's
+ * native header field, Android's Material 3 search bar) drives everything on one screen. An empty
  * field shows recent and top searches; text shows results under the type chips.
  * A `/search?q=` link (Siri, Google Assistant) opens with that query searched.
  */

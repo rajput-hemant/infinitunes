@@ -186,31 +186,27 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   kit), `lib/` (clients, `preferences`, `share`, `download`, `use-infinite-list`, `use-pending`, `meta`),
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
   `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
-- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, then iOS's Search as the system search tab
-  (last in JSX). expo-router's `role="search"` reaches react-native-screens only as `ios.systemItem` (the
-  magnifier, a plain tab in the pill on iOS 27); the `UISearchTab` (trailing glass button, header field in the
-  bar) needs `unstable_nativeProps={{ ios: { role: "search", automaticallyActivatesSearch: true } }}` (26.1+);
-  below that the field stays under the large title (`hideWhenScrolling: false`);
-  Android has no Search tab. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
+- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, Search, all four in the one bar on both platforms. Search is a
+  plain tab, not iOS's detached system search tab (no `role="search"`; icon `magnifyingglass`/`search`); its stack root
+  is the search screen with the native header field (`hideWhenScrolling: false`) on iOS and the M3 bar on Android. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
   `NativeTabs.Trigger` with an `sf` and an `md` icon. On iOS 26 the mini player is the bar's
   `NativeTabs.BottomAccessory` (`AccessoryMiniPlayer`; `usePlacement()` `inline` drops Next) and the bar
   minimizes on scroll down. New Playlist is the Library Playlists `SectionHeader`'s "New" action; `/create`
   links open `/create-playlist` (`+native-intent`).
   Settings is not a tab: the root screens' `headerRight` is `TopLevelActions` (`navigation/top-level-actions`:
-  Android's Search, Settings, the avatar or Sign In), which push onto the current tab. Languages is in Settings
+  Settings, the avatar or Sign In), which push onto the current tab. Languages is in Settings
   only, not the header. On iOS 26 `useTopLevelHeaderOptions(title)` puts the page title at the top left (a custom
   header item, no large title) and Settings and Profile as native buttons sharing one glass capsule at the right. Android's
-  pushed Search hides the app bar for its own M3 search bar (`features/search/search-header.android.tsx`: a
+  Search tab hides the app bar for its own M3 search bar (`features/search/search-header.android.tsx`: a
   visible Back in every state, clear while there is text; the native field sat after the toolbar's 72dp inset)
-  and autofocuses it. The auth stack's iOS root gets Close (`authHeaderOptions`); Android shows no bar title.
+  and autofocuses it (Back goes Home). The auth stack's iOS root gets Close (`authHeaderOptions`); Android shows no bar title.
 - Routes are the web's paths (`@infinitunes/core/entity-route`): detail screens, `search` and the account
   screens (`settings`, `profile`, `password`, `delete-account`) live once in `(tabs)/(home,search,library,radio)/`
   (entities as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and `artist/[name]/[token]/{index,[tab]}`;
   the season or tab only selects what opens, switching stays in the screen, whose header scrolls in the one
   list), so they open in the current tab and a web link with the app's scheme lands on them (a cold link in
   Home's stack). `+native-intent` maps legacy `<name>-songs` artist links and sends `/search?q=` (Siri,
-  Assistant) to `/(tabs)/(search)/search` on iOS and `/(tabs)/(home)/search` on Android, as a bare `/search`
-  resolves to the search tab, which Android does not show (it would redirect to Home and drop `q`). Lists are
+  Assistant) to the Search tab, `/(tabs)/(search)/search` (a bare `/search` is ambiguous across the tab stacks). Lists are
   `/album`, `/artist`, `/playlist`, `/show`, `/chart`, `/browse` in `(home)` and `/radio` in `(radio)`. Link with
   `entityHref(type, perma_url)`, never a hand-built path (`entityRoute` reads only the type's own section,
   `SECTIONS`, at exact arity: anything else is `undefined`, an unpressable item); open from handlers with
