@@ -232,14 +232,24 @@ function HeroArt({
     const box = stage.get();
     const row = header.get();
     const edge = box ? Math.min(hero, box.height) : hero;
-    const fromX = box ? box.x + (box.width - edge) / 2 : 0;
-    const fromY = box ? box.y + (box.height - edge) / 2 : 0;
-    const toX = row ? row.x + space.xl : 0;
-    const toY = row ? row.y + (row.height - COMPACT_ART) / 2 : 0;
-    const size = edge + (COMPACT_ART - edge) * p;
-    const x = fromX + (toX - fromX) * p;
-    const y = fromY + (toY - fromY) * p;
-    const ready = (p >= 1 || box !== null) && (p <= 0 || row !== null);
+    const large = box && {
+      x: box.x + (box.width - edge) / 2,
+      y: box.y + (box.height - edge) / 2,
+      edge,
+    };
+    const compactSlot = row && {
+      x: row.x + space.xl,
+      y: row.y + (row.height - COMPACT_ART) / 2,
+      edge: COMPACT_ART,
+    };
+    // A slot not measured yet (its view mounts this frame) stands in with the
+    // other one, so the art holds where it is for that frame instead of vanishing.
+    const from = large ?? compactSlot;
+    const to = compactSlot ?? large;
+    const ready = from !== null && to !== null;
+    const size = ready ? from.edge + (to.edge - from.edge) * p : hero;
+    const x = ready ? from.x + (to.x - from.x) * p : 0;
+    const y = ready ? from.y + (to.y - from.y) * p : 0;
     // As `useSwipeable`'s style: it follows the finger and fades (only fades under reduce motion).
     const dx = swipeX.get();
     const swiped = 1 - Math.min(Math.abs(dx) / Math.max(width, 1), 1) * 0.6;
