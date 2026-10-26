@@ -131,18 +131,41 @@ type LongPressMenuProps = {
   children: (onLongPress: () => void) => ReactElement;
   /** The menu, mounted on the first long press: `anchor` is its trigger, `ref` its handle. */
   renderMenu: (
-    ref: Ref<MenuComponentRef>,
+    options: { ref?: Ref<MenuComponentRef>; openOnLongPress?: boolean },
     anchor: ReactElement,
   ) => ReactElement;
   testID?: string;
 };
 
+function ignoreLongPress() {}
+
 /**
- * Android (and anything without link menus): a list holds dozens of items,
- * so the dropdown, with its subscriptions, mounts the first time one is long
- * pressed and opens once its handle exists.
+ * Without link menus: Android's dropdown mounts on the first long press
+ * (below); iOS (an old-architecture build, or an item with no screen) wraps
+ * the item in the system context menu, opened by the user's own long press,
+ * as SwiftUI menus cannot be opened from code (`show()` warns there).
  */
-export function LongPressMenu({
+export function LongPressMenu(props: LongPressMenuProps) {
+  if (Platform.OS !== "ios") return <AndroidLongPressMenu {...props} />;
+  const { href, children, renderMenu } = props;
+  const pressable = children(ignoreLongPress);
+  return renderMenu(
+    { openOnLongPress: true },
+    href ? (
+      <Link href={href} asChild>
+        {pressable}
+      </Link>
+    ) : (
+      pressable
+    ),
+  );
+}
+
+/**
+ * A list holds dozens of items, so the dropdown, with its subscriptions,
+ * mounts the first time one is long pressed and opens once its handle exists.
+ */
+function AndroidLongPressMenu({
   href,
   children,
   renderMenu,
@@ -177,7 +200,7 @@ export function LongPressMenu({
         // still reach the item.
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
           {renderMenu(
-            setHandle,
+            { ref: setHandle },
             <View testID={testID} style={styles.anchor} />,
           )}
         </View>

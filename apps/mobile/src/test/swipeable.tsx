@@ -15,6 +15,7 @@ type SwipeableProps = {
   children?: ReactNode;
   renderLeftActions?: () => ReactNode;
   renderRightActions?: () => ReactNode;
+  enabled?: boolean;
 };
 
 function Swipeable({
@@ -22,10 +23,11 @@ function Swipeable({
   children,
   renderLeftActions,
   renderRightActions,
+  enabled = true,
 }: SwipeableProps) {
   useImperativeHandle(ref, () => ({ close: () => {} }));
   return (
-    <View>
+    <View testID="swipeable" accessibilityState={{ disabled: !enabled }}>
       {renderLeftActions?.()}
       {children}
       {renderRightActions?.()}

@@ -20,6 +20,13 @@ function ReorderableList<Item>({
   return <FlatList testID="reorderable-list" {...props} />;
 }
 
+/** Whether the row is being dragged; a test sets it to simulate a drag. */
+export const reorderState = { active: false };
+
+export function useIsActive() {
+  return reorderState.active;
+}
+
 /** The real hook starts the row's drag; at rest it does nothing. */
 export function useReorderableDrag() {
   return () => {};

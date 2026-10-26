@@ -53,6 +53,7 @@ describe("SongRow swipe actions", () => {
     expect(screen.queryByRole("button", { name: "Play Next" })).toBeNull();
   });
 });
+afterEach(() => jest.restoreAllMocks());
 
 describe("SongRow", () => {
   it("shows the decoded title and the primary artists", async () => {
@@ -92,7 +93,24 @@ describe("SongRow", () => {
     expect(app.getPathname()).toBe("/song/fa9la/BSaNI3Yr-token");
   });
 
-  it("opens the song menu on a long press, not only from the More button", async () => {
+  it("wraps the row in the system context menu on iOS and never calls show()", async () => {
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
+    await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
+
+    await fireEvent(
+      screen.getByRole("button", { name: "FA9LA & Friends" }),
+      "longPress",
+    );
+
+    // The user's own long press opens it natively; code never does.
+    expect(screen.queryByTestId("card-menu")).toBeNull();
+    expect(warn).not.toHaveBeenCalledWith(
+      expect.stringContaining("show() is a no-op"),
+    );
+  });
+
+  it("opens the song menu on a long press on Android, not only from the More button", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
     await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
     expect(screen.queryByTestId("card-menu")).toBeNull();
 

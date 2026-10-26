@@ -179,6 +179,18 @@ describe("FullPlayer", () => {
       "Repeat off",
       "More actions for Alpha",
     ]);
+    // Four identical capsules: each a `flex-1` container with the same shape.
+    const pills = screen.getAllByTestId("header-pill");
+    expect(pills).toHaveLength(4);
+    for (const pill of pills) {
+      expect(pill.props.className).toEqual(
+        expect.stringContaining("flex-1 items-center justify-center"),
+      );
+      expect(pill.props.className).toEqual(
+        expect.stringContaining("rounded-full"),
+      );
+    }
+    expect(new Set(pills.map((pill) => pill.props.style)).size).toBe(1);
     await fireEvent.press(screen.getByRole("button", { name: "Shuffle" }));
     expect(screen.getByRole("button", { name: "Shuffle" })).toHaveProp(
       "accessibilityState",

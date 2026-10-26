@@ -101,9 +101,9 @@ export async function chooseCardAction(
   event: string,
 ) {
   await fireEvent(card, "longPress");
-  await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
-    nativeEvent: { event },
-  });
+  // Android mounts the menu after the press; iOS's wraps the card already.
+  const mounted = screen.queryByTestId("card-menu");
+  await fireEvent(mounted ?? card, "pressAction", { nativeEvent: { event } });
 }
 
 /**

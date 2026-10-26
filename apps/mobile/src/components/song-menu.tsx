@@ -218,6 +218,8 @@ type SongMenuProps = Omit<SongMenuOptions, "inQueue"> & {
   /** `show()` opens the menu from code (Android only). */
   ref?: Ref<MenuComponentRef>;
   style?: StyleProp<ViewStyle>;
+  /** The system context menu on long press (iOS rows), not a tap. */
+  openOnLongPress?: boolean;
 };
 
 /** A track's actions in the platform menu (`useSongMenuEntries`). */
@@ -227,10 +229,17 @@ export function SongMenu({
   children,
   ref,
   style,
+  openOnLongPress,
 }: SongMenuProps) {
   const entries = useSongMenuEntries({ song, removal });
   return (
-    <NativeMenu title={song.name} entries={entries} ref={ref} style={style}>
+    <NativeMenu
+      title={song.name}
+      entries={entries}
+      ref={ref}
+      style={style}
+      openOnLongPress={openOnLongPress}
+    >
       {children}
     </NativeMenu>
   );
@@ -267,8 +276,8 @@ export function SongContextLink({
   }
   return (
     <LongPressMenu
-      renderMenu={(ref, anchor) => (
-        <SongMenu song={song} removal={removal} ref={ref}>
+      renderMenu={(options, anchor) => (
+        <SongMenu song={song} removal={removal} {...options}>
           {anchor}
         </SongMenu>
       )}
