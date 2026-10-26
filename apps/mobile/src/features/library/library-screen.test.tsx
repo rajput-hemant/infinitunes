@@ -128,6 +128,24 @@ describe("LibraryScreen", () => {
     ).toBeOnTheScreen();
   });
 
+  it("counts the recently played songs on their tile", async () => {
+    procedure("history.list").mockResolvedValue([
+      { id: "a", type: "song" },
+      { id: "b", type: "song" },
+    ]);
+    procedure("song.items").mockImplementation(
+      catalogAnswering({
+        a: songNamed("a", "Alpha"),
+        b: songNamed("b", "Beta"),
+      }),
+    );
+    await renderLibraryTab();
+
+    expect(
+      await screen.findByRole("link", { name: "Recently Played, 2 songs" }),
+    ).toBeOnTheScreen();
+  });
+
   it("shows a playlist's first song as its cover, the icon until then", async () => {
     procedure("song.details").mockImplementation(
       catalogAnswering({ a: songNamed("a", "Alpha") }),

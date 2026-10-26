@@ -29,15 +29,15 @@ export function CatalogLoadMore(props: CatalogLoadMoreProps) {
   }
 
   return (
-    <div
+    <output
       ref={ref}
       className="flex items-center justify-center gap-2 py-6 text-sm font-medium text-muted-foreground"
     >
       {isFetchingNextPage && (
         <>
-          <Loader2 className="size-5 animate-spin" /> Loading...
+          <Loader2 aria-hidden className="size-5 animate-spin" /> Loading...
         </>
       )}
-    </div>
+    </output>
   );
 }

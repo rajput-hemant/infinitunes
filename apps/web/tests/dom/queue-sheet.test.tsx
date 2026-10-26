@@ -583,11 +583,12 @@ describe("queue pane open state", () => {
     const root = await mountPane();
     await act(async () => toggle()?.click());
 
-    await act(async () => {
-      [...document.querySelectorAll<HTMLButtonElement>("aside button")]
-        .find((button) => button.textContent === "Clear")
-        ?.click();
-    });
+    const clear = [
+      ...document.querySelectorAll<HTMLButtonElement>("aside button"),
+    ].find((button) => button.textContent === "Clear");
+    // The bare word is ambiguous out of context for screen readers.
+    expect(clear?.getAttribute("aria-label")).toBe("Clear up next");
+    await act(async () => clear?.click());
 
     expect(storedIds()).toEqual(["a", "b"]);
     expect(localStorage.getItem("current_song_index")).toBe("1");

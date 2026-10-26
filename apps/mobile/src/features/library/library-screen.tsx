@@ -21,6 +21,7 @@ import {
 import { LibraryTile } from "./library-tile";
 import { PlaylistRow, songCount } from "./playlist-row";
 import { SignedInGate } from "./signed-in-gate";
+import { useHistory } from "./use-history";
 import { usePlaylistCovers } from "./use-playlist-covers";
 
 function Playlists() {
@@ -55,10 +56,12 @@ function Playlists() {
   ));
 }
 
-/** Liked Songs and Recently Played, side by side across the row at any width; the liked count is already loaded. */
+/** Liked Songs and Recently Played, side by side across the row at any width; the counts are already loaded. */
 function Tiles() {
   const width = useGridCardWidth(2);
   const liked = useFavoriteLists()?.songs.length;
+  const history = useHistory();
+  const played = history.status === "ready" ? history.items.length : undefined;
   return (
     <View className="flex-row px-page pb-2 pt-2" style={{ gap: GRID_GAP }}>
       <LibraryTile
@@ -66,7 +69,11 @@ function Tiles() {
         width={width}
         detail={liked === undefined ? undefined : songCount(liked)}
       />
-      <LibraryTile {...RECENTLY_PLAYED} width={width} />
+      <LibraryTile
+        {...RECENTLY_PLAYED}
+        width={width}
+        detail={played === undefined ? undefined : songCount(played)}
+      />
     </View>
   );
 }
