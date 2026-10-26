@@ -22,6 +22,8 @@ describe("redirectSystemPath", () => {
   it("leaves every other link as it came", () => {
     for (const path of [
       "infinitunes://album/udta-teer/LHgqn_",
+      "infinitunes://song/fa9la/MjsKfz0DbkE",
+      "/song/fa9la/MjsKfz0DbkE",
       "/artist/flipperachi/LnMf_/songs",
       "/searches",
     ]) {

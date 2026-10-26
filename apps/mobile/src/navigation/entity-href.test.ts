@@ -1,4 +1,19 @@
-import { entityHref, entityPath, stationRef } from "./entity-href";
+import { creditsHref, entityHref, entityPath, stationRef } from "./entity-href";
+
+describe("creditsHref", () => {
+  it("opens only a song's credits, preserving the upstream slug and token", () => {
+    expect(
+      creditsHref("https://www.jiosaavn.com/song/fa9la/MjsKfz0DbkE"),
+    ).toEqual({
+      pathname: "/song/[name]/[token]/credits",
+      params: { name: "fa9la", token: "MjsKfz0DbkE" },
+    });
+    expect(
+      creditsHref("https://www.jiosaavn.com/album/fa9la/abc"),
+    ).toBeUndefined();
+    expect(creditsHref("https://example.com/song/fa9la/abc")).toBeUndefined();
+  });
+});
 
 describe("entityHref", () => {
   it("opens an item at the web's path: its section, name and token", () => {
