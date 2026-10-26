@@ -241,6 +241,25 @@ describe("Better Auth configuration", () => {
         new Request("http://localhost:3000/api/auth/social-providers"),
       );
       expect(await res.json()).toEqual(["google", "github", "apple"]);
+
+      // No secret: the web redirect flow is refused, the app's ID token is not.
+      const social = (body: Record<string, unknown>) =>
+        auth.handler(
+          new Request("http://localhost:3000/api/auth/sign-in/social", {
+            method: "POST",
+            headers: {
+              "content-type": "application/json",
+              origin: "http://localhost:3000",
+            },
+            body: JSON.stringify({ provider: "apple", ...body }),
+          }),
+        );
+      const redirect = await social({ callbackURL: "/" });
+      expect(redirect.status).toBe(400);
+      expect((await redirect.json()).message).toContain("iOS app only");
+      const native = await social({ idToken: { token: "not-a-jwt" } });
+      expect(native.status).not.toBe(500);
+      expect(JSON.stringify(await native.json())).not.toContain("iOS app only");
     } finally {
       delete process.env.APPLE_CLIENT_ID;
     }

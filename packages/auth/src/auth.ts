@@ -200,7 +200,9 @@ export function createAuth(
     env.GITHUB_CLIENT_SECRET,
   );
   // The iOS app's ID tokens name the bundle id as their audience; verifying
-  // one needs no secret (only a web redirect flow would).
+  // one needs no secret, so the redirect flow is refused (`hooks.before`). A
+  // future web Apple flow needs a real secret and
+  // `audience: [clientId, NATIVE_APP_ID]`.
   const apple = env.APPLE_CLIENT_ID
     ? {
         clientId: env.APPLE_CLIENT_ID,
@@ -246,6 +248,15 @@ export function createAuth(
         ) {
           // Reject before a reset consumes its single-use token.
           assertNewPasswordLength(ctx.body?.newPassword);
+        } else if (
+          ["/sign-in/social", "/link-social"].includes(ctx.path) &&
+          ctx.body?.provider === "apple" &&
+          !ctx.body?.idToken
+        ) {
+          // Apple is the app's ID token flow only (see `apple` above).
+          throw new APIError("BAD_REQUEST", {
+            message: "Sign in with Apple is available in the iOS app only",
+          });
         }
       }),
     },
