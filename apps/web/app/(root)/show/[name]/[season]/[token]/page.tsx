@@ -16,19 +16,16 @@ import { DetailsHeader } from "~/components/details-header/details-header";
 import { Shelf } from "~/components/slider/shelf";
 import { ShelfItem } from "~/components/slider/shelf-item";
 import { SliderCard } from "~/components/slider/slider-card";
-import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
-import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
-import { orFallback } from "~/lib/degrade";
 import { pageMetadata } from "~/lib/metadata";
 import { orNotFound } from "~/lib/not-found";
+import { readSort } from "~/lib/sort";
 import { api } from "~/lib/trpc/server";
 import { asRoute, cn } from "~/lib/utils";
+import { getViewer } from "~/lib/viewer";
 
 import { EpisodeList } from "./_components/episode-list";
 import { EpisodesSkeleton } from "./_components/episodes-skeleton";
-
-const DEFAULT_SORT: Sort = "desc";
 
 // callers must pass a normalized sort so generateMetadata and the page share one cache entry
 const getShow = cache(async (token: string, season: string, sort: Sort) =>
@@ -42,16 +39,18 @@ const getShow = cache(async (token: string, season: string, sort: Sort) =>
 );
 
 type ShowDetailsPageProps = {
-  searchParams: Promise<{ sort?: Sort }>;
+  searchParams: Promise<{ sort?: string | string[] }>;
   params: Promise<{ name: string; season: string; token: string }>;
 };
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: ShowDetailsPageProps): Promise<Metadata> {
   const { name, season, token } = await params;
+  const sort = readSort((await searchParams).sort);
 
-  const { show_details: show } = await getShow(token, season, DEFAULT_SORT);
+  const { show_details: show } = await getShow(token, season, sort);
 
   return pageMetadata({
     title: show.title,
@@ -65,21 +64,10 @@ export async function generateMetadata({
 type ShowEpisodeSectionProps = {
   show: Awaited<ReturnType<typeof getShow>>;
   sort: Sort;
-  userPromise: ReturnType<typeof getUser>;
 };
 
-async function ShowEpisodeSection({
-  show,
-  sort,
-  userPromise,
-}: ShowEpisodeSectionProps) {
-  const user = await userPromise;
-  const [favorites, playlists] = user
-    ? await Promise.all([
-        orFallback("user favorites", getUserFavorites(), null),
-        orFallback("user playlists", getUserPlaylists(), undefined),
-      ])
-    : [undefined, undefined];
+async function ShowEpisodeSection({ show, sort }: ShowEpisodeSectionProps) {
+  const { user, favorites, playlists } = await getViewer();
 
   return (
     <>
@@ -128,11 +116,9 @@ async function ShowEpisodeSection({
 }
 
 export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
-  const { sort = DEFAULT_SORT } = await props.searchParams;
+  const sort = readSort((await props.searchParams).sort);
   const { season, token } = await props.params;
 
-  const userPromise = getUser();
-  userPromise.catch(() => undefined);
   const show = await getShow(token, season, sort);
   const { modules, seasons, show_details } = show;
 
@@ -176,7 +162,7 @@ export default async function ShowDetailsPage(props: ShowDetailsPageProps) {
       </Shelf>
 
       <Suspense fallback={<EpisodesSkeleton />}>
-        <ShowEpisodeSection show={show} sort={sort} userPromise={userPromise} />
+        <ShowEpisodeSection show={show} sort={sort} />
       </Suspense>
     </div>
   );
