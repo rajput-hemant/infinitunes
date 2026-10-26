@@ -13,11 +13,11 @@
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
     "@infinitunes/types": "workspace:*",
+    "@t3-oss/env-core": "^0.13.11",
     "bcryptjs": "catalog:",
     "better-auth": "catalog:",
     "drizzle-orm": "catalog:",
-    "zod": "catalog:",
-    "@t3-oss/env-core": "^0.13.11"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",

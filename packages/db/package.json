@@ -18,10 +18,10 @@
   },
   "dependencies": {
     "@infinitunes/env": "workspace:*",
+    "@t3-oss/env-core": "^0.13.11",
     "bcryptjs": "catalog:",
     "drizzle-orm": "catalog:",
     "postgres": "^3.4.9",
-    "@t3-oss/env-core": "^0.13.11",
     "zod": "catalog:"
   },
   "devDependencies": {

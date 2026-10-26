@@ -16,7 +16,9 @@
     "start": "bun run with-env turbo run start",
     "lint": "turbo run lint",
     "knip": "knip",
-    "clean": "bash scripts/clean.sh",
+    "lint:ws": "bunx sherif@latest",
+    "clean": "bun scripts/clean.ts",
+    "clean:native": "bun scripts/clean.ts --native",
     "deps:update": "bun update -i",
     "skeletons:capture": "bun run --cwd apps/web skeletons:capture && oxfmt --write apps/web/bones",
     "budget": "bun scripts/check-budget.ts",
@@ -56,6 +58,7 @@
     "lint-staged": "^17.6.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "sherif": "^1.13.0",
     "turbo": "^2.11.10",
     "typescript": "catalog:"
   },

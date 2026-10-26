@@ -13,14 +13,14 @@
     "@infinitunes/core": "workspace:*",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/types": "workspace:*",
+    "@t3-oss/env-core": "^0.13.11",
     "@trpc/server": "catalog:",
     "bcryptjs": "catalog:",
     "crypto-js": "^4.2.0",
     "drizzle-orm": "catalog:",
     "server-only": "catalog:",
     "superjson": "catalog:",
-    "zod": "catalog:",
-    "@t3-oss/env-core": "^0.13.11"
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@infinitunes/typescript-config": "workspace:*",
