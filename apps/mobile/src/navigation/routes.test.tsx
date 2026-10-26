@@ -216,6 +216,18 @@ describe("on Android", () => {
     expect(home.queryByRole("button", { name: "Languages" })).toBeNull();
   });
 
+  it("makes Search a regular fourth tab on Android", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    const tabs = app.container.queryAll(
+      (node) =>
+        typeof node.props.screenKey === "string" && "systemItem" in node.props,
+    );
+    expect(tabs).toHaveLength(4);
+    expect(tabs.some((node) => node.props.systemItem === "search")).toBe(false);
+    expect(tabs.at(-1)?.props.screenKey).toBe("(search)");
+  });
+
   it("opens a search link (Google Assistant) in the Search tab with its query", async () => {
     const app = await renderRouter("./src/app", {
       initialUrl: redirectSystemPath({ path: "infinitunes://search?q=siri" }),
@@ -235,7 +247,7 @@ describe("the tab bar", () => {
     ).toHaveLength(0);
   });
 
-  it("uses the native Search role without automatic activation or prominence on iOS", async () => {
+  it("makes Search the system search tab, last, on iOS", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
     const tabs = app.container.queryAll(
@@ -243,23 +255,15 @@ describe("the tab bar", () => {
         typeof node.props.screenKey === "string" && "systemItem" in node.props,
     );
     expect(tabs).toHaveLength(4);
-    expect(tabs.some((node) => node.props.systemItem === "search")).toBe(false);
+    const search = tabs.filter((node) => node.props.systemItem === "search");
+    expect(search).toHaveLength(1);
+    expect(tabs.at(-1)).toBe(search[0]);
     expect(tabs.at(-1)?.props).toMatchObject({
       screenKey: "(search)",
-      title: "Search",
-      iconType: "sfSymbol",
-      iconResourceName: "magnifyingglass",
+      systemItem: "search",
       tabRole: "search",
-      automaticallyActivatesSearch: false,
+      automaticallyActivatesSearch: true,
     });
-
-    const hosts = app.container.queryAll(
-      (node) => node.props.tabBarMinimizeBehavior === "onScrollDown",
-    );
-    expect(hosts.length).toBeGreaterThan(0);
-    for (const host of hosts) {
-      expect(host.props.prominentScreenKey).toBeUndefined();
-    }
   });
 
   it("opens a search link (Siri) in the Search tab with its query on iOS", async () => {
