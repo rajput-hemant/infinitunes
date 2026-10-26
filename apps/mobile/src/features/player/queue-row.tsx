@@ -10,6 +10,8 @@ import { ListRow } from "~/components/list-row";
 import { NativeMenu } from "~/components/native-menu";
 import { useSongMenuEntries } from "~/components/song-menu";
 
+import { SwipeToRemove } from "./swipe-remove";
+
 /** A queue entry and the row extras its menu reads (the album). */
 type QueueTrack = Queue & RowExtras;
 
@@ -60,8 +62,8 @@ export function QueueRow({ song, onPress, onRemove, children }: QueueRowProps) {
     />
   );
 
-  if (Platform.OS === "ios") {
-    return (
+  const menu =
+    Platform.OS === "ios" ? (
       <NativeMenu
         title={song.name}
         entries={entries}
@@ -71,18 +73,17 @@ export function QueueRow({ song, onPress, onRemove, children }: QueueRowProps) {
       >
         {row()}
       </NativeMenu>
+    ) : (
+      <LongPressMenu
+        testID="queue-row-menu"
+        renderMenu={(options, anchor) => (
+          <NativeMenu title={song.name} entries={entries} {...options}>
+            {anchor}
+          </NativeMenu>
+        )}
+      >
+        {(onLongPress) => row(onLongPress)}
+      </LongPressMenu>
     );
-  }
-  return (
-    <LongPressMenu
-      testID="queue-row-menu"
-      renderMenu={(options, anchor) => (
-        <NativeMenu title={song.name} entries={entries} {...options}>
-          {anchor}
-        </NativeMenu>
-      )}
-    >
-      {(onLongPress) => row(onLongPress)}
-    </LongPressMenu>
-  );
+  return <SwipeToRemove onRemove={onRemove}>{menu}</SwipeToRemove>;
 }

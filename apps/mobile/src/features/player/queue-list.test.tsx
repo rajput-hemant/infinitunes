@@ -6,6 +6,7 @@ import { Platform } from "react-native";
 import { playerColorsFromSeed } from "~/lib/artwork-colors";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
+import { reorderState } from "~/test/reorderable-list";
 
 import { QueueList } from "./queue-list";
 import { nowPlayingWash, OnWash } from "./wash";
@@ -125,6 +126,35 @@ describe("QueueList", () => {
       node = node.parent;
     }
     expect(highlighted).toBe(true);
+  });
+
+  it("removes a row from its revealed Remove button (a slow swipe that rests open)", async () => {
+    await renderScreen(<QueueList />);
+    await screen.findByText("Delta");
+
+    const [first] = screen.getAllByRole("button", { name: "Remove" });
+    if (!first) throw new Error("no Remove button");
+    await fireEvent.press(first);
+
+    expect(ids()).toEqual(["a", "b", "d"]);
+  });
+
+  it("disables the swipe while a row's handle drags it", async () => {
+    await renderScreen(<QueueList />);
+    await screen.findByText("Delta");
+    expect(
+      screen.getAllByTestId("swipeable")[0]?.props.accessibilityState,
+    ).toEqual({ disabled: false });
+
+    reorderState.active = true;
+    try {
+      await renderScreen(<QueueList />);
+      expect(
+        screen.getAllByTestId("swipeable")[0]?.props.accessibilityState,
+      ).toEqual({ disabled: true });
+    } finally {
+      reorderState.active = false;
+    }
   });
 
   it("reorders up next by dragging", async () => {
