@@ -568,6 +568,13 @@ export function FullPlayer() {
   const background = useTokenColor("background");
   const paletteBackground = usePalette().background;
   const reduceMotion = useReducedMotion();
+  // The rounded top of a card sheet (the system sheet it replaced); the
+  // page clips the wash to it.
+  const sheetCorner = useRadii().xl;
+  const pageCorners = {
+    borderTopLeftRadius: sheetCorner,
+    borderTopRightRadius: sheetCorner,
+  };
 
   const close = () => router.back();
   const toggle = (next: PlayerView) => setView(view === next ? "art" : next);
@@ -644,7 +651,7 @@ export function FullPlayer() {
     return (
       <View
         className="flex-1 bg-background"
-        style={{ paddingTop: insets.top }}
+        style={[styles.page, pageCorners, { paddingTop: insets.top }]}
         accessibilityViewIsModal
         onAccessibilityEscape={close}
       >
@@ -673,7 +680,7 @@ export function FullPlayer() {
       : null;
 
   return (
-    <Animated.View style={[styles.page, dragStyle]}>
+    <Animated.View style={[styles.page, pageCorners, dragStyle]}>
       {/* The tabs stay drawn underneath: keep a screen reader on this page. */}
       <View
         ref={root}
@@ -817,7 +824,7 @@ export function FullPlayer() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1 },
+  page: { flex: 1, overflow: "hidden" },
   hero: { position: "absolute", left: 0, top: 0 },
   clip: { overflow: "hidden" },
 });
