@@ -3,6 +3,7 @@ import type { MenuAction, MenuComponentRef } from "@expo/ui/community/menu";
 import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists";
 import { router } from "expo-router";
 import type { ReactNode, Ref } from "react";
+import type { StyleProp, ViewStyle } from "react-native";
 
 import type { RadioSeed } from "~/playback/radio";
 import { startSeededRadio } from "~/playback/radio";
@@ -45,6 +46,7 @@ type NativeMenuProps = {
   /** `show()` opens the menu from code (Android only; a no-op on iOS). */
   ref?: Ref<MenuComponentRef>;
   testID?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
 /** The platform menu (SwiftUI `Menu`, a Material dropdown) over entries that carry their own action. */
@@ -55,6 +57,7 @@ export function NativeMenu({
   openOnLongPress = false,
   ref,
   testID,
+  style,
 }: NativeMenuProps) {
   const runs = collectRuns(entries);
   return (
@@ -65,6 +68,7 @@ export function NativeMenu({
       title={title}
       actions={entries.map(toMenuAction)}
       onPressAction={({ nativeEvent }) => runs.get(nativeEvent.event)?.()}
+      style={style}
     >
       {children}
     </MenuView>

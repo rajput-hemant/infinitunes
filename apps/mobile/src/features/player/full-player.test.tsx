@@ -144,18 +144,35 @@ describe("FullPlayer", () => {
     expect(
       screen.getByRole("adjustable", { name: "Playback position" }),
     ).toBeOnTheScreen();
-    // Shuffle, repeat, the heart and the menu share the header's pill row,
-    // one of each; the title row keeps neither heart nor menu.
-    expect(screen.getAllByRole("button", { name: "Shuffle" })).toHaveLength(1);
-    expect(screen.getAllByRole("button", { name: "Repeat off" })).toHaveLength(
+    // The header's compact pill row orders: Like, Shuffle, Repeat, More;
+    // the title row keeps neither heart nor menu.
+    expect(screen.getAllByRole("button", { name: "Like Alpha" })).toHaveLength(
       1,
     );
-    expect(screen.getAllByRole("button", { name: "Like Alpha" })).toHaveLength(
+    expect(screen.getAllByRole("button", { name: "Shuffle" })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "Repeat off" })).toHaveLength(
       1,
     );
     expect(
       screen.getAllByRole("button", { name: "More actions for Alpha" }),
     ).toHaveLength(1);
+    const pillLabels = screen
+      .getAllByRole("button")
+      .map((b) => b.props.accessibilityLabel as string)
+      .filter((label) =>
+        [
+          "Like Alpha",
+          "Shuffle",
+          "Repeat off",
+          "More actions for Alpha",
+        ].includes(label),
+      );
+    expect(pillLabels).toEqual([
+      "Like Alpha",
+      "Shuffle",
+      "Repeat off",
+      "More actions for Alpha",
+    ]);
     await fireEvent.press(screen.getByRole("button", { name: "Shuffle" }));
     expect(screen.getByRole("button", { name: "Shuffle" })).toHaveProp(
       "accessibilityState",

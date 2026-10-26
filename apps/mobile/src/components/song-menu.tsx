@@ -3,6 +3,7 @@ import type { QueueSource, RowExtras } from "@infinitunes/types";
 import { useEffect, useState } from "react";
 import type { ReactNode, Ref } from "react";
 import { Platform, StyleSheet, View } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 
 import { downloadTrack } from "~/lib/download";
 import { showFailure } from "~/lib/failure";
@@ -79,6 +80,7 @@ type SongMenuProps = {
   children: ReactNode;
   /** `show()` opens the menu from code (Android only). */
   ref?: Ref<MenuComponentRef>;
+  style?: StyleProp<ViewStyle>;
 };
 
 /**
@@ -87,7 +89,13 @@ type SongMenuProps = {
  * download, and the
  * list's own removal.
  */
-export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
+export function SongMenu({
+  song,
+  removal,
+  children,
+  ref,
+  style,
+}: SongMenuProps) {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
   const membership = usePlaylistMembership();
@@ -177,7 +185,7 @@ export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
   }
 
   return (
-    <NativeMenu title={song.name} entries={entries} ref={ref}>
+    <NativeMenu title={song.name} entries={entries} ref={ref} style={style}>
       {children}
     </NativeMenu>
   );
