@@ -14,7 +14,7 @@ export function searchBarOptions() {
     autoCapitalize: "none",
     // Read at render, like `hasHeaderLanguages`, so a test can switch platforms.
     autoFocus: Platform.OS === "android",
-    // Visible without scrolling: the field sits in the header, not a system search tab.
+    // Keep the field visible without scrolling.
     hideWhenScrolling: false,
   } as const satisfies SearchBarProps;
 }
