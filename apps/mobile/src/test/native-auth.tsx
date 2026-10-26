@@ -32,6 +32,15 @@ export const appleAuthentication = {
   },
 };
 
+// A fixed nonce and a readable stand-in digest, so tests can trace both.
+export const expoCrypto = {
+  CryptoDigestAlgorithm: { SHA256: "SHA-256" },
+  randomUUID: jest.fn(() => "nonce-1"),
+  digestStringAsync: jest.fn(
+    async (algorithm: string, data: string) => `${algorithm}(${data})`,
+  ),
+};
+
 export const googleSignIn = {
   GoogleSignin: {
     configure: jest.fn(),

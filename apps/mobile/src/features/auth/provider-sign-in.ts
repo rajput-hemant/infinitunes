@@ -1,6 +1,7 @@
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useQuery } from "@tanstack/react-query";
 import * as AppleAuthentication from "expo-apple-authentication";
+import * as Crypto from "expo-crypto";
 import { Platform } from "react-native";
 import { Passkey } from "react-native-passkey";
 import type { PasskeyGetRequest } from "react-native-passkey";
@@ -38,6 +39,9 @@ const noToken = { error: { status: 400, message: NO_TOKEN_MESSAGE } };
 
 export function signInWithApple(): Promise<AuthFailure | undefined> {
   return authFailure(async () => {
+    // Apple signs the nonce's SHA-256 into the token and only the server sees
+    // the nonce itself, so a captured token cannot be replayed on its own.
+    const nonce = Crypto.randomUUID();
     let credential: AppleAuthentication.AppleAuthenticationCredential;
     try {
       credential = await AppleAuthentication.signInAsync({
@@ -45,6 +49,10 @@ export function signInWithApple(): Promise<AuthFailure | undefined> {
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
+        nonce: await Crypto.digestStringAsync(
+          Crypto.CryptoDigestAlgorithm.SHA256,
+          nonce,
+        ),
       });
     } catch (error) {
       if (codeOf(error) === "ERR_REQUEST_CANCELED") return cancelled;
@@ -57,6 +65,7 @@ export function signInWithApple(): Promise<AuthFailure | undefined> {
       provider: "apple",
       idToken: {
         token,
+        nonce,
         // Apple names the listener on the first sign-in only.
         ...(givenName || familyName
           ? {

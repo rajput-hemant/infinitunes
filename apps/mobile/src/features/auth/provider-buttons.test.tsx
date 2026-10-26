@@ -56,10 +56,15 @@ describe("Sign-in providers", () => {
 
     await fireEvent.press(await button("Continue with Apple"));
 
+    // Apple gets the nonce's hash, the server the nonce itself.
+    expect(appleAuthentication.signInAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ nonce: "SHA-256(nonce-1)" }),
+    );
     expect(authClient.signIn.social).toHaveBeenCalledWith({
       provider: "apple",
       idToken: {
         token: "apple-token",
+        nonce: "nonce-1",
         user: { name: { firstName: "Ada", lastName: "Lovelace" } },
       },
     });
