@@ -1,4 +1,3 @@
-import * as AppleAuthentication from "expo-apple-authentication";
 import { useState } from "react";
 import { useColorScheme, View } from "react-native";
 import Svg, { Path } from "react-native-svg";
@@ -10,6 +9,7 @@ import type { AuthFailure } from "~/lib/auth-failure";
 import { iconSize, sizes } from "~/theme/tokens";
 
 import {
+  loadAppleAuthentication,
   signInWithApple,
   signInWithGoogle,
   signInWithPasskey,
@@ -65,6 +65,10 @@ export function ProviderButtons({
   const [error, setError] = useState<string>();
   const passkey = providers.passkey && purpose === "signin";
   if (!providers.apple && !providers.google && !passkey) return null;
+  // Loaded only when Apple is offered: its native module is linked.
+  const AppleAuthentication = providers.apple
+    ? loadAppleAuthentication()
+    : null;
 
   function signIn(provider: () => Promise<AuthFailure | undefined>) {
     void run(async () => setError((await provider())?.message));
@@ -72,7 +76,7 @@ export function ProviderButtons({
 
   return (
     <View className="gap-3">
-      {providers.apple ? (
+      {AppleAuthentication ? (
         <View
           pointerEvents={pending ? "none" : "auto"}
           className={pending ? "opacity-50" : undefined}

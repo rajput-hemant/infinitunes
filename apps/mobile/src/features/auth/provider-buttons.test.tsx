@@ -1,7 +1,12 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
-import { appleAuthentication, googleSignIn, passkey } from "~/test/native-auth";
+import {
+  appleAuthentication,
+  googleSignIn,
+  nativePresence,
+  passkey,
+} from "~/test/native-auth";
 import { renderScreen } from "~/test/render";
 import { authClient } from "~/test/session-mock";
 
@@ -20,9 +25,50 @@ function serverOffers(providers: string[]) {
 afterEach(() => {
   authClient.$fetch.mockReset();
   serverOffers(["google", "github", "apple"]);
+  nativePresence.hasNativeModule.mockImplementation(() => true);
 });
 
 describe("Sign-in providers", () => {
+  it("hides only the provider whose native module this build lacks", async () => {
+    nativePresence.hasNativeModule.mockImplementation(
+      (name: string) => name !== "RNGoogleSignin",
+    );
+    await renderScreen(<LoginForm />);
+
+    expect(await button("Continue with Apple")).toBeOnTheScreen();
+    expect(await button("Sign in with a passkey")).toBeOnTheScreen();
+    expect(
+      screen.queryByRole("button", { name: "Continue with Google" }),
+    ).toBeNull();
+  });
+
+  it("renders the login form with no provider when no sign-in module is linked", async () => {
+    nativePresence.hasNativeModule.mockImplementation(() => false);
+    await renderScreen(<LoginForm />);
+
+    expect(
+      await screen.findByRole("button", { name: "Sign in" }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.queryByRole("button", { name: /Apple|Google|passkey/ }),
+    ).toBeNull();
+    expect(screen.queryByText("or")).toBeNull();
+  });
+
+  it("imports the sign-in module without requiring a package whose native module is missing", () => {
+    nativePresence.hasNativeModule.mockImplementation(() => false);
+    jest.isolateModules(() => {
+      jest.doMock("@react-native-google-signin/google-signin", () => {
+        throw new Error("'RNGoogleSignin' could not be found");
+      });
+      expect(() => require("./provider-sign-in")).not.toThrow();
+    });
+    jest.doMock(
+      "@react-native-google-signin/google-signin",
+      () => require("~/test/native-auth").googleSignIn,
+    );
+  });
+
   it("offers Apple, Google and a passkey above the email form, never GitHub", async () => {
     await renderScreen(<LoginForm />);
 
