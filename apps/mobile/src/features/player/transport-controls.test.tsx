@@ -1,6 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
+import { impactAsync } from "expo-haptics";
 
 import {
   contrastRatio,
@@ -149,5 +150,21 @@ describe("TransportControls", () => {
       screen.getByRole("button", { name: "Repeat off" }),
     ).not.toBeSelected();
     expect(playerStore.getState().repeat).toBe("off");
+  });
+});
+
+describe("transport haptics", () => {
+  beforeEach(() => jest.mocked(impactAsync).mockClear());
+
+  it("taps once for an icon button face (it taps on its own)", async () => {
+    await renderScreen(<TransportControls />);
+    await press("Next track");
+    expect(impactAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("taps once for a pressable face", async () => {
+    await renderScreen(<TransportControls />);
+    await press("Play");
+    expect(impactAsync).toHaveBeenCalledTimes(1);
   });
 });
