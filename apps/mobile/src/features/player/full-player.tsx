@@ -679,6 +679,9 @@ export function FullPlayer() {
   };
   useLayoutEffect(() => {
     const target = compact ? 1 : 0;
+    // A toggle that lands before the other view measured cancels that flight,
+    // so its queued layout cannot start one for the view it left.
+    pending.current = null;
     if (progress.get() === target) return;
     if (reduceMotion) {
       // No flight: the artwork reappears in its new place with a crossfade.
