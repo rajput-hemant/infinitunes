@@ -1,6 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen, within } from "@testing-library/react-native";
 
 import { playerColorsFromSeed } from "~/lib/artwork-colors";
 import { playerStore } from "~/playback/player-store";
@@ -85,6 +85,8 @@ describe("QueueList", () => {
       "Share",
       "Play Next",
       "Create Station",
+      "Go to Artist: Hussam Assim",
+      "Go to Artist: Flipperachi",
       "View Credits",
       "Remove from Queue",
     ]);
@@ -92,6 +94,36 @@ describe("QueueList", () => {
       nativeEvent: { actionName: "play-next" },
     });
     expect(ids()).toEqual(["a", "b", "d", "c", "d"]);
+  });
+
+  it("paints the whole row, handle included, as an opaque card while a touch rests", async () => {
+    jest.useFakeTimers();
+    try {
+      await renderScreen(<QueueList />);
+      const [row] = await screen.findAllByTestId("queue-row");
+      if (!row) throw new Error("no queue row");
+      expect(row.props.style).toBeUndefined();
+      // The drag handle is the row's own child, so the lifted region includes it.
+      expect(
+        within(row).getByRole("button", { name: /^Reorder / }),
+      ).toBeOnTheScreen();
+
+      await fireEvent(row, "touchStart");
+      await act(async () => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(screen.getAllByTestId("queue-row")[0]?.props.style).toMatchObject({
+        backgroundColor: expect.any(String),
+        borderRadius: expect.any(Number),
+      });
+
+      await fireEvent(row, "touchEnd");
+      expect(
+        screen.getAllByTestId("queue-row")[0]?.props.style,
+      ).toBeUndefined();
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("reorders up next by dragging", async () => {
