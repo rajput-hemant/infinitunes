@@ -41,7 +41,7 @@
     "@happy-dom/global-registrator": "^21.0.4",
     "@types/node": "catalog:",
     "husky": "^9.1.7",
-    "knip": "^6.42.1",
+    "knip": "^6.43.0",
     "lint-staged": "^17.6.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
@@ -86,5 +86,5 @@
       "@commitlint/config-conventional"
     ]
   },
-  "packageManager": "bun@1.4.3"
+  "packageManager": "bun@1.4.4"
 }
