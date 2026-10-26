@@ -43,6 +43,8 @@ type IconButtonProps = {
   /** What the button does, for screen readers ("Pause", "Like FA9LA"). */
   label: string;
   onPress: () => void;
+  /** False when the action supplies its own haptic (a like). */
+  haptic?: boolean;
   /** An `iconSize` name: `md` in rows, `lg` (the default) in headers. */
   size?: IconSize;
   color?: ColorValue;
@@ -86,10 +88,10 @@ export function IconButton(props: IconButtonProps) {
 }
 
 /** The press handler: a tap, then the action (nothing while busy). */
-function pressWith(onPress: () => void, busy: boolean) {
+function pressWith(onPress: () => void, busy: boolean, haptic: boolean) {
   if (busy) return undefined;
   return () => {
-    tap();
+    if (haptic) tap();
     onPress();
   };
 }
@@ -98,6 +100,7 @@ function SymbolButton({
   icon,
   label,
   onPress,
+  haptic = true,
   size = "lg",
   color,
   variant = "standard",
@@ -120,7 +123,7 @@ function SymbolButton({
   const tonal = selected && !container;
   const button = (
     <Pressable
-      onPress={pressWith(onPress, busy)}
+      onPress={pressWith(onPress, busy, haptic)}
       onPressIn={ios ? press.onPressIn : undefined}
       onPressOut={ios ? press.onPressOut : undefined}
       disabled={disabled}
@@ -183,6 +186,7 @@ function MaterialIconButton({
   icon,
   label,
   onPress,
+  haptic = true,
   size = "lg",
   color,
   variant,
@@ -207,7 +211,7 @@ function MaterialIconButton({
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
   return (
     <AnimatedPressable
-      onPress={pressWith(onPress, busy)}
+      onPress={pressWith(onPress, busy, haptic)}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={label}

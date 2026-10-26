@@ -14,6 +14,17 @@ const TAB_LABEL = Platform.select({
 } as const);
 
 /**
+ * The system search tab. expo-router's `role="search"` only reaches
+ * react-native-screens as `ios.systemItem` (the magnifier item: a plain tab
+ * in the pill on iOS 27); `ios.role` makes the tab a `UISearchTab` (iOS
+ * 26.1+), and `automaticallyActivatesSearch` detaches it trailing on iOS 27
+ * and moves the search screen's header field into the tab bar, focused.
+ */
+const SEARCH_TAB = {
+  ios: { role: "search", automaticallyActivatesSearch: true },
+} as const;
+
+/**
  * Platform tab bars (UITabBarController, Material 3 navigation bar) with the
  * system materials: no colours are set here, so iOS 26 keeps Liquid Glass and
  * Android its Material You surface. Each tab owns a stack, so pushed screens
@@ -23,9 +34,11 @@ const TAB_LABEL = Platform.select({
  * Tab order is Home, Radio, Library, Search. New Playlist is a row
  * in Library (and the `/create` link opens its sheet, see `+native-intent`).
  *
- * Search uses UISearchTab without automatic activation: iOS 27 keeps it in
- * the expanded pill; iOS 26.1+ detaches it. Its root keeps the native header
- * search field on iOS and the Material 3 search bar on Android.
+ * Search on iOS is the system search tab (`role="search"`: its title and
+ * symbol are the system's, and iOS 26 pins it trailing as a separate glass
+ * circle in both expanded and collapsed states, with the search screen's
+ * field at the bottom). Android has Search as a fourth tab (`md="search"`),
+ * with the Material 3 search bar at its root.
  *
  * On iOS 26 the mini player is the tab bar's bottom accessory and the bar
  * minimizes while a tab scrolls down (Apple Music); elsewhere it floats.
@@ -70,15 +83,24 @@ export default function TabsLayout() {
           />
           <NativeTabs.Trigger.Label>Library</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
-        <NativeTabs.Trigger
-          name="(search)"
-          unstable_nativeProps={{
-            ios: { role: "search", automaticallyActivatesSearch: false },
-          }}
-        >
-          <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />
-          <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
-        </NativeTabs.Trigger>
+        {/* The system search tab: its own trailing glass button on iOS 26, the
+            screen's header field moving into the tab bar. Last in the JSX so
+            the order is the same on iOS 18, where it is a plain trailing tab. */}
+        {Platform.OS === "ios" ? (
+          <NativeTabs.Trigger
+            name="(search)"
+            role="search"
+            unstable_nativeProps={SEARCH_TAB}
+          >
+            {/* The system's title wins; this names the tab for tests and tooling. */}
+            <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+        ) : (
+          <NativeTabs.Trigger name="(search)">
+            <NativeTabs.Trigger.Icon md="search" />
+            <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
+          </NativeTabs.Trigger>
+        )}
       </NativeTabs>
       {hasTabBarAccessory ? null : <FloatingPlayerDock />}
     </>

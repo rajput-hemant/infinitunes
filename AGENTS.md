@@ -186,11 +186,13 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   kit), `lib/` (clients, `preferences`, `share`, `download`, `use-infinite-list`, `use-pending`, `meta`),
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
   `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
-- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, Search. Search uses `unstable_nativeProps.ios`
-  `{ role: "search", automaticallyActivatesSearch: false }`, not Expo's `role` (which maps to `systemItem`),
-  with icon `magnifyingglass`/`search`: iOS 27 keeps it in the expanded pill; iOS 26.1+ detaches it.
-  Minimized trailing Search placement on iOS 27 still needs a device check. Android keeps all four in one bar.
-  Its stack root keeps the native header field (`hideWhenScrolling: false`, no autofocus) on iOS and the M3 bar on Android. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
+- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, Search. iOS Search is the system search tab
+  (separate trailing circle in both expanded and collapsed states, last in JSX): expo-router's `role="search"`
+  reaches react-native-screens only as `ios.systemItem` (the magnifier, a plain tab in the pill on iOS 27); the
+  `UISearchTab` (separate trailing glass circle, header field in the bar) needs
+  `unstable_nativeProps={{ ios: { role: "search", automaticallyActivatesSearch: true } }}` (26.1+);
+  below that the field stays under the large title (`hideWhenScrolling: false`). Android has Search as a
+  fourth tab (`md="search"` in its navigation bar, Material 3 search bar at root). Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
   `NativeTabs.Trigger` with an `sf` and an `md` icon. On iOS 26 the mini player is the bar's
   `NativeTabs.BottomAccessory` (`AccessoryMiniPlayer`; `usePlacement()` `inline` drops Next) and the bar
   minimizes on scroll down. New Playlist is the Library Playlists `SectionHeader`'s "New" action; `/create`

@@ -55,7 +55,7 @@ const addFavoriteInput = favoriteInput.extend({
   /** A show's perma token, kept beside its id so reading it back is one `show.details` call. */
   linkToken: z
     .string()
-    .regex(/^[\w-]{1,64}$/)
+    .regex(/^[\w,-]{1,64}$/)
     .optional(),
 });
 
@@ -102,7 +102,7 @@ function favoritePatch(
         : op === "remove"
           ? sql`${favorites.podcastTokens} - ${token}`
           : linkToken
-            ? sql`${favorites.podcastTokens} || ${JSON.stringify({ [token]: linkToken })}::jsonb`
+            ? sql`case when ${token} = any(${favorites.podcasts}) or cardinality(${favorites.podcasts}) < ${FAVORITE_MAX_ITEMS} then ${favorites.podcastTokens} || ${JSON.stringify({ [token]: linkToken })}::jsonb else ${favorites.podcastTokens} end`
             : undefined,
   };
 }

@@ -13,6 +13,8 @@ import type { RenderRouterResult } from "expo-router/testing-library";
 import { Platform, Pressable, Text } from "react-native";
 
 import { redirectSystemPath } from "~/app/+native-intent";
+import * as SearchHeaderModule from "~/features/search/search-header";
+import { SearchHeader as AndroidSearchHeader } from "~/features/search/search-header.android";
 import { authClient } from "~/lib/auth-client";
 import { playerStore } from "~/playback/player-store";
 import { signInAs } from "~/test/session-mock";
@@ -57,6 +59,12 @@ describe("app routes", () => {
 
   it.each([
     ["an album", ALBUM_PATH, ["album", "[name]", "[token]"]],
+    ["a song", "/song/fa9la/MjsKfz0DbkE", ["song", "[name]", "[token]"]],
+    [
+      "song credits",
+      "/song/fa9la/MjsKfz0DbkE/credits",
+      ["song", "[name]", "[token]", "credits"],
+    ],
     [
       "a show at a season",
       "/show/the-ranveer-show/2/mXtDJ4Yd2Sw_",
@@ -206,6 +214,19 @@ describe("on Android", () => {
   beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
   afterEach(() => jest.restoreAllMocks());
 
+  it("returns Home from the Search tab's Back button", async () => {
+    jest
+      .spyOn(SearchHeaderModule, "SearchHeader")
+      .mockImplementation(AndroidSearchHeader);
+    const app = await renderRouter("./src/app", { initialUrl: "/radio" });
+    await act(async () => router.navigate("/(tabs)/(search)/search"));
+    await fireEvent.press(
+      (await selectedTab(app)).getByRole("button", { name: "Back" }),
+    );
+    expect(app.getPathname()).toBe("/");
+    expect(app.getSegments()).toEqual(["(tabs)", "(home)"]);
+  });
+
   it("keeps Home's app bar to Settings and Profile", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
@@ -214,6 +235,18 @@ describe("on Android", () => {
     expect(home.queryByRole("button", { name: "Search" })).toBeNull();
     expect(home.getByRole("button", { name: "Sign in" })).toBeOnTheScreen();
     expect(home.queryByRole("button", { name: "Languages" })).toBeNull();
+  });
+
+  it("makes Search a regular fourth tab on Android", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    const tabs = app.container.queryAll(
+      (node) =>
+        typeof node.props.screenKey === "string" && "systemItem" in node.props,
+    );
+    expect(tabs).toHaveLength(4);
+    expect(tabs.some((node) => node.props.systemItem === "search")).toBe(false);
+    expect(tabs.at(-1)?.props.screenKey).toBe("(search)");
   });
 
   it("opens a search link (Google Assistant) in the Search tab with its query", async () => {
@@ -235,7 +268,7 @@ describe("the tab bar", () => {
     ).toHaveLength(0);
   });
 
-  it("uses the native Search role without automatic activation or prominence on iOS", async () => {
+  it("makes Search the system search tab, last, on iOS", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
     const tabs = app.container.queryAll(
@@ -243,23 +276,15 @@ describe("the tab bar", () => {
         typeof node.props.screenKey === "string" && "systemItem" in node.props,
     );
     expect(tabs).toHaveLength(4);
-    expect(tabs.some((node) => node.props.systemItem === "search")).toBe(false);
+    const search = tabs.filter((node) => node.props.systemItem === "search");
+    expect(search).toHaveLength(1);
+    expect(tabs.at(-1)).toBe(search[0]);
     expect(tabs.at(-1)?.props).toMatchObject({
       screenKey: "(search)",
-      title: "Search",
-      iconType: "sfSymbol",
-      iconResourceName: "magnifyingglass",
+      systemItem: "search",
       tabRole: "search",
-      automaticallyActivatesSearch: false,
+      automaticallyActivatesSearch: true,
     });
-
-    const hosts = app.container.queryAll(
-      (node) => node.props.tabBarMinimizeBehavior === "onScrollDown",
-    );
-    expect(hosts.length).toBeGreaterThan(0);
-    for (const host of hosts) {
-      expect(host.props.prominentScreenKey).toBeUndefined();
-    }
   });
 
   it("opens a search link (Siri) in the Search tab with its query on iOS", async () => {
