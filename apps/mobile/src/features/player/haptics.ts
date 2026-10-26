@@ -1,38 +1,13 @@
-import {
-  AndroidHaptics,
-  impactAsync,
-  ImpactFeedbackStyle,
-  performAndroidHapticsAsync,
-  selectionAsync,
-} from "expo-haptics";
-import { Platform } from "react-native";
+import { selection, tap } from "~/lib/haptics";
 
-/** A device without the haptics API rejects: nothing to feel, nothing to report. */
-function feel(ios: () => Promise<void>, android: AndroidHaptics) {
-  const run =
-    Platform.OS === "android" ? () => performAndroidHapticsAsync(android) : ios;
-  run().catch(() => {});
-}
-
-/**
- * The player's haptics. shortcut: local to the player until a shared
- * `lib/haptics` exists; move these onto it then.
- */
+/** The player's haptics, on the app's shared intents (`lib/haptics`). */
 export const playerHaptics = {
   /** Play, pause, next, previous, and a swipe that changed the song. */
-  press: () =>
-    feel(
-      () => impactAsync(ImpactFeedbackStyle.Light),
-      AndroidHaptics.Virtual_Key,
-    ),
+  press: tap,
   /** The seek slider crossing a step while dragged. */
-  tick: () => feel(selectionAsync, AndroidHaptics.Segment_Tick),
+  tick: selection,
   /** The seek slider let go. */
-  release: () =>
-    feel(
-      () => impactAsync(ImpactFeedbackStyle.Light),
-      AndroidHaptics.Clock_Tick,
-    ),
+  release: tap,
 };
 
 /** The seek slider ticks once per this share of the track. */
