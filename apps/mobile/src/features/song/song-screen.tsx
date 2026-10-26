@@ -16,6 +16,7 @@ import type {
 import { useQuery } from "@tanstack/react-query";
 import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
+import Animated from "react-native-reanimated";
 
 import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
@@ -24,6 +25,7 @@ import { SecondaryShelf } from "~/components/secondary-shelf";
 import { SectionHeader } from "~/components/section-header";
 import { Shelf } from "~/components/shelf";
 import {
+  CONTENT_REVEAL,
   EntityHeaderSkeleton,
   LyricsSkeleton,
   SectionHeaderSkeleton,
@@ -188,10 +190,10 @@ function MoreFromAlbum({ song, albumUrl }: MoreFromAlbumProps) {
   if (rows.length === 0) return null;
 
   return (
-    <>
+    <Animated.View entering={CONTENT_REVEAL} testID="more-from-album-reveal">
       <SectionHeader title={`More from ${song.album ?? "the album"}`} />
       <TrackList rows={rows} />
-    </>
+    </Animated.View>
   );
 }
 
