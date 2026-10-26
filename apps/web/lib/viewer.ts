@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import { getUser } from "~/lib/auth";
@@ -27,3 +28,14 @@ export const getViewer = cache(async (): Promise<Viewer> => {
 
   return { user, playlists, favorites };
 });
+
+/**
+ * The signed-in user, or a redirect to /login. The proxy only checks that a
+ * session cookie exists, so a stale one reaches the page: call this first in
+ * every page that reads the library, before its UNAUTHORIZED can hit error.tsx.
+ */
+export async function requireUser() {
+  const { user } = await getViewer();
+  if (!user) redirect("/login");
+  return user;
+}

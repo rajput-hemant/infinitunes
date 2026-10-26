@@ -1,13 +1,12 @@
 import { buttonVariants } from "@infinitunes/ui/components/button";
 import { Pencil } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import type { ReactNode } from "react";
 
 import { UserAvatar } from "~/components/user-avatar";
-import { getUser } from "~/lib/auth";
 import { controlStyles } from "~/lib/control-styles";
+import { requireUser } from "~/lib/viewer";
 
 import { LogoutButton } from "./_components/logout";
 import { Navbar } from "./_components/navbar";
@@ -23,10 +22,7 @@ type LibraryLayoutProps = {
  * that a session cookie exists; a stale one is sent to /login from here.
  */
 async function ProfileHeader() {
-  const user = await getUser();
-  if (!user) {
-    redirect("/login");
-  }
+  const user = await requireUser();
 
   return (
     <header className="flex flex-wrap items-center gap-5">

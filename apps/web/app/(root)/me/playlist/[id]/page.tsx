@@ -24,6 +24,7 @@ import { SongList } from "~/components/song-list/song-list";
 import { controlStyles } from "~/lib/control-styles";
 import { getPlaylistDetails } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
+import { requireUser } from "~/lib/viewer";
 
 type PlaylistPageProps = {
   params: Promise<{
@@ -65,6 +66,7 @@ export async function generateMetadata({
 }
 
 export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
+  await requireUser();
   const { id } = await params;
 
   const playlist = await getPlaylist(id);

@@ -8,6 +8,9 @@ mock.module("server-only", () => ({}));
 mock.module("next/navigation", () => ({
   unstable_rethrow: () => {},
   notFound: () => {},
+  redirect: (to: string) => {
+    throw new Error(`redirect:${to}`);
+  },
 }));
 mock.module("~/lib/auth", () => ({ getUser: async () => user }));
 mock.module("~/lib/db/queries", () => ({
@@ -15,7 +18,7 @@ mock.module("~/lib/db/queries", () => ({
   getUserFavorites: () => favorites(),
 }));
 
-const { getViewer } = await import("../../lib/viewer");
+const { getViewer, requireUser } = await import("../../lib/viewer");
 
 beforeEach(() => {
   user = undefined;
@@ -69,5 +72,16 @@ describe("getViewer", () => {
     } finally {
       console.error = errors;
     }
+  });
+});
+
+describe("requireUser", () => {
+  it("redirects a null session to /login", async () => {
+    await expect(requireUser()).rejects.toThrow("redirect:/login");
+  });
+
+  it("returns the user", async () => {
+    user = { id: "u2" };
+    expect(await requireUser()).toEqual({ id: "u2" });
   });
 });
