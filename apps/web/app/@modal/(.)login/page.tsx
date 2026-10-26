@@ -14,6 +14,7 @@ export default function LoginModal() {
     <AuthModal
       title="Welcome back"
       description="Log in to sync your library across devices."
+      footer="signup"
     >
       <LoginForm />
     </AuthModal>

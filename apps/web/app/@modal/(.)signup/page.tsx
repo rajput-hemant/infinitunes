@@ -14,6 +14,7 @@ export default function SignUpModal() {
     <AuthModal
       title="Create your account"
       description="Free forever. No credit card needed."
+      footer="login"
     >
       <SignUpForm />
     </AuthModal>

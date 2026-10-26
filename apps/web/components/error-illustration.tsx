@@ -8,7 +8,7 @@ export function ErrorIllustration() {
         src="/images/searching-duck.gif"
         width={100}
         height={100}
-        alt="Searching Duck"
+        alt=""
         className="size-28 object-cover drop-shadow-sm motion-reduce:hidden"
       />
 

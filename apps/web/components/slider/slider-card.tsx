@@ -106,7 +106,7 @@ export function SliderCard(props: SliderCardProps) {
           fallback={getPlaceholderSrc(type)}
           width={200}
           height={200}
-          alt={name}
+          alt=""
           loading={priority ? "eager" : undefined}
           fetchPriority={priority ? "high" : undefined}
           className={cn(

@@ -1,8 +1,8 @@
 import { uniqueBy } from "@infinitunes/types";
 import { Skeleton } from "@infinitunes/ui/components/skeleton";
 
-import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
-import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
+import { CatalogHeader } from "~/components/catalog/catalog-header";
+import { CatalogGridSkeleton } from "~/components/catalog/catalog-skeleton";
 import { KeyedByParams } from "~/components/search-params-boundary";
 import { Shelf } from "~/components/slider/shelf";
 import { ShelfItem } from "~/components/slider/shelf-item";

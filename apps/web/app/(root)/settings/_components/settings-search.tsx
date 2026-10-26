@@ -159,7 +159,10 @@ export function SettingsSearchField({ className }: { className?: string }) {
 
 /** What the last theme change did: saving, or saved. Appearance saves as you change it. */
 export function SettingsSaveStatus({ className }: { className?: string }) {
-  const { isSaving } = useThemeConfig();
+  const { isSaving, changed } = useThemeConfig();
+
+  // Nothing is shown until the appearance has changed: a first paint is not a save.
+  if (!isSaving && !changed) return null;
 
   return (
     <GlassSurface

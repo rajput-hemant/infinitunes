@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useKeydown } from "~/hooks/use-keydown";
 
@@ -38,18 +38,24 @@ export function useSearchPaletteKeys(options: SearchPaletteKeysOptions) {
     setIndex(0);
   }
 
+  // The selected index is read through a ref so the observer below is not
+  // recreated on every arrow key; `syncRef` re-applies it when the index moves.
+  const indexRef = useRef(index);
+  const syncRef = useRef<() => void>(() => {});
+
   // Options mount after this hook (portal, results, streamed server rows), so the DOM is watched.
   useEffect(() => {
     if (!enabled) return;
     const sync = () => {
       const rows = getOptions(listboxId);
-      const selected = Math.min(index, rows.length - 1);
+      const selected = Math.min(indexRef.current, rows.length - 1);
       setRowCount(rows.length);
       rows.forEach((row, i) => {
         row.id = `${listboxId}-option-${i}`;
         row.setAttribute("aria-selected", String(i === selected));
       });
     };
+    syncRef.current = sync;
     sync();
 
     let observer: MutationObserver | undefined;
@@ -67,7 +73,13 @@ export function useSearchPaletteKeys(options: SearchPaletteKeysOptions) {
     };
     watch();
     return () => observer?.disconnect();
-  }, [enabled, listboxId, index]);
+  }, [enabled, listboxId]);
+
+  // Declared after the observer effect, so it runs once that effect has set `syncRef`.
+  useEffect(() => {
+    indexRef.current = index;
+    if (enabled) syncRef.current();
+  }, [enabled, index]);
 
   useKeydown((event) => {
     const input = event.target;

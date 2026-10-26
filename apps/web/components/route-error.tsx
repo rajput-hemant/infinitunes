@@ -68,7 +68,7 @@ export function RouteError(props: RouteErrorProps) {
           onClick={() => retry()}
           className={cn(controlStyles.text, "mt-2")}
         >
-          <RefreshCw className="mr-2 size-4" />
+          <RefreshCw className="mr-2 size-4" aria-hidden="true" />
           Try again
         </Button>
       </GlassSurface>

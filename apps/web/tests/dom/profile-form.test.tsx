@@ -56,11 +56,15 @@ async function mount() {
 }
 
 describe("profile form accessibility", () => {
-  it("shows the account initial and a non-submitting Change avatar action", async () => {
+  it("shows the account initial and no dead Change avatar control", async () => {
     const container = await mount();
 
-    expect(findButton(container, "Change avatar").type).toBe("button");
     expect(container.textContent).toContain("A");
+    expect(
+      [...container.querySelectorAll("button")].some((b) =>
+        b.textContent?.includes("Change avatar"),
+      ),
+    ).toBe(false);
   });
 
   it("associates every visible label with its input", async () => {

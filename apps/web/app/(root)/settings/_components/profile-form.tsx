@@ -43,7 +43,6 @@ type ProfileFormProps = {
 
 const inputClass = cn(controlStyles.textLg, controlStyles.flatInput);
 const labelClass = "text-[0.8125rem] leading-5 font-semibold";
-const squareButtonClass = cn(controlStyles.text, controlStyles.squareButton);
 const primaryButtonClass = cn(
   controlStyles.text,
   "rounded-sm px-3 font-semibold",
@@ -192,16 +191,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
                   initial
                 )}
               </div>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={() =>
-                  toast.info("Avatar uploads are not available yet.")
-                }
-                className={squareButtonClass}
-              >
-                Change avatar
-              </Button>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
