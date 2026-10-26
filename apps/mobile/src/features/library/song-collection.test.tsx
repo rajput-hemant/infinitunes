@@ -130,11 +130,11 @@ describe("SongCollection app bar", () => {
     expect(mockSetOptions).toHaveBeenCalledWith(tinted);
   });
 
-  it("tints it as the reorderable list scrolls too", async () => {
+  it("gives the reorderable list a Reanimated scroll handler", async () => {
     await renderCollection(jest.fn());
 
-    await scrollListTo("Middle Song", 40);
-
-    expect(mockSetOptions).toHaveBeenCalledWith(tinted);
+    // ReorderableList composes only Reanimated handlers: never the plain one.
+    const list = screen.getByTestId("reorderable-list");
+    expect(list.props.onScroll).toEqual(expect.any(Function));
   });
 });

@@ -3,7 +3,12 @@ import { FlashList } from "@shopify/flash-list";
 import { useState } from "react";
 import type { ReactElement } from "react";
 import { Platform, View } from "react-native";
+import {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from "react-native-reanimated";
 import ReorderableList from "react-native-reorderable-list";
+import { scheduleOnRN } from "react-native-worklets";
 
 import type { ReorderActions } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
@@ -15,7 +20,11 @@ import { PullToRefresh } from "~/components/ui/refresh-control";
 import { SkeletonBlock } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
-import { useScrolledBar } from "~/navigation/use-scrolled-bar";
+import {
+  crossesBar,
+  useScrolledBar,
+  useScrolledBarSetter,
+} from "~/navigation/use-scrolled-bar";
 import { playAll, playFrom, shuffleAll } from "~/playback/play-collection";
 
 import { FilterField, FilterHeader } from "./song-filter";
@@ -69,6 +78,15 @@ export function SongCollection({
   header,
 }: SongCollectionProps) {
   const scrolledBar = useScrolledBar();
+  // ReorderableList composes only Reanimated handlers, so its bar tint runs
+  // from a worklet that crosses to JS on a change alone.
+  const setBarUnder = useScrolledBarSetter();
+  const barUnder = useSharedValue(false);
+  const reorderableScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      crossesBar(event.contentOffset.y, barUnder, setBarUnder, scheduleOnRN);
+    },
+  });
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SongSort>("recent");
   const shown = orderSongs(songs, query, sort);
@@ -159,7 +177,6 @@ export function SongCollection({
     contentContainerStyle: { paddingBottom: playerDockInset },
     keyboardShouldPersistTaps: "handled" as const,
     refreshControl: <PullToRefresh onRefresh={onRefresh} />,
-    ...scrolledBar,
   };
 
   return (
@@ -170,11 +187,12 @@ export function SongCollection({
         // so typing never remounts it or loses the scroll position.
         <ReorderableList
           {...listProps}
+          onScroll={reorderableScroll}
           dragEnabled={reorderable}
           onReorder={({ from, to }) => move(from, to)}
         />
       ) : (
-        <FlashList {...listProps} />
+        <FlashList {...listProps} {...scrolledBar} />
       )}
     </>
   );

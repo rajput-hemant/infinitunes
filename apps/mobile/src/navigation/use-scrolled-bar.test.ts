@@ -4,7 +4,7 @@ import type { NativeScrollEvent, NativeSyntheticEvent } from "react-native";
 
 import { colors } from "~/theme/tokens";
 
-import { useScrolledBar } from "./use-scrolled-bar";
+import { crossesBar, useScrolledBar } from "./use-scrolled-bar";
 
 const mockSetOptions = jest.fn();
 jest.mock("expo-router", () => ({
@@ -46,5 +46,28 @@ describe("useScrolledBar", () => {
     const { result } = await renderHook(() => useScrolledBar());
 
     expect(result.current).toEqual({});
+  });
+});
+
+describe("crossesBar", () => {
+  const run = (fn: (under: boolean) => void, under: boolean) => fn(under);
+
+  it("tints once the content goes under the bar and clears it at the top", () => {
+    const set = jest.fn();
+    const last = { value: false };
+
+    crossesBar(40, last, set, run);
+    crossesBar(80, last, set, run);
+    crossesBar(0, last, set, run);
+
+    expect(set.mock.calls).toEqual([[true], [false]]);
+  });
+
+  it("does nothing without a setter (iOS)", () => {
+    const schedule = jest.fn();
+
+    crossesBar(40, { value: false }, undefined, schedule);
+
+    expect(schedule).not.toHaveBeenCalled();
   });
 });
