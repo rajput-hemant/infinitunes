@@ -3,7 +3,9 @@
 // Every deep link here is routed by the app itself (`src/app/+native-intent.tsx`
 // and the expo-router tree); this file only emits them.
 
-export const DEEP_LINK_SCHEME = "infinitunes";
+import { NATIVE_APP_SCHEME } from "@infinitunes/auth/native-app";
+
+export const DEEP_LINK_SCHEME = NATIVE_APP_SCHEME;
 
 export const LINKS = {
   resume: `${DEEP_LINK_SCHEME}://action/resume`,
