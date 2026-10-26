@@ -4,7 +4,9 @@ import {
   betterAuthAccounts,
   betterAuthSessions,
   favorites,
+  infinitunesPasskeys,
   myPlaylists,
+  recentlyPlayed,
   users,
 } from "@infinitunes/db/schema";
 import { USER_NAME_MAX } from "@infinitunes/types";
@@ -250,14 +252,6 @@ async function confirmIdentity(
   ) {
     throw new TRPCError({ code: "FORBIDDEN", message: REAUTH_MESSAGE });
   }
-}
-
-/** The Postgres error code under a Drizzle query error, e.g. `23505`. */
-function pgErrorCode(error: unknown): unknown {
-  const cause = error instanceof Error ? error.cause : undefined;
-  return typeof cause === "object" && cause !== null && "code" in cause
-    ? cause.code
-    : undefined;
 }
 
 type PlaylistCtx = { db: TRPCContext["db"]; session: NonNullable<Session> };
@@ -656,24 +650,22 @@ export const userRouter = router({
     .mutation(async ({ ctx, input }) => {
       await confirmIdentity(ctx, input.password);
 
-      try {
-        const [deletedUser] = await ctx.db
-          .delete(users)
-          .where(eq(users.id, ctx.session.user.id))
-          .returning({ id: users.id });
+      const userId = ctx.session.user.id;
+      await ctx.db.transaction(async (tx) => {
+        await tx.delete(favorites).where(eq(favorites.userId, userId));
+        await tx.delete(myPlaylists).where(eq(myPlaylists.userId, userId));
+        await tx
+          .delete(recentlyPlayed)
+          .where(eq(recentlyPlayed.userId, userId));
+        await tx
+          .delete(infinitunesPasskeys)
+          .where(eq(infinitunesPasskeys.userId, userId));
+        // Shared sessions have no app marker; revocation also signs out Lipi.
+        await tx
+          .delete(betterAuthSessions)
+          .where(eq(betterAuthSessions.userId, userId));
+      });
 
-        return deletedUser;
-      } catch (error) {
-        // The `user` row is shared with Lipi: a row there that references it
-        // (foreign key violation) blocks the delete.
-        if (pgErrorCode(error) === "23503") {
-          throw new TRPCError({
-            code: "CONFLICT",
-            message:
-              "This account is also used by another app, so it can't be deleted here",
-          });
-        }
-        throw error;
-      }
+      return { id: userId };
     }),
 });

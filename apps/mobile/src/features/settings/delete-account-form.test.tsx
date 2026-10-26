@@ -28,6 +28,19 @@ beforeEach(() => {
 });
 
 describe("DeleteAccountForm", () => {
+  it("explains the Infinitunes-only deletion and shared sign-out", async () => {
+    await renderScreen(<DeleteAccountForm />);
+    expect(
+      screen.getByText(
+        /Infinitunes library \(likes, playlists, history and passkeys\)/,
+      ),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByText(
+        /Your account in other apps stays, though you'll be signed out there too/,
+      ),
+    ).toBeOnTheScreen();
+  });
   it("stays disabled until the confirmation phrase is typed exactly", async () => {
     await renderScreen(<DeleteAccountForm />);
     expect(deleteButton()).toBeDisabled();
@@ -43,7 +56,7 @@ describe("DeleteAccountForm", () => {
     expect(procedure("user.deleteUser")).not.toHaveBeenCalled();
   });
 
-  it("deletes the account, signs out and forgets the library", async () => {
+  it("deletes the Infinitunes library, signs out and forgets local data", async () => {
     await renderScreen(<DeleteAccountForm />);
 
     await fireEvent.changeText(

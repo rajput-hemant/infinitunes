@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "bun:test";
 
 import type { DbClient } from "@infinitunes/db/client";
+import * as schema from "@infinitunes/db/schema";
 import { users } from "@infinitunes/db/schema";
 import { hash } from "bcryptjs";
 import { getTableName, type SQL } from "drizzle-orm";
@@ -23,6 +24,7 @@ type Write = {
   params?: unknown[];
   transaction: boolean;
 };
+type StoredRow = { table: string; userId: string; id: string };
 const state = {
   row: undefined as (Lists & { userId: string }) | undefined,
   returned: [] as (Lists & { userId: string })[],
@@ -32,6 +34,8 @@ const state = {
   deleteError: undefined as Error | undefined,
   conflict: undefined as Record<string, SQL | undefined> | undefined,
   inTransaction: false,
+  storedRows: [] as StoredRow[],
+  failDeleteTable: undefined as string | undefined,
 };
 const dialect = new PgDialect();
 const fakeDb = {
@@ -77,10 +81,25 @@ const fakeDb = {
   }),
   delete: (table: Parameters<typeof getTableName>[0]) => ({
     where: (where: SQL) => {
-      if (state.deleteError) throw state.deleteError;
+      const name = getTableName(table);
+      if (
+        state.deleteError &&
+        (!state.failDeleteTable || state.failDeleteTable === name)
+      ) {
+        throw state.deleteError;
+      }
+      const { params, sql } = dialect.sqlToQuery(where);
+      if (state.storedRows.length) {
+        expect(sql).toBe(
+          `"${name}"."${name === "user" ? "id" : "userId"}" = $1`,
+        );
+      }
+      state.storedRows = state.storedRows.filter(
+        (row) => row.table !== name || row.userId !== params[0],
+      );
       state.writes.push({
-        table: getTableName(table),
-        params: dialect.sqlToQuery(where).params,
+        table: name,
+        params,
         transaction: state.inTransaction,
       });
       return Object.assign(Promise.resolve(), {
@@ -90,11 +109,13 @@ const fakeDb = {
   }),
   transaction: async (fn: (tx: unknown) => Promise<unknown>) => {
     const before = [...state.writes];
+    const rowsBefore = [...state.storedRows];
     state.inTransaction = true;
     try {
       return await fn(fakeDb);
     } catch (error) {
       state.writes = before;
+      state.storedRows = rowsBefore;
       throw error;
     } finally {
       state.inTransaction = false;
@@ -119,6 +140,8 @@ beforeEach(() => {
   state.deleteError = undefined;
   state.conflict = undefined;
   state.inTransaction = false;
+  state.storedRows = [];
+  state.failDeleteTable = undefined;
 });
 
 describe("favorite bounds and empty accounts", () => {
@@ -222,17 +245,53 @@ describe("favorite bounds and empty accounts", () => {
 });
 
 describe("account security mutations", () => {
-  it("maps a foreign-key deletion failure to CONFLICT", async () => {
-    const foreignKey = Object.assign(new Error("foreign key detail"), {
-      code: "23503",
-    });
-    state.deleteError = new Error("Drizzle query failed", {
-      cause: foreignKey,
-    });
-    await expect(caller().deleteUser({})).rejects.toMatchObject({
-      code: "CONFLICT",
-      message: expect.stringContaining("another app"),
-    });
+  const ownedTables = Object.values(schema).filter(
+    (table) =>
+      getTableName(table).startsWith("infinitunes_") && "userId" in table,
+  );
+  const ownedNames = ownedTables.map((table) => getTableName(table));
+  const clearedNames = [...ownedNames, "better_auth_session"];
+  const seedDeletionRows = () => {
+    state.storedRows = [
+      ...clearedNames,
+      "user",
+      "better_auth_account",
+      "lipi_document",
+      "infinitunes_rate_limit",
+    ].flatMap((table) =>
+      ["u", "other-user"].flatMap((userId) =>
+        ["1", "2"].map((id) => ({ table, userId, id: `${userId}-${id}` })),
+      ),
+    );
+    return [...state.storedRows];
+  };
+
+  it("clears only the user's Infinitunes data and all shared sessions in one transaction", async () => {
+    const before = seedDeletionRows();
+
+    expect(await caller().deleteUser({})).toEqual({ id: "u" });
+
+    expect(state.storedRows).toEqual(
+      before.filter(
+        (row) => row.userId !== "u" || !clearedNames.includes(row.table),
+      ),
+    );
+    expect(state.writes.map((write) => write.table).sort()).toEqual(
+      [...clearedNames].sort(),
+    );
+    expect(state.writes.at(-1)?.table).toBe("better_auth_session");
+    expect(state.writes.every((write) => write.transaction)).toBe(true);
+    for (const write of state.writes) expect(write.params).toEqual(["u"]);
+  });
+  it("rolls back the library deletion when session revocation fails", async () => {
+    const before = seedDeletionRows();
+    state.deleteError = new Error("offline");
+    state.failDeleteTable = "better_auth_session";
+
+    await expect(caller().deleteUser({})).rejects.toThrow("offline");
+
+    expect(state.storedRows).toEqual(before);
+    expect(state.writes).toEqual([]);
   });
   it("preserves unrelated delete failures", async () => {
     state.deleteError = new Error("offline");

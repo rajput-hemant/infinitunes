@@ -17,7 +17,7 @@ import { mutationFailure } from "./mutation-failure";
 export const DELETE_CONFIRMATION = "DELETE MY ACCOUNT";
 
 /**
- * Permanently deletes the account and everything saved to it. Accounts with
+ * Permanently removes the Infinitunes library and sessions. Accounts with
  * a password enter it; passkey or OAuth accounts leave it blank if they
  * signed in recently, and the server says when they must sign in again.
  */
@@ -46,10 +46,11 @@ export function DeleteAccountForm() {
   return (
     <FormScreen>
       <Text tone="muted">
-        Once you delete your account, there is no going back: your profile,
-        likes and playlists are removed. Accounts without a password (passkey or
-        OAuth) can leave the password blank if they signed in within the last 10
-        minutes; otherwise sign in again first.
+        This permanently removes your Infinitunes library (likes, playlists,
+        history and passkeys) and signs you out. Your account in other apps
+        stays, though you'll be signed out there too. Accounts without a
+        password (passkey or OAuth) can leave the password blank if they signed
+        in within the last 10 minutes; otherwise sign in again first.
       </Text>
       <PasswordField
         ref={passwordInput}

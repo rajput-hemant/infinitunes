@@ -1,12 +1,7 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 import { db } from "@infinitunes/db";
-import {
-  betterAuthAccounts,
-  betterAuthSessions,
-  myPlaylists,
-  users,
-} from "@infinitunes/db/schema";
+import { betterAuthAccounts, myPlaylists, users } from "@infinitunes/db/schema";
 import { compare, hash } from "bcryptjs";
 import { getTableName } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
@@ -133,7 +128,7 @@ const fakeDb = {
       },
     }),
   }),
-  delete: (table: typeof betterAuthSessions | typeof users) => ({
+  delete: (table: Parameters<typeof getTableName>[0]) => ({
     where: (where: Parameters<PgDialect["sqlToQuery"]>[0]) => {
       const { params } = new PgDialect().sqlToQuery(where);
       state.deletes.push({ table: getTableName(table), where: params });
@@ -734,13 +729,21 @@ describe("user router authorization", () => {
       };
     });
 
-    it("deletes the account with a session created inside the window", async () => {
+    it("deletes the Infinitunes library with a session created inside the window", async () => {
       const deleted = await sessionAge(
         FRESH_SESSION_MS - 60_000,
       ).user.deleteUser({});
 
       expect(deleted).toMatchObject({ id: "user-123" });
-      expect(state.deletes).toEqual([{ table: "user", where: ["user-123"] }]);
+      expect(state.deletes).toEqual(
+        [
+          "infinitunes_favorite",
+          "infinitunes_playlist",
+          "infinitunes_recently_played",
+          "infinitunes_passkey",
+          "better_auth_session",
+        ].map((table) => ({ table, where: ["user-123"] })),
+      );
     });
 
     it("asks to sign in again with an older session", async () => {
@@ -834,7 +837,7 @@ describe("user router authorization", () => {
       signedIn().user.deleteUser({ password: "WrongPassword1!" }),
     ).rejects.toMatchObject({ message: "Current password is incorrect" });
     await signedIn().user.deleteUser({ password: "CurrentPassword1!" });
-    expect(state.deletes).toHaveLength(1);
+    expect(state.deletes).toHaveLength(5);
   });
 
   it("requires a password to delete the account", async () => {
@@ -852,7 +855,7 @@ describe("user router authorization", () => {
     expect(state.deletes).toHaveLength(0);
   });
 
-  it("deletes the account when the password matches", async () => {
+  it("deletes the Infinitunes library when the password matches", async () => {
     await seedPasswordUser();
 
     const deleted = await signedIn().user.deleteUser({
@@ -860,7 +863,15 @@ describe("user router authorization", () => {
     });
 
     expect(deleted).toMatchObject({ id: "user-123" });
-    expect(state.deletes).toEqual([{ table: "user", where: ["user-123"] }]);
+    expect(state.deletes).toEqual(
+      [
+        "infinitunes_favorite",
+        "infinitunes_playlist",
+        "infinitunes_recently_played",
+        "infinitunes_passkey",
+        "better_auth_session",
+      ].map((table) => ({ table, where: ["user-123"] })),
+    );
   });
 
   it("requires the current password to change the email", async () => {
