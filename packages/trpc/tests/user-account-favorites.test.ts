@@ -255,6 +255,33 @@ describe("favorite bounds and empty accounts", () => {
       await caller().addToFavorites({ type: "song", token: "song-4999" }),
     ).toEqual(state.returned);
   });
+  it("guards show metadata with the same capacity check as the favorite list", async () => {
+    state.returned = [
+      {
+        userId: "u",
+        ...emptyLists(),
+        podcasts: Array.from({ length: 5000 }, (_, i) => `old-${i}`),
+      },
+    ];
+    await expect(
+      caller().addToFavorites({
+        type: "show",
+        token: "new",
+        linkToken: "new-token",
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    const patch = state.conflict?.podcastTokens;
+    if (!patch) throw new Error("Missing podcastTokens SQL");
+    const query = dialect.sqlToQuery(patch);
+    expect(query.sql).toMatch(
+      /case when .* = any\(.*\) or cardinality\(.*\) < \$\d+ then .* \|\| .* else .* end/,
+    );
+    expect(query.params).toEqual([
+      "new",
+      5000,
+      JSON.stringify({ new: "new-token" }),
+    ]);
+  });
 });
 
 describe("account security mutations", () => {
