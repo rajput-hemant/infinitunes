@@ -8,6 +8,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { Text } from "~/components/ui/text";
+import { selection } from "~/lib/haptics";
 import { springs } from "~/theme/motion";
 import { sizes, space } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
@@ -54,7 +55,10 @@ export function SegmentedTabs<Tab extends string>({
           selected={tab === value}
           first={index === 0}
           last={index === tabs.length - 1}
-          onPress={() => onChange(tab)}
+          onPress={() => {
+            if (tab !== value) selection();
+            onChange(tab);
+          }}
         />
       ))}
     </View>

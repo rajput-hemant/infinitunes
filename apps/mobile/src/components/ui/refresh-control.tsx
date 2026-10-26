@@ -3,6 +3,7 @@ import { RefreshControl } from "react-native";
 import type { RefreshControlProps } from "react-native";
 
 import { reportFailure } from "~/lib/failure";
+import { tap } from "~/lib/haptics";
 import { usePalette } from "~/theme/use-palette";
 
 type PullToRefreshProps = Omit<
@@ -28,6 +29,7 @@ export function PullToRefresh({ onRefresh, ...props }: PullToRefreshProps) {
   const [refreshing, setRefreshing] = useState(false);
 
   async function refresh() {
+    tap();
     setRefreshing(true);
     try {
       await onRefresh().catch(reportFailure("Couldn't refresh."));

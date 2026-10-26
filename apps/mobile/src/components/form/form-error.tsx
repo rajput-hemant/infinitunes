@@ -6,6 +6,7 @@ import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { announce } from "~/lib/announce";
 import { cx } from "~/lib/class-names";
+import { reject } from "~/lib/haptics";
 import { usePalette } from "~/theme/use-palette";
 
 import type { TextInputHandle } from "./form-field";
@@ -19,7 +20,10 @@ import type { TextInputHandle } from "./form-field";
 export function FormError({ message }: { message?: string }) {
   const palette = usePalette();
   useEffect(() => {
-    if (message) announce(message);
+    if (message) {
+      announce(message);
+      reject();
+    }
   }, [message]);
   if (!message) return null;
   return (

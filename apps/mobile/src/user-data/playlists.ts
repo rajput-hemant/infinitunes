@@ -13,6 +13,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 
 import { reportFailure } from "~/lib/failure";
+import { confirm } from "~/lib/haptics";
 import { queryClient } from "~/lib/query-client";
 import { trpc, trpcClient } from "~/lib/trpc";
 
@@ -130,6 +131,7 @@ export function createPlaylist(details: PlaylistDetails) {
   createPlaylistOptimistic(details, () =>
     trpcClient.user.createNewPlaylist.mutate(details),
   )
+    .then(confirm)
     .catch(reportFailure("Couldn't create the playlist."))
     .finally(() => void refreshPlaylists());
 }
@@ -160,6 +162,7 @@ function addSongIds(playlist: Playlist, ids: readonly string[]) {
       songs: [...ids],
     }),
   )
+    .then(confirm)
     .catch(reportFailure(`Couldn't add to ${playlist.name}.`))
     .finally(() => void refreshPlaylists());
 }

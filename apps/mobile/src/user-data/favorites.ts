@@ -9,9 +9,9 @@ import {
   useFavorite,
 } from "@infinitunes/core/react/optimistic-favorite";
 import { useQuery } from "@tanstack/react-query";
-import { impactAsync, ImpactFeedbackStyle } from "expo-haptics";
 
 import { showFailure } from "~/lib/failure";
+import { confirm, tap } from "~/lib/haptics";
 import { queryClient } from "~/lib/query-client";
 import { trpc, trpcClient } from "~/lib/trpc";
 
@@ -110,7 +110,9 @@ export function useFavoriteToggle({ type, token }: FavoriteToggleOptions) {
     }
     // Unknown liked state: a write would toggle blindly.
     if (known === undefined) return undefined;
-    void impactAsync(ImpactFeedbackStyle.Light);
+    // Liking is the success; unliking a plain tap.
+    if (liked) tap();
+    else confirm();
     toggleFavorite({
       key,
       serverLiked,

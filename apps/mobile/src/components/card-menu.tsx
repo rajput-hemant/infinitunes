@@ -1,6 +1,5 @@
 import type { MenuComponentRef } from "@expo/ui/community/menu";
 import type { MediaType } from "@infinitunes/types";
-import { AndroidHaptics, performAndroidHapticsAsync } from "expo-haptics";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
@@ -8,6 +7,7 @@ import type { ComponentProps, ReactElement } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 import type { AccessibilityActionEvent } from "react-native";
 
+import { longPress } from "~/lib/haptics";
 import { isPlayable, playEntity, queueEntity } from "~/playback/play-entity";
 
 import { NativeMenu } from "./native-menu";
@@ -150,7 +150,7 @@ function AndroidCardLink({ href, name, entries, children }: CardLinkProps) {
   }, [requested, menu]);
 
   function open() {
-    void performAndroidHapticsAsync(AndroidHaptics.Long_Press);
+    longPress();
     if (menu) menu.show();
     else setRequested(true);
   }

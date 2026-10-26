@@ -20,6 +20,25 @@ Dimensions.set({ window: phone, screen: phone });
 
 jest.mock("expo-file-system", () => require("~/test/expo-file-system"));
 jest.mock("expo-sharing", () => ({ shareAsync: jest.fn() }));
+// Haptics have no engine under Jest; suites assert on the calls.
+jest.mock("expo-haptics", () => ({
+  AndroidHaptics: {
+    Virtual_Key: "virtual-key",
+    Segment_Tick: "segment-tick",
+    Toggle_On: "toggle-on",
+    Toggle_Off: "toggle-off",
+    Confirm: "confirm",
+    Reject: "reject",
+    Long_Press: "long-press",
+    Gesture_Start: "gesture-start",
+  },
+  ImpactFeedbackStyle: { Light: "light", Medium: "medium", Rigid: "rigid" },
+  NotificationFeedbackType: { Success: "success", Error: "error" },
+  impactAsync: jest.fn(() => Promise.resolve()),
+  notificationAsync: jest.fn(() => Promise.resolve()),
+  selectionAsync: jest.fn(() => Promise.resolve()),
+  performAndroidHapticsAsync: jest.fn(() => Promise.resolve()),
+}));
 
 jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
 jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));

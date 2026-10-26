@@ -7,6 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
+import { tap } from "~/lib/haptics";
 import { usePressScale } from "~/lib/use-press-scale";
 import { springs } from "~/theme/motion";
 import { sizes } from "~/theme/tokens";
@@ -84,6 +85,15 @@ export function IconButton(props: IconButtonProps) {
   );
 }
 
+/** The press handler: a tap, then the action (nothing while busy). */
+function pressWith(onPress: () => void, busy: boolean) {
+  if (busy) return undefined;
+  return () => {
+    tap();
+    onPress();
+  };
+}
+
 function SymbolButton({
   icon,
   label,
@@ -110,7 +120,7 @@ function SymbolButton({
   const tonal = selected && !container;
   const button = (
     <Pressable
-      onPress={busy ? undefined : onPress}
+      onPress={pressWith(onPress, busy)}
       onPressIn={ios ? press.onPressIn : undefined}
       onPressOut={ios ? press.onPressOut : undefined}
       disabled={disabled}
@@ -197,7 +207,7 @@ function MaterialIconButton({
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
   return (
     <AnimatedPressable
-      onPress={busy ? undefined : onPress}
+      onPress={pressWith(onPress, busy)}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={label}

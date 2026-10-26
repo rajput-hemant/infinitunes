@@ -1,10 +1,10 @@
 import type { FavoriteType } from "@infinitunes/core/favorites";
 import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
-import { impactAsync } from "expo-haptics";
 import { Pressable, Text } from "react-native";
 
 import { FailureSnackbar } from "~/components/failure-snackbar";
+import { confirm } from "~/lib/haptics";
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure, trpcError } from "~/test/trpc-mock";
@@ -13,10 +13,7 @@ import { deferred, favoritesRow } from "~/test/user-library";
 import { useFavoriteLists, useFavoriteToggle } from "./favorites";
 import { useOptimisticOwner } from "./session";
 
-jest.mock("expo-haptics", () => ({
-  impactAsync: jest.fn(),
-  ImpactFeedbackStyle: { Light: "light" },
-}));
+jest.mock("~/lib/haptics");
 
 type HeartProps = { type?: FavoriteType; token?: string };
 
@@ -85,7 +82,7 @@ describe("useFavoriteToggle", () => {
 
     expect(heart()).toBe("liked");
     expect(add()).toHaveBeenCalledWith({ type: "song", token: "BSaNI3Yr" });
-    expect(impactAsync).toHaveBeenCalledTimes(1);
+    expect(confirm).toHaveBeenCalledTimes(1);
 
     await act(async () => write.resolve([]));
     expect(heart()).toBe("liked");
