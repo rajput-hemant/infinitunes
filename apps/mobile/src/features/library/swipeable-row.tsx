@@ -46,7 +46,7 @@ function FullSwipeWatcher({
   useAnimatedReaction(
     () => isFullSwipe(translation.value, width.value),
     (past, previous) => {
-      if (past !== previous) scheduleOnRN(onChange, past);
+      if (previous !== null && past !== previous) scheduleOnRN(onChange, past);
     },
   );
   return null;
