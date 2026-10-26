@@ -6,7 +6,6 @@ import { DragHandle } from "~/components/drag-handle";
 import { EmptyState } from "~/components/empty-state";
 import { MenuTrigger } from "~/components/menu-trigger";
 import { addToPlaylistEntry, NativeMenu } from "~/components/native-menu";
-import { SongRow } from "~/components/song-row";
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
 import { playerStore, usePlayer } from "~/playback/player-store";
@@ -16,6 +15,8 @@ import {
   useUserPlaylists,
 } from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
+
+import { QueueRow } from "./queue-row";
 
 /** Android labels the groups as Material 3 does Settings' (labelLarge in primary). */
 const android = () => Platform.OS === "android";
@@ -109,20 +110,13 @@ export function QueueList() {
         moveInQueue(firstNext + from, firstNext + to)
       }
       renderItem={({ item, index }) => (
-        <View className="flex-row items-center pr-2">
-          <View className="flex-1">
-            <SongRow
-              song={item}
-              queueItemId={item.queueItemId}
-              onPress={() => playAt(firstNext + index)}
-              removal={{
-                title: "Remove from Queue",
-                onRemove: () => {
-                  removeAt(firstNext + index);
-                },
-              }}
-            />
-          </View>
+        <QueueRow
+          song={item}
+          onPress={() => playAt(firstNext + index)}
+          onRemove={() => {
+            removeAt(firstNext + index);
+          }}
+        >
           <DragHandle
             name={item.name}
             actions={{
@@ -136,7 +130,7 @@ export function QueueList() {
                   : undefined,
             }}
           />
-        </View>
+        </QueueRow>
       )}
       ListHeaderComponent={header}
       ListEmptyComponent={

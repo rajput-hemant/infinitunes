@@ -1,11 +1,11 @@
-import type { Episode, MediaType, Song } from "@infinitunes/types";
+import type { Episode, MediaType, Song, SongRowItem } from "@infinitunes/types";
 import { parseToken, toSongRow } from "@infinitunes/types";
 
 import { showFailure } from "~/lib/failure";
 import { trpcClient } from "~/lib/trpc";
 import { stationRef } from "~/navigation/entity-href";
 
-import { playAll } from "./play-collection";
+import { playAll, shuffleAll } from "./play-collection";
 import { beginPlaybackRequest } from "./playback-request";
 import { playerStore } from "./player-store";
 import { playStation } from "./radio";
@@ -64,7 +64,11 @@ async function tracksOf(
  * station. A failure shows in the snackbar (with Retry) unless a newer play
  * replaced it; nothing throws, so a handler can `void` it.
  */
-export async function playEntity(type: PlayableType, url: string) {
+export async function playEntity(
+  type: PlayableType,
+  url: string,
+  options: { shuffle?: boolean } = {},
+) {
   const isCurrent = beginPlaybackRequest();
   if (type === "radio_station") {
     const station = stationRef(url);
@@ -78,13 +82,32 @@ export async function playEntity(type: PlayableType, url: string) {
     if (isCurrent()) {
       showFailure("Couldn't play this.", {
         label: "Retry",
-        onPress: () => void playEntity(type, url),
+        onPress: () => void playEntity(type, url, options),
       });
     }
     return;
   }
   if (!isCurrent()) return;
-  playAll(tracks.map(toSongRow));
+  const rows = tracks.map(toSongRow);
+  if (options.shuffle) shuffleAll(rows);
+  else playAll(rows);
+}
+
+/**
+ * The songs of an album, playlist or mix as rows, for the card menu's "Add to
+ * Playlist". `undefined` after a failure, which has shown in the snackbar.
+ */
+export async function songsOfEntity(
+  type: QueueableType,
+  url: string,
+): Promise<SongRowItem[] | undefined> {
+  try {
+    const tracks = await tracksOf(type, parseToken(url));
+    return tracks.map(toSongRow).filter((row) => row.type === "song");
+  } catch {
+    showFailure("Couldn't load this.");
+    return undefined;
+  }
 }
 
 /** Types whose tracks can be queued (a station has no fixed list). */

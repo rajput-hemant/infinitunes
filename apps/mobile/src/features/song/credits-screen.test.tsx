@@ -55,6 +55,14 @@ describe("creditGroups", () => {
 });
 
 describe("CreditsScreen", () => {
+  it("loads credit cards without song-row action placeholders", async () => {
+    procedure("song.details").mockReturnValue(new Promise(() => {}));
+    await renderScreen(<CreditsScreen token="song-token" />);
+
+    expect(screen.getAllByRole("progressbar")).toHaveLength(1);
+    expect(screen.queryAllByTestId("row-skeleton-menu")).toHaveLength(0);
+    expect(screen.queryAllByTestId("row-skeleton-like")).toHaveLength(0);
+  });
   it("renders the sections from the song's details", async () => {
     procedure("song.details").mockResolvedValue({
       songs: [song()],

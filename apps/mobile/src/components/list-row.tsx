@@ -2,9 +2,9 @@ import type { MediaType } from "@infinitunes/types";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
 import { useEffect, useState } from "react";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
-import type { AccessibilityValue } from "react-native";
+import type { AccessibilityValue, PressableProps } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -60,6 +60,13 @@ type ListRowProps = {
   accessibilityLabel?: string;
   accessibilityHint?: string;
   accessibilityValue?: AccessibilityValue;
+  /** A long press on the text area (a context menu). */
+  onLongPress?: () => void;
+  /** Screen reader actions on the text area (what its long press offers). */
+  accessibilityActions?: PressableProps["accessibilityActions"];
+  onAccessibilityAction?: PressableProps["onAccessibilityAction"];
+  /** Wraps the text area's button, e.g. in a link with a context menu. */
+  wrap?: (pressable: ReactElement) => ReactElement;
 };
 
 /**
@@ -182,6 +189,10 @@ export function ListRow({
   accessibilityLabel,
   accessibilityHint,
   accessibilityValue,
+  onLongPress,
+  accessibilityActions,
+  onAccessibilityAction,
+  wrap,
 }: ListRowProps) {
   const palette = usePalette();
   const primary = useTokenColor("primary");
@@ -203,34 +214,28 @@ export function ListRow({
         <Leading leading={leading} nowPlaying={nowPlaying} dimmed={dimmed} />
       ) : null}
       <View className="flex-1">
-        <Text
-          numberOfLines={1}
-          tone={
-            selected
-              ? tonalNowPlaying()
-                ? "onSecondary"
-                : "primary"
-              : "default"
-          }
-          emphasized={selected}
-        >
-          {title}
-        </Text>
-        {subtitle || explicit ? (
-          <View className="flex-row items-center gap-1">
-            {/* The row's label already says "Explicit". */}
-            {explicit ? <ExplicitBadge accessible={false} /> : null}
-            {subtitle ? (
-              <Text
-                variant="footnote"
-                tone="muted"
-                numberOfLines={1}
-                className="shrink"
-              >
-                {subtitle}
-              </Text>
-            ) : null}
-          </View>
+        <View className="flex-row items-center gap-1">
+          {/* The row's label already says "Explicit". */}
+          {explicit ? <ExplicitBadge accessible={false} /> : null}
+          <Text
+            numberOfLines={1}
+            className="shrink"
+            tone={
+              selected
+                ? tonalNowPlaying()
+                  ? "onSecondary"
+                  : "primary"
+                : "default"
+            }
+            emphasized={selected}
+          >
+            {title}
+          </Text>
+        </View>
+        {subtitle ? (
+          <Text variant="footnote" tone="muted" numberOfLines={1}>
+            {subtitle}
+          </Text>
         ) : null}
       </View>
       {/* iOS marks only the chosen rows; Material 3 shows every row's checkbox. */}
@@ -293,6 +298,9 @@ export function ListRow({
   const pressable = (
     <Pressable
       onPress={onPress}
+      onLongPress={onLongPress}
+      accessibilityActions={accessibilityActions}
+      onAccessibilityAction={onAccessibilityAction}
       onPressIn={() => {
         setPressed(true);
         if (entity) prefetchEntity(entity.type, entity.url);
@@ -317,7 +325,7 @@ export function ListRow({
       {pressable}
     </Link>
   ) : (
-    pressable
+    (wrap?.(pressable) ?? pressable)
   );
 
   if (!android) {

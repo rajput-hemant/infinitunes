@@ -6,6 +6,7 @@ import { Platform } from "react-native";
 import { playbackStatusStore } from "~/playback/playback-status";
 import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderScreen } from "~/test/render";
+import { titleLineTexts } from "~/test/title-row";
 import { procedure } from "~/test/trpc-mock";
 
 import { SongRow } from "./song-row";
@@ -54,6 +55,23 @@ describe("SongRow", () => {
     await chooseMenuAction("More actions for FA9LA & Friends", "details");
 
     expect(app.getPathname()).toBe("/song/fa9la/BSaNI3Yr-token");
+  });
+
+  it("opens the song menu on a long press, not only from the More button", async () => {
+    await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
+    expect(screen.queryByTestId("card-menu")).toBeNull();
+
+    await fireEvent(
+      screen.getByRole("button", { name: "FA9LA & Friends" }),
+      "longPress",
+    );
+    await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
+      nativeEvent: { event: "add-to-queue" },
+    });
+
+    expect(playerStore.getState().queue.map((entry) => entry.id)).toEqual([
+      song.id,
+    ]);
   });
 
   it("plays its list when pressed", async () => {
@@ -116,9 +134,10 @@ describe("SongRow", () => {
       <SongRow song={{ ...song, explicit: true }} onPress={jest.fn()} />,
     );
 
-    expect(
-      screen.getByText("E", { includeHiddenElements: true }),
-    ).toBeOnTheScreen();
+    expect(titleLineTexts(screen.getByText("FA9LA & Friends"))).toEqual([
+      "E",
+      "FA9LA & Friends",
+    ]);
     expect(
       screen.getByRole("button", { name: "FA9LA & Friends" }),
     ).toHaveAccessibilityValue({ text: "Explicit, Flipperachi" });

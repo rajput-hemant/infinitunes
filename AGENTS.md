@@ -186,11 +186,13 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   kit), `lib/` (clients, `preferences`, `share`, `download`, `use-infinite-list`, `use-pending`, `meta`),
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
   `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
-- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, Search. Search uses `unstable_nativeProps.ios`
-  `{ role: "search", automaticallyActivatesSearch: false }`, not Expo's `role` (which maps to `systemItem`),
-  with icon `magnifyingglass`/`search`: iOS 27 keeps it in the expanded pill; iOS 26.1+ detaches it.
-  Minimized trailing Search placement on iOS 27 still needs a device check. Android keeps all four in one bar.
-  Its stack root keeps the native header field (`hideWhenScrolling: false`, no autofocus) on iOS and the M3 bar on Android. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
+- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, Search. iOS Search is the system search tab
+  (separate trailing circle in both expanded and collapsed states, last in JSX): expo-router's `role="search"`
+  reaches react-native-screens only as `ios.systemItem` (the magnifier, a plain tab in the pill on iOS 27); the
+  `UISearchTab` (separate trailing glass circle, header field in the bar) needs
+  `unstable_nativeProps={{ ios: { role: "search", automaticallyActivatesSearch: true } }}` (26.1+);
+  below that the field stays under the large title (`hideWhenScrolling: false`). Android has Search as a
+  fourth tab (`md="search"` in its navigation bar, Material 3 search bar at root). Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
   `NativeTabs.Trigger` with an `sf` and an `md` icon. On iOS 26 the mini player is the bar's
   `NativeTabs.BottomAccessory` (`AccessoryMiniPlayer`; `usePlacement()` `inline` drops Next) and the bar
   minimizes on scroll down. New Playlist is the Library Playlists `SectionHeader`'s "New" action; `/create`
@@ -289,8 +291,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   compact/medium/expanded at 600/840, widths floored to a device pixel; never a fixed count; Jest defaults to a 390pt phone). Headers, forms and settings cap at
   `max-w-readable` (`sizes.readable`), centred. Press feedback that moves is
   `usePressScale` (`lib/use-press-scale`: a Reanimated sink-and-spring on an `Animated.View` around the art or tile). Filter chips are `ChipRow` (`tabs` when they switch the content below, as search's do). A card's long press and screen reader actions offer
-  Play/Play Next/Add to Queue through `CardLink` (`card-menu.tsx`): iOS uses the link's own `Link.Menu`, Android
-  mounts a `NativeMenu` on the first long press; never wrap each card in a `MenuView` (one native host per card).
+  the menu's entries (`useCardMenuEntries`: Play, Shuffle, Play Next, Add to Queue, Add to Playlist, Favourite, Share; songs: `useSongMenuEntries`, a
+  Favourite/Share `quick` group first) through `CardLink`, `SongContextLink` (song rows) and `QueueRow`, all on `components/context-menu.tsx`:
+  iOS is `ContextLink` (the link's own `Link.Menu` plus `Link.Preview` with children: the compact opaque `ContextPreview`, explicitly sized,
+  never the destination's live screen, which floated transparent over the page; a song row's tap plays via `preventDefault`), Android
+  `LongPressMenu` mounts a `NativeMenu` on the first long press; never wrap each item in a `MenuView` (one native host per item). The system
+  lifts and snapshots the link's trigger view, so it must be the whole row and paint an opaque background (`QueueRow`'s `LiftableRow`).
   `ExplicitBadge accessible={false}` inside a row or card whose label already says "Explicit".
   Stations open `/radio/<name>/<token>`. Artwork goes through `Artwork` with a `size` token (edge, radius and
   resolution: 150px while it covers the edge's physical pixels, `PixelRatio`, else 500px; capped by the Image

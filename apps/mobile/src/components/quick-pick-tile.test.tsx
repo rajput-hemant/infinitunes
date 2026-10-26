@@ -13,7 +13,13 @@ describe("QuickPickTile", () => {
         title="Udta Teer"
         href="/album/udta-teer/abc"
         leading={{ artwork: "https://c.saavncdn.com/a-150x150.jpg" }}
-        item={{ type: "album", url: "https://www.jiosaavn.com/album/x/abc" }}
+        item={{
+          id: "abc",
+          name: "Udta Teer",
+          image: "https://c.saavncdn.com/a-500x500.jpg",
+          type: "album",
+          url: "https://www.jiosaavn.com/album/x/abc",
+        }}
       />,
       { routes: { "album/[name]/[token]": () => null } },
     );

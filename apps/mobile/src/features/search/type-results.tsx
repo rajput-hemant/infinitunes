@@ -11,6 +11,7 @@ import { SongRow } from "~/components/song-row";
 import { Spinner } from "~/components/ui/spinner";
 import { useGrid } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
+import { useScrolledBar } from "~/navigation/use-scrolled-bar";
 import { playFrom } from "~/playback/play-collection";
 
 import { isSongEntry, toResultCard } from "./result-cards";
@@ -42,6 +43,7 @@ export function TypeResults({
   onOpenResult,
 }: TypeResultsProps) {
   const results = useTypeResults(query, type);
+  const scrolledBar = useScrolledBar();
   const { columns, width: cardWidth } = useGrid("cards");
 
   const { entries } = results;
@@ -98,6 +100,7 @@ export function TypeResults({
     ) : null,
     onEndReached: results.loadMore,
     contentContainerStyle: { paddingBottom: playerDockInset },
+    ...scrolledBar,
   };
 
   if (type === "song") {

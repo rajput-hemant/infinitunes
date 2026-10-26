@@ -1,35 +1,120 @@
-import type { MenuComponentRef } from "@expo/ui/community/menu";
-import type { MediaType } from "@infinitunes/types";
-import { Link } from "expo-router";
+import { isFavoriteType } from "@infinitunes/core/favorites";
+import type { CardItem } from "@infinitunes/types";
+import { Link, router } from "expo-router";
 import type { Href } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import type { ComponentProps, ReactElement } from "react";
-import { Platform, StyleSheet, View } from "react-native";
-import type { AccessibilityActionEvent } from "react-native";
+import type { ReactElement } from "react";
 
-import { longPress } from "~/lib/haptics";
+import { shareItem } from "~/lib/share";
 import { isPlayable, playEntity, queueEntity } from "~/playback/play-entity";
+import type { QueueableType } from "~/playback/play-entity";
+import { songsOfEntity } from "~/playback/play-entity";
+import { useFavoriteToggle } from "~/user-data/favorites";
+import { addSongsToPlaylist, useUserPlaylists } from "~/user-data/playlists";
+import { useUserId } from "~/user-data/session";
 
+import { ContextLink, LINK_MENUS, LongPressMenu } from "./context-menu";
 import { NativeMenu } from "./native-menu";
 import type { MenuEntry } from "./native-menu";
 
-type CardTarget = { type: MediaType; url: string };
+export {
+  LINK_MENUS,
+  menuAccessibilityActions as cardAccessibilityActions,
+} from "./context-menu";
+
+/** Types whose card offers Shuffle (a list of songs, not one song or a station). */
+const SHUFFLE_TYPES: ReadonlySet<string> = new Set([
+  "album",
+  "playlist",
+  "mix",
+  "artist",
+  "label",
+]);
+
+/** Types whose songs "Add to Playlist" adds. */
+const PLAYLIST_TYPES: ReadonlySet<string> = new Set([
+  "album",
+  "playlist",
+  "mix",
+]);
+
+/** Types with a heart: the card's id is the token the favorites table stores. */
+const FAVORITE_CARD_TYPES: ReadonlySet<string> = new Set(["album", "playlist"]);
 
 /**
- * What a card offers besides opening its item: Play, and for a fixed list
- * Play Next and Add to Queue. Empty for a type nothing can play.
+ * "Add to Playlist" for a card: its songs are fetched when a playlist is
+ * chosen (a card holds none), so no item shows checked.
  */
-export function cardMenuEntries({ type, url }: CardTarget): MenuEntry[] {
-  if (!isPlayable(type)) return [];
-  const play: MenuEntry = {
-    id: "play",
-    title: "Play",
-    image: "play",
-    run: () => void playEntity(type, url),
+function cardPlaylistEntry(
+  type: QueueableType,
+  url: string,
+  playlists: ReturnType<typeof useUserPlaylists>,
+): MenuEntry {
+  return {
+    id: "add-to-playlist",
+    title: "Add to Playlist",
+    image: "music.note.list",
+    subactions: [
+      ...(playlists ?? []).map((playlist): MenuEntry => ({
+        id: `playlist:${playlist.id}`,
+        title: playlist.name,
+        attributes: { disabled: playlist.pending === true },
+        run: () =>
+          void songsOfEntity(type, url).then((songs) => {
+            if (songs) addSongsToPlaylist(playlist, songs);
+          }),
+      })),
+      {
+        id: "new-playlist",
+        title: "New Playlist",
+        image: "plus",
+        run: () =>
+          void songsOfEntity(type, url).then((songs) => {
+            if (!songs) return;
+            router.push({
+              pathname: "/create-playlist",
+              params: { songs: songs.map((song) => song.id).join(",") },
+            });
+          }),
+      },
+    ],
   };
-  if (type === "radio_station") return [play];
-  return [
-    play,
+}
+
+/**
+ * What a card offers besides opening its item, for an album or playlist
+ * Apple Music's: Play, Shuffle, Play Next, Add to Queue, Add to Playlist,
+ * Favourite, Share. Other types keep what applies; empty for one nothing can
+ * play.
+ */
+export function useCardMenuEntries(
+  item: CardItem | undefined,
+): readonly MenuEntry[] {
+  const signedIn = useUserId() !== undefined;
+  const playlists = useUserPlaylists();
+  const { liked, toggle } = useFavoriteToggle({
+    type: item && isFavoriteType(item.type) ? item.type : "album",
+    token: item?.id ?? "",
+  });
+  if (!item || !isPlayable(item.type)) return [];
+  const { type, url } = item;
+  const entries: MenuEntry[] = [
+    {
+      id: "play",
+      title: "Play",
+      image: "play",
+      run: () => void playEntity(type, url),
+    },
+  ];
+  if (type === "radio_station") return entries;
+  if (SHUFFLE_TYPES.has(type)) {
+    entries.push({
+      id: "shuffle",
+      title: "Shuffle",
+      image: "shuffle",
+      run: () => void playEntity(type, url, { shuffle: true }),
+    });
+  }
+  entries.push(
     {
       id: "play-next",
       title: "Play Next",
@@ -42,35 +127,25 @@ export function cardMenuEntries({ type, url }: CardTarget): MenuEntry[] {
       image: "text.line.last.and.arrowtriangle.forward",
       run: () => void queueEntity(type, url, "last"),
     },
-  ];
-}
-
-/** `cardMenuEntries`, kept while the item stays the same (a card re-renders often in a list). */
-export function useCardMenuEntries(
-  item: CardTarget | undefined,
-): readonly MenuEntry[] {
-  const type = item?.type;
-  const url = item?.url;
-  return useMemo(
-    () => (type && url ? cardMenuEntries({ type, url }) : []),
-    [type, url],
   );
-}
-
-/**
- * The same entries as screen reader actions on the card's link, so VoiceOver
- * and TalkBack reach what a long press shows.
- */
-export function cardAccessibilityActions(entries: readonly MenuEntry[]) {
-  if (entries.length === 0) return {};
-  return {
-    accessibilityActions: entries.map(({ id, title }) => ({
-      name: id,
-      label: title,
-    })),
-    onAccessibilityAction: ({ nativeEvent }: AccessibilityActionEvent) =>
-      entries.find(({ id }) => id === nativeEvent.actionName)?.run?.(),
-  };
+  if (signedIn && PLAYLIST_TYPES.has(type)) {
+    entries.push(cardPlaylistEntry(type, url, playlists));
+  }
+  if (signedIn && FAVORITE_CARD_TYPES.has(type)) {
+    entries.push({
+      id: "favourite",
+      title: liked ? "Unfavourite" : "Favourite",
+      image: liked ? "heart.fill" : "heart",
+      run: () => void toggle(),
+    });
+  }
+  entries.push({
+    id: "share",
+    title: "Share",
+    image: "square.and.arrow.up",
+    run: () => shareItem(item),
+  });
+  return entries;
 }
 
 type CardLinkProps = {
@@ -78,6 +153,8 @@ type CardLinkProps = {
   /** The menu's title. */
   name: string;
   entries: readonly MenuEntry[];
+  /** What the long press previews (iOS); omitted, the menu has no preview card. */
+  item?: CardItem;
   /**
    * The card's `Pressable`; pass `onLongPress` to it. A long press then only
    * opens the menu: it never also follows the link on release.
@@ -85,23 +162,22 @@ type CardLinkProps = {
   children: (onLongPress: (() => void) | undefined) => ReactElement;
 };
 
-/**
- * Whether the link's own context menu exists: expo-router draws it with a
- * native view that only the new architecture on iOS has, and renders nothing
- * (not even the card) without it. Jest has none either.
- */
-const LINK_MENUS =
-  Platform.OS === "ios" &&
-  (globalThis as { RN$Bridgeless?: boolean }).RN$Bridgeless === true;
+function ignoreLongPress() {}
 
 /**
  * A card's link with its long-press menu (C4: cards carry no Play button).
  * A shelf holds dozens of cards, so no card keeps a native menu host of its
- * own: iOS uses the link's own context menu (`Link.Menu`, part of the link's
- * native view), Android mounts its menu the first time the card is long
- * pressed.
+ * own: iOS uses the link's own context menu with a compact preview card
+ * (`ContextLink`), Android mounts its menu the first time the card is long
+ * pressed (`LongPressMenu`).
  */
-export function CardLink({ href, name, entries, children }: CardLinkProps) {
+export function CardLink({
+  href,
+  name,
+  entries,
+  item,
+  children,
+}: CardLinkProps) {
   if (entries.length === 0) {
     return (
       <Link href={href} asChild>
@@ -110,67 +186,29 @@ export function CardLink({ href, name, entries, children }: CardLinkProps) {
     );
   }
   return LINK_MENUS ? (
-    <Link href={href} asChild>
-      {/* The system's context menu takes the long press. */}
-      <Link.Trigger>{children(ignoreLongPress)}</Link.Trigger>
-      <Link.Preview />
-      <Link.Menu title={name}>
-        {entries.map(({ id, title, image, run }) => (
-          <Link.MenuAction
-            key={id}
-            icon={image as SymbolName | undefined}
-            onPress={run}
-          >
-            {title}
-          </Link.MenuAction>
-        ))}
-      </Link.Menu>
-    </Link>
+    <ContextLink
+      href={href}
+      entries={entries}
+      preview={{
+        image: item?.image ?? "",
+        title: name,
+        subtitle: item?.subtitle,
+        // As `isRoundType` (media-card imports this module, so not shared).
+        round: item?.type === "artist" || item?.type === "radio_station",
+      }}
+    >
+      {(wrap) => wrap(children(ignoreLongPress))}
+    </ContextLink>
   ) : (
-    <AndroidCardLink href={href} name={name} entries={entries}>
+    <LongPressMenu
+      href={href}
+      renderMenu={(ref, anchor) => (
+        <NativeMenu title={name} entries={entries} ref={ref}>
+          {anchor}
+        </NativeMenu>
+      )}
+    >
       {children}
-    </AndroidCardLink>
+    </LongPressMenu>
   );
 }
-
-/** An SF Symbol name, as `Link.MenuAction` types it. */
-type SymbolName = ComponentProps<typeof Link.MenuAction>["icon"];
-
-function ignoreLongPress() {}
-
-/** Android's card (and any platform without link menus): the menu mounts on the first long press. */
-function AndroidCardLink({ href, name, entries, children }: CardLinkProps) {
-  const [requested, setRequested] = useState(false);
-  // The menu's handle as state (a callback ref), so render never reads a ref.
-  const [menu, setMenu] = useState<MenuComponentRef | null>(null);
-
-  // The first long press mounts the menu; it opens once its handle exists.
-  useEffect(() => {
-    if (requested) menu?.show();
-  }, [requested, menu]);
-
-  function open() {
-    longPress();
-    if (menu) menu.show();
-    else setRequested(true);
-  }
-
-  return (
-    <View>
-      <Link href={href} asChild>
-        {children(open)}
-      </Link>
-      {requested ? (
-        // The anchor covers the card, so the dropdown opens over it; touches
-        // still reach the card.
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <NativeMenu title={name} entries={entries} ref={setMenu}>
-            <View testID="card-menu" style={styles.anchor} />
-          </NativeMenu>
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({ anchor: { flex: 1 } });

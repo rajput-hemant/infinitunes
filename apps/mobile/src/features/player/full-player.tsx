@@ -1,8 +1,8 @@
 import type { Queue } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocalSearchParams, useRouter, useTheme } from "expo-router";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ComponentRef } from "react";
 import {
   Platform,
@@ -11,9 +11,17 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import type { LayoutChangeEvent, LayoutRectangle } from "react-native";
+import type {
+  ColorValue,
+  LayoutChangeEvent,
+  LayoutRectangle,
+} from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  Easing,
+  FadeIn,
+  FadeInDown,
+  FadeOut,
   ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
@@ -32,7 +40,7 @@ import { SongMenu } from "~/components/song-menu";
 import { Artwork, artworkFrame } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
-import { Text } from "~/components/ui/text";
+import { announce } from "~/lib/announce";
 import { usePreferences } from "~/lib/preferences";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import {
@@ -45,6 +53,7 @@ import { art, playerArtSize, space } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
 import { useRadii } from "~/theme/use-radii";
+import { useFavoriteToggle } from "~/user-data/favorites";
 
 import { songSwipeActions, useDismissPan, useSwipeable } from "./gestures";
 import { PlayerLyrics } from "./player-lyrics";
@@ -133,37 +142,55 @@ function settle(target: number) {
     : withTiming(target, { duration: 340 });
 }
 
+/** The artwork's flight between the stage and the compact header. */
+const FLIGHT_MS = 420;
+/** Material's emphasized decelerate, close to Apple Music's flight: fast off, long settle. */
+const EMPHASIZED = Easing.bezier(0.2, 0, 0, 1);
+/** How long a flight waits for a destination slot that reports no new layout. */
+const LAYOUT_WAIT_MS = 34;
+
+/** The flight: one timing curve on both platforms (a spring's overshoot reads as a wobble on a scale). */
+function fly(target: number) {
+  return withTiming(target, { duration: FLIGHT_MS, easing: EMPHASIZED });
+}
+
+/** Starts the pending flight, if one waits. */
+function takeOff(
+  pending: { current: 0 | 1 | null },
+  progress: SharedValue<number>,
+) {
+  const target = pending.current;
+  if (target === null) return;
+  pending.current = null;
+  progress.set(fly(target));
+}
+
 /**
- * The cover at the hero size, a little smaller while paused (the system
- * players' cue). That is movement, so reduce motion keeps it at full size,
- * as does the compact header. A new track's cover crossfades over the old one
- * with the wash (expo-image's transition; `Artwork` would drop the old
- * picture first), at the Image quality cap.
+ * What enters and leaves with the flight (titles, pills, the list): a fade
+ * with a short rise over the flight's span, a fade alone under reduce motion.
  */
-function NowPlayingArt({
-  image,
-  compact,
-}: {
-  image: string;
-  compact: boolean;
-}) {
+const contentIn = (reduceMotion: boolean) =>
+  reduceMotion
+    ? FadeIn.duration(200).reduceMotion(ReduceMotion.Never)
+    : FadeInDown.duration(FLIGHT_MS - 80)
+        .delay(80)
+        .easing(EMPHASIZED)
+        .withInitialValues({ transform: [{ translateY: space.lg }] });
+const contentOut = FadeOut.duration(140).reduceMotion(ReduceMotion.Never);
+
+/**
+ * The cover at the hero size, edge to edge in its rounded clip. A new
+ * track's cover crossfades over the old one with the wash (expo-image's
+ * transition; `Artwork` would drop the old picture first), at the Image
+ * quality cap.
+ */
+function NowPlayingArt({ image }: { image: string }) {
   const { width } = useWindowDimensions();
   const cap = usePreferences((preferences) => preferences.imageQuality);
-  const playing = usePlaybackStatus((state) => state.playing);
-  const reduceMotion = useReducedMotion();
-  const target = playing || reduceMotion || compact ? 1 : PAUSED_SCALE;
-  // Opened while paused, the art starts settled instead of shrinking in.
-  const scale = useSharedValue(target);
-  useEffect(() => {
-    scale.set(settle(target));
-  }, [target, scale]);
-  const animated = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.get() }],
-  }));
   const frame = { ...artworkFrame("player", width, false), borderRadius: 0 };
 
   return (
-    <Animated.View style={animated}>
+    <View>
       {image ? (
         <Image
           // The player's art is always past the 150px picture: the cap decides.
@@ -181,8 +208,26 @@ function NowPlayingArt({
           style={{ borderRadius: 0 }}
         />
       )}
-    </Animated.View>
+    </View>
   );
+}
+
+/**
+ * The whole artwork (clip and shadow) a little smaller while paused, the
+ * system players' cue. Scaling the picture inside its clip instead left a
+ * square image floating in an empty rounded frame. That is movement, so
+ * reduce motion keeps it at full size, as does the compact header.
+ */
+function usePausedScale(compact: boolean) {
+  const playing = usePlaybackStatus((state) => state.playing);
+  const reduceMotion = useReducedMotion();
+  const target = playing || reduceMotion || compact ? 1 : PAUSED_SCALE;
+  // Opened while paused, the art starts settled instead of shrinking in.
+  const scale = useSharedValue(target);
+  useEffect(() => {
+    scale.set(settle(target));
+  }, [target, scale]);
+  return scale;
 }
 
 type Slots = {
@@ -227,6 +272,7 @@ function HeroArt({
   const big = corner[ART_CORNER];
   const small = (corner.sm * hero) / COMPACT_ART;
   const { stage, header } = slots;
+  const paused = usePausedScale(compact);
   const place = useAnimatedStyle(() => {
     const p = progress.get();
     const box = stage.get();
@@ -259,11 +305,15 @@ function HeroArt({
         // Scaled about its centre: shift so the scaled box lands at x, y.
         { translateX: x - (hero - size) / 2 + (reduceMotion ? 0 : dx) },
         { translateY: y - (hero - size) / 2 },
-        { scale: size / hero },
+        { scale: (size / hero) * paused.get() },
       ],
     };
   });
   const clip = useAnimatedStyle(() => ({
+    borderRadius: big + (small - big) * progress.get(),
+  }));
+  // The same radius for the shadow (one animated style per view).
+  const shadowShape = useAnimatedStyle(() => ({
     borderRadius: big + (small - big) * progress.get(),
   }));
 
@@ -278,10 +328,10 @@ function HeroArt({
           accessibilityRole="image"
           accessibilityLabel={`Artwork, ${track.name}`}
           {...songSwipeActions}
-          style={[ART_SHADOW, { borderRadius: big }]}
+          style={[ART_SHADOW, shadowShape]}
         >
           <Animated.View style={[styles.clip, clip]}>
-            <NowPlayingArt image={track.image} compact={compact} />
+            <NowPlayingArt image={track.image} />
           </Animated.View>
         </Animated.View>
       </GestureDetector>
@@ -309,7 +359,7 @@ function ExplicitMark() {
 }
 
 /**
- * Title and credit, then the heart and the song menu. The text takes the
+ * Title and credit, then (in the large view) the heart and the song menu. The text takes the
  * song swipe (and its screen reader actions); `compact` is the queue and
  * lyrics header beside the small artwork.
  */
@@ -335,27 +385,33 @@ function TrackTitle({
           className="flex-1"
           style={swipe.style}
         >
-          <WashText
-            variant={compact ? "headline" : TITLE_VARIANT}
-            emphasized
-            numberOfLines={1}
-          >
-            {track.name}
-          </WashText>
           <View className="flex-row items-center gap-1">
             {track.explicit ? <ExplicitMark /> : null}
-            <WashText tone="muted" numberOfLines={1} className="shrink">
-              {track.subtitle}
+            <WashText
+              variant={compact ? "headline" : TITLE_VARIANT}
+              emphasized
+              numberOfLines={1}
+              className="shrink"
+            >
+              {track.name}
             </WashText>
           </View>
+          <WashText tone="muted" numberOfLines={1}>
+            {track.subtitle}
+          </WashText>
         </Animated.View>
       </GestureDetector>
-      {track.type === "song" ? (
-        <LikeButton type="song" token={track.id} name={track.name} />
-      ) : null}
-      <SongMenu song={track}>
-        <MenuTrigger label={`More actions for ${track.name}`} size="lg" />
-      </SongMenu>
+      {/* The compact header's heart and menu sit in its pill row. */}
+      {compact ? null : (
+        <>
+          {track.type === "song" ? (
+            <LikeButton type="song" token={track.id} name={track.name} />
+          ) : null}
+          <SongMenu song={track}>
+            <MenuTrigger label={`More actions for ${track.name}`} size="lg" />
+          </SongMenu>
+        </>
+      )}
     </View>
   );
 }
@@ -411,34 +467,27 @@ function Grabber({ onPress }: { onPress: () => void }) {
 const PILL_TINT_ALPHA = 0.14;
 
 /**
- * A queue mode as a capsule with its name (Apple Music's queue pills). On a
- * wash, on is the play button's checked `control` fill with `onControl`
- * text, off a faint tint of the foreground; on the D1 palette `primary` and
- * `muted`.
+ * One capsule of the compact header's row (Apple Music's queue pills), an
+ * icon alone. On a wash, on is the play button's checked `control` fill
+ * with an `onControl` glyph, off a faint tint of the foreground; on the D1
+ * palette `primary` and `muted`. `color` overrides the off glyph (a liked
+ * heart).
  */
-function ModePill({
+function PillFace({
   icon,
-  text,
-  label,
-  on,
-  onPress,
+  on = false,
+  color,
 }: {
   icon: SymbolName;
-  text: string;
-  label: string;
-  on: boolean;
-  onPress: () => void;
+  on?: boolean;
+  color?: ColorValue;
 }) {
   const wash = useWashColors();
   const token = useTokenColor(on ? "primary-foreground" : "foreground");
   const ink = wash ? (on ? wash.onControl : wash.foreground) : token;
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected: on }}
-      className={`min-h-touch flex-1 flex-row items-center justify-center gap-2 overflow-hidden rounded-full px-4 active:opacity-70 ${wash ? "" : on ? "bg-primary" : "bg-muted"}`}
+    <View
+      className={`min-h-touch items-center justify-center overflow-hidden rounded-full ${wash ? "" : on ? "bg-primary" : "bg-muted"}`}
     >
       {wash ? (
         <View
@@ -449,35 +498,104 @@ function ModePill({
           }}
         />
       ) : null}
-      <Icon name={icon} size="sm" color={ink} />
-      <Text variant="subhead" emphasized color={ink} numberOfLines={1}>
-        {text}
-      </Text>
+      <Icon name={icon} size="md" color={on ? ink : (color ?? ink)} />
+    </View>
+  );
+}
+
+/** A pill that is a button: a mode (`on` set) or the heart. */
+function Pill({
+  icon,
+  label,
+  on,
+  color,
+  onPress,
+}: {
+  icon: SymbolName;
+  label: string;
+  on?: boolean;
+  color?: ColorValue;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={on === undefined ? undefined : { selected: on }}
+      className="flex-1 active:opacity-70"
+    >
+      <PillFace icon={icon} on={on} color={color} />
     </Pressable>
   );
 }
 
-/** The queue's modes: shuffle and repeat (transport leaves its own out here). */
-function QueueModes() {
+/** The heart as a pill: the same optimistic like as `LikeButton`. */
+function LikePill({ track }: { track: Queue }) {
+  const { colors } = useTheme();
+  const { liked, toggle } = useFavoriteToggle({
+    type: "song",
+    token: track.id,
+  });
+  return (
+    <Pill
+      icon={
+        liked
+          ? { ios: "heart.fill", android: "favorite" }
+          : { ios: "heart", android: "favorite_border" }
+      }
+      label={liked ? `Unlike ${track.name}` : `Like ${track.name}`}
+      color={liked ? colors.primary : undefined}
+      onPress={() => {
+        const nowLiked = toggle();
+        if (nowLiked !== undefined) {
+          announce(
+            nowLiked
+              ? `Liked ${track.name}`
+              : `Removed ${track.name} from liked`,
+          );
+        }
+      }}
+    />
+  );
+}
+
+/**
+ * The compact header's row (queue and lyrics): shuffle, repeat, the heart
+ * and the song menu as four equal capsules, Apple Music's layout. Transport
+ * leaves its own shuffle and repeat out here.
+ */
+function HeaderControls({ track }: { track: Queue }) {
   const shuffle = usePlayer((state) => state.shuffle);
   const repeat = usePlayer((state) => state.repeat);
   const { toggleShuffle, cycleRepeat } = playerStore.getState();
   return (
     <View className="flex-row gap-2 px-6 pb-2">
-      <ModePill
+      <Pill
         icon={shuffleIcon(shuffle)}
-        text="Shuffle"
         label="Shuffle"
         on={shuffle}
         onPress={toggleShuffle}
       />
-      <ModePill
+      <Pill
         icon={REPEAT_ICONS[repeat]}
-        text={repeat === "track" ? "Repeat One" : "Repeat"}
         label={REPEAT_LABELS[repeat]}
         on={repeat !== "off"}
         onPress={() => cycleRepeat()}
       />
+      {track.type === "song" ? <LikePill track={track} /> : null}
+      <View className="flex-1">
+        <SongMenu song={track}>
+          <View
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={`More actions for ${track.name}`}
+            accessibilityHint="Opens a menu"
+          >
+            <PillFace icon={{ ios: "ellipsis", android: "more_vert" }} />
+          </View>
+        </SongMenu>
+      </View>
     </View>
   );
 }
@@ -502,7 +620,15 @@ export function FullPlayer() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const params = useLocalSearchParams<{ view?: string }>();
-  const view = playerViewOf(params.view);
+  const linkedView = playerViewOf(params.view);
+  // Local state, so a toggle re-renders only this screen (a route param
+  // change goes through the navigator); a new `?view=` link still switches it.
+  const [view, setView] = useState(linkedView);
+  const [shownLink, setShownLink] = useState(linkedView);
+  if (shownLink !== linkedView) {
+    setShownLink(linkedView);
+    setView(linkedView);
+  }
   const compact = view !== "art";
   const track = usePlayer(selectCurrentTrack);
   const colors = usePlayerColors(track?.image);
@@ -515,10 +641,15 @@ export function FullPlayer() {
   const background = useTokenColor("background");
   const paletteBackground = usePalette().background;
   const reduceMotion = useReducedMotion();
+  // The rounded top of a card sheet (the system sheet it replaced); the
+  // page clips the wash to it.
+  const sheetCorner = useRadii().xl;
+  const pageCorners = {
+    borderTopLeftRadius: sheetCorner,
+    borderTopRightRadius: sheetCorner,
+  };
 
   const close = () => router.back();
-  const setView = (next: PlayerView) =>
-    router.setParams({ view: next === "art" ? undefined : next });
   const toggle = (next: PlayerView) => setView(view === next ? "art" : next);
 
   // The drag down to close, shared by the areas outside the lists.
@@ -541,7 +672,13 @@ export function FullPlayer() {
     stage: useSharedValue<LayoutRectangle | null>(null),
     header: useSharedValue<LayoutRectangle | null>(null),
   };
-  useEffect(() => {
+  // A flight waits for its destination slot's first layout, so both ends are
+  // known before it starts and nothing is measured mid-flight.
+  const pending = useRef<0 | 1 | null>(null);
+  const landed = (slot: 0 | 1) => {
+    if (pending.current === slot) takeOff(pending, progress);
+  };
+  useLayoutEffect(() => {
     const target = compact ? 1 : 0;
     if (progress.get() === target) return;
     if (reduceMotion) {
@@ -551,7 +688,12 @@ export function FullPlayer() {
       fade.set(
         withTiming(1, { duration: 200, reduceMotion: ReduceMotion.Never }),
       );
-    } else progress.set(settle(target));
+      return;
+    }
+    pending.current = target;
+    // The slot is already laid out (no new layout event): fly anyway.
+    const timer = setTimeout(() => takeOff(pending, progress), LAYOUT_WAIT_MS);
+    return () => clearTimeout(timer);
   }, [compact, reduceMotion, progress, fade]);
 
   // The lyrics' box, and where it spans down the backdrop (0 top, 1 bottom).
@@ -582,7 +724,7 @@ export function FullPlayer() {
     return (
       <View
         className="flex-1 bg-background"
-        style={{ paddingTop: insets.top }}
+        style={[styles.page, pageCorners, { paddingTop: insets.top }]}
         accessibilityViewIsModal
         onAccessibilityEscape={close}
       >
@@ -611,7 +753,7 @@ export function FullPlayer() {
       : null;
 
   return (
-    <Animated.View style={[styles.page, dragStyle]}>
+    <Animated.View style={[styles.page, pageCorners, dragStyle]}>
       {/* The tabs stay drawn underneath: keep a screen reader on this page. */}
       <View
         ref={root}
@@ -644,18 +786,30 @@ export function FullPlayer() {
                   <View
                     className="flex-row items-center gap-3 px-6 py-2"
                     pointerEvents="box-none"
-                    onLayout={(event) => slots.header.set(boxOf(event))}
+                    onLayout={(event) => {
+                      slots.header.set(boxOf(event));
+                      landed(1);
+                    }}
                   >
                     {/* The artwork flies into this slot. */}
                     <View
                       pointerEvents="none"
                       style={{ width: COMPACT_ART, height: COMPACT_ART }}
                     />
-                    <View className="flex-1">
+                    <Animated.View
+                      className="flex-1"
+                      entering={contentIn(reduceMotion)}
+                      exiting={contentOut}
+                    >
                       <TrackTitle track={track} compact swipe={titleSwipe} />
-                    </View>
+                    </Animated.View>
                   </View>
-                  {view === "queue" ? <QueueModes /> : null}
+                  <Animated.View
+                    entering={contentIn(reduceMotion)}
+                    exiting={contentOut}
+                  >
+                    <HeaderControls track={track} />
+                  </Animated.View>
                 </>
               ) : (
                 <>
@@ -663,33 +817,50 @@ export function FullPlayer() {
                   <View
                     className="flex-1"
                     pointerEvents="none"
-                    onLayout={(event) => slots.stage.set(boxOf(event))}
+                    onLayout={(event) => {
+                      slots.stage.set(boxOf(event));
+                      landed(0);
+                    }}
                   />
-                  <View className="mt-8 px-6">
+                  <Animated.View
+                    className="mt-8 px-6"
+                    entering={contentIn(reduceMotion)}
+                    exiting={contentOut}
+                  >
                     <TrackTitle
                       track={track}
                       compact={false}
                       swipe={titleSwipe}
                     />
-                  </View>
+                  </Animated.View>
                 </>
               )}
             </View>
           </GestureDetector>
           {view === "queue" ? (
-            <View className="flex-1">
+            <Animated.View
+              className="flex-1"
+              entering={contentIn(reduceMotion)}
+              exiting={contentOut}
+            >
               <QueueList />
-            </View>
+            </Animated.View>
           ) : null}
           {view === "lyrics" ? (
-            <View ref={slot} className="flex-1 px-6" onLayout={measureLyrics}>
+            <Animated.View
+              ref={slot}
+              className="flex-1 px-6"
+              onLayout={measureLyrics}
+              entering={contentIn(reduceMotion)}
+              exiting={contentOut}
+            >
               <PlayerLyrics
                 track={track}
                 width={Math.max(lyricsBox.width - 2 * space.xl, 0)}
                 height={lyricsBox.height}
                 edges={lyricEdges}
               />
-            </View>
+            </Animated.View>
           ) : null}
           <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom }}>
             {/* Outside the drag to close: a thumb grab that rolls down would
@@ -698,7 +869,7 @@ export function FullPlayer() {
             <GestureDetector gesture={bottomPan}>
               <View>
                 <View className="mt-6">
-                  <TransportControls modes={view !== "queue"} />
+                  <TransportControls modes={!compact} />
                 </View>
                 <View className="mt-2 flex-row items-center justify-between">
                   <ModeToggle
@@ -724,7 +895,7 @@ export function FullPlayer() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1 },
+  page: { flex: 1, overflow: "hidden" },
   hero: { position: "absolute", left: 0, top: 0 },
   clip: { overflow: "hidden" },
 });
