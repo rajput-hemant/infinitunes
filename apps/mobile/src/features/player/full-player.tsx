@@ -134,36 +134,18 @@ function settle(target: number) {
 }
 
 /**
- * The cover at the hero size, a little smaller while paused (the system
- * players' cue). That is movement, so reduce motion keeps it at full size,
- * as does the compact header. A new track's cover crossfades over the old one
- * with the wash (expo-image's transition; `Artwork` would drop the old
- * picture first), at the Image quality cap.
+ * The cover at the hero size, edge to edge in its rounded clip. A new
+ * track's cover crossfades over the old one with the wash (expo-image's
+ * transition; `Artwork` would drop the old picture first), at the Image
+ * quality cap.
  */
-function NowPlayingArt({
-  image,
-  compact,
-}: {
-  image: string;
-  compact: boolean;
-}) {
+function NowPlayingArt({ image }: { image: string }) {
   const { width } = useWindowDimensions();
   const cap = usePreferences((preferences) => preferences.imageQuality);
-  const playing = usePlaybackStatus((state) => state.playing);
-  const reduceMotion = useReducedMotion();
-  const target = playing || reduceMotion || compact ? 1 : PAUSED_SCALE;
-  // Opened while paused, the art starts settled instead of shrinking in.
-  const scale = useSharedValue(target);
-  useEffect(() => {
-    scale.set(settle(target));
-  }, [target, scale]);
-  const animated = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.get() }],
-  }));
   const frame = { ...artworkFrame("player", width, false), borderRadius: 0 };
 
   return (
-    <Animated.View style={animated}>
+    <View>
       {image ? (
         <Image
           // The player's art is always past the 150px picture: the cap decides.
@@ -181,8 +163,26 @@ function NowPlayingArt({
           style={{ borderRadius: 0 }}
         />
       )}
-    </Animated.View>
+    </View>
   );
+}
+
+/**
+ * The whole artwork (clip and shadow) a little smaller while paused, the
+ * system players' cue. Scaling the picture inside its clip instead left a
+ * square image floating in an empty rounded frame. That is movement, so
+ * reduce motion keeps it at full size, as does the compact header.
+ */
+function usePausedScale(compact: boolean) {
+  const playing = usePlaybackStatus((state) => state.playing);
+  const reduceMotion = useReducedMotion();
+  const target = playing || reduceMotion || compact ? 1 : PAUSED_SCALE;
+  // Opened while paused, the art starts settled instead of shrinking in.
+  const scale = useSharedValue(target);
+  useEffect(() => {
+    scale.set(settle(target));
+  }, [target, scale]);
+  return scale;
 }
 
 type Slots = {
@@ -227,6 +227,7 @@ function HeroArt({
   const big = corner[ART_CORNER];
   const small = (corner.sm * hero) / COMPACT_ART;
   const { stage, header } = slots;
+  const paused = usePausedScale(compact);
   const place = useAnimatedStyle(() => {
     const p = progress.get();
     const box = stage.get();
@@ -259,7 +260,7 @@ function HeroArt({
         // Scaled about its centre: shift so the scaled box lands at x, y.
         { translateX: x - (hero - size) / 2 + (reduceMotion ? 0 : dx) },
         { translateY: y - (hero - size) / 2 },
-        { scale: size / hero },
+        { scale: (size / hero) * paused.get() },
       ],
     };
   });
@@ -281,7 +282,7 @@ function HeroArt({
           style={[ART_SHADOW, { borderRadius: big }]}
         >
           <Animated.View style={[styles.clip, clip]}>
-            <NowPlayingArt image={track.image} compact={compact} />
+            <NowPlayingArt image={track.image} />
           </Animated.View>
         </Animated.View>
       </GestureDetector>
