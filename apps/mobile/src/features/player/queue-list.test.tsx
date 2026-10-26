@@ -4,7 +4,7 @@ import { fireEvent, screen } from "@testing-library/react-native";
 
 import { playerColorsFromSeed } from "~/lib/artwork-colors";
 import { playerStore } from "~/playback/player-store";
-import { chooseMenuAction, renderScreen } from "~/test/render";
+import { renderScreen } from "~/test/render";
 
 import { QueueList } from "./queue-list";
 import { nowPlayingWash, OnWash } from "./wash";
@@ -47,13 +47,52 @@ describe("QueueList", () => {
     expect(screen.getByText("Nothing else is queued.")).toBeOnTheScreen();
   });
 
-  it("removes an entry from its menu", async () => {
+  it("removes an entry from its long-press menu", async () => {
+    await renderScreen(<QueueList />);
+    const delta = await screen.findByRole("button", { name: "Delta" });
+
+    await fireEvent(delta, "longPress");
+    await fireEvent(screen.getByTestId("queue-row-menu"), "pressAction", {
+      nativeEvent: { event: "remove" },
+    });
+
+    expect(ids()).toEqual(["a", "b", "c"]);
+  });
+
+  it("shows only the drag handle at a row's end, its menu on a long press", async () => {
     await renderScreen(<QueueList />);
     await screen.findByText("Delta");
 
-    await chooseMenuAction("More actions for Delta", "remove");
+    expect(
+      screen.queryByRole("button", { name: "More actions for Delta" }),
+    ).toBeNull();
+    expect(screen.queryByRole("button", { name: /^Like / })).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Reorder Delta" }),
+    ).toBeOnTheScreen();
+  });
 
-    expect(ids()).toEqual(["a", "b", "c"]);
+  it("offers the menu's entries as the row's screen reader actions", async () => {
+    await renderScreen(<QueueList />);
+    const delta = await screen.findByRole("button", { name: "Delta" });
+
+    expect(
+      delta.props.accessibilityActions.map(
+        (action: { label: string }) => action.label,
+      ),
+    ).toEqual([
+      "Add",
+      "Favourite",
+      "Share",
+      "Play Next",
+      "Create Station",
+      "View Credits",
+      "Remove from Queue",
+    ]);
+    await fireEvent(delta, "accessibilityAction", {
+      nativeEvent: { actionName: "play-next" },
+    });
+    expect(ids()).toEqual(["a", "b", "d", "c", "d"]);
   });
 
   it("reorders up next by dragging", async () => {

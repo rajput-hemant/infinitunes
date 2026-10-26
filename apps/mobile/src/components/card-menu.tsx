@@ -90,7 +90,7 @@ type CardLinkProps = {
  * native view that only the new architecture on iOS has, and renders nothing
  * (not even the card) without it. Jest has none either.
  */
-const LINK_MENUS =
+export const LINK_MENUS =
   Platform.OS === "ios" &&
   (globalThis as { RN$Bridgeless?: boolean }).RN$Bridgeless === true;
 
