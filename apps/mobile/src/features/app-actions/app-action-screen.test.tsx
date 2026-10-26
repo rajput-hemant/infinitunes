@@ -210,8 +210,20 @@ describe("action/play-liked and action/shuffle-liked", () => {
 
     const app = await openLink("/action/play-liked");
 
-    await landsOn(app, "/");
+    await landsOn(app, "/login");
     expect(procedure("user.getUserFavorites")).not.toHaveBeenCalled();
+  });
+
+  it("signs in over an open player without the action screen left beneath it", async () => {
+    await act(async () => signInAs(null));
+    const app = await openLink("/player");
+
+    await act(async () => router.push("/action/shuffle-liked"));
+
+    await landsOn(app, "/login");
+    // The action screen between the player and the sign-in modal is what
+    // react-native-screens cannot reorder when it leaves.
+    expect(stackNames(app)).toEqual(["index", "player", "login"]);
   });
 
   it("plays nothing when the library can't be read", async () => {

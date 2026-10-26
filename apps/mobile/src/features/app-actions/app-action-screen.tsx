@@ -10,6 +10,7 @@ import { View } from "react-native";
 import { Spinner } from "~/components/ui/spinner";
 import { authClient } from "~/lib/auth-client";
 import { single } from "~/lib/params";
+import { promptSignIn } from "~/user-data/session";
 
 import { isAppAction, runAppAction, type ActionOutcome } from "./app-actions";
 
@@ -53,6 +54,7 @@ export function landing(
   outcome: ActionOutcome,
 ): LandingAction | "home" | null {
   if (outcome === "home") return "home";
+  if (outcome === "signin") outcome = "back";
   const index = state.routes.findIndex((route) => route.key === key);
   if (index === -1) return null;
   const aimed = { source: key, target: state.key };
@@ -91,6 +93,8 @@ export function AppActionScreen() {
       const next = state ? landing(state, key, outcome) : "home";
       if (next === "home") router.replace("/");
       else if (next) navigation.dispatch(next);
+      // After this screen has left, so the sign-in modal is only ever added on top.
+      if (outcome === "signin") promptSignIn();
     };
     const outcome = isAppAction(action)
       ? runAppAction(action, { userId, id, q })
