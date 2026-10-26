@@ -1,7 +1,7 @@
 import type { MenuComponentRef } from "@expo/ui/community/menu";
 import type { QueueSource, RowExtras } from "@infinitunes/types";
 import { useEffect, useState } from "react";
-import type { ReactNode, Ref } from "react";
+import type { ReactElement, ReactNode, Ref } from "react";
 import { Platform, StyleSheet, View } from "react-native";
 
 import { downloadTrack } from "~/lib/download";
@@ -12,9 +12,11 @@ import {
 } from "~/lib/notifications";
 import { preferencesStore } from "~/lib/preferences";
 import { shareItem } from "~/lib/share";
+import { entityHref } from "~/navigation/entity-href";
 import { useOpenCredits, useOpenEntity } from "~/navigation/use-open-entity";
 import { playerStore } from "~/playback/player-store";
 import { radioSeedOf } from "~/playback/radio";
+import { useFavoriteToggle } from "~/user-data/favorites";
 import {
   addSongsToPlaylist,
   usePlaylistMembership,
@@ -22,6 +24,8 @@ import {
 } from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
 
+import { ContextLink, LINK_MENUS, LongPressMenu } from "./context-menu";
+import type { ContextPreviewProps } from "./context-preview";
 import { MenuTrigger } from "./menu-trigger";
 import {
   addToPlaylistEntry,
@@ -71,47 +75,69 @@ function download(song: TrackItem) {
   });
 }
 
-type SongMenuProps = {
+type SongMenuOptions = {
   song: TrackItem;
   /** The list's own destructive action (remove from the queue or a playlist). */
   removal?: { title: string; onRemove: () => void };
-  /** The trigger; tapping it opens the native menu. */
-  children: ReactNode;
-  /** `show()` opens the menu from code (Android only). */
-  ref?: Ref<MenuComponentRef>;
+  /** The song is already in the queue (an Up next row): no "Add to Queue", details or download. */
+  inQueue?: boolean;
 };
 
 /**
- * A track's actions in the platform menu: play next, add to queue, add to
- * playlist, play radio, its own page, credits, go to album or artist, share,
- * download, and the
- * list's own removal.
+ * A track's actions, Apple Music's: a quick group (Favourite, Share), then
+ * play next, add to queue, add to playlist, create station, go to album and
+ * artist, credits, its own page, download, and the list's own removal. The
+ * "..." menu and a long press's context menu share it.
  */
-export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
+export function useSongMenuEntries({
+  song,
+  removal,
+  inQueue = false,
+}: SongMenuOptions): MenuEntry[] {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
   const membership = usePlaylistMembership();
   const openEntity = useOpenEntity();
   const openCredits = useOpenCredits();
+  const { liked, toggle } = useFavoriteToggle({ type: "song", token: song.id });
   const { playNext, addToQueue } = playerStore.getState();
   const isSong = song.type === "song";
 
+  const quick: MenuEntry[] = [];
+  // Signed out, the toggle asks the listener to sign in.
+  if (isSong) {
+    quick.push({
+      id: "favourite",
+      title: liked ? "Unfavourite" : "Favourite",
+      image: liked ? "heart.fill" : "heart",
+      run: () => void toggle(),
+    });
+  }
+  quick.push({
+    id: "share",
+    title: "Share",
+    image: "square.and.arrow.up",
+    run: () => shareItem(song),
+  });
   const entries: MenuEntry[] = [
+    { id: "quick", title: "", quick: true, subactions: quick },
     {
       id: "play-next",
       title: "Play Next",
       image: "text.line.first.and.arrowtriangle.forward",
       run: () => playNext(song),
     },
-    {
+  ];
+  if (!inQueue) {
+    entries.push({
       id: "add-to-queue",
       title: "Add to Queue",
       image: "text.line.last.and.arrowtriangle.forward",
       run: () => {
         addToQueue(song);
       },
-    },
-  ];
+    });
+  }
   if (isSong) {
     entries.push(
       ...(signedIn
@@ -124,15 +150,21 @@ export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
             }),
           ]
         : []),
-      playRadioEntry(radioSeedOf([song])),
+      { ...playRadioEntry(radioSeedOf([song])), title: "Create Station" },
     );
   }
-  entries.push({
-    id: "details",
-    title: isSong ? "View Song Details" : "View Episode Details",
-    image: "info.circle",
-    run: () => openEntity(song.type, song.url),
-  });
+  const { albumUrl } = song;
+  if (isSong && albumUrl) {
+    entries.push({
+      id: "go-to-album",
+      title: "Go to Album",
+      subtitle: song.album,
+      image: "square.stack",
+      run: () => openEntity("album", albumUrl),
+    });
+  }
+  const artist = artistEntry(song, openEntity);
+  if (artist) entries.push(artist);
   if (isSong) {
     entries.push({
       id: "credits",
@@ -141,30 +173,21 @@ export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
       run: () => openCredits(song.url),
     });
   }
-  const { albumUrl } = song;
-  if (isSong && albumUrl) {
+  if (!inQueue) {
     entries.push({
-      id: "go-to-album",
-      title: "Go to Album",
-      image: "square.stack",
-      run: () => openEntity("album", albumUrl),
+      id: "details",
+      title: isSong ? "View Song Details" : "View Episode Details",
+      image: "info.circle",
+      run: () => openEntity(song.type, song.url),
     });
-  }
-  const artist = artistEntry(song, openEntity);
-  if (artist) entries.push(artist);
-  entries.push({
-    id: "share",
-    title: "Share",
-    image: "square.and.arrow.up",
-    run: () => shareItem(song),
-  });
-  if (isSong) {
-    entries.push({
-      id: "download",
-      title: "Download",
-      image: "arrow.down.circle",
-      run: () => download(song),
-    });
+    if (isSong) {
+      entries.push({
+        id: "download",
+        title: "Download",
+        image: "arrow.down.circle",
+        run: () => download(song),
+      });
+    }
   }
   if (removal) {
     entries.push({
@@ -175,11 +198,96 @@ export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
       run: removal.onRemove,
     });
   }
+  return entries;
+}
 
+/** What a long press on a song previews: its art, name, credits and album. */
+export function songPreview(song: TrackItem): ContextPreviewProps {
+  return {
+    image: song.image,
+    title: song.name,
+    subtitle: song.subtitle,
+    caption: song.album,
+  };
+}
+
+type SongMenuProps = Omit<SongMenuOptions, "inQueue"> & {
+  /** The trigger; tapping it opens the native menu. */
+  children: ReactNode;
+  /** `show()` opens the menu from code (Android only). */
+  ref?: Ref<MenuComponentRef>;
+};
+
+/** A track's actions in the platform menu (`useSongMenuEntries`). */
+export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
+  const entries = useSongMenuEntries({ song, removal });
   return (
     <NativeMenu title={song.name} entries={entries} ref={ref}>
       {children}
     </NativeMenu>
+  );
+}
+
+type SongContextLinkProps = Omit<SongMenuOptions, "inQueue"> & {
+  /**
+   * The row: put `wrap` around its pressable (`ListRow`'s `wrap`) and pass
+   * `onLongPress` to it.
+   */
+  children: (
+    wrap?: (pressable: ReactElement) => ReactElement,
+    onLongPress?: () => void,
+  ) => ReactElement;
+};
+
+/**
+ * A song row's long-press menu: iOS's context menu with the song preview (a
+ * tap still plays; only the preview opens the song), Android's dropdown,
+ * mounted on the first long press. A long list keeps no native host per row.
+ */
+export function SongContextLink({
+  song,
+  removal,
+  children,
+}: SongContextLinkProps) {
+  const href = entityHref(song.type, song.url);
+  if (LINK_MENUS && href) {
+    return (
+      <IosSongContext song={song} removal={removal} href={href}>
+        {children}
+      </IosSongContext>
+    );
+  }
+  return (
+    <LongPressMenu
+      renderMenu={(ref, anchor) => (
+        <SongMenu song={song} removal={removal} ref={ref}>
+          {anchor}
+        </SongMenu>
+      )}
+    >
+      {(onLongPress) => children(undefined, onLongPress)}
+    </LongPressMenu>
+  );
+}
+
+function IosSongContext({
+  song,
+  removal,
+  href,
+  children,
+}: SongContextLinkProps & {
+  href: NonNullable<ReturnType<typeof entityHref>>;
+}) {
+  const entries = useSongMenuEntries({ song, removal });
+  return (
+    <ContextLink
+      href={href}
+      entries={entries}
+      preview={songPreview(song)}
+      tapOpens={false}
+    >
+      {(wrap) => children(wrap)}
+    </ContextLink>
   );
 }
 

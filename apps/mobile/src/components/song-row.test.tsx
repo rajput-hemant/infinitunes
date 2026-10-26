@@ -56,6 +56,23 @@ describe("SongRow", () => {
     expect(app.getPathname()).toBe("/song/fa9la/BSaNI3Yr-token");
   });
 
+  it("opens the song menu on a long press, not only from the More button", async () => {
+    await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
+    expect(screen.queryByTestId("card-menu")).toBeNull();
+
+    await fireEvent(
+      screen.getByRole("button", { name: "FA9LA & Friends" }),
+      "longPress",
+    );
+    await fireEvent(screen.getByTestId("card-menu"), "pressAction", {
+      nativeEvent: { event: "add-to-queue" },
+    });
+
+    expect(playerStore.getState().queue.map((entry) => entry.id)).toEqual([
+      song.id,
+    ]);
+  });
+
   it("plays its list when pressed", async () => {
     const onPress = jest.fn();
     await renderScreen(<SongRow song={song} onPress={onPress} />);

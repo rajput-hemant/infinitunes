@@ -155,7 +155,7 @@ export function MediaCard({
 
   return (
     <View style={{ width: edge }}>
-      <CardLink href={href} name={item.name} entries={entries}>
+      <CardLink href={href} name={item.name} entries={entries} item={item}>
         {(onLongPress) => (
           <Pressable
             onPress={onPress}

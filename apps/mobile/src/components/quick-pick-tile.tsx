@@ -1,4 +1,4 @@
-import type { MediaType } from "@infinitunes/types";
+import type { CardItem } from "@infinitunes/types";
 import type { Href } from "expo-router";
 import { Platform, Pressable, View } from "react-native";
 import Animated from "react-native-reanimated";
@@ -32,7 +32,7 @@ type QuickPickTileProps = {
   /** What a tap does, when the title does not say it (Surprise me). */
   accessibilityHint?: string;
   /** The catalog item behind the tile: its long press offers Play, Play Next and Add to Queue. */
-  item?: { type: MediaType; url: string };
+  item?: CardItem;
 };
 
 /** Material's tiles sit on a tonal surface container; iOS's on a translucent fill. */
@@ -143,7 +143,7 @@ export function QuickPickTile({
   return (
     <Animated.View style={[{ width }, press.style]}>
       {href ? (
-        <CardLink href={href} name={title} entries={entries}>
+        <CardLink href={href} name={title} entries={entries} item={item}>
           {pressable}
         </CardLink>
       ) : (
