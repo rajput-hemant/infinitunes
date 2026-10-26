@@ -1,7 +1,8 @@
 import type { MediaType } from "@infinitunes/types";
 import { router, useSegments } from "expo-router";
+import type { Href } from "expo-router";
 
-import { entityHref } from "./entity-href";
+import { creditsHref, entityHref } from "./entity-href";
 
 /**
  * Opens an item's screen from a handler (a menu action, not a `Link`).
@@ -10,9 +11,19 @@ import { entityHref } from "./entity-href";
  * screen opens in the tab beneath them.
  */
 export function useOpenEntity() {
+  const open = useOpenHref();
+  return (type: MediaType, url: string) => open(entityHref(type, url));
+}
+
+/** Opens a song's Credits screen, the same way. */
+export function useOpenCredits() {
+  const open = useOpenHref();
+  return (url: string) => open(creditsHref(url));
+}
+
+function useOpenHref() {
   const inModal = useSegments()[0] !== "(tabs)";
-  return (type: MediaType, url: string) => {
-    const href = entityHref(type, url);
+  return (href: Href | undefined) => {
     if (!href) return;
     if (inModal) router.dismissAll();
     router.push(href);

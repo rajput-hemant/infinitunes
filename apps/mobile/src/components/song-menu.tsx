@@ -12,7 +12,7 @@ import {
 } from "~/lib/notifications";
 import { preferencesStore } from "~/lib/preferences";
 import { shareItem } from "~/lib/share";
-import { useOpenEntity } from "~/navigation/use-open-entity";
+import { useOpenCredits, useOpenEntity } from "~/navigation/use-open-entity";
 import { playerStore } from "~/playback/player-store";
 import { radioSeedOf } from "~/playback/radio";
 import {
@@ -83,7 +83,7 @@ type SongMenuProps = {
 
 /**
  * A track's actions in the platform menu: play next, add to queue, add to
- * playlist, play radio, its own page, go to album or artist, share,
+ * playlist, play radio, its own page, credits, go to album or artist, share,
  * download, and the
  * list's own removal.
  */
@@ -92,6 +92,7 @@ export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
   const playlists = useUserPlaylists();
   const membership = usePlaylistMembership();
   const openEntity = useOpenEntity();
+  const openCredits = useOpenCredits();
   const { playNext, addToQueue } = playerStore.getState();
   const isSong = song.type === "song";
 
@@ -132,6 +133,14 @@ export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
     image: "info.circle",
     run: () => openEntity(song.type, song.url),
   });
+  if (isSong) {
+    entries.push({
+      id: "credits",
+      title: "View Credits",
+      image: "info.circle",
+      run: () => openCredits(song.url),
+    });
+  }
   const { albumUrl } = song;
   if (isSong && albumUrl) {
     entries.push({

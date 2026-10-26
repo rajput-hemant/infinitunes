@@ -67,6 +67,17 @@ export function entityHref(type: MediaType, url: string): Href | undefined {
   }
 }
 
+/** A song's Credits screen (`/song/<name>/<token>/credits`), mobile only. */
+export function creditsHref(url: string): Href | undefined {
+  const route = routeOf("song", url);
+  return route?.kind === "entity"
+    ? {
+        pathname: "/song/[name]/[token]/credits",
+        params: { name: route.name, token: route.token },
+      }
+    : undefined;
+}
+
 /** The item's page path, the same on the web (`undefined` for a URL that is not one). */
 export function entityPath(type: MediaType, url: string): string | undefined {
   const route = routeOf(type, url);

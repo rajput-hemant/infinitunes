@@ -93,23 +93,15 @@ describe("SongScreen", () => {
     expect(screen.queryByText("Play")).toBeNull();
   });
 
-  it("shows the header, credits and the album's other songs", async () => {
+  it("shows the header and the album's other songs", async () => {
     await renderScreen(<SongScreen token="song-token" />);
 
     expect(await screen.findByText("FA9LA & Friends")).toBeOnTheScreen();
     expect(screen.getByText(/^Song · \d{4}$/)).toBeOnTheScreen();
     expect(screen.getAllByText("Flipperachi").length).toBeGreaterThan(0);
-    expect(
-      screen.getByRole("link", { name: "FA9LA, Album" }),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByRole("link", { name: "Flipperachi, Singer" }),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByRole("link", { name: "Outlaw Productions, Label" }),
-    ).toBeOnTheScreen();
-    expect(screen.getByText("(P) 2024 Outlaw Productions")).toBeOnTheScreen();
-    expect(screen.getByText(/01:45/)).toBeOnTheScreen();
+    // Credits live on their own screen, not inline.
+    expect(screen.queryByRole("header", { name: "Credits" })).toBeNull();
+    expect(screen.queryByText("(P) 2024 Outlaw Productions")).toBeNull();
     expect(await screen.findByText("Album Neighbour")).toBeOnTheScreen();
     expect(
       screen.getByRole("header", { name: "More from FA9LA" }),
@@ -133,6 +125,17 @@ describe("SongScreen", () => {
     expect(playerStore.getState().queue.map((entry) => entry.id)).toEqual([
       "BSaNI3Yr",
     ]);
+  });
+
+  it("opens the credits screen from its menu", async () => {
+    const app = await renderScreen(<SongScreen token="song-token" />, {
+      routes: { "song/[name]/[token]/credits": () => null },
+    });
+    await screen.findByText("FA9LA & Friends");
+
+    await chooseMenuAction("More actions for FA9LA & Friends", "credits");
+
+    expect(app.getPathname()).toBe("/song/fa9la/BSaNI3Yr-token/credits");
   });
 
   it("plays just this song", async () => {
