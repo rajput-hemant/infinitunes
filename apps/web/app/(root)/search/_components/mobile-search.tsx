@@ -78,7 +78,12 @@ function MobileSearchContent({ topSearches }: MobileSearchProps) {
                 <h2 id="recent-searches" className={searchUi.sectionTitle}>
                   Recent searches
                 </h2>
-                <button type="button" onClick={clear} className={searchUi.link}>
+                <button
+                  type="button"
+                  aria-label="Clear recent searches"
+                  onClick={clear}
+                  className={searchUi.link}
+                >
                   Clear
                 </button>
               </div>

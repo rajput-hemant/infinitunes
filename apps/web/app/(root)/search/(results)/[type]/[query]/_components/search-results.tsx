@@ -118,7 +118,7 @@ function SearchResultsContent(props: SearchResultsProps) {
       )}
 
       {hasNextPage ? (
-        <div
+        <output
           ref={ref}
           className="flex items-center justify-center gap-2 py-4 text-sm font-medium text-muted-foreground"
         >
@@ -128,7 +128,7 @@ function SearchResultsContent(props: SearchResultsProps) {
               Loading...
             </>
           ) : null}
-        </div>
+        </output>
       ) : (
         <p className="py-6 text-center text-sm text-muted-foreground">
           You have reached the end of these results.

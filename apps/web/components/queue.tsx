@@ -142,6 +142,7 @@ export function Queue({ open, onOpenChange }: QueueProps) {
               {upNext > 0 && (
                 <button
                   type="button"
+                  aria-label="Clear up next"
                   onClick={clearUpNext}
                   className={cn(
                     controlStyles.textLg,

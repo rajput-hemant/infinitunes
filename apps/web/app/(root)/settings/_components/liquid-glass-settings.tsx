@@ -207,7 +207,10 @@ function LensFineTune() {
       </SettingsRow>
 
       {open && (
-        <div id={panelId}>
+        <div
+          id={panelId}
+          className="animate-in fade-in-0 duration-base ease-out"
+        >
           {lensSliders.map((slider) => (
             <SettingsRow
               key={slider.key}
