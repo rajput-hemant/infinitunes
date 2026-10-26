@@ -1,4 +1,3 @@
-import { selectionAsync } from "expo-haptics";
 import { useTheme } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import type { AnimationSpec } from "expo-symbols";
@@ -14,6 +13,7 @@ import Animated, {
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
+import { selection } from "~/lib/haptics";
 import { usePressScale } from "~/lib/use-press-scale";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { playerStore, usePlayer } from "~/playback/player-store";
@@ -265,7 +265,7 @@ export function ModeToggle({ icon, label, on, onPress }: ModeToggleProps) {
   return (
     <Pressable
       onPress={() => {
-        void selectionAsync();
+        selection();
         onPress();
       }}
       accessibilityRole="button"
