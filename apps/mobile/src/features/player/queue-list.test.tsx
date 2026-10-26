@@ -1,6 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { act, fireEvent, screen, within } from "@testing-library/react-native";
+import { fireEvent, screen } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import { playerColorsFromSeed } from "~/lib/artwork-colors";
 import { playerStore } from "~/playback/player-store";
@@ -22,6 +23,8 @@ beforeEach(() => {
   playerStore.setState(initial, true);
   playerStore.getState().playTracks(rows, { startIndex: 1 });
 });
+
+afterEach(() => jest.restoreAllMocks());
 
 describe("QueueList", () => {
   it("shows only what comes next (the player's header shows what plays)", async () => {
@@ -47,9 +50,21 @@ describe("QueueList", () => {
     expect(screen.getByText("Nothing else is queued.")).toBeOnTheScreen();
   });
 
-  it("removes an entry from its long-press menu", async () => {
+  it("removes an entry from its long-press context menu (iOS: the system menu, one per row)", async () => {
+    await renderScreen(<QueueList />);
+    await screen.findByRole("button", { name: "Delta" });
+
+    const menu = screen.getByTestId("queue-row-menu-d");
+    await fireEvent(menu, "pressAction", { nativeEvent: { event: "remove" } });
+
+    expect(ids()).toEqual(["a", "b", "c"]);
+  });
+
+  it("opens the dropdown on a long press on Android, mounting it then", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
     await renderScreen(<QueueList />);
     const delta = await screen.findByRole("button", { name: "Delta" });
+    expect(screen.queryByTestId("queue-row-menu")).toBeNull();
 
     await fireEvent(delta, "longPress");
     await fireEvent(screen.getByTestId("queue-row-menu"), "pressAction", {
@@ -96,34 +111,20 @@ describe("QueueList", () => {
     expect(ids()).toEqual(["a", "b", "d", "c", "d"]);
   });
 
-  it("paints the whole row, handle included, as an opaque card while a touch rests", async () => {
-    jest.useFakeTimers();
-    try {
-      await renderScreen(<QueueList />);
-      const [row] = await screen.findAllByTestId("queue-row");
-      if (!row) throw new Error("no queue row");
-      expect(row.props.style).toBeUndefined();
-      // The drag handle is the row's own child, so the lifted region includes it.
-      expect(
-        within(row).getByRole("button", { name: /^Reorder / }),
-      ).toBeOnTheScreen();
+  it("highlights the whole row while pressed, the drag handle inside it", async () => {
+    await renderScreen(<QueueList />);
+    const delta = await screen.findByRole("button", { name: "Delta" });
+    const handle = screen.getByRole("button", { name: "Reorder Delta" });
 
-      await fireEvent(row, "touchStart");
-      await act(async () => {
-        jest.advanceTimersByTime(300);
-      });
-      expect(screen.getAllByTestId("queue-row")[0]?.props.style).toMatchObject({
-        backgroundColor: expect.any(String),
-        borderRadius: expect.any(Number),
-      });
+    await fireEvent(delta, "pressIn");
 
-      await fireEvent(row, "touchEnd");
-      expect(
-        screen.getAllByTestId("queue-row")[0]?.props.style,
-      ).toBeUndefined();
-    } finally {
-      jest.useRealTimers();
+    let node = handle.parent;
+    let highlighted = false;
+    while (node && !highlighted) {
+      highlighted = String(node.props.className ?? "").includes("bg-fill-2");
+      node = node.parent;
     }
+    expect(highlighted).toBe(true);
   });
 
   it("reorders up next by dragging", async () => {

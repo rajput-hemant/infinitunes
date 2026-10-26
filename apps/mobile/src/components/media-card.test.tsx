@@ -61,6 +61,8 @@ describe("MediaCard", () => {
       list: [rawSong({ id: "s1" }), rawSong({ id: "s2" })],
     });
     procedure("album.details").mockResolvedValue(album);
+    // Android mounts its menu on the long press; iOS wraps the card in the system menu.
+    jest.replaceProperty(Platform, "OS", "android");
     await renderScreen(<MediaCard item={toCardItem(album)} />, {
       routes: { "album/[name]/[token]": () => null },
     });

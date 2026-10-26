@@ -202,8 +202,8 @@ export function CardLink({
   ) : (
     <LongPressMenu
       href={href}
-      renderMenu={(ref, anchor) => (
-        <NativeMenu title={name} entries={entries} ref={ref}>
+      renderMenu={(options, anchor) => (
+        <NativeMenu title={name} entries={entries} {...options}>
           {anchor}
         </NativeMenu>
       )}
