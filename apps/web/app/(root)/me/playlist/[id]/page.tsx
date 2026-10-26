@@ -24,6 +24,7 @@ import { SongList } from "~/components/song-list/song-list";
 import { controlStyles } from "~/lib/control-styles";
 import { getPlaylistDetails } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
+import { requireUser } from "~/lib/viewer";
 
 type PlaylistPageProps = {
   params: Promise<{
@@ -65,6 +66,7 @@ export async function generateMetadata({
 }
 
 export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
+  await requireUser();
   const { id } = await params;
 
   const playlist = await getPlaylist(id);
@@ -86,6 +88,10 @@ export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
   });
   const playlistSongs = playlistEntries.map(({ song }) => song);
   const playlistSongIndices = playlistEntries.map(({ dbIndex }) => dbIndex);
+  const totalSeconds = playlistSongs.reduce(
+    (acc, song) => acc + Number(song.more_info.duration),
+    0,
+  );
   const unavailableCount = songs.length - playlistSongs.length;
 
   const imageSrcs = playlistSongs
@@ -124,16 +130,15 @@ export default async function MyPlaylistPage({ params }: PlaylistPageProps) {
               description={description}
             />
             <p>
-              <span>{songs.length} Songs</span>
+              <span>
+                {songs.length} {songs.length === 1 ? "Song" : "Songs"}
+              </span>
               {playlistSongs.length > 0 && (
                 <span>
                   {" · "}
                   {formatDuration(
-                    playlistSongs.reduce(
-                      (acc, song) => acc + Number(song.more_info.duration),
-                      0,
-                    ),
-                    "mm:ss",
+                    totalSeconds,
+                    totalSeconds >= 3600 ? "hh:mm:ss" : "mm:ss",
                   )}
                 </span>
               )}
