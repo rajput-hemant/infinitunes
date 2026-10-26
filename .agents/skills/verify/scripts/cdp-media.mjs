@@ -1,21 +1,19 @@
-#!/usr/bin/env node
+#!/usr/bin/env bun
 // Capture a page under media emulation the T3 browser tools cannot set (forced-colors).
-// Usage: node cdp-media.mjs <origin> <path> <width> <height> <light|dark> <forced|none> <out.png> [email password]
+// Usage: bun cdp-media.mjs <origin> <path> <width> <height> <light|dark> <forced|none> <out.png> [email password]
 // Starts its own throwaway headless Chrome (random port, temp profile) and closes it.
-import { spawn } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { $ } from "bun";
 
-const [origin, path, w, h, scheme, forced, out, email, password] = process.argv.slice(2);
+const [origin, path, w, h, scheme, forced, out, email, password] = Bun.argv.slice(2);
 const chromeBin =
-  process.env.CHROME_BIN ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  Bun.env.CHROME_BIN ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const port = 9400 + Math.floor(Math.random() * 400);
-const dir = mkdtempSync(join(tmpdir(), "verify-cdp-"));
-const chrome = spawn(
-  chromeBin,
-  ["--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${dir}`, "--no-first-run", "about:blank"],
-  { stdio: "ignore" },
+// Chrome creates the profile directory itself; mktemp makes the name unique.
+const tmp = (Bun.env.TMPDIR ?? "/tmp").replace(/\/$/, "");
+const dir = (await $`mktemp -d ${`${tmp}/verify-cdp-XXXXXX`}`.text()).trim();
+const chrome = Bun.spawn(
+  [chromeBin, "--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${dir}`, "--no-first-run", "about:blank"],
+  { stdin: "ignore", stdout: "ignore", stderr: "ignore" },
 );
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 try {
@@ -65,11 +63,11 @@ try {
     expression: `({forced:matchMedia('(forced-colors: active)').matches,dark:matchMedia('(prefers-color-scheme: dark)').matches,iw:innerWidth,over:document.documentElement.scrollWidth-innerWidth,h1:document.querySelectorAll('h1').length,bodyColor:getComputedStyle(document.body).color,bodyBg:getComputedStyle(document.body).backgroundColor})`,
   });
   const shot = await send("Page.captureScreenshot", { format: "png" });
-  writeFileSync(out, Buffer.from(shot.data, "base64"));
+  await Bun.write(out, Buffer.from(shot.data, "base64"));
   console.log(JSON.stringify(probe.result.value));
   ws.close();
 } finally {
   chrome.kill();
-  await new Promise((r) => (chrome.exitCode === null ? chrome.once("exit", r) : r()));
-  rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  await chrome.exited;
+  await $`rm -rf ${dir}`;
 }

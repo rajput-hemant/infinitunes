@@ -77,7 +77,7 @@ Recipes that worked on this app:
 - **Iframes do not work** for multi-page sweeps: the app refuses framing (`contentDocument` is null). Navigate per page.
 - **Seek.** `preview_click` at x,y on the player track (y about 722 at 1280x800, full width) seeks. `preview_drag` timed out on the moving thumb. For a drag, dispatch `pointerdown` on `[data-slot=slider-thumb]`, then `pointermove` on `document`, then `pointerup` from `preview_evaluate`, reading `input[type=range].value` after each step; it tracks the pointer and playback continues. Label that run a synthetic pointer drag.
 - **Forced colors, or any media feature the T3 tools cannot set:** [scripts/cdp-media.mjs](scripts/cdp-media.mjs), e.g.
-  `node .agents/skills/verify/scripts/cdp-media.mjs http://localhost:$PORT /me/liked-songs 390 844 light forced out.png user@example.test 'Password!1'`
+  `bun .agents/skills/verify/scripts/cdp-media.mjs http://localhost:$PORT /me/liked-songs 390 844 light forced out.png user@example.test 'Password!1'`
   It starts its own throwaway headless Chrome, signs in over the Better Auth API, emulates the media (`light|dark`, `forced|none`), saves a PNG, prints a JSON probe (`forced`, `iw`, `over`, `h1`, body colors) and deletes its profile. Needs Chrome at `/Applications/Google Chrome.app` or `CHROME_BIN`.
 
 Non-browser drives:

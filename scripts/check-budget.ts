@@ -30,10 +30,6 @@
  *
  *   bun run build && bun run budget
  */
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { gzipSync } from "node:zlib";
-
 // --- Config ------------------------------------------------------------
 
 export type RouteClass =
@@ -146,18 +142,18 @@ export type RouteStat = {
   firstLoadChunkPaths: string[];
 };
 
-/** Reads the build output. The real implementation lives in {@link nodeFileSystem}. */
+/** Reads the build output. The real implementation lives in {@link bunFileSystem}. */
 export type FileSystemAdapter = {
   /** Every route's initial chunks, from route-bundle-stats.json. */
-  readRouteStats(): RouteStat[];
+  readRouteStats(): RouteStat[] | Promise<RouteStat[]>;
   /** Chunks that are only loaded as `noModule` polyfills (build-manifest `polyfillFiles`). */
-  polyfillFiles(): string[];
+  polyfillFiles(): string[] | Promise<string[]>;
   /** The `href` of every `rel=preload; as=font` link the route's `.meta` file sends. */
-  fontPreloadHrefs(route: string): string[];
+  fontPreloadHrefs(route: string): string[] | Promise<string[]>;
   /** Gzip (level 9) size in bytes of a file, by its path relative to `.next`. */
-  gzipSizeOf(file: string): number;
+  gzipSizeOf(file: string): number | Promise<number>;
   /** Contents of a file, by its path relative to `.next`. */
-  readText(file: string): string;
+  readText(file: string): string | Promise<string>;
 };
 
 export type RouteRow = {
@@ -247,20 +243,20 @@ export function fontPreloadHrefsFromLink(linkHeader: string): string[] {
  * Evaluates the performance budget against a build's output.
  * Pure over the adapter: same adapter answers in, same report out.
  */
-export function evaluateBudget(
+export async function evaluateBudget(
   fs: FileSystemAdapter,
   config: BudgetConfig = defaultConfig,
-): BudgetReport {
+): Promise<BudgetReport> {
   assertWithinCaps(config);
 
-  const stats = fs.readRouteStats();
+  const stats = await fs.readRouteStats();
   if (stats.length === 0) {
     throw new Error(
       "route-bundle-stats.json lists no routes. Rebuild the app.",
     );
   }
 
-  const polyfills = new Set(fs.polyfillFiles().map(toNextRelative));
+  const polyfills = new Set((await fs.polyfillFiles()).map(toNextRelative));
   const routes = stats
     .map((stat) => ({
       route: stat.route,
@@ -279,29 +275,33 @@ export function evaluateBudget(
   const frameworkSet = new Set(frameworkChunks);
 
   const sizeCache = new Map<string, number>();
-  const gzipKB = (file: string): number => {
+  const gzipKB = async (file: string): Promise<number> => {
     let bytes = sizeCache.get(file);
     if (bytes === undefined) {
-      bytes = fs.gzipSizeOf(file);
+      bytes = await fs.gzipSizeOf(file);
       sizeCache.set(file, bytes);
     }
     return bytes / 1024;
   };
-  const sumKB = (files: string[]) =>
-    files.reduce((sum, file) => sum + gzipKB(file), 0);
+  const sumKB = async (files: string[]): Promise<number> => {
+    let total = 0;
+    for (const file of files) total += await gzipKB(file);
+    return total;
+  };
 
-  const frameworkKB = sumKB(frameworkChunks);
+  const frameworkKB = await sumKB(frameworkChunks);
 
-  const rows: RouteRow[] = routes.map(({ route, chunks }) => {
-    const fonts = fs.fontPreloadHrefs(route).map(toNextRelative);
+  const rows: RouteRow[] = [];
+  for (const { route, chunks } of routes) {
+    const fonts = (await fs.fontPreloadHrefs(route)).map(toNextRelative);
     const category = classifyRoute(route);
     const ceilingKB =
       category === "unknown" ? null : config.ceilingsKB[category];
-    const totalKB = sumKB(chunks);
-    const pageSpecificKB = sumKB(
+    const totalKB = await sumKB(chunks);
+    const pageSpecificKB = await sumKB(
       chunks.filter((chunk) => !frameworkSet.has(chunk)),
     );
-    const fontKB = sumKB(fonts);
+    const fontKB = await sumKB(fonts);
 
     const reasons: string[] = [];
     if (ceilingKB !== null && totalKB > ceilingKB) {
@@ -320,7 +320,7 @@ export function evaluateBudget(
       );
     }
 
-    return {
+    rows.push({
       route,
       category,
       totalKB,
@@ -335,12 +335,12 @@ export function evaluateBudget(
             ? "FAIL"
             : "OK",
       reasons,
-    };
-  });
+    });
+  }
 
   const forbiddenHits: ForbiddenHit[] = [];
   for (const chunk of frameworkChunks) {
-    const text = fs.readText(chunk);
+    const text = await fs.readText(chunk);
     for (const needle of config.forbiddenStrings) {
       if (text.includes(needle)) forbiddenHits.push({ chunk, needle });
     }
@@ -421,13 +421,7 @@ export function formatReport(report: BudgetReport): string {
 // --- Real adapter ------------------------------------------------------------
 
 /** `apps/web/.next`, resolved from this script's location (repo `scripts/`). */
-export const DEFAULT_NEXT_DIR = join(
-  import.meta.dir,
-  "..",
-  "apps",
-  "web",
-  ".next",
-);
+export const DEFAULT_NEXT_DIR = `${import.meta.dir}/../apps/web/.next`;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -457,27 +451,31 @@ function parseRouteStats(value: unknown): RouteStat[] {
   });
 }
 
-export function nodeFileSystem(nextDir = DEFAULT_NEXT_DIR): FileSystemAdapter {
-  const existing = (file: string): string => {
-    const full = join(nextDir, file);
-    if (!existsSync(full)) {
+export function bunFileSystem(nextDir = DEFAULT_NEXT_DIR): FileSystemAdapter {
+  const existing = async (file: string): Promise<string> => {
+    const full = `${nextDir}/${file}`;
+    if (!(await Bun.file(full).exists())) {
       throw new Error(
         `Missing build output ${file} under ${nextDir}. Run \`next build\` in apps/web first.`,
       );
     }
     return full;
   };
-  const readJson = (file: string): unknown =>
-    JSON.parse(readFileSync(existing(file), "utf8"));
+  const readJson = async (file: string): Promise<unknown> =>
+    Bun.file(await existing(file)).json();
 
   return {
-    readRouteStats(): RouteStat[] {
-      return parseRouteStats(readJson("diagnostics/route-bundle-stats.json"));
+    async readRouteStats(): Promise<RouteStat[]> {
+      return parseRouteStats(
+        await readJson("diagnostics/route-bundle-stats.json"),
+      );
     },
-    polyfillFiles(): string[] {
+    async polyfillFiles(): Promise<string[]> {
       // Optional: without a build manifest nothing is treated as a polyfill.
-      if (!existsSync(join(nextDir, "build-manifest.json"))) return [];
-      const manifest = readJson("build-manifest.json");
+      if (!(await Bun.file(`${nextDir}/build-manifest.json`).exists())) {
+        return [];
+      }
+      const manifest = await readJson("build-manifest.json");
       if (!isRecord(manifest) || !Array.isArray(manifest.polyfillFiles)) {
         return [];
       }
@@ -485,11 +483,11 @@ export function nodeFileSystem(nextDir = DEFAULT_NEXT_DIR): FileSystemAdapter {
         (file): file is string => typeof file === "string",
       );
     },
-    fontPreloadHrefs(route: string): string[] {
+    async fontPreloadHrefs(route: string): Promise<string[]> {
       // Pages with no `.meta` file (never prerendered) preload nothing.
       const metaFile = `server/app/${route === "/" ? "index" : route.slice(1)}.meta`;
-      if (!existsSync(join(nextDir, metaFile))) return [];
-      const meta = readJson(metaFile);
+      if (!(await Bun.file(`${nextDir}/${metaFile}`).exists())) return [];
+      const meta = await readJson(metaFile);
       const headers =
         isRecord(meta) && isRecord(meta.headers) ? meta.headers : {};
       const link = headers.link;
@@ -500,13 +498,14 @@ export function nodeFileSystem(nextDir = DEFAULT_NEXT_DIR): FileSystemAdapter {
           : "";
       return fontPreloadHrefsFromLink(linkHeader);
     },
-    gzipSizeOf(file: string): number {
+    async gzipSizeOf(file: string): Promise<number> {
       // Chunk names are content-hashed, so a missing file means the stats
       // drifted from the build, not a transient issue.
-      return gzipSync(readFileSync(existing(file)), { level: 9 }).length;
+      const bytes = await Bun.file(await existing(file)).bytes();
+      return Bun.gzipSync(bytes, { level: 9 }).byteLength;
     },
-    readText(file: string): string {
-      return readFileSync(existing(file), "utf8");
+    async readText(file: string): Promise<string> {
+      return Bun.file(await existing(file)).text();
     },
   };
 }
@@ -515,7 +514,7 @@ export function nodeFileSystem(nextDir = DEFAULT_NEXT_DIR): FileSystemAdapter {
 
 if (import.meta.main) {
   try {
-    const report = evaluateBudget(nodeFileSystem());
+    const report = await evaluateBudget(bunFileSystem());
     console.log(formatReport(report));
     if (!report.ok) {
       console.error("\nPerformance budget check failed.");
