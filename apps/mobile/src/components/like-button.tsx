@@ -37,6 +37,7 @@ export function LikeButton({
 
   return (
     <IconButton
+      haptic={false}
       icon={
         liked
           ? { ios: "heart.fill", android: "favorite" }
