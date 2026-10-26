@@ -56,6 +56,14 @@ async function openFineTune(container: HTMLElement) {
   await act(async () => toggle.click());
 }
 
+function panelIdOf(container: HTMLElement) {
+  const id = container
+    .querySelector("button[aria-label='Fine-tune the lens']")
+    ?.getAttribute("aria-controls");
+  if (!id) throw new Error("No panel id");
+  return id;
+}
+
 function sliderFor(container: HTMLElement, label: string) {
   const text = [...container.querySelectorAll("label")].find(
     (element) => element.textContent === label,
@@ -105,6 +113,18 @@ beforeEach(() => {
 });
 
 describe("liquid glass tuning", () => {
+  it("fades the fine-tune panel in when it opens", async () => {
+    const container = await mount(<LiquidGlassSettings />);
+    expect(
+      container.querySelector("#" + CSS.escape(panelIdOf(container))),
+    ).toBeNull();
+    await openFineTune(container);
+    const panel = document.getElementById(panelIdOf(container));
+    // Fade only: reduced motion keeps opacity transitions (see globals.css).
+    expect(panel?.className).toContain("fade-in-0");
+    expect(panel?.className).not.toContain("slide-in");
+  });
+
   it("hydrates a saved dark theme without a mismatch", async () => {
     localStorage.setItem("theme", "dark");
     const tree = (

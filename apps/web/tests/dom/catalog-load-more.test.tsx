@@ -76,3 +76,23 @@ it("shows a loading state while the next page is fetching", async () => {
   expect(container.textContent).toContain("Loading...");
   expect(container.textContent).not.toContain("You have seen it all");
 });
+
+it("keeps a persistent status region so the loading text is announced", async () => {
+  const container = await render({
+    hasNextPage: true,
+    isFetchingNextPage: false,
+    onLoadMore: () => {},
+  });
+  // Present while idle: a live region must exist before its content appears.
+  const status = container.querySelector("output");
+  expect(status).not.toBeNull();
+  expect(status?.textContent).toBe("");
+
+  const loading = await render({
+    hasNextPage: true,
+    isFetchingNextPage: true,
+    onLoadMore: () => {},
+  });
+  const spinner = loading.querySelector("svg");
+  expect(spinner?.getAttribute("aria-hidden")).toBe("true");
+});
