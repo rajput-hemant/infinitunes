@@ -71,10 +71,7 @@ export const defaultConfig: BudgetConfig = {
   maxFontPreloads: 2,
   maxFontPreloadKB: 100,
   forbiddenStrings: ["ZodError", "navigator.credentials"],
-  // TODO: "warn" means the Zod/passkey shell-chunk rule cannot fail CI. Needs a
-  // build (`bun run build && bun run budget`) to confirm the shared chunks are
-  // clean of `forbiddenStrings`, then flip to "error".
-  forbiddenMode: "warn",
+  forbiddenMode: "error",
 };
 
 /** Hard caps: a config can never exceed these, whatever is measured. */
