@@ -35,6 +35,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { EmptyState } from "~/components/empty-state";
 import { ExplicitBadge } from "~/components/explicit-badge";
 import { LikeButton } from "~/components/like-button";
+import { MeasuredBox } from "~/components/measured-box";
 import { MenuTrigger } from "~/components/menu-trigger";
 import { SongMenu } from "~/components/song-menu";
 import { Artwork, artworkFrame } from "~/components/ui/artwork";
@@ -598,28 +599,34 @@ function HeaderControls({ track }: { track: Queue }) {
       />
       <PillFrame>
         {(ink) => (
-          <SongMenu song={track} style={styles.fill}>
-            <View
-              accessible
-              accessibilityRole="button"
-              accessibilityLabel={`More actions for ${track.name}`}
-              accessibilityHint="Opens a menu"
-              className="items-center justify-center active:opacity-70"
-              style={styles.fill}
-            >
-              <View
-                style={Platform.select({
-                  ios: { transform: [{ rotate: "90deg" }] },
-                })}
-              >
-                <Icon
-                  name={{ ios: "ellipsis", android: "more_vert" }}
-                  size="md"
-                  color={ink}
-                />
-              </View>
-            </View>
-          </SongMenu>
+          // The menu host hugs its child and sits at the pill's top: hand the
+          // trigger the pill's own size so it fills and centres its glyph.
+          <MeasuredBox testID="more-pill-frame" style={styles.fill}>
+            {(box) => (
+              <SongMenu song={track} style={box}>
+                <View
+                  accessible
+                  accessibilityRole="button"
+                  accessibilityLabel={`More actions for ${track.name}`}
+                  accessibilityHint="Opens a menu"
+                  className="items-center justify-center active:opacity-70"
+                  style={box ?? styles.fill}
+                >
+                  <View
+                    style={Platform.select({
+                      ios: { transform: [{ rotate: "90deg" }] },
+                    })}
+                  >
+                    <Icon
+                      name={{ ios: "ellipsis", android: "more_vert" }}
+                      size="md"
+                      color={ink}
+                    />
+                  </View>
+                </View>
+              </SongMenu>
+            )}
+          </MeasuredBox>
         )}
       </PillFrame>
     </View>
