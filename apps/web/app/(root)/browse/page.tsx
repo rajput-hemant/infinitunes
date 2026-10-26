@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 
+import { CatalogHeader } from "~/components/catalog/catalog-header";
+import { CategoryTilesSkeleton } from "~/components/catalog/catalog-skeleton";
 import { languages } from "~/config/languages";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
@@ -7,8 +9,6 @@ import { api } from "~/lib/trpc/server";
 import { asRoute, getHref } from "~/lib/utils";
 
 import { BrowseTile } from "./_components/browse-tile";
-import { CatalogHeader } from "./_components/catalog-header";
-import { CategoryTilesSkeleton } from "./_components/catalog-skeleton";
 import { tileColor, tileGradient } from "./_components/tile-palette";
 
 const tileGridClassName =

@@ -2,13 +2,10 @@ import { formatCount, uniqueBy } from "@infinitunes/types";
 import { Users } from "lucide-react";
 import { Suspense } from "react";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
-import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
-import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
-import {
-  CatalogEmpty,
-  CatalogEnd,
-} from "~/app/(root)/browse/_components/catalog-states";
+import { CatalogGrid } from "~/components/catalog/catalog-grid";
+import { CatalogHeader } from "~/components/catalog/catalog-header";
+import { CatalogGridSkeleton } from "~/components/catalog/catalog-skeleton";
+import { CatalogEmpty, CatalogEnd } from "~/components/catalog/catalog-states";
 import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
 import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
