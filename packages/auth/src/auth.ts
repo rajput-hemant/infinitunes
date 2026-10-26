@@ -15,8 +15,9 @@ import { betterAuth } from "better-auth";
 import type { BetterAuthPlugin } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import { and, desc, eq, ne } from "drizzle-orm";
 
-import { resetPasswordEmail } from "./emails";
+import { changeEmailVerificationEmail, resetPasswordEmail } from "./emails";
 import { authEnv, resolveAuthUrl } from "./env";
 import { createSendEmail } from "./mail";
 import type { SendEmail } from "./mail";
@@ -28,6 +29,9 @@ import { webRedirectsOnly } from "./web-redirects";
 /** Reset links are single use and expire after an hour (Better Auth default, pinned). */
 export const RESET_TOKEN_TTL_SECONDS = 60 * 60;
 
+/** Email-change confirmation links expire after an hour. */
+export const EMAIL_CHANGE_TTL_SECONDS = 60 * 60;
+
 /**
  * Per-IP throttles on the reset endpoints (Better Auth's built-in limiter,
  * production only). Counters live in `infinitunes_rate_limit` (SE-17), so the
@@ -37,6 +41,8 @@ export const RESET_TOKEN_TTL_SECONDS = 60 * 60;
 export const RESET_RATE_LIMITS = {
   "/request-password-reset": { window: 60, max: 3 },
   "/reset-password": { window: 60, max: 5 },
+  // Configuring `sendVerificationEmail` also exposes this public mailer.
+  "/send-verification-email": { window: 60, max: 3 },
 } as const;
 
 type OAuthCredentials = { clientId: string; clientSecret: string };
@@ -75,6 +81,47 @@ function assertNewPasswordLength(password: unknown) {
     throw new APIError("BAD_REQUEST", {
       message: result.error.issues[0]!.message,
     });
+  }
+}
+
+/**
+ * Signs out every other device once an email change is confirmed (the change
+ * used to do this when it was written). `keepToken` is the session that stays:
+ * the confirming browser's own, else the newest one (Better Auth just minted it
+ * for a browser that had none). Failures are logged, never thrown: the email
+ * has already changed by the time this runs.
+ */
+export async function revokeOtherSessions(
+  db: DbClient,
+  userId: string,
+  keepToken: string | undefined,
+) {
+  try {
+    let keep = keepToken;
+    if (!keep) {
+      const [newest] = await db
+        .select({ token: betterAuthSessions.token })
+        .from(betterAuthSessions)
+        .where(eq(betterAuthSessions.userId, userId))
+        .orderBy(desc(betterAuthSessions.createdAt))
+        .limit(1);
+      keep = newest?.token;
+    }
+    await db
+      .delete(betterAuthSessions)
+      .where(
+        keep
+          ? and(
+              eq(betterAuthSessions.userId, userId),
+              ne(betterAuthSessions.token, keep),
+            )
+          : eq(betterAuthSessions.userId, userId),
+      );
+  } catch (error) {
+    console.error(
+      "[auth] revoking sessions after an email change failed:",
+      error instanceof Error ? error.message : "unknown error",
+    );
   }
 }
 
@@ -144,7 +191,11 @@ export function createAuth(
     env.GITHUB_CLIENT_SECRET,
   );
 
-  return betterAuth({
+  // Set once Better Auth exists: the confirm hook reads the opener's session.
+  let sessionTokenOf = async (_headers: Headers): Promise<string | undefined> =>
+    undefined;
+
+  const auth = betterAuth({
     secret: env.BETTER_AUTH_SECRET || env.AUTH_SECRET,
     baseURL,
     trustedOrigins,
@@ -185,6 +236,44 @@ export function createAuth(
       fields: {
         name: "betterAuthName",
         emailVerified: "emailVerifiedBoolean",
+      },
+      // The address changes only when the link mailed to the NEW address is
+      // opened (X-1). `updateEmailWithoutVerification` stays off, so even an
+      // unverified account cannot switch to an address it does not control.
+      changeEmail: { enabled: true },
+    },
+
+    emailVerification: {
+      expiresIn: EMAIL_CHANGE_TTL_SECONDS,
+      // Runs after a confirmed email change, and also after a plain address
+      // verification (the public /send-verification-email flow), which then
+      // signs the user out of their other devices too.
+      afterEmailVerification: async (user, request) => {
+        const keep = request
+          ? await sessionTokenOf(request.headers).catch(() => undefined)
+          : undefined;
+        await revokeOtherSessions(db, user.id, keep);
+      },
+      // The only verification mail we send is the change-email link, and it
+      // goes to the new address (`user.email` is already the new one here).
+      sendVerificationEmail: async ({ user, url }) => {
+        // Never throw: Better Auth answers identically for an address that
+        // already has an account, so a delivery failure must not tell them apart.
+        try {
+          await sendEmail({
+            to: user.email,
+            ...changeEmailVerificationEmail({
+              url,
+              newEmail: user.email,
+              expiresInMinutes: EMAIL_CHANGE_TTL_SECONDS / 60,
+            }),
+          });
+        } catch (error) {
+          console.error(
+            "[auth] email change verification failed:",
+            error instanceof Error ? error.message : "unknown error",
+          );
+        }
       },
     },
 
@@ -289,6 +378,11 @@ export function createAuth(
       ...(options.plugins ?? []),
     ],
   });
+
+  sessionTokenOf = async (headers) =>
+    (await auth.api.getSession({ headers }))?.session.token;
+
+  return auth;
 }
 
 export type Auth = ReturnType<typeof createAuth>;

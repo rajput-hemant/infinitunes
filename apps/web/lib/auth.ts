@@ -100,3 +100,15 @@ export const getUser = cache(async () => {
     image: session.user.image,
   };
 });
+
+/**
+ * Mails a confirmation link to `email` for the signed-in user of the current
+ * request (Better Auth `changeEmail`); the address changes only when it is
+ * opened. The link lands on `/settings` afterwards.
+ */
+export async function requestEmailChange(email: string) {
+  await auth.api.changeEmail({
+    headers: await headers(),
+    body: { newEmail: email, callbackURL: "/settings" },
+  });
+}

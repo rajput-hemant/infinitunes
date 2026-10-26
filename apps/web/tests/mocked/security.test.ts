@@ -23,6 +23,7 @@ mock.module("~/lib/auth", () => ({
   getUser: async () => mockUser,
   getSession: async () => (mockUser ? { user: { id: mockUser.id } } : null),
   getAuth: () => ({}),
+  requestEmailChange: async () => {},
   auth: {},
 }));
 

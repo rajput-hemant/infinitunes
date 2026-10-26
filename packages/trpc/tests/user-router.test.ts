@@ -259,14 +259,29 @@ describe("user router authorization", () => {
     });
   });
 
-  it("rejects a malformed email in updateUser before writing", async () => {
+  it("rejects a malformed email in requestEmailChange before anything runs", async () => {
+    const requestEmailChange = mock(async () => {});
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+      requestEmailChange,
+    });
+
+    await expect(
+      caller.user.requestEmailChange({ email: "not-an-email" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(requestEmailChange).not.toHaveBeenCalled();
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it("refuses an email key on updateUser instead of dropping it", async () => {
     const caller = createCallerFactory(appRouter)({
       db,
       session: { user: { id: "user-123" } },
     });
 
     await expect(
-      caller.user.updateUser({ email: "not-an-email" }),
+      caller.user.updateUser({ email: "new@example.com" } as never),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     expect(state.updates).toHaveLength(0);
   });
@@ -319,10 +334,12 @@ describe("user router authorization", () => {
     expect(state.inserts).toHaveLength(0);
   });
 
-  it("normalizes the updateUser email before writing", async () => {
+  it("lowercases the new email and mails it through Better Auth without writing", async () => {
+    const requestEmailChange = mock(async () => {});
     const caller = createCallerFactory(appRouter)({
       db,
       session: { user: { id: "user-123" } },
+      requestEmailChange,
     });
 
     state.user = {
@@ -339,15 +356,17 @@ describe("user router authorization", () => {
       },
     ];
 
-    await caller.user.updateUser({
+    const result = await caller.user.requestEmailChange({
       email: "New@Example.COM",
       currentPassword: "CurrentPassword1!",
     });
 
-    expect(state.updates[0]?.values).toMatchObject({
-      email: "new@example.com",
-      emailVerifiedBoolean: false,
-    });
+    expect(requestEmailChange).toHaveBeenCalledWith("new@example.com");
+    expect(result).toEqual({ pendingEmail: "new@example.com" });
+    // The address, its verified flag and the other sessions stay as they are
+    // until the link is opened.
+    expect(state.updates).toHaveLength(0);
+    expect(state.deletes).toHaveLength(0);
   });
 
   it("omits the password column from the updateUser return value", async () => {
@@ -372,20 +391,15 @@ describe("user router authorization", () => {
     });
   });
 
-  it("maps a duplicate email in updateUser to CONFLICT", async () => {
-    state.updateError = new Error("Failed query", {
-      cause: { code: "23505" },
-    });
+  it("answers a taken email like any other, so the form cannot probe accounts", async () => {
+    // Better Auth returns success for an address that already has an account.
+    const requestEmailChange = mock(async () => {});
     const caller = createCallerFactory(appRouter)({
       db,
       session: { user: { id: "user-123" } },
+      requestEmailChange,
     });
-
-    state.user = {
-      id: "user-123",
-      email: "old@example.com",
-    };
-
+    state.user = { id: "user-123", email: "old@example.com" };
     state.accounts = [
       {
         id: "credential-123",
@@ -397,14 +411,74 @@ describe("user router authorization", () => {
     ];
 
     await expect(
-      caller.user.updateUser({
+      caller.user.requestEmailChange({
         email: "taken@example.com",
         currentPassword: "CurrentPassword1!",
       }),
-    ).rejects.toMatchObject({
-      code: "CONFLICT",
-      message: "That email is already in use",
+    ).resolves.toEqual({ pendingEmail: "taken@example.com" });
+  });
+
+  it("blocks an email change with a clear error when no mailer-backed auth is wired", async () => {
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
     });
+    state.user = { id: "user-123", email: "old@example.com" };
+    state.accounts = [
+      {
+        id: "credential-123",
+        userId: "user-123",
+        accountId: "user-123",
+        providerId: "credential",
+        password: await hash("CurrentPassword1!", 10),
+      },
+    ];
+
+    await expect(
+      caller.user.requestEmailChange({
+        email: "new@example.com",
+        currentPassword: "CurrentPassword1!",
+      }),
+    ).rejects.toMatchObject({
+      code: "PRECONDITION_FAILED",
+      message: "Changing your email is not available right now",
+    });
+    expect(state.updates).toHaveLength(0);
+  });
+
+  it("reports a failed Better Auth request without leaking its error", async () => {
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+      requestEmailChange: async () => {
+        throw new Error("smtp down: secret detail");
+      },
+    });
+    state.user = { id: "user-123", email: "old@example.com" };
+    state.accounts = [
+      {
+        id: "credential-123",
+        userId: "user-123",
+        accountId: "user-123",
+        providerId: "credential",
+        password: await hash("CurrentPassword1!", 10),
+      },
+    ];
+    const original = console.error;
+    console.error = () => {};
+    try {
+      await expect(
+        caller.user.requestEmailChange({
+          email: "new@example.com",
+          currentPassword: "CurrentPassword1!",
+        }),
+      ).rejects.toMatchObject({
+        code: "PRECONDITION_FAILED",
+        message: "We couldn't start the email change. Try again later",
+      });
+    } finally {
+      console.error = original;
+    }
   });
 
   it("does not expose or mutate another user's playlist", async () => {
@@ -686,20 +760,29 @@ describe("user router authorization", () => {
       });
     });
 
-    it("changes the email only with a fresh session, and resets verification", async () => {
+    it("starts an email change only with a fresh session", async () => {
+      const requestEmailChange = mock(async () => {});
+      const aged = (ms: number) =>
+        createCallerFactory(appRouter)({
+          db,
+          session: {
+            user: { id: "user-123" },
+            session: { token: "t", createdAt: new Date(Date.now() - ms) },
+          },
+          requestEmailChange,
+        });
+
       await expect(
-        sessionAge(FRESH_SESSION_MS + 60_000).user.updateUser({
+        aged(FRESH_SESSION_MS + 60_000).user.requestEmailChange({
           email: "new@example.com",
         }),
       ).rejects.toMatchObject({ code: "FORBIDDEN" });
+      expect(requestEmailChange).not.toHaveBeenCalled();
+
+      await aged(1000).user.requestEmailChange({ email: "new@example.com" });
+
+      expect(requestEmailChange).toHaveBeenCalledWith("new@example.com");
       expect(state.updates).toHaveLength(0);
-
-      await sessionAge(1000).user.updateUser({ email: "new@example.com" });
-
-      expect(state.updates[0]?.values).toEqual({
-        email: "new@example.com",
-        emailVerifiedBoolean: false,
-      });
     });
 
     it("still ignores a stale session for a name-only update", async () => {
@@ -782,12 +865,18 @@ describe("user router authorization", () => {
 
   it("requires the current password to change the email", async () => {
     await seedPasswordUser();
+    const requestEmailChange = mock(async () => {});
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+      requestEmailChange,
+    });
 
     await expect(
-      signedIn().user.updateUser({ email: "new@example.com" }),
+      caller.user.requestEmailChange({ email: "new@example.com" }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
-      signedIn().user.updateUser({
+      caller.user.requestEmailChange({
         email: "new@example.com",
         currentPassword: "WrongPassword1!",
       }),
@@ -795,30 +884,29 @@ describe("user router authorization", () => {
       code: "BAD_REQUEST",
       message: "Current password is incorrect",
     });
+    expect(requestEmailChange).not.toHaveBeenCalled();
     expect(state.updates).toHaveLength(0);
   });
 
-  it("resets email verification when the email changes", async () => {
+  it("refuses to 'change' the email to the current one", async () => {
     await seedPasswordUser();
-
-    await signedIn().user.updateUser({
-      email: "new@example.com",
-      currentPassword: "CurrentPassword1!",
+    const requestEmailChange = mock(async () => {});
+    const caller = createCallerFactory(appRouter)({
+      db,
+      session: { user: { id: "user-123" } },
+      requestEmailChange,
     });
 
-    expect(state.updates[0]?.values).toEqual({
-      email: "new@example.com",
-      emailVerifiedBoolean: false,
-    });
+    await expect(
+      caller.user.requestEmailChange({ email: "User@Example.com" }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    expect(requestEmailChange).not.toHaveBeenCalled();
   });
 
-  it("updates the name without a password, and ignores an unchanged email", async () => {
+  it("updates the name with no password", async () => {
     await seedPasswordUser();
 
-    await signedIn().user.updateUser({
-      name: "New Name",
-      email: "User@Example.com",
-    });
+    await signedIn().user.updateUser({ name: "New Name" });
 
     expect(state.updates).toHaveLength(1);
     expect(state.updates[0]?.values).toEqual({ betterAuthName: "New Name" });
