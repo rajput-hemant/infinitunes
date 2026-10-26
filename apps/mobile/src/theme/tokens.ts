@@ -447,3 +447,16 @@ export const typeScale: Record<"ios" | "android", Scale> = {
  */
 export const textStyles: Record<TextVariant, TypeStyle> =
   process.env.EXPO_OS === "ios" ? typeScale.ios : typeScale.android;
+
+/**
+ * Swipe-action capsule fills (Apple Music orange, indigo and red), the same in
+ * both schemes under a white glyph (>= 4.5:1, pinned in `tokens.test.ts`).
+ */
+export const swipeFills = {
+  orange: "#c2570c",
+  indigo: "#5048e0",
+  red: "#c4262e",
+} as const;
+
+/** The glyph on every swipe capsule. */
+export const swipeGlyph = "#ffffff";

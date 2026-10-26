@@ -22,6 +22,7 @@ function LikedSongRow({ song, play }: { song: SongRowItem; play: () => void }) {
       trailingSwipe={{
         label: "Unlike",
         icon: { ios: "heart.slash", android: "heart_broken" },
+        tone: "red",
         onPress: toggle,
       }}
     />

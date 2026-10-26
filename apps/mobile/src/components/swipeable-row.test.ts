@@ -1,10 +1,15 @@
+import { space } from "~/theme/tokens";
+
 import {
+  capsuleLayout,
+  openWidth,
   FLING_MIN_DISTANCE,
   FLING_VELOCITY,
   FULL_SWIPE_SHARE,
   shouldCommitSwipe,
 } from "./swipeable-row";
 
+const GAP = space.sm;
 const base = { velocity: 0, width: 400 };
 
 describe("shouldCommitSwipe", () => {
@@ -72,5 +77,34 @@ describe("shouldCommitSwipe", () => {
         side: "leading",
       }),
     ).toBe(false);
+  });
+});
+
+describe("capsuleLayout", () => {
+  const open = openWidth(2);
+
+  it("rests with the primary next to the row and the other outermost", () => {
+    const primary = capsuleLayout(open, 0, 0, 2);
+    const other = capsuleLayout(open, 0, 1, 2);
+    // Distances from the screen edge: the primary is the one closer to the row.
+    expect(primary.edge).toBeGreaterThan(other.edge);
+    expect(primary.edge + primary.width + GAP).toBe(open);
+    expect(other.edge).toBe(GAP);
+    expect(other.opacity).toBe(1);
+  });
+
+  it("stretches the primary over the whole pane and fades the rest once past the commit point", () => {
+    const reveal = 300;
+    const primary = capsuleLayout(reveal, 1, 0, 2);
+    expect(primary.edge).toBe(GAP);
+    expect(primary.width).toBe(reveal - 2 * GAP);
+    expect(capsuleLayout(reveal, 1, 1, 2).opacity).toBe(0);
+  });
+
+  it("lets the primary absorb an overshoot before the commit point", () => {
+    const rest = capsuleLayout(open, 0, 0, 2);
+    const pulled = capsuleLayout(open + 40, 0, 0, 2);
+    expect(pulled.edge).toBe(rest.edge);
+    expect(pulled.width).toBe(rest.width + 40);
   });
 });

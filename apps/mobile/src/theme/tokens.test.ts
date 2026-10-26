@@ -15,6 +15,7 @@ import {
   COLOR_TOKENS,
   colors,
   iosSystemColors,
+  swipeFills,
 } from "./tokens";
 import type { ColorScheme, ColorToken, Palette } from "./tokens";
 
@@ -188,4 +189,15 @@ describe("Material You colour roles", () => {
       COLOR_TOKENS.filter((token) => !/^(fill|scrim)/.test(token)),
     );
   });
+});
+
+describe("swipeFills", () => {
+  it.each(Object.entries(swipeFills))(
+    "%s carries a white glyph at AA",
+    (_name, fill) => {
+      expect(contrast(parse("#ffffff"), parse(fill))).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    },
+  );
 });

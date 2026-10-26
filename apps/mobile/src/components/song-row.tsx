@@ -127,7 +127,7 @@ export function SongRow({
             ios: "text.line.first.and.arrowtriangle.forward",
             android: "playlist_play",
           },
-          tone: "primary",
+          tone: "indigo",
           onPress: () => {
             playerStore.getState().playNext(song);
           },
@@ -138,7 +138,7 @@ export function SongRow({
             ios: "text.line.last.and.arrowtriangle.forward",
             android: "playlist_add",
           },
-          tone: "accent",
+          tone: "orange",
           onPress: () => {
             playerStore.getState().addToQueue(song);
           },

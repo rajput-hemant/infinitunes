@@ -8,6 +8,8 @@ import { SwipeableRow } from "./swipeable-row";
 
 jest.mock("react-native-reanimated", () => ({
   ...jest.requireActual("react-native-reanimated"),
+  __esModule: true,
+  default: jest.requireActual("react-native-reanimated").default,
   useAnimatedReaction: jest.fn(),
 }));
 
@@ -33,8 +35,18 @@ jest.mock("react-native-gesture-handler/ReanimatedSwipeable", () => ({
 const first = jest.fn();
 const second = jest.fn();
 const leading = [
-  { label: "First", icon: "plus" as const, onPress: first },
-  { label: "Second", icon: "plus" as const, onPress: second },
+  {
+    label: "First",
+    icon: "plus" as const,
+    tone: "indigo" as const,
+    onPress: first,
+  },
+  {
+    label: "Second",
+    icon: "plus" as const,
+    tone: "orange" as const,
+    onPress: second,
+  },
 ];
 
 beforeEach(() => {
