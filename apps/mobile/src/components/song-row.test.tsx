@@ -1,6 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
+import { Platform } from "react-native";
 
 import { playbackStatusStore } from "~/playback/playback-status";
 import { playerStore } from "~/playback/player-store";
@@ -129,5 +130,24 @@ describe("SongRow", () => {
     expect(
       screen.queryByRole("button", { name: "Like FA9LA & Friends" }),
     ).toBeNull();
+  });
+
+  it("mounts its Android menu only once its button is pressed", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    const app = await renderScreen(
+      <SongRow song={song} onPress={jest.fn()} />,
+      { routes: { "song/[name]/[token]": () => null } },
+    );
+    // A list holds dozens of rows: none keeps a native menu host until asked.
+    expect(screen.queryByTestId("song-menu")).toBeNull();
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: "More actions for FA9LA & Friends" }),
+    );
+    await fireEvent(screen.getByTestId("song-menu"), "pressAction", {
+      nativeEvent: { event: "details" },
+    });
+
+    expect(app.getPathname()).toBe("/song/fa9la/BSaNI3Yr-token");
   });
 });

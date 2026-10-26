@@ -5,8 +5,7 @@ import { useCurrentTrackState } from "~/playback/use-current-track";
 
 import { LikeButton } from "./like-button";
 import { ListRow } from "./list-row";
-import { MenuTrigger } from "./menu-trigger";
-import { SongMenu, type TrackItem } from "./song-menu";
+import { SongMenuButton, type TrackItem } from "./song-menu";
 import { Text } from "./ui/text";
 
 type SongRowProps = {
@@ -95,9 +94,7 @@ export function SongRow({
               size="md"
             />
           ) : null}
-          <SongMenu song={song} removal={removal}>
-            <MenuTrigger label={`More actions for ${song.name}`} />
-          </SongMenu>
+          <SongMenuButton song={song} removal={removal} />
         </>
       }
     />

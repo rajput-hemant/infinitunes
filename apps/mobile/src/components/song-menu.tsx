@@ -1,5 +1,8 @@
+import type { MenuComponentRef } from "@expo/ui/community/menu";
 import type { QueueSource, RowExtras } from "@infinitunes/types";
-import type { ReactNode } from "react";
+import { useEffect, useState } from "react";
+import type { ReactNode, Ref } from "react";
+import { Platform, StyleSheet, View } from "react-native";
 
 import { downloadTrack } from "~/lib/download";
 import { showFailure } from "~/lib/failure";
@@ -19,12 +22,14 @@ import {
 } from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
 
+import { MenuTrigger } from "./menu-trigger";
 import {
   addToPlaylistEntry,
   NativeMenu,
   playRadioEntry,
   type MenuEntry,
 } from "./native-menu";
+import { IconButton } from "./ui/icon-button";
 
 /** A catalog row or a queue entry: what a track's menu needs. */
 export type TrackItem = QueueSource & RowExtras;
@@ -72,6 +77,8 @@ type SongMenuProps = {
   removal?: { title: string; onRemove: () => void };
   /** The trigger; tapping it opens the native menu. */
   children: ReactNode;
+  /** `show()` opens the menu from code (Android only). */
+  ref?: Ref<MenuComponentRef>;
 };
 
 /**
@@ -80,7 +87,7 @@ type SongMenuProps = {
  * download, and the
  * list's own removal.
  */
-export function SongMenu({ song, removal, children }: SongMenuProps) {
+export function SongMenu({ song, removal, children, ref }: SongMenuProps) {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
   const membership = usePlaylistMembership();
@@ -161,8 +168,63 @@ export function SongMenu({ song, removal, children }: SongMenuProps) {
   }
 
   return (
-    <NativeMenu title={song.name} entries={entries}>
+    <NativeMenu title={song.name} entries={entries} ref={ref}>
       {children}
     </NativeMenu>
   );
 }
+
+type SongMenuButtonProps = Omit<SongMenuProps, "children" | "ref">;
+
+/**
+ * A row's "More" button and its `SongMenu`. A list holds dozens of rows, so
+ * on Android the menu (a native host, the playlist and route subscriptions)
+ * mounts on the first press, as `CardLink`'s does. iOS's SwiftUI menu cannot
+ * be opened from code (`show()` is a no-op), so there each row keeps its own.
+ */
+export function SongMenuButton({ song, removal }: SongMenuButtonProps) {
+  const label = `More actions for ${song.name}`;
+  return Platform.OS === "ios" ? (
+    <SongMenu song={song} removal={removal}>
+      <MenuTrigger label={label} />
+    </SongMenu>
+  ) : (
+    <LazySongMenu song={song} removal={removal} label={label} />
+  );
+}
+
+function LazySongMenu({
+  song,
+  removal,
+  label,
+}: SongMenuButtonProps & { label: string }) {
+  const [requested, setRequested] = useState(false);
+  // The menu's handle as state (a callback ref), so render never reads a ref.
+  const [menu, setMenu] = useState<MenuComponentRef | null>(null);
+
+  // The first press mounts the menu; it opens once its handle exists.
+  useEffect(() => {
+    if (requested) menu?.show();
+  }, [requested, menu]);
+
+  return (
+    <View>
+      <IconButton
+        icon={{ ios: "ellipsis", android: "more_vert" }}
+        label={label}
+        size="md"
+        onPress={() => (menu ? menu.show() : setRequested(true))}
+      />
+      {requested ? (
+        // The anchor covers the button, so the dropdown opens at it.
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <SongMenu song={song} removal={removal} ref={setMenu}>
+            <View testID="song-menu" style={styles.anchor} />
+          </SongMenu>
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({ anchor: { flex: 1 } });
