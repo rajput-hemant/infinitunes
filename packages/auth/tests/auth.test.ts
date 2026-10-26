@@ -224,6 +224,54 @@ describe("Better Auth configuration", () => {
     }
   });
 
+  it("adds Sign in with Apple only when its client ID is set", async () => {
+    expect(createAuth(makeFakeDb()).options.socialProviders).not.toHaveProperty(
+      "apple",
+    );
+
+    process.env.APPLE_CLIENT_ID = "com.infinitunes.web";
+    try {
+      const auth = createAuth(makeFakeDb());
+      // Native ID tokens are issued to the bundle id.
+      expect(auth.options.socialProviders?.apple).toMatchObject({
+        clientId: "com.infinitunes.web",
+        appBundleIdentifier: "com.infinitunes.app",
+      });
+      const res = await auth.handler(
+        new Request("http://localhost:3000/api/auth/social-providers"),
+      );
+      expect(await res.json()).toEqual(["google", "github", "apple"]);
+    } finally {
+      delete process.env.APPLE_CLIENT_ID;
+    }
+  });
+
+  it("accepts the Android app's passkey origin next to the web's", () => {
+    const passkeyOrigin = (auth: ReturnType<typeof createAuth>) =>
+      (
+        auth.options.plugins?.find((plugin) => plugin.id === "passkey") as {
+          options?: { origin?: unknown };
+        }
+      ).options?.origin;
+    expect(passkeyOrigin(createAuth(makeFakeDb()))).toEqual([
+      "http://localhost:3000",
+    ]);
+
+    // keytool's colon hex, as Play Console shows it.
+    const hex = Array.from({ length: 32 }, (_, i) =>
+      ((i * 37 + 250) % 256).toString(16).padStart(2, "0").toUpperCase(),
+    ).join(":");
+    process.env.ANDROID_CERT_SHA256_FINGERPRINTS = ` ${hex} `;
+    try {
+      expect(passkeyOrigin(createAuth(makeFakeDb()))).toEqual([
+        "http://localhost:3000",
+        `android:apk-key-hash:${Buffer.from(hex.replace(/:/g, ""), "hex").toString("base64url")}`,
+      ]);
+    } finally {
+      delete process.env.ANDROID_CERT_SHA256_FINGERPRINTS;
+    }
+  });
+
   it("generates UUID primary keys via advanced.database.generateId", () => {
     const auth = createAuth(makeFakeDb());
     expect(auth.options.advanced?.database?.generateId).toBe("uuid");
@@ -414,6 +462,7 @@ describe("Injected plugins and env precedence", () => {
       "passkey",
       "expo",
       "web-redirects-only",
+      "infinitunes-social-providers",
     ]);
   });
 
@@ -424,6 +473,7 @@ describe("Injected plugins and env precedence", () => {
       "passkey",
       "expo",
       "web-redirects-only",
+      "infinitunes-social-providers",
       "test-injected",
     ]);
   });
