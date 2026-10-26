@@ -1,4 +1,4 @@
-import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
+import { CatalogGridSkeleton } from "~/components/catalog/catalog-skeleton";
 import { LibraryHeadingSkeleton } from "~/components/library/library-heading-skeleton";
 
 /** Mirrors the library collection: heading with a count, then the card grid. */

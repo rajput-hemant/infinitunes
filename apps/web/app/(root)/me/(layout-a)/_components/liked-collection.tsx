@@ -5,7 +5,7 @@ import {
 import { uniqueBy } from "@infinitunes/types";
 import type { ComponentProps } from "react";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { CatalogGrid } from "~/components/catalog/catalog-grid";
 import {
   LibraryEmpty,
   LibraryHeading,
