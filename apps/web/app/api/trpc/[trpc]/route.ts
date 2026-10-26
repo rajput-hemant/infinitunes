@@ -2,7 +2,7 @@ import { db } from "@infinitunes/db";
 import { appRouter } from "@infinitunes/trpc";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 
-import { getSession } from "~/lib/auth";
+import { getSession, requestEmailChange } from "~/lib/auth";
 import { cachedApi } from "~/lib/cached-api";
 
 function handler(req: Request) {
@@ -20,6 +20,7 @@ function handler(req: Request) {
       db,
       session: getSession,
       catalogApi: cachedApi,
+      requestEmailChange,
     }),
   });
 }

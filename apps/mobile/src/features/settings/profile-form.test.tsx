@@ -48,7 +48,7 @@ describe("ProfileForm", () => {
     expect(authClient.$store.notify).toHaveBeenCalledWith("$sessionSignal");
   });
 
-  it("asks for the current password once the email changes, and sends it", async () => {
+  it("asks for the current password once the email changes, and starts the confirmed flow", async () => {
     await renderScreen(<ProfileForm user={user} />);
 
     await fireEvent.changeText(
@@ -61,11 +61,14 @@ describe("ProfileForm", () => {
     );
     await fireEvent.press(save());
 
-    expect(procedure("user.updateUser")).toHaveBeenCalledWith({
-      name: "Listener",
+    expect(procedure("user.requestEmailChange")).toHaveBeenCalledWith({
       email: "new@example.com",
       currentPassword: "Secret#123",
     });
+    // The name is unchanged and the email is never written by updateUser.
+    expect(procedure("user.updateUser")).not.toHaveBeenCalled();
+    expect(screen.getByText(/we sent it a link/)).toBeOnTheScreen();
+    expect(authClient.$store.notify).toHaveBeenCalledWith("$sessionSignal");
   });
 
   it("checks the new email", async () => {
@@ -78,10 +81,13 @@ describe("ProfileForm", () => {
     expect(procedure("user.updateUser")).not.toHaveBeenCalled();
   });
 
-  it("keeps the session when the email is taken", async () => {
+  it("keeps the session and the form when the email change is refused", async () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
-    procedure("user.updateUser").mockRejectedValueOnce(
-      trpcError("CONFLICT", "That email is already in use"),
+    procedure("user.requestEmailChange").mockRejectedValueOnce(
+      trpcError(
+        "PRECONDITION_FAILED",
+        "Changing your email is not available right now",
+      ),
     );
     await renderScreen(<ProfileForm user={user} />);
 
@@ -92,6 +98,7 @@ describe("ProfileForm", () => {
     await fireEvent.press(save());
 
     expect(authClient.$store.notify).not.toHaveBeenCalled();
+    expect(screen.queryByText(/we sent it a link/)).toBeNull();
   });
 
   it("puts the cursor back in the email when a name-only save is refused", async () => {
@@ -110,7 +117,7 @@ describe("ProfileForm", () => {
 
   it("puts the cursor in the current password when a new email is refused", async () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
-    procedure("user.updateUser").mockRejectedValueOnce(
+    procedure("user.requestEmailChange").mockRejectedValueOnce(
       trpcError("UNAUTHORIZED", "Wrong password"),
     );
     await renderScreen(<ProfileForm user={user} />);

@@ -510,7 +510,7 @@ describe.skipIf(
       });
     });
 
-    test("profile: rename; an email change needs the current password", async () => {
+    test("profile: rename; an email change needs the current password and writes nothing", async () => {
       const renamed = await trpcClient.user.updateUser.mutate({
         name: "E2E Listener",
       });
@@ -521,30 +521,39 @@ describe.skipIf(
       expect(data?.user.name).toBe("E2E Listener");
       const moved = `moved-${email}`;
       expect(
-        await codeOf(trpcClient.user.updateUser.mutate({ email: moved })),
+        await codeOf(
+          trpcClient.user.requestEmailChange.mutate({ email: moved }),
+        ),
       ).toBe("BAD_REQUEST");
       expect(
         await codeOf(
-          trpcClient.user.updateUser.mutate({
+          trpcClient.user.requestEmailChange.mutate({
             email: moved,
             currentPassword: "nope",
           }),
         ),
       ).toBe("BAD_REQUEST");
+      // Taken and free addresses answer alike: the link goes to the new
+      // inbox and the account's email stays until it is opened.
       expect(
         await codeOf(
-          trpcClient.user.updateUser.mutate({
+          trpcClient.user.requestEmailChange.mutate({
             email: otherEmail,
             currentPassword: password,
           }),
         ),
-      ).toBe("CONFLICT");
-      // The same address in another case is not a change.
+      ).toBe("OK");
+      const after = await authClient.getSession({
+        query: { disableCookieCache: true },
+      });
+      expect(after.data?.user.email).toBe(email);
       expect(
         await codeOf(
-          trpcClient.user.updateUser.mutate({ email: email.toUpperCase() }),
+          trpcClient.user.requestEmailChange.mutate({
+            email: email.toUpperCase(),
+          }),
         ),
-      ).toBe("OK");
+      ).toBe("BAD_REQUEST");
     });
 
     test("change password keeps this phone signed in and signs out the other device", async () => {

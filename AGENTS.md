@@ -32,6 +32,7 @@ This file is the project's committed home for project-intrinsic agent knowledge:
   See `packages/ui/README.md`.
 - Server data fetching in `apps/web` calls `api.<router>.<procedure>` directly via
   `import { api } from "~/lib/trpc/server"`; `apps/web/lib/jiosaavn-api.ts` has been deleted.
+- An email change never writes the `user` row from tRPC: `user.requestEmailChange` calls `ctx.requestEmailChange` (web: Better Auth `changeEmail` in `apps/web/lib/auth.ts`), which mails a link to the new address; `user.updateUser` is name-only.
 - User database operations live in `packages/trpc/src/router/user.ts`; the
   `apps/web` query and action modules are thin Next.js wrappers for those
   procedures and own cache invalidation or redirects.

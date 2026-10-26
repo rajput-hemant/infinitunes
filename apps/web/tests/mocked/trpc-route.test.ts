@@ -11,7 +11,10 @@ const mockCachedApi = mock(async () => {
 });
 
 mock.module("server-only", () => ({}));
-mock.module("~/lib/auth", () => ({ getSession: mockGetSession }));
+mock.module("~/lib/auth", () => ({
+  getSession: mockGetSession,
+  requestEmailChange: async () => {},
+}));
 mock.module("~/lib/cached-api", () => ({ cachedApi: mockCachedApi }));
 mock.module("@infinitunes/db", () => ({ db: {} }));
 

@@ -25,7 +25,7 @@ import type { z } from "zod";
 
 import { useIsTyping } from "~/hooks/use-store";
 import { unwrap } from "~/lib/action-result";
-import { changePassword, updateUser } from "~/lib/actions";
+import { changePassword, requestEmailChange, updateUser } from "~/lib/actions";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
@@ -88,20 +88,26 @@ export function ProfileForm({ user }: ProfileFormProps) {
     setIsSubmitting(true);
 
     async function save() {
-      await unwrap(
-        updateUser({
-          name: formData.name,
-          ...(emailChanged && {
+      if (!emailChanged || formData.name !== user.name) {
+        await unwrap(updateUser({ name: formData.name }));
+      }
+      if (emailChanged) {
+        await unwrap(
+          requestEmailChange({
             email: formData.email,
             currentPassword: formData.currentPassword,
           }),
-        }),
-      );
+        );
+      }
+      return emailChanged;
     }
 
     toast.promise(save(), {
       loading: "Updating Profile...",
-      success: "Profile Updated!",
+      success: (sentLink) =>
+        sentLink
+          ? `If ${formData.email} is free, we sent it a link to confirm.`
+          : "Profile Updated!",
       error: userMessage,
       finally: () => setIsSubmitting(false),
     });
@@ -248,7 +254,9 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       {...field}
                     />
                     <FieldDescription>
-                      Your email will be used for account notifications.
+                      Your email is used for account notifications. A new
+                      address only takes effect after you confirm it from a link
+                      we send there.
                     </FieldDescription>
                     <FieldError errors={[fieldState.error]} />
                   </Field>

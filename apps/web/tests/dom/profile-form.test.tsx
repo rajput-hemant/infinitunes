@@ -22,6 +22,15 @@ mock.module("../../lib/actions", () => ({
     actionCalls.push(`updateUser ${input.name}`);
     return { ok: true, data: {} };
   },
+  requestEmailChange: async (input: {
+    email: string;
+    currentPassword?: string;
+  }) => {
+    actionCalls.push(
+      `requestEmailChange ${input.email} ${input.currentPassword ?? ""}`,
+    );
+    return { ok: true, data: { pendingEmail: input.email } };
+  },
   changePassword: async (input: { password: string; newPassword: string }) => {
     actionCalls.push(`changePassword ${input.password} ${input.newPassword}`);
     return { ok: true, data: {} };
@@ -163,6 +172,32 @@ describe("profile form accessibility", () => {
     });
 
     expect(actionCalls).toEqual(["updateUser Ada L"]);
+  });
+
+  it("sends a new email through the verified flow and never updateUser", async () => {
+    const container = await mount();
+    actionCalls.length = 0;
+
+    const email = requireElement(
+      container,
+      "input[type=email]",
+      HTMLInputElement,
+    );
+    await act(async () => setInputValue(email, "new@example.com"));
+    const current = requireElement(
+      container,
+      "input[autocomplete=current-password]",
+      HTMLInputElement,
+    );
+    await act(async () => setInputValue(current, "hunter2hunter2"));
+    await act(async () => findButton(container, "Save profile").click());
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 20));
+    });
+
+    expect(actionCalls).toEqual([
+      "requestEmailChange new@example.com hunter2hunter2",
+    ]);
   });
 
   it("blocks the profile save on an invalid name without a password error", async () => {
