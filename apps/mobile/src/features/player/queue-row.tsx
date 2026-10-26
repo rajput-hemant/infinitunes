@@ -1,12 +1,13 @@
 import type { Queue, RowExtras } from "@infinitunes/types";
 import type { ReactNode } from "react";
-import { Platform } from "react-native";
+import { Platform, View } from "react-native";
 
 import {
   LongPressMenu,
   menuAccessibilityActions,
 } from "~/components/context-menu";
 import { ListRow } from "~/components/list-row";
+import { MeasuredBox } from "~/components/measured-box";
 import { NativeMenu } from "~/components/native-menu";
 import { useSongMenuEntries } from "~/components/song-menu";
 
@@ -64,15 +65,23 @@ export function QueueRow({ song, onPress, onRemove, children }: QueueRowProps) {
 
   const menu =
     Platform.OS === "ios" ? (
-      <NativeMenu
-        title={song.name}
-        entries={entries}
-        openOnLongPress
-        testID={`queue-row-menu-${song.id}`}
-        style={{ width: "100%" }}
-      >
-        {row()}
-      </NativeMenu>
+      // The menu host hugs its child: give the row the list's full width, so
+      // every handle sits at the right edge and long titles truncate before it.
+      <MeasuredBox testID="queue-row-frame">
+        {(box) => (
+          <NativeMenu
+            title={song.name}
+            entries={entries}
+            openOnLongPress
+            testID={`queue-row-menu-${song.id}`}
+            style={box && { width: box.width }}
+          >
+            <View testID="queue-row-body" style={box && { width: box.width }}>
+              {row()}
+            </View>
+          </NativeMenu>
+        )}
+      </MeasuredBox>
     ) : (
       <LongPressMenu
         testID="queue-row-menu"

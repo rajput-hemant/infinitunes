@@ -191,6 +191,17 @@ describe("FullPlayer", () => {
       );
     }
     expect(new Set(pills.map((pill) => pill.props.style)).size).toBe(1);
+    // The More trigger takes the pill's measured size and centres its glyph.
+    await fireEvent(screen.getByTestId("more-pill-frame"), "layout", {
+      nativeEvent: { layout: { x: 0, y: 0, width: 114, height: 68 } },
+    });
+    expect(
+      screen.getByRole("button", { name: "More actions for Alpha" }),
+    ).toHaveStyle({ width: 114, height: 68 });
+    expect(screen.getByTestId("more-pill-frame")).toHaveStyle({
+      alignItems: "center",
+      justifyContent: "center",
+    });
     await fireEvent.press(screen.getByRole("button", { name: "Shuffle" }));
     expect(screen.getByRole("button", { name: "Shuffle" })).toHaveProp(
       "accessibilityState",

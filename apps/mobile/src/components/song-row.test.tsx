@@ -37,7 +37,12 @@ describe("SongRow swipe actions", () => {
       <SongRow
         song={song}
         onPress={jest.fn()}
-        trailingSwipe={{ label: "Unlike", icon: "heart.slash", onPress }}
+        trailingSwipe={{
+          label: "Unlike",
+          icon: "heart.slash",
+          tone: "red",
+          onPress,
+        }}
       />,
     );
 

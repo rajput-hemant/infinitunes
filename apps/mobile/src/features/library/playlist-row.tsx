@@ -54,6 +54,7 @@ export function PlaylistRow({
         {
           label: "Delete",
           icon: { ios: "trash", android: "delete" },
+          tone: "red",
           onPress: () => confirmDeletePlaylist(playlist),
         },
       ]}

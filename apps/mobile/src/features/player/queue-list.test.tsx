@@ -61,6 +61,19 @@ describe("QueueList", () => {
     expect(ids()).toEqual(["a", "b", "c"]);
   });
 
+  it("gives every iOS row the list's full width, so the menu host cannot hug its text", async () => {
+    await renderScreen(<QueueList />);
+    await screen.findByRole("button", { name: "Delta" });
+
+    await fireEvent(screen.getAllByTestId("queue-row-frame")[0]!, "layout", {
+      nativeEvent: { layout: { x: 0, y: 0, width: 342, height: 56 } },
+    });
+
+    expect(screen.getAllByTestId("queue-row-body")[0]).toHaveStyle({
+      width: 342,
+    });
+  });
+
   it("opens the dropdown on a long press on Android, mounting it then", async () => {
     jest.replaceProperty(Platform, "OS", "android");
     await renderScreen(<QueueList />);

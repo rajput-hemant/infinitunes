@@ -9,6 +9,8 @@ import { SwipeableRow } from "./swipeable-row";
 
 jest.mock("react-native-reanimated", () => ({
   ...jest.requireActual("react-native-reanimated"),
+  __esModule: true,
+  default: jest.requireActual("react-native-reanimated").default,
   useAnimatedReaction: jest.fn(),
 }));
 
@@ -35,7 +37,9 @@ it("buzzes only when a swipe crosses the commit point, not on its initial reacti
   const reaction = jest.mocked(Reanimated.useAnimatedReaction);
   await renderWithProviders(
     <SwipeableRow
-      trailing={[{ label: "Remove", icon: "trash", onPress: jest.fn() }]}
+      trailing={[
+        { label: "Remove", icon: "trash", tone: "red", onPress: jest.fn() },
+      ]}
     >
       {null}
     </SwipeableRow>,

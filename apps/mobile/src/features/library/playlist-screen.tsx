@@ -47,7 +47,8 @@ function PlaylistSongRow({
           removal={{ title: "Remove from Playlist", onRemove }}
           trailingSwipe={{
             label: "Remove",
-            icon: { ios: "minus.circle", android: "remove_circle" },
+            icon: { ios: "minus.circle.fill", android: "remove_circle" },
+            tone: "red",
             onPress: onRemove,
           }}
         />
