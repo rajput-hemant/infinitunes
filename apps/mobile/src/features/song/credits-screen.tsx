@@ -6,17 +6,15 @@ import { Platform, View } from "react-native";
 
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { ListRow } from "~/components/list-row";
-import {
-  SectionHeaderSkeleton,
-  SkeletonText,
-  SongListSkeleton,
-} from "~/components/skeletons";
-import { SkeletonPulse } from "~/components/ui/skeleton";
+import { SkeletonText } from "~/components/skeletons";
+import { artworkFrame } from "~/components/ui/artwork";
+import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { entityQueries } from "~/lib/entity-queries";
 import { joinMeta } from "~/lib/meta";
 import { entityHref } from "~/navigation/entity-href";
-import { sizes } from "~/theme/tokens";
+import { sizes, space } from "~/theme/tokens";
+import { useRadii } from "~/theme/use-radii";
 
 export const CREDIT_SECTIONS = [
   "Performing Artists",
@@ -152,21 +150,44 @@ function CreditsPage({ song }: { song: Song }) {
   );
 }
 
-/** The loaded page's shape: a section title over a card of rows, twice. */
+function CreditRowSkeleton({ round = false }: { round?: boolean }) {
+  const radii = useRadii();
+  return (
+    <View
+      className="min-h-row flex-row items-center gap-3 bg-card py-1"
+      style={{
+        paddingStart: space.lg - (Platform.OS === "android" ? space.sm : 0),
+        paddingEnd: space.lg,
+      }}
+    >
+      <SkeletonBlock style={artworkFrame("row", 0, round, radii)} />
+      <View className="flex-1">
+        <SkeletonText variant="body" width="60%" />
+        <SkeletonText variant="footnote" width="40%" />
+      </View>
+    </View>
+  );
+}
+
+/** The same inset cards, row artwork and readable width as the loaded page. */
 function CreditsSkeleton() {
   return (
-    <>
-      <SkeletonPulse>
+    <SkeletonPulse>
+      <View className="w-full max-w-readable self-center pb-4">
         <View className="px-page pb-2 pt-2">
           <SkeletonText variant="title1" width={120} />
           <SkeletonText variant="body" width={200} />
         </View>
-      </SkeletonPulse>
-      <SectionHeaderSkeleton />
-      <SongListSkeleton rows={1} />
-      <SectionHeaderSkeleton />
-      <SongListSkeleton rows={3} />
-    </>
+        <Group title="Album">
+          <CreditRowSkeleton />
+        </Group>
+        <Group title="Performing Artists">
+          {range(3).map((row) => (
+            <CreditRowSkeleton key={row} round />
+          ))}
+        </Group>
+      </View>
+    </SkeletonPulse>
   );
 }
 
