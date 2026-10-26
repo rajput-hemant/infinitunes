@@ -2,7 +2,7 @@ import type { SongRowItem } from "@infinitunes/types";
 import { Stack } from "expo-router";
 
 import { SongRow } from "~/components/song-row";
-import { useFavoriteToggle } from "~/user-data/favorites";
+import { useFavoriteToggle, useStillLiked } from "~/user-data/favorites";
 
 import { LibraryListView } from "./library-list-view";
 import { SignedInGate } from "./signed-in-gate";
@@ -10,10 +10,9 @@ import { SongCollection, SongCollectionSkeleton } from "./song-collection";
 import { SwipeableRow } from "./swipeable-row";
 import { useLikedSongs } from "./use-liked-songs";
 
-/** Unliking hides the row in the same frame; a failed write brings it back. */
+/** Unliking hides the row in the same frame (`useStillLiked`). */
 function LikedSongRow({ song, play }: { song: SongRowItem; play: () => void }) {
-  const { liked, toggle } = useFavoriteToggle({ type: "song", token: song.id });
-  if (!liked) return null;
+  const { toggle } = useFavoriteToggle({ type: "song", token: song.id });
 
   return (
     <SwipeableRow
@@ -32,8 +31,16 @@ function LikedSongRow({ song, play }: { song: SongRowItem; play: () => void }) {
   );
 }
 
+const NONE: readonly SongRowItem[] = [];
+
 function LikedSongs() {
-  const list = useLikedSongs();
+  const resolved = useLikedSongs();
+  const stillLiked = useStillLiked(
+    "song",
+    resolved.status === "ready" ? resolved.items : NONE,
+  );
+  const list =
+    resolved.status === "ready" ? { ...resolved, items: stillLiked } : resolved;
 
   return (
     <LibraryListView

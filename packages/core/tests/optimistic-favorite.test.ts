@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { claimOptimisticOwner } from "../src/optimistic-owner";
 import {
   favoriteKey,
+  peekFavorite,
   resetFavoriteOverlay,
   toggleFavorite,
 } from "../src/react/optimistic-favorite";
@@ -89,5 +90,24 @@ describe("toggleFavorite", () => {
     await settle();
 
     expect(sent).toEqual(["alice:true"]);
+  });
+});
+
+describe("peekFavorite", () => {
+  it("shows the pending intent, the server's state without one, and the rollback", async () => {
+    const key = favoriteKey("song", "a");
+    expect(peekFavorite(key, true)).toBe(true);
+
+    let reject = () => {};
+    toggleFavorite({
+      key,
+      serverLiked: true,
+      send: () => new Promise((_, no) => (reject = () => no(new Error("x")))),
+    });
+    expect(peekFavorite(key, true)).toBe(false);
+
+    reject();
+    await settle();
+    expect(peekFavorite(key, true)).toBe(true);
   });
 });

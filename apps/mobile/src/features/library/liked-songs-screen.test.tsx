@@ -2,6 +2,7 @@ import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorit
 import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 
+import { playerStore } from "~/playback/player-store";
 import { renderStack } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
@@ -27,7 +28,10 @@ beforeEach(async () => {
   procedure("song.details").mockImplementation(catalogAnswering(catalog));
 });
 
+const initialPlayer = playerStore.getState();
+
 afterEach(() => {
+  playerStore.setState(initialPlayer, true);
   resetFavoriteOverlay();
   resetPlaylistOverlay();
   jest.restoreAllMocks();
@@ -108,6 +112,26 @@ describe("LikedSongsScreen", () => {
       type: "song",
       token: "b",
     });
+  });
+
+  it("leaves an unliked song out of the count and of Play", async () => {
+    // The removal never answers: the overlay alone hides the song.
+    procedure("user.removeFromFavorites").mockReturnValue(
+      new Promise(() => {}),
+    );
+    await renderLikedSongs();
+    await screen.findByText("Second Like");
+
+    await fireEvent.press(
+      screen.getAllByRole("button", { name: "Unlike" })[1]!,
+    );
+    expect(screen.getByText("2 songs")).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Play" }));
+    expect(playerStore.getState().queue.map((entry) => entry.id)).toEqual([
+      "c",
+      "a",
+    ]);
   });
 
   it("brings the song back when unliking fails", async () => {
