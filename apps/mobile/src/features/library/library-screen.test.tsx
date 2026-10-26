@@ -5,6 +5,7 @@ import { router as appRouter } from "expo-router";
 import { Alert } from "react-native";
 import type { AlertButton } from "react-native";
 
+import { CONTENT_REVEAL } from "~/components/skeletons";
 import { renderStack, chooseMenuAction } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
@@ -136,6 +137,13 @@ describe("LibraryScreen", () => {
 
     expect(await screen.findByTestId("list-row-art")).toBeOnTheScreen();
     expect(procedure("song.details")).toHaveBeenCalledTimes(1);
+  });
+
+  it("fades the playlists in over their skeleton", async () => {
+    await renderLibraryTab();
+
+    const reveal = await screen.findByTestId("playlists-reveal");
+    expect(reveal.props.entering).toBe(CONTENT_REVEAL);
   });
 
   it("shows a skeleton while the playlists load", async () => {

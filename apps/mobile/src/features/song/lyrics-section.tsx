@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Platform, Pressable, View } from "react-native";
+import { Platform, Pressable } from "react-native";
+import Animated from "react-native-reanimated";
 
 import { SectionHeader } from "~/components/section-header";
-import { LyricsSkeleton } from "~/components/skeletons";
+import { CONTENT_REVEAL, LyricsSkeleton } from "~/components/skeletons";
 import { SyncedLyrics } from "~/components/synced-lyrics";
 import { Text } from "~/components/ui/text";
 import { useLyrics } from "~/lib/use-lyrics";
@@ -30,7 +31,7 @@ export function LyricsSection({ songId }: { songId: string }) {
     ? `${firstLine}. Read full lyrics`
     : "Read full lyrics";
   return (
-    <View>
+    <Animated.View entering={CONTENT_REVEAL} testID="lyrics-reveal">
       <SectionHeader title="Lyrics" />
       <Pressable
         onPress={() => setExpanded((open) => !open)}
@@ -62,7 +63,11 @@ export function LyricsSection({ songId }: { songId: string }) {
         </Text>
       </Pressable>
       {expanded && (
-        <View className={android ? "gap-2 px-page pt-3" : "gap-2 px-page"}>
+        <Animated.View
+          entering={CONTENT_REVEAL}
+          testID="lyrics-body"
+          className={android ? "gap-2 px-page pt-3" : "gap-2 px-page"}
+        >
           {lyrics.synced ? (
             <SyncedLyrics
               key={songId}
@@ -78,8 +83,8 @@ export function LyricsSection({ songId }: { songId: string }) {
               {lyrics.copyright}
             </Text>
           ) : null}
-        </View>
+        </Animated.View>
       )}
-    </View>
+    </Animated.View>
   );
 }

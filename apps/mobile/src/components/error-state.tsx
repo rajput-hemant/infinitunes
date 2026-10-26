@@ -12,6 +12,7 @@ type ErrorStateProps = {
 export function ErrorState({ error, onRetry }: ErrorStateProps) {
   return (
     <EmptyState
+      announce
       icon={{ ios: "exclamationmark.triangle", android: "error" }}
       title="Couldn't load this"
       message={userMessage(error)}

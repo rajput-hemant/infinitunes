@@ -23,6 +23,8 @@ type EmptyStateProps = {
    * a centred notice would sit below the fold of the smaller one.
    */
   placement?: "center" | "top";
+  /** A failure that replaces content: screen readers announce it when it appears. */
+  announce?: boolean;
 };
 
 /** A centred notice for an empty list or screen, with an optional way forward. */
@@ -32,6 +34,7 @@ export function EmptyState({
   message,
   action,
   placement = "center",
+  announce = false,
 }: EmptyStateProps) {
   const palette = usePalette();
   // Android (Material 3 Expressive): the symbol in a tonal extra-large shape,
@@ -39,6 +42,7 @@ export function EmptyState({
   const android = Platform.OS === "android";
   return (
     <View
+      accessibilityLiveRegion={announce ? "polite" : undefined}
       className={
         placement === "top"
           ? "items-center px-page py-8"
@@ -62,6 +66,7 @@ export function EmptyState({
       <Text
         variant={android ? "title2" : "headline"}
         emphasized
+        accessibilityRole="header"
         className={android ? "mt-6 text-center" : "mt-4 text-center"}
       >
         {title}
