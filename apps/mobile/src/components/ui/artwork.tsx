@@ -111,7 +111,8 @@ export function Artwork({
       recyclingKey={src}
       style={[frame, style]}
       testID={testID}
-      transition={150}
+      // Recycled list cells (rows, cards) swap their picture at once.
+      transition={size === "row" || size === "card" ? 0 : 150}
       accessibilityIgnoresInvertColors
     />
   );
