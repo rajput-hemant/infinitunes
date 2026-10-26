@@ -205,6 +205,19 @@ describe("FullPlayer", () => {
 });
 
 describe("MiniPlayer", () => {
+  it("does not open /player and has no button role when queue is empty", async () => {
+    const app = await renderScreen(<MiniPlayer />, {
+      routes: { player: () => null },
+    });
+
+    expect(screen.queryByRole("button", { name: "Not playing" })).toBeNull();
+    const notPlaying = screen.getByLabelText("Not playing");
+    expect(notPlaying).toBeOnTheScreen();
+
+    fireEvent.press(notPlaying);
+    expect(app.getPathname()).toBe("/");
+  });
+
   it("shows the station badge only for a radio queue", async () => {
     play(rawSong());
     await renderScreen(<MiniPlayer />);
