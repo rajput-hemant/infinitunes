@@ -1,6 +1,6 @@
 import type { Album } from "@infinitunes/types";
 import { rawSong, rawAlbum } from "@infinitunes/types/fixtures";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { fireEvent, screen, within } from "@testing-library/react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
@@ -71,6 +71,9 @@ describe("AlbumScreen", () => {
     expect(screen.getByText("1")).toBeOnTheScreen();
     expect(screen.getByText("2")).toBeOnTheScreen();
     expect(screen.getByText("(P) 2026 Sony & Co")).toBeOnTheScreen();
+    // The page is one virtualized list: the rows are its items.
+    const list = screen.getByTestId("track-list");
+    expect(within(list).getByText("Second Song")).toBeOnTheScreen();
     expect(await screen.findByText("Related Album")).toBeOnTheScreen();
     expect(
       screen.getByRole("header", { name: "Recommended Albums" }),

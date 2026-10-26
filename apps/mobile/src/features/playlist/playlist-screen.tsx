@@ -15,7 +15,7 @@ import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
 import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
-import { TrackList } from "~/components/track-list";
+import { TrackListPage } from "~/components/track-list";
 import { entityQueries } from "~/lib/entity-queries";
 import { joinMeta } from "~/lib/meta";
 import { songRowsOf } from "~/lib/song-rows";
@@ -51,6 +51,7 @@ export function PlaylistScreen({ token }: PlaylistScreenProps) {
       query={query}
       skeleton={<DetailSkeleton />}
       noun="Playlist"
+      list
       icon={{ ios: "music.note.list", android: "queue_music" }}
       refreshKeys={[
         trpc.playlist.recommendations.pathKey(),
@@ -74,6 +75,31 @@ type PlaylistPageProps = {
 
 function PlaylistPage({ playlist, trending }: PlaylistPageProps) {
   const rows = useMemo(() => songRowsOf(playlist.list), [playlist]);
+
+  return (
+    <TrackListPage
+      rows={rows}
+      header={
+        <EntityHeader
+          image={playlist.image}
+          eyebrow="Playlist"
+          title={decode(playlist.title)}
+          subtitle={playlistCredit(playlist)}
+          meta={playlistMeta(playlist)}
+          explicit={isExplicit(playlist.explicit_content)}
+          onPlay={() => playAll(rows)}
+          onShuffle={() => shuffleAll(rows)}
+          like={{ type: "playlist", token: playlist.id }}
+          actions={<CollectionMenu name={decode(playlist.title)} rows={rows} />}
+        />
+      }
+      footer={<PlaylistFooter playlist={playlist} trending={trending} />}
+    />
+  );
+}
+
+/** Under the songs: the playlist's shelves. */
+function PlaylistFooter({ playlist, trending }: PlaylistPageProps) {
   const recommendations = useQuery({
     ...trpc.playlist.recommendations.queryOptions({ id: playlist.id }),
     select: toCardItems,
@@ -82,19 +108,6 @@ function PlaylistPage({ playlist, trending }: PlaylistPageProps) {
 
   return (
     <>
-      <EntityHeader
-        image={playlist.image}
-        eyebrow="Playlist"
-        title={decode(playlist.title)}
-        subtitle={playlistCredit(playlist)}
-        meta={playlistMeta(playlist)}
-        explicit={isExplicit(playlist.explicit_content)}
-        onPlay={() => playAll(rows)}
-        onShuffle={() => shuffleAll(rows)}
-        like={{ type: "playlist", token: playlist.id }}
-        actions={<CollectionMenu name={decode(playlist.title)} rows={rows} />}
-      />
-      <TrackList rows={rows} />
       <SecondaryShelf
         title={modules?.relatedPlaylist?.title ?? "Recommended Playlists"}
         query={recommendations}

@@ -1,3 +1,4 @@
+import { FlashList } from "@shopify/flash-list";
 import {
   QueryClient,
   QueryClientProvider,
@@ -8,7 +9,10 @@ import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 import { Platform, Share, Text } from "react-native";
 
-import { DetailScreen } from "~/components/detail/detail-screen";
+import {
+  DetailScreen,
+  useDetailListProps,
+} from "~/components/detail/detail-screen";
 import { art } from "~/theme/tokens";
 
 type Page = { name: string };
@@ -17,11 +21,24 @@ const answer = jest.fn(async (): Promise<Page | null> => ({
   name: "Udta Teer",
 }));
 
-function Harness() {
+/** A `list` page: its own virtualized list is the scroll view. */
+function PageList({ name }: Page) {
+  return (
+    <FlashList
+      testID="page-list"
+      data={[name]}
+      renderItem={({ item }) => <Text>{`Page of ${item}`}</Text>}
+      {...useDetailListProps()}
+    />
+  );
+}
+
+function Harness({ list = false }: { list?: boolean }) {
   const query = useQuery({ queryKey: ["page"], queryFn: answer });
   return (
     <DetailScreen
       query={query}
+      list={list}
       skeleton={<Text>Skeleton</Text>}
       noun="Album"
       identity={({ name }) => ({
@@ -30,12 +47,14 @@ function Harness() {
         url: "https://www.jiosaavn.com/album/udta-teer/LHgqn,SRpyA_",
       })}
     >
-      {({ name }) => <Text>{`Page of ${name}`}</Text>}
+      {({ name }) =>
+        list ? <PageList name={name} /> : <Text>{`Page of ${name}`}</Text>
+      }
     </DetailScreen>
   );
 }
 
-function renderHarness() {
+function renderHarness(list = false) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -43,7 +62,7 @@ function renderHarness() {
     _layout: () => <Stack />,
     index: () => (
       <QueryClientProvider client={queryClient}>
-        <Harness />
+        <Harness list={list} />
       </QueryClientProvider>
     ),
   });
@@ -120,6 +139,16 @@ describe("DetailScreen", () => {
     await userEvent
       .setup()
       .pullToRefresh(screen.getByText("Page of Udta Teer").parent!.parent!);
+
+    expect(await screen.findByText("Page of Updated")).toBeOnTheScreen();
+  });
+
+  it("lets a list page be the scroll view, refreshed by a pull", async () => {
+    await renderHarness(true);
+    await screen.findByText("Page of Udta Teer");
+    answer.mockResolvedValueOnce({ name: "Updated" });
+
+    await userEvent.setup().pullToRefresh(screen.getByTestId("page-list"));
 
     expect(await screen.findByText("Page of Updated")).toBeOnTheScreen();
   });

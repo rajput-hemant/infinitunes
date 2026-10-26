@@ -7,7 +7,7 @@ import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
-import { TrackList } from "~/components/track-list";
+import { TrackListPage } from "~/components/track-list";
 import { joinMeta, songCountLabel, totalDurationLabel } from "~/lib/meta";
 import { songRowsOf } from "~/lib/song-rows";
 import { trpc } from "~/lib/trpc";
@@ -28,6 +28,7 @@ export function MixScreen({ token }: MixScreenProps) {
       query={query}
       skeleton={<DetailSkeleton like={false} shelf={false} />}
       noun="Mix"
+      list
       icon={{ ios: "music.note.list", android: "queue_music" }}
       identity={(mix) => ({
         name: decode(mix.title),
@@ -45,21 +46,26 @@ function MixPage({ mix }: { mix: Mix }) {
   const { firstname, lastname } = mix.more_info;
 
   return (
-    <>
-      {/* A mix is not a favorite type, so its header has no heart. */}
-      <EntityHeader
-        image={mix.image}
-        eyebrow="Mix"
-        title={decode(mix.title)}
-        subtitle={[decode(firstname), decode(lastname)]
-          .filter(Boolean)
-          .join(" ")}
-        meta={joinMeta([songCountLabel(rows.length), totalDurationLabel(rows)])}
-        onPlay={() => playAll(rows)}
-        onShuffle={() => shuffleAll(rows)}
-        actions={<CollectionMenu name={decode(mix.title)} rows={rows} />}
-      />
-      <TrackList rows={rows} />
-    </>
+    <TrackListPage
+      rows={rows}
+      // A mix is not a favorite type, so its header has no heart.
+      header={
+        <EntityHeader
+          image={mix.image}
+          eyebrow="Mix"
+          title={decode(mix.title)}
+          subtitle={[decode(firstname), decode(lastname)]
+            .filter(Boolean)
+            .join(" ")}
+          meta={joinMeta([
+            songCountLabel(rows.length),
+            totalDurationLabel(rows),
+          ])}
+          onPlay={() => playAll(rows)}
+          onShuffle={() => shuffleAll(rows)}
+          actions={<CollectionMenu name={decode(mix.title)} rows={rows} />}
+        />
+      }
+    />
   );
 }

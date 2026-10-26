@@ -261,7 +261,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   is set after the prompt resolves). Playback never asks: Android 13+ exempts media-session notifications from
   `POST_NOTIFICATIONS`. The channel is created before asking only because apps targeting API <= 32 need it first.
 - Entity screens are `DetailFrame` (skeleton, NOT_FOUND or `null` data as not found, retry, native header with
-  Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view); a hook
+  Share via `detailHeaderOptions`) or `DetailScreen` (that frame around one refreshable scroll view; with `list` the page's own `TrackListPage` FlashList is that view, so album, playlist and mix rows are virtualized); a hook
   that finds nothing returns `null` from `select`. Spread `useDetailScrollProps()` (`components/detail/detail-scroll.tsx`)
   on every detail scroll view: on Android it swaps the app bar to `card` with the title once the header art
   scrolls under it. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,

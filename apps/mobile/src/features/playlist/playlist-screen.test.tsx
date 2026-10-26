@@ -1,5 +1,5 @@
 import { rawPlaylist } from "@infinitunes/types/fixtures";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { fireEvent, screen, within } from "@testing-library/react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
@@ -37,6 +37,10 @@ describe("PlaylistScreen", () => {
     expect(screen.getByText("Hindi · 50 Songs")).toBeOnTheScreen();
     expect(screen.getByText("Opener")).toBeOnTheScreen();
     expect(screen.getByText("Closer")).toBeOnTheScreen();
+    // The page is one virtualized list: the rows are its items.
+    expect(
+      within(screen.getByTestId("track-list")).getByText("Closer"),
+    ).toBeOnTheScreen();
     expect(await screen.findByText("Trending Mix")).toBeOnTheScreen();
     expect(
       screen.getByRole("header", { name: "Trending Playlists" }),
