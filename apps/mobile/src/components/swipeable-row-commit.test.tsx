@@ -68,6 +68,53 @@ it("runs the first action when released past the commit point", async () => {
   expect(second).not.toHaveBeenCalled();
 });
 
+it("still commits when the release spring has already dropped the row below the point", async () => {
+  await renderWithProviders(
+    <SwipeableRow leading={leading}>{null}</SwipeableRow>,
+  );
+  const react = jest.mocked(Reanimated.useAnimatedReaction).mock.calls[0]?.[1];
+  if (!react) throw new Error("Missing swipe reaction");
+
+  await act(async () => react(true, false));
+  await act(async () => react(false, true));
+  await act(async () => props.onSwipeableWillOpen("left"));
+  await act(async () => props.onSwipeableWillOpen("left"));
+
+  expect(first).toHaveBeenCalledTimes(1);
+});
+
+it("slides a removing row out first, then runs its action once", async () => {
+  jest.useFakeTimers();
+  const remove = jest.fn();
+  await renderWithProviders(
+    <SwipeableRow
+      leading={[
+        {
+          label: "Remove",
+          icon: "trash",
+          tone: "red",
+          removes: true,
+          onPress: remove,
+        },
+      ]}
+    >
+      {null}
+    </SwipeableRow>,
+  );
+  const react = jest.mocked(Reanimated.useAnimatedReaction).mock.calls[0]?.[1];
+  if (!react) throw new Error("Missing swipe reaction");
+
+  await act(async () => react(true, false));
+  await act(async () => props.onSwipeableWillOpen("left"));
+  expect(remove).not.toHaveBeenCalled();
+
+  await act(async () => {
+    jest.advanceTimersByTime(500);
+  });
+  expect(remove).toHaveBeenCalledTimes(1);
+  jest.useRealTimers();
+});
+
 it("only reveals the buttons when released short of it, and a tap runs one", async () => {
   await renderWithProviders(
     <SwipeableRow leading={leading}>{null}</SwipeableRow>,

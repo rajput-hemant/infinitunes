@@ -186,9 +186,14 @@ describe("removing a song", () => {
     await renderPlaylist();
     await screen.findByText("Middle Song");
 
+    jest.useFakeTimers();
     await fireEvent.press(
       screen.getAllByRole("button", { name: "Remove" })[1]!,
     );
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+    });
+    jest.useRealTimers();
 
     expect(screen.queryByText("Middle Song")).toBeNull();
     expect(screen.getByText("Opening Number")).toBeOnTheScreen();

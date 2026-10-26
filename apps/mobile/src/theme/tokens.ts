@@ -456,6 +456,7 @@ export const swipeFills = {
   orange: "#c2570c",
   indigo: "#5048e0",
   red: "#c4262e",
+  pink: "#c2245f",
 } as const;
 
 /** The glyph on every swipe capsule. */

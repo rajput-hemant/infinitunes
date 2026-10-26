@@ -5,6 +5,7 @@ import { space } from "~/theme/tokens";
 import {
   capsuleLayout,
   openWidth,
+  releaseCommits,
   FLING_MIN_DISTANCE,
   FLING_VELOCITY,
   FULL_SWIPE_SHARE,
@@ -91,6 +92,7 @@ describe("capsuleLayout", () => {
     // Distances from the screen edge: the primary is the one closer to the row.
     expect(primary.edge).toBeGreaterThan(other.edge);
     expect(primary.edge + primary.width + GAP).toBe(open);
+    expect(primary.width).toBe(other.width);
     expect(other.edge).toBe(GAP);
     expect(other.opacity).toBe(1);
   });
@@ -103,11 +105,27 @@ describe("capsuleLayout", () => {
     expect(capsuleLayout(reveal, 1, 1, 2).opacity).toBe(0);
   });
 
-  it("lets the primary absorb an overshoot before the commit point", () => {
-    const rest = capsuleLayout(open, 0, 0, 2);
-    const pulled = capsuleLayout(open + 40, 0, 0, 2);
-    expect(pulled.edge).toBe(rest.edge);
-    expect(pulled.width).toBe(rest.width + 40);
+  it("gives a lone capsule the whole pane and grows every share with the drag", () => {
+    const lone = capsuleLayout(200, 0, 0, 1);
+    expect(lone.edge).toBe(GAP);
+    expect(lone.width).toBe(200 - 2 * GAP);
+    const wider = capsuleLayout(300, 0, 0, 2);
+    expect(wider.width).toBeGreaterThan(capsuleLayout(200, 0, 0, 2).width);
+    expect(wider.width).toBe((300 - 3 * GAP) / 2);
+  });
+
+  it("keeps the fade without the growth under reduced motion", () => {
+    expect(capsuleLayout(300, 0, 0, 2, 1).width).toBe((300 - 3 * GAP) / 2);
+    expect(capsuleLayout(300, 0, 1, 2, 1).opacity).toBe(0);
+  });
+});
+
+describe("releaseCommits", () => {
+  it("commits while past, and just after the release spring left the point", () => {
+    expect(releaseCommits({ past: true, end: 0 }, 1000)).toBe(true);
+    expect(releaseCommits({ past: false, end: 900 }, 1000)).toBe(true);
+    expect(releaseCommits({ past: false, end: 500 }, 1000)).toBe(false);
+    expect(releaseCommits({ past: false, end: 0 }, 1000)).toBe(false);
   });
 });
 
