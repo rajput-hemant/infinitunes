@@ -11,6 +11,7 @@ import {
 import { seekTo } from "~/playback/transport";
 import { useTokenColor } from "~/theme/use-palette";
 
+import { playerHaptics, scrubStep } from "./haptics";
 import { useProgressValues } from "./progress-values";
 import { SeekSlider } from "./seek-slider";
 import { SLIDER_HOST } from "./seek-slider-props";
@@ -134,12 +135,19 @@ export function Scrubber() {
   const shown = Math.floor(scrubbed ?? second);
 
   function scrub(value: number) {
+    // A light tick on each step of the track the drag crosses.
+    const from = scrubbedRef.current ?? playbackPosition.get();
+    if (scrubStep(value, duration) !== scrubStep(from, duration))
+      playerHaptics.tick();
     scrubbedRef.current = value;
     setScrubbed(value);
   }
 
   function release() {
-    if (scrubbedRef.current !== null) seekTo(scrubbedRef.current);
+    if (scrubbedRef.current !== null) {
+      playerHaptics.release();
+      seekTo(scrubbedRef.current);
+    }
     scrubbedRef.current = null;
     setScrubbed(null);
   }
