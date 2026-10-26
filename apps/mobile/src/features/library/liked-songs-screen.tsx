@@ -2,13 +2,14 @@ import type { SongRowItem } from "@infinitunes/types";
 import { Stack } from "expo-router";
 
 import { SongRow } from "~/components/song-row";
-import { useFavoriteToggle, useStillLiked } from "~/user-data/favorites";
+import { useFavoriteToggle } from "~/user-data/favorites";
 
 import { LibraryListView } from "./library-list-view";
 import { SignedInGate } from "./signed-in-gate";
 import { SongCollection, SongCollectionSkeleton } from "./song-collection";
 import { SwipeableRow } from "./swipeable-row";
 import { useLikedSongs } from "./use-liked-songs";
+import { useStillLiked } from "./use-still-liked";
 
 /** Unliking hides the row in the same frame (`useStillLiked`). */
 function LikedSongRow({ song, play }: { song: SongRowItem; play: () => void }) {
