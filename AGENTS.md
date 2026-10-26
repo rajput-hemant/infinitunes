@@ -381,7 +381,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   through `authClient.$fetch` (it keeps the challenge cookie) and `react-native-passkey`, not
   `passkeyClient()`, whose sign-in calls the browser WebAuthn API; the associated domain is the https
   `EXPO_PUBLIC_API_URL` host (`app.config.ts`). A button shows only if the server lists the provider and the
-  build has its ids; on iOS Google needs Apple (guideline 4.8). Cancels are silent. Jest stubs all three
+  build has its ids; on iOS Google needs Apple (guideline 4.8), and Apple and passkeys need
+  `EXPO_PUBLIC_APPLE_PAID_TEAM=true` (a free Apple ID cannot sign those capabilities). Cancels are silent. Jest stubs all three
   (`src/test/native-auth.tsx`).
 - Bun's isolated installs: Babel resolves `nativewind/babel`'s plugins and the JSX runtime from the app, so
   `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`

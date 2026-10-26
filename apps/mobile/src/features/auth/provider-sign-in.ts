@@ -145,14 +145,16 @@ export function useSignInProviders(): SignInProviders {
     },
     staleTime: Infinity,
   });
-  const apple = Platform.OS === "ios" && server.includes("apple");
+  const ios = Platform.OS === "ios";
+  const apple = ios && env.applePaidTeam && server.includes("apple");
   const google =
     server.includes("google") &&
     Boolean(env.googleWebClientId) &&
-    (Platform.OS === "ios" ? apple && Boolean(env.googleIosClientId) : true);
+    (ios ? apple && Boolean(env.googleIosClientId) : true);
   return {
     apple,
     google,
-    passkey: env.passkeys && Passkey.isSupported(),
+    passkey:
+      env.passkeys && (!ios || env.applePaidTeam) && Passkey.isSupported(),
   };
 }

@@ -18,4 +18,6 @@ export const env = {
   googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
   /** Passkeys need the web domain as an associated domain: https only. */
   passkeys: apiUrl.startsWith("https:"),
+  /** Signed by a paid Apple team: Sign in with Apple and iOS passkeys (`app.config.ts`). */
+  applePaidTeam: process.env.EXPO_PUBLIC_APPLE_PAID_TEAM === "true",
 } as const;

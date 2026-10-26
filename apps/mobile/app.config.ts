@@ -14,6 +14,10 @@ const SPLASH = "./assets/splash-icon.png";
 const api = URL.parse(process.env.EXPO_PUBLIC_API_URL ?? "");
 const passkeyDomain = api?.protocol === "https:" ? api.hostname : undefined;
 
+// Sign in with Apple and Associated Domains need a paid Apple Developer team:
+// a free Apple ID cannot sign them, so builds leave both out unless told.
+const applePaidTeam = process.env.EXPO_PUBLIC_APPLE_PAID_TEAM === "true";
+
 // Google's iOS SDK opens its sign-in through the iOS client's reversed id.
 const googleIosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const googleIosUrlScheme = googleIosClientId?.split(".").toReversed().join(".");
@@ -33,10 +37,11 @@ const config: ExpoConfig = {
       tinted: "./assets/icon-tinted.png",
     },
     bundleIdentifier: NATIVE_APP_ID,
-    usesAppleSignIn: true,
-    ...(passkeyDomain && {
-      associatedDomains: [`webcredentials:${passkeyDomain}`],
-    }),
+    usesAppleSignIn: applePaidTeam,
+    ...(applePaidTeam &&
+      passkeyDomain && {
+        associatedDomains: [`webcredentials:${passkeyDomain}`],
+      }),
     supportsTablet: true,
     infoPlist: {
       // The dev client's floating "Tools" button covers the header buttons.
@@ -57,7 +62,7 @@ const config: ExpoConfig = {
     "expo-router",
     "expo-secure-store",
     "expo-web-browser",
-    "expo-apple-authentication",
+    ...(applePaidTeam ? ["expo-apple-authentication"] : []),
     ...(googleIosUrlScheme
       ? [
           [

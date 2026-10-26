@@ -11,6 +11,7 @@ import { setUpTests } from "react-native-reanimated";
 process.env.EXPO_PUBLIC_API_URL = "https://infinitunes.test";
 process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = "web.apps.googleusercontent.com";
 process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID = "ios.apps.googleusercontent.com";
+process.env.EXPO_PUBLIC_APPLE_PAID_TEAM = "true";
 
 setUpTests();
 
