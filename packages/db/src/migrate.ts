@@ -1,16 +1,12 @@
-import { fileURLToPath } from "node:url";
-
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import postgres from "postgres";
 
-const migrationsFolder = fileURLToPath(
-  new URL("./migrations/", import.meta.url),
-);
+const migrationsFolder = `${import.meta.dir}/migrations/`;
 const journal = await Bun.file(`${migrationsFolder}/meta/_journal.json`).json();
 const baseline = journal.entries[0] as { when: number };
 
-const url = process.env.DATABASE_URL;
+const url = Bun.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL is required for migrations");
 
 const client = postgres(url, { max: 1, onnotice: () => {} });

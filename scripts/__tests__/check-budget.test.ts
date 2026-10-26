@@ -62,7 +62,7 @@ function fakeFileSystem(options: FakeOptions): FileSystemAdapter {
 const FW = ".next/static/chunks/fw.js";
 
 describe("evaluateBudget", () => {
-  it("passes routes under their class ceiling and reports the shared framework share", () => {
+  it("passes routes under their class ceiling and reports the shared framework share", async () => {
     const fs = fakeFileSystem({
       routes: {
         "/": [FW, ".next/static/chunks/home.js"],
@@ -75,7 +75,7 @@ describe("evaluateBudget", () => {
       },
     });
 
-    const report = evaluateBudget(fs, config);
+    const report = await evaluateBudget(fs, config);
     expect(report.ok).toBe(true);
     expect(report.frameworkKB).toBeCloseTo(50);
     expect(report.frameworkChunks).toEqual(["static/chunks/fw.js"]);
@@ -87,20 +87,20 @@ describe("evaluateBudget", () => {
     expect(home?.status).toBe("OK");
   });
 
-  it("fails a route over its class ceiling and names the route", () => {
+  it("fails a route over its class ceiling and names the route", async () => {
     const fs = fakeFileSystem({
       routes: { "/album/[name]/[token]": [".next/static/chunks/big.js"] },
       sizesKB: { "static/chunks/big.js": 95 },
     });
 
-    const report = evaluateBudget(fs, config);
+    const report = await evaluateBudget(fs, config);
     expect(report.ok).toBe(false);
     expect(report.rows[0]?.category).toBe("detail");
     expect(report.rows[0]?.status).toBe("FAIL");
     expect(report.rows[0]?.reasons[0]).toContain("exceeds the 90KB ceiling");
   });
 
-  it("drops the noModule polyfill from every route", () => {
+  it("drops the noModule polyfill from every route", async () => {
     const fs = fakeFileSystem({
       routes: {
         "/": [".next/static/chunks/a.js", ".next/static/chunks/polyfill.js"],
@@ -112,12 +112,12 @@ describe("evaluateBudget", () => {
       polyfills: ["static/chunks/polyfill.js"],
     });
 
-    const report = evaluateBudget(fs, config);
+    const report = await evaluateBudget(fs, config);
     expect(report.rows[0]?.totalKB).toBeCloseTo(5);
     expect(report.ok).toBe(true);
   });
 
-  it("fails a route with too many font preloads", () => {
+  it("fails a route with too many font preloads", async () => {
     const fonts = Array.from(
       { length: 3 },
       (_, i) => `/_next/static/media/${i}.woff2`,
@@ -130,44 +130,44 @@ describe("evaluateBudget", () => {
       fonts: { "/": fonts },
     });
 
-    const report = evaluateBudget(fs, config);
+    const report = await evaluateBudget(fs, config);
     expect(report.ok).toBe(false);
     expect(report.rows[0]?.reasons[0]).toContain("3 font preloads");
   });
 
-  it("fails a route whose preloaded fonts are too heavy", () => {
+  it("fails a route whose preloaded fonts are too heavy", async () => {
     const fs = fakeFileSystem({
       routes: { "/": [] },
       sizesKB: { "static/media/a.woff2": 120 },
       fonts: { "/": ["/_next/static/media/a.woff2"] },
     });
 
-    const report = evaluateBudget(fs, config);
+    const report = await evaluateBudget(fs, config);
     expect(report.ok).toBe(false);
     expect(report.rows[0]?.fontKB).toBeCloseTo(120);
     expect(report.rows[0]?.reasons[0]).toContain("of preloaded fonts");
   });
 
-  it("reports an unrecognised route as unchecked rather than failing", () => {
+  it("reports an unrecognised route as unchecked rather than failing", async () => {
     const fs = fakeFileSystem({
       routes: { "/surprise": [".next/static/chunks/big.js"] },
       sizesKB: { "static/chunks/big.js": 500 },
     });
 
-    const report = evaluateBudget(fs, config);
+    const report = await evaluateBudget(fs, config);
     expect(report.rows[0]?.status).toBe("UNCHECKED");
     expect(report.rows[0]?.ceilingKB).toBeNull();
     expect(report.ok).toBe(true);
   });
 
-  it("warns on a forbidden string in a shared chunk without failing in warn mode", () => {
+  it("warns on a forbidden string in a shared chunk without failing in warn mode", async () => {
     const fs = fakeFileSystem({
       routes: { "/": [FW], "/browse": [FW] },
       sizesKB: { "static/chunks/fw.js": 10 },
       texts: { "static/chunks/fw.js": "throw new ZodError()" },
     });
 
-    const report = evaluateBudget(fs, config);
+    const report = await evaluateBudget(fs, config);
     expect(report.ok).toBe(true);
     expect(report.forbiddenHits).toEqual([
       { chunk: "static/chunks/fw.js", needle: "ZodError" },
@@ -177,41 +177,47 @@ describe("evaluateBudget", () => {
     );
   });
 
-  it("fails on a forbidden string in a shared chunk once the mode is error", () => {
+  it("fails on a forbidden string in a shared chunk once the mode is error", async () => {
     const fs = fakeFileSystem({
       routes: { "/": [FW], "/browse": [FW] },
       sizesKB: { "static/chunks/fw.js": 10 },
       texts: { "static/chunks/fw.js": "throw new ZodError()" },
     });
 
-    const report = evaluateBudget(fs, { ...config, forbiddenMode: "error" });
+    const report = await evaluateBudget(fs, {
+      ...config,
+      forbiddenMode: "error",
+    });
     expect(report.ok).toBe(false);
   });
 
-  it("ignores forbidden strings in chunks that only some routes load", () => {
+  it("ignores forbidden strings in chunks that only some routes load", async () => {
     const fs = fakeFileSystem({
       routes: { "/": [FW], "/login": [FW, ".next/static/chunks/auth.js"] },
       sizesKB: { "static/chunks/fw.js": 10, "static/chunks/auth.js": 5 },
       texts: { "static/chunks/auth.js": "ZodError" },
     });
 
-    const report = evaluateBudget(fs, { ...config, forbiddenMode: "error" });
+    const report = await evaluateBudget(fs, {
+      ...config,
+      forbiddenMode: "error",
+    });
     expect(report.forbiddenHits).toEqual([]);
     expect(report.ok).toBe(true);
   });
 
-  it("refuses a config that raises a ceiling above the hard cap", () => {
+  it("refuses a config that raises a ceiling above the hard cap", async () => {
     const fs = fakeFileSystem({
       routes: { "/": [] },
       sizesKB: {},
     });
 
-    expect(() =>
+    await expect(
       evaluateBudget(fs, {
         ...config,
         ceilingsKB: { ...config.ceilingsKB, catalog: 351 },
       }),
-    ).toThrow("catalog ceiling 351KB exceeds the 350KB cap");
+    ).rejects.toThrow("catalog ceiling 351KB exceeds the 350KB cap");
   });
 });
 
@@ -259,12 +265,12 @@ describe("parsing helpers", () => {
 });
 
 describe("formatReport", () => {
-  it("renders a table with the framework share and lists violations", () => {
+  it("renders a table with the framework share and lists violations", async () => {
     const fs = fakeFileSystem({
       routes: { "/": [".next/static/chunks/big.js"] },
       sizesKB: { "static/chunks/big.js": 500 },
     });
-    const output = formatReport(evaluateBudget(fs, config));
+    const output = formatReport(await evaluateBudget(fs, config));
     expect(output).toContain("Route");
     expect(output).toContain("Framework share");
     expect(output).toContain("Violations:");

@@ -13,15 +13,11 @@
  *    launcher masks (One UI's squircle) never clip it.
  *  - Splash: glyph only, inside the 2/3 circle Android 12 masks to.
  */
-import { mkdir, readFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
+import { $ } from "bun";
 import sharp from "sharp";
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const brandDir = path.join(root, "assets", "brand");
-const assetsDir = path.join(root, "assets");
+const assetsDir = `${import.meta.dir}/../assets`;
+const brandDir = `${assetsDir}/brand`;
 
 const GLYPH_CENTER = { x: 619, y: 662 } as const;
 /** Farthest glyph pixel from GLYPH_CENTER, in glyph units (measured on the trace). */
@@ -41,7 +37,7 @@ const DARK_TOP = "#14211e";
 const DARK_BOTTOM = "#0b0b0c";
 
 async function readGlyph() {
-  const svg = await readFile(path.join(brandDir, "glyph.svg"), "utf8");
+  const svg = await Bun.file(`${brandDir}/glyph.svg`).text();
   const d = /<path fill="url\(#ribbon\)" d="([^"]+)"/.exec(svg)?.[1];
   const gradient = /<linearGradient id="ribbon"[\s\S]*?<\/linearGradient>/.exec(
     svg,
@@ -85,7 +81,7 @@ async function render(svg: string, file: string, opaque: boolean) {
   const out = opaque
     ? image.flatten({ background: "#000000" }).removeAlpha()
     : image;
-  await out.png({ compressionLevel: 9 }).toFile(path.join(assetsDir, file));
+  await out.png({ compressionLevel: 9 }).toFile(`${assetsDir}/${file}`);
   console.log(`wrote assets/${file}`);
 }
 
@@ -96,7 +92,7 @@ async function main() {
   if (GLYPH_REACH * SPLASH_SCALE > 1024 / 3)
     throw new Error("splash glyph exceeds the Android 12 mask");
 
-  await mkdir(assetsDir, { recursive: true });
+  await $`mkdir -p ${assetsDir}`;
   const glyph = await readGlyph();
   const ribbon = glyph.gradient;
   const bgRect = `<rect width="1024" height="1024" fill="url(#bg)"/>`;

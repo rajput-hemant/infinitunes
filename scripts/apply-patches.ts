@@ -4,23 +4,42 @@
  * patch (`<name>@<version>.patch`, paths `a/node_modules/<name>/...`) is applied by hand to every
  * `node_modules/.bun/<name>@<version>+*` copy. Idempotent.
  */
-import { existsSync, readdirSync } from "node:fs";
-import { join } from "node:path";
+const root = `${import.meta.dir}/..`;
+const store = `${root}/node_modules/.bun`;
 
-const root = join(import.meta.dir, "..");
-const store = join(root, "node_modules/.bun");
+/** Whether a path exists (following symlinks, as existsSync did). Bun.file().exists() is false for directories. */
+async function exists(path: string): Promise<boolean> {
+  return Bun.file(path)
+    .stat()
+    .then(
+      () => true,
+      () => false,
+    );
+}
 
-for (const file of readdirSync(join(root, "patches")).filter((f) =>
+async function listNames(cwd: string, pattern = "*"): Promise<string[]> {
+  const names: string[] = [];
+  for await (const name of new Bun.Glob(pattern).scan({
+    cwd,
+    dot: true,
+    onlyFiles: false,
+  })) {
+    names.push(name);
+  }
+  return names;
+}
+
+for (const file of (await listNames(`${root}/patches`, "*.patch")).filter((f) =>
   f.endsWith(".patch"),
 )) {
   const key = file.slice(0, -".patch".length);
   const name = key.slice(0, key.lastIndexOf("@"));
-  const patch = join(root, "patches", file);
-  for (const dir of readdirSync(store).filter(
+  const patch = `${root}/patches/${file}`;
+  for (const dir of (await listNames(store)).filter(
     (d) => d === key || d.startsWith(`${key}+`),
   )) {
-    const target = join(store, dir, "node_modules", name);
-    if (!existsSync(target)) continue;
+    const target = `${store}/${dir}/node_modules/${name}`;
+    if (!(await exists(target))) continue;
     const git = (...args: string[]) =>
       Bun.spawnSync(
         [
