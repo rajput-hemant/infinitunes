@@ -1,10 +1,13 @@
 import { fireEvent, screen } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
 
+import { tap } from "~/lib/haptics";
 import { renderScreen } from "~/test/render";
 import { sizes } from "~/theme/tokens";
 
 import { IconButton } from "./icon-button";
+
+jest.mock("~/lib/haptics");
 
 const PLAY = { ios: "play.fill", android: "play_arrow" } as const;
 
@@ -16,6 +19,16 @@ function hasTonalContainer(): boolean {
 }
 
 describe("IconButton", () => {
+  it("taps once per press", async () => {
+    const onPress = jest.fn();
+    await renderScreen(
+      <IconButton icon={PLAY} label="Play" onPress={onPress} />,
+    );
+    await fireEvent.press(screen.getByRole("button", { name: "Play" }));
+    expect(tap).toHaveBeenCalledTimes(1);
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
   it("has no container while not selected", async () => {
     await renderScreen(
       <IconButton icon={PLAY} label="Lyrics" onPress={jest.fn()} />,

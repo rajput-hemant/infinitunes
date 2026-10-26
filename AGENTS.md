@@ -306,6 +306,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   (its `recyclingKey` drops the old picture). expo-symbols has no replace transition and replays an
   `animationSpec` on every prop update, so set one only briefly (`useGlyphBounce`). react-native-screens gives
   Android form sheets 0 corners: the root layout sets `sheetCornerRadius` to `radii.xl` there.
+- Haptics fire only through `lib/haptics.ts` (intent-named: `tap`, `selection`, `toggle`, `confirm`, `reject`, `longPress`, `dragStart`, `commit`; iOS `expo-haptics` generators, Android `performAndroidHapticsAsync`), never `expo-haptics` directly. Buttons, icon buttons, chips, Android segments/switches, pull to refresh, swipe commit, drag, likes, playlist writes and `showFailure`/`FormError` already fire; native iOS controls (UISwitch, segmented control, tabs, menus) tick themselves, so add none there; plain row navigation and scrolling stay silent. Jest mocks `expo-haptics` globally (`test/setup.ts`).
 - Failures, never successes, show in the one `FailureSnackbar` (root layout; M3 snackbar on Android, a glass
   banner in a `FullWindowOverlay` on iOS so it covers modals): `showFailure(message, action?)` or
   `.catch(reportFailure(fallback))` from `lib/failure.ts`, usable outside React. `reportFailure` shows the

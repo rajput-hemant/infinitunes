@@ -7,6 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
+import { tap } from "~/lib/haptics";
 import { usePressScale } from "~/lib/use-press-scale";
 import { springs } from "~/theme/motion";
 import { sizes, space } from "~/theme/tokens";
@@ -68,6 +69,7 @@ function CapsuleButton({
   icon,
   variant = "primary",
   style,
+  onPress,
   onPressIn,
   onPressOut,
   ...props
@@ -85,6 +87,10 @@ function CapsuleButton({
           container,
         )}
         {...props}
+        onPress={(event) => {
+          tap();
+          onPress?.(event);
+        }}
         onPressIn={(event) => {
           press.onPressIn();
           onPressIn?.(event);
@@ -124,6 +130,7 @@ function MaterialButton({
   icon,
   variant = "primary",
   style,
+  onPress,
   onPressIn,
   onPressOut,
   ...props
@@ -150,6 +157,10 @@ function MaterialButton({
         onPressOut?.(event);
       }}
       {...props}
+      onPress={(event) => {
+        tap();
+        onPress?.(event);
+      }}
       style={[
         styles.button,
         { backgroundColor },

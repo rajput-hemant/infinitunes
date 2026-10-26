@@ -11,6 +11,7 @@ import { NativeMenu } from "~/components/native-menu";
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
+import { toggle } from "~/lib/haptics";
 import { userInitial } from "~/lib/user-initial";
 import { playerDockInset } from "~/navigation/player-dock";
 import { sizes, space } from "~/theme/tokens";
@@ -216,7 +217,10 @@ function SwitchRow({
       <Switch
         accessibilityLabel={title}
         value={value}
-        onValueChange={onChange}
+        onValueChange={(next) => {
+          toggle(next);
+          onChange(next);
+        }}
         style={{ minHeight: sizes.touch, marginRight: sizes.page }}
       />
     </View>

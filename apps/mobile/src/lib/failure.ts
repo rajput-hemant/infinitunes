@@ -5,6 +5,7 @@ import { useStore } from "zustand";
 import { createStore } from "zustand/vanilla";
 
 import { announce } from "./announce";
+import { reject } from "./haptics";
 
 export type FailureAction = { label: string; onPress: () => void };
 
@@ -42,6 +43,7 @@ export function showFailure(message: string, action?: FailureAction) {
   clearTimeout(timer);
   failureStore.setState({ current: { id, message, action } });
   announce(message);
+  reject();
   startTimer(id, Boolean(action));
 }
 

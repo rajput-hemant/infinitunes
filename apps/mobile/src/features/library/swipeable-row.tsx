@@ -10,6 +10,7 @@ import { scheduleOnRN } from "react-native-worklets";
 
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
+import { commit as commitHaptic } from "~/lib/haptics";
 import { useTokenColor } from "~/theme/use-palette";
 
 export type SwipeAction = {
@@ -93,6 +94,8 @@ export function SwipeableRow({
               width={width}
               onChange={(next) => {
                 past.current = next;
+                // Crossing the commit point ticks, in either direction.
+                commitHaptic();
               }}
             />
           ) : null}

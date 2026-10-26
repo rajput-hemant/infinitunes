@@ -7,6 +7,7 @@ import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { cx } from "~/lib/class-names";
+import { selection } from "~/lib/haptics";
 import { usePressScale } from "~/lib/use-press-scale";
 import { sizes, space } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
@@ -180,7 +181,10 @@ function ChipButton({
       onLayout={onLayout}
     >
       <Pressable
-        onPress={chip.onPress}
+        onPress={() => {
+          if (!chip.selected) selection();
+          chip.onPress?.();
+        }}
         onPressIn={MATERIAL ? undefined : press.onPressIn}
         onPressOut={MATERIAL ? undefined : press.onPressOut}
         android_ripple={MATERIAL ? { color: ripple } : undefined}
