@@ -271,7 +271,7 @@ export const art = {
   card: 136,
   /** The Top Result card's art (Android search). */
   feature: 96,
-  header: 200,
+  header: 248,
   hero: 208,
 } as const;
 

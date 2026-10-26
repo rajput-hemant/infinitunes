@@ -7,7 +7,6 @@ import {
   toSongRow,
 } from "@infinitunes/types";
 
-import { CollectionMenu } from "~/components/collection-menu";
 import { Description } from "~/components/detail/description";
 import { useDetailScrollProps } from "~/components/detail/detail-scroll";
 import { EntityHeader } from "~/components/entity-header";
@@ -83,7 +82,7 @@ export function EpisodeContent({
         meta={meta}
         explicit={isExplicit(episode.explicit_content)}
         onPlay={play}
-        actions={<CollectionMenu name={row.name} rows={[row]} />}
+        menu={{ rows: [row] }}
       />
       {description ? (
         <>

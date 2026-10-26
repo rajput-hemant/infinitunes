@@ -14,12 +14,13 @@ import { AppState } from "react-native";
 import { pickDownloadFolder, saveTracks } from "~/lib/download";
 import { notificationPromptStore } from "~/lib/notifications";
 import { preferencesStore } from "~/lib/preferences";
+import { CollectionMenuBar } from "~/test/collection-menu-bar";
 import { chooseMenuAction, renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
 import { playlistSummary, userPlaylist } from "~/test/user-library";
 
-import { CollectionMenu } from "./collection-menu";
+const CollectionMenu = CollectionMenuBar;
 
 jest.mock("~/lib/download", () => ({
   pickDownloadFolder: jest.fn(),

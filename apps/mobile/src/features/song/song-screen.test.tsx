@@ -5,7 +5,7 @@ import { fireEvent, screen } from "@testing-library/react-native";
 
 import { CONTENT_REVEAL } from "~/components/skeletons";
 import { playerStore } from "~/playback/player-store";
-import { chooseMenuAction, renderScreen } from "~/test/render";
+import { chooseMenuAction, renderScreen, renderStack } from "~/test/render";
 import { procedure, trpcError } from "~/test/trpc-mock";
 
 import { SongScreen } from "./song-screen";
@@ -116,8 +116,8 @@ describe("SongScreen", () => {
     ).toBeNull();
   });
 
-  it("queues the song from the header's menu", async () => {
-    await renderScreen(<SongScreen token="song-token" />);
+  it("queues the song from the menu in the bar", async () => {
+    await renderStack({ index: () => <SongScreen token="song-token" /> });
     await screen.findByText("FA9LA & Friends");
 
     await chooseMenuAction("More actions for FA9LA & Friends", "add-to-queue");
@@ -128,8 +128,9 @@ describe("SongScreen", () => {
   });
 
   it("opens the credits screen from its menu", async () => {
-    const app = await renderScreen(<SongScreen token="song-token" />, {
-      routes: { "song/[name]/[token]/credits": () => null },
+    const app = await renderStack({
+      index: () => <SongScreen token="song-token" />,
+      "song/[name]/[token]/credits": () => null,
     });
     await screen.findByText("FA9LA & Friends");
 

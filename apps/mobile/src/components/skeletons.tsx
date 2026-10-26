@@ -9,7 +9,7 @@ import type { ArtSize, TextVariant } from "~/theme/tokens";
 import { useRadii } from "~/theme/use-radii";
 import { useUserId } from "~/user-data/session";
 
-import { entityTitleVariant, largePlay } from "./entity-header";
+import { ENTITY_TITLE_VARIANT } from "./entity-header";
 import { CARD_TITLE } from "./media-card";
 import { artworkFrame } from "./ui/artwork";
 import { range, SkeletonBlock, SkeletonPulse } from "./ui/skeleton";
@@ -285,6 +285,19 @@ function MenuGlyphSkeleton({
   );
 }
 
+/** A round tonal button of the header's action row. */
+function ActionCircleSkeleton({ testID }: { testID: string }) {
+  return (
+    <SkeletonBlock
+      testID={testID}
+      className={cx(
+        Platform.OS === "android" ? "size-ctl" : "size-touch",
+        "rounded-full",
+      )}
+    />
+  );
+}
+
 type EntityHeaderSkeletonProps = {
   /** Round artwork, for artists and stations. */
   round?: boolean;
@@ -292,8 +305,6 @@ type EntityHeaderSkeletonProps = {
   shuffle?: boolean;
   /** The header's heart (shown only to a signed-in listener). */
   like?: boolean;
-  /** The header's actions menu. */
-  menu?: boolean;
   /** The credit line under the title. */
   subtitle?: boolean;
   /** The muted meta line. */
@@ -304,7 +315,6 @@ export function EntityHeaderSkeleton({
   round = false,
   shuffle = true,
   like = true,
-  menu = true,
   subtitle = true,
   meta = true,
 }: EntityHeaderSkeletonProps) {
@@ -313,38 +323,32 @@ export function EntityHeaderSkeleton({
   const signedIn = useUserId() !== undefined;
   return (
     <SkeletonPulse>
-      <View className="w-full max-w-readable items-center self-center px-page pb-4 pt-2">
+      <View className="w-full max-w-readable items-center self-center px-page pb-6 pt-2">
         <SkeletonBlock style={frame("header", round)} />
-        <View className="mt-3">
+        <View className="mt-4">
           <SkeletonText variant="caption" width={96} />
         </View>
         <View className="mt-1">
-          <SkeletonText variant={entityTitleVariant()} width={200} />
+          <SkeletonText variant={ENTITY_TITLE_VARIANT} width={200} />
         </View>
         {subtitle ? <SkeletonText variant="subhead" width={140} /> : null}
         {meta ? <SkeletonText variant="footnote" width={180} /> : null}
-        {/* The heart and the menu, then Shuffle and Play: Android's 40dp
-            tonal and 56dp filled containers, iOS's two 48pt buttons. */}
-        <View className="mt-4 w-full flex-row items-center gap-2">
-          {like && signedIn ? (
-            <HeartCellSkeleton testID="header-skeleton-like" />
-          ) : null}
-          {menu ? <MenuGlyphSkeleton /> : null}
-          <View className="flex-1" />
+        {/* Shuffle, Play and the heart, as the header's row: two round
+            buttons around the Play capsule (Android 40dp, iOS 48pt). */}
+        <View className="mt-6 w-full flex-row items-center gap-3">
           {shuffle ? (
-            <SkeletonBlock
-              className={cx(
-                Platform.OS === "android" ? "size-ctl" : "size-touch",
-                "rounded-full",
-              )}
-            />
+            <ActionCircleSkeleton testID="header-skeleton-shuffle" />
           ) : null}
           <SkeletonBlock
+            testID="header-skeleton-play"
             className={cx(
-              largePlay() ? "size-row" : "size-touch",
-              "rounded-full",
+              Platform.OS === "android" ? "h-ctl" : "h-touch",
+              "flex-1 rounded-full",
             )}
           />
+          {like && signedIn ? (
+            <ActionCircleSkeleton testID="header-skeleton-like" />
+          ) : null}
         </View>
       </View>
     </SkeletonPulse>

@@ -12,7 +12,7 @@ import { SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 export function ShowSkeleton() {
   return (
     <ScreenScrollView scrollEnabled={false}>
-      <EntityHeaderSkeleton menu={false} />
+      <EntityHeaderSkeleton />
       <TextBlockSkeleton />
       <SkeletonPulse>
         {/* The order pill (`OptionMenu`): 40pt drawn in its 48pt target. Only

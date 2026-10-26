@@ -18,7 +18,6 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 import Animated from "react-native-reanimated";
 
-import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { EntityHeader } from "~/components/entity-header";
 import { SecondaryShelf } from "~/components/secondary-shelf";
@@ -35,7 +34,7 @@ import { TrackList } from "~/components/track-list";
 import { entityQueries } from "~/lib/entity-queries";
 import { joinMeta } from "~/lib/meta";
 import { trpc } from "~/lib/trpc";
-import { useOpenCredits } from "~/navigation/use-open-entity";
+import { useOpenCredits, useOpenEntity } from "~/navigation/use-open-entity";
 import { playAll } from "~/playback/play-collection";
 
 import { LyricsSection } from "./lyrics-section";
@@ -117,6 +116,10 @@ function SongPage({ song, modules, trending }: SongPageProps) {
   const rows = useMemo(() => [row], [row]);
   const { more_info: info } = song;
   const openCredits = useOpenCredits();
+  const openEntity = useOpenEntity();
+  // One credited artist: the credit opens their screen.
+  const soleArtist =
+    row.primaryArtists.length === 1 ? row.primaryArtists[0] : undefined;
   const recommendations = useQuery({
     ...trpc.song.recommendations.queryOptions({ id: song.id }),
     select: toCardItems,
@@ -133,20 +136,22 @@ function SongPage({ song, modules, trending }: SongPageProps) {
         explicit={isExplicit(song.explicit_content)}
         onPlay={() => playAll(rows)}
         like={{ type: "song", token: song.id }}
-        actions={
-          <CollectionMenu
-            name={row.name}
-            rows={rows}
-            extra={[
-              {
-                id: "credits",
-                title: "View Credits",
-                image: "info.circle",
-                run: () => openCredits(song.perma_url),
-              },
-            ]}
-          />
+        onSubtitlePress={
+          soleArtist
+            ? () => openEntity("artist", soleArtist.perma_url)
+            : undefined
         }
+        menu={{
+          rows,
+          extra: [
+            {
+              id: "credits",
+              title: "View Credits",
+              image: "info.circle",
+              run: () => openCredits(song.perma_url),
+            },
+          ],
+        }}
       />
       <LyricsSection songId={song.id} />
       <MoreFromAlbum song={row} albumUrl={info.album_url} />

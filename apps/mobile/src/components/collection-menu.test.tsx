@@ -1,14 +1,16 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { screen } from "@testing-library/react-native";
+import { fireEvent, screen } from "@testing-library/react-native";
 import { router } from "expo-router";
+import { Share } from "react-native";
 
 import { playerStore } from "~/playback/player-store";
+import { CollectionMenuBar } from "~/test/collection-menu-bar";
 import { chooseMenuAction, renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
 
-import { CollectionMenu } from "./collection-menu";
+const CollectionMenu = CollectionMenuBar;
 
 const rows = ["one", "two", "three"].map((id) =>
   toSongRow(rawSong({ id, title: `Song ${id}` })),
@@ -19,7 +21,23 @@ const initial = playerStore.getState();
 
 beforeEach(() => playerStore.setState(initial, true));
 
-describe("CollectionMenu", () => {
+describe("the header's collection menu", () => {
+  it("sits beside Share in the bar, with every entry", async () => {
+    const share = jest.spyOn(Share, "share").mockResolvedValue({
+      action: "dismissedAction",
+      activityType: undefined,
+    });
+    signInAs("u1");
+    await renderWithProviders(<CollectionMenu name="Udta Teer" rows={rows} />);
+
+    const shareButton = screen.getByRole("button", { name: "Share Udta Teer" });
+    expect(
+      screen.getByLabelText("More actions for Udta Teer"),
+    ).toBeOnTheScreen();
+    await fireEvent.press(shareButton);
+    expect(share).toHaveBeenCalledTimes(1);
+  });
+
   it("queues every song after the current one, in order", async () => {
     playerStore.getState().playTracks([toSongRow(rawSong({ id: "now" }))]);
     await renderWithProviders(<CollectionMenu name="Udta Teer" rows={rows} />);

@@ -18,13 +18,8 @@ import {
 } from "~/user-data/playlists";
 import { useUserId } from "~/user-data/session";
 
-import { MenuTrigger } from "./menu-trigger";
-import {
-  addToPlaylistEntry,
-  NativeMenu,
-  playRadioEntry,
-  type MenuEntry,
-} from "./native-menu";
+import { addToPlaylistEntry, playRadioEntry } from "./native-menu";
+import type { MenuEntry } from "./native-menu";
 
 /**
  * Saves the songs into a folder the listener picks, at the download quality
@@ -52,7 +47,7 @@ async function downloadAll(songs: readonly SongRowItem[]) {
   );
 }
 
-type CollectionMenuProps = {
+export type CollectionMenuSpec = {
   /** The album, playlist or artist; the menu's title. */
   name: string;
   rows: readonly SongRowItem[];
@@ -63,16 +58,17 @@ type CollectionMenuProps = {
 };
 
 /**
- * A collection's "more" menu, `EntityHeader`'s trailing control: queue all
- * its songs next or last, add them all to a playlist, start its radio, or
- * download them all into a folder.
+ * A collection's "more" menu entries, shown in the detail header's bar
+ * (`DetailMenu`): queue all its songs next or last, add them all to a
+ * playlist, start its radio, or download them all into a folder. Empty with
+ * no rows.
  */
-export function CollectionMenu({
+export function useCollectionEntries({
   name,
   rows,
   radio,
   extra = [],
-}: CollectionMenuProps) {
+}: CollectionMenuSpec): MenuEntry[] {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
   const membership = usePlaylistMembership();
@@ -123,10 +119,5 @@ export function CollectionMenu({
 
   entries.push(...extra);
 
-  if (rows.length === 0) return null;
-  return (
-    <NativeMenu title={name} entries={entries}>
-      <MenuTrigger label={`More actions for ${name}`} size="lg" />
-    </NativeMenu>
-  );
+  return rows.length === 0 ? [] : entries;
 }

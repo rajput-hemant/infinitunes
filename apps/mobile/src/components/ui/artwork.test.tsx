@@ -2,6 +2,7 @@ import { act, render, screen } from "@testing-library/react-native";
 import { PixelRatio, StyleSheet } from "react-native";
 
 import { preferencesStore } from "~/lib/preferences";
+import { art } from "~/theme/tokens";
 
 import { Artwork } from "./artwork";
 
@@ -58,7 +59,7 @@ describe("Artwork", () => {
     const { borderRadius } = StyleSheet.flatten(
       screen.getByTestId("art").props.style,
     );
-    expect(screen.getByTestId("art")).toHaveStyle({ width: 200 });
+    expect(screen.getByTestId("art")).toHaveStyle({ width: art.header });
     expect(borderRadius).toBeGreaterThanOrEqual(100);
     expect(renderedUri()).toContain("-500x500.jpg");
   });

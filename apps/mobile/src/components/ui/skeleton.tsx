@@ -50,9 +50,20 @@ export function SkeletonPulse({ children }: { children: ReactNode }) {
 type SkeletonBlockProps = {
   className?: string;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
 };
 
 /** A placeholder shape in the fill colour; size and radius come from the caller. */
-export function SkeletonBlock({ className, style }: SkeletonBlockProps) {
-  return <View className={cx("bg-fill-2", className)} style={style} />;
+export function SkeletonBlock({
+  className,
+  style,
+  testID,
+}: SkeletonBlockProps) {
+  return (
+    <View
+      testID={testID}
+      className={cx("bg-fill-2", className)}
+      style={style}
+    />
+  );
 }

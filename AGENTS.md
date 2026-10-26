@@ -267,11 +267,16 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   on every detail scroll view: on Android it swaps the app bar to `card` with the title once the header art
   scrolls under it. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
   `eyebrow` (the kind and year, "Album · 2026"), `subtitle` (the credit), `meta` (counts, duration, plays),
-  `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified` and `actions` (`CollectionMenu`: play next, queue,
-  add all to a playlist, radio, download all), which lead the action row; Shuffle and Play close it as icon buttons.
+  `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified`, `onSubtitlePress` (a sole artist: the credit becomes an underlined link) and `menu`
+  (`{ rows, radio?, extra? }`: play next, queue, add all to a playlist, radio, download all). The `menu` is not in the
+  header: `DetailMenu` registers its entries with `DetailFrame`, whose `detailHeaderOptions` puts Share + a native
+  `menu` item (a real `UIMenu`) in `unstable_headerRightItems` on iOS 26 (one glass capsule), and Share + a `more_vert`
+  `NativeMenu` in `headerRight` elsewhere. The action row is Apple Music's: Shuffle (round tonal), a wide labelled Play
+  capsule, the heart (round tonal). The header sits on a wash of the artwork colour (`usePlayerColors` + `OnWash`, from
+  `features/player`, fading to the page background; no seed or a contrast miss is no wash) and the art is 248pt.
   Compact UI: a symbol alone replaces icon-plus-text wherever it is unambiguous (`IconButton` `variant`
   `filled`/`tonal`, `large` for a screen's Play; keep the label); text stays on submits and empty-state actions.
-  Skeletons must mirror the loaded layout (`EntityHeaderSkeleton` `like`/`menu`/`subtitle`/`meta` match the
+  Skeletons must mirror the loaded layout (`EntityHeaderSkeleton` `shuffle`/`like`/`subtitle`/`meta` match the
   header; overlay skeleton on loaded page to check). Loading marks are `Spinner` (Compose M3E `LoadingIndicator` on Android). Menus are `NativeMenu` entries that carry their action
   (`addToPlaylistEntry`, which ends with New Playlist, the `/create-playlist` sheet; `playRadioEntry`);
   `SongMenu` is the track's (a row's is `SongMenuButton`: Android mounts it on the first press; iOS `MenuView.show()` is a no-op, so iOS rows keep one each). Long detail text (a show's or episode's description) is `Description`
