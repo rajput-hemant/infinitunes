@@ -45,7 +45,7 @@ function qualityFor(edge: number): ImageQuality {
 }
 
 /** Any radius past half the edge draws a circle, even when `style` resizes the art. */
-const FULL_RADIUS = 9999;
+export const FULL_RADIUS = 9999;
 
 /** Edge and radius of a size token; round art is a circle at every size. */
 export function artworkFrame(
