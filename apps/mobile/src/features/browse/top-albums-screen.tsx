@@ -33,7 +33,11 @@ export function TopAlbumsScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "Top Albums" }} />
+      <Stack.Screen
+        options={{
+          title: lang ? `${languageLabel(lang)} Albums` : "Top Albums",
+        }}
+      />
       <CatalogScreen
         query={albums}
         keyOf={(album) => album.id}

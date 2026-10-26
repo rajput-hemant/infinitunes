@@ -56,6 +56,7 @@ export function OptionMenu<Id extends string>({
       }))}
     >
       <View
+        accessible
         accessibilityRole="button"
         accessibilityLabel={`${label}, ${selected?.title ?? ""}`}
         className="min-h-touch justify-center"

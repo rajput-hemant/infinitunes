@@ -9,15 +9,11 @@ import { View } from "react-native";
 
 import { Spinner } from "~/components/ui/spinner";
 import { authClient } from "~/lib/auth-client";
+import { single } from "~/lib/params";
 
 import { isAppAction, runAppAction, type ActionOutcome } from "./app-actions";
 
 type Params = { action?: string; id?: string; q?: string };
-
-/** One value of a param Expo Router may hand over repeated. */
-function single(value: string | string[] | undefined) {
-  return Array.isArray(value) ? value[0] : value;
-}
 
 type StackState = {
   key: string;

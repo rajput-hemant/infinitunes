@@ -17,7 +17,7 @@ import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
 import { SecondaryShelf } from "~/components/secondary-shelf";
 import { Shelf } from "~/components/shelf";
-import { TrackList } from "~/components/track-list";
+import { TrackListPage } from "~/components/track-list";
 import { Text } from "~/components/ui/text";
 import { entityQueries } from "~/lib/entity-queries";
 import {
@@ -63,6 +63,7 @@ export function AlbumScreen({ token }: AlbumScreenProps) {
       query={query}
       skeleton={<DetailSkeleton numbered />}
       noun="Album"
+      list
       icon={{ ios: "square.stack", android: "album" }}
       refreshKeys={[
         trpc.album.recommendations.pathKey(),
@@ -87,6 +88,32 @@ type AlbumPageProps = {
 
 function AlbumPage({ album, trending }: AlbumPageProps) {
   const rows = useMemo(() => songRowsOf(album.list), [album]);
+
+  return (
+    <TrackListPage
+      rows={rows}
+      numbered
+      header={
+        <EntityHeader
+          image={album.image}
+          eyebrow={joinMeta(["Album", album.year])}
+          title={decode(album.title)}
+          subtitle={albumCredit(album)}
+          meta={albumMeta(album, rows)}
+          explicit={isExplicit(album.explicit_content)}
+          onPlay={() => playAll(rows)}
+          onShuffle={() => shuffleAll(rows)}
+          like={{ type: "album", token: album.id }}
+          actions={<CollectionMenu name={decode(album.title)} rows={rows} />}
+        />
+      }
+      footer={<AlbumFooter album={album} trending={trending} />}
+    />
+  );
+}
+
+/** Under the songs: the copyright line, then the album's shelves. */
+function AlbumFooter({ album, trending }: AlbumPageProps) {
   const recommendations = useQuery({
     ...trpc.album.recommendations.queryOptions({ id: album.id }),
     select: toCardItems,
@@ -100,19 +127,6 @@ function AlbumPage({ album, trending }: AlbumPageProps) {
 
   return (
     <>
-      <EntityHeader
-        image={album.image}
-        eyebrow={joinMeta(["Album", album.year])}
-        title={decode(album.title)}
-        subtitle={albumCredit(album)}
-        meta={albumMeta(album, rows)}
-        explicit={isExplicit(album.explicit_content)}
-        onPlay={() => playAll(rows)}
-        onShuffle={() => shuffleAll(rows)}
-        like={{ type: "album", token: album.id }}
-        actions={<CollectionMenu name={decode(album.title)} rows={rows} />}
-      />
-      <TrackList rows={rows} numbered />
       {copyright ? (
         <View className="px-page pt-4">
           <Text variant="caption" tone="muted">

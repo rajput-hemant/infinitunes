@@ -8,6 +8,7 @@ import type {
   SongRowItem,
 } from "@infinitunes/types";
 import { toCardItem, toSongRow } from "@infinitunes/types";
+import { useMemo } from "react";
 import type { ReactElement } from "react";
 
 import { cardItems, songItems } from "~/components/entity-list";
@@ -38,6 +39,36 @@ type ArtistPanelInput = {
   bio: readonly ArtistBioSection[];
 };
 
+/** What a paged tab (Songs, Albums) hands the list: its rows and a footer that pages. */
+function pagedPanel(
+  pages: {
+    items: readonly unknown[];
+    isPending: boolean;
+    error: unknown;
+    isFetchingNextPage: boolean;
+    loadMore: () => void;
+    refetch: () => Promise<unknown>;
+  },
+  items: ArtistListItem[],
+  emptyTitle: string,
+): ArtistPanel {
+  return {
+    items,
+    footer: (
+      <PagedFooter
+        isPending={pages.isPending}
+        error={pages.error}
+        isFetchingNextPage={pages.isFetchingNextPage}
+        isEmpty={pages.items.length === 0}
+        emptyTitle={emptyTitle}
+        onRetry={() => void pages.refetch()}
+      />
+    ),
+    loadMore: pages.loadMore,
+    refetch: pages.refetch,
+  };
+}
+
 /**
  * The active tab's rows and what closes them. Songs and Albums fetch their
  * pages only while selected; the Overview and Biography come from the artist
@@ -67,47 +98,27 @@ export function useArtistPanel({
     enabled: tab === "albums",
   });
 
+  const songListItems = useMemo(() => songItems(songs.items), [songs.items]);
+  const albumListItems = useMemo(() => cardItems(albums.items), [albums.items]);
+  const bioListItems = useMemo(() => bioItems(bio), [bio]);
+  const overviewItems = useMemo(
+    () => songItems(topSongs, OVERVIEW_SONGS),
+    [topSongs],
+  );
+
   switch (tab) {
     case "songs":
-      return {
-        items: songItems(songs.items),
-        footer: (
-          <PagedFooter
-            isPending={songs.isPending}
-            error={songs.error}
-            isFetchingNextPage={songs.isFetchingNextPage}
-            isEmpty={songs.items.length === 0}
-            emptyTitle="No songs yet"
-            onRetry={() => void songs.refetch()}
-          />
-        ),
-        loadMore: songs.loadMore,
-        refetch: songs.refetch,
-      };
+      return pagedPanel(songs, songListItems, "No songs yet");
     case "albums":
-      return {
-        items: cardItems(albums.items),
-        footer: (
-          <PagedFooter
-            isPending={albums.isPending}
-            error={albums.error}
-            isFetchingNextPage={albums.isFetchingNextPage}
-            isEmpty={albums.items.length === 0}
-            emptyTitle="No albums yet"
-            onRetry={() => void albums.refetch()}
-          />
-        ),
-        loadMore: albums.loadMore,
-        refetch: albums.refetch,
-      };
+      return pagedPanel(albums, albumListItems, "No albums yet");
     case "bio":
       return {
-        items: bioItems(bio),
+        items: bioListItems,
         footer: null,
       };
     case "overview":
       return {
-        items: songItems(topSongs, OVERVIEW_SONGS),
+        items: overviewItems,
         footer: <OverviewShelves artist={artist} />,
       };
   }

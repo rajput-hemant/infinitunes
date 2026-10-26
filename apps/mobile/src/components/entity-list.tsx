@@ -27,9 +27,14 @@ export function songItems(
   queue: readonly SongRowItem[],
   limit = queue.length,
 ): EntityListItem[] {
-  return queue
-    .slice(0, limit)
-    .map((row, index) => ({ kind: "song", id: row.id, row, queue, index }));
+  return queue.slice(0, limit).map((row, index) => ({
+    kind: "song",
+    // A song can repeat in a list (artist, label, show): the position keeps keys unique.
+    id: `${row.id}-${index}`,
+    row,
+    queue,
+    index,
+  }));
 }
 
 export function cardItems(cards: readonly CardItem[]): EntityListItem[] {

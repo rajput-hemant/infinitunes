@@ -37,6 +37,25 @@ function renderPlaylist(id = "pl-1") {
   );
 }
 
+type Node = ReturnType<typeof screen.getByText>;
+
+function find(node: Node, type: string): Node | undefined {
+  if (node.type === type) return node;
+  for (const child of node.children) {
+    const found = typeof child === "string" ? undefined : find(child, type);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/** The native header's title, as the screen hands it to the platform. */
+function headerTitle(anchor: Node) {
+  let root = anchor;
+  while (root.parent) root = root.parent;
+  const config = find(root, "RNSScreenStackHeaderConfig");
+  return (config?.props as { title?: string } | undefined)?.title;
+}
+
 beforeEach(async () => {
   await act(async () => signInAs("alice"));
   procedure("user.getUserPlaylists").mockResolvedValue([
@@ -134,6 +153,17 @@ describe("PlaylistScreen", () => {
     await renderPlaylist("someone-elses");
 
     expect(await screen.findByText("Playlist not found")).toBeOnTheScreen();
+    // A title even with no playlist, not the route's name.
+    expect(headerTitle(screen.getByText("Playlist not found"))).toBe(
+      "Playlist",
+    );
+  });
+
+  it("titles the header with the playlist's name once it loads", async () => {
+    await renderPlaylist();
+
+    const row = await screen.findByText("Opening Number");
+    expect(headerTitle(row)).toBe("Road Trip");
   });
 
   it("shows an error with a retry when the songs cannot load", async () => {

@@ -63,6 +63,20 @@ describe("ShowScreen episode list", () => {
     );
   });
 
+  it("opens the latest season when the route names one the show lacks", async () => {
+    const episodes = procedure("show.episodes");
+    await renderScreen(<ShowScreen token={SHOW_TOKEN} season={9} />);
+
+    await waitFor(() =>
+      expect(episodes).toHaveBeenCalledWith(
+        expect.objectContaining({ season: 2, page: 1 }),
+      ),
+    );
+    expect(episodes).not.toHaveBeenCalledWith(
+      expect.objectContaining({ season: 9 }),
+    );
+  });
+
   it("shows an error with a retry when the episodes fail, keeping the header", async () => {
     procedure("show.episodes").mockRejectedValueOnce(new Error("down"));
     await renderScreen(<ShowScreen token={SHOW_TOKEN} />);

@@ -67,7 +67,8 @@ slop, mini player 64, page gutter 16.
 
 Hit slop only works on the outermost view: Android drops a touch outside a parent's bounds (an
 `overflow: hidden` view's own, else its children's frames, never their slop) before it reaches the children,
-so a slopped child of a clipped or same-size wrapper keeps its 40dp target. `Button` and `IconButton` make the
+so a slopped child inside an `overflow: hidden` or `scroll` wrapper keeps its 40dp target; a same-size wrapper
+that does not clip gives no such guarantee on RN 0.88 Fabric. `Button` and `IconButton` make the
 clipped, shaped view the pressable itself, with no wrapper. A native menu (`OptionMenu`, `MenuTrigger`)
 hit-tests its child's bounds, so its trigger is the full 48dp instead.
 
@@ -187,7 +188,6 @@ Compose `MotionScheme.expressive()` values, damping coefficient = 2·ζ·√stif
 | spatial fast    | 800       | 0.6 | 34        | press morphs, press-scale release    |
 | spatial default | 380       | 0.8 | 31        | play-button shape, segment selection |
 | spatial slow    | 200       | 0.8 | 23        | large surfaces                       |
-| effects fast    | 3800      | 1   | 123       | colour/opacity, fast                 |
 | effects default | 1600      | 1   | 80        | colour/opacity                       |
 
 Spatial springs may overshoot (expressive bounce); effects springs never do. Worklet springs follow the

@@ -1,7 +1,13 @@
 import type { TagMix } from "@infinitunes/types";
 import { rawChart, rawAlbum, rawLaunchData } from "@infinitunes/types/fixtures";
-import { fireEvent, screen, userEvent } from "@testing-library/react-native";
+import {
+  fireEvent,
+  screen,
+  userEvent,
+  waitFor,
+} from "@testing-library/react-native";
 
+import { preferencesStore } from "~/lib/preferences";
 import { renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
 
@@ -69,6 +75,16 @@ describe("BrowseScreen", () => {
     expect(
       await screen.findByRole("link", { name: "Made for you" }),
     ).toBeOnTheScreen();
+  });
+
+  it("asks Home for the listener's languages, not the default catalog", async () => {
+    preferencesStore.setState({ languages: ["tamil"] });
+    await renderScreen(<BrowseScreen />, { routes });
+
+    await waitFor(() =>
+      expect(procedure("home.home")).toHaveBeenCalledWith({ lang: "tamil" }),
+    );
+    preferencesStore.setState({ languages: [] });
   });
 
   it("opens a category's list", async () => {

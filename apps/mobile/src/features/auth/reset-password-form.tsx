@@ -52,13 +52,17 @@ export function ResetPasswordForm({
   useFocusOnRefusal(passwordInput, serverError, pending);
 
   if (!token || linkError || tokenRejected) return <InvalidLink />;
+  const resetToken = token;
 
   function submit() {
     const reset = validate();
-    if (!reset || pending || !token) return;
+    if (!reset || pending) return;
     void run(async () => {
       const failure = await authFailure(() =>
-        authClient.resetPassword({ newPassword: reset.password, token }),
+        authClient.resetPassword({
+          newPassword: reset.password,
+          token: resetToken,
+        }),
       );
       setServerError(failure?.message);
       if (failure?.code === "INVALID_TOKEN") setTokenRejected(true);

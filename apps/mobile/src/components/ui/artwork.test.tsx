@@ -36,6 +36,23 @@ describe("Artwork", () => {
     expect(renderedUri()).toContain("-150x150.jpg");
   });
 
+  it("swaps list cell art at once, without a fade", async () => {
+    await render(
+      <>
+        <Artwork testID="row" image={IMAGE} size="row" />
+        <Artwork testID="card" image={IMAGE} size="card" />
+        <Artwork testID="header" image={IMAGE} size="header" />
+      </>,
+    );
+    expect(screen.getByTestId("row").props.transition).toEqual({ duration: 0 });
+    expect(screen.getByTestId("card").props.transition).toEqual({
+      duration: 0,
+    });
+    expect(screen.getByTestId("header").props.transition).toEqual({
+      duration: 150,
+    });
+  });
+
   it("loads high resolution for large sizes and rounds round art", async () => {
     await render(<Artwork testID="art" image={IMAGE} size="header" round />);
     const { borderRadius } = StyleSheet.flatten(

@@ -1,8 +1,13 @@
 import { act, screen } from "@testing-library/react-native";
 
+import { reportFailure } from "~/lib/failure";
 import { renderWithProviders } from "~/test/render";
 
 import { PullToRefresh } from "./refresh-control";
+
+jest.mock("~/lib/failure", () => ({
+  reportFailure: jest.fn(() => jest.fn()),
+}));
 
 // Jest's stock RefreshControl drops its props; keep them to read `refreshing`.
 jest.mock(
@@ -36,6 +41,21 @@ describe("PullToRefresh", () => {
     expect(control().props.refreshing).toBe(true);
 
     await act(async () => settle());
+    expect(control().props.refreshing).toBe(false);
+  });
+
+  it("reports a rejected refresh instead of leaving it unhandled", async () => {
+    const failure = jest.fn();
+    jest.mocked(reportFailure).mockReturnValueOnce(failure);
+    const error = new Error("offline");
+    await renderWithProviders(
+      <PullToRefresh onRefresh={() => Promise.reject(error)} />,
+    );
+
+    await act(async () => control().props.onRefresh());
+
+    expect(reportFailure).toHaveBeenCalledWith("Couldn't refresh.");
+    expect(failure).toHaveBeenCalledWith(error);
     expect(control().props.refreshing).toBe(false);
   });
 

@@ -6,8 +6,8 @@ import { trpc } from "~/lib/trpc";
 const ITEMS = 50;
 
 export function useLabel(token: string) {
-  return useQuery({
-    ...trpc.get.label.queryOptions({
+  return useQuery(
+    trpc.get.label.queryOptions({
       token,
       page: 0,
       n_song: ITEMS,
@@ -15,5 +15,5 @@ export function useLabel(token: string) {
       cat: "popularity",
       sort: "asc",
     }),
-  });
+  );
 }

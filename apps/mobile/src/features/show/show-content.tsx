@@ -43,7 +43,15 @@ export function ShowContent({
   const { show_details: details } = show;
   const [chosenSeason, setSeason] = useState(initialSeason);
   const [sort, setSort] = useState<Sort>("desc");
-  const season = chosenSeason ?? Number(details.more_info.season_number);
+  // A season the show does not have (a stale or hand-edited link) opens the latest.
+  const latest = Number(details.more_info.season_number);
+  const season =
+    chosenSeason !== undefined &&
+    show.seasons.some(
+      (option) => Number(option.more_info.season_number) === chosenSeason,
+    )
+      ? chosenSeason
+      : latest;
   const episodes = useShowEpisodes({ show, season, sort });
   const description = plainText(details.more_info.description);
 

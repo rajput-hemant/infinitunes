@@ -118,7 +118,6 @@ describe("spacing scale", () => {
         "12",
         "px",
         "ctl",
-        "ctl-lg",
         "touch",
         "row",
         "row-2",

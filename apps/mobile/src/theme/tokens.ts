@@ -301,14 +301,13 @@ export const artRadius: Record<ArtSize, Radius> = {
  * Control, row and gutter sizes in points: the web's touch-screen
  * (`pointer: coarse`) values, plus `touch`, the smallest size of anything the
  * listener taps alone (an icon button, a menu trigger, a button): Android's
- * 48dp, which also clears iOS's 44pt. `ctl` and `ctl-lg` are visual heights
- * of controls that reach it with hit slop or sit in a row of their own.
+ * 48dp, which also clears iOS's 44pt. `ctl` is the visual height of a control
+ * that reaches it with hit slop or sits in a row of its own.
  * `row` is a list row's minimum (it grows with Dynamic Type), `dock` the
  * floating mini player's height.
  */
 export const sizes = {
   ctl: 40,
-  "ctl-lg": 44,
   touch: 48,
   row: 56,
   /** A two-line list row (Material's list item with supporting text). */

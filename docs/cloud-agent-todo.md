@@ -66,16 +66,19 @@ Edits `song-collection.tsx`; M-17 waits on the user decision.
 - [ ] **M-17** **[device sign-off later]** P3 PLAUSIBLE `features/library/song-collection.tsx:168-171,202` - Liked Songs, History and playlist screens use Android's native header `Stack.SearchBar` (the 72dp inset problem Search already replaced) [screens P3-11]
   - Fix: accept it, or reuse `search-header.android.tsx`'s pill as a list header. Executor: opus. Flags: needs device check (decision: reuse the M3 pill).
 
-## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx`
+## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx` (branch `fix/m5-virtualized-tracks`)
 
 Runs after M4 only if both touch playlist hooks (they do not share files otherwise).
 
-- [ ] **M-18** **[device sign-off later]** P1 PLAUSIBLE `components/track-list.tsx:25-37`, `detail-screen.tsx:48-54`, `album-screen.tsx:115`, `playlist-screen.tsx:97` - album and catalog playlist track lists are not virtualized (a big ScrollView of rows) [perf#2]
+- [x] **M-18** **[device sign-off later]** P1 PLAUSIBLE `components/track-list.tsx:25-37`, `detail-screen.tsx:48-54`, `album-screen.tsx:115`, `playlist-screen.tsx:97` - album and catalog playlist track lists are not virtualized (a big ScrollView of rows) [perf#2]
   - Fix: one `FlashList` as in `artist-content.tsx:49`, header/shelves as `ListHeader/Footer`, keep `useDetailScrollProps`; `TrackList numbered` and `DetailSkeleton numbered` keep matching. Executor: opus. Flags: needs device check.
-- [ ] **M-19** P3 CONFIRMED `features/library/playlist-screen.tsx:131-151` - no header title while loading, errored or not found [screens P3-3]
+  - Done: `DetailScreen list` lets the page's own `FlashList` (`TrackListPage`, header and shelves as `ListHeader/Footer`, `useDetailListProps` for refresh and the detail scroll props) be the scroll view on album, catalog playlist and mix; `TrackList` stays inline for the song page's "More from". Needs a device check.
+- [x] **M-19** P3 CONFIRMED `features/library/playlist-screen.tsx:131-151` - no header title while loading, errored or not found [screens P3-3]
   - Fix: render `<Stack.Screen options={{ title: playlist?.name ?? "Playlist" }} />` unconditionally. Executor: haiku. Flags: none.
-- [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
+  - Done: the library playlist screen titles its header "Playlist" until the name loads.
+- [x] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
+  - Done: `playlistAsList` (`features/library/use-playlist-by-id.ts`) and `usePlaylistById` feed `LibraryListView` on both screens; the rename sheet keeps the summaries query.
 
 ## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` (branch `worktree-agent-a4bc026a952a4285b`)
 
@@ -163,61 +166,73 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [x] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
   - Executor: haiku (after the fixes land). Flags: none.
 
-## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts`
+## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts` (branch `fix/m14-screen-nits`)
 
-- [ ] **M-53** P2 PLAUSIBLE `features/search/search-screen.tsx:27-32`, `features/library/new-playlist-screen.tsx:9-19`, `app/(auth)/reset-password.tsx:7`, `features/app-actions/app-action-screen.tsx:18`, edit/playlist screens' `id` - repeated query params (`?q=a&q=b`, `?songs=1&songs=2`) arrive as `string[]` and crash `trim`/`split` [screens P2-2]
+- [x] **M-53** P2 PLAUSIBLE `features/search/search-screen.tsx:27-32`, `features/library/new-playlist-screen.tsx:9-19`, `app/(auth)/reset-password.tsx:7`, `features/app-actions/app-action-screen.tsx:18`, edit/playlist screens' `id` - repeated query params (`?q=a&q=b`, `?songs=1&songs=2`) arrive as `string[]` and crash `trim`/`split` [screens P2-2] _Done: `lib/params.ts` `single` used by search, new-playlist, reset-password, app-action, playlist and edit-playlist screens; cases in `malformed-links.test.ts`._
   - Fix: one shared `single(value)` helper in `lib/params.ts` used everywhere; add two cases to `navigation/malformed-links.test.ts`. Executor: haiku. Flags: none.
-- [ ] **M-54** P3 CONFIRMED `search-screen.tsx:36-40,61,84-87` - a recent search re-runs under the last type chip, not "All" [screens P3-1]
+- [x] **M-54** P3 CONFIRMED `search-screen.tsx:36-40,61,84-87` - a recent search re-runs under the last type chip, not "All" [screens P3-1] _Done: a recent search now runs under All (`searchFor(recent, "all")`) and Cancel resets the chip._
   - Fix: `onCancel` also `setType("all")` and/or `searchFor(recent, "all")`; add a test. Executor: haiku. Flags: none.
-- [ ] **M-55** P3 CONFIRMED `app/(tabs)/.../show/[name]/[season]/[token].tsx:6-7`, `show-content.tsx:44-46` - an unknown season segment selects nothing and shows "No episodes yet" [screens P3-4]
+- [x] **M-55** P3 CONFIRMED `app/(tabs)/.../show/[name]/[season]/[token].tsx:6-7`, `show-content.tsx:44-46` - an unknown season segment selects nothing and shows "No episodes yet" [screens P3-4] _Done: `ShowContent` falls back to the latest season when the route names one the show lacks._
   - Fix: fall back to the latest season when `show.seasons` has no match. Executor: haiku. Flags: none.
-- [ ] **M-56** P3 CONFIRMED `features/browse/use-category-covers.ts:15,41-44` - "Made for you" mix queries `home.home` with `{}` instead of `{ lang }` (second Home request, wrong catalog) [screens P3-5]
+- [x] **M-56** P3 CONFIRMED `features/browse/use-category-covers.ts:15,41-44` - "Made for you" mix queries `home.home` with `{}` instead of `{ lang }` (second Home request, wrong catalog) [screens P3-5] _Done: `useCategoryCovers` passes `useCatalogLang()` to `home.home`._
   - Fix: pass `useCatalogLang()`. Executor: haiku. Flags: none.
-- [ ] **M-57** P3 CONFIRMED `features/browse/top-albums-screen.tsx:36` - title ignores `?lang=` (playlists screen titles itself) [screens P3-8]
+- [x] **M-57** P3 CONFIRMED `features/browse/top-albums-screen.tsx:36` - title ignores `?lang=` (playlists screen titles itself) [screens P3-8] _Done: title is `${languageLabel(lang)} Albums` when `?lang=` is set._
   - Fix: `${languageLabel(lang)} Albums`. Executor: haiku. Flags: none.
-- [ ] **M-58** **[device sign-off later]** P3 PLAUSIBLE `search-screen.tsx:50-52`, `search-header.tsx:31` - on iOS a cold `?q=` link may leave the native search field empty (effect runs before the ref attaches) [screens P3-6]
+- [x] **M-58** **[device sign-off later]** P3 PLAUSIBLE `search-screen.tsx:50-52`, `search-header.tsx:31` - on iOS a cold `?q=` link may leave the native search field empty (effect runs before the ref attaches) [screens P3-6] _Done in code, device check pending: the search field ref is an accessor object that applies the linked `?q=` when the native field attaches._
   - Fix: callback ref that sets the text when the native field attaches. Executor: sonnet. Flags: needs device check.
-- [ ] **M-59** P3 CONFIRMED `features/song/lyrics-section.tsx:26-37` - `accessibilityLabel="Read full lyrics"` hides the preview from screen readers [screens P3-12]
+- [x] **M-59** P3 CONFIRMED `features/song/lyrics-section.tsx:26-37` - `accessibilityLabel="Read full lyrics"` hides the preview from screen readers [screens P3-12] _Done: label leads with the first lyric line ("<line>. Read full lyrics")._
   - Fix: start the label with the first lyric line or keep the preview outside the pressable. Executor: haiku. Flags: none.
-- [ ] **M-60** P3 CONFIRMED `features/artist/use-artist-panel.tsx:110`, `features/label/label-content.tsx:42`, `features/search/type-results.tsx:73,93` - new `items`/`rows`/`renderItem` every render [screens P3-13]
+- [x] **M-60** P3 CONFIRMED `features/artist/use-artist-panel.tsx:110`, `features/label/label-content.tsx:42`, `features/search/type-results.tsx:73,93` - new `items`/`rows`/`renderItem` every render [screens P3-13] _Done: `useMemo`/`useCallback` in `use-artist-panel`, `label-content`, `type-results`._
   - Fix: `useMemo`/`useCallback` keyed on source rows. Executor: haiku. Flags: none.
-- [ ] **M-61** P3 CONFIRMED `features/library/library-tile.tsx` + `features/browse/browse-tile.tsx`, `charts/top-charts-screen.tsx:27` + `browse/top-artists-screen.tsx:41`, `artist/use-artist-panel.tsx:71-102`, `use-artist.ts`/`use-show.ts` - duplicated screen logic [screens P3-10]
+- [x] **M-61** P3 CONFIRMED `features/library/library-tile.tsx` + `features/browse/browse-tile.tsx`, `charts/top-charts-screen.tsx:27` + `browse/top-artists-screen.tsx:41`, `artist/use-artist-panel.tsx:71-102`, `use-artist.ts`/`use-show.ts` - duplicated screen logic [screens P3-10] _Done: `components/pressable-tile.tsx`, `features/single-page.ts`, `pagedPanel` in `use-artist-panel`, `useLabel` in the same style as `useArtist`/`useShow`._
   - Fix: shared `PressableTile`; a `singlePage(query)` helper in `features/` (not in `CatalogScreen`, M6 owns it); a `pagedPanel` helper; one style for entity-query wrappers. Executor: haiku. Flags: none.
-- [ ] **M-62** P3 CONFIRMED `features/library/library-screen.tsx:37` - empty Playlists section is bare text [design P3-4]
+- [x] **M-62** P3 CONFIRMED `features/library/library-screen.tsx:37` - empty Playlists section is bare text [design P3-4] _Done: `EmptyState placement="top"` with a New Playlist action._
   - Fix: `EmptyState placement="top"` with a New Playlist action. Executor: haiku. Flags: none.
-- [ ] **M-63** P3 CONFIRMED `features/auth/reset-password-form.tsx:54-58` - dead `!token` re-check after the early return [screens P3-9]
+- [x] **M-63** P3 CONFIRMED `features/auth/reset-password-form.tsx:54-58` - dead `!token` re-check after the early return [screens P3-9] _Done: dead `!token` check removed (`resetToken` const)._
   - Fix: delete the dead check. Executor: haiku. Flags: none.
 
-## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md`
+## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md` (branch `fix/m15-component-cleanup`)
 
 `song-menu.tsx` belongs to M3, so M-67 waits on M3 and the decision.
 
-- [ ] **M-64** **[device sign-off later]** P2 PLAUSIBLE `components/option-menu.tsx:58-62` - `OptionMenu` trigger View lacks `accessible`, so VoiceOver reads inner text, not "Sort by, Popular, button" [comp P2-1]
+- [x] **M-64** **[device sign-off later]** P2 PLAUSIBLE `components/option-menu.tsx:58-62` - `OptionMenu` trigger View lacks `accessible`, so VoiceOver reads inner text, not "Sort by, Popular, button" [comp P2-1]
   - Fix: add `accessible` (as `MenuTrigger` does) and `toHaveProp("accessible", true)` in the a11y test. Executor: haiku. Flags: needs device check.
-- [ ] **M-65** P2 PLAUSIBLE `components/entity-list.tsx:26-33,64-66` - `entityListKey` collides when a song repeats in an artist/label/show list [comp P2-2]
+  - Done: OptionMenu trigger is `accessible`; the a11y test pins it.
+- [x] **M-65** P2 PLAUSIBLE `components/entity-list.tsx:26-33,64-66` - `entityListKey` collides when a song repeats in an artist/label/show list [comp P2-2]
   - Fix: song item `id` = `${row.id}-${index}` (or append `index` for `kind === "song"`). Executor: haiku. Flags: none.
-- [ ] **M-66** P3 CONFIRMED `components/ui/spinner.tsx:11-15`, `spinner.android.tsx:9-27` - iOS and Android spinners differ in size and accessibility label [comp P3-2]
+  - Done: Song rows key by `${id}-${index}`; `entity-list.test.ts` covers the repeat.
+- [x] **M-66** P3 CONFIRMED `components/ui/spinner.tsx:11-15`, `spinner.android.tsx:9-27` - iOS and Android spinners differ in size and accessibility label [comp P3-2]
   - Fix: iOS default label "Loading" in a `sizes.touch` box. Executor: haiku. Flags: none.
-- [ ] **M-67** P3 CONFIRMED `song-menu.tsx:90`, `collection-menu.tsx:73`, `native-menu.tsx:96`, `card-menu.tsx:26` - menu icons are SF Symbol names and never render on Android [comp P3-3]
+  - Done: iOS Spinner is one progressbar, default label "Loading", in a 48pt box.
+- [ ] **M-67** P3 CONFIRMED `song-menu.tsx:90`, `collection-menu.tsx:73`, `native-menu.tsx:96`, `card-menu.tsx:26` - menu icons are SF Symbol names and never render on Android [comp P3-3] _Held: song-menu is in owner's M3._
   - Fix: decide, then either drop `image` for Android or map `{ ios, android }` once in `toMenuAction`. Executor: sonnet (decision) / haiku (mechanical). Flags: needs user decision.
-- [ ] **M-68** P3 CONFIRMED `theme/appearance.ts:54-66` - `merge` validates accent and corners but not `mode` [comp P3-5]
+- [x] **M-68** P3 CONFIRMED `theme/appearance.ts:54-66` - `merge` validates accent and corners but not `mode` [comp P3-5]
   - Fix: `mode: APPEARANCE_MODES.includes(value.mode) ? value.mode : "system"`. Executor: haiku. Flags: none.
-- [ ] **M-69** P3 CONFIRMED `theme/tokens.ts:303` (`sizes["ctl-lg"]`), `theme/motion.ts:19` (`springs.effectsDefault`), spec Motion table "effects fast 3800/123" - dead tokens and spec drift [comp P3-6]
+  - Done: `merge` maps an unknown saved mode to "system"; test added.
+- [x] **M-69** P3 CONFIRMED `theme/tokens.ts:303` (`sizes["ctl-lg"]`), `theme/motion.ts:19` (`springs.effectsDefault`), spec Motion table "effects fast 3800/123" - dead tokens and spec drift [comp P3-6]
   - Fix: delete `ctl-lg`, the phantom spec row, and `effectsDefault` only if M-25 did not start using it. Do after M7. Executor: haiku. Flags: none.
-- [ ] **M-70** P3 CONFIRMED `components/ui/artwork.tsx:48`, `catalog-grid-skeleton.tsx:14`, `components/equalizer.tsx:23-25` - duplicated `9999` full-radius literal; Equalizer sizes are literals [comp P3-7, P3-8]
+  - Done: Deleted `ctl-lg` (and its spacing-test entry) and the phantom "effects fast" spec row. `effectsDefault` stays (M-25 uses it).
+- [x] **M-70** P3 CONFIRMED `components/ui/artwork.tsx:48`, `catalog-grid-skeleton.tsx:14`, `components/equalizer.tsx:23-25` - duplicated `9999` full-radius literal; Equalizer sizes are literals [comp P3-7, P3-8]
   - Fix: export `FULL_RADIUS` once (or call `artworkFrame`); `EDGE = iconSize.sm`, `BAR_GAP = sizes.seam`. Executor: haiku. Flags: none.
-- [ ] **M-71** P3 PLAUSIBLE `components/ui/artwork.tsx:109-117` - 150ms fade on recycled list cells [perf#20]
+  - Done: `FULL_RADIUS` exported from artwork and shared by the catalog skeleton; equalizer uses `iconSize.sm` and `sizes.seam`.
+- [x] **M-71** P3 PLAUSIBLE `components/ui/artwork.tsx:109-117` - 150ms fade on recycled list cells [perf#20]
   - Fix: `transition={0}` for row/card sizes. Executor: haiku. Flags: none.
-- [ ] **M-72** P3 CONFIRMED `components/form/{form-field,email-field,password-field}.tsx` - deprecated `forwardRef` on React 19 [comp P3-12]
+  - Done: Row and card art use `transition={0}`; test pins it.
+- [x] **M-72** P3 CONFIRMED `components/form/{form-field,email-field,password-field}.tsx` - deprecated `forwardRef` on React 19 [comp P3-12]
   - Fix: take `ref` as a prop. Executor: haiku. Flags: none.
-- [ ] **M-73** P3 CONFIRMED `components/ui/refresh-control.tsx:29-42` - a rejected `onRefresh` becomes an unhandled rejection (latent) [comp P3-13]
+  - Done: FormField, EmailField and PasswordField take `ref` as a prop; forwardRef removed.
+- [x] **M-73** P3 CONFIRMED `components/ui/refresh-control.tsx:29-42` - a rejected `onRefresh` becomes an unhandled rejection (latent) [comp P3-13]
   - Fix: `.catch(reportFailure("Couldn't refresh."))`. Executor: haiku. Flags: none.
-- [ ] **M-74** P3 PLAUSIBLE `navigation/use-quick-action-routing.ts:20` - `QuickActions.initial` replays on every layout mount [comp P3-15]
+  - Done: `onRefresh` rejection goes through `reportFailure("Couldn't refresh.")`; test added.
+- [x] **M-74** P3 PLAUSIBLE `navigation/use-quick-action-routing.ts:20` - `QuickActions.initial` replays on every layout mount [comp P3-15]
   - Fix: module-level `handledInitial` flag. Executor: haiku. Flags: none.
-- [ ] **M-75** P3 CONFIRMED `docs/design/android-m3-expressive/spec.md` "Spacing and density" - the "same-size wrapper drops slop" claim is wrong on RN 0.88 Fabric; only `overflow: hidden|scroll` does [comp P3-16]
+  - Done: Already fixed: the module-level `openedLaunchAction` guard stops a remount from replaying the launch action. Added a remount test that pins it.
+- [x] **M-75** P3 CONFIRMED `docs/design/android-m3-expressive/spec.md` "Spacing and density" - the "same-size wrapper drops slop" claim is wrong on RN 0.88 Fabric; only `overflow: hidden|scroll` does [comp P3-16]
   - Fix: reword the spec sentence (leave `Button`/`IconButton` as they are). Executor: haiku. Flags: none.
-- [ ] **M-76** P3 CONFIRMED `plugins/android-app-actions/shortcuts.ts:6` - `DEEP_LINK_SCHEME` duplicates `NATIVE_APP_SCHEME` [core#12]
+  - Done: Spec now says only `overflow: hidden` or `scroll` keeps a child's slop.
+- [x] **M-76** P3 CONFIRMED `plugins/android-app-actions/shortcuts.ts:6` - `DEEP_LINK_SCHEME` duplicates `NATIVE_APP_SCHEME` [core#12]
   - Fix: import it from `@infinitunes/auth/native-app` as `app.config.ts` does. Executor: haiku. Flags: none.
+  - Done: shortcuts.ts imports `NATIVE_APP_SCHEME` from `@infinitunes/auth/native-app`.
 
 ## Batch M16 (sonnet): song cache, downloads, notifications - `lib/{song-cache,download,notifications}.ts` (branch `feat/m16-downloads`)
 
