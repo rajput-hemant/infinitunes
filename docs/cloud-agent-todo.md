@@ -53,18 +53,22 @@ Coordinate with S1 (S-6 changes the playlists payload shape): either land S-6 fi
 - [ ] **M-13** P3 PLAUSIBLE `navigation/use-open-entity.ts:13`, `like-button.tsx:26`, `song-menu.tsx:80` - `useOpenEntity` / `useUserId` subscribed per row [perf#19]
   - Fix: hoist to the list or read at press time. Do after M-11. Executor: sonnet. Flags: none.
 
-## Batch M4 (opus): liked and per-song data fetching - `features/library/{use-liked-collection,liked-collections,use-resolved-items,use-playlist-songs,use-playlist-covers,liked-songs-screen,song-collection}.ts(x)`, `packages/core/src/liked-songs.ts`
+## Batch M4 (opus): liked and per-song data fetching - `features/library/{use-liked-collection,liked-collections,use-resolved-items,use-playlist-songs,use-playlist-covers,liked-songs-screen,song-collection}.ts(x)`, `packages/core/src/liked-songs.ts` (branch `fix/m4-liked-fetching`)
 
 Edits `song-collection.tsx`; M-17 waits on the user decision.
 
-- [ ] **M-14** P1 PLAUSIBLE `use-liked-collection.ts:29-35`, `liked-collections.ts:36-72`, `packages/core/src/liked-songs.ts:9` - liked albums/artists/playlists/podcasts: one full detail request per liked item, and all refetch on any like [perf#3]
+- [x] **M-14** P1 PLAUSIBLE `use-liked-collection.ts:29-35`, `liked-collections.ts:36-72`, `packages/core/src/liked-songs.ts:9` - liked albums/artists/playlists/podcasts: one full detail request per liked item, and all refetch on any like [perf#3]
   - Fix: per-id cached queries (`ensureQueryData` per token) so only new ids fetch; optionally a trimmed card-summary server procedure. Executor: opus. Flags: none.
-- [ ] **M-15** P1 PLAUSIBLE `use-resolved-items.ts:45`, `use-playlist-songs.ts:21-26`, `use-playlist-covers.ts:19-35` - every like/unlike refetches the whole liked-songs list [perf#4]
+  - Done: each token's card is a `catalog-item` query entry (`lib/item-cache.ts`, fresh 10 min) read through core `resolveWithCache` + `lookupEach`; a like fetches one card, an unlike none, pull to refresh all. No card-summary procedure (not needed for this).
+- [x] **M-15** P1 PLAUSIBLE `use-resolved-items.ts:45`, `use-playlist-songs.ts:21-26`, `use-playlist-covers.ts:19-35` - every like/unlike refetches the whole liked-songs list [perf#4]
   - Fix: per-song cache with a coalescing chunked loader, or key on scope and fetch only new ids. Pair with M-14. Executor: opus. Flags: none.
-- [ ] **M-16** P3 CONFIRMED `liked-songs-screen.tsx:14-16`, `song-collection.tsx:77,102,110,130,138` - an unliked row is hidden but still counted and queued by Play/Shuffle [screens P3-2]
+  - Done: song rows (liked, playlists, covers) share one per-id `song-row` cache, history its own; only uncached ids go through core `lookupSongsChunked`, which marks an id gone only when its chunk was answered (never for a failed chunk).
+- [x] **M-16** P3 CONFIRMED `liked-songs-screen.tsx:14-16`, `song-collection.tsx:77,102,110,130,138` - an unliked row is hidden but still counted and queued by Play/Shuffle [screens P3-2]
   - Fix: apply the favorites overlay to `items` before `SongCollection` and drop the `null` branch. Executor: sonnet. Flags: none.
-- [ ] **M-17** **[device sign-off later]** P3 PLAUSIBLE `features/library/song-collection.tsx:168-171,202` - Liked Songs, History and playlist screens use Android's native header `Stack.SearchBar` (the 72dp inset problem Search already replaced) [screens P3-11]
+  - Done: `useStillLiked` (over core `peekFavorite`/`useFavoriteOverlayVersion`) filters the items first, so count, Play and Shuffle drop the song; the row's `null` branch is gone. (Line numbers above were stale; the finding held.)
+- [x] **M-17** **[device sign-off later]** P3 PLAUSIBLE `features/library/song-collection.tsx:168-171,202` - Liked Songs, History and playlist screens use Android's native header `Stack.SearchBar` (the 72dp inset problem Search already replaced) [screens P3-11]
   - Fix: accept it, or reuse `search-header.android.tsx`'s pill as a list header. Executor: opus. Flags: needs device check (decision: reuse the M3 pill).
+  - Done (unverified on device): pill extracted to `components/search-pill.tsx`; `song-filter.tsx`/`.android.tsx` keep iOS's header field and lead Android's list (and skeleton) with the pill instead of `Stack.SearchBar`.
 
 ## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx`
 
