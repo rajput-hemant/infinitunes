@@ -58,6 +58,9 @@ export const appearanceStore = createStore<AppearanceState>()(
         return {
           ...current,
           ...value,
+          mode: APPEARANCE_MODES.includes(value.mode as AppearanceMode)
+            ? (value.mode as AppearanceMode)
+            : "system",
           accent:
             value.accent && value.accent in ACCENTS ? value.accent : "default",
           corners:
