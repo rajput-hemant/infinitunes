@@ -1,12 +1,15 @@
 import { useRouter } from "expo-router";
 import { NativeTabs } from "expo-router/native-tabs";
-import { Pressable, View } from "react-native";
+import { Pressable, useWindowDimensions, View } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
+import Animated, { useSharedValue } from "react-native-reanimated";
 
 import { Artwork } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
 import { art, maxFontScale, radii } from "~/theme/tokens";
 
+import { songSwipeActions, useSwipeable } from "./gestures";
 import { RadioBadge } from "./radio-badge";
 import { NextTrackButton, PlayPauseButton } from "./transport-controls";
 import { WashText } from "./wash";
@@ -25,11 +28,14 @@ const PLACEHOLDER = {
  * dock, which on Android lays it on the artwork's tonal surface through
  * `OnWash`). The dock and the accessory have a fixed height, so text scales
  * only up to `maxFontScale.chrome`. `compact` drops Next, for the narrow
- * inline accessory.
+ * inline accessory. Swiping the track sideways changes the song (a tap
+ * still opens the player).
  */
 export function MiniPlayer({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const track = usePlayer(selectCurrentTrack);
+  const { width } = useWindowDimensions();
+  const swipe = useSwipeable(useSharedValue(0), width);
 
   const openPlayer = () => {
     router.push("/player");
@@ -37,53 +43,63 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
 
   return (
     <View className="flex-1 flex-row items-center pl-4 pr-1">
-      <Pressable
-        onPress={openPlayer}
-        accessibilityRole="button"
-        accessibilityLabel={
-          track ? `Now playing ${track.name}, ${track.subtitle}` : "Not playing"
-        }
-        accessibilityHint="Opens the player"
-        className="flex-1 flex-row items-center gap-3"
-      >
-        {track ? (
-          <Artwork image={track.image} size="mini" />
-        ) : (
-          <View
-            className="items-center justify-center bg-muted"
-            style={PLACEHOLDER}
+      <GestureDetector gesture={swipe.gesture}>
+        <Pressable
+          onPress={openPlayer}
+          accessibilityRole="button"
+          accessibilityLabel={
+            track
+              ? `Now playing ${track.name}, ${track.subtitle}`
+              : "Not playing"
+          }
+          accessibilityHint="Opens the player"
+          {...(track ? songSwipeActions : null)}
+          className="flex-1"
+        >
+          <Animated.View
+            className="flex-1 flex-row items-center gap-3"
+            style={swipe.style}
           >
-            <Icon
-              name={{ ios: "music.note", android: "music_note" }}
-              size="sm"
-            />
-          </View>
-        )}
-        <View className="flex-1">
-          <WashText
-            variant="subhead"
-            emphasized
-            numberOfLines={1}
-            maxFontSizeMultiplier={maxFontScale.chrome}
-          >
-            {track?.name ?? "Not playing"}
-          </WashText>
-          {track ? (
-            <View className="flex-row items-center gap-1">
-              <RadioBadge />
+            {track ? (
+              <Artwork image={track.image} size="mini" />
+            ) : (
+              <View
+                className="items-center justify-center bg-muted"
+                style={PLACEHOLDER}
+              >
+                <Icon
+                  name={{ ios: "music.note", android: "music_note" }}
+                  size="sm"
+                />
+              </View>
+            )}
+            <View className="flex-1">
               <WashText
-                variant="caption"
-                tone="muted"
+                variant="subhead"
+                emphasized
                 numberOfLines={1}
                 maxFontSizeMultiplier={maxFontScale.chrome}
-                className="flex-1"
               >
-                {track.subtitle}
+                {track?.name ?? "Not playing"}
               </WashText>
+              {track ? (
+                <View className="flex-row items-center gap-1">
+                  <RadioBadge />
+                  <WashText
+                    variant="caption"
+                    tone="muted"
+                    numberOfLines={1}
+                    maxFontSizeMultiplier={maxFontScale.chrome}
+                    className="flex-1"
+                  >
+                    {track.subtitle}
+                  </WashText>
+                </View>
+              ) : null}
             </View>
-          ) : null}
-        </View>
-      </Pressable>
+          </Animated.View>
+        </Pressable>
+      </GestureDetector>
       {track ? (
         <>
           <PlayPauseButton />
