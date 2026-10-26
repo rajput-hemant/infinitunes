@@ -209,6 +209,7 @@ function HeroArt({
   slots,
   compact,
   swipe,
+  swipeX,
 }: {
   track: Queue;
   progress: SharedValue<number>;
@@ -216,8 +217,11 @@ function HeroArt({
   slots: Slots;
   compact: boolean;
   swipe: Swipeable;
+  /** The song swipe's offset, applied unscaled so the small art follows the finger too. */
+  swipeX: SharedValue<number>;
 }) {
   const { width } = useWindowDimensions();
+  const reduceMotion = useReducedMotion();
   const corner = useRadii();
   const hero = playerArtSize(width);
   const big = corner[ART_CORNER];
@@ -236,11 +240,14 @@ function HeroArt({
     const x = fromX + (toX - fromX) * p;
     const y = fromY + (toY - fromY) * p;
     const ready = (p >= 1 || box !== null) && (p <= 0 || row !== null);
+    // As `useSwipeable`'s style: it follows the finger and fades (only fades under reduce motion).
+    const dx = swipeX.get();
+    const swiped = 1 - Math.min(Math.abs(dx) / Math.max(width, 1), 1) * 0.6;
     return {
-      opacity: ready ? fade.get() : 0,
+      opacity: ready ? fade.get() * swiped : 0,
       transform: [
         // Scaled about its centre: shift so the scaled box lands at x, y.
-        { translateX: x - (hero - size) / 2 },
+        { translateX: x - (hero - size) / 2 + (reduceMotion ? 0 : dx) },
         { translateY: y - (hero - size) / 2 },
         { scale: size / hero },
       ],
@@ -261,7 +268,7 @@ function HeroArt({
           accessibilityRole="image"
           accessibilityLabel={`Artwork, ${track.name}`}
           {...songSwipeActions}
-          style={[ART_SHADOW, { borderRadius: big }, swipe.style]}
+          style={[ART_SHADOW, { borderRadius: big }]}
         >
           <Animated.View style={[styles.clip, clip]}>
             <NowPlayingArt image={track.image} compact={compact} />
@@ -550,6 +557,7 @@ export function FullPlayer() {
       <View
         className="flex-1 bg-background"
         style={{ paddingTop: insets.top }}
+        accessibilityViewIsModal
         onAccessibilityEscape={close}
       >
         <Grabber onPress={close} />
@@ -578,7 +586,13 @@ export function FullPlayer() {
 
   return (
     <Animated.View style={[styles.page, dragStyle]}>
-      <View ref={root} className="flex-1" onAccessibilityEscape={close}>
+      {/* The tabs stay drawn underneath: keep a screen reader on this page. */}
+      <View
+        ref={root}
+        className="flex-1"
+        accessibilityViewIsModal
+        onAccessibilityEscape={close}
+      >
         <Backdrop fill={fill} />
         <OnWash colors={wash}>
           <GestureDetector gesture={topPan}>
@@ -588,14 +602,29 @@ export function FullPlayer() {
             >
               <Grabber onPress={close} />
               <PlayingFrom />
+              {/* First, so a screen reader reads it before the title; it is
+                  absolutely placed over its slot, which lets touches through. */}
+              <HeroArt
+                track={track}
+                progress={progress}
+                fade={fade}
+                slots={slots}
+                compact={compact}
+                swipe={artSwipe}
+                swipeX={swipeX}
+              />
               {compact ? (
                 <>
                   <View
                     className="flex-row items-center gap-3 px-6 py-2"
+                    pointerEvents="box-none"
                     onLayout={(event) => slots.header.set(boxOf(event))}
                   >
                     {/* The artwork flies into this slot. */}
-                    <View style={{ width: COMPACT_ART, height: COMPACT_ART }} />
+                    <View
+                      pointerEvents="none"
+                      style={{ width: COMPACT_ART, height: COMPACT_ART }}
+                    />
                     <View className="flex-1">
                       <TrackTitle track={track} compact swipe={titleSwipe} />
                     </View>
@@ -607,6 +636,7 @@ export function FullPlayer() {
                   {/* The artwork's stage: it centres there, as large as fits. */}
                   <View
                     className="flex-1"
+                    pointerEvents="none"
                     onLayout={(event) => slots.stage.set(boxOf(event))}
                   />
                   <View className="mt-8 px-6">
@@ -618,14 +648,6 @@ export function FullPlayer() {
                   </View>
                 </>
               )}
-              <HeroArt
-                track={track}
-                progress={progress}
-                fade={fade}
-                slots={slots}
-                compact={compact}
-                swipe={artSwipe}
-              />
             </View>
           </GestureDetector>
           {view === "queue" ? (

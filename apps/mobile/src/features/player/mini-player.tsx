@@ -1,7 +1,10 @@
 import { useRouter } from "expo-router";
 import { NativeTabs } from "expo-router/native-tabs";
 import { Pressable, useWindowDimensions, View } from "react-native";
-import { GestureDetector } from "react-native-gesture-handler";
+import {
+  GestureDetector,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 import Animated, { useSharedValue } from "react-native-reanimated";
 
 import { Artwork } from "~/components/ui/artwork";
@@ -114,9 +117,15 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
  * The mini player in the iOS 26 tab bar accessory. Scrolling down minimizes
  * the tab bar and moves the accessory inline beside the selected tab, a much
  * narrower slot: there it keeps the art, the title and play/pause (Apple
- * Music's inline player). The system renders one copy per placement.
+ * Music's inline player). The system renders one copy per placement. UIKit
+ * hosts it in the tab bar, outside the app's gesture root, so it brings its
+ * own for the song swipe.
  */
 export function AccessoryMiniPlayer() {
   const placement = NativeTabs.BottomAccessory.usePlacement();
-  return <MiniPlayer compact={placement === "inline"} />;
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <MiniPlayer compact={placement === "inline"} />
+    </GestureHandlerRootView>
+  );
 }

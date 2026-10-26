@@ -308,7 +308,6 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `nextTrack`/`previousTrack` screen reader actions). Lyrics and Up next are views of it, not routes:
   `?view=lyrics|queue` (`router.setParams`; the `/queue` link maps there in `+native-intent`). They fly the art into
   a compact header; the queue view drops the wash (its rows are D1-coloured) and moves shuffle/repeat to pills.
-  Haptics stay in `features/player/haptics.ts` until a shared helper exists.
 - Player sharp edges: Now Playing's art is expo-image with a `CROSSFADE_MS` cross-dissolve, not `Artwork`
   (its `recyclingKey` drops the old picture). expo-symbols has no replace transition and replays an
   `animationSpec` on every prop update, so set one only briefly (`useGlyphBounce`). react-native-screens gives
