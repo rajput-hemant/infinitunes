@@ -71,6 +71,11 @@ describe("touch targets", () => {
         "className",
         expect.stringContaining("min-h-touch"),
       );
+      // One VoiceOver element: the label, not the inner text, is read.
+      expect(screen.getByLabelText("Sort by, Popular")).toHaveProp(
+        "accessible",
+        true,
+      );
     },
   );
 
