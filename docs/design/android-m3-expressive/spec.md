@@ -187,7 +187,6 @@ Compose `MotionScheme.expressive()` values, damping coefficient = 2·ζ·√stif
 | spatial fast    | 800       | 0.6 | 34        | press morphs, press-scale release    |
 | spatial default | 380       | 0.8 | 31        | play-button shape, segment selection |
 | spatial slow    | 200       | 0.8 | 23        | large surfaces                       |
-| effects fast    | 3800      | 1   | 123       | colour/opacity, fast                 |
 | effects default | 1600      | 1   | 80        | colour/opacity                       |
 
 Spatial springs may overshoot (expressive bounce); effects springs never do. Worklet springs follow the
