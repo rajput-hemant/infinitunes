@@ -1,6 +1,9 @@
 import { plainText, toSongRow } from "@infinitunes/types";
 import { rawEpisode, rawLyrics, rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
+import { selectionAsync } from "expo-haptics";
+import { router } from "expo-router";
+import { Text } from "react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
@@ -182,6 +185,68 @@ describe("FullPlayer", () => {
     await fireEvent.press(lyrics);
     expect(lyrics).toHaveProp("accessibilityState", { selected: false });
     expect(screen.queryByText("Up next · 2")).toBeNull();
+  });
+
+  it("names every repeat mode and ticks once per compact mode change", async () => {
+    play(
+      rawSong({ id: "a", title: "Alpha" }),
+      rawSong({ id: "b", title: "Bravo" }),
+    );
+    await renderScreen(<FullPlayer />, { initialUrl: "/?view=queue" });
+    jest.mocked(selectionAsync).mockClear();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Shuffle" }));
+    expect(screen.getByRole("button", { name: "Shuffle" })).toBeSelected();
+
+    await fireEvent.press(screen.getByRole("button", { name: "Repeat off" }));
+    expect(screen.getByRole("button", { name: "Repeat all" })).toBeSelected();
+    await fireEvent.press(screen.getByRole("button", { name: "Repeat all" }));
+    expect(screen.getByRole("button", { name: "Repeat one" })).toBeSelected();
+    await fireEvent.press(screen.getByRole("button", { name: "Repeat one" }));
+    expect(
+      screen.getByRole("button", { name: "Repeat off" }),
+    ).not.toBeSelected();
+
+    expect(selectionAsync).toHaveBeenCalledTimes(4);
+  });
+
+  it("follows a changed view link while it is already open", async () => {
+    play(rawSong());
+    await renderScreen(<FullPlayer />, { initialUrl: "/?view=queue" });
+
+    const upNext = await screen.findByRole("button", { name: "Up next" });
+    expect(upNext).toHaveProp("accessibilityState", { selected: true });
+    await fireEvent.press(upNext);
+    expect(upNext).toHaveProp("accessibilityState", { selected: false });
+
+    // A new `?view=` link still switches the view, unlike the local toggle.
+    await act(async () => router.setParams({ view: "lyrics" }));
+    expect(screen.getByRole("button", { name: "Lyrics" })).toHaveProp(
+      "accessibilityState",
+      { selected: true },
+    );
+    expect(upNext).toHaveProp("accessibilityState", { selected: false });
+
+    await act(async () => router.setParams({ view: undefined }));
+    expect(screen.getByRole("button", { name: "Lyrics" })).toHaveProp(
+      "accessibilityState",
+      { selected: false },
+    );
+  });
+
+  it("sends a signed-out compact Like to sign in without writing a favorite", async () => {
+    play(rawSong());
+    const app = await renderScreen(<FullPlayer />, {
+      initialUrl: "/?view=queue",
+      routes: { login: () => <Text>Sign in screen</Text> },
+    });
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Like FA9LA & Friends" }),
+    );
+    expect(app.getPathname()).toBe("/login");
+    expect(procedure("user.addToFavorites")).not.toHaveBeenCalled();
+    expect(procedure("user.removeFromFavorites")).not.toHaveBeenCalled();
   });
 
   it("changes the song from the artwork's and the title's screen reader actions", async () => {
