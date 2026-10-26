@@ -43,6 +43,8 @@ export function SearchHeader({
         label="Search"
         placeholder={placeholder}
         autoCapitalize={autoCapitalize}
+        // Search is pushed from the app bar's search action: the tap means "type now".
+        // oxlint-disable-next-line jsx-a11y/no-autofocus
         autoFocus={autoFocus}
         returnKeyType="search"
         onClear={onCancel}

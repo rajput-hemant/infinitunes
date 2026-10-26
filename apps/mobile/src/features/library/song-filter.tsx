@@ -23,6 +23,4 @@ export function FilterHeader({ onChangeText }: SongFilterProps) {
 }
 
 /** iOS: nothing at the top of the list; the header holds the field. */
-export function FilterField(_: SongFilterProps) {
-  return null;
-}
+export const FilterField: (props: SongFilterProps) => null = () => null;
