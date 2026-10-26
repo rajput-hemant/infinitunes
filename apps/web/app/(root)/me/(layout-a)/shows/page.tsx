@@ -3,6 +3,7 @@ import { Podcast } from "lucide-react";
 
 import { getUserFavorites } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
+import { requireUser } from "~/lib/viewer";
 
 import { LikedCollection } from "../_components/liked-collection";
 
@@ -21,6 +22,7 @@ async function getShowDetails(id: string) {
 }
 
 export default async function LikedPodcastsPage() {
+  await requireUser();
   const favorites = await getUserFavorites();
 
   return (

@@ -43,6 +43,24 @@ export function useFavoriteLists(): FavoriteLists | null | undefined {
   return isError ? null : data;
 }
 
+/**
+ * Whether the listener likes one item, from the same query as
+ * `useFavoriteLists` but re-rendering only when this item's answer changes
+ * (a list holds a heart per row). `undefined` while unknown, as there.
+ */
+function useIsFavorited(
+  type: FavoriteType,
+  token: string,
+): boolean | undefined {
+  const userId = useUserId();
+  const { data, isError } = useQuery({
+    ...favoriteListsQuery(userId),
+    enabled: userId !== undefined,
+    select: (lists) => isFavorited(lists, type, token),
+  });
+  return isError ? undefined : data;
+}
+
 /** The liked-tokens query of `userId`, for hooks and `queryClient.fetchQuery`. */
 export function favoriteListsQuery(userId: string | undefined) {
   return {
@@ -82,8 +100,8 @@ type FavoriteToggleOptions = { type: FavoriteType; token: string };
  */
 export function useFavoriteToggle({ type, token }: FavoriteToggleOptions) {
   const userId = useUserId();
-  const lists = useFavoriteLists();
-  const serverLiked = isFavorited(lists, type, token);
+  const known = useIsFavorited(type, token);
+  const serverLiked = known ?? false;
   const key = favoriteKey(type, token);
   const liked = useFavorite(key, serverLiked);
 
@@ -93,7 +111,7 @@ export function useFavoriteToggle({ type, token }: FavoriteToggleOptions) {
       return undefined;
     }
     // Unknown liked state: a write would toggle blindly.
-    if (!lists) return undefined;
+    if (known === undefined) return undefined;
     void impactAsync(ImpactFeedbackStyle.Light);
     toggleFavorite({
       key,

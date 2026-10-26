@@ -8,10 +8,10 @@ import {
   LibraryUnavailable,
 } from "~/components/library/library-section";
 import { LibrarySongList } from "~/components/library/library-song-list";
-import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { api } from "~/lib/trpc/server";
+import { requireUser } from "~/lib/viewer";
 
 // `recordPlay` writes history without `refresh()`, so never reuse a visit.
 export const unstable_dynamicStaleTime = 0;
@@ -22,6 +22,7 @@ export const metadata = {
 };
 
 export default async function RecentlyPlayedPage() {
+  const user = await requireUser();
   const history = await api.history.list();
   const ids = history.map((item) => item.id);
 
@@ -36,9 +37,8 @@ export default async function RecentlyPlayedPage() {
     );
   }
 
-  const [fetched, user, playlists, favorites] = await Promise.all([
+  const [fetched, playlists, favorites] = await Promise.all([
     fetchSongsChunked(ids, (input) => api.song.items(input)),
-    getUser(),
     orFallback("user playlists", getUserPlaylists(), undefined),
     orFallback("user favorites", getUserFavorites(), null),
   ]);

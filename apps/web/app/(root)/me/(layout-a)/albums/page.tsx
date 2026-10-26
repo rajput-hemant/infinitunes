@@ -2,6 +2,7 @@ import { Disc3 } from "lucide-react";
 
 import { getUserFavorites } from "~/lib/db/queries";
 import { api } from "~/lib/trpc/server";
+import { requireUser } from "~/lib/viewer";
 
 import { LikedCollection } from "../_components/liked-collection";
 
@@ -11,6 +12,7 @@ export const metadata = {
 };
 
 export default async function LikedAlbumsPage() {
+  await requireUser();
   const favorites = await getUserFavorites();
 
   return (

@@ -8,10 +8,10 @@ import {
   LibraryUnavailable,
 } from "~/components/library/library-section";
 import { LibrarySongList } from "~/components/library/library-song-list";
-import { getUser } from "~/lib/auth";
 import { getUserFavorites, getUserPlaylists } from "~/lib/db/queries";
 import { orFallback } from "~/lib/degrade";
 import { api } from "~/lib/trpc/server";
+import { requireUser } from "~/lib/viewer";
 
 export const metadata = {
   title: "Liked Songs",
@@ -19,6 +19,7 @@ export const metadata = {
 };
 
 export default async function LikedSongsPage() {
+  const user = await requireUser();
   // Optional data starts now so it overlaps the favourites read and the
   // song-details fetch instead of waiting behind them.
   const playlistsRequest = orFallback(
@@ -26,10 +27,7 @@ export default async function LikedSongsPage() {
     getUserPlaylists(),
     undefined,
   );
-  const [user, favoriteSongs] = await Promise.all([
-    getUser(),
-    getUserFavorites(),
-  ]);
+  const favoriteSongs = await getUserFavorites();
 
   if (favoriteSongs && favoriteSongs.songs.length) {
     const [songs, playlists] = await Promise.all([

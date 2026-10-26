@@ -16,6 +16,7 @@ import {
 import { SliderCardSkeleton } from "~/components/slider/slider-card-skeleton";
 import { controlStyles } from "~/lib/control-styles";
 import { getUserPlaylists } from "~/lib/db/queries";
+import { requireUser } from "~/lib/viewer";
 
 import { PlaylistItem } from "./_components/playlist-item";
 
@@ -25,6 +26,7 @@ export const metadata = {
 };
 
 export default async function MyPlaylistsPage() {
+  await requireUser();
   const playlists = await getUserPlaylists();
 
   return (

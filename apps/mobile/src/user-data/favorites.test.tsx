@@ -196,6 +196,40 @@ describe("useFavoriteToggle", () => {
     await waitFor(() => expect(heart()).toBe("not liked"));
   });
 
+  it("does not re-render another item's heart when one is liked", async () => {
+    procedure("user.getUserFavorites").mockResolvedValue(favoritesRow());
+    const rendered = jest.fn();
+    function Other() {
+      rendered();
+      const { liked } = useFavoriteToggle({ type: "song", token: "other" });
+      return <Text>{liked ? "other liked" : "other not liked"}</Text>;
+    }
+    await renderStack({
+      index: () => (
+        <>
+          <Heart />
+          <Other />
+        </>
+      ),
+    });
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(10);
+    });
+    const before = rendered.mock.calls.length;
+
+    procedure("user.getUserFavorites").mockResolvedValue(
+      favoritesRow({ songs: ["BSaNI3Yr"] }),
+    );
+    await fireEvent.press(screen.getByRole("button"));
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(10);
+    });
+
+    expect(heart()).toBe("liked");
+    expect(procedure("user.getUserFavorites")).toHaveBeenCalledTimes(2);
+    expect(rendered).toHaveBeenCalledTimes(before);
+  });
+
   it("does not send Alice's queued unlike after Bob signs in", async () => {
     procedure("user.getUserFavorites").mockResolvedValue(favoritesRow());
     const first = deferred<never[]>();
