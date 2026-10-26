@@ -17,6 +17,7 @@ export const env = createEnv({
     TRUSTED_PROXY: z.enum(TRUSTED_PROXY_MODES).optional(),
     RATE_LIMITING_REQUESTS_PER_SECOND: z.coerce.number().default(50),
     UMAMI_WEBSITE_ID: z.string().optional(),
+    APPLE_TEAM_ID: z.string().optional(),
   },
   client: clientSchema,
   createFinalSchema: (shape) =>
