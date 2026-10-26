@@ -1,0 +1,13 @@
+--- a/node_modules/react-native-css-interop/dist/runtime/components.js
++++ b/node_modules/react-native-css-interop/dist/runtime/components.js
+@@ -31,10 +31,6 @@
+     columnWrapperClassName: "columnWrapperStyle",
+     contentContainerClassName: "contentContainerStyle",
+ });
+-(0, api_1.remapProps)(react_native_1.ImageBackground, {
+-    className: "style",
+-    imageClassName: "imageStyle",
+-});
+ (0, api_1.remapProps)(react_native_1.KeyboardAvoidingView, {
+     className: "style",
+     contentContainerClassName: "contentContainerStyle",
