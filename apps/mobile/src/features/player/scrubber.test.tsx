@@ -7,7 +7,7 @@ import {
 } from "~/playback/playback-status";
 import { renderScreen } from "~/test/render";
 
-import { Scrubber } from "./scrubber";
+import { SCRUB_STALE_MS, Scrubber } from "./scrubber";
 import type { SeekSliderProps } from "./seek-slider-props";
 
 /**
@@ -127,6 +127,29 @@ describe("Scrubber", () => {
 
     expect(seek).toHaveBeenCalledTimes(1);
     expect(seek).toHaveBeenCalledWith(120);
+  });
+
+  it("takes a drag the slider never ended (a cancelled touch) as let go", async () => {
+    jest.useFakeTimers();
+    try {
+      await renderScreen(<Scrubber />);
+      await fireEvent.press(screen.getByLabelText("drag to 90"));
+
+      await act(async () => jest.advanceTimersByTime(SCRUB_STALE_MS - 1));
+      expect(seek).not.toHaveBeenCalled();
+      await act(async () => jest.advanceTimersByTime(1));
+
+      expect(seek).toHaveBeenCalledTimes(1);
+      expect(seek).toHaveBeenCalledWith(90);
+      // Not stuck: the slider follows playback again.
+      await act(async () => playbackPosition.set(95));
+      expect(slider()).toBe("95/200");
+      // A late end from the slider seeks nothing more.
+      await fireEvent.press(screen.getByLabelText("release"));
+      expect(seek).toHaveBeenCalledTimes(1);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("does not seek when a drag ends without moving", async () => {

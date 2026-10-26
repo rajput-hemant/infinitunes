@@ -1,3 +1,4 @@
+import { createContext, use } from "react";
 import { Text as NativeText } from "react-native";
 import type { ColorValue, TextProps as NativeTextProps } from "react-native";
 
@@ -50,17 +51,34 @@ export type TextProps = NativeTextProps & {
   color?: ColorValue;
 };
 
+/** Text colours for a surface the tokens do not cover, keyed by tone. */
+export type TextInk = { default: string; muted: string; primary: string };
+
+/**
+ * Recolours the `default`, `muted` and `primary` tones of every `Text`
+ * inside (rows laid on Now Playing's artwork wash, `OnWash`). On iOS the
+ * tones are UIKit system colours that NativeWind variables cannot override,
+ * so this is a context. The provider owns the contrast check.
+ */
+export const TextInkContext = createContext<TextInk | null>(null);
+
 /** Text in the platform type scale and a semantic colour. */
 export function Text({
   variant = "body",
   tone = "default",
   numeric = false,
   emphasized = false,
-  color,
+  color: explicit,
   className,
   style,
   ...props
 }: TextProps) {
+  const ink = use(TextInkContext);
+  const color =
+    explicit ??
+    (ink && (tone === "default" || tone === "muted" || tone === "primary")
+      ? ink[tone]
+      : undefined);
   return (
     <NativeText
       dynamicTypeRamp={RAMPS[variant]}

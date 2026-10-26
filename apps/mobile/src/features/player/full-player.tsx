@@ -232,14 +232,24 @@ function HeroArt({
     const box = stage.get();
     const row = header.get();
     const edge = box ? Math.min(hero, box.height) : hero;
-    const fromX = box ? box.x + (box.width - edge) / 2 : 0;
-    const fromY = box ? box.y + (box.height - edge) / 2 : 0;
-    const toX = row ? row.x + space.xl : 0;
-    const toY = row ? row.y + (row.height - COMPACT_ART) / 2 : 0;
-    const size = edge + (COMPACT_ART - edge) * p;
-    const x = fromX + (toX - fromX) * p;
-    const y = fromY + (toY - fromY) * p;
-    const ready = (p >= 1 || box !== null) && (p <= 0 || row !== null);
+    const large = box && {
+      x: box.x + (box.width - edge) / 2,
+      y: box.y + (box.height - edge) / 2,
+      edge,
+    };
+    const compactSlot = row && {
+      x: row.x + space.xl,
+      y: row.y + (row.height - COMPACT_ART) / 2,
+      edge: COMPACT_ART,
+    };
+    // A slot not measured yet (its view mounts this frame) stands in with the
+    // other one, so the art holds where it is for that frame instead of vanishing.
+    const from = large ?? compactSlot;
+    const to = compactSlot ?? large;
+    const ready = from !== null && to !== null;
+    const size = ready ? from.edge + (to.edge - from.edge) * p : hero;
+    const x = ready ? from.x + (to.x - from.x) * p : 0;
+    const y = ready ? from.y + (to.y - from.y) * p : 0;
     // As `useSwipeable`'s style: it follows the finger and fades (only fades under reduce motion).
     const dx = swipeX.get();
     const swiped = 1 - Math.min(Math.abs(dx) / Math.max(width, 1), 1) * 0.6;
@@ -397,9 +407,14 @@ function Grabber({ onPress }: { onPress: () => void }) {
   );
 }
 
+/** An off pill's fill on a wash: its text colour at this opacity (the tonal skip buttons' tint). */
+const PILL_TINT_ALPHA = 0.14;
+
 /**
- * A queue mode as a capsule with its name (Apple Music's queue pills): on
- * is the filled `primary` capsule. The queue view is on the D1 palette.
+ * A queue mode as a capsule with its name (Apple Music's queue pills). On a
+ * wash, on is the play button's checked `control` fill with `onControl`
+ * text, off a faint tint of the foreground; on the D1 palette `primary` and
+ * `muted`.
  */
 function ModePill({
   icon,
@@ -414,15 +429,26 @@ function ModePill({
   on: boolean;
   onPress: () => void;
 }) {
-  const ink = useTokenColor(on ? "primary-foreground" : "foreground");
+  const wash = useWashColors();
+  const token = useTokenColor(on ? "primary-foreground" : "foreground");
+  const ink = wash ? (on ? wash.onControl : wash.foreground) : token;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: on }}
-      className={`min-h-touch flex-1 flex-row items-center justify-center gap-2 rounded-full px-4 active:opacity-70 ${on ? "bg-primary" : "bg-muted"}`}
+      className={`min-h-touch flex-1 flex-row items-center justify-center gap-2 overflow-hidden rounded-full px-4 active:opacity-70 ${wash ? "" : on ? "bg-primary" : "bg-muted"}`}
     >
+      {wash ? (
+        <View
+          className="absolute inset-0"
+          style={{
+            backgroundColor: on ? wash.control : wash.foreground,
+            opacity: on ? 1 : PILL_TINT_ALPHA,
+          }}
+        />
+      ) : null}
       <Icon name={icon} size="sm" color={ink} />
       <Text variant="subhead" emphasized color={ink} numberOfLines={1}>
         {text}
@@ -467,9 +493,9 @@ const boxOf = (event: LayoutChangeEvent) => event.nativeEvent.layout;
  * toggles stay put. Drag down anywhere outside a list to close it, swipe the
  * artwork or the title sideways to change the song. The view is the route's
  * `view` param, so `/player?view=queue` (and the `/queue` link) opens on the
- * queue. Text and controls take the artwork wash's contrast-checked colours;
- * the queue (rows the wash cannot recolour) and a missing or failed wash use
- * the D1 palette.
+ * queue. Text and controls, the queue's rows included (`OnWash`), take the
+ * artwork wash's contrast-checked colours in every view; a missing or failed
+ * wash leaves the D1 palette.
  */
 export function FullPlayer() {
   const router = useRouter();
@@ -480,7 +506,7 @@ export function FullPlayer() {
   const compact = view !== "art";
   const track = usePlayer(selectCurrentTrack);
   const colors = usePlayerColors(track?.image);
-  const washColors = view === "queue" ? null : colors;
+  const washColors = colors;
   // One object per palette, so `OnWash`'s theme stays put between renders.
   const wash = useMemo(
     () => (washColors ? nowPlayingWash(washColors) : null),
@@ -665,31 +691,32 @@ export function FullPlayer() {
               />
             </View>
           ) : null}
-          <GestureDetector gesture={bottomPan}>
-            <View
-              className="px-6 pt-4"
-              style={{ paddingBottom: insets.bottom }}
-            >
-              <Scrubber />
-              <View className="mt-6">
-                <TransportControls modes={view !== "queue"} />
+          <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom }}>
+            {/* Outside the drag to close: a thumb grab that rolls down would
+                otherwise close the player and cancel the native slider. */}
+            <Scrubber />
+            <GestureDetector gesture={bottomPan}>
+              <View>
+                <View className="mt-6">
+                  <TransportControls modes={view !== "queue"} />
+                </View>
+                <View className="mt-2 flex-row items-center justify-between">
+                  <ModeToggle
+                    icon={{ ios: "quote.bubble", android: "lyrics" }}
+                    label="Lyrics"
+                    on={view === "lyrics"}
+                    onPress={() => toggle("lyrics")}
+                  />
+                  <ModeToggle
+                    icon={{ ios: "list.bullet", android: "queue_music" }}
+                    label="Up next"
+                    on={view === "queue"}
+                    onPress={() => toggle("queue")}
+                  />
+                </View>
               </View>
-              <View className="mt-2 flex-row items-center justify-between">
-                <ModeToggle
-                  icon={{ ios: "quote.bubble", android: "lyrics" }}
-                  label="Lyrics"
-                  on={view === "lyrics"}
-                  onPress={() => toggle("lyrics")}
-                />
-                <ModeToggle
-                  icon={{ ios: "list.bullet", android: "queue_music" }}
-                  label="Up next"
-                  on={view === "queue"}
-                  onPress={() => toggle("queue")}
-                />
-              </View>
-            </View>
-          </GestureDetector>
+            </GestureDetector>
+          </View>
         </OnWash>
       </View>
     </Animated.View>

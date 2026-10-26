@@ -1,5 +1,5 @@
 import { formatDuration } from "@infinitunes/types";
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Platform, View } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
@@ -34,6 +34,9 @@ const TRACK = Platform.select({
 
 /** What a screen reader's swipe up or down seeks by, in seconds. */
 export const SEEK_STEP_SECONDS = 10;
+
+/** A drag with no slider event for this long counts as released. */
+export const SCRUB_STALE_MS = 3000;
 
 /** The playhead in whole seconds: what the clocks show, so they render at 1Hz. */
 function useWholeSecond() {
@@ -133,6 +136,8 @@ export function Scrubber() {
   const [scrubbed, setScrubbed] = useState<number | null>(null);
   const scrubbedRef = useRef<number | null>(null);
   const shown = Math.floor(scrubbed ?? second);
+  const stale = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => clearTimeout(stale.current ?? undefined), []);
 
   function scrub(value: number) {
     // A light tick on each step of the track the drag crosses.
@@ -141,9 +146,17 @@ export function Scrubber() {
       playerHaptics.tick();
     scrubbedRef.current = value;
     setScrubbed(value);
+    // Neither native slider reports a cancelled touch (Compose's or SwiftUI's
+    // end callback is all there is): a drag that goes quiet this long is
+    // taken as let go, so the shown position never sticks. A finger still
+    // resting on the thumb loses nothing: its next move scrubs again.
+    clearTimeout(stale.current ?? undefined);
+    stale.current = setTimeout(release, SCRUB_STALE_MS);
   }
 
   function release() {
+    clearTimeout(stale.current ?? undefined);
+    stale.current = null;
     if (scrubbedRef.current !== null) {
       playerHaptics.release();
       seekTo(scrubbedRef.current);

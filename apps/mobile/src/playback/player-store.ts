@@ -311,3 +311,16 @@ export function usePlayer<Slice>(selector: (state: PlayerStore) => Slice) {
 export function selectCurrentTrack(state: PlayerState): Queue | undefined {
   return state.queue[state.currentIndex];
 }
+
+/** Whether Next would move off the current entry (not at the end of an unlooped queue). */
+export function selectHasNext(state: PlayerState): boolean {
+  return (
+    nextTrackIndex(playbackOrder(state), { reason: "skip" }) !==
+    state.currentIndex
+  );
+}
+
+/** Whether Previous would move off the current entry. */
+export function selectHasPrevious(state: PlayerState): boolean {
+  return prevTrackIndex(playbackOrder(state)) !== state.currentIndex;
+}

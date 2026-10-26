@@ -1,4 +1,10 @@
-import { shouldDismiss, swipeDecision } from "./gestures";
+import { toSongRow } from "@infinitunes/types";
+import { rawSong } from "@infinitunes/types/fixtures";
+import { impactAsync } from "expo-haptics";
+
+import { playerStore } from "~/playback/player-store";
+
+import { changeSong, shouldDismiss, swipeDecision } from "./gestures";
 import { scrubStep } from "./haptics";
 
 const WIDTH = 400;
@@ -22,6 +28,44 @@ describe("swipeDecision", () => {
 
   it("keeps the song when a long drag is flicked back", () => {
     expect(swipeDecision(-200, 900, WIDTH)).toBeNull();
+  });
+
+  it("springs back past the queue's end, either way", () => {
+    const last = { next: false, previous: true };
+    expect(swipeDecision(-200, -900, WIDTH, last)).toBeNull();
+    expect(swipeDecision(200, 0, WIDTH, last)).toBe("previous");
+    const first = { next: true, previous: false };
+    expect(swipeDecision(200, 900, WIDTH, first)).toBeNull();
+  });
+});
+
+describe("changeSong", () => {
+  const initial = playerStore.getState();
+  beforeEach(() => {
+    playerStore.setState(initial, true);
+    playerStore.getState().playTracks(
+      ["a", "b"].map((id) => toSongRow(rawSong({ id }))),
+      {
+        startIndex: 1,
+      },
+    );
+    jest.mocked(impactAsync).mockClear();
+  });
+
+  it("does nothing, not even a tap, past the end of an unlooped queue", () => {
+    changeSong("next");
+    expect(playerStore.getState().currentIndex).toBe(1);
+    expect(impactAsync).not.toHaveBeenCalled();
+
+    changeSong("previous");
+    expect(playerStore.getState().currentIndex).toBe(0);
+    expect(impactAsync).toHaveBeenCalledTimes(1);
+  });
+
+  it("wraps when the queue repeats", () => {
+    playerStore.setState({ repeat: "playlist" });
+    changeSong("next");
+    expect(playerStore.getState().currentIndex).toBe(0);
   });
 });
 

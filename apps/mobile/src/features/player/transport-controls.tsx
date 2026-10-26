@@ -1,4 +1,3 @@
-import { selectionAsync } from "expo-haptics";
 import { useTheme } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import type { AnimationSpec } from "expo-symbols";
@@ -14,6 +13,7 @@ import Animated, {
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
 import { IconButton } from "~/components/ui/icon-button";
+import { selection } from "~/lib/haptics";
 import { usePressScale } from "~/lib/use-press-scale";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import { playerStore, usePlayer } from "~/playback/player-store";
@@ -31,21 +31,22 @@ const PROMINENT_EDGE = 72;
 /** The paused shape's corners on Android: Material 3 Expressive's extra-large. */
 const PAUSED_RADIUS = 24;
 
-/** Play or pause, with the player's light tap. */
-function playOrPause() {
-  playerHaptics.press();
-  togglePlayback();
+/*
+ * No haptic in these: `IconButton` taps on its own. The `Pressable` faces
+ * below tap through `tapped`, so one press is one tap either way.
+ */
+const skipNext = () => playerStore.getState().skipToNext();
+const skipPrevious = () => playerStore.getState().skipToPrevious();
+
+/** A `Pressable` face's press: the player's light tap, then `action`. */
+function tapped(action: () => void) {
+  return () => {
+    playerHaptics.press();
+    action();
+  };
 }
 
-function skipNext() {
-  playerHaptics.press();
-  playerStore.getState().skipToNext();
-}
-
-function skipPrevious() {
-  playerHaptics.press();
-  playerStore.getState().skipToPrevious();
-}
+const tappedPlayPause = tapped(togglePlayback);
 
 function usePlayPause() {
   const playing = usePlaybackStatus((state) => state.playing);
@@ -103,7 +104,7 @@ export function PlayPauseButton() {
         icon={icon}
         label={label}
         variant="filled"
-        onPress={playOrPause}
+        onPress={togglePlayback}
         size="md"
         fill={wash?.control ?? primary}
         color={wash?.onControl ?? onPrimary}
@@ -112,7 +113,7 @@ export function PlayPauseButton() {
   }
   return (
     <Pressable
-      onPress={playOrPause}
+      onPress={tappedPlayPause}
       accessibilityRole="button"
       accessibilityLabel={label}
       className="min-h-touch min-w-touch items-center justify-center active:opacity-60"
@@ -168,7 +169,7 @@ export function ProminentPlayPauseButton() {
         ]}
       >
         <Pressable
-          onPress={playOrPause}
+          onPress={tappedPlayPause}
           accessibilityRole="button"
           accessibilityLabel={label}
           android_ripple={{ color: ripple }}
@@ -184,7 +185,7 @@ export function ProminentPlayPauseButton() {
   return (
     <Animated.View style={press.style}>
       <Pressable
-        onPress={playOrPause}
+        onPress={tappedPlayPause}
         onPressIn={press.onPressIn}
         onPressOut={press.onPressOut}
         accessibilityRole="button"
@@ -264,7 +265,7 @@ export function ModeToggle({ icon, label, on, onPress }: ModeToggleProps) {
   return (
     <Pressable
       onPress={() => {
-        void selectionAsync();
+        selection();
         onPress();
       }}
       accessibilityRole="button"
@@ -314,7 +315,7 @@ function TonalSkipButton({
   const ripple = usePalette()["fill-2"];
   return (
     <Pressable
-      onPress={onPress}
+      onPress={tapped(onPress)}
       accessibilityRole="button"
       accessibilityLabel={label}
       android_ripple={{ color: ripple }}
