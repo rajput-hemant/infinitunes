@@ -55,6 +55,10 @@ jest.mock(
 );
 jest.mock("react-native-passkey", () => require("~/test/native-auth").passkey);
 jest.mock("expo-crypto", () => require("~/test/native-auth").expoCrypto);
+jest.mock(
+  "~/features/auth/native-presence",
+  () => require("~/test/native-auth").nativePresence,
+);
 // The v3 gesture hooks load Gesture Handler's Reanimated wrapper, which asks
 // Worklets for the UI runtime on an immediate: Jest's web build of Worklets
 // has none and throws after the suite ends. There is no UI runtime to bind.

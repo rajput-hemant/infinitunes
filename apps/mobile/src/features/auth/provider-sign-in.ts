@@ -1,15 +1,13 @@
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { useQuery } from "@tanstack/react-query";
-import * as AppleAuthentication from "expo-apple-authentication";
-import * as Crypto from "expo-crypto";
 import { Platform } from "react-native";
-import { Passkey } from "react-native-passkey";
 import type { PasskeyGetRequest } from "react-native-passkey";
 
 import { authClient } from "~/lib/auth-client";
 import { authFailure } from "~/lib/auth-failure";
 import type { AuthFailure } from "~/lib/auth-failure";
 import { env } from "~/lib/env";
+
+import { hasNativeModule } from "./native-presence";
 
 /**
  * Sign-in without a password: Apple and Google hand the app an ID token that
@@ -28,6 +26,21 @@ const NO_PASSKEY: AuthFailure = {
 /** The empty result of a request the listener cancelled. */
 const cancelled = { error: null };
 
+// Each package is required only inside these loaders, and only once
+// `hasNativeModule` has said its native module is linked: importing a package
+// whose native module is missing throws, and the route tree imports this file.
+export function loadAppleAuthentication(): typeof import("expo-apple-authentication") {
+  return require("expo-apple-authentication");
+}
+
+function loadGoogleSignin(): typeof import("@react-native-google-signin/google-signin") {
+  return require("@react-native-google-signin/google-signin");
+}
+
+function loadPasskey(): typeof import("react-native-passkey") {
+  return require("react-native-passkey");
+}
+
 function codeOf(error: unknown): unknown {
   return typeof error === "object" && error !== null && "code" in error
     ? error.code
@@ -39,10 +52,12 @@ const noToken = { error: { status: 400, message: NO_TOKEN_MESSAGE } };
 
 export function signInWithApple(): Promise<AuthFailure | undefined> {
   return authFailure(async () => {
+    const AppleAuthentication = loadAppleAuthentication();
+    const Crypto: typeof import("expo-crypto") = require("expo-crypto");
     // Apple signs the nonce's SHA-256 into the token and only the server sees
     // the nonce itself, so a captured token cannot be replayed on its own.
     const nonce = Crypto.randomUUID();
-    let credential: AppleAuthentication.AppleAuthenticationCredential;
+    let credential: import("expo-apple-authentication").AppleAuthenticationCredential;
     try {
       credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -85,6 +100,7 @@ export function signInWithApple(): Promise<AuthFailure | undefined> {
 let googleConfigured = false;
 
 export async function signInWithGoogle(): Promise<AuthFailure | undefined> {
+  const { GoogleSignin } = loadGoogleSignin();
   if (!googleConfigured) {
     // The web client makes the ID token's audience the server's client id.
     GoogleSignin.configure({
@@ -105,6 +121,7 @@ export async function signInWithGoogle(): Promise<AuthFailure | undefined> {
 export async function signInWithPasskey(): Promise<AuthFailure | undefined> {
   let noPasskey = false;
   const failure = await authFailure(async () => {
+    const { Passkey } = loadPasskey();
     // `$fetch` keeps the challenge cookie and sends it back with the answer.
     const options = await authClient.$fetch<PasskeyGetRequest>(
       "/passkey/generate-authenticate-options",
@@ -138,10 +155,16 @@ export type SignInProviders = {
   passkey: boolean;
 };
 
+/** Whether this build and device can run a passkey sign-in. */
+function passkeySupported(): boolean {
+  return hasNativeModule("Passkey") && loadPasskey().Passkey.isSupported();
+}
+
 /**
- * Which buttons to show: a provider the server has and this build can reach.
- * On iOS, Google only with Apple (App Store guideline 4.8). Nothing while the
- * list loads or if it fails: email and password still work.
+ * Which buttons to show: a provider the server has, that this build links the
+ * native modules for, and this device can reach. On iOS, Google only with
+ * Apple (App Store guideline 4.8). Nothing while the list loads or if it
+ * fails: email and password still work.
  */
 export function useSignInProviders(): SignInProviders {
   const { data: server = [] } = useQuery({
@@ -155,15 +178,20 @@ export function useSignInProviders(): SignInProviders {
     staleTime: Infinity,
   });
   const ios = Platform.OS === "ios";
-  const apple = ios && env.applePaidTeam && server.includes("apple");
+  const apple =
+    ios &&
+    env.applePaidTeam &&
+    server.includes("apple") &&
+    hasNativeModule("ExpoAppleAuthentication") &&
+    hasNativeModule("ExpoCrypto");
   const google =
     server.includes("google") &&
     Boolean(env.googleWebClientId) &&
+    hasNativeModule("RNGoogleSignin") &&
     (ios ? apple && Boolean(env.googleIosClientId) : true);
   return {
     apple,
     google,
-    passkey:
-      env.passkeys && (!ios || env.applePaidTeam) && Passkey.isSupported(),
+    passkey: env.passkeys && (!ios || env.applePaidTeam) && passkeySupported(),
   };
 }

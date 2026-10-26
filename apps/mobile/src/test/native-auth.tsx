@@ -51,6 +51,14 @@ export const googleSignIn = {
   },
 };
 
+/**
+ * Which native sign-in modules the build links: all of them, until a test
+ * makes one missing (`mockImplementation`). Reset after each test.
+ */
+export const nativePresence = {
+  hasNativeModule: jest.fn((_name: string) => true),
+};
+
 export const passkey = {
   Passkey: {
     isSupported: jest.fn(() => true),
