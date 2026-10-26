@@ -273,7 +273,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   Skeletons must mirror the loaded layout (`EntityHeaderSkeleton` `like`/`menu`/`subtitle`/`meta` match the
   header; overlay skeleton on loaded page to check). Loading marks are `Spinner` (Compose M3E `LoadingIndicator` on Android). Menus are `NativeMenu` entries that carry their action
   (`addToPlaylistEntry`, which ends with New Playlist, the `/create-playlist` sheet; `playRadioEntry`);
-  `SongMenu` is the track's. Long detail text (a show's or episode's description) is `Description`
+  `SongMenu` is the track's (a row's is `SongMenuButton`: Android mounts it on the first press; iOS `MenuView.show()` is a no-op, so iOS rows keep one each). Long detail text (a show's or episode's description) is `Description`
   (`components/detail`, three lines plus Read More); a list's one-of-many order is an `OptionMenu`, not a second
   `SegmentedTabs` (the artist's "Sort by"). Every titled group starts with `SectionHeader` (`title`, optional text `action`;
   it carries the 16/8 rhythm, sections add no padding). Every row is `ListRow` (artwork, icon or track-number
