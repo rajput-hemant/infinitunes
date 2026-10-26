@@ -6,7 +6,7 @@ import type { ViewStyle } from "react-native";
 import Animated, { FadeIn, ReduceMotion } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-import { Text } from "~/components/ui/text";
+import { Text, TextInkContext } from "~/components/ui/text";
 import type { TextProps } from "~/components/ui/text";
 import type { OnSurfaceColors, PlayerColors } from "~/lib/artwork-colors";
 
@@ -43,9 +43,11 @@ export function dockWash({ dock }: PlayerColors): WashColors {
 }
 
 /**
- * Lays `children` on a wash: `WashText` and every control that reads the
- * navigation theme (icons, the heart, menu triggers) take its contrast-checked
- * colours. `null` leaves the D1 palette in place.
+ * Lays `children` on a wash: `WashText`, every `Text` in a token tone (the
+ * queue's rows; `primary` takes the foreground, the only text colour checked
+ * at 4.5:1) and every control that reads the navigation theme (icons, the
+ * heart, menu triggers) take its contrast-checked colours. `null` leaves the
+ * D1 palette in place.
  */
 export function OnWash({
   colors,
@@ -69,9 +71,22 @@ export function OnWash({
         : theme,
     [theme, colors],
   );
+  const ink = useMemo(
+    () =>
+      colors
+        ? {
+            default: colors.foreground,
+            muted: colors.muted,
+            primary: colors.foreground,
+          }
+        : null,
+    [colors],
+  );
   return (
     <WashContext.Provider value={colors}>
-      <ThemeProvider value={washTheme}>{children}</ThemeProvider>
+      <TextInkContext value={ink}>
+        <ThemeProvider value={washTheme}>{children}</ThemeProvider>
+      </TextInkContext>
     </WashContext.Provider>
   );
 }

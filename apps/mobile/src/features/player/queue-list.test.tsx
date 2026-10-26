@@ -2,10 +2,12 @@ import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 
+import { playerColorsFromSeed } from "~/lib/artwork-colors";
 import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderScreen } from "~/test/render";
 
 import { QueueList } from "./queue-list";
+import { nowPlayingWash, OnWash } from "./wash";
 
 const rows = [
   rawSong({ id: "a", title: "Alpha" }),
@@ -73,5 +75,28 @@ describe("QueueList", () => {
     await fireEvent.press(await screen.findByRole("button", { name: "Delta" }));
 
     expect(playerStore.getState().currentIndex).toBe(3);
+  });
+});
+
+describe("QueueList on the artwork wash", () => {
+  it("draws its rows and labels in the wash's checked colours", async () => {
+    const colors = playerColorsFromSeed("#5B0F12", "dark", "ios");
+    if (!colors) throw new Error("the test seed must pass");
+    const wash = nowPlayingWash(colors);
+    await renderScreen(
+      <OnWash colors={wash}>
+        <QueueList />
+      </OnWash>,
+    );
+
+    expect(await screen.findByText("Charlie")).toHaveStyle({
+      color: wash.foreground,
+    });
+    expect(screen.getAllByText("Flipperachi - FA9LA")[0]).toHaveStyle({
+      color: wash.muted,
+    });
+    expect(screen.getByText("Up next · 2")).toHaveStyle({
+      color: wash.muted,
+    });
   });
 });

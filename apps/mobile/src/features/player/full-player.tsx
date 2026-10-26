@@ -407,9 +407,14 @@ function Grabber({ onPress }: { onPress: () => void }) {
   );
 }
 
+/** An off pill's fill on a wash: its text colour at this opacity (the tonal skip buttons' tint). */
+const PILL_TINT_ALPHA = 0.14;
+
 /**
- * A queue mode as a capsule with its name (Apple Music's queue pills): on
- * is the filled `primary` capsule. The queue view is on the D1 palette.
+ * A queue mode as a capsule with its name (Apple Music's queue pills). On a
+ * wash, on is the play button's checked `control` fill with `onControl`
+ * text, off a faint tint of the foreground; on the D1 palette `primary` and
+ * `muted`.
  */
 function ModePill({
   icon,
@@ -424,15 +429,26 @@ function ModePill({
   on: boolean;
   onPress: () => void;
 }) {
-  const ink = useTokenColor(on ? "primary-foreground" : "foreground");
+  const wash = useWashColors();
+  const token = useTokenColor(on ? "primary-foreground" : "foreground");
+  const ink = wash ? (on ? wash.onControl : wash.foreground) : token;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ selected: on }}
-      className={`min-h-touch flex-1 flex-row items-center justify-center gap-2 rounded-full px-4 active:opacity-70 ${on ? "bg-primary" : "bg-muted"}`}
+      className={`min-h-touch flex-1 flex-row items-center justify-center gap-2 overflow-hidden rounded-full px-4 active:opacity-70 ${wash ? "" : on ? "bg-primary" : "bg-muted"}`}
     >
+      {wash ? (
+        <View
+          className="absolute inset-0"
+          style={{
+            backgroundColor: on ? wash.control : wash.foreground,
+            opacity: on ? 1 : PILL_TINT_ALPHA,
+          }}
+        />
+      ) : null}
       <Icon name={icon} size="sm" color={ink} />
       <Text variant="subhead" emphasized color={ink} numberOfLines={1}>
         {text}
@@ -477,9 +493,9 @@ const boxOf = (event: LayoutChangeEvent) => event.nativeEvent.layout;
  * toggles stay put. Drag down anywhere outside a list to close it, swipe the
  * artwork or the title sideways to change the song. The view is the route's
  * `view` param, so `/player?view=queue` (and the `/queue` link) opens on the
- * queue. Text and controls take the artwork wash's contrast-checked colours;
- * the queue (rows the wash cannot recolour) and a missing or failed wash use
- * the D1 palette.
+ * queue. Text and controls, the queue's rows included (`OnWash`), take the
+ * artwork wash's contrast-checked colours in every view; a missing or failed
+ * wash leaves the D1 palette.
  */
 export function FullPlayer() {
   const router = useRouter();
@@ -490,7 +506,7 @@ export function FullPlayer() {
   const compact = view !== "art";
   const track = usePlayer(selectCurrentTrack);
   const colors = usePlayerColors(track?.image);
-  const washColors = view === "queue" ? null : colors;
+  const washColors = colors;
   // One object per palette, so `OnWash`'s theme stays put between renders.
   const wash = useMemo(
     () => (washColors ? nowPlayingWash(washColors) : null),
