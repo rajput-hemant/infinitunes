@@ -188,7 +188,7 @@ describe("the root screens' header", () => {
     expect(tab.queryByRole("button", { name: "Languages" })).toBeNull();
   });
 
-  it("has no search action on iOS, which has the search tab", async () => {
+  it("has no search action in the header: Search is a tab", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/library" });
 
     const tab = await selectedTab(app);
@@ -201,31 +201,22 @@ describe("on Android", () => {
   beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
   afterEach(() => jest.restoreAllMocks());
 
-  it("keeps Home's app bar to Search, Settings and Profile", async () => {
+  it("keeps Home's app bar to Settings and Profile", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
     const home = await selectedTab(app);
     await home.findByRole("button", { name: "Settings" });
-    expect(home.getByRole("button", { name: "Search" })).toBeOnTheScreen();
+    expect(home.queryByRole("button", { name: "Search" })).toBeNull();
     expect(home.getByRole("button", { name: "Sign in" })).toBeOnTheScreen();
     expect(home.queryByRole("button", { name: "Languages" })).toBeNull();
   });
 
-  it("pushes search onto the current tab from the app bar", async () => {
-    const app = await renderRouter("./src/app", { initialUrl: "/library" });
-
-    await fireEvent.press(
-      await (await selectedTab(app)).findByRole("button", { name: "Search" }),
-    );
-    expect(app.getSegments()).toEqual(["(tabs)", "(library)", "search"]);
-  });
-
-  it("opens a search link (Google Assistant) in Home with its query", async () => {
+  it("opens a search link (Google Assistant) in the Search tab with its query", async () => {
     const app = await renderRouter("./src/app", {
       initialUrl: redirectSystemPath({ path: "infinitunes://search?q=siri" }),
     });
 
-    expect(app.getSegments()).toEqual(["(tabs)", "(home)", "search"]);
+    expect(app.getSegments()).toEqual(["(tabs)", "(search)", "search"]);
     expect(app.getSearchParams()).toEqual({ q: "siri" });
   });
 });
@@ -239,7 +230,7 @@ describe("the tab bar", () => {
     ).toHaveLength(0);
   });
 
-  it("makes Search the system search tab, last, on iOS", async () => {
+  it("makes Search a regular fourth tab, last, on iOS", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
     const tabs = app.container.queryAll(
@@ -247,9 +238,9 @@ describe("the tab bar", () => {
         typeof node.props.screenKey === "string" && "systemItem" in node.props,
     );
     expect(tabs).toHaveLength(4);
-    const search = tabs.filter((node) => node.props.systemItem === "search");
-    expect(search).toHaveLength(1);
-    expect(tabs.at(-1)).toBe(search[0]);
+    // No system search item or role: it sits in the same pill as the others.
+    expect(tabs.some((node) => node.props.systemItem === "search")).toBe(false);
+    expect(tabs.at(-1)?.props.screenKey).toBe("(search)");
   });
 
   it("opens the sheet for an infinitunes://create link", async () => {

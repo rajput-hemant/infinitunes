@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import type { NativeStackNavigationOptions } from "expo-router";
-import { Platform, Pressable, View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
@@ -48,21 +48,13 @@ function ProfileButton() {
 }
 
 /**
- * The trailing header of a tab's root screen (Home, Library, Radio): Search
- * (Android only; iOS has the search tab), then Settings and Profile, both
- * pushed onto the current tab. Settings is not a tab of its own. Languages
+ * The trailing header of a tab's root screen (Home, Library, Radio): Settings
+ * and Profile, both pushed onto the current tab. Settings is not a tab of its own. Languages
  * lives in Settings only. Pass it as the root screen's `headerRight`.
  */
 export function TopLevelActions() {
   return (
     <View className="flex-row items-center">
-      {Platform.OS === "android" ? (
-        <IconButton
-          icon={{ ios: "magnifyingglass", android: "search" }}
-          label="Search"
-          onPress={() => router.push("/search")}
-        />
-      ) : null}
       <IconButton
         icon={{ ios: "gearshape", android: "settings" }}
         label="Settings"
