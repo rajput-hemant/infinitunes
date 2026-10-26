@@ -8,7 +8,7 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@better-auth/passkey": "^1.7.12",
+    "@better-auth/passkey": "^1.7.13",
     "@infinitunes/db": "workspace:*",
     "@infinitunes/env": "workspace:*",
     "bcryptjs": "catalog:",
