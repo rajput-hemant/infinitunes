@@ -1,12 +1,10 @@
-import { Link } from "expo-router";
 import type { Href } from "expo-router";
-import { Platform, Pressable } from "react-native";
-import Animated from "react-native-reanimated";
+import { Platform } from "react-native";
 
+import { PressableTile } from "~/components/pressable-tile";
 import { Artwork } from "~/components/ui/artwork";
 import { Text } from "~/components/ui/text";
 import { cx } from "~/lib/class-names";
-import { usePressScale } from "~/lib/use-press-scale";
 import { art } from "~/theme/tokens";
 
 type BrowseTileProps = {
@@ -24,35 +22,29 @@ type BrowseTileProps = {
  * under the finger like a quick pick.
  */
 export function BrowseTile({ href, title, width, image }: BrowseTileProps) {
-  const press = usePressScale(0.97);
   return (
-    <Animated.View style={[{ width }, press.style]}>
-      <Link href={href} asChild>
-        <Pressable
-          onPressIn={press.onPressIn}
-          onPressOut={press.onPressOut}
-          accessibilityRole="link"
-          accessibilityLabel={title}
-          className={cx(
-            "flex-row items-center gap-3 overflow-hidden rounded-md active:opacity-80",
-            // Material tiles sit on a tonal surface container, as quick picks do.
-            Platform.OS === "android" ? "bg-card" : "bg-fill",
-          )}
-          style={{ minHeight: art.tile }}
-        >
-          <Text
-            variant="headline"
-            numberOfLines={2}
-            className={cx("flex-1 py-3 pl-3", !image && "pr-3")}
-          >
-            {title}
-          </Text>
-          {image ? (
-            // Flush art takes the tile's corners (the tile clips it).
-            <Artwork image={image} size="tile" style={{ borderRadius: 0 }} />
-          ) : null}
-        </Pressable>
-      </Link>
-    </Animated.View>
+    <PressableTile
+      width={width}
+      href={href}
+      accessibilityLabel={title}
+      className={cx(
+        "flex-row items-center gap-3 overflow-hidden rounded-md active:opacity-80",
+        // Material tiles sit on a tonal surface container, as quick picks do.
+        Platform.OS === "android" ? "bg-card" : "bg-fill",
+      )}
+      style={{ minHeight: art.tile }}
+    >
+      <Text
+        variant="headline"
+        numberOfLines={2}
+        className={cx("flex-1 py-3 pl-3", !image && "pr-3")}
+      >
+        {title}
+      </Text>
+      {image ? (
+        // Flush art takes the tile's corners (the tile clips it).
+        <Artwork image={image} size="tile" style={{ borderRadius: 0 }} />
+      ) : null}
+    </PressableTile>
   );
 }

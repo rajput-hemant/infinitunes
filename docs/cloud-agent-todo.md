@@ -172,29 +172,29 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [x] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
   - Executor: haiku (after the fixes land). Flags: none.
 
-## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts` _(after S1)_
+## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts` _(after S1)_ (branch `fix/m14-screen-nits`)
 
-- [ ] **M-53** P2 PLAUSIBLE `features/search/search-screen.tsx:27-32`, `features/library/new-playlist-screen.tsx:9-19`, `app/(auth)/reset-password.tsx:7`, `features/app-actions/app-action-screen.tsx:18`, edit/playlist screens' `id` - repeated query params (`?q=a&q=b`, `?songs=1&songs=2`) arrive as `string[]` and crash `trim`/`split` [screens P2-2]
+- [ ] **M-53** P2 PLAUSIBLE `features/search/search-screen.tsx:27-32`, `features/library/new-playlist-screen.tsx:9-19`, `app/(auth)/reset-password.tsx:7`, `features/app-actions/app-action-screen.tsx:18`, edit/playlist screens' `id` - repeated query params (`?q=a&q=b`, `?songs=1&songs=2`) arrive as `string[]` and crash `trim`/`split` [screens P2-2] _Partly done (`lib/params.ts` `single`; search, new-playlist, reset-password, app-action; tests). Held: `id` in features/library/{playlist-screen,edit-playlist-screen}.tsx (S1)._
   - Fix: one shared `single(value)` helper in `lib/params.ts` used everywhere; add two cases to `navigation/malformed-links.test.ts`. Executor: haiku. Flags: none.
-- [ ] **M-54** P3 CONFIRMED `search-screen.tsx:36-40,61,84-87` - a recent search re-runs under the last type chip, not "All" [screens P3-1]
+- [x] **M-54** P3 CONFIRMED `search-screen.tsx:36-40,61,84-87` - a recent search re-runs under the last type chip, not "All" [screens P3-1] _Done: a recent search now runs under All (`searchFor(recent, "all")`) and Cancel resets the chip._
   - Fix: `onCancel` also `setType("all")` and/or `searchFor(recent, "all")`; add a test. Executor: haiku. Flags: none.
-- [ ] **M-55** P3 CONFIRMED `app/(tabs)/.../show/[name]/[season]/[token].tsx:6-7`, `show-content.tsx:44-46` - an unknown season segment selects nothing and shows "No episodes yet" [screens P3-4]
+- [x] **M-55** P3 CONFIRMED `app/(tabs)/.../show/[name]/[season]/[token].tsx:6-7`, `show-content.tsx:44-46` - an unknown season segment selects nothing and shows "No episodes yet" [screens P3-4] _Done: `ShowContent` falls back to the latest season when the route names one the show lacks._
   - Fix: fall back to the latest season when `show.seasons` has no match. Executor: haiku. Flags: none.
-- [ ] **M-56** P3 CONFIRMED `features/browse/use-category-covers.ts:15,41-44` - "Made for you" mix queries `home.home` with `{}` instead of `{ lang }` (second Home request, wrong catalog) [screens P3-5]
+- [x] **M-56** P3 CONFIRMED `features/browse/use-category-covers.ts:15,41-44` - "Made for you" mix queries `home.home` with `{}` instead of `{ lang }` (second Home request, wrong catalog) [screens P3-5] _Done: `useCategoryCovers` passes `useCatalogLang()` to `home.home`._
   - Fix: pass `useCatalogLang()`. Executor: haiku. Flags: none.
-- [ ] **M-57** P3 CONFIRMED `features/browse/top-albums-screen.tsx:36` - title ignores `?lang=` (playlists screen titles itself) [screens P3-8]
+- [x] **M-57** P3 CONFIRMED `features/browse/top-albums-screen.tsx:36` - title ignores `?lang=` (playlists screen titles itself) [screens P3-8] _Done: title is `${languageLabel(lang)} Albums` when `?lang=` is set._
   - Fix: `${languageLabel(lang)} Albums`. Executor: haiku. Flags: none.
-- [ ] **M-58** **[device sign-off later]** P3 PLAUSIBLE `search-screen.tsx:50-52`, `search-header.tsx:31` - on iOS a cold `?q=` link may leave the native search field empty (effect runs before the ref attaches) [screens P3-6]
+- [x] **M-58** **[device sign-off later]** P3 PLAUSIBLE `search-screen.tsx:50-52`, `search-header.tsx:31` - on iOS a cold `?q=` link may leave the native search field empty (effect runs before the ref attaches) [screens P3-6] _Done in code, device check pending: the search field ref is an accessor object that applies the linked `?q=` when the native field attaches._
   - Fix: callback ref that sets the text when the native field attaches. Executor: sonnet. Flags: needs device check.
-- [ ] **M-59** P3 CONFIRMED `features/song/lyrics-section.tsx:26-37` - `accessibilityLabel="Read full lyrics"` hides the preview from screen readers [screens P3-12]
+- [x] **M-59** P3 CONFIRMED `features/song/lyrics-section.tsx:26-37` - `accessibilityLabel="Read full lyrics"` hides the preview from screen readers [screens P3-12] _Done: label leads with the first lyric line ("<line>. Read full lyrics")._
   - Fix: start the label with the first lyric line or keep the preview outside the pressable. Executor: haiku. Flags: none.
-- [ ] **M-60** P3 CONFIRMED `features/artist/use-artist-panel.tsx:110`, `features/label/label-content.tsx:42`, `features/search/type-results.tsx:73,93` - new `items`/`rows`/`renderItem` every render [screens P3-13]
+- [x] **M-60** P3 CONFIRMED `features/artist/use-artist-panel.tsx:110`, `features/label/label-content.tsx:42`, `features/search/type-results.tsx:73,93` - new `items`/`rows`/`renderItem` every render [screens P3-13] _Done: `useMemo`/`useCallback` in `use-artist-panel`, `label-content`, `type-results`._
   - Fix: `useMemo`/`useCallback` keyed on source rows. Executor: haiku. Flags: none.
-- [ ] **M-61** P3 CONFIRMED `features/library/library-tile.tsx` + `features/browse/browse-tile.tsx`, `charts/top-charts-screen.tsx:27` + `browse/top-artists-screen.tsx:41`, `artist/use-artist-panel.tsx:71-102`, `use-artist.ts`/`use-show.ts` - duplicated screen logic [screens P3-10]
+- [x] **M-61** P3 CONFIRMED `features/library/library-tile.tsx` + `features/browse/browse-tile.tsx`, `charts/top-charts-screen.tsx:27` + `browse/top-artists-screen.tsx:41`, `artist/use-artist-panel.tsx:71-102`, `use-artist.ts`/`use-show.ts` - duplicated screen logic [screens P3-10] _Done: `components/pressable-tile.tsx`, `features/single-page.ts`, `pagedPanel` in `use-artist-panel`, `useLabel` in the same style as `useArtist`/`useShow`._
   - Fix: shared `PressableTile`; a `singlePage(query)` helper in `features/` (not in `CatalogScreen`, M6 owns it); a `pagedPanel` helper; one style for entity-query wrappers. Executor: haiku. Flags: none.
-- [ ] **M-62** P3 CONFIRMED `features/library/library-screen.tsx:37` - empty Playlists section is bare text [design P3-4]
+- [ ] **M-62** P3 CONFIRMED `features/library/library-screen.tsx:37` - empty Playlists section is bare text [design P3-4] _Held: needs features/library/library-screen.tsx (S1)._
   - Fix: `EmptyState placement="top"` with a New Playlist action. Executor: haiku. Flags: none.
-- [ ] **M-63** P3 CONFIRMED `features/auth/reset-password-form.tsx:54-58` - dead `!token` re-check after the early return [screens P3-9]
+- [x] **M-63** P3 CONFIRMED `features/auth/reset-password-form.tsx:54-58` - dead `!token` re-check after the early return [screens P3-9] _Done: dead `!token` check removed (`resetToken` const)._
   - Fix: delete the dead check. Executor: haiku. Flags: none.
 
 ## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md` _(after S1)_

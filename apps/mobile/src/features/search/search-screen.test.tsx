@@ -82,6 +82,35 @@ describe("SearchScreen", () => {
     expect(await screen.findByText("Top Result")).toBeOnTheScreen();
   });
 
+  it("uses the first value of a repeated ?q= instead of crashing", async () => {
+    await renderStack({ index: Search }, "/?q=fa9la&q=other");
+
+    expect(procedure("search.all")).toHaveBeenCalledWith({ q: "fa9la" });
+  });
+
+  it("searches a recent query under All, not the last type chip", async () => {
+    procedure("search.byType").mockResolvedValue({
+      total: 0,
+      start: 0,
+      results: [],
+    });
+    searchHistoryStore.setState({ queries: ["older"] });
+    await renderStack({ index: Search });
+    await type("fa9la");
+    await debounce();
+    await fireEvent.press(await screen.findByRole("tab", { name: "Albums" }));
+    await type("");
+    await debounce();
+    procedure("search.all").mockClear();
+
+    await fireEvent.press(
+      await screen.findByRole("button", { name: "Search for older" }),
+    );
+    await debounce();
+
+    expect(procedure("search.all")).toHaveBeenCalledWith({ q: "older" });
+  });
+
   it("does not fetch top searches until its tab is shown", async () => {
     mockFocus.focused = false;
     await renderStack({ index: Search });

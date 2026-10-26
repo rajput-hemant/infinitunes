@@ -10,6 +10,8 @@ import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
 import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
 
+import { singlePage } from "../single-page";
+
 const selectCharts = (charts: Chart[]) => uniqueBy(charts, (chart) => chart.id);
 
 /** The top charts; upstream answers with one page, so there is no paging. */
@@ -24,7 +26,7 @@ export function TopChartsScreen() {
     <>
       <Stack.Screen options={{ title: "Top Charts" }} />
       <CatalogScreen
-        query={{ ...charts, items: charts.data ?? [] }}
+        query={singlePage(charts)}
         keyOf={(chart) => chart.id}
         renderCard={(chart, width) => (
           <MediaCard item={toCardItem(chart)} width={width} />
