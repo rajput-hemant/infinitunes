@@ -49,6 +49,7 @@ function PlaylistSongRow({
             label: "Remove",
             icon: { ios: "minus.circle.fill", android: "remove_circle" },
             tone: "red",
+            removes: true,
             onPress: onRemove,
           }}
         />

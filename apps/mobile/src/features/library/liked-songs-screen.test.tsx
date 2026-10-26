@@ -103,9 +103,14 @@ describe("LikedSongsScreen", () => {
     await renderLikedSongs();
     await screen.findByText("Second Like");
 
+    jest.useFakeTimers();
     await fireEvent.press(
       screen.getAllByRole("button", { name: "Unlike" })[1]!,
     );
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+    });
+    jest.useRealTimers();
 
     expect(screen.queryByText("Second Like")).toBeNull();
     expect(procedure("user.removeFromFavorites")).toHaveBeenCalledWith({
@@ -122,9 +127,14 @@ describe("LikedSongsScreen", () => {
     await renderLikedSongs();
     await screen.findByText("Second Like");
 
+    jest.useFakeTimers();
     await fireEvent.press(
       screen.getAllByRole("button", { name: "Unlike" })[1]!,
     );
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+    });
+    jest.useRealTimers();
     expect(screen.getByText("2 songs")).toBeOnTheScreen();
 
     await fireEvent.press(screen.getByRole("button", { name: "Play" }));

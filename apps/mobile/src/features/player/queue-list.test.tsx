@@ -1,6 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { fireEvent, screen } from "@testing-library/react-native";
+import { act, fireEvent, screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
 import { playerColorsFromSeed } from "~/lib/artwork-colors";
@@ -141,15 +141,23 @@ describe("QueueList", () => {
     expect(highlighted).toBe(true);
   });
 
-  it("removes a row from its revealed Remove button (a slow swipe that rests open)", async () => {
+  it("removes a row from its revealed Remove button once the row has slid out (a slow swipe that rests open)", async () => {
+    jest.useFakeTimers();
     await renderScreen(<QueueList />);
     await screen.findByText("Delta");
 
     const [first] = screen.getAllByRole("button", { name: "Remove" });
     if (!first) throw new Error("no Remove button");
     await fireEvent.press(first);
+    // Still queued while the exit animation runs.
+    expect(ids()).toEqual(["a", "b", "c", "d"]);
+
+    await act(async () => {
+      jest.advanceTimersByTime(500);
+    });
 
     expect(ids()).toEqual(["a", "b", "d"]);
+    jest.useRealTimers();
   });
 
   it("disables the swipe while a row's handle drags it", async () => {

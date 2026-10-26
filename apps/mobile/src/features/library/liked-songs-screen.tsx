@@ -23,6 +23,7 @@ function LikedSongRow({ song, play }: { song: SongRowItem; play: () => void }) {
         label: "Unlike",
         icon: { ios: "heart.slash", android: "heart_broken" },
         tone: "red",
+        removes: true,
         onPress: toggle,
       }}
     />

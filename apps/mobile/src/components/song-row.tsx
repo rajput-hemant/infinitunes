@@ -1,9 +1,10 @@
 import { formatDuration } from "@infinitunes/types";
 import type { ReactElement } from "react";
 
-import { playerStore } from "~/playback/player-store";
+import { playerStore, usePlayer } from "~/playback/player-store";
 import { togglePlayback } from "~/playback/transport";
 import { useCurrentTrackState } from "~/playback/use-current-track";
+import { useFavoriteToggle } from "~/user-data/favorites";
 
 import { LikeButton } from "./like-button";
 import { ListRow } from "./list-row";
@@ -51,6 +52,10 @@ export function SongRow({
     id: song.id,
     queueItemId,
   });
+  const hasUpNext = usePlayer(
+    (state) => state.queue.length > state.currentIndex + 1,
+  );
+  const { liked, toggle } = useFavoriteToggle({ type: "song", token: song.id });
   const credits = creditsOf(song);
   const length =
     leading === "index" && song.duration > 0
@@ -116,37 +121,64 @@ export function SongRow({
       {row}
     </SongContextLink>
   );
-  // Queue rows swipe in the player; every other row has Apple Music's pair.
+  // Queue rows swipe in the player; every other row has Apple Music's swipes.
   if (queueItemId) return link;
+  // Favourite by default; a list's own destructive action replaces it.
+  const trailing =
+    trailingSwipe ??
+    (song.type === "song"
+      ? {
+          label: liked ? "Unfavourite" : "Favourite",
+          icon: liked
+            ? { ios: "heart.slash.fill", android: "heart_broken" }
+            : { ios: "heart.fill", android: "favorite" },
+          tone: "pink",
+          onPress: () => void toggle(),
+        }
+      : undefined);
   return (
     <SwipeableRow
-      leading={[
-        {
-          label: "Play Next",
-          icon: {
-            ios: "text.line.first.and.arrowtriangle.forward",
-            android: "playlist_play",
-          },
-          tone: "indigo",
-          onPress: () => {
-            playerStore.getState().playNext(song);
-          },
-        },
-        {
-          label: "Add to Queue",
-          icon: {
-            ios: "text.line.last.and.arrowtriangle.forward",
-            android: "playlist_add",
-          },
-          tone: "orange",
-          onPress: () => {
-            playerStore.getState().addToQueue(song);
-          },
-        },
-      ]}
-      trailing={trailingSwipe ? [trailingSwipe] : undefined}
+      leading={swipeLeading(song, hasUpNext)}
+      trailing={trailing ? [trailing] : undefined}
     >
       {link}
     </SwipeableRow>
   );
+}
+
+/**
+ * Apple Music's leading pair: Play Next alone, and Add to Queue as a second
+ * capsule once something is queued after the current song.
+ */
+export function swipeLeading(
+  song: TrackItem,
+  hasUpNext: boolean,
+): SwipeAction[] {
+  const { playNext, addToQueue } = playerStore.getState();
+  const next: SwipeAction = {
+    label: "Play Next",
+    icon: {
+      ios: "text.line.first.and.arrowtriangle.forward",
+      android: "playlist_play",
+    },
+    tone: "indigo",
+    onPress: () => {
+      playNext(song);
+    },
+  };
+  if (!hasUpNext) return [next];
+  return [
+    next,
+    {
+      label: "Add to Queue",
+      icon: {
+        ios: "text.line.last.and.arrowtriangle.forward",
+        android: "playlist_add",
+      },
+      tone: "orange",
+      onPress: () => {
+        addToQueue(song);
+      },
+    },
+  ];
 }

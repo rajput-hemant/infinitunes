@@ -20,15 +20,41 @@ beforeEach(() => {
 });
 
 describe("SongRow swipe actions", () => {
-  it("plays next and adds to the queue from the leading buttons", async () => {
+  it("offers only Play Next while nothing is queued after the current song", async () => {
     await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
 
+    expect(screen.getByRole("button", { name: "Play Next" })).toBeOnTheScreen();
+    expect(screen.queryByRole("button", { name: "Add to Queue" })).toBeNull();
+
     await fireEvent.press(screen.getByRole("button", { name: "Play Next" }));
-    expect(playerStore.getState().queue.map((q) => q.id)).toContain(song.id);
+    expect(playerStore.getState().queue.map((q) => q.id)).toEqual([song.id]);
+  });
+
+  it("adds Add to Queue once something follows the current song, Play Next the primary", async () => {
+    const others = ["x", "y"].map((id) => toSongRow(rawSong({ id })));
+    playerStore.getState().playTracks(others, { startIndex: 0 });
+    await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
+
+    const labels = screen
+      .getAllByRole("button")
+      .map((button) => button.props.accessibilityLabel)
+      .filter((label) => label === "Play Next" || label === "Add to Queue");
+    // Primary first (next to the row), the other further out.
+    expect(labels).toEqual(["Add to Queue", "Play Next"]);
 
     const before = playerStore.getState().queue.length;
     await fireEvent.press(screen.getByRole("button", { name: "Add to Queue" }));
-    expect(playerStore.getState().queue.length).toBe(before + 1);
+    expect(playerStore.getState().queue.map((q) => q.id)).toEqual([
+      "x",
+      "y",
+      song.id,
+    ]);
+    expect(before).toBe(2);
+  });
+
+  it("swipes right to left to favourite by default, the row's own action replacing it", async () => {
+    await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
+    expect(screen.getByRole("button", { name: "Favourite" })).toBeOnTheScreen();
   });
 
   it("adds a trailing destructive action only when given", async () => {
