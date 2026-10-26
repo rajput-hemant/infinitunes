@@ -2,7 +2,7 @@ import type { Queue } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ComponentRef } from "react";
 import {
   Platform,
@@ -14,6 +14,10 @@ import {
 import type { LayoutChangeEvent, LayoutRectangle } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  Easing,
+  FadeIn,
+  FadeInDown,
+  FadeOut,
   ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
@@ -132,6 +136,42 @@ function settle(target: number) {
     ? withSpring(target, springs.spatialSlow)
     : withTiming(target, { duration: 340 });
 }
+
+/** The artwork's flight between the stage and the compact header. */
+const FLIGHT_MS = 420;
+/** Material's emphasized decelerate, close to Apple Music's flight: fast off, long settle. */
+const EMPHASIZED = Easing.bezier(0.2, 0, 0, 1);
+/** How long a flight waits for a destination slot that reports no new layout. */
+const LAYOUT_WAIT_MS = 34;
+
+/** The flight: one timing curve on both platforms (a spring's overshoot reads as a wobble on a scale). */
+function fly(target: number) {
+  return withTiming(target, { duration: FLIGHT_MS, easing: EMPHASIZED });
+}
+
+/** Starts the pending flight, if one waits. */
+function takeOff(
+  pending: { current: 0 | 1 | null },
+  progress: SharedValue<number>,
+) {
+  const target = pending.current;
+  if (target === null) return;
+  pending.current = null;
+  progress.set(fly(target));
+}
+
+/**
+ * What enters and leaves with the flight (titles, pills, the list): a fade
+ * with a short rise over the flight's span, a fade alone under reduce motion.
+ */
+const contentIn = (reduceMotion: boolean) =>
+  reduceMotion
+    ? FadeIn.duration(200).reduceMotion(ReduceMotion.Never)
+    : FadeInDown.duration(FLIGHT_MS - 80)
+        .delay(80)
+        .easing(EMPHASIZED)
+        .withInitialValues({ transform: [{ translateY: space.lg }] });
+const contentOut = FadeOut.duration(140).reduceMotion(ReduceMotion.Never);
 
 /**
  * The cover at the hero size, edge to edge in its rounded clip. A new
@@ -267,6 +307,10 @@ function HeroArt({
   const clip = useAnimatedStyle(() => ({
     borderRadius: big + (small - big) * progress.get(),
   }));
+  // The same radius for the shadow (one animated style per view).
+  const shadowShape = useAnimatedStyle(() => ({
+    borderRadius: big + (small - big) * progress.get(),
+  }));
 
   return (
     <Animated.View
@@ -279,7 +323,7 @@ function HeroArt({
           accessibilityRole="image"
           accessibilityLabel={`Artwork, ${track.name}`}
           {...songSwipeActions}
-          style={[ART_SHADOW, { borderRadius: big }]}
+          style={[ART_SHADOW, shadowShape]}
         >
           <Animated.View style={[styles.clip, clip]}>
             <NowPlayingArt image={track.image} />
@@ -503,7 +547,15 @@ export function FullPlayer() {
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
   const params = useLocalSearchParams<{ view?: string }>();
-  const view = playerViewOf(params.view);
+  const linkedView = playerViewOf(params.view);
+  // Local state, so a toggle re-renders only this screen (a route param
+  // change goes through the navigator); a new `?view=` link still switches it.
+  const [view, setView] = useState(linkedView);
+  const [shownLink, setShownLink] = useState(linkedView);
+  if (shownLink !== linkedView) {
+    setShownLink(linkedView);
+    setView(linkedView);
+  }
   const compact = view !== "art";
   const track = usePlayer(selectCurrentTrack);
   const colors = usePlayerColors(track?.image);
@@ -518,8 +570,6 @@ export function FullPlayer() {
   const reduceMotion = useReducedMotion();
 
   const close = () => router.back();
-  const setView = (next: PlayerView) =>
-    router.setParams({ view: next === "art" ? undefined : next });
   const toggle = (next: PlayerView) => setView(view === next ? "art" : next);
 
   // The drag down to close, shared by the areas outside the lists.
@@ -542,7 +592,13 @@ export function FullPlayer() {
     stage: useSharedValue<LayoutRectangle | null>(null),
     header: useSharedValue<LayoutRectangle | null>(null),
   };
-  useEffect(() => {
+  // A flight waits for its destination slot's first layout, so both ends are
+  // known before it starts and nothing is measured mid-flight.
+  const pending = useRef<0 | 1 | null>(null);
+  const landed = (slot: 0 | 1) => {
+    if (pending.current === slot) takeOff(pending, progress);
+  };
+  useLayoutEffect(() => {
     const target = compact ? 1 : 0;
     if (progress.get() === target) return;
     if (reduceMotion) {
@@ -552,7 +608,12 @@ export function FullPlayer() {
       fade.set(
         withTiming(1, { duration: 200, reduceMotion: ReduceMotion.Never }),
       );
-    } else progress.set(settle(target));
+      return;
+    }
+    pending.current = target;
+    // The slot is already laid out (no new layout event): fly anyway.
+    const timer = setTimeout(() => takeOff(pending, progress), LAYOUT_WAIT_MS);
+    return () => clearTimeout(timer);
   }, [compact, reduceMotion, progress, fade]);
 
   // The lyrics' box, and where it spans down the backdrop (0 top, 1 bottom).
@@ -645,18 +706,32 @@ export function FullPlayer() {
                   <View
                     className="flex-row items-center gap-3 px-6 py-2"
                     pointerEvents="box-none"
-                    onLayout={(event) => slots.header.set(boxOf(event))}
+                    onLayout={(event) => {
+                      slots.header.set(boxOf(event));
+                      landed(1);
+                    }}
                   >
                     {/* The artwork flies into this slot. */}
                     <View
                       pointerEvents="none"
                       style={{ width: COMPACT_ART, height: COMPACT_ART }}
                     />
-                    <View className="flex-1">
+                    <Animated.View
+                      className="flex-1"
+                      entering={contentIn(reduceMotion)}
+                      exiting={contentOut}
+                    >
                       <TrackTitle track={track} compact swipe={titleSwipe} />
-                    </View>
+                    </Animated.View>
                   </View>
-                  {view === "queue" ? <QueueModes /> : null}
+                  {view === "queue" ? (
+                    <Animated.View
+                      entering={contentIn(reduceMotion)}
+                      exiting={contentOut}
+                    >
+                      <QueueModes />
+                    </Animated.View>
+                  ) : null}
                 </>
               ) : (
                 <>
@@ -664,33 +739,50 @@ export function FullPlayer() {
                   <View
                     className="flex-1"
                     pointerEvents="none"
-                    onLayout={(event) => slots.stage.set(boxOf(event))}
+                    onLayout={(event) => {
+                      slots.stage.set(boxOf(event));
+                      landed(0);
+                    }}
                   />
-                  <View className="mt-8 px-6">
+                  <Animated.View
+                    className="mt-8 px-6"
+                    entering={contentIn(reduceMotion)}
+                    exiting={contentOut}
+                  >
                     <TrackTitle
                       track={track}
                       compact={false}
                       swipe={titleSwipe}
                     />
-                  </View>
+                  </Animated.View>
                 </>
               )}
             </View>
           </GestureDetector>
           {view === "queue" ? (
-            <View className="flex-1">
+            <Animated.View
+              className="flex-1"
+              entering={contentIn(reduceMotion)}
+              exiting={contentOut}
+            >
               <QueueList />
-            </View>
+            </Animated.View>
           ) : null}
           {view === "lyrics" ? (
-            <View ref={slot} className="flex-1 px-6" onLayout={measureLyrics}>
+            <Animated.View
+              ref={slot}
+              className="flex-1 px-6"
+              onLayout={measureLyrics}
+              entering={contentIn(reduceMotion)}
+              exiting={contentOut}
+            >
               <PlayerLyrics
                 track={track}
                 width={Math.max(lyricsBox.width - 2 * space.xl, 0)}
                 height={lyricsBox.height}
                 edges={lyricEdges}
               />
-            </View>
+            </Animated.View>
           ) : null}
           <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom }}>
             {/* Outside the drag to close: a thumb grab that rolls down would
