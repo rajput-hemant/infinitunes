@@ -18,6 +18,7 @@ import { eq } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
 
 import { createAuth, revokeOtherSessions } from "../src/auth";
+import { parseFingerprints } from "../src/native-app";
 
 function makeFakeDb() {
   const query: Record<string, unknown> = {
@@ -288,6 +289,31 @@ describe("Better Auth configuration", () => {
       ]);
     } finally {
       delete process.env.ANDROID_CERT_SHA256_FINGERPRINTS;
+    }
+  });
+
+  it("normalises Android fingerprints and refuses a malformed one", () => {
+    const hex = Array(32).fill("ab").join(":");
+    expect(parseFingerprints(` ${hex} ,, ${hex.toUpperCase()}`)).toEqual([
+      hex.toUpperCase(),
+      hex.toUpperCase(),
+    ]);
+    expect(parseFingerprints(undefined)).toEqual([]);
+
+    // Too short, a SHA-1, and no separators.
+    for (const bad of [
+      "AB:CD",
+      Array(20).fill("AB").join(":"),
+      "AB".repeat(32),
+    ]) {
+      process.env.ANDROID_CERT_SHA256_FINGERPRINTS = bad;
+      try {
+        expect(() => createAuth(makeFakeDb())).toThrow(
+          "ANDROID_CERT_SHA256_FINGERPRINTS",
+        );
+      } finally {
+        delete process.env.ANDROID_CERT_SHA256_FINGERPRINTS;
+      }
     }
   });
 

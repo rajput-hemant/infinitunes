@@ -16,12 +16,26 @@ export const NATIVE_ORIGIN_HEADER = "expo-origin";
 /** The app's iOS bundle id and Android package (`apps/mobile/app.config.ts`). */
 export const NATIVE_APP_ID = "com.infinitunes.app";
 
-/** The comma-separated `ANDROID_CERT_SHA256_FINGERPRINTS` value as a list. */
+const SHA256_FINGERPRINT = /^([0-9A-F]{2}:){31}[0-9A-F]{2}$/;
+
+/**
+ * The comma-separated `ANDROID_CERT_SHA256_FINGERPRINTS` value as a list of
+ * uppercase colon hex. Throws on anything else: a typo would otherwise turn
+ * into a passkey origin and asset link that silently never match.
+ */
 export function parseFingerprints(value: string | undefined): string[] {
   return (value ?? "")
     .split(",")
-    .map((fingerprint) => fingerprint.trim())
-    .filter(Boolean);
+    .map((fingerprint) => fingerprint.trim().toUpperCase())
+    .filter(Boolean)
+    .map((fingerprint) => {
+      if (!SHA256_FINGERPRINT.test(fingerprint)) {
+        throw new Error(
+          `ANDROID_CERT_SHA256_FINGERPRINTS: "${fingerprint}" is not a SHA-256 fingerprint (32 colon-separated hex bytes, as keytool prints it)`,
+        );
+      }
+      return fingerprint;
+    });
 }
 
 /**
