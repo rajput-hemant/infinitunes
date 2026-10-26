@@ -21,12 +21,15 @@ type LikeButtonProps = React.HtmlHTMLAttributes<HTMLButtonElement> & {
   type: MediaType;
   name: string;
   token: string;
+  /** A show's perma token, stored with the like. */
+  linkToken?: string;
   /** `null` means the favorites read failed: state unknown, so no writes. */
   favourites?: Favorite | null;
 };
 
 export function LikeButton(props: LikeButtonProps) {
-  const { user, type, token, name, favourites, className, ...rest } = props;
+  const { user, type, token, linkToken, name, favourites, className, ...rest } =
+    props;
 
   const [popping, setPopping] = React.useState(false);
   // Types without a favorites column render nothing below; "song" only
@@ -34,6 +37,7 @@ export function LikeButton(props: LikeButtonProps) {
   const { liked: optimisticLike, toggle } = useFavoriteToggle({
     type: isFavoriteType(type) ? type : "song",
     token,
+    linkToken,
     name,
     user,
     favourites,

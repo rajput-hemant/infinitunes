@@ -157,6 +157,7 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                 user={user}
                 type={playType}
                 token={getId(item)}
+                linkToken={playType === "show" ? playToken : undefined}
                 name={title}
                 favourites={favorites}
                 className={cn(

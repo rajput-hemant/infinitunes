@@ -68,10 +68,15 @@ export function favoriteListsQuery(userId: string | undefined) {
   };
 }
 
-function persistFavorite(type: FavoriteType, token: string, liked: boolean) {
+function persistFavorite(
+  type: FavoriteType,
+  token: string,
+  liked: boolean,
+  linkToken?: string,
+) {
   const input = { type, token };
   const write = liked
-    ? trpcClient.user.addToFavorites.mutate(input)
+    ? trpcClient.user.addToFavorites.mutate({ ...input, linkToken })
     : trpcClient.user.removeFromFavorites.mutate(input);
   return write
     .catch((error: unknown) => {
@@ -87,7 +92,12 @@ function persistFavorite(type: FavoriteType, token: string, liked: boolean) {
     );
 }
 
-type FavoriteToggleOptions = { type: FavoriteType; token: string };
+type FavoriteToggleOptions = {
+  type: FavoriteType;
+  token: string;
+  /** A show's perma token, stored with the like. */
+  linkToken?: string;
+};
 
 /**
  * Optimistic like for one item: `liked` flips in every heart that shows it
@@ -96,7 +106,11 @@ type FavoriteToggleOptions = { type: FavoriteType; token: string };
  * `toggle` returns the liked state it asked for, or `undefined` when it wrote
  * nothing.
  */
-export function useFavoriteToggle({ type, token }: FavoriteToggleOptions) {
+export function useFavoriteToggle({
+  type,
+  token,
+  linkToken,
+}: FavoriteToggleOptions) {
   const userId = useUserId();
   const known = useIsFavorited(type, token);
   const serverLiked = known ?? false;
@@ -116,7 +130,7 @@ export function useFavoriteToggle({ type, token }: FavoriteToggleOptions) {
     toggleFavorite({
       key,
       serverLiked,
-      send: (want) => persistFavorite(type, token, want),
+      send: (want) => persistFavorite(type, token, want, linkToken),
     });
     return !liked;
   }

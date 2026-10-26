@@ -13,6 +13,8 @@ type LikeButtonProps = {
   /** The item's id (`artistId` for an artist). */
   token: string;
   name: string;
+  /** A show's perma token, stored with the like. */
+  linkToken?: string;
   /** `lg` by default; `md` in rows. */
   size?: IconSize;
 };
@@ -21,10 +23,16 @@ type LikeButtonProps = {
  * The heart for one item. Every heart for the same item flips together
  * (optimistic). Likes need an account, so a signed-out listener sees none.
  */
-export function LikeButton({ type, token, name, size }: LikeButtonProps) {
+export function LikeButton({
+  type,
+  token,
+  name,
+  size,
+  linkToken,
+}: LikeButtonProps) {
   const { colors } = useTheme();
   const signedIn = useUserId() !== undefined;
-  const { liked, toggle } = useFavoriteToggle({ type, token });
+  const { liked, toggle } = useFavoriteToggle({ type, token, linkToken });
   if (!signedIn) return null;
 
   return (

@@ -1,0 +1,1 @@
+ALTER TABLE "infinitunes_favorite" ADD COLUMN IF NOT EXISTS "podcastTokens" jsonb DEFAULT '{}'::jsonb NOT NULL;

@@ -95,9 +95,17 @@ export async function removeSongsFromPlaylist(
   });
 }
 
-export async function addToFavorites(token: string, type: FavoriteType) {
+export async function addToFavorites(
+  token: string,
+  type: FavoriteType,
+  linkToken?: string,
+) {
   return toResult(async () => {
-    const favorites = await api.user.addToFavorites({ token, type });
+    const favorites = await api.user.addToFavorites({
+      token,
+      type,
+      linkToken,
+    });
     refresh();
     return favorites;
   });

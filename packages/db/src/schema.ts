@@ -3,6 +3,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -162,6 +163,11 @@ export const favorites = createTable("favorite", {
   playlists: text("playlists").array().default([]).notNull(),
   artists: text("artists").array().default([]).notNull(),
   podcasts: text("podcasts").array().default([]).notNull(),
+  /** Show id -> perma token, so the liked-podcasts page needs one `show.details` call. Rows from before it have no entry. */
+  podcastTokens: jsonb("podcastTokens")
+    .$type<Record<string, string>>()
+    .default({})
+    .notNull(),
 });
 
 /** One row per user and played item; replaying bumps `playedAt`. */

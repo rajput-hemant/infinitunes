@@ -57,7 +57,7 @@ type EntityHeaderProps = {
   /** Leave out for a single track or a station, where shuffling means nothing. */
   onShuffle?: () => void;
   /** The item's heart; `token` is its id (`artistId` for an artist). */
-  like?: { type: FavoriteType; token: string };
+  like?: { type: FavoriteType; token: string; linkToken?: string };
   /** Controls after the heart, e.g. the collection's `CollectionMenu`. */
   actions?: ReactNode;
 };
@@ -154,7 +154,12 @@ export function EntityHeader({
           (Android's the large one) close the row, where the thumb rests. */}
       <View className="mt-4 w-full flex-row items-center gap-2">
         {like ? (
-          <LikeButton type={like.type} token={like.token} name={title} />
+          <LikeButton
+            type={like.type}
+            token={like.token}
+            linkToken={like.linkToken}
+            name={title}
+          />
         ) : null}
         {actions}
         <View className="flex-1" />
