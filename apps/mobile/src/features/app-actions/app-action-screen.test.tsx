@@ -223,7 +223,7 @@ describe("action/play-liked and action/shuffle-liked", () => {
     await landsOn(app, "/login");
     // The action screen between the player and the sign-in modal is what
     // react-native-screens cannot reorder when it leaves.
-    expect(stackNames(app)).toEqual(["index", "player", "login"]);
+    expect(stackNames(app)).toEqual(["player", "login"]);
   });
 
   it("plays nothing when the library can't be read", async () => {
