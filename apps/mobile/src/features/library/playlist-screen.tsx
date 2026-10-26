@@ -136,24 +136,44 @@ function Playlist({ id }: { id: string }) {
   const { data, error, isPending, refetch } = useServerPlaylistDetails(id);
   const playlist = usePlaylistDetails(data);
 
-  if (isPending) return <PlaylistSkeleton />;
+  // Titled in every state, not only once loaded (else the route's name shows).
+  const title = (
+    <Stack.Screen options={{ title: playlist?.name ?? "Playlist" }} />
+  );
+
+  if (isPending) {
+    return (
+      <>
+        {title}
+        <PlaylistSkeleton />
+      </>
+    );
+  }
   if (data === undefined) {
-    return <ErrorState error={error} onRetry={() => void refetch()} />;
+    return (
+      <>
+        {title}
+        <ErrorState error={error} onRetry={() => void refetch()} />
+      </>
+    );
   }
   if (!data || !playlist) {
     return (
-      <EmptyState
-        icon={{ ios: "music.note.list", android: "queue_music" }}
-        title="Playlist not found"
-        message="It may have been deleted."
-        action={{ label: "Back to Library", onPress: () => router.back() }}
-      />
+      <>
+        {title}
+        <EmptyState
+          icon={{ ios: "music.note.list", android: "queue_music" }}
+          title="Playlist not found"
+          message="It may have been deleted."
+          action={{ label: "Back to Library", onPress: () => router.back() }}
+        />
+      </>
     );
   }
 
   return (
     <>
-      <Stack.Screen options={{ title: playlist.name }} />
+      {title}
       <Stack.Toolbar placement="right" asChild>
         <PlaylistMenu playlist={playlist} onDeleting={() => router.back()}>
           <MenuTrigger
