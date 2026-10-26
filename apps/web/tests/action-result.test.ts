@@ -1,7 +1,8 @@
 import { describe, expect, it } from "bun:test";
 
 import { userMessage } from "@infinitunes/core/user-message";
-import { TRPCError } from "@trpc/server";
+import { initTRPC, TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { toResult, unwrap } from "../lib/action-result";
 
@@ -124,5 +125,24 @@ describe("server action results", () => {
         });
       }),
     ).rejects.toThrow("NEXT_REDIRECT");
+  });
+});
+
+describe("toResult with a direct caller", () => {
+  it("shows the first validation issue, not zod's JSON", async () => {
+    const t = initTRPC.create();
+    const caller = t.createCallerFactory(
+      t.router({
+        save: t.procedure
+          .input(z.object({ name: z.string().min(1, "Enter a name") }))
+          .mutation(() => "saved"),
+      }),
+    )({});
+
+    await expect(toResult(() => caller.save({ name: "" }))).resolves.toEqual({
+      ok: false,
+      code: "BAD_REQUEST",
+      message: "Enter a name",
+    });
   });
 });

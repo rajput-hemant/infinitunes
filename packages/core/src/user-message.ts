@@ -13,6 +13,28 @@ const USER_CODES = new Set([
   "NOT_FOUND",
 ]);
 
+/**
+ * The copy for an input validation failure: the first issue's message. `cause`
+ * is a tRPC error's cause; anything without zod's `issues` list is `undefined`.
+ * The HTTP `errorFormatter` and `userMessage` (server actions call procedures
+ * directly, with no formatter) share it, so no client sees zod's JSON.
+ */
+export function validationMessage(cause: unknown): string | undefined {
+  if (
+    typeof cause !== "object" ||
+    cause === null ||
+    !("issues" in cause) ||
+    !Array.isArray(cause.issues)
+  )
+    return undefined;
+  const first: unknown = cause.issues[0];
+  const message =
+    typeof first === "object" && first !== null && "message" in first
+      ? first.message
+      : undefined;
+  return typeof message === "string" && message ? message : "Invalid request";
+}
+
 /** Next.js replaces server-action error messages with this in production. */
 const OMITTED_MESSAGE = "omitted in production builds";
 
@@ -35,6 +57,10 @@ export function userMessage(
         ? error
         : "";
   if (!message || message.includes(OMITTED_MESSAGE)) return fallback;
+  const invalid = validationMessage(
+    error instanceof Error ? error.cause : undefined,
+  );
+  if (invalid) return invalid;
 
   const code = getErrorCode(error);
   if (code === "UNAUTHORIZED") return "Please sign in to continue.";

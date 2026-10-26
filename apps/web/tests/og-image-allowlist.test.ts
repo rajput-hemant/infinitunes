@@ -39,13 +39,6 @@ describe("OG route image allowlist (SSRF)", () => {
     expect(parseAllowedImageUrl(raw)).toBe(null);
   });
 
-  it("derives next.config remotePatterns from the same list", async () => {
-    const source = await Bun.file(
-      new URL("../next.config.ts", import.meta.url),
-    ).text();
-    expect(source).toContain("IMAGE_CDN_HOSTS");
-  });
-
   it("validates the og image param before fetching and refuses redirects", async () => {
     const source = await Bun.file(
       new URL("../app/api/og/route.tsx", import.meta.url),

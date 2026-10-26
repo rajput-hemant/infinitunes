@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from "bun:test";
 
 import { AppRouterContext } from "next/dist/shared/lib/app-router-context.shared-runtime";
-import { PathnameContext } from "next/dist/shared/lib/hooks-client-context.shared-runtime";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -14,7 +13,7 @@ afterEach(async () => {
   document.body.replaceChildren();
 });
 
-async function open(pathname = "/login") {
+async function open(footer?: "login" | "signup") {
   const calls: string[] = [];
   const router = {
     back: () => calls.push("back"),
@@ -27,11 +26,13 @@ async function open(pathname = "/login") {
   await act(async () => {
     root.render(
       <AppRouterContext.Provider value={router}>
-        <PathnameContext.Provider value={pathname}>
-          <AuthModal title="Welcome back" description="Sign in to continue">
-            <input aria-label="Email" />
-          </AuthModal>
-        </PathnameContext.Provider>
+        <AuthModal
+          title="Welcome back"
+          description="Sign in to continue"
+          footer={footer}
+        >
+          <input aria-label="Email" />
+        </AuthModal>
       </AppRouterContext.Provider>,
     );
   });
@@ -65,12 +66,12 @@ describe("auth modal close control", () => {
   });
 
   it.each([
-    ["/login", "Sign up", "replace /signup"],
-    ["/signup", "Login", "replace /login"],
+    ["signup", "Sign up", "replace /signup"],
+    ["login", "Login", "replace /login"],
   ])(
-    "on %s the footer button is %s and calls %s",
-    async (path, label, call) => {
-      const calls = await open(path);
+    "with footer %s the button is %s and calls %s",
+    async (footer, label, call) => {
+      const calls = await open(footer as "login" | "signup");
       const toggle = buttons().find((b) => b.textContent === label);
 
       expect(toggle).toBeDefined();
@@ -80,15 +81,21 @@ describe("auth modal close control", () => {
     },
   );
 
+  it("shows no switch line when the modal has no footer prop", async () => {
+    await open();
+
+    expect(dialog()?.textContent).not.toContain("account?");
+  });
+
   it.each([
-    ["/login", "Don't have an account?", "Sign up."],
-    ["/signup", "Already have an account?", "Login."],
+    ["signup", "Don't have an account?", "Sign up."],
+    ["login", "Already have an account?", "Login."],
   ])(
-    "on %s the footer reads %s %s with no padding before the period",
-    async (path, lead, tail) => {
-      await open(path);
-      const footer = [...(dialog()?.querySelectorAll("p") ?? [])].at(-1);
-      expect(footer?.textContent?.replace(/\s+/g, " ").trim()).toBe(
+    "with footer %s the text reads %s %s with no padding before the period",
+    async (footer, lead, tail) => {
+      await open(footer as "login" | "signup");
+      const line = [...(dialog()?.querySelectorAll("p") ?? [])].at(-1);
+      expect(line?.textContent?.replace(/\s+/g, " ").trim()).toBe(
         `${lead} ${tail}`,
       );
       const toggle = buttons().find((b) =>

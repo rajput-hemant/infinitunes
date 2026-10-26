@@ -38,6 +38,7 @@ async function mount(props: { user?: typeof user }) {
             reset: () => {},
             isDefault: true,
             isSaving: false,
+            changed: false,
           }}
         >
           <UserDropdown {...props} />

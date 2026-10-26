@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@infinitunes/ui/components/dialog";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ReactNode } from "react";
 
@@ -18,13 +18,18 @@ import { cn } from "~/lib/utils";
 type AuthModalProps = {
   title: string;
   description: string;
+  /** The other auth page the footer links to; omitted, there is no footer line. */
+  footer?: "login" | "signup";
   children: ReactNode;
 };
 
-export function AuthModal({ title, description, children }: AuthModalProps) {
+export function AuthModal({
+  title,
+  description,
+  footer,
+  children,
+}: AuthModalProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const isLoginPage = pathname === "/login";
   const [isClosed, setIsClosed] = useState(false);
 
   // Next keeps the slot's last page mounted (hidden) after `router.back()`, so
@@ -53,22 +58,24 @@ export function AuthModal({ title, description, children }: AuthModalProps) {
 
         {children}
 
-        <p className="py-2 text-center text-sm text-muted-foreground">
-          {isLoginPage
-            ? "Don't have an account? "
-            : "Already have an account? "}
-          <Button
-            variant="link"
-            className={cn(
-              controlStyles.text,
-              "inline h-auto min-h-0 px-0 py-0",
-            )}
-            onClick={() => router.replace(isLoginPage ? "/signup" : "/login")}
-          >
-            {isLoginPage ? "Sign up" : "Login"}
-          </Button>
-          .
-        </p>
+        {footer && (
+          <p className="py-2 text-center text-sm text-muted-foreground">
+            {footer === "signup"
+              ? "Don't have an account? "
+              : "Already have an account? "}
+            <Button
+              variant="link"
+              className={cn(
+                controlStyles.text,
+                "inline h-auto min-h-0 px-0 py-0",
+              )}
+              onClick={() => router.replace(`/${footer}`)}
+            >
+              {footer === "signup" ? "Sign up" : "Login"}
+            </Button>
+            .
+          </p>
+        )}
       </DialogContent>
     </Dialog>
   );

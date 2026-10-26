@@ -53,7 +53,7 @@ export default async function RadioStationPage({
             src={getImageSrc(station.image, "high")}
             width={200}
             height={200}
-            alt={station.title}
+            alt=""
             fallback={getPlaceholderSrc("radio_station")}
             loading="eager"
             fetchPriority="high"

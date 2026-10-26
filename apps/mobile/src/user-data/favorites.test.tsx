@@ -228,7 +228,7 @@ describe("useFavoriteLists", () => {
   });
 
   it("is empty, not unknown, for a listener who never liked anything", async () => {
-    procedure("user.getUserFavorites").mockResolvedValue(undefined);
+    procedure("user.getUserFavorites").mockResolvedValue(null);
     await renderLists();
 
     await waitFor(() => expect(lists()).toBe("empty"));

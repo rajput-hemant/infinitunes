@@ -72,7 +72,7 @@ export function MainNavPopup({
                 {megaMenu?.mega_menu?.new_releases?.map(
                   ({ title, perma_url }) => (
                     <ListItem
-                      key={title}
+                      key={perma_url}
                       title={title}
                       href={
                         perma_url.includes("song")
@@ -92,7 +92,7 @@ export function MainNavPopup({
                 {megaMenu?.mega_menu?.top_playlists?.map(
                   ({ title, perma_url }) => (
                     <ListItem
-                      key={title}
+                      key={perma_url}
                       title={title}
                       href={getHref(perma_url, "playlist")}
                     >
@@ -108,7 +108,7 @@ export function MainNavPopup({
                 {megaMenu?.mega_menu?.top_artists?.map(
                   ({ title, perma_url }) => (
                     <ListItem
-                      key={title}
+                      key={perma_url}
                       title={title}
                       href={getHref(perma_url, "artist")}
                     >

@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 
-import { CatalogEnd } from "~/app/(root)/browse/_components/catalog-states";
+import { CatalogEnd } from "~/components/catalog/catalog-states";
 import { useIntersectionObserver } from "~/hooks/use-intersection-observer";
 
 type CatalogLoadMoreProps = {

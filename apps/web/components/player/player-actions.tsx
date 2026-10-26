@@ -1,4 +1,5 @@
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import type { Queue } from "@infinitunes/types";
 import { Button, buttonVariants } from "@infinitunes/ui/components/button";
 import { ListOrdered, Maximize2, MoreVertical } from "lucide-react";
@@ -17,7 +18,7 @@ type PlayerActionsProps = {
   onToggleQueue: () => void;
   onExpand: () => void;
   user?: User;
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   favorites?: Favorite | null;
 };
 

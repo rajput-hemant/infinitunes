@@ -5,8 +5,9 @@ import {
   addSongsOptimistic,
   removeSongOptimistic,
 } from "@infinitunes/core/react/optimistic-playlists";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import { userMessage } from "@infinitunes/core/user-message";
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { Favorite } from "@infinitunes/db/schema";
 import { parseToken, toQueueEntry } from "@infinitunes/types";
 import {
   Download,
@@ -57,8 +58,10 @@ type TileMoreButtonProps = {
   favorites?: Favorite | null;
   item: TileMoreItem;
   showAlbum: boolean;
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   playlistId?: string;
+  /** The playlist's songs as stored: a removal indexes into them. */
+  playlistSongIds?: string[];
   playlistSongIndex?: number;
   className?: string;
 };
@@ -78,6 +81,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     showAlbum,
     playlists,
     playlistId,
+    playlistSongIds,
     playlistSongIndex,
     className,
   } = props;
@@ -159,11 +163,8 @@ export function TileMoreButton(props: TileMoreButtonProps) {
     // The row hides now; the write uses the index the server will see after
     // any earlier removals, and a failure shows the row again with a toast.
     toast.promise(
-      removeSongOptimistic(
-        playlistId,
-        item.id,
-        playlists?.find((p) => p.id === playlistId)?.songs,
-        (index) => unwrap(removeSongsFromPlaylist(playlistId, index, item.id)),
+      removeSongOptimistic(playlistId, item.id, playlistSongIds, (index) =>
+        unwrap(removeSongsFromPlaylist(playlistId, index, item.id)),
       ),
       {
         loading: "Removing from playlist...",

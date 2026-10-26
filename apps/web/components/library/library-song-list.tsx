@@ -1,9 +1,11 @@
 "use client";
 
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import type { SongRowItem } from "@infinitunes/types";
 import { decode } from "@infinitunes/types";
 import { Input } from "@infinitunes/ui/components/input";
+import { Music } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import type { User } from "~/lib/auth";
@@ -11,6 +13,7 @@ import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
 
 import { SongListClient } from "../song-list/song-list.client";
+import { LibraryEmpty } from "./library-section";
 import { PlayAllButton } from "./play-all-button";
 
 const SORT_KEYS = ["recent", "title", "artist"] as const;
@@ -53,7 +56,7 @@ type LibrarySongListProps = {
   user?: User;
   items: SongRowItem[];
   userFavorites?: Favorite | null;
-  userPlaylists?: MyPlaylist[];
+  userPlaylists?: PlaylistSummary[];
   showAlbum?: boolean;
   className?: string;
   /** Label of the default (server-order) sort, e.g. "Recently played". */
@@ -151,10 +154,16 @@ export function LibrarySongList(props: LibrarySongListProps) {
           userFavorites={userFavorites}
           userPlaylists={userPlaylists}
         />
-      ) : (
+      ) : query.trim() ? (
         <output className="block py-10 text-center text-sm text-muted-foreground">
           No songs match &quot;{query.trim()}&quot;.
         </output>
+      ) : (
+        <LibraryEmpty
+          icon={Music}
+          title="No songs here"
+          description="Nothing in this list is available right now."
+        />
       )}
     </div>
   );

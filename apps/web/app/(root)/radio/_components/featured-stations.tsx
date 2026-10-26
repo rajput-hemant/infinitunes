@@ -6,9 +6,9 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Radio as RadioIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
-import { CatalogEmpty } from "~/app/(root)/browse/_components/catalog-states";
 import { CatalogLoadMore } from "~/components/catalog-load-more";
+import { CatalogGrid } from "~/components/catalog/catalog-grid";
+import { CatalogEmpty } from "~/components/catalog/catalog-states";
 import { QueryScope } from "~/components/query-scope";
 import { FIRST_ROW_CARDS, SliderCard } from "~/components/slider/slider-card";
 import { trpc } from "~/lib/trpc/vanilla";

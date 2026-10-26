@@ -16,12 +16,14 @@ import {
  * icon then).
  */
 export function usePlaylistCovers(
-  playlists: readonly { songs: readonly string[] }[] | undefined,
+  playlists: readonly { coverSongs: readonly string[] }[] | undefined,
 ): ReadonlyMap<string, string> {
   const userId = useUserId();
   const client = useQueryClient();
   const firstIds = [
-    ...new Set(playlists?.flatMap(({ songs }) => songs[0] ?? []) ?? []),
+    ...new Set(
+      playlists?.flatMap(({ coverSongs }) => coverSongs[0] ?? []) ?? [],
+    ),
   ].sort();
   const { data } = useQuery({
     queryKey: [

@@ -199,6 +199,16 @@ describe("LibrarySongList", () => {
     }
   });
 
+  it("shows the library empty state, not a match message, for an empty list", () =>
+    withList(
+      async (container) => {
+        expect(container.textContent).not.toContain("No songs match");
+        expect(container.textContent).toContain("No songs here");
+      },
+      {},
+      [],
+    ));
+
   it("shows an empty state when nothing matches", async () => {
     const { container, root } = await renderList();
     try {

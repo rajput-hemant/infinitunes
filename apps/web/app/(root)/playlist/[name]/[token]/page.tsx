@@ -64,18 +64,16 @@ export default async function PlaylistDetailsPage(props: PlaylistPageProps) {
         <PlaylistTrending playlist={playlist} trending={trending} />
       </Suspense>
 
-      {artists.length > 0 && (
-        <SliderList
-          title={playlist.modules?.artists?.title ?? "Artists"}
-          items={artists.map((artist) => ({
-            id: artist.id,
-            name: decode(artist.name),
-            url: artist.perma_url,
-            type: artist.type,
-            image: artist.image,
-          }))}
-        />
-      )}
+      <SliderList
+        title={playlist.modules?.artists?.title ?? "Artists"}
+        items={artists.map((artist) => ({
+          id: artist.id,
+          name: decode(artist.name),
+          url: artist.perma_url,
+          type: artist.type,
+          image: artist.image,
+        }))}
+      />
     </div>
   );
 }

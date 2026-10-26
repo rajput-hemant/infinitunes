@@ -1,6 +1,6 @@
 "use client";
 
-import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import type { MediaType, Quality, SongRowItem } from "@infinitunes/types";
 import { MoreVertical, Share2 } from "lucide-react";
 import { useId, useState } from "react";
@@ -18,7 +18,7 @@ export type MoreButtonProps = {
   name: string;
   subtitle: string;
   songs: SongRowItem[];
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   artistId?: string;
   language?: string;
 };

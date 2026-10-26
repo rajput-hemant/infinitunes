@@ -41,16 +41,7 @@ Delete this file in the last PR, once every box is ticked (the repo must not kee
 - The Home `h1` stays the greeting.
 - Rate limiting: warn when it is off in production, never fail the build.
 
-## Do not touch (in progress locally on other branches)
-
-These items will be merged into `feat/platforms` soon. Avoid their files, or wait until they land.
-
-- **User router:** `fix/s1-user-router`. Files: `user.ts`, `trpc.ts`, core `optimistic-playlists`, the playlist consumers on web and mobile, `user-data/playlists.ts`, the song, native and collection menus.
-- **Upstream and history:** `fix/s3-upstream-history`. Files: `router/{utils,album,playlist,history}.ts`, `synced-lyrics.ts`.
-
-Before starting a batch marked _after S1_, check `git log --oneline feat/platforms | grep s1-user-router`. If the merge is not there yet, pick another batch.
-
-## Batch M3 (opus): song-row menu and per-row subscriptions - `components/{song-row,song-menu,native-menu,like-button}.tsx`, `user-data/{favorites,playlists}.ts`, `navigation/use-open-entity.ts` _(after S1)_
+## Batch M3 (opus): song-row menu and per-row subscriptions - `components/{song-row,song-menu,native-menu,like-button}.tsx`, `user-data/{favorites,playlists}.ts`, `navigation/use-open-entity.ts` _(in progress locally, do not take)_
 
 Coordinate with S1 (S-6 changes the playlists payload shape): either land S-6 first, or keep the per-playlist `Set` here and swap the source later.
 
@@ -62,7 +53,7 @@ Coordinate with S1 (S-6 changes the playlists payload shape): either land S-6 fi
 - [ ] **M-13** P3 PLAUSIBLE `navigation/use-open-entity.ts:13`, `like-button.tsx:26`, `song-menu.tsx:80` - `useOpenEntity` / `useUserId` subscribed per row [perf#19]
   - Fix: hoist to the list or read at press time. Do after M-11. Executor: sonnet. Flags: none.
 
-## Batch M4 (opus): liked and per-song data fetching - `features/library/{use-liked-collection,liked-collections,use-resolved-items,use-playlist-songs,use-playlist-covers,liked-songs-screen,song-collection}.ts(x)`, `packages/core/src/liked-songs.ts` _(after S1)_
+## Batch M4 (opus): liked and per-song data fetching - `features/library/{use-liked-collection,liked-collections,use-resolved-items,use-playlist-songs,use-playlist-covers,liked-songs-screen,song-collection}.ts(x)`, `packages/core/src/liked-songs.ts`
 
 Edits `song-collection.tsx`; M-17 waits on the user decision.
 
@@ -75,7 +66,7 @@ Edits `song-collection.tsx`; M-17 waits on the user decision.
 - [ ] **M-17** **[device sign-off later]** P3 PLAUSIBLE `features/library/song-collection.tsx:168-171,202` - Liked Songs, History and playlist screens use Android's native header `Stack.SearchBar` (the 72dp inset problem Search already replaced) [screens P3-11]
   - Fix: accept it, or reuse `search-header.android.tsx`'s pill as a list header. Executor: opus. Flags: needs device check (decision: reuse the M3 pill).
 
-## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx` _(after S1)_
+## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx`
 
 Runs after M4 only if both touch playlist hooks (they do not share files otherwise).
 
@@ -172,7 +163,7 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [x] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
   - Executor: haiku (after the fixes land). Flags: none.
 
-## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts` _(after S1)_
+## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts`
 
 - [ ] **M-53** P2 PLAUSIBLE `features/search/search-screen.tsx:27-32`, `features/library/new-playlist-screen.tsx:9-19`, `app/(auth)/reset-password.tsx:7`, `features/app-actions/app-action-screen.tsx:18`, edit/playlist screens' `id` - repeated query params (`?q=a&q=b`, `?songs=1&songs=2`) arrive as `string[]` and crash `trim`/`split` [screens P2-2]
   - Fix: one shared `single(value)` helper in `lib/params.ts` used everywhere; add two cases to `navigation/malformed-links.test.ts`. Executor: haiku. Flags: none.
@@ -197,7 +188,7 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [ ] **M-63** P3 CONFIRMED `features/auth/reset-password-form.tsx:54-58` - dead `!token` re-check after the early return [screens P3-9]
   - Fix: delete the dead check. Executor: haiku. Flags: none.
 
-## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md` _(after S1)_
+## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md`
 
 `song-menu.tsx` belongs to M3, so M-67 waits on M3 and the decision.
 
@@ -295,7 +286,7 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
   - Fix: mirror the artist pattern: `label/[name]/[token]/layout.tsx` (header + tab nav) with `page.tsx` (songs) and `albums/page.tsx`, map `-songs`/`-albums` slugs in `getHref`/`entity-route` like `legacyArtistPath`. Minimal fallback: client-state tabs, render only the active panel, never rewrite the slug. Executor: opus. Flags: none.
   - Done: Songs on the bare route, Albums on `/albums`; `entityRoute` splits the slug into an optional `tab` on the label's `entity` route, `legacyLabelPath` 308s both suffixes in `proxy.ts`. Follow-up (mobile): `+native-intent.tsx` has no mapping for the web's `/label/<name>/<token>/albums`.
 
-## Batch W5 (sonnet): `/me`, show and home routes - `apps/web/app/(root)/me/**`, `app/(root)/show/[name]/[season]/[token]/page.tsx`, `app/(root)/_components/home-greeting.tsx`, `app/(root)/page.tsx`, `lib/db/queries.ts` _(after S1)_
+## Batch W5 (sonnet): `/me`, show and home routes - `apps/web/app/(root)/me/**`, `app/(root)/show/[name]/[season]/[token]/page.tsx`, `app/(root)/_components/home-greeting.tsx`, `app/(root)/page.tsx`, `lib/db/queries.ts` _(in progress locally, do not take)_
 
 - [ ] **W-16** P2 PLAUSIBLE `(root)/me/(layout-a)/layout.tsx:25-29,63-65`, `error.tsx`, `page.tsx:28`, `albums/page.tsx:14`, `liked-songs/page.tsx:29-32`, `recently-played/page.tsx:25` - with a stale session cookie the page body throws UNAUTHORIZED into `error.tsx` before the `ProfileHeader` redirect lands [routes 4]
   - Fix: one `requireUser()` (`getViewer()` then `redirect("/login")`) at the top of every `/me` page and in `ProfileHeader`; add a mocked test with a null session. Executor: sonnet. Flags: none.
@@ -331,25 +322,25 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 - [x] **W-30** P3 CONFIRMED `tests/dom/*`, `tests/player-a11y.test.ts` - missing web tests: `ExpandedPane` phone toggles/`aria-expanded`, `MainNavPopup` with duplicate titles, plus those named in W-4, W-7, W-22..W-25 [wcomp T-1] Done: `ExpandedPane` phone toggles/`aria-expanded` were already covered (`expanded-player.test.tsx`); added `main-nav-popup.test.tsx` (duplicate titles render; the duplicate `key={title}` warning is W7's fix in `main-nav-popup.tsx`) and tests with W-22..W-25. W-4/W-7 tests belong to batch W2.
   - Executor: sonnet, alongside each fix. Flags: none.
 
-## Batch W7 (haiku): small component and route nits - `components/{slider/slider-list,slider/slider-card,error-illustration,route-error,catalog-load-more,site-header/main-nav-popup,search/use-search-palette-keys,library/library-song-list}.tsx`, `app/(root)/{playlist/[name]/[token],album/[name]/[token],radio/[name]/[token]}/page.tsx`, `app/(root)/settings/_components/{profile-form,settings-search}.tsx`, `app/@modal/**`, `app/(root)/browse/_components/catalog-states.tsx`, `app/(root)/loading.tsx` _(after S1)_
+## Batch W7 (haiku) (branch `fix/w7-web-nits`): small component and route nits - `components/{slider/slider-list,slider/slider-card,error-illustration,route-error,catalog-load-more,site-header/main-nav-popup,search/use-search-palette-keys,library/library-song-list}.tsx`, `app/(root)/{playlist/[name]/[token],album/[name]/[token],radio/[name]/[token]}/page.tsx`, `app/(root)/settings/_components/{profile-form,settings-search}.tsx`, `app/@modal/**`, `app/(root)/browse/_components/catalog-states.tsx`, `app/(root)/loading.tsx`
 
-- [ ] **W-31** P2 CONFIRMED `components/slider/slider-list.tsx:16-39`, `slider/shelf.tsx:70-98`, `album/[name]/[token]/page.tsx:73-82`, `artist/[name]/[token]/layout.tsx:62-103`, `song/[name]/[token]/page.tsx:204-213` - empty shelves render a heading plus two disabled arrows (album "Artists", seven artist shelves) [routes 7]
+- [x] **W-31** (Done: `SliderList` returns null for an empty list; playlist page's length guard removed; `tests/dom/slider-list-empty.test.tsx`.) P2 CONFIRMED `components/slider/slider-list.tsx:16-39`, `slider/shelf.tsx:70-98`, `album/[name]/[token]/page.tsx:73-82`, `artist/[name]/[token]/layout.tsx:62-103`, `song/[name]/[token]/page.tsx:204-213` - empty shelves render a heading plus two disabled arrows (album "Artists", seven artist shelves) [routes 7]
   - Fix: `if (items.length === 0) return null;` in `SliderList` (one line covers every caller); delete the redundant guard in the playlist page. Executor: haiku. Flags: none.
-- [ ] **W-32** P3 CONFIRMED `settings/_components/profile-form.tsx:195-204`, `settings-search.tsx:161-182` - dead "Change avatar" control and an "Appearance saved" pill on first paint [routes 14]
+- [x] **W-32** (Done: avatar button removed; "Appearance saved" pill renders only after a change in this visit, via `changed` on `ThemeConfigContext`.) P3 CONFIRMED `settings/_components/profile-form.tsx:195-204`, `settings-search.tsx:161-182` - dead "Change avatar" control and an "Appearance saved" pill on first paint [routes 14]
   - Fix: remove the avatar button until uploads exist; show the status only after the first `update()`. Executor: haiku. Flags: none.
-- [ ] **W-33** P3 CONFIRMED `radio/[name]/[token]/page.tsx:52-70` - station artwork `alt` duplicates the `h1` [routes 15]
+- [x] **W-33** (Done: station artwork `alt=""`.) P3 CONFIRMED `radio/[name]/[token]/page.tsx:52-70` - station artwork `alt` duplicates the `h1` [routes 15]
   - Fix: `alt=""`. Executor: haiku. Flags: none.
-- [ ] **W-34** P3 CONFIRMED `app/@modal/(.)reset-password/page.tsx`, `@modal/auth-modal.tsx:56-71` - unreachable reset-password modal; forgot/reset modals say "Already have an account? Login" [routes 16]
+- [x] **W-34** (Done: `@modal/(.)reset-password` deleted (the reset email links to the full page, nothing soft-navigates there); `AuthModal` takes a `footer="login"|"signup"` prop, so forgot-password shows no switch line.) P3 CONFIRMED `app/@modal/(.)reset-password/page.tsx`, `@modal/auth-modal.tsx:56-71` - unreachable reset-password modal; forgot/reset modals say "Already have an account? Login" [routes 16]
   - Fix: delete `@modal/(.)reset-password`; make the footer line a `login`/`signup`-only prop. Executor: haiku. Flags: none.
-- [ ] **W-35** P3 CONFIRMED `components/catalog-load-more.tsx:5`, `app/(root)/loading.tsx` - shared component imports `CatalogEnd` from the route-private `browse/_components/catalog-states` [wcomp P3-5]
+- [x] **W-35** (Done: `CatalogEnd`, `CatalogEmpty`, the catalog skeletons and their grid/header helpers moved to `components/catalog/`; all importers updated.) P3 CONFIRMED `components/catalog-load-more.tsx:5`, `app/(root)/loading.tsx` - shared component imports `CatalogEnd` from the route-private `browse/_components/catalog-states` [wcomp P3-5]
   - Fix: move `CatalogEnd` and the catalog skeletons under `components/catalog/`. Executor: haiku. Flags: none.
-- [ ] **W-36** P3 CONFIRMED `slider/slider-card.tsx:109`, `error-illustration.tsx:11`, `route-error.tsx:71` - decorative media announced twice (text alt, no `aria-hidden`) [wcomp P3-6]
+- [x] **W-36** (Done: `alt=""` on card art and the duck gif; `aria-hidden` on the retry icon.) P3 CONFIRMED `slider/slider-card.tsx:109`, `error-illustration.tsx:11`, `route-error.tsx:71` - decorative media announced twice (text alt, no `aria-hidden`) [wcomp P3-6]
   - Fix: `alt=""` on card art and the duck gif; `aria-hidden` on `RefreshCw`. Executor: haiku. Flags: none.
-- [ ] **W-37** P3 CONFIRMED `site-header/main-nav-popup.tsx:75,95,111` - mega-menu keys use `title`, duplicates collide [wcomp P3-7]
+- [x] **W-37** (Done: mega-menu rows keyed by `perma_url`.) P3 CONFIRMED `site-header/main-nav-popup.tsx:75,95,111` - mega-menu keys use `title`, duplicates collide [wcomp P3-7]
   - Fix: key by `perma_url`. Executor: haiku. Flags: none.
-- [ ] **W-38** P3 CONFIRMED `search/use-search-palette-keys.ts:42-70` - the MutationObserver is recreated on every arrow key (`index` in deps) [wcomp P3-8]
+- [x] **W-38** (Done: observer effect keyed on `[enabled, listboxId]`; the index is read via a ref and re-applied by a separate effect.) P3 CONFIRMED `search/use-search-palette-keys.ts:42-70` - the MutationObserver is recreated on every arrow key (`index` in deps) [wcomp P3-8]
   - Fix: observer effect keyed on `[enabled, listboxId]`, read `index` via a ref. Executor: haiku. Flags: none.
-- [ ] **W-39** P3 CONFIRMED `library/library-song-list.tsx:154-158` - empty `items` with no filter shows `No songs match ""` [wcomp P3-9]
+- [x] **W-39** (Done: an empty unfiltered list shows `LibraryEmpty`; "No songs match" only for a real filter; test added in `library-song-list.test.tsx`.) P3 CONFIRMED `library/library-song-list.tsx:154-158` - empty `items` with no filter shows `No songs match ""` [wcomp P3-9]
   - Fix: branch on `query.trim()` and show `LibraryEmpty` otherwise. Executor: haiku. Flags: none.
 
 ## Batch T1 (sonnet): CI, budget and lint gates - `.github/workflows/ci.yml`, `turbo.json`, `packages/ui/package.json`, `scripts/check-budget.ts`, `knip.json`, root `package.json` (lint-staged), `next.config.ts`, `lib/image-hosts.ts` (branch `fix/t1-t2-ci-csp`)
@@ -393,7 +384,7 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 
 ## Extra follow-ups (from earlier work, not in the review batches)
 
-- [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. _(after S1)_
+- [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified.
 - [x] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. Done: the pending placeholder is wrapped in an `exiting={CONTENT_CONCEAL}` fade (200ms, reduce-motion safe, exported from `skeletons.tsx`) so it crossfades with the cards' shared-opacity fade; test in `catalog-screen.test.tsx`. (branch `fix/x2-catalog-crossfade`)
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates

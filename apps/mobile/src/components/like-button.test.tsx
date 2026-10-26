@@ -24,7 +24,7 @@ beforeEach(async () => {
   await switchTo(null);
   procedure("user.getUserFavorites").mockImplementation(async () => {
     const songs = viewer ? likedBy[viewer] : undefined;
-    return songs ? favoritesRow({ songs }) : undefined;
+    return songs ? favoritesRow({ songs }) : null;
   });
 });
 

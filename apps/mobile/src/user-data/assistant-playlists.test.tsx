@@ -3,7 +3,7 @@ import { act, waitFor } from "@testing-library/react-native";
 import { renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
-import { userPlaylist } from "~/test/user-library";
+import { playlistSummary } from "~/test/user-library";
 
 import { AssistantPlaylists } from "./assistant-playlists";
 import { shareAssistantPlaylists } from "./assistant-shortcuts";
@@ -19,8 +19,8 @@ describe("AssistantPlaylists", () => {
   it("shares the signed-in listener's playlist names and ids", async () => {
     await act(async () => signInAs("alice"));
     procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1", name: "Road Trip", songs: ["a"] }),
-      userPlaylist({ id: "pl-2", name: "Focus" }),
+      playlistSummary({ id: "pl-1", name: "Road Trip", songs: ["a"] }),
+      playlistSummary({ id: "pl-2", name: "Focus" }),
     ]);
 
     renderWithProviders(<AssistantPlaylists />);
@@ -42,7 +42,7 @@ describe("AssistantPlaylists", () => {
 
   it("clears them on sign-out", async () => {
     await act(async () => signInAs("alice"));
-    procedure("user.getUserPlaylists").mockResolvedValue([userPlaylist()]);
+    procedure("user.getUserPlaylists").mockResolvedValue([playlistSummary()]);
     renderWithProviders(<AssistantPlaylists />);
     await waitFor(() => expect(shared).toHaveBeenCalled());
 
@@ -54,7 +54,7 @@ describe("AssistantPlaylists", () => {
   it("clears the previous account's while the next one's load", async () => {
     await act(async () => signInAs("alice"));
     procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1", name: "Road Trip" }),
+      playlistSummary({ id: "pl-1", name: "Road Trip" }),
     ]);
     renderWithProviders(<AssistantPlaylists />);
     await waitFor(() =>

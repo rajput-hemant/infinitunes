@@ -35,6 +35,8 @@ export type ThemeConfigContextValue = {
   isDefault: boolean;
   /** A save is in flight. */
   isSaving: boolean;
+  /** A change was made in this visit; nothing has been saved before it. */
+  changed: boolean;
 };
 
 export const ThemeConfigContext = createContext<ThemeConfigContextValue | null>(
@@ -62,6 +64,7 @@ export function ThemeConfigProvider({ children }: ThemeConfigProviderProps) {
   );
   const [draft, setDraft] = useState<ThemeConfig | null>(null);
   const [isSaving, startSaving] = useTransition();
+  const [changed, setChanged] = useState(false);
   const config = draft ?? stored ?? DEFAULT_THEME_CONFIG;
   const latest = useRef<ThemeConfig | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -73,6 +76,7 @@ export function ThemeConfigProvider({ children }: ThemeConfigProviderProps) {
 
   const commit = useCallback((next: ThemeConfig) => {
     latest.current = next;
+    setChanged(true);
     setDraft(next);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
@@ -108,6 +112,7 @@ export function ThemeConfigProvider({ children }: ThemeConfigProviderProps) {
         reset,
         isDefault: isDefaultThemeConfig(config),
         isSaving,
+        changed,
       }}
     >
       {children}

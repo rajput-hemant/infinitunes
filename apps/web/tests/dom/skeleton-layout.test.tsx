@@ -2,11 +2,11 @@ import { describe, expect, it } from "bun:test";
 
 import { renderToStaticMarkup } from "react-dom/server";
 
-import { CatalogGrid } from "../../app/(root)/browse/_components/catalog-grid";
+import { CatalogGrid } from "../../components/catalog/catalog-grid";
 import {
   CatalogGridSkeleton,
   CatalogHeaderSkeleton,
-} from "../../app/(root)/browse/_components/catalog-skeleton";
+} from "../../components/catalog/catalog-skeleton";
 import { detailBandClassName } from "../../components/details-header/details-header-band";
 import { DetailsHeaderSkeleton } from "../../components/details-header/details-header-skeleton";
 import {
