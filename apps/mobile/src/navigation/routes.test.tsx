@@ -13,6 +13,8 @@ import type { RenderRouterResult } from "expo-router/testing-library";
 import { Platform, Pressable, Text } from "react-native";
 
 import { redirectSystemPath } from "~/app/+native-intent";
+import * as SearchHeaderModule from "~/features/search/search-header";
+import { SearchHeader as AndroidSearchHeader } from "~/features/search/search-header.android";
 import { authClient } from "~/lib/auth-client";
 import { playerStore } from "~/playback/player-store";
 import { signInAs } from "~/test/session-mock";
@@ -57,6 +59,12 @@ describe("app routes", () => {
 
   it.each([
     ["an album", ALBUM_PATH, ["album", "[name]", "[token]"]],
+    ["a song", "/song/fa9la/MjsKfz0DbkE", ["song", "[name]", "[token]"]],
+    [
+      "song credits",
+      "/song/fa9la/MjsKfz0DbkE/credits",
+      ["song", "[name]", "[token]", "credits"],
+    ],
     [
       "a show at a season",
       "/show/the-ranveer-show/2/mXtDJ4Yd2Sw_",
@@ -205,6 +213,19 @@ describe("the root screens' header", () => {
 describe("on Android", () => {
   beforeEach(() => jest.replaceProperty(Platform, "OS", "android"));
   afterEach(() => jest.restoreAllMocks());
+
+  it("returns Home from the Search tab's Back button", async () => {
+    jest
+      .spyOn(SearchHeaderModule, "SearchHeader")
+      .mockImplementation(AndroidSearchHeader);
+    const app = await renderRouter("./src/app", { initialUrl: "/radio" });
+    await act(async () => router.navigate("/(tabs)/(search)/search"));
+    await fireEvent.press(
+      (await selectedTab(app)).getByRole("button", { name: "Back" }),
+    );
+    expect(app.getPathname()).toBe("/");
+    expect(app.getSegments()).toEqual(["(tabs)", "(home)"]);
+  });
 
   it("keeps Home's app bar to Settings and Profile", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });

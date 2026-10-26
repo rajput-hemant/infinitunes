@@ -1,5 +1,6 @@
 import { resetFavoriteOverlay } from "@infinitunes/core/react/optimistic-favorite";
 import { act, fireEvent, screen, waitFor } from "@testing-library/react-native";
+import { impactAsync, notificationAsync } from "expo-haptics";
 
 import { renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
@@ -49,6 +50,11 @@ describe("LikeButton", () => {
       await screen.findByRole("button", { name: "Like FA9LA" }),
     );
 
+    expect(
+      jest.mocked(impactAsync).mock.calls.length +
+        jest.mocked(notificationAsync).mock.calls.length,
+    ).toBe(1);
+
     expect(procedure("user.addToFavorites")).toHaveBeenCalledWith({
       type: "song",
       token: "BSaNI3Yr",
@@ -56,6 +62,18 @@ describe("LikeButton", () => {
     expect(
       screen.getByRole("button", { name: "Unlike FA9LA" }),
     ).toBeOnTheScreen();
+  });
+
+  it("buzzes once when unliking a song", async () => {
+    await switchTo("alice");
+    await renderWithProviders(heart);
+    const button = await screen.findByRole("button", { name: "Unlike FA9LA" });
+    await fireEvent.press(button);
+
+    expect(
+      jest.mocked(impactAsync).mock.calls.length +
+        jest.mocked(notificationAsync).mock.calls.length,
+    ).toBe(1);
   });
 
   it("shows each account its own likes", async () => {

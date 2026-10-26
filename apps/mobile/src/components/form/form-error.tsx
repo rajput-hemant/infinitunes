@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 import { Platform, View } from "react-native";
 
@@ -19,11 +19,13 @@ import type { TextInputHandle } from "./form-field";
  */
 export function FormError({ message }: { message?: string }) {
   const palette = usePalette();
+  const previous = useRef(message);
   useEffect(() => {
     if (message) {
       announce(message);
-      reject();
+      if (message !== previous.current) reject();
     }
+    previous.current = message;
   }, [message]);
   if (!message) return null;
   return (

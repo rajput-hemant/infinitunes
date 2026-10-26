@@ -232,6 +232,19 @@ describe("favorite bounds and empty accounts", () => {
     }
     expect(state.writes).toEqual([]);
   });
+  it("accepts comma-bearing show tokens returned by upstream v4", async () => {
+    state.returned = [{ userId: "u", ...emptyLists(), podcasts: ["174786"] }];
+    await caller().addToFavorites({
+      type: "show",
+      token: "174786",
+      linkToken: ",eI,wxvKSqU_",
+    });
+    const patch = state.conflict?.podcastTokens;
+    if (!patch) throw new Error("Missing podcastTokens SQL");
+    expect(dialect.sqlToQuery(patch).params).toContain(
+      JSON.stringify({ "174786": ",eI,wxvKSqU_" }),
+    );
+  });
   it("accepts a duplicate at the cap and an add that reaches the cap", async () => {
     const songs = Array.from({ length: 5000 }, (_, i) => `song-${i}`);
     state.returned = [{ userId: "u", ...emptyLists(), songs }];
@@ -241,6 +254,33 @@ describe("favorite bounds and empty accounts", () => {
     expect(
       await caller().addToFavorites({ type: "song", token: "song-4999" }),
     ).toEqual(state.returned);
+  });
+  it("guards show metadata with the same capacity check as the favorite list", async () => {
+    state.returned = [
+      {
+        userId: "u",
+        ...emptyLists(),
+        podcasts: Array.from({ length: 5000 }, (_, i) => `old-${i}`),
+      },
+    ];
+    await expect(
+      caller().addToFavorites({
+        type: "show",
+        token: "new",
+        linkToken: "new-token",
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    const patch = state.conflict?.podcastTokens;
+    if (!patch) throw new Error("Missing podcastTokens SQL");
+    const query = dialect.sqlToQuery(patch);
+    expect(query.sql).toMatch(
+      /case when .* = any\(.*\) or cardinality\(.*\) < \$\d+ then .* \|\| .* else .* end/,
+    );
+    expect(query.params).toEqual([
+      "new",
+      5000,
+      JSON.stringify({ new: "new-token" }),
+    ]);
   });
 });
 
