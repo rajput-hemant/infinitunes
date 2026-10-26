@@ -1,6 +1,5 @@
 import type { SongRowItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
-import { Stack } from "expo-router";
 import { useState } from "react";
 import type { ReactElement } from "react";
 import { Platform, View } from "react-native";
@@ -18,13 +17,8 @@ import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
 import { playAll, playFrom, shuffleAll } from "~/playback/play-collection";
 
+import { FilterField, FilterHeader } from "./song-filter";
 import { orderSongs, type SongSort } from "./song-order";
-
-/** The header's filter field (the collection and its skeleton). */
-const FILTER_BAR = {
-  placeholder: "Filter by title or artist",
-  autoCapitalize: "none",
-} as const;
 
 type SongCollectionProps = {
   songs: readonly SongRowItem[];
@@ -59,7 +53,8 @@ function countLabel(shown: number, total: number): string {
 }
 
 /**
- * A song list with the library's controls: native search to filter, a sort
+ * A song list with the library's controls: a filter field (iOS's native
+ * header field, Android's M3 search bar atop the list), a sort
  * menu, Play and Shuffle over what is shown, pull to refresh, and dragging
  * rows into a new order where the list has one of its own.
  */
@@ -103,6 +98,7 @@ export function SongCollection({
     ListHeaderComponent: (
       <View>
         {header}
+        <FilterField query={query} onChangeText={setQuery} />
         {/* One compact row: the count and sort lead, Shuffle and Play close it. */}
         {/* At Play's height even while a filter hides the buttons: no jump. */}
         <View className="min-h-row flex-row items-center gap-2 pl-page pr-4">
@@ -165,10 +161,7 @@ export function SongCollection({
 
   return (
     <>
-      <Stack.SearchBar
-        {...FILTER_BAR}
-        onChangeText={(event) => setQuery(event.nativeEvent.text)}
-      />
+      <FilterHeader query={query} onChangeText={setQuery} />
       {onMove ? (
         // One list for the screen's life: filtering only turns dragging off,
         // so typing never remounts it or loses the scroll position.
@@ -199,12 +192,13 @@ export function SongCollectionSkeleton({
 }: SongCollectionSkeletonProps) {
   return (
     <>
-      <Stack.SearchBar {...FILTER_BAR} />
+      <FilterHeader query="" />
       <ScreenScrollView scrollEnabled={false}>
         <SongListSkeleton
           header={
             <>
               {header}
+              <FilterField query="" />
               <View className="min-h-row flex-row items-center gap-2 pl-page pr-4">
                 <SkeletonText variant="subhead" width={64} />
                 {/* The sort trigger's own height (OptionMenu's plain trigger). */}

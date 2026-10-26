@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
+import type { SongRowItem } from "@infinitunes/types";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { queryItemCache } from "~/lib/item-cache";
 import { fetchSongRows } from "~/lib/song-rows";
 import {
   LIBRARY_QUERY_KEY,
@@ -8,14 +10,16 @@ import {
 } from "~/user-data/session";
 
 /**
- * Each playlist's cover: its first song's artwork, looked up in one batch.
- * Empty while loading, on failure, and for an empty playlist (the row keeps
- * its icon then).
+ * Each playlist's cover: its first song's artwork, looked up in one batch
+ * through the song rows cache, so only a new first song is fetched. Empty
+ * while loading, on failure, and for an empty playlist (the row keeps its
+ * icon then).
  */
 export function usePlaylistCovers(
   playlists: readonly { coverSongs: readonly string[] }[] | undefined,
 ): ReadonlyMap<string, string> {
   const userId = useUserId();
+  const client = useQueryClient();
   const firstIds = [
     ...new Set(
       playlists?.flatMap(({ coverSongs }) => coverSongs[0] ?? []) ?? [],
@@ -27,7 +31,10 @@ export function usePlaylistCovers(
       firstIds,
     ],
     queryFn: async () => {
-      const rows = await fetchSongRows(firstIds);
+      const rows = await fetchSongRows(
+        firstIds,
+        queryItemCache<SongRowItem>(client, "song-row"),
+      );
       return new Map(rows?.map(({ id, image }) => [id, image]));
     },
     enabled: userId !== undefined && firstIds.length > 0,

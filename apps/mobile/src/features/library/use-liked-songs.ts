@@ -7,6 +7,7 @@ import { useResolvedItems } from "./use-resolved-items";
 export function useLikedSongs() {
   return useResolvedItems({
     scope: "liked-songs",
+    itemKind: "song-row",
     source: useFavoriteIds("songs"),
     resolve: fetchLikedSongRows,
   });

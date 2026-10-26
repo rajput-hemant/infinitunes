@@ -1,3 +1,7 @@
+import {
+  resolveWithCache,
+  type ItemCache,
+} from "@infinitunes/core/liked-songs";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react-native";
 import type { ReactNode } from "react";
@@ -13,16 +17,24 @@ import {
 
 type Item = { id: string };
 
-function wrapper({ children }: { children: ReactNode }) {
+function makeWrapper() {
+  // One cache for the whole render, rerenders included.
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={client}>{children}</QueryClientProvider>
+    );
+  };
 }
 
 type Props = {
   source: IdSource;
-  resolve: (ids: string[]) => Promise<Item[] | undefined>;
+  resolve: (
+    ids: string[],
+    cache: ItemCache<Item>,
+  ) => Promise<Item[] | undefined>;
 };
 
 const idsOf = (ids: string[]): IdSource => ({
@@ -33,8 +45,8 @@ const idsOf = (ids: string[]): IdSource => ({
 function renderList(initial: Props) {
   return renderHook(
     ({ source, resolve }: Props) =>
-      useResolvedItems({ scope: "test", source, resolve }),
-    { wrapper, initialProps: initial },
+      useResolvedItems({ scope: "test", itemKind: "test", source, resolve }),
+    { wrapper: makeWrapper(), initialProps: initial },
   );
 }
 
@@ -171,6 +183,46 @@ describe("useResolvedItems", () => {
     await waitFor(() =>
       expect(result.current).toMatchObject({ items: [{ id: "bobs-song" }] }),
     );
+  });
+
+  it("looks up only new ids when the list changes, and every id on refresh", async () => {
+    const lookup = jest.fn(async (ids: string[]) => ({
+      found: new Map(ids.map((id) => [id, { id }])),
+      gone: [],
+    }));
+    const resolve = (ids: string[], cache: ItemCache<Item>) =>
+      resolveWithCache(ids, cache, lookup);
+    const { result, rerender } = await renderList({
+      source: idsOf(["a", "b"]),
+      resolve,
+    });
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(lookup).toHaveBeenLastCalledWith(["a", "b"]);
+
+    // A like: one lookup, for the new id only.
+    await rerender({ source: idsOf(["a", "b", "c"]), resolve });
+    await waitFor(() =>
+      expect(result.current).toMatchObject({
+        items: [{ id: "a" }, { id: "b" }, { id: "c" }],
+      }),
+    );
+    expect(lookup).toHaveBeenCalledTimes(2);
+    expect(lookup).toHaveBeenLastCalledWith(["c"]);
+
+    // An unlike: no lookup at all.
+    await rerender({ source: idsOf(["a", "c"]), resolve });
+    await waitFor(() =>
+      expect(result.current).toMatchObject({
+        items: [{ id: "a" }, { id: "c" }],
+      }),
+    );
+    expect(lookup).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      if (result.current.status === "ready") await result.current.refresh();
+    });
+    expect(lookup).toHaveBeenCalledTimes(3);
+    expect(lookup).toHaveBeenLastCalledWith(["a", "c"]);
   });
 
   it("refreshes the source and the items, and keeps the list when the lookup fails", async () => {
