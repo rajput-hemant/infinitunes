@@ -18,6 +18,7 @@ import { PullToRefresh } from "~/components/ui/refresh-control";
 import { Spinner } from "~/components/ui/spinner";
 import { useGrid } from "~/lib/use-grid-card-width";
 import { playerDockInset } from "~/navigation/player-dock";
+import { useScrolledBar } from "~/navigation/use-scrolled-bar";
 
 /** What a catalog list reads from its query; paging fields are absent for a single page. */
 type CatalogQuery<Item> = {
@@ -67,6 +68,7 @@ export function CatalogScreen<Item>({
 }: CatalogScreenProps<Item>) {
   const { columns, width } = useGrid("cards");
   const { items } = query;
+  const scrolledBar = useScrolledBar();
   const loaded = items.length > 0;
   // Already loaded at mount (a cached list): no fade.
   const opacity = useSharedValue(loaded ? 1 : 0);
@@ -97,6 +99,7 @@ export function CatalogScreen<Item>({
       refreshControl={<PullToRefresh onRefresh={query.refetch} />}
       onEndReached={query.loadMore}
       onEndReachedThreshold={0.5}
+      {...scrolledBar}
     />
   );
 }

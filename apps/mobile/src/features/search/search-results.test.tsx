@@ -14,14 +14,24 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Stack } from "expo-router";
 import { renderRouter } from "expo-router/testing-library";
 import type { ReactElement } from "react";
-import { Text } from "react-native";
+import { Platform, Text } from "react-native";
 
 import { playerStore } from "~/playback/player-store";
+import { scrollListTo } from "~/test/render";
 import { procedure, trpcError } from "~/test/trpc-mock";
+import { colors } from "~/theme/tokens";
 
 import { IdleSearch } from "./idle-search";
 import { searchHistoryStore } from "./search-history";
 import { SearchResults } from "./search-results";
+
+const mockSetOptions = jest.fn();
+jest.mock("expo-router", () => ({
+  ...jest.requireActual("expo-router"),
+  useNavigation: () => ({ setOptions: mockSetOptions }),
+}));
+
+const tinted = { headerStyle: { backgroundColor: colors.light.card } };
 
 const initialPlayer = playerStore.getState();
 
@@ -225,6 +235,18 @@ describe("results of one type", () => {
     expect(
       await screen.findByText("You have reached the end of these results."),
     ).toBeOnTheScreen();
+  });
+
+  it("tints the Android app bar once a list scrolls under it", async () => {
+    jest.replaceProperty(Platform, "OS", "android");
+    mockSetOptions.mockClear();
+    procedure("search.byType").mockResolvedValue(page([rawSong()]));
+    await renderResults({ type: "song" });
+    await screen.findByText("FA9LA & Friends");
+
+    await scrollListTo("FA9LA & Friends", 40);
+
+    expect(mockSetOptions).toHaveBeenCalledWith(tinted);
   });
 
   it("keeps the end note off while more pages remain", async () => {

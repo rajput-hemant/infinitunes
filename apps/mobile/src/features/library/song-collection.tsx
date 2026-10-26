@@ -15,6 +15,7 @@ import { PullToRefresh } from "~/components/ui/refresh-control";
 import { SkeletonBlock } from "~/components/ui/skeleton";
 import { Text } from "~/components/ui/text";
 import { playerDockInset } from "~/navigation/player-dock";
+import { useScrolledBar } from "~/navigation/use-scrolled-bar";
 import { playAll, playFrom, shuffleAll } from "~/playback/play-collection";
 
 import { FilterField, FilterHeader } from "./song-filter";
@@ -67,6 +68,7 @@ export function SongCollection({
   onMove,
   header,
 }: SongCollectionProps) {
+  const scrolledBar = useScrolledBar();
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<SongSort>("recent");
   const shown = orderSongs(songs, query, sort);
@@ -157,6 +159,7 @@ export function SongCollection({
     contentContainerStyle: { paddingBottom: playerDockInset },
     keyboardShouldPersistTaps: "handled" as const,
     refreshControl: <PullToRefresh onRefresh={onRefresh} />,
+    ...scrolledBar,
   };
 
   return (
