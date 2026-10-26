@@ -232,6 +232,19 @@ describe("favorite bounds and empty accounts", () => {
     }
     expect(state.writes).toEqual([]);
   });
+  it("accepts comma-bearing show tokens returned by upstream v4", async () => {
+    state.returned = [{ userId: "u", ...emptyLists(), podcasts: ["174786"] }];
+    await caller().addToFavorites({
+      type: "show",
+      token: "174786",
+      linkToken: ",eI,wxvKSqU_",
+    });
+    const patch = state.conflict?.podcastTokens;
+    if (!patch) throw new Error("Missing podcastTokens SQL");
+    expect(dialect.sqlToQuery(patch).params).toContain(
+      JSON.stringify({ "174786": ",eI,wxvKSqU_" }),
+    );
+  });
   it("accepts a duplicate at the cap and an add that reaches the cap", async () => {
     const songs = Array.from({ length: 5000 }, (_, i) => `song-${i}`);
     state.returned = [{ userId: "u", ...emptyLists(), songs }];

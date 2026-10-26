@@ -55,7 +55,7 @@ const addFavoriteInput = favoriteInput.extend({
   /** A show's perma token, kept beside its id so reading it back is one `show.details` call. */
   linkToken: z
     .string()
-    .regex(/^[\w-]{1,64}$/)
+    .regex(/^[\w,-]{1,64}$/)
     .optional(),
 });
 
