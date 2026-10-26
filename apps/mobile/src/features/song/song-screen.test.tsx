@@ -3,6 +3,7 @@ import type { Song, SongModules, SongObj } from "@infinitunes/types";
 import { rawAlbum, rawLyrics, rawSong } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 
+import { CONTENT_REVEAL } from "~/components/skeletons";
 import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderScreen } from "~/test/render";
 import { procedure, trpcError } from "~/test/trpc-mock";
@@ -175,6 +176,19 @@ describe("SongScreen", () => {
     expect(procedure("song.syncedLyrics")).toHaveBeenCalledWith({
       id: SONG_ID,
     });
+  });
+
+  it("fades the lyrics in over their skeleton and fades the full text in", async () => {
+    await renderScreen(<SongScreen token="song-token" />);
+
+    const reveal = await screen.findByTestId("lyrics-reveal");
+    expect(reveal.props.entering).toBe(CONTENT_REVEAL);
+    await fireEvent.press(
+      screen.getByRole("button", { name: "First line. Read full lyrics" }),
+    );
+    expect(screen.getByTestId("lyrics-body").props.entering).toBe(
+      CONTENT_REVEAL,
+    );
   });
 
   it("looks up LRCLIB even when JioSaavn has no lyrics", async () => {

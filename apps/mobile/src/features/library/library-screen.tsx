@@ -1,13 +1,14 @@
 import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
 import { router } from "expo-router";
 import { View } from "react-native";
+import Animated from "react-native-reanimated";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { ListRow } from "~/components/list-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SectionHeader } from "~/components/section-header";
-import { SongListSkeleton } from "~/components/skeletons";
+import { CONTENT_REVEAL, SongListSkeleton } from "~/components/skeletons";
 import { PullToRefresh } from "~/components/ui/refresh-control";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { useFavoriteLists } from "~/user-data/favorites";
@@ -30,30 +31,41 @@ function Playlists() {
   const covers = usePlaylistCovers(playlists);
 
   if (isPending) return <SongListSkeleton rows={3} />;
+  // The skeleton gives way to the result with a fade, not a pop.
   if (!playlists) {
-    return <ErrorState error={error} onRetry={() => void refetch()} />;
+    return (
+      <Animated.View entering={CONTENT_REVEAL} testID="playlists-reveal">
+        <ErrorState error={error} onRetry={() => void refetch()} />
+      </Animated.View>
+    );
   }
   if (playlists.length === 0) {
     return (
-      <EmptyState
-        placement="top"
-        icon={{ ios: "music.note.list", android: "queue_music" }}
-        title="No playlists yet"
-        message="Collect songs you love into playlists you can play any time."
-        action={{
-          label: "New Playlist",
-          onPress: () => router.push("/create-playlist"),
-        }}
-      />
+      <Animated.View entering={CONTENT_REVEAL} testID="playlists-reveal">
+        <EmptyState
+          placement="top"
+          icon={{ ios: "music.note.list", android: "queue_music" }}
+          title="No playlists yet"
+          message="Collect songs you love into playlists you can play any time."
+          action={{
+            label: "New Playlist",
+            onPress: () => router.push("/create-playlist"),
+          }}
+        />
+      </Animated.View>
     );
   }
-  return playlists.map((playlist) => (
-    <PlaylistRow
-      key={playlist.id}
-      playlist={playlist}
-      cover={playlist.coverSongs[0] && covers.get(playlist.coverSongs[0])}
-    />
-  ));
+  return (
+    <Animated.View entering={CONTENT_REVEAL} testID="playlists-reveal">
+      {playlists.map((playlist) => (
+        <PlaylistRow
+          key={playlist.id}
+          playlist={playlist}
+          cover={playlist.coverSongs[0] && covers.get(playlist.coverSongs[0])}
+        />
+      ))}
+    </Animated.View>
+  );
 }
 
 /** Liked Songs and Recently Played, side by side across the row at any width; the counts are already loaded. */
