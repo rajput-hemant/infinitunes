@@ -522,6 +522,7 @@ migration idempotent (`IF NOT EXISTS`), never drop or require `user.name` /
 prefix distinct (`@infinitunes/auth/session-cookie`, used by Better Auth,
 `proxy.ts` and the mobile auth client). Opt-in DB tests need `TEST_MIGRATION_DATABASE_URL` (a disposable
 admin URL).
+Delete account removes only Infinitunes data and revokes sessions; shared users and credentials stay.
 
 ## Media URL shapes (playback / artwork)
 

@@ -35,15 +35,15 @@ export function DeleteAccountSection() {
   function deleteUserHandler() {
     const deletion = unwrap(deleteUser(deletePassword || undefined)).then(
       () => {
-        // The session row is gone with the user; leave the stale signed-in page.
+        // The sessions are revoked; leave the stale signed-in page.
         router.replace("/");
         router.refresh();
       },
     );
 
     toast.promise(deletion, {
-      loading: "Deleting Account...",
-      success: "Account Deleted! Logging out...",
+      loading: "Deleting Infinitunes data...",
+      success: "Infinitunes library deleted. Signing out...",
       error: userMessage,
     });
   }
@@ -53,7 +53,7 @@ export function DeleteAccountSection() {
       <SettingsRow
         id="delete"
         label="Delete account"
-        help="Permanently delete your account and all its associated data. This cannot be undone."
+        help="Remove your Infinitunes library and sign out. Your account in other apps stays."
         keywords="danger zone remove erase"
       >
         <AlertDialog
@@ -83,10 +83,12 @@ export function DeleteAccountSection() {
                 Are you sure you want to delete your account?
               </AlertDialogTitle>
               <AlertDialogDescription>
-                Once you delete your account, there is no going back. Please be
-                certain. Accounts without a password (passkey or OAuth) can
-                leave the password blank if they signed in within the last 10
-                minutes; otherwise sign in again first.
+                This permanently removes your Infinitunes library (likes,
+                playlists, history and passkeys) and signs you out. Your account
+                in other apps stays, though you'll be signed out there too.
+                Accounts without a password (passkey or OAuth) can leave the
+                password blank if they signed in within the last 10 minutes;
+                otherwise sign in again first.
               </AlertDialogDescription>
             </AlertDialogHeader>
 

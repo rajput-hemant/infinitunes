@@ -260,7 +260,7 @@ describe("profile form accessibility", () => {
     ]);
   });
 
-  it("leaves the signed-in page once the account is deleted", async () => {
+  it("explains Infinitunes-only deletion and leaves the signed-in page after deletion", async () => {
     const container = await mount();
     calls.length = 0;
 
@@ -273,6 +273,13 @@ describe("profile form accessibility", () => {
       document,
       '[role="alertdialog"]',
       HTMLElement,
+    );
+    const copy = dialog.textContent?.replace(/\s+/g, " ");
+    expect(copy).toContain(
+      "Infinitunes library (likes, playlists, history and passkeys)",
+    );
+    expect(copy).toContain(
+      "Your account in other apps stays, though you'll be signed out there too",
     );
     const password = requireElement(
       dialog,
