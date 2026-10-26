@@ -368,7 +368,7 @@ export const art = {
 } as const;
 export type ArtSize = keyof typeof art | "player";
 export const artRadius: Record<keyof typeof art, keyof typeof radii | "full">; // per 2.4
-export const sizes = { ctl: 40, "ctl-lg": 44, touch: 48, row: 64, page: 16, dock: 64 } as const;
+export const sizes = { ctl: 40, touch: 48, row: 64, page: 16, dock: 64 } as const;
 export const iconSize = { xs: 12, sm: 16, md: 20, lg: 24, xl: 32, xxl: 48 } as const;
 export type IconSize = keyof typeof iconSize;
 export const maxFontScale = { chrome: 1.3 } as const;

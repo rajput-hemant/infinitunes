@@ -1,18 +1,17 @@
 import { View } from "react-native";
 
 import { CardTextSkeleton } from "~/components/skeletons";
+import { FULL_RADIUS } from "~/components/ui/artwork";
 import { range, SkeletonBlock, SkeletonPulse } from "~/components/ui/skeleton";
 import { GRID_GAP, useGrid } from "~/lib/use-grid-card-width";
 import { useRadii } from "~/theme/use-radii";
 
 const ROWS = 3;
-/** Past half the edge: a circle at any width. */
-const FULL = 9999;
 
 /** Placeholder cards at the real grid geometry, so the list lands without a jump. */
 export function CatalogGridSkeleton({ round = false }: { round?: boolean }) {
   const scale = useRadii();
-  const radius = round ? FULL : scale.md;
+  const radius = round ? FULL_RADIUS : scale.md;
   const { columns, width } = useGrid("cards");
 
   return (

@@ -3,10 +3,11 @@ import {
   useDebouncedValue,
 } from "@infinitunes/core/react/use-debounced-value";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { SearchBarCommands } from "react-native-screens";
 
 import { ChipRow } from "~/components/chip-row";
+import { single } from "~/lib/params";
 
 import { IdleSearch } from "./idle-search";
 import { SearchHeader } from "./search-header";
@@ -16,6 +17,31 @@ import { SEARCH_TYPES } from "./search-types";
 import type { SearchType } from "./search-types";
 
 /**
+ * The native field's ref. A cold `?q=` link renders before the native field
+ * attaches, so the effect finds no field: this ref object also puts the linked
+ * query in the field the moment it attaches.
+ */
+function useSearchField(linked: string | undefined) {
+  const field = useRef<SearchBarCommands | null>(null);
+  const linkedRef = useRef(linked);
+  useEffect(() => {
+    linkedRef.current = linked;
+  }, [linked]);
+  return useMemo(
+    () => ({
+      get current() {
+        return field.current;
+      },
+      set current(next: SearchBarCommands | null) {
+        field.current = next;
+        if (next && linkedRef.current) next.setText(linkedRef.current);
+      },
+    }),
+    [],
+  );
+}
+
+/**
  * Search (iOS's search tab; on Android pushed from the app bar's search
  * action): the search field (`SearchHeader`: the iOS 26 search tab's native
  * field, Android's Material 3 search bar) drives everything on one screen. An empty
@@ -23,8 +49,9 @@ import type { SearchType } from "./search-types";
  * A `/search?q=` link (Siri, Google Assistant) opens with that query searched.
  */
 export function SearchScreen() {
-  const { q } = useLocalSearchParams<{ q?: string }>();
-  const searchBar = useRef<SearchBarCommands>(null);
+  const params = useLocalSearchParams<{ q?: string | string[] }>();
+  const q = single(params.q);
+  const searchBar = useSearchField(q);
   const [query, setQuery] = useState(q ?? "");
   const [type, setType] = useState<SearchType>("all");
   const { add } = useSearchHistory();
@@ -46,10 +73,10 @@ export function SearchScreen() {
     if (q) setQuery(q);
   }
 
-  // The native field keeps its own text: put the linked query in it.
+  // The native field keeps its own text: put a new linked query in it.
   useEffect(() => {
     if (q) searchBar.current?.setText(q);
-  }, [q]);
+  }, [q, searchBar]);
 
   return (
     <>
@@ -58,7 +85,10 @@ export function SearchScreen() {
         fieldRef={searchBar}
         onChangeText={setQuery}
         onSubmit={add}
-        onCancel={() => setQuery("")}
+        onCancel={() => {
+          setQuery("");
+          setType("all");
+        }}
       />
       {debouncedQuery ? (
         <SearchResults
@@ -82,7 +112,7 @@ export function SearchScreen() {
       ) : (
         <IdleSearch
           onSelectRecent={(recent) => {
-            searchFor(recent);
+            searchFor(recent, "all");
             add(recent);
           }}
         />

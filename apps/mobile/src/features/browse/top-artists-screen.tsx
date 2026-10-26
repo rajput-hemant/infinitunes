@@ -8,6 +8,8 @@ import { MediaCard } from "~/components/media-card";
 import { trpc } from "~/lib/trpc";
 import { CATALOG_PAGE_SIZE } from "~/lib/use-infinite-list";
 
+import { singlePage } from "../single-page";
+
 type TopArtist = TopArtists["top_artists"][number];
 
 /** The artist list items carry `name` and `artistid`, not the `title`/`type` of other lists. */
@@ -38,7 +40,7 @@ export function TopArtistsScreen() {
     <>
       <Stack.Screen options={{ title: "Top Artists" }} />
       <CatalogScreen
-        query={{ ...artists, items: artists.data ?? [] }}
+        query={singlePage(artists)}
         round
         keyOf={(artist) => artist.id}
         renderCard={(artist, width) => (

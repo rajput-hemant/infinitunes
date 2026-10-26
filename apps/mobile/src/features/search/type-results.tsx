@@ -1,5 +1,6 @@
 import { toSongRow } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
+import { useCallback, useMemo } from "react";
 import type { ReactElement } from "react";
 import { View } from "react-native";
 
@@ -43,6 +44,36 @@ export function TypeResults({
   const results = useTypeResults(query, type);
   const { columns, width: cardWidth } = useGrid("cards");
 
+  const { entries } = results;
+  const rows = useMemo(
+    () => entries.filter(isSongEntry).map(toSongRow),
+    [entries],
+  );
+  const cards = useMemo(
+    () => entries.filter((entry) => !isSongEntry(entry)).map(toResultCard),
+    [entries],
+  );
+  const renderSong = useCallback(
+    ({ item, index }: { item: (typeof rows)[number]; index: number }) => (
+      <SongRow
+        song={item}
+        onPress={() => {
+          playFrom(rows, index);
+          onOpenResult();
+        }}
+      />
+    ),
+    [rows, onOpenResult],
+  );
+  const renderCard = useCallback(
+    ({ item, index }: { item: (typeof cards)[number]; index: number }) => (
+      <GridCell index={index} columns={columns}>
+        <MediaCard item={item} width={cardWidth} onPress={onOpenResult} />
+      </GridCell>
+    ),
+    [columns, cardWidth, onOpenResult],
+  );
+
   const common = {
     ...listProps,
     ListHeaderComponent: header,
@@ -70,29 +101,16 @@ export function TypeResults({
   };
 
   if (type === "song") {
-    const rows = results.entries.filter(isSongEntry).map(toSongRow);
     return (
       <FlashList
         key={type}
         {...common}
         data={rows}
         keyExtractor={(row) => row.id}
-        renderItem={({ item, index }) => (
-          <SongRow
-            song={item}
-            onPress={() => {
-              playFrom(rows, index);
-              onOpenResult();
-            }}
-          />
-        )}
+        renderItem={renderSong}
       />
     );
   }
-
-  const cards = results.entries
-    .filter((entry) => !isSongEntry(entry))
-    .map(toResultCard);
 
   return (
     <FlashList
@@ -101,11 +119,7 @@ export function TypeResults({
       data={cards}
       numColumns={columns}
       keyExtractor={(card) => card.id}
-      renderItem={({ item, index }) => (
-        <GridCell index={index} columns={columns}>
-          <MediaCard item={item} width={cardWidth} onPress={onOpenResult} />
-        </GridCell>
-      )}
+      renderItem={renderCard}
     />
   );
 }

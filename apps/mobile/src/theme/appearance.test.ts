@@ -56,4 +56,16 @@ describe("appearance store", () => {
     expect(second.store.appearanceStore.getState().mode).toBe("light");
     expect(second.setColorScheme).toHaveBeenCalledWith("light");
   });
+
+  it("falls back to the system for a saved mode this build does not know", async () => {
+    await Storage.setItemAsync(
+      "appearance",
+      JSON.stringify({ state: { mode: "sepia" }, version: 0 }),
+    );
+
+    const { setColorScheme, store } = startApp();
+
+    expect(store.appearanceStore.getState().mode).toBe("system");
+    expect(setColorScheme).toHaveBeenCalledWith("auto");
+  });
 });

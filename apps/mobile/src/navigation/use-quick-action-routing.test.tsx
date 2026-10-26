@@ -83,4 +83,15 @@ describe("useQuickActionRouting", () => {
     await unmount();
     expect(mockRemove).toHaveBeenCalledTimes(1);
   });
+  it("does not replay the launch action when the layout remounts", async () => {
+    mockInitial = action("/library");
+    const first = await renderHook(() => useQuickActionRouting());
+    await act(async () => jest.runOnlyPendingTimers());
+    first.unmount();
+
+    await renderHook(() => useQuickActionRouting());
+    await act(async () => jest.runOnlyPendingTimers());
+
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+  });
 });

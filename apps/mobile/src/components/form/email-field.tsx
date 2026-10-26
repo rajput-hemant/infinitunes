@@ -1,10 +1,5 @@
-import { forwardRef } from "react";
-
 import { FormField } from "~/components/form/form-field";
-import type {
-  FormFieldProps,
-  TextInputHandle,
-} from "~/components/form/form-field";
+import type { FormFieldProps } from "~/components/form/form-field";
 
 type EmailFieldProps = Omit<
   FormFieldProps,
@@ -12,19 +7,16 @@ type EmailFieldProps = Omit<
 > & { label?: string };
 
 /** The email address field: email keyboard, no capitalisation, autofill. */
-export const EmailField = forwardRef<TextInputHandle, EmailFieldProps>(
-  function EmailField({ label = "Email", ...props }, ref) {
-    return (
-      <FormField
-        ref={ref}
-        label={label}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-        autoComplete="email"
-        textContentType="emailAddress"
-        {...props}
-      />
-    );
-  },
-);
+export function EmailField({ label = "Email", ...props }: EmailFieldProps) {
+  return (
+    <FormField
+      label={label}
+      keyboardType="email-address"
+      autoCapitalize="none"
+      autoCorrect={false}
+      autoComplete="email"
+      textContentType="emailAddress"
+      {...props}
+    />
+  );
+}

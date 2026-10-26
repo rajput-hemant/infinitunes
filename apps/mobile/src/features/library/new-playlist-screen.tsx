@@ -1,5 +1,6 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 
+import { single } from "~/lib/params";
 import { createPlaylist, createPlaylistWithSongs } from "~/user-data/playlists";
 
 import { PlaylistForm } from "./playlist-form";
@@ -15,8 +16,8 @@ function songIdsOf(param: string | undefined): string[] {
  * also adds those songs (the `songs` param) once created.
  */
 export function NewPlaylistScreen() {
-  const { songs } = useLocalSearchParams<{ songs?: string }>();
-  const songIds = songIdsOf(songs);
+  const { songs } = useLocalSearchParams<{ songs?: string | string[] }>();
+  const songIds = songIdsOf(single(songs));
 
   return (
     <>

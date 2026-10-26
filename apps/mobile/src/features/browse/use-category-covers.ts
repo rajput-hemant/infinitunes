@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
+import { useCatalogLang } from "~/lib/preferences";
 import { trpc } from "~/lib/trpc";
 
 const FIRST_ONLY = { page: 1, n: 1 } as const;
@@ -12,7 +13,8 @@ const FIRST_ONLY = { page: 1, n: 1 } as const;
  * refresh).
  */
 export function useCategoryCovers() {
-  const home = trpc.home.home.queryOptions({});
+  const lang = useCatalogLang();
+  const home = trpc.home.home.queryOptions({ lang });
   const queries = {
     albums: useQuery({
       ...trpc.get.topAlbums.queryOptions(FIRST_ONLY),
