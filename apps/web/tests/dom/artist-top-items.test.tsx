@@ -1,6 +1,6 @@
 import { afterEach, expect, it, mock } from "bun:test";
 
-import type { Album, Song } from "@infinitunes/types";
+import type { Album, Song, SongRowItem } from "@infinitunes/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -58,7 +58,9 @@ async function visit(type: "songs" | "albums") {
         <ArtistsTopItems
           id="artist-1"
           type={type}
-          initialSongs={type === "songs" ? songs : undefined}
+          initialSongs={
+            type === "songs" ? (songs as unknown as SongRowItem[]) : undefined
+          }
           initialAlbums={type === "albums" ? albums : undefined}
         />
       </QueryClientProvider>,

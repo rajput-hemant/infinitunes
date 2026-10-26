@@ -9,7 +9,7 @@
     "build": "bun run with-env next build",
     "start": "bun run with-env next start",
     "lint": "oxlint --deny-warnings --nextjs-plugin",
-    "type-check": "next typegen && tsc --noEmit",
+    "type-check": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.tests.json",
     "fmt": "oxfmt --write \"**/*.{ts,tsx,mdx,json}\"",
     "fmt:check": "oxfmt --check \"**/*.{ts,tsx,mdx,json}\"",
     "skeletons:capture": "boneyard-js build http://127.0.0.1:3000/ http://127.0.0.1:3000/login --out ./bones --no-scan --breakpoints 360,768,1280 --wait 1000",

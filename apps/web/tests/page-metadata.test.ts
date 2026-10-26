@@ -52,7 +52,7 @@ describe("pageMetadata", () => {
     const canonical = meta.alternates?.canonical;
 
     expect(canonical).toBe(`${new URL(siteConfig.url).origin}/song/a/b`);
-    expect(meta.openGraph?.url).toBe(canonical);
+    expect<unknown>(meta.openGraph?.url).toBe(canonical);
   });
 
   test("percent-encodes ampersands so the image param is not truncated", () => {

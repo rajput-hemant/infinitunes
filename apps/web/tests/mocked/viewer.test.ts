@@ -35,7 +35,7 @@ describe("getViewer", () => {
     };
     favorites = playlists;
 
-    expect(await getViewer()).toEqual({
+    expect<unknown>(await getViewer()).toEqual({
       user: undefined,
       playlists: undefined,
       favorites: undefined,
@@ -46,7 +46,7 @@ describe("getViewer", () => {
   it("carries the user with their playlists and favorites", async () => {
     user = { id: "u1" };
 
-    expect(await getViewer()).toEqual({
+    expect<unknown>(await getViewer()).toEqual({
       user: { id: "u1" },
       playlists: [{ id: "p1" }],
       favorites: { songs: [] },
@@ -64,7 +64,7 @@ describe("getViewer", () => {
     const errors = console.error;
     console.error = () => {};
     try {
-      expect(await getViewer()).toEqual({
+      expect<unknown>(await getViewer()).toEqual({
         user: { id: "u1" },
         playlists: undefined,
         favorites: null,

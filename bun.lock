@@ -8,6 +8,8 @@
         "@commitlint/cli": "^21.2.4",
         "@commitlint/config-conventional": "^21.2.4",
         "@happy-dom/global-registrator": "^21.0.4",
+        "@infinitunes/typescript-config": "workspace:*",
+        "@types/bun": "catalog:",
         "@types/node": "catalog:",
         "husky": "^9.1.7",
         "knip": "^6.43.0",
@@ -15,6 +17,7 @@
         "oxfmt": "catalog:",
         "oxlint": "catalog:",
         "turbo": "^2.11.10",
+        "typescript": "catalog:",
       },
     },
     "apps/mobile": {

@@ -60,8 +60,9 @@ const fakeDb = {
         }),
     }),
   }),
-  transaction: async (fn: (tx: typeof fakeDb) => Promise<unknown>) =>
-    fn(fakeDb),
+  transaction: async (
+    fn: (tx: unknown) => Promise<unknown>,
+  ): Promise<unknown> => fn(fakeDb),
   // The per-user advisory lock playlist creates take.
   execute: async () => [],
   insert: () => ({
@@ -292,11 +293,15 @@ describe("Server action authorization security checks", () => {
 
   describe("coded action results", () => {
     const unauthorized = {
-      ok: false,
+      ok: false as const,
       code: "UNAUTHORIZED",
       message: "Please sign in to continue.",
     };
-    const forbidden = { ok: false, code: "FORBIDDEN", message: "Unauthorized" };
+    const forbidden = {
+      ok: false as const,
+      code: "FORBIDDEN",
+      message: "Unauthorized",
+    };
 
     it("returns UNAUTHORIZED results for logged-out callers", async () => {
       mockUser = undefined;

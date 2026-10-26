@@ -217,10 +217,7 @@ const user = {
   id: "u1",
   name: "U",
   email: "u@x.dev",
-  emailVerified: true,
   image: null,
-  createdAt: new Date(0),
-  updatedAt: new Date(0),
 } satisfies User;
 
 const link = (name: string) =>
@@ -262,8 +259,22 @@ describe("sidebar active route", () => {
         <AppSidebar
           user={user}
           userPlaylists={[
-            { id: "p1", name: "Road trip" },
-            { id: "p2", name: "Focus" },
+            {
+              id: "p1",
+              name: "Road trip",
+              description: null,
+              createdAt: new Date(0),
+              songCount: 0,
+              coverSongs: [],
+            },
+            {
+              id: "p2",
+              name: "Focus",
+              description: null,
+              createdAt: new Date(0),
+              songCount: 0,
+              coverSongs: [],
+            },
           ]}
         />
       </AppSidebarProvider>,
@@ -447,7 +458,19 @@ describe("glass sidebar", () => {
   it("is one glass surface with no glass nested inside it", async () => {
     await mount(
       <AppSidebarProvider>
-        <AppSidebar user={user} userPlaylists={[{ id: "p1", name: "Focus" }]} />
+        <AppSidebar
+          user={user}
+          userPlaylists={[
+            {
+              id: "p1",
+              name: "Focus",
+              description: null,
+              createdAt: new Date(0),
+              songCount: 0,
+              coverSongs: [],
+            },
+          ]}
+        />
       </AppSidebarProvider>,
     );
     const panel = document.querySelector("[data-glass-role=sidebar]");
