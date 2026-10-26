@@ -28,7 +28,7 @@
     "@trpc/server": "catalog:",
     "@trpc/tanstack-react-query": "^11.19.0",
     "better-auth": "catalog:",
-    "expo": "~58.0.19",
+    "expo": "~58.0.16",
     "expo-asset": "~58.0.18",
     "expo-audio": "~58.0.9",
     "expo-blur": "~58.0.5",
