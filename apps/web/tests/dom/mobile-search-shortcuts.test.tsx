@@ -48,3 +48,16 @@ it("leaves player shortcuts enabled after departing a nonempty search", async ()
   await act(async () => root.render(<Probe />));
   expect(typing).toBe(false);
 });
+
+it("names the recent searches clear button for screen readers", async () => {
+  localStorage.setItem("recent_searches", JSON.stringify(["lofi"]));
+  const host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+  await act(async () => root.render(<MobileSearch topSearches={null} />));
+  const clear = [...host.querySelectorAll("button")].find(
+    (button) => button.textContent === "Clear",
+  );
+  expect(clear?.getAttribute("aria-label")).toBe("Clear recent searches");
+  localStorage.removeItem("recent_searches");
+});
