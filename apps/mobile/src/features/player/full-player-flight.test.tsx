@@ -28,7 +28,7 @@ const HEADER = { x: 0, y: 48, width: 390, height: 72 };
 const AT_STAGE = (STAGE.width - HERO) / 2;
 const AT_HEADER = space.xl - (HERO - art.tile) / 2;
 
-type Node = typeof screen.root;
+type Node = NonNullable<typeof screen.root>;
 
 function nodes(predicate: (node: Node) => boolean) {
   const found: Node[] = [];

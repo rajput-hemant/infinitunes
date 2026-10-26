@@ -41,6 +41,7 @@ import { Artwork, artworkFrame } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
 import { announce } from "~/lib/announce";
+import { selection } from "~/lib/haptics";
 import { usePreferences } from "~/lib/preferences";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import {
@@ -574,13 +575,19 @@ function HeaderControls({ track }: { track: Queue }) {
         icon={shuffleIcon(shuffle)}
         label="Shuffle"
         on={shuffle}
-        onPress={toggleShuffle}
+        onPress={() => {
+          selection();
+          toggleShuffle();
+        }}
       />
       <Pill
         icon={REPEAT_ICONS[repeat]}
         label={REPEAT_LABELS[repeat]}
         on={repeat !== "off"}
-        onPress={() => cycleRepeat()}
+        onPress={() => {
+          selection();
+          cycleRepeat();
+        }}
       />
       {track.type === "song" ? <LikePill track={track} /> : null}
       <View className="flex-1">
