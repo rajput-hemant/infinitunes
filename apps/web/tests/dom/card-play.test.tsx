@@ -152,7 +152,7 @@ describe("song row art icon", () => {
 
   it("is a plain filled play glyph, not a heavy stroked one", async () => {
     const container = await mount(
-      <TilePlayPauseButton id="s1" type="song" token="s1" />,
+      <TilePlayPauseButton id="s1" name="Song s1" type="song" token="s1" />,
     );
     const svg = rowButton(container).querySelector("svg");
     expect(svg?.getAttribute("class")).toContain("lucide-play");

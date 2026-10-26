@@ -18,7 +18,7 @@ const iconRoles = {
   transportPlay: 6,
 } as const;
 
-const SCALE = [...ICON_CONTROL_SIZES];
+const SCALE: number[] = [...ICON_CONTROL_SIZES];
 const VARIABLE_PX: Record<string, number> = { ctl: 32, "ctl-lg": 36 };
 
 /** The box size class a control resolves to after `cn`, in fine-pointer px. */

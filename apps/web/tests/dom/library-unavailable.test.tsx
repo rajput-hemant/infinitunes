@@ -24,7 +24,7 @@ describe("LibraryUnavailable", () => {
     const retry = renderToStaticMarkup(<LibraryUnavailable what="songs" />);
     const empty = renderToStaticMarkup(
       <LibraryEmpty
-        icon={() => null}
+        icon={(() => null) as never}
         title="Nothing"
         description="Nothing here"
         action={{ href: "/chart", label: "Browse" }}

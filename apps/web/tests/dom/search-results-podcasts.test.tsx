@@ -6,7 +6,7 @@ import { createRoot, type Root } from "react-dom/client";
 
 const podcastShow = {
   id: "412160",
-  type: "show",
+  type: "show" as const,
   title: "cricket",
   subtitle: "Hubhopper",
   image_file_url: "https://c.sop.saavncdn.com/cricket-500x500.jpg",

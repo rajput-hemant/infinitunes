@@ -42,6 +42,7 @@ afterEach(async () => {
 it("resolves the song viewer behind Suspense and forwards the library to song rows", async () => {
   const page = SearchPage({
     params: Promise.resolve({ type: "song", query: "song" }),
+    searchParams: Promise.resolve({}),
   });
   expect(page.type).toBe(Suspense);
   const results = await page.props.children.type(page.props.children.props);

@@ -35,6 +35,7 @@ const track: QueueItem = {
   image: "https://c.saavncdn.com/x-150x150.jpg",
   artists: [],
   download_url: "",
+  queueItemId: "q-1",
   duration: 100,
 };
 
@@ -48,6 +49,7 @@ const router = {
   forward: noop,
   prefetch: noop,
   hmrRefresh: noop,
+  bfcacheId: "0",
 };
 
 async function mountExpanded(song = track) {

@@ -28,6 +28,7 @@ const router: AppRouterInstance = {
   push() {},
   replace() {},
   prefetch() {},
+  bfcacheId: "0",
 };
 const playlist = { id: "p1", name: "Road trip", description: "Long drives" };
 const roots: Root[] = [];

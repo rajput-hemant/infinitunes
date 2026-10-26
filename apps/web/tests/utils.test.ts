@@ -11,7 +11,7 @@ import {
 
 describe("getHref", () => {
   it("normalizes non-canonical internal-site.jiosaavn.com album URL with /s/<lang>/ prefix", () => {
-    expect(
+    expect<string>(
       getHref(
         "https://internal-site.jiosaavn.com/s/album/hindi/dhurandhar-the-revenge-2026/fzGxJ2eyORk_",
         "album",
@@ -20,7 +20,7 @@ describe("getHref", () => {
   });
 
   it("normalizes staging.jiosaavn.com artist URL", () => {
-    expect(
+    expect<string>(
       getHref(
         "https://staging.jiosaavn.com/artist/arijit-singh-songs/LlRWpHzy3Hk_",
         "artist",
@@ -29,7 +29,7 @@ describe("getHref", () => {
   });
 
   it("links a plain artist name to the Overview route", () => {
-    expect(
+    expect<string>(
       getHref(
         "https://www.jiosaavn.com/artist/arijit-singh/LlRWpHzy3Hk_",
         "artist",
@@ -38,7 +38,7 @@ describe("getHref", () => {
   });
 
   it("normalizes legacy saavn.com radio station URL with /s/ prefix", () => {
-    expect(
+    expect<string>(
       getHref(
         "https://www.saavn.com/s/radio/hindi-featured-station/Chill",
         "radio_station",
@@ -47,7 +47,7 @@ describe("getHref", () => {
   });
 
   it("handles canonical www.jiosaavn.com album URL without change to trailing segments", () => {
-    expect(
+    expect<string>(
       getHref(
         "https://www.jiosaavn.com/album/fallen-angel-digital-ep/QTqp3RbJZb4_",
         "album",
@@ -56,13 +56,13 @@ describe("getHref", () => {
   });
 
   it("strips /s/<lang>/ from canonical www.jiosaavn.com URL", () => {
-    expect(
+    expect<string>(
       getHref("https://www.jiosaavn.com/s/album/hindi/x-2026/tok_", "album"),
     ).toBe("/album/x-2026/tok_");
   });
 
   it("normalizes playlist URL with /featured/ entity segment", () => {
-    expect(
+    expect<string>(
       getHref(
         "https://www.jiosaavn.com/featured/romantic-hits/abc_",
         "playlist",
@@ -71,52 +71,60 @@ describe("getHref", () => {
   });
 
   it("keeps 3 trailing segments for show type (name, season, token)", () => {
-    expect(
+    expect<string>(
       getHref("https://www.jiosaavn.com/shows/the-ranveer-show/1/abc_", "show"),
     ).toBe("/show/the-ranveer-show/1/abc_");
   });
 
   it("handles http scheme", () => {
-    expect(getHref("http://www.jiosaavn.com/album/x/abc_", "album")).toBe(
-      "/album/x/abc_",
-    );
+    expect<string>(
+      getHref("http://www.jiosaavn.com/album/x/abc_", "album"),
+    ).toBe("/album/x/abc_");
   });
 
   it("returns relative path unchanged without double-prefixing or failing", () => {
-    expect(getHref("/album/x/abc_", "album")).toBe("/album/x/abc_");
+    expect<string>(getHref("/album/x/abc_", "album")).toBe("/album/x/abc_");
   });
 
   it("returns # for empty, undefined, or null input", () => {
-    expect(getHref("", "album")).toBe("#");
-    expect(getHref(undefined, "album")).toBe("#");
-    expect(getHref(null, "album")).toBe("#");
+    expect<string>(getHref("", "album")).toBe("#");
+    expect<string>(getHref(undefined, "album")).toBe("#");
+    expect<string>(getHref(null, "album")).toBe("#");
   });
 
   it("returns # for non-jiosaavn / non-saavn external URLs", () => {
-    expect(getHref("https://example.com/album/foo/bar", "album")).toBe("#");
-    expect(getHref("https://google.com/search?q=test", "song")).toBe("#");
+    expect<string>(getHref("https://example.com/album/foo/bar", "album")).toBe(
+      "#",
+    );
+    expect<string>(getHref("https://google.com/search?q=test", "song")).toBe(
+      "#",
+    );
   });
 
   it("returns # when path lacks required segment count", () => {
-    expect(getHref("https://www.jiosaavn.com/", "album")).toBe("#");
-    expect(getHref("https://www.jiosaavn.com/album", "album")).toBe("#");
-    expect(getHref("https://www.jiosaavn.com/shows/test-show", "show")).toBe(
+    expect<string>(getHref("https://www.jiosaavn.com/", "album")).toBe("#");
+    expect<string>(getHref("https://www.jiosaavn.com/album", "album")).toBe(
       "#",
     );
-    expect(getHref("https://www.jiosaavn.com/album/only-name", "album")).toBe(
-      "#",
-    );
+    expect<string>(
+      getHref("https://www.jiosaavn.com/shows/test-show", "show"),
+    ).toBe("#");
+    expect<string>(
+      getHref("https://www.jiosaavn.com/album/only-name", "album"),
+    ).toBe("#");
   });
 
   it("returns # for a URL in another type's section", () => {
-    expect(getHref("https://www.jiosaavn.com/song/x/abc_", "album")).toBe("#");
-    expect(
+    expect<string>(
+      getHref("https://www.jiosaavn.com/song/x/abc_", "album"),
+    ).toBe("#");
+    expect<string>(
       getHref("https://www.jiosaavn.com/shows/the-show/1/abc_", "episode"),
     ).toBe("#");
   });
 
   it("ignores query strings and URL fragments when extracting segments", () => {
-    expect(
+    expect<string>(
       getHref(
         "https://www.jiosaavn.com/album/test-album/tok_?lang=hindi#details",
         "album",
@@ -127,13 +135,13 @@ describe("getHref", () => {
 
 describe("getHref label tabs", () => {
   it("links a label's tab route, not the suffixed slug", () => {
-    expect(
+    expect<string>(
       getHref(
         "https://www.jiosaavn.com/label/outlaw-productions-albums/tok_",
         "label",
       ),
     ).toBe("/label/outlaw-productions/tok_/albums");
-    expect(
+    expect<string>(
       getHref(
         "https://www.jiosaavn.com/label/outlaw-productions-songs/tok_",
         "label",

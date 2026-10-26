@@ -25,6 +25,7 @@ const item: QueueItem = {
   image: "https://c.saavncdn.com/x-150x150.jpg",
   artists: [],
   download_url: "",
+  queueItemId: "q-1",
   duration: 100,
 };
 

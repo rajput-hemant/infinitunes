@@ -20,7 +20,7 @@
     "deps:update": "bun update -i",
     "skeletons:capture": "bun run --cwd apps/web skeletons:capture && oxfmt --write apps/web/bones",
     "budget": "bun scripts/check-budget.ts",
-    "type-check": "turbo run type-check",
+    "type-check": "tsc --noEmit -p scripts/tsconfig.json && turbo run type-check",
     "test": "bun test --pass-with-no-tests && bun run test:isolated && bun run test:mobile",
     "test:isolated": "bun scripts/test-isolated.ts",
     "test:mocked": "bun scripts/test-isolated.ts mocked",
@@ -48,13 +48,16 @@
     "@commitlint/cli": "^21.2.4",
     "@commitlint/config-conventional": "^21.2.4",
     "@happy-dom/global-registrator": "^21.0.4",
+    "@infinitunes/typescript-config": "workspace:*",
+    "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "husky": "^9.1.7",
     "knip": "^6.43.0",
     "lint-staged": "^17.6.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
-    "turbo": "^2.11.10"
+    "turbo": "^2.11.10",
+    "typescript": "catalog:"
   },
   "workspaces": {
     "packages": [
