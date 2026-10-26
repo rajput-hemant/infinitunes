@@ -15,6 +15,7 @@ import { SkeletonText } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
 import { Text } from "~/components/ui/text";
 import { totalDurationLabel } from "~/lib/meta";
+import { single } from "~/lib/params";
 import {
   moveSongInPlaylist,
   removeSongFromPlaylist,
@@ -169,7 +170,8 @@ function Playlist({ id }: { id: string }) {
 }
 
 export function PlaylistScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const id = single(params.id) ?? "";
 
   return (
     <SignedInGate>

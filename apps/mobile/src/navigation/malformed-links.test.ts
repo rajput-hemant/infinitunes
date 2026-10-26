@@ -1,6 +1,7 @@
 import type { MediaType } from "@infinitunes/types";
 
 import { redirectSystemPath } from "~/app/+native-intent";
+import { single } from "~/lib/params";
 
 import { entityHref, entityPath, stationRef } from "./entity-href";
 
@@ -146,5 +147,20 @@ describe("redirectSystemPath for malformed links", () => {
     expect(redirectSystemPath({ path: "//artist/x-bio/T_" })).toBe(
       "/artist/x/T_/bio",
     );
+  });
+});
+
+describe("repeated query params", () => {
+  it("takes the first value of a repeated key", () => {
+    expect(single(["a", "b"])).toBe("a");
+    expect(single("a")).toBe("a");
+    expect(single(undefined)).toBeUndefined();
+    expect(single([])).toBeUndefined();
+  });
+
+  it("keeps a repeated key from reaching string methods", () => {
+    const repeated = ["1,2", "3"];
+    expect(() => single(repeated)?.split(",")).not.toThrow();
+    expect(single(repeated)?.trim()).toBe("1,2");
   });
 });

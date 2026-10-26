@@ -39,7 +39,10 @@ export function LabelContent({ label, onRefresh }: LabelContentProps) {
     () => uniqueBy(label.topAlbums.albums, (album) => album.id).map(toCardItem),
     [label.topAlbums.albums],
   );
-  const items = tab === "songs" ? songItems(songs) : cardItems(albums);
+  const items = useMemo(
+    () => (tab === "songs" ? songItems(songs) : cardItems(albums)),
+    [tab, songs, albums],
+  );
 
   return (
     <FlashList

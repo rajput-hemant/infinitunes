@@ -1,13 +1,11 @@
-import { Link } from "expo-router";
 import type { Href } from "expo-router";
-import { Platform, Pressable, View } from "react-native";
-import Animated from "react-native-reanimated";
+import { Platform, View } from "react-native";
 
+import { PressableTile } from "~/components/pressable-tile";
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
 import { cx } from "~/lib/class-names";
-import { usePressScale } from "~/lib/use-press-scale";
 import { art } from "~/theme/tokens";
 import { usePalette } from "~/theme/use-palette";
 
@@ -32,41 +30,33 @@ export function LibraryTile({
   detail,
 }: LibraryTileProps) {
   const palette = usePalette();
-  const press = usePressScale(0.97);
   return (
-    <Animated.View style={[{ width }, press.style]}>
-      <Link href={href} asChild>
-        <Pressable
-          onPressIn={press.onPressIn}
-          onPressOut={press.onPressOut}
-          accessibilityRole="link"
-          accessibilityLabel={[title, detail].filter(Boolean).join(", ")}
-          className={cx(
-            "flex-1 justify-between gap-3 rounded-lg p-4",
-            MATERIAL ? "bg-card" : "bg-fill",
-          )}
-          style={{ minHeight: art.feature }}
-        >
-          <View className="size-ctl items-center justify-center rounded-full bg-secondary">
-            <Icon
-              name={icon}
-              size="md"
-              color={
-                MATERIAL ? palette["secondary-foreground"] : palette.primary
-              }
-            />
-          </View>
-          <View>
-            <Text variant="headline" emphasized numberOfLines={1}>
-              {title}
-            </Text>
-            {/* Always two lines, so both tiles match and nothing moves when a count lands. */}
-            <Text variant="subhead" tone="muted" numberOfLines={1}>
-              {detail ?? "\u00a0"}
-            </Text>
-          </View>
-        </Pressable>
-      </Link>
-    </Animated.View>
+    <PressableTile
+      width={width}
+      href={href}
+      accessibilityLabel={[title, detail].filter(Boolean).join(", ")}
+      className={cx(
+        "flex-1 justify-between gap-3 rounded-lg p-4",
+        MATERIAL ? "bg-card" : "bg-fill",
+      )}
+      style={{ minHeight: art.feature }}
+    >
+      <View className="size-ctl items-center justify-center rounded-full bg-secondary">
+        <Icon
+          name={icon}
+          size="md"
+          color={MATERIAL ? palette["secondary-foreground"] : palette.primary}
+        />
+      </View>
+      <View>
+        <Text variant="headline" emphasized numberOfLines={1}>
+          {title}
+        </Text>
+        {/* Always two lines, so both tiles match and nothing moves when a count lands. */}
+        <Text variant="subhead" tone="muted" numberOfLines={1}>
+          {detail ?? " "}
+        </Text>
+      </View>
+    </PressableTile>
   );
 }

@@ -5,6 +5,7 @@ import { View } from "react-native";
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { Spinner } from "~/components/ui/spinner";
+import { single } from "~/lib/params";
 import { renamePlaylist } from "~/user-data/playlists";
 import { useServerPlaylists } from "~/user-data/playlists";
 
@@ -51,7 +52,8 @@ function EditPlaylist({ id }: { id: string }) {
 }
 
 export function EditPlaylistScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const params = useLocalSearchParams<{ id?: string | string[] }>();
+  const id = single(params.id) ?? "";
 
   return (
     <>

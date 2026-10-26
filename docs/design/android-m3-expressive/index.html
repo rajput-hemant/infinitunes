@@ -1,272 +1,1302 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Infinitunes Android: Material 3 Expressive mockup</title>
-<style>
-  /* Material You dark scheme approximating the test phone's wallpaper (blue primary). */
-  :root {
-    --surface: #121316; --on-surface: #e3e2e6; --on-surface-variant: #c4c6d0;
-    --sc-low: #1a1b1f; --sc: #1e1f23; --sc-high: #292a2d; --sc-highest: #343538;
-    --primary: #aac7ff; --on-primary: #0a305f; --sec-container: #3e4759; --on-sec-container: #dae2f9;
-    --outline-variant: #44474e; --error: #ffb4ab;
-    --r-xs: 4px; --r-sm: 8px; --r-md: 12px; --r-lg: 16px; --r-xl: 28px;
-    font-family: Roboto, "Google Sans Flex", system-ui, sans-serif;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: #0b0b0d; color: #eee; padding: 32px; }
-  header.doc { max-width: 1500px; margin: 0 auto 24px; }
-  header.doc h1 { font-size: 22px; font-weight: 600; }
-  header.doc p { color: #aaa; font-size: 14px; margin-top: 6px; max-width: 900px; line-height: 1.5; }
-  .grid { display: flex; flex-wrap: wrap; gap: 28px; max-width: 1500px; margin: 0 auto; }
-  figure { display: flex; flex-direction: column; gap: 8px; }
-  figcaption { font-size: 13px; color: #aaa; }
-  .phone { width: 360px; height: 780px; border-radius: 36px; background: var(--surface); color: var(--on-surface);
-    position: relative; overflow: hidden; border: 6px solid #2a2a2e; display: flex; flex-direction: column; }
-  .status { height: 28px; flex: none; font-size: 12px; padding: 6px 20px; color: var(--on-surface-variant); display: flex; justify-content: space-between; }
-  .appbar { height: 56px; flex: none; display: flex; align-items: center; padding: 0 4px 0 16px; gap: 4px; background: var(--surface); }
-  .appbar .title { flex: 1; font-size: 22px; line-height: 28px; }
-  .appbar.pushed { padding-left: 4px; }
-  .ib { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; color: var(--on-surface-variant); font-size: 22px; flex: none; }
-  .content { flex: 1; overflow: hidden; padding-bottom: 150px; }
-  .chips { display: flex; gap: 8px; padding: 8px 16px; overflow: hidden; }
-  .chip { height: 32px; padding: 0 12px; border-radius: var(--r-sm); border: 1px solid var(--outline-variant); font-size: 14px; font-weight: 500;
-    display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--on-surface-variant); }
-  .chip.on { background: var(--sec-container); color: var(--on-sec-container); border-color: transparent; font-weight: 600; padding-left: 8px; }
-  .sh { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 8px; }
-  .sh h2 { font-size: 20px; line-height: 28px; font-weight: 500; }
-  .sh a { color: var(--primary); font-size: 14px; font-weight: 500; }
-  .row-cards { display: flex; gap: 12px; padding: 0 16px; overflow: hidden; }
-  .card { width: 136px; flex: none; }
-  .art { border-radius: var(--r-md); aspect-ratio: 1; background: linear-gradient(135deg, var(--a, #6b5bff), var(--b, #ff7aa8)); }
-  .card .t { font-size: 14px; font-weight: 500; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .card .s { font-size: 12px; color: var(--on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .hero { width: 208px; flex: none; position: relative; }
-  .hero .art { border-radius: var(--r-lg); }
-  .hero .play { position: absolute; right: 12px; top: 148px; width: 48px; height: 48px; border-radius: 16px; background: var(--primary); color: var(--on-primary); display: grid; place-items: center; }
-  .eyebrow { font-size: 12px; font-weight: 500; color: var(--on-surface-variant); margin-top: 8px; }
-  .qp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px; }
-  .tile { height: 56px; border-radius: var(--r-md); background: var(--sc-high); display: flex; align-items: center; gap: 12px; overflow: hidden; font-size: 14px; font-weight: 500; }
-  .tile .ta { width: 56px; height: 56px; flex: none; background: linear-gradient(135deg, var(--a, #3a7), var(--b, #d4a)); display: grid; place-items: center; }
-  .tile .ta.icon { background: var(--sc-highest); color: var(--primary); }
-  .li { min-height: 56px; display: flex; align-items: center; gap: 12px; padding: 4px 4px 4px 16px; }
-  .li .la { width: 48px; height: 48px; border-radius: var(--r-sm); flex: none; background: linear-gradient(135deg, var(--a, #c63), var(--b, #339)); }
-  .li .la.round { border-radius: 50%; }
-  .li .num { width: 48px; text-align: center; color: var(--on-surface-variant); flex: none; }
-  .li .tx { flex: 1; min-width: 0; }
-  .li .tt { font-size: 16px; line-height: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .li .tt.playing { color: var(--primary); }
-  .li .ts { font-size: 14px; line-height: 20px; color: var(--on-surface-variant); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .btn { height: 40px; border-radius: 20px; padding: 0 16px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 500; }
-  .btn.filled { background: var(--primary); color: var(--on-primary); }
-  .btn.tonal { background: var(--sec-container); color: var(--on-sec-container); }
-  .btn.pressed { border-radius: var(--r-sm); }
-  .grp { display: flex; gap: 8px; align-items: center; padding: 0 4px 0 4px; }
-  .grp .btn { flex: 1; }
-  .ehead { text-align: center; padding: 8px 16px 16px; }
-  .ehead .art { width: 200px; margin: 0 auto; border-radius: var(--r-lg); }
-  .ehead .k { font-size: 12px; font-weight: 500; color: var(--on-surface-variant); margin-top: 12px; }
-  .ehead h1 { font-size: 20px; line-height: 28px; font-weight: 500; margin-top: 2px; }
-  .ehead .c { font-size: 14px; color: var(--on-surface-variant); }
-  .cgroup { display: flex; gap: 2px; padding: 0 16px; }
-  .seg { flex: 1; height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px; background: var(--sc-highest); font-size: 14px; font-weight: 500; border-radius: var(--r-sm); color: var(--on-surface-variant); }
-  .seg:first-child { border-radius: 20px var(--r-sm) var(--r-sm) 20px; }
-  .seg:last-child { border-radius: var(--r-sm) 20px 20px var(--r-sm); }
-  .seg.on { background: var(--sec-container); color: var(--on-sec-container); border-radius: 20px; }
-  .search { margin: 4px 16px 8px; height: 48px; border-radius: 24px; background: var(--sc-high); display: flex; align-items: center; gap: 12px; padding: 0 16px; color: var(--on-surface-variant); font-size: 16px; }
-  .stations { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 12px; padding: 8px 16px; }
-  .st { text-align: center; }
-  .st .art { border-radius: 50%; }
-  .st .t { font-size: 14px; font-weight: 500; margin-top: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .st .s { font-size: 12px; color: var(--on-surface-variant); }
-  .slabel { color: var(--primary); font-size: 14px; font-weight: 500; padding: 16px 32px 8px; }
-  .slist { display: flex; flex-direction: column; gap: 2px; margin: 0 16px; border-radius: var(--r-lg); overflow: hidden; }
-  .srow { background: var(--sc-high); min-height: 56px; display: flex; align-items: center; gap: 16px; padding: 8px 16px; border-radius: var(--r-xs); }
-  .srow .ic { width: 40px; height: 40px; border-radius: 50%; background: var(--sec-container); display: grid; place-items: center; color: var(--on-sec-container); flex: none; }
-  .srow .tt { font-size: 16px; }
-  .srow .ts { font-size: 14px; color: var(--on-surface-variant); }
-  .srow .tx { flex: 1; }
-  .sw { width: 52px; height: 32px; border-radius: 16px; background: var(--primary); position: relative; flex: none; }
-  .sw::after { content: ""; position: absolute; right: 4px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background: var(--on-primary); }
-  .mini { position: absolute; left: 16px; right: 16px; bottom: 88px; height: 64px; border-radius: var(--r-lg); background: #2b3a4a; display: flex; align-items: center; gap: 12px; padding: 0 8px 0 12px; overflow: hidden; }
-  .mini .la { width: 40px; height: 40px; border-radius: var(--r-sm); background: linear-gradient(135deg, #8ef, #f8c); flex: none; }
-  .mini .tx { flex: 1; min-width: 0; }
-  .mini .tt { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mini .ts { font-size: 12px; color: #c4cfdc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .mini .pp { width: 40px; height: 40px; border-radius: 50%; background: #c9e2ff; color: #0d2b46; display: grid; place-items: center; flex: none; }
-  .mini .prog { position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; background: rgba(255,255,255,.15); }
-  .mini .prog::before { content: ""; display: block; width: 38%; height: 2px; background: #c9e2ff; }
-  .nav { position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: var(--sc); display: flex; justify-content: space-around; padding-top: 12px; }
-  .nav div { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; color: var(--on-surface-variant); width: 80px; }
-  .nav i { width: 56px; height: 32px; border-radius: 16px; display: grid; place-items: center; font-style: normal; font-size: 18px; }
-  .nav .on i { background: var(--sec-container); color: var(--on-sec-container); }
-  .nav .on { color: var(--on-surface); font-weight: 600; }
-  .player { background: linear-gradient(180deg, #23435c 0%, #142636 60%, #0d1822 100%); }
-  .player .art { width: 312px; margin: 12px auto 0; border-radius: var(--r-xl); background: linear-gradient(135deg, #8ef, #f8c 50%, #fd8); }
-  .player h1 { font-size: 24px; line-height: 32px; font-weight: 500; }
-  .pinfo { display: flex; align-items: center; padding: 24px 24px 0; gap: 8px; }
-  .pinfo .tx { flex: 1; }
-  .pinfo .ts { color: #c4cfdc; font-size: 16px; }
-  .seek { margin: 20px 24px 0; height: 16px; position: relative; }
-  .seek::before { content: ""; position: absolute; left: 0; right: 0; top: 6px; height: 4px; border-radius: 2px; background: rgba(255,255,255,.2); }
-  .seek::after { content: ""; position: absolute; left: 0; width: 40%; top: 6px; height: 4px; border-radius: 2px; background: #c9e2ff; }
-  .times { display: flex; justify-content: space-between; padding: 4px 24px 0; font-size: 12px; color: #c4cfdc; }
-  .transport { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px 0; }
-  .transport .ib { color: #e6eef8; }
-  .tbtn { width: 56px; height: 56px; border-radius: 20px; background: rgba(201,226,255,.14); display: grid; place-items: center; color: #e6eef8; font-size: 22px; }
-  .bigplay { width: 88px; height: 72px; border-radius: 28px; background: #c9e2ff; color: #0d2b46; display: grid; place-items: center; font-size: 30px; }
-  .bigplay.playing { border-radius: 36px; }
-  .pfoot { display: flex; justify-content: space-between; padding: 24px 12px 0; }
-  .pfoot .btn { background: rgba(201,226,255,.14); color: #e6eef8; }
-  .note { font-size: 11px; color: var(--primary); padding: 0 16px; }
-  .sym { font-family: "Material Symbols Rounded", sans-serif; }
-</style>
-</head>
-<body>
-<header class="doc">
-  <h1>Infinitunes Android: Material 3 Expressive</h1>
-  <p>Reference mockup for the Android app (360dp phone, dark Material You scheme). Spec: <code>spec.md</code>. Compact,
-  YouTube Music density: 40dp buttons (48dp targets), 56dp rows, 32dp chips, emphasized type for hierarchy only.
-  Expressive layer: shape (8/12/16/28 corners, full buttons that morph to 8 while pressed, a play button that is a
-  rounded square paused and a circle playing), connected button groups, segmented lists, spring motion.</p>
-</header>
-<div class="grid">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Infinitunes Android: Material 3 Expressive mockup</title>
+    <style>
+      /* Material You dark scheme approximating the test phone's wallpaper (blue primary). */
+      :root {
+        --surface: #121316;
+        --on-surface: #e3e2e6;
+        --on-surface-variant: #c4c6d0;
+        --sc-low: #1a1b1f;
+        --sc: #1e1f23;
+        --sc-high: #292a2d;
+        --sc-highest: #343538;
+        --primary: #aac7ff;
+        --on-primary: #0a305f;
+        --sec-container: #3e4759;
+        --on-sec-container: #dae2f9;
+        --outline-variant: #44474e;
+        --error: #ffb4ab;
+        --r-xs: 4px;
+        --r-sm: 8px;
+        --r-md: 12px;
+        --r-lg: 16px;
+        --r-xl: 28px;
+        font-family: Roboto, "Google Sans Flex", system-ui, sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: #0b0b0d;
+        color: #eee;
+        padding: 32px;
+      }
+      header.doc {
+        max-width: 1500px;
+        margin: 0 auto 24px;
+      }
+      header.doc h1 {
+        font-size: 22px;
+        font-weight: 600;
+      }
+      header.doc p {
+        color: #aaa;
+        font-size: 14px;
+        margin-top: 6px;
+        max-width: 900px;
+        line-height: 1.5;
+      }
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 28px;
+        max-width: 1500px;
+        margin: 0 auto;
+      }
+      figure {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      figcaption {
+        font-size: 13px;
+        color: #aaa;
+      }
+      .phone {
+        width: 360px;
+        height: 780px;
+        border-radius: 36px;
+        background: var(--surface);
+        color: var(--on-surface);
+        position: relative;
+        overflow: hidden;
+        border: 6px solid #2a2a2e;
+        display: flex;
+        flex-direction: column;
+      }
+      .status {
+        height: 28px;
+        flex: none;
+        font-size: 12px;
+        padding: 6px 20px;
+        color: var(--on-surface-variant);
+        display: flex;
+        justify-content: space-between;
+      }
+      .appbar {
+        height: 56px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        padding: 0 4px 0 16px;
+        gap: 4px;
+        background: var(--surface);
+      }
+      .appbar .title {
+        flex: 1;
+        font-size: 22px;
+        line-height: 28px;
+      }
+      .appbar.pushed {
+        padding-left: 4px;
+      }
+      .ib {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--on-surface-variant);
+        font-size: 22px;
+        flex: none;
+      }
+      .content {
+        flex: 1;
+        overflow: hidden;
+        padding-bottom: 150px;
+      }
+      .chips {
+        display: flex;
+        gap: 8px;
+        padding: 8px 16px;
+        overflow: hidden;
+      }
+      .chip {
+        height: 32px;
+        padding: 0 12px;
+        border-radius: var(--r-sm);
+        border: 1px solid var(--outline-variant);
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+        color: var(--on-surface-variant);
+      }
+      .chip.on {
+        background: var(--sec-container);
+        color: var(--on-sec-container);
+        border-color: transparent;
+        font-weight: 600;
+        padding-left: 8px;
+      }
+      .sh {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 16px 8px;
+      }
+      .sh h2 {
+        font-size: 20px;
+        line-height: 28px;
+        font-weight: 500;
+      }
+      .sh a {
+        color: var(--primary);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .row-cards {
+        display: flex;
+        gap: 12px;
+        padding: 0 16px;
+        overflow: hidden;
+      }
+      .card {
+        width: 136px;
+        flex: none;
+      }
+      .art {
+        border-radius: var(--r-md);
+        aspect-ratio: 1;
+        background: linear-gradient(
+          135deg,
+          var(--a, #6b5bff),
+          var(--b, #ff7aa8)
+        );
+      }
+      .card .t {
+        font-size: 14px;
+        font-weight: 500;
+        margin-top: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .card .s {
+        font-size: 12px;
+        color: var(--on-surface-variant);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .hero {
+        width: 208px;
+        flex: none;
+        position: relative;
+      }
+      .hero .art {
+        border-radius: var(--r-lg);
+      }
+      .hero .play {
+        position: absolute;
+        right: 12px;
+        top: 148px;
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        background: var(--primary);
+        color: var(--on-primary);
+        display: grid;
+        place-items: center;
+      }
+      .eyebrow {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--on-surface-variant);
+        margin-top: 8px;
+      }
+      .qp {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 0 16px;
+      }
+      .tile {
+        height: 56px;
+        border-radius: var(--r-md);
+        background: var(--sc-high);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        overflow: hidden;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .tile .ta {
+        width: 56px;
+        height: 56px;
+        flex: none;
+        background: linear-gradient(135deg, var(--a, #3a7), var(--b, #d4a));
+        display: grid;
+        place-items: center;
+      }
+      .tile .ta.icon {
+        background: var(--sc-highest);
+        color: var(--primary);
+      }
+      .li {
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 4px 4px 4px 16px;
+      }
+      .li .la {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--r-sm);
+        flex: none;
+        background: linear-gradient(135deg, var(--a, #c63), var(--b, #339));
+      }
+      .li .la.round {
+        border-radius: 50%;
+      }
+      .li .num {
+        width: 48px;
+        text-align: center;
+        color: var(--on-surface-variant);
+        flex: none;
+      }
+      .li .tx {
+        flex: 1;
+        min-width: 0;
+      }
+      .li .tt {
+        font-size: 16px;
+        line-height: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .li .tt.playing {
+        color: var(--primary);
+      }
+      .li .ts {
+        font-size: 14px;
+        line-height: 20px;
+        color: var(--on-surface-variant);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .btn {
+        height: 40px;
+        border-radius: 20px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .btn.filled {
+        background: var(--primary);
+        color: var(--on-primary);
+      }
+      .btn.tonal {
+        background: var(--sec-container);
+        color: var(--on-sec-container);
+      }
+      .btn.pressed {
+        border-radius: var(--r-sm);
+      }
+      .grp {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        padding: 0 4px 0 4px;
+      }
+      .grp .btn {
+        flex: 1;
+      }
+      .ehead {
+        text-align: center;
+        padding: 8px 16px 16px;
+      }
+      .ehead .art {
+        width: 200px;
+        margin: 0 auto;
+        border-radius: var(--r-lg);
+      }
+      .ehead .k {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--on-surface-variant);
+        margin-top: 12px;
+      }
+      .ehead h1 {
+        font-size: 20px;
+        line-height: 28px;
+        font-weight: 500;
+        margin-top: 2px;
+      }
+      .ehead .c {
+        font-size: 14px;
+        color: var(--on-surface-variant);
+      }
+      .cgroup {
+        display: flex;
+        gap: 2px;
+        padding: 0 16px;
+      }
+      .seg {
+        flex: 1;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        background: var(--sc-highest);
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: var(--r-sm);
+        color: var(--on-surface-variant);
+      }
+      .seg:first-child {
+        border-radius: 20px var(--r-sm) var(--r-sm) 20px;
+      }
+      .seg:last-child {
+        border-radius: var(--r-sm) 20px 20px var(--r-sm);
+      }
+      .seg.on {
+        background: var(--sec-container);
+        color: var(--on-sec-container);
+        border-radius: 20px;
+      }
+      .search {
+        margin: 4px 16px 8px;
+        height: 48px;
+        border-radius: 24px;
+        background: var(--sc-high);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 16px;
+        color: var(--on-surface-variant);
+        font-size: 16px;
+      }
+      .stations {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px 12px;
+        padding: 8px 16px;
+      }
+      .st {
+        text-align: center;
+      }
+      .st .art {
+        border-radius: 50%;
+      }
+      .st .t {
+        font-size: 14px;
+        font-weight: 500;
+        margin-top: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .st .s {
+        font-size: 12px;
+        color: var(--on-surface-variant);
+      }
+      .slabel {
+        color: var(--primary);
+        font-size: 14px;
+        font-weight: 500;
+        padding: 16px 32px 8px;
+      }
+      .slist {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        margin: 0 16px;
+        border-radius: var(--r-lg);
+        overflow: hidden;
+      }
+      .srow {
+        background: var(--sc-high);
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 8px 16px;
+        border-radius: var(--r-xs);
+      }
+      .srow .ic {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--sec-container);
+        display: grid;
+        place-items: center;
+        color: var(--on-sec-container);
+        flex: none;
+      }
+      .srow .tt {
+        font-size: 16px;
+      }
+      .srow .ts {
+        font-size: 14px;
+        color: var(--on-surface-variant);
+      }
+      .srow .tx {
+        flex: 1;
+      }
+      .sw {
+        width: 52px;
+        height: 32px;
+        border-radius: 16px;
+        background: var(--primary);
+        position: relative;
+        flex: none;
+      }
+      .sw::after {
+        content: "";
+        position: absolute;
+        right: 4px;
+        top: 4px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--on-primary);
+      }
+      .mini {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 88px;
+        height: 64px;
+        border-radius: var(--r-lg);
+        background: #2b3a4a;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 8px 0 12px;
+        overflow: hidden;
+      }
+      .mini .la {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--r-sm);
+        background: linear-gradient(135deg, #8ef, #f8c);
+        flex: none;
+      }
+      .mini .tx {
+        flex: 1;
+        min-width: 0;
+      }
+      .mini .tt {
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mini .ts {
+        font-size: 12px;
+        color: #c4cfdc;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mini .pp {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #c9e2ff;
+        color: #0d2b46;
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+      .mini .prog {
+        position: absolute;
+        left: 12px;
+        right: 12px;
+        bottom: 0;
+        height: 2px;
+        background: rgba(255, 255, 255, 0.15);
+      }
+      .mini .prog::before {
+        content: "";
+        display: block;
+        width: 38%;
+        height: 2px;
+        background: #c9e2ff;
+      }
+      .nav {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 80px;
+        background: var(--sc);
+        display: flex;
+        justify-content: space-around;
+        padding-top: 12px;
+      }
+      .nav div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--on-surface-variant);
+        width: 80px;
+      }
+      .nav i {
+        width: 56px;
+        height: 32px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        font-style: normal;
+        font-size: 18px;
+      }
+      .nav .on i {
+        background: var(--sec-container);
+        color: var(--on-sec-container);
+      }
+      .nav .on {
+        color: var(--on-surface);
+        font-weight: 600;
+      }
+      .player {
+        background: linear-gradient(
+          180deg,
+          #23435c 0%,
+          #142636 60%,
+          #0d1822 100%
+        );
+      }
+      .player .art {
+        width: 312px;
+        margin: 12px auto 0;
+        border-radius: var(--r-xl);
+        background: linear-gradient(135deg, #8ef, #f8c 50%, #fd8);
+      }
+      .player h1 {
+        font-size: 24px;
+        line-height: 32px;
+        font-weight: 500;
+      }
+      .pinfo {
+        display: flex;
+        align-items: center;
+        padding: 24px 24px 0;
+        gap: 8px;
+      }
+      .pinfo .tx {
+        flex: 1;
+      }
+      .pinfo .ts {
+        color: #c4cfdc;
+        font-size: 16px;
+      }
+      .seek {
+        margin: 20px 24px 0;
+        height: 16px;
+        position: relative;
+      }
+      .seek::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 6px;
+        height: 4px;
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.2);
+      }
+      .seek::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        width: 40%;
+        top: 6px;
+        height: 4px;
+        border-radius: 2px;
+        background: #c9e2ff;
+      }
+      .times {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 24px 0;
+        font-size: 12px;
+        color: #c4cfdc;
+      }
+      .transport {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px 0;
+      }
+      .transport .ib {
+        color: #e6eef8;
+      }
+      .tbtn {
+        width: 56px;
+        height: 56px;
+        border-radius: 20px;
+        background: rgba(201, 226, 255, 0.14);
+        display: grid;
+        place-items: center;
+        color: #e6eef8;
+        font-size: 22px;
+      }
+      .bigplay {
+        width: 88px;
+        height: 72px;
+        border-radius: 28px;
+        background: #c9e2ff;
+        color: #0d2b46;
+        display: grid;
+        place-items: center;
+        font-size: 30px;
+      }
+      .bigplay.playing {
+        border-radius: 36px;
+      }
+      .pfoot {
+        display: flex;
+        justify-content: space-between;
+        padding: 24px 12px 0;
+      }
+      .pfoot .btn {
+        background: rgba(201, 226, 255, 0.14);
+        color: #e6eef8;
+      }
+      .note {
+        font-size: 11px;
+        color: var(--primary);
+        padding: 0 16px;
+      }
+      .sym {
+        font-family: "Material Symbols Rounded", sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="doc">
+      <h1>Infinitunes Android: Material 3 Expressive</h1>
+      <p>
+        Reference mockup for the Android app (360dp phone, dark Material You
+        scheme). Spec: <code>spec.md</code>. Compact, YouTube Music density:
+        40dp buttons (48dp targets), 56dp rows, 32dp chips, emphasized type for
+        hierarchy only. Expressive layer: shape (8/12/16/28 corners, full
+        buttons that morph to 8 while pressed, a play button that is a rounded
+        square paused and a circle playing), connected button groups, segmented
+        lists, spring motion.
+      </p>
+    </header>
+    <div class="grid">
+      <figure>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
+          <div class="appbar">
+            <div class="title">Good morning</div>
+            <div class="ib">⌕</div>
+            <div class="ib">⚙</div>
+            <div class="ib">◯</div>
+          </div>
+          <div class="content">
+            <div class="chips">
+              <div class="chip on">✓ For you</div>
+              <div class="chip">Hindi</div>
+              <div class="chip">English</div>
+              <div class="chip">Punjabi</div>
+            </div>
+            <div class="row-cards" style="margin-top: 8px">
+              <div class="hero">
+                <div class="art" style="--a: #3d6bff; --b: #c8d3ff"></div>
+                <div class="play">▶</div>
+                <div class="eyebrow">Featured playlist</div>
+                <div class="card">
+                  <div class="t" style="margin-top: 0; font-size: 16px">
+                    Chartbusters 2026
+                  </div>
+                  <div class="s">Just updated</div>
+                </div>
+              </div>
+              <div class="hero">
+                <div class="art" style="--a: #ff7a00; --b: #ff3d9a"></div>
+              </div>
+            </div>
+            <div class="sh"><h2>Quick picks</h2></div>
+            <div class="qp">
+              <div class="tile">
+                <div class="ta icon">✦</div>
+                Surprise me
+              </div>
+              <div class="tile">
+                <div class="ta icon">▦</div>
+                Browse
+              </div>
+              <div class="tile">
+                <div class="ta"></div>
+                Housewife
+              </div>
+              <div class="tile">
+                <div class="ta" style="--a: #da4; --b: #367"></div>
+                Udta Teer
+              </div>
+            </div>
+            <div class="sh">
+              <h2>New releases</h2>
+              <a>See all</a>
+            </div>
+            <div class="row-cards">
+              <div class="card">
+                <div class="art" style="--a: #a33; --b: #fc9"></div>
+                <div class="t">Rajini The Jailer 2</div>
+                <div class="s">Anirudh</div>
+              </div>
+              <div class="card">
+                <div class="art" style="--a: #123; --b: #58a"></div>
+                <div class="t">The Odyssey</div>
+                <div class="s">Ludwig Göransson</div>
+              </div>
+              <div class="card">
+                <div class="art"></div>
+                <div class="t">Musafir</div>
+              </div>
+            </div>
+          </div>
+          <div class="mini">
+            <div class="la"></div>
+            <div class="tx">
+              <div class="tt">Waste It On Me</div>
+              <div class="ts">Steve Aoki ft. BTS</div>
+            </div>
+            <div class="pp">❚❚</div>
+            <div class="ib" style="color: #e6eef8">⏭</div>
+            <div class="prog"></div>
+          </div>
+          <div class="nav">
+            <div class="on"><i>⌂</i>Home</div>
+            <div><i>◉</i>Radio</div>
+            <div><i>♫</i>Library</div>
+          </div>
+        </div>
+        <figcaption>
+          Home: flat surface app bar, M3 filter chips (8dp, check), hero, quick
+          picks, shelves with primary text-button "See all"
+        </figcaption>
+      </figure>
 
-<figure><div class="phone">
-  <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
-  <div class="appbar"><div class="title">Good morning</div><div class="ib">⌕</div><div class="ib">⚙</div><div class="ib">◯</div></div>
-  <div class="content">
-    <div class="chips"><div class="chip on">✓ For you</div><div class="chip">Hindi</div><div class="chip">English</div><div class="chip">Punjabi</div></div>
-    <div class="row-cards" style="margin-top:8px">
-      <div class="hero"><div class="art" style="--a:#3d6bff;--b:#c8d3ff"></div><div class="play">▶</div><div class="eyebrow">Featured playlist</div><div class="card"><div class="t" style="margin-top:0;font-size:16px">Chartbusters 2026</div><div class="s">Just updated</div></div></div>
-      <div class="hero"><div class="art" style="--a:#ff7a00;--b:#ff3d9a"></div></div>
+      <figure>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
+          <div class="appbar pushed">
+            <div class="ib">←</div>
+            <div class="title"></div>
+            <div class="ib">⇪</div>
+          </div>
+          <div class="content">
+            <div class="ehead">
+              <div class="art" style="--a: #b31b1b; --b: #311"></div>
+              <div class="k">Album · 2026</div>
+              <h1>Rajini The Jailer 2 (Original Motion Picture Soundtrack)</h1>
+              <div class="c">Various Artists</div>
+              <div class="c">12 songs · 35 min</div>
+            </div>
+            <div class="grp">
+              <div class="ib">♡</div>
+              <div class="btn filled">▶ Play</div>
+              <div class="btn tonal pressed">⤨ Shuffle</div>
+              <div class="ib">⋮</div>
+            </div>
+            <p class="note" style="padding-top: 4px; text-align: right">
+              Shuffle shown pressed: corners morph full → 8
+            </p>
+            <div class="li">
+              <div class="num" style="color: var(--primary)">▮▮▮</div>
+              <div class="tx">
+                <div class="tt playing">Ala Bolelo</div>
+                <div class="ts">Anirudh Ravichander, Ritesh G</div>
+              </div>
+              <div class="ib">♡</div>
+              <div class="ib">⋮</div>
+            </div>
+            <div class="li">
+              <div class="num">2</div>
+              <div class="tx">
+                <div class="tt">One Sun One Moon</div>
+                <div class="ts">Anirudh Ravichander</div>
+              </div>
+              <div class="ib">♡</div>
+              <div class="ib">⋮</div>
+            </div>
+            <div class="li">
+              <div class="num">3</div>
+              <div class="tx">
+                <div class="tt">Beete Lamhe</div>
+                <div class="ts">Shankar Mahadevan</div>
+              </div>
+              <div class="ib">♡</div>
+              <div class="ib">⋮</div>
+            </div>
+          </div>
+          <div class="mini">
+            <div class="la"></div>
+            <div class="tx">
+              <div class="tt">Waste It On Me</div>
+              <div class="ts">Steve Aoki ft. BTS</div>
+            </div>
+            <div class="pp">▶</div>
+            <div class="ib" style="color: #e6eef8">⏭</div>
+            <div class="prog"></div>
+          </div>
+          <div class="nav">
+            <div class="on"><i>⌂</i>Home</div>
+            <div><i>◉</i>Radio</div>
+            <div><i>♫</i>Library</div>
+          </div>
+        </div>
+        <figcaption>
+          Album: untitled app bar (title once, in the header), button group:
+          heart · Play (filled) · Shuffle (tonal) · menu
+        </figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
+          <div class="appbar pushed">
+            <div class="ib">←</div>
+            <div class="title"></div>
+            <div class="ib">⇪</div>
+          </div>
+          <div class="content">
+            <div class="ehead">
+              <div
+                class="art"
+                style="border-radius: 50%; --a: #f5a96b; --b: #7a3b1a"
+              ></div>
+              <div class="k">
+                Artist · <span style="color: var(--primary)">✔</span> Verified
+              </div>
+              <h1>Arijit Singh</h1>
+              <div class="c">9.4M listeners</div>
+            </div>
+            <div class="grp">
+              <div class="ib">♡</div>
+              <div class="btn filled">▶ Play</div>
+              <div class="btn tonal">⤨ Shuffle</div>
+              <div class="ib">⋮</div>
+            </div>
+            <div style="height: 16px"></div>
+            <div class="cgroup">
+              <div class="seg on">✓ Overview</div>
+              <div class="seg">Songs</div>
+              <div class="seg">Albums</div>
+              <div class="seg">Bio</div>
+            </div>
+            <div class="li" style="margin-top: 8px">
+              <div class="la" style="--a: #655; --b: #211"></div>
+              <div class="tx">
+                <div class="tt">Gehra Hua</div>
+                <div class="ts">Shashwat Sachdev, Arijit Singh</div>
+              </div>
+              <div class="ib">♡</div>
+              <div class="ib">⋮</div>
+            </div>
+            <div class="li">
+              <div class="la" style="--a: #355; --b: #111"></div>
+              <div class="tx">
+                <div class="tt">Tum Hi Ho</div>
+                <div class="ts">Mithoon, Arijit Singh</div>
+              </div>
+              <div class="ib">♡</div>
+              <div class="ib">⋮</div>
+            </div>
+          </div>
+          <div class="nav">
+            <div class="on"><i>⌂</i>Home</div>
+            <div><i>◉</i>Radio</div>
+            <div><i>♫</i>Library</div>
+          </div>
+        </div>
+        <figcaption>
+          Artist: connected button group replaces outlined segmented buttons
+          (2dp seams, selected goes full-round)
+        </figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
+          <div class="appbar pushed">
+            <div class="ib">←</div>
+            <div class="search" style="flex: 1; margin: 0 8px 0 0">
+              ⌕ arijit
+            </div>
+          </div>
+          <div class="content">
+            <div class="chips">
+              <div class="chip on">✓ All</div>
+              <div class="chip">Songs</div>
+              <div class="chip">Albums</div>
+              <div class="chip">Playlists</div>
+              <div class="chip">Artists</div>
+            </div>
+            <div class="sh"><h2>Top result</h2></div>
+            <div class="li">
+              <div class="la round" style="--a: #f5a96b; --b: #7a3b1a"></div>
+              <div class="tx">
+                <div class="tt">Arijit Singh</div>
+                <div class="ts">Artist</div>
+              </div>
+            </div>
+            <div class="sh">
+              <h2>Songs</h2>
+              <a>See all</a>
+            </div>
+            <div class="li">
+              <div class="la"></div>
+              <div class="tx">
+                <div class="tt">Gehra Hua (From "Dhurandhar")</div>
+                <div class="ts">Dhurandhar</div>
+              </div>
+              <div class="ib">⋮</div>
+            </div>
+            <div class="li">
+              <div class="la" style="--a: #c12; --b: #222"></div>
+              <div class="tx">
+                <div class="tt">Tum Hi Ho</div>
+                <div class="ts">Aashiqui 2</div>
+              </div>
+              <div class="ib">⋮</div>
+            </div>
+            <div class="sh">
+              <h2>Artists</h2>
+              <a>See all</a>
+            </div>
+          </div>
+          <div class="mini">
+            <div class="la"></div>
+            <div class="tx">
+              <div class="tt">Waste It On Me</div>
+              <div class="ts">Steve Aoki ft. BTS</div>
+            </div>
+            <div class="pp">❚❚</div>
+            <div class="ib" style="color: #e6eef8">⏭</div>
+            <div class="prog"></div>
+          </div>
+          <div class="nav">
+            <div class="on"><i>⌂</i>Home</div>
+            <div><i>◉</i>Radio</div>
+            <div><i>♫</i>Library</div>
+          </div>
+        </div>
+        <figcaption>
+          Search results: filter chips as tabs, section headers with primary
+          "See all"
+        </figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
+          <div class="appbar">
+            <div class="title">Library</div>
+            <div class="ib">⌕</div>
+            <div class="ib">⚙</div>
+            <div class="ib">A</div>
+          </div>
+          <div class="content">
+            <div class="qp" style="margin-top: 8px">
+              <div class="tile">
+                <div class="ta icon">♥</div>
+                Liked songs
+              </div>
+              <div class="tile">
+                <div class="ta icon">⟲</div>
+                History
+              </div>
+              <div class="tile">
+                <div class="ta icon">◫</div>
+                Albums
+              </div>
+              <div class="tile">
+                <div class="ta icon">☰</div>
+                Playlists
+              </div>
+            </div>
+            <div class="sh">
+              <h2>Playlists</h2>
+              <a>See all</a>
+            </div>
+            <div class="li">
+              <div
+                class="la icon"
+                style="
+                  background: var(--sc-highest);
+                  display: grid;
+                  place-items: center;
+                  color: var(--primary);
+                "
+              >
+                ＋
+              </div>
+              <div class="tx"><div class="tt">New playlist</div></div>
+            </div>
+            <div class="li">
+              <div class="la"></div>
+              <div class="tx">
+                <div class="tt">Late night drives</div>
+                <div class="ts">Playlist · 24 songs</div>
+              </div>
+              <div class="ib">⋮</div>
+            </div>
+            <div class="li">
+              <div class="la" style="--a: #284; --b: #9d4"></div>
+              <div class="tx">
+                <div class="tt">Gym</div>
+                <div class="ts">Playlist · 12 songs</div>
+              </div>
+              <div class="ib">⋮</div>
+            </div>
+          </div>
+          <div class="mini">
+            <div class="la"></div>
+            <div class="tx">
+              <div class="tt">Waste It On Me</div>
+              <div class="ts">Steve Aoki ft. BTS</div>
+            </div>
+            <div class="pp">❚❚</div>
+            <div class="ib" style="color: #e6eef8">⏭</div>
+            <div class="prog"></div>
+          </div>
+          <div class="nav">
+            <div><i>⌂</i>Home</div>
+            <div><i>◉</i>Radio</div>
+            <div class="on"><i>♫</i>Library</div>
+          </div>
+        </div>
+        <figcaption>
+          Library (signed in): shortcut tiles, list rows at 56dp
+        </figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
+          <div class="appbar">
+            <div class="title">Radio</div>
+            <div class="ib">⌕</div>
+            <div class="ib">⚙</div>
+            <div class="ib">◯</div>
+          </div>
+          <div class="content">
+            <div class="stations">
+              <div class="st">
+                <div class="art" style="--a: #a2f; --b: #f2a"></div>
+                <div class="t">Rock</div>
+                <div class="s">English</div>
+              </div>
+              <div class="st">
+                <div class="art" style="--a: #516; --b: #c8a"></div>
+                <div class="t">Hindustani</div>
+                <div class="s">Hindi</div>
+              </div>
+              <div class="st">
+                <div class="art" style="--a: #f94; --b: #fd8"></div>
+                <div class="t">Drivetime Dhun</div>
+                <div class="s">Hindi</div>
+              </div>
+              <div class="st">
+                <div class="art" style="--a: #f36; --b: #f9a"></div>
+                <div class="t">Pyaar Ka Safar</div>
+                <div class="s">Hindi</div>
+              </div>
+              <div class="st">
+                <div class="art" style="--a: #c4f; --b: #f6c"></div>
+                <div class="t">Drivetime</div>
+                <div class="s">English</div>
+              </div>
+              <div class="st">
+                <div class="art" style="--a: #666; --b: #ccc"></div>
+                <div class="t">Jai Shiv Shankar</div>
+                <div class="s">Hindi</div>
+              </div>
+            </div>
+          </div>
+          <div class="mini">
+            <div class="la"></div>
+            <div class="tx">
+              <div class="tt">Waste It On Me</div>
+              <div class="ts">Steve Aoki ft. BTS</div>
+            </div>
+            <div class="pp">❚❚</div>
+            <div class="ib" style="color: #e6eef8">⏭</div>
+            <div class="prog"></div>
+          </div>
+          <div class="nav">
+            <div><i>⌂</i>Home</div>
+            <div class="on"><i>◉</i>Radio</div>
+            <div><i>♫</i>Library</div>
+          </div>
+        </div>
+        <figcaption>
+          Radio: three-column round stations, titles labelLarge
+        </figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
+          <div class="appbar pushed">
+            <div class="ib">←</div>
+            <div class="title">Settings</div>
+          </div>
+          <div class="content">
+            <div class="slabel">Appearance</div>
+            <div class="slist">
+              <div class="srow">
+                <div class="ic">◐</div>
+                <div class="tx">
+                  <div class="tt">Theme</div>
+                  <div class="ts">System</div>
+                </div>
+              </div>
+              <div class="srow">
+                <div class="ic">◍</div>
+                <div class="tx">
+                  <div class="tt">Accent color</div>
+                  <div class="ts">Default</div>
+                </div>
+              </div>
+              <div class="srow">
+                <div class="ic">◰</div>
+                <div class="tx">
+                  <div class="tt">Corners</div>
+                  <div class="ts">Round</div>
+                </div>
+              </div>
+            </div>
+            <div class="slabel">Playback</div>
+            <div class="slist">
+              <div class="srow">
+                <div class="ic">♒</div>
+                <div class="tx">
+                  <div class="tt">Stream quality</div>
+                  <div class="ts">320 kbps</div>
+                </div>
+              </div>
+              <div class="srow">
+                <div class="ic">⤓</div>
+                <div class="tx">
+                  <div class="tt">Download quality</div>
+                  <div class="ts">320 kbps</div>
+                </div>
+              </div>
+              <div class="srow">
+                <div class="ic">◎</div>
+                <div class="tx">
+                  <div class="tt">Languages</div>
+                  <div class="ts">Hindi, English</div>
+                </div>
+                <span style="color: var(--on-surface-variant)">›</span>
+              </div>
+            </div>
+            <div class="slabel">Storage</div>
+            <div class="slist">
+              <div class="srow">
+                <div class="ic">⤓</div>
+                <div class="tx">
+                  <div class="tt">Cache frequently played songs</div>
+                </div>
+                <div class="sw"></div>
+              </div>
+              <div class="srow">
+                <div class="ic">▤</div>
+                <div class="tx">
+                  <div class="tt">Cached songs</div>
+                  <div class="ts">142 MB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="nav">
+            <div><i>⌂</i>Home</div>
+            <div><i>◉</i>Radio</div>
+            <div class="on"><i>♫</i>Library</div>
+          </div>
+        </div>
+        <figcaption>
+          Settings: Android 16 segmented list (tiles, 2dp seams, 16dp outer /
+          4dp inner corners), value as supporting text
+        </figcaption>
+      </figure>
+
+      <figure>
+        <div class="phone player">
+          <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
+          <div class="appbar" style="background: transparent; padding: 0 4px">
+            <div class="ib" style="color: #e6eef8">⌄</div>
+            <div
+              class="title"
+              style="
+                text-align: center;
+                font-size: 12px;
+                line-height: 16px;
+                color: #c4cfdc;
+              "
+            >
+              Playing from<br /><b style="color: #e6eef8; font-size: 14px"
+                >K Pop</b
+              >
+            </div>
+            <div class="ib" style="color: #e6eef8">⋮</div>
+          </div>
+          <div class="art"></div>
+          <div class="pinfo">
+            <div class="tx">
+              <h1>Waste It On Me</h1>
+              <div class="ts">Steve Aoki ft. BTS</div>
+            </div>
+            <div class="ib" style="color: #e6eef8">♡</div>
+          </div>
+          <div class="seek"></div>
+          <div class="times"><span>1:12</span><span>-2:01</span></div>
+          <div class="transport">
+            <div class="ib">⤨</div>
+            <div class="tbtn">⏮</div>
+            <div class="bigplay">▶</div>
+            <div class="tbtn">⏭</div>
+            <div class="ib">↻</div>
+          </div>
+          <div class="pfoot">
+            <div class="btn">❝ Lyrics</div>
+            <div class="btn">☰ Up next</div>
+          </div>
+        </div>
+        <figcaption>
+          Now Playing: 28dp art corners, headlineSmall title, play is a rounded
+          square paused → circle playing (spring), tonal prev/next
+        </figcaption>
+      </figure>
     </div>
-    <div class="sh"><h2>Quick picks</h2></div>
-    <div class="qp">
-      <div class="tile"><div class="ta icon">✦</div>Surprise me</div>
-      <div class="tile"><div class="ta icon">▦</div>Browse</div>
-      <div class="tile"><div class="ta"></div>Housewife</div>
-      <div class="tile"><div class="ta" style="--a:#da4;--b:#367"></div>Udta Teer</div>
-    </div>
-    <div class="sh"><h2>New releases</h2><a>See all</a></div>
-    <div class="row-cards"><div class="card"><div class="art" style="--a:#a33;--b:#fc9"></div><div class="t">Rajini The Jailer 2</div><div class="s">Anirudh</div></div><div class="card"><div class="art" style="--a:#123;--b:#58a"></div><div class="t">The Odyssey</div><div class="s">Ludwig Göransson</div></div><div class="card"><div class="art"></div><div class="t">Musafir</div></div></div>
-  </div>
-  <div class="mini"><div class="la"></div><div class="tx"><div class="tt">Waste It On Me</div><div class="ts">Steve Aoki ft. BTS</div></div><div class="pp">❚❚</div><div class="ib" style="color:#e6eef8">⏭</div><div class="prog"></div></div>
-  <div class="nav"><div class="on"><i>⌂</i>Home</div><div><i>◉</i>Radio</div><div><i>♫</i>Library</div></div>
-</div><figcaption>Home: flat surface app bar, M3 filter chips (8dp, check), hero, quick picks, shelves with primary text-button "See all"</figcaption></figure>
-
-<figure><div class="phone">
-  <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
-  <div class="appbar pushed"><div class="ib">←</div><div class="title"></div><div class="ib">⇪</div></div>
-  <div class="content">
-    <div class="ehead"><div class="art" style="--a:#b31b1b;--b:#311"></div><div class="k">Album · 2026</div><h1>Rajini The Jailer 2 (Original Motion Picture Soundtrack)</h1><div class="c">Various Artists</div><div class="c">12 songs · 35 min</div></div>
-    <div class="grp"><div class="ib">♡</div><div class="btn filled">▶ Play</div><div class="btn tonal pressed">⤨ Shuffle</div><div class="ib">⋮</div></div>
-    <p class="note" style="padding-top:4px;text-align:right">Shuffle shown pressed: corners morph full → 8</p>
-    <div class="li"><div class="num" style="color:var(--primary)">▮▮▮</div><div class="tx"><div class="tt playing">Ala Bolelo</div><div class="ts">Anirudh Ravichander, Ritesh G</div></div><div class="ib">♡</div><div class="ib">⋮</div></div>
-    <div class="li"><div class="num">2</div><div class="tx"><div class="tt">One Sun One Moon</div><div class="ts">Anirudh Ravichander</div></div><div class="ib">♡</div><div class="ib">⋮</div></div>
-    <div class="li"><div class="num">3</div><div class="tx"><div class="tt">Beete Lamhe</div><div class="ts">Shankar Mahadevan</div></div><div class="ib">♡</div><div class="ib">⋮</div></div>
-  </div>
-  <div class="mini"><div class="la"></div><div class="tx"><div class="tt">Waste It On Me</div><div class="ts">Steve Aoki ft. BTS</div></div><div class="pp">▶</div><div class="ib" style="color:#e6eef8">⏭</div><div class="prog"></div></div>
-  <div class="nav"><div class="on"><i>⌂</i>Home</div><div><i>◉</i>Radio</div><div><i>♫</i>Library</div></div>
-</div><figcaption>Album: untitled app bar (title once, in the header), button group: heart · Play (filled) · Shuffle (tonal) · menu</figcaption></figure>
-
-<figure><div class="phone">
-  <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
-  <div class="appbar pushed"><div class="ib">←</div><div class="title"></div><div class="ib">⇪</div></div>
-  <div class="content">
-    <div class="ehead"><div class="art" style="border-radius:50%;--a:#f5a96b;--b:#7a3b1a"></div><div class="k">Artist · <span style="color:var(--primary)">✔</span> Verified</div><h1>Arijit Singh</h1><div class="c">9.4M listeners</div></div>
-    <div class="grp"><div class="ib">♡</div><div class="btn filled">▶ Play</div><div class="btn tonal">⤨ Shuffle</div><div class="ib">⋮</div></div>
-    <div style="height:16px"></div>
-    <div class="cgroup"><div class="seg on">✓ Overview</div><div class="seg">Songs</div><div class="seg">Albums</div><div class="seg">Bio</div></div>
-    <div class="li" style="margin-top:8px"><div class="la" style="--a:#655;--b:#211"></div><div class="tx"><div class="tt">Gehra Hua</div><div class="ts">Shashwat Sachdev, Arijit Singh</div></div><div class="ib">♡</div><div class="ib">⋮</div></div>
-    <div class="li"><div class="la" style="--a:#355;--b:#111"></div><div class="tx"><div class="tt">Tum Hi Ho</div><div class="ts">Mithoon, Arijit Singh</div></div><div class="ib">♡</div><div class="ib">⋮</div></div>
-  </div>
-  <div class="nav"><div class="on"><i>⌂</i>Home</div><div><i>◉</i>Radio</div><div><i>♫</i>Library</div></div>
-</div><figcaption>Artist: connected button group replaces outlined segmented buttons (2dp seams, selected goes full-round)</figcaption></figure>
-
-<figure><div class="phone">
-  <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
-  <div class="appbar pushed"><div class="ib">←</div><div class="search" style="flex:1;margin:0 8px 0 0">⌕ arijit</div></div>
-  <div class="content">
-    <div class="chips"><div class="chip on">✓ All</div><div class="chip">Songs</div><div class="chip">Albums</div><div class="chip">Playlists</div><div class="chip">Artists</div></div>
-    <div class="sh"><h2>Top result</h2></div>
-    <div class="li"><div class="la round" style="--a:#f5a96b;--b:#7a3b1a"></div><div class="tx"><div class="tt">Arijit Singh</div><div class="ts">Artist</div></div></div>
-    <div class="sh"><h2>Songs</h2><a>See all</a></div>
-    <div class="li"><div class="la"></div><div class="tx"><div class="tt">Gehra Hua (From "Dhurandhar")</div><div class="ts">Dhurandhar</div></div><div class="ib">⋮</div></div>
-    <div class="li"><div class="la" style="--a:#c12;--b:#222"></div><div class="tx"><div class="tt">Tum Hi Ho</div><div class="ts">Aashiqui 2</div></div><div class="ib">⋮</div></div>
-    <div class="sh"><h2>Artists</h2><a>See all</a></div>
-  </div>
-  <div class="mini"><div class="la"></div><div class="tx"><div class="tt">Waste It On Me</div><div class="ts">Steve Aoki ft. BTS</div></div><div class="pp">❚❚</div><div class="ib" style="color:#e6eef8">⏭</div><div class="prog"></div></div>
-  <div class="nav"><div class="on"><i>⌂</i>Home</div><div><i>◉</i>Radio</div><div><i>♫</i>Library</div></div>
-</div><figcaption>Search results: filter chips as tabs, section headers with primary "See all"</figcaption></figure>
-
-<figure><div class="phone">
-  <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
-  <div class="appbar"><div class="title">Library</div><div class="ib">⌕</div><div class="ib">⚙</div><div class="ib">A</div></div>
-  <div class="content">
-    <div class="qp" style="margin-top:8px"><div class="tile"><div class="ta icon">♥</div>Liked songs</div><div class="tile"><div class="ta icon">⟲</div>History</div><div class="tile"><div class="ta icon">◫</div>Albums</div><div class="tile"><div class="ta icon">☰</div>Playlists</div></div>
-    <div class="sh"><h2>Playlists</h2><a>See all</a></div>
-    <div class="li"><div class="la icon" style="background:var(--sc-highest);display:grid;place-items:center;color:var(--primary)">＋</div><div class="tx"><div class="tt">New playlist</div></div></div>
-    <div class="li"><div class="la"></div><div class="tx"><div class="tt">Late night drives</div><div class="ts">Playlist · 24 songs</div></div><div class="ib">⋮</div></div>
-    <div class="li"><div class="la" style="--a:#284;--b:#9d4"></div><div class="tx"><div class="tt">Gym</div><div class="ts">Playlist · 12 songs</div></div><div class="ib">⋮</div></div>
-  </div>
-  <div class="mini"><div class="la"></div><div class="tx"><div class="tt">Waste It On Me</div><div class="ts">Steve Aoki ft. BTS</div></div><div class="pp">❚❚</div><div class="ib" style="color:#e6eef8">⏭</div><div class="prog"></div></div>
-  <div class="nav"><div><i>⌂</i>Home</div><div><i>◉</i>Radio</div><div class="on"><i>♫</i>Library</div></div>
-</div><figcaption>Library (signed in): shortcut tiles, list rows at 56dp</figcaption></figure>
-
-<figure><div class="phone">
-  <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
-  <div class="appbar"><div class="title">Radio</div><div class="ib">⌕</div><div class="ib">⚙</div><div class="ib">◯</div></div>
-  <div class="content">
-    <div class="stations">
-      <div class="st"><div class="art" style="--a:#a2f;--b:#f2a"></div><div class="t">Rock</div><div class="s">English</div></div>
-      <div class="st"><div class="art" style="--a:#516;--b:#c8a"></div><div class="t">Hindustani</div><div class="s">Hindi</div></div>
-      <div class="st"><div class="art" style="--a:#f94;--b:#fd8"></div><div class="t">Drivetime Dhun</div><div class="s">Hindi</div></div>
-      <div class="st"><div class="art" style="--a:#f36;--b:#f9a"></div><div class="t">Pyaar Ka Safar</div><div class="s">Hindi</div></div>
-      <div class="st"><div class="art" style="--a:#c4f;--b:#f6c"></div><div class="t">Drivetime</div><div class="s">English</div></div>
-      <div class="st"><div class="art" style="--a:#666;--b:#ccc"></div><div class="t">Jai Shiv Shankar</div><div class="s">Hindi</div></div>
-    </div>
-  </div>
-  <div class="mini"><div class="la"></div><div class="tx"><div class="tt">Waste It On Me</div><div class="ts">Steve Aoki ft. BTS</div></div><div class="pp">❚❚</div><div class="ib" style="color:#e6eef8">⏭</div><div class="prog"></div></div>
-  <div class="nav"><div><i>⌂</i>Home</div><div class="on"><i>◉</i>Radio</div><div><i>♫</i>Library</div></div>
-</div><figcaption>Radio: three-column round stations, titles labelLarge</figcaption></figure>
-
-<figure><div class="phone">
-  <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
-  <div class="appbar pushed"><div class="ib">←</div><div class="title">Settings</div></div>
-  <div class="content">
-    <div class="slabel">Appearance</div>
-    <div class="slist">
-      <div class="srow"><div class="ic">◐</div><div class="tx"><div class="tt">Theme</div><div class="ts">System</div></div></div>
-      <div class="srow"><div class="ic">◍</div><div class="tx"><div class="tt">Accent color</div><div class="ts">Default</div></div></div>
-      <div class="srow"><div class="ic">◰</div><div class="tx"><div class="tt">Corners</div><div class="ts">Round</div></div></div>
-    </div>
-    <div class="slabel">Playback</div>
-    <div class="slist">
-      <div class="srow"><div class="ic">♒</div><div class="tx"><div class="tt">Stream quality</div><div class="ts">320 kbps</div></div></div>
-      <div class="srow"><div class="ic">⤓</div><div class="tx"><div class="tt">Download quality</div><div class="ts">320 kbps</div></div></div>
-      <div class="srow"><div class="ic">◎</div><div class="tx"><div class="tt">Languages</div><div class="ts">Hindi, English</div></div><span style="color:var(--on-surface-variant)">›</span></div>
-    </div>
-    <div class="slabel">Storage</div>
-    <div class="slist">
-      <div class="srow"><div class="ic">⤓</div><div class="tx"><div class="tt">Cache frequently played songs</div></div><div class="sw"></div></div>
-      <div class="srow"><div class="ic">▤</div><div class="tx"><div class="tt">Cached songs</div><div class="ts">142 MB</div></div></div>
-    </div>
-  </div>
-  <div class="nav"><div><i>⌂</i>Home</div><div><i>◉</i>Radio</div><div class="on"><i>♫</i>Library</div></div>
-</div><figcaption>Settings: Android 16 segmented list (tiles, 2dp seams, 16dp outer / 4dp inner corners), value as supporting text</figcaption></figure>
-
-<figure><div class="phone player">
-  <div class="status"><span>9:41</span><span>5G ▮▮▮ 80</span></div>
-  <div class="appbar" style="background:transparent;padding:0 4px"><div class="ib" style="color:#e6eef8">⌄</div><div class="title" style="text-align:center;font-size:12px;line-height:16px;color:#c4cfdc">Playing from<br><b style="color:#e6eef8;font-size:14px">K Pop</b></div><div class="ib" style="color:#e6eef8">⋮</div></div>
-  <div class="art"></div>
-  <div class="pinfo"><div class="tx"><h1>Waste It On Me</h1><div class="ts">Steve Aoki ft. BTS</div></div><div class="ib" style="color:#e6eef8">♡</div></div>
-  <div class="seek"></div><div class="times"><span>1:12</span><span>-2:01</span></div>
-  <div class="transport"><div class="ib">⤨</div><div class="tbtn">⏮</div><div class="bigplay">▶</div><div class="tbtn">⏭</div><div class="ib">↻</div></div>
-  <div class="pfoot"><div class="btn">❝ Lyrics</div><div class="btn">☰ Up next</div></div>
-</div><figcaption>Now Playing: 28dp art corners, headlineSmall title, play is a rounded square paused → circle playing (spring), tonal prev/next</figcaption></figure>
-
-</div>
-</body>
+  </body>
 </html>

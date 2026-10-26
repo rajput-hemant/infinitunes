@@ -20,13 +20,22 @@ export function LyricsSection({ songId }: { songId: string }) {
   if (!lyrics?.synced && !lyrics?.plain) return null;
   const preview =
     lyrics.plain ?? lyrics.synced?.map((line) => line.text).join("\n");
+  // A label replaces the pressable's content for screen readers, so it leads
+  // with the first lyric line the sighted preview shows.
+  const firstLine = preview
+    ?.split("\n")
+    .find((line) => line.trim())
+    ?.trim();
+  const readLabel = firstLine
+    ? `${firstLine}. Read full lyrics`
+    : "Read full lyrics";
   return (
     <View>
       <SectionHeader title="Lyrics" />
       <Pressable
         onPress={() => setExpanded((open) => !open)}
         accessibilityRole="button"
-        accessibilityLabel={expanded ? "Collapse lyrics" : "Read full lyrics"}
+        accessibilityLabel={expanded ? "Collapse lyrics" : readLabel}
         accessibilityState={{ expanded }}
         android_ripple={{ color: palette["fill-2"], foreground: true }}
         className={

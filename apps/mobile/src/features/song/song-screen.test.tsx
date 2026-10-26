@@ -165,7 +165,7 @@ describe("SongScreen", () => {
       await screen.findByText("First line\nSecond & third\nbold"),
     ).toBeOnTheScreen();
     await fireEvent.press(
-      screen.getByRole("button", { name: "Read full lyrics" }),
+      screen.getByRole("button", { name: "First line. Read full lyrics" }),
     );
 
     expect(
