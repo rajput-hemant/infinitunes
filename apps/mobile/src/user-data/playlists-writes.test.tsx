@@ -1,12 +1,16 @@
-import { resetPlaylistOverlay } from "@infinitunes/core/react/optimistic-playlists";
+import {
+  resetPlaylistOverlay,
+  usePlaylistDetails,
+} from "@infinitunes/core/react/optimistic-playlists";
 import { act, screen, waitFor } from "@testing-library/react-native";
 import { Text } from "react-native";
 
 import { failureStore } from "~/lib/failure";
+import { queryClient } from "~/lib/query-client";
 import { renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure, trpcError } from "~/test/trpc-mock";
-import { deferred, userPlaylist } from "~/test/user-library";
+import { deferred, playlistSummary, userPlaylist } from "~/test/user-library";
 
 import {
   addSongsToPlaylist,
@@ -15,6 +19,8 @@ import {
   moveSongInPlaylist,
   removeSongFromPlaylist,
   renamePlaylist,
+  usePlaylistMembership,
+  useServerPlaylistDetails,
   useUserPlaylists,
 } from "./playlists";
 
@@ -27,23 +33,43 @@ const server = userPlaylist({
 /** The playlists as a list shows them: `name:songs`, `*` for a pending row. */
 function Shown() {
   const playlists = useUserPlaylists();
+  const playlist = usePlaylistDetails(useServerPlaylistDetails("pl-1").data);
+  const membership = usePlaylistMembership();
   return (
-    <Text testID="shown">
-      {playlists
-        ?.map((p) => `${p.name}:${p.songs.join("")}${p.pending ? "*" : ""}`)
-        .join("|") ?? "unknown"}
-    </Text>
+    <>
+      <Text testID="held">{[...(membership.get("pl-1") ?? [])].join("")}</Text>
+      <Text testID="counts">
+        {playlists?.map((p) => `${p.name}:${p.songCount}`).join("|")}
+      </Text>
+      <Text testID="shown">
+        {playlists
+          ?.map(
+            (p) =>
+              `${p.name}:${p.id === playlist?.id ? playlist.songs.join("") : ""}${p.pending ? "*" : ""}`,
+          )
+          .join("|") ?? "unknown"}
+      </Text>
+    </>
   );
 }
 
 const shown = () => screen.getByTestId("shown").props.children as string;
+const counts = () => screen.getByTestId("counts").props.children as string;
+const held = () => screen.getByTestId("held").props.children as string;
 
 beforeEach(async () => {
   // Each optimistic record expires on a long timer; a real one would keep
   // the Jest worker alive after the suite.
+  queryClient.clear();
   jest.useFakeTimers();
   await act(async () => signInAs("alice"));
-  procedure("user.getUserPlaylists").mockResolvedValue([server]);
+  procedure("user.getUserPlaylists").mockResolvedValue([
+    playlistSummary(server),
+  ]);
+  procedure("user.getPlaylistMembership").mockResolvedValue([
+    { id: server.id, songs: server.songs },
+  ]);
+  procedure("user.getPlaylistDetails").mockResolvedValue(server);
   await renderWithProviders(<Shown />);
   await waitFor(() => expect(shown()).toBe("Road Trip:abc"));
 });
@@ -162,6 +188,27 @@ describe("add songs", () => {
     await act(async () =>
       write.resolve(userPlaylist({ id: "pl-1", songs: ["a", "b", "c", "d"] })),
     );
+  });
+
+  it("counts and checks the songs at once, then counts what the write returns", async () => {
+    const write = deferred<ReturnType<typeof userPlaylist>>();
+    procedure("user.addSongsToPlaylist").mockReturnValue(write.promise);
+
+    await act(async () =>
+      addSongsToPlaylist({ id: "pl-1", name: "Road Trip" }, [
+        { id: "a", name: "Already held" },
+        { id: "d", name: "New song" },
+      ]),
+    );
+    expect(procedure("user.getPlaylistMembership")).toHaveBeenCalledTimes(1);
+    // "a" is one of the summary's cover songs, so only "d" is counted.
+    expect(counts()).toBe("Road Trip:4");
+    expect(held()).toBe("abcd");
+
+    await act(async () =>
+      write.resolve(userPlaylist({ id: "pl-1", songs: ["a", "b", "c", "d"] })),
+    );
+    expect(counts()).toBe("Road Trip:4");
   });
 
   it("takes the songs back out when the write fails", async () => {

@@ -8,7 +8,7 @@ import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderScreen } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
-import { userPlaylist } from "~/test/user-library";
+import { playlistSummary, userPlaylist } from "~/test/user-library";
 
 import { QueueList } from "./queue-list";
 
@@ -53,8 +53,9 @@ describe("saving the queue to a playlist", () => {
 
   it("adds every song in the queue, including the one playing, to the chosen playlist", async () => {
     await act(async () => signInAs("alice"));
+    procedure("user.getPlaylistDetails").mockResolvedValue(userPlaylist());
     procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1", name: "Road Trip" }),
+      playlistSummary({ id: "pl-1", name: "Road Trip" }),
     ]);
     playerStore.getState().playTracks(songs, { startIndex: 1 });
     await renderScreen(<QueueList />);
@@ -70,8 +71,9 @@ describe("saving the queue to a playlist", () => {
 
   it("leaves podcast episodes out of the saved songs", async () => {
     await act(async () => signInAs("alice"));
+    procedure("user.getPlaylistDetails").mockResolvedValue(userPlaylist());
     procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1" }),
+      playlistSummary({ id: "pl-1" }),
     ]);
     playerStore
       .getState()
@@ -89,6 +91,7 @@ describe("saving the queue to a playlist", () => {
 
   it("offers a new playlist made of the queue's songs", async () => {
     await act(async () => signInAs("alice"));
+    procedure("user.getPlaylistDetails").mockResolvedValue(userPlaylist());
     procedure("user.getUserPlaylists").mockResolvedValue([]);
     playerStore.getState().playTracks(songs);
     await renderScreen(<QueueList />);

@@ -1,7 +1,7 @@
 "use client";
 
 import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
-import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import { Button } from "@infinitunes/ui/components/button";
 import {
   Dialog,
@@ -21,7 +21,7 @@ import { NewPlaylistForm } from "./new-playlist-form";
 type AddToPlaylistDialogProps = {
   isDialogOpen: boolean;
   setDialogOpen: (open: boolean) => void;
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   addToPlaylist: (id: string, name: string) => void;
 };
 
@@ -47,7 +47,7 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
           </output>
         ) : playlists.length !== 0 ? (
           <div className="-mx-2 flex max-h-80 flex-col gap-1 overflow-y-auto">
-            {playlists.map(({ id, name, songs }) => (
+            {playlists.map(({ id, name, songCount }) => (
               <button
                 key={id}
                 type="button"
@@ -62,9 +62,9 @@ export function AddToPlaylistDialog(props: AddToPlaylistDialogProps) {
                     {name}
                   </p>
                   <p className="truncate text-muted-foreground">
-                    {songs.length === 0
+                    {songCount === 0
                       ? "No songs"
-                      : `${songs.length} ${songs.length === 1 ? "song" : "songs"}`}
+                      : `${songCount} ${songCount === 1 ? "song" : "songs"}`}
                   </p>
                 </div>
               </button>

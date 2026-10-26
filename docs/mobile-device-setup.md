@@ -33,6 +33,7 @@ Installs: JDK 17 and the Android command-line SDK (no Android Studio, no emulato
 
    Set `JAVA_HOME` and `ANDROID_HOME` (the SDK folder) and add `$ANDROID_HOME/platform-tools` to `PATH`.
    Gradle can also fetch missing SDK parts if you accept the licenses: `sdkmanager --licenses`.
+
 3. On the phone: Settings > About phone > tap Build number 7 times, then Developer options > turn on USB debugging.
 4. Connect with a data-capable USB cable, accept "Allow USB debugging" on the phone, and check `adb devices` shows `device`.
 5. Build and install (first build downloads Gradle and compiles native code: slow and several GB of disk):
@@ -60,6 +61,7 @@ The app targets iOS 16.4+. Linux and Windows cannot build iOS.
 
    The script is `expo run:ios --device`: pick the iPhone from the list. If it fails on signing, open `apps/mobile/ios/Infinitunes.xcworkspace` (created by the first run), set your Team under Signing & Capabilities, then rerun the command.
    If `com.infinitunes.app` is taken for a free account, change `ios.bundleIdentifier` locally.
+
 5. First launch: Settings > General > VPN & Device Management > your Apple ID > Trust. Allow the Local Network prompt in the app.
 
 ## Daily use

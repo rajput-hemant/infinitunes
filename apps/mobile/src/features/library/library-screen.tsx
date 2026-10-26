@@ -1,13 +1,14 @@
 import { usePlaylists } from "@infinitunes/core/react/optimistic-playlists";
+import { router } from "expo-router";
 import { View } from "react-native";
 
+import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
 import { ListRow } from "~/components/list-row";
 import { ScreenScrollView } from "~/components/screen-scroll-view";
 import { SectionHeader } from "~/components/section-header";
 import { SongListSkeleton } from "~/components/skeletons";
 import { PullToRefresh } from "~/components/ui/refresh-control";
-import { Text } from "~/components/ui/text";
 import { GRID_GAP, useGridCardWidth } from "~/lib/use-grid-card-width";
 import { useFavoriteLists } from "~/user-data/favorites";
 import { useServerPlaylists } from "~/user-data/playlists";
@@ -33,16 +34,23 @@ function Playlists() {
   }
   if (playlists.length === 0) {
     return (
-      <Text tone="muted" className="px-page">
-        Collect songs you love into playlists you can play any time.
-      </Text>
+      <EmptyState
+        placement="top"
+        icon={{ ios: "music.note.list", android: "queue_music" }}
+        title="No playlists yet"
+        message="Collect songs you love into playlists you can play any time."
+        action={{
+          label: "New Playlist",
+          onPress: () => router.push("/create-playlist"),
+        }}
+      />
     );
   }
   return playlists.map((playlist) => (
     <PlaylistRow
       key={playlist.id}
       playlist={playlist}
-      cover={playlist.songs[0] && covers.get(playlist.songs[0])}
+      cover={playlist.coverSongs[0] && covers.get(playlist.coverSongs[0])}
     />
   ));
 }

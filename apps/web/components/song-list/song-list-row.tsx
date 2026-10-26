@@ -1,6 +1,7 @@
 "use client";
 
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import type { SongRowItem } from "@infinitunes/types";
 import {
   formatDuration,
@@ -36,8 +37,9 @@ type SongListRowProps = {
   showAlbum: boolean;
   user?: User;
   favorites?: Favorite | null;
-  playlists?: MyPlaylist[];
+  playlists?: PlaylistSummary[];
   playlistId?: string;
+  playlistSongIds?: string[];
   playlistSongIndex?: number;
 };
 
@@ -55,6 +57,7 @@ export function SongListRow(props: SongListRowProps) {
     favorites,
     playlists,
     playlistId,
+    playlistSongIds,
     playlistSongIndex,
   } = props;
 
@@ -188,6 +191,7 @@ export function SongListRow(props: SongListRowProps) {
           showAlbum={showAlbum}
           playlists={playlists}
           playlistId={playlistId}
+          playlistSongIds={playlistSongIds}
           playlistSongIndex={playlistSongIndex}
         />
       </div>

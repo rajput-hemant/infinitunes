@@ -2,6 +2,11 @@ import { afterEach, beforeAll, expect, it } from "bun:test";
 
 import { db } from "@infinitunes/db";
 
+import {
+  DEFAULT_LYRICS_TIMEOUT_MS,
+  getSyncedLyrics,
+} from "../src/lib/synced-lyrics";
+
 const originalFetch = globalThis.fetch;
 let caller: Awaited<ReturnType<typeof createCaller>>;
 let calls: URL[] = [];
@@ -77,6 +82,7 @@ it("matches decoded metadata and parses synced lyrics with a descriptive User-Ag
     "Infinitunes (https://github.com/rajput-hemant/infinitunes)",
   );
 });
+
 it("searches after 404, rejects duration mismatches and prefers synced within three seconds", async () => {
   const input = setup();
   search = [
@@ -89,6 +95,7 @@ it("searches after 404, rejects duration mismatches and prefers synced within th
     { time: 2, text: "Right" },
   ]);
 });
+
 it("retries a title without From and feat suffixes", async () => {
   const input = setup();
   title = 'Song (From "Film") (feat. Singer)';
@@ -99,6 +106,7 @@ it("retries a title without From and feat suffixes", async () => {
       .map((url) => url.searchParams.get("track_name")),
   ).toEqual([title, "Song"]);
 });
+
 it("falls back to decoded JioSaavn plain lyrics and retains credit", async () => {
   const input = setup();
   fallback = { lyrics: "One<br>Two &amp; Three", lyrics_copyright: "Provider" };
@@ -110,6 +118,7 @@ it("falls back to decoded JioSaavn plain lyrics and retains credit", async () =>
     copyright: "Provider",
   });
 });
+
 it("returns nulls for missing or malformed lyrics", async () => {
   const input = setup();
   get = { syncedLyrics: 10 };
@@ -120,6 +129,7 @@ it("returns nulls for missing or malformed lyrics", async () => {
     instrumental: false,
   });
 });
+
 it("returns instrumental without falling back", async () => {
   const input = setup();
   get = { instrumental: true, plainLyrics: null, syncedLyrics: null };
@@ -132,4 +142,74 @@ it("returns instrumental without falling back", async () => {
   expect(
     calls.some((url) => url.searchParams.get("__call") === "lyrics.getLyrics"),
   ).toBe(false);
+});
+
+it("enforces an overall deadline of ~8 seconds and skips catalog fallback when expired (S-16)", async () => {
+  expect(DEFAULT_LYRICS_TIMEOUT_MS).toBe(8000);
+  const input = setup();
+  fallback = { lyrics: "Late fallback", lyrics_copyright: "Late" };
+
+  globalThis.fetch = async (fetchInput, init) => {
+    const url = new URL(String(fetchInput));
+    calls.push(url);
+    if (url.hostname === "lrclib.net") {
+      // Simulate slow LRCLIB call that waits for caller signal to abort
+      await new Promise<void>((resolve) => {
+        if (init?.signal?.aborted) return resolve();
+        init?.signal?.addEventListener("abort", () => resolve(), {
+          once: true,
+        });
+        setTimeout(resolve, 200);
+      });
+      return new Response("timeout", { status: 408 });
+    }
+    if (url.searchParams.get("__call") === "lyrics.getLyrics") {
+      return Response.json(fallback);
+    }
+    return Response.json({
+      songs: [
+        {
+          title: "Slow Song",
+          more_info: {
+            album: "Album",
+            duration: "200",
+            artistMap: { primary_artists: [{ name: "Singer" }] },
+          },
+        },
+      ],
+    });
+  };
+
+  const { api } = await import("../src/lib/api");
+  // Run with a small overall deadline (50ms) to verify deadline arithmetic
+  const result = await getSyncedLyrics(input.id, api, 50);
+
+  expect(result).toEqual({
+    synced: null,
+    plain: null,
+    instrumental: false,
+    source: "jiosaavn",
+    copyright: null,
+  });
+  // Since overall deadline expired during LRCLIB, plain fallback was skipped
+  expect(
+    calls.some((url) => url.searchParams.get("__call") === "lyrics.getLyrics"),
+  ).toBe(false);
+});
+
+it("immediately returns empty when caller signal is pre-aborted (S-16)", async () => {
+  const input = setup();
+  const { api } = await import("../src/lib/api");
+  const controller = new AbortController();
+  controller.abort();
+
+  const result = await getSyncedLyrics(input.id, api, 8000, controller.signal);
+  expect(result).toEqual({
+    synced: null,
+    plain: null,
+    instrumental: false,
+    source: "jiosaavn",
+    copyright: null,
+  });
+  expect(calls).toHaveLength(0);
 });

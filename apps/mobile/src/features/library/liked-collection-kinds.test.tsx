@@ -51,7 +51,7 @@ describe("liked playlists", () => {
   });
 
   it("says so when none is liked", async () => {
-    procedure("user.getUserFavorites").mockResolvedValue(undefined);
+    procedure("user.getUserFavorites").mockResolvedValue(null);
     await renderStack({
       index: () => <LikedCollectionScreen kind="playlists" />,
     });

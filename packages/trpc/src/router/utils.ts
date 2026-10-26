@@ -1,6 +1,5 @@
-import { api, isTransientUpstreamError } from "../lib/api";
+import { isTransientUpstreamError } from "../lib/api";
 import { createDownloadLinks } from "../lib/download";
-import { endpoints } from "../lib/endpoints";
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -12,19 +11,6 @@ export function hasIdentity(
   key: string,
 ): value is Record<string, unknown> {
   return isRecord(value) && Boolean(value[key]);
-}
-
-export async function resolveNumericId(
-  t: string,
-  type: "album" | "playlist",
-  request: typeof api = api,
-): Promise<string> {
-  if (/^\d+$/.test(t)) return t;
-  const result = await request(endpoints[type].link, {
-    query: { token: t, type },
-  });
-  if (!isRecord(result) || result.id == null) return t;
-  return typeof result.id === "string" ? result.id : String(result.id);
 }
 
 export function withDownloadUrl<T>(item: T): T {

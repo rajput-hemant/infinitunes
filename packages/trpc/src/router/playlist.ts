@@ -5,12 +5,7 @@ import { z } from "zod";
 import { endpoints } from "../lib/endpoints";
 import { playlistInput, playlistRecommendInput } from "../lib/inputs";
 import { publicProcedure, router } from "../trpc";
-import {
-  hasIdentity,
-  mapDownloadUrls,
-  resolveNumericId,
-  secondaryList,
-} from "./utils";
+import { hasIdentity, mapDownloadUrls, secondaryList } from "./utils";
 
 export const playlistRouter = router({
   details: publicProcedure
@@ -24,12 +19,13 @@ export const playlistRouter = router({
           message: "Please provide playlist id or a token",
         });
       }
-      const t = token ?? "";
-      const listid = id ?? (await resolveNumericId(t, "playlist", api));
-      const result = await api(endpoints.playlist.id, {
+      const isNumeric = (val?: string) => Boolean(val && /^\d+$/.test(val));
+      const listid = id || (isNumeric(token) ? token : undefined);
+      const endpoint = listid ? endpoints.playlist.id : endpoints.playlist.link;
+      const result = await api(endpoint, {
         query: {
           listid,
-          token: t,
+          token: listid ? (token ?? "") : token,
           type: "playlist",
           p: "1",
           n: "50",

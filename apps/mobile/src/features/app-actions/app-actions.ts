@@ -12,7 +12,7 @@ import { beginPlaybackRequest } from "~/playback/playback-request";
 import { playerStore } from "~/playback/player-store";
 import { resumePlayback } from "~/playback/transport";
 import { favoriteListsQuery } from "~/user-data/favorites";
-import { serverPlaylistsQuery } from "~/user-data/playlists";
+import { playlistDetailsQuery } from "~/user-data/playlists";
 import { promptSignIn } from "~/user-data/session";
 
 /**
@@ -94,9 +94,10 @@ async function playPlaylist(
     promptSignIn();
     return "back";
   }
-  const playlists = await queryClient.fetchQuery(serverPlaylistsQuery(userId));
+  const playlist = id
+    ? await queryClient.fetchQuery(playlistDetailsQuery(id, userId))
+    : undefined;
   if (!isCurrent()) return "back";
-  const playlist = playlists.find((candidate) => candidate.id === id);
   if (!playlist) {
     showFailure("That playlist isn't in your library");
     return "back";

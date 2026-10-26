@@ -66,7 +66,7 @@ describe("LikedSongsScreen", () => {
   });
 
   it("says so when nothing is liked yet", async () => {
-    procedure("user.getUserFavorites").mockResolvedValue(undefined);
+    procedure("user.getUserFavorites").mockResolvedValue(null);
     await renderLikedSongs();
 
     expect(await screen.findByText("No liked songs yet")).toBeOnTheScreen();

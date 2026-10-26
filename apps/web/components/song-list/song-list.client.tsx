@@ -1,4 +1,5 @@
-import type { Favorite, MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
+import type { Favorite } from "@infinitunes/db/schema";
 import type { SongRowItem } from "@infinitunes/types";
 
 import type { User } from "~/lib/auth";
@@ -12,7 +13,7 @@ type SongListProps = {
   items: SongRowItem[];
   showAlbum?: boolean;
   userFavorites?: Favorite | null;
-  userPlaylists?: MyPlaylist[];
+  userPlaylists?: PlaylistSummary[];
   className?: string;
 };
 

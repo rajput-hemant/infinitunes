@@ -6,6 +6,7 @@ import {
   removeSongOptimistic,
   renamePlaylistOptimistic,
   usePlaylists,
+  usePlaylistSongSets,
   type PlaylistView,
   type UserPlaylist,
 } from "@infinitunes/core/react/optimistic-playlists";
@@ -18,9 +19,8 @@ import { trpc, trpcClient } from "~/lib/trpc";
 import { userQueryKey, useUserId } from "./session";
 
 /**
- * The listener's playlists exactly as the server holds them, with the
- * query's state. Removing or moving a song needs this raw copy (the server
- * indexes what it holds); lists and menus show `useUserPlaylists`.
+ * The listener's playlist summaries (count and cover ids, no songs) with the
+ * query's state; the songs come from `useServerPlaylistDetails`.
  */
 export function useServerPlaylists() {
   const userId = useUserId();
@@ -47,11 +47,74 @@ export function useUserPlaylists(): PlaylistView[] | undefined {
   return usePlaylists(useServerPlaylists().data);
 }
 
+/** One playlist's detail query (its songs) for `userId`. */
+export function playlistDetailsQuery(
+  playlistId: string,
+  userId: string | undefined,
+) {
+  return {
+    queryKey: userQueryKey(
+      trpc.user.getPlaylistDetails.queryKey({ playlistId }),
+      userId,
+    ),
+    queryFn: () => trpcClient.user.getPlaylistDetails.query({ playlistId }),
+  };
+}
+
+/**
+ * One playlist exactly as the server holds it (`null` when it has none by
+ * that id). Removing or moving a song needs this raw copy (the server indexes
+ * what it holds); the screen shows it through `usePlaylistDetails`.
+ */
+export function useServerPlaylistDetails(playlistId: string) {
+  const userId = useUserId();
+  return useQuery({
+    ...playlistDetailsQuery(playlistId, userId),
+    enabled: userId !== undefined,
+  });
+}
+
+/** Every playlist's song ids of `userId`, in one request (`getPlaylistMembership`). */
+export function playlistMembershipQuery(userId: string | undefined) {
+  return {
+    queryKey: userQueryKey(trpc.user.getPlaylistMembership.queryKey(), userId),
+    queryFn: () => trpcClient.user.getPlaylistMembership.query(),
+  };
+}
+
+/**
+ * The songs each playlist holds, with pending writes applied, for the "Add to
+ * Playlist" check marks: one query every menu shares, and one map per answer.
+ * Empty until it loads (no marks, as for a playlist without the songs).
+ * M3 builds menus on first press; load this there, lazily.
+ */
+export function usePlaylistMembership(): ReadonlyMap<
+  string,
+  ReadonlySet<string>
+> {
+  const userId = useUserId();
+  const { data } = useQuery({
+    ...playlistMembershipQuery(userId),
+    enabled: userId !== undefined,
+  });
+  return usePlaylistSongSets(data) ?? NO_MEMBERSHIP;
+}
+
+const NO_MEMBERSHIP: ReadonlyMap<string, ReadonlySet<string>> = new Map();
+
 /** Refetches every account's playlists after a write settles. */
 export function refreshPlaylists() {
-  return queryClient.invalidateQueries({
-    queryKey: trpc.user.getUserPlaylists.queryKey(),
-  });
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: trpc.user.getUserPlaylists.queryKey(),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: trpc.user.getPlaylistDetails.pathKey(),
+    }),
+    queryClient.invalidateQueries({
+      queryKey: trpc.user.getPlaylistMembership.queryKey(),
+    }),
+  ]);
 }
 
 /*

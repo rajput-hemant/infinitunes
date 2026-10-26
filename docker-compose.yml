@@ -2,11 +2,14 @@
 # byte-identical with the copy in the other project: the project name, container
 # names, volumes, network and init SQL are the contract that lets either checkout
 # start, reuse and stop the same shared resources. See docs/local-development.md.
+# Images are unpinned on purpose (`docker compose pull` takes the newest). A new
+# Postgres major starts an empty cluster beside the old one in the volume: dump
+# with the old image first (docs/local-development.md, "Postgres upgrades").
 name: local-platforms
 
 services:
   postgres:
-    image: postgres:18.6-alpine
+    image: postgres:alpine
     container_name: local-platforms-postgres
     restart: unless-stopped
     ports:
@@ -27,7 +30,7 @@ services:
       retries: 5
 
   redis:
-    image: redis:7.4-alpine
+    image: redis:alpine
     container_name: local-platforms-redis
     restart: unless-stopped
     ports:
@@ -41,7 +44,7 @@ services:
       retries: 5
 
   redis-rest:
-    image: hiett/serverless-redis-http:0.0.10
+    image: hiett/serverless-redis-http
     container_name: local-platforms-redis-rest
     restart: unless-stopped
     ports:

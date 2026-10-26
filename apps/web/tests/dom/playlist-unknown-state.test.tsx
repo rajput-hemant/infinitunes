@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 
-import type { MyPlaylist } from "@infinitunes/db/schema";
+import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
 import {
   AppRouterContext,
   type AppRouterInstance,
@@ -54,16 +54,16 @@ afterEach(async () => {
 });
 
 const text = () => document.body.textContent ?? "";
-const playlist = (id: string, name: string): MyPlaylist => ({
+const playlist = (id: string, name: string): PlaylistSummary => ({
   id,
   name,
   description: null,
-  userId: "u1",
-  songs: [],
+  songCount: 0,
+  coverSongs: [],
   createdAt: new Date(0),
 });
 
-function dialog(playlists: MyPlaylist[] | undefined) {
+function dialog(playlists: PlaylistSummary[] | undefined) {
   return (
     <AddToPlaylistDialog
       isDialogOpen
@@ -74,7 +74,7 @@ function dialog(playlists: MyPlaylist[] | undefined) {
   );
 }
 
-function sidebar(userPlaylists: MyPlaylist[] | undefined) {
+function sidebar(userPlaylists: PlaylistSummary[] | undefined) {
   return (
     <AppSidebarProvider>
       <Sidebar user={user} userPlaylists={userPlaylists} />
