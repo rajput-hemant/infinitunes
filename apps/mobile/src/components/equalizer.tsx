@@ -13,6 +13,8 @@ import Animated, {
 } from "react-native-reanimated";
 import type { SharedValue } from "react-native-reanimated";
 
+import { iconSize, sizes } from "~/theme/tokens";
+
 /** Each bar's rest height (a fraction of the edge) and its bounce period. */
 const BARS = [
   { rest: 0.45, period: 420, delay: 0 },
@@ -20,9 +22,9 @@ const BARS = [
   { rest: 0.6, period: 480, delay: 60 },
 ] as const;
 
-const EDGE = 16;
+const EDGE = iconSize.sm;
 const BAR_WIDTH = 3;
-const BAR_GAP = 2;
+const BAR_GAP = sizes.seam;
 /** Paused bars sit low and still. */
 const PAUSED_SCALE = 0.25;
 

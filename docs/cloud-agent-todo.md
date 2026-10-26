@@ -188,36 +188,48 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [x] **M-63** P3 CONFIRMED `features/auth/reset-password-form.tsx:54-58` - dead `!token` re-check after the early return [screens P3-9] _Done: dead `!token` check removed (`resetToken` const)._
   - Fix: delete the dead check. Executor: haiku. Flags: none.
 
-## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md`
+## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md` (branch `fix/m15-component-cleanup`)
 
 `song-menu.tsx` belongs to M3, so M-67 waits on M3 and the decision.
 
-- [ ] **M-64** **[device sign-off later]** P2 PLAUSIBLE `components/option-menu.tsx:58-62` - `OptionMenu` trigger View lacks `accessible`, so VoiceOver reads inner text, not "Sort by, Popular, button" [comp P2-1]
+- [x] **M-64** **[device sign-off later]** P2 PLAUSIBLE `components/option-menu.tsx:58-62` - `OptionMenu` trigger View lacks `accessible`, so VoiceOver reads inner text, not "Sort by, Popular, button" [comp P2-1]
   - Fix: add `accessible` (as `MenuTrigger` does) and `toHaveProp("accessible", true)` in the a11y test. Executor: haiku. Flags: needs device check.
-- [ ] **M-65** P2 PLAUSIBLE `components/entity-list.tsx:26-33,64-66` - `entityListKey` collides when a song repeats in an artist/label/show list [comp P2-2]
+  - Done: OptionMenu trigger is `accessible`; the a11y test pins it.
+- [x] **M-65** P2 PLAUSIBLE `components/entity-list.tsx:26-33,64-66` - `entityListKey` collides when a song repeats in an artist/label/show list [comp P2-2]
   - Fix: song item `id` = `${row.id}-${index}` (or append `index` for `kind === "song"`). Executor: haiku. Flags: none.
-- [ ] **M-66** P3 CONFIRMED `components/ui/spinner.tsx:11-15`, `spinner.android.tsx:9-27` - iOS and Android spinners differ in size and accessibility label [comp P3-2]
+  - Done: Song rows key by `${id}-${index}`; `entity-list.test.ts` covers the repeat.
+- [x] **M-66** P3 CONFIRMED `components/ui/spinner.tsx:11-15`, `spinner.android.tsx:9-27` - iOS and Android spinners differ in size and accessibility label [comp P3-2]
   - Fix: iOS default label "Loading" in a `sizes.touch` box. Executor: haiku. Flags: none.
-- [ ] **M-67** P3 CONFIRMED `song-menu.tsx:90`, `collection-menu.tsx:73`, `native-menu.tsx:96`, `card-menu.tsx:26` - menu icons are SF Symbol names and never render on Android [comp P3-3]
+  - Done: iOS Spinner is one progressbar, default label "Loading", in a 48pt box.
+- [ ] **M-67** P3 CONFIRMED `song-menu.tsx:90`, `collection-menu.tsx:73`, `native-menu.tsx:96`, `card-menu.tsx:26` - menu icons are SF Symbol names and never render on Android [comp P3-3] _Held: song-menu is in owner's M3._
   - Fix: decide, then either drop `image` for Android or map `{ ios, android }` once in `toMenuAction`. Executor: sonnet (decision) / haiku (mechanical). Flags: needs user decision.
-- [ ] **M-68** P3 CONFIRMED `theme/appearance.ts:54-66` - `merge` validates accent and corners but not `mode` [comp P3-5]
+- [x] **M-68** P3 CONFIRMED `theme/appearance.ts:54-66` - `merge` validates accent and corners but not `mode` [comp P3-5]
   - Fix: `mode: APPEARANCE_MODES.includes(value.mode) ? value.mode : "system"`. Executor: haiku. Flags: none.
-- [ ] **M-69** P3 CONFIRMED `theme/tokens.ts:303` (`sizes["ctl-lg"]`), `theme/motion.ts:19` (`springs.effectsDefault`), spec Motion table "effects fast 3800/123" - dead tokens and spec drift [comp P3-6]
+  - Done: `merge` maps an unknown saved mode to "system"; test added.
+- [x] **M-69** P3 CONFIRMED `theme/tokens.ts:303` (`sizes["ctl-lg"]`), `theme/motion.ts:19` (`springs.effectsDefault`), spec Motion table "effects fast 3800/123" - dead tokens and spec drift [comp P3-6]
   - Fix: delete `ctl-lg`, the phantom spec row, and `effectsDefault` only if M-25 did not start using it. Do after M7. Executor: haiku. Flags: none.
-- [ ] **M-70** P3 CONFIRMED `components/ui/artwork.tsx:48`, `catalog-grid-skeleton.tsx:14`, `components/equalizer.tsx:23-25` - duplicated `9999` full-radius literal; Equalizer sizes are literals [comp P3-7, P3-8]
+  - Done: Deleted `ctl-lg` (and its spacing-test entry) and the phantom "effects fast" spec row. `effectsDefault` stays (M-25 uses it).
+- [x] **M-70** P3 CONFIRMED `components/ui/artwork.tsx:48`, `catalog-grid-skeleton.tsx:14`, `components/equalizer.tsx:23-25` - duplicated `9999` full-radius literal; Equalizer sizes are literals [comp P3-7, P3-8]
   - Fix: export `FULL_RADIUS` once (or call `artworkFrame`); `EDGE = iconSize.sm`, `BAR_GAP = sizes.seam`. Executor: haiku. Flags: none.
-- [ ] **M-71** P3 PLAUSIBLE `components/ui/artwork.tsx:109-117` - 150ms fade on recycled list cells [perf#20]
+  - Done: `FULL_RADIUS` exported from artwork and shared by the catalog skeleton; equalizer uses `iconSize.sm` and `sizes.seam`.
+- [x] **M-71** P3 PLAUSIBLE `components/ui/artwork.tsx:109-117` - 150ms fade on recycled list cells [perf#20]
   - Fix: `transition={0}` for row/card sizes. Executor: haiku. Flags: none.
-- [ ] **M-72** P3 CONFIRMED `components/form/{form-field,email-field,password-field}.tsx` - deprecated `forwardRef` on React 19 [comp P3-12]
+  - Done: Row and card art use `transition={0}`; test pins it.
+- [x] **M-72** P3 CONFIRMED `components/form/{form-field,email-field,password-field}.tsx` - deprecated `forwardRef` on React 19 [comp P3-12]
   - Fix: take `ref` as a prop. Executor: haiku. Flags: none.
-- [ ] **M-73** P3 CONFIRMED `components/ui/refresh-control.tsx:29-42` - a rejected `onRefresh` becomes an unhandled rejection (latent) [comp P3-13]
+  - Done: FormField, EmailField and PasswordField take `ref` as a prop; forwardRef removed.
+- [x] **M-73** P3 CONFIRMED `components/ui/refresh-control.tsx:29-42` - a rejected `onRefresh` becomes an unhandled rejection (latent) [comp P3-13]
   - Fix: `.catch(reportFailure("Couldn't refresh."))`. Executor: haiku. Flags: none.
-- [ ] **M-74** P3 PLAUSIBLE `navigation/use-quick-action-routing.ts:20` - `QuickActions.initial` replays on every layout mount [comp P3-15]
+  - Done: `onRefresh` rejection goes through `reportFailure("Couldn't refresh.")`; test added.
+- [x] **M-74** P3 PLAUSIBLE `navigation/use-quick-action-routing.ts:20` - `QuickActions.initial` replays on every layout mount [comp P3-15]
   - Fix: module-level `handledInitial` flag. Executor: haiku. Flags: none.
-- [ ] **M-75** P3 CONFIRMED `docs/design/android-m3-expressive/spec.md` "Spacing and density" - the "same-size wrapper drops slop" claim is wrong on RN 0.88 Fabric; only `overflow: hidden|scroll` does [comp P3-16]
+  - Done: Already fixed: the module-level `openedLaunchAction` guard stops a remount from replaying the launch action. Added a remount test that pins it.
+- [x] **M-75** P3 CONFIRMED `docs/design/android-m3-expressive/spec.md` "Spacing and density" - the "same-size wrapper drops slop" claim is wrong on RN 0.88 Fabric; only `overflow: hidden|scroll` does [comp P3-16]
   - Fix: reword the spec sentence (leave `Button`/`IconButton` as they are). Executor: haiku. Flags: none.
-- [ ] **M-76** P3 CONFIRMED `plugins/android-app-actions/shortcuts.ts:6` - `DEEP_LINK_SCHEME` duplicates `NATIVE_APP_SCHEME` [core#12]
+  - Done: Spec now says only `overflow: hidden` or `scroll` keeps a child's slop.
+- [x] **M-76** P3 CONFIRMED `plugins/android-app-actions/shortcuts.ts:6` - `DEEP_LINK_SCHEME` duplicates `NATIVE_APP_SCHEME` [core#12]
   - Fix: import it from `@infinitunes/auth/native-app` as `app.config.ts` does. Executor: haiku. Flags: none.
+  - Done: shortcuts.ts imports `NATIVE_APP_SCHEME` from `@infinitunes/auth/native-app`.
 
 ## Batch M16 (sonnet): song cache, downloads, notifications - `lib/{song-cache,download,notifications}.ts` (branch `feat/m16-downloads`)
 

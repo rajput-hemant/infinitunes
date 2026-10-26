@@ -2,6 +2,7 @@ import { useState } from "react";
 import { RefreshControl } from "react-native";
 import type { RefreshControlProps } from "react-native";
 
+import { reportFailure } from "~/lib/failure";
 import { usePalette } from "~/theme/use-palette";
 
 type PullToRefreshProps = Omit<
@@ -29,7 +30,7 @@ export function PullToRefresh({ onRefresh, ...props }: PullToRefreshProps) {
   async function refresh() {
     setRefreshing(true);
     try {
-      await onRefresh();
+      await onRefresh().catch(reportFailure("Couldn't refresh."));
     } finally {
       setRefreshing(false);
     }
