@@ -16,7 +16,9 @@
     "start": "bun run with-env turbo run start",
     "lint": "turbo run lint",
     "knip": "knip",
-    "clean": "bash scripts/clean.sh",
+    "lint:ws": "bunx sherif@latest",
+    "clean": "bun scripts/clean.ts",
+    "clean:native": "bun scripts/clean.ts --native",
     "deps:update": "bun update -i",
     "skeletons:capture": "bun run --cwd apps/web skeletons:capture && oxfmt --write apps/web/bones",
     "budget": "bun scripts/check-budget.ts",
@@ -56,6 +58,7 @@
     "lint-staged": "^17.6.0",
     "oxfmt": "catalog:",
     "oxlint": "catalog:",
+    "sherif": "^1.13.0",
     "turbo": "^2.11.10",
     "typescript": "catalog:"
   },
@@ -65,16 +68,16 @@
       "packages/*"
     ],
     "catalog": {
-      "@better-auth/expo": "1.7.6",
+      "@better-auth/expo": "1.7.13",
       "@trpc/server": "^11.19.0",
-      "@types/bun": "^1.4.2",
+      "@types/bun": "^1.4.4",
       "@types/node": "^26.6.5",
       "@types/react": "^19.3.0",
       "@types/react-dom": "^19.3.0",
       "bcryptjs": "^3.0.3",
-      "better-auth": "^1.7.6",
-      "drizzle-orm": "^0.45.3",
-      "lucide-react": "^1.48.0",
+      "better-auth": "^1.7.13",
+      "drizzle-orm": "^0.45.4",
+      "lucide-react": "^1.61.0",
       "next-themes": "^0.4.6",
       "oxfmt": "^0.74.0",
       "oxlint": "^1.89.0",
@@ -83,7 +86,7 @@
       "superjson": "^2.2.6",
       "tailwindcss": "^4.3.3",
       "typescript": "^7.0.2",
-      "zod": "^4.6.5"
+      "zod": "^4.6.7"
     }
   },
   "lint-staged": {
@@ -99,5 +102,10 @@
       "@commitlint/config-conventional"
     ]
   },
-  "packageManager": "bun@1.4.4"
+  "packageManager": "bun@1.4.4",
+  "sherif": {
+    "ignoreDependency": [
+      "react"
+    ]
+  }
 }
