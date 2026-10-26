@@ -22,21 +22,18 @@ export default function RootLayout() {
       <AssistantPlaylists />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
-        {/* One Now Playing: a second push or replace while it is open reuses it. */}
+        {/* One Now Playing: a second push or replace while it is open reuses
+            it. A whole page, not a card over the tabs (Apple Music): over full
+            screen keeps the tabs drawn underneath, so the player's own drag
+            down (`useDismissPan`) shows them as it follows the finger. Not
+            the native stack's vertical swipe: it starts on sideways drags
+            too, which belong to the song swipe and the scrubber. */}
         <Stack.Screen
           name="player"
           dangerouslySingular
-          options={{ presentation: "modal" }}
-        />
-        <Stack.Screen
-          name="queue"
           options={{
-            presentation: "formSheet",
-            sheetAllowedDetents: [0.6, 1],
-            sheetGrabberVisible: true,
-            sheetCornerRadius,
-            headerShown: true,
-            title: "Up Next",
+            presentation: "transparentModal",
+            animation: "slide_from_bottom",
           }}
         />
         <Stack.Screen

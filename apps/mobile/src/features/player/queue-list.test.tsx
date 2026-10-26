@@ -22,16 +22,16 @@ beforeEach(() => {
 });
 
 describe("QueueList", () => {
-  it("shows what is playing, then only what comes next", async () => {
+  it("shows only what comes next (the player's header shows what plays)", async () => {
     await renderScreen(<QueueList />);
 
     expect(
-      await screen.findByRole("header", { name: "Now playing" }),
+      await screen.findByRole("header", { name: "Up next · 2" }),
     ).toBeOnTheScreen();
-    expect(screen.getByText("Bravo")).toBeOnTheScreen();
-    expect(screen.getByText("Up next · 2")).toBeOnTheScreen();
     expect(screen.getByText("Charlie")).toBeOnTheScreen();
+    expect(screen.getByText("Delta")).toBeOnTheScreen();
     expect(screen.queryByText("Alpha")).toBeNull();
+    expect(screen.queryByText("Bravo")).toBeNull();
   });
 
   it("clears up next and keeps the current track", async () => {

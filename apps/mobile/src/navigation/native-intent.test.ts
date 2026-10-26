@@ -14,6 +14,13 @@ describe("redirectSystemPath", () => {
     );
   });
 
+  it("opens the player's queue for a /queue link", () => {
+    expect(redirectSystemPath({ path: "infinitunes://queue" })).toBe(
+      "/player?view=queue",
+    );
+    expect(redirectSystemPath({ path: "/queue/" })).toBe("/player?view=queue");
+  });
+
   it("leaves every other link as it came", () => {
     for (const path of [
       "infinitunes://album/udta-teer/LHgqn_",

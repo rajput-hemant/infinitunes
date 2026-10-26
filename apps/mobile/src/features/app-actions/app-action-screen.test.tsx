@@ -35,7 +35,7 @@ function openLink(url: string) {
     {
       index: () => <Text>Home</Text>,
       player: () => <Text>Player</Text>,
-      queue: () => <Text>Queue</Text>,
+      "create-playlist": () => <Text>New Playlist</Text>,
       login: () => null,
       "action/[action]": AppActionScreen,
     },
@@ -108,11 +108,11 @@ describe("action/resume", () => {
     expect(playerStore.getState().started).toBe(true);
   });
 
-  it("closes the queue sheet over an open player instead of stacking one", async () => {
+  it("closes a sheet over an open player instead of stacking one", async () => {
     playerStore.getState().playTracks([toSongRow(catalog.a)]);
     const app = await openLink("/player");
-    await act(async () => router.push("/queue"));
-    expect(stackNames(app)).toContain("queue");
+    await act(async () => router.push("/create-playlist"));
+    expect(stackNames(app)).toContain("create-playlist");
 
     await act(async () => router.push("/action/resume"));
 
@@ -120,7 +120,7 @@ describe("action/resume", () => {
     expect(app.getPathname()).toBe("/player");
     const names = stackNames(app);
     expect(names.filter((name) => name === "player")).toHaveLength(1);
-    expect(names).not.toContain("queue");
+    expect(names).not.toContain("create-playlist");
     expect(names).not.toContain("action/[action]");
   });
 
@@ -313,7 +313,7 @@ describe("landing", () => {
   it("pops to the player from this screen's place in the stack", () => {
     expect(
       landing(
-        stack("(tabs)", "player", "queue", "action"),
+        stack("(tabs)", "player", "create-playlist", "action"),
         "action-3",
         "player",
       ),

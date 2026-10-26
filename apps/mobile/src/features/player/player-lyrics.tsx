@@ -10,7 +10,8 @@ import { useWashColors, WashText } from "./wash";
 
 type PlayerLyricsProps = {
   track: Queue;
-  size: number;
+  width: number;
+  height: number;
   /**
    * The fill behind the lyrics at their top and bottom edge (the wash's
    * gradient stops, or the D1 background twice); the lines fade into it.
@@ -64,19 +65,24 @@ function EdgeFades({ edges }: { edges: readonly [string, string] }) {
   );
 }
 
-export function PlayerLyrics({ track, size, edges }: PlayerLyricsProps) {
+export function PlayerLyrics({
+  track,
+  width,
+  height,
+  edges,
+}: PlayerLyricsProps) {
   const wash = useWashColors();
   const isSong = track.type === "song";
   const lyrics = useLyrics(track.id, isSong);
   const data = lyrics.data;
   if (data?.synced && isSong)
     return (
-      <View style={{ width: size }}>
+      <View style={{ width }}>
         <SyncedLyrics
           key={track.id}
           lines={data.synced}
           songId={track.id}
-          height={size}
+          height={height}
           foreground={wash?.foreground}
           muted={wash?.muted}
           prominent
@@ -86,7 +92,7 @@ export function PlayerLyrics({ track, size, edges }: PlayerLyricsProps) {
     );
   if (data?.plain && isSong)
     return (
-      <View style={{ width: size, height: size }}>
+      <View style={{ width, height }}>
         <ScrollView
           contentContainerClassName="gap-4 py-8"
           accessibilityLabel="Lyrics"
@@ -103,10 +109,7 @@ export function PlayerLyrics({ track, size, edges }: PlayerLyricsProps) {
       </View>
     );
   return (
-    <View
-      className="items-center justify-center"
-      style={{ width: size, height: size }}
-    >
+    <View className="items-center justify-center" style={{ width, height }}>
       {isSong && lyrics.isPending ? (
         <Spinner accessibilityLabel="Loading lyrics" color={wash?.foreground} />
       ) : (

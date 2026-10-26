@@ -23,12 +23,29 @@ import { iconSize, sizes } from "~/theme/tokens";
 import type { IconSize } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
 
+import { playerHaptics } from "./haptics";
 import { useWashColors } from "./wash";
 
 /** Now Playing's play/pause shape (spec 2.10): a 72pt circle around a 32pt glyph. */
 const PROMINENT_EDGE = 72;
 /** The paused shape's corners on Android: Material 3 Expressive's extra-large. */
 const PAUSED_RADIUS = 24;
+
+/** Play or pause, with the player's light tap. */
+function playOrPause() {
+  playerHaptics.press();
+  togglePlayback();
+}
+
+function skipNext() {
+  playerHaptics.press();
+  playerStore.getState().skipToNext();
+}
+
+function skipPrevious() {
+  playerHaptics.press();
+  playerStore.getState().skipToPrevious();
+}
 
 function usePlayPause() {
   const playing = usePlaybackStatus((state) => state.playing);
@@ -86,7 +103,7 @@ export function PlayPauseButton() {
         icon={icon}
         label={label}
         variant="filled"
-        onPress={togglePlayback}
+        onPress={playOrPause}
         size="md"
         fill={wash?.control ?? primary}
         color={wash?.onControl ?? onPrimary}
@@ -95,7 +112,7 @@ export function PlayPauseButton() {
   }
   return (
     <Pressable
-      onPress={togglePlayback}
+      onPress={playOrPause}
       accessibilityRole="button"
       accessibilityLabel={label}
       className="min-h-touch min-w-touch items-center justify-center active:opacity-60"
@@ -151,7 +168,7 @@ export function ProminentPlayPauseButton() {
         ]}
       >
         <Pressable
-          onPress={togglePlayback}
+          onPress={playOrPause}
           accessibilityRole="button"
           accessibilityLabel={label}
           android_ripple={{ color: ripple }}
@@ -167,7 +184,7 @@ export function ProminentPlayPauseButton() {
   return (
     <Animated.View style={press.style}>
       <Pressable
-        onPress={togglePlayback}
+        onPress={playOrPause}
         onPressIn={press.onPressIn}
         onPressOut={press.onPressOut}
         accessibilityRole="button"
@@ -196,19 +213,23 @@ export function NextTrackButton({ size = "xl" }: { size?: IconSize }) {
     <IconButton
       icon={{ ios: "forward.fill", android: "skip_next" }}
       label="Next track"
-      onPress={playerStore.getState().skipToNext}
+      onPress={skipNext}
       size={size}
     />
   );
 }
 
-const REPEAT_LABELS = {
+export function shuffleIcon(on: boolean): SymbolName {
+  return { ios: "shuffle", android: on ? "shuffle_on" : "shuffle" };
+}
+
+export const REPEAT_LABELS = {
   off: "Repeat off",
   playlist: "Repeat all",
   track: "Repeat one",
 } as const;
 
-const REPEAT_ICONS = {
+export const REPEAT_ICONS = {
   off: { ios: "repeat", android: "repeat" },
   playlist: { ios: "repeat", android: "repeat_on" },
   track: { ios: "repeat.1", android: "repeat_one_on" },
@@ -308,31 +329,42 @@ function TonalSkipButton({
   );
 }
 
-/** Now Playing's row: shuffle, previous, play/pause, next, repeat. */
-export function TransportControls() {
+/** An empty slot as wide as a mode toggle, so the transport keeps its place. */
+const MODE_SLOT = { width: sizes.touch, height: sizes.touch };
+
+/**
+ * Now Playing's row: shuffle, previous, play/pause, next, repeat. `modes`
+ * false leaves shuffle and repeat to the queue's mode pills (empty slots
+ * keep the other buttons in place).
+ */
+export function TransportControls({ modes = true }: { modes?: boolean }) {
   const shuffle = usePlayer((state) => state.shuffle);
   const repeat = usePlayer((state) => state.repeat);
-  const { toggleShuffle, skipToPrevious, cycleRepeat } = playerStore.getState();
+  const { toggleShuffle, cycleRepeat } = playerStore.getState();
 
   return (
     <View className="flex-row items-center justify-between">
-      <ModeToggle
-        icon={{ ios: "shuffle", android: shuffle ? "shuffle_on" : "shuffle" }}
-        label="Shuffle"
-        on={shuffle}
-        onPress={toggleShuffle}
-      />
+      {modes ? (
+        <ModeToggle
+          icon={shuffleIcon(shuffle)}
+          label="Shuffle"
+          on={shuffle}
+          onPress={toggleShuffle}
+        />
+      ) : (
+        <View style={MODE_SLOT} />
+      )}
       {Platform.OS === "android" ? (
         <TonalSkipButton
           icon={{ ios: "backward.fill", android: "skip_previous" }}
           label="Previous track"
-          onPress={skipToPrevious}
+          onPress={skipPrevious}
         />
       ) : (
         <IconButton
           icon={{ ios: "backward.fill", android: "skip_previous" }}
           label="Previous track"
-          onPress={skipToPrevious}
+          onPress={skipPrevious}
           size="xl"
         />
       )}
@@ -341,17 +373,21 @@ export function TransportControls() {
         <TonalSkipButton
           icon={{ ios: "forward.fill", android: "skip_next" }}
           label="Next track"
-          onPress={playerStore.getState().skipToNext}
+          onPress={skipNext}
         />
       ) : (
         <NextTrackButton size="xl" />
       )}
-      <ModeToggle
-        icon={REPEAT_ICONS[repeat]}
-        label={REPEAT_LABELS[repeat]}
-        on={repeat !== "off"}
-        onPress={() => cycleRepeat()}
-      />
+      {modes ? (
+        <ModeToggle
+          icon={REPEAT_ICONS[repeat]}
+          label={REPEAT_LABELS[repeat]}
+          on={repeat !== "off"}
+          onPress={() => cycleRepeat()}
+        />
+      ) : (
+        <View style={MODE_SLOT} />
+      )}
     </View>
   );
 }
