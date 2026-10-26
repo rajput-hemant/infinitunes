@@ -123,6 +123,16 @@ export function PlaybackController() {
 
   useEffect(() => {
     void configureAudioSession();
+    // Swiping the app away on Android destroys the UI but keeps the process
+    // (and this store) alive, so playback would go on and the next launch
+    // would reload the "started" track and play it. Closing the app stops it,
+    // as a cold start would (iOS ends the process instead).
+    return () => {
+      audioPlayer.pause();
+      audioPlayer.clearLockScreenControls();
+      replaceSource(null);
+      playerStore.setState({ started: false });
+    };
   }, []);
 
   useTrackPlayback({
