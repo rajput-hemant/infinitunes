@@ -19,6 +19,41 @@ beforeEach(() => {
   playbackStatusStore.setState({ playing: false });
 });
 
+describe("SongRow swipe actions", () => {
+  it("plays next and adds to the queue from the leading buttons", async () => {
+    await renderScreen(<SongRow song={song} onPress={jest.fn()} />);
+
+    await fireEvent.press(screen.getByRole("button", { name: "Play Next" }));
+    expect(playerStore.getState().queue.map((q) => q.id)).toContain(song.id);
+
+    const before = playerStore.getState().queue.length;
+    await fireEvent.press(screen.getByRole("button", { name: "Add to Queue" }));
+    expect(playerStore.getState().queue.length).toBe(before + 1);
+  });
+
+  it("adds a trailing destructive action only when given", async () => {
+    const onPress = jest.fn();
+    await renderScreen(
+      <SongRow
+        song={song}
+        onPress={jest.fn()}
+        trailingSwipe={{ label: "Unlike", icon: "heart.slash", onPress }}
+      />,
+    );
+
+    await fireEvent.press(screen.getByRole("button", { name: "Unlike" }));
+    expect(onPress).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves queue rows to the player", async () => {
+    await renderScreen(
+      <SongRow song={song} onPress={jest.fn()} queueItemId="q1" />,
+    );
+
+    expect(screen.queryByRole("button", { name: "Play Next" })).toBeNull();
+  });
+});
+
 describe("SongRow", () => {
   it("shows the decoded title and the primary artists", async () => {
     await renderScreen(<SongRow song={song} onPress={jest.fn()} />);

@@ -1,12 +1,14 @@
 import { formatDuration } from "@infinitunes/types";
 import type { ReactElement } from "react";
 
+import { playerStore } from "~/playback/player-store";
 import { togglePlayback } from "~/playback/transport";
 import { useCurrentTrackState } from "~/playback/use-current-track";
 
 import { LikeButton } from "./like-button";
 import { ListRow } from "./list-row";
 import { SongContextLink, SongMenuButton, type TrackItem } from "./song-menu";
+import { SwipeableRow, type SwipeAction } from "./swipeable-row";
 import { Text } from "./ui/text";
 
 type SongRowProps = {
@@ -17,6 +19,8 @@ type SongRowProps = {
   queueItemId?: string;
   /** The list's own destructive menu action (remove from queue or playlist). */
   removal?: { title: string; onRemove: () => void };
+  /** A destructive swipe from the right edge (unlike, remove); the menu has it too. */
+  trailingSwipe?: SwipeAction;
   /** `index` numbers the row (album track lists) instead of repeating the cover. */
   leading?: "artwork" | "index";
   /** The 1-based track number shown with `leading="index"`. */
@@ -39,6 +43,7 @@ export function SongRow({
   onPress,
   queueItemId,
   removal,
+  trailingSwipe,
   leading = "artwork",
   index,
 }: SongRowProps) {
@@ -106,9 +111,42 @@ export function SongRow({
     />
   );
 
-  return (
+  const link = (
     <SongContextLink song={song} removal={removal}>
       {row}
     </SongContextLink>
+  );
+  // Queue rows swipe in the player; every other row has Apple Music's pair.
+  if (queueItemId) return link;
+  return (
+    <SwipeableRow
+      leading={[
+        {
+          label: "Play Next",
+          icon: {
+            ios: "text.line.first.and.arrowtriangle.forward",
+            android: "playlist_play",
+          },
+          tone: "primary",
+          onPress: () => {
+            playerStore.getState().playNext(song);
+          },
+        },
+        {
+          label: "Add to Queue",
+          icon: {
+            ios: "text.line.last.and.arrowtriangle.forward",
+            android: "playlist_add",
+          },
+          tone: "accent",
+          onPress: () => {
+            playerStore.getState().addToQueue(song);
+          },
+        },
+      ]}
+      trailing={trailingSwipe ? [trailingSwipe] : undefined}
+    >
+      {link}
+    </SwipeableRow>
   );
 }

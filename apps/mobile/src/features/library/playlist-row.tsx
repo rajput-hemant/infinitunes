@@ -2,10 +2,10 @@ import type { PlaylistView } from "@infinitunes/core/react/optimistic-playlists"
 
 import { ListRow } from "~/components/list-row";
 import { MenuTrigger } from "~/components/menu-trigger";
+import { SwipeableRow } from "~/components/swipeable-row";
 
 import { confirmDeletePlaylist } from "./confirm-delete-playlist";
 import { PlaylistMenu } from "./playlist-menu";
-import { SwipeableRow } from "./swipeable-row";
 
 export function songCount(count: number): string {
   return count === 1 ? "1 song" : `${count} songs`;
@@ -50,11 +50,13 @@ export function PlaylistRow({
   if (playlist.pending) return row;
   return (
     <SwipeableRow
-      action={{
-        label: "Delete",
-        icon: { ios: "trash", android: "delete" },
-        onPress: () => confirmDeletePlaylist(playlist),
-      }}
+      trailing={[
+        {
+          label: "Delete",
+          icon: { ios: "trash", android: "delete" },
+          onPress: () => confirmDeletePlaylist(playlist),
+        },
+      ]}
     >
       {row}
     </SwipeableRow>

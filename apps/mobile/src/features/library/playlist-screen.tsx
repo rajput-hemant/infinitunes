@@ -20,7 +20,6 @@ import { LibraryListView } from "./library-list-view";
 import { PlaylistMenu } from "./playlist-menu";
 import { SignedInGate } from "./signed-in-gate";
 import { SongCollection, SongCollectionSkeleton } from "./song-collection";
-import { SwipeableRow } from "./swipeable-row";
 import { usePlaylistById } from "./use-playlist-by-id";
 import { usePlaylistSongs } from "./use-playlist-songs";
 
@@ -39,25 +38,22 @@ function PlaylistSongRow({
   reorder,
 }: PlaylistSongRowProps) {
   return (
-    <SwipeableRow
-      action={{
-        label: "Remove",
-        icon: { ios: "minus.circle", android: "remove_circle" },
-        onPress: onRemove,
-      }}
-    >
-      {/* The handle is a third trailing control: it keeps the row's 4pt end inset. */}
-      <View className="flex-row items-center pr-1">
-        <View className="flex-1">
-          <SongRow
-            song={song}
-            onPress={play}
-            removal={{ title: "Remove from Playlist", onRemove }}
-          />
-        </View>
-        {reorder ? <DragHandle name={song.name} actions={reorder} /> : null}
+    // The handle is a third trailing control: it keeps the row's 4pt end inset.
+    <View className="flex-row items-center pr-1">
+      <View className="flex-1">
+        <SongRow
+          song={song}
+          onPress={play}
+          removal={{ title: "Remove from Playlist", onRemove }}
+          trailingSwipe={{
+            label: "Remove",
+            icon: { ios: "minus.circle", android: "remove_circle" },
+            onPress: onRemove,
+          }}
+        />
       </View>
-    </SwipeableRow>
+      {reorder ? <DragHandle name={song.name} actions={reorder} /> : null}
+    </View>
   );
 }
 

@@ -7,7 +7,6 @@ import { useFavoriteToggle } from "~/user-data/favorites";
 import { LibraryListView } from "./library-list-view";
 import { SignedInGate } from "./signed-in-gate";
 import { SongCollection, SongCollectionSkeleton } from "./song-collection";
-import { SwipeableRow } from "./swipeable-row";
 import { useLikedSongs } from "./use-liked-songs";
 import { useStillLiked } from "./use-still-liked";
 
@@ -16,19 +15,16 @@ function LikedSongRow({ song, play }: { song: SongRowItem; play: () => void }) {
   const { toggle } = useFavoriteToggle({ type: "song", token: song.id });
 
   return (
-    <SwipeableRow
-      action={{
+    <SongRow
+      song={song}
+      onPress={play}
+      removal={{ title: "Remove from Liked Songs", onRemove: toggle }}
+      trailingSwipe={{
         label: "Unlike",
         icon: { ios: "heart.slash", android: "heart_broken" },
         onPress: toggle,
       }}
-    >
-      <SongRow
-        song={song}
-        onPress={play}
-        removal={{ title: "Remove from Liked Songs", onRemove: toggle }}
-      />
-    </SwipeableRow>
+    />
   );
 }
 
