@@ -72,6 +72,7 @@ const INSET = space.xs;
 
 /** Width of the revealed pane with `count` buttons at rest. */
 export function openWidth(count: number): number {
+  "worklet";
   return GAP + count * (BUTTON + GAP);
 }
 

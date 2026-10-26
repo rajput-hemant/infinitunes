@@ -1,3 +1,5 @@
+import { isWorkletFunction } from "react-native-worklets";
+
 import { space } from "~/theme/tokens";
 
 import {
@@ -106,5 +108,17 @@ describe("capsuleLayout", () => {
     const pulled = capsuleLayout(open + 40, 0, 0, 2);
     expect(pulled.edge).toBe(rest.edge);
     expect(pulled.width).toBe(rest.width + 40);
+  });
+});
+
+describe("UI-thread helpers", () => {
+  // Called from useAnimatedStyle/useAnimatedReaction: a plain function there
+  // throws "Tried to synchronously call a Remote Function" on device.
+  it.each([
+    ["capsuleLayout", capsuleLayout],
+    ["openWidth", openWidth],
+    ["shouldCommitSwipe", shouldCommitSwipe],
+  ])("%s is a worklet", (_name, fn) => {
+    expect(isWorkletFunction(fn)).toBe(true);
   });
 });
