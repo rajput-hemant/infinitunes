@@ -1,15 +1,10 @@
-import {
-  usePlaylistDetails,
-  type UserPlaylist,
-} from "@infinitunes/core/react/optimistic-playlists";
+import type { UserPlaylist } from "@infinitunes/core/react/optimistic-playlists";
 import type { SongRowItem } from "@infinitunes/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { View } from "react-native";
 
 import { DragHandle } from "~/components/drag-handle";
 import type { ReorderActions } from "~/components/drag-handle";
-import { EmptyState } from "~/components/empty-state";
-import { ErrorState } from "~/components/error-state";
 import { MenuTrigger } from "~/components/menu-trigger";
 import { SkeletonText } from "~/components/skeletons";
 import { SongRow } from "~/components/song-row";
@@ -18,7 +13,6 @@ import { totalDurationLabel } from "~/lib/meta";
 import {
   moveSongInPlaylist,
   removeSongFromPlaylist,
-  useServerPlaylistDetails,
 } from "~/user-data/playlists";
 
 import { LibraryListView } from "./library-list-view";
@@ -26,6 +20,7 @@ import { PlaylistMenu } from "./playlist-menu";
 import { SignedInGate } from "./signed-in-gate";
 import { SongCollection, SongCollectionSkeleton } from "./song-collection";
 import { SwipeableRow } from "./swipeable-row";
+import { usePlaylistById } from "./use-playlist-by-id";
 import { usePlaylistSongs } from "./use-playlist-songs";
 
 type PlaylistSongRowProps = {
@@ -133,57 +128,42 @@ function PlaylistSongs({
 }
 
 function Playlist({ id }: { id: string }) {
-  const { data, error, isPending, refetch } = useServerPlaylistDetails(id);
-  const playlist = usePlaylistDetails(data);
-
-  // Titled in every state, not only once loaded (else the route's name shows).
-  const title = (
-    <Stack.Screen options={{ title: playlist?.name ?? "Playlist" }} />
-  );
-
-  if (isPending) {
-    return (
-      <>
-        {title}
-        <PlaylistSkeleton />
-      </>
-    );
-  }
-  if (data === undefined) {
-    return (
-      <>
-        {title}
-        <ErrorState error={error} onRetry={() => void refetch()} />
-      </>
-    );
-  }
-  if (!data || !playlist) {
-    return (
-      <>
-        {title}
-        <EmptyState
-          icon={{ ios: "music.note.list", android: "queue_music" }}
-          title="Playlist not found"
-          message="It may have been deleted."
-          action={{ label: "Back to Library", onPress: () => router.back() }}
-        />
-      </>
-    );
-  }
+  const list = usePlaylistById(id);
+  const name =
+    list.status === "ready" ? list.items[0]?.playlist.name : undefined;
 
   return (
     <>
-      {title}
-      <Stack.Toolbar placement="right" asChild>
-        <PlaylistMenu playlist={playlist} onDeleting={() => router.back()}>
-          <MenuTrigger
-            label="Playlist options"
-            icon={{ ios: "ellipsis.circle", android: "more_vert" }}
-            size="lg"
-          />
-        </PlaylistMenu>
-      </Stack.Toolbar>
-      <PlaylistSongs playlist={playlist} server={data} />
+      {/* Titled in every state, not only once loaded (else the route's name shows). */}
+      <Stack.Screen options={{ title: name ?? "Playlist" }} />
+      <LibraryListView
+        list={list}
+        skeleton={<PlaylistSkeleton />}
+        empty={{
+          icon: { ios: "music.note.list", android: "queue_music" },
+          title: "Playlist not found",
+          message: "It may have been deleted.",
+          action: { label: "Back to Library", onPress: () => router.back() },
+        }}
+      >
+        {({ items: [{ playlist, server }] }) => (
+          <>
+            <Stack.Toolbar placement="right" asChild>
+              <PlaylistMenu
+                playlist={playlist}
+                onDeleting={() => router.back()}
+              >
+                <MenuTrigger
+                  label="Playlist options"
+                  icon={{ ios: "ellipsis.circle", android: "more_vert" }}
+                  size="lg"
+                />
+              </PlaylistMenu>
+            </Stack.Toolbar>
+            <PlaylistSongs playlist={playlist} server={server} />
+          </>
+        )}
+      </LibraryListView>
     </>
   );
 }
