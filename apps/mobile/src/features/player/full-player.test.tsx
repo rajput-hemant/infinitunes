@@ -144,11 +144,24 @@ describe("FullPlayer", () => {
     expect(
       screen.getByRole("adjustable", { name: "Playback position" }),
     ).toBeOnTheScreen();
-    // Shuffle and repeat move to the queue's pills: one of each.
+    // Shuffle, repeat, the heart and the menu share the header's pill row,
+    // one of each; the title row keeps neither heart nor menu.
     expect(screen.getAllByRole("button", { name: "Shuffle" })).toHaveLength(1);
     expect(screen.getAllByRole("button", { name: "Repeat off" })).toHaveLength(
       1,
     );
+    expect(screen.getAllByRole("button", { name: "Like Alpha" })).toHaveLength(
+      1,
+    );
+    expect(
+      screen.getAllByRole("button", { name: "More actions for Alpha" }),
+    ).toHaveLength(1);
+    await fireEvent.press(screen.getByRole("button", { name: "Shuffle" }));
+    expect(screen.getByRole("button", { name: "Shuffle" })).toHaveProp(
+      "accessibilityState",
+      { selected: true },
+    );
+    await fireEvent.press(screen.getByRole("button", { name: "Shuffle" }));
     // Lyrics and the queue never show together.
     const lyrics = screen.getByRole("button", { name: "Lyrics" });
     procedure("song.syncedLyrics").mockResolvedValue({
