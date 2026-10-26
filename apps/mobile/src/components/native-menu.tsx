@@ -11,16 +11,26 @@ import { startSeededRadio } from "~/playback/radio";
 export type MenuEntry = Omit<MenuAction, "subactions" | "id"> & {
   id: string;
   run?: () => void;
+  /** A second line (iOS context menus show it; the dropdown does not). */
+  subtitle?: string;
+  /** With `subactions`: a quick-action group, drawn inline above the rest. */
+  quick?: boolean;
   subactions?: MenuEntry[];
 };
 
 function toMenuAction({
   run: _run,
+  subtitle: _subtitle,
+  quick,
   subactions,
   ...action
 }: MenuEntry): MenuAction {
   return subactions
-    ? { ...action, subactions: subactions.map(toMenuAction) }
+    ? {
+        ...action,
+        ...(quick ? { displayInline: true } : undefined),
+        subactions: subactions.map(toMenuAction),
+      }
     : action;
 }
 

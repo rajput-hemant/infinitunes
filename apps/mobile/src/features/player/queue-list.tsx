@@ -110,16 +110,13 @@ export function QueueList() {
         moveInQueue(firstNext + from, firstNext + to)
       }
       renderItem={({ item, index }) => (
-        <View className="flex-row items-center pr-2">
-          <View className="flex-1">
-            <QueueRow
-              song={item}
-              onPress={() => playAt(firstNext + index)}
-              onRemove={() => {
-                removeAt(firstNext + index);
-              }}
-            />
-          </View>
+        <QueueRow
+          song={item}
+          onPress={() => playAt(firstNext + index)}
+          onRemove={() => {
+            removeAt(firstNext + index);
+          }}
+        >
           <DragHandle
             name={item.name}
             actions={{
@@ -133,7 +130,7 @@ export function QueueList() {
                   : undefined,
             }}
           />
-        </View>
+        </QueueRow>
       )}
       ListHeaderComponent={header}
       ListEmptyComponent={

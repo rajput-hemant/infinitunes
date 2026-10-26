@@ -1,11 +1,12 @@
 import { formatDuration } from "@infinitunes/types";
+import type { ReactElement } from "react";
 
 import { togglePlayback } from "~/playback/transport";
 import { useCurrentTrackState } from "~/playback/use-current-track";
 
 import { LikeButton } from "./like-button";
 import { ListRow } from "./list-row";
-import { SongMenuButton, type TrackItem } from "./song-menu";
+import { SongContextLink, SongMenuButton, type TrackItem } from "./song-menu";
 import { Text } from "./ui/text";
 
 type SongRowProps = {
@@ -52,7 +53,10 @@ export function SongRow({
         formatDuration(song.duration, "mm:ss").replace(/^0/, "")
       : undefined;
 
-  return (
+  const row = (
+    wrap?: (pressable: ReactElement) => ReactElement,
+    onLongPress?: () => void,
+  ) => (
     <ListRow
       title={song.name}
       subtitle={credits}
@@ -65,6 +69,8 @@ export function SongRow({
       selected={isCurrent}
       paused={isCurrent && !isPlaying}
       onPress={isCurrent ? togglePlayback : onPress}
+      onLongPress={onLongPress}
+      wrap={wrap}
       accessibilityLabel={song.name}
       accessibilityValue={{
         text: [song.explicit && "Explicit", credits, length]
@@ -98,5 +104,11 @@ export function SongRow({
         </>
       }
     />
+  );
+
+  return (
+    <SongContextLink song={song} removal={removal}>
+      {row}
+    </SongContextLink>
   );
 }
