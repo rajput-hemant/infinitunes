@@ -268,11 +268,13 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   scrolls under it. `EntityHeader` takes `onPlay`, optional `onShuffle`, `like`,
   `eyebrow` (the kind and year, "Album · 2026"), `subtitle` (the credit), `meta` (counts, duration, plays),
   `explicit` (`isExplicit` from `@infinitunes/types`: upstream sends "0"/"1"), `verified`, `onSubtitlePress` (a sole artist: the credit becomes an underlined link) and `menu`
-  (`{ rows, radio?, extra? }`: play next, queue, add all to a playlist, radio, download all). The `menu` is not in the
+  (`{ rows, radio?, extra? }`: play next, queue, add all to a playlist, radio, download all) and `like`. The `menu` and the
+  favourite (a first "Like <name>" entry; signed out it asks to sign in) are not in the
   header: `DetailMenu` registers its entries with `DetailFrame`, whose `detailHeaderOptions` puts Share + a native
   `menu` item (a real `UIMenu`) in `unstable_headerRightItems` on iOS 26 (one glass capsule), and Share + a `more_vert`
-  `NativeMenu` in `headerRight` elsewhere. The action row is Apple Music's: Shuffle (round tonal), a wide labelled Play
-  capsule, the heart (round tonal). The header sits on a wash of the artwork colour (`usePlayerColors` + `OnWash`, from
+  `NativeMenu` in `headerRight` elsewhere. The action row is Apple Music's: centred Shuffle, Play, Download (download all songs,
+  works signed out): Play is the solid capsule hugging icon and label (`Button roomy`), the two circles are equal on a
+  `translucentFill` that shows the wash through. The header sits on a wash of the artwork colour (`usePlayerColors` + `OnWash`, from
   `features/player`, fading to the page background; no seed or a contrast miss is no wash) and the art is 248pt.
   Compact UI: a symbol alone replaces icon-plus-text wherever it is unambiguous (`IconButton` `variant`
   `filled`/`tonal`, `large` for a screen's Play; keep the label); text stays on submits and empty-state actions.

@@ -14,7 +14,7 @@ export function LabelSkeleton() {
       <View className="gap-2 pb-2">
         <EntityHeaderSkeleton
           round
-          like={false}
+          download={false}
           subtitle={false}
           meta={false}
         />

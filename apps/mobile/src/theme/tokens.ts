@@ -171,6 +171,12 @@ export const space = {
 /** iOS's lift under artwork (Material is flat): a black shadow at this opacity. */
 export const artShadow = { color: "#000000", opacity: 0.18 } as const;
 
+/** A fill that lets what is behind it (an artwork wash) show through, per scheme. */
+export const translucentFill = {
+  light: "rgba(0, 0, 0, 0.08)",
+  dark: "rgba(255, 255, 255, 0.18)",
+} as const;
+
 /** A centred message's longest line (empty and error states). */
 export const measure = 300;
 

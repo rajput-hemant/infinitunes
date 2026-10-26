@@ -8,7 +8,7 @@ import {
 export function EpisodeSkeleton() {
   return (
     <ScreenScrollView scrollEnabled={false}>
-      <EntityHeaderSkeleton shuffle={false} like={false} />
+      <EntityHeaderSkeleton shuffle={false} download={false} />
       <TextBlockSkeleton />
     </ScreenScrollView>
   );

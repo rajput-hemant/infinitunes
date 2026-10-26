@@ -36,7 +36,7 @@ export function StationScreen({ name, token }: StationRef) {
           <EntityHeaderSkeleton
             round
             shuffle={false}
-            like={false}
+            download={false}
             meta={false}
           />
           <SectionHeaderSkeleton />

@@ -25,7 +25,7 @@ export function MixScreen({ token }: MixScreenProps) {
   return (
     <DetailScreen
       query={query}
-      skeleton={<DetailSkeleton like={false} shelf={false} />}
+      skeleton={<DetailSkeleton shelf={false} />}
       noun="Mix"
       list
       icon={{ ios: "music.note.list", android: "queue_music" }}

@@ -25,7 +25,7 @@ import type { MenuEntry } from "./native-menu";
  * Saves the songs into a folder the listener picks, at the download quality
  * preference; dismissing the picker does nothing.
  */
-async function downloadAll(songs: readonly SongRowItem[]) {
+export async function downloadAll(songs: readonly SongRowItem[]) {
   const folder = await pickDownloadFolder();
   if (!folder) return;
   const { downloadQuality } = preferencesStore.getState();

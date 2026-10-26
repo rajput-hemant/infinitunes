@@ -1,19 +1,27 @@
+import { toSongRow } from "@infinitunes/types";
+import { rawSong } from "@infinitunes/types/fixtures";
 import { fireEvent, screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
+import { pickDownloadFolder } from "~/lib/download";
 import { renderScreen } from "~/test/render";
-import { signInAs } from "~/test/session-mock";
+import { translucentFill } from "~/theme/tokens";
 
 import { EntityHeader } from "./entity-header";
 
+jest.mock("~/lib/download", () => ({
+  pickDownloadFolder: jest.fn(),
+  saveTracks: jest.fn(),
+}));
+
+const rows = [toSongRow(rawSong())];
 const IMAGE = "https://c.saavncdn.com/a-500x500.jpg";
 
 describe("EntityHeader", () => {
   afterEach(() => jest.restoreAllMocks());
 
-  it("lays Shuffle, a wide labelled Play and the heart in one row, each a 48pt target on iOS", async () => {
+  it("lays Shuffle, a content-hugging Play and Download in one centred row, signed out too", async () => {
     jest.replaceProperty(Platform, "OS", "ios");
-    signInAs("user-1");
     const onPlay = jest.fn();
     const onShuffle = jest.fn();
     await renderScreen(
@@ -23,24 +31,49 @@ describe("EntityHeader", () => {
         onPlay={onPlay}
         onShuffle={onShuffle}
         like={{ type: "album", token: "a1" }}
+        menu={{ rows }}
       />,
     );
 
     const play = screen.getByRole("button", { name: "Play" });
     const shuffle = screen.getByRole("button", { name: "Shuffle" });
-    const like = screen.getByRole("button", { name: "Like Album" });
-    expect(`${play.props.className}`).toContain("min-h-touch");
-    expect(`${shuffle.props.className}`).toContain("min-h-touch");
-    expect(`${like.props.className}`).toContain("min-h-touch");
-    // Shuffle and the heart are the same round tonal button.
-    expect(`${shuffle.props.className}`).toContain("bg-secondary");
-    expect(`${like.props.className}`).toContain("bg-secondary");
-    expect(screen.getByText("Play")).toBeOnTheScreen();
+    const download = screen.getByRole("button", { name: "Download Album" });
+    // Row order: Shuffle, Play, Download.
+    const buttons = screen.getAllByRole("button");
+    expect(buttons.indexOf(shuffle)).toBeLessThan(buttons.indexOf(play));
+    expect(buttons.indexOf(play)).toBeLessThan(buttons.indexOf(download));
+    for (const button of [play, shuffle, download]) {
+      expect(`${button.props.className}`).toContain("min-h-touch");
+    }
+    // Play hugs its content; the side buttons are translucent.
+    expect(`${play.props.className}`).toContain("px-8");
+    expect(shuffle).toHaveStyle({ backgroundColor: translucentFill.light });
+    expect(download).toHaveStyle({ backgroundColor: translucentFill.light });
+    // The heart left the row for the bar's menu.
+    expect(screen.queryByRole("button", { name: "Like Album" })).toBeNull();
 
     await fireEvent.press(play);
     await fireEvent.press(shuffle);
     expect(onPlay).toHaveBeenCalledTimes(1);
     expect(onShuffle).toHaveBeenCalledTimes(1);
+  });
+
+  it("downloads every song from the Download button", async () => {
+    jest.mocked(pickDownloadFolder).mockResolvedValue(null);
+    await renderScreen(
+      <EntityHeader
+        image={IMAGE}
+        title="Album"
+        onPlay={jest.fn()}
+        menu={{ rows }}
+      />,
+    );
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Download Album" }),
+    );
+
+    expect(pickDownloadFolder).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the options out of the row: they live in the native header", async () => {

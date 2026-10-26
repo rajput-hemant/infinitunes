@@ -285,6 +285,9 @@ function MenuGlyphSkeleton({
   );
 }
 
+/** Play's icon and label, between its padding. */
+const PLAY_LABEL_WIDTH = 64;
+
 /** A round tonal button of the header's action row. */
 function ActionCircleSkeleton({ testID }: { testID: string }) {
   return (
@@ -303,8 +306,8 @@ type EntityHeaderSkeletonProps = {
   round?: boolean;
   /** A Shuffle button beside Play, as the loaded header will have. */
   shuffle?: boolean;
-  /** The header's heart (shown only to a signed-in listener). */
-  like?: boolean;
+  /** The Download button after Play (headers with songs to save). */
+  download?: boolean;
   /** The credit line under the title. */
   subtitle?: boolean;
   /** The muted meta line. */
@@ -314,13 +317,11 @@ type EntityHeaderSkeletonProps = {
 export function EntityHeaderSkeleton({
   round = false,
   shuffle = true,
-  like = true,
+  download = true,
   subtitle = true,
   meta = true,
 }: EntityHeaderSkeletonProps) {
   const frame = useFrame();
-  // Signed out, the header has no heart (`LikeButton` renders nothing).
-  const signedIn = useUserId() !== undefined;
   return (
     <SkeletonPulse>
       <View className="w-full max-w-readable items-center self-center px-page pb-6 pt-2">
@@ -333,9 +334,9 @@ export function EntityHeaderSkeleton({
         </View>
         {subtitle ? <SkeletonText variant="subhead" width={140} /> : null}
         {meta ? <SkeletonText variant="footnote" width={180} /> : null}
-        {/* Shuffle, Play and the heart, as the header's row: two round
-            buttons around the Play capsule (Android 40dp, iOS 48pt). */}
-        <View className="mt-6 w-full flex-row items-center gap-3">
+        {/* Shuffle, Play and Download, centred: two round buttons around a
+            Play capsule that hugs its icon and label (Android 40dp, iOS 48pt). */}
+        <View className="mt-6 flex-row items-center justify-center gap-3">
           {shuffle ? (
             <ActionCircleSkeleton testID="header-skeleton-shuffle" />
           ) : null}
@@ -343,11 +344,12 @@ export function EntityHeaderSkeleton({
             testID="header-skeleton-play"
             className={cx(
               Platform.OS === "android" ? "h-ctl" : "h-touch",
-              "flex-1 rounded-full",
+              "rounded-full",
             )}
+            style={{ width: 2 * space.xxl + PLAY_LABEL_WIDTH }}
           />
-          {like && signedIn ? (
-            <ActionCircleSkeleton testID="header-skeleton-like" />
+          {download ? (
+            <ActionCircleSkeleton testID="header-skeleton-download" />
           ) : null}
         </View>
       </View>
