@@ -13,16 +13,14 @@
  * `maxFontPreloads` `rel=preload; as=font` entries and `maxFontPreloadKB` of
  * their gzipped size per route.
  *
- * Ceilings were set in the phase 3 perf audit at af9cea8, which measured
- * 522-557KB gzipped initial JS across routes. The skills audit (WP3-5)
- * ratcheted them to about 5% above the measured maxima (catalog 345, detail
- * 405, search 360, account 362, auth 343, modal 344, not-found 241 KB gzipped;
- * fonts 2 preloads / 93KB). The current ceilings and hard caps (catalog 365,
- * detail 425, search 380, account 380, auth 360, modal 365, not-found 255) were
- * raised 14-20KB above that on purpose as the app grew, so they are NOT the
- * ratchet. They need re-measuring with `bun run build && bun run budget`; then
- * set each ceiling (and its hard cap) to about 5% above the measured maximum.
- * A config may lower a ceiling but never raise one past the hard caps.
+ * Ceilings and hard caps were re-measured on 2026-10-27 at 3b0f314e
+ * (`SKIP_ENV_VALIDATION=true bun run build --filter=@infinitunes/web && bun run
+ * budget`) and set to about 5% above the largest route of each class (measured
+ * gzipped KB: catalog 332.9, detail 364.3, search 348.0, account 349.8, auth
+ * 323.8, modal 324.1, not-found 234.3; fonts 2 preloads / 92.6KB). To raise one,
+ * rebuild, re-measure, and set it to about 5% above the new maximum in the same
+ * change as the code that grew it. A config may lower a ceiling but never raise
+ * one past the hard caps.
  *
  * Routes whose class is not recognised are reported as UNCHECKED, not failed.
  *
@@ -62,32 +60,29 @@ export type BudgetConfig = {
 /** Ratchet values: measured today rounded up, with headroom. */
 export const defaultConfig: BudgetConfig = {
   ceilingsKB: {
-    catalog: 365,
-    detail: 425,
-    search: 380,
-    account: 380,
-    auth: 360,
-    modal: 365,
-    "not-found": 255,
+    catalog: 350,
+    detail: 383,
+    search: 366,
+    account: 368,
+    auth: 341,
+    modal: 341,
+    "not-found": 247,
   },
   maxFontPreloads: 2,
   maxFontPreloadKB: 100,
   forbiddenStrings: ["ZodError", "navigator.credentials"],
-  // TODO: "warn" means the Zod/passkey shell-chunk rule cannot fail CI. Needs a
-  // build (`bun run build && bun run budget`) to confirm the shared chunks are
-  // clean of `forbiddenStrings`, then flip to "error".
-  forbiddenMode: "warn",
+  forbiddenMode: "error",
 };
 
 /** Hard caps: a config can never exceed these, whatever is measured. */
 const HARD_CAPS_KB: Record<RouteClass, number> = {
-  catalog: 365,
-  detail: 425,
-  search: 380,
-  account: 380,
-  auth: 360,
-  modal: 365,
-  "not-found": 255,
+  catalog: 350,
+  detail: 383,
+  search: 366,
+  account: 368,
+  auth: 341,
+  modal: 341,
+  "not-found": 247,
 };
 const HARD_MAX_FONT_PRELOADS = 2;
 const HARD_MAX_FONT_PRELOAD_KB = 100;

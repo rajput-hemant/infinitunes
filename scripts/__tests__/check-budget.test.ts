@@ -209,9 +209,9 @@ describe("evaluateBudget", () => {
     expect(() =>
       evaluateBudget(fs, {
         ...config,
-        ceilingsKB: { ...config.ceilingsKB, catalog: 366 },
+        ceilingsKB: { ...config.ceilingsKB, catalog: 351 },
       }),
-    ).toThrow("catalog ceiling 366KB exceeds the 365KB cap");
+    ).toThrow("catalog ceiling 351KB exceeds the 350KB cap");
   });
 });
 
