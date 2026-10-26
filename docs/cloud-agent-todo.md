@@ -313,7 +313,7 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
   - Fix: `readSort(searchParams)` returning `"asc" | "desc"` used by both; give `generateMetadata` the `searchParams` prop; add a test. Executor: sonnet. Flags: none.
 - [x] **W-18** P3 CONFIRMED `show/.../page.tsx:19,21,76-82,134-136` - the page re-implements `getViewer()` with a `.catch(() => undefined)` hack [routes 9] Done locally.
   - Fix: `const { user, favorites, playlists } = await getViewer();` in `ShowEpisodeSection`; delete the three imports and the catch. Executor: haiku. Flags: none.
-- [ ] **W-19** P3 CONFIRMED `(root)/me/(layout-a)/shows/page.tsx:14-21` - two sequential upstream calls per saved podcast (`show.episodes` then `show.details`) [routes 10] Skipped locally: needs a favorites column, migration and a live DB. _(taken locally)_
+- [x] **W-19** P3 CONFIRMED `(root)/me/(layout-a)/shows/page.tsx:14-21` - two sequential upstream calls per saved podcast (`show.episodes` then `show.details`) [routes 10] Done locally: `podcastTokens` jsonb map on the favorites row (migration 0010, additive), one `show.details` per show, old rows fall back.
   - Fix: store the show token/`show_url` with the favorite id, one `show.details` per item; keep the two-call path as lazy fallback for old rows. Executor: sonnet. Flags: needs live DB.
 - [x] **W-20** P3 CONFIRMED `(root)/me/playlist/[id]/page.tsx:120-131` - whole-playlist duration shown as "95:12" and "1 Songs" [routes 11] Done locally.
   - Fix: `"hh:mm:ss"` at 3600s or more; reuse `LibraryHeading`'s pluralisation. Executor: haiku. Flags: none.
