@@ -399,6 +399,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `@babel/plugin-transform-react-jsx`, `@babel/runtime`, `babel-preset-expo` and `react-native-css-interop`
   are direct dependencies; `jest.config.js` adds `.bun` to the transform allow-list, falls back to the app's
   `node_modules` and maps `react` to the app's copy (else `packages/core` hooks throw "Invalid hook call").
+  `patches/react-native-css-interop` drops its `remapProps(ImageBackground)`: reading RN's `ImageBackground` getter
+  logs the deprecation warning at startup, and the app uses no `ImageBackground` (re-add it only if one is used).
   Jest runs real Reanimated (its `jest/resolver` composed in `src/test/resolver.js`, `setUpTests()`), swaps
   `expo-audio` for the scriptable `src/test/expo-audio.ts`, and `src/test/setup.ts` maps `~/lib/trpc` to a
   typed registry (`procedure("album.details").mockResolvedValue(...)`, reset before each test; unanswered
