@@ -186,9 +186,11 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   kit), `lib/` (clients, `preferences`, `share`, `download`, `use-infinite-list`, `use-pending`, `meta`),
   `playback/` (player, `play-collection`, `radio`), `user-data/` (session, favorites, every playlist write),
   `navigation/` (`entityHref`, stack options, header actions, player dock) or `theme/` (tokens, `appearance`).
-- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, Search, all four in the one bar on both platforms. Search is a
-  plain tab, not iOS's detached system search tab (no `role="search"`; icon `magnifyingglass`/`search`); its stack root
-  is the search screen with the native header field (`hideWhenScrolling: false`) on iOS and the M3 bar on Android. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
+- Tabs (`app/(tabs)/_layout.tsx`): Home, Radio, Library, Search. Search uses `unstable_nativeProps.ios`
+  `{ role: "search", automaticallyActivatesSearch: false }`, not Expo's `role` (which maps to `systemItem`),
+  with icon `magnifyingglass`/`search`: iOS 27 keeps it in the expanded pill; iOS 26.1+ detaches it.
+  Minimized trailing Search placement on iOS 27 still needs a device check. Android keeps all four in one bar.
+  Its stack root keeps the native header field (`hideWhenScrolling: false`, no autofocus) on iOS and the M3 bar on Android. Each is a route group with its own `Stack` (`tabStackOptions`); a new tab needs a
   `NativeTabs.Trigger` with an `sf` and an `md` icon. On iOS 26 the mini player is the bar's
   `NativeTabs.BottomAccessory` (`AccessoryMiniPlayer`; `usePlacement()` `inline` drops Next) and the bar
   minimizes on scroll down. New Playlist is the Library Playlists `SectionHeader`'s "New" action; `/create`

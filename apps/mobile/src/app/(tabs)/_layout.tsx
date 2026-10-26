@@ -20,12 +20,12 @@ const TAB_LABEL = Platform.select({
  * keep the tab bar; Settings and Profile are pushed onto the current tab from
  * the root screens' headers (`TopLevelActions`).
  *
- * Tab order is Home, Radio, Library, Search, all in the one bar. New Playlist is a row
+ * Tab order is Home, Radio, Library, Search. New Playlist is a row
  * in Library (and the `/create` link opens its sheet, see `+native-intent`).
  *
- * Search is a regular tab (not iOS's detached system search tab): its stack's
- * root is the search screen, whose field is the native header search bar on
- * iOS and the Material 3 search bar on Android.
+ * Search uses UISearchTab without automatic activation: iOS 27 keeps it in
+ * the expanded pill; iOS 26.1+ detaches it. Its root keeps the native header
+ * search field on iOS and the Material 3 search bar on Android.
  *
  * On iOS 26 the mini player is the tab bar's bottom accessory and the bar
  * minimizes while a tab scrolls down (Apple Music); elsewhere it floats.
@@ -70,7 +70,12 @@ export default function TabsLayout() {
           />
           <NativeTabs.Trigger.Label>Library</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="(search)">
+        <NativeTabs.Trigger
+          name="(search)"
+          unstable_nativeProps={{
+            ios: { role: "search", automaticallyActivatesSearch: false },
+          }}
+        >
           <NativeTabs.Trigger.Icon sf="magnifyingglass" md="search" />
           <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
         </NativeTabs.Trigger>

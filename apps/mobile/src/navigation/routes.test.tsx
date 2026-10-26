@@ -235,7 +235,7 @@ describe("the tab bar", () => {
     ).toHaveLength(0);
   });
 
-  it("makes Search a regular fourth tab, last, on iOS", async () => {
+  it("uses the native Search role without automatic activation or prominence on iOS", async () => {
     const app = await renderRouter("./src/app", { initialUrl: "/" });
 
     const tabs = app.container.queryAll(
@@ -243,9 +243,42 @@ describe("the tab bar", () => {
         typeof node.props.screenKey === "string" && "systemItem" in node.props,
     );
     expect(tabs).toHaveLength(4);
-    // No system search item or role: it sits in the same pill as the others.
     expect(tabs.some((node) => node.props.systemItem === "search")).toBe(false);
-    expect(tabs.at(-1)?.props.screenKey).toBe("(search)");
+    expect(tabs.at(-1)?.props).toMatchObject({
+      screenKey: "(search)",
+      title: "Search",
+      iconType: "sfSymbol",
+      iconResourceName: "magnifyingglass",
+      tabRole: "search",
+      automaticallyActivatesSearch: false,
+    });
+
+    const hosts = app.container.queryAll(
+      (node) => node.props.tabBarMinimizeBehavior === "onScrollDown",
+    );
+    expect(hosts.length).toBeGreaterThan(0);
+    for (const host of hosts) {
+      expect(host.props.prominentScreenKey).toBeUndefined();
+    }
+  });
+
+  it("opens a search link (Siri) in the Search tab with its query on iOS", async () => {
+    const app = await renderRouter("./src/app", {
+      initialUrl: redirectSystemPath({ path: "infinitunes://search?q=siri" }),
+    });
+
+    expect(app.getSegments()).toEqual(["(tabs)", "(search)", "search"]);
+    expect(app.getSearchParams()).toEqual({ q: "siri" });
+    const fields = app.container.queryAll(
+      (node) =>
+        node.props.placeholder === "Songs, albums, artists, podcasts" &&
+        typeof node.props.onChangeText === "function",
+    );
+    expect(fields.length).toBeGreaterThan(0);
+    for (const field of fields) {
+      expect(field.props.autoFocus).toBe(false);
+      expect(field.props.hideWhenScrolling).toBe(false);
+    }
   });
 
   it("opens the sheet for an infinitunes://create link", async () => {
