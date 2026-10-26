@@ -172,6 +172,43 @@ describe("favorite bounds and empty accounts", () => {
       expect(query.params).toContain(5000);
     },
   );
+  it("stores a show's link token beside its id and drops it on unlike", async () => {
+    state.returned = [{ userId: "u", ...emptyLists(), podcasts: ["42"] }];
+    await caller().addToFavorites({
+      type: "show",
+      token: "42",
+      linkToken: "abc_-9",
+    });
+    const patch = state.conflict?.podcastTokens;
+    if (!patch) throw new Error("Missing podcastTokens SQL");
+    const query = dialect.sqlToQuery(patch);
+    expect(query.sql).toContain("||");
+    expect(query.params).toContain(JSON.stringify({ "42": "abc_-9" }));
+
+    await caller().removeFromFavorites({ type: "show", token: "42" });
+    const values = state.writes.at(-1)?.values?.podcastTokens as SQL;
+    expect(dialect.sqlToQuery(values).sql).toContain("-");
+  });
+  it("leaves the token map alone without a link token or for other types", async () => {
+    state.returned = [{ userId: "u", ...emptyLists(), podcasts: ["42"] }];
+    await caller().addToFavorites({ type: "show", token: "42" });
+    expect(state.conflict?.podcastTokens).toBeUndefined();
+    state.returned = [{ userId: "u", ...emptyLists(), songs: ["s"] }];
+    await caller().addToFavorites({
+      type: "song",
+      token: "s",
+      linkToken: "abc",
+    });
+    expect(state.conflict?.podcastTokens).toBeUndefined();
+  });
+  it("bounds the link token at the boundary", async () => {
+    for (const linkToken of ["", "a".repeat(65), "a/b", "a b"]) {
+      await expect(
+        caller().addToFavorites({ type: "show", token: "42", linkToken }),
+      ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+    }
+    expect(state.writes).toEqual([]);
+  });
   it("accepts a duplicate at the cap and an add that reaches the cap", async () => {
     const songs = Array.from({ length: 5000 }, (_, i) => `song-${i}`);
     state.returned = [{ userId: "u", ...emptyLists(), songs }];

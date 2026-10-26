@@ -1,5 +1,11 @@
 import type { Show, Sort } from "@infinitunes/types";
-import { decode, formatCount, isExplicit, plainText } from "@infinitunes/types";
+import {
+  decode,
+  formatCount,
+  isExplicit,
+  parseToken,
+  plainText,
+} from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import { useState } from "react";
 import { View } from "react-native";
@@ -76,7 +82,11 @@ export function ShowContent({
             explicit={isExplicit(details.explicit_content)}
             onPlay={() => play(false)}
             onShuffle={() => play(true)}
-            like={{ type: "show", token: details.id }}
+            like={{
+              type: "show",
+              token: details.id,
+              linkToken: parseToken(details.perma_url),
+            }}
           />
           {description ? (
             <>

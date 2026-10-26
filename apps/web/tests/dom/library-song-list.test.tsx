@@ -407,6 +407,7 @@ describe("LibrarySongList", () => {
           playlists: [],
           artists: [],
           podcasts: [],
+          podcastTokens: {},
         },
       },
     ));

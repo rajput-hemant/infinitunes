@@ -49,6 +49,14 @@ const favoriteInput = z.object({
   type: z.enum(["song", "album", "playlist", "artist", "show"]),
 });
 
+const addFavoriteInput = favoriteInput.extend({
+  /** A show's perma token, kept beside its id so reading it back is one `show.details` call. */
+  linkToken: z
+    .string()
+    .regex(/^[\w-]{1,64}$/)
+    .optional(),
+});
+
 type FavoriteType = z.infer<typeof favoriteInput>["type"];
 
 const favoriteColumns = {
@@ -73,6 +81,7 @@ function favoritePatch(
   type: FavoriteType,
   token: string,
   op: "append" | "remove",
+  linkToken?: string,
 ) {
   const patch = (column: SQLWrapper) =>
     op === "append"
@@ -85,6 +94,14 @@ function favoritePatch(
     playlists: type === "playlist" ? patch(favorites.playlists) : undefined,
     artists: type === "artist" ? patch(favorites.artists) : undefined,
     podcasts: type === "show" ? patch(favorites.podcasts) : undefined,
+    podcastTokens:
+      type !== "show"
+        ? undefined
+        : op === "remove"
+          ? sql`${favorites.podcastTokens} - ${token}`
+          : linkToken
+            ? sql`${favorites.podcastTokens} || ${JSON.stringify({ [token]: linkToken })}::jsonb`
+            : undefined,
   };
 }
 
@@ -443,7 +460,7 @@ export const userRouter = router({
   ),
 
   addToFavorites: protectedProcedure
-    .input(favoriteInput)
+    .input(addFavoriteInput)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user.id;
 
@@ -452,10 +469,19 @@ export const userRouter = router({
         .values({
           userId,
           ...emptyFavoriteLists(input.type, input.token),
+          podcastTokens:
+            input.type === "show" && input.linkToken
+              ? { [input.token]: input.linkToken }
+              : {},
         })
         .onConflictDoUpdate({
           target: favorites.userId,
-          set: favoritePatch(input.type, input.token, "append"),
+          set: favoritePatch(
+            input.type,
+            input.token,
+            "append",
+            input.linkToken,
+          ),
         })
         .returning();
 

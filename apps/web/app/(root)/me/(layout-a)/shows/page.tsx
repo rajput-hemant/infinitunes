@@ -12,7 +12,10 @@ export const metadata = {
   description: "Your favorite podcasts in one place.",
 };
 
-async function getShowDetails(id: string) {
+async function getShowDetails(id: string, token?: string) {
+  // Likes saved before the token was stored have none: resolve it from an episode.
+  if (token) return api.show.details({ token });
+
   const episodes = await api.show.episodes({ id });
   const showUrl = episodes[0]?.more_info.show_url;
 
@@ -24,12 +27,13 @@ async function getShowDetails(id: string) {
 export default async function LikedPodcastsPage() {
   await requireUser();
   const favorites = await getUserFavorites();
+  const tokens = favorites?.podcastTokens ?? {};
 
   return (
     <LikedCollection
       tokens={favorites?.podcasts ?? []}
       noun="podcast"
-      fetchItem={getShowDetails}
+      fetchItem={(id) => getShowDetails(id, tokens[id])}
       toCard={({ show_details: show }) => ({
         name: show.title,
         url: show.perma_url,

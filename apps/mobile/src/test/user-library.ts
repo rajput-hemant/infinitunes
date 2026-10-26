@@ -48,6 +48,7 @@ export function favoritesRow(
     playlists: [],
     artists: [],
     podcasts: [],
+    podcastTokens: {},
     ...overrides,
   };
 }

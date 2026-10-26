@@ -22,6 +22,8 @@ type FavoriteToggleOptions = {
   type: FavoriteType;
   token: string;
   name: string;
+  /** A show's perma token, stored with the like (see `user.addToFavorites`). */
+  linkToken?: string;
   user?: User;
   /** `null`: the favorites read failed, so the state is unknown. */
   favorites?: Favorite | null;
@@ -34,7 +36,7 @@ type FavoriteToggleOptions = {
  * shows this item; the write follows, and a failure rolls back with a toast.
  */
 export function useFavoriteToggle(options: FavoriteToggleOptions) {
-  const { type, token, name, user, favorites, favourites } = options;
+  const { type, token, name, linkToken, user, favorites, favourites } = options;
   const currentFavorites = favorites !== undefined ? favorites : favourites;
   const copy = FAVORITE_COPY[type];
   const serverLiked = isFavorited(currentFavorites, type, token);
@@ -61,7 +63,7 @@ export function useFavoriteToggle(options: FavoriteToggleOptions) {
           .promise(
             unwrap(
               want
-                ? addToFavorites(token, type)
+                ? addToFavorites(token, type, linkToken)
                 : removeFromFavorites(token, type),
             ),
             want
