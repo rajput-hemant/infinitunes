@@ -41,9 +41,9 @@ type QueueTrack = Queue & RowExtras;
 type LinkIcon = ComponentProps<typeof Link.MenuAction>["icon"];
 
 /**
- * A queue row's long-press menu, Apple Music's: a row of quick actions (Add
- * to Queue, Favourite, Share), then Play Next, Add to Playlist, Create
- * Station, Go to Album, View Credits and Remove from Queue.
+ * A queue row's long-press menu, in line with the song menu's: a quick row
+ * (Favourite, Share), then Play Next, Add to Playlist, Create Station, Go to
+ * Album, View Credits and Remove from Queue.
  */
 function useQueueRowMenu(song: QueueTrack, onRemove: () => void) {
   const signedIn = useUserId() !== undefined;
@@ -53,16 +53,9 @@ function useQueueRowMenu(song: QueueTrack, onRemove: () => void) {
   const openCredits = useOpenCredits();
   const { liked, toggle } = useFavoriteToggle({ type: "song", token: song.id });
   const isSong = song.type === "song";
-  const { playNext, addToQueue } = playerStore.getState();
+  const { playNext } = playerStore.getState();
 
-  const quick: Entry[] = [
-    {
-      id: "add-to-queue",
-      title: "Add",
-      image: "plus.circle",
-      run: () => addToQueue(song),
-    },
-  ];
+  const quick: Entry[] = [];
   if (isSong)
     quick.push({
       id: "favourite",
@@ -173,12 +166,16 @@ function LinkEntries({ entries }: { entries: readonly Entry[] }) {
   );
 }
 
-/** The context menu's preview: the art, title, artist and album, on the system's surface. */
+/**
+ * The context menu's preview: a compact opaque card (art, title, artist,
+ * album), never the song's live screen. shortcut: local until the shared
+ * `components/context-preview.tsx` lands; swap this body for it then.
+ */
 function QueuePreview({ song }: { song: QueueTrack }) {
   return (
-    // The row sits on the player's wash; the preview is on the system's own surface.
+    // The row sits on the player's wash; the card is on its own surface.
     <TextInkContext value={null}>
-      <View className="flex-row items-center gap-4 p-4">
+      <View className="flex-1 flex-row items-center gap-4 overflow-hidden rounded-xl bg-card p-4">
         <Artwork image={song.image} size="feature" />
         <View className="flex-1 gap-1">
           <Text variant="headline" numberOfLines={2}>

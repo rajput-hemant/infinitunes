@@ -81,7 +81,6 @@ describe("QueueList", () => {
         (action: { label: string }) => action.label,
       ),
     ).toEqual([
-      "Add",
       "Favourite",
       "Share",
       "Play Next",
