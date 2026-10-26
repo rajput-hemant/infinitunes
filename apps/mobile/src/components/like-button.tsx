@@ -17,6 +17,8 @@ type LikeButtonProps = {
   linkToken?: string;
   /** `lg` by default; `md` in rows. */
   size?: IconSize;
+  /** `tonal` in a header's action row, beside the other round buttons. */
+  variant?: "standard" | "tonal";
 };
 
 /**
@@ -29,6 +31,7 @@ export function LikeButton({
   name,
   size,
   linkToken,
+  variant,
 }: LikeButtonProps) {
   const { colors } = useTheme();
   const signedIn = useUserId() !== undefined;
@@ -51,6 +54,7 @@ export function LikeButton({
         }
       }}
       size={size}
+      variant={variant}
       color={liked ? colors.primary : undefined}
     />
   );

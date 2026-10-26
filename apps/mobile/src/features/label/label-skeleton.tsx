@@ -15,7 +15,6 @@ export function LabelSkeleton() {
         <EntityHeaderSkeleton
           round
           like={false}
-          menu={false}
           subtitle={false}
           meta={false}
         />

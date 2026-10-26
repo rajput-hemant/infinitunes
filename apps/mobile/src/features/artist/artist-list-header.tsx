@@ -3,7 +3,6 @@ import type { Artist, Category, SongRowItem } from "@infinitunes/types";
 import { decode, formatCount } from "@infinitunes/types";
 import { View } from "react-native";
 
-import { CollectionMenu } from "~/components/collection-menu";
 import { EntityHeader } from "~/components/entity-header";
 import { OptionMenu } from "~/components/option-menu";
 import { SegmentedTabs } from "~/components/segmented-tabs";
@@ -56,17 +55,14 @@ export function ArtistListHeader({
         onPlay={() => playAll(topSongs)}
         onShuffle={() => shuffleAll(topSongs)}
         like={{ type: "artist", token: artist.artistId }}
-        actions={
-          <CollectionMenu
-            name={name}
-            rows={topSongs}
-            radio={{
-              name,
-              artistId: artist.artistId,
-              language: artist.dominantLanguage,
-            }}
-          />
-        }
+        menu={{
+          rows: topSongs,
+          radio: {
+            name,
+            artistId: artist.artistId,
+            language: artist.dominantLanguage,
+          },
+        }}
       />
       <SegmentedTabs
         testID="artist-tabs"

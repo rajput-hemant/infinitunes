@@ -14,6 +14,8 @@ import type { ShareableItem } from "~/lib/share";
 import { usePalette } from "~/theme/use-palette";
 
 import { detailHeaderOptions } from "./detail-header-options";
+import { DetailMenuContext } from "./detail-menu";
+import type { HeaderMenu } from "./detail-menu";
 import { DetailScrollContext } from "./detail-scroll";
 
 const NOT_FOUND_ICON: SymbolViewProps["name"] = {
@@ -38,7 +40,8 @@ export type DetailFrameProps<Data> = {
 /**
  * Every entity screen's states: the skeleton while loading, a final
  * not-found or a retryable failure, and the loaded page with the item's name
- * in a small native header title and Share at its trailing edge. The page's
+ * in a small native header title, with Share and the page's "more" menu
+ * (`DetailMenu`) at its trailing edge. The page's
  * scroll view reports scrolling under the bar through `useDetailScrollProps`
  * (Android's tinted, titled bar).
  */
@@ -52,20 +55,24 @@ export function DetailFrame<Data>({
 }: DetailFrameProps<Data>) {
   const { data } = query;
   const [scrolled, setScrolled] = useState(false);
+  const [menu, setMenu] = useState<HeaderMenu>();
   const scrolledColor = usePalette().card;
 
   if (data !== undefined && data !== null) {
     return (
       <DetailScrollContext value={setScrolled}>
-        <Stack.Screen
-          options={detailHeaderOptions(
-            identity(data),
-            scrolled ? scrolledColor : undefined,
-          )}
-        />
-        <Animated.View entering={CONTENT_REVEAL} className="flex-1">
-          {children(data)}
-        </Animated.View>
+        <DetailMenuContext value={setMenu}>
+          <Stack.Screen
+            options={detailHeaderOptions(
+              identity(data),
+              scrolled ? scrolledColor : undefined,
+              menu,
+            )}
+          />
+          <Animated.View entering={CONTENT_REVEAL} className="flex-1">
+            {children(data)}
+          </Animated.View>
+        </DetailMenuContext>
       </DetailScrollContext>
     );
   }

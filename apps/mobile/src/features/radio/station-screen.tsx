@@ -37,7 +37,6 @@ export function StationScreen({ name, token }: StationRef) {
             round
             shuffle={false}
             like={false}
-            menu={false}
             meta={false}
           />
           <SectionHeaderSkeleton />

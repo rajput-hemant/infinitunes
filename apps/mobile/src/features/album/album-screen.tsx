@@ -11,7 +11,6 @@ import type { UseQueryResult } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { View } from "react-native";
 
-import { CollectionMenu } from "~/components/collection-menu";
 import { DetailScreen } from "~/components/detail/detail-screen";
 import { DetailSkeleton } from "~/components/detail/detail-skeleton";
 import { EntityHeader } from "~/components/entity-header";
@@ -28,6 +27,7 @@ import {
 } from "~/lib/meta";
 import { songRowsOf } from "~/lib/song-rows";
 import { trpc } from "~/lib/trpc";
+import { useOpenEntity } from "~/navigation/use-open-entity";
 import { playAll, shuffleAll } from "~/playback/play-collection";
 
 type AlbumScreenProps = {
@@ -88,6 +88,10 @@ type AlbumPageProps = {
 
 function AlbumPage({ album, trending }: AlbumPageProps) {
   const rows = useMemo(() => songRowsOf(album.list), [album]);
+  const openEntity = useOpenEntity();
+  // One credited artist: the credit opens their screen.
+  const artists = uniqueArtists(album.more_info.artistMap?.artists ?? []);
+  const soleArtist = artists.length === 1 ? artists[0] : undefined;
 
   return (
     <TrackListPage
@@ -99,12 +103,17 @@ function AlbumPage({ album, trending }: AlbumPageProps) {
           eyebrow={joinMeta(["Album", album.year])}
           title={decode(album.title)}
           subtitle={albumCredit(album)}
+          onSubtitlePress={
+            soleArtist
+              ? () => openEntity("artist", soleArtist.perma_url)
+              : undefined
+          }
           meta={albumMeta(album, rows)}
           explicit={isExplicit(album.explicit_content)}
           onPlay={() => playAll(rows)}
           onShuffle={() => shuffleAll(rows)}
           like={{ type: "album", token: album.id }}
-          actions={<CollectionMenu name={decode(album.title)} rows={rows} />}
+          menu={{ rows }}
         />
       }
       footer={<AlbumFooter album={album} trending={trending} />}

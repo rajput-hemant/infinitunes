@@ -58,15 +58,24 @@ describe("LyricsSkeleton", () => {
 });
 
 describe("EntityHeaderSkeleton", () => {
-  it("draws the menu's dots where the loaded header has its menu", async () => {
-    await renderScreen(<EntityHeaderSkeleton like={false} />);
-    expect(screen.getByTestId("header-skeleton-menu")).toBeOnTheScreen();
-    expect(screen.queryByTestId("header-skeleton-like")).toBeNull();
+  it("mirrors the action row: Shuffle, the wide Play capsule, the heart", async () => {
+    jest.replaceProperty(Platform, "OS", "ios");
+    signInAs("user-1");
+    await renderScreen(<EntityHeaderSkeleton />);
+    expect(screen.getByTestId("header-skeleton-shuffle")).toBeOnTheScreen();
+    expect(
+      screen.getByTestId("header-skeleton-play").props.className,
+    ).toContain("flex-1");
+    expect(screen.getByTestId("header-skeleton-like")).toBeOnTheScreen();
+    // The options moved to the native bar: no dots in the row.
+    expect(screen.queryByTestId("header-skeleton-menu")).toBeNull();
   });
 
-  it("leaves the menu out of a header without one", async () => {
-    await renderScreen(<EntityHeaderSkeleton menu={false} />);
-    expect(screen.queryByTestId("header-skeleton-menu")).toBeNull();
+  it("leaves out the buttons the loaded header will not have", async () => {
+    await renderScreen(<EntityHeaderSkeleton like={false} shuffle={false} />);
+    expect(screen.queryByTestId("header-skeleton-shuffle")).toBeNull();
+    expect(screen.queryByTestId("header-skeleton-like")).toBeNull();
+    expect(screen.getByTestId("header-skeleton-play")).toBeOnTheScreen();
   });
 });
 
