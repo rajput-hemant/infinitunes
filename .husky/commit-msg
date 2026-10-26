@@ -1,1 +1,1 @@
-bunx --no -- commitlint --edit ${1}
+bunx --bun --no -- commitlint --edit ${1}
