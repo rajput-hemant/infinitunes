@@ -58,6 +58,8 @@ type CollectionMenuProps = {
   rows: readonly SongRowItem[];
   /** The station "Play Radio" starts; the first song's artist by default. */
   radio?: RadioSeed;
+  /** Entries after the standard ones (a song's "View Credits"). */
+  extra?: readonly MenuEntry[];
 };
 
 /**
@@ -65,7 +67,12 @@ type CollectionMenuProps = {
  * its songs next or last, add them all to a playlist, start its radio, or
  * download them all into a folder.
  */
-export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
+export function CollectionMenu({
+  name,
+  rows,
+  radio,
+  extra = [],
+}: CollectionMenuProps) {
   const signedIn = useUserId() !== undefined;
   const playlists = useUserPlaylists();
   const membership = usePlaylistMembership();
@@ -113,6 +120,8 @@ export function CollectionMenu({ name, rows, radio }: CollectionMenuProps) {
       },
     );
   }
+
+  entries.push(...extra);
 
   if (rows.length === 0) return null;
   return (

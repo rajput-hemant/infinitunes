@@ -202,7 +202,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   and autofocuses it (Back goes Home). The auth stack's iOS root gets Close (`authHeaderOptions`); Android shows no bar title.
 - Routes are the web's paths (`@infinitunes/core/entity-route`): detail screens, `search` and the account
   screens (`settings`, `profile`, `password`, `delete-account`) live once in `(tabs)/(home,search,library,radio)/`
-  (entities as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and `artist/[name]/[token]/{index,[tab]}`;
+  (entities as `<type>/[name]/[token]`, `show/[name]/[season]/[token]` and `artist/[name]/[token]/{index,[tab]}`, `song/[name]/[token]/{index,credits}` (mobile-only Credits screen, `creditsHref`; the song screen shows no credits inline, "View Credits" is in `SongMenu` and the song header menu);
   the season or tab only selects what opens, switching stays in the screen, whose header scrolls in the one
   list), so they open in the current tab and a web link with the app's scheme lands on them (a cold link in
   Home's stack). `+native-intent` maps legacy `<name>-songs` artist links and sends `/search?q=` (Siri,

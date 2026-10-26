@@ -35,10 +35,10 @@ import { TrackList } from "~/components/track-list";
 import { entityQueries } from "~/lib/entity-queries";
 import { joinMeta } from "~/lib/meta";
 import { trpc } from "~/lib/trpc";
+import { useOpenCredits } from "~/navigation/use-open-entity";
 import { playAll } from "~/playback/play-collection";
 
 import { LyricsSection } from "./lyrics-section";
-import { SongCredits } from "./song-credits";
 
 type SongDetails = { song: Song; modules: SongModules | undefined };
 
@@ -116,6 +116,7 @@ function SongPage({ song, modules, trending }: SongPageProps) {
   const row = useMemo(() => toSongRow(song), [song]);
   const rows = useMemo(() => [row], [row]);
   const { more_info: info } = song;
+  const openCredits = useOpenCredits();
   const recommendations = useQuery({
     ...trpc.song.recommendations.queryOptions({ id: song.id }),
     select: toCardItems,
@@ -132,10 +133,22 @@ function SongPage({ song, modules, trending }: SongPageProps) {
         explicit={isExplicit(song.explicit_content)}
         onPlay={() => playAll(rows)}
         like={{ type: "song", token: song.id }}
-        actions={<CollectionMenu name={row.name} rows={rows} />}
+        actions={
+          <CollectionMenu
+            name={row.name}
+            rows={rows}
+            extra={[
+              {
+                id: "credits",
+                title: "View Credits",
+                image: "info.circle",
+                run: () => openCredits(song.perma_url),
+              },
+            ]}
+          />
+        }
       />
       <LyricsSection songId={song.id} />
-      <SongCredits song={song} />
       <MoreFromAlbum song={row} albumUrl={info.album_url} />
       <SecondaryShelf
         title={modules?.reco?.title ?? "Recommended Songs"}
