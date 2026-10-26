@@ -14,6 +14,9 @@ type SliderListProps = {
 };
 
 export function SliderList({ title, subtitle, items }: SliderListProps) {
+  // An empty shelf is not shown: no heading and no disabled arrows.
+  if (items.length === 0) return null;
+
   return (
     <section>
       <Shelf
