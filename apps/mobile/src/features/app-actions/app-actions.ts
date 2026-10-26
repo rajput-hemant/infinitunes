@@ -13,7 +13,6 @@ import { playerStore } from "~/playback/player-store";
 import { resumePlayback } from "~/playback/transport";
 import { favoriteListsQuery } from "~/user-data/favorites";
 import { playlistDetailsQuery } from "~/user-data/playlists";
-import { promptSignIn } from "~/user-data/session";
 
 /**
  * The `infinitunes://action/<name>` links Siri (App Shortcuts) and Google
@@ -45,8 +44,13 @@ export type AppActionContext = {
   q?: string;
 };
 
-/** Where the app lands after an action: the player once something plays, else back. */
-export type ActionOutcome = "player" | "back" | "home";
+/**
+ * Where the app lands after an action: the player once something plays, else back.
+ * `signin` leaves like `back`, then opens sign in: pushing /login while the action
+ * screen sits below it over an open player makes react-native-screens reshuffle
+ * its modals when the action screen leaves, which aborts on iOS.
+ */
+export type ActionOutcome = "player" | "back" | "home" | "signin";
 
 /** Starts the restored queue, or plays the paused one on; `back` when nothing is queued. */
 function resume(): ActionOutcome {
@@ -71,8 +75,7 @@ async function playLiked(
   isCurrent: () => boolean,
 ): Promise<ActionOutcome> {
   if (!userId) {
-    promptSignIn();
-    return "back";
+    return "signin";
   }
   const rows = await likedSongs(userId);
   if (!isCurrent()) return "back";
@@ -91,8 +94,7 @@ async function playPlaylist(
   isCurrent: () => boolean,
 ): Promise<ActionOutcome> {
   if (!userId) {
-    promptSignIn();
-    return "back";
+    return "signin";
   }
   const playlist = id
     ? await queryClient.fetchQuery(playlistDetailsQuery(id, userId))
