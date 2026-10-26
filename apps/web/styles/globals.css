@@ -494,6 +494,13 @@ html[data-theme-switching] *::after {
     user-drag: none;
   }
 
+  /* In dark mode, placeholder images are inverted so they blend with the dark
+     interface. Placed in @layer base so utility filters (such as the blur on
+     ArtworkWash) take precedence. */
+  .dark img[src*="/images/placeholder/"] {
+    filter: invert(1);
+  }
+
   ::selection {
     @apply bg-primary text-primary-foreground;
   }
