@@ -1,15 +1,22 @@
+import { useEffect } from "react";
 import { usePanGesture } from "react-native-gesture-handler";
 import {
   ReduceMotion,
   useAnimatedStyle,
   useReducedMotion,
+  useSharedValue,
   withSpring,
   withTiming,
 } from "react-native-reanimated";
 import type { SharedValue } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-import { playerStore } from "~/playback/player-store";
+import {
+  playerStore,
+  selectHasNext,
+  selectHasPrevious,
+  usePlayer,
+} from "~/playback/player-store";
 import { springs } from "~/theme/motion";
 import { space } from "~/theme/tokens";
 
@@ -40,15 +47,28 @@ export function shouldDismiss(
   return translation > height * DISMISS_SHARE || velocity > FLICK_VELOCITY;
 }
 
+/** Which ways the queue can move from the current entry. */
+export type SwipeEdges = { next: boolean; previous: boolean };
+
+/** How far a drag towards a song that does not exist follows the finger. */
+const EDGE_RESISTANCE = 0.25;
+
+/** The way a drag of `translation` points: left is next, right previous. */
+function directionOf(translation: number) {
+  "worklet";
+  return translation < 0 ? "next" : "previous";
+}
+
 /**
  * What a sideways drag does: left is the next song, right the previous, as
  * Apple Music and Spotify; short and slow drags (or a flick back against the
- * drag) spring back.
+ * drag) spring back, as does a drag past the queue's end (`edges`).
  */
 export function swipeDecision(
   translation: number,
   velocity: number,
   width: number,
+  edges: SwipeEdges = { next: true, previous: true },
 ): "next" | "previous" | null {
   "worklet";
   if (translation === 0) return null;
@@ -60,15 +80,33 @@ export function swipeDecision(
     Math.abs(velocity) > FLICK_VELOCITY &&
     Math.sign(velocity) !== Math.sign(translation);
   if (against || (!far && !flick)) return null;
-  return translation < 0 ? "next" : "previous";
+  const direction = directionOf(translation);
+  return edges[direction] ? direction : null;
 }
 
-/** Next or previous through the store, so radio refill, repeat and shuffle apply. */
+/**
+ * Next or previous through the store, so radio refill, repeat and shuffle
+ * apply. Nothing (no tap either) past the queue's end.
+ */
 export function changeSong(direction: "next" | "previous") {
+  const state = playerStore.getState();
+  const can =
+    direction === "next" ? selectHasNext(state) : selectHasPrevious(state);
+  if (!can) return;
   playerHaptics.press();
-  const { skipToNext, skipToPrevious } = playerStore.getState();
-  if (direction === "next") skipToNext();
-  else skipToPrevious();
+  if (direction === "next") state.skipToNext();
+  else state.skipToPrevious();
+}
+
+/** The queue's edges as a shared value the swipe's worklets read. */
+function useSwipeEdges() {
+  const next = usePlayer(selectHasNext);
+  const previous = usePlayer(selectHasPrevious);
+  const edges = useSharedValue<SwipeEdges>({ next, previous });
+  useEffect(() => {
+    edges.set({ next, previous });
+  }, [edges, next, previous]);
+  return edges;
 }
 
 /** Screen reader actions for an element that also takes the song swipe. */
@@ -125,18 +163,26 @@ export function useDismissPan(
  */
 function useSongSwipe(offset: SharedValue<number>, width: number) {
   const reduceMotion = useReducedMotion();
+  const edges = useSwipeEdges();
   return usePanGesture({
     activeOffsetX: [-space.md, space.md],
     failOffsetY: [-space.md, space.md],
     onUpdate: (event) => {
       "worklet";
-      offset.set(event.translationX);
+      const x = event.translationX;
+      // Towards a song that does not exist it rubber-bands.
+      offset.set(edges.get()[directionOf(x)] ? x : x * EDGE_RESISTANCE);
     },
     onDeactivate: (event) => {
       "worklet";
       const decision = event.canceled
         ? null
-        : swipeDecision(event.translationX, event.velocityX, width);
+        : swipeDecision(
+            event.translationX,
+            event.velocityX,
+            width,
+            edges.get(),
+          );
       if (!decision) {
         offset.set(withSpring(0, SETTLE));
         return;
