@@ -13,6 +13,8 @@ import { authClient } from "~/lib/auth-client";
 import { authFailure } from "~/lib/auth-failure";
 import { usePending } from "~/lib/use-pending";
 
+import { ProviderButtons } from "./provider-buttons";
+
 /**
  * Email and password sign-in. The session store updates on success and the
  * `(auth)` layout then leaves the sign-in screens, so there is no redirect
@@ -42,6 +44,7 @@ export function LoginForm() {
 
   return (
     <View className="gap-4">
+      <ProviderButtons purpose="signin" pending={pending} run={run} />
       <EmailField
         ref={emailInput}
         value={values.email}

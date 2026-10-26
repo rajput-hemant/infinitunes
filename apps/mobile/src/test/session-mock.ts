@@ -52,7 +52,18 @@ export const authClient = {
   useSession: () => useSyncExternalStore(subscribe, () => session),
   // Async like Better Auth's expo client: the cookie is read from secure storage.
   getCookie: async () => (session.data ? "infinitunes.session_token=test" : ""),
-  signIn: { email: jest.fn(succeed) },
+  signIn: { email: jest.fn(succeed), social: jest.fn(succeed) },
+  // Better Auth's raw fetch (the provider list, the passkey ceremony): the
+  // server offers every provider until a test says otherwise.
+  $fetch: jest.fn(
+    async (
+      path: string,
+      _options?: unknown,
+    ): Promise<{ data: unknown; error: AuthResult["error"] }> => ({
+      data: path === "/social-providers" ? ["google", "github", "apple"] : {},
+      error: null,
+    }),
+  ),
   signUp: { email: jest.fn(succeed) },
   signOut: jest.fn(succeed),
   requestPasswordReset: jest.fn(succeed),

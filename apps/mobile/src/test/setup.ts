@@ -9,6 +9,8 @@ import { Dimensions } from "react-native";
 import { setUpTests } from "react-native-reanimated";
 
 process.env.EXPO_PUBLIC_API_URL = "https://infinitunes.test";
+process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID = "web.apps.googleusercontent.com";
+process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID = "ios.apps.googleusercontent.com";
 
 setUpTests();
 
@@ -42,6 +44,15 @@ jest.mock("expo-haptics", () => ({
 
 jest.mock("~/lib/trpc", () => require("~/test/trpc-mock"));
 jest.mock("~/lib/auth-client", () => require("~/test/session-mock"));
+jest.mock(
+  "expo-apple-authentication",
+  () => require("~/test/native-auth").appleAuthentication,
+);
+jest.mock(
+  "@react-native-google-signin/google-signin",
+  () => require("~/test/native-auth").googleSignIn,
+);
+jest.mock("react-native-passkey", () => require("~/test/native-auth").passkey);
 // The v3 gesture hooks load Gesture Handler's Reanimated wrapper, which asks
 // Worklets for the UI runtime on an immediate: Jest's web build of Worklets
 // has none and throws after the suite ends. There is no UI runtime to bind.

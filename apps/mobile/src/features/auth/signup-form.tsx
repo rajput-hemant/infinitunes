@@ -13,6 +13,8 @@ import { authClient } from "~/lib/auth-client";
 import { authFailure } from "~/lib/auth-failure";
 import { usePending } from "~/lib/use-pending";
 
+import { ProviderButtons } from "./provider-buttons";
+
 /**
  * Creates the account and signs it in (no email verification, like the web);
  * the `(auth)` layout leaves the screens once the session exists. The display
@@ -47,6 +49,7 @@ export function SignUpForm() {
 
   return (
     <View className="gap-4">
+      <ProviderButtons purpose="signup" pending={pending} run={run} />
       <EmailField
         ref={emailInput}
         value={values.email}

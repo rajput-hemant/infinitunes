@@ -12,4 +12,10 @@ export const env = {
   apiUrl: __DEV__
     ? resolveDevApiUrl(apiUrl, Constants.expoConfig?.hostUri)
     : apiUrl,
+  /** The server's Google web client (`GOOGLE_CLIENT_ID`): ID tokens name it. */
+  googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  /** Google's iOS client, whose reversed id is the app's URL scheme. */
+  googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  /** Passkeys need the web domain as an associated domain: https only. */
+  passkeys: apiUrl.startsWith("https:"),
 } as const;
