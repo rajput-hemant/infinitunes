@@ -1,12 +1,27 @@
 import { toCardItem } from "@infinitunes/types";
 import { rawAlbum } from "@infinitunes/types/fixtures";
-import { fireEvent, screen, waitFor } from "@testing-library/react-native";
+import {
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 import { Platform } from "react-native";
 
 import { renderScreen } from "~/test/render";
 import { procedure } from "~/test/trpc-mock";
 
 import { MediaCard } from "./media-card";
+
+/** The nearest flex row above a text: the card's title line. */
+function titleRow(text: ReturnType<typeof screen.getByText>) {
+  let row = text.parent;
+  while (row && !String(row.props.className ?? "").includes("flex-row")) {
+    row = row.parent;
+  }
+  if (!row) throw new Error("no title row");
+  return row;
+}
 
 describe("MediaCard", () => {
   it("prefetches the album's details when the card is pressed in", async () => {
@@ -26,6 +41,22 @@ describe("MediaCard", () => {
         token: "LHgqn,SRpyA_",
       }),
     );
+  });
+
+  it("shows the explicit badge on the title line, before the title", async () => {
+    await renderScreen(
+      <MediaCard item={toCardItem(rawAlbum({ explicit_content: "1" }))} />,
+      { routes: { "album/[name]/[token]": () => null } },
+    );
+
+    // Only the badge and the title sit on the title line, badge first.
+    const row = titleRow(screen.getByText("Udta Teer"));
+    expect(
+      within(row)
+        // The badge is hidden from screen readers, so include hidden nodes.
+        .getAllByText(/.+/, { includeHiddenElements: true })
+        .map((node) => node.props.children),
+    ).toEqual(["E", "Udta Teer"]);
   });
 
   it("is not clipped on iOS, which has no ripple", async () => {
