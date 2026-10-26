@@ -1,15 +1,22 @@
 import type { MediaType } from "@infinitunes/types";
 import { Link } from "expo-router";
 import type { Href } from "expo-router";
-import { isValidElement, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { Platform, Pressable, View } from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
 import type { AccessibilityValue } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
 import { prefetchEntity } from "~/lib/entity-queries";
+import { springs } from "~/theme/motion";
 import { space } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
+import { useRadii } from "~/theme/use-radii";
 
 import { Equalizer } from "./equalizer";
 import { ExplicitBadge } from "./explicit-badge";
@@ -23,9 +30,6 @@ export type ListRowLeading =
   | { icon: SymbolName }
   | { index: number };
 
-/** A disclosure chevron (iOS only; Android rows have none). */
-export type ListRowChevron = { chevron: true };
-
 type ListRowProps = {
   title: string;
   subtitle?: string;
@@ -33,8 +37,10 @@ type ListRowProps = {
   explicit?: boolean;
   /** Artwork (`row` size), an icon tile, or a track number. */
   leading?: ListRowLeading;
-  /** At most two 48pt controls (`IconButton`, a `NativeMenu`'s `MenuTrigger`), or a chevron. */
-  trailing?: ReactNode | ListRowChevron;
+  /** At most two 48pt controls (`IconButton`, a `NativeMenu`'s `MenuTrigger`). */
+  trailing?: ReactNode;
+  /** A disclosure chevron: the row opens a screen (iOS only; Android rows have none). */
+  chevron?: boolean;
   /** The row's screen: the row is a link. */
   href?: Href;
   /** What a tap does when the row is not a link. */
@@ -64,17 +70,6 @@ const tonalNowPlaying = () => Platform.OS === "android";
 
 /** What the leading slot shows for the current track. */
 type NowPlaying = "playing" | "paused" | undefined;
-
-function isChevron(
-  trailing: ListRowProps["trailing"],
-): trailing is ListRowChevron {
-  return (
-    typeof trailing === "object" &&
-    trailing !== null &&
-    !isValidElement(trailing) &&
-    "chevron" in trailing
-  );
-}
 
 /**
  * The current track's mark on both platforms: bars that bounce while playing
@@ -177,6 +172,7 @@ export function ListRow({
   explicit = false,
   leading,
   trailing,
+  chevron = false,
   href,
   onPress,
   entity,
@@ -190,8 +186,7 @@ export function ListRow({
   const palette = usePalette();
   const primary = useTokenColor("primary");
   const [pressed, setPressed] = useState(false);
-  const chevron = isChevron(trailing);
-  const controls = chevron ? null : trailing;
+  const controls = trailing;
   const dimmed = !href && !onPress;
   const nowPlaying: NowPlaying = selected
     ? paused
@@ -264,21 +259,24 @@ export function ListRow({
       ) : null}
     </>
   );
-  // Android's tonal container is inset by `space.sm` on both sides; the
-  // padding inside shrinks by as much, so its contents keep their place.
-  const inset = tonalNowPlaying() && selected ? space.sm : 0;
+  const android = tonalNowPlaying();
+  const hasControls =
+    controls !== undefined && controls !== null && controls !== false;
+  // Beside controls the row ends 4dp in; the current track's container ends
+  // there too, so the controls do not move when a row becomes current.
+  const endPad = hasControls ? space.xs : space.lg;
+  const endInset = android ? (hasControls ? space.xs : space.sm) : 0;
+  // Android's tonal container insets the start by `space.sm` while current;
+  // a plain row keeps that much as padding, so the content keeps its place.
   const bodyClass = "min-h-row flex-1 flex-row items-center gap-3 py-1";
-  const bodyStyle = { paddingStart: space.lg - inset };
-  const endPadding = {
-    paddingEnd: Math.max(0, (controls ? space.xs : space.lg) - inset),
-  };
-  const container = inset ? { marginHorizontal: inset } : undefined;
+  const bodyStyle = { paddingStart: space.lg - (android ? space.sm : 0) };
+  const tonal = useTonalContainer(selected && !dimmed, endPad, endInset);
 
   // An item without a screen is a labelled view, never a disabled button;
   // only its picture dims (`Leading`), so the text keeps its contrast.
   if (dimmed) {
     return (
-      <View className="flex-row items-center" style={endPadding}>
+      <View className="flex-row items-center" style={{ paddingEnd: endPad }}>
         <View
           accessible
           accessibilityLabel={label}
@@ -314,23 +312,68 @@ export function ListRow({
       {body}
     </Pressable>
   );
-  return (
-    <View
-      className={cx(
-        "flex-row items-center",
-        pressed && Platform.OS === "ios" && "bg-fill-2",
-        container && "overflow-hidden rounded-lg bg-secondary",
-      )}
-      style={[endPadding, container]}
-    >
-      {href ? (
-        <Link href={href} asChild>
-          {pressable}
-        </Link>
-      ) : (
-        pressable
-      )}
-      {controls}
-    </View>
+  const content = href ? (
+    <Link href={href} asChild>
+      {pressable}
+    </Link>
+  ) : (
+    pressable
   );
+
+  if (!android) {
+    return (
+      <View
+        className={cx("flex-row items-center", pressed && "bg-fill-2")}
+        style={{ paddingEnd: endPad }}
+      >
+        {content}
+        {controls}
+      </View>
+    );
+  }
+  return (
+    <Animated.View
+      className="flex-row items-center overflow-hidden"
+      style={tonal.style}
+    >
+      <Animated.View
+        testID="list-row-container"
+        pointerEvents="none"
+        className="bg-secondary"
+        style={[StyleSheet.absoluteFill, tonal.background]}
+      />
+      {content}
+      {controls}
+    </Animated.View>
+  );
+}
+
+/**
+ * The current track's tonal container (Android): margins and padding on the
+ * spatial spring, the fill on the effects spring; both follow the system's
+ * reduce motion setting. A row starts at rest, so a mount does not animate.
+ */
+function useTonalContainer(current: boolean, endPad: number, endInset: number) {
+  const radius = useRadii().lg;
+  const place = useSharedValue(current ? 1 : 0);
+  const fill = useSharedValue(current ? 1 : 0);
+  useEffect(() => {
+    place.set(withSpring(current ? 1 : 0, springs.spatialDefault));
+    fill.set(withSpring(current ? 1 : 0, springs.effectsDefault));
+  }, [current, place, fill]);
+  const style = useAnimatedStyle(() => {
+    // A spring may overshoot; a length may not go negative.
+    const on = place.get();
+    return {
+      marginStart: Math.max(0, space.sm * on),
+      marginEnd: Math.max(0, endInset * on),
+      paddingStart: Math.max(0, space.sm * (1 - on)),
+      paddingEnd: Math.max(0, endPad - endInset * on),
+      borderRadius: Math.max(0, radius * on),
+    };
+  });
+  const background = useAnimatedStyle(() => ({
+    opacity: Math.min(1, Math.max(0, fill.get())),
+  }));
+  return { style, background };
 }

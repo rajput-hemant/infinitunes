@@ -11,6 +11,8 @@ import { PlayButton } from "../play-button";
 
 type TilePlayPauseButtonProps = {
   id: string;
+  /** The track's title: rows of one list must not all be named "Play". */
+  name: string;
   type: MediaType;
   token: string;
   /** Set when this row is itself a queue entry, so duplicates stay distinct. */
@@ -18,7 +20,7 @@ type TilePlayPauseButtonProps = {
 };
 
 export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
-  const { id, type, token, queueItemId } = props;
+  const { id, name, type, token, queueItemId } = props;
   const [queue] = useQueue();
   const [currentIndex] = useCurrentSongIndex();
   const { isPlaying, play, pause } = useAudioPlayerContext();
@@ -32,7 +34,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
   return isCurrentSong ? (
     <button
       type="button"
-      aria-label={isPlaying ? "Pause" : "Play"}
+      aria-label={`${isPlaying ? "Pause" : "Play"} ${name}`}
       onClick={isPlaying ? pause : play}
       // Image scrim: must stay dark over arbitrary artwork in both themes, so
       // it is deliberately not a theme token.
@@ -48,6 +50,7 @@ export function TilePlayPauseButton(props: TilePlayPauseButtonProps) {
       type={type}
       token={token}
       queueItemId={queueItemId}
+      aria-label={`Play ${name}`}
       className="absolute inset-0 z-20 outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
     >
       <Play

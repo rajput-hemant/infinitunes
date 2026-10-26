@@ -4,7 +4,11 @@ import { act, screen, waitFor } from "@testing-library/react-native";
 import { Image } from "expo-image";
 import { getColors } from "react-native-image-colors";
 
-import { NO_SWATCH, playerColorsFromSeed } from "~/lib/artwork-colors";
+import {
+  loadMaterialColors,
+  NO_SWATCH,
+  playerColorsFromSeed,
+} from "~/lib/artwork-colors";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
 
@@ -34,6 +38,10 @@ function expectedColors() {
 }
 
 const initial = playerStore.getState();
+
+// The colour library loads with the first extraction; transforming it takes
+// longer than a `waitFor`, so load it before the first test.
+beforeAll(() => loadMaterialColors());
 
 beforeEach(() => {
   playerStore.setState(initial, true);
@@ -66,6 +74,8 @@ async function onSecondCover() {
   await waitFor(() =>
     expect(backdrop()).toHaveStyle({ backgroundImage: expect.anything() }),
   );
+  // The second cover is read ahead of its turn: let that settle first.
+  await waitFor(() => expect(getColors).toHaveBeenCalledTimes(2));
 }
 
 describe("Now Playing's wash", () => {
@@ -160,7 +170,7 @@ describe("Now Playing's wash", () => {
     jest.mocked(getColors).mockRejectedValueOnce(new Error("offline"));
     await act(async () => playerStore.getState().skipToNext());
 
-    await waitFor(() => expect(getColors).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(getColors).toHaveBeenCalledTimes(3));
     await waitFor(() =>
       expect(backdrop()).not.toHaveStyle({
         backgroundImage: expect.anything(),
@@ -174,7 +184,7 @@ describe("Now Playing's wash", () => {
 
     jest.mocked(getColors).mockReturnValueOnce(new Promise(() => {}));
     await act(async () => playerStore.getState().skipToNext());
-    await waitFor(() => expect(getColors).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(getColors).toHaveBeenCalledTimes(3));
     // Still loading: the first cover's wash holds.
     expect(backdrop()).toHaveStyle({ backgroundImage: expect.anything() });
 
@@ -186,6 +196,43 @@ describe("Now Playing's wash", () => {
       expect(backdrop()).not.toHaveStyle({
         backgroundImage: expect.anything(),
       }),
+    );
+  });
+
+  it("reads the next cover's colour ahead of its turn, once", async () => {
+    jest.mocked(getColors).mockResolvedValue(iosColors(SEED));
+    await onSecondCover();
+
+    // Playing "first": the second cover was read while it plays.
+    await waitFor(() => expect(getColors).toHaveBeenCalledTimes(2));
+    expect(getColors).toHaveBeenLastCalledWith(
+      expect.stringMatching(/second-50x50/),
+      expect.anything(),
+    );
+
+    jest.mocked(getColors).mockClear();
+    await act(async () => playerStore.getState().skipToNext());
+    // Landing on it reads nothing more: the seed is already cached.
+    await waitFor(() => expect(getColors).not.toHaveBeenCalled());
+  });
+
+  it("does not guess the next cover of a shuffled queue", async () => {
+    playerStore
+      .getState()
+      .playTracks(
+        ["first", "second"].map((id) =>
+          toSongRow(
+            rawSong({ id, image: `https://c.saavncdn.com/${id}-500x500.jpg` }),
+          ),
+        ),
+      );
+    playerStore.getState().toggleShuffle();
+    await renderScreen(<FullPlayer />);
+
+    await waitFor(() => expect(getColors).toHaveBeenCalledTimes(1));
+    expect(getColors).not.toHaveBeenCalledWith(
+      expect.stringMatching(/second-50x50/),
+      expect.anything(),
     );
   });
 

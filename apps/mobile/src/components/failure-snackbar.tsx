@@ -1,12 +1,6 @@
 import { useSegments } from "expo-router";
-import { useState } from "react";
-import {
-  PanResponder,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-} from "react-native";
+import { Platform, Pressable, StyleSheet, View } from "react-native";
+import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -17,6 +11,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { scheduleOnRN } from "react-native-worklets";
 
 import {
   dismissFailure,
@@ -39,7 +34,8 @@ import {
 
 /** A drag this far (or a flick) sends the snackbar away. */
 const DISMISS_DISTANCE = sizes.touch;
-const DISMISS_VELOCITY = 0.5;
+/** Points per second (the gesture handler's unit). */
+const DISMISS_VELOCITY = 500;
 
 const fadeIn = FadeIn.duration(200).reduceMotion(ReduceMotion.Never);
 const fadeOut = FadeOut.duration(150).reduceMotion(ReduceMotion.Never);
@@ -90,36 +86,38 @@ function Card({ failure }: { failure: Failure }) {
     dismiss();
     failure.action?.onPress();
   };
-  const [pan] = useState(() =>
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) =>
-        Math.abs(g.dx) > space.sm || g.dy > space.sm,
+  const pan = usePanGesture({
+    testID: "failure-snackbar-pan",
+    // Down or sideways, past a small slop; up is left to the page.
+    activeOffsetX: [-space.sm, space.sm],
+    activeOffsetY: space.sm,
+    onActivate: () => {
+      "worklet";
       // The message stays while a finger is on it.
-      onPanResponderGrant: () => holdFailure(failure.id),
-      onPanResponderMove: (_, g) => {
-        x.set(g.dx);
-        y.set(Math.max(g.dy, 0));
-      },
-      onPanResponderRelease: (_, g) => {
-        const away =
-          Math.abs(g.dx) > DISMISS_DISTANCE ||
-          g.dy > DISMISS_DISTANCE / 2 ||
-          Math.abs(g.vx) > DISMISS_VELOCITY ||
-          g.vy > DISMISS_VELOCITY;
-        if (away) dismissFailure(failure.id);
-        else {
-          releaseFailure(failure.id);
-          x.set(withSpring(0, springs.spatialDefault));
-          y.set(withSpring(0, springs.spatialDefault));
-        }
-      },
-      onPanResponderTerminate: () => {
-        releaseFailure(failure.id);
-        x.set(withSpring(0, springs.spatialDefault));
-        y.set(withSpring(0, springs.spatialDefault));
-      },
-    }),
-  );
+      scheduleOnRN(holdFailure, failure.id);
+    },
+    onUpdate: (event) => {
+      "worklet";
+      x.set(event.translationX);
+      y.set(Math.max(event.translationY, 0));
+    },
+    onDeactivate: (event) => {
+      "worklet";
+      const away =
+        !event.canceled &&
+        (Math.abs(event.translationX) > DISMISS_DISTANCE ||
+          event.translationY > DISMISS_DISTANCE / 2 ||
+          Math.abs(event.velocityX) > DISMISS_VELOCITY ||
+          event.velocityY > DISMISS_VELOCITY);
+      if (away) {
+        scheduleOnRN(dismissFailure, failure.id);
+        return;
+      }
+      scheduleOnRN(releaseFailure, failure.id);
+      x.set(withSpring(0, springs.spatialDefault));
+      y.set(withSpring(0, springs.spatialDefault));
+    },
+  });
   const dragStyle = useAnimatedStyle(() => ({
     opacity: 1 - Math.min(Math.abs(x.value) / (DISMISS_DISTANCE * 3), 0.6),
     transform: [{ translateX: x.value }, { translateY: y.value }],
@@ -131,29 +129,31 @@ function Card({ failure }: { failure: Failure }) {
       exiting={reduceMotion ? fadeOut : snackbarExiting}
       style={styles.card}
     >
-      <Animated.View style={dragStyle} {...pan.panHandlers}>
-        <Pressable
-          onPress={dismiss}
-          accessibilityRole="alert"
-          accessibilityLabel={failure.message}
-          accessibilityHint="Dismisses the message"
-          // One element for a screen reader; the action is a custom action.
-          accessibilityActions={[
-            { name: "activate" },
-            // Android has no platform escape: a custom action needs its label.
-            { name: "escape", label: "Dismiss" },
-            ...(failure.action
-              ? [{ name: "action", label: failure.action.label }]
-              : []),
-          ]}
-          onAccessibilityAction={(event) =>
-            event.nativeEvent.actionName === "action" ? act() : dismiss()
-          }
-          onAccessibilityEscape={dismiss}
-        >
-          <SnackbarSurface failure={failure} onAction={act} />
-        </Pressable>
-      </Animated.View>
+      <GestureDetector gesture={pan}>
+        <Animated.View style={dragStyle}>
+          <Pressable
+            onPress={dismiss}
+            accessibilityRole="alert"
+            accessibilityLabel={failure.message}
+            accessibilityHint="Dismisses the message"
+            // One element for a screen reader; the action is a custom action.
+            accessibilityActions={[
+              { name: "activate" },
+              // Android has no platform escape: a custom action needs its label.
+              { name: "escape", label: "Dismiss" },
+              ...(failure.action
+                ? [{ name: "action", label: failure.action.label }]
+                : []),
+            ]}
+            onAccessibilityAction={(event) =>
+              event.nativeEvent.actionName === "action" ? act() : dismiss()
+            }
+            onAccessibilityEscape={dismiss}
+          >
+            <SnackbarSurface failure={failure} onAction={act} />
+          </Pressable>
+        </Animated.View>
+      </GestureDetector>
     </Animated.View>
   );
 }

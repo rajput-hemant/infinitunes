@@ -23,7 +23,7 @@ Auth model: Better Auth with email + password, passkey (WebAuthn) and Google/Git
 
 ## Route inventory (from `apps/web/app`)
 
-Public: `/`, `/album`, `/album/[name]/[token]`, `/artist`, `/artist/[name]/[token]`, `/chart`, `/episode/[name]/[token]`, `/label/[name]/[token]`, `/mix/[name]/[token]`, `/playlist`, `/playlist/[name]/[token]`, `/radio`, `/radio/[name]/[token]`, `/search`, `/search/[type]/[query]`, `/show`, `/show/[name]/[season]/[token]`, `/song/[name]/[token]`, `/settings` (the old `/settings/appearance` and `/settings/preferences` 308 to its sections).
+Public: `/`, `/album`, `/album/[name]/[token]`, `/artist`, `/artist/[name]/[token]`, `/chart`, `/episode/[name]/[token]`, `/label/[name]/[token]`, `/label/[name]/[token]/albums`, `/mix/[name]/[token]`, `/playlist`, `/playlist/[name]/[token]`, `/radio`, `/radio/[name]/[token]`, `/search`, `/search/[type]/[query]`, `/show`, `/show/[name]/[season]/[token]`, `/song/[name]/[token]`, `/settings` (the old `/settings/appearance` and `/settings/preferences` 308 to its sections).
 
 Auth pages (redirect to `/` when a session exists): `/login`, `/signup`, `/forgot-password`, `/reset-password`, also intercepted as modals via `app/@modal/(.)login|signup|forgot-password|reset-password`.
 

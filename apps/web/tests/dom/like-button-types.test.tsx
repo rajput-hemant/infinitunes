@@ -39,7 +39,7 @@ describe("LikeButton by media type", () => {
   it.each(["song", "album", "playlist", "artist", "show"] as const)(
     "renders the like control for %s",
     (type) => {
-      expect(render(type)).toContain('aria-label="Like"');
+      expect(render(type)).toContain('aria-label="Like ');
     },
   );
 
@@ -73,7 +73,7 @@ describe("LikeButton when favorites could not be loaded", () => {
       );
     });
     const trigger = container.querySelector<HTMLButtonElement>(
-      '[aria-label="Like"]',
+      '[aria-label^="Like"]',
     );
     return {
       trigger,

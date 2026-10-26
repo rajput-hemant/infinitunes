@@ -5,6 +5,7 @@ import { ScrollView } from "react-native";
 import { ListRow } from "~/components/list-row";
 import { Text } from "~/components/ui/text";
 import { usePreferences } from "~/lib/preferences";
+import { useSheetBottomInset } from "~/navigation/sheet-inset";
 
 /** What the catalog serves when no language is chosen (`api.ts`'s fallback). */
 const DEFAULT_LANGUAGES: readonly Lang[] = ["hindi", "english"];
@@ -53,9 +54,13 @@ export function LanguagesScreen() {
   );
 
   const checked = effectiveLanguages(languages);
+  const bottomInset = useSheetBottomInset();
 
   return (
-    <ScrollView contentInsetAdjustmentBehavior="automatic">
+    <ScrollView
+      contentInsetAdjustmentBehavior="automatic"
+      contentContainerStyle={{ paddingBottom: bottomInset }}
+    >
       <Text variant="subhead" tone="muted" className="px-page pb-2 pt-3">
         Pick the languages you want on Home, Charts and New Releases.
       </Text>

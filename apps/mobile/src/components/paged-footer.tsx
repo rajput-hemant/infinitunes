@@ -1,8 +1,9 @@
 import { View } from "react-native";
+import Animated from "react-native-reanimated";
 
 import { EmptyState } from "~/components/empty-state";
 import { ErrorState } from "~/components/error-state";
-import { SongListSkeleton } from "~/components/skeletons";
+import { CONTENT_REVEAL, SongListSkeleton } from "~/components/skeletons";
 import { Spinner } from "~/components/ui/spinner";
 
 type PagedFooterProps = {
@@ -23,14 +24,23 @@ export function PagedFooter({
   emptyTitle,
   onRetry,
 }: PagedFooterProps) {
-  if (error && isEmpty) return <ErrorState error={error} onRetry={onRetry} />;
+  // The skeleton gives way to these two with a fade, not a pop.
+  if (error && isEmpty) {
+    return (
+      <Animated.View entering={CONTENT_REVEAL}>
+        <ErrorState error={error} onRetry={onRetry} />
+      </Animated.View>
+    );
+  }
   if (isPending) return <SongListSkeleton />;
   if (isEmpty) {
     return (
-      <EmptyState
-        icon={{ ios: "music.note.list", android: "queue_music" }}
-        title={emptyTitle}
-      />
+      <Animated.View entering={CONTENT_REVEAL}>
+        <EmptyState
+          icon={{ ios: "music.note.list", android: "queue_music" }}
+          title={emptyTitle}
+        />
+      </Animated.View>
     );
   }
   if (isFetchingNextPage) {

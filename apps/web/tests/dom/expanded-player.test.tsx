@@ -147,7 +147,7 @@ describe("expanded player sheet", () => {
       dialog?.querySelector('button[aria-label="More options"]'),
     ).not.toBeNull();
     expect(
-      dialog?.querySelector('button[aria-label="Like"][aria-pressed="false"]'),
+      dialog?.querySelector('button[aria-label^="Like"][aria-pressed="false"]'),
     ).not.toBeNull();
 
     await act(async () => root.unmount());

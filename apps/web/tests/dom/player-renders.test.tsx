@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, mock } from "bun:test";
+import { afterEach, describe, expect, it, mock, spyOn } from "bun:test";
 
 import type { Favorite } from "@infinitunes/db/schema";
 import { getDownloadLink } from "@infinitunes/types";
@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { createRoot, type Root } from "react-dom/client";
+import * as sonner from "sonner";
 
 import { useIsPlayerInit } from "../../hooks/use-store";
 import { waitFor } from "./wait-for";
@@ -425,6 +426,20 @@ describe("player repeat and volume controls", () => {
     await press("s");
     await press("l");
     expect(loopCalls).toEqual(["on", "off"]);
+  });
+
+  it("announces shuffle on and off for the s shortcut, like l does for repeat", async () => {
+    const toasts = spyOn(sonner, "toast");
+    await mountPlayer({ queue: threeSongs });
+
+    await press("s");
+    await press("s");
+
+    expect(toasts.mock.calls.map((call) => call[0])).toEqual([
+      "Shuffle on",
+      "Shuffle off",
+    ]);
+    toasts.mockRestore();
   });
 
   it("toggles the loop of a single-song queue", async () => {

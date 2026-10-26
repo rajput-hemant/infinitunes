@@ -51,6 +51,8 @@ describe("buildCsp", () => {
       "blob:",
       "https://c.saavncdn.com",
       "https://c.sop.saavncdn.com",
+      "https://lh3.googleusercontent.com",
+      "https://avatars.githubusercontent.com",
     ]);
     expect(directive(csp, "media-src")).toEqual([
       "'self'",

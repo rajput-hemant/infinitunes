@@ -193,12 +193,18 @@ describe("song row art icon", () => {
     playing = true;
     const container = await mount(
       <Current>
-        <TilePlayPauseButton id="s1" type="song" token="s1" queueItemId="q1" />
+        <TilePlayPauseButton
+          id="s1"
+          name="Song One"
+          type="song"
+          token="s1"
+          queueItemId="q1"
+        />
       </Current>,
     );
     await seed(container);
     let button = rowButton(container);
-    expect(button.getAttribute("aria-label")).toBe("Pause");
+    expect(button.getAttribute("aria-label")).toBe("Pause Song One");
     expect(button.querySelector("svg")?.getAttribute("class")).toContain(
       "lucide-pause",
     );
@@ -209,6 +215,7 @@ describe("song row art icon", () => {
         <Current>
           <TilePlayPauseButton
             id="s1"
+            name="Song One"
             type="song"
             token="s1"
             queueItemId="q1"
@@ -217,7 +224,7 @@ describe("song row art icon", () => {
       ),
     );
     button = rowButton(container);
-    expect(button.getAttribute("aria-label")).toBe("Play");
+    expect(button.getAttribute("aria-label")).toBe("Play Song One");
     expect(button.querySelector("svg")?.getAttribute("class")).toContain(
       "lucide-play",
     );

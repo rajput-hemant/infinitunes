@@ -14,7 +14,7 @@ import { siteConfig } from "~/config/site";
 import { pageMetadata } from "~/lib/metadata";
 import { api } from "~/lib/trpc/server";
 
-const title = ` Top Indian Music Artists - Download or Listen Free on ${siteConfig.name} `;
+const title = `Top Indian Music Artists - Download or Listen Free on ${siteConfig.name}`;
 const description = `Search for songs based on Top Artist. Get new and old songs based on artists along with details of individual artist on ${siteConfig.name}.`;
 
 export const metadata = pageMetadata({

@@ -1,3 +1,4 @@
+import { failureStore } from "~/lib/failure";
 import { queryClient } from "~/lib/query-client";
 import { playerStore } from "~/playback/player-store";
 import { authClient } from "~/test/session-mock";
@@ -14,6 +15,7 @@ const CATALOG_KEY = [["home", "home"], { type: "query" }];
 afterAll(() => queryClient.clear());
 
 beforeEach(() => {
+  failureStore.setState({ current: null });
   queryClient.clear();
   queryClient.setQueryData(FAVORITES_KEY, { song: ["a"] });
   queryClient.setQueryData(PLAYLISTS_KEY, []);
@@ -54,5 +56,16 @@ describe("signOut", () => {
     });
 
     expect(queryClient.getQueryData(FAVORITES_KEY)).toEqual({ song: ["a"] });
+    expect(failureStore.getState().current?.message).toBe(
+      "Something went wrong. Please try again.",
+    );
+  });
+
+  it("stays quiet about a failure when the caller opts out", async () => {
+    authClient.signOut.mockResolvedValueOnce({ error: { status: 503 } });
+
+    await signOut({ report: false });
+
+    expect(failureStore.getState().current).toBeNull();
   });
 });

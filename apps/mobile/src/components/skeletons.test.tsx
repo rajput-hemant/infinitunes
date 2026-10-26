@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
 import { renderScreen } from "~/test/render";
+import { signInAs } from "~/test/session-mock";
 import { textStyles } from "~/theme/tokens";
 
 import {
@@ -9,7 +10,23 @@ import {
   LyricsSkeleton,
   ShelfSkeleton,
   SkeletonText,
+  SongListSkeleton,
 } from "./skeletons";
+
+describe("SongListSkeleton", () => {
+  it("ends each row with the menu's cell, and the heart for a signed-in listener", async () => {
+    await renderScreen(<SongListSkeleton rows={3} />);
+    expect(screen.getAllByTestId("row-skeleton-menu")).toHaveLength(3);
+    expect(screen.queryByTestId("row-skeleton-like")).toBeNull();
+  });
+
+  it("draws the heart cell on every row once signed in", async () => {
+    signInAs("user-1");
+    await renderScreen(<SongListSkeleton rows={3} numbered />);
+    expect(screen.getAllByTestId("row-skeleton-like")).toHaveLength(3);
+    expect(screen.getAllByTestId("row-skeleton-menu")).toHaveLength(3);
+  });
+});
 
 describe("LyricsSkeleton", () => {
   afterEach(() => jest.restoreAllMocks());

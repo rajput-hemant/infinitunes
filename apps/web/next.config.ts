@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 
 // This is validation for the environment variables early in the build process.
 import "./lib/env";
-import { IMAGE_CDN_HOSTS } from "./lib/image-hosts";
 import { legacySettingsRedirects } from "./lib/legacy-redirects";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -59,12 +58,6 @@ const config: NextConfig = {
   images: {
     // Images are served as-is without Next.js optimization.
     unoptimized: true,
-    remotePatterns: [
-      ...IMAGE_CDN_HOSTS.map((hostname) => ({
-        protocol: "https" as const,
-        hostname,
-      })),
-    ],
   },
   async redirects() {
     return legacySettingsRedirects;

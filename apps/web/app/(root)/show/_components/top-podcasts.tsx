@@ -13,22 +13,24 @@ import { trpc } from "~/lib/trpc/vanilla";
 
 type TopPodcastsProps = {
   initialTopShows: TopShows;
+  /** The 1-based page `initial*` holds (`?page=N`); the next request is N + 1. */
+  page?: number;
 };
 
-function TopPodcastsContent({ initialTopShows }: TopPodcastsProps) {
+function TopPodcastsContent({ initialTopShows, page = 1 }: TopPodcastsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["top-podcasts"],
+      queryKey: ["top-podcasts", page],
       queryFn: ({ pageParam }) =>
         trpc.get.topShows.query({ page: pageParam, n: 50 }),
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, allPages) =>
-        lastPage.last_page ? null : allPages.length + 1,
-      initialData: { pages: [initialTopShows], pageParams: [1] },
+      initialPageParam: page,
+      getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+        lastPage.last_page ? null : lastPageParam + 1,
+      initialData: { pages: [initialTopShows], pageParams: [page] },
     });
 
   const podcasts = uniqueBy(
-    data.pages.flatMap((page) => page.data),
+    data.pages.flatMap((group) => group.data),
     (show) => show.id,
   );
 

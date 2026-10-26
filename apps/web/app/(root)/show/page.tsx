@@ -16,7 +16,7 @@ import { api } from "~/lib/trpc/server";
 import { TopPodcasts } from "./_components/top-podcasts";
 
 const title = `Latest podcasts - download and listen online @${siteConfig.name}`;
-const description = `Listen to the latest podcasts online on ${siteConfig.name}. Download and listen to new, exclusive, electronic dance music and house tracks.`;
+const description = `Listen to the latest podcasts online on ${siteConfig.name}. Follow new episodes, trending shows and exclusive series, and listen free anytime.`;
 
 export const metadata = pageMetadata({
   title,
@@ -46,8 +46,10 @@ function PodcastsSkeleton() {
 async function Podcasts({ searchParams }: TopPodcastsPageProps) {
   const { page } = await searchParams;
 
+  const pageNumber = parsePageParam(page);
+
   const topShows = await api.get.topShows({
-    page: parsePageParam(page),
+    page: pageNumber,
     n: 50,
   });
 
@@ -94,7 +96,7 @@ async function Podcasts({ searchParams }: TopPodcastsPageProps) {
         All Podcasts
       </h2>
 
-      <TopPodcasts initialTopShows={topShows} />
+      <TopPodcasts initialTopShows={topShows} page={pageNumber} />
     </>
   );
 }

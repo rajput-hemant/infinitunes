@@ -11,8 +11,8 @@ import { api } from "~/lib/trpc/server";
 import { FeaturedPlaylists } from "./_components/featured-playlists";
 import { PlaylistsTitle } from "./_components/playlists-title";
 
-const title = `Best Songs ${new Date().getFullYear()} - Online Downloads and Playlists @${siteConfig.name}`;
-const description = `The music buffs at Saavn have created music playlists which include a huge variety of songs from various genres such as festivals, devotional, film, wedding, dance & more.`;
+const title = `Best Songs - Online Downloads and Playlists @${siteConfig.name}`;
+const description = `The music buffs at ${siteConfig.name} have created music playlists which include a huge variety of songs from various genres such as festivals, devotional, film, wedding, dance & more.`;
 
 export const metadata = pageMetadata({
   title,
@@ -27,8 +27,10 @@ type PageProps = {
 async function PlaylistsGrid({ searchParams }: PageProps) {
   const { page, lang } = await searchParams;
 
+  const pageNumber = parsePageParam(page);
+
   const featuredPlaylists = await api.get.featuredPlaylists({
-    page: parsePageParam(page),
+    page: pageNumber,
     n: 50,
     lang,
   });
@@ -37,6 +39,7 @@ async function PlaylistsGrid({ searchParams }: PageProps) {
     <FeaturedPlaylists
       key={`${lang ?? "all"}-${featuredPlaylists.data[0]?.id ?? "playlists"}`}
       initialPlaylists={featuredPlaylists}
+      page={pageNumber}
       lang={lang}
     />
   );

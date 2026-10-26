@@ -272,6 +272,57 @@ describe("proxy legacy artist tab URLs", () => {
   });
 });
 
+describe("proxy legacy label tab URLs", () => {
+  let proxy: typeof import("../../proxy").proxy;
+
+  beforeAll(async () => {
+    getSessionCookie.mockImplementation(() => undefined);
+    ({ proxy } = await import("../../proxy"));
+  });
+
+  const location = (res: unknown) =>
+    (res as { headers: { location: string } }).headers.location;
+
+  it("moves JioSaavn's -albums slug permanently onto the Albums route", async () => {
+    const res = await proxy(
+      createNextRequest(
+        "http://localhost:3000/label/outlaw-productions-albums/tok_?a=1",
+      ),
+    );
+
+    expect(res.status).toBe(308);
+    expect(location(res)).toBe(
+      "http://localhost:3000/label/outlaw-productions/tok_/albums?a=1",
+    );
+  });
+
+  it("moves a -songs slug onto the bare Songs route", async () => {
+    const res = await proxy(
+      createNextRequest("http://localhost:3000/label/x-songs/tok_"),
+    );
+
+    expect(res.status).toBe(308);
+    expect(location(res)).toBe("http://localhost:3000/label/x/tok_");
+  });
+
+  it("serves the current URLs without a redirect", async () => {
+    for (const path of ["/label/x/tok_", "/label/x/tok_/albums"]) {
+      const res = await proxy(
+        createNextRequest(`http://localhost:3000${path}`),
+      );
+      expect(res.status).toBe(200);
+    }
+  });
+
+  it("does not redirect a non-GET request", async () => {
+    const res = await proxy(
+      createNextRequest("http://localhost:3000/label/x-albums/tok_", "POST"),
+    );
+
+    expect(res.status).toBe(200);
+  });
+});
+
 describe("proxy /api/trpc origin check", () => {
   let proxy: typeof import("../../proxy").proxy;
   const url = "http://localhost:3000/api/trpc/song.details";
@@ -656,6 +707,11 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
       "/api/trpc/song.syncedLyrics,missing.json?batch=1",
       "/api/trpc/missing.png",
       "/api/og",
+      "/search/all/50%.json",
+      "/search/songs/a.mp3?q=50%25.json",
+      "/album/x/y.mp3",
+      "/artist/a/b.png",
+      "/search?q=a.json",
     ]) {
       expect(matches(path)).toBe(true);
     }
@@ -665,6 +721,8 @@ describe("proxy /api/auth rate limiting (SE-4)", () => {
       "/favicon.ico",
       "/icon-512.png",
       "/fonts/CalSans-SemiBold.woff",
+      "/images/artists/a.jpg",
+      "/images/404.png",
       "/robots.txt",
       "/api/other",
     ]) {

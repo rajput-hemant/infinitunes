@@ -4,7 +4,10 @@ import {
 } from "@infinitunes/auth/native-app";
 import { sessionCookiePrefix } from "@infinitunes/auth/session-cookie";
 import { originOf } from "@infinitunes/auth/url";
-import { legacyArtistPath } from "@infinitunes/core/entity-route";
+import {
+  legacyArtistPath,
+  legacyLabelPath,
+} from "@infinitunes/core/entity-route";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { getSessionCookie } from "better-auth/cookies";
@@ -139,10 +142,11 @@ export async function proxy(req: NextRequest) {
 
   if (isTrpc) return NextResponse.next();
 
-  // Artist tabs used to live in the name slug (`<name>-songs`); they are child
-  // routes now, so old links and bookmarks move permanently to the tab route.
+  // Artist and label tabs used to live in the name slug (`<name>-songs`, and
+  // JioSaavn's `<label>-albums`); they are child routes now, so old links and
+  // bookmarks move permanently to the tab route.
   if (req.method === "GET" || req.method === "HEAD") {
-    const tabPath = legacyArtistPath(pathname);
+    const tabPath = legacyArtistPath(pathname) ?? legacyLabelPath(pathname);
     if (tabPath) {
       const target = new URL(tabPath, nextUrl);
       target.search = nextUrl.search;
@@ -233,6 +237,6 @@ export const config = {
   // equal) in tests/mocked/proxy.test.ts.
   matcher: [
     "/api/trpc/:path*",
-    "/((?!api/(?!trpc|auth|og)|_next/|favicon\\.ico|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|css|js|map|txt|xml|json|webmanifest|mp3|mp4)$).*)",
+    "/((?!api/(?!trpc|auth|og)|_next/|favicon\\.ico|(?:images|fonts)/|[^/]+\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|css|js|map|txt|xml|json|webmanifest|mp3|mp4)$).*)",
   ],
 };

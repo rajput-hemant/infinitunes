@@ -1,37 +1,54 @@
-import { Column, Text } from "@expo/ui";
+// The iOS settings list's rows (`settings-screen.tsx`); Android draws its own in `settings-screen.android.tsx`.
+import { ListItem, Text } from "@expo/ui";
 
+import { Icon } from "~/components/ui/icon";
 import { usePalette } from "~/theme/use-palette";
 
+import { RowIcon } from "./row-icon";
 import type { ActionRowProps, TapRowProps } from "./tap-row-props";
 
-/**
- * Material 3 settings rows are plain tappable text. The list wraps each row
- * in its own Compose `ListItem`, so a `ListItem` here would nest inside it.
- */
+/** A tappable row that opens another screen, with a disclosure chevron. */
+export function NavigationRow({ label, detail, icon, onPress }: TapRowProps) {
+  const palette = usePalette();
+  return (
+    <ListItem
+      onPress={onPress}
+      supportingText={detail}
+      leading={icon ? <RowIcon {...icon} /> : undefined}
+      trailing={
+        <Icon
+          name="chevron.forward"
+          size="sm"
+          color={palette["muted-foreground"]}
+        />
+      }
+    >
+      <Text>{label}</Text>
+    </ListItem>
+  );
+}
+
+/** A tappable row that does something now. */
 export function ActionRow({
   label,
   detail,
-  icon: _icon,
+  icon,
   destructive = false,
   onPress,
 }: ActionRowProps) {
   const palette = usePalette();
 
   return (
-    <Column onPress={onPress}>
+    <ListItem
+      onPress={onPress}
+      supportingText={detail}
+      leading={icon ? <RowIcon {...icon} /> : undefined}
+    >
       <Text
         textStyle={destructive ? { color: palette.destructive } : undefined}
       >
         {label}
       </Text>
-      {detail ? (
-        <Text textStyle={{ color: palette["muted-foreground"] }}>{detail}</Text>
-      ) : null}
-    </Column>
+    </ListItem>
   );
-}
-
-/** A tappable row that opens another screen (no chevron on Material). */
-export function NavigationRow(props: TapRowProps) {
-  return <ActionRow {...props} />;
 }

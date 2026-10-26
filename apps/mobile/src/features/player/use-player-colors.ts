@@ -1,17 +1,24 @@
 import { getImageSrc } from "@infinitunes/types";
 import type { ImageQuality } from "@infinitunes/types";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  queryOptions,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { Image } from "expo-image";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Platform, useColorScheme } from "react-native";
 import { getColors } from "react-native-image-colors";
 
 import {
+  loadMaterialColors,
   NO_SWATCH,
   playerColorsFromSeed,
   seedFromImageColors,
 } from "~/lib/artwork-colors";
 import type { PlayerColors } from "~/lib/artwork-colors";
+import { usePlayer } from "~/playback/player-store";
 
 /** One cache entry per artwork URL; a cover's colours never change. */
 export function artworkColorsKey(src: string) {
@@ -60,6 +67,8 @@ function withTimeout<T>(work: Promise<T>, what: string): Promise<T> {
  * a later mount tries again.
  */
 async function fetchSeed(image: string, src: string): Promise<string> {
+  // The colour library loads with the first extraction, off the launch path.
+  await loadMaterialColors();
   const uri = (await cachedRendition(image)) ?? src;
   const result = await withTimeout(
     getColors(uri, { quality: "low", fallback: NO_SWATCH }),
@@ -68,6 +77,39 @@ async function fetchSeed(image: string, src: string): Promise<string> {
   const seed = seedFromImageColors(result);
   if (!seed) throw new Error(`No colour in ${src}`);
   return seed;
+}
+
+/** The query for one cover's seed colour, shared by the hook and the prefetch. */
+function seedQuery(image: string) {
+  const src = image ? getImageSrc(image, "low") : "";
+  return queryOptions({
+    queryKey: artworkColorsKey(src),
+    queryFn: () => fetchSeed(image, src),
+    enabled: src !== "",
+    // A cached rendition reads offline; without one the fetch fails fast
+    // rather than pausing, which would hold the previous cover's wash.
+    networkMode: "always",
+    staleTime: Infinity,
+    // One short string per cover: keep it for the session, so a track that
+    // comes round again (repeat, back) washes at once.
+    gcTime: Infinity,
+    retry: false,
+  });
+}
+
+/**
+ * Reads the next track's cover colour while the current one plays, so the
+ * wash is ready when Next lands. Only in queue order: a shuffled queue's next
+ * track is not known until it is picked.
+ */
+function usePrefetchNextSeed() {
+  const client = useQueryClient();
+  const next = usePlayer((state) =>
+    state.shuffle ? undefined : state.queue[state.currentIndex + 1]?.image,
+  );
+  useEffect(() => {
+    if (next) void client.prefetchQuery(seedQuery(next));
+  }, [client, next]);
 }
 
 /**
@@ -84,19 +126,10 @@ export function usePlayerColors(
   const scheme = useColorScheme() === "dark" ? "dark" : "light";
   const src = image ? getImageSrc(image, "low") : "";
   const { data: seed } = useQuery({
-    queryKey: artworkColorsKey(src),
-    queryFn: () => fetchSeed(image ?? "", src),
-    enabled: src !== "",
-    // A cached rendition reads offline; without one the fetch fails fast
-    // rather than pausing, which would hold the previous cover's wash.
-    networkMode: "always",
-    staleTime: Infinity,
-    // One short string per cover: keep it for the session, so a track that
-    // comes round again (repeat, back) washes at once.
-    gcTime: Infinity,
-    retry: false,
+    ...seedQuery(image ?? ""),
     placeholderData: keepPreviousData,
   });
+  usePrefetchNextSeed();
   return useMemo(
     () =>
       src && seed

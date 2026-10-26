@@ -32,6 +32,29 @@ export const songCacheStore = createStore<CacheState>()(
   }),
 );
 
+/** The most recent songs whose listens are counted; enough to find repeats. */
+const LISTEN_LIMIT = 1000;
+/** A load only rewrites the persisted play time when it is this stale. */
+const PLAY_PERSIST_MS = 60 * 60 * 1000;
+/**
+ * Latest load of each cached song. Loads only touch this map; the persisted
+ * `lastPlayed` (a synchronous SQLite write) follows when it is stale or the
+ * cache next changes, and eviction reads the newer of the two. Bounded by the
+ * cached songs: `removeSong` drops its entry.
+ */
+const recentPlays = new Map<string, number>();
+const playedAt = (id: string, song: CachedSong) =>
+  Math.max(recentPlays.get(id) ?? 0, song.lastPlayed);
+
+function withRecentPlays(songs: CacheState["songs"]): CacheState["songs"] {
+  return Object.fromEntries(
+    Object.entries(songs).map(([id, song]) => [
+      id,
+      { ...song, lastPlayed: playedAt(id, song) },
+    ]),
+  );
+}
+
 let work = Promise.resolve();
 let generation = 0;
 function serialized<T>(operation: () => Promise<T> | T): Promise<T> {
@@ -51,11 +74,19 @@ function removeSong(id: string) {
   if (file.exists) file.delete();
   const next = { ...songs };
   delete next[id];
+  recentPlays.delete(id);
   songCacheStore.setState({ songs: next });
 }
 
-/** Reconcile OS-purged files and interrupted downloads against actual disk sizes. */
-export function refreshSongCache() {
+/**
+ * Reconcile OS-purged files and interrupted downloads against actual disk
+ * sizes. A synchronous directory walk: run it from `serialized`, and on the
+ * playback path only once per app run (`reconcileOnce`), since the OS purges
+ * the cache between runs, and `cachedSongSource` drops a vanished file itself.
+ */
+let reconciled = false;
+function refreshSongCache() {
+  reconciled = true;
   const { songs } = songCacheStore.getState();
   const next: CacheState["songs"] = {};
   const kept = new Set<string>();
@@ -73,6 +104,10 @@ export function refreshSongCache() {
     }
   }
   songCacheStore.setState({ songs: next });
+}
+
+function reconcileOnce() {
+  if (!reconciled) refreshSongCache();
 }
 
 export const cacheBytes = (songs: CacheState["songs"]) =>
@@ -124,18 +159,21 @@ export function cacheQualifiedListen(track: Queue, quality: StreamQuality) {
   if (track.type !== "song" || !preferencesStore.getState().cacheFrequentSongs)
     return Promise.resolve();
   const { listens } = songCacheStore.getState();
-  // Bound metadata too; the most recent 1,000 songs are enough to find repeats.
-  const next = Object.fromEntries(
-    Object.entries({
-      ...listens,
-      [track.id]: {
-        count: Math.min(2, (listens[track.id]?.count ?? 0) + 1),
-        lastPlayed: Date.now(),
-      },
-    })
-      .sort((a, b) => b[1].lastPlayed - a[1].lastPlayed)
-      .slice(0, 1000),
-  );
+  let next = {
+    ...listens,
+    [track.id]: {
+      count: Math.min(2, (listens[track.id]?.count ?? 0) + 1),
+      lastPlayed: Date.now(),
+    },
+  };
+  // Bound metadata too; only sort when a new song pushed it past the limit.
+  if (Object.keys(next).length > LISTEN_LIMIT) {
+    next = Object.fromEntries(
+      Object.entries(next)
+        .sort((a, b) => b[1].lastPlayed - a[1].lastPlayed)
+        .slice(0, LISTEN_LIMIT),
+    );
+  }
   songCacheStore.setState({ listens: next });
   if ((next[track.id]?.count ?? 0) < 2) return Promise.resolve();
   const requestedGeneration = generation;
@@ -145,7 +183,7 @@ export function cacheQualifiedListen(track: Queue, quality: StreamQuality) {
       !preferencesStore.getState().cacheFrequentSongs
     )
       return;
-    refreshSongCache();
+    reconcileOnce();
     const candidates = getDownloadCandidates(
       track.download_url,
       quality,
@@ -170,7 +208,7 @@ export function cacheQualifiedListen(track: Queue, quality: StreamQuality) {
       }
       removeSong(track.id);
       for (const [id] of Object.entries(songCacheStore.getState().songs).sort(
-        (a, b) => a[1].lastPlayed - b[1].lastPlayed,
+        (a, b) => playedAt(a[0], a[1]) - playedAt(b[0], b[1]),
       )) {
         if (
           cacheBytes(songCacheStore.getState().songs) + file.size <=
@@ -181,7 +219,7 @@ export function cacheQualifiedListen(track: Queue, quality: StreamQuality) {
       }
       songCacheStore.setState(({ songs }) => ({
         songs: {
-          ...songs,
+          ...withRecentPlays(songs),
           [track.id]: {
             filename,
             source,
@@ -219,9 +257,13 @@ export function cachedSongSource(
   );
   const requested = candidates.indexOf(source);
   const cached = candidates.indexOf(song.source);
-  songCacheStore.setState(({ songs }) => ({
-    songs: { ...songs, [track.id]: { ...song, lastPlayed: Date.now() } },
-  }));
+  const now = Date.now();
+  recentPlays.set(track.id, now);
+  if (now - song.lastPlayed > PLAY_PERSIST_MS) {
+    songCacheStore.setState(({ songs }) => ({
+      songs: { ...songs, [track.id]: { ...song, lastPlayed: now } },
+    }));
+  }
   if (requested < 0 || cached < requested) return;
   try {
     const file = new File(directory(), song.filename);
@@ -253,6 +295,9 @@ export function clearSongCache(): Promise<number> {
     const freed = dir.exists ? (dir.size ?? 0) : 0;
     if (dir.exists) dir.delete();
     songCacheStore.setState({ songs: {}, listens: {} });
+    recentPlays.clear();
+    // The next qualified listen reconciles again against the emptied directory.
+    reconciled = false;
     return freed;
   });
 }

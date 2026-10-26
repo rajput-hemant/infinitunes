@@ -1,9 +1,3 @@
-import {
-  argbFromHex,
-  Hct,
-  hexFromArgb,
-  SchemeContent,
-} from "@material/material-color-utilities";
 import type { ImageColorsResult } from "react-native-image-colors";
 
 import type { ColorScheme } from "~/theme/tokens";
@@ -45,6 +39,28 @@ export const MIN_TEXT_CONTRAST = 4.5;
 export const MIN_CONTROL_CONTRAST = 3;
 
 const HEX = /^#[\da-f]{6}$/i;
+
+type MaterialColors = typeof import("@material/material-color-utilities");
+
+let material: MaterialColors | null = null;
+
+/**
+ * The colour library (Material's scheme maths, a large module), evaluated on
+ * first use instead of at import time: Metro inlines requires, so nothing runs
+ * until this is called. `loadMaterialColors` calls it from the first
+ * extraction's query, so the cost lands there and not at launch or in a
+ * render. (A native bundle is one file, so `import()` would not split it
+ * either, and Jest has no dynamic import without a VM flag.)
+ */
+function materialColors(): MaterialColors {
+  material ??= require("@material/material-color-utilities") as MaterialColors;
+  return material;
+}
+
+/** Evaluates the colour library ahead of the first `playerColorsFromSeed`. */
+export async function loadMaterialColors(): Promise<void> {
+  materialColors();
+}
 
 /**
  * The `fallback` handed to the extractor, which answers it in every field it
@@ -150,6 +166,7 @@ export function playerColorsFromSeed(
   platform: WashPlatform,
 ): PlayerColors | null {
   if (!HEX.test(seed)) return null;
+  const { argbFromHex, Hct, hexFromArgb, SchemeContent } = materialColors();
   const dark = scheme === "dark";
   const m3 = new SchemeContent(Hct.fromInt(argbFromHex(seed)), dark, 0);
   const hex = hexFromArgb;

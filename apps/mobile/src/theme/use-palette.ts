@@ -5,27 +5,21 @@ import {
 } from "react-native";
 import type { ColorValue } from "react-native";
 
+import { withAccent } from "./accent-palette";
 import { paletteFor } from "./android-colors";
 import { useAccent } from "./appearance";
-import { ACCENT_TOKENS, accentColors, iosSystemColors } from "./tokens";
+import { ACCENT_TOKENS, iosSystemColors } from "./tokens";
 import type { ColorToken, Palette } from "./tokens";
 
 /**
  * The token palette of the current colour scheme, for the few props that take
  * a colour instead of a class (a placeholder). On Android 12+ it holds the
- * Material You roles the classes resolve to. Prefer semantic classes.
+ * Material You roles the classes resolve to, or with a custom accent the
+ * scheme built from it (`accent-palette`). Prefer semantic classes.
  */
 export function usePalette(): Palette {
   const scheme = useColorScheme() === "dark" ? "dark" : "light";
-  const accent = accentColors(useAccent(), scheme);
-  const base = paletteFor(scheme);
-  return accent
-    ? {
-        ...base,
-        primary: accent.primary,
-        "primary-foreground": accent.foreground,
-      }
-    : base;
+  return withAccent(paletteFor(scheme), useAccent(), scheme);
 }
 
 /**
@@ -44,6 +38,6 @@ export function useTokenColor(token: ColorToken): ColorValue {
 
 /** The accent as the tab bar's tint, or undefined to keep the system tint. */
 export function useTabAccent(): string | undefined {
-  const scheme = useColorScheme() === "dark" ? "dark" : "light";
-  return accentColors(useAccent(), scheme)?.primary;
+  const palette = usePalette();
+  return useAccent() === "default" ? undefined : palette.primary;
 }

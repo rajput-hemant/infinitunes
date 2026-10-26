@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
 
-import { IMAGE_CDN_HOSTS, parseAllowedImageUrl } from "../lib/image-hosts";
+import {
+  AVATAR_HOSTS,
+  IMAGE_CDN_HOSTS,
+  parseAllowedImageUrl,
+} from "../lib/image-hosts";
 
 describe("OG route image allowlist (SSRF)", () => {
   it("accepts https URLs on the image CDN hosts", () => {
@@ -8,6 +12,12 @@ describe("OG route image allowlist (SSRF)", () => {
       expect(parseAllowedImageUrl(`https://${host}/a/b-500x500.jpg`)).not.toBe(
         null,
       );
+    }
+  });
+
+  it("does not fetch social avatar hosts (CSP img-src only)", () => {
+    for (const host of AVATAR_HOSTS) {
+      expect(parseAllowedImageUrl(`https://${host}/a.png`)).toBe(null);
     }
   });
 
@@ -27,13 +37,6 @@ describe("OG route image allowlist (SSRF)", () => {
     "",
   ])("rejects %p", (raw) => {
     expect(parseAllowedImageUrl(raw)).toBe(null);
-  });
-
-  it("derives next.config remotePatterns from the same list", async () => {
-    const source = await Bun.file(
-      new URL("../next.config.ts", import.meta.url),
-    ).text();
-    expect(source).toContain("IMAGE_CDN_HOSTS");
   });
 
   it("validates the og image param before fetching and refuses redirects", async () => {

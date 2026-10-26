@@ -5,7 +5,6 @@ import { toQueueEntry } from "@infinitunes/types";
 import { Button } from "@infinitunes/ui/components/button";
 import { Play } from "lucide-react";
 import type { ReactNode } from "react";
-import { toast } from "sonner";
 
 import {
   useActiveRadioSession,
@@ -15,11 +14,6 @@ import {
 } from "~/hooks/use-store";
 import { controlStyles } from "~/lib/control-styles";
 import { cn } from "~/lib/utils";
-
-/** Neutral toast title for a played list: episodes are tracks too. */
-export function playAllToastTitle(count: number): string {
-  return `${count} ${count === 1 ? "track" : "tracks"} added to the queue`;
-}
 
 type PlayAllButtonProps = {
   items: SongRowItem[];
@@ -45,11 +39,6 @@ export function PlayAllButton({
     setQueue(queue);
     setCurrentIndex(0);
     setIsPlayerInit(true);
-
-    toast.success(playAllToastTitle(queue.length), {
-      description: `Playing “${queue[0]?.name}”`,
-      position: "bottom-center",
-    });
   }
 
   return (

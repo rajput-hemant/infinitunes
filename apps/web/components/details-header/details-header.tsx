@@ -32,7 +32,6 @@ import {
 } from "./details-header-items";
 import { DetailsMeta } from "./details-header-meta";
 import { MoreButton } from "./more-button";
-import { ShareButton } from "./share-button";
 
 const KIND_LABELS: Partial<Record<DetailsKind, string>> = {
   show: "Podcast",
@@ -174,8 +173,6 @@ export async function DetailsHeader({ item }: DetailsHeaderProps) {
                   "max-md:hidden",
                 )}
               />
-
-              <ShareButton title={title} />
 
               <MoreButton
                 user={user}

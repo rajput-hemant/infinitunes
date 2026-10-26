@@ -41,8 +41,7 @@ Delete this file in the last PR, once every box is ticked (the repo must not kee
 - The Home `h1` stays the greeting.
 - Rate limiting: warn when it is off in production, never fail the build.
 
-
-## Batch M3 (opus): song-row menu and per-row subscriptions - `components/{song-row,song-menu,native-menu,like-button}.tsx`, `user-data/{favorites,playlists}.ts`, `navigation/use-open-entity.ts` 
+## Batch M3 (opus): song-row menu and per-row subscriptions - `components/{song-row,song-menu,native-menu,like-button}.tsx`, `user-data/{favorites,playlists}.ts`, `navigation/use-open-entity.ts`
 
 Coordinate with S1 (S-6 changes the playlists payload shape): either land S-6 first, or keep the per-playlist `Set` here and swap the source later.
 
@@ -54,7 +53,7 @@ Coordinate with S1 (S-6 changes the playlists payload shape): either land S-6 fi
 - [ ] **M-13** P3 PLAUSIBLE `navigation/use-open-entity.ts:13`, `like-button.tsx:26`, `song-menu.tsx:80` - `useOpenEntity` / `useUserId` subscribed per row [perf#19]
   - Fix: hoist to the list or read at press time. Do after M-11. Executor: sonnet. Flags: none.
 
-## Batch M4 (opus): liked and per-song data fetching - `features/library/{use-liked-collection,liked-collections,use-resolved-items,use-playlist-songs,use-playlist-covers,liked-songs-screen,song-collection}.ts(x)`, `packages/core/src/liked-songs.ts` 
+## Batch M4 (opus): liked and per-song data fetching - `features/library/{use-liked-collection,liked-collections,use-resolved-items,use-playlist-songs,use-playlist-covers,liked-songs-screen,song-collection}.ts(x)`, `packages/core/src/liked-songs.ts`
 
 Edits `song-collection.tsx`; M-17 waits on the user decision.
 
@@ -67,7 +66,7 @@ Edits `song-collection.tsx`; M-17 waits on the user decision.
 - [ ] **M-17** **[device sign-off later]** P3 PLAUSIBLE `features/library/song-collection.tsx:168-171,202` - Liked Songs, History and playlist screens use Android's native header `Stack.SearchBar` (the 72dp inset problem Search already replaced) [screens P3-11]
   - Fix: accept it, or reuse `search-header.android.tsx`'s pill as a list header. Executor: opus. Flags: needs device check (decision: reuse the M3 pill).
 
-## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx` 
+## Batch M5 (opus): virtualize detail track lists + playlist screens - `components/track-list.tsx`, `components/detail/detail-screen.tsx`, `features/{album,library}/{album-screen,playlist-screen,edit-playlist-screen}.tsx`
 
 Runs after M4 only if both touch playlist hooks (they do not share files otherwise).
 
@@ -78,82 +77,93 @@ Runs after M4 only if both touch playlist hooks (they do not share files otherwi
 - [ ] **M-20** P3 CONFIRMED `edit-playlist-screen.tsx:14-39`, `playlist-screen.tsx:129-147` - duplicated "find playlist by id, skeleton/error/not-found" ladder [screens P3-10]
   - Fix: one `usePlaylistById(id)` rendered through `LibraryListView`. Executor: sonnet. Flags: none.
 
-## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` 
+## Batch M7 (sonnet): Android chrome and ListRow - `app.config.ts` (predictive back only), `navigation/tab-stack-options.ts`, `features/settings/languages-screen.tsx`, `features/player/queue-list.tsx`, create-playlist form, `components/{segmented-tabs.android,chip-row,list-row}.tsx`, `theme/{android-colors.android,dynamic-color-root.android}.ts(x)`, `theme/motion.ts` (branch `worktree-agent-a4bc026a952a4285b`)
 
 M6 is merged. The predictive-back change needs a native rebuild, which the owner does.
 
-- [ ] **M-22** **[device sign-off later]** P1 PLAUSIBLE `AndroidManifest.xml:17`, `app.config.ts` - predictive back disabled (`enableOnBackInvokedCallback=false`) [design P1-11]
+- [x] **M-22** **[device sign-off later]** P1 PLAUSIBLE `AndroidManifest.xml:17`, `app.config.ts` - predictive back disabled (`enableOnBackInvokedCallback=false`) [design P1-11]
   - Fix: `android.predictiveBackGestureEnabled: true`, prebuild, verify the player modal, formSheets and search Back. Executor: sonnet. Flags: needs native rebuild, needs device check.
-- [ ] **M-23** **[device sign-off later]** P2 PLAUSIBLE `navigation/tab-stack-options.ts` - root tab app bars (Home, Radio, Library, Browse, Charts) never tint on scroll [design P2-13]
+  - Done: set `android.predictiveBackGestureEnabled: true`; owner prebuilds and checks the player modal, formSheets and search Back.
+- [x] **M-23** **[device sign-off later]** P2 PLAUSIBLE `navigation/tab-stack-options.ts` - root tab app bars (Home, Radio, Library, Browse, Charts) never tint on scroll [design P2-13]
   - Fix: `useScrolledBar()` hook lifted from `DetailFrame`, `card` once offset > 0. Executor: sonnet. Flags: needs device check.
-- [ ] **M-24** **[device sign-off later]** P2 PLAUSIBLE `features/settings/languages-screen.tsx:58`, `features/player/queue-list.tsx:153`, create-playlist form - Android form sheets sit under the 3-button nav bar [design P2-14]
+  - Done: `navigation/use-scrolled-bar.ts` (`useScrolledBar`) tints the bar `card` once offset > 0; wired into `ScreenScrollView` (a screen's own `onScroll`, e.g. detail, takes over). FlashList root screens must spread it themselves: not done here, their files belong to other batches.
+- [x] **M-24** **[device sign-off later]** P2 PLAUSIBLE `features/settings/languages-screen.tsx:58`, `features/player/queue-list.tsx:153`, create-playlist form - Android form sheets sit under the 3-button nav bar [design P2-14]
   - Fix: Android `paddingBottom: insets.bottom + space.lg`. Executor: sonnet. Flags: needs device check.
-- [ ] **M-25** P3 PLAUSIBLE `components/segmented-tabs.android.tsx:107` - button-group colours snap [design P3-16]
+  - Done: `navigation/sheet-inset.ts` (`useSheetBottomInset`, Android `insets.bottom + space.lg`) in languages, queue and the create-playlist route.
+- [x] **M-25** P3 PLAUSIBLE `components/segmented-tabs.android.tsx:107` - button-group colours snap [design P3-16]
   - Fix: `interpolateColor` on `springs.effectsDefault` (this makes `effectsDefault` live; see M-69). Executor: sonnet. Flags: none.
-- [ ] **M-26** P3 PLAUSIBLE `components/chip-row.tsx:168` - chips scale on Android [design P3-17]
+  - Done: fill follows `springs.effectsDefault` via `interpolateColor`; the label colour still switches at once (Text takes classes).
+- [x] **M-26** P3 PLAUSIBLE `components/chip-row.tsx:168` - chips scale on Android [design P3-17]
   - Fix: ripple only, no `usePressScale` on Android. Executor: haiku. Flags: none.
-- [ ] **M-27** **[device sign-off later]** P3 CONFIRMED `components/list-row.tsx:174,267-275` - current-track tonal container toggles without a transition, and trailing controls jump 4dp when a row becomes current [design P3-18, comp P3-1]
+  - Done: Android chips use a ripple, no press scale or opacity (no test: `MATERIAL` is a module constant).
+- [x] **M-27** **[device sign-off later]** P3 CONFIRMED `components/list-row.tsx:174,267-275` - current-track tonal container toggles without a transition, and trailing controls jump 4dp when a row becomes current [design P3-18, comp P3-1]
   - Fix: animate bg/margin with the effects/spatial springs (reduce-motion gated); give the selected container `paddingEnd` of `(controls ? space.xs : space.lg) - inset` or inset the end by `space.xs`. Executor: sonnet. Flags: needs device check.
-- [ ] **M-28** P3 CONFIRMED `list-row.tsx:36-37,68-77` - `trailing: ReactNode | { chevron: true }` sentinel union [comp P3-11]
+  - Done: tonal container animates (spatial spring for margins/padding, effects spring for the fill, reduce motion via ReduceMotion.System); the end inset is `space.xs` beside controls, so they no longer jump 4dp.
+- [x] **M-28** P3 CONFIRMED `list-row.tsx:36-37,68-77` - `trailing: ReactNode | { chevron: true }` sentinel union [comp P3-11]
   - Fix: a plain `chevron?: boolean` prop (call site `entity-list.tsx:59`). Executor: haiku. Flags: none.
-- [ ] **M-29** **[device sign-off later]** P3 PLAUSIBLE `theme/android-colors.android.ts:11-33`, `dynamic-color-root.android.tsx:18-21` - Material You palette cache never invalidates after a wallpaper change [comp P3-14]
+  - Done: `chevron?: boolean`; call sites updated (entity-list, song-credits, library-screen, episode-content).
+- [x] **M-29** **[device sign-off later]** P3 PLAUSIBLE `theme/android-colors.android.ts:11-33`, `dynamic-color-root.android.tsx:18-21` - Material You palette cache never invalidates after a wallpaper change [comp P3-14]
   - Fix: clear on `AppState` `active` or key on the resolved `primary`. Executor: sonnet. Flags: needs device check.
+  - Done: `refreshDynamicPalettes()` on `AppState` active, `DynamicColorRoot` re-reads. Components using `usePalette()` pick the fresh palette on their next render.
 
-## Batch M8 (sonnet): iOS polish and shared control files - `components/ui/{text,icon-button,button}.tsx`, `components/{card-menu,card-play-button,drag-handle}.tsx`, `components/detail/{detail-scroll,detail-header-options}.tsx`, `features/player/{transport-controls,mini-player}.tsx`, `features/library/swipeable-row.tsx`
+## Batch M8 (sonnet): iOS polish and shared control files - `components/ui/{text,icon-button,button}.tsx`, `components/{card-menu,card-play-button,drag-handle}.tsx`, `components/detail/{detail-scroll,detail-header-options}.tsx`, `features/player/{transport-controls,mini-player}.tsx`, `features/library/swipeable-row.tsx` _(branch `worktree-agent-a80fc897fa184b6f9`)_
 
 Owns every edit to `icon-button.tsx`, `transport-controls.tsx` and `card-play-button.tsx` (iOS and Android items together).
 
-- [ ] **M-36** **[device sign-off later]** P3 PLAUSIBLE `features/library/swipeable-row.tsx:35` - swipe row does not commit on a full swipe [design P3-10]
-  - Fix: iOS full-swipe (>60% width) triggers the destructive action. Executor: sonnet. Flags: needs device check.
+- [x] **M-36** **[device sign-off later]** P3 PLAUSIBLE `features/library/swipeable-row.tsx:35` - swipe row does not commit on a full swipe [design P3-10]
+  - Fix: iOS full-swipe (>60% width) triggers the destructive action. Executor: sonnet. Flags: needs device check. Done: iOS-only `overshootRight`; a UI-thread reaction flags a drag past 60% of the row width, and the release (`onSwipeableWillOpen`) runs the action (`isFullSwipe`, unit-tested). Gesture itself needs a device check.
 
-## Batch M9 (opus): Android accent - `theme/use-palette.ts` (+ contrast test)
+## Batch M9 (opus): Android accent - `theme/use-palette.ts` (+ contrast test) - `fix/m9-android-accent`
 
 Gated on the accent decision.
 
-- [ ] **M-40** **[device sign-off later]** P2 PLAUSIBLE `theme/use-palette.ts:20` - a custom accent replaces only `primary`; containers keep wallpaper roles [design P2-12]
+- [x] **M-40** **[device sign-off later]** P2 PLAUSIBLE `theme/use-palette.ts:20` - a custom accent replaces only `primary`; containers keep wallpaper roles [design P2-12]
   - Fix: generate `SchemeTonalSpot` from the accent seed and map every role, keep the AA test (`tokens.test.ts`). Executor: opus. Flags: needs device check (decision: reuse the M3 pill).
+  - Done: `theme/accent-palette{,.android}.ts`; Android builds the scheme (library `require`d on first use) for `usePalette`, `ThemeRoot`'s class variables and the nav chrome; iOS keeps the two-token override.
 
-## Batch M10 (sonnet): network and auth plumbing - `lib/trpc.ts`, `lib/auth-client.ts`, `playback/record-play.ts`, Radio/Search tab queries
+## Batch M10 (sonnet): network and auth plumbing - `lib/trpc.ts`, `lib/auth-client.ts`, `playback/record-play.ts`, Radio/Search tab queries `worktree-agent-ababad090a8d2de55`
 
-- [ ] **M-41** **[device sign-off later]** P2 PLAUSIBLE `lib/trpc.ts:20-37` - `httpBatchLink` makes cold-start Home wait for the slowest query (all tabs mount) [perf#5]
+- [x] **M-41** **[device sign-off later]** P2 PLAUSIBLE `lib/trpc.ts:20-37` - `httpBatchLink` makes cold-start Home wait for the slowest query (all tabs mount) [perf#5]
   - Fix: `httpBatchStreamLink` (or a `splitLink` for `home.home`); `enabled: isFocused` for Radio/Search tab queries. Executor: sonnet. Flags: needs device check. (Pairs with S-4 session lookup server-side.)
-- [ ] **M-42** P2 PLAUSIBLE `lib/trpc.ts:27-33`, `playback/record-play.ts:15` - Keychain/Keystore read on every tRPC request and every play [perf#6]
+- [x] **M-42** P2 PLAUSIBLE `lib/trpc.ts:27-33`, `playback/record-play.ts:15` - Keychain/Keystore read on every tRPC request and every play [perf#6]
   - Fix: in-memory cookie cache in `auth-client.ts`, refreshed on sign-in/out/session signal. Executor: sonnet. Flags: none.
 
 ## Batch M11 (sonnet): player progress and colours - `features/player/{dock-progress,scrubber,use-player-colors}.tsx`, `lib/artwork-colors.ts`, `components/floating-player-dock.tsx`
 
+Branch: `worktree-agent-af553c0fcbf1fa499`
+
 Start after M2 (status/position stores change there).
 
-- [ ] **M-43** **[device sign-off later]** P2 PLAUSIBLE `features/player/dock-progress.tsx:18-55`, `scrubber.tsx:39-131` - scrubber/dock progress relayout every tick [perf#10]
+- [x] **M-43** **[device sign-off later]** P2 PLAUSIBLE `features/player/dock-progress.tsx:18-55`, `scrubber.tsx:39-131` - scrubber/dock progress relayout every tick [perf#10]
   - Fix: shared values + `useAnimatedStyle` scaleX; time labels at 1Hz. Executor: sonnet. Flags: needs device check.
-- [ ] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
+- [x] **M-44** P3 PLAUSIBLE `features/player/use-player-colors.ts:35-70`, `lib/artwork-colors.ts`, `floating-player-dock.tsx:15` - colour extraction re-opens the image per track, and material-color-utilities loads on the launch path [perf#12, perf#17]
   - Fix: prefetch the next track's seed; dynamic-import the utilities inside the `usePlayerColors` queryFn. Executor: sonnet. Flags: none.
 
-## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` 
+## Batch M12 (sonnet): loading and skeleton fidelity - `components/skeletons.tsx`, `components/detail/detail-frame.tsx`, `features/home/home-feed.tsx`, `components/shelf.tsx`, `components/paged-footer.tsx`, `features/browse/top-podcasts-screen.tsx` - branch `worktree-agent-a8420b91455e7cd29`
 
 Do NOT edit `catalog-screen.tsx` (M6 owns it).
 
-- [ ] **M-45** **[device sign-off later]** P2 PLAUSIBLE `features/home/home-feed.tsx:47`, `DetailFrame`, `PagedFooter` - content pops in over skeletons [design P2-2]
-  - Fix: loaded branch `entering={FadeIn.duration(200).reduceMotion(ReduceMotion.Never)}`, no exiting on the skeleton. Executor: sonnet. Flags: needs device check.
-- [ ] **M-46** **[device sign-off later]** P2 CONFIRMED `components/skeletons.tsx:57-78`, `features/browse/top-podcasts-screen.tsx:53-59` - skeletons do not mirror the loaded layout: `SongRowSkeleton` lacks the 48pt heart and menu cells (text column ~100pt too wide, `pr-4` vs `space.xs`), and the TopPodcasts header (Trending shelf, "All Podcasts") appears only after data lands [comp P2-3, screens P3-7, design P2-2 skeleton-rule note]
+- [x] **M-45** **[device sign-off later]** P2 PLAUSIBLE `features/home/home-feed.tsx:47`, `DetailFrame`, `PagedFooter` - content pops in over skeletons [design P2-2]
+  - Fix: loaded branch `entering={FadeIn.duration(200).reduceMotion(ReduceMotion.Never)}`, no exiting on the skeleton. Executor: sonnet. Flags: needs device check. Done: fade on Home, DetailFrame and PagedFooter's empty/error states; the rows of paged lists live in their parents (not M12 files) and are not faded.
+- [x] **M-46** **[device sign-off later]** P2 CONFIRMED `components/skeletons.tsx:57-78`, `features/browse/top-podcasts-screen.tsx:53-59` - skeletons do not mirror the loaded layout: `SongRowSkeleton` lacks the 48pt heart and menu cells (text column ~100pt too wide, `pr-4` vs `space.xs`), and the TopPodcasts header (Trending shelf, "All Podcasts") appears only after data lands [comp P2-3, screens P3-7, design P2-2 skeleton-rule note]
   - Fix: add `size-touch` heart (when `useUserId()`) and `MenuGlyphSkeleton` cells, use the row's `paddingEnd`, keep the numbered length bar; render `ShelfSkeleton` + `SectionHeaderSkeleton` as TopPodcasts' header while pending; overlay-check each skeleton on the loaded page. Executor: sonnet. Flags: needs device check.
-- [ ] **M-47** P3 PLAUSIBLE `components/shelf.tsx:83-92`, `home-feed.tsx:56-64` - `uniqueBy` per render and Home re-diffs every shelf [perf#14]
-  - Fix: dedupe in `buildHomeModel`; consider Home as a vertical FlashList of shelves. Executor: sonnet. Flags: none.
-- [ ] **M-48** P3 PLAUSIBLE `components/detail/detail-frame.tsx:56-59` - children memo is ineffective [perf#18]
-  - Fix: drop the memo or move secondary queries into the page. Executor: haiku. Flags: none.
+- [x] **M-47** P3 PLAUSIBLE `components/shelf.tsx:83-92`, `home-feed.tsx:56-64` - `uniqueBy` per render and Home re-diffs every shelf [perf#14]
+  - Fix: dedupe in `buildHomeModel`; consider Home as a vertical FlashList of shelves. Executor: sonnet. Flags: none. Done: deduped carousel in `buildHomeModel`, `Shelf` memoized; shelf cards already deduped upstream; vertical FlashList not done (optional).
+- [x] **M-48** P3 PLAUSIBLE `components/detail/detail-frame.tsx:56-59` - children memo is ineffective [perf#18]
+  - Fix: drop the memo or move secondary queries into the page. Executor: haiku. Flags: none. Done: memo dropped.
 
-## Batch M13 (sonnet): settings and forms - `features/settings/{settings-screen,settings-screen.android,end-session,profile-form,tap-rows,row-icon}.tsx`, tests
+## Batch M13 (sonnet): settings and forms - `features/settings/{settings-screen,settings-screen.android,end-session,profile-form,tap-rows,row-icon}.tsx`, tests _(branch `fix/m13-settings-forms`)_
 
-- [ ] **M-49** P2 CONFIRMED `settings-screen.tsx:86`, `settings-screen.android.tsx:270`, `end-session.ts:30-34` - a failed sign-out is swallowed (no snackbar) [screens P2-1]
+- [x] **M-49** P2 CONFIRMED `settings-screen.tsx:86`, `settings-screen.android.tsx:270`, `end-session.ts:30-34` - a failed sign-out is swallowed (no snackbar) [screens P2-1]
   - Fix: show `failure.message` via `showFailure` once inside `signOut` (let `forgetDeletedAccount` opt out); assert it in `settings-screen.test.tsx:104`. Executor: sonnet. Flags: none.
-- [ ] **M-50** P2 CONFIRMED `features/settings/profile-form.tsx:5-17` - no `useFocusOnRefusal` on the profile form, unlike all sibling forms [screens P2-3]
+- [x] **M-50** P2 CONFIRMED `features/settings/profile-form.tsx:5-17` - no `useFocusOnRefusal` on the profile form, unlike all sibling forms [screens P2-3]
   - Fix: `useFocusOnRefusal(emailChanged ? passwordInput : emailInput, serverError, pending)` plus a test mirroring `forms-pending.test.tsx`. Executor: haiku. Flags: none.
-- [ ] **M-51** P3 CONFIRMED `settings-screen.tsx` vs `settings-screen.android.tsx`, `tap-rows.tsx`, `row-icon.tsx` - the whole settings model (sections, labels, handlers, URLs) is duplicated and already drifts (Delete account chevron); non-iOS `tap-rows`/`row-icon` stubs exist only for `tsc` [screens P3-10]
+- [x] **M-51** P3 CONFIRMED `settings-screen.tsx` vs `settings-screen.android.tsx`, `tap-rows.tsx`, `row-icon.tsx` - the whole settings model (sections, labels, handlers, URLs) is duplicated and already drifts (Delete account chevron); non-iOS `tap-rows`/`row-icon` stubs exist only for `tsc` [screens P3-10]
   - Fix: one shared settings list with per-platform row renderers; make the iOS files the base and delete the stubs, or comment them. Executor: sonnet. Flags: none.
-- [ ] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
+- [x] **M-52** P3 CONFIRMED `features/settings/require-session.tsx`, `features/show/use-show-episodes.ts:7-35`, `song-collection.tsx:89-96` - missing tests: `require-session` (`dismissTo`, `openedAsGuest`), `numEpisodes` vs `total_episodes` fallback and `hasMore`, `reorderActions` accessibility path [screens P3-14]
   - Executor: haiku (after the fixes land). Flags: none.
 
-## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts` 
+## Batch M14 (haiku; M-58 sonnet): screen nits - `features/{search,browse,show,library,artist,label,charts,song,auth}/**`, `app/**` route files, new `lib/params.ts`
 
 - [ ] **M-53** P2 PLAUSIBLE `features/search/search-screen.tsx:27-32`, `features/library/new-playlist-screen.tsx:9-19`, `app/(auth)/reset-password.tsx:7`, `features/app-actions/app-action-screen.tsx:18`, edit/playlist screens' `id` - repeated query params (`?q=a&q=b`, `?songs=1&songs=2`) arrive as `string[]` and crash `trim`/`split` [screens P2-2]
   - Fix: one shared `single(value)` helper in `lib/params.ts` used everywhere; add two cases to `navigation/malformed-links.test.ts`. Executor: haiku. Flags: none.
@@ -178,7 +188,7 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [ ] **M-63** P3 CONFIRMED `features/auth/reset-password-form.tsx:54-58` - dead `!token` re-check after the early return [screens P3-9]
   - Fix: delete the dead check. Executor: haiku. Flags: none.
 
-## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md` 
+## Batch M15 (haiku): component and theme cleanup - `components/{option-menu,entity-list,song-menu*,equalizer}.tsx`, `components/ui/{spinner*,artwork,refresh-control}.tsx`, `components/form/*`, `components/catalog-grid-skeleton.tsx`, `theme/{appearance,tokens,motion}.ts`, `navigation/use-quick-action-routing.ts`, `plugins/android-app-actions/shortcuts.ts`, `docs/design/android-m3-expressive/spec.md`
 
 `song-menu.tsx` belongs to M3, so M-67 waits on M3 and the decision.
 
@@ -209,66 +219,74 @@ Do NOT edit `catalog-screen.tsx` (M6 owns it).
 - [ ] **M-76** P3 CONFIRMED `plugins/android-app-actions/shortcuts.ts:6` - `DEEP_LINK_SCHEME` duplicates `NATIVE_APP_SCHEME` [core#12]
   - Fix: import it from `@infinitunes/auth/native-app` as `app.config.ts` does. Executor: haiku. Flags: none.
 
-## Batch M16 (sonnet): song cache, downloads, notifications - `lib/{song-cache,download,notifications}.ts`
+## Batch M16 (sonnet): song cache, downloads, notifications - `lib/{song-cache,download,notifications}.ts` (branch `feat/m16-downloads`)
 
 Fix the permission race inside `downloadTrack`/`downloadAll` so `song-menu.tsx`/`collection-menu.tsx` (M3) stay untouched.
 
-- [ ] **M-77** **[device sign-off later]** P2 PLAUSIBLE `lib/song-cache.ts:56-74,126-137,146,220-222,258-260` - synchronous FS work on the JS thread during playback (directory walk per qualified listen and on Settings mount, 1000-entry resort, persist on every load); `refreshSongCache` is also exported unserialized next to `refreshSongCacheSize` [perf#8, core#8, core#13]
+- [x] **M-77** **[device sign-off later]** P2 PLAUSIBLE `lib/song-cache.ts:56-74,126-137,146,220-222,258-260` - synchronous FS work on the JS thread during playback (directory walk per qualified listen and on Settings mount, 1000-entry resort, persist on every load); `refreshSongCache` is also exported unserialized next to `refreshSongCacheSize` [perf#8, core#8, core#13]
   - Fix: async FS, reconcile once per app run (and after a clear), keep the per-listen check to `existing`; in-memory `lastPlayed` persisted per track end, bounded LRU; make `refreshSongCache` module-private. Executor: sonnet. Flags: needs device check.
-- [ ] **M-78** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:72-85` - Android deletes the shared file as soon as the chooser returns; the receiver may still be reading [core#6]
+  - Done: reconcile once per run (and after a clear), sort only past 1000 listens, plays kept in memory and persisted hourly or on the next cache write, `refreshSongCache` private. expo-file-system 58's File/Directory API has no async list/size, so the walk stays synchronous but now rare; the Settings refresh still reconciles on purpose.
+- [x] **M-78** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:72-85` - Android deletes the shared file as soon as the chooser returns; the receiver may still be reading [core#6]
   - Fix: delay the delete (next app foreground or a few seconds) or delete on the next download of the same name. Executor: sonnet. Flags: needs device check.
-- [ ] **M-79** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:118-125` - iOS "Download all" into a folder that already has the files fails every track [core#7]
+- [x] **M-79** **[device sign-off later]** P3 PLAUSIBLE `lib/download.ts:118-125` - iOS "Download all" into a folder that already has the files fails every track [core#7]
   - Fix: pick `name (2).mp4` or overwrite, add an existing-file case to `download-flow.test.ts`. Verify expo-file-system `createFile` semantics. Executor: sonnet. Flags: needs device check.
-- [ ] **M-80** **[device sign-off later]** P3 PLAUSIBLE `lib/notifications.ts:87-102` - permission prompt and share sheet are not sequenced; both system sheets overlap on iOS [core#11]
+  - Verified: iOS `createFile` runs `validateCanCreate` with overwrite false and throws `FileAlreadyExists`; Android's DocumentFile renames itself. Now picks `name (2).mp4` on iOS.
+- [x] **M-80** **[device sign-off later]** P3 PLAUSIBLE `lib/notifications.ts:87-102` - permission prompt and share sheet are not sequenced; both system sheets overlap on iOS [core#11]
   - Fix: `await ensureNotificationPermission()` inside the download functions before starting. Executor: haiku. Flags: needs device check.
 
-## Batch M17 (sonnet): component tests and snackbar gesture - `components/failure-snackbar.tsx`, new tests under `components/**`, `navigation/**`
+## Batch M17 (sonnet): component tests and snackbar gesture - `components/failure-snackbar.tsx`, new tests under `components/**`, `navigation/**` (branch `fix/m17-component-tests`)
 
-- [ ] **M-81** **[device sign-off later]** P3 CONFIRMED `components/failure-snackbar.tsx:93-126` - snackbar swipe is a JS-thread `PanResponder` [comp P3-9]
+- [x] **M-81** **[device sign-off later]** P3 CONFIRMED `components/failure-snackbar.tsx:93-126` - snackbar swipe is a JS-thread `PanResponder` [comp P3-9]
   - Fix: `Gesture.Pan()` on the UI thread with `runOnJS` for dismiss/release. Executor: sonnet. Flags: needs device check.
-- [ ] **M-82** P3 CONFIRMED `equalizer`, `refresh-control`, `use-schema-form`, `detail-scroll`/`detail-frame` (Android scrolled bar), `card-play-button`, `segmented-tabs` (iOS), `use-quick-action-routing`, `player-dock` - no tests for their behaviour [comp P3-17]
+  - Done: RNGH 3's `usePanGesture` + `GestureDetector` (the installed v3 hook API, `Gesture.Pan()` is its legacy form) with Reanimated shared values; hold/release/dismiss hop through `scheduleOnRN`; velocity threshold now 500 pt/s. Tests drive the pan callbacks. Needs a device check (drag, flick, tap, iOS FullWindowOverlay).
+- [x] **M-82** P3 CONFIRMED `equalizer`, `refresh-control`, `use-schema-form`, `detail-scroll`/`detail-frame` (Android scrolled bar), `card-play-button`, `segmented-tabs` (iOS), `use-quick-action-routing`, `player-dock` - no tests for their behaviour [comp P3-17]
   - Fix: add the tests listed in the comp report (paused/reduced-motion bars, `refreshing` follows only the pull, first issue per field, scroll-past offset bar swap, pending/label, out-of-range index, initial action once, dock inset). Run after M7/M8 so tests match final code. Executor: sonnet. Flags: none.
+  - Done: new tests for equalizer, refresh-control, use-schema-form, detail-scroll (detail-frame's Android bar swap was already pinned in detail-screen.test), card-play-button, iOS segmented-tabs, player-dock, use-quick-action-routing. The last exposed a real bug (router change re-opened the launch action): fixed in its own commit.
 
 ## Batch W2 (sonnet): details and row "more" sheets - `components/song-list/{more-button,more-button-mobile-popup,more-button-radio}.ts(x)`, `components/details-header/more-button.tsx`, `components/{share-options,share-button}.tsx`, `tests/dom/more-button-share-panel.test.tsx`
 
+Branch: `worktree-agent-aa5afa3af9174331f`. W-6: `bun run budget` unmeasured (no `next build`); by import graph the header chunk now holds Drawer, DropdownMenu, share and the dialog, loaded on intent.
+
 Do P1 + the extraction together so the fix is applied once.
 
-- [ ] **W-4** P1 CONFIRMED `song-list/more-button-mobile-popup.tsx:107-116`, `details-header/more-button.tsx:329-340` - phone "more" bottom sheets never close after an action (needs Cancel; Add to Playlist opens a dialog over the open drawer) [wcomp P1-1]
+- [x] **W-4** P1 CONFIRMED `song-list/more-button-mobile-popup.tsx:107-116`, `details-header/more-button.tsx:329-340` - phone "more" bottom sheets never close after an action (needs Cancel; Add to Playlist opens a dialog over the open drawer) [wcomp P1-1]
   - Fix: render entries as `DrawerClose` (as `user-menu-sheet.tsx:74-77` does), close the header drawer before opening the playlist dialog; add "choosing an entry closes the sheet" tests for row and header. Executor: sonnet. Flags: none.
-- [ ] **W-5** P2 CONFIRMED `details-header/more-button.tsx:278-390,103-164`, `more-button-mobile-popup.tsx:54-173`, `more-button-radio.ts:27-77` - two drifted copies of the share drawer and of "create station then play" [wcomp P2-5]
+- [x] **W-5** P2 CONFIRMED `details-header/more-button.tsx:278-390,103-164`, `more-button-mobile-popup.tsx:54-173`, `more-button-radio.ts:27-77` - two drifted copies of the share drawer and of "create station then play" [wcomp P2-5]
   - Fix: one `MoreSheet({ art, title, subtitle, entries, sharePath })` and one `startRadio(seed, radio)`. Executor: sonnet. Flags: none.
-- [ ] **W-6** P2 CONFIRMED `details-header/more-button.tsx:14-30,65`, `share-button.tsx` - the header menu imports Drawer, DropdownMenu and the Add-to-playlist Dialog statically while the row menu defers all three (detail routes carry the largest budget class) [wcomp P2-6]
+- [x] **W-6** P2 CONFIRMED `details-header/more-button.tsx:14-30,65`, `share-button.tsx` - the header menu imports Drawer, DropdownMenu and the Add-to-playlist Dialog statically while the row menu defers all three (detail routes carry the largest budget class) [wcomp P2-6]
   - Fix: shell trigger with identical classes/ARIA, `useDeferred("details-more", () => import("./more-button-popup"))`, `React.lazy` for the dialog, fold `ShareButton` into the chunk; check `bun run budget`. Executor: sonnet. Flags: none.
-- [ ] **W-7** P2 CONFIRMED `components/share-options.tsx:160-164` - `navigator.clipboard.writeText` unawaited: a rejection is unhandled and the UI still says "Link Copied" [wcomp P2-2]
+- [x] **W-7** P2 CONFIRMED `components/share-options.tsx:160-164` - `navigator.clipboard.writeText` unawaited: a rejection is unhandled and the UI still says "Link Copied" [wcomp P2-2]
   - Fix: `.then(success, () => toast.error("Couldn't copy the link"))`, guard undefined `navigator.clipboard`, add a rejected-write test. Executor: haiku. Flags: none.
-- [ ] **W-8** P3 CONFIRMED `share-options.tsx:155,162` - `isCopied` never resets ("Link Copied" for the rest of the page) [wcomp P3-3]
+- [x] **W-8** P3 CONFIRMED `share-options.tsx:155,162` - `isCopied` never resets ("Link Copied" for the rest of the page) [wcomp P3-3]
   - Fix: reset on a 2s timer or menu close. Executor: haiku. Flags: none.
-- [ ] **W-9** P3 CONFIRMED `song-list/more-button.tsx:100-104` - "Play Song Now" matches by `id`, not `queueItemId` (duplicate track jumps to the first copy) [wcomp P3-10]
+- [x] **W-9** P3 CONFIRMED `song-list/more-button.tsx:100-104` - "Play Song Now" matches by `id`, not `queueItemId` (duplicate track jumps to the first copy) [wcomp P3-10]
   - Fix: `findQueueIndex(initialQueue, { token: item.id, queueItemId })` as `play-button.tsx:60` does. Executor: haiku. Flags: none.
-- [ ] **W-10** P3 CONFIRMED `details-header/more-button.tsx:267-273` - the Download entry disappears while a download runs (`hide: isDownloading`) [wcomp P3-11]
+- [x] **W-10** P3 CONFIRMED `details-header/more-button.tsx:267-273` - the Download entry disappears while a download runs (`hide: isDownloading`) [wcomp P3-11]
   - Fix: keep it, `disabled`/`aria-busy`. Executor: haiku. Flags: none.
 
-## Batch W3 (sonnet): catalog list pages and metadata - `apps/web/app/(root)/{album,playlist,radio,show,artist}/page.tsx` + their `_components/{top-albums,featured-playlists,featured-stations,top-podcasts}.tsx`, `app/(root)/browse/page.tsx`
+## Batch W3 (sonnet): catalog list pages and metadata - `apps/web/app/(root)/{album,playlist,radio,show,artist}/page.tsx` + their `_components/{top-albums,featured-playlists,featured-stations,top-podcasts}.tsx`, `app/(root)/browse/page.tsx` (branch `fix/w3-web-batch`)
 
 Does not touch `browse/_components` (W7 moves `catalog-states`).
 
-- [ ] **W-11** P2 CONFIRMED `(root)/album/page.tsx:30-45` + `top-albums.tsx:20-29`, `playlist/page.tsx:27-43` + `featured-playlists.tsx:23-32`, `radio/page.tsx:30-46` + `featured-stations.tsx:25-34`, `show/page.tsx:46-52` + `top-podcasts.tsx:19-28` - `?page=N` is fetched by the server but the client infinite query is seeded as page 1, so scrolling loads page 2 under page N and drops page N as a duplicate [routes 3]
+- [x] **W-11** P2 CONFIRMED `(root)/album/page.tsx:30-45` + `top-albums.tsx:20-29`, `playlist/page.tsx:27-43` + `featured-playlists.tsx:23-32`, `radio/page.tsx:30-46` + `featured-stations.tsx:25-34`, `show/page.tsx:46-52` + `top-podcasts.tsx:19-28` - `?page=N` is fetched by the server but the client infinite query is seeded as page 1, so scrolling loads page 2 under page N and drops page N as a duplicate [routes 3]
   - Fix: pass the parsed page into the client components for `initialPageParam` and `pageParams: [page]` (or stop reading `page` and drop it from `KeyedByParams`); add one dom test seeding page 3 and asserting the next request is page 4. Executor: sonnet. Flags: none.
-- [ ] **W-12** P3 CONFIRMED `(root)/playlist/page.tsx:14-15`, `show/page.tsx:18-19`, `artist/page.tsx:18`, `album/page.tsx:15` - static metadata copy: build-time year, "Saavn" brand leak, EDM description on podcasts, padded `/artist` title, trailing "." on `/album` [routes 12]
+- [x] **W-12** P3 CONFIRMED `(root)/playlist/page.tsx:14-15`, `show/page.tsx:18-19`, `artist/page.tsx:18`, `album/page.tsx:15` - static metadata copy: build-time year, "Saavn" brand leak, EDM description on podcasts, padded `/artist` title, trailing "." on `/album` [routes 12]
   - Fix: rewrite the four strings; drop the year or compute it in `generateMetadata`. Executor: haiku. Flags: none.
-- [ ] **W-13** P3 CONFIRMED `(root)/browse/page.tsx:43-47,61-65` - "Top Albums" and "New Releases" tiles both link to `/album` [routes 13]
+- [x] **W-13** P3 CONFIRMED `(root)/browse/page.tsx:43-47,61-65` - "Top Albums" and "New Releases" tiles both link to `/album` [routes 13]
   - Fix: point New Releases at `/album?lang=<first language>` or drop it. Executor: haiku. Flags: none.
 
-## Batch W4 (opus): label route restructure - `apps/web/app/(root)/label/[name]/[token]/{page,loading}.tsx`, `packages/core/src/entity-route.ts`
+## Batch W4 (opus): label route restructure - `apps/web/app/(root)/label/[name]/[token]/{page,loading}.tsx`, `packages/core/src/entity-route.ts` - branch `fix/w4-label-tab-routes`
 
 `entity-route` is shared with mobile: re-run mobile route tests after the change.
 
-- [ ] **W-14** P2 PLAUSIBLE `(root)/label/[name]/[token]/loading.tsx:1-17` - `usePathname()` outside `PathnameBoundary`, so the shell degrades to the generic `(root)/loading.tsx` grid and the page shows three layouts in a row [routes 5]
+- [x] **W-14** P2 PLAUSIBLE `(root)/label/[name]/[token]/loading.tsx:1-17` - `usePathname()` outside `PathnameBoundary`, so the shell degrades to the generic `(root)/loading.tsx` grid and the page shows three layouts in a row [routes 5]
   - Fix: static header/tab skeleton, list-vs-grid choice behind `PathnameBoundary` with the grid as the null fallback (or always the grid); add a dom test with no pathname. Executor: sonnet. Flags: none. (Superseded if W-15's layout lands first.)
-- [ ] **W-15** P2 CONFIRMED `label/[name]/[token]/page.tsx:62-63,69-117`, `lib/types` fixture `label/music-label/lbl123_` - label tabs are `<Link>`s that re-skeleton the whole page, both lists are rendered and shipped every visit, and a slug without `-songs`/`-albums` makes both tabs link to the same URL (Songs unreachable) [routes 6]
+  - Done: superseded by W-15, the route `loading.tsx` is deleted; the layout's header and tab row and each panel have their own Suspense skeletons.
+- [x] **W-15** P2 CONFIRMED `label/[name]/[token]/page.tsx:62-63,69-117`, `lib/types` fixture `label/music-label/lbl123_` - label tabs are `<Link>`s that re-skeleton the whole page, both lists are rendered and shipped every visit, and a slug without `-songs`/`-albums` makes both tabs link to the same URL (Songs unreachable) [routes 6]
   - Fix: mirror the artist pattern: `label/[name]/[token]/layout.tsx` (header + tab nav) with `page.tsx` (songs) and `albums/page.tsx`, map `-songs`/`-albums` slugs in `getHref`/`entity-route` like `legacyArtistPath`. Minimal fallback: client-state tabs, render only the active panel, never rewrite the slug. Executor: opus. Flags: none.
+  - Done: Songs on the bare route, Albums on `/albums`; `entityRoute` splits the slug into an optional `tab` on the label's `entity` route, `legacyLabelPath` 308s both suffixes in `proxy.ts`. Follow-up (mobile): `+native-intent.tsx` has no mapping for the web's `/label/<name>/<token>/albums`.
 
-## Batch W5 (sonnet): `/me`, show and home routes - `apps/web/app/(root)/me/**`, `app/(root)/show/[name]/[season]/[token]/page.tsx`, `app/(root)/_components/home-greeting.tsx`, `app/(root)/page.tsx`, `lib/db/queries.ts` 
+## Batch W5 (sonnet): `/me`, show and home routes - `apps/web/app/(root)/me/**`, `app/(root)/show/[name]/[season]/[token]/page.tsx`, `app/(root)/_components/home-greeting.tsx`, `app/(root)/page.tsx`, `lib/db/queries.ts`
 
 - [ ] **W-16** P2 PLAUSIBLE `(root)/me/(layout-a)/layout.tsx:25-29,63-65`, `error.tsx`, `page.tsx:28`, `albums/page.tsx:14`, `liked-songs/page.tsx:29-32`, `recently-played/page.tsx:25` - with a stale session cookie the page body throws UNAUTHORIZED into `error.tsx` before the `ProfileHeader` redirect lands [routes 4]
   - Fix: one `requireUser()` (`getViewer()` then `redirect("/login")`) at the top of every `/me` page and in `ProfileHeader`; add a mocked test with a null session. Executor: sonnet. Flags: none.
@@ -283,28 +301,28 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 - [ ] **W-21** P3 CONFIRMED `(root)/_components/home-greeting.tsx:27,36`, `(root)/page.tsx:27-32` - the document's only `h1` is the time-of-day greeting [routes 18]
   - Fix: greeting as `p` plus a visually hidden `h1`, or `h1` only when signed in. Executor: sonnet. Flags: needs user decision (design call).
 
-## Batch W6 (sonnet): player and play controls, a11y - `components/{play-button,play-all-button,queue,player,like-button,download-button}.tsx`, `components/song-list/play-pause-button.tsx`, `components/player/use-queue-removal.ts`, `components/site-header/surprise-me-button.tsx`, `tests/dom/{queue-sheet,like-button,card-play,download-button,play-button-season}.test.tsx`, `tests/player-a11y.test.ts`
+## Batch W6 (sonnet): player and play controls, a11y _(branch `worktree-agent-a02df50c3b60cedf5`)_ - `components/{play-button,play-all-button,queue,player,like-button,download-button}.tsx`, `components/song-list/play-pause-button.tsx`, `components/player/use-queue-removal.ts`, `components/site-header/surprise-me-button.tsx`, `tests/dom/{queue-sheet,like-button,card-play,download-button,play-button-season}.test.tsx`, `tests/player-a11y.test.ts`
 
-- [ ] **W-22** P2 PLAUSIBLE `components/play-button.tsx:46,56` - `useSearchParams()` in every play control (hero, quick picks, cards, rows) for a `sort` only show/episode read; may push the home content out of the static shell [wcomp P2-1]
+- [x] **W-22** P2 PLAUSIBLE `components/play-button.tsx:46,56` - `useSearchParams()` in every play control (hero, quick picks, cards, rows) for a `sort` only show/episode read; may push the home content out of the static shell [wcomp P2-1] Done: `sort` read from `window.location.search` at click time. Prerendered `index.html` NOT confirmed (no `next build` run).
   - Fix: read `sort` at click time from `window.location.search` in those two branches (or pass it as a prop) and remove the hook; confirm `.next/server/app/index.html` contains the hero or add an `instant()` e2e for `/`. Executor: sonnet. Flags: none.
-- [ ] **W-23** P2 CONFIRMED `components/download-button.tsx:67-81,100-103` - "Download N songs" runs `Promise.all` over every song: N blobs in memory, N save dialogs the browser blocks, one failure masks partial success [wcomp P2-3]
+- [x] **W-23** P2 CONFIRMED `components/download-button.tsx:67-81,100-103` - "Download N songs" runs `Promise.all` over every song: N blobs in memory, N save dialogs the browser blocks, one failure masks partial success [wcomp P2-3] Done: sequential, progress toast, partial-failure toast, confirm above 10.
   - Fix: sequential (or 2 at a time), release each blob, one progress toast ("3 of 40"), report partial failure, consider a confirm above ~10. Executor: sonnet. Flags: none.
-- [ ] **W-24** P2 CONFIRMED `components/queue.tsx:40-48,64,85-93`, `player.tsx:331-333,401` - closing the queue pane (Escape, close, `q`) while focused inside drops focus to `body` [wcomp P2-4]
+- [x] **W-24** P2 CONFIRMED `components/queue.tsx:40-48,64,85-93`, `player.tsx:331-333,401` - closing the queue pane (Escape, close, `q`) while focused inside drops focus to `body` [wcomp P2-4] Done: layout effect refocuses the `aria-controls` toggle on close.
   - Fix: on close, if the pane contains `document.activeElement`, focus `[aria-controls="player-queue"]`; optionally focus the pane on open. Executor: sonnet. Flags: none.
-- [ ] **W-25** P2 CONFIRMED `song-list/play-pause-button.tsx:35,47-52`, `play-button.tsx:176`, `like-button.tsx:54` - row play/like controls are all named "Play" / "Like" with no track name [wcomp P2-7]
+- [x] **W-25** P2 CONFIRMED `song-list/play-pause-button.tsx:35,47-52`, `play-button.tsx:176`, `like-button.tsx:54` - row play/like controls are all named "Play" / "Like" with no track name [wcomp P2-7] Done: `Play/Pause/Like <name>`; `TilePlayPauseButton` takes `name` (callers `song-list-row`, `queue-row` updated; three other dom tests now match `^="Like"`).
   - Fix: `aria-label={`Play ${item.name}`}` / "Pause ..." and `Like ${name}` (keep the word first for `aria-pressed`); update the like-button and a11y tests. Executor: haiku. Flags: none.
-- [ ] **W-26** P3 CONFIRMED `play-button.tsx:160-166`, `library/play-all-button.tsx:43-46`, `surprise-me-button.tsx:90-93` - success toast on every Play over a player that already announces it [wcomp P3-2]
+- [x] **W-26** P3 CONFIRMED `play-button.tsx:160-166`, `library/play-all-button.tsx:43-46`, `surprise-me-button.tsx:90-93` - success toast on every Play over a player that already announces it [wcomp P3-2] Done: toasts dropped; `playAllToastTitle` and its test removed.
   - Fix: drop for Play/Play All/Surprise Me; keep toasts for radio and errors. Executor: haiku. Flags: none.
-- [ ] **W-27** P3 CONFIRMED `components/player/use-queue-removal.ts:107-112` - "Removed from queue" lives 10s with no Undo [wcomp P3-1]
+- [x] **W-27** P3 CONFIRMED `components/player/use-queue-removal.ts:107-112` - "Removed from queue" lives 10s with no Undo [wcomp P3-1] Done: Undo action (cancels a leaving row or reinserts at the old index), default duration.
   - Fix: `action: { label: "Undo" }` reinserting at the old index, or default duration. Executor: sonnet. Flags: none.
-- [ ] **W-28** P3 CONFIRMED `components/player.tsx:328-330` - `s` (shuffle) gives no feedback while `l` toasts [wcomp P3-4]
+- [x] **W-28** P3 CONFIRMED `components/player.tsx:328-330` - `s` (shuffle) gives no feedback while `l` toasts [wcomp P3-4] Done: `s` toasts Shuffle on/off.
   - Fix: toast "Shuffle on/off" or write it to the `aria-live` `<output>`. Executor: haiku. Flags: none.
-- [ ] **W-29** P3 CONFIRMED `components/queue.tsx:50-53` - `clearUpNext` calls `setCurrentIndex(currentIndex)` (no-op) [wcomp P3-12]
+- [x] **W-29** P3 CONFIRMED `components/queue.tsx:50-53` - `clearUpNext` calls `setCurrentIndex(currentIndex)` (no-op) [wcomp P3-12] Done.
   - Fix: delete the line. Executor: haiku. Flags: none.
-- [ ] **W-30** P3 CONFIRMED `tests/dom/*`, `tests/player-a11y.test.ts` - missing web tests: `ExpandedPane` phone toggles/`aria-expanded`, `MainNavPopup` with duplicate titles, plus those named in W-4, W-7, W-22..W-25 [wcomp T-1]
+- [x] **W-30** P3 CONFIRMED `tests/dom/*`, `tests/player-a11y.test.ts` - missing web tests: `ExpandedPane` phone toggles/`aria-expanded`, `MainNavPopup` with duplicate titles, plus those named in W-4, W-7, W-22..W-25 [wcomp T-1] Done: `ExpandedPane` phone toggles/`aria-expanded` were already covered (`expanded-player.test.tsx`); added `main-nav-popup.test.tsx` (duplicate titles render; the duplicate `key={title}` warning is W7's fix in `main-nav-popup.tsx`) and tests with W-22..W-25. W-4/W-7 tests belong to batch W2.
   - Executor: sonnet, alongside each fix. Flags: none.
 
-## Batch W7 (haiku): small component and route nits - `components/{slider/slider-list,slider/slider-card,error-illustration,route-error,catalog-load-more,site-header/main-nav-popup,search/use-search-palette-keys,library/library-song-list}.tsx`, `app/(root)/{playlist/[name]/[token],album/[name]/[token],radio/[name]/[token]}/page.tsx`, `app/(root)/settings/_components/{profile-form,settings-search}.tsx`, `app/@modal/**`, `app/(root)/browse/_components/catalog-states.tsx`, `app/(root)/loading.tsx` 
+## Batch W7 (haiku): small component and route nits - `components/{slider/slider-list,slider/slider-card,error-illustration,route-error,catalog-load-more,site-header/main-nav-popup,search/use-search-palette-keys,library/library-song-list}.tsx`, `app/(root)/{playlist/[name]/[token],album/[name]/[token],radio/[name]/[token]}/page.tsx`, `app/(root)/settings/_components/{profile-form,settings-search}.tsx`, `app/@modal/**`, `app/(root)/browse/_components/catalog-states.tsx`, `app/(root)/loading.tsx`
 
 - [ ] **W-31** P2 CONFIRMED `components/slider/slider-list.tsx:16-39`, `slider/shelf.tsx:70-98`, `album/[name]/[token]/page.tsx:73-82`, `artist/[name]/[token]/layout.tsx:62-103`, `song/[name]/[token]/page.tsx:204-213` - empty shelves render a heading plus two disabled arrows (album "Artists", seven artist shelves) [routes 7]
   - Fix: `if (items.length === 0) return null;` in `SliderList` (one line covers every caller); delete the redundant guard in the playlist page. Executor: haiku. Flags: none.
@@ -325,30 +343,30 @@ Does not touch `browse/_components` (W7 moves `catalog-states`).
 - [ ] **W-39** P3 CONFIRMED `library/library-song-list.tsx:154-158` - empty `items` with no filter shows `No songs match ""` [wcomp P3-9]
   - Fix: branch on `query.trim()` and show `LibraryEmpty` otherwise. Executor: haiku. Flags: none.
 
-## Batch T1 (sonnet): CI, budget and lint gates - `.github/workflows/ci.yml`, `turbo.json`, `packages/ui/package.json`, `scripts/check-budget.ts`, `knip.json`, root `package.json` (lint-staged), `next.config.ts`, `lib/image-hosts.ts`
+## Batch T1 (sonnet): CI, budget and lint gates - `.github/workflows/ci.yml`, `turbo.json`, `packages/ui/package.json`, `scripts/check-budget.ts`, `knip.json`, root `package.json` (lint-staged), `next.config.ts`, `lib/image-hosts.ts` (branch `fix/t1-t2-ci-csp`)
 
 Run `bun run build && bun run budget` first to get real numbers.
 
-- [ ] **T-1** P2 CONFIRMED `packages/ui/package.json:8`, `turbo.json`, `ci.yml:34` - `lint:shadcn` (`no-raw-colors`, `require-static-classes`) is not a turbo task and never runs in CI [lib 4]
+- [x] **T-1** (Done: `lint:shadcn` turbo task, root script and CI step; `--deny-warnings`; 8 `require-static-classes` warnings on `cn(sharedStyleConst)` sites exempted by override in `.oxlintrc.shadcn.json`, no shadcn component touched.) P2 CONFIRMED `packages/ui/package.json:8`, `turbo.json`, `ci.yml:34` - `lint:shadcn` (`no-raw-colors`, `require-static-classes`) is not a turbo task and never runs in CI [lib 4]
   - Fix: add a `lint:shadcn` turbo task and a CI step; run once first and fix or exempt findings. Executor: haiku (sonnet if it finds violations). Flags: none.
-- [ ] **T-2** P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
+- [ ] **T-2** (needs a measured build: caps kept, header comment now says they were raised on purpose and must be re-measured with `bun run build && bun run budget`.) P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
   - Fix: measure, set ceilings ~5% above current maxima, rewrite the header (or state the raise was deliberate). Executor: sonnet. Flags: none.
 - [ ] **T-3** P2 CONFIRMED `apps/web/tests/mocked/cached-api.test.ts:8-11,84-100`, `tests/cached-api-runtime.ts`, `ci.yml:85-101` - the `use cache` error-digest round-trip is only covered by a manual script CI never runs [lib 3]
   - Fix: run `tests/cached-api-runtime.ts` with the `cached-api-fetch.mjs` preload in the production job after readiness, list it as a knip `entry`; or make the mocked test throw a structurally cloned error. Executor: sonnet. Flags: none.
-- [ ] **T-4** P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15]
+- [ ] **T-4** (needs a measured build: `forbiddenMode` left as `"warn"`, TODO added; confirm the shell chunk is clean before flipping to `"error"`.) P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15]
   - Fix: run `bun run budget`; if clean flip to `"error"`, else report the offender. Executor: sonnet. Flags: none.
-- [ ] **T-5** P3 CONFIRMED root `package.json` lint-staged vs `apps/web/package.json:11` - pre-commit oxlint is weaker than CI (no `--deny-warnings --nextjs-plugin`) [lib 9]
+- [x] **T-5** (Done: lint-staged oxlint now `--deny-warnings --nextjs-plugin`.) P3 CONFIRMED root `package.json` lint-staged vs `apps/web/package.json:11` - pre-commit oxlint is weaker than CI (no `--deny-warnings --nextjs-plugin`) [lib 9]
   - Fix: add the flags or run `turbo run lint --filter=...[HEAD]`. Executor: haiku. Flags: none.
-- [ ] **T-6** P3 CONFIRMED `knip.json:4-6` - ignores cause false positives (`@happy-dom/global-registrator`, `scripts/api-server.ts`, `tests/cached-api-runtime.ts`) [lib 10]
+- [x] **T-6** (Done: declared as knip `entry`.) P3 CONFIRMED `knip.json:4-6` - ignores cause false positives (`@happy-dom/global-registrator`, `scripts/api-server.ts`, `tests/cached-api-runtime.ts`) [lib 10]
   - Fix: declare them as `entry` instead of `ignore`. Executor: haiku. Flags: none.
-- [ ] **T-7** P3 CONFIRMED `apps/web/next.config.ts:58-66`, `lib/image-hosts.ts:2-4`, `.github/workflows/ci.yml:5` - dead `images.remotePatterns` under `unoptimized: true`; stale `migration/bun-monorepo` branch [lib 16]
+- [x] **T-7** (Done: dead `remotePatterns` and stale comment dropped, `migration/bun-monorepo` removed from the CI push list; PRs still run for `feat/platforms`.) P3 CONFIRMED `apps/web/next.config.ts:58-66`, `lib/image-hosts.ts:2-4`, `.github/workflows/ci.yml:5` - dead `images.remotePatterns` under `unoptimized: true`; stale `migration/bun-monorepo` branch [lib 16]
   - Fix: drop the block and the comment; fix the branch list. Executor: haiku. Flags: none.
 
-## Batch T2 (sonnet): CSP avatars - `apps/web/lib/{csp,image-hosts}.ts`, `apps/web/tests/csp.test.ts`
+## Batch T2 (sonnet): CSP avatars - `apps/web/lib/{csp,image-hosts}.ts`, `apps/web/tests/csp.test.ts` (branch `fix/t1-t2-ci-csp`)
 
 Shares `image-hosts.ts` with T1's T-7: do T2 first or have one executor take both.
 
-- [ ] **T-8** P2 CONFIRMED (gap) / PLAUSIBLE (hosts) `lib/csp.ts:67`, `lib/image-hosts.ts:6-9`, `components/user-avatar.tsx:38`, `packages/auth/src/auth.ts:226-228`, `tests/csp.test.ts:49-56` - `img-src` omits the Google/GitHub avatar hosts, so social-login avatars always violate CSP and break if `CSP_ENFORCE` flips [lib 2]
+- [x] **T-8** (Done: `AVATAR_HOSTS` in `image-hosts.ts`, spread into `img-src`, tests updated; Better Auth maps Google `picture` and GitHub `avatar_url` to `user.image` verbatim, the hosts themselves are the documented Google/GitHub CDNs and were not checked against a live `user.image`; kept out of `parseAllowedImageUrl`.) P2 CONFIRMED (gap) / PLAUSIBLE (hosts) `lib/csp.ts:67`, `lib/image-hosts.ts:6-9`, `components/user-avatar.tsx:38`, `packages/auth/src/auth.ts:226-228`, `tests/csp.test.ts:49-56` - `img-src` omits the Google/GitHub avatar hosts, so social-login avatars always violate CSP and break if `CSP_ENFORCE` flips [lib 2]
   - Fix: `AVATAR_HOSTS = ["lh3.googleusercontent.com", "avatars.githubusercontent.com"]` (confirm against a real `user.image`), spread into `img-src`, update the test; keep them out of `parseAllowedImageUrl`. Executor: sonnet. Flags: none.
 
 ## Batch T3 (sonnet): type-check tests and scripts - new `apps/web/tsconfig.tests.json`, root `tsconfig.json`, `type-check` scripts
@@ -358,16 +376,18 @@ Run LAST (after the S/W/M batches merge): the first run surfaces real type error
 - [ ] **T-9** P2 CONFIRMED `apps/web/tsconfig.json:16-21`, root `scripts/*` - tests and scripts are excluded from type-checking, so renamed exports and stale shapes only fail at runtime [lib 1]
   - Fix: `tsconfig.tests.json` (extends, `include: ["tests","scripts","**/*.test.*"]`, `types: ["bun"]`) and a root tsconfig for `scripts/`, chained into `type-check` as `packages/core` does; fix the errors in the same change. Executor: sonnet. Flags: none.
 
-## Batch T4 (haiku; T-13 sonnet): web lib cleanup - `apps/web/lib/{cached-api,search-route,rate-limit-scope,client-ip,env,theme-config,use-favorite-toggle,csp,control-styles,pending-params}.ts`, `lib/glass/{artwork,overlays}.ts`, `lib/theme/{oklch,accent}.ts`, `lib/trpc/server.ts`, `hooks/{use-deferred,use-store}.ts`, `packages/trpc/src/lib/api.ts`
+## Batch T4 (haiku; T-13 sonnet) (branch `fix/t4-proxy-matcher`): web lib cleanup - `apps/web/lib/{cached-api,search-route,rate-limit-scope,client-ip,env,theme-config,use-favorite-toggle,csp,control-styles,pending-params}.ts`, `lib/glass/{artwork,overlays}.ts`, `lib/theme/{oklch,accent}.ts`, `lib/trpc/server.ts`, `hooks/{use-deferred,use-store}.ts`, `packages/trpc/src/lib/api.ts`
 
-- [ ] **T-13** P3 PLAUSIBLE `lib/rate-limit-scope.ts:10`, `tests/mocked/proxy.test.ts:643` - any page path ending in a static extension (`/search/all/50%.json`, `/album/x/y.mp3`) skips the proxy: no search repair, CSP header or limiter charge [lib 8]
+- [x] **T-13** P3 PLAUSIBLE `lib/rate-limit-scope.ts:10`, `tests/mocked/proxy.test.ts:643` - any page path ending in a static extension (`/search/all/50%.json`, `/album/x/y.mp3`) skips the proxy: no search repair, CSP header or limiter charge [lib 8]
   - Fix: anchor the extension exclusion to top-level public files or `_next/`, `favicon.ico`, `/images/`, `/fonts/`; add a search-query case to the matcher test. Executor: sonnet. Flags: none.
+  - Done: exclusion is now `(?:images|fonts)/` plus top-level `[^/]+\.(ext)$`; nested paths ending in an extension reach the proxy. Matcher test covers `/search/all/50%.json`, `/album/x/y.mp3`, `/search?q=a.json`.
 
 ## Extra follow-ups (from earlier work, not in the review batches)
 
-- [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified. 
-- [ ] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. 
+- [ ] **X-1** P2 Security: email change without verification. `packages/trpc/src/router/user.ts` (`updateUser`). Changing the email now clears `emailVerified` and revokes other sessions, but nothing proves the user owns the new address. Better Auth then links a Google sign-in for that email to this account. Fix: use Better Auth's `changeEmail` flow, which sends a verification to the new address and changes it only on confirm, or block the change until verified.
+- [x] **X-2** P3 `apps/mobile/src/components/catalog-screen.tsx`: the skeleton disappears in one frame and the cards fade in from 0, so there is a 200ms dip to the background. Crossfade the skeleton out instead, opacity only and reduce-motion safe. Done: the pending placeholder is wrapped in an `exiting={CONTENT_CONCEAL}` fade (200ms, reduce-motion safe, exported from `skeletons.tsx`) so it crossfades with the cards' shared-opacity fade; test in `catalog-screen.test.tsx`. (branch `fix/x2-catalog-crossfade`)
 - [ ] **X-3** P3 Animation and accessibility sweep, last, after the batches above:
   - review mobile and web motion for missing enter and exit transitions on state changes (sheets, lists, toggles) and for reduce-motion gates
   - add accessibility labels and roles where tests show gaps
   - one PR per platform, with no visual redesign
+- [x] **X-4** (branch `fix/x4-label-followups`) P3 Label tab follow-ups from W-15. Done: native-intent maps `/albums` onto the label screen; `label_url` links via `getHref`; AGENTS.md and the feature map describe the label tab routes. `apps/mobile/src/app/+native-intent.tsx` should map the web's `/label/<name>/<token>/albums` onto `/label/<name>/<token>` (as it maps `/featured`); `components/details-header/details-header-meta.tsx` should link `label_url` with `getHref(..., "label")` instead of `asRoute` (it goes through the 308 now); `AGENTS.md` (entity pages with a `loading.tsx`) and `.agents/skills/verify/features/README.md` (route list) should describe the label tab routes.

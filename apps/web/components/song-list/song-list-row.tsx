@@ -111,6 +111,7 @@ export function SongListRow(props: SongListRowProps) {
 
           <TilePlayPauseButton
             id={item.id}
+            name={item.name}
             type={item.type}
             token={parseToken(item.url)}
           />

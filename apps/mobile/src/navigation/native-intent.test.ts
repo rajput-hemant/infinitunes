@@ -70,6 +70,21 @@ describe("redirectSystemPath", () => {
     }
   });
 
+  it("opens a label's albums link on the label screen, which is one page", () => {
+    expect(
+      redirectSystemPath({
+        path: "infinitunes://label/t-series/pKJp_/albums?ref=share",
+      }),
+    ).toBe("/label/t-series/pKJp_?ref=share");
+    expect(redirectSystemPath({ path: "/label/t-series/pKJp_/albums/" })).toBe(
+      "/label/t-series/pKJp_",
+    );
+    // The label's songs route is already the screen's own path.
+    expect(redirectSystemPath({ path: "/label/t-series/pKJp_" })).toBe(
+      "/label/t-series/pKJp_",
+    );
+  });
+
   it("opens JioSaavn's featured playlist links on the playlist route", () => {
     expect(
       redirectSystemPath({ path: "infinitunes://featured/top-50/abc__?x=1" }),

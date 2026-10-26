@@ -1,72 +1,17 @@
 "use client";
 
-import { addSongsOptimistic } from "@infinitunes/core/react/optimistic-playlists";
 import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
-import { userMessage } from "@infinitunes/core/user-message";
-import type {
-  MediaType,
-  Quality,
-  Queue,
-  SongRowItem,
-} from "@infinitunes/types";
-import { getImageSrc, toQueue, toQueueEntry } from "@infinitunes/types";
-import { Button } from "@infinitunes/ui/components/button";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "@infinitunes/ui/components/drawer";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@infinitunes/ui/components/dropdown-menu";
-import { Separator } from "@infinitunes/ui/components/separator";
-import { Skeleton } from "@infinitunes/ui/components/skeleton";
-import {
-  ChevronLeft,
-  CloudDownload,
-  ChevronRight,
-  ListMusic,
-  ListOrdered,
-  MoreVertical,
-  Radio,
-  Share2,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
+import type { MediaType, Quality, SongRowItem } from "@infinitunes/types";
+import { MoreVertical, Share2 } from "lucide-react";
+import { useId, useState } from "react";
 
-import { useDownloadSongs } from "~/components/download-button";
-import { ImageWithFallback } from "~/components/image-with-fallback";
-import { getPlaceholderSrc } from "~/components/placeholder-src";
-import type { RadioStart } from "~/components/song-list/more-button-radio";
-import {
-  useActiveRadioSession,
-  useCurrentSongIndex,
-  useIsPlayerInit,
-  useQueue,
-} from "~/hooks/use-store";
-import { unwrap } from "~/lib/action-result";
-import { addSongsToPlaylist } from "~/lib/actions";
+import { useDeferred } from "~/hooks/use-deferred";
 import type { User } from "~/lib/auth";
-import { controlStyles } from "~/lib/control-styles";
-import { trpc } from "~/lib/trpc/vanilla";
-import { cn } from "~/lib/utils";
 
-import { AddToPlaylistDialog } from "../playlist/add-to-playlist-dialog";
-import { ShareOptions } from "../share-options";
-import { ShareSubMenu } from "../share-submenu";
+import { headerIconClassName } from "./header-icon";
+import type { MoreButtonPopupProps } from "./more-button-popup";
 
-type MoreButtonProps = {
+export type MoreButtonProps = {
   user?: User;
   type: MediaType;
   image: Quality;
@@ -78,360 +23,100 @@ type MoreButtonProps = {
   language?: string;
 };
 
-type MenuItem = {
-  label: string;
-  onClick: () => void;
-  hide?: boolean;
-  /** The header shows its own button for this action from md up. */
-  phoneOnly?: boolean;
-  icon: LucideIcon;
-};
+type Opened = MoreButtonPopupProps["openOnMount"];
 
-type RadioSeed = {
-  type: MediaType;
-  name: string;
-  artistId?: string;
-  songs: SongRowItem[];
-  language?: string;
-};
+const loadPopup = () => import("./more-button-popup");
 
 /**
- * Creates a station for the album, playlist or artist and starts it. Kept
- * outside the component: the React Compiler bails out on try/catch around
- * value blocks.
+ * The details header's Share and "more" buttons. Their popups (Base UI Menu,
+ * Drawer, the Add-to-playlist dialog) are one chunk loaded on the first hover,
+ * focus, pointer down or arrow key; until then the page carries identical
+ * closed triggers. A click before the chunk lands opens the popup on arrival.
  */
-async function startSeedRadio(seed: RadioSeed, radio: RadioStart) {
-  const { type, name, artistId: initialArtistId, songs, language } = seed;
-  const { client, setQueue, setCurrentIndex, setIsPlayerInit, setActiveRadio } =
-    radio;
-
-  try {
-    toast.loading("Starting radio...", { id: "play-radio" });
-    let stationName = name;
-    let artistId: string | undefined = initialArtistId;
-    let radioType: "artist" | "featured" = "featured";
-
-    if (type === "artist") {
-      radioType = "artist";
-    } else {
-      const primary = songs[0]?.primaryArtists[0];
-      if (primary) {
-        stationName = primary.name;
-        artistId = primary.id;
-        radioType = "artist";
-      }
-    }
-
-    const stationLanguage = language || songs[0]?.language;
-
-    const { stationId } = await client.radio.createStation.mutate({
-      type: radioType,
-      name: stationName,
-      artistId,
-      language: stationLanguage,
-    });
-
-    const radioSongs = await client.radio.songs.query({
-      stationId,
-      k: 20,
-    });
-
-    if (!radioSongs.length) {
-      toast.error("Could not find songs for this radio", {
-        id: "play-radio",
-      });
-      return;
-    }
-
-    const radioQueue = radioSongs.map(toQueue);
-    setQueue(radioQueue);
-    setActiveRadio({
-      stationId,
-      name: `${stationName} Radio`,
-      type: radioType,
-      language: stationLanguage,
-    });
-    setCurrentIndex(0);
-    setIsPlayerInit(true);
-
-    toast.success(`Playing "${stationName} Radio"`, {
-      id: "play-radio",
-      description: `Added ${radioQueue.length} station tracks to queue`,
-    });
-  } catch {
-    toast.error("Unable to start radio station", { id: "play-radio" });
-  }
-}
-
 export function MoreButton(props: MoreButtonProps) {
-  const {
-    user,
-    name,
-    subtitle,
-    type,
-    image,
-    songs,
-    playlists,
-    artistId: initialArtistId,
-    language,
-  } = props;
+  const id = useId();
+  const names = {
+    share: `share-${id}`,
+    mobile: `details-more-m-${id}`,
+    desktop: `details-more-${id}`,
+  };
+  // One deferred per trigger, so focus returns to the very one that had it.
+  const share = useDeferred(names.share, loadPopup);
+  const mobile = useDeferred(names.mobile, loadPopup);
+  const desktop = useDeferred(names.desktop, loadPopup);
+  const [opened, setOpened] = useState<Opened>(null);
 
-  const router = useRouter();
-
-  const [isSharing, setIsSharing] = useState(false);
-  const [isDialogOpen, setDialogOpen] = useState(false);
-
-  const [, setQueue] = useQueue();
-  const [, setCurrentIndex] = useCurrentSongIndex();
-  const [, setIsPlayerInit] = useIsPlayerInit();
-  const [, setActiveRadio] = useActiveRadioSession();
-
-  const { isDownloading, download } = useDownloadSongs(songs);
-
-  function addToQueue() {
-    const songsPayload: Queue[] = songs.map(toQueueEntry);
-
-    setQueue((prev) => [...prev, ...songsPayload]);
-
-    toast(
-      `Added ${songs.length} song${songs.length === 1 ? "" : "s"} to queue`,
+  const mod = share.mod ?? mobile.mod ?? desktop.mod;
+  if (mod) {
+    return (
+      <mod.MoreButtonPopup {...props} names={names} openOnMount={opened} />
     );
   }
 
-  function togglePlaylistDialog() {
-    if (user) {
-      setDialogOpen(true);
-    } else {
-      router.push("/login");
-
-      toast.info("Unable to perform action", {
-        description: "You need to be logged in to add to playlist",
-      });
-    }
+  function open(which: Exclude<Opened, null>, deferred: typeof share) {
+    deferred.preload();
+    setOpened(which);
   }
-
-  function addToPlaylist(playlistId: string, playlistName: string) {
-    // The dialog closes and the playlist's count rises now; a failure rolls both back.
-    const songIds = songs.map((song) => song.id);
-    setDialogOpen(false);
-    toast.promise(
-      addSongsOptimistic(playlistId, songIds, () =>
-        unwrap(addSongsToPlaylist(playlistId, songIds)),
-      ),
-      {
-        loading: "Adding songs to playlist...",
-        success: `${songs.length} song${songs.length === 1 ? "" : "s"} added to "${playlistName}" playlist`,
-        error: userMessage,
-      },
-    );
-  }
-
-  async function playRadio() {
-    await startSeedRadio(
-      {
-        type,
-        name,
-        artistId: initialArtistId,
-        songs,
-        language,
-      },
-      {
-        client: trpc,
-        setQueue,
-        setCurrentIndex,
-        setIsPlayerInit,
-        setActiveRadio,
-      },
-    );
-  }
-
-  const menuItems: MenuItem[] = [
-    {
-      label: "Add to Queue",
-      onClick: addToQueue,
-      hide: type === "show" || type === "artist",
-      icon: ListOrdered,
-    },
-    {
-      label: "Add To Playlist",
-      onClick: togglePlaylistDialog,
-      hide: type === "show" || type === "artist" || type === "episode",
-      icon: ListMusic,
-    },
-    {
-      label: "Play Radio",
-      onClick: playRadio,
-      hide: type === "show" || type === "mix",
-      icon: Radio,
-    },
-    {
-      label: "Download",
-      onClick: download,
-      hide: songs.length === 0 || isDownloading,
-      phoneOnly: true,
-      icon: CloudDownload,
-    },
-  ];
 
   return (
-    <div>
+    <>
+      <button
+        type="button"
+        aria-label="Share"
+        aria-haspopup="menu"
+        aria-expanded={false}
+        data-slot="dropdown-menu-trigger"
+        data-deferred={names.share}
+        className={headerIconClassName}
+        {...share.intent}
+        onKeyDown={(event) => {
+          if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+            event.preventDefault();
+            open("share", share);
+          }
+        }}
+        onClick={() => open("share", share)}
+      >
+        <Share2 aria-hidden="true" className="size-5" />
+      </button>
+
       <div className="md:hidden">
-        <Drawer onOpenChange={(open) => !open && setIsSharing(false)}>
-          <DrawerTrigger
-            render={
-              <Button
-                aria-label="More options"
-                size="icon"
-                variant="ghost"
-                className={controlStyles.headerIcon}
-              >
-                <MoreVertical className="size-5" />
-              </Button>
-            }
-          />
-
-          <DrawerContent className="rounded-t-3xl">
-            <DrawerHeader className="pb-0">
-              <div className="flex gap-2 truncate">
-                <div className="relative aspect-square h-14 rounded-md">
-                  <ImageWithFallback
-                    src={getImageSrc(image, "low")}
-                    alt={name}
-                    fill
-                    sizes="56px"
-                    fallback={getPlaceholderSrc(type)}
-                    className="z-10 rounded-md"
-                  />
-
-                  <Skeleton className="absolute inset-0 size-full" />
-                </div>
-
-                <div className="flex flex-col justify-center truncate text-start">
-                  <DrawerTitle className="truncate">{name}</DrawerTitle>
-                  <DrawerDescription className="truncate">
-                    {subtitle}
-                  </DrawerDescription>
-                </div>
-              </div>
-            </DrawerHeader>
-
-            <Separator className="my-2" />
-
-            <div
-              className="relative flex min-h-[300px] flex-col gap-4 px-4 transition-transform duration-300"
-              style={{ transform: `translateX(${isSharing ? -110 : 0}%)` }}
-            >
-              <div
-                inert={isSharing}
-                aria-hidden={isSharing}
-                className="flex flex-col gap-4"
-              >
-                {menuItems
-                  .filter(({ hide }) => !hide)
-                  .map(({ icon: Icon, label, onClick }) => (
-                    <button
-                      key={label}
-                      onClick={onClick}
-                      className="flex h-(--ctl-lg) items-center font-medium"
-                    >
-                      <Icon className="mr-2 size-5" />
-                      {label}
-                    </button>
-                  ))}
-
-                <button
-                  onClick={() => setIsSharing(true)}
-                  className="flex h-(--ctl-lg) items-center font-medium"
-                >
-                  <Share2 className="mr-2 size-5" />
-                  Share
-                  <ChevronRight className="ml-auto size-5" />
-                </button>
-              </div>
-
-              <div
-                inert={!isSharing}
-                aria-hidden={!isSharing}
-                className="absolute left-[110%] min-w-full space-y-2 bg-background"
-              >
-                <button
-                  onClick={() => setIsSharing(false)}
-                  className="flex h-(--ctl-lg) items-center px-4 font-medium"
-                >
-                  <ChevronLeft className="mr-2 size-5" />
-                  Back
-                </button>
-
-                <Separator />
-
-                <ShareOptions
-                  className="flex flex-col gap-4 p-4"
-                  title={name}
-                />
-              </div>
-            </div>
-
-            <Separator className="my-4" />
-
-            <DrawerFooter className="pt-0 sm:justify-center">
-              <DrawerClose
-                render={
-                  <Button
-                    variant="outline"
-                    className={cn(controlStyles.text, "w-full")}
-                  >
-                    Cancel
-                  </Button>
-                }
-              />
-            </DrawerFooter>
-          </DrawerContent>
-        </Drawer>
+        <button
+          type="button"
+          aria-label="More options"
+          aria-haspopup="dialog"
+          aria-expanded={false}
+          data-slot="drawer-trigger"
+          data-deferred={names.mobile}
+          className={headerIconClassName}
+          {...mobile.intent}
+          onClick={() => open("mobile", mobile)}
+        >
+          <MoreVertical aria-hidden="true" className="size-5" />
+        </button>
       </div>
+
       <div className="hidden md:block">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={
-              <Button
-                aria-label="More options"
-                size="icon"
-                variant="ghost"
-                className={controlStyles.headerIcon}
-              >
-                <MoreVertical className="size-5" />
-              </Button>
+        <button
+          type="button"
+          aria-label="More options"
+          aria-haspopup="menu"
+          aria-expanded={false}
+          data-slot="dropdown-menu-trigger"
+          data-deferred={names.desktop}
+          className={headerIconClassName}
+          {...desktop.intent}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+              event.preventDefault();
+              open("desktop", desktop);
             }
-          />
-
-          <DropdownMenuContent align="start">
-            <DropdownMenuGroup>
-              {menuItems
-                .filter(({ hide, phoneOnly }) => !hide && !phoneOnly)
-                .map(({ icon: Icon, label, onClick }) => (
-                  <DropdownMenuItem
-                    key={label}
-                    onClick={onClick}
-                    className="cursor-pointer"
-                  >
-                    <Icon className="mr-2 size-5" />
-                    {label}
-                  </DropdownMenuItem>
-                ))}
-
-              <ShareSubMenu title={name} />
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+          }}
+          onClick={() => open("desktop", desktop)}
+        >
+          <MoreVertical aria-hidden="true" className="size-5" />
+        </button>
       </div>
-
-      {!!user && (
-        <AddToPlaylistDialog
-          isDialogOpen={isDialogOpen}
-          setDialogOpen={setDialogOpen}
-          playlists={playlists}
-          addToPlaylist={addToPlaylist}
-        />
-      )}
-    </div>
+    </>
   );
 }

@@ -32,6 +32,8 @@ const config: ExpoConfig = {
   },
   android: {
     package: "com.infinitunes.app",
+    // Back previews the screen it returns to (`enableOnBackInvokedCallback`).
+    predictiveBackGestureEnabled: true,
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-foreground.png",
       backgroundImage: "./assets/adaptive-background.png",

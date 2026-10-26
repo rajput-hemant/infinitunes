@@ -58,11 +58,6 @@ async function CategoryTiles() {
       image: artists.top_artists[0]?.image,
     },
     { label: "Radio", href: asRoute("/radio"), image: stations[0]?.image },
-    {
-      label: "New Releases",
-      href: asRoute("/album"),
-      image: home.new_albums[0]?.image,
-    },
     ...(mix
       ? [
           {

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { FadeInDown, FadeOut } from "react-native-reanimated";
 import { FullWindowOverlay } from "react-native-screens";
 
@@ -15,10 +16,21 @@ import { usePalette } from "~/theme/use-palette";
 /**
  * The banner's own window above the app's, so it also shows over Now Playing
  * and the sheets (native modals cover anything the root layout draws). It
- * passes touches outside the banner through.
+ * passes touches outside the banner through. The overlay is a separate native
+ * window the app's gesture root does not reach, so it needs its own for the
+ * swipe to dismiss.
  */
 export function SnackbarLayer({ children }: { children: ReactNode }) {
-  return <FullWindowOverlay>{children}</FullWindowOverlay>;
+  return (
+    <FullWindowOverlay>
+      <GestureHandlerRootView
+        pointerEvents="box-none"
+        style={StyleSheet.absoluteFill}
+      >
+        {children}
+      </GestureHandlerRootView>
+    </FullWindowOverlay>
+  );
 }
 
 /** Rises a little on a soft spring, fades out. */

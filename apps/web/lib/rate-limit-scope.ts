@@ -2,12 +2,13 @@ export type LimiterKind = "global" | "auth" | "og";
 
 /**
  * Matcher for `proxy.ts`. Pages, `/api/trpc`, `/api/auth` and `/api/og` run
- * through it; static assets (`_next/`, the favicon, files in `public/` by
- * extension) and every other API route do not.
+ * through it; static assets (`_next/`, the favicon, `/images/`, `/fonts/` and
+ * top-level files in `public/` by extension; a nested page path that merely ends
+ * in an extension, such as `/search/all/50%.json`, still runs) and every other API route do not.
  */
 export const PROXY_MATCHER = [
   "/api/trpc/:path*",
-  "/((?!api/(?!trpc|auth|og)|_next/|favicon\\.ico|.*\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|css|js|map|txt|xml|json|webmanifest|mp3|mp4)$).*)",
+  "/((?!api/(?!trpc|auth|og)|_next/|favicon\\.ico|(?:images|fonts)/|[^/]+\\.(?:png|jpe?g|gif|svg|webp|avif|ico|woff2?|ttf|otf|css|js|map|txt|xml|json|webmanifest|mp3|mp4)$).*)",
 ];
 
 /**

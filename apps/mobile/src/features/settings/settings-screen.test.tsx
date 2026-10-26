@@ -3,6 +3,7 @@ import { router } from "expo-router";
 import { openBrowserAsync } from "expo-web-browser";
 import { Alert, Appearance } from "react-native";
 
+import { failureStore } from "~/lib/failure";
 import { preferencesStore } from "~/lib/preferences";
 import { queryClient } from "~/lib/query-client";
 import { songCacheStore } from "~/lib/song-cache";
@@ -25,6 +26,7 @@ const initialPreferences = preferencesStore.getState();
 afterAll(() => queryClient.clear());
 
 beforeEach(() => {
+  failureStore.setState({ current: null });
   preferencesStore.setState(initialPreferences, true);
   appearanceStore.setState({ mode: "system" });
   jest.spyOn(Appearance, "setColorScheme").mockImplementation(() => {});
@@ -110,6 +112,9 @@ describe("SettingsScreen signed in", () => {
     await fireEvent.press(screen.getByRole("button", { name: "Sign out" }));
 
     expect(queryClient.getQueryData(FAVORITES_KEY)).toEqual({ song: ["a"] });
+    expect(failureStore.getState().current?.message).toBe(
+      "Something went wrong. Please try again.",
+    );
   });
 });
 

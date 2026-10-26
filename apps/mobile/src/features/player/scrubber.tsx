@@ -1,14 +1,17 @@
 import { formatDuration } from "@infinitunes/types";
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { Platform, View } from "react-native";
+import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
 import {
+  playbackPosition,
   usePlaybackPosition,
   usePlaybackStatus,
 } from "~/playback/playback-status";
 import { seekTo } from "~/playback/transport";
 import { useTokenColor } from "~/theme/use-palette";
 
+import { useProgressValues } from "./progress-values";
 import { SeekSlider } from "./seek-slider";
 import { SLIDER_HOST } from "./seek-slider-props";
 import { useWashColors, WashText } from "./wash";
@@ -31,22 +34,104 @@ const TRACK = Platform.select({
 /** What a screen reader's swipe up or down seeks by, in seconds. */
 export const SEEK_STEP_SECONDS = 10;
 
+/** The playhead in whole seconds: what the clocks show, so they render at 1Hz. */
+function useWholeSecond() {
+  return useSyncExternalStore(playbackPosition.subscribe, () =>
+    Math.floor(playbackPosition.get()),
+  );
+}
+
+/** The native slider: the one part that follows every playhead tick. */
+function PositionSlider({
+  scrubbed,
+  duration,
+  onScrub,
+  onScrubEnd,
+}: {
+  scrubbed: number | null;
+  duration: number;
+  onScrub: (value: number) => void;
+  onScrubEnd: () => void;
+}) {
+  const position = usePlaybackPosition();
+  const wash = useWashColors();
+  return (
+    <SeekSlider
+      value={Math.min(scrubbed ?? position, duration)}
+      max={Math.max(duration, 1)}
+      onScrub={onScrub}
+      onScrubEnd={onScrubEnd}
+      colors={wash ? { active: wash.accent, inactive: wash.track } : undefined}
+    />
+  );
+}
+
+/**
+ * The loaded range as a lighter part of the native track, from the thumb's far
+ * edge on. Placed on the UI thread from shared values, so neither a tick nor
+ * a buffer update re-renders React.
+ */
+function BufferedRange({ scrubbed }: { scrubbed: number | null }) {
+  const muted = useTokenColor("muted-foreground");
+  const wash = useWashColors();
+  const { played, buffered } = useProgressValues(scrubbed);
+  const place = useAnimatedStyle(() => ({
+    left: `${played.get() * 100}%`,
+    width: `${Math.max(buffered.get() - played.get(), 0) * 100}%`,
+  }));
+  const shape = useAnimatedStyle(() => {
+    const full = buffered.get() >= 1;
+    return {
+      // Fully loaded reaches the track's own end, past the thumb's travel.
+      marginRight: full ? -TRACK.thumb / 2 : 0,
+      borderTopRightRadius: full ? TRACK.height / 2 : TRACK.radius,
+      borderBottomRightRadius: full ? TRACK.height / 2 : TRACK.radius,
+    };
+  });
+
+  return (
+    <View
+      pointerEvents="none"
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
+      style={{
+        position: "absolute",
+        // Span the thumb centre's travel, so percentages land where the thumb does.
+        left: TRACK.inset + TRACK.thumb / 2,
+        right: TRACK.inset + TRACK.thumb / 2,
+        top: (SLIDER_HOST.height - TRACK.height) / 2,
+      }}
+    >
+      <Animated.View testID="scrubber-buffered" style={place}>
+        <Animated.View
+          style={[
+            {
+              marginLeft: TRACK.thumb / 2 + TRACK.gap,
+              height: TRACK.height,
+              borderRadius: TRACK.radius,
+              backgroundColor: wash?.muted ?? muted,
+              opacity: 0.45,
+            },
+            shape,
+          ]}
+        />
+      </Animated.View>
+    </View>
+  );
+}
+
 /**
  * The full player's seek bar with elapsed and remaining time. While the
  * listener drags it shows the dragged position, and seeks once on release.
+ * Only the slider follows every tick (the buffered range is placed on the UI
+ * thread); the clocks and the spoken value change once a second.
  */
 export function Scrubber() {
-  const position = usePlaybackPosition();
+  const second = useWholeSecond();
   const duration = usePlaybackStatus((state) => state.duration);
-  const bufferedTime = usePlaybackStatus((state) => state.bufferedTime);
-  const muted = useTokenColor("muted-foreground");
-  const wash = useWashColors();
   const [scrubbed, setScrubbed] = useState<number | null>(null);
   const scrubbedRef = useRef<number | null>(null);
-  const shown = scrubbed ?? position;
-  const played = duration > 0 ? Math.min(Math.max(shown / duration, 0), 1) : 0;
-  const buffered =
-    duration > 0 ? Math.min(Math.max(bufferedTime / duration, 0), 1) : 0;
+  const shown = Math.floor(scrubbed ?? second);
 
   function scrub(value: number) {
     scrubbedRef.current = value;
@@ -61,7 +146,7 @@ export function Scrubber() {
 
   /** Screen readers cannot drag the native slider: they step the position instead. */
   function step(direction: 1 | -1) {
-    const next = position + direction * SEEK_STEP_SECONDS;
+    const next = playbackPosition.get() + direction * SEEK_STEP_SECONDS;
     seekTo(Math.min(Math.max(next, 0), Math.max(duration, 0)));
   }
 
@@ -84,52 +169,13 @@ export function Scrubber() {
       }}
     >
       <View>
-        <SeekSlider
-          value={Math.min(shown, duration)}
-          max={Math.max(duration, 1)}
+        <PositionSlider
+          scrubbed={scrubbed}
+          duration={duration}
           onScrub={scrub}
           onScrubEnd={release}
-          colors={
-            wash ? { active: wash.accent, inactive: wash.track } : undefined
-          }
         />
-        {/* The loaded range as a lighter part of the native track, from the thumb's far edge on. */}
-        <View
-          pointerEvents="none"
-          accessibilityElementsHidden
-          importantForAccessibility="no-hide-descendants"
-          style={{
-            position: "absolute",
-            // Span the thumb centre's travel, so percentages land where the thumb does.
-            left: TRACK.inset + TRACK.thumb / 2,
-            right: TRACK.inset + TRACK.thumb / 2,
-            top: (SLIDER_HOST.height - TRACK.height) / 2,
-          }}
-        >
-          <View
-            testID="scrubber-buffered"
-            style={{
-              left: `${played * 100}%`,
-              width: `${Math.max(buffered - played, 0) * 100}%`,
-            }}
-          >
-            <View
-              style={{
-                marginLeft: TRACK.thumb / 2 + TRACK.gap,
-                // Fully loaded reaches the track's own end, past the thumb's travel.
-                marginRight: buffered >= 1 ? -TRACK.thumb / 2 : 0,
-                height: TRACK.height,
-                borderRadius: TRACK.radius,
-                borderTopRightRadius:
-                  buffered >= 1 ? TRACK.height / 2 : TRACK.radius,
-                borderBottomRightRadius:
-                  buffered >= 1 ? TRACK.height / 2 : TRACK.radius,
-                backgroundColor: wash?.muted ?? muted,
-                opacity: 0.45,
-              }}
-            />
-          </View>
-        </View>
+        <BufferedRange scrubbed={scrubbed} />
       </View>
       <View className="mt-1 flex-row justify-between">
         <WashText variant="caption" tone="muted" numeric>

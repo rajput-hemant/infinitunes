@@ -1,6 +1,7 @@
 import { toCardItem, uniqueBy } from "@infinitunes/types";
 import type { TopSearch } from "@infinitunes/types";
 import { useQuery } from "@tanstack/react-query";
+import { useIsFocused } from "expo-router";
 import { View } from "react-native";
 
 import { ListRow } from "~/components/list-row";
@@ -57,8 +58,11 @@ function RecentSearches({ onSelectRecent }: IdleSearchProps) {
 
 function TopSearches() {
   const openEntity = useOpenEntity();
+  // The iOS search tab mounts at cold start: fetch when it is first shown.
+  const focused = useIsFocused();
   const { data, isPending } = useQuery({
     ...trpc.search.top.queryOptions(),
+    enabled: focused,
     select: selectTopSearches,
   });
 

@@ -27,7 +27,7 @@ const sectionLabel =
 export function Queue({ open, onOpenChange }: QueueProps) {
   const docked = useIsWide();
   const [queue, setQueue] = useQueue();
-  const [currentIndex, setCurrentIndex] = useCurrentSongIndex();
+  const [currentIndex] = useCurrentSongIndex();
   const current = queue[currentIndex];
   const upNext = queue.length - currentIndex - 1;
 
@@ -47,9 +47,22 @@ export function Queue({ open, onOpenChange }: QueueProps) {
     }
   });
 
+  // Closing makes the pane inert: focus inside it would fall to `body`. Hand
+  // it to the toggle that controls the pane before the browser drops it.
+  React.useLayoutEffect(() => {
+    if (open) return;
+    const pane = paneRef.current;
+    if (!pane?.contains(document.activeElement)) return;
+    const toggle = [
+      ...document.querySelectorAll<HTMLElement>(
+        '[aria-controls="player-queue"]',
+      ),
+    ].find((el) => el.checkVisibility?.() !== false);
+    toggle?.focus();
+  }, [open]);
+
   function clearUpNext() {
     setQueue(queue.slice(0, currentIndex + 1));
-    setCurrentIndex(currentIndex);
   }
 
   return (

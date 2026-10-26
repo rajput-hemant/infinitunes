@@ -14,22 +14,24 @@ import { trpc } from "~/lib/trpc/vanilla";
 type TopAlbumsProps = {
   initialAlbums: TopAlbum;
   lang?: Lang;
+  /** The 1-based page `initial*` holds (`?page=N`); the next request is N + 1. */
+  page?: number;
 };
 
-function TopAlbumsContent({ initialAlbums, lang }: TopAlbumsProps) {
+function TopAlbumsContent({ initialAlbums, lang, page = 1 }: TopAlbumsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["top-albums", lang],
+      queryKey: ["top-albums", lang, page],
       queryFn: ({ pageParam }) =>
         trpc.get.topAlbums.query({ page: pageParam, n: 50, lang }),
-      initialPageParam: 1,
-      getNextPageParam: (lastPage, allPages) =>
-        lastPage.last_page ? null : allPages.length + 1,
-      initialData: { pages: [initialAlbums], pageParams: [1] },
+      initialPageParam: page,
+      getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+        lastPage.last_page ? null : lastPageParam + 1,
+      initialData: { pages: [initialAlbums], pageParams: [page] },
     });
 
   const topAlbums = uniqueBy(
-    data.pages.flatMap((page) => page.data),
+    data.pages.flatMap((group) => group.data),
     (album) => album.id,
   );
 

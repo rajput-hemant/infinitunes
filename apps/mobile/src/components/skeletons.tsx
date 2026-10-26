@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { Platform, View } from "react-native";
 import type { DimensionValue } from "react-native";
+import { FadeIn, FadeOut, ReduceMotion } from "react-native-reanimated";
 
 import { cx } from "~/lib/class-names";
-import { iconSize, textStyles } from "~/theme/tokens";
+import { iconSize, space, textStyles } from "~/theme/tokens";
 import type { ArtSize, TextVariant } from "~/theme/tokens";
 import { useRadii } from "~/theme/use-radii";
 import { useUserId } from "~/user-data/session";
@@ -28,6 +29,19 @@ function useFrame() {
   return (size: Exclude<ArtSize, "player">, round = false) =>
     artworkFrame(size, 0, round, scale);
 }
+
+/**
+ * How loaded content replaces its skeleton: a fade in, with the skeleton
+ * fading out (`CONTENT_CONCEAL`) where it can. Opacity alone carries no movement, so it runs under reduce motion.
+ */
+export const CONTENT_REVEAL = FadeIn.duration(200).reduceMotion(
+  ReduceMotion.Never,
+);
+
+/** The skeleton's matching exit: it fades out while the content fades in (a crossfade). */
+export const CONTENT_CONCEAL = FadeOut.duration(200).reduceMotion(
+  ReduceMotion.Never,
+);
 
 type SkeletonTextProps = {
   variant: TextVariant;
@@ -54,25 +68,37 @@ export function SkeletonText({ variant, width }: SkeletonTextProps) {
   );
 }
 
+/**
+ * The row's own trailing cells (`SongRow`): the length of a numbered row, the
+ * heart (signed-in listeners only) and the menu's 48pt target.
+ */
 function SongRowSkeleton({ numbered }: { numbered: boolean }) {
   const frame = useFrame();
+  const signedIn = useUserId() !== undefined;
   return (
-    <View className="min-h-row flex-row items-center gap-3 py-1 pl-page pr-4">
-      {numbered ? (
-        // The track number's 48pt column, then the length at the row's end.
-        <View className="w-touch items-center">
-          <SkeletonText variant="body" width={iconSize.sm} />
+    <View
+      className="min-h-row flex-row items-center"
+      style={{ paddingEnd: space.xs }}
+    >
+      <View className="min-h-row flex-1 flex-row items-center gap-3 py-1 pl-page">
+        {numbered ? (
+          // The track number's 48pt column, then the length at the row's end.
+          <View className="w-touch items-center">
+            <SkeletonText variant="body" width={iconSize.sm} />
+          </View>
+        ) : (
+          <SkeletonBlock style={frame("row")} />
+        )}
+        <View className="flex-1">
+          <SkeletonText variant="body" width="60%" />
+          <SkeletonText variant="footnote" width="40%" />
         </View>
-      ) : (
-        <SkeletonBlock style={frame("row")} />
-      )}
-      <View className="flex-1">
-        <SkeletonText variant="body" width="60%" />
-        <SkeletonText variant="footnote" width="40%" />
       </View>
       {numbered ? (
         <SkeletonText variant="footnote" width={iconSize.xl} />
       ) : null}
+      {signedIn ? <HeartCellSkeleton testID="row-skeleton-like" /> : null}
+      <MenuGlyphSkeleton testID="row-skeleton-menu" />
     </View>
   );
 }
@@ -226,14 +252,27 @@ export function LyricsSkeleton() {
   );
 }
 
+/** `LikeButton`'s heart in its 48pt target. */
+function HeartCellSkeleton({ testID }: { testID: string }) {
+  return (
+    <View testID={testID} className="size-touch items-center justify-center">
+      <SkeletonBlock className="size-6 rounded-full" />
+    </View>
+  );
+}
+
 /**
  * The header's menu trigger (`MenuTrigger`): its three dots in their 48pt
  * target, upright on Android (`more_vert`), across on iOS (`ellipsis`).
  */
-function MenuGlyphSkeleton() {
+function MenuGlyphSkeleton({
+  testID = "header-skeleton-menu",
+}: {
+  testID?: string;
+}) {
   return (
     <View
-      testID="header-skeleton-menu"
+      testID={testID}
       className={cx(
         "size-touch items-center justify-center gap-1",
         Platform.OS === "android" ? "flex-col" : "flex-row",
@@ -288,12 +327,7 @@ export function EntityHeaderSkeleton({
             tonal and 56dp filled containers, iOS's two 48pt buttons. */}
         <View className="mt-4 w-full flex-row items-center gap-2">
           {like && signedIn ? (
-            <View
-              testID="header-skeleton-like"
-              className="size-touch items-center justify-center"
-            >
-              <SkeletonBlock className="size-6 rounded-full" />
-            </View>
+            <HeartCellSkeleton testID="header-skeleton-like" />
           ) : null}
           {menu ? <MenuGlyphSkeleton /> : null}
           <View className="flex-1" />
