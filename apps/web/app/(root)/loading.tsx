@@ -1,7 +1,7 @@
 import {
   CatalogGridSkeleton,
   CatalogHeaderSkeleton,
-} from "./browse/_components/catalog-skeleton";
+} from "~/components/catalog/catalog-skeleton";
 
 /**
  * The boundary above every page under the layout. A page's own `loading.tsx`

@@ -13,7 +13,7 @@ import { Button } from "@infinitunes/ui/components/button";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { ComponentProps } from "react";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { CatalogGrid } from "~/components/catalog/catalog-grid";
 import { QueryScope } from "~/components/query-scope";
 import { SliderCard } from "~/components/slider/slider-card";
 import { SongListClient } from "~/components/song-list/song-list.client";

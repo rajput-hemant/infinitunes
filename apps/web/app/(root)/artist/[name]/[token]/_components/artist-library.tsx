@@ -7,7 +7,7 @@ import {
 import type { Album, Category, Song } from "@infinitunes/types";
 import { toSongRow } from "@infinitunes/types";
 
-import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
+import { CatalogGridSkeleton } from "~/components/catalog/catalog-skeleton";
 import { KeyedByParams } from "~/components/search-params-boundary";
 import { SongListSkeleton } from "~/components/song-list/song-list-skeleton";
 import { api } from "~/lib/trpc/server";

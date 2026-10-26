@@ -2,7 +2,7 @@ import { Button } from "@infinitunes/ui/components/button";
 import { ListMusic, Plus } from "lucide-react";
 import React from "react";
 
-import { CatalogGrid } from "~/app/(root)/browse/_components/catalog-grid";
+import { CatalogGrid } from "~/components/catalog/catalog-grid";
 import {
   LibraryEmpty,
   LibraryHeading,

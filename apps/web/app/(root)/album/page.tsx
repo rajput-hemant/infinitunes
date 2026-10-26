@@ -1,7 +1,7 @@
 import type { Lang } from "@infinitunes/types";
 
-import { CatalogHeader } from "~/app/(root)/browse/_components/catalog-header";
-import { CatalogGridSkeleton } from "~/app/(root)/browse/_components/catalog-skeleton";
+import { CatalogHeader } from "~/components/catalog/catalog-header";
+import { CatalogGridSkeleton } from "~/components/catalog/catalog-skeleton";
 import { LanguageBar } from "~/components/language-bar";
 import { KeyedByParams } from "~/components/search-params-boundary";
 import { siteConfig } from "~/config/site";
