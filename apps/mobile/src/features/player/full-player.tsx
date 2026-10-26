@@ -665,31 +665,32 @@ export function FullPlayer() {
               />
             </View>
           ) : null}
-          <GestureDetector gesture={bottomPan}>
-            <View
-              className="px-6 pt-4"
-              style={{ paddingBottom: insets.bottom }}
-            >
-              <Scrubber />
-              <View className="mt-6">
-                <TransportControls modes={view !== "queue"} />
+          <View className="px-6 pt-4" style={{ paddingBottom: insets.bottom }}>
+            {/* Outside the drag to close: a thumb grab that rolls down would
+                otherwise close the player and cancel the native slider. */}
+            <Scrubber />
+            <GestureDetector gesture={bottomPan}>
+              <View>
+                <View className="mt-6">
+                  <TransportControls modes={view !== "queue"} />
+                </View>
+                <View className="mt-2 flex-row items-center justify-between">
+                  <ModeToggle
+                    icon={{ ios: "quote.bubble", android: "lyrics" }}
+                    label="Lyrics"
+                    on={view === "lyrics"}
+                    onPress={() => toggle("lyrics")}
+                  />
+                  <ModeToggle
+                    icon={{ ios: "list.bullet", android: "queue_music" }}
+                    label="Up next"
+                    on={view === "queue"}
+                    onPress={() => toggle("queue")}
+                  />
+                </View>
               </View>
-              <View className="mt-2 flex-row items-center justify-between">
-                <ModeToggle
-                  icon={{ ios: "quote.bubble", android: "lyrics" }}
-                  label="Lyrics"
-                  on={view === "lyrics"}
-                  onPress={() => toggle("lyrics")}
-                />
-                <ModeToggle
-                  icon={{ ios: "list.bullet", android: "queue_music" }}
-                  label="Up next"
-                  on={view === "queue"}
-                  onPress={() => toggle("queue")}
-                />
-              </View>
-            </View>
-          </GestureDetector>
+            </GestureDetector>
+          </View>
         </OnWash>
       </View>
     </Animated.View>
