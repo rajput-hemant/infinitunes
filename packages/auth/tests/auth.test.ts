@@ -249,10 +249,10 @@ describe("Better Auth configuration", () => {
   it("accepts the Android app's passkey origin next to the web's", () => {
     const passkeyOrigin = (auth: ReturnType<typeof createAuth>) =>
       (
-        auth.options.plugins?.find((plugin) => plugin.id === "passkey") as {
-          options?: { origin?: unknown };
-        }
-      ).options?.origin;
+        auth.options.plugins?.find((plugin) => plugin.id === "passkey") as
+          | { options?: { origin?: unknown } }
+          | undefined
+      )?.options?.origin;
     expect(passkeyOrigin(createAuth(makeFakeDb()))).toEqual([
       "http://localhost:3000",
     ]);
