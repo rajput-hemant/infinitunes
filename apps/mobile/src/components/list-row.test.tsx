@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Platform, StyleSheet } from "react-native";
 
 import { renderScreen } from "~/test/render";
+import { titleLineTexts } from "~/test/title-row";
 import { procedure } from "~/test/trpc-mock";
 import { space } from "~/theme/tokens";
 
@@ -214,7 +215,7 @@ describe("ListRow", () => {
     expect(screen.getByRole("button", { name: "Song" })).toBeSelected();
   });
 
-  it("names the explicit mark and leads the subtitle with it", async () => {
+  it("puts the explicit mark on the title line, before the title", async () => {
     await renderScreen(
       <ListRow title="Song" subtitle="Artist" explicit onPress={jest.fn()} />,
     );
@@ -222,9 +223,7 @@ describe("ListRow", () => {
     expect(
       screen.getByRole("button", { name: "Song, Explicit, Artist" }),
     ).toBeOnTheScreen();
-    expect(
-      screen.getByText("E", { includeHiddenElements: true }),
-    ).toBeOnTheScreen();
+    expect(titleLineTexts(screen.getByText("Song"))).toEqual(["E", "Song"]);
   });
 
   it("keeps the 64pt minimum and grows with Dynamic Type", async () => {

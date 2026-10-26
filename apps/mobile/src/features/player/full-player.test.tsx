@@ -4,6 +4,7 @@ import { act, fireEvent, screen } from "@testing-library/react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
+import { titleLineTexts } from "~/test/title-row";
 import { procedure } from "~/test/trpc-mock";
 
 import { FullPlayer } from "./full-player";
@@ -105,10 +106,12 @@ describe("FullPlayer", () => {
         "FA9LA & Friends, Explicit, Flipperachi - FA9LA",
       ),
     ).toBeOnTheScreen();
-    // Hidden from screen readers: the row's label already says it.
-    expect(
-      screen.getByText("E", { includeHiddenElements: true }),
-    ).toBeOnTheScreen();
+    // On the title line, before the title; hidden from screen readers, as
+    // the track's label already says it.
+    expect(titleLineTexts(screen.getByText("FA9LA & Friends"))).toEqual([
+      "E",
+      "FA9LA & Friends",
+    ]);
     expect(screen.queryByLabelText("Explicit")).toBeNull();
   });
 

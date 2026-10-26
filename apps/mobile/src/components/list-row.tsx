@@ -214,34 +214,28 @@ export function ListRow({
         <Leading leading={leading} nowPlaying={nowPlaying} dimmed={dimmed} />
       ) : null}
       <View className="flex-1">
-        <Text
-          numberOfLines={1}
-          tone={
-            selected
-              ? tonalNowPlaying()
-                ? "onSecondary"
-                : "primary"
-              : "default"
-          }
-          emphasized={selected}
-        >
-          {title}
-        </Text>
-        {subtitle || explicit ? (
-          <View className="flex-row items-center gap-1">
-            {/* The row's label already says "Explicit". */}
-            {explicit ? <ExplicitBadge accessible={false} /> : null}
-            {subtitle ? (
-              <Text
-                variant="footnote"
-                tone="muted"
-                numberOfLines={1}
-                className="shrink"
-              >
-                {subtitle}
-              </Text>
-            ) : null}
-          </View>
+        <View className="flex-row items-center gap-1">
+          {/* The row's label already says "Explicit". */}
+          {explicit ? <ExplicitBadge accessible={false} /> : null}
+          <Text
+            numberOfLines={1}
+            className="shrink"
+            tone={
+              selected
+                ? tonalNowPlaying()
+                  ? "onSecondary"
+                  : "primary"
+                : "default"
+            }
+            emphasized={selected}
+          >
+            {title}
+          </Text>
+        </View>
+        {subtitle ? (
+          <Text variant="footnote" tone="muted" numberOfLines={1}>
+            {subtitle}
+          </Text>
         ) : null}
       </View>
       {/* iOS marks only the chosen rows; Material 3 shows every row's checkbox. */}

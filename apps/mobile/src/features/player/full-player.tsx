@@ -385,19 +385,20 @@ function TrackTitle({
           className="flex-1"
           style={swipe.style}
         >
-          <WashText
-            variant={compact ? "headline" : TITLE_VARIANT}
-            emphasized
-            numberOfLines={1}
-          >
-            {track.name}
-          </WashText>
           <View className="flex-row items-center gap-1">
             {track.explicit ? <ExplicitMark /> : null}
-            <WashText tone="muted" numberOfLines={1} className="shrink">
-              {track.subtitle}
+            <WashText
+              variant={compact ? "headline" : TITLE_VARIANT}
+              emphasized
+              numberOfLines={1}
+              className="shrink"
+            >
+              {track.name}
             </WashText>
           </View>
+          <WashText tone="muted" numberOfLines={1}>
+            {track.subtitle}
+          </WashText>
         </Animated.View>
       </GestureDetector>
       {/* The compact header's heart and menu sit in its pill row. */}
