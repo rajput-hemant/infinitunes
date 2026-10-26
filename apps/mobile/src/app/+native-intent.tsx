@@ -25,6 +25,8 @@ export function redirectSystemPath({ path }: { path: string }): string {
   const pathname = pathnameOf(path).replace(/\/+$/, "") || "/";
   // Create is an action, not a screen: its link opens the New Playlist sheet.
   if (pathname === "/create") return `/create-playlist${suffixOf(path)}`;
+  // The queue is a view of the player, not a screen of its own.
+  if (pathname === "/queue") return "/player?view=queue";
   // The web's `/search/<type>?q=` too. The screen takes only `q` (its type
   // chips are local state), so the type segment is dropped.
   if (pathname === "/search" || /^\/search\/[^/]+$/.test(pathname))

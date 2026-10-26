@@ -210,8 +210,8 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   `/album`, `/artist`, `/playlist`, `/show`, `/chart`, `/browse` in `(home)` and `/radio` in `(radio)`. Link with
   `entityHref(type, perma_url)`, never a hand-built path (`entityRoute` reads only the type's own section,
   `SECTIONS`, at exact arity: anything else is `undefined`, an unpressable item); open from handlers with
-  `useOpenEntity()` (it closes the player/queue modals first). `/player` is `dangerouslySingular`. Sheets are
-  native `formSheet` routes (`/queue`, `/languages`, `/create-playlist`; Android draws no header there, so the
+  `useOpenEntity()` (it closes the player and sheets first). `/player` is `dangerouslySingular`. Sheets are
+  native `formSheet` routes (`/languages`, `/create-playlist`; Android draws no header there, so the
   route renders `SheetHeader`, and a sheet's empty state uses `EmptyState placement="top"`: content lays out at the
   largest detent) or `@expo/ui`'s `BottomSheet`. Scroll
   containers are `ScreenScrollView` (or a list with `contentInsetAdjustmentBehavior="automatic"` and
@@ -298,6 +298,12 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   Android's spinner (`primary` on `card`). `useInfiniteList` pages by number (`firstPage`, `enabled`, items flattened and deduped; an
   empty page always ends the list, whatever upstream's `last_page`/`total` say). Forms show a server refusal
   as `FormError` and move focus to it with `useFocusOnRefusal`.
+- Now Playing (`features/player/full-player.tsx`) is a `transparentModal` page, Apple Music's model: a grabber,
+  drag down outside a list to close (`useDismissPan`; not the native stack's vertical swipe, which also starts on
+  sideways drags), swipe the art, the title or the mini player sideways for next/previous (`useSwipeable`, with
+  `nextTrack`/`previousTrack` screen reader actions). Lyrics and Up next are views of it, not routes:
+  `?view=lyrics|queue` (`router.setParams`; the `/queue` link maps there in `+native-intent`). They fly the art into
+  a compact header; the queue view drops the wash (its rows are D1-coloured) and moves shuffle/repeat to pills.
 - Player sharp edges: Now Playing's art is expo-image with a `CROSSFADE_MS` cross-dissolve, not `Artwork`
   (its `recyclingKey` drops the old picture). expo-symbols has no replace transition and replays an
   `animationSpec` on every prop update, so set one only briefly (`useGlyphBounce`). react-native-screens gives

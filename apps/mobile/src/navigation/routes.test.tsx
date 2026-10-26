@@ -1,3 +1,5 @@
+import { toSongRow } from "@infinitunes/types";
+import { rawSong } from "@infinitunes/types/fixtures";
 import {
   act,
   fireEvent,
@@ -12,9 +14,12 @@ import { Platform, Pressable, Text } from "react-native";
 
 import { redirectSystemPath } from "~/app/+native-intent";
 import { authClient } from "~/lib/auth-client";
+import { playerStore } from "~/playback/player-store";
 import { signInAs } from "~/test/session-mock";
 
 import { useOpenEntity } from "./use-open-entity";
+
+const initialPlayer = playerStore.getState();
 
 const ARTIST_URL =
   "https://www.jiosaavn.com/artist/flipperachi-songs/LnMfdXjMGl0_";
@@ -275,6 +280,34 @@ describe("the player", () => {
     expect(routesNamed(app.getRouterState(), "player")).toBe(1);
     await act(async () => router.back());
     expect(app.getPathname()).toBe("/");
+  });
+
+  it("opens a /queue link as the player showing the queue", async () => {
+    playerStore
+      .getState()
+      .playTracks(["a", "b"].map((id) => toSongRow(rawSong({ id }))));
+    const app = await renderRouter("./src/app", {
+      initialUrl: redirectSystemPath({ path: "infinitunes://queue" }),
+    });
+
+    expect(app.getPathname()).toBe("/player");
+    expect(app.getSearchParams()).toEqual({ view: "queue" });
+    expect(await screen.findByRole("button", { name: "Up next" })).toHaveProp(
+      "accessibilityState",
+      { selected: true },
+    );
+    expect(screen.getByText("Up next · 1")).toBeOnTheScreen();
+    playerStore.setState(initialPlayer, true);
+  });
+
+  it("switches an open player to the queue instead of stacking another", async () => {
+    const app = await renderRouter("./src/app", { initialUrl: "/" });
+
+    await act(async () => router.push("/player"));
+    await act(async () => router.push("/player?view=queue"));
+
+    expect(routesNamed(app.getRouterState(), "player")).toBe(1);
+    expect(app.getSearchParams()).toEqual({ view: "queue" });
   });
 });
 

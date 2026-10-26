@@ -9,7 +9,6 @@ import { addToPlaylistEntry, NativeMenu } from "~/components/native-menu";
 import { SongRow } from "~/components/song-row";
 import { IconButton } from "~/components/ui/icon-button";
 import { Text } from "~/components/ui/text";
-import { useSheetBottomInset } from "~/navigation/sheet-inset";
 import { playerStore, usePlayer } from "~/playback/player-store";
 import {
   addSongsToPlaylist,
@@ -61,15 +60,15 @@ function SaveQueueMenu({ queue }: { queue: readonly Queue[] }) {
 }
 
 /**
- * The queue sheet, as the web's queue pane: what is playing, then Up next
- * (drag a handle to reorder, a row's menu to remove it, the clear button to empty it),
- * and a menu that saves the queue to a playlist.
+ * Now Playing's queue mode, as the web's queue pane: Up next under the
+ * player's compact header (drag a handle to reorder, a row's menu to remove
+ * it, the clear button to empty it), and a menu that saves the queue to a
+ * playlist. The player's scrubber and transport stay below it.
  */
 export function QueueList() {
   const queue = usePlayer((state) => state.queue);
   const currentIndex = usePlayer((state) => state.currentIndex);
   const { playAt, removeAt, clearUpNext, moveInQueue } = playerStore.getState();
-  const bottomInset = useSheetBottomInset();
 
   if (queue.length === 0) {
     return (
@@ -82,27 +81,13 @@ export function QueueList() {
     );
   }
 
-  const current = queue[currentIndex];
   const firstNext = currentIndex + 1;
   const upNext = queue.slice(firstNext);
 
   const header = (
-    <View className="gap-1 pt-2">
-      {current ? (
-        <>
-          <View className="flex-row items-center justify-between px-page">
-            <SectionLabel>Now playing</SectionLabel>
-            <SaveQueueMenu queue={queue} />
-          </View>
-          <SongRow
-            song={current}
-            queueItemId={current.queueItemId}
-            onPress={() => playAt(currentIndex)}
-          />
-        </>
-      ) : null}
-      <View className="min-h-touch flex-row items-center justify-between pl-page pr-1">
-        <SectionLabel>{`Up next · ${upNext.length}`}</SectionLabel>
+    <View className="min-h-touch flex-row items-center justify-between pl-page pr-1">
+      <SectionLabel>{`Up next · ${upNext.length}`}</SectionLabel>
+      <View className="flex-row items-center">
         {upNext.length > 0 ? (
           <IconButton
             icon={{ ios: "trash", android: "clear_all" }}
@@ -111,6 +96,7 @@ export function QueueList() {
             onPress={clearUpNext}
           />
         ) : null}
+        <SaveQueueMenu queue={queue} />
       </View>
     </View>
   );
@@ -158,8 +144,6 @@ export function QueueList() {
           Nothing else is queued.
         </Text>
       }
-      contentInsetAdjustmentBehavior="automatic"
-      contentContainerStyle={{ paddingBottom: bottomInset }}
     />
   );
 }
