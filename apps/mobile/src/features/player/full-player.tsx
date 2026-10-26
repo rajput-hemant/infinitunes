@@ -15,6 +15,8 @@ import type {
   ColorValue,
   LayoutChangeEvent,
   LayoutRectangle,
+  StyleProp,
+  ViewStyle,
 } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -478,17 +480,24 @@ function PillFace({
   icon,
   on = false,
   color,
+  style,
+  iconStyle,
+  className = "",
 }: {
   icon: SymbolName;
   on?: boolean;
   color?: ColorValue;
+  style?: StyleProp<ViewStyle>;
+  iconStyle?: StyleProp<ViewStyle>;
+  className?: string;
 }) {
   const wash = useWashColors();
   const token = useTokenColor(on ? "primary-foreground" : "foreground");
   const ink = wash ? (on ? wash.onControl : wash.foreground) : token;
   return (
     <View
-      className={`min-h-touch items-center justify-center overflow-hidden rounded-full ${wash ? "" : on ? "bg-primary" : "bg-muted"}`}
+      className={`min-h-touch items-center justify-center overflow-hidden rounded-full ${wash ? "" : on ? "bg-primary" : "bg-muted"}${className ? ` ${className}` : ""}`}
+      style={style}
     >
       {wash ? (
         <View
@@ -499,7 +508,9 @@ function PillFace({
           }}
         />
       ) : null}
-      <Icon name={icon} size="md" color={on ? ink : (color ?? ink)} />
+      <View style={iconStyle}>
+        <Icon name={icon} size="md" color={on ? ink : (color ?? ink)} />
+      </View>
     </View>
   );
 }
@@ -526,7 +537,13 @@ function Pill({
       accessibilityState={on === undefined ? undefined : { selected: on }}
       className="flex-1 active:opacity-70"
     >
-      <PillFace icon={icon} on={on} color={color} />
+      <PillFace
+        icon={icon}
+        on={on}
+        color={color}
+        className="w-full h-full"
+        style={styles.pillFace}
+      />
     </Pressable>
   );
 }
@@ -562,7 +579,7 @@ function LikePill({ track }: { track: Queue }) {
 }
 
 /**
- * The compact header's row (queue and lyrics): shuffle, repeat, the heart
+ * The compact header's row (queue and lyrics): the heart, shuffle, repeat,
  * and the song menu as four equal capsules, Apple Music's layout. Transport
  * leaves its own shuffle and repeat out here.
  */
@@ -572,6 +589,7 @@ function HeaderControls({ track }: { track: Queue }) {
   const { toggleShuffle, cycleRepeat } = playerStore.getState();
   return (
     <View className="flex-row gap-2 px-6 pb-2">
+      {track.type === "song" ? <LikePill track={track} /> : null}
       <Pill
         icon={shuffleIcon(shuffle)}
         label="Shuffle"
@@ -590,16 +608,24 @@ function HeaderControls({ track }: { track: Queue }) {
           cycleRepeat();
         }}
       />
-      {track.type === "song" ? <LikePill track={track} /> : null}
       <View className="flex-1">
-        <SongMenu song={track}>
+        <SongMenu song={track} style={styles.pillFace}>
           <View
             accessible
             accessibilityRole="button"
             accessibilityLabel={`More actions for ${track.name}`}
             accessibilityHint="Opens a menu"
+            className="flex-1 w-full h-full active:opacity-70"
+            style={styles.pillFace}
           >
-            <PillFace icon={{ ios: "ellipsis", android: "more_vert" }} />
+            <PillFace
+              icon={{ ios: "ellipsis", android: "more_vert" }}
+              iconStyle={Platform.select({
+                ios: { transform: [{ rotate: "90deg" }] },
+              })}
+              className="w-full h-full"
+              style={styles.pillFace}
+            />
           </View>
         </SongMenu>
       </View>
@@ -908,4 +934,5 @@ const styles = StyleSheet.create({
   page: { flex: 1, overflow: "hidden" },
   hero: { position: "absolute", left: 0, top: 0 },
   clip: { overflow: "hidden" },
+  pillFace: { flex: 1, width: "100%", height: "100%" },
 });

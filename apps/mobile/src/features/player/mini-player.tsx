@@ -46,46 +46,30 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
 
   return (
     <View className="flex-1 flex-row items-center pl-4 pr-1">
-      <GestureDetector gesture={swipe.gesture}>
-        <Pressable
-          onPress={openPlayer}
-          accessibilityRole="button"
-          accessibilityLabel={
-            track
-              ? `Now playing ${track.name}, ${track.subtitle}`
-              : "Not playing"
-          }
-          accessibilityHint="Opens the player"
-          {...(track ? songSwipeActions : null)}
-          className="flex-1"
-        >
-          <Animated.View
-            className="flex-1 flex-row items-center gap-3"
-            style={swipe.style}
+      {track ? (
+        <GestureDetector gesture={swipe.gesture}>
+          <Pressable
+            onPress={openPlayer}
+            accessibilityRole="button"
+            accessibilityLabel={`Now playing ${track.name}, ${track.subtitle}`}
+            accessibilityHint="Opens the player"
+            {...songSwipeActions}
+            className="flex-1"
           >
-            {track ? (
+            <Animated.View
+              className="flex-1 flex-row items-center gap-3"
+              style={swipe.style}
+            >
               <Artwork image={track.image} size="mini" />
-            ) : (
-              <View
-                className="items-center justify-center bg-muted"
-                style={PLACEHOLDER}
-              >
-                <Icon
-                  name={{ ios: "music.note", android: "music_note" }}
-                  size="sm"
-                />
-              </View>
-            )}
-            <View className="flex-1">
-              <WashText
-                variant="subhead"
-                emphasized
-                numberOfLines={1}
-                maxFontSizeMultiplier={maxFontScale.chrome}
-              >
-                {track?.name ?? "Not playing"}
-              </WashText>
-              {track ? (
+              <View className="flex-1">
+                <WashText
+                  variant="subhead"
+                  emphasized
+                  numberOfLines={1}
+                  maxFontSizeMultiplier={maxFontScale.chrome}
+                >
+                  {track.name}
+                </WashText>
                 <View className="flex-row items-center gap-1">
                   <RadioBadge />
                   <WashText
@@ -98,11 +82,37 @@ export function MiniPlayer({ compact = false }: { compact?: boolean }) {
                     {track.subtitle}
                   </WashText>
                 </View>
-              ) : null}
-            </View>
-          </Animated.View>
-        </Pressable>
-      </GestureDetector>
+              </View>
+            </Animated.View>
+          </Pressable>
+        </GestureDetector>
+      ) : (
+        <View
+          accessible
+          accessibilityLabel="Not playing"
+          className="flex-1 flex-row items-center gap-3"
+        >
+          <View
+            className="items-center justify-center bg-muted"
+            style={PLACEHOLDER}
+          >
+            <Icon
+              name={{ ios: "music.note", android: "music_note" }}
+              size="sm"
+            />
+          </View>
+          <View className="flex-1">
+            <WashText
+              variant="subhead"
+              emphasized
+              numberOfLines={1}
+              maxFontSizeMultiplier={maxFontScale.chrome}
+            >
+              Not playing
+            </WashText>
+          </View>
+        </View>
+      )}
       {track ? (
         <>
           <PlayPauseButton />
