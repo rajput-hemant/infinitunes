@@ -10,7 +10,7 @@ runs:
         bun-version-file: .bun-version
 
     - name: Cache Bun package store
-      uses: actions/cache@v4
+      uses: actions/cache@v6
       with:
         path: ~/.bun/install/cache
         key: bun-${{ runner.os }}-${{ hashFiles('bun.lock') }}
