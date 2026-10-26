@@ -49,9 +49,9 @@ describe("useScrolledBar", () => {
   });
 });
 
-describe("crossesBar", () => {
-  const run = (fn: (under: boolean) => void, under: boolean) => fn(under);
+const run = (fn: (under: boolean) => void, under: boolean) => fn(under);
 
+describe("crossesBar", () => {
   it("tints once the content goes under the bar and clears it at the top", () => {
     const set = jest.fn();
     const last = { value: false };
