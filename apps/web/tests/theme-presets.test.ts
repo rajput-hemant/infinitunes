@@ -31,7 +31,7 @@ const MOCKUP_PRESETS = {
 
 describe("spot colour presets", () => {
   it("are the mockup's twelve, with its hex values", () => {
-    expect(
+    expect<unknown>(
       Object.fromEntries(themes.map(({ name, hex }) => [name, hex])),
     ).toEqual(MOCKUP_PRESETS);
     expect(themes).toHaveLength(12);

@@ -30,6 +30,7 @@ const router: AppRouterInstance = {
   push() {},
   replace() {},
   prefetch() {},
+  bfcacheId: "0",
 };
 
 async function mount(ui: React.ReactNode) {

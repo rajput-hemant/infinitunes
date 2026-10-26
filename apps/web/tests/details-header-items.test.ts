@@ -75,7 +75,10 @@ describe("toolbar title position", () => {
   it("counts the heading as under the toolbar only once it is fully above the bar", () => {
     expect(
       isTitleUnderToolbar(
-        { isIntersecting: false, boundingClientRect: { top: -120 } },
+        {
+          isIntersecting: false,
+          boundingClientRect: { top: -120 } as DOMRectReadOnly,
+        },
         TOOLBAR,
       ),
     ).toBe(true);
@@ -84,7 +87,10 @@ describe("toolbar title position", () => {
   it("keeps the heading in place while any of it is visible", () => {
     expect(
       isTitleUnderToolbar(
-        { isIntersecting: true, boundingClientRect: { top: 20 } },
+        {
+          isIntersecting: true,
+          boundingClientRect: { top: 20 } as DOMRectReadOnly,
+        },
         TOOLBAR,
       ),
     ).toBe(false);
@@ -93,7 +99,10 @@ describe("toolbar title position", () => {
   it("does not treat a heading below the fold as under the toolbar", () => {
     expect(
       isTitleUnderToolbar(
-        { isIntersecting: false, boundingClientRect: { top: 900 } },
+        {
+          isIntersecting: false,
+          boundingClientRect: { top: 900 } as DOMRectReadOnly,
+        },
         TOOLBAR,
       ),
     ).toBe(false);

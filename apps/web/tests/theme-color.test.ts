@@ -21,6 +21,6 @@ describe("theme-color", () => {
   });
 
   it("tracks the approved mockup surfaces", () => {
-    expect(THEME_COLOR).toEqual(MOCKUP_BACKGROUND);
+    expect<unknown>(THEME_COLOR).toEqual(MOCKUP_BACKGROUND);
   });
 });

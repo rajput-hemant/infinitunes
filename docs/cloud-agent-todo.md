@@ -370,8 +370,9 @@ Run `bun run build && bun run budget` first to get real numbers.
   - Fix: add a `lint:shadcn` turbo task and a CI step; run once first and fix or exempt findings. Executor: haiku (sonnet if it finds violations). Flags: none.
 - [ ] **T-2** (needs a measured build: caps kept, header comment now says they were raised on purpose and must be re-measured with `bun run build && bun run budget`.) P2 CONFIRMED `scripts/check-budget.ts:16-22,59-68,72-80` - hard caps (365/425/380/380/360/365/255) are 14-20 KB above the documented ratchet, so "caps equal the ratchet" is tautological [lib 5]
   - Fix: measure, set ceilings ~5% above current maxima, rewrite the header (or state the raise was deliberate). Executor: sonnet. Flags: none.
-- [ ] **T-3** P2 CONFIRMED `apps/web/tests/mocked/cached-api.test.ts:8-11,84-100`, `tests/cached-api-runtime.ts`, `ci.yml:85-101` - the `use cache` error-digest round-trip is only covered by a manual script CI never runs [lib 3]
+- [x] **T-3** P2 CONFIRMED `apps/web/tests/mocked/cached-api.test.ts:8-11,84-100`, `tests/cached-api-runtime.ts`, `ci.yml:85-101` - the `use cache` error-digest round-trip is only covered by a manual script CI never runs [lib 3]
   - Fix: run `tests/cached-api-runtime.ts` with the `cached-api-fetch.mjs` preload in the production job after readiness, list it as a knip `entry`; or make the mocked test throw a structurally cloned error. Executor: sonnet. Flags: none.
+  - Done: second option (`next build` cannot run here). `tests/mocked/cached-api.test.ts` now wraps the upstream error so that, once `catalogRequest` sets its digest, it reads as a `structuredClone` (plain `Error`, only name/message/digest, no class or `code`); every classification test therefore goes through the digest round-trip. `tests/cached-api-runtime.ts` was already a knip `entry` (T-6). The runtime script is still manual.
 - [ ] **T-4** (needs a measured build: `forbiddenMode` left as `"warn"`, TODO added; confirm the shell chunk is clean before flipping to `"error"`.) P3 CONFIRMED `scripts/check-budget.ts:66-67,342-343` - `forbiddenMode: "warn"` means the Zod/passkey shell-chunk rule can never fail CI [lib 15]
   - Fix: run `bun run budget`; if clean flip to `"error"`, else report the offender. Executor: sonnet. Flags: none.
 - [x] **T-5** (Done: lint-staged oxlint now `--deny-warnings --nextjs-plugin`.) P3 CONFIRMED root `package.json` lint-staged vs `apps/web/package.json:11` - pre-commit oxlint is weaker than CI (no `--deny-warnings --nextjs-plugin`) [lib 9]
@@ -392,8 +393,9 @@ Shares `image-hosts.ts` with T1's T-7: do T2 first or have one executor take bot
 
 Run LAST (after the S/W/M batches merge): the first run surfaces real type errors across ~150 test files, and it would conflict with every batch that adds tests.
 
-- [ ] **T-9** P2 CONFIRMED `apps/web/tsconfig.json:16-21`, root `scripts/*` - tests and scripts are excluded from type-checking, so renamed exports and stale shapes only fail at runtime [lib 1]
+- [x] **T-9** P2 CONFIRMED `apps/web/tsconfig.json:16-21`, root `scripts/*` - tests and scripts are excluded from type-checking, so renamed exports and stale shapes only fail at runtime [lib 1]
   - Fix: `tsconfig.tests.json` (extends, `include: ["tests","scripts","**/*.test.*"]`, `types: ["bun"]`) and a root tsconfig for `scripts/`, chained into `type-check` as `packages/core` does; fix the errors in the same change. Executor: sonnet. Flags: none.
+  - Done: `apps/web/tsconfig.tests.json` (tests, scripts, `*.test.*`, with the `.next/types` route types) is chained into the web `type-check`; `scripts/tsconfig.json` into the root `type-check` (root now has `typescript`, `@types/bun`, the shared tsconfig). Fixed about 80 test-only errors (no app code): stale `bfcacheId`/`queueItemId`/`PlaylistView` shapes, `fetch` stubs (`tests/fetch-stub.ts`), `"season"` show kind in `player-a11y.test.ts` (now `isShowDetails`, type `"show"`), typed-route `getHref` assertions.
 
 ## Batch T4 (haiku; T-13 sonnet) (branch `fix/t4-proxy-matcher`): web lib cleanup - `apps/web/lib/{cached-api,search-route,rate-limit-scope,client-ip,env,theme-config,use-favorite-toggle,csp,control-styles,pending-params}.ts`, `lib/glass/{artwork,overlays}.ts`, `lib/theme/{oklch,accent}.ts`, `lib/trpc/server.ts`, `hooks/{use-deferred,use-store}.ts`, `packages/trpc/src/lib/api.ts`
 

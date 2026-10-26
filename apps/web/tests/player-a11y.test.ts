@@ -4,7 +4,7 @@ import type { ShowDetails } from "@infinitunes/types";
 
 import {
   getKind,
-  isKind,
+  isShowDetails,
   type DetailsItem,
 } from "../components/details-header/details-header-items";
 import { albumFixture, songFixture } from "./details-header-fixtures";
@@ -17,7 +17,7 @@ describe("details header season (PQ-4)", () => {
     title: "Show",
     subtitle: "",
     header_desc: "",
-    type: "season",
+    type: "show",
     perma_url: "https://www.example.test/show/show1",
     image: "",
     language: "hindi",
@@ -62,10 +62,10 @@ describe("details header season (PQ-4)", () => {
 
   // Mirrors the value DetailsHeader hands PlayButton as `season`.
   const seasonOf = (item: DetailsItem) =>
-    isKind(item, "season") ? Number(item.more_info.season_number) : undefined;
+    isShowDetails(item) ? Number(item.more_info.season_number) : undefined;
 
   it("is the show's season number for a show page", () => {
-    expect(getKind(show)).toBe("season");
+    expect(getKind(show)).toBe("show");
     expect(seasonOf(show)).toBe(3);
   });
 

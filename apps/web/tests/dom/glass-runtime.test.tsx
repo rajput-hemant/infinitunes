@@ -125,7 +125,7 @@ describe("GlassRuntime", () => {
     expect(registered()).toEqual([]);
 
     await mountRuntime();
-    expect(registered()).toEqual([surface]);
+    expect(registered()).toEqual([surface as HTMLElement]);
   });
 
   it("registers a popup that was already open when the runtime starts", async () => {

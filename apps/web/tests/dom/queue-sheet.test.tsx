@@ -30,6 +30,7 @@ function song(id: string): QueueItem {
     image: "https://c.saavncdn.com/x-150x150.jpg",
     artists: [],
     download_url: "",
+    queueItemId: `q-${id}`,
     duration: 100,
   };
 }

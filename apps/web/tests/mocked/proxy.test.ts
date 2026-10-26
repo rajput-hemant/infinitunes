@@ -119,7 +119,7 @@ function createNextRequest(
     method,
     headers: new Headers(headers),
     ip: undefined,
-  } as NextRequest;
+  } as unknown as NextRequest;
 }
 
 describe("proxy Upstash client laziness", () => {
@@ -159,9 +159,9 @@ describe("proxy guest route access", () => {
     );
 
     expect(res.status).toBe(307);
-    expect((res as { headers: { location: string } }).headers.location).toBe(
-      "http://localhost:3000/login",
-    );
+    expect(
+      (res as unknown as { headers: { location: string } }).headers.location,
+    ).toBe("http://localhost:3000/login");
   });
 });
 
@@ -206,9 +206,9 @@ describe("proxy detail route normalization", () => {
     );
 
     expect(res.status).toBe(307);
-    expect((res as { headers: { location: string } }).headers.location).toBe(
-      "http://localhost:3000/playlist",
-    );
+    expect(
+      (res as unknown as { headers: { location: string } }).headers.location,
+    ).toBe("http://localhost:3000/playlist");
   });
 
   it("leaves /playlist/<name>/<token> alone", async () => {
@@ -229,7 +229,7 @@ describe("proxy legacy artist tab URLs", () => {
   });
 
   const location = (res: unknown) =>
-    (res as { headers: { location: string } }).headers.location;
+    (res as unknown as { headers: { location: string } }).headers.location;
 
   it("moves a name-suffix URL permanently onto its tab route", async () => {
     const res = await proxy(
@@ -281,7 +281,7 @@ describe("proxy legacy label tab URLs", () => {
   });
 
   const location = (res: unknown) =>
-    (res as { headers: { location: string } }).headers.location;
+    (res as unknown as { headers: { location: string } }).headers.location;
 
   it("moves JioSaavn's -albums slug permanently onto the Albums route", async () => {
     const res = await proxy(
@@ -768,7 +768,7 @@ describe("proxy limiter scope", () => {
   });
 
   it("never limits RSC navigations, prefetches or subresources", async () => {
-    for (const headers of [
+    for (const headers of <Record<string, string>[]>[
       { rsc: "1", "sec-fetch-dest": "empty" },
       { rsc: "1", "next-router-prefetch": "1" },
       { "sec-fetch-dest": "image" },

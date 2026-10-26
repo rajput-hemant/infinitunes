@@ -124,7 +124,9 @@ function collect(active: readonly string[]): Entry[] {
       } else if (node.type === "rule") {
         const rule: Rule = node;
         const declarations = new Map<string, string>();
-        rule.walkDecls((decl) => declarations.set(decl.prop, decl.value));
+        rule.walkDecls((decl) => {
+          declarations.set(decl.prop, decl.value);
+        });
         for (const selector of splitTopLevel(
           rule.selector.replace(/\s+/g, " "),
         )) {

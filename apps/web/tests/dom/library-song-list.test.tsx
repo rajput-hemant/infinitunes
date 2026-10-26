@@ -58,6 +58,7 @@ const router: AppRouterInstance = {
   back() {},
   forward() {},
   prefetch() {},
+  bfcacheId: "0",
 };
 
 function queryRequired<T extends Element>(

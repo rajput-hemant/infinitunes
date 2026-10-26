@@ -121,7 +121,7 @@ describe("GlassSurface", () => {
     expect(surface.classList.contains("props-class")).toBe(true);
     expect(surface.getAttribute("data-glass-size")).toBe("s");
     expect(surface.textContent).toBe("links");
-    expect(ref.current).toBe(surface);
+    expect(ref.current).toBe(surface as HTMLElement);
   });
 
   it("keeps the render element's own children when none are given", async () => {
@@ -145,6 +145,6 @@ describe("GlassSurface", () => {
     await act(async () => root.render(ui("b")));
     await act(async () => root.render(ui("c")));
     expect(calls).toHaveLength(1);
-    expect(calls[0]).toBe(container.firstElementChild);
+    expect(calls[0]).toBe(container.firstElementChild as HTMLElement);
   });
 });

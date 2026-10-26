@@ -4,6 +4,8 @@ import type { Song } from "@infinitunes/types";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 
+import { stubFetch as fetchStub } from "../fetch-stub";
+
 const toasts: string[] = [];
 mock.module("sonner", () => ({
   toast: {
@@ -29,7 +31,7 @@ function song(title: string, url = "https://cdn.example/a_96.mp4"): Song {
 }
 
 function stubFetch(response: Response) {
-  globalThis.fetch = (() => Promise.resolve(response)) as typeof fetch;
+  globalThis.fetch = fetchStub(() => Promise.resolve(response));
 }
 
 afterEach(() => {
@@ -110,7 +112,7 @@ describe("download button", () => {
   it("downloads one song at a time and reports partial failure", async () => {
     let inFlight = 0;
     let peak = 0;
-    globalThis.fetch = (async (input: string | URL | Request) => {
+    globalThis.fetch = fetchStub(async (input) => {
       inFlight++;
       peak = Math.max(peak, inFlight);
       await new Promise((r) => setTimeout(r, 2));
@@ -118,7 +120,7 @@ describe("download button", () => {
       return String(input).includes("bad")
         ? new Response("no", { status: 500 })
         : new Response("audio", { status: 200 });
-    }) as typeof fetch;
+    });
     const saved: string[] = [];
     URL.createObjectURL = () => "blob:x";
     URL.revokeObjectURL = () => {};
@@ -145,10 +147,10 @@ describe("download button", () => {
 
   it("asks before downloading more than ten songs and stops on cancel", async () => {
     let fetched = 0;
-    globalThis.fetch = (() => {
+    globalThis.fetch = fetchStub(() => {
       fetched++;
       return Promise.resolve(new Response("audio"));
-    }) as typeof fetch;
+    });
     const realConfirm = window.confirm;
     window.confirm = () => false;
     try {

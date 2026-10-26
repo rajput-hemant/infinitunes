@@ -1,6 +1,11 @@
 import { afterEach, describe, expect, it, mock } from "bun:test";
 
-import type { ActiveRadioSession, Queue, Song } from "@infinitunes/types";
+import type {
+  ActiveRadioSession,
+  Queue,
+  Song,
+  SongRowItem,
+} from "@infinitunes/types";
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 
@@ -75,7 +80,7 @@ async function mount(items: Song[]) {
     root.render(
       <>
         <Probe />
-        <PlayAllButton items={items} />
+        <PlayAllButton items={items as unknown as SongRowItem[]} />
       </>,
     );
   });

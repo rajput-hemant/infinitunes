@@ -42,7 +42,7 @@ beforeEach(() => {
         widthListeners.add(listener),
       removeEventListener: (_: string, listener: () => void) =>
         widthListeners.delete(listener),
-    }) as MediaQueryList;
+    }) as unknown as MediaQueryList;
 });
 
 afterEach(async () => {
