@@ -41,4 +41,6 @@ for (const path of targets) {
   console.log(`removed ${path.slice(root.length + 1)}`);
   removed++;
 }
-console.log(`clean done: ${removed} removed${native ? "" : "; run bun install"}`);
+console.log(
+  `clean done: ${removed} removed${native ? "" : "; run bun install"}`,
+);
