@@ -10,6 +10,7 @@ type Row = { id: string; type: string };
 
 const state: {
   rows: Row[];
+  count: number;
   inserted: { table: string; values: Record<string, unknown> }[];
   conflict: { target: unknown[]; set: Record<string, unknown> } | null;
   deleted: { table: string; where: unknown[] }[];
@@ -21,6 +22,7 @@ const state: {
   operations: string[];
 } = {
   rows: [],
+  count: 65,
   inserted: [],
   conflict: null,
   deleted: [],
@@ -73,6 +75,14 @@ const fakeDb = {
               },
             };
           },
+          then: (
+            onFulfilled?: (value: { historyCount: number }[]) => unknown,
+            onRejected?: (reason: unknown) => unknown,
+          ) =>
+            Promise.resolve([{ historyCount: state.count }]).then(
+              onFulfilled,
+              onRejected,
+            ),
         };
       },
     }),
@@ -104,7 +114,8 @@ mock.module("@infinitunes/db", () => ({ db: fakeDb }));
 
 const { appRouter } = await import("../src/root");
 const { createCallerFactory } = await import("../src/trpc");
-const { HISTORY_LIMIT } = await import("../src/router/history");
+const { HISTORY_LIMIT, HISTORY_TRIM_THRESHOLD } =
+  await import("../src/router/history");
 
 const db = fakeDb as unknown as DbClient;
 const authed = () =>
@@ -113,6 +124,7 @@ const authed = () =>
 describe("history router", () => {
   beforeEach(() => {
     state.rows = [];
+    state.count = 65;
     state.inserted = [];
     state.conflict = null;
     state.deleted = [];
@@ -190,6 +202,23 @@ describe("history router", () => {
     expect(state.deleted).toHaveLength(1);
     expect(state.deleted[0]?.table).toBe("infinitunes_recently_played");
     expect(state.deleted[0]?.where).toContain("user-1");
+  });
+
+  it("skips trimming when history count is 60 or fewer (S-17)", async () => {
+    state.count = 60;
+    await authed().history.record({ id: "abc", type: "song" });
+
+    expect(HISTORY_TRIM_THRESHOLD).toBe(60);
+    expect(state.operations).toEqual(["lock", "insert"]);
+    expect(state.deleted).toHaveLength(0);
+  });
+
+  it("trims when history count exceeds 60 (S-17)", async () => {
+    state.count = 61;
+    await authed().history.record({ id: "abc", type: "song" });
+
+    expect(state.operations).toEqual(["lock", "insert", "trim"]);
+    expect(state.deleted).toHaveLength(1);
   });
 
   it("rolls back the upsert when trimming fails", async () => {

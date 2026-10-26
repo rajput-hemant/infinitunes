@@ -76,6 +76,8 @@ type PlaylistEntryOptions = {
   songs: readonly { id: string; name: string }[];
   /** The listener's playlists; `undefined` while loading. */
   playlists: PlaylistView[] | undefined;
+  /** The songs each playlist holds (`usePlaylistMembership`). */
+  membership: ReadonlyMap<string, ReadonlySet<string>>;
   onAdd: (playlist: PlaylistView) => void;
 };
 
@@ -87,6 +89,7 @@ type PlaylistEntryOptions = {
 export function addToPlaylistEntry({
   songs,
   playlists,
+  membership,
   onAdd,
 }: PlaylistEntryOptions): MenuEntry {
   const songIds = songs.map((song) => song.id);
@@ -124,7 +127,7 @@ export function addToPlaylistEntry({
       ...playlists.map((playlist): MenuEntry => ({
         id: `playlist:${playlist.id}`,
         title: playlist.name,
-        state: songIds.every((id) => playlist.songs.includes(id))
+        state: songIds.every((id) => membership.get(playlist.id)?.has(id))
           ? "on"
           : "off",
         attributes: { disabled: playlist.pending === true },

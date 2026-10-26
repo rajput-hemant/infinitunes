@@ -287,7 +287,11 @@ describe("user router authorization", () => {
   });
 
   it("rejects oversized favorite tokens and song batches before writing", async () => {
-    state.playlist = { id: "playlist-1", userId: "user-123", songs: [] };
+    state.playlist = {
+      id: "00000000-0000-4000-8000-000000000001",
+      userId: "user-123",
+      songs: [],
+    };
     const caller = createCallerFactory(appRouter)({
       db,
       session: { user: { id: "user-123" } },
@@ -298,13 +302,16 @@ describe("user router authorization", () => {
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
       caller.user.addSongsToPlaylist({
-        playlistId: "playlist-1",
-        songs: Array.from({ length: 501 }, (_, i) => `song-${i}`),
+        playlistId: "00000000-0000-4000-8000-000000000001",
+        songs: Array.from(
+          { length: PLAYLIST_MAX_SONGS + 1 },
+          (_, i) => `song-${i}`,
+        ),
       }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
     await expect(
       caller.user.addSongsToPlaylist({
-        playlistId: "playlist-1",
+        playlistId: "00000000-0000-4000-8000-000000000001",
         songs: ["x".repeat(65)],
       }),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });
@@ -339,6 +346,7 @@ describe("user router authorization", () => {
 
     expect(state.updates[0]?.values).toMatchObject({
       email: "new@example.com",
+      emailVerifiedBoolean: false,
     });
   });
 
@@ -401,7 +409,7 @@ describe("user router authorization", () => {
 
   it("does not expose or mutate another user's playlist", async () => {
     state.playlist = {
-      id: "playlist-victim",
+      id: "00000000-0000-4000-8000-0000000000bb",
       userId: "user-456",
       songs: ["existing-song"],
     };
@@ -411,11 +419,13 @@ describe("user router authorization", () => {
     });
 
     await expect(
-      caller.user.getPlaylistDetails({ playlistId: "playlist-victim" }),
-    ).resolves.toBeUndefined();
+      caller.user.getPlaylistDetails({
+        playlistId: "00000000-0000-4000-8000-0000000000bb",
+      }),
+    ).resolves.toBeNull();
     await expect(
       caller.user.addSongsToPlaylist({
-        playlistId: "playlist-victim",
+        playlistId: "00000000-0000-4000-8000-0000000000bb",
         songs: ["attacker-song"],
       }),
     ).rejects.toMatchObject({
@@ -424,7 +434,7 @@ describe("user router authorization", () => {
     });
     await expect(
       caller.user.removeSongsFromPlaylist({
-        playlistId: "playlist-victim",
+        playlistId: "00000000-0000-4000-8000-0000000000bb",
         index: 0,
         songId: "existing-song",
       }),
@@ -434,7 +444,7 @@ describe("user router authorization", () => {
     });
     await expect(
       caller.user.renamePlaylist({
-        playlistId: "playlist-victim",
+        playlistId: "00000000-0000-4000-8000-0000000000bb",
         name: "Hijacked",
       }),
     ).rejects.toMatchObject({
@@ -442,7 +452,9 @@ describe("user router authorization", () => {
       message: "Unauthorized",
     });
     await expect(
-      caller.user.deletePlaylist({ playlistId: "playlist-victim" }),
+      caller.user.deletePlaylist({
+        playlistId: "00000000-0000-4000-8000-0000000000bb",
+      }),
     ).rejects.toMatchObject({
       code: "FORBIDDEN",
       message: "Unauthorized",
@@ -451,7 +463,7 @@ describe("user router authorization", () => {
 
   it("returns the owner's playlist from getPlaylistDetails", async () => {
     state.playlist = {
-      id: "playlist-own",
+      id: "00000000-0000-4000-8000-0000000000aa",
       userId: "user-123",
       songs: ["song-1"],
     };
@@ -461,8 +473,13 @@ describe("user router authorization", () => {
     });
 
     await expect(
-      caller.user.getPlaylistDetails({ playlistId: "playlist-own" }),
-    ).resolves.toMatchObject({ id: "playlist-own", userId: "user-123" });
+      caller.user.getPlaylistDetails({
+        playlistId: "00000000-0000-4000-8000-0000000000aa",
+      }),
+    ).resolves.toMatchObject({
+      id: "00000000-0000-4000-8000-0000000000aa",
+      userId: "user-123",
+    });
   });
 
   it("resolves a lazy session thunk before authorizing", async () => {
@@ -809,11 +826,14 @@ describe("user router authorization", () => {
 
   describe("movePlaylistSong", () => {
     const move = (input: { from: number; to: number; songId: string }) =>
-      signedIn().user.movePlaylistSong({ playlistId: "playlist-1", ...input });
+      signedIn().user.movePlaylistSong({
+        playlistId: "00000000-0000-4000-8000-000000000001",
+        ...input,
+      });
 
     it("stores the reordered list", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: ["a", "b", "c"],
       };
@@ -829,7 +849,7 @@ describe("user router authorization", () => {
 
     it("rejects a target past the end without writing", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: ["a", "b", "c"],
       };
@@ -849,7 +869,7 @@ describe("user router authorization", () => {
 
     it("rejects negative and fractional positions", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: ["a", "b"],
       };
@@ -865,7 +885,7 @@ describe("user router authorization", () => {
 
     it("rejects a stale position without writing", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: ["a", "b", "c"],
       };
@@ -880,7 +900,7 @@ describe("user router authorization", () => {
 
     it("does not touch another user's playlist", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-456",
         songs: ["a", "b"],
       };
@@ -899,13 +919,23 @@ describe("user router authorization", () => {
       Array.from({ length: n }, (_, i) => `${prefix}-${i}`);
     const add = (input: string[]) =>
       signedIn().user.addSongsToPlaylist({
-        playlistId: "playlist-1",
+        playlistId: "00000000-0000-4000-8000-000000000001",
         songs: input,
       });
 
+    it("accepts a whole collection up to the playlist limit", async () => {
+      state.playlist = {
+        id: "00000000-0000-4000-8000-000000000001",
+        userId: "user-123",
+        songs: [],
+      };
+      await add(songs(PLAYLIST_MAX_SONGS));
+      expect(state.updates[0]?.values.songs).toHaveLength(PLAYLIST_MAX_SONGS);
+    });
+
     it("appends new songs at the end", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: ["a", "b"],
       };
@@ -917,7 +947,7 @@ describe("user router authorization", () => {
 
     it("accepts an add that stays under the cap", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: songs(PLAYLIST_MAX_SONGS - 10, "old"),
       };
@@ -931,7 +961,7 @@ describe("user router authorization", () => {
 
     it("accepts an add that lands exactly on the cap", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: songs(PLAYLIST_MAX_SONGS - 2, "old"),
       };
@@ -943,7 +973,7 @@ describe("user router authorization", () => {
 
     it("rejects the whole add when it would exceed the cap", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: songs(PLAYLIST_MAX_SONGS - 1, "old"),
       };
@@ -957,7 +987,7 @@ describe("user router authorization", () => {
 
     it("does not count songs already in the playlist or repeated in the add", async () => {
       state.playlist = {
-        id: "playlist-1",
+        id: "00000000-0000-4000-8000-000000000001",
         userId: "user-123",
         songs: songs(PLAYLIST_MAX_SONGS, "old"),
       };
@@ -989,17 +1019,21 @@ describe("user router authorization", () => {
     });
 
     it("rejects the same overruns on rename without touching the row", async () => {
-      state.playlist = { id: "playlist-1", userId: "user-123", songs: [] };
+      state.playlist = {
+        id: "00000000-0000-4000-8000-000000000001",
+        userId: "user-123",
+        songs: [],
+      };
 
       await expect(
         own().user.renamePlaylist({
-          playlistId: "playlist-1",
+          playlistId: "00000000-0000-4000-8000-000000000001",
           name: "n".repeat(101),
         }),
       ).rejects.toMatchObject({ code: "BAD_REQUEST" });
       await expect(
         own().user.renamePlaylist({
-          playlistId: "playlist-1",
+          playlistId: "00000000-0000-4000-8000-000000000001",
           name: "Valid name",
           description: "d".repeat(256),
         }),
@@ -1008,10 +1042,14 @@ describe("user router authorization", () => {
     });
 
     it("accepts a 100-character name and a 255-character description", async () => {
-      state.playlist = { id: "playlist-1", userId: "user-123", songs: [] };
+      state.playlist = {
+        id: "00000000-0000-4000-8000-000000000001",
+        userId: "user-123",
+        songs: [],
+      };
 
       await own().user.renamePlaylist({
-        playlistId: "playlist-1",
+        playlistId: "00000000-0000-4000-8000-000000000001",
         name: "n".repeat(100),
         description: "d".repeat(255),
       });

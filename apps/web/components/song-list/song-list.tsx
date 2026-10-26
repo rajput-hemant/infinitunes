@@ -13,6 +13,7 @@ type SongListProps = {
   showAlbum?: boolean;
   className?: string;
   playlistId?: string;
+  playlistSongIds?: string[];
   playlistSongIndices?: number[];
 };
 
@@ -22,6 +23,7 @@ export async function SongList(props: SongListProps) {
     showAlbum = true,
     className,
     playlistId,
+    playlistSongIds,
     playlistSongIndices,
   } = props;
 
@@ -47,6 +49,7 @@ export async function SongList(props: SongListProps) {
               favorites={favorites}
               playlists={playlists}
               playlistId={playlistId}
+              playlistSongIds={playlistSongIds}
               playlistSongIndex={dbIndex}
             />
           );

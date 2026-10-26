@@ -17,7 +17,7 @@ import { preferencesStore } from "~/lib/preferences";
 import { chooseMenuAction, renderWithProviders } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
-import { userPlaylist } from "~/test/user-library";
+import { playlistSummary, userPlaylist } from "~/test/user-library";
 
 import { CollectionMenu } from "./collection-menu";
 
@@ -58,8 +58,9 @@ describe("add to playlist", () => {
 
   it("adds every song to the chosen playlist", async () => {
     await act(async () => signInAs("alice"));
+    procedure("user.getPlaylistDetails").mockResolvedValue(userPlaylist());
     procedure("user.getUserPlaylists").mockResolvedValue([
-      userPlaylist({ id: "pl-1", name: "Road Trip" }),
+      playlistSummary({ id: "pl-1", name: "Road Trip" }),
     ]);
     await renderWithProviders(menu());
 
