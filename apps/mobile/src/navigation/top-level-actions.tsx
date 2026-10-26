@@ -74,10 +74,9 @@ export function TopLevelActions() {
 }
 
 /**
- * The root screens' header options. iOS 26 wraps everything in one `headerRight`
- * view in a single glass capsule, so iOS uses native items that each keep their
- * own glass button (`sharesBackground: false`), with the page title as a
- * leading item (Apple Music's layout: title left, actions right on one row).
+ * The root screens' header options. iOS uses native items that share one glass
+ * capsule (the system default), with the page title as a leading item (Apple
+ * Music's layout: title left, actions right on one row).
  * Other platforms keep the view and the system title. A hook: the profile
  * button follows the session.
  */
@@ -125,7 +124,6 @@ export function useTopLevelHeaderOptions(
         type: "button" as const,
         label: "Settings",
         icon: { type: "sfSymbol" as const, name: "gearshape" as const },
-        sharesBackground: false,
         onPress: () => router.push("/settings"),
       },
       // A cold start reads the stored session first: no Sign in flash.
@@ -141,7 +139,6 @@ export function useTopLevelHeaderOptions(
                   ? ("person.crop.circle.fill" as const)
                   : ("person.crop.circle" as const),
               },
-              sharesBackground: false,
               onPress: () => router.push(signedIn ? "/profile" : "/login"),
             },
           ]),

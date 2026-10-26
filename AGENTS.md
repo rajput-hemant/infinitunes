@@ -199,7 +199,7 @@ DB scripts (`db:generate|migrate|drop|push|pull|studio|check`) forward to
   Settings is not a tab: the root screens' `headerRight` is `TopLevelActions` (`navigation/top-level-actions`:
   Android's Search, Settings, the avatar or Sign In), which push onto the current tab. Languages is in Settings
   only, not the header. On iOS 26 `useTopLevelHeaderOptions(title)` puts the page title at the top left (a custom
-  header item, no large title) and Settings and Profile as separate native glass buttons at the right. Android's
+  header item, no large title) and Settings and Profile as native buttons sharing one glass capsule at the right. Android's
   pushed Search hides the app bar for its own M3 search bar (`features/search/search-header.android.tsx`: a
   visible Back in every state, clear while there is text; the native field sat after the toolbar's 72dp inset)
   and autofocuses it. The auth stack's iOS root gets Close (`authHeaderOptions`); Android shows no bar title.
