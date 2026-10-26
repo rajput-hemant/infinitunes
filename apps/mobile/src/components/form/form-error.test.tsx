@@ -1,4 +1,5 @@
 import { renderHook, screen } from "@testing-library/react-native";
+import { notificationAsync } from "expo-haptics";
 
 import { renderWithProviders } from "~/test/render";
 
@@ -6,6 +7,20 @@ import { FormError, useFocusOnRefusal } from "./form-error";
 import type { TextInputHandle } from "./form-field";
 
 describe("FormError", () => {
+  it("buzzes for a new refusal, never for a restored error on mount", async () => {
+    const view = await renderWithProviders(
+      <FormError message="Wrong password" />,
+    );
+    expect(notificationAsync).not.toHaveBeenCalled();
+
+    await view.rerender(<FormError />);
+    await view.rerender(<FormError message="Wrong password" />);
+    expect(notificationAsync).toHaveBeenCalledTimes(1);
+    expect(notificationAsync).toHaveBeenCalledWith("error");
+
+    await view.rerender(<FormError message="Wrong password" />);
+    expect(notificationAsync).toHaveBeenCalledTimes(1);
+  });
   it("is an alert with the message, and nothing without one", async () => {
     const view = await renderWithProviders(
       <FormError message="Wrong password" />,
