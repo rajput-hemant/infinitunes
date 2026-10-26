@@ -6,7 +6,7 @@ import { entityHref } from "./entity-href";
 /**
  * Opens an item's screen from a handler (a menu action, not a `Link`).
  * Inside a tab it is pushed onto that tab's stack, keeping the screen below;
- * from the player or queue (modals over the tabs) those close first, so the
+ * from the player or a sheet (routes over the tabs) those close first, so the
  * screen opens in the tab beneath them.
  */
 export function useOpenEntity() {
