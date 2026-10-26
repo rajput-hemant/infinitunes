@@ -6,6 +6,7 @@ import { Platform } from "react-native";
 import { playbackStatusStore } from "~/playback/playback-status";
 import { playerStore } from "~/playback/player-store";
 import { chooseMenuAction, renderScreen } from "~/test/render";
+import { titleLineTexts } from "~/test/title-row";
 import { procedure } from "~/test/trpc-mock";
 
 import { SongRow } from "./song-row";
@@ -133,9 +134,10 @@ describe("SongRow", () => {
       <SongRow song={{ ...song, explicit: true }} onPress={jest.fn()} />,
     );
 
-    expect(
-      screen.getByText("E", { includeHiddenElements: true }),
-    ).toBeOnTheScreen();
+    expect(titleLineTexts(screen.getByText("FA9LA & Friends"))).toEqual([
+      "E",
+      "FA9LA & Friends",
+    ]);
     expect(
       screen.getByRole("button", { name: "FA9LA & Friends" }),
     ).toHaveAccessibilityValue({ text: "Explicit, Flipperachi" });

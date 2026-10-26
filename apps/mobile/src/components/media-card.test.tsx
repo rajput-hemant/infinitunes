@@ -1,29 +1,15 @@
 import { toCardItem } from "@infinitunes/types";
 import { rawAlbum, rawSong } from "@infinitunes/types/fixtures";
-import {
-  fireEvent,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react-native";
+import { fireEvent, screen, waitFor } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
 import { playerStore } from "~/playback/player-store";
 import { chooseCardAction, renderScreen } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
+import { titleLineTexts } from "~/test/title-row";
 import { procedure } from "~/test/trpc-mock";
 
 import { MediaCard } from "./media-card";
-
-/** The nearest flex row above a text: the card's title line. */
-function titleRow(text: ReturnType<typeof screen.getByText>) {
-  let row = text.parent;
-  while (row && !String(row.props.className ?? "").includes("flex-row")) {
-    row = row.parent;
-  }
-  if (!row) throw new Error("no title row");
-  return row;
-}
 
 describe("MediaCard", () => {
   it("prefetches the album's details when the card is pressed in", async () => {
@@ -52,13 +38,10 @@ describe("MediaCard", () => {
     );
 
     // Only the badge and the title sit on the title line, badge first.
-    const row = titleRow(screen.getByText("Udta Teer"));
-    expect(
-      within(row)
-        // The badge is hidden from screen readers, so include hidden nodes.
-        .getAllByText(/.+/, { includeHiddenElements: true })
-        .map((node) => node.props.children),
-    ).toEqual(["E", "Udta Teer"]);
+    expect(titleLineTexts(screen.getByText("Udta Teer"))).toEqual([
+      "E",
+      "Udta Teer",
+    ]);
   });
 
   it("is not clipped on iOS, which has no ripple", async () => {
