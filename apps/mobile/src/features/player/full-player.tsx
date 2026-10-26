@@ -1,7 +1,7 @@
 import type { Queue } from "@infinitunes/types";
 import { getImageSrc } from "@infinitunes/types";
 import { Image } from "expo-image";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter, useTheme } from "expo-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ComponentRef } from "react";
 import {
@@ -11,7 +11,11 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import type { LayoutChangeEvent, LayoutRectangle } from "react-native";
+import type {
+  ColorValue,
+  LayoutChangeEvent,
+  LayoutRectangle,
+} from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
@@ -36,7 +40,7 @@ import { SongMenu } from "~/components/song-menu";
 import { Artwork, artworkFrame } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
-import { Text } from "~/components/ui/text";
+import { announce } from "~/lib/announce";
 import { usePreferences } from "~/lib/preferences";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import {
@@ -49,6 +53,7 @@ import { art, playerArtSize, space } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
 import { usePalette, useTokenColor } from "~/theme/use-palette";
 import { useRadii } from "~/theme/use-radii";
+import { useFavoriteToggle } from "~/user-data/favorites";
 
 import { songSwipeActions, useDismissPan, useSwipeable } from "./gestures";
 import { PlayerLyrics } from "./player-lyrics";
@@ -354,7 +359,7 @@ function ExplicitMark() {
 }
 
 /**
- * Title and credit, then the heart and the song menu. The text takes the
+ * Title and credit, then (in the large view) the heart and the song menu. The text takes the
  * song swipe (and its screen reader actions); `compact` is the queue and
  * lyrics header beside the small artwork.
  */
@@ -395,12 +400,17 @@ function TrackTitle({
           </View>
         </Animated.View>
       </GestureDetector>
-      {track.type === "song" ? (
-        <LikeButton type="song" token={track.id} name={track.name} />
-      ) : null}
-      <SongMenu song={track}>
-        <MenuTrigger label={`More actions for ${track.name}`} size="lg" />
-      </SongMenu>
+      {/* The compact header's heart and menu sit in its pill row. */}
+      {compact ? null : (
+        <>
+          {track.type === "song" ? (
+            <LikeButton type="song" token={track.id} name={track.name} />
+          ) : null}
+          <SongMenu song={track}>
+            <MenuTrigger label={`More actions for ${track.name}`} size="lg" />
+          </SongMenu>
+        </>
+      )}
     </View>
   );
 }
@@ -456,34 +466,27 @@ function Grabber({ onPress }: { onPress: () => void }) {
 const PILL_TINT_ALPHA = 0.14;
 
 /**
- * A queue mode as a capsule with its name (Apple Music's queue pills). On a
- * wash, on is the play button's checked `control` fill with `onControl`
- * text, off a faint tint of the foreground; on the D1 palette `primary` and
- * `muted`.
+ * One capsule of the compact header's row (Apple Music's queue pills), an
+ * icon alone. On a wash, on is the play button's checked `control` fill
+ * with an `onControl` glyph, off a faint tint of the foreground; on the D1
+ * palette `primary` and `muted`. `color` overrides the off glyph (a liked
+ * heart).
  */
-function ModePill({
+function PillFace({
   icon,
-  text,
-  label,
-  on,
-  onPress,
+  on = false,
+  color,
 }: {
   icon: SymbolName;
-  text: string;
-  label: string;
-  on: boolean;
-  onPress: () => void;
+  on?: boolean;
+  color?: ColorValue;
 }) {
   const wash = useWashColors();
   const token = useTokenColor(on ? "primary-foreground" : "foreground");
   const ink = wash ? (on ? wash.onControl : wash.foreground) : token;
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      accessibilityState={{ selected: on }}
-      className={`min-h-touch flex-1 flex-row items-center justify-center gap-2 overflow-hidden rounded-full px-4 active:opacity-70 ${wash ? "" : on ? "bg-primary" : "bg-muted"}`}
+    <View
+      className={`min-h-touch items-center justify-center overflow-hidden rounded-full ${wash ? "" : on ? "bg-primary" : "bg-muted"}`}
     >
       {wash ? (
         <View
@@ -494,35 +497,104 @@ function ModePill({
           }}
         />
       ) : null}
-      <Icon name={icon} size="sm" color={ink} />
-      <Text variant="subhead" emphasized color={ink} numberOfLines={1}>
-        {text}
-      </Text>
+      <Icon name={icon} size="md" color={on ? ink : (color ?? ink)} />
+    </View>
+  );
+}
+
+/** A pill that is a button: a mode (`on` set) or the heart. */
+function Pill({
+  icon,
+  label,
+  on,
+  color,
+  onPress,
+}: {
+  icon: SymbolName;
+  label: string;
+  on?: boolean;
+  color?: ColorValue;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={on === undefined ? undefined : { selected: on }}
+      className="flex-1 active:opacity-70"
+    >
+      <PillFace icon={icon} on={on} color={color} />
     </Pressable>
   );
 }
 
-/** The queue's modes: shuffle and repeat (transport leaves its own out here). */
-function QueueModes() {
+/** The heart as a pill: the same optimistic like as `LikeButton`. */
+function LikePill({ track }: { track: Queue }) {
+  const { colors } = useTheme();
+  const { liked, toggle } = useFavoriteToggle({
+    type: "song",
+    token: track.id,
+  });
+  return (
+    <Pill
+      icon={
+        liked
+          ? { ios: "heart.fill", android: "favorite" }
+          : { ios: "heart", android: "favorite_border" }
+      }
+      label={liked ? `Unlike ${track.name}` : `Like ${track.name}`}
+      color={liked ? colors.primary : undefined}
+      onPress={() => {
+        const nowLiked = toggle();
+        if (nowLiked !== undefined) {
+          announce(
+            nowLiked
+              ? `Liked ${track.name}`
+              : `Removed ${track.name} from liked`,
+          );
+        }
+      }}
+    />
+  );
+}
+
+/**
+ * The compact header's row (queue and lyrics): shuffle, repeat, the heart
+ * and the song menu as four equal capsules, Apple Music's layout. Transport
+ * leaves its own shuffle and repeat out here.
+ */
+function HeaderControls({ track }: { track: Queue }) {
   const shuffle = usePlayer((state) => state.shuffle);
   const repeat = usePlayer((state) => state.repeat);
   const { toggleShuffle, cycleRepeat } = playerStore.getState();
   return (
     <View className="flex-row gap-2 px-6 pb-2">
-      <ModePill
+      <Pill
         icon={shuffleIcon(shuffle)}
-        text="Shuffle"
         label="Shuffle"
         on={shuffle}
         onPress={toggleShuffle}
       />
-      <ModePill
+      <Pill
         icon={REPEAT_ICONS[repeat]}
-        text={repeat === "track" ? "Repeat One" : "Repeat"}
         label={REPEAT_LABELS[repeat]}
         on={repeat !== "off"}
         onPress={() => cycleRepeat()}
       />
+      {track.type === "song" ? <LikePill track={track} /> : null}
+      <View className="flex-1">
+        <SongMenu song={track}>
+          <View
+            accessible
+            accessibilityRole="button"
+            accessibilityLabel={`More actions for ${track.name}`}
+            accessibilityHint="Opens a menu"
+          >
+            <PillFace icon={{ ios: "ellipsis", android: "more_vert" }} />
+          </View>
+        </SongMenu>
+      </View>
     </View>
   );
 }
@@ -731,14 +803,12 @@ export function FullPlayer() {
                       <TrackTitle track={track} compact swipe={titleSwipe} />
                     </Animated.View>
                   </View>
-                  {view === "queue" ? (
-                    <Animated.View
-                      entering={contentIn(reduceMotion)}
-                      exiting={contentOut}
-                    >
-                      <QueueModes />
-                    </Animated.View>
-                  ) : null}
+                  <Animated.View
+                    entering={contentIn(reduceMotion)}
+                    exiting={contentOut}
+                  >
+                    <HeaderControls track={track} />
+                  </Animated.View>
                 </>
               ) : (
                 <>
@@ -798,7 +868,7 @@ export function FullPlayer() {
             <GestureDetector gesture={bottomPan}>
               <View>
                 <View className="mt-6">
-                  <TransportControls modes={view !== "queue"} />
+                  <TransportControls modes={!compact} />
                 </View>
                 <View className="mt-2 flex-row items-center justify-between">
                   <ModeToggle
