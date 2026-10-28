@@ -212,7 +212,9 @@ export function ArtistsTopItems(
   props: ComponentProps<typeof ArtistsTopItemsContent>,
 ) {
   return (
-    <QueryScope>
+    <QueryScope
+      seed={props.type === "songs" ? props.initialSongs : props.initialAlbums}
+    >
       <ArtistsTopItemsContent {...props} />
     </QueryScope>
   );

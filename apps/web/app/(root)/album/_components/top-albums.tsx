@@ -68,7 +68,7 @@ function TopAlbumsContent({ initialAlbums, lang, page = 1 }: TopAlbumsProps) {
 
 export function TopAlbums(props: ComponentProps<typeof TopAlbumsContent>) {
   return (
-    <QueryScope>
+    <QueryScope seed={props.initialAlbums}>
       <TopAlbumsContent {...props} />
     </QueryScope>
   );

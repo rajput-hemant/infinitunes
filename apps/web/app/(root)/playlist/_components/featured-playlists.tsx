@@ -74,7 +74,7 @@ export function FeaturedPlaylists(
   props: ComponentProps<typeof FeaturedPlaylistsContent>,
 ) {
   return (
-    <QueryScope>
+    <QueryScope seed={props.initialPlaylists}>
       <FeaturedPlaylistsContent {...props} />
     </QueryScope>
   );

@@ -83,7 +83,7 @@ export function FeaturedStations(
   props: ComponentProps<typeof FeaturedStationsContent>,
 ) {
   return (
-    <QueryScope>
+    <QueryScope seed={props.initialStations}>
       <FeaturedStationsContent {...props} />
     </QueryScope>
   );

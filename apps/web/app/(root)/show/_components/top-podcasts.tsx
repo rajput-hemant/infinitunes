@@ -68,7 +68,7 @@ function TopPodcastsContent({ initialTopShows, page = 1 }: TopPodcastsProps) {
 
 export function TopPodcasts(props: ComponentProps<typeof TopPodcastsContent>) {
   return (
-    <QueryScope>
+    <QueryScope seed={props.initialTopShows}>
       <TopPodcastsContent {...props} />
     </QueryScope>
   );

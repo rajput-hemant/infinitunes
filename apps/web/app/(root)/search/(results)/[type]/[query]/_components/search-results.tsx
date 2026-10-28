@@ -142,7 +142,7 @@ export function SearchResults(
   props: ComponentProps<typeof SearchResultsContent>,
 ) {
   return (
-    <QueryScope>
+    <QueryScope seed={props.initialPage}>
       <SearchResultsContent {...props} />
     </QueryScope>
   );

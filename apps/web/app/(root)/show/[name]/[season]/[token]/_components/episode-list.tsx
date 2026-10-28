@@ -98,7 +98,7 @@ function EpisodeListContent(props: EpisodeListProps) {
 
 export function EpisodeList(props: ComponentProps<typeof EpisodeListContent>) {
   return (
-    <QueryScope>
+    <QueryScope seed={props.initialEpisodes}>
       <EpisodeListContent {...props} />
     </QueryScope>
   );
