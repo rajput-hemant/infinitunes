@@ -39,7 +39,7 @@ export type SwipeSide = "leading" | "trailing";
 
 /** A swipe past this share of the row's width commits the action (iOS Mail). */
 export const FULL_SWIPE_SHARE = 0.6;
-/** A fling faster than this (px/s), past `FLING_MIN_DISTANCE`, commits too. */
+/** A fling at least this fast (px/s), past `FLING_MIN_DISTANCE`, commits too. */
 export const FLING_VELOCITY = 900;
 export const FLING_MIN_DISTANCE = 40;
 
@@ -66,7 +66,7 @@ export function shouldCommitSwipe({
   return (
     width > 0 &&
     (distance > width * FULL_SWIPE_SHARE ||
-      (dir * velocity > FLING_VELOCITY && distance > FLING_MIN_DISTANCE))
+      (dir * velocity >= FLING_VELOCITY && distance > FLING_MIN_DISTANCE))
   );
 }
 
@@ -471,7 +471,8 @@ export function SwipeableRow({
     // Released past the commit point: run the primary instead of resting open.
     if (!fullSwipe || !releaseCommits(latch.get(), Date.now())) return;
     latch.set({ past: false, end: 0 });
-    const primary = (direction === "left" ? leading : trailing)?.[0];
+    // RNGH reports the row's movement: rightward opens the leading actions.
+    const primary = (direction === "right" ? leading : trailing)?.[0];
     if (primary) run(primary);
   };
 

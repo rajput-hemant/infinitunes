@@ -15,7 +15,8 @@ jest.mock("react-native-reanimated", () => ({
 
 type Props = {
   children: ReactNode;
-  renderLeftActions: (progress: unknown, translation: unknown) => ReactNode;
+  renderLeftActions?: (progress: unknown, translation: unknown) => ReactNode;
+  renderRightActions?: (progress: unknown, translation: unknown) => ReactNode;
   onSwipeableWillOpen: (direction: "left" | "right") => void;
 };
 let props: Props;
@@ -26,7 +27,8 @@ jest.mock("react-native-gesture-handler/ReanimatedSwipeable", () => ({
     return (
       <>
         {next.children}
-        {next.renderLeftActions(undefined, { value: 0 })}
+        {next.renderLeftActions?.(undefined, { value: 0 })}
+        {next.renderRightActions?.(undefined, { value: 0 })}
       </>
     );
   },
@@ -62,7 +64,7 @@ it("runs the first action when released past the commit point", async () => {
   if (!react) throw new Error("Missing swipe reaction");
 
   await act(async () => react(true, false));
-  await act(async () => props.onSwipeableWillOpen("left"));
+  await act(async () => props.onSwipeableWillOpen("right"));
 
   expect(first).toHaveBeenCalledTimes(1);
   expect(second).not.toHaveBeenCalled();
@@ -77,8 +79,8 @@ it("still commits when the release spring has already dropped the row below the 
 
   await act(async () => react(true, false));
   await act(async () => react(false, true));
-  await act(async () => props.onSwipeableWillOpen("left"));
-  await act(async () => props.onSwipeableWillOpen("left"));
+  await act(async () => props.onSwipeableWillOpen("right"));
+  await act(async () => props.onSwipeableWillOpen("right"));
 
   expect(first).toHaveBeenCalledTimes(1);
 });
@@ -105,7 +107,7 @@ it("slides a removing row out first, then runs its action once", async () => {
   if (!react) throw new Error("Missing swipe reaction");
 
   await act(async () => react(true, false));
-  await act(async () => props.onSwipeableWillOpen("left"));
+  await act(async () => props.onSwipeableWillOpen("right"));
   expect(remove).not.toHaveBeenCalled();
 
   await act(async () => {
@@ -120,9 +122,30 @@ it("only reveals the buttons when released short of it, and a tap runs one", asy
     <SwipeableRow leading={leading}>{null}</SwipeableRow>,
   );
 
-  await act(async () => props.onSwipeableWillOpen("left"));
+  await act(async () => props.onSwipeableWillOpen("right"));
   expect(first).not.toHaveBeenCalled();
 
   await userEvent.press(screen.getByRole("button", { name: "Second" }));
   expect(second).toHaveBeenCalledTimes(1);
+});
+
+it("runs trailing Remove on a leftward full swipe instead of a leading action", async () => {
+  const remove = jest.fn();
+  await renderWithProviders(
+    <SwipeableRow
+      leading={leading}
+      trailing={[
+        { label: "Remove", icon: "trash", tone: "red", onPress: remove },
+      ]}
+    >
+      {null}
+    </SwipeableRow>,
+  );
+  const reactions = jest.mocked(Reanimated.useAnimatedReaction).mock.calls;
+  const trailingReaction = reactions[2]?.[1];
+  if (!trailingReaction) throw new Error("Missing trailing commit reaction");
+  await act(async () => trailingReaction(true, false));
+  await act(async () => props.onSwipeableWillOpen("left"));
+  expect(remove).toHaveBeenCalledTimes(1);
+  expect(first).not.toHaveBeenCalled();
 });
