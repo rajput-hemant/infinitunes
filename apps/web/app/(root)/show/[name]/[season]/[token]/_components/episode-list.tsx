@@ -39,7 +39,7 @@ function EpisodeListContent(props: EpisodeListProps) {
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["episodes", season, showId, sort],
+      queryKey: ["episodes", season, showId, sort, initialEpisodes],
       queryFn: async ({ pageParam }) =>
         (
           await trpc.show.episodes.query({
@@ -98,7 +98,7 @@ function EpisodeListContent(props: EpisodeListProps) {
 
 export function EpisodeList(props: ComponentProps<typeof EpisodeListContent>) {
   return (
-    <QueryScope seed={props.initialEpisodes}>
+    <QueryScope>
       <EpisodeListContent {...props} />
     </QueryScope>
   );

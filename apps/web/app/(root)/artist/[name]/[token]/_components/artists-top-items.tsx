@@ -79,7 +79,12 @@ function ArtistTopSongs(props: TopSongsProps) {
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: [id, "artists-top-songs", category ?? "popularity"],
+      queryKey: [
+        id,
+        "artists-top-songs",
+        category ?? "popularity",
+        initialSongs,
+      ],
       queryFn: async ({ pageParam }) => {
         const page = toArtistPage<Song>(
           await trpc.artist.songs.query({
@@ -138,7 +143,12 @@ function ArtistTopAlbums({
 }: TopAlbumsProps) {
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: [id, "artists-top-albums", category ?? "popularity"],
+      queryKey: [
+        id,
+        "artists-top-albums",
+        category ?? "popularity",
+        initialAlbums,
+      ],
       queryFn: async ({ pageParam }) =>
         toArtistPage<Album>(
           await trpc.artist.albums.query({
@@ -212,9 +222,7 @@ export function ArtistsTopItems(
   props: ComponentProps<typeof ArtistsTopItemsContent>,
 ) {
   return (
-    <QueryScope
-      seed={props.type === "songs" ? props.initialSongs : props.initialAlbums}
-    >
+    <QueryScope>
       <ArtistsTopItemsContent {...props} />
     </QueryScope>
   );

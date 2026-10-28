@@ -47,7 +47,7 @@ function SearchResultsContent(props: SearchResultsProps) {
 
   const { data, fetchNextPage, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
-      queryKey: ["search-results", type, query],
+      queryKey: ["search-results", type, query, initialPage],
       queryFn: async ({ pageParam }) =>
         toSearchPage(
           await trpc.search.byType.query({
@@ -142,7 +142,7 @@ export function SearchResults(
   props: ComponentProps<typeof SearchResultsContent>,
 ) {
   return (
-    <QueryScope seed={props.initialPage}>
+    <QueryScope>
       <SearchResultsContent {...props} />
     </QueryScope>
   );

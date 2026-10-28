@@ -14,7 +14,7 @@ it("uses each server page when returning to a previously paginated sort", async 
   const requests: number[] = [];
   function List({ sort, seed }: { sort: string; seed: string[] }) {
     const { data, fetchNextPage } = useInfiniteQuery({
-      queryKey: ["episodes", sort],
+      queryKey: ["episodes", sort, seed],
       queryFn: async ({ pageParam }) => {
         requests.push(pageParam);
         return [`${sort} page ${pageParam}`];
@@ -32,7 +32,7 @@ it("uses each server page when returning to a previously paginated sort", async 
   async function render(sort: string, seed: string[]) {
     await act(async () =>
       root.render(
-        <QueryScope seed={seed}>
+        <QueryScope>
           <List sort={sort} seed={seed} />
         </QueryScope>,
       ),
@@ -44,6 +44,12 @@ it("uses each server page when returning to a previously paginated sort", async 
     await act(async () => host.querySelector("button")?.click());
     await waitFor(() => host.textContent === "old first, desc page 2");
     expect(host.textContent).toBe("old first, desc page 2");
+    const button = host.querySelector("button");
+    await render("desc", ["old first"]);
+    expect(host.textContent).toBe("old first, desc page 2");
+    expect(host.querySelector("button")).toBe(button);
+    await render("desc", ["new first"]);
+    expect(host.textContent).toBe("new first");
     await render("asc", ["ascending"]);
     expect(host.textContent).toBe("ascending");
     await render("desc", ["new first"]);
