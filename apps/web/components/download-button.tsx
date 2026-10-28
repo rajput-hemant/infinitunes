@@ -209,7 +209,7 @@ async function downloadAll(
         for (;;) {
           const chunk = await reader.read();
           if (chunk.done) break;
-          await writable.write(chunk.value);
+          await writable.write(chunk.value as Uint8Array<ArrayBuffer>);
         }
       } catch (error) {
         await writable.abort();
