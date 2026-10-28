@@ -82,7 +82,8 @@ function streamed(length?: number) {
   };
 }
 
-const wait = (ms = 30) => act(async () => new Promise((r) => setTimeout(r, ms)));
+const wait = (ms = 30) =>
+  act(async () => new Promise((r) => setTimeout(r, ms)));
 
 async function mount(songs: Song[]) {
   const container = document.createElement("div");

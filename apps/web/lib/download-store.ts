@@ -194,11 +194,7 @@ export type DownloadStatus = "idle" | "queued" | "active";
 
 export function useDownloadStatus(id: string): DownloadStatus {
   return useDownloads((s) =>
-    s.currentId === id
-      ? "active"
-      : s.pending.includes(id)
-        ? "queued"
-        : "idle",
+    s.currentId === id ? "active" : s.pending.includes(id) ? "queued" : "idle",
   );
 }
 

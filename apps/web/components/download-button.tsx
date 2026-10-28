@@ -140,7 +140,8 @@ function downloadJob(song: Downloadable, quality: StreamQuality): DownloadJob {
 function reportOutcome({ total, failed, cancelled }: DownloadSummary) {
   if (cancelled) return;
   if (failed === total) toast.error(FAILED_MESSAGE);
-  else if (failed) toast.error(`Downloaded ${total - failed} of ${total} songs`);
+  else if (failed)
+    toast.error(`Downloaded ${total - failed} of ${total} songs`);
   else if (total > 1) toast.success(`Downloaded ${total} songs`);
 }
 

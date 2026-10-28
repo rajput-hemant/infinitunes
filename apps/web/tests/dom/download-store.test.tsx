@@ -73,7 +73,7 @@ async function mountRows(ids: string[]) {
   const row = (id: string) => container.querySelector(`[data-row="${id}"]`)!;
   return {
     ring: (id: string) => row(id).querySelector('[role="progressbar"]'),
-    dot: (id: string) => row(id).querySelector('[role="img"]'),
+    dot: (id: string) => row(id).querySelector(".sr-only"),
     unmount: async () => {
       await act(async () => root.unmount());
       container.remove();
@@ -97,10 +97,10 @@ describe("download store", () => {
     await a.started;
 
     // The current song has the ring, the others wait as dots, the rest show nothing.
-    expect(rows.ring("a")?.getAttribute("aria-label")).toBe("Downloading Song a");
-    expect(rows.dot("b")?.getAttribute("aria-label")).toBe(
-      "Song b is waiting to download",
+    expect(rows.ring("a")?.getAttribute("aria-label")).toBe(
+      "Downloading Song a",
     );
+    expect(rows.dot("b")?.textContent).toBe("Song b is waiting to download");
     expect(rows.dot("c")).not.toBeNull();
     expect(rows.ring("b")).toBeNull();
     expect(rows.ring("idle")).toBeNull();
