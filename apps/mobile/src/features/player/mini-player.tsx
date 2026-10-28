@@ -9,13 +9,13 @@ import Animated, { useSharedValue } from "react-native-reanimated";
 
 import { Artwork } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
+import { WashText } from "~/components/wash";
 import { selectCurrentTrack, usePlayer } from "~/playback/player-store";
 import { art, maxFontScale, radii } from "~/theme/tokens";
 
 import { songSwipeActions, useSwipeable } from "./gestures";
 import { RadioBadge } from "./radio-badge";
 import { NextTrackButton, PlayPauseButton } from "./transport-controls";
-import { WashText } from "./wash";
 
 /** The "Not playing" placeholder: the mini artwork's frame. */
 const PLACEHOLDER = {

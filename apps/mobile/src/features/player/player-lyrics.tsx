@@ -3,10 +3,9 @@ import { ScrollView, StyleSheet, View } from "react-native";
 
 import { SyncedLyrics } from "~/components/synced-lyrics";
 import { Spinner } from "~/components/ui/spinner";
+import { useWashColors, WashText } from "~/components/wash";
 import { useLyrics } from "~/lib/use-lyrics";
 import { space } from "~/theme/tokens";
-
-import { useWashColors, WashText } from "./wash";
 
 type PlayerLyricsProps = {
   track: Queue;

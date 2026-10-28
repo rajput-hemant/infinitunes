@@ -3,6 +3,7 @@ import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { impactAsync } from "expo-haptics";
 
+import { nowPlayingWash, OnWash } from "~/components/wash";
 import {
   contrastRatio,
   MIN_CONTROL_CONTRAST,
@@ -15,7 +16,6 @@ import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
 
 import { PlayPauseButton, TransportControls } from "./transport-controls";
-import { nowPlayingWash, OnWash } from "./wash";
 
 const rows = ["a", "b", "c"].map((id) => toSongRow(rawSong({ id })));
 const current = () => playerStore.getState().currentIndex;

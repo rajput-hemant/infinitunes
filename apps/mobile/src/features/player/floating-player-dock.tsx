@@ -1,6 +1,8 @@
 import { useMemo } from "react";
 import { StyleSheet, View } from "react-native";
 
+import { Backdrop, dockWash, OnWash } from "~/components/wash";
+import { usePlayerColors } from "~/lib/use-player-colors";
 import {
   FLOATING_DOCK_INSET,
   useFloatingDockOffset,
@@ -12,8 +14,6 @@ import { useRadii } from "~/theme/use-radii";
 
 import { DockProgress } from "./dock-progress";
 import { MiniPlayer } from "./mini-player";
-import { usePlayerColors } from "./use-player-colors";
-import { Backdrop, dockWash, OnWash } from "./wash";
 
 /** Material 3 elevation level 2: the only shadowed element on Android (P9). */
 const ELEVATION = 3;

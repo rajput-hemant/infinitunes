@@ -41,9 +41,19 @@ import { SongMenu } from "~/components/song-menu";
 import { Artwork, artworkFrame } from "~/components/ui/artwork";
 import { Icon } from "~/components/ui/icon";
 import type { SymbolName } from "~/components/ui/icon";
+import {
+  Backdrop,
+  CROSSFADE_MS,
+  gradientFill,
+  nowPlayingWash,
+  OnWash,
+  useWashColors,
+  WashText,
+} from "~/components/wash";
 import { announce } from "~/lib/announce";
 import { selection } from "~/lib/haptics";
 import { usePreferences } from "~/lib/preferences";
+import { usePlayerColors } from "~/lib/use-player-colors";
 import { usePlaybackStatus } from "~/playback/playback-status";
 import {
   playerStore,
@@ -68,16 +78,6 @@ import {
   shuffleIcon,
   TransportControls,
 } from "./transport-controls";
-import { usePlayerColors } from "./use-player-colors";
-import {
-  Backdrop,
-  CROSSFADE_MS,
-  gradientFill,
-  nowPlayingWash,
-  OnWash,
-  useWashColors,
-  WashText,
-} from "./wash";
 
 /** iOS lifts the artwork off the wash (spec 2.9); Material is flat. */
 const ART_SHADOW = Platform.select({

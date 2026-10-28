@@ -3,13 +3,13 @@ import { rawSong } from "@infinitunes/types/fixtures";
 import { act, fireEvent, screen } from "@testing-library/react-native";
 import { Platform } from "react-native";
 
+import { nowPlayingWash, OnWash } from "~/components/wash";
 import { playerColorsFromSeed } from "~/lib/artwork-colors";
 import { playerStore } from "~/playback/player-store";
 import { renderScreen } from "~/test/render";
 import { reorderState } from "~/test/reorderable-list";
 
 import { QueueList } from "./queue-list";
-import { nowPlayingWash, OnWash } from "./wash";
 
 const rows = [
   rawSong({ id: "a", title: "Alpha" }),

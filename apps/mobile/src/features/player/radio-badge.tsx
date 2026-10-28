@@ -3,9 +3,8 @@ import { View } from "react-native";
 
 import { Icon } from "~/components/ui/icon";
 import { Text } from "~/components/ui/text";
+import { useWashColors, WashText } from "~/components/wash";
 import { usePlayer } from "~/playback/player-store";
-
-import { useWashColors, WashText } from "./wash";
 
 /**
  * The station the queue refills from (the web player's "Radio" badge);

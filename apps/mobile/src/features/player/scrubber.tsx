@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Platform, View } from "react-native";
 import Animated, { useAnimatedStyle } from "react-native-reanimated";
 
+import { useWashColors, WashText } from "~/components/wash";
 import {
   playbackPosition,
   usePlaybackPosition,
@@ -15,7 +16,6 @@ import { playerHaptics, scrubStep } from "./haptics";
 import { useProgressValues } from "./progress-values";
 import { SeekSlider } from "./seek-slider";
 import { SLIDER_HOST } from "./seek-slider-props";
-import { useWashColors, WashText } from "./wash";
 
 /** A player clock without the leading zero ("3:07", "0:00"), as system players show it. */
 function clock(seconds: number) {

@@ -1,8 +1,8 @@
 import type { FavoriteType } from "@infinitunes/core/favorites";
 import { Platform, Pressable, useColorScheme, View } from "react-native";
 
-import { usePlayerColors } from "~/features/player/use-player-colors";
-import { OnWash, nowPlayingWash } from "~/features/player/wash";
+import { OnWash, nowPlayingWash } from "~/components/wash";
+import { usePlayerColors } from "~/lib/use-player-colors";
 import { artShadow, translucentFill } from "~/theme/tokens";
 import type { TextVariant } from "~/theme/tokens";
 import { useTokenColor } from "~/theme/use-palette";
