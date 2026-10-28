@@ -136,6 +136,30 @@ export function PlayPauseButton() {
 export function ProminentPlayPauseButton() {
   const { icon, label } = usePlayPause();
   const playing = label === "Pause";
+  return Platform.OS === "android" ? (
+    <AndroidProminentPlayPauseButton
+      icon={icon}
+      label={label}
+      playing={playing}
+    />
+  ) : (
+    <IOSProminentPlayPauseButton
+      icon={icon}
+      label={label}
+      bounceName={icon.ios}
+    />
+  );
+}
+
+function AndroidProminentPlayPauseButton({
+  icon,
+  label,
+  playing,
+}: {
+  icon: SymbolName;
+  label: string;
+  playing: boolean;
+}) {
   const wash = useWashColors();
   const primary = useTokenColor("primary");
   const onPrimary = useTokenColor("primary-foreground");
@@ -151,36 +175,48 @@ export function ProminentPlayPauseButton() {
     );
   }, [playing, radius]);
   const shape = useAnimatedStyle(() => ({ borderRadius: radius.get() }));
-  const bounce = useGlyphBounce(icon.ios);
   const ripple = usePalette()["fill-2"];
-  const press = usePressScale(0.88);
 
-  if (Platform.OS === "android") {
-    return (
-      <Animated.View
-        style={[
-          {
-            width: PROMINENT_EDGE,
-            height: PROMINENT_EDGE,
-            overflow: "hidden",
-            backgroundColor: wash?.control ?? primary,
-          },
-          shape,
-        ]}
+  return (
+    <Animated.View
+      style={[
+        {
+          width: PROMINENT_EDGE,
+          height: PROMINENT_EDGE,
+          overflow: "hidden",
+          backgroundColor: wash?.control ?? primary,
+        },
+        shape,
+      ]}
+    >
+      <Pressable
+        onPress={tappedPlayPause}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        android_ripple={{ color: ripple }}
+        className="flex-1 items-center justify-center"
+        testID="play-pause-prominent"
       >
-        <Pressable
-          onPress={tappedPlayPause}
-          accessibilityRole="button"
-          accessibilityLabel={label}
-          android_ripple={{ color: ripple }}
-          className="flex-1 items-center justify-center"
-          testID="play-pause-prominent"
-        >
-          <Icon name={icon} size="xl" color={wash?.onControl ?? onPrimary} />
-        </Pressable>
-      </Animated.View>
-    );
-  }
+        <Icon name={icon} size="xl" color={wash?.onControl ?? onPrimary} />
+      </Pressable>
+    </Animated.View>
+  );
+}
+
+function IOSProminentPlayPauseButton({
+  icon,
+  label,
+  bounceName,
+}: {
+  icon: SymbolName;
+  label: string;
+  bounceName: string;
+}) {
+  const wash = useWashColors();
+  const primary = useTokenColor("primary");
+  const onPrimary = useTokenColor("primary-foreground");
+  const bounce = useGlyphBounce(bounceName);
+  const press = usePressScale(0.88);
 
   return (
     <Animated.View style={press.style}>
