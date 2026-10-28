@@ -1,8 +1,9 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
-import { act, render, waitFor } from "@testing-library/react-native";
+import { act, render, screen, waitFor } from "@testing-library/react-native";
 import { Profiler } from "react";
 
+import { PlayPauseButton } from "~/features/player/transport-controls";
 import { forgetUserData } from "~/features/settings/end-session";
 import { failureStore } from "~/lib/failure";
 import { preferencesStore } from "~/lib/preferences";
@@ -14,6 +15,7 @@ import {
 } from "~/lib/song-cache";
 import { audioModes, lastPlayer } from "~/test/expo-audio";
 import { resetFiles } from "~/test/expo-file-system";
+import { renderScreen } from "~/test/render";
 import { signInAs } from "~/test/session-mock";
 import { procedure } from "~/test/trpc-mock";
 
@@ -566,6 +568,70 @@ describe("PlaybackController", () => {
 
     await act(async () => player.pressRemote("previousTrack"));
     expect(player.loads.at(-1)).toBe(ladder("BSaNI3Yr", 320));
+  });
+
+  it("follows a pause and a play the system made, with no JS action", async () => {
+    await renderScreen(
+      <>
+        <PlaybackController />
+        <PlayPauseButton />
+      </>,
+    );
+    const player = lastPlayer();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading());
+    expect(screen.getByRole("button", { name: "Pause" })).toBeOnTheScreen();
+    expect(playbackStatusStore.getState().playing).toBe(true);
+
+    // A media key, headset or lock-screen pause: the engine says so, nothing else did.
+    await act(async () => player.emitStatus({ playing: false }));
+    expect(playbackStatusStore.getState().playing).toBe(false);
+    expect(screen.getByRole("button", { name: "Play" })).toBeOnTheScreen();
+
+    await act(async () => player.emitStatus({ playing: true }));
+    expect(playbackStatusStore.getState().playing).toBe(true);
+    expect(screen.getByRole("button", { name: "Pause" })).toBeOnTheScreen();
+  });
+
+  it("notices an engine that stopped without a status", async () => {
+    jest.useFakeTimers();
+    try {
+      await renderScreen(
+        <>
+          <PlaybackController />
+          <PlayPauseButton />
+        </>,
+      );
+      const player = lastPlayer();
+      await act(async () => playerStore.getState().playTracks(rows));
+      await act(async () => player.finishLoading());
+      expect(playbackStatusStore.getState().playing).toBe(true);
+
+      // iOS reads the play state before it settles and ticks no more once paused.
+      player.stopSilently();
+      await act(async () => jest.advanceTimersByTimeAsync(600));
+
+      expect(playbackStatusStore.getState().playing).toBe(false);
+      expect(screen.getByRole("button", { name: "Play" })).toBeOnTheScreen();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it("keeps showing Pause while the engine buffers a playing track", async () => {
+    jest.useFakeTimers();
+    try {
+      const player = await mountController();
+      await act(async () => playerStore.getState().playTracks(rows));
+      await act(async () => player.finishLoading());
+      await act(async () =>
+        player.emitStatus({ playing: true, isBuffering: true }),
+      );
+      await act(async () => jest.advanceTimersByTimeAsync(1200));
+      expect(playbackStatusStore.getState().playing).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("resumes the paused entry when its list is played again", async () => {

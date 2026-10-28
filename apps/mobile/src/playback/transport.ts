@@ -19,7 +19,9 @@ export function togglePlayback() {
     start();
     return;
   }
-  if (audioPlayer.playing) {
+  // The status, not `playing`: Android's reports false while the engine buffers
+  // a track the UI shows as playing, and that press must still pause.
+  if (audioPlayer.currentStatus.playing) {
     beginPlaybackRequest();
     audioPlayer.pause();
     return;
