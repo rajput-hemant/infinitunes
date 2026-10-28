@@ -63,8 +63,22 @@ export async function generateMetadata({
 type SongLyricsProps = { id: string };
 
 async function SongLyrics({ id }: SongLyricsProps) {
-  const lyrics = await orFallback("lyrics", api.get.lyrics({ id }), undefined);
-  return lyrics ? <Lyrics lyrics={lyrics} /> : null;
+  const lyrics = await orFallback(
+    "lyrics",
+    api.song.syncedLyrics({ id }),
+    undefined,
+  );
+  return lyrics?.synced || lyrics?.plain ? (
+    <Lyrics
+      id={id}
+      lyrics={{
+        synced: lyrics.synced,
+        plain: lyrics.plain,
+        source: lyrics.source,
+        copyright: lyrics.copyright,
+      }}
+    />
+  ) : null;
 }
 
 async function SongAlbumSongs({ token }: TokenProps) {
@@ -170,11 +184,9 @@ export default async function SongDetailsPage(props: SongDetailsPageProps) {
     <div className="flex flex-col gap-(--page-gap)">
       <DetailsHeader item={song} />
 
-      {song.more_info.has_lyrics === "true" && (
-        <Suspense fallback={<Skeleton className="h-24" />}>
-          <SongLyrics id={song.id} />
-        </Suspense>
-      )}
+      <Suspense fallback={<Skeleton className="h-24" />}>
+        <SongLyrics id={song.id} />
+      </Suspense>
 
       <Suspense
         fallback={

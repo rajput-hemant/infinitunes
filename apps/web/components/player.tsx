@@ -8,7 +8,6 @@ import {
   prevTrackIndex,
 } from "@infinitunes/core/playback-order";
 import type { PlaylistSummary } from "@infinitunes/core/react/optimistic-playlists";
-import { createPositionStore } from "@infinitunes/core/react/position-store";
 import { usePlayhead } from "@infinitunes/core/react/use-playhead";
 import { useRadioRefill } from "@infinitunes/core/react/use-radio-refill";
 import {
@@ -36,6 +35,7 @@ import {
 import type { User } from "~/lib/auth";
 import { recordPlay } from "~/lib/history-actions";
 import { shouldIgnoreShortcut } from "~/lib/keyboard";
+import { playerSeek, playhead as position } from "~/lib/playhead";
 import { trpc } from "~/lib/trpc/vanilla";
 import { cn } from "~/lib/utils";
 
@@ -70,7 +70,6 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
   // states
   const [isShuffle, setIsShuffle] = React.useState(false);
   const [loopPlaylist, setLoopPlaylist] = React.useState(false);
-  const [position] = React.useState(createPositionStore);
   const [isDragging, setIsDragging] = React.useState<boolean>(false);
   const [isExpanded, setIsExpanded] = React.useState(false);
   const [showRemainingTime, setShowRemainingTime] = React.useState(false);
@@ -258,6 +257,16 @@ export function Player({ user, playlists, favorites }: PlayerProps) {
       setIsPlayerInit(true);
     }
   }
+
+  React.useEffect(() => {
+    playerSeek.current = (seconds) => {
+      seek(seconds);
+      position.set(seconds);
+    };
+    return () => {
+      playerSeek.current = undefined;
+    };
+  }, [seek]);
 
   function seekChange(value: number) {
     position.set(value);
