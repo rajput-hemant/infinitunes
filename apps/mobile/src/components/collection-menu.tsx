@@ -27,12 +27,19 @@ import type { MenuEntry } from "./native-menu";
  * preference; dismissing the picker does nothing. One run at a time: while
  * one is going, another asks the listener to wait.
  */
+// The folder picker is open: a second tap must not open another run.
+let picking = false;
+
 export async function downloadAll(songs: readonly SongRowItem[]) {
+  if (picking) return;
   if (downloadStore.getState().batch) {
     showFailure("Another download is still running.");
     return;
   }
-  const folder = await pickDownloadFolder();
+  picking = true;
+  const folder = await pickDownloadFolder().finally(() => {
+    picking = false;
+  });
   if (!folder) return;
   const { downloadQuality } = preferencesStore.getState();
   void ensureNotificationPermission();
