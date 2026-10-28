@@ -62,9 +62,9 @@ export function getSubtitle(item: DetailsItem): string {
   return decode("subtitle" in item ? item.subtitle : "");
 }
 
-/** A single song has nothing to shuffle; every other page lists tracks. */
+/** A single song or episode has nothing to shuffle; every other page lists tracks. */
 export function canShuffle(item: DetailsItem): boolean {
-  return !isKind(item, "song");
+  return !isKind(item, "song") && !isKind(item, "episode");
 }
 
 /**
