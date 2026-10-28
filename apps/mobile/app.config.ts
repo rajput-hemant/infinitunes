@@ -1,5 +1,7 @@
 import { NATIVE_APP_ID, NATIVE_APP_SCHEME } from "@infinitunes/auth/native-app";
 import type { ExpoConfig } from "expo/config";
+import { withEntitlementsPlist } from "expo/config-plugins";
+import type { ConfigPlugin } from "expo/config-plugins";
 
 // Node loads this file without a bundler, so the import names its extension.
 import { buildIosQuickActions } from "./plugins/ios-quick-actions.ts";
@@ -17,6 +19,14 @@ const passkeyDomain = api?.protocol === "https:" ? api.hostname : undefined;
 // Sign in with Apple and Associated Domains need a paid Apple Developer team:
 // a free Apple ID cannot sign them, so builds leave both out unless told.
 const applePaidTeam = process.env.EXPO_PUBLIC_APPLE_PAID_TEAM === "true";
+
+// Prebuild applies expo-apple-authentication's plugin whenever the package is
+// installed, whatever `plugins` lists, so a free team's build drops it here.
+const withoutAppleSignIn: ConfigPlugin = (config) =>
+  withEntitlementsPlist(config, (entitlements) => {
+    delete entitlements.modResults["com.apple.developer.applesignin"];
+    return entitlements;
+  });
 
 // Google's iOS SDK opens its sign-in through the iOS client's reversed id.
 const googleIosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
@@ -114,4 +124,4 @@ const config: ExpoConfig = {
   },
 };
 
-export default config;
+export default applePaidTeam ? config : withoutAppleSignIn(config);
