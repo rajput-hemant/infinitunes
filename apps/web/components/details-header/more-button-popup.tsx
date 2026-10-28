@@ -83,7 +83,7 @@ export function MoreButtonPopup(props: MoreButtonPopupProps) {
   const [, setQueue] = useQueue();
   const startRadio = useRadioStart();
 
-  const { isDownloading, download } = useDownloadSongs(songs, name);
+  const { isDownloading, download } = useDownloadSongs(songs);
 
   function addToQueue() {
     const songsPayload: Queue[] = songs.map(toQueueEntry);
