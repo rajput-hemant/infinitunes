@@ -67,16 +67,13 @@ export function SongListRow(props: SongListRowProps) {
   return (
     <SongRow
       id={item.id}
-      style={
-        index < STAGGER_ROWS
-          ? { animationDelay: `${index * STAGGER_STEP_MS}ms` }
-          : undefined
-      }
+      style={{
+        animationDelay: `${Math.min(index, STAGGER_ROWS) * STAGGER_STEP_MS}ms`,
+      }}
       className={cn(
         songRowGrid,
-        // The first rows rise in one after another; later rows (and pages loaded on demand) just appear.
-        index < STAGGER_ROWS &&
-          "animate-in fade-in-0 slide-in-from-bottom-1 fill-mode-backwards ease-out [--tw-animation-duration:var(--duration-base)]",
+        // Every row rises in; the stagger stops growing after the first rows, so long lists don't wait.
+        "animate-in fade-in-0 slide-in-from-bottom-1 fill-mode-backwards ease-out [--tw-animation-duration:var(--duration-base)]",
         "group/row relative h-row rounded-sm px-1 text-sm transition-colors duration-fast hover:bg-fill focus-within:bg-fill active:bg-fill-2 md:px-2",
       )}
     >
