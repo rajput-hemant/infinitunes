@@ -1,6 +1,7 @@
 import { useImperativeHandle } from "react";
 import type { ReactNode, Ref } from "react";
 import { View } from "react-native";
+import { useSharedValue, type SharedValue } from "react-native-reanimated";
 
 /**
  * `react-native-gesture-handler/ReanimatedSwipeable` in every suite
@@ -10,11 +11,16 @@ import { View } from "react-native";
  * its revealed actions beside it, and the `close()` handle.
  */
 
+type RenderActions = (
+  progress: SharedValue<number>,
+  translation: SharedValue<number>,
+) => ReactNode;
+
 type SwipeableProps = {
   ref?: Ref<{ close: () => void }>;
   children?: ReactNode;
-  renderLeftActions?: () => ReactNode;
-  renderRightActions?: () => ReactNode;
+  renderLeftActions?: RenderActions;
+  renderRightActions?: RenderActions;
   enabled?: boolean;
 };
 
@@ -25,12 +31,14 @@ function Swipeable({
   renderRightActions,
   enabled = true,
 }: SwipeableProps) {
+  const progress = useSharedValue(0);
+  const translation = useSharedValue(0);
   useImperativeHandle(ref, () => ({ close: () => {} }));
   return (
     <View testID="swipeable" accessibilityState={{ disabled: !enabled }}>
-      {renderLeftActions?.()}
+      {renderLeftActions?.(progress, translation)}
       {children}
-      {renderRightActions?.()}
+      {renderRightActions?.(progress, translation)}
     </View>
   );
 }
