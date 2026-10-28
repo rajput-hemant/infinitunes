@@ -82,18 +82,31 @@ type ArtworkProps = {
  * setting. Keyed by its URL so a recycled list cell (FlashList) drops the
  * previous row's picture at once instead of showing it until the new one loads.
  */
-export function Artwork({
+export function Artwork(props: ArtworkProps) {
+  return props.size === "player" ? (
+    <ResponsiveArtwork {...props} />
+  ) : (
+    <ArtworkImage {...props} windowWidth={0} />
+  );
+}
+
+function ResponsiveArtwork(props: ArtworkProps) {
+  const { width } = useWindowDimensions();
+  return <ArtworkImage {...props} windowWidth={width} />;
+}
+
+function ArtworkImage({
   image,
   size,
   round = false,
   quality,
   style,
   testID,
-}: ArtworkProps) {
-  const { width } = useWindowDimensions();
+  windowWidth,
+}: ArtworkProps & { windowWidth: number }) {
   const scale = useRadii();
   const cap = usePreferences((preferences) => preferences.imageQuality);
-  const frame = artworkFrame(size, width, round, scale);
+  const frame = artworkFrame(size, windowWidth, round, scale);
   const wanted = quality ?? qualityFor(frame.width);
   const src = getImageSrc(image, cappedQuality(wanted, cap));
   if (!image || STOCK_IMAGE.test(image)) {

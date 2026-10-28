@@ -1,5 +1,5 @@
 import { act, render, screen } from "@testing-library/react-native";
-import { PixelRatio, StyleSheet } from "react-native";
+import { Dimensions, PixelRatio, StyleSheet } from "react-native";
 
 import { preferencesStore } from "~/lib/preferences";
 import { art } from "~/theme/tokens";
@@ -20,6 +20,35 @@ function renderedUri(testID = "art") {
 afterEach(() => preferencesStore.getState().setImageQuality("high"));
 
 describe("Artwork", () => {
+  it("does not subscribe fixed-size cells to window changes", async () => {
+    const listen = jest.spyOn(Dimensions, "addEventListener");
+    try {
+      await render(
+        <>
+          <Artwork image={IMAGE} size="row" />
+          <Artwork image={IMAGE} size="card" />
+        </>,
+      );
+      expect(listen).not.toHaveBeenCalled();
+    } finally {
+      listen.mockRestore();
+    }
+  });
+
+  it("keeps player artwork responsive to window changes", async () => {
+    const window = Dimensions.get("window");
+    try {
+      await render(<Artwork testID="art" image={IMAGE} size="player" />);
+      expect(screen.getByTestId("art")).toHaveStyle({ width: 342 });
+      await act(async () => {
+        Dimensions.set({ window: { ...window, width: 320 } });
+      });
+      expect(screen.getByTestId("art")).toHaveStyle({ width: 272 });
+    } finally {
+      await act(async () => Dimensions.set({ window }));
+    }
+  });
+
   it("loads the resolution the layout asks for", async () => {
     await render(
       <Artwork testID="art" image={IMAGE} size="card" quality="medium" />,
