@@ -302,7 +302,7 @@ describe("saveTracks", () => {
       .mocked(File.downloadFileAsync)
       .mockImplementationOnce(async (_url, destination) => {
         cancelDownloads();
-        return destination;
+        return destination as File;
       });
     const result = await saveTracks(
       new Directory(),
