@@ -138,7 +138,7 @@ export function MoreButtonPopup(props: MoreButtonPopupProps) {
       icon: ListOrdered,
     },
     {
-      label: "Add To Playlist",
+      label: "Add to Playlist",
       onClick: togglePlaylistDialog,
       hide: type === "show" || type === "artist" || type === "episode",
       icon: ListMusic,
@@ -191,7 +191,12 @@ export function MoreButtonPopup(props: MoreButtonPopupProps) {
             <MoreVertical aria-hidden="true" className="size-5" />
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent align="start">
+          {/* The primitive pins the popup to the trigger's width, so the labels wrap.
+              Size it to the content instead, as the song row menu does. */}
+          <DropdownMenuContent
+            align="start"
+            className="w-auto min-w-56 max-w-[min(20rem,calc(100vw-1rem))]"
+          >
             <DropdownMenuGroup>
               {visible
                 .filter(({ phoneOnly }) => !phoneOnly)
@@ -200,7 +205,7 @@ export function MoreButtonPopup(props: MoreButtonPopupProps) {
                     key={label}
                     onClick={onClick}
                     disabled={disabled}
-                    className="cursor-pointer"
+                    className="cursor-pointer whitespace-nowrap"
                   >
                     <Icon className="mr-2 size-5" />
                     {label}

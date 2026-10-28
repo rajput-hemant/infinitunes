@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 import { getHref } from "~/lib/utils";
 
 import type { DetailsItem } from "./details-header-items";
-import { getSongs, isLabel } from "./details-header-items";
+import { getSongs, isLabel, playlistMetaParts } from "./details-header-items";
 
 const metaLink = "font-semibold text-foreground hover:underline";
 
@@ -117,16 +117,7 @@ function AlbumMeta({ album }: { album: Album }) {
 }
 
 function PlaylistMeta({ playlist }: { playlist: Playlist }) {
-  return (
-    <p className="capitalize">
-      {decode(playlist.subtitle)}
-      {" · "}
-      {playlist.more_info.subtitle_desc
-        .slice()
-        .reverse()
-        .map((s, i, arr) => s + (i !== arr.length - 1 ? " · " : ""))}
-    </p>
-  );
+  return <p className="capitalize">{joinMeta(playlistMetaParts(playlist))}</p>;
 }
 
 function MixMeta({ mix }: { mix: Mix }) {

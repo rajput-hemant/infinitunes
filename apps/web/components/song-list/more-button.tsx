@@ -193,7 +193,7 @@ export function TileMoreButton(props: TileMoreButtonProps) {
       icon: ListOrdered,
     },
     {
-      label: "Add To Playlist",
+      label: "Add to Playlist",
       onClick: togglePlaylistDialog,
       icon: ListMusic,
     },
