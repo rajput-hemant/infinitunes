@@ -1,6 +1,7 @@
 import { toSongRow } from "@infinitunes/types";
 import { rawSong } from "@infinitunes/types/fixtures";
 import { act, render, waitFor } from "@testing-library/react-native";
+import { Profiler } from "react";
 
 import { forgetUserData } from "~/features/settings/end-session";
 import { failureStore } from "~/lib/failure";
@@ -53,6 +54,30 @@ beforeEach(() => {
 afterEach(() => queryClient.clear());
 
 describe("PlaybackController", () => {
+  it("publishes buffering progress without committing the controller on status ticks", async () => {
+    const onRender = jest.fn();
+    await render(
+      <Profiler id="playback" onRender={onRender}>
+        <PlaybackController />
+      </Profiler>,
+    );
+    const player = lastPlayer();
+    await act(async () => playerStore.getState().playTracks(rows));
+    await act(async () => player.finishLoading(200));
+    await act(async () => player.bufferTo(20));
+    onRender.mockClear();
+
+    for (const seconds of [1, 2, 3]) {
+      await act(async () => {
+        void player.seekTo(seconds);
+        player.bufferTo(seconds + 20);
+      });
+    }
+
+    expect(playbackStatusStore.getState().bufferedTime).toBe(23);
+    expect(onRender).not.toHaveBeenCalled();
+  });
+
   it("rejects an earlier load of the same URL and events preceding a source clear", async () => {
     const player = await mountController();
     await act(async () => playerStore.getState().playTracks(rows));

@@ -80,7 +80,7 @@ export function PlaybackController() {
     updateQueue,
   } = playerStore.getState();
   const streamQuality = usePreferences((state) => state.streamQuality);
-  const [status, setStatus] = useState(() => audioPlayer.currentStatus);
+  const [playing, setPlaying] = useState(() => audioPlayer.playing);
   const lockScreenActive = useRef(false);
   // The current source's outcome, kept per load. The status hook cannot
   // carry it: the engine reports `error` on one event only (the next status
@@ -152,14 +152,13 @@ export function PlaybackController() {
         audioPlayer.clearLockScreenControls();
         lockScreenActive.current = false;
         // `replace(null)` emits no status: show the stopped engine now.
-        setStatus((prev) => ({
-          ...prev,
+        setPlaying(false);
+        playbackStatusStore.setState({
           playing: false,
-          isBuffering: false,
+          buffering: false,
           duration: 0,
-          currentTime: 0,
           bufferedTime: 0,
-        }));
+        });
       }
       setSource(FRESH_SOURCE);
       showFailure(PLAYBACK_PROBLEM_MESSAGES[problem]);
@@ -200,7 +199,7 @@ export function PlaybackController() {
   usePlayhead({
     store: playbackPosition,
     getPosition,
-    playing: status.playing,
+    playing,
   });
 
   // The playing song's lyrics and the next song's are cached before the
@@ -234,7 +233,22 @@ export function PlaybackController() {
         const current = selectCurrentTrack(playerStore.getState());
         // The queue can move before React runs the source-replacement effect.
         if (current && current.queueItemId !== loadedEntry.current) return;
-        setStatus(update);
+        setPlaying(update.playing);
+        const nextStatus = {
+          playing: update.playing,
+          buffering: update.isBuffering,
+          duration: update.duration,
+          bufferedTime: update.bufferedTime ?? 0,
+        };
+        const previousStatus = playbackStatusStore.getState();
+        if (
+          previousStatus.playing !== nextStatus.playing ||
+          previousStatus.buffering !== nextStatus.buffering ||
+          previousStatus.duration !== nextStatus.duration ||
+          previousStatus.bufferedTime !== nextStatus.bufferedTime
+        ) {
+          playbackStatusStore.setState(nextStatus);
+        }
         if (
           current &&
           countListen.current(
@@ -310,20 +324,6 @@ export function PlaybackController() {
     audioPlayer.clearLockScreenControls();
     lockScreenActive.current = false;
   }, [started, hasTrack]);
-
-  useEffect(() => {
-    playbackStatusStore.setState({
-      playing: status.playing,
-      buffering: status.isBuffering,
-      duration: status.duration,
-      bufferedTime: status.bufferedTime ?? 0,
-    });
-  }, [
-    status.playing,
-    status.isBuffering,
-    status.duration,
-    status.bufferedTime,
-  ]);
 
   // Activated once, by the first load (`load`), then only the metadata
   // changes: on Android every activation rebuilds the MediaSession and takes
