@@ -2,7 +2,7 @@ import { uniqueBy } from "@infinitunes/types";
 import type { CardItem } from "@infinitunes/types";
 import { FlashList } from "@shopify/flash-list";
 import type { Href } from "expo-router";
-import { memo, useMemo } from "react";
+import { memo, useCallback, useMemo } from "react";
 import { useWindowDimensions, View } from "react-native";
 
 import { art, playerArtSize, sizes, space } from "~/theme/tokens";
@@ -27,6 +27,7 @@ type ShelfProps = {
 
 /** How much of the next hero card shows past the current one (M3 hero carousel's small item). */
 const HERO_PEEK = art.tile;
+const cardKey = (item: CardItem) => item.id;
 
 /**
  * The hero card's edge: the window less the gutter, the gap and a peek of the
@@ -61,8 +62,20 @@ export const Shelf = memo(function Shelf({
   const heroWidth = useHeroWidth();
   // Upstream modules can repeat an item; FlashList needs unique keys.
   const unique = useMemo(() => uniqueBy(items, (item) => item.id), [items]);
-  if (items.length === 0) return null;
   const hero = variant === "hero";
+  const renderItem = useCallback(
+    ({ item }: { item: CardItem }) => (
+      <MediaCard
+        item={item}
+        variant={variant}
+        width={hero ? heroWidth : undefined}
+        eyebrow={eyebrow?.(item)}
+        onPress={onItemPress && (() => onItemPress(item))}
+      />
+    ),
+    [eyebrow, hero, heroWidth, onItemPress, variant],
+  );
+  if (items.length === 0) return null;
 
   return (
     <View>
@@ -83,16 +96,8 @@ export const Shelf = memo(function Shelf({
       <FlashList
         horizontal
         data={unique}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <MediaCard
-            item={item}
-            variant={variant}
-            width={hero ? heroWidth : undefined}
-            eyebrow={eyebrow?.(item)}
-            onPress={onItemPress && (() => onItemPress(item))}
-          />
-        )}
+        keyExtractor={cardKey}
+        renderItem={renderItem}
         ItemSeparatorComponent={CardGap}
         showsHorizontalScrollIndicator={false}
         // The hero carousel settles one card at a time, its start on the gutter.

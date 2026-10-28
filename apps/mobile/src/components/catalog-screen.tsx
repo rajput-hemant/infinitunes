@@ -1,5 +1,10 @@
 import { FlashList } from "@shopify/flash-list";
-import { type ComponentProps, type ReactElement, useEffect } from "react";
+import {
+  type ComponentProps,
+  type ReactElement,
+  useCallback,
+  useEffect,
+} from "react";
 import { View } from "react-native";
 import Animated, {
   ReduceMotion,
@@ -76,19 +81,23 @@ export function CatalogScreen<Item>({
     opacity.set(loaded ? withTiming(1, REVEAL) : 0);
   }, [loaded, opacity]);
   const reveal = useAnimatedStyle(() => ({ opacity: opacity.get() }));
+  const renderItem = useCallback(
+    ({ item, index }: { item: Item; index: number }) => (
+      <Animated.View style={reveal}>
+        <GridCell index={index} columns={columns}>
+          {renderCard(item, width)}
+        </GridCell>
+      </Animated.View>
+    ),
+    [columns, renderCard, reveal, width],
+  );
 
   return (
     <FlashList
       data={items}
       numColumns={columns}
       keyExtractor={keyOf}
-      renderItem={({ item, index }) => (
-        <Animated.View style={reveal}>
-          <GridCell index={index} columns={columns}>
-            {renderCard(item, width)}
-          </GridCell>
-        </Animated.View>
-      )}
+      renderItem={renderItem}
       ListHeaderComponent={header}
       ListEmptyComponent={
         <CatalogPlaceholder query={query} empty={empty} round={round} />
