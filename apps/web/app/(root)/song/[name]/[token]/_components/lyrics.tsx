@@ -26,7 +26,6 @@ type LyricsProps = { id: string; lyrics: SongLyricsData };
 // A playhead that matches no line, for a song that is not the current track.
 const idle = createPositionStore(-1);
 const SNIPPET_LINES = 4;
-const noSeek = () => {};
 const seekPlayer = (seconds: number) => playerSeek.current?.(seconds);
 
 export function lyricsSnippet({ synced, plain }: SongLyricsData) {
@@ -57,6 +56,7 @@ export function Lyrics({ id, lyrics }: LyricsProps) {
               Lyrics
             </h2>
 
+            {!isCollapsed && <p className="text-sm">Read Less</p>}
             {isCollapsed && (
               <>
                 <p className="text-sm whitespace-pre-line text-muted-foreground">
@@ -76,7 +76,7 @@ export function Lyrics({ id, lyrics }: LyricsProps) {
                 key={id}
                 lines={lyrics.synced}
                 position={isCurrent ? playhead : idle}
-                onSeek={isCurrent ? seekPlayer : noSeek}
+                onSeek={isCurrent ? seekPlayer : undefined}
               />
             </div>
           ) : (

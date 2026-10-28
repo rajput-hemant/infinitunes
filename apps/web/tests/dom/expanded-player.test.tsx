@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it, mock } from "bun:test";
 
 import { createPositionStore } from "@infinitunes/core/react/position-store";
 import type { Queue as QueueItem } from "@infinitunes/types";
@@ -236,3 +236,83 @@ describe("expanded player sheet", () => {
     await act(async () => root.unmount());
   });
 });
+
+for (const reduced of [false, true]) {
+  it(
+    reduced
+      ? "fades phone artwork under reduced motion"
+      : "flies phone artwork into its compact header",
+    async () => {
+      const originalMatchMedia = window.matchMedia;
+      window.matchMedia = (query) =>
+        originalMatchMedia.call(
+          window,
+          query === "(min-width: 768px)" ? "(min-width: 99999px)" : query,
+        );
+      const originalRect = HTMLElement.prototype.getBoundingClientRect;
+      const originalAnimate = Object.getOwnPropertyDescriptor(
+        HTMLElement.prototype,
+        "animate",
+      );
+      const cancel = mock(() => {});
+      const animate = mock(() => ({ cancel }));
+      Object.defineProperty(HTMLElement.prototype, "animate", {
+        configurable: true,
+        value: animate,
+      });
+      HTMLElement.prototype.getBoundingClientRect = function () {
+        if (this.classList.contains("max-w-88")) {
+          const compact = this.parentElement?.className.includes("max-md:grid");
+          return new DOMRect(
+            compact ? 24 : 80,
+            60,
+            compact ? 64 : 352,
+            compact ? 64 : 352,
+          );
+        }
+        return originalRect.call(this);
+      };
+      if (reduced) document.documentElement.dataset.motion = "reduced";
+      const root = await mountExpanded();
+      try {
+        const toggle = [
+          ...document.querySelectorAll<HTMLButtonElement>("button"),
+        ].find(
+          (button) =>
+            button.hasAttribute("aria-expanded") &&
+            button.textContent?.trim() === "Up next",
+        );
+        await act(async () => toggle?.click());
+        expect(animate).toHaveBeenCalledWith(
+          reduced
+            ? [{ opacity: 0.5 }, { opacity: 1 }]
+            : [
+                {
+                  transformOrigin: "top left",
+                  transform: "translate(56px, 0px) scale(5.5, 5.5)",
+                },
+                { transformOrigin: "top left", transform: "none" },
+              ],
+          {
+            duration: reduced ? 160 : 340,
+            easing: "cubic-bezier(0.2, 0, 0, 1)",
+          },
+        );
+        await act(async () => root.unmount());
+        expect(cancel).toHaveBeenCalled();
+      } finally {
+        await act(async () => root.unmount());
+        HTMLElement.prototype.getBoundingClientRect = originalRect;
+        window.matchMedia = originalMatchMedia;
+        if (originalAnimate)
+          Object.defineProperty(
+            HTMLElement.prototype,
+            "animate",
+            originalAnimate,
+          );
+        else Reflect.deleteProperty(HTMLElement.prototype, "animate");
+        delete document.documentElement.dataset.motion;
+      }
+    },
+  );
+}

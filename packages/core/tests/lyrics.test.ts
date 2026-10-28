@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { activeLineIndex, parseLrc } from "../src/lyrics";
+import { activeLineIndex, parseLrc, lyricScrollTop } from "../src/lyrics";
 
 describe("LRC", () => {
   it("preserves bracketed lyric text", () => {
@@ -36,4 +36,9 @@ describe("LRC", () => {
     expect(activeLineIndex([], 10)).toBe(-1);
     expect(activeLineIndex(lines, NaN)).toBe(-1);
   });
+});
+
+it("places the active lyric one third down without scrolling above the start", () => {
+  expect(lyricScrollTop(240, 300)).toBe(140);
+  expect(lyricScrollTop(20, 300)).toBe(0);
 });

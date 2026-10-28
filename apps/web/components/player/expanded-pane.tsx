@@ -7,16 +7,13 @@ import type * as React from "react";
 
 import { cn } from "~/lib/utils";
 
+import { LyricsSkeleton } from "./lyrics-skeleton";
 import { QueueList } from "./queue-list";
 
 const ExpandedLyrics = dynamic(
   () => import("./expanded-lyrics").then((mod) => mod.ExpandedLyrics),
   {
-    loading: () => (
-      <output className="px-2 text-sm text-muted-foreground">
-        Loading lyrics...
-      </output>
-    ),
+    loading: () => <LyricsSkeleton />,
   },
 );
 
@@ -105,7 +102,11 @@ export function ExpandedPane({
         role="tabpanel"
         id={`${id}-${tab}`}
         aria-labelledby={`${id}-${tab}-tab`}
-        className="min-h-0 flex-1 overflow-y-auto rounded-md p-2"
+        aria-label={tab === "queue" ? "Up next" : "Lyrics"}
+        className={cn(
+          "min-h-0 flex-1 rounded-md p-2",
+          tab === "queue" ? "overflow-y-auto" : "overflow-hidden",
+        )}
       >
         {tab === "queue" ? (
           <QueueList upNextOnly />
