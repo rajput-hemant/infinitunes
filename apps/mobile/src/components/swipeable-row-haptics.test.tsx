@@ -1,6 +1,7 @@
-import { act } from "@testing-library/react-native";
+import { act, screen, userEvent } from "@testing-library/react-native";
 import { impactAsync } from "expo-haptics";
 import type { ReactNode } from "react";
+import { Platform } from "react-native";
 import * as Reanimated from "react-native-reanimated";
 
 import { renderWithProviders } from "~/test/render";
@@ -54,4 +55,26 @@ it("buzzes only when a swipe crosses the commit point, not on its initial reacti
   expect(impactAsync).toHaveBeenCalledTimes(1);
   await act(async () => react(false, true));
   expect(impactAsync).toHaveBeenCalledTimes(2);
+});
+
+it("keeps Android swipe buttons without mounting the iOS commit reaction", async () => {
+  jest.replaceProperty(Platform, "OS", "android");
+  const reaction = jest.mocked(Reanimated.useAnimatedReaction);
+  reaction.mockClear();
+  const remove = jest.fn();
+  await renderWithProviders(
+    <SwipeableRow
+      trailing={[
+        { label: "Remove", icon: "trash", tone: "red", onPress: remove },
+      ]}
+    >
+      {null}
+    </SwipeableRow>,
+  );
+
+  // Only the displaced row's highlight follows translation, with no commit latch.
+  expect(reaction).toHaveBeenCalledTimes(1);
+  expect(impactAsync).not.toHaveBeenCalled();
+  await userEvent.press(screen.getByRole("button", { name: "Remove" }));
+  expect(remove).toHaveBeenCalledTimes(1);
 });
